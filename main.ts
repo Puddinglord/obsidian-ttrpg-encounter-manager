@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, ItemView } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, ItemView, TFile, MarkdownPostProcessorContext } from 'obsidian';
 
 // ============================================================================
 // TYPES
@@ -54,6 +54,12 @@ interface EncounterCreature {
 	maxHp: number;
 	sourceFile?: string;
 	conditions: string[];
+}
+
+interface MonsterIndexEntry {
+	name: string;
+	filePath: string;
+	monster: NimbleMonster;
 }
 
 interface NimbleCondition {
@@ -161,11 +167,11 @@ class EncounterTrackerView extends ItemView {
 		const activeEnc = this.getActiveEncounter();
 		const viewingCreature = activeEnc?.creatures.find(c => c.id === this.viewingCreatureId);
 		const viewingCond = this.viewingCondition ? this.getAllConditions().find(c => c.name === this.viewingCondition) : null;
-		
+
 		// Condition viewer
 		if (viewingCond) {
 			const condViewer = container.createEl('div', { cls: 'condition-viewer' });
-			
+
 			const condHeader = condViewer.createEl('div', { cls: 'viewer-header' });
 			condHeader.createEl('span', { text: viewingCond.name, cls: 'viewer-title condition-title' });
 			const closeCondBtn = condHeader.createEl('button', { text: '✕', cls: 'close-viewer-btn small' });
@@ -173,7 +179,7 @@ class EncounterTrackerView extends ItemView {
 				this.viewingCondition = null;
 				this.render();
 			};
-			
+
 			condViewer.createEl('p', { text: viewingCond.description, cls: 'condition-description' });
 			condViewer.createEl('hr', { cls: 'viewer-divider' });
 		}
@@ -181,7 +187,7 @@ class EncounterTrackerView extends ItemView {
 		// Stat block viewer
 		if (viewingCreature) {
 			const viewer = container.createEl('div', { cls: 'statblock-viewer' });
-			
+
 			const viewerHeader = viewer.createEl('div', { cls: 'viewer-header' });
 			viewerHeader.createEl('span', { text: viewingCreature.label, cls: 'viewer-title' });
 			const closeBtn = viewerHeader.createEl('button', { text: '✕', cls: 'close-viewer-btn small' });
@@ -189,11 +195,11 @@ class EncounterTrackerView extends ItemView {
 				this.viewingCreatureId = null;
 				this.render();
 			};
-			
+
 			// Render the stat block
 			const statblockContainer = viewer.createEl('div', { cls: 'viewer-statblock' });
 			this.renderInlineStatblock(statblockContainer, viewingCreature.monster);
-			
+
 			viewer.createEl('hr', { cls: 'viewer-divider' });
 		}
 
@@ -205,15 +211,15 @@ class EncounterTrackerView extends ItemView {
 		if (multiMode) {
 			// New encounter form
 			const newForm = container.createEl('div', { cls: 'new-encounter-form' });
-			const input = newForm.createEl('input', { 
-				type: 'text', 
+			const input = newForm.createEl('input', {
+				type: 'text',
 				placeholder: 'New encounter name...'
 			});
 			input.addClass('encounter-name-input');
-			
+
 			const addBtn = newForm.createEl('button', { text: '+' });
 			addBtn.addClass('add-encounter-btn');
-			
+
 			addBtn.onclick = () => {
 				if (input.value.trim()) {
 					this.createEncounter(input.value.trim());
@@ -232,7 +238,7 @@ class EncounterTrackerView extends ItemView {
 			const selector = container.createEl('div', { cls: 'encounter-selector' });
 			const select = selector.createEl('select');
 			select.addClass('encounter-select');
-			
+
 			select.createEl('option', { text: 'Select encounter...', value: '' });
 			for (const enc of this.plugin.settings.encounters) {
 				const opt = select.createEl('option', { text: enc.name, value: enc.id });
@@ -253,7 +259,7 @@ class EncounterTrackerView extends ItemView {
 		// Active encounter content
 		if (activeEnc) {
 			const content = container.createEl('div', { cls: 'encounter-content' });
-			
+
 			// Delete encounter button (only in multiple mode)
 			if (multiMode) {
 				const deleteBtn = content.createEl('button', { text: '🗑️ Delete Encounter' });
@@ -272,7 +278,7 @@ class EncounterTrackerView extends ItemView {
 						confirmBtn.addClass('confirm-btn');
 						const cancelBtn = clearContainer.createEl('button', { text: '✕ Cancel' });
 						cancelBtn.addClass('cancel-btn');
-						
+
 						confirmBtn.onclick = () => {
 							activeEnc.creatures = [];
 							this.viewingCreatureId = null;
@@ -280,7 +286,7 @@ class EncounterTrackerView extends ItemView {
 							this.plugin.saveSettings();
 							this.render();
 						};
-						
+
 						cancelBtn.onclick = () => {
 							this.render();
 						};
@@ -289,7 +295,7 @@ class EncounterTrackerView extends ItemView {
 			}
 
 			if (activeEnc.creatures.length === 0) {
-				content.createEl('p', { 
+				content.createEl('p', {
 					text: 'No creatures yet. Add monsters from stat blocks.',
 					cls: 'empty-message'
 				});
@@ -298,7 +304,7 @@ class EncounterTrackerView extends ItemView {
 			}
 		} else if (multiMode) {
 			// Only show this message in multi mode when no encounter selected
-			container.createEl('p', { 
+			container.createEl('p', {
 				text: 'Create or select an encounter to get started.',
 				cls: 'empty-message'
 			});
@@ -323,27 +329,27 @@ class EncounterTrackerView extends ItemView {
 
 	renderCreatureList(container: HTMLElement, activeEnc: Encounter): void {
 		const list = container.createEl('ul', { cls: 'creature-list' });
-		
+
 		for (let i = 0; i < activeEnc.creatures.length; i++) {
 			const creature = activeEnc.creatures[i];
 			const item = list.createEl('li', { cls: 'creature-item' });
 			item.addClass(this.getHpClass(creature.currentHp, creature.maxHp));
-			
+
 			// Make draggable
 			item.setAttribute('draggable', 'true');
 			item.dataset.creatureId = creature.id;
 			item.dataset.index = i.toString();
-			
+
 			item.ondragstart = (e) => {
 				item.addClass('dragging');
 				e.dataTransfer?.setData('text/plain', creature.id);
 			};
-			
+
 			item.ondragend = () => {
 				item.removeClass('dragging');
 				list.querySelectorAll('.drag-over').forEach(el => el.removeClass('drag-over'));
 			};
-			
+
 			item.ondragover = (e) => {
 				e.preventDefault();
 				const dragging = list.querySelector('.dragging');
@@ -351,11 +357,11 @@ class EncounterTrackerView extends ItemView {
 					item.addClass('drag-over');
 				}
 			};
-			
+
 			item.ondragleave = () => {
 				item.removeClass('drag-over');
 			};
-			
+
 			item.ondrop = (e) => {
 				e.preventDefault();
 				item.removeClass('drag-over');
@@ -367,11 +373,11 @@ class EncounterTrackerView extends ItemView {
 
 			// Header row
 			const headerRow = item.createEl('div', { cls: 'creature-header' });
-			
+
 			// Drag handle
 			const dragHandle = headerRow.createEl('span', { cls: 'drag-handle', text: '⋮⋮' });
 			dragHandle.setAttribute('title', 'Drag to reorder');
-			
+
 			// Label - click to view stat block
 			const labelContainer = headerRow.createEl('div', { cls: 'label-container' });
 			const labelSpan = labelContainer.createEl('span', { text: creature.label, cls: 'creature-label' });
@@ -379,13 +385,13 @@ class EncounterTrackerView extends ItemView {
 			if (this.viewingCreatureId === creature.id) {
 				labelSpan.addClass('viewing');
 			}
-			
+
 			// Click label to view stat block (always replace, never close)
 			labelSpan.onclick = () => {
 				this.viewingCreatureId = creature.id;
 				this.render();
 			};
-			
+
 			// Buttons container
 			const buttonsContainer = headerRow.createEl('div', { cls: 'creature-buttons' });
 
@@ -399,7 +405,7 @@ class EncounterTrackerView extends ItemView {
 				input.type = 'text';
 				input.value = creature.label;
 				input.className = 'label-edit-input';
-				
+
 				const saveLabel = () => {
 					const newLabel = input.value.trim();
 					if (newLabel && newLabel !== creature.label) {
@@ -408,7 +414,7 @@ class EncounterTrackerView extends ItemView {
 					}
 					this.render();
 				};
-				
+
 				input.onblur = saveLabel;
 				input.onkeydown = (e) => {
 					if (e.key === 'Enter') {
@@ -417,7 +423,7 @@ class EncounterTrackerView extends ItemView {
 						this.render();
 					}
 				};
-				
+
 				labelContainer.empty();
 				labelContainer.appendChild(input);
 				input.focus();
@@ -429,34 +435,34 @@ class EncounterTrackerView extends ItemView {
 
 			// HP controls
 			const hpRow = item.createEl('div', { cls: 'hp-controls' });
-			
+
 			const minus5 = hpRow.createEl('button', { text: '-5', cls: 'hp-btn' });
 			minus5.onclick = () => this.updateHp(activeEnc.id, creature.id, -5);
-			
+
 			const minus1 = hpRow.createEl('button', { text: '-1', cls: 'hp-btn' });
 			minus1.onclick = () => this.updateHp(activeEnc.id, creature.id, -1);
-			
-			hpRow.createEl('span', { 
+
+			hpRow.createEl('span', {
 				text: `${creature.currentHp} / ${creature.maxHp}`,
 				cls: 'hp-display'
 			});
-			
+
 			const plus1 = hpRow.createEl('button', { text: '+1', cls: 'hp-btn' });
 			plus1.onclick = () => this.updateHp(activeEnc.id, creature.id, 1);
-			
+
 			const plus5 = hpRow.createEl('button', { text: '+5', cls: 'hp-btn' });
 			plus5.onclick = () => this.updateHp(activeEnc.id, creature.id, 5);
 
 			// Conditions row
 			const conditionsRow = item.createEl('div', { cls: 'conditions-row' });
-			
+
 			// Calculate if bloodied (auto condition)
 			const isBloodied = creature.currentHp <= creature.maxHp / 2 && creature.currentHp > 0;
 			const isDying = creature.currentHp === 0;
-			
+
 			// Ensure conditions array exists
 			if (!creature.conditions) creature.conditions = [];
-			
+
 			// Get all conditions to display
 			const displayConditions: string[] = [];
 			if (isDying && !creature.conditions.includes('Dying')) {
@@ -466,22 +472,22 @@ class EncounterTrackerView extends ItemView {
 				displayConditions.push('Bloodied');
 			}
 			displayConditions.push(...creature.conditions.filter(c => c !== 'Bloodied' && c !== 'Dying'));
-			
+
 			// Display conditions as tags
 			for (const condName of displayConditions) {
 				const cond = this.getAllConditions().find(c => c.name === condName);
-				const tag = conditionsRow.createEl('span', { 
-					text: condName, 
-					cls: 'condition-tag' 
+				const tag = conditionsRow.createEl('span', {
+					text: condName,
+					cls: 'condition-tag'
 				});
-				
+
 				// Add tooltip
 				if (cond) {
 					tag.setAttribute('title', cond.description);
 				}
-				
+
 				// Auto conditions get special styling
-				if ((condName === 'Bloodied' && isBloodied && !creature.conditions.includes('Bloodied')) || 
+				if ((condName === 'Bloodied' && isBloodied && !creature.conditions.includes('Bloodied')) ||
 					(condName === 'Dying' && isDying && !creature.conditions.includes('Dying'))) {
 					tag.addClass('auto-condition');
 				} else {
@@ -492,14 +498,14 @@ class EncounterTrackerView extends ItemView {
 						this.removeCondition(activeEnc.id, creature.id, condName);
 					};
 				}
-				
+
 				// Click to view in panel
 				tag.onclick = () => {
 					this.viewingCondition = this.viewingCondition === condName ? null : condName;
 					this.render();
 				};
 			}
-			
+
 			// Add condition button
 			const addCondBtn = conditionsRow.createEl('button', { text: '+', cls: 'add-condition-btn' });
 			addCondBtn.setAttribute('title', 'Add condition');
@@ -602,13 +608,13 @@ class EncounterTrackerView extends ItemView {
 
 		const picker = document.createElement('div');
 		picker.className = 'condition-picker';
-		
+
 		// Get available conditions (exclude already applied ones), sorted alphabetically
 		const allConditions = this.getAllConditions();
 		const available = allConditions
 			.filter(c => !c.auto && !existingConditions.includes(c.name))
 			.sort((a, b) => a.name.localeCompare(b.name));
-		
+
 		if (available.length === 0) {
 			const emptyDiv = document.createElement('div');
 			emptyDiv.className = 'picker-empty';
@@ -627,7 +633,7 @@ class EncounterTrackerView extends ItemView {
 				picker.appendChild(option);
 			}
 		}
-		
+
 		// Position near button
 		document.body.appendChild(picker);
 		const rect = button.getBoundingClientRect();
@@ -635,7 +641,7 @@ class EncounterTrackerView extends ItemView {
 		picker.style.left = `${rect.left}px`;
 		picker.style.top = `${rect.bottom + 4}px`;
 		picker.style.zIndex = '1000';
-		
+
 		// Close when clicking outside
 		const closeHandler = (e: MouseEvent) => {
 			if (!picker.contains(e.target as Node) && e.target !== button) {
@@ -678,13 +684,13 @@ class EncounterTrackerView extends ItemView {
 		if (enc) {
 			const draggedIndex = enc.creatures.findIndex(c => c.id === draggedId);
 			const targetIndex = enc.creatures.findIndex(c => c.id === targetId);
-			
+
 			if (draggedIndex !== -1 && targetIndex !== -1) {
 				// Remove dragged item
 				const [dragged] = enc.creatures.splice(draggedIndex, 1);
 				// Insert at target position
 				enc.creatures.splice(targetIndex, 0, dragged);
-				
+
 				this.plugin.saveSettings();
 				this.render();
 			}
@@ -714,31 +720,31 @@ class EncounterTrackerView extends ItemView {
 	renderInlineSolo(block: HTMLElement, monster: NimbleMonster): void {
 		// Solo Header Row
 		const headerRow = block.createEl('div', { cls: 'solo-header-row' });
-		
+
 		const headerLeft = headerRow.createEl('div', { cls: 'solo-header-left' });
 		const levelParts = [];
 		if (monster.level) levelParts.push(`Level ${monster.level}`);
 		if (monster.size) levelParts.push(monster.size);
 		if (monster.type) levelParts.push(monster.type);
 		headerLeft.createEl('span', { text: levelParts.join(' '), cls: 'solo-level-type' });
-		
+
 		const headerRight = headerRow.createEl('div', { cls: 'solo-header-right' });
-		
+
 		// SVG Icons
 		const heartSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
 		const shieldSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`;
 		const starSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
-		
+
 		const hpBadge = headerRight.createEl('span', { cls: 'solo-stat-badge hp-badge' });
 		hpBadge.innerHTML = `${heartSvg}<span class="badge-value">${monster.hp}</span>`;
-		
+
 		// Armor badge (only show if medium or heavy)
 		if (monster.armor !== 'none') {
 			const armorLetter = monster.armor === 'medium' ? 'M' : 'H';
 			const armorBadge = headerRight.createEl('span', { cls: 'solo-stat-badge armor-badge' });
 			armorBadge.innerHTML = `${shieldSvg}<span class="badge-value">${armorLetter}</span>`;
 		}
-		
+
 		const savesParts: string[] = [];
 		if (monster.str) savesParts.push(`STR${monster.str}`);
 		if (monster.dex) savesParts.push(`DEX${monster.dex}`);
@@ -766,11 +772,11 @@ class EncounterTrackerView extends ItemView {
 		// Actions
 		if (monster.attacks?.length || monster.multiattack) {
 			const actionsSection = block.createEl('div', { cls: 'solo-actions-section' });
-			
+
 			const actionHeader = actionsSection.createEl('p', { cls: 'solo-action-header' });
 			const actionText = monster.actionText || 'After each hero\'s turn, choose one:';
 			actionHeader.innerHTML = `<strong>ACTIONS:</strong> ${actionText}`;
-			
+
 			if (monster.multiattack) {
 				const p = actionsSection.createEl('p');
 				p.innerHTML = markdownToHtml(monster.multiattack);
@@ -812,10 +818,10 @@ class EncounterTrackerView extends ItemView {
 
 		// Header Row: Name + Type on left, badges on right
 		const headerRow = block.createEl('div', { cls: 'monster-header-row' });
-		
+
 		const headerLeft = headerRow.createEl('div', { cls: 'monster-header-left' });
 		headerLeft.createEl('span', { text: monster.name, cls: 'monster-name-inline' });
-		
+
 		// Build type string (size and level now in badges)
 		const infoParts = [];
 		if (monster.type) infoParts.push(monster.type);
@@ -823,32 +829,32 @@ class EncounterTrackerView extends ItemView {
 		if (infoParts.length > 0) {
 			headerLeft.createEl('span', { text: infoParts.join(', '), cls: 'monster-info-inline' });
 		}
-		
+
 		// Right side badges - Order: Level, Size, HP, Armor, Movement, Saves
 		const headerRight = headerRow.createEl('div', { cls: 'monster-header-right' });
-		
+
 		// Level badge (skull icon)
 		if (monster.level) {
 			const levelBadge = headerRight.createEl('span', { cls: 'stat-badge level-badge' });
 			levelBadge.innerHTML = `${skullSvg}<span class="badge-value">${monster.level}</span>`;
 		}
-		
+
 		// Size badge (person icon) - only show if not medium
 		if (monster.size && monster.size.toLowerCase() !== 'medium') {
 			const sizeBadge = headerRight.createEl('span', { cls: 'stat-badge size-badge' });
 			sizeBadge.innerHTML = `${sizeSvg}<span class="badge-value">${monster.size.toUpperCase()}</span>`;
 		}
-		
+
 		const hpBadge = headerRight.createEl('span', { cls: 'stat-badge hp-badge' });
 		hpBadge.innerHTML = `${heartSvg}<span class="badge-value">${monster.hp}</span>`;
-		
+
 		// Armor badge (only show if medium or heavy)
 		if (monster.armor !== 'none') {
 			const armorLetter = monster.armor === 'medium' ? 'M' : 'H';
 			const armorBadge = headerRight.createEl('span', { cls: 'stat-badge armor-badge' });
 			armorBadge.innerHTML = `${shieldSvg}<span class="badge-value">${armorLetter}</span>`;
 		}
-		
+
 		// Movement badge (only show if different from default walk 6)
 		const movementInfo = parseMovement(monster.movement);
 		if (movementInfo.display) {
@@ -898,7 +904,7 @@ class EncounterTrackerView extends ItemView {
 				block.createEl('hr');
 			}
 			const actionsSection = block.createEl('div', { cls: 'monster-actions-section' });
-			
+
 			if (monster.multiattack) {
 				actionsSection.createEl('p').innerHTML = markdownToHtml(monster.multiattack);
 			}
@@ -924,13 +930,13 @@ interface MovementInfo {
 
 function parseMovement(movement: string | undefined): MovementInfo {
 	if (!movement) return { display: null, type: null, speed: null };
-	
+
 	const trimmed = movement.trim().toLowerCase();
-	
+
 	// Try to extract type and speed
 	// Patterns: "6", "Fly 10", "Fly", "walk 6", etc.
 	const match = trimmed.match(/^([a-z]+)?\s*(\d+)?$/i);
-	
+
 	if (!match) {
 		// Complex movement string, just show as-is if not default
 		if (trimmed === '6' || trimmed === 'walk 6' || trimmed === 'walk') {
@@ -938,45 +944,45 @@ function parseMovement(movement: string | undefined): MovementInfo {
 		}
 		return { display: movement.trim(), type: null, speed: null };
 	}
-	
+
 	let type = match[1] || null;
 	const speed = match[2] ? parseInt(match[2]) : null;
-	
+
 	// Normalize type
 	if (type) {
 		type = type.toLowerCase();
 	}
-	
+
 	// Check if it's the default (walk 6 or just 6 with implied walk)
 	const isDefaultType = !type || type === 'walk';
 	const isDefaultSpeed = speed === 6 || speed === null;
-	
+
 	if (isDefaultType && isDefaultSpeed && speed === 6) {
 		return { display: null, type: 'walk', speed: 6 };
 	}
-	
+
 	// Build display string
 	const parts: string[] = [];
-	
+
 	// Show type if it's not walk
 	if (type && type !== 'walk') {
 		parts.push(type.toUpperCase());
 	}
-	
+
 	// Show speed if it's not 6 (or if we're showing a non-walk type)
 	if (speed !== null && (speed !== 6 || (type && type !== 'walk'))) {
 		parts.push(speed.toString());
 	}
-	
+
 	// If we only have speed and it's 6, don't show
 	if (parts.length === 0) {
 		return { display: null, type: type || 'walk', speed: speed };
 	}
-	
-	return { 
-		display: parts.join(' '), 
-		type: type || 'walk', 
-		speed: speed 
+
+	return {
+		display: parts.join(' '),
+		type: type || 'walk',
+		speed: speed
 	};
 }
 
@@ -988,7 +994,7 @@ function parseStatblock(content: string): NimbleMonster | null {
 	try {
 		const monster: Partial<NimbleMonster> = {};
 		const lines = content.split('\n');
-		
+
 		let currentSection: string | null = null;
 		let currentList: string[] = [];
 
@@ -1031,7 +1037,7 @@ function parseStatblock(content: string): NimbleMonster | null {
 		}
 
 		if (!monster.name) return null;
-		
+
 		monster.armor = monster.armor || 'none';
 		monster.hp = monster.hp || 10;
 		monster.movement = monster.movement || '6';
@@ -1049,53 +1055,53 @@ function processKeyValue(monster: Partial<NimbleMonster>, key: string, value: st
 		case 'type': monster.type = value; break;
 		case 'size': monster.size = value; break;
 		case 'level': monster.level = value; break;
-		case 'armor': case 'ac': 
-			monster.armor = normalizeArmor(value); 
+		case 'armor': case 'ac':
+			monster.armor = normalizeArmor(value);
 			break;
-		case 'hp': case 'hitpoints': 
-			monster.hp = parseInt(value) || 10; 
+		case 'hp': case 'hitpoints':
+			monster.hp = parseInt(value) || 10;
 			break;
-		case 'movement': case 'speed': 
-			monster.movement = value; 
+		case 'movement': case 'speed':
+			monster.movement = value;
 			break;
-		case 'str': 
-			monster.str = value.trim(); 
+		case 'str':
+			monster.str = value.trim();
 			break;
-		case 'dex': 
-			monster.dex = value.trim(); 
+		case 'dex':
+			monster.dex = value.trim();
 			break;
-		case 'will': 
-			monster.will = value.trim(); 
+		case 'will':
+			monster.will = value.trim();
 			break;
-		case 'cr': 
-			monster.cr = value; 
+		case 'cr':
+			monster.cr = value;
 			break;
-		case 'senses': 
-			monster.senses = value; 
+		case 'senses':
+			monster.senses = value;
 			break;
-		case 'languages': 
-			monster.languages = value; 
+		case 'languages':
+			monster.languages = value;
 			break;
-		case 'multiattack': 
-			monster.multiattack = value; 
+		case 'multiattack':
+			monster.multiattack = value;
 			break;
-		case 'monstertype': 
-			monster.monsterType = value.toLowerCase().includes('solo') ? 'solo' : 'regular'; 
+		case 'monstertype':
+			monster.monsterType = value.toLowerCase().includes('solo') ? 'solo' : 'regular';
 			break;
-		case 'legendaryresistances': 
-			monster.legendaryResistances = parseInt(value) || 3; 
+		case 'legendaryresistances':
+			monster.legendaryResistances = parseInt(value) || 3;
 			break;
-		case 'description': case 'desc': 
-			monster.description = value; 
+		case 'description': case 'desc':
+			monster.description = value;
 			break;
-		case 'bloodied': 
-			monster.bloodied = value; 
+		case 'bloodied':
+			monster.bloodied = value;
 			break;
-		case 'laststand': 
-			monster.lastStand = value; 
+		case 'laststand':
+			monster.lastStand = value;
 			break;
-		case 'actiontext': 
-			monster.actionText = value; 
+		case 'actiontext':
+			monster.actionText = value;
 			break;
 	}
 }
@@ -1135,7 +1141,7 @@ function markdownToHtml(text: string): string {
 
 function parseAbility(line: string): NimbleAbility {
 	const ability: NimbleAbility = { name: 'Ability', description: '' };
-	
+
 	if (line.includes('(L)')) {
 		ability.isLegendary = true;
 		line = line.replace('(L)', '').trim();
@@ -1143,7 +1149,7 @@ function parseAbility(line: string): NimbleAbility {
 
 	// Remove markdown formatting for parsing (***text*** or **text** or *text*)
 	let cleanLine = line.replace(/\*+/g, '');
-	
+
 	// Find the colon separator
 	const idx = cleanLine.indexOf(':');
 	if (idx !== -1) {
@@ -1161,7 +1167,7 @@ function normalizeArmor(value: string): ArmorType {
 	if (v === 'n' || v === 'none' || v === 'l' || v === 'light') return 'none';
 	if (v === 'm' || v === 'medium') return 'medium';
 	if (v === 'h' || v === 'heavy') return 'heavy';
-	
+
 	const num = parseInt(v);
 	if (!isNaN(num)) {
 		if (num <= 13) return 'none';
@@ -1215,7 +1221,7 @@ function renderStatblock(el: HTMLElement, monster: NimbleMonster, plugin: Nimble
 function renderSoloStatblock(block: HTMLElement, monster: NimbleMonster): void {
 	// Solo Header Row: "Level X Solo Size Type" | HP | Armor | Saves
 	const headerRow = block.createEl('div', { cls: 'solo-header-row' });
-	
+
 	// Left side: Level/Size/Type
 	const headerLeft = headerRow.createEl('div', { cls: 'solo-header-left' });
 	const levelParts = [];
@@ -1223,26 +1229,26 @@ function renderSoloStatblock(block: HTMLElement, monster: NimbleMonster): void {
 	if (monster.size) levelParts.push(monster.size);
 	if (monster.type) levelParts.push(monster.type);
 	headerLeft.createEl('span', { text: levelParts.join(' '), cls: 'solo-level-type' });
-	
+
 	// Right side: HP, Armor, Saves
 	const headerRight = headerRow.createEl('div', { cls: 'solo-header-right' });
-	
+
 	// SVG Icons
 	const heartSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
 	const shieldSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`;
 	const starSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
-	
+
 	// HP badge
 	const hpBadge = headerRight.createEl('span', { cls: 'solo-stat-badge hp-badge' });
 	hpBadge.innerHTML = `${heartSvg}<span class="badge-value">${monster.hp}</span>`;
-	
+
 	// Armor badge (only show if medium or heavy)
 	if (monster.armor !== 'none') {
 		const armorLetter = monster.armor === 'medium' ? 'M' : 'H';
 		const armorBadge = headerRight.createEl('span', { cls: 'solo-stat-badge armor-badge' });
 		armorBadge.innerHTML = `${shieldSvg}<span class="badge-value">${armorLetter}</span>`;
 	}
-	
+
 	// Saves badge (if any)
 	const savesParts: string[] = [];
 	if (monster.str) savesParts.push(`STR${monster.str}`);
@@ -1272,12 +1278,12 @@ function renderSoloStatblock(block: HTMLElement, monster: NimbleMonster): void {
 	// Actions section
 	if (monster.attacks?.length || monster.multiattack) {
 		const actionsSection = block.createEl('div', { cls: 'solo-actions-section' });
-		
+
 		// Action header with custom text
 		const actionHeader = actionsSection.createEl('p', { cls: 'solo-action-header' });
 		const actionText = monster.actionText || 'After each hero\'s turn, choose one:';
 		actionHeader.innerHTML = `<strong>ACTIONS:</strong> ${actionText}`;
-		
+
 		if (monster.multiattack) {
 			const p = actionsSection.createEl('p');
 			p.innerHTML = markdownToHtml(monster.multiattack);
@@ -1320,11 +1326,11 @@ function renderRegularStatblock(block: HTMLElement, monster: NimbleMonster): voi
 
 	// Header Row: Name + Type on left, badges on right (wraps when needed)
 	const headerRow = block.createEl('div', { cls: 'monster-header-row' });
-	
+
 	// Left side: Name + Type inline
 	const headerLeft = headerRow.createEl('div', { cls: 'monster-header-left' });
 	headerLeft.createEl('span', { text: monster.name, cls: 'monster-name-inline' });
-	
+
 	// Build type string (size and level now in badges)
 	const infoParts = [];
 	if (monster.type) infoParts.push(monster.type);
@@ -1332,33 +1338,33 @@ function renderRegularStatblock(block: HTMLElement, monster: NimbleMonster): voi
 	if (infoParts.length > 0) {
 		headerLeft.createEl('span', { text: infoParts.join(', '), cls: 'monster-info-inline' });
 	}
-	
+
 	// Right side badges - Order: Level, Size, HP, Armor, Movement, Saves
 	const headerRight = headerRow.createEl('div', { cls: 'monster-header-right' });
-	
+
 	// Level badge (skull icon)
 	if (monster.level) {
 		const levelBadge = headerRight.createEl('span', { cls: 'stat-badge level-badge' });
 		levelBadge.innerHTML = `${skullSvg}<span class="badge-value">${monster.level}</span>`;
 	}
-	
+
 	// Size badge (person icon) - only show if not medium
 	if (monster.size && monster.size.toLowerCase() !== 'medium') {
 		const sizeBadge = headerRight.createEl('span', { cls: 'stat-badge size-badge' });
 		sizeBadge.innerHTML = `${sizeSvg}<span class="badge-value">${monster.size.toUpperCase()}</span>`;
 	}
-	
+
 	// HP badge
 	const hpBadge = headerRight.createEl('span', { cls: 'stat-badge hp-badge' });
 	hpBadge.innerHTML = `${heartSvg}<span class="badge-value">${monster.hp}</span>`;
-	
+
 	// Armor badge (only show if medium or heavy)
 	if (monster.armor !== 'none') {
 		const armorLetter = monster.armor === 'medium' ? 'M' : 'H';
 		const armorBadge = headerRight.createEl('span', { cls: 'stat-badge armor-badge' });
 		armorBadge.innerHTML = `${shieldSvg}<span class="badge-value">${armorLetter}</span>`;
 	}
-	
+
 	// Movement badge (only show if different from default walk 6)
 	const movementInfo = parseMovement(monster.movement);
 	if (movementInfo.display) {
@@ -1412,7 +1418,7 @@ function renderRegularStatblock(block: HTMLElement, monster: NimbleMonster): voi
 			block.createEl('hr');
 		}
 		const actionsSection = block.createEl('div', { cls: 'monster-actions-section' });
-		
+
 		if (monster.multiattack) {
 			actionsSection.createEl('p').innerHTML = markdownToHtml(monster.multiattack);
 		}
@@ -1468,14 +1474,14 @@ class NimbleSettingsTab extends PluginSettingTab {
 
 		// Custom Conditions Section
 		containerEl.createEl('h3', { text: 'Custom Conditions' });
-		containerEl.createEl('p', { 
+		containerEl.createEl('p', {
 			text: 'Add custom conditions that can be applied to creatures in encounters.',
 			cls: 'setting-item-description'
 		});
 
 		// Add new condition form
 		const addConditionContainer = containerEl.createEl('div', { cls: 'custom-condition-add' });
-		
+
 		let newConditionName = '';
 		let newConditionDesc = '';
 
@@ -1556,7 +1562,7 @@ class NimbleSettingsTab extends PluginSettingTab {
 		const modal = new EditConditionModal(this.app, condition, async (name, desc) => {
 			// Check for duplicates (excluding current)
 			const otherConditions = [
-				...NIMBLE_CONDITIONS, 
+				...NIMBLE_CONDITIONS,
 				...customConds.filter((_, i) => i !== index)
 			];
 			if (otherConditions.some(c => c.name.toLowerCase() === name.toLowerCase())) {
@@ -1632,6 +1638,7 @@ class EditConditionModal extends Modal {
 
 export default class NimbleStatblocksPlugin extends Plugin {
 	settings: NimbleStatblocksSettings;
+	private monsterIndex: Map<string, MonsterIndexEntry> = new Map();
 
 	async onload() {
 		await this.loadSettings();
@@ -1647,6 +1654,20 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			} else {
 				el.createEl('p', { text: 'Error: Invalid stat block syntax', cls: 'nimble-error' });
 			}
+		});
+
+		// Register inline nimble reference processor
+		this.registerMarkdownPostProcessor((el, ctx) => {
+			const codeEls = el.querySelectorAll('code');
+			codeEls.forEach((codeEl) => {
+				const text = codeEl.textContent || '';
+				if (text.startsWith('nimble:')) {
+					const monsterName = text.slice(7).trim();
+					if (monsterName) {
+						this.renderInlineReference(codeEl as HTMLElement, monsterName, ctx.sourcePath);
+					}
+				}
+			});
 		});
 
 		this.addCommand({
@@ -1678,6 +1699,34 @@ abilities:
 		});
 
 		this.addSettingTab(new NimbleSettingsTab(this.app, this));
+
+		// Build monster index for inline references
+		this.buildMonsterIndex();
+
+		// Update index on file changes
+		this.registerEvent(
+			this.app.vault.on('modify', (file) => {
+				if (file instanceof TFile && file.extension === 'md') {
+					this.updateIndexForFile(file);
+				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				if (file instanceof TFile) {
+					this.removeFileFromIndex(file.path);
+				}
+			})
+		);
+
+		this.registerEvent(
+			this.app.vault.on('create', (file) => {
+				if (file instanceof TFile && file.extension === 'md') {
+					this.updateIndexForFile(file);
+				}
+			})
+		);
 	}
 
 	async loadSettings() {
@@ -1707,5 +1756,439 @@ abilities:
 			}
 		}
 		if (leaf) this.app.workspace.revealLeaf(leaf);
+	}
+
+	// ========================================================================
+	// MONSTER INDEX SYSTEM
+	// ========================================================================
+
+	async buildMonsterIndex(): Promise<void> {
+		this.monsterIndex.clear();
+		const files = this.app.vault.getMarkdownFiles();
+
+		for (const file of files) {
+			await this.indexFile(file);
+		}
+	}
+
+	private async indexFile(file: TFile): Promise<void> {
+		try {
+			const content = await this.app.vault.cachedRead(file);
+			const regex = /```nimble\n([\s\S]*?)```/g;
+			let match;
+
+			while ((match = regex.exec(content)) !== null) {
+				const statblockContent = match[1];
+				const monster = parseStatblock(statblockContent);
+				if (monster?.name) {
+					const key = monster.name.toLowerCase();
+					// Store first occurrence
+					if (!this.monsterIndex.has(key)) {
+						this.monsterIndex.set(key, {
+							name: monster.name,
+							filePath: file.path,
+							monster: monster
+						});
+					}
+				}
+			}
+		} catch (e) {
+			console.error(`Error indexing file ${file.path}:`, e);
+		}
+	}
+
+	getMonsterByName(name: string): MonsterIndexEntry | undefined {
+		return this.monsterIndex.get(name.toLowerCase());
+	}
+
+	private async updateIndexForFile(file: TFile): Promise<void> {
+		// Remove old entries from this file
+		this.removeFileFromIndex(file.path);
+		// Re-index this file
+		await this.indexFile(file);
+	}
+
+	private removeFileFromIndex(filePath: string): void {
+		for (const [key, entry] of this.monsterIndex.entries()) {
+			if (entry.filePath === filePath) {
+				this.monsterIndex.delete(key);
+			}
+		}
+	}
+
+	// ========================================================================
+	// INLINE REFERENCE RENDERER
+	// ========================================================================
+
+	private renderInlineReference(codeEl: HTMLElement, monsterName: string, sourcePath: string): void {
+		const entry = this.getMonsterByName(monsterName);
+
+		// Create container span
+		const container = document.createElement('span');
+		container.className = 'nimble-inline-ref';
+
+		if (entry) {
+			// Monster found - create clickable link
+			container.addClass('nimble-inline-found');
+
+			// Monster name link
+			const nameLink = container.createEl('a', {
+				text: entry.name,
+				cls: 'nimble-inline-name'
+			});
+
+			// Navigate to source file on click
+			nameLink.onclick = (e) => {
+				e.preventDefault();
+				this.app.workspace.openLinkText(entry.filePath, sourcePath);
+			};
+
+			// Attach hover preview
+			this.attachHoverPreview(nameLink, entry);
+
+			// Add button
+			const addBtn = container.createEl('button', {
+				text: '+',
+				cls: 'nimble-inline-add-btn',
+				attr: { 'aria-label': 'Add to encounter' }
+			});
+
+			addBtn.onclick = (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				const view = this.getEncounterView();
+				if (view) {
+					view.addCreature(entry.monster, entry.filePath);
+				} else {
+					this.activateEncounterView().then(() => {
+						setTimeout(() => {
+							const v = this.getEncounterView();
+							if (v) v.addCreature(entry.monster, entry.filePath);
+						}, 100);
+					});
+				}
+			};
+		} else {
+			// Monster not found - show as unresolved
+			container.addClass('nimble-inline-unresolved');
+			container.createEl('span', {
+				text: monsterName,
+				cls: 'nimble-inline-name unresolved'
+			});
+			container.createEl('span', {
+				text: '?',
+				cls: 'nimble-inline-unknown',
+				attr: { 'title': `Monster "${monsterName}" not found in vault` }
+			});
+		}
+
+		// Replace the original code element
+		codeEl.replaceWith(container);
+	}
+
+	// ========================================================================
+	// HOVER PREVIEW SYSTEM
+	// ========================================================================
+
+	private attachHoverPreview(element: HTMLElement, entry: MonsterIndexEntry): void {
+		let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
+		let previewEl: HTMLElement | null = null;
+
+		const showPreview = () => {
+			// Remove any existing preview
+			this.removeHoverPreview();
+
+			// Create preview container
+			previewEl = document.createElement('div');
+			previewEl.className = 'nimble-hover-preview';
+			previewEl.id = 'nimble-hover-preview-active';
+
+			// Render the stat block
+			this.renderStatblockForHover(previewEl, entry.monster);
+
+			// Position near element
+			document.body.appendChild(previewEl);
+			this.positionHoverPreview(previewEl, element);
+
+			// Close on mouse leave from preview
+			previewEl.onmouseleave = (e) => {
+				const relatedTarget = e.relatedTarget as HTMLElement;
+				if (relatedTarget !== element && !element.contains(relatedTarget)) {
+					this.removeHoverPreview();
+				}
+			};
+		};
+
+		element.onmouseenter = () => {
+			hoverTimeout = setTimeout(showPreview, 300);
+		};
+
+		element.onmouseleave = (e) => {
+			if (hoverTimeout) {
+				clearTimeout(hoverTimeout);
+				hoverTimeout = null;
+			}
+
+			// Don't remove if mouse moved to preview
+			const relatedTarget = e.relatedTarget as HTMLElement;
+			if (relatedTarget?.closest?.('#nimble-hover-preview-active')) {
+				return;
+			}
+
+			// Small delay to allow moving to preview
+			setTimeout(() => {
+				const preview = document.getElementById('nimble-hover-preview-active');
+				if (preview && !preview.matches(':hover') && !element.matches(':hover')) {
+					this.removeHoverPreview();
+				}
+			}, 100);
+		};
+	}
+
+	private removeHoverPreview(): void {
+		const existing = document.getElementById('nimble-hover-preview-active');
+		if (existing) {
+			existing.remove();
+		}
+	}
+
+	private positionHoverPreview(preview: HTMLElement, anchor: HTMLElement): void {
+		const rect = anchor.getBoundingClientRect();
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+
+		// Position below anchor by default
+		let top = rect.bottom + 8;
+		let left = rect.left;
+
+		preview.style.position = 'fixed';
+		preview.style.zIndex = '1000';
+		preview.style.left = `${left}px`;
+		preview.style.top = `${top}px`;
+
+		// After rendering, check if it goes off screen and adjust
+		requestAnimationFrame(() => {
+			const previewRect = preview.getBoundingClientRect();
+
+			// Adjust horizontal position
+			if (previewRect.right > viewportWidth - 20) {
+				preview.style.left = `${Math.max(20, viewportWidth - previewRect.width - 20)}px`;
+			}
+
+			// Adjust vertical - show above if not enough space below
+			if (previewRect.bottom > viewportHeight - 20) {
+				preview.style.top = `${rect.top - previewRect.height - 8}px`;
+			}
+		});
+	}
+
+	private renderStatblockForHover(container: HTMLElement, monster: NimbleMonster): void {
+		const block = container.createEl('div', { cls: 'nimble-statblock inline hover-preview' });
+		const isSolo = monster.monsterType === 'solo';
+		if (isSolo) block.addClass('solo-monster');
+
+		// Reuse the existing rendering logic
+		if (isSolo) {
+			this.renderSoloForHover(block, monster);
+		} else {
+			this.renderRegularForHover(block, monster);
+		}
+
+		// Description
+		if (monster.description) {
+			block.createEl('hr');
+			block.createEl('p', { text: monster.description, cls: 'monster-description' });
+		}
+	}
+
+	private renderSoloForHover(block: HTMLElement, monster: NimbleMonster): void {
+		// SVG Icons
+		const heartSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+		const shieldSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`;
+		const starSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+
+		// Solo Header Row
+		const headerRow = block.createEl('div', { cls: 'solo-header-row' });
+
+		const headerLeft = headerRow.createEl('div', { cls: 'solo-header-left' });
+		const levelParts = [];
+		if (monster.level) levelParts.push(`Level ${monster.level}`);
+		if (monster.size) levelParts.push(monster.size);
+		if (monster.type) levelParts.push(monster.type);
+		headerLeft.createEl('span', { text: levelParts.join(' '), cls: 'solo-level-type' });
+
+		const headerRight = headerRow.createEl('div', { cls: 'solo-header-right' });
+
+		const hpBadge = headerRight.createEl('span', { cls: 'solo-stat-badge hp-badge' });
+		hpBadge.innerHTML = `${heartSvg}<span class="badge-value">${monster.hp}</span>`;
+
+		if (monster.armor !== 'none') {
+			const armorLetter = monster.armor === 'medium' ? 'M' : 'H';
+			const armorBadge = headerRight.createEl('span', { cls: 'solo-stat-badge armor-badge' });
+			armorBadge.innerHTML = `${shieldSvg}<span class="badge-value">${armorLetter}</span>`;
+		}
+
+		const savesParts: string[] = [];
+		if (monster.str) savesParts.push(`STR${monster.str}`);
+		if (monster.dex) savesParts.push(`DEX${monster.dex}`);
+		if (monster.will) savesParts.push(`WIL${monster.will}`);
+		if (savesParts.length > 0) {
+			const savesBadge = headerRight.createEl('span', { cls: 'solo-stat-badge saves-badge' });
+			savesBadge.innerHTML = `${starSvg}<span class="badge-value">${savesParts.join(' ')}</span>`;
+		}
+
+		block.createEl('h2', { text: monster.name, cls: 'monster-name solo-name' });
+
+		// Abilities
+		if (monster.abilities?.length) {
+			const abilitiesBox = block.createEl('div', { cls: 'solo-abilities-box' });
+			for (const ab of monster.abilities) {
+				const abilityDiv = abilitiesBox.createEl('div', { cls: 'solo-ability-item' });
+				let name = ab.name;
+				if (ab.isLegendary) name += ' (L)';
+				abilityDiv.innerHTML = `<strong class="ability-name">${name}.</strong> ${markdownToHtml(ab.description)}`;
+			}
+		}
+
+		block.createEl('hr');
+
+		// Actions
+		if (monster.attacks?.length || monster.multiattack) {
+			const actionsSection = block.createEl('div', { cls: 'solo-actions-section' });
+
+			const actionHeader = actionsSection.createEl('p', { cls: 'solo-action-header' });
+			const actionText = monster.actionText || 'After each hero\'s turn, choose one:';
+			actionHeader.innerHTML = `<strong>ACTIONS:</strong> ${actionText}`;
+
+			if (monster.multiattack) {
+				const p = actionsSection.createEl('p');
+				p.innerHTML = markdownToHtml(monster.multiattack);
+			}
+
+			const actionsList = actionsSection.createEl('ul', { cls: 'solo-actions-list' });
+			for (const atk of monster.attacks || []) {
+				const li = actionsList.createEl('li');
+				li.innerHTML = markdownToHtml(atk.raw);
+			}
+		}
+
+		// Bloodied
+		if (monster.bloodied) {
+			const bloodiedSection = block.createEl('div', { cls: 'solo-phase-section bloodied-section' });
+			bloodiedSection.innerHTML = `<strong class="phase-label">BLOODIED:</strong> ${markdownToHtml(monster.bloodied)}`;
+		}
+
+		// Last Stand
+		if (monster.lastStand) {
+			const lastStandSection = block.createEl('div', { cls: 'solo-phase-section laststand-section' });
+			lastStandSection.innerHTML = `<strong class="phase-label">LAST STAND:</strong> ${markdownToHtml(monster.lastStand)}`;
+		}
+
+		if (monster.legendaryResistances) {
+			const lrSection = block.createEl('div', { cls: 'solo-phase-section' });
+			lrSection.innerHTML = `<strong>Legendary Resistances (${monster.legendaryResistances}/Day).</strong> Can choose to succeed on a failed save.`;
+		}
+	}
+
+	private renderRegularForHover(block: HTMLElement, monster: NimbleMonster): void {
+		// SVG Icons
+		const skullSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512" fill="white" stroke="none"><path d="M437.914,74.078C392.43,27,326.117,0,255.992,0C185.883,0,119.57,27,74.102,74.063c-42.5,44-64.703,102.828-62.531,165.688l6.609,83.875c6.031,84.75,55.234,93.906,76.094,93.906c7.563,0,15.531-1.094,23.625-3.188c1.094,7.938,1,21.859,0.922,32.688l-0.078,15.063c-0.141,10.938-0.359,27.5,11.234,39.234c4.797,4.875,13.563,10.672,28,10.672h196.047c14.438,0,23.188-5.797,28-10.656c11.578-11.75,11.375-28.297,11.234-39.25l-0.094-15.031c-0.063-10.844-0.172-24.781,0.938-32.719c8.172,2.109,16.094,3.188,23.625,3.188c20.859,0,70.047-9.156,76.094-93.75l6.563-83.156l0.047-0.875C502.602,176.891,480.398,118.063,437.914,74.078z M459.961,237.906l-6.516,82.844c-2.672,37.344-14.703,56.281-35.719,56.281c-4.844,0-10.266-0.891-16.297-2.688c-14.406-4.156-26.891-1.375-35.703,7.5c-13.406,13.5-13.266,35.313-13.047,65.5l0.078,15.281c0.031,2.5,0.078,6.188-0.141,8.875h-42.75v-50.016h-32.406V471.5h-42.938v-50.016h-32.391V471.5h-42.766c-0.203-2.688-0.156-6.375-0.125-8.906l0.078-15.297c0.219-30.156,0.359-51.953-13.047-65.453c-8.766-8.844-20.953-11.75-35.875-7.453c-5.859,1.75-11.281,2.641-16.125,2.641c-21.031,0-33.031-18.938-35.719-56.438l-6.531-82.688c-1.656-51.609,16.5-99.781,51.203-135.688C141.117,63,196.805,40.5,255.992,40.5c59.203,0,114.891,22.5,152.781,61.719C443.477,138.125,461.648,186.297,459.961,237.906z"/><path d="M256.008,309.656c-9.719,0-31.125,46.688-35.031,54.469c-3.875,7.781,3.906,19.469,15.578,15.563c11.672-3.875,19.453-13.609,19.453-13.609s7.781,9.734,19.453,13.609c11.656,3.906,19.453-7.781,15.563-15.563C287.117,356.344,265.742,309.656,256.008,309.656z"/><path d="M171.586,183.281c-30.891-3.25-58.578,19.188-61.828,50.094l-4.188,29.422c-3.25,30.922,19.188,58.578,50.078,61.828c30.922,3.25,58.609-19.172,61.844-50.094l4.188-29.422C224.914,214.188,202.508,186.531,171.586,183.281z"/><path d="M402.242,233.375c-3.234-30.906-30.938-53.344-61.828-50.094c-30.922,3.25-53.328,30.906-50.094,61.828l4.172,29.422c3.25,30.922,30.938,53.344,61.844,50.094s53.344-30.906,50.094-61.828L402.242,233.375z"/></svg>`;
+		const sizeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 32 32" fill="white" stroke="none"><path d="M21.434 11.975l8.602-8.549-0.028 4.846c-0.009 0.404 0.311 0.755 0.716 0.746l0.513-0.001c0.404-0.009 0.739-0.25 0.748-0.654l0.021-7.219c0-0.007-0.027-0.012-0.027-0.019l0.040-0.366c0.004-0.203-0.044-0.384-0.174-0.513-0.13-0.131-0.311-0.21-0.512-0.204l-0.366 0.009c-0.007 0-0.012 0.003-0.020 0.004l-7.172-0.032c-0.404 0.009-0.738 0.343-0.747 0.748l-0.001 0.513c0.061 0.476 0.436 0.755 0.84 0.746l4.726 0.013-8.572 8.52c-0.39 0.39-0.39 1.024 0 1.415s1.023 0.39 1.414 0zM10.597 20.025l-8.602 8.523 0.027-4.82c0.010-0.404-0.312-0.756-0.716-0.747l-0.544 0.001c-0.405 0.010-0.739 0.25-0.748 0.654l-0.021 7.219c0 0.007 0.028 0.011 0.028 0.019l-0.040 0.365c-0.005 0.203 0.043 0.385 0.174 0.514 0.129 0.131 0.311 0.21 0.512 0.205l0.366-0.009c0.007 0 0.012-0.003 0.020-0.003l7.203 0.032c0.404-0.010 0.738-0.344 0.748-0.748l0.001-0.514c-0.062-0.476-0.436-0.755-0.840-0.746l-4.726-0.012 8.571-8.518c0.39-0.39 0.39-1.023 0-1.414s-1.023-0.391-1.413-0zM32.007 30.855l-0.021-7.219c-0.009-0.404-0.343-0.645-0.747-0.654l-0.513-0.001c-0.404-0.009-0.725 0.343-0.716 0.747l0.028 4.846-8.602-8.549c-0.39-0.39-1.023-0.39-1.414 0s-0.39 1.023 0 1.414l8.571 8.518-4.726 0.012c-0.404-0.009-0.779 0.27-0.840 0.746l0.001 0.514c0.009 0.404 0.344 0.739 0.747 0.748l7.172-0.032c0.008 0 0.013 0.003 0.020 0.003l0.366 0.009c0.201 0.005 0.384-0.074 0.512-0.205 0.131-0.129 0.178-0.311 0.174-0.514l-0.040-0.365c0-0.008 0.027-0.012 0.027-0.019zM3.439 2.041l4.727-0.012c0.404 0.009 0.778-0.27 0.840-0.746l-0.001-0.513c-0.010-0.405-0.344-0.739-0.748-0.748l-7.204 0.031c-0.008-0.001-0.013-0.004-0.020-0.004l-0.366-0.009c-0.201-0.005-0.383 0.074-0.512 0.204-0.132 0.13-0.179 0.31-0.174 0.514l0.040 0.366c0 0.007-0.028 0.012-0.028 0.020l0.021 7.219c0.009 0.404 0.343 0.645 0.748 0.654l0.545 0.001c0.404 0.009 0.724-0.342 0.715-0.746l-0.028-4.819 8.602 8.523c0.39 0.39 1.024 0.39 1.414 0s0.39-1.024 0-1.415z"/></svg>`;
+		const heartSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+		const shieldSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>`;
+		const starSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+		const arrowSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg>`;
+
+		// Header Row
+		const headerRow = block.createEl('div', { cls: 'monster-header-row' });
+
+		const headerLeft = headerRow.createEl('div', { cls: 'monster-header-left' });
+		headerLeft.createEl('span', { text: monster.name, cls: 'monster-name-inline' });
+
+		const infoParts = [];
+		if (monster.type) infoParts.push(monster.type);
+		if (monster.cr) infoParts.push(`CR ${monster.cr}`);
+		if (infoParts.length > 0) {
+			headerLeft.createEl('span', { text: infoParts.join(', '), cls: 'monster-info-inline' });
+		}
+
+		const headerRight = headerRow.createEl('div', { cls: 'monster-header-right' });
+
+		if (monster.level) {
+			const levelBadge = headerRight.createEl('span', { cls: 'stat-badge level-badge' });
+			levelBadge.innerHTML = `${skullSvg}<span class="badge-value">${monster.level}</span>`;
+		}
+
+		if (monster.size && monster.size.toLowerCase() !== 'medium') {
+			const sizeBadge = headerRight.createEl('span', { cls: 'stat-badge size-badge' });
+			sizeBadge.innerHTML = `${sizeSvg}<span class="badge-value">${monster.size.toUpperCase()}</span>`;
+		}
+
+		const hpBadge = headerRight.createEl('span', { cls: 'stat-badge hp-badge' });
+		hpBadge.innerHTML = `${heartSvg}<span class="badge-value">${monster.hp}</span>`;
+
+		if (monster.armor !== 'none') {
+			const armorLetter = monster.armor === 'medium' ? 'M' : 'H';
+			const armorBadge = headerRight.createEl('span', { cls: 'stat-badge armor-badge' });
+			armorBadge.innerHTML = `${shieldSvg}<span class="badge-value">${armorLetter}</span>`;
+		}
+
+		const movementInfo = parseMovement(monster.movement);
+		if (movementInfo.display) {
+			const moveBadge = headerRight.createEl('span', { cls: 'stat-badge move-badge' });
+			moveBadge.innerHTML = `${arrowSvg}<span class="badge-value">${movementInfo.display}</span>`;
+		}
+
+		const savesParts: string[] = [];
+		if (monster.str) savesParts.push(`STR${monster.str}`);
+		if (monster.dex) savesParts.push(`DEX${monster.dex}`);
+		if (monster.will) savesParts.push(`WIL${monster.will}`);
+		if (savesParts.length > 0) {
+			const savesBadge = headerRight.createEl('span', { cls: 'stat-badge saves-badge' });
+			savesBadge.innerHTML = `${starSvg}<span class="badge-value">${savesParts.join(' ')}</span>`;
+		}
+
+		if (monster.resistances?.length || monster.immunities?.length) {
+			const defenses = block.createEl('div', { cls: 'monster-defenses' });
+			if (monster.resistances?.length) {
+				defenses.createEl('p').innerHTML = `<strong>Resistances:</strong> ${monster.resistances.join(', ')}`;
+			}
+			if (monster.immunities?.length) {
+				defenses.createEl('p').innerHTML = `<strong>Immunities:</strong> ${monster.immunities.join(', ')}`;
+			}
+		}
+
+		if (monster.senses || monster.languages) {
+			const sensesLang = block.createEl('div', { cls: 'monster-senses' });
+			if (monster.senses) sensesLang.createEl('p').innerHTML = `<strong>Senses:</strong> ${monster.senses}`;
+			if (monster.languages) sensesLang.createEl('p').innerHTML = `<strong>Languages:</strong> ${monster.languages}`;
+		}
+
+		if (monster.abilities?.length) {
+			const abilitiesBox = block.createEl('div', { cls: 'monster-abilities-box' });
+			for (const ab of monster.abilities) {
+				const abilityDiv = abilitiesBox.createEl('div', { cls: 'ability-item' });
+				let name = ab.name;
+				if (ab.isLegendary) name += ' (L)';
+				abilityDiv.innerHTML = `<strong class="ability-name">${name}.</strong> ${markdownToHtml(ab.description)}`;
+			}
+		}
+
+		if (monster.attacks?.length || monster.multiattack) {
+			if (!monster.abilities?.length) {
+				block.createEl('hr');
+			}
+			const actionsSection = block.createEl('div', { cls: 'monster-actions-section' });
+
+			if (monster.multiattack) {
+				actionsSection.createEl('p').innerHTML = markdownToHtml(monster.multiattack);
+			}
+
+			const actionsList = actionsSection.createEl('ul', { cls: 'actions-list' });
+			for (const atk of monster.attacks || []) {
+				const li = actionsList.createEl('li');
+				li.innerHTML = markdownToHtml(atk.raw);
+			}
+		}
 	}
 }
