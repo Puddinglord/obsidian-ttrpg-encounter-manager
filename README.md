@@ -1,0 +1,1 @@
+# obsidian-ttrpg-encounter-manager
