@@ -1,0 +1,848 @@
+/* Nimble Statblocks Styles */
+
+/* ============================================
+   STATBLOCK STYLES
+   ============================================ */
+
+.nimble-statblock {
+	background: var(--background-secondary);
+	border: 2px solid var(--background-modifier-border);
+	border-radius: 8px;
+	padding: 1rem;
+	margin: 1rem 0;
+	font-family: var(--font-text);
+}
+
+.nimble-statblock.solo-monster {
+	border-color: #8b0000;
+	border-width: 3px;
+}
+
+/* Solo Monster Header Row */
+.nimble-statblock .solo-header-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-bottom: 0.25rem;
+}
+
+.nimble-statblock .solo-header-left {
+	flex: 1;
+}
+
+.nimble-statblock .solo-level-type {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.nimble-statblock .solo-header-right {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.nimble-statblock .solo-stat-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	padding: 0.2rem 0.5rem;
+	border-radius: 4px;
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.nimble-statblock .solo-stat-badge svg {
+	flex-shrink: 0;
+}
+
+.nimble-statblock .solo-stat-badge.hp-badge {
+	background: #4a7c4e;
+	color: white;
+}
+
+.nimble-statblock .solo-stat-badge.armor-badge {
+	background: #5a5a5a;
+	color: white;
+}
+
+.nimble-statblock .solo-stat-badge.saves-badge {
+	background: #6b5b7a;
+	color: white;
+}
+
+.nimble-statblock .solo-name {
+	margin-top: 0.25rem;
+}
+
+/* Solo Abilities - Single Combined Box */
+.nimble-statblock .solo-abilities-box {
+	background: var(--background-primary-alt);
+	border: 1px solid var(--background-modifier-border);
+	padding: 0.5rem 0.75rem;
+	margin: 0.5rem 0;
+	border-radius: 4px;
+}
+
+.nimble-statblock .solo-ability-item {
+	line-height: 1.4;
+	margin: 0.4rem 0;
+}
+
+.nimble-statblock .solo-ability-item:first-child {
+	margin-top: 0;
+}
+
+.nimble-statblock .solo-ability-item:last-child {
+	margin-bottom: 0;
+}
+
+/* Solo Actions Section */
+.nimble-statblock .solo-actions-section {
+	margin: 0.5rem 0;
+}
+
+.nimble-statblock .solo-action-header {
+	margin: 0 0 0.5rem 0;
+}
+
+.nimble-statblock .solo-actions-list {
+	margin: 0;
+	padding-left: 1.25rem;
+}
+
+.nimble-statblock .solo-actions-list li {
+	margin: 0.35rem 0;
+	line-height: 1.4;
+}
+
+/* Solo Phase Sections (Bloodied, Last Stand) */
+.nimble-statblock .solo-phase-section {
+	margin: 0.75rem 0;
+	line-height: 1.4;
+}
+
+.nimble-statblock .solo-phase-section .phase-label {
+	color: #e61919;
+}
+
+.nimble-statblock .solo-phase-section strong:not(.phase-label) {
+	color: #e61919;
+}
+
+/* Regular Monster Header Row */
+.nimble-statblock .monster-header-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-bottom: 0.25rem;
+}
+
+.nimble-statblock .monster-header-left {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	min-width: 0;
+}
+
+.nimble-statblock .monster-name-inline {
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: var(--text-accent);
+	font-variant: small-caps;
+}
+
+.nimble-statblock .monster-info-inline {
+	font-size: 0.8rem;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+}
+
+.nimble-statblock .monster-level-type {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.nimble-statblock .monster-header-right {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+/* Stat badges (shared between solo and regular) */
+.nimble-statblock .stat-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	padding: 0.2rem 0.5rem;
+	border-radius: 4px;
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.nimble-statblock .stat-badge svg {
+	flex-shrink: 0;
+}
+
+.nimble-statblock .stat-badge.hp-badge {
+	background: #4a7c4e;
+	color: white;
+}
+
+.nimble-statblock .stat-badge.armor-badge {
+	background: #5a5a5a;
+	color: white;
+}
+
+.nimble-statblock .stat-badge.saves-badge {
+	background: #6b5b7a;
+	color: white;
+}
+
+.nimble-statblock .stat-badge.move-badge {
+	background: #3d6e8f;
+	color: white;
+}
+
+.nimble-statblock .stat-badge.level-badge {
+	background: #2a2a2a;
+	color: white;
+}
+
+.nimble-statblock .stat-badge.size-badge {
+	background: #7a5c3e;
+	color: white;
+}
+
+/* Monster speed, defenses, senses */
+.nimble-statblock .monster-speed {
+	margin: 0.25rem 0;
+}
+
+.nimble-statblock .monster-defenses,
+.nimble-statblock .monster-senses {
+	margin: 0.25rem 0;
+}
+
+.nimble-statblock .monster-defenses p,
+.nimble-statblock .monster-senses p {
+	margin: 0.15rem 0;
+}
+
+/* Regular monster abilities box */
+.nimble-statblock .monster-abilities-box {
+	background: var(--background-primary-alt);
+	border: 1px solid var(--background-modifier-border);
+	padding: 0.5rem 0.75rem;
+	margin: 0.5rem 0;
+	border-radius: 4px;
+}
+
+.nimble-statblock .monster-abilities-box .ability-item {
+	line-height: 1.4;
+	margin: 0.4rem 0;
+}
+
+.nimble-statblock .monster-abilities-box .ability-item:first-child {
+	margin-top: 0;
+}
+
+.nimble-statblock .monster-abilities-box .ability-item:last-child {
+	margin-bottom: 0;
+}
+
+/* Regular monster actions section */
+.nimble-statblock .monster-actions-section {
+	margin: 0.5rem 0;
+}
+
+.nimble-statblock .monster-actions-section .actions-header {
+	margin: 0 0 0.5rem 0;
+}
+
+.nimble-statblock .monster-actions-section .actions-list {
+	margin: 0;
+	padding-left: 1.25rem;
+}
+
+.nimble-statblock .monster-actions-section .actions-list li {
+	margin: 0.35rem 0;
+	line-height: 1.4;
+}
+
+.nimble-statblock .monster-name {
+	margin: 0 0 0.25rem 0;
+	font-size: 1.4rem;
+	color: var(--text-accent);
+}
+
+.nimble-statblock .monster-type {
+	margin: 0;
+	font-style: italic;
+	font-size: 0.9rem;
+	color: var(--text-muted);
+}
+
+.nimble-statblock hr {
+	border: none;
+	border-top: 1px solid var(--background-modifier-border);
+	margin: 0.75rem 0;
+}
+
+.nimble-statblock .core-stats p,
+.nimble-statblock p {
+	margin: 0.25rem 0;
+}
+
+.nimble-statblock .saves {
+	text-align: center;
+	padding: 0.5rem 0;
+}
+
+.nimble-statblock h4 {
+	margin: 0.5rem 0 0.25rem 0;
+	font-size: 1rem;
+	color: var(--text-accent);
+}
+
+/* Abilities Box */
+.nimble-statblock .abilities-callout {
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	padding: 0.6rem 0.75rem;
+	margin: 0.5rem 0;
+	border-radius: 6px;
+}
+
+.nimble-statblock .ability-item {
+	margin: 0.35rem 0;
+	line-height: 1.4;
+}
+
+.nimble-statblock .ability-item:first-child {
+	margin-top: 0;
+}
+
+.nimble-statblock .ability-item:last-child {
+	margin-bottom: 0;
+}
+
+.nimble-statblock .ability-name {
+	color: var(--text-accent);
+}
+
+.nimble-statblock .monster-description {
+	font-size: 0.8rem;
+	color: var(--text-muted);
+	font-style: italic;
+	line-height: 1.4;
+	margin: 0.5rem 0 0 0;
+}
+
+.nimble-statblock .add-btn {
+	width: 100%;
+	padding: 0.5rem;
+	margin-top: 0.5rem;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.nimble-statblock .add-btn:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.nimble-error {
+	color: var(--text-error);
+	padding: 1rem;
+	background: var(--background-secondary);
+	border: 1px solid var(--text-error);
+	border-radius: 4px;
+}
+
+/* ============================================
+   ENCOUNTER TRACKER STYLES
+   ============================================ */
+
+.nimble-encounter-tracker {
+	padding: 0.5rem;
+	font-family: var(--font-interface);
+}
+
+.nimble-encounter-tracker .encounter-header h3 {
+	margin: 0 0 0.5rem 0;
+	font-size: 1rem;
+}
+
+.nimble-encounter-tracker .new-encounter-form {
+	display: flex;
+	gap: 0.25rem;
+	margin-bottom: 0.5rem;
+}
+
+.nimble-encounter-tracker .encounter-name-input {
+	flex: 1;
+	padding: 0.25rem 0.5rem;
+}
+
+.nimble-encounter-tracker .add-encounter-btn {
+	padding: 0.25rem 0.75rem;
+	font-weight: bold;
+}
+
+.nimble-encounter-tracker .encounter-selector {
+	margin-bottom: 0.5rem;
+}
+
+.nimble-encounter-tracker .encounter-select {
+	width: 100%;
+	padding: 0.25rem;
+}
+
+.nimble-encounter-tracker .delete-encounter-btn {
+	width: 100%;
+	padding: 0.25rem;
+	margin-bottom: 0.5rem;
+	background: transparent;
+	border: 1px solid var(--text-error);
+	color: var(--text-error);
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.nimble-encounter-tracker .clear-btn-container {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.nimble-encounter-tracker .clear-btn-container .delete-encounter-btn {
+	margin-bottom: 0;
+}
+
+.nimble-encounter-tracker .confirm-btn {
+	flex: 1;
+	padding: 0.25rem;
+	background: var(--text-error);
+	border: 1px solid var(--text-error);
+	color: white;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.nimble-encounter-tracker .confirm-btn:hover {
+	background: #c0392b;
+}
+
+.nimble-encounter-tracker .cancel-btn {
+	flex: 1;
+	padding: 0.25rem;
+	background: transparent;
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.nimble-encounter-tracker .cancel-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.nimble-encounter-tracker .empty-message {
+	color: var(--text-muted);
+	font-size: 0.85rem;
+	text-align: center;
+}
+
+.nimble-encounter-tracker .creature-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.nimble-encounter-tracker .creature-item {
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-left: 4px solid #888;
+	border-radius: 4px;
+	padding: 0.5rem;
+	margin-bottom: 0.5rem;
+	transition: transform 0.1s, opacity 0.1s;
+}
+
+.nimble-encounter-tracker .creature-item.dragging {
+	opacity: 0.5;
+	transform: scale(0.98);
+}
+
+.nimble-encounter-tracker .creature-item.drag-over {
+	border-top: 2px solid var(--interactive-accent);
+	padding-top: calc(0.5rem - 1px);
+}
+
+.nimble-encounter-tracker .creature-item.hp-healthy {
+	border-left-color: #28a745;
+}
+
+.nimble-encounter-tracker .creature-item.hp-wounded {
+	border-left-color: #ffc107;
+}
+
+.nimble-encounter-tracker .creature-item.hp-critical {
+	border-left-color: #dc3545;
+}
+
+.nimble-encounter-tracker .creature-item.hp-dead {
+	border-left-color: #6c757d;
+	opacity: 0.6;
+}
+
+.nimble-encounter-tracker .creature-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 0.25rem;
+}
+
+.nimble-encounter-tracker .drag-handle {
+	cursor: grab;
+	color: var(--text-muted);
+	padding: 0 0.3rem 0 0;
+	font-size: 0.85rem;
+	user-select: none;
+	line-height: 1;
+}
+
+.nimble-encounter-tracker .drag-handle:hover {
+	color: var(--text-normal);
+}
+
+.nimble-encounter-tracker .drag-handle:active {
+	cursor: grabbing;
+}
+
+.nimble-encounter-tracker .creature-buttons {
+	display: flex;
+	gap: 0.25rem;
+	margin-left: auto;
+}
+
+.nimble-encounter-tracker .creature-label {
+	font-weight: 600;
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: 3px;
+	transition: background 0.1s, color 0.1s;
+}
+
+.nimble-encounter-tracker .creature-label:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-accent);
+}
+
+.nimble-encounter-tracker .creature-label.viewing {
+	color: var(--text-accent);
+	background: var(--background-modifier-hover);
+}
+
+.nimble-encounter-tracker .label-container {
+	flex: 1;
+}
+
+.nimble-encounter-tracker .label-edit-input {
+	font-weight: 600;
+	font-size: inherit;
+	padding: 2px 4px;
+	border: 1px solid var(--interactive-accent);
+	border-radius: 3px;
+	background: var(--background-primary);
+	width: 100%;
+	max-width: 150px;
+}
+
+.nimble-encounter-tracker .remove-btn {
+	padding: 0 0.5rem;
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.nimble-encounter-tracker .remove-btn:hover {
+	color: var(--text-error);
+}
+
+.nimble-encounter-tracker .edit-btn {
+	padding: 0.2rem 0.4rem;
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.nimble-encounter-tracker .edit-btn:hover {
+	color: var(--text-accent);
+}
+
+.nimble-encounter-tracker .edit-btn svg {
+	width: 14px;
+	height: 14px;
+}
+
+/* Stat Block Viewer */
+.nimble-encounter-tracker .statblock-viewer {
+	margin-bottom: 0.5rem;
+}
+
+.nimble-encounter-tracker .viewer-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.5rem;
+}
+
+.nimble-encounter-tracker .viewer-title {
+	font-weight: 600;
+	font-size: 1rem;
+	color: var(--text-accent);
+}
+
+.nimble-encounter-tracker .close-viewer-btn {
+	padding: 0.25rem 0.5rem;
+	font-size: 0.8rem;
+	background: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.nimble-encounter-tracker .close-viewer-btn:hover {
+	background: var(--background-modifier-active-hover);
+}
+
+.nimble-encounter-tracker .viewer-statblock {
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.nimble-encounter-tracker .viewer-statblock .nimble-statblock {
+	margin: 0;
+	max-width: none;
+	font-size: 0.85rem;
+}
+
+.nimble-encounter-tracker .viewer-statblock .nimble-statblock .monster-name {
+	font-size: 1.1rem;
+}
+
+.nimble-encounter-tracker .viewer-statblock .nimble-statblock h4 {
+	font-size: 0.9rem;
+}
+
+.nimble-encounter-tracker .viewer-divider {
+	border: none;
+	border-top: 2px solid var(--background-modifier-border);
+	margin: 0.75rem 0;
+}
+
+.nimble-encounter-tracker .hp-controls {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+}
+
+.nimble-encounter-tracker .hp-btn {
+	width: 32px;
+	height: 28px;
+	padding: 0;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.nimble-encounter-tracker .hp-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.nimble-encounter-tracker .hp-display {
+	min-width: 60px;
+	text-align: center;
+	font-weight: bold;
+}
+
+/* Conditions */
+.nimble-encounter-tracker .conditions-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	margin-top: 0.35rem;
+	align-items: center;
+}
+
+.nimble-encounter-tracker .condition-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	padding: 0.15rem 0.4rem;
+	font-size: 0.75rem;
+	background: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.nimble-encounter-tracker .condition-tag:hover {
+	background: var(--background-modifier-active-hover);
+}
+
+.nimble-encounter-tracker .condition-tag.auto-condition {
+	background: rgba(220, 53, 69, 0.2);
+	border-color: rgba(220, 53, 69, 0.5);
+	color: var(--text-normal);
+}
+
+.nimble-encounter-tracker .condition-tag .remove-condition {
+	font-weight: bold;
+	opacity: 0.6;
+	cursor: pointer;
+	margin-left: 0.1rem;
+}
+
+.nimble-encounter-tracker .condition-tag .remove-condition:hover {
+	opacity: 1;
+	color: var(--text-error);
+}
+
+.nimble-encounter-tracker .add-condition-btn {
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	font-size: 0.85rem;
+	font-weight: bold;
+	border: 1px dashed var(--background-modifier-border);
+	background: transparent;
+	border-radius: 3px;
+	cursor: pointer;
+	color: var(--text-muted);
+}
+
+.nimble-encounter-tracker .add-condition-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+/* Condition Picker Dropdown */
+.condition-picker {
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	max-height: 250px;
+	overflow-y: auto;
+	min-width: 150px;
+}
+
+.condition-picker .picker-option {
+	padding: 0.4rem 0.6rem;
+	cursor: pointer;
+	font-size: 0.85rem;
+}
+
+.condition-picker .picker-option:hover {
+	background: var(--background-modifier-hover);
+}
+
+.condition-picker .picker-empty {
+	padding: 0.5rem;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+	text-align: center;
+}
+
+/* Condition Viewer */
+.nimble-encounter-tracker .condition-viewer {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.nimble-encounter-tracker .condition-title {
+	color: #dc3545;
+}
+
+.nimble-encounter-tracker .condition-description {
+	margin: 0.25rem 0 0 0;
+	font-size: 0.9rem;
+	line-height: 1.4;
+}
+
+.nimble-encounter-tracker .close-viewer-btn.small {
+	padding: 0.15rem 0.4rem;
+	font-size: 0.75rem;
+}
+
+/* Custom Conditions Settings */
+.custom-condition-add {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	padding: 1rem;
+	margin-bottom: 1rem;
+}
+
+.custom-condition-add .setting-item {
+	border-top: none;
+	padding-top: 0.5rem;
+}
+
+.custom-condition-add textarea {
+	min-height: 60px;
+	width: 100%;
+}
+
+.custom-conditions-list {
+	margin-top: 1rem;
+}
+
+.custom-conditions-list h4 {
+	margin-bottom: 0.5rem;
+	color: var(--text-muted);
+}
+
+.custom-conditions-list .setting-item {
+	background: var(--background-secondary);
+	border-radius: 6px;
+	padding: 0.5rem 1rem;
+	margin-bottom: 0.5rem;
+}
+
+.custom-conditions-list .setting-item-info {
+	flex: 1;
+}
+
+.custom-conditions-list .setting-item-control {
+	gap: 0.25rem;
+}
