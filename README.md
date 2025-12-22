@@ -38,6 +38,25 @@ This renders as a styled stat block in your note with an "Add to Encounter" butt
 
 ---
 
+## Inline Monster References
+
+Reference any monster from your vault inline using the `nimble:` syntax:
+
+```markdown
+The party encounters a `nimble:Goblin` and its leader, a `nimble:Goblin Boss`.
+```
+
+### Features
+
+- **Hover Preview** — Hover over the reference to see the full stat block
+- **Click to Navigate** — Click the monster name to open its source file
+- **Quick Add** — Click the **+** button to add the monster to your active encounter
+- **Auto-Detection** — If the monster isn't found in your vault, it shows with a **?** indicator
+
+This is useful for writing adventure notes where you want quick access to monster stats without leaving the page.
+
+---
+
 ## Monster Fields Reference
 
 ### Basic Info
@@ -372,7 +391,7 @@ Access these from the command palette (Cmd/Ctrl + P):
 
 1. **Organize monsters by folder** — Create a `Bestiary/` folder with all your monster notes
 
-2. **Link monsters in adventure notes** — Use `[[Goblin]]` to quickly reference and open monster stats
+2. **Link monsters in adventure notes** — Use `[[Goblin]]` for simple links, or `` `nimble:Goblin` `` for inline references with hover previews and quick-add buttons
 
 3. **Prep encounters ahead of time** — Create and name encounters before the session, then just add monsters as needed
 
