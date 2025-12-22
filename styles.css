@@ -911,6 +911,20 @@
 }
 
 /* ============================================
+   WIKILINK STYLES IN STATBLOCKS
+   ============================================ */
+
+.nimble-statblock a.nimble-wikilink {
+	color: var(--text-accent);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.nimble-statblock a.nimble-wikilink:hover {
+	text-decoration: underline;
+}
+
+/* ============================================
    HOVER PREVIEW STYLES
    ============================================ */
 

@@ -198,7 +198,7 @@ class EncounterTrackerView extends ItemView {
 
 			// Render the stat block
 			const statblockContainer = viewer.createEl('div', { cls: 'viewer-statblock' });
-			this.renderInlineStatblock(statblockContainer, viewingCreature.monster);
+			this.renderInlineStatblock(statblockContainer, viewingCreature.monster, viewingCreature.sourceFile);
 
 			viewer.createEl('hr', { cls: 'viewer-divider' });
 		}
@@ -697,7 +697,7 @@ class EncounterTrackerView extends ItemView {
 		}
 	}
 
-	renderInlineStatblock(container: HTMLElement, monster: NimbleMonster): void {
+	renderInlineStatblock(container: HTMLElement, monster: NimbleMonster, sourceFile?: string): void {
 		const block = container.createEl('div', { cls: 'nimble-statblock inline' });
 		const isSolo = monster.monsterType === 'solo';
 		if (isSolo) block.addClass('solo-monster');
@@ -715,6 +715,9 @@ class EncounterTrackerView extends ItemView {
 			block.createEl('hr');
 			block.createEl('p', { text: monster.description, cls: 'monster-description' });
 		}
+
+		// Process WikiLinks
+		processWikiLinks(block, this.plugin, sourceFile || '');
 	}
 
 	renderInlineSolo(block: HTMLElement, monster: NimbleMonster): void {
@@ -1136,7 +1139,49 @@ function markdownToHtml(text: string): string {
 		.replace(/\*(.+?)\*/g, '<em>$1</em>')
 		.replace(/___(.+?)___/g, '<strong><em>$1</em></strong>')
 		.replace(/__(.+?)__/g, '<strong>$1</strong>')
-		.replace(/_(.+?)_/g, '<em>$1</em>');
+		.replace(/_(.+?)_/g, '<em>$1</em>')
+		// WikiLinks: [[Page|Display]] or [[Page]]
+		.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '<a class="nimble-wikilink" data-link="$1">$2</a>')
+		.replace(/\[\[([^\]]+)\]\]/g, '<a class="nimble-wikilink" data-link="$1">$1</a>');
+}
+
+function processWikiLinks(container: HTMLElement, plugin: NimbleStatblocksPlugin, sourcePath: string): void {
+	const wikilinks = container.querySelectorAll('a.nimble-wikilink');
+	wikilinks.forEach((link) => {
+		const anchor = link as HTMLAnchorElement;
+		const target = anchor.dataset.link || anchor.textContent || '';
+
+		// Resolve the link to get the actual file path
+		const resolvedFile = plugin.app.metadataCache.getFirstLinkpathDest(target, sourcePath);
+		const resolvedPath = resolvedFile ? resolvedFile.path : target;
+
+		// Set up attributes for Obsidian's hover preview system
+		anchor.href = resolvedPath;
+		anchor.dataset.href = resolvedPath;
+		anchor.classList.add('internal-link');
+
+		// Set the target attribute for proper link behavior
+		anchor.setAttr('target', '_blank');
+		anchor.setAttr('rel', 'noopener');
+
+		anchor.onclick = (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			plugin.app.workspace.openLinkText(target, sourcePath);
+		};
+
+		// Register hover link event for Obsidian's native preview
+		anchor.addEventListener('mouseover', (event) => {
+			plugin.app.workspace.trigger('hover-link', {
+				event,
+				source: 'nimble-statblock',
+				hoverParent: container,
+				targetEl: anchor,
+				linktext: target,
+				sourcePath: sourcePath
+			});
+		});
+	});
 }
 
 function parseAbility(line: string): NimbleAbility {
@@ -1199,6 +1244,9 @@ function renderStatblock(el: HTMLElement, monster: NimbleMonster, plugin: Nimble
 		block.createEl('hr');
 		block.createEl('p', { text: monster.description, cls: 'monster-description' });
 	}
+
+	// Process WikiLinks in the stat block
+	processWikiLinks(block, plugin, sourceFile || '');
 
 	// Add button
 	block.createEl('hr');
@@ -1904,7 +1952,7 @@ abilities:
 			previewEl.id = 'nimble-hover-preview-active';
 
 			// Render the stat block
-			this.renderStatblockForHover(previewEl, entry.monster);
+			this.renderStatblockForHover(previewEl, entry.monster, entry.filePath);
 
 			// Position near element
 			document.body.appendChild(previewEl);
@@ -1982,7 +2030,7 @@ abilities:
 		});
 	}
 
-	private renderStatblockForHover(container: HTMLElement, monster: NimbleMonster): void {
+	private renderStatblockForHover(container: HTMLElement, monster: NimbleMonster, sourcePath: string): void {
 		const block = container.createEl('div', { cls: 'nimble-statblock inline hover-preview' });
 		const isSolo = monster.monsterType === 'solo';
 		if (isSolo) block.addClass('solo-monster');
@@ -1999,6 +2047,9 @@ abilities:
 			block.createEl('hr');
 			block.createEl('p', { text: monster.description, cls: 'monster-description' });
 		}
+
+		// Process WikiLinks in the hover preview
+		processWikiLinks(block, this, sourcePath);
 	}
 
 	private renderSoloForHover(block: HTMLElement, monster: NimbleMonster): void {
