@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, ItemView, TFile, MarkdownPostProcessorContext } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf, ItemView, TFile, MarkdownPostProcessorContext, Platform } from 'obsidian';
 
 // ============================================================================
 // TYPES
@@ -104,6 +104,7 @@ interface NimbleStatblocksSettings {
 	activeEncounterId: string | null;
 	multipleEncounters: boolean;
 	customConditions: NimbleCondition[];
+	mobileTapToPreview: boolean;
 }
 
 const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
@@ -111,7 +112,8 @@ const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	encounters: [],
 	activeEncounterId: null,
 	multipleEncounters: false,
-	customConditions: []
+	customConditions: [],
+	mobileTapToPreview: true
 };
 
 // ============================================================================
@@ -1520,6 +1522,16 @@ class NimbleSettingsTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
+		new Setting(containerEl)
+			.setName('Tap to preview on mobile')
+			.setDesc('On mobile, tap once to preview a monster stat block, tap again to navigate. When disabled, tapping navigates immediately.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.mobileTapToPreview)
+				.onChange(async (value) => {
+					this.plugin.settings.mobileTapToPreview = value;
+					await this.plugin.saveSettings();
+				}));
+
 		// Custom Conditions Section
 		containerEl.createEl('h3', { text: 'Custom Conditions' });
 		containerEl.createEl('p', {
@@ -1718,6 +1730,18 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			});
 		});
 
+		// Mobile tap-away handler: close preview when tapping outside
+		if (Platform.isMobile) {
+			this.registerDomEvent(document, 'click', (e: MouseEvent) => {
+				const target = e.target as HTMLElement;
+				// If clicking outside preview and outside any nimble reference
+				if (!target.closest('#nimble-hover-preview-active') &&
+					!target.closest('.nimble-inline-name')) {
+					this.removeHoverPreview();
+				}
+			});
+		}
+
 		this.addCommand({
 			id: 'open-tracker',
 			name: 'Open Encounter Tracker',
@@ -1896,10 +1920,29 @@ abilities:
 				cls: 'nimble-inline-name'
 			});
 
-			// Navigate to source file on click
+			// Navigate to source file on click (with mobile tap-to-preview support)
 			nameLink.onclick = (e) => {
 				e.preventDefault();
-				this.app.workspace.openLinkText(entry.filePath, sourcePath);
+
+				// Check if mobile tap-to-preview is enabled
+				if (Platform.isMobile && this.settings.mobileTapToPreview) {
+					const isPreviewShowing = nameLink.dataset.previewShowing === 'true';
+
+					if (isPreviewShowing) {
+						// Second tap: close preview and navigate
+						this.removeHoverPreview();
+						delete nameLink.dataset.previewShowing;
+						this.app.workspace.openLinkText(entry.filePath, sourcePath);
+					} else {
+						// First tap: show preview
+						this.removeHoverPreview();
+						this.showMobilePreview(nameLink, entry);
+						nameLink.dataset.previewShowing = 'true';
+					}
+				} else {
+					// Desktop or setting disabled: navigate immediately
+					this.app.workspace.openLinkText(entry.filePath, sourcePath);
+				}
 			};
 
 			// Attach hover preview
@@ -2004,11 +2047,38 @@ abilities:
 		};
 	}
 
+	private showMobilePreview(element: HTMLElement, entry: MonsterIndexEntry): void {
+		// Remove any existing preview and clear other elements' state
+		this.removeHoverPreview();
+		document.querySelectorAll('[data-preview-showing]').forEach(el => {
+			delete (el as HTMLElement).dataset.previewShowing;
+		});
+
+		// Create preview container
+		const previewEl = document.createElement('div');
+		previewEl.className = 'nimble-hover-preview';
+		previewEl.id = 'nimble-hover-preview-active';
+
+		// Render the stat block
+		this.renderStatblockForHover(previewEl, entry.monster, entry.filePath);
+
+		// Position and append
+		document.body.appendChild(previewEl);
+		this.positionHoverPreview(previewEl, element);
+
+		// Mark element as showing preview
+		element.dataset.previewShowing = 'true';
+	}
+
 	private removeHoverPreview(): void {
 		const existing = document.getElementById('nimble-hover-preview-active');
 		if (existing) {
 			existing.remove();
 		}
+		// Clear all preview-showing states
+		document.querySelectorAll('[data-preview-showing]').forEach(el => {
+			delete (el as HTMLElement).dataset.previewShowing;
+		});
 	}
 
 	private positionHoverPreview(preview: HTMLElement, anchor: HTMLElement): void {
