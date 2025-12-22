@@ -1775,6 +1775,17 @@ abilities:
 				}
 			})
 		);
+
+		this.registerEvent(
+			this.app.vault.on('rename', (file, oldPath) => {
+				if (file instanceof TFile && file.extension === 'md') {
+					// Remove entries from the old path
+					this.removeFileFromIndex(oldPath);
+					// Re-index at the new path
+					this.updateIndexForFile(file);
+				}
+			})
+		);
 	}
 
 	async loadSettings() {
