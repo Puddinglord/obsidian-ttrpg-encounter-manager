@@ -27,6 +27,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify build output
+        run: |
+          if [ ! -f main.js ]; then
+            echo "Error: main.js was not created by the build step"
+            exit 1
+          fi
+          ls -la main.js manifest.json styles.css
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
