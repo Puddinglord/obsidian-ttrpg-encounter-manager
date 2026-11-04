@@ -17,3 +17,6 @@ data.json
 
 # Exclude macOS Finder (System Exploer) parsing
 .DS_Store
+
+# e2e screenshots
+e2e/artifacts
