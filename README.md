@@ -1,432 +1,251 @@
-# Nimble Statblocks
+# Nimble GM for Obsidian
 
-An Obsidian plugin for creating Nimble TTRPG monster stat blocks and tracking encounters during play.
+A GM companion for the Nimble TTRPG (3.2 rules), built into Obsidian. It covers prepping and running campaigns from your notes: a campaign manager, a bundled bestiary of 500+ monsters, stat blocks, encounter blocks rated against your party, a combat tracker, GM maps with pins, and slash commands. It isn't a virtual tabletop. Everything here is for the GM.
 
-## Quick Start
+> Nimble GM is an independent product published under the Nimble 3rd Party Creator License. Nimble TTRPG © Nimble Co. Nimble text is included with permission. This tool is free to use for anyone who already owns the content, is trying the system out, or can't afford it right now. If you enjoy Nimble and are able, please support the game by buying the official books at [nimbleRPG.com](https://nimbleRPG.com).
 
-1. Create a new note
-2. Add a code block with the `nimble` language
-3. Define your monster using simple YAML-like syntax
-4. Click "Add to Encounter" to track it during combat
+## Quick start
 
----
+1. Open **Settings → Nimble GM** and add your party (name, class, level, HP, Defense).
+2. Type `/` in a note: `/encounter 3 goblin, 2 wolf` writes an encounter block rated against your party.
+3. Click **Run** on the block. The tracker opens with the monsters and your heroes.
+4. Click **Start combat**. Heroes go first; tick each one off as they act, then the monsters go. Click **Next round**.
 
-## Creating Monsters
+## Campaigns
 
-Use a fenced code block with `nimble` as the language:
+Run several campaigns from one vault. Each one has its own chapters, scenes, NPCs, session logs and party.
+
+- **Start one:** use **New campaign** (the castle icon in the ribbon, or the command palette). You give it a name, a starting level and the number of heroes. It creates a folder with a home note, a first chapter and an opening scene.
+- **The Campaign panel** (left sidebar) is home base:
+  - switch campaigns
+  - see and edit the party
+  - **Continue** where you left off
+  - browse chapters and their scenes (map buttons sit on each chapter)
+  - browse Sessions, NPCs, Locations and Monsters
+  - create any of these with the **+** buttons
+- **Each campaign has its own party.** Opening a note inside a campaign makes that campaign active, so encounter blocks there rate against that table's heroes. Until you add heroes, the campaign's `level:` and `heroes:` are used.
+- **Moving through scenes:** use the **Next scene** / **Previous scene** commands (bind them to hotkeys). They step through scenes in order, across chapters.
+
+The structure is plain folders and a little frontmatter, so you can also build it by hand:
+
+```
+Campaigns/
+  Vecna - Eve of Ruin/
+    Vecna - Eve of Ruin.md        nimble: campaign   (level: 3, heroes: 4)
+    Nest of the Eldritch Eye/
+      Nest of the Eldritch Eye.md nimble: chapter    (order: 0, label: Prelude)
+      N1 Entrance Tunnel.md       nimble: scene      (order: 4, area: N1)   ← any note here is a scene
+      Map - Nest….md              nimble: map
+    NPCs/  Sessions/  Locations/  Monsters/  Assets/  ← any other folder is a section
+```
+
+- A campaign is any folder holding a `nimble: campaign` note.
+- A chapter is any folder inside it holding a `nimble: chapter` note.
+- Every other note in a chapter folder is a scene, even without frontmatter.
+- `order:` sorts notes; without it, names sort naturally (N2 before N10).
+- A ```` ```nimble-campaign ```` block on the home note shows the same outline inside the note.
+
+## Boxes
+
+Styled boxes for adventure notes: read-aloud text, what's in a room, treasure, traps, clues, handouts and more. Type the slash command and start writing inside the box.
+
+| Command | Box |
+|---|---|
+| `/read-aloud` (`/read`) | Read-aloud text, in a serif face so it's the first thing your eye finds |
+| `/look` | What's here |
+| `/treasure` (`/loot`) | Treasure and rewards |
+| `/trap` (`/hazard`) | A trap or hazard, with Trigger / Spot / Effect / Disarm lines |
+| `/secret`, `/clue`, `/checks`, `/exits` | GM-only notes, clues, a check table, exits |
+| `/handout`, `/lore`, `/rumor`, `/quest` | A handout (old paper), lore, rumors, a quest or hook |
+| `/box` | Any of the above, searchable |
+
+**Restyling a box:** click its icon. A small panel opens with three tabs (Type, Icon, Look); the title is edited at the top. You can pick:
+- a type
+- a title
+- an icon from the library (or any Lucide icon by name)
+- a colour, or any custom colour
+- a style: card, banner, old note, letter, stone or minimal
+- a font: sans, serif, hand or mono
+- bold, italic, or start folded
+
+Changes preview live and are saved when you click away. Click a box's title to fold it.
+
+**Tables** in boxes, and in notes (setting: *Styled tables*), get rounded corners, a tinted header and zebra rows. A **DC** column shows its numbers as pills.
+
+The look lives on the fence line, so you can also type it:
 
 ````markdown
-```nimble
-name: Goblin
-type: Humanoid
-size: Small
-armor: none
-hp: 12
-movement: 6
-str: -
-dex: ++
-will: -
-attacks:
-- Shortsword 1d6 slashing
-- Shortbow 1d6 piercing
-abilities:
-- Nimble Escape: Can Disengage or Hide as a bonus action
+```box treasure title="Wyrm's hoard" icon=crown color=gold style=parchment
+- 300 gp in old coin
+- A **+1 shield**
 ```
 ````
 
-This renders as a styled stat block in your note with an "Add to Encounter" button.
+## NPCs
 
----
-
-## Inline Monster References
-
-Reference any monster from your vault inline using the `nimble:` syntax:
-
-```markdown
-The party encounters a `nimble:Goblin` and its leader, a `nimble:Goblin Boss`.
-```
-
-### Features
-
-- **Works while you write** — References render in Live Preview as well as Reading view. Put your cursor inside one to edit the raw text.
-- **Autocomplete** — Type `` `nimble: `` and pick a monster from the list
-- **Hover Preview** — Hover over the reference to see the full stat block (Escape closes it)
-- **Click to Navigate** — Click the monster name to open its source file (Cmd/Ctrl-click opens a new tab)
-- **Quick Add** — Click the **+** button to add the monster to your active encounter (Shift-click adds two)
-- **Auto-Detection** — If the monster isn't found in your vault, it shows with a **?** indicator. It resolves on its own as soon as you write that monster up.
-
-This is useful for writing adventure notes where you want quick access to monster stats without leaving the page.
-
----
-
-## Monster Fields Reference
-
-### Basic Info
-
-| Field | Description | Example |
-|-------|-------------|---------|
-| `name` | Monster name (required) | `Goblin` |
-| `type` | Creature type | `Humanoid`, `Beast`, `Undead` |
-| `size` | Size category | `Tiny`, `Small`, `Medium`, `Large`, `Huge` |
-| `cr` | Challenge rating | `1`, `1/2`, `5` |
-
-### Combat Stats
-
-| Field | Description | Example |
-|-------|-------------|---------|
-| `armor` | Armor type (see below) | `none`, `medium`, `heavy` |
-| `hp` | Hit points | `45` |
-| `movement` | Speed in spaces | `6` or `6, fly 12` |
-
-### Saving Throws (Nimble's Simplified System)
-
-Saves use `+`, `++`, `-`, `--` notation to indicate advantage/disadvantage:
-
-| Symbol | Meaning |
-|--------|---------|
-| `++` | Double advantage |
-| `+` | Advantage |
-| `-` | Disadvantage |
-| `--` | Double disadvantage |
-
-| Field | Description | Example |
-|-------|-------------|---------|
-| `str` | Strength save (includes Con) | `+`, `++`, `-` |
-| `dex` | Dexterity save | `+`, `-`, `--` |
-| `will` | Will save (Int/Wis/Cha combined) | `+`, `-` |
-
-### Other Fields
-
-| Field | Description | Example |
-|-------|-------------|---------|
-| `senses` | Special senses | `Darkvision 12 spaces` |
-| `languages` | Known languages | `Common, Goblin` |
-| `multiattack` | Multiattack description | `Makes two claw attacks` |
-| `resistances` | Damage resistances (list) | See below |
-| `immunities` | Damage immunities (list) | See below |
-
----
-
-## Nimble Armor System
-
-Nimble simplifies armor into three categories:
-
-| Armor | Input | Effect |
-|-------|-------|--------|
-| **None** | `none` or `N` | Takes full damage (dice + modifiers) |
-| **Medium** | `medium` or `M` | Takes dice only (ignores modifiers) |
-| **Heavy** | `heavy` or `H` | Takes half damage from all sources |
-
----
-
-## Attacks
-
-List attacks under the `attacks:` section. Each line starts with `-`:
+A note is an NPC when its properties say `nimble: npc` (or it's tagged `#npc`). Add `role:` for a one-line description and `aliases:` for other names.
 
 ```yaml
-attacks:
-- Longsword 1d8 slashing
-- Bite 2d6 piercing
-- Fire Breath 8d6 fire
-```
-
-### Attack Format
-```
-- [Name] [Damage Dice] [Damage Type]
-```
-
-Examples:
-```yaml
-attacks:
-- Claw 1d6 slashing
-- Venomous Bite 1d4 piercing
-- Life Drain (L) 2d6 necrotic
-```
-
-Add `(L)` after the name to mark it as a Legendary action.
-
-### Rolling dice
-
-Dice in attacks, abilities and phase text (like `1d6+2` or `2d10`) are clickable. Click one to roll it: the result pops up in a notice and is kept in the **Recent rolls** log at the bottom of the encounter tracker.
-
-Dice in **attack lines** follow Nimble's attack rules:
-
-- A **1** on the first (primary) die is a **miss**.
-- The primary die's **max** is a **crit**: roll one more die and add it, and keep going while it rolls max.
-- Otherwise it's the dice plus the modifier.
-
-Attack lines that mention a **save** (like a breath weapon), and dice in abilities, Bloodied or Last Stand text, always roll a plain sum.
-
-Turn the rules off with **Nimble attack rolls** in settings, or all dice clicking with **Clickable dice**.
-
 ---
-
-## Abilities
-
-List abilities under the `abilities:` section:
-
-```yaml
-abilities:
-- Pack Tactics: Advantage on attacks when ally is adjacent to target
-- Keen Senses: Advantage on Perception checks
-- Sunlight Sensitivity: Disadvantage on attacks in sunlight
-```
-
-### Ability Format
-```
-- [Name]: [Description]
-```
-
-Add `(L)` after the name for Legendary abilities:
-```yaml
-abilities:
-- Frightful Presence (L): Creatures within 6 spaces must make Will save or be Frightened
-```
-
+nimble: npc
+role: Lord Protector of Neverwinter
+aliases:
+  - Neverember
+  - Lord Neverember
 ---
-
-## Resistances & Immunities
-
-List these as simple items:
-
-```yaml
-resistances:
-- Fire
-- Cold
-- Bludgeoning from nonmagical weapons
-
-immunities:
-- Poison
-- Necrotic
 ```
 
----
+- **Links become chips:** `[[Lord Dagult Neverember]]` shows as a green person chip in both reading view and Live Preview.
+- **Mentions are linked as you read:** the NPC's name or an alias anywhere in that campaign's notes gets a dotted underline and a hover preview. In Live Preview, Cmd/Ctrl-click opens the note. Your files aren't changed. Turn this off in settings.
+- **Generic creatures** (a cultist, a zombie) stay bestiary references (`nimble:Cultist`). NPCs are the named people with their own pages, and they can carry a stat block too.
+- **`/npc`** searches the campaign's NPCs and inserts a link. Typing a new name offers **New NPC**, which creates the note in the campaign's NPCs folder.
 
-## Solo/Legendary Monsters
+## Bestiary
 
-Nimble's Solo monsters act after **each hero's turn** instead of once per round. To create one:
+The plugin ships with every monster from the Nimble GM Guide and the Monsters & More draft. That's 525 stat blocks, including 51 legendary/solo monsters and 20 minion types.
 
-```yaml
-monsterType: solo
-legendaryResistances: 3
-bloodied: What changes at half HP
-lastStand: What happens at 0 HP
+- **Open it:** use the book icon in the ribbon, or the **Open bestiary** command. You can search names, abilities, groups and habitats, and filter by role, armor, source and level.
+- **Use them anywhere:** `` `nimble:Krogg, Goblin King` `` in any note shows a reference you can hover for the full stat block.
+- **Customise one:** use **Copy to vault** to make an editable note. A note with the same name replaces the bundled monster everywhere.
+- **Duplicates:** monsters in both books keep the Monsters & More name, and the GM Guide version is called "Name (GM Guide)".
+
+Turn the bundled bestiary off in settings if you only want your own monsters.
+
+## Slash commands
+
+Type `/` at the start of a line or after a space:
+
+| Command | Does |
+|---|---|
+| `/monster goblin` | Inserts a monster reference |
+| `/add 3 goblin` | Adds 3 goblins to the tracker; nothing is written to the note |
+| `/encounter 3 goblin, 2 wolf` | Encounter block with live difficulty (or "Insert and run it now") |
+| `/statblock krogg` | The full stat block, editable in the note |
+| `/builder` | Opens the encounter builder |
+| `/legendary`, `/minion`, `/new-monster` | Stat block templates |
+| `/condition dazed` | The condition's rules as a callout |
+| `/read-aloud`, `/look`, `/treasure`, `/trap`, `/clue`… | Styled boxes (see Boxes below) |
+| `/npc kevori` | Link an NPC, or create a new one |
+| `/map hideout` | A GM map block for an image in your vault |
+| `/roll 2d6+3` | Rolls now and writes the result (plain or as a Nimble attack) |
+| `/party`, `/bestiary`, `/tracker`, `/settings` | Jump straight to the party editor, bestiary, tracker or settings |
+| `/summary`, `/party-table` | The current encounter's summary; a table of your heroes |
+
+## Stat blocks
+
+````markdown
+```nimble
+name: Krogg, Goblin King
+level: 2
+role: solo              # regular, minion, legendary or solo
+size: Medium
+type: Angry Bugbear
+hp: 28/hero             # or a flat number
+armor: none             # none, medium (M) or heavy (H)
+movement: 6             # e.g. 8, fly 10
+saves: STR+ DEX+
 actionText: After each hero's turn, choose one:
-```
-
-In the encounter tracker, solo monsters get legendary resistance pips you can click to spend, and their **Bloodied** and **Last Stand** text pops up the moment their HP crosses half or hits 0.
-
-### Full Solo Monster Example
-
-````markdown
-```nimble
-name: Young Dragon
-type: Dragon
-size: Large
-monsterType: solo
-armor: medium
-hp: 120
-movement: 8, fly 16
-str: ++
-dex: +
-will: ++
-legendaryResistances: 3
-senses: Blindsight 6 spaces, Darkvision 24 spaces
-languages: Common, Draconic
-multiattack: Makes two claw attacks and one bite attack
 attacks:
-- Claw (L) 2d6 slashing
-- Bite 2d10 piercing
-- Fire Breath 10d6 fire
-abilities:
-- Frightful Presence: Creatures within 12 spaces must make Will save or be Frightened for 1 minute
-- Wing Attack (L): All creatures within 2 spaces make Dex save or take 2d6 bludgeoning and are knocked prone
-resistances:
-- Fire
+- **Manglemaul.** Move 6. 2d6+2 damage, Grappled (escape DC 10).
+- **Crack Skulls.** Move 6. Swing a Grappled creature at another creature. Both take 2d6+2.
+bloodied: At 45 HP, Krogg's damage increases to 2d8+2.
+lastStand: At 0 HP Krogg is dying! If he takes 20 more damage he dies. Until then, he has Medium Armor.
+easier: Have the Manglemaul jam after using Crack Skulls.
+harder: Move often; end turns out of melee reach.
 ```
 ````
 
----
+- Other fields: `abilities:`, `resistances:`, `vulnerabilities:` and `immunities:` lists, plus `minion die: d8`, `description:`, `source:`, `group:`.
+- Notes in the older format (`monsterType: solo`, `str: +`, `dex: ++`, `will: -`) still work.
+- **3D dice:** clicking a dice expression throws real dice across the screen. They tumble, collide and bounce differently every time, yet always land on the rolled result. The notice appears when they land.
+  - Finishes: Classic resin, Gem, Metal, Glitter, Lava, Frost, Nebula, Opal and Marble.
+  - The primary die, the other dice and crit dice each get their own finish and colour (settings: **3D dice**).
+  - **Test a crit** in settings previews an explosion chain.
+  - An attack's primary die has its own colour.
+  - A crit rolls its extra dice in as a second wave.
+  - Colours, and whether phones get 3D dice too, are in settings. It switches off by itself without WebGL or with reduced motion.
+- **Interactive text:** dice are clickable, and attack lines follow Nimble rules (a 1 on the first die misses, its max crits and explodes). Condition names such as Grappled or Prone show their rules when clicked.
+- **Hover previews** stay open while you move into them. Click inside to pin one; drag its top bar to move it. Its **Add** button has a menu with Add 2, Add tougher (+1 level) and Add weaker (−1 level). Easier/Harder notes appear in full stat blocks and the bestiary, not the hover card. Escape closes the preview.
 
-## Running Encounters
+## Encounter blocks
 
-### Opening the Encounter Tracker
-
-- Click the **swords icon** in the left ribbon, OR
-- Use command palette: `Nimble Statblocks: Open Encounter Tracker`
-
-### Creating an Encounter
-
-1. Open the Encounter Tracker (right sidebar)
-2. Type a name in the text field (e.g., "Goblin Ambush")
-3. Click **+** or press Enter
-
-### Adding Monsters
-
-Any of these adds a creature to the active encounter, opening the tracker if it's closed:
-
-- Click **"+ Add to Encounter"** on a stat block (Shift-click adds two)
-- Click the **+** on an inline `nimble:` reference
-- Click **Add monster…** in the tracker, or run the **Add monster to encounter…** command, and search your whole bestiary
-
-Each copy is numbered: Goblin-1, Goblin-2, and so on. Numbers are never reused, so removing Goblin-1 and adding another gives Goblin-4, not a second Goblin-3. Click the pencil to rename a creature.
-
-### Tracking Health
-
-| Control | Effect |
-|--------|--------|
-| **-5 / -1 / +1 / +5** | Adjust HP |
-| **Click the HP number** | Type an amount: `7` deals 7 damage, `+7` heals 7, `=20` sets HP to 20. Press Enter. |
-
-The bar under each creature, and its border color, show its health:
-- 🟢 **Green** — Above 50% HP
-- 🟡 **Yellow** — 25-50% HP
-- 🔴 **Red** — Below 25% HP
-- ⚫ **Grey** — 0 HP
-
-Creatures at half HP or less are tagged **Bloodied** automatically, and at 0 HP **Dying**.
-
-The top of the tracker shows how many creatures are still standing, the encounter's total HP, and a **round counter** (use the arrows or the **Next round** command).
-
-### Conditions
-
-Click **+** under a creature to add a condition, and **×** on a tag to remove it. Click a tag to read what the condition does. Add your own conditions in settings.
-
-### Removing Creatures
-
-Click the **✕** button next to any creature to remove it, or **Clear all** to empty the encounter. Drag creatures by the ⋮⋮ handle to reorder them.
-
-### Managing Multiple Encounters
-
-- Create multiple encounters from the dropdown
-- Switch between them using the selector
-- Delete encounters with the "🗑️ Delete Encounter" button
-
----
-
-## Installation
-
-### From a release
-
-1. Download `main.js`, `manifest.json` and `styles.css` from the latest GitHub release
-2. Copy them into `<your vault>/.obsidian/plugins/nimble-statblocks/`
-3. Restart Obsidian, then enable **Nimble Statblocks** in Settings → Community plugins
-
-### From source
-
-```bash
-npm install
-npm run build
-```
-
-Then copy `main.js`, `manifest.json` and `styles.css` into your vault's plugin folder as above. `./deploy.sh` does this for a dev vault at `~/Documents/DevVault`.
-
----
-
-## Example: Complete Encounter Setup
-
-### Step 1: Create Monster Notes
-
-**Goblin.md**
 ````markdown
-# Goblin
-
-```nimble
-name: Goblin
-type: Humanoid
-size: Small
-armor: none
-hp: 12
-movement: 6
-str: -
-dex: ++
-will: -
-attacks:
-- Shortsword 1d6 slashing
-- Shortbow 1d6 piercing
-abilities:
-- Nimble Escape: Can Disengage or Hide as a bonus action
+```nimble-encounter
+name: Goblin Blind
+party: true
+monsters:
+- 2 Goblin
+- 3 Goblin Minion
+notes: If spotted, one goblin runs to warn the den.
 ```
 ````
 
-**Goblin Boss.md**
-````markdown
-# Goblin Boss
+The block shows its difficulty using the GM Guide budget:
 
-```nimble
-name: Goblin Boss
-type: Humanoid
-size: Small
-armor: medium
-hp: 36
-movement: 6
-str: +
-dex: ++
-will: -
-multiattack: Makes two scimitar attacks
-attacks:
-- Scimitar 1d6 slashing
-- Javelin 1d6 piercing
-abilities:
-- Redirect Attack: When missed by an attack, can redirect it to an adjacent ally
+- The budget is the party's total hero levels.
+- 50% of the budget is Easy, 75% Medium, 100% Hard, 125% Deadly and 150% Very Deadly.
+- Each minion counts as half the party's level.
+- A legendary monster counts as its level × the number of heroes.
+
+You also get warnings, for example armor before level 3, or more than 3 monsters per hero. **Scaling and balancing:**
+- Click a monster's count (`2×`) to change how many, make them **tougher or weaker** (one level each way), or remove them. The note updates when the editor closes.
+- A shift is written into the block, e.g. `- 2 Cultist +1`. It counts toward difficulty and carries into the tracker.
+- Per level: about 25% more (or less) HP, and +2 (or −2) damage on every hit. The stat block shows a Tougher or Weaker line so you can see it at the table.
+- Click the difficulty chip (e.g. *Very Deadly · 144%*) and pick a target (Easy, Medium, Hard or Deadly). You get the two or three smallest edits that reach it, for example "Remove all 3 Goblin Minions → Hard 106%". One click applies it. Legendary monsters are kept, and minions from the same family can be suggested.
+- The same balancer sits under the meter in the encounter builder.
+- The "4 heroes, level 2" line opens the party editor.
+
+**Run** loads the encounter into the tracker, **Add to current** adds its monsters to the encounter already running, and **Edit** opens the builder and saves back into the block.
+
+## Encounter tracker
+
+Nimble turn order: heroes act first, in any order, then the monsters.
+
+- **Turns:** tick the circle when a combatant has gone. When every hero has gone, the tracker switches to the monsters' turn. **Next round** resets everyone and counts durations down.
+- **HP entry:** click a combatant's HP and type:
+  - `12` for damage
+  - `12!` for a crit
+  - `+5` to heal, `=20` to set HP, `t5` for temp HP
+  - `12v` / `12r` for vulnerable (+10) / resisted (−10)
+- **Monster armor:** Medium (−10) and Heavy (−20) are subtracted automatically, and crits ignore armor. The working is shown, e.g. `15 − 10 (Medium armor) = 5`.
+- **Heroes:** action pips (set them from Initiative: 1–9 → 1, 10–19 → 2, 20+ → 3) and Wound pips. Dropping to 0 HP adds 1 Wound and makes the hero Dying; damage while Dying adds 2 Wounds (3 on a crit).
+- **Minions** share one row with a pip each. Any hit drops one; big hits drop more (one per full die of damage). **Group attack** rolls all of them at once: 1s miss, no crits, and one Defend covers the total.
+- **Legendary monsters** have HP scaled to the party. After each hero's turn the tracker shows their choose-one actions with clickable dice. Bloodied and Last Stand appear as prompts, and **Apply** handles Last Stand HP (regain per hero, or a final damage pool with armor).
+- **Statuses:** all the 3.2 conditions plus minor statuses and your own custom ones. Apply one for a set number of rounds or until removed; Empowered and Weakened take a value. Durations count down when that combatant's turn ends.
+- **Quick add:** type `3 goblin` in the box at the top. **Add the party** is in the ⋯ menu.
+- **Combat log and summary:** **Copy summary**, or **Append summary to source note** for your session log.
+
+## GM maps
+
+````markdown
+```nimble-map
+image: [[Cragmaw Hideout.jpg]]
+grid: 30x20
+pins:
+- 40, 78 | 1. Cave Mouth | [[Part 1#1. Cave Mouth]] | area
+- 18.3, 35 | 8. Klarg's Cave | [[Part 1#8. Klarg's Cave]] | encounter
 ```
 ````
 
-### Step 2: Build the Encounter
+Pins link to notes or headings, with Obsidian's hover preview, and clicking a pin opens its note. **Add pin**, **Move pins** and right-click (long-press on touch) → **Edit** all save back into the block. Scroll or pinch to zoom, drag to pan, double-tap to zoom in, and press `0` to fit. **Encounter tokens** shows the tracker's combatants as tokens you can drag onto the map, kept in plugin data rather than the note. Pin kinds are place, area, encounter, npc, treasure, danger, note and secret.
 
-1. Open Encounter Tracker
-2. Create encounter: "Goblin Ambush"
-3. Open Goblin.md, click "Add to Encounter" 4 times
-4. Open Goblin Boss.md, click "Add to Encounter" once
+## Phone and iPad
 
-Your tracker now shows:
-- Goblin-1 (12/12 HP)
-- Goblin-2 (12/12 HP)
-- Goblin-3 (12/12 HP)
-- Goblin-4 (12/12 HP)
-- Goblin Boss-1 (36/36 HP)
+Everything works in the Obsidian mobile app. On a touch screen:
 
-### Step 3: Run Combat
+- **Monster references and NPCs:** tap once to look (a bottom sheet on phones), tap again, or use **Open** in the sheet, to go to the page. The note scrolls so what you tapped stays visible above the sheet.
+- **HP:** tapping a combatant's HP opens a keypad with Damage, Heal, Set HP and Temp HP, plus Crit / Vulnerable / Resisted toggles. It shows the armor working before you apply it, so you don't need the phone keyboard.
+- **Menus:** long-press where a desktop would right-click (map pins and tokens). Rules chips such as Bloodied and Last Stand open on tap instead of on hover.
+- **Minion group attacks:** tapping asks how many minions attack.
+- **Encounter blocks:** the − / + steppers are always visible.
+- **Bestiary:** on a phone it shows the list or one monster at a time. Filters sit behind the sliders button.
+- **Maps:** pinch to zoom and double-tap to zoom in. Tapping a pin opens a card with Open note, Edit and Delete.
+- **Screen:** the screen stays on while combat is running. Turn this off under **Keep the screen on during combat**.
 
-As combat progresses, use the HP buttons to track damage. Dead goblins fade out but remain visible until you remove them.
+**Prep on desktop, run on the iPad:**
+- Encounters, maps and monsters live in your notes, so any sync (Obsidian Sync, iCloud) carries them.
+- The party, the tracker state and map token positions are plugin data. To sync those with Obsidian Sync, turn on **Installed community plugins** in its settings.
 
----
+## Development
 
-## Commands
-
-Access these from the command palette (Cmd/Ctrl + P):
-
-| Command | Description |
-|---------|-------------|
-| **Open encounter tracker** | Opens the tracker sidebar |
-| **Add monster to encounter…** | Search every monster in your vault and add one (Shift-Enter adds two) |
-| **Next round** | Advances the tracker's round counter |
-| **Insert monster template** | Inserts a basic monster template at the cursor |
-| **Insert solo monster template** | Inserts a solo monster template with Bloodied and Last Stand |
-| **Insert monster reference** | Starts a `` `nimble: `` reference so you can pick a monster |
-| **Clear roll log** | Empties the tracker's Recent rolls list |
-
-## Settings
-
-| Setting | What it does |
-|---------|--------------|
-| **Stat block style** | Book (roomy) or Compact (tighter spacing and smaller text) |
-| **Clickable dice** | Makes dice in stat blocks roll when clicked |
-| **Nimble attack rolls** | Attack dice miss on a 1 and crit (exploding) on max; on by default |
-| **Tap to preview on mobile** | First tap previews a monster reference, second tap opens it |
-| **Multiple encounters** | Create and switch between named encounters |
-| **Custom conditions** | Add, edit and delete your own conditions |
-
----
-
-## Tips
-
-1. **Organize monsters by folder** — Create a `Bestiary/` folder with all your monster notes
-
-2. **Link monsters in adventure notes** — Use `[[Goblin]]` for simple links, or `` `nimble:Goblin` `` for inline references with hover previews and quick-add buttons
-
-3. **Prep encounters ahead of time** — Create and name encounters before the session, then just add monsters as needed
-
-4. **Use the sidebar** — Keep the encounter tracker open in the right sidebar during play for quick access
-
-5. **Custom labels** — The auto-generated labels (Goblin-1, Goblin-2) help distinguish identical creatures
+See [CLAUDE_CODE_GUIDE.md](CLAUDE_CODE_GUIDE.md). `npm test` runs the unit tests. `npm run test:e2e` drives a real Obsidian. The bestiary comes from `scripts/bestiary/` (`python3 -I scripts/bestiary/merge.py`).
