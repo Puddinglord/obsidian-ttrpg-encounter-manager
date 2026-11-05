@@ -8,6 +8,10 @@
 export interface RichTextOptions {
 	/** Called for every dice expression found; return nothing. */
 	onDice?: (el: HTMLElement, expression: string) => void;
+	/** Whole words to mark up (e.g. condition names). Must not use the g flag. */
+	keywords?: RegExp;
+	/** Called for every keyword found. */
+	onKeyword?: (el: HTMLElement, word: string) => void;
 }
 
 interface Rule {
@@ -65,9 +69,31 @@ const DICE_RULE: Rule = {
 	},
 };
 
+function keywordRule(re: RegExp): Rule {
+	return {
+		re,
+		build: (m, doc, opts) => {
+			const span = doc.createElement('span');
+			span.className = 'nimble-keyword';
+			span.textContent = m[0];
+			opts.onKeyword?.(span, m[0]);
+			return span;
+		},
+	};
+}
+
+/** Builds a whole-word, case-sensitive matcher for a list of terms (longest first). */
+export function keywordPattern(words: string[]): RegExp | undefined {
+	const list = [...new Set(words.filter(Boolean))].sort((a, b) => b.length - a.length)
+		.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+	return list.length ? new RegExp(`(?<![\\w-])(?:${list.join('|')})(?![\\w-])`) : undefined;
+}
+
 export function appendRichText(parent: HTMLElement, text: string, opts: RichTextOptions = {}): void {
 	const doc = parent.ownerDocument;
-	const rules = opts.onDice ? [...RULES, DICE_RULE] : RULES;
+	const rules = [...RULES];
+	if (opts.onDice) rules.push(DICE_RULE);
+	if (opts.keywords && opts.onKeyword) rules.push(keywordRule(opts.keywords));
 	let rest = text;
 
 	while (rest.length > 0) {

@@ -1,6 +1,6 @@
 // Stat block parsing. Pure functions, no Obsidian imports.
 
-import { ArmorType, NimbleAbility, NimbleAttack, NimbleMonster } from './types';
+import { ArmorType, MonsterRole, NimbleAbility, NimbleAttack, NimbleMonster } from './types';
 
 const DEFAULT_HP = 10;
 
@@ -49,8 +49,10 @@ export function parseStatblock(content: string): NimbleMonster | null {
 		if (!monster.name) return null;
 
 		monster.armor = monster.armor || 'none';
-		if (monster.hp === undefined) monster.hp = DEFAULT_HP;
+		if (monster.hp === undefined) monster.hp = monster.hpPerHero ? monster.hpPerHero * 4 : DEFAULT_HP;
 		monster.movement = monster.movement || '6';
+		if (!monster.role && monster.monsterType === 'solo') monster.role = 'legendary';
+		if (monster.tactics && !monster.tactics.easier && !monster.tactics.harder) delete monster.tactics;
 
 		return monster as NimbleMonster;
 	} catch (e) {
@@ -64,15 +66,49 @@ function processKeyValue(monster: Partial<NimbleMonster>, key: string, value: st
 		case 'name': monster.name = value; break;
 		case 'type': monster.type = value; break;
 		case 'size': monster.size = value; break;
-		case 'level': monster.level = value; break;
+		case 'level': case 'lvl': monster.level = value; break;
 		case 'armor': case 'ac':
 			monster.armor = normalizeArmor(value);
 			break;
 		case 'hp': case 'hitpoints': {
+			const perHero = value.match(/^(\d+)\s*(?:\/|per)\s*hero/i);
+			if (perHero) {
+				monster.hpPerHero = parseInt(perHero[1], 10);
+				break;
+			}
 			const hp = parseInt(value, 10);
 			monster.hp = isNaN(hp) || hp < 0 ? DEFAULT_HP : hp;
 			break;
 		}
+		case 'hpperhero': case 'hp per hero': {
+			const n = parseInt(value, 10);
+			if (n > 0) monster.hpPerHero = n;
+			break;
+		}
+		case 'role': case 'kind': {
+			const role = normalizeRole(value);
+			if (role) {
+				monster.role = role;
+				if (role === 'legendary') monster.roleLabel = /solo/i.test(value) ? 'Solo' : 'Legendary';
+			}
+			break;
+		}
+		case 'saves': case 'save': monster.saves = value; break;
+		case 'int': {
+			// Legacy per-stat saves: fold INT into the saves string.
+			monster.saves = [monster.saves, `INT${value}`].filter(Boolean).join(' ');
+			break;
+		}
+		case 'miniondie': case 'minion die': case 'die': {
+			const d = value.match(/d?\s*(\d+)/i);
+			if (d) monster.minionDie = parseInt(d[1], 10);
+			break;
+		}
+		case 'source': monster.source = value; break;
+		case 'group': case 'family': monster.group = value; break;
+		case 'habitat': monster.habitat = value; break;
+		case 'easier': monster.tactics = { ...monster.tactics, easier: value }; break;
+		case 'harder': monster.tactics = { ...monster.tactics, harder: value }; break;
 		case 'movement': case 'speed': monster.movement = value; break;
 		case 'str': monster.str = value; break;
 		case 'dex': monster.dex = value; break;
@@ -81,16 +117,16 @@ function processKeyValue(monster: Partial<NimbleMonster>, key: string, value: st
 		case 'senses': monster.senses = value; break;
 		case 'languages': monster.languages = value; break;
 		case 'multiattack': monster.multiattack = value; break;
-		case 'monstertype':
-			monster.monsterType = value.toLowerCase().includes('solo') ? 'solo' : 'regular';
+		case 'monstertype': {
+			const role = normalizeRole(value);
+			if (role) monster.role = role;
+			if (role === 'legendary') monster.roleLabel = /solo/i.test(value) ? 'Solo' : 'Legendary';
 			break;
-		case 'legendaryresistances':
-			monster.legendaryResistances = parseInt(value, 10) || 3;
-			break;
-		case 'description': case 'desc': monster.description = value; break;
+		}
+		case 'description': case 'desc': case 'flavor': case 'flavour': monster.description = value; break;
 		case 'bloodied': monster.bloodied = value; break;
 		case 'laststand': monster.lastStand = value; break;
-		case 'actiontext': monster.actionText = value; break;
+		case 'actiontext': case 'actionsintro': monster.actionText = value; break;
 	}
 }
 
@@ -107,6 +143,9 @@ function processSection(monster: Partial<NimbleMonster>, section: string, items:
 			break;
 		case 'immunities':
 			monster.immunities = items;
+			break;
+		case 'vulnerabilities':
+			monster.vulnerabilities = items;
 			break;
 	}
 }
@@ -143,19 +182,66 @@ export function parseAbility(line: string): NimbleAbility {
 	return ability;
 }
 
+/** Nimble monsters are unarmored, Medium (M) or Heavy (H). There is no armor class. */
 export function normalizeArmor(value: string): ArmorType {
 	const v = value.toLowerCase().trim();
-	if (v === 'n' || v === 'none' || v === 'l' || v === 'light') return 'none';
 	if (v === 'm' || v === 'medium') return 'medium';
 	if (v === 'h' || v === 'heavy') return 'heavy';
-
-	const num = parseInt(v, 10);
-	if (!isNaN(num)) {
-		if (num <= 13) return 'none';
-		if (num <= 17) return 'medium';
-		return 'heavy';
-	}
 	return 'none';
+}
+
+export function normalizeRole(value: string): MonsterRole | null {
+	const v = value.toLowerCase();
+	if (/solo|legendary|boss/.test(v)) return 'legendary';
+	if (/minion/.test(v)) return 'minion';
+	if (/regular|normal|standard/.test(v)) return 'regular';
+	return null;
+}
+
+// ----------------------------------------------------------------------------
+// Writing a monster back out as a ```nimble block (e.g. copying a bundled
+// monster into the vault so the GM can edit it)
+// ----------------------------------------------------------------------------
+
+const oneLine = (s: string) => s.replace(/\s*\n\s*/g, ' ').trim();
+
+export function toStatblockSource(m: NimbleMonster): string {
+	const lines: string[] = [`name: ${m.name}`];
+	const kv = (key: string, value: unknown) => {
+		if (value === undefined || value === null || value === '') return;
+		lines.push(`${key}: ${oneLine(String(value))}`);
+	};
+	kv('level', m.level);
+	if (m.role && m.role !== 'regular') kv('role', m.role === 'legendary' ? (m.roleLabel || 'Legendary').toLowerCase() : m.role);
+	kv('size', m.size);
+	kv('type', m.type);
+	if (m.armor !== 'none') kv('armor', m.armor);
+	if (m.hpPerHero) kv('hp', `${m.hpPerHero}/hero`);
+	else if (m.role !== 'minion') kv('hp', m.hp);
+	if (m.minionDie) kv('minion die', `d${m.minionDie}`);
+	if (m.movement && m.movement !== '6') kv('movement', m.movement);
+	kv('saves', m.saves);
+	kv('senses', m.senses);
+	kv('languages', m.languages);
+	kv('actionText', m.actionText);
+	kv('bloodied', m.bloodied);
+	kv('lastStand', m.lastStand);
+	kv('description', m.description);
+	kv('easier', m.tactics?.easier);
+	kv('harder', m.tactics?.harder);
+	kv('group', m.group);
+	kv('source', m.source);
+	const list = (key: string, items: string[] | undefined) => {
+		if (!items?.length) return;
+		lines.push(`${key}:`);
+		for (const item of items) lines.push(`- ${oneLine(item)}`);
+	};
+	list('abilities', m.abilities?.map(a => `${a.name}: ${a.description}`));
+	list('attacks', m.attacks?.map(a => a.raw));
+	list('resistances', m.resistances);
+	list('immunities', m.immunities);
+	list('vulnerabilities', m.vulnerabilities);
+	return lines.join('\n');
 }
 
 // ----------------------------------------------------------------------------
