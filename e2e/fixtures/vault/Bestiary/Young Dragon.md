@@ -12,7 +12,6 @@ movement: 8, fly 16
 str: ++
 dex: +
 will: ++
-legendaryResistances: 3
 senses: Blindsight 6 spaces, Darkvision 24 spaces
 languages: Common, Draconic
 multiattack: Makes two claw attacks and one bite attack
