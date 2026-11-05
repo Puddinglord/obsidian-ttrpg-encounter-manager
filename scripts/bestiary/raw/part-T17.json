@@ -1,0 +1,3786 @@
+[
+  {
+    "name": "Polar Bear",
+    "book": "M&M",
+    "page": 112,
+    "pdfPage": 59,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Mighty Swipes (2x)",
+        "text": "1d10+2. On damage, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The largest of the (non-owl) bears, the polar bear is a master of hunting and surviving in the glacial cold.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Mammoth",
+    "book": "M&M",
+    "page": 112,
+    "pdfPage": 59,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "11",
+    "level": 11,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 150,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Tusks",
+        "text": "3d10+10. On damage, Prone. OR"
+      },
+      {
+        "name": "Stomp",
+        "text": "(vs Prone) 5d10+10. On crit, 1 Wound."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Once thought extinct, the thawing cold released mammoths back onto the snowy plains. They travel in family groups, and their ivory is prized for it's rarity—taking it is no easy task.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Stone Giant",
+    "book": "M&M",
+    "page": 113,
+    "pdfPage": 59,
+    "group": "Stone Giants",
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "12",
+    "level": 12,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 4,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Stone's Endurance",
+        "text": "(1/round) force an enemy to reroll a melee attack against you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shattering Throw",
+        "text": "(Range 12) 1d12+30. On hit: Prone. Adjacent creatures take Primary Die Damage. OR:"
+      },
+      {
+        "name": "Quake Stomp",
+        "text": "(AoE, Reach 2) 1d12+10. Daze."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Under the greatest mountains reside the strongholds and factories of the Fire Giants. Proud and eager for glorious battle, the frequent campaigns the Fire Giants wage keep the titanic monsters beneath the earth at bay. When their colossal machines of war turn towards the surface, however, the results are inevitably catastrophic.",
+    "tactics": {
+      "easier": "They subjugate Bullettes and Umber Hulks to mine their ore, as well as Fire Elementals and Salamanders to power their subterranean factories to build massive weapons of war.",
+      "harder": "Spread damage out to use Deep Burn as little as possible. Flamestrike nearby heroes."
+    },
+    "groupTraits": [],
+    "notes": "Draft error: flavour and both tactics lines under this block are copied from the Fire Giant, transcribed as printed. A third line with a 'd' icon is a quote: \"Who'd carve a statue in the middle of a fo—did it just blink?\" Kato Valens, Commander."
+  },
+  {
+    "name": "Frost Giant",
+    "book": "M&M",
+    "page": 114,
+    "pdfPage": 60,
+    "group": "Frost Giants",
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "13",
+    "level": 13,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Fire"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Icelord",
+        "text": "Vulnerable to Fire. (1/Round) Use Ice Tomb as a reaction when crit or dealt fire damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ice Tomb",
+        "text": "(Reach 8) Encase a creature in Ice (it has 10 hp, and vulnerable to bludgeoning/fire). Then:"
+      },
+      {
+        "name": "Twin Greataxes (2x)",
+        "text": "(Reach 2) 1d12+10. On damage: Knockback 1. +10 damage to ice tombed creatures, shattering it."
+      }
+    ],
+    "bloodied": {
+      "name": "Avalanche",
+      "text": "(Reaction: at 65 HP) Restrain all heroes on a failed DC 16 DEX save, each suffers 20 damage minus their save result."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Tactics lines are 'xx' placeholders in the draft; omitted."
+  },
+  {
+    "name": "Winter Golem",
+    "book": "M&M",
+    "page": 115,
+    "pdfPage": 60,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "12",
+    "level": 12,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Icy Doom",
+        "text": "When crit, the next attack against the attacker deals max damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Mangle (2x)",
+        "text": "1d20+5"
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(45hp) When damaged, the attacker suffers Icy Doom."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Printed just above the Ice Elementals heading; unclear whether it belongs to that family, so no group set."
+  },
+  {
+    "name": "Rimewisp",
+    "book": "M&M",
+    "page": 115,
+    "pdfPage": 60,
+    "group": "Ice Elementals",
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "1",
+    "level": 1,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Fire",
+      "Bludgeoning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Chill",
+        "text": "2d6, Slowed. OR:"
+      },
+      {
+        "name": "Icewall",
+        "text": "Create a wall of ice that fills 3 contiguous spaces (Heavy armor, 20hp)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Icy Armor",
+        "text": "Vulnerable to fire/bludgeoning; recharge Slam or attack next turn with advantage."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Elemental Frost",
+    "book": "M&M",
+    "page": 115,
+    "pdfPage": 60,
+    "group": "Ice Elementals",
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "3",
+    "level": 3,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 25,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Fire",
+      "Bludgeoning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam",
+        "text": "2d20, Slowed (can't use this attack next turn)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Icy Armor",
+        "text": "Vulnerable to fire/bludgeoning; recharge Slam or attack next turn with advantage."
+      }
+    ],
+    "notes": "Two different blocks named 'Elemental Frost' on this page; this is the lvl 3 Small one. Armor printed as lowercase 'h'."
+  },
+  {
+    "name": "Elemental Frost",
+    "book": "M&M",
+    "page": 115,
+    "pdfPage": 60,
+    "group": "Ice Elementals",
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 35,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Fire",
+      "Bludgeoning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam",
+        "text": "d44, Slowed (can't use this attack next turn)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Icy Armor",
+        "text": "Vulnerable to fire/bludgeoning; recharge Slam or attack next turn with advantage."
+      }
+    ],
+    "notes": "Two different blocks named 'Elemental Frost' on this page; this is the lvl 5 one (no size printed). Armor printed as lowercase 'h'."
+  },
+  {
+    "name": "Walking Iceberg",
+    "book": "M&M",
+    "page": 115,
+    "pdfPage": 60,
+    "group": "Ice Elementals",
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 55,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Fire",
+      "Bludgeoning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam",
+        "text": "d66 Prone & Slowed (can't use this attack next turn)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Icy Armor",
+        "text": "Vulnerable to fire/bludgeoning; recharge Slam or attack next turn with advantage."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Living Glacier",
+    "book": "M&M",
+    "page": 115,
+    "pdfPage": 60,
+    "group": "Ice Elementals",
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "11",
+    "level": 11,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Fire",
+      "Bludgeoning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam",
+        "text": "d88, Prone & Restrained (can't use this attack next turn)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Icy Armor",
+        "text": "Vulnerable to fire/bludgeoning; recharge Slam or attack next turn with advantage."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Iskaryth the Frostborne",
+    "book": "M&M",
+    "page": 117,
+    "pdfPage": 61,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": "Ice Dragon",
+    "role": "solo",
+    "armor": "H",
+    "hp": 190,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+ WIL+",
+    "resist": [],
+    "vuln": [
+      "Fire",
+      "Bludgeoning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Rimeblade Aura",
+        "text": "(Reach 2) Others suffer 2 damage for each space they move while in this area."
+      },
+      {
+        "name": "Shielded by Ice",
+        "text": "Vulnerable to Fire and Bludgeoning damage, she gains advantage on her next attack."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, Fly 12 OR choose one:",
+    "actions": [
+      {
+        "name": "Icewall",
+        "text": "(1 use, Reach 10) Summon a wall of ice 5 spaces in a line."
+      },
+      {
+        "name": "Bite",
+        "text": "Move 3. (Reach 2) 2d6+10. On damage, Frostbite: Can't use Reactions (healing or fire damage ends)."
+      },
+      {
+        "name": "Shattering Claws",
+        "text": "Move 3. (Reach 2) 3d6. Any die can be chosen as the primary die against a Hampered target. On crit: deal +20 damage instead of rolling additional dice."
+      },
+      {
+        "name": "Blizzard",
+        "text": "(1 use, AoE, Reach 6) 3d6+20. DC 14 STR save or frozen in place (Restrained, save to escape, or any Fire/Bludgeoning damage)."
+      }
+    ],
+    "bloodied": {
+      "name": "Brutal Storm",
+      "text": "At 95hp summon a icy storm, others are Blind beyond Reach/Range 6 and take 1d6 damage at the end of each of their turns."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Iskaryth is dying! 80 more damage and she dies. Brutal Storm intensifies: 2d6 damage instead."
+    },
+    "flavor": "A name whispered in reverence and fear among the highland tribes and northern scholars alike. She slumbers beneath the ruins of Skeldrim Hollow, a shattered temple buried in ice, guarded by frost-wights who chant in dead tongues. But recent tremors in the permafrost and the unnatural stilling of the wind have led some to believe she stirs again—awakened not by hunger, but by prophecy. They say when Iskaryth flies once more, she will not return alone.",
+    "tactics": {
+      "easier": "Iskareth can say \"YOU ALL WILL BE BITTEN BY FROST!\" and spend a few turns flying with Biting each hero \"WHO'S NEXT?\", greatly reducing her damage output (and allowing the heroes to RP and try to deceive her or heal through the Frostbite and catch up). Return to the normal tactics when you feel the heroes have regained the upper hand.",
+      "harder": "Regain Blizzard once when Dying and increase the DC to 16 (or they must deal 16 Bludgeoning or Fire damage). Instead of a straight line, you can use Wall of Ice to completely encircle a hero!"
+    },
+    "groupTraits": [],
+    "notes": "Header 'Level 8 Solo Ice Dragon'; no size printed (default Medium). No movement stat; flies via the Solo action. A longer 'Ice Dragon Encounter & Tactics' section follows on the page (not transcribed)."
+  },
+  {
+    "name": "Stenchling",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Putrid Cloud",
+        "text": "(Reach 2) On Death: 2d6 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "2d6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Bloated, foul scavengers. Their stench is a menace to all.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Imp",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Cowardly",
+        "text": "Advantage on attacks when an ally is adjacent, Disadvantage otherwise."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sting",
+        "text": "1d6+6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Cowardly opportunists, they strike whenever attention falters.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Spiny Fiend",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 49,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Spines",
+        "text": "Melee attackers take 3 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claws (2×)",
+        "text": "1d6+6. OR:"
+      },
+      {
+        "name": "Shoot Spine",
+        "text": "(Range 12) 1d6+6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Covered in wickedly sharp spines: a defence and cruel offense.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Hookspawn",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Lacerated",
+        "text": "Suffer 1 damage for each space you move (or are moved). Healing or a DC 15 Examination check ends."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Rend (2×)",
+        "text": "1d6+6. On damage: Lacerated."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Its enormous scythe-like hooks prevent prey from fleeing.",
+    "tactics": {
+      "easier": "Target Ranged heroes who have little need to move.",
+      "harder": "Lacerate as many heroes as possible. Combine with Glabrezu, Hezrou, or Incubus/Succubus to force movement."
+    },
+    "groupTraits": [],
+    "notes": "'Lacerated' is printed as a condition box under the attack."
+  },
+  {
+    "name": "Incubus/Succubus",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Infernal Allure",
+        "text": "At the beginning of each round, Allure 1 hero on a failed DC 15 WIL save (you spend one of their actions this round). They gain advantage on the save for each time they fail this encounter."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Brimstone Whip",
+        "text": "(Reach 3) 2d6+6 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Cruel tempters who use their allure to sew chaos and inflict pain.",
+    "tactics": {
+      "easier": "Target strong-willed heroes (Shepherd & Songweaver)",
+      "harder": "Target weak-willed heroes (The Cheat & Shadowmancer)"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Vrock",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "11",
+    "level": 11,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Horrid Screech",
+        "text": "(Reach 6) 20 psychic damage (ignoring armor), enemies are also Dazed on a failed DC 15 STR save. (Reach 18) 10 damage instead and advantage on the save."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A foul, carrion bird, often kept by fiends as a living alarm system.",
+    "tactics": {
+      "easier": "Keep it near strong melee heroes (Berserker, Commander, Oathsworn) so the save is much easier to overcome.",
+      "harder": "Keep it in the air out of melee reach, target weaker heroes (Mage, Songweaver, Stormshifter)."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Hezrou",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "13",
+    "level": 13,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 150,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "Leap 6",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Consumed",
+        "text": "At the end of each of your turns suffer 2d6+6 damage (ignoring armor) and 1 Wound. Your attacks have advantage and ignore armor (teleport or escape DC 15)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite (2x)",
+        "text": "2d6+6, Overpowering. On Crit: Consumed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A nightmarish toad-fiend, able to swallow a horse whole.",
+    "tactics": {
+      "easier": "Move twice instead of one of your attacks. Target high-STR/DEX classes to be consumed.",
+      "harder": "Target classes that buff their allies (e.g., Commander, Songweaver) to limit their special abilities."
+    },
+    "groupTraits": [],
+    "notes": "Movement printed with a leap icon ([leap] 6) instead of the Speed icon. 'Consumed' is a condition box under the attack."
+  },
+  {
+    "name": "Glabrezu",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "14",
+    "level": 14,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 110,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doomclaw (2×)",
+        "text": "(Reach 2) 3d6+10. On damage: Grappled (escape DC 17; if Grappled by both claws, a creatures must escape from each of them). OR:"
+      },
+      {
+        "name": "Tear Asunder",
+        "text": "(A creature Grappled by both of the glabrezu's claws) 50 unpreventable damage. Then, if the target is Dying: DC 17 STR save or be torn in two, dying instantly."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A mighty fiend with terrible pincers and heavy carapace.",
+    "tactics": {
+      "easier": "Target two different heroes with Doomclaw.",
+      "harder": "Target a single weak/slow hero with both Doomclaws."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Nalfeshnee",
+    "book": "M&M",
+    "page": 121,
+    "pdfPage": 63,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "19",
+    "level": 19,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 290,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 12,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "12 (teleport)",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Spellthief",
+        "text": "Cast a spell you saw cast this round. OR:"
+      },
+      {
+        "name": "Ichorbolt",
+        "text": "(Range 6) d66 to creatures in a 3x3 area."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A grotesque swine-fiend, bloated with dark magic.",
+    "tactics": {
+      "easier": "Cast copies of weaker spells, stay near melee heroes.",
+      "harder": "Use your mobility to stay far away from heroes."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Quasit",
+    "book": "M&M",
+    "page": 122,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "1",
+    "level": 1,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mobile",
+        "text": "Move 3 spaces away after attacking."
+      },
+      {
+        "name": "I Offer You RICHES!",
+        "text": "(1 use) When you would be killed: offer LVL gp. If accepted, you can't be harmed this round."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slash",
+        "text": "1d8+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Diminutive, horned fellows with exquisitely tailored suits.",
+    "tactics": {
+      "easier": "When damaged, it can make its Offer, if accepted it can flee combat in a puff of sulfuric smoke.",
+      "harder": "Tempt multiple heroes with smaller weapons to make Opportunity Attacks by moving past them or moving away after attacking. It can OFFER more riches, but they only carry enough gp to fulfil the offer once—\"I'll owe you! hehehehe…\""
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Grumbulus",
+    "book": "M&M",
+    "page": 122,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 32,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "I Offer You SECRETS!",
+        "text": "(1 use) When an attacker would kill you: offer control of a random Fiend on their next turn. If accepted, you can't be harmed this round."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gnash",
+        "text": "2d8+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Blackmailing, little secret-hoarders. They leverage this illicit information to hold sway over other fiends.",
+    "tactics": {
+      "easier": "Make your Offer more often (e.g., when you take damage), or select a powerful Fiend instead of choosing randomly.",
+      "harder": "Use these with other powerful Fiends to really tempt Heroes into taking the offer—or with ones that summon weak minions like the Lumbrax to increase the chances of the heroes getting a bad deal!"
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Pactmonger",
+    "book": "M&M",
+    "page": 122,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "I Offer You POWER!",
+        "text": "(Reach 8) Offer a hero an additional Action. Then:"
+      },
+      {
+        "name": "Reckoning",
+        "text": "(Reach 8) 2d8+4; or twice as much if the target has accepted an Offer this round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Cruel predators who seek out and feed upon the weak-willed and power-hungry.",
+    "tactics": {
+      "easier": "Choose strong heroes, ones that can easily be protected, or ones that have already accepted an offer.",
+      "harder": "Act last amongst monsters. Choose heroes with very low HP, they'll lose the action anyway when they drop to 0!"
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Lumbrax",
+    "book": "M&M",
+    "page": 122,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "I Offer You REPRIEVE!",
+        "text": "If accepted, summon 3 minions (size:d8). If rejected Brutalize:"
+      },
+      {
+        "name": "Brutalize",
+        "text": "2d20 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hulking, powerful, but lazy. Prefer to have their underlings do most physical labor for them.",
+    "tactics": {
+      "easier": "Swarm your minions around Heroes who can easily deal AoE damage. The minions are lazy and attack next round.",
+      "harder": "Threaten weakened heroes with BIG damage (feel free to let them know you'll be rolling d20s!) so you can summon LOTS of minions (who attack right away). Works great with the Grumbulus."
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Justiciar",
+    "book": "M&M",
+    "page": 122,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Infernal Edict",
+        "text": "When damaged by the Justicar, enemies MUST accept the next Offer they receive. Enemies suffer 5 damage whenever they act while it is not their turn."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cruel Judgment",
+        "text": "(Reach 6) 1d20+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Judges of Fiendlaw with enormous, gaping maws. They bellow judgements toward foes, forcing them into terrible deals.",
+    "tactics": {
+      "easier": "Limit the need to Interpose by spreading damage out and attacking more well-armored heroes.",
+      "harder": "Focus-fire weak heroes, force their allies to Interpose. Tempt them into making Opportunity Attacks against weak enemies. Use Cruel Judgment to to set up devastating Offerings for the Hierarch, Lashfiend, or Pactmonger."
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Lashfiend",
+    "book": "M&M",
+    "page": 122,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "I Offer You REVENGE!",
+        "text": "When attacked by a Lashfiend, the target may choose to make a DC 15 STR save."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Punish",
+        "text": "(Reach 8) 2d20+10 damage. If the Offer was accepted, roll 1 additional d20. On save, the hero chooses one of the dice rolled for the Lashfiend to suffer, the hero takes the remaining damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Vengeful fiends with spiny, whip-like tails who revel in revenge.",
+    "tactics": {
+      "easier": "Target strong heroes (Berserker, Commander, Oathsworn)",
+      "harder": "Target weak heroes (Mage, Songweaver, Stormshifer)"
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Hierarch",
+    "book": "M&M",
+    "page": 122,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "13",
+    "level": 13,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 170,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Tip the Scales",
+        "text": "Enemies roll Disadvantage, with +1 Disadvantage. Allies roll Advantage with +1 Advantage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "I Offer You ABSOLUTION!",
+        "text": "(Reach 8) Permit 1 hero to kneel (considered Prone). Otherwise punish them for 2d20+10 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "High-Judges of Fiendlaw, ever tips the scales in their own favor.",
+    "tactics": {
+      "easier": "Act last amongst monsters or Offer Absolution to those not at risk of being attacked.",
+      "harder": "Act first and Offer Absolution to those at greatest risk of being attacked."
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": "Block continues from printed page 122 onto 123."
+  },
+  {
+    "name": "Overlord",
+    "book": "M&M",
+    "page": 123,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "15",
+    "level": 15,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 200,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Cruel Dealer",
+        "text": "Whenever an enemy rejects an Offering, they take 10 psychic damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Rise, My Minions!",
+        "text": "(Reach 8) Summon 3 fiendish minions (size:d8). Then:"
+      },
+      {
+        "name": "We Offer You Clarity!",
+        "text": "Each fiendish minion Offers to Taunt an enemy."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Eyeless, robed lawmakers that tip the scales ever in their own favor. They enforce deals through malevolent cunning.",
+    "tactics": {
+      "easier": "Have all minions Offer to Taunt a single nearby enemy who can easily dispatch them with an AoE.",
+      "harder": "Each minion Offers to Taunt a different enemy, continue to target any Hero who rejects. Extra challenging when combined with the Lumbrax, Pactmonger, or Hierarch."
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Executor",
+    "book": "M&M",
+    "page": 123,
+    "pdfPage": 64,
+    "group": "Fiendish Tyrants",
+    "habitat": "Cultists & Horrors",
+    "levelText": "18",
+    "level": 18,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 270,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Torment",
+        "text": "(Reach 8) Select up to 3 enemies, each must SECRETLY choose: • Courage. Suffer 2d20 damage. • Cowardice. Take no damage; If ALL choose Cowardice, Suffer 2d20 damage and 1 Wound."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Direct envoys to Vorgrath, these supreme judges wield dominion over the minds of those that dare stand against them.",
+    "tactics": {
+      "easier": "Allow the heroes to creatively coordinate their choices in secret (e.g., telepathy or stealth check).",
+      "harder": "If the Executor notices coordination, heroes may forfeit their choice and you choose for them this round instead."
+    },
+    "groupTraits": [
+      {
+        "name": "Fiendishly Crafty",
+        "text": "A crafty fiend reveals only the benefits of the Offer and NOT the drawbacks—though if a hero insists, you may reveal all the terms."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Vorgrath, the Insatiable",
+    "book": "M&M",
+    "page": 125,
+    "pdfPage": 65,
+    "group": "Fiends",
+    "habitat": "Cultists & Horrors",
+    "levelText": "14",
+    "level": 14,
+    "size": "Medium",
+    "kind": "Progenitor of Fiends",
+    "role": "solo",
+    "armor": "M",
+    "hp": 375,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero's turn perform 1 action (rec. in order).",
+    "actions": [
+      {
+        "name": "Bow Before Me!",
+        "text": "Each hero rolls 3d20. Allow each to bow (become Prone) or take that much damage."
+      },
+      {
+        "name": "Serve Me!",
+        "text": "(Prone target) Spend 3 actions for them (they regain any spent actions)."
+      },
+      {
+        "name": "Suffer!",
+        "text": "Fly 8 then Ichorbolt. (Range 8) d66 damage to creatures in a 3x3 area."
+      }
+    ],
+    "bloodied": {
+      "name": "BLEED WITH ME!",
+      "text": "At 187 HP, Vorgrath inflicts Lacerated on all heroes: Lacerated. Suffer 1 damage for each space you move (or are moved). Healing or a DC 15 Examination check ends."
+    },
+    "lastStand": {
+      "name": "Your Pain Will Be Unending!",
+      "text": "Vorgrath is dying! 140 more damage and he dies! Until then he can force a hero within Reach 8 to Interpose for him (1 time use)."
+    },
+    "flavor": "In the deepest reaches of the Horrible Beyond lies the profane citadel, Ebonreach, and sitting atop the cursed black throne is the realm's most feared creature: Vorgrath, the Insatiable. No records tell of when Vorgrath first took the throne; some say he has always sat upon it. Commander and Lord of all fiends, he demands fealty and endless tribute from his progeny. Those that fail are ripped asunder without a second thought.\n\nConqueror of the black depths, his goal now is to rise and conquer the world beyond the White Gate, spreading his hate and poison to the farthest corners of the known lands and beyond.",
+    "tactics": {
+      "easier": "Use his \"Serve Me!\" to move the heroes around rather than attack one another. Have him land after using \"Suffer!\" action, perhaps demanding fealty again, to allow the heroes to attack from melee if they dare! Lacerated could end after 1 round.",
+      "harder": "Use heroes to make melee attacks against their Prone allies. Move heroes into dangerous terrain. Gain an additional use of his Last Stand Ability."
+    },
+    "groupTraits": [],
+    "notes": "Header 'Level 14 Solo Progenitor of Fiends'; no size printed (default Medium). Actions intro printed after 'Solo.'. Tactics taken from the 'Reducing/Increasing the Difficulty' sections; 'Running Vorgrath' and 'What he says' sections not transcribed."
+  },
+  {
+    "name": "Cloud Giant",
+    "book": "M&M",
+    "page": 128,
+    "pdfPage": 67,
+    "group": "Cloud Giants",
+    "habitat": "Magical Domain",
+    "levelText": "14",
+    "level": 14,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 190,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mystical Aura",
+        "text": "(1/round. Reaction: when a creature is targeted) Choose another one to be likewise affected (ie: damage, healing, or other positive/negative effect)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pawn in My Domain",
+        "text": "Move another creature 6; their next attack damage is either doubled or halved (your choice). Then choose 1:"
+      },
+      {
+        "name": "Windshear",
+        "text": "(Range 8) 1d12+20 and summon a cyclone minion: (1d12) on hit: move 1 space."
+      },
+      {
+        "name": "Rupture Lungs",
+        "text": "(AoE, Reach 1) 1d12+20 (ignores armor)."
+      }
+    ],
+    "bloodied": {
+      "name": "Cloudform",
+      "text": "At 95 HP, turn into a cloud and reform up to 8 spaces away. Steal the breath of all you pass through, Dazing them."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Move an ally that has already attacked, or a ranged hero. Wait to attack with cyclone minions until the next round.",
+      "harder": "Throw heroes out a window, off a ledge, or into range for a big AoE with Pawn in My Domain. Or boost an ally, moving them into a critical backline position for a powerful attack."
+    },
+    "groupTraits": [],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Adamantine Golem",
+    "book": "M&M",
+    "page": 129,
+    "pdfPage": 67,
+    "group": null,
+    "habitat": "Magical Domain",
+    "levelText": "22",
+    "level": 22,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Inexorable",
+        "text": "Ignores ALL damage and effects from attacks but 1 die (attacker's choice)."
+      }
+    ],
+    "actionsIntro": "Choose Twice:",
+    "actions": [
+      {
+        "name": "Slam",
+        "text": "(Reach 3) d44, knockback 6 and Prone."
+      },
+      {
+        "name": "Crush",
+        "text": "(vs Prone target) d66 with advantage, 2 Wounds."
+      }
+    ],
+    "bloodied": {
+      "name": "Structural Compromise",
+      "text": "(50hp) Attackers may include a 2nd die or their normal modifiers to their attacks. Berserk. Each time you are damaged, immediately move or attack."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Armor icon printed with '*' rather than M/H (see Inexorable); armor left as 'none'. Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Arbalest Scion",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "1 enemy gains advantage on their next attack."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shoot",
+        "text": "(Range 8) 1d6+10 damage OR:"
+      },
+      {
+        "name": "Finishing Move",
+        "text": "(vs Prone) 2d20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Support Construct, Ranged Harrier. Built to snipe intruders with enchanted bolts—these constructs are often stationed atop tower parapets or deep gallery nests with overlapping lines of fire. Their range and reliability make them indispensable sentries.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Halberdier Scion",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "1 enemy gains advantage on their next attack."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Execute",
+        "text": "(Reach 2) 1d20, advantage at Reach 2, disadvantage otherwise. On 18+: Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Common infantry construct. These scions control space with their long polearms, and are deployed in corridors, temple gates, and narrow halls—anywhere they may face groups of enemies.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Bladed Scion",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "1 enemy gains advantage on their next attack."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flurry",
+        "text": "3d6, also damages the next closest target within Reach."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Rabble-clearing infantry. These scions serve as the disciplined front line of any detachment. Swift and reactive, made for sudden bursts of lethal force against groups of tightly packed foes. They enter the battlefield when the Archmage faces overwhelming numbers.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Scourge Hulk",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 75,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "An enemy gains 1 action."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Punish",
+        "text": "(Reach 2) 3d6, the highest die is the primary die. On crit: +20 damage & Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These constructs act as wardens and pain engines, their flails are etched with runes that echo the shrieks of creatures they've struck. They often guard prison halls or magical containment vaults where threats must remain bound rather than dead.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Scourge Titan",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "14",
+    "level": 14,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 150,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "2 enemies gain 1 action."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Punish",
+        "text": "(Reach 3) 4d6, the highest die is the primary die. On crit: +30 damage & Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Spire Hulk",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Aegis",
+        "text": "Ignore damage from 1st attack each round."
+      },
+      {
+        "name": "On Death",
+        "text": "An enemy can move immediately for free."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Swift Strike",
+        "text": "(Reach 2) 1d6+20, can't Interpose. 1d20+20 instead vs. Evasive targets (DEX>STR)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These swift-striking anti-thief constructs guard against stealth and subtlety. Created to root out infiltrators, thieves, and assassins, their gaze can pierce stealthy attempts and basic illusions, while their blades are honed for swift, silent kills.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Spire Titan",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "14",
+    "level": 14,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 150,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Aegis",
+        "text": "(1/round) Ignore ALL effects of 1 attack."
+      },
+      {
+        "name": "On Death",
+        "text": "2 enemies can move for free."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Swift Strike",
+        "text": "(Reach 3) 1d6+30, can't Interpose. 1d20+30 instead vs. Evasive targets (DEX>STR)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "No armor printed (unlike Spire Hulk). Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Breaker Hulk",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Crush",
+        "text": "Moving through a Prone creature deals 20 damage."
+      },
+      {
+        "name": "On Death",
+        "text": "An enemy gains 15 temp HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Armor Breaker",
+        "text": "1d4+20. On Crit: Prone. Advantage 2 vs Tanky targets (STR>DEX)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These super-heavy constructs are less subtle. They act as seige breakers and specialize in taking down heavily fortified enemies. These are designed to hold choke points, or end a seige against a mage's tower. Breakers excel in brief, decisive violence.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Breaker Titan",
+    "book": "M&M",
+    "page": 132,
+    "pdfPage": 69,
+    "group": "Mana Hulks",
+    "habitat": "Magical Domain",
+    "levelText": "14",
+    "level": 14,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 125,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Crush",
+        "text": "Moving through a Prone creature deals 30 damage."
+      },
+      {
+        "name": "On Death",
+        "text": "An enemy gains 30 temp HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Armor Breaker",
+        "text": "(Reach 2) 1d4+30. On Crit: Prone. Advantage 3 vs Tanky targets (STR>DEX)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Mana Charged",
+        "text": "After mana is spent, the closest mana construct MUST attack a target within Range/Reach."
+      }
+    ],
+    "notes": "Block starts on printed page 132 and continues on 133. Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Naga Skeleton",
+    "book": "M&M",
+    "page": 135,
+    "pdfPage": 70,
+    "group": "Naga",
+    "habitat": "Magical Domain",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Undead",
+        "text": "The first time this drops to 0hp, reset to 16 hp."
+      },
+      {
+        "name": "Corrupted",
+        "text": "(1/turn) Rolls against you are maximized (healing ends)."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Opportunistic Hunter",
+        "text": "(Reach 8) Enemies make a DEX save; move to and Restrain whoever rolled lowest (escape DC 13, or any Radiant damage)."
+      },
+      {
+        "name": "Necrotic Fangs",
+        "text": "(VS Restrained or any who dealt Radiant damage this round) 1d10+10. Corrupted."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Remind heroes that they can choose to fail a save!",
+      "harder": null
+    },
+    "groupTraits": [],
+    "notes": "Flavour and 'harder' tactic are 'xx' placeholders in the draft. 'Corrupted' is a condition box under the attacks. Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Naga Warden",
+    "book": "M&M",
+    "page": 135,
+    "pdfPage": 70,
+    "group": "Naga",
+    "habitat": "Magical Domain",
+    "levelText": "13",
+    "level": 13,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Overwhelming Presence",
+        "text": "(1 use, when Crit) Use Charm immediately, they roll with disadvantage."
+      },
+      {
+        "name": "Pestilent",
+        "text": "(Reach 2) At the start of your next turn, deal 2d10 damage to others, ending the condition on you and giving it to them."
+      }
+    ],
+    "actionsIntro": "Choose Twice:",
+    "actions": [
+      {
+        "name": "Pestilent Spit",
+        "text": "(Range 10) 2d10, and Pestilent."
+      },
+      {
+        "name": "Charm",
+        "text": "Move a creature (up to their speed, spending their action) on a failed DC 13 WIL save; or, move them half as far, and they don't lose an action."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(65hp) Pestilent increases to Reach 4."
+    },
+    "lastStand": null,
+    "flavor": "A guardian of the lands between the mundane world and the mystical realms.",
+    "tactics": {
+      "easier": "Prioritize heroes who go later in the round or allow heroes to take their turns in a different order.",
+      "harder": "Prioritize heroes that go earlier in the round. Charm melee heroes to make them spend actions moving back into reach with you."
+    },
+    "groupTraits": [],
+    "notes": "Flavour is printed with a leftover 'XX.' prefix. 'Pestilent' is a condition box under the block. Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Claw Swarm",
+    "book": "M&M",
+    "page": 135,
+    "pdfPage": 70,
+    "group": "Underlings",
+    "habitat": "Magical Domain",
+    "levelText": "7",
+    "level": 7,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can occupy the space of other creatures. When damaged, reduce HP by 1. AoE attacks reduce HP by 2."
+      },
+      {
+        "name": "Grasp of the Dead",
+        "text": "The Claw Swarm's area is difficult terrain. Creatures who end their turn here are knocked Prone, they also move wherever the swarm moves."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Choke & Scratch",
+        "text": "(Reach 0, AoE) HPd4 divided amongst any creatures in the area. On damage silenced (can't cast spells or use other abilities that require the voice)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavour and tactics are 'xx' placeholders in the draft. Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Shield Guardian",
+    "book": "M&M",
+    "page": 135,
+    "pdfPage": 70,
+    "group": "Underlings",
+    "habitat": "Magical Domain",
+    "levelText": "12",
+    "level": 12,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Guardian Construct",
+        "text": "(1/round) Can Interpose for its master."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam (2x, Reach 2)",
+        "text": "1d10+10; 1d20+10 instead if its master was damaged this round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavour and tactics are 'xx' placeholders in the draft. Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Oni",
+    "book": "M&M",
+    "page": 138,
+    "pdfPage": 72,
+    "group": null,
+    "habitat": "Magical Domain",
+    "levelText": "7",
+    "level": 7,
+    "size": "Large",
+    "kind": "Shapeshifting Nightmare Mage",
+    "role": "solo",
+    "armor": "none",
+    "hp": 200,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "All+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Odd Shapeshifter",
+        "text": "(1/round) When attacked, on an odd primary die roll, exchange places with an enemy, they are damaged instead."
+      }
+    ],
+    "actionsIntro": "After each hero's turn move 4, then perform 1 in order (or choose 1):",
+    "actions": [
+      {
+        "name": "Opening Move: Darkness",
+        "text": "Create an 8x8 area of magical darkness. Enemies here attack with disadvantage, you attack here with advantage."
+      },
+      {
+        "name": "Naginata",
+        "text": "(Reach 2) 2d12, marked with Malevolence."
+      },
+      {
+        "name": "Twisted Charm",
+        "text": "Spend 1 action for a Malevolent enemy, ending the condition."
+      },
+      {
+        "name": "Cruel Nightmare",
+        "text": "(Reach 12, VS target in Darkness) 4d12 psychic damage (ignoring armor, cannot be Interposed)"
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(100hp) Every enemy is marked with Malevolence."
+    },
+    "lastStand": {
+      "name": "Overwhelming Malevolence",
+      "text": "70hp. Spend 1 action for each enemy."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Header 'lvl 7, Large Solo Shapeshifting Nightmare Mage'. Last Stand is labelled 'Dying.' in print. Flavour and tactics are 'xx' placeholders in the draft. Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Couatl",
+    "book": "M&M",
+    "page": 139,
+    "pdfPage": 72,
+    "group": null,
+    "habitat": "Magical Domain",
+    "levelText": "9",
+    "level": 9,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 104,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Resplendent",
+        "text": "Attacks against you crit on 1 less than the max. You take no additional damage from crits, the attacker does instead."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Searing Bite (2x)",
+        "text": "(Reach 2) 2d10, gain advantage on your next attack."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Summer Golem",
+    "book": "M&M",
+    "page": 139,
+    "pdfPage": 72,
+    "group": null,
+    "habitat": "Magical Domain",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 75,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Brilliant Shine",
+        "text": "When crit, (Reach 12) Blind all enemies for 1 round. On damage, grant target 1 action."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Energizing Strike (2x)",
+        "text": "2d10+10. OR:"
+      },
+      {
+        "name": "Heat Ray",
+        "text": "(Line 12) 2d10+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Habitat heading printed as 'Macigal Domain'."
+  },
+  {
+    "name": "Animated Sword",
+    "book": "M&M",
+    "page": 141,
+    "pdfPage": 73,
+    "group": "Animated Objects",
+    "habitat": "Spooky Domain",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Parry",
+        "text": "Attacks miss you on 1 or 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slice",
+        "text": "1d6+3"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Perfectly Normal Item",
+        "text": "Undetected Animated objects always start combat first (or join as they please)."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Animated Armor",
+    "book": "M&M",
+    "page": 141,
+    "pdfPage": 73,
+    "group": "Animated Objects",
+    "habitat": "Spooky Domain",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 25,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam (2x)",
+        "text": "2d6"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Perfectly Normal Item",
+        "text": "Undetected Animated objects always start combat first (or join as they please)."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Possessed Armor",
+    "book": "M&M",
+    "page": 141,
+    "pdfPage": 73,
+    "group": "Animated Objects",
+    "habitat": "Spooky Domain",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Equip",
+        "text": "Equip yourself on a creature, they gain +10 Defense (If they do not have proficiency with Plate armor, Defending requires +1 action). Whenever they Defend, you suffer 10 damage. Whenever you are attacked, they take the same amount of damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Possessed Attack",
+        "text": "Force the equipped creature to move then make a basic melee attack against a target in Reach (this does not cost them any of their own actions)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Perfectly Normal Item",
+        "text": "Undetected Animated objects always start combat first (or join as they please)."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Animated Mirror",
+    "book": "M&M",
+    "page": 141,
+    "pdfPage": 73,
+    "group": "Animated Objects",
+    "habitat": "Spooky Domain",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mirror, Mirror",
+        "text": "Can Interpose for allies within Reach 6. Bludgeoning crits deal 2x damage."
+      },
+      {
+        "name": "On Death: Animated Shard Swarm",
+        "text": "10 tiny d4 minions."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Reflective",
+        "text": "Reflect spells back at caster (up to 20 damage)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Perfectly Normal Item",
+        "text": "Undetected Animated objects always start combat first (or join as they please)."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Possessed Sword",
+    "book": "M&M",
+    "page": 141,
+    "pdfPage": 73,
+    "group": "Animated Objects",
+    "habitat": "Spooky Domain",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 23,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Equip",
+        "text": "Equip yourself to a creature (cannot unequip). Increase their melee attack damage by 2d6. Whenever they attack more than once on a turn, you can choose a different target within Reach."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Perfectly Normal Item",
+        "text": "Undetected Animated objects always start combat first (or join as they please)."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Animated Rug",
+    "book": "M&M",
+    "page": 141,
+    "pdfPage": 73,
+    "group": "Animated Objects",
+    "habitat": "Spooky Domain",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Perfectly Normal Rug",
+        "text": "Knock Prone any creature standing on you as you take your first turn."
+      },
+      {
+        "name": "Mutual Harm",
+        "text": "You take half damage from attacks while Grappling (they take the other half)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Constrict",
+        "text": "2d6+6 on hit, Grappled (escape DC 13, or any slashing damage)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Perfectly Normal Item",
+        "text": "Undetected Animated objects always start combat first (or join as they please)."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Wererat",
+    "book": "M&M",
+    "page": 142,
+    "pdfPage": 74,
+    "group": "Lycans",
+    "habitat": "Spooky Domain",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 48,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Skitter",
+        "text": "When damaged, move 3."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claws",
+        "text": "2d10+7. OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(VS a Dying creature) 2d10, On damage, cursed with Lycanthropy."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Avoid using Bite. Instead, turn your focus to the heroes still standing. Skitter to areas within Range of heroes.",
+      "harder": "Focus on weak heroes and use Bite at every opportunity. Skitter to block movement of enemies."
+    },
+    "groupTraits": [
+      {
+        "name": "Undying Curse",
+        "text": "Does not die at 0 HP. Only silvered weapons, radiant, or a crit while at 0 HP can kill it."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Werewolf",
+    "book": "M&M",
+    "page": 142,
+    "pdfPage": 74,
+    "group": "Lycans",
+    "habitat": "Spooky Domain",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Pack Hunter",
+        "text": "Advantage if an ally is adjacent to target."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claws (2x)",
+        "text": "2d10 OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(VS a Dying creature) 3d10, On Damage, cursed with Lycanthropy."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Attack enemies far away from your allies.",
+      "harder": "Maximize use of Pack Hunter: charge a Wereboar in first, then bring in the Werewolves."
+    },
+    "groupTraits": [
+      {
+        "name": "Undying Curse",
+        "text": "Does not die at 0 HP. Only silvered weapons, radiant, or a crit while at 0 HP can kill it."
+      }
+    ],
+    "notes": "Flavour is an 'xx' placeholder in the draft."
+  },
+  {
+    "name": "Wereboar",
+    "book": "M&M",
+    "page": 142,
+    "pdfPage": 74,
+    "group": "Lycans",
+    "habitat": "Spooky Domain",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 94,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Charge",
+        "text": "+1 damage/space moved toward target."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gore",
+        "text": "1d10+20 OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(VS a Dying creature) 1d10, On Damage, cursed with Lycanthropy."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Large, hairy creatures with huge tusks and ravenous, glowing eyes. Surprisingly quick and agile for their size.",
+    "tactics": {
+      "easier": "Attack the nearest creatures, limiting Charge damage.",
+      "harder": "Maximize your use of Charge"
+    },
+    "groupTraits": [
+      {
+        "name": "Undying Curse",
+        "text": "Does not die at 0 HP. Only silvered weapons, radiant, or a crit while at 0 HP can kill it."
+      }
+    ],
+    "notes": "Tactics printed at the top of the next column."
+  },
+  {
+    "name": "Werebear",
+    "book": "M&M",
+    "page": 142,
+    "pdfPage": 74,
+    "group": "Lycans",
+    "habitat": "Spooky Domain",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Maul (2x)",
+        "text": "2d10+5. Knockback & Prone. OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(VS a Dying creature) 1d10, On Damage, cursed with Lycanthropy."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use the Knockback of Maul to turn off the Werewolves' Pack Hunter ability. Maul 2 different targets rather than attacking a Prone one.",
+      "harder": "Knock heroes into their own allies, or knockback to increase Wereboar's Charge damage or adjacent to allied Werewolves, giving them Advantage 2 (Prone + Pack Hunter)."
+    },
+    "groupTraits": [
+      {
+        "name": "Undying Curse",
+        "text": "Does not die at 0 HP. Only silvered weapons, radiant, or a crit while at 0 HP can kill it."
+      }
+    ],
+    "notes": "Flavour is an 'xx' placeholder in the draft."
+  },
+  {
+    "name": "Nightmare",
+    "book": "M&M",
+    "page": 143,
+    "pdfPage": 74,
+    "group": "Henchmen & Guardians",
+    "habitat": "Spooky Domain",
+    "levelText": "7",
+    "level": 7,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 10,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Brimstone Aura",
+        "text": "(Reach 2) Enemies here gain Frightened (DC 13 WIL save or ends, or when crit)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Fiery Charge",
+        "text": "2d10. +2 damage for each space you moved toward your target this turn."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Black haired spectral horses with fiery manes, Nightmares are mounts belonging to the fiendish rulers of the Horrible Beyond.",
+    "tactics": {
+      "easier": "Charge through your enemies, ending with them outside your aura.",
+      "harder": "Have a rider engage from atop the Nightmare. Vampires or Fiends make for a good combination."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Flesh Golem",
+    "book": "M&M",
+    "page": 143,
+    "pdfPage": 74,
+    "group": "Henchmen & Guardians",
+    "habitat": "Spooky Domain",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 4,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Dead Nerves",
+        "text": "Cannot be crit or Slowed."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam",
+        "text": "4d12+10, Knockback 2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Terrible abominations stitched from tissue of dead things. Slow, indomitable, and barely sentient.",
+    "tactics": {
+      "easier": "Telegraph your slow speed, allow enemies to kite you.",
+      "harder": "Pretend to be a dead body, surprising enemies that draw near. Engage in an enclosed space, or with Grappling allies (e.g., an animated rug)."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Autumn Golem",
+    "book": "M&M",
+    "page": 143,
+    "pdfPage": 74,
+    "group": "Henchmen & Guardians",
+    "habitat": "Spooky Domain",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Fire"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haunting Glare",
+        "text": "When dealt fire damage or Crit, Frighten attacker, move them 6 spaces."
+      },
+      {
+        "name": "Vulnerable to Fire",
+        "text": "When dealt Fire damage, Combust: your attacks deal +1d10 fire damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Harvest Scythe",
+        "text": "(Reach 2, AoE) 2d10+10, On damage, Bleeding: take 1 damage for each space you move or are moved (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Aim scythe attacks to hit only 1 or 2 targets.",
+      "harder": "Have an ally or minion intentionally set the Golem ablaze."
+    },
+    "groupTraits": [],
+    "notes": "Flavour is an 'xx' placeholder in the draft; tactics printed at the top of the next column."
+  },
+  {
+    "name": "Vampire Spawn",
+    "book": "M&M",
+    "page": 145,
+    "pdfPage": 75,
+    "group": "Vampires",
+    "habitat": "Spooky Domain",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 118,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Rend",
+        "text": "1d10+20. OR:"
+      },
+      {
+        "name": "Feed",
+        "text": "(If you have advantage) 1d20+20 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Humanoids who began the vampiric transformation but their minds were broken in the process. They mindlessly thirst for blood, lacking any trace of their former humanity.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Sunscorn",
+        "text": "Radiant deals +10 damage to you. When damaged this way, gain advantage on your next attack."
+      },
+      {
+        "name": "Predation",
+        "text": "Advantage VS Bloodied creatures."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Vampire Thinblood",
+    "book": "M&M",
+    "page": 145,
+    "pdfPage": 75,
+    "group": "Vampires",
+    "habitat": "Spooky Domain",
+    "levelText": "14",
+    "level": 14,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 170,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Mesmerize",
+        "text": "DC 16 WIL Save or spend 1 action moving where the vampire wishes. Then:"
+      },
+      {
+        "name": "Rapier (x2)",
+        "text": "1d10+10 OR:"
+      },
+      {
+        "name": "Feed",
+        "text": "(If you have advantage) 1d20+30 damage and 1 Wound."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The weakest of the vampire kin. Their powers have been diluted by many generations of transmission of the blood curse. They hide amongst humans, beguiling and seducing them in order to feed.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Sunscorn",
+        "text": "Radiant deals +10 damage to you. When damaged this way, gain advantage on your next attack."
+      },
+      {
+        "name": "Predation",
+        "text": "Advantage VS Bloodied creatures."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Vampire Gorger",
+    "book": "M&M",
+    "page": 145,
+    "pdfPage": 75,
+    "group": "Vampires",
+    "habitat": "Spooky Domain",
+    "levelText": "15",
+    "level": 15,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 230,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Piercing",
+      "Slashing"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodgorged",
+        "text": "Vulnerable to Piercing and Slashing damage. When damaged this way adjacent targets become Bloodsoaked: considered Bloodied until washed."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Thrash",
+        "text": "2d10+10 to all adjacent targets OR:"
+      },
+      {
+        "name": "Devour",
+        "text": "(If you have advantage) 1d20+30 damage and 1 Wound."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A vampire that imbibes too deeply and for too long, becoming bloated and disfigured from overindulgence. Characterized by swollen, misshappen bodies and mouths that hang permanaently agape.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Sunscorn",
+        "text": "Radiant deals +10 damage to you. When damaged this way, gain advantage on your next attack."
+      },
+      {
+        "name": "Predation",
+        "text": "Advantage VS Bloodied creatures."
+      }
+    ],
+    "notes": "Block starts at the foot of the left column and continues at the top of the right column."
+  },
+  {
+    "name": "Vampire Outlander",
+    "book": "M&M",
+    "page": 145,
+    "pdfPage": 75,
+    "group": "Vampires",
+    "habitat": "Spooky Domain",
+    "levelText": "17",
+    "level": 17,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 200,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hunter's Bola",
+        "text": "(1/ Round) When crit, Restrain them (escape DC 18, or 2 actions)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Call of the Wild",
+        "text": "(If you have no minions) Summon 1 Wolf minion/hero (d10, speed 10). Then:"
+      },
+      {
+        "name": "Feed",
+        "text": "(if you have advantage) 1d20+30 damage and 1 Wound. OR:"
+      },
+      {
+        "name": "Crossbow",
+        "text": "(Range 8) 1d10+20"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These vampires embrace their rightful place as an apex predator. Nothing is more satisfying to them than the thrill cornering of their terrified prey.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Sunscorn",
+        "text": "Radiant deals +10 damage to you. When damaged this way, gain advantage on your next attack."
+      },
+      {
+        "name": "Predation",
+        "text": "Advantage VS Bloodied creatures."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Vampire (fullblood)",
+    "book": "M&M",
+    "page": 145,
+    "pdfPage": 75,
+    "group": "Vampires",
+    "habitat": "Spooky Domain",
+    "levelText": "19",
+    "level": 19,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 230,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Batform",
+        "text": "(1/round) Temporarily turn into a cloud of bats and teleport 6 spaces (can be used as a Reaction to avoid an attack)."
+      },
+      {
+        "name": "Enthralled",
+        "text": "You can't Defend against the vampire nor allow anyone to Interpose for you against it; it spends one action on each of your turns; damage ends."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Enthrall",
+        "text": "(Range 12) DC 20 WIL Save or Enthralled, on save 10 Psychic damage. Then:"
+      },
+      {
+        "name": "Feed",
+        "text": "(If you have advantage or an Enthralled target) 1d20+40 damage and 1 Wound. OR:"
+      },
+      {
+        "name": "Sanguine Strike (2x)",
+        "text": "1d10+20 (Reach 2)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Fullblooded Vampires are afflicted by the most ancient and potent strains of the blood curse. Fullbloods are frequently arrogant and imperious, choosing to assume positions of wealth and power, command leagues of servants and familiars, and maintain an impressive castle or manor home.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Sunscorn",
+        "text": "Radiant deals +10 damage to you. When damaged this way, gain advantage on your next attack."
+      },
+      {
+        "name": "Predation",
+        "text": "Advantage VS Bloodied creatures."
+      }
+    ],
+    "notes": "Printed name 'Vampire (fullblood)'. 'Enthralled' is a condition box under the actions."
+  },
+  {
+    "name": "Swarm of Bats",
+    "book": "M&M",
+    "page": 146,
+    "pdfPage": 76,
+    "group": "Vampiric Servants",
+    "habitat": "Spooky Domain",
+    "levelText": "",
+    "level": null,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 3,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can enter the space of other creatures. When damaged, reduce HP by 1. AoE attacks"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Horrible Distraction",
+        "text": "(Reach 0, AoE) HPd4, Blinded. The bat swarm may move with a creature it is Blinding."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "No level header printed. Swarm text is cut off mid-sentence in the draft ('AoE attacks')."
+  },
+  {
+    "name": "Timberwolf",
+    "book": "M&M",
+    "page": 146,
+    "pdfPage": 76,
+    "group": "Vampiric Servants",
+    "habitat": "Spooky Domain",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Mangle",
+        "text": "1d4+10. Advantage VS bloodied creatures."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Timberwolves are a favorite pet of Vampires, giant beasts that are physically imposing but as easy to dominate as any other animal.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Blood Thrall",
+    "book": "M&M",
+    "page": 146,
+    "pdfPage": 76,
+    "group": "Vampiric Servants",
+    "habitat": "Spooky Domain",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 75,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Nothing Without Master!",
+        "text": "Unarmored and Frightened when beyond Reach 6 of a Vampire."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cursed Dagger",
+        "text": "1d4. On hit: +25 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Weak-willed, servile humans who willingly submit as servants in exchange for a vampire's favor. A Thrall lures victims to their master, and performs other errands and tasks beneath their master. The more powerful a vampire, the more thralls it may have at its command.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gargoyle",
+    "book": "M&M",
+    "page": 146,
+    "pdfPage": 76,
+    "group": "Vampiric Servants",
+    "habitat": "Spooky Domain",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crush",
+        "text": "1d4+30 (with disadvantage) and Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Stone statues of terrifying design, imbued with a mote of a vampire's magical essence. Used by vampires to protect their castle homes, they attack by flying above enemies and crushing them with terrible force.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bloodstain",
+    "book": "M&M",
+    "page": 146,
+    "pdfPage": 76,
+    "group": "Vampiric Servants",
+    "habitat": "Spooky Domain",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 75,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Blood Spatter",
+        "text": "Melee attackers and creatures you hit become Bloodsoaked: considered Bloodied until washed."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crimson Lash",
+        "text": "1d4+10 (Reach 2), up to 3 targets."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Thralls that live out their purpose may be granted a form of immortality, dissolved into puddles of animated blood. They remain telepathically connected to the Vampire that created them and seek to fulfil their master's every desire.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  }
+]

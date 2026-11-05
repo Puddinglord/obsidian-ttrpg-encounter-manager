@@ -1,0 +1,4215 @@
+[
+  {
+    "name": "Berserker",
+    "book": "M&M",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "That all you got?!",
+        "text": "Reduce all incoming damage by 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Battleaxe",
+        "text": "1d12+8"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "When using Whirlwind, position so that you hit fewer heroes, and sometimes hit your own allies or minions.",
+      "harder": "Get in close, and make the best use of Whirlwind, by hitting as many heroes as possible. Try to attract as much attention as possible, to make the most of “That all you got?!”"
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Berserker enemy hero."
+  },
+  {
+    "name": "Berserker",
+    "book": "M&M",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 52,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "That all you got?!",
+        "text": "Reduce all incoming damage by 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Whirlwind",
+        "text": "(Reach 1, AoE) 1d12+8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "When using Whirlwind, position so that you hit fewer heroes, and sometimes hit your own allies or minions.",
+      "harder": "Get in close, and make the best use of Whirlwind, by hitting as many heroes as possible. Try to attract as much attention as possible, to make the most of “That all you got?!”"
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Berserker enemy hero."
+  },
+  {
+    "name": "Berserker",
+    "book": "M&M",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "That all you got?!",
+        "text": "Reduce all incoming damage by 3."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Whirlwind",
+        "text": "(Reach 1, AoE) 1d12+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "When using Whirlwind, position so that you hit fewer heroes, and sometimes hit your own allies or minions.",
+      "harder": "Get in close, and make the best use of Whirlwind, by hitting as many heroes as possible. Try to attract as much attention as possible, to make the most of “That all you got?!”"
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Berserker enemy hero."
+  },
+  {
+    "name": "Berserker",
+    "book": "M&M",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "That all you got?!",
+        "text": "Reduce all incoming damage by 4."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Whirlwind",
+        "text": "(AoE) 2d12+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "When using Whirlwind, position so that you hit fewer heroes, and sometimes hit your own allies or minions.",
+      "harder": "Get in close, and make the best use of Whirlwind, by hitting as many heroes as possible. Try to attract as much attention as possible, to make the most of “That all you got?!”"
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Berserker enemy hero."
+  },
+  {
+    "name": "The Cheat",
+    "book": "M&M",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Slippery",
+        "text": "Can move 2 spaces after attacking and after being attacked."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Daggers",
+        "text": "2d4+10 (either die can be Primary). On Crit, +10 damage (instead of rolling additional dice)"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Stay in melee between attacks, attack high Defense targets.",
+      "harder": "Move in and out of melee range, ensuring you end your turn in a safe place. Attack lower defense targets, and those you can get advantage against."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the The Cheat enemy hero."
+  },
+  {
+    "name": "The Cheat",
+    "book": "M&M",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 42,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Slippery",
+        "text": "Can move 3 spaces after attacking and after being attacked. (1 use) Make an attack miss you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Daggers",
+        "text": "2d4+10 (either die can be Primary). On Crit, +15 damage (instead of rolling additional dice)"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Stay in melee between attacks, attack high Defense targets.",
+      "harder": "Move in and out of melee range, ensuring you end your turn in a safe place. Attack lower defense targets, and those you can get advantage against."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the The Cheat enemy hero."
+  },
+  {
+    "name": "The Cheat",
+    "book": "M&M",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Slippery",
+        "text": "Can move 4 spaces after attacking and after being attacked. (1 use) Make an attack miss you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Daggers",
+        "text": "2d4+10 (either die can be Primary). On Crit, +20 damage (instead of rolling additional dice)"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Stay in melee between attacks, attack high Defense targets.",
+      "harder": "Move in and out of melee range, ensuring you end your turn in a safe place. Attack lower defense targets, and those you can get advantage against."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the The Cheat enemy hero."
+  },
+  {
+    "name": "The Cheat",
+    "book": "M&M",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Slippery",
+        "text": "Can move 6 spaces after attacking and after being attacked. (1 use) make an attack miss you, Blind the attacker for 1 round."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Daggers",
+        "text": "2d4+10 (either die can be Primary). On Crit, +30 damage (instead of rolling additional dice)"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Stay in melee between attacks, attack high Defense targets.",
+      "harder": "Move in and out of melee range, ensuring you end your turn in a safe place. Attack lower defense targets, and those you can get advantage against."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the The Cheat enemy hero."
+  },
+  {
+    "name": "Commander",
+    "book": "M&M",
+    "page": 37,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 27,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Command",
+        "text": "(1 use) give an ally an extra turn."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Polearm",
+        "text": "(Reach 2) 1d10+6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Attack adjacent heroes, leaving yourself open to attack. Decline using Command.",
+      "harder": "Attack from Reach 2, and keep your distance from the heroes. Use Command on the most powerful ally you have (Mage, Oathsworn who has been attacked, or Shadowmancer with lots of minions)."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Commander enemy hero."
+  },
+  {
+    "name": "Commander",
+    "book": "M&M",
+    "page": 37,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Command",
+        "text": "(1 use) give an ally an extra turn."
+      },
+      {
+        "name": "Veteran",
+        "text": "The first time you would drop to 0hp, reset to 12hp and use Command immediately."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Polearm",
+        "text": "(Reach 2) 1d10+6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Attack adjacent heroes, leaving yourself open to attack. Decline using Command.",
+      "harder": "Attack from Reach 2, and keep your distance from the heroes. Use Command on the most powerful ally you have (Mage, Oathsworn who has been attacked, or Shadowmancer with lots of minions)."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Commander enemy hero."
+  },
+  {
+    "name": "Commander",
+    "book": "M&M",
+    "page": 37,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 42,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Command",
+        "text": "(1 use) give an ally an extra turn."
+      },
+      {
+        "name": "Veteran",
+        "text": "The first time you would drop to 0hp, reset to 16hp and use Command immediately."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Polearm (2x)",
+        "text": "(Reach 2) 1d10+6"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Attack adjacent heroes, leaving yourself open to attack. Decline using Command.",
+      "harder": "Attack from Reach 2, and keep your distance from the heroes. Use Command on the most powerful ally you have (Mage, Oathsworn who has been attacked, or Shadowmancer with lots of minions)."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Commander enemy hero."
+  },
+  {
+    "name": "Commander",
+    "book": "M&M",
+    "page": 37,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Command",
+        "text": "(1 use) give an ally an extra turn."
+      },
+      {
+        "name": "Veteran",
+        "text": "The first time you would drop to 0hp, reset to 20hp and use Command immediately."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Polearm (2x)",
+        "text": "(Reach 2) 1d10+10"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Attack adjacent heroes, leaving yourself open to attack. Decline using Command.",
+      "harder": "Attack from Reach 2, and keep your distance from the heroes. Use Command on the most powerful ally you have (Mage, Oathsworn who has been attacked, or Shadowmancer with lots of minions)."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Commander enemy hero."
+  },
+  {
+    "name": "Hunter",
+    "book": "M&M",
+    "page": 37,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hidden Trap",
+        "text": "(1 use) When an enemy moves adjacent to you, Restrain them (escape DC 10)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Longbow",
+        "text": "(Range 12) 1d8+8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Allow melee combatants to close in on you, decline using your trap.",
+      "harder": "Start combat positioned on high ground, move to a new position each turn to stay at long range."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Hunter enemy hero."
+  },
+  {
+    "name": "Hunter",
+    "book": "M&M",
+    "page": 37,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hidden Trap",
+        "text": "(1 use) When an enemy would move adjacent to you, move them back 1 space, Restrain them (escape DC 10) and deal 1d8 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Longbow",
+        "text": "(Range 12) 1d8+8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Allow melee combatants to close in on you, decline using your trap.",
+      "harder": "Start combat positioned on high ground, move to a new position each turn to stay at long range."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Hunter enemy hero."
+  },
+  {
+    "name": "Hunter",
+    "book": "M&M",
+    "page": 37,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hidden Trap",
+        "text": "(1 use) When an enemy would move adjacent to you, move them back 1 space, Restrain them (escape DC 12) and deal 1d8+8 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Longbow (2x)",
+        "text": "(Range 12) 1d8+8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Allow melee combatants to close in on you, decline using your trap.",
+      "harder": "Start combat positioned on high ground, move to a new position each turn to stay at long range."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Hunter enemy hero."
+  },
+  {
+    "name": "Hunter",
+    "book": "M&M",
+    "page": 37,
+    "pdfPage": 19,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hidden Trap",
+        "text": "(2 uses) When an enemy would move adjacent to you, move them back 1 space, Restrain them (escape DC 14) and deal 2d8+8 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Longbow (2x)",
+        "text": "(Range 12) 2d8+8"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Allow melee combatants to close in on you, decline using your trap.",
+      "harder": "Start combat positioned on high ground, move to a new position each turn to stay at long range."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Hunter enemy hero."
+  },
+  {
+    "name": "Mage",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 22,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flame Blast",
+        "text": "(Range 10) 1d10+10"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Flamethrower wrecklessly, sometimes catching your allies in the damage.",
+      "harder": "Focus on using Flame Blast. Only use Flamethrower you can get 2 or more heroes in it."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Mage enemy hero."
+  },
+  {
+    "name": "Mage",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 36,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Echo Casting",
+        "text": "(1 use) Choose a 2nd target for your Flame Blast."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flame Blast",
+        "text": "(Range 10) 1d10+15. OR:"
+      },
+      {
+        "name": "Flamethrower",
+        "text": "(Cone 3) 1d10+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Flamethrower wrecklessly, sometimes catching your allies in the damage.",
+      "harder": "Focus on using Flame Blast. Only use Flamethrower you can get 2 or more heroes in it."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Mage enemy hero."
+  },
+  {
+    "name": "Mage",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Echo Casting",
+        "text": "(1 use) Choose a 2nd target for your Flame Blast."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flame Blast",
+        "text": "(Range 10) 1d10+20. OR:"
+      },
+      {
+        "name": "Flamethrower",
+        "text": "(Cone 3) 1d10+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Flamethrower wrecklessly, sometimes catching your allies in the damage.",
+      "harder": "Focus on using Flame Blast. Only use Flamethrower you can get 2 or more heroes in it."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Mage enemy hero."
+  },
+  {
+    "name": "Mage",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Echo Casting",
+        "text": "(1 use) Choose a 2nd target for your Flame Blast."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flame Blast",
+        "text": "(Range 10) 1d10+30. OR:"
+      },
+      {
+        "name": "Flamethrower",
+        "text": "(Cone 4) 1d10+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Flamethrower wrecklessly, sometimes catching your allies in the damage.",
+      "harder": "Focus on using Flame Blast. Only use Flamethrower you can get 2 or more heroes in it."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Mage enemy hero."
+  },
+  {
+    "name": "Oathsworn",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Zealous Defender",
+        "text": "(Reach 2, 1/round) Can Interpose."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Revenge",
+        "text": "1d8+2 (+8 more if attacked this round)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Chase down ranged heroes by yourself, and stay out of position so you can't Interpose. Or Interpose VS crits that ignore your Heavy armor.",
+      "harder": "Stick close by allies who need protection (namely Mages, Shadowmancers, and Songweavers). Interpose against non-critical hits."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Oathsworn enemy hero."
+  },
+  {
+    "name": "Oathsworn",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Zealous Defender",
+        "text": "(Reach 3, 1/round) Can Interpose."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Revenge",
+        "text": "1d8+2 (+10 more if attacked this round)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Chase down ranged heroes by yourself, and stay out of position so you can't Interpose. Or Interpose VS crits that ignore your Heavy armor.",
+      "harder": "Stick close by allies who need protection (namely Mages, Shadowmancers, and Songweavers). Interpose against non-critical hits."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Oathsworn enemy hero. Level badge is printed as “LVL 64” (typo); recorded as 4 from its position between the lvl 2 and lvl 6 blocks."
+  },
+  {
+    "name": "Oathsworn",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 42,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Zealous Defender",
+        "text": "(Reach 4, 1/round) Can Interpose."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Revenge",
+        "text": "1d8+10 (+10 more if attacked this round)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Chase down ranged heroes by yourself, and stay out of position so you can't Interpose. Or Interpose VS crits that ignore your Heavy armor.",
+      "harder": "Stick close by allies who need protection (namely Mages, Shadowmancers, and Songweavers). Interpose against non-critical hits."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Oathsworn enemy hero."
+  },
+  {
+    "name": "Oathsworn",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 72,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Zealous Defender",
+        "text": "(Reach 4, 1/round) Can Interpose."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Revenge",
+        "text": "2d8+10 (+20 more if attacked this round)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Chase down ranged heroes by yourself, and stay out of position so you can't Interpose. Or Interpose VS crits that ignore your Heavy armor.",
+      "harder": "Stick close by allies who need protection (namely Mages, Shadowmancers, and Songweavers). Interpose against non-critical hits."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Oathsworn enemy hero."
+  },
+  {
+    "name": "Shadowmancer",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Summon Shadows",
+        "text": "(Reach 1) Summon 1 shadow minion (size: d12). Then all your minions can move 6 and attack."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Wait until the next round to attack with newly summoned minions. Group them near heroes with high Defense or ones that can easily AoE them down.",
+      "harder": "Stay behind cover toward the back lines and continually send in waves of minions, spread their attacks out"
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Shadowmancer enemy hero."
+  },
+  {
+    "name": "Shadowmancer",
+    "book": "M&M",
+    "page": 38,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Summon Shadows",
+        "text": "(Reach 1) Summon 2 shadow minions (size:d12). Then all your minions can move 6 and attack."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Wait until the next round to attack with newly summoned minions. Group them near heroes with high Defense or ones that can easily AoE them down.",
+      "harder": "Stay behind cover toward the back lines and continually send in waves of minions, spread their attacks out"
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Shadowmancer enemy hero."
+  },
+  {
+    "name": "Shadowmancer",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Summon Shadows",
+        "text": "(Reach 2) Summon 2 shadow minions (size:d12). Then all your minions can move 6 and attack."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Wait until the next round to attack with newly summoned minions. Group them near heroes with high Defense or ones that can easily AoE them down.",
+      "harder": "Stay behind cover toward the back lines and continually send in waves of minions, spread their attacks out"
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Shadowmancer enemy hero."
+  },
+  {
+    "name": "Shadowmancer",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Summon Shadows",
+        "text": "(Reach 3) Summon 3 shadow minions (size: d12). Then all your minions can move 6 and attack."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Wait until the next round to attack with newly summoned minions. Group them near heroes with high Defense or ones that can easily AoE them down.",
+      "harder": "Stay behind cover toward the back lines and continually send in waves of minions, spread their attacks out"
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Shadowmancer enemy hero."
+  },
+  {
+    "name": "Shepherd",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 27,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Radiate Strike",
+        "text": "1d8+2 (ignores Cover, cannot be Defended or Interposed)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Radiant Strike against heroes with low defense.",
+      "harder": "Combos extremely well with Shadowmancer's minions! Use Final Judgement whenever possible, use Radiant Strike against heroes with high Defense."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Shepherd enemy hero. Action is printed “Radiate Strike” in the block but “Radiant Strike” in the tactics."
+  },
+  {
+    "name": "Shepherd",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Radiate Strike",
+        "text": "1d8+6 (ignores Cover, cannot be Defended or Interposed). OR:"
+      },
+      {
+        "name": "Final Judgment",
+        "text": "(vs a creature who killed an ally this round) 2d8+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Radiant Strike against heroes with low defense.",
+      "harder": "Combos extremely well with Shadowmancer's minions! Use Final Judgement whenever possible, use Radiant Strike against heroes with high Defense."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Shepherd enemy hero. Action is printed “Radiate Strike” in the block but “Radiant Strike” in the tactics."
+  },
+  {
+    "name": "Shepherd",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 42,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Radiate Strike",
+        "text": "1d8+10 (ignores Cover, cannot be Defended or Interposed). OR:"
+      },
+      {
+        "name": "Final Judgment",
+        "text": "(vs a creature who killed an ally this round) 2d8+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Radiant Strike against heroes with low defense.",
+      "harder": "Combos extremely well with Shadowmancer's minions! Use Final Judgement whenever possible, use Radiant Strike against heroes with high Defense."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Shepherd enemy hero. Action is printed “Radiate Strike” in the block but “Radiant Strike” in the tactics."
+  },
+  {
+    "name": "Shepherd",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Radiate Strike (2x)",
+        "text": "1d8+10 (ignores Cover, cannot be Defended or Interposed)."
+      },
+      {
+        "name": "Final Judgment",
+        "text": "(vs a creature who killed an ally this round) 2d8+30."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Radiant Strike against heroes with low defense.",
+      "harder": "Combos extremely well with Shadowmancer's minions! Use Final Judgement whenever possible, use Radiant Strike against heroes with high Defense."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Shepherd enemy hero. Action is printed “Radiate Strike” in the block but “Radiant Strike” in the tactics."
+  },
+  {
+    "name": "Songweaver",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Vicious Mockery",
+        "text": "(Range 12) 1d4+5, Taunted for 1 round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Taunt heroes who were going to attack you anyway, decline to use your special ability.",
+      "harder": "Save “I’m too pretty to die!” to redirect a powerful ranged attack. Taunt melee heroes that are far away, or ranged heroes you have Cover from. Combos well with Oathsworn!"
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Songweaver enemy hero."
+  },
+  {
+    "name": "Songweaver",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "I’m too pretty to die!",
+        "text": "(1 use) When attacked, choose a different target."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Vicious Mockery (1x)",
+        "text": "(Range 12) 1d4+5, Taunted for 1 round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Taunt heroes who were going to attack you anyway, decline to use your special ability.",
+      "harder": "Save “I’m too pretty to die!” to redirect a powerful ranged attack. Taunt melee heroes that are far away, or ranged heroes you have Cover from. Combos well with Oathsworn!"
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Songweaver enemy hero."
+  },
+  {
+    "name": "Songweaver",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "I’m too pretty to die!",
+        "text": "(1 use) When attacked, choose a different target."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Vicious Mockery (2x)",
+        "text": "(Range 12) 1d4+5, Taunted for 1 round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Taunt heroes who were going to attack you anyway, decline to use your special ability.",
+      "harder": "Save “I’m too pretty to die!” to redirect a powerful ranged attack. Taunt melee heroes that are far away, or ranged heroes you have Cover from. Combos well with Oathsworn!"
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Songweaver enemy hero."
+  },
+  {
+    "name": "Songweaver",
+    "book": "M&M",
+    "page": 39,
+    "pdfPage": 20,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "I’m too pretty to die!",
+        "text": "(2 uses) When attacked, choose a different target."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Vicious Mockery (2x)",
+        "text": "(Range 12) 1d4+10, Taunted for 1 round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Taunt heroes who were going to attack you anyway, decline to use your special ability.",
+      "harder": "Save “I’m too pretty to die!” to redirect a powerful ranged attack. Taunt melee heroes that are far away, or ranged heroes you have Cover from. Combos well with Oathsworn!"
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Songweaver enemy hero."
+  },
+  {
+    "name": "Stormshifter",
+    "book": "M&M",
+    "page": 40,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Alternate each round:",
+    "actions": [
+      {
+        "name": "Call Storm",
+        "text": "(Range 8) 2d8, also damages the next closest creature."
+      },
+      {
+        "name": "Beastshift",
+        "text": "Gain Med armor, +4 speed, and melee attackers take 2 damage this round. 2d8, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Let your Call Storm damage an ally sometimes, and use Beastshift against high Defense targets.",
+      "harder": "Stay adjavent to heroes who want to attack frequently while Beastshifted, use your speed to move back out after attacking."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Stormshifter enemy hero."
+  },
+  {
+    "name": "Stormshifter",
+    "book": "M&M",
+    "page": 40,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 45,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Alternate each round:",
+    "actions": [
+      {
+        "name": "Call Storm",
+        "text": "(Range 8) 2d8, also damages the next closest creature."
+      },
+      {
+        "name": "Beastshift",
+        "text": "Gain Med armor, +4 speed, and melee attackers take 4 damage this round. 3d8, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Let your Call Storm damage an ally sometimes, and use Beastshift against high Defense targets.",
+      "harder": "Stay adjavent to heroes who want to attack frequently while Beastshifted, use your speed to move back out after attacking."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Stormshifter enemy hero. Level badge is printed as “LVL 6” (duplicate of the next block); recorded as 4 from its position and HP between the lvl 2 and lvl 6 blocks."
+  },
+  {
+    "name": "Stormshifter",
+    "book": "M&M",
+    "page": 40,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Alternate each round:",
+    "actions": [
+      {
+        "name": "Call Storm",
+        "text": "(Range 8) 3d8, also damages the next closest creature."
+      },
+      {
+        "name": "Beastshift",
+        "text": "Gain Med armor, +4 speed, and melee attackers take 6 damage this round. 3d8, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Let your Call Storm damage an ally sometimes, and use Beastshift against high Defense targets.",
+      "harder": "Stay adjavent to heroes who want to attack frequently while Beastshifted, use your speed to move back out after attacking."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Stormshifter enemy hero."
+  },
+  {
+    "name": "Stormshifter",
+    "book": "M&M",
+    "page": 40,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Alternate each round:",
+    "actions": [
+      {
+        "name": "Call Storm",
+        "text": "(Range 8) 4d8, also damages the next closest creature."
+      },
+      {
+        "name": "Beastshift",
+        "text": "Gain Med armor, +4 speed, and melee attackers take 10 damage this round. 4d8, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Let your Call Storm damage an ally sometimes, and use Beastshift against high Defense targets.",
+      "harder": "Stay adjavent to heroes who want to attack frequently while Beastshifted, use your speed to move back out after attacking."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Stormshifter enemy hero."
+  },
+  {
+    "name": "Zephyr",
+    "book": "M&M",
+    "page": 40,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Blur",
+        "text": "(1/round) When attacked, first move 4 spaces, taking no damage if you are now out of range or have Full Cover."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Double-Strike (2x)",
+        "text": "1d6+2"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Decline to use Blur, use your speed to move from target to target, speading your damage out.",
+      "harder": "Harass heroes that are furthest from their allies. Stay near environmental cover, so that you can use Blur to avoid damage whenever possible."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Zephyr enemy hero."
+  },
+  {
+    "name": "Zephyr",
+    "book": "M&M",
+    "page": 40,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Blur",
+        "text": "(1/round) When attacked, first move 4 spaces, taking no damage if you are now out of range or have Full Cover."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Double-Strike (2x)",
+        "text": "2d6+2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Decline to use Blur, use your speed to move from target to target, speading your damage out.",
+      "harder": "Harass heroes that are furthest from their allies. Stay near environmental cover, so that you can use Blur to avoid damage whenever possible."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Zephyr enemy hero. Level badge is printed as “LVL 64” (typo); recorded as 4 from its position between the lvl 2 and lvl 6 blocks."
+  },
+  {
+    "name": "Zephyr",
+    "book": "M&M",
+    "page": 40,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Blur",
+        "text": "(1/round) When attacked, first move 4 spaces, taking no damage if you are now out of range or have Full Cover."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Double-Strike (2x)",
+        "text": "2d6+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Decline to use Blur, use your speed to move from target to target, speading your damage out.",
+      "harder": "Harass heroes that are furthest from their allies. Stay near environmental cover, so that you can use Blur to avoid damage whenever possible."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Zephyr enemy hero."
+  },
+  {
+    "name": "Zephyr",
+    "book": "M&M",
+    "page": 40,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 110,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 12,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Blur",
+        "text": "(1/round) When attacked, first move 4 spaces, taking no damage if you are now out of range or have Full Cover."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Triple-Strike (3x)",
+        "text": "3d6+4"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Decline to use Blur, use your speed to move from target to target, speading your damage out.",
+      "harder": "Harass heroes that are furthest from their allies. Stay near environmental cover, so that you can use Blur to avoid damage whenever possible."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Zephyr enemy hero."
+  },
+  {
+    "name": "Hexbinder",
+    "book": "M&M",
+    "page": 41,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bramble Marked",
+        "text": "Attackers take 2 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hedge Curse",
+        "text": "1d4 Cursed 10 (the next time you take damage this round, it deals +10 damage)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Hedge Curse on a hero that is unlikely to get attacked again, or act last in the round.",
+      "harder": "Act first, so that an ally attacks your cursed target immediately."
+    },
+    "groupTraits": [],
+    "notes": "Level 2 variant of the Hexbinder enemy hero."
+  },
+  {
+    "name": "Hexbinder",
+    "book": "M&M",
+    "page": 41,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bramble Marked",
+        "text": "Attackers take 3 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hedge Curse",
+        "text": "1d4, Cursed 20 (the next time you take damage this round, it deals +20 damage)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Hedge Curse on a hero that is unlikely to get attacked again, or act last in the round.",
+      "harder": "Act first, so that an ally attacks your cursed target immediately."
+    },
+    "groupTraits": [],
+    "notes": "Level 4 variant of the Hexbinder enemy hero."
+  },
+  {
+    "name": "Hexbinder",
+    "book": "M&M",
+    "page": 41,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bramble Marked",
+        "text": "Attackers take 3 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hedge Curse",
+        "text": "1d4, Cursed 20 (the next time you take damage this round, it deals +20 damage)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Hedge Curse on a hero that is unlikely to get attacked again, or act last in the round.",
+      "harder": "Act first, so that an ally attacks your cursed target immediately."
+    },
+    "groupTraits": [],
+    "notes": "Level 6 variant of the Hexbinder enemy hero."
+  },
+  {
+    "name": "Hexbinder",
+    "book": "M&M",
+    "page": 41,
+    "pdfPage": 21,
+    "group": "Enemy Heroes",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 110,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bramble Marked",
+        "text": "Attackers take 5 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hedge Curse",
+        "text": "1d4, Cursed 30 (the next time you take damage this round, it deals +30 damage)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Hedge Curse on a hero that is unlikely to get attacked again, or act last in the round.",
+      "harder": "Act first, so that an ally attacks your cursed target immediately."
+    },
+    "groupTraits": [],
+    "notes": "Level 10 variant of the Hexbinder enemy hero."
+  },
+  {
+    "name": "Worg",
+    "book": "M&M",
+    "page": 42,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "1",
+    "level": 1,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 28,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Savage",
+        "text": "Always crits VS Grappled creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Rip Apart (2×)",
+        "text": "1d6+2, Grappled (escape DC 10)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A cunning mutt, often used as a mount by malevolent creatures.",
+    "tactics": {
+      "easier": "Switch between targets, minimizing time spent Grappling.",
+      "harder": "Focus 1 target, especially if they have disadvantage on rolls."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Griffon",
+    "book": "M&M",
+    "page": 42,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 12,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Talons",
+        "text": "1d6+10, on hit: Grappled (escape DC 14) OR:"
+      },
+      {
+        "name": "Fly & Drop",
+        "text": "(if Grappling) Fly upward 12 and release (6d6 fall damage, landing Prone)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Half-eagle, half-lion, and utterly majestic. Only reveals itself when finished with self-grooming.",
+    "tactics": {
+      "easier": "Stay low to the ground, and mostly use Talons.",
+      "harder": "End turn in the air to avoid melee attacks. Use Fly & Drop as much as possible."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bulette",
+    "book": "M&M",
+    "page": 42,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 74,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": 6,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Burst Forth!",
+        "text": "Combat starts with the heaviest character making a DC 14 DEX save or they are Grappled and take 1d12+20 (half on save, escape DC 14)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Leap & Bite",
+        "text": "Leap 6, 1d12+20, Grapple. OR:"
+      },
+      {
+        "name": "Drag Below",
+        "text": "(vs Grappled creature) 2d12 then drag below and burrow 6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Stoneskinned ambush predators with shovel-shaped claws and a gaping maw. Their burrowing has been known to sink entire houses.",
+    "tactics": {
+      "easier": "Stay above ground, mostly using Leap & Bite.",
+      "harder": "Drag Below as much as possible."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Troll",
+    "book": "M&M",
+    "page": 42,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Regenerate",
+        "text": "Does not die at 0 HP. Only fire, radiant, or a crit while at 0 HP can kill it."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Claws",
+        "text": "(Reach 2) 1d4+10. On crit: Prone."
+      },
+      {
+        "name": "Bite",
+        "text": "(A Prone creature) 1d4+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Switch between targets, mostly using Claws.",
+      "harder": "Avoid heroes who can deal lethal damage (Mage, Oathbreaker, Cheat), and use Bite as much as possible."
+    },
+    "groupTraits": [],
+    "notes": "Flavour line is a draft placeholder (“XX”) in the source."
+  },
+  {
+    "name": "Roc",
+    "book": "M&M",
+    "page": 42,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "17",
+    "level": 17,
+    "size": "Gargantuan",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 195,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 20,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pluck Up",
+        "text": "(Reach 4, target up to 2 creatures) 3d12+20. On hit: Grappled (escape DC 18). OR:"
+      },
+      {
+        "name": "Crush & Drop",
+        "text": "Fly upward 20 spaces, deal 20 damage to Grappled creatures, then release (10d6 fall damage)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These enormous birds of prey were once ridden by legendary warriors to slay titans. To a worthy hero, they may offer their wings once more.",
+    "tactics": {
+      "easier": "Stay low to the ground, and grapple only one hero at a time.",
+      "harder": "Keep to the skies to avoid melee heroes, while grappling ranged ones."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Lion",
+    "book": "M&M",
+    "page": 42,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "2",
+    "level": 2,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Intelligent Stalker",
+        "text": "Heroes have disadvantage on initiative against a pack of lions."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ferocious Leap",
+        "text": "2d10, Prone OR:"
+      },
+      {
+        "name": "Maul",
+        "text": "(Prone creature) 3d10"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Stick to using Ferocious Leap, and avoid heroes who rolled badly on Initiative.",
+      "harder": "Have one Lion knock a hero Prone, before having the rest use Maul."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Lion Packleader",
+    "book": "M&M",
+    "page": 42,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Intelligent Stalker",
+        "text": "Heroes have disadvantage on initiative against a pack of lions."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ferocious Leap",
+        "text": "3d10, Prone OR:"
+      },
+      {
+        "name": "Maul",
+        "text": "(Prone creature) 3d10+10"
+      }
+    ],
+    "bloodied": {
+      "name": "Mighty Roar",
+      "text": "(29hp) Allies gain advantage on their next attack, enemies disadvantage."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Ferocious Leap over Maul, especially when Bloodied.",
+      "harder": "Join the other lions in all Mauling one target."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Ogre",
+    "book": "M&M",
+    "page": 43,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Who Hit Me??",
+        "text": "Will always attack whoever hit it most recently."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Club",
+        "text": "(Reach 2) 2d10+10, Prone. OR:"
+      },
+      {
+        "name": "Rock",
+        "text": "(Reach 10) 2d10, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Angry, hulking humanoids with little patience and even less intellect. Deeply protective of their quiet place. \"All those loud 'lil guys running around take too much thinkin'!\"",
+    "tactics": {
+      "easier": "Switch between targets, mostly using Rock.",
+      "harder": "Combine with Lions or Trolls who deal additional damage to Prone heroes."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Manticore",
+    "book": "M&M",
+    "page": 43,
+    "pdfPage": 22,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "7",
+    "level": 7,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Venomous Stinger (1 use, Reach 3)",
+        "text": "3d10+10. OR:"
+      },
+      {
+        "name": "Ravage (2x)",
+        "text": "1d10+5, Vicious."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(40hp) Fly 8 immediately then recharge Venomous Stinger."
+    },
+    "lastStand": null,
+    "flavor": "Malicious cousin to the griffon…?",
+    "tactics": {
+      "easier": "Use Stinger on heroes who are already very low on HP.",
+      "harder": "Combo with creatures like Worgs & Griffons that Grapple, or creatures that can knock Prone like Lions and Trolls."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Ettin",
+    "book": "M&M",
+    "page": 43,
+    "pdfPage": 22,
+    "group": "Ettins",
+    "habitat": "Hill & Field",
+    "levelText": "9",
+    "level": 9,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 110,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Not like THAT, like THIS!",
+        "text": "Ettins miss on 5 or less, its next attack is made with advantage."
+      }
+    ],
+    "actionsIntro": "Attack with both weapons:",
+    "actions": [
+      {
+        "name": "Club",
+        "text": "2d10+10. Prone."
+      },
+      {
+        "name": "Morningstar",
+        "text": "2d10+10, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Two petulant children inhabiting into one very large form. The majority of their strength comes from the overwhelming desire to prove the other wrong.",
+    "tactics": {
+      "easier": "Attack with the Morningstar first, allowing heroes to avoid being hit while Prone.",
+      "harder": "Attack with the Club first, increasing the chance of landing a crit with the Morningstar."
+    },
+    "groupTraits": [],
+    "notes": "Regular lvl 9 Ettin; a separate solo lvl 3 Ettin follows. Flavour and tactics are printed once for the Ettins group. Group RP Note: If an Ettin hits on the first roll, “ThAt gOoD HiT, hAhaHa!” If it hits on the 2nd roll “SEE?!”"
+  },
+  {
+    "name": "Ettin",
+    "book": "M&M",
+    "page": 43,
+    "pdfPage": 22,
+    "group": "Ettins",
+    "habitat": "Hill & Field",
+    "levelText": "3",
+    "level": 3,
+    "size": "Large",
+    "kind": "Bickering Two-Headed Giant",
+    "role": "solo",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Not like THAT, like THIS!",
+        "text": "Ettins miss on 5 or less, (1/turn) when it misses, attack again with advantage."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn, choose 1 (rec. alternate):",
+    "actions": [
+      {
+        "name": "Club",
+        "text": "Move 4 then (Reach 2) 1d10+10. Prone."
+      },
+      {
+        "name": "Morningstar",
+        "text": "Move 4 then (Reach 2) 1d10+10, Vicious."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 60 HP, Yous makin’ we angry! Gain Medium armor."
+    },
+    "lastStand": {
+      "name": "Dying",
+      "text": "At 0 HP the Ettin is dying! 30 more damage and it dies, until then gain: Together? Together! Use BOTH attacks each turn."
+    },
+    "flavor": "Two petulant children inhabiting into one very large form. The majority of their strength comes from the overwhelming desire to prove the other wrong.",
+    "tactics": {
+      "easier": "Attack with the Morningstar first, allowing heroes to avoid being hit while Prone.",
+      "harder": "Attack with the Club first, increasing the chance of landing a crit with the Morningstar."
+    },
+    "groupTraits": [],
+    "notes": "Solo lvl 3 Ettin (header “Solo lvl 3, large bickering two-headed giant”); distinct from the lvl 9 Ettin. Last Stand is printed as “DYING.”; HP is flat 120. Group RP Note: If an Ettin hits on the first roll, “ThAt gOoD HiT, hAhaHa!” If it hits on the 2nd roll “SEE?!”"
+  },
+  {
+    "name": "Hill Giant",
+    "book": "M&M",
+    "page": 44,
+    "pdfPage": 23,
+    "group": "Hill Giants",
+    "habitat": "Hill & Field",
+    "levelText": "10",
+    "level": 10,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Clumsy",
+        "text": "Always attacks with disadvantage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Clobber (2x)",
+        "text": "1d6+15. On hit: Prone. OR:"
+      },
+      {
+        "name": "Stomp",
+        "text": "(Prone Creature) 1d6+40. OR:"
+      },
+      {
+        "name": "Punt",
+        "text": "1d12+10. On hit, Prone & Knockback Primary Die spaces."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The smallest of giantkin; foul-tempered, petty, and deeply insecure about appearing foolish. Found commonly roaming the countryside, devouring livestock, and acting as hired muscle for Goblins, Bandits, and especially Gnolls.",
+    "tactics": {
+      "easier": "Punt Ranged heroes away to safety. Play into their stupidity, attack suboptimal targets (whichever is making the most noise, whichever hurt him last).",
+      "harder": "Use Punt to separate heroes and kick them toward allies."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gnoll",
+    "book": "M&M",
+    "page": 46,
+    "pdfPage": 24,
+    "group": "Gnolls",
+    "habitat": "Hill & Field",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 28,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage VS damaged creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ravage (2×)",
+        "text": "1d10. OR:"
+      },
+      {
+        "name": "Shoot",
+        "text": "(Range 10) 1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gnoll Hunter",
+    "book": "M&M",
+    "page": 46,
+    "pdfPage": 24,
+    "group": "Gnolls",
+    "habitat": "Hill & Field",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 32,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage VS damaged creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shoot (2x)",
+        "text": "(Range 10) 1d10. OR:"
+      },
+      {
+        "name": "Ravage",
+        "text": "1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A natural tracker that never loses a trail and never forgets a scent.",
+    "tactics": {
+      "easier": "Mostly use melee attacks, attack undamaged heroes.",
+      "harder": "Use ranged attacks to damage multiple targets."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gnoll Packleader",
+    "book": "M&M",
+    "page": 46,
+    "pdfPage": 24,
+    "group": "Gnolls",
+    "habitat": "Hill & Field",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage VS damaged creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bark Orders",
+        "text": "2 allies can move. Then:"
+      },
+      {
+        "name": "Ravage (3×)",
+        "text": "1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The first to taste blood in any battle, the Packleader drives his allies to victory.",
+    "tactics": {
+      "easier": "Bark Orders to move Gnolls adjacent to heroes after the gnoll has already attacked.",
+      "harder": "Bark Orders to move Gnolls to safety after they’ve acted, or to give them extra movement needed to chase down heroes hiding behind the frontliners."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gnoll Frenzied One",
+    "book": "M&M",
+    "page": 46,
+    "pdfPage": 24,
+    "group": "Gnolls",
+    "habitat": "Hill & Field",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage VS damaged creatures."
+      },
+      {
+        "name": "Frenzy",
+        "text": "Advantage when damaged."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ravage (2x)",
+        "text": "2d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Flurry of chaos with no thought for self-preservation.",
+    "tactics": {
+      "easier": "Target well-armored or undamaged heroes. Have them ignore the Packleader's commands.",
+      "harder": "Bloodthirsty and Frenzy can stack, giving Advantage 2."
+    },
+    "groupTraits": [],
+    "notes": "Tactics lines continue at the top of the next column."
+  },
+  {
+    "name": "Gnoll Battle Shaman",
+    "book": "M&M",
+    "page": 46,
+    "pdfPage": 24,
+    "group": "Gnolls",
+    "habitat": "Hill & Field",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Battle Rattle",
+        "text": "All gnolls gain +2 speed and advantage while damaged."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Baleful Howl",
+        "text": "DC 14 WIL save or Frightened 1 round. THEN:"
+      },
+      {
+        "name": "Withering Dread",
+        "text": "(Reach 10) 6d6 necrotic damage, divide these dice up amongst targets within reach."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A beacon of fear with an aptitude for unstable magic.",
+    "tactics": {
+      "easier": "Focus the Dread dice on 1 well-armored target.",
+      "harder": "Whichever dice roll low on Withering Dread, damage unharmed allies. Spread the remaining dice out to make defending unappealing."
+    },
+    "groupTraits": [],
+    "notes": "Bloodthirsty is not printed in this block."
+  },
+  {
+    "name": "Briarbane Seedling",
+    "book": "M&M",
+    "page": 50,
+    "pdfPage": 26,
+    "group": "Briarbanes",
+    "habitat": "Forest",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 8,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Thorn Seed",
+        "text": "(Range 6) 2d6+2"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A juvenile sprout, Seedlings throw rock-hard seeds from hiding spots to assist their fellow warriors.",
+    "tactics": {
+      "easier": "Attack while heroes are adjacent. Attack Acidpods when they'll damage other Briarbanes.",
+      "harder": "Target Grappled heroes, or Acidpods that are in a good position to explode and hit multiple enemies."
+    },
+    "groupTraits": [
+      {
+        "name": "Peeling Bark",
+        "text": "Damage degrades armor (H » M » None)."
+      }
+    ],
+    "notes": "Armor printed as “H*”; the asterisk refers to the Peeling Bark group trait."
+  },
+  {
+    "name": "Briarbane Acidpod",
+    "book": "M&M",
+    "page": 50,
+    "pdfPage": 26,
+    "group": "Briarbanes",
+    "habitat": "Forest",
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 8,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Caustic Eruption",
+        "text": "On death: 4d6 to ALL in Reach 1."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Grab",
+        "text": "DC 12 DEX save or Grappled."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Acid-bloated viney tangles, Acidpods have no sense of individuality and will gladly sacrifice themselves for the safety of the forest. Their remains have proven to be effective fertilizer for other horrifying plant creatures.",
+    "tactics": {
+      "easier": "Grab isolated or well-armored or high DEX heroes.",
+      "harder": "Grab heroes near their allies then shoot it with Seedlings for a big explosion! Combo with Tanglers to Pull heroes into a clump."
+    },
+    "groupTraits": [
+      {
+        "name": "Peeling Bark",
+        "text": "Damage degrades armor (H » M » None)."
+      }
+    ],
+    "notes": "Armor printed as “H*”; the asterisk refers to the Peeling Bark group trait."
+  },
+  {
+    "name": "Briarbane Tangler",
+    "book": "M&M",
+    "page": 50,
+    "pdfPage": 26,
+    "group": "Briarbanes",
+    "habitat": "Forest",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Remember!",
+        "text": "Tiny/Small creatures are affected twice as much by forced movement; Large, half as much."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Tangle (2×)",
+        "text": "(Reach 6) 1d6+2, Grappled (escape DC 12, or any fire or slashing damage). OR:"
+      },
+      {
+        "name": "Pull",
+        "text": "Move a Grappled creature 4 spaces."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A coiled mass of bark-armored roots capable of taking any shape, Tanglers are able to restrain many foes at once.",
+    "tactics": {
+      "easier": "Separate them from their allies. They're far less deadly without other creatures taking advantage of their Grapple.",
+      "harder": "Act first amonsgt monsters to set up advantage on their attacks. Avoid heroes who deal fire or slashing damage."
+    },
+    "groupTraits": [
+      {
+        "name": "Peeling Bark",
+        "text": "Damage degrades armor (H » M » None)."
+      }
+    ],
+    "notes": "Armor printed as “H*”; the asterisk refers to the Peeling Bark group trait. “Remember!” is a boxed rules reminder inside the block."
+  },
+  {
+    "name": "Briarbane Rootbreaker",
+    "book": "M&M",
+    "page": 50,
+    "pdfPage": 26,
+    "group": "Briarbanes",
+    "habitat": "Forest",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam",
+        "text": "3d6+6. On crit: knockback 2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The frontline troops of the forest, these walking stumps strike with arms stronger than sledgehammers.",
+    "tactics": {
+      "easier": "Target Grappled heroes, likely breaking them free.",
+      "harder": "Angle their attacks to push heroes into each other or toward Acidpods."
+    },
+    "groupTraits": [
+      {
+        "name": "Peeling Bark",
+        "text": "Damage degrades armor (H » M » None)."
+      }
+    ],
+    "notes": "Armor printed as “H*”; the asterisk refers to the Peeling Bark group trait."
+  },
+  {
+    "name": "Briarbane Treant",
+    "book": "M&M",
+    "page": 50,
+    "pdfPage": 26,
+    "group": "Briarbanes",
+    "habitat": "Forest",
+    "levelText": "14",
+    "level": 14,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 170,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Enrage",
+        "text": "Attack with advantage when unarmored."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Slam",
+        "text": "(Reach 3) 2d6+10. On damage: Prone."
+      },
+      {
+        "name": "Stomp",
+        "text": "(Hampered target) 2d6+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "An ancient tree brought to life, a single Treant stands guard at the center of each of the worlds greatest forests.",
+    "tactics": {
+      "easier": "Mostly use Slam, targeting well-armored heroes.",
+      "harder": "Use Stomp as often as possible, including against heroes Grappled by allies."
+    },
+    "groupTraits": [
+      {
+        "name": "Peeling Bark",
+        "text": "Damage degrades armor (H » M » None)."
+      }
+    ],
+    "notes": "Armor printed as “H*”; the asterisk refers to the Peeling Bark group trait."
+  },
+  {
+    "name": "Duskprowler",
+    "book": "M&M",
+    "page": 52,
+    "pdfPage": 27,
+    "group": "Beasts",
+    "habitat": "Forest",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Illusory Aura",
+        "text": "Attacks against the Duskprowler have Disadvantage 2. Damage suppresses this effect until the end of the next hero’s turn."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ravage (2×)",
+        "text": "2d8+2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Predatory cats capable of distorting perception, they blend into their environments to stalk their prey.",
+    "tactics": {
+      "easier": "Stay near heroes that use large damage dice to attack.",
+      "harder": "Focus on attacking heroes with small damage dice (daggers, unarmed strikes, wind spells)."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Owlbear",
+    "book": "M&M",
+    "page": 52,
+    "pdfPage": 27,
+    "group": "Beasts",
+    "habitat": "Forest",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Choose 1:",
+    "actions": [
+      {
+        "name": "Fearsome Hoot (1 use, Reach 12)",
+        "text": "Lower level enemies take 20 psychic damage – their WIL save. If they take 8 or more damage, they are Frightened as well (until the Owlbear is bloodied)."
+      },
+      {
+        "name": "Savage Claws & Beak",
+        "text": "3d12, advantage if crit this round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Aggressive and territorial, they are apex predators—stronger than bears and keener hunters than owls.",
+    "tactics": {
+      "easier": "Use Fearsome Hoot after you are bloodied.",
+      "harder": "Use Fearsome Hoot early, so that Frightened lasts longer."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Wolf",
+    "book": "M&M",
+    "page": 52,
+    "pdfPage": 27,
+    "group": "Forest Wolves",
+    "habitat": "Forest",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Pack Hunters",
+        "text": "Flee combat when outnumbered."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "1d8+2"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Pack hunters that surround and overwhelm prey much larger than themselves.",
+    "tactics": {
+      "easier": "Allow one wolf to take most of the damage at the beginning, so that Fearsome Howl goes away quickly. Have the Wolves flee early.",
+      "harder": "Move in and out of melee range, so that it takes longer for any single wolf to die. Have the Pack Leader Interpose for wolves, to keep them from dying and fleeing."
+    },
+    "groupTraits": [
+      {
+        "name": "Fearsome Howl",
+        "text": "At the beginning of combat, heroes make a DC 13 WIL save or start Frightened. Ends when 1 wolf dies."
+      }
+    ],
+    "notes": "Tactics are printed once for the Forest Wolves group."
+  },
+  {
+    "name": "Dire Wolf",
+    "book": "M&M",
+    "page": 52,
+    "pdfPage": 27,
+    "group": "Forest Wolves",
+    "habitat": "Forest",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Vicious Bite",
+        "text": "2d8+2, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A monstrous family of wolves with longer claws, sharper teeth, and piercing red eyes. Twice the size of a regular wolf.",
+    "tactics": {
+      "easier": "Allow one wolf to take most of the damage at the beginning, so that Fearsome Howl goes away quickly. Have the Wolves flee early.",
+      "harder": "Move in and out of melee range, so that it takes longer for any single wolf to die. Have the Pack Leader Interpose for wolves, to keep them from dying and fleeing."
+    },
+    "groupTraits": [
+      {
+        "name": "Fearsome Howl",
+        "text": "At the beginning of combat, heroes make a DC 13 WIL save or start Frightened. Ends when 1 wolf dies."
+      }
+    ],
+    "notes": "Tactics are printed once for the Forest Wolves group."
+  },
+  {
+    "name": "Dire Wolf Pack Leader",
+    "book": "M&M",
+    "page": 52,
+    "pdfPage": 27,
+    "group": "Forest Wolves",
+    "habitat": "Forest",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Protector of the Pack",
+        "text": "(Reach 6) Can Interpose."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Vicious Bite",
+        "text": "(2x) 2d8+2, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Allow one wolf to take most of the damage at the beginning, so that Fearsome Howl goes away quickly. Have the Wolves flee early.",
+      "harder": "Move in and out of melee range, so that it takes longer for any single wolf to die. Have the Pack Leader Interpose for wolves, to keep them from dying and fleeing."
+    },
+    "groupTraits": [
+      {
+        "name": "Fearsome Howl",
+        "text": "At the beginning of combat, heroes make a DC 13 WIL save or start Frightened. Ends when 1 wolf dies."
+      }
+    ],
+    "notes": "Tactics are printed once for the Forest Wolves group. Its own flavour and tactics lines are draft placeholders (“XX”, “xx”) in the source."
+  },
+  {
+    "name": "Druid",
+    "book": "M&M",
+    "page": 53,
+    "pdfPage": 27,
+    "group": "Forest Protectors",
+    "habitat": "Forest",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Beastshift",
+        "text": "+4 speed, gain Medium armor this round. 4d4+10. OR:"
+      },
+      {
+        "name": "Hurricane",
+        "text": "(Reach 3, AoE ) 4d4+10 to enemies. On damage: move targets anywhere within Reach."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Guardians of the wilds, they command the elements to strike back against the enemies of nature.",
+    "tactics": {
+      "easier": "Use Beastshift to charge into combat aggressively. Keep melee heroes nearby with Hurricane.",
+      "harder": "Push heroes into obstacles or hazards with Hurricane. Use Beastshift to strike then escape melee."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Spring Golem",
+    "book": "M&M",
+    "page": 53,
+    "pdfPage": 27,
+    "group": "Forest Protectors",
+    "habitat": "Forest",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 54,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swiftspear",
+        "text": "(1/Round, Reach 2) Reaction: When an enemy escapes Entangle, strike them for 2d8."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Verdant Growth (2x)",
+        "text": "(Reach 8) 2d8, Entangle: half speed (escape DC 12, or any slashing/fire damage). OR:"
+      },
+      {
+        "name": "Crushing Vines",
+        "text": "2d8+10 to all Entangled enemies."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Embodiments of growth and rebirth, these are walking saplings into humanoid form, draped in flowers and vines.",
+    "tactics": {
+      "easier": "Stay away from Entangled foes, preventing you from using Swiftspear on them if they escape.",
+      "harder": "Always move toward Entangled foes, so you can use Swiftspear. If you have at least 2 foes Entangled, use Crushing Vines."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Dryad",
+    "book": "M&M",
+    "page": 55,
+    "pdfPage": 28,
+    "group": "Dryads",
+    "habitat": "Forest",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Dryad Magic",
+        "text": "(Reach 6) 1d6+10. Gain an additional Dryad Magic effect based on the roll."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Beautiful, lithe beings who…",
+    "tactics": {
+      "easier": "Stay within your home tree, even after it is attacked.",
+      "harder": "Immediately teleport to another tree within sight after your bonded tree is attacked. Distract them by attacking from a non-bonded tree."
+    },
+    "groupTraits": [
+      {
+        "name": "Treebonded",
+        "text": "Each Dryad is bonded to 1 specific tree, they only take damage when it does."
+      },
+      {
+        "name": "Treestep",
+        "text": "Dryads inhabit trees and can teleport between any trees they can see."
+      },
+      {
+        "name": "Dryad Magic",
+        "text": "Sum the attack dice, it gains the following effect: 2–3. Branch Sweep. Prone. 4–6. Rootlash. Restrained (Escape DC 10+dryad lvl, or any slashing damage). 7–8. Befuddled. Your next attack MUST be against an ally. 9-10. Thornburst. Teleport up to 6 away, then (Reach 2) 3d6 damage to allies. 11+. Glamorized. The next 2 actions you spend are controlled by the GM (you regain the spent actions afterward)."
+      }
+    ],
+    "notes": "Flavour line is unfinished in the draft. Dryad Tactics intro: “Assessing or RP comments from the Dryad should honestly reveal which tree is theirs! Perhaps they giggle when the wrong tree is attacked, or wince in pain when theirs is attacked. Let it be a puzzle to figure out which tree they are bonded to (but don’t make it too hard or you risk it turning into a frustrating slog!).” Dryad Magic is a shared results table, stored in groupTraits."
+  },
+  {
+    "name": "Greater Dryad",
+    "book": "M&M",
+    "page": 55,
+    "pdfPage": 28,
+    "group": "Dryads",
+    "habitat": "Forest",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Dryad Magic",
+        "text": "(Reach 8) 2d6+10. Gain an additional Dryad Magic effect based on the roll."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Captivating and charming…",
+    "tactics": {
+      "easier": "Stay within your home tree, even after it is attacked.",
+      "harder": "Immediately teleport to another tree within sight after your bonded tree is attacked. Distract them by attacking from a non-bonded tree."
+    },
+    "groupTraits": [
+      {
+        "name": "Treebonded",
+        "text": "Each Dryad is bonded to 1 specific tree, they only take damage when it does."
+      },
+      {
+        "name": "Treestep",
+        "text": "Dryads inhabit trees and can teleport between any trees they can see."
+      },
+      {
+        "name": "Dryad Magic",
+        "text": "Sum the attack dice, it gains the following effect: 2–3. Branch Sweep. Prone. 4–6. Rootlash. Restrained (Escape DC 10+dryad lvl, or any slashing damage). 7–8. Befuddled. Your next attack MUST be against an ally. 9-10. Thornburst. Teleport up to 6 away, then (Reach 2) 3d6 damage to allies. 11+. Glamorized. The next 2 actions you spend are controlled by the GM (you regain the spent actions afterward)."
+      }
+    ],
+    "notes": "Header reads “lvl 4, inhabiting a large tree”. Flavour line is unfinished in the draft. Dryad Tactics intro: “Assessing or RP comments from the Dryad should honestly reveal which tree is theirs! Perhaps they giggle when the wrong tree is attacked, or wince in pain when theirs is attacked. Let it be a puzzle to figure out which tree they are bonded to (but don’t make it too hard or you risk it turning into a frustrating slog!).” Dryad Magic is a shared results table, stored in groupTraits."
+  },
+  {
+    "name": "Wondrous Dryad",
+    "book": "M&M",
+    "page": 55,
+    "pdfPage": 28,
+    "group": "Dryads",
+    "habitat": "Forest",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Dryad Magic",
+        "text": "(Reach 10) 3d6+10. Gain an additional Dryad Magic effect based on the roll."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Their skin glows like the petals of a flower in the sun, stare too long and you may lose yourself in their beauty.",
+    "tactics": {
+      "easier": "Stay within your home tree, even after it is attacked.",
+      "harder": "Immediately teleport to another tree within sight after your bonded tree is attacked. Distract them by attacking from a non-bonded tree."
+    },
+    "groupTraits": [
+      {
+        "name": "Treebonded",
+        "text": "Each Dryad is bonded to 1 specific tree, they only take damage when it does."
+      },
+      {
+        "name": "Treestep",
+        "text": "Dryads inhabit trees and can teleport between any trees they can see."
+      },
+      {
+        "name": "Dryad Magic",
+        "text": "Sum the attack dice, it gains the following effect: 2–3. Branch Sweep. Prone. 4–6. Rootlash. Restrained (Escape DC 10+dryad lvl, or any slashing damage). 7–8. Befuddled. Your next attack MUST be against an ally. 9-10. Thornburst. Teleport up to 6 away, then (Reach 2) 3d6 damage to allies. 11+. Glamorized. The next 2 actions you spend are controlled by the GM (you regain the spent actions afterward)."
+      }
+    ],
+    "notes": "Header reads “lvl 8, inhabiting a huge tree”. Dryad Tactics intro: “Assessing or RP comments from the Dryad should honestly reveal which tree is theirs! Perhaps they giggle when the wrong tree is attacked, or wince in pain when theirs is attacked. Let it be a puzzle to figure out which tree they are bonded to (but don’t make it too hard or you risk it turning into a frustrating slog!).” Dryad Magic is a shared results table, stored in groupTraits."
+  },
+  {
+    "name": "Snake Swarm",
+    "book": "M&M",
+    "page": 56,
+    "pdfPage": 29,
+    "group": "Swarms",
+    "habitat": "Forest",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 5,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can enter the space of other creatures. When damaged, reduce HP by 1. AoE attacks reduce HP by 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Venomous Bites",
+        "text": "(Reach 0, AoE) HPd4. On damage, Poisoned (healing ends)"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Overlap space with a small number of heroes. Clump together, making AOEs do more damage.",
+      "harder": "Enter the spaces of as many heroes as possible. Spread out, to put pressure on the whole party and make AOEs less effective."
+    },
+    "groupTraits": [
+      {
+        "name": "Swarms",
+        "text": "If it makes sense, any creatures within a swarm when it is attacked may also take damage!"
+      }
+    ],
+    "notes": "Habitat assumed Forest (Swarms falls inside the Forest chapter). Section note: “If your party doesn’t like snakes or spiders, feel free to change them to rats, hornets, centipedes, beetles, bats or any other creature more appropriate for your table.” Tactics printed once for both swarms."
+  },
+  {
+    "name": "Snake Swarm Horde",
+    "book": "M&M",
+    "page": 56,
+    "pdfPage": 29,
+    "group": "Swarms",
+    "habitat": "Forest",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 8,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can enter the space of other creatures. When damaged, reduce HP by 1. AoE attacks reduce HP by 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Venomous Bites",
+        "text": "(Reach 0, AoE) HPd4. On damage, Prone & Poisoned (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Overlap space with a small number of heroes. Clump together, making AOEs do more damage.",
+      "harder": "Enter the spaces of as many heroes as possible. Spread out, to put pressure on the whole party and make AOEs less effective."
+    },
+    "groupTraits": [
+      {
+        "name": "Swarms",
+        "text": "If it makes sense, any creatures within a swarm when it is attacked may also take damage!"
+      }
+    ],
+    "notes": "Habitat assumed Forest (Swarms falls inside the Forest chapter). Section note: “If your party doesn’t like snakes or spiders, feel free to change them to rats, hornets, centipedes, beetles, bats or any other creature more appropriate for your table.” Tactics printed once for both swarms."
+  }
+]

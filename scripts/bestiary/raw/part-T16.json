@@ -1,0 +1,4472 @@
+[
+  {
+    "name": "Bogleech",
+    "book": "M&M",
+    "page": 84,
+    "pdfPage": 45,
+    "group": "Swamp Critters",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 4,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Waterborne",
+        "text": "Moving on land is difficult terrain; in water, move twice as fast."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Drain Blood",
+        "text": "1d6+5. On hit: Daze & Latched On: You move where your target moves until either dies. Your attacks can't miss or be Defended/Interposed against."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Take care of shadows in the swampwater. It only takes a few to drain a traveler dry.",
+    "tactics": {
+      "easier": "Leap from the water, revealing yourself, and chase targets onto dry land.",
+      "harder": "Remain hidden underwater until a hero is distracted or weakened."
+    },
+    "groupTraits": [],
+    "notes": "Section intro under 'Swamp Critters' repeats the Hags paragraph (draft copy-paste)."
+  },
+  {
+    "name": "Diretoad",
+    "book": "M&M",
+    "page": 84,
+    "pdfPage": 45,
+    "group": "Swamp Critters",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 46,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "Leap 6 (leap icon printed in place of the Speed icon)",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Voracious Eater",
+        "text": "Whenever you hit a smaller creature with your tongue, pull it to you and swallow it. Swallowed creatures deal double damage to you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sticky Tongue",
+        "text": "(Reach 6) 2d8+6 to all swallowed creatures, then to an outside creature."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "They never stop eating, until they eventually swallow something more dangerous than themselves.",
+    "tactics": {
+      "easier": "Gorge yourself! Fill up with heroes hitting for 2x damage.",
+      "harder": "Attack from max reach, and hop away with your prize!"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Mist Wyrm",
+    "book": "M&M",
+    "page": 84,
+    "pdfPage": 45,
+    "group": "Swamp Critters",
+    "habitat": null,
+    "levelText": "9",
+    "level": 9,
+    "size": "Huge",
+    "kind": null,
+    "role": "solo",
+    "armor": "none",
+    "hp": 250,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mist Veiled",
+        "text": "When damaged, fade away into the mist, reappear elsewhere at the end of the turn."
+      }
+    ],
+    "actionsIntro": "At the end of your turn. INT save or suffer the effects of the mist. Each round:",
+    "actions": [
+      {
+        "name": "Choking Mist",
+        "text": "Silenced"
+      },
+      {
+        "name": "Grasping Mist",
+        "text": "Grappled"
+      },
+      {
+        "name": "Burning Mist",
+        "text": ""
+      },
+      {
+        "name": "Addling Mist",
+        "text": "1d4."
+      }
+    ],
+    "bloodied": {
+      "name": "Blinding Mist",
+      "text": "Enemy Range/Reach reduced to max of 4."
+    },
+    "lastStand": null,
+    "flavor": "Her scales shine oily black and opalescent, like obsidian crossed with tempered steel. The effect it casts on her wingless, serpentine form is more evocative of the water snakes that share her lake than of her draconic cousins. Shrewd and curious, the Mist Wyrm asks favors of travelers that seek safe passage through her domain. Her requests may seem perilous, or strange, but those that defy her become lost in her vapors, never to return.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Unfinished draft block. After the mist list it prints 'GM chooses target', then (top of next column) 'Self', 'Random closest', 'Randomly' (probably a target per mist). Burning Mist has no effect text. LAST STAND is printed with no text. Tactics are 'xx' placeholders."
+  },
+  {
+    "name": "Crabman",
+    "book": "M&M",
+    "page": 85,
+    "pdfPage": 45,
+    "group": "Crabmen",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claw (2x)",
+        "text": "1d8+1. On crit: Grapple (escape DC 10)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Formidable warriors, but famously gullible, it's sometimes easier to trick a Crabman than face them head-on.",
+    "tactics": {
+      "easier": "Start a conversation! Crabmen will believe almost anything they are told. Give the heroes an opening to trick the Crabmen into a truce or surrender.",
+      "harder": "Focus weaker targets with the Crabman's friends while melee fighters are grappled."
+    },
+    "groupTraits": [],
+    "notes": "Both tactics lines are printed with the easier icon; the second was treated as the harder tactic."
+  },
+  {
+    "name": "Crabman Brute",
+    "book": "M&M",
+    "page": 85,
+    "pdfPage": 45,
+    "group": "Crabmen",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bash (2x)",
+        "text": "2d8+1. Knockback 2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Crustacean warriors that love a good scrap. Their massive bulk and natural armor demands constant meat as fuel. Embroiled in constant struggles for control of beaches, bogs and caves.",
+    "tactics": {
+      "easier": "Start an argument about which Crabman is strongest! Alternatively, push a grappled hero out of a Crabman's grasp.",
+      "harder": "Push heroes into deep water, sharp stones, or other hazards."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Huskwalker",
+    "book": "M&M",
+    "page": 85,
+    "pdfPage": 45,
+    "group": "Crabmen",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": "Undead",
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Greatclaw (2x)",
+        "text": "1d4+10. On crit: Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Crabmen reanimated by necromantic meddling. Sometimes they wash up on shore, mindlessly terrorizing anyone nearby.",
+    "tactics": {
+      "easier": "Attack any target that is closest. Move on to other targets after knocking Prone, or wander aimlessly is a undead haze.",
+      "harder": "Crabmen can dog-pile a hero knocked prone by a Huskwalker, keeping them pinned with Grapple."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "The Bog Tyrant",
+    "book": "M&M",
+    "page": 85,
+    "pdfPage": 45,
+    "group": "Crabmen",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": "Crab King",
+    "role": "solo",
+    "armor": "H",
+    "hp": 125,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Short Memory",
+        "text": "Always attacks the last creature to damage him."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one:",
+    "actions": [
+      {
+        "name": "King Claws",
+        "text": "Move 4, attack (2x) for 1d20."
+      },
+      {
+        "name": "Skitterthrow",
+        "text": "Move 8, throw rock (Range 6) 1d20."
+      }
+    ],
+    "bloodied": {
+      "name": "Cracked Shell",
+      "text": "At 75 HP, your armor degrades to Medium armor, gain +2 Speed."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "The Bog Tyrant is dying! 50 more damage and he dies. Until then, his attacks gain: On hit: Prone."
+    },
+    "flavor": "The Bog Tyrant has polluted his brackish bog with a necromantic curse. His subjects live stunted lives, then revive as Huskwalkers—mindless but powerful servants. The bog has not prospered under his rule, his Huskwalkers are rotting to pieces in time, so the Bog Tyrant has grown more desperate to maintain control.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Actions printed under the label 'ACTIONS:'. Tactics are 'xx' placeholders."
+  },
+  {
+    "name": "Croakoa Tadpole",
+    "book": "M&M",
+    "page": 86,
+    "pdfPage": 46,
+    "group": "Croakoa",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 2,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Legless Flop",
+        "text": "Tadpoles treat dry ground as difficult terrain and water as normal terrain."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Poison Touch",
+        "text": "2d6. On damage, Poisoned (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Croakoa Darter",
+    "book": "M&M",
+    "page": 86,
+    "pdfPage": 46,
+    "group": "Croakoa",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "Leap 6 (leap icon printed in place of the Speed icon)",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Blowgun",
+        "text": "(1x, Range 8) 1d6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": null,
+      "harder": "Excellent when combined with Writhing Baloons"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Croakoa Venomslicer",
+    "book": "M&M",
+    "page": 86,
+    "pdfPage": 46,
+    "group": "Croakoa",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 32,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "Leap 6 (leap icon printed in place of the Speed icon)",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Nearsighted",
+        "text": "Creatures beyond Reach 3 have advantage against you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Venom Slice",
+        "text": "1d6+10 (with advantage), Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Croakoa Brute",
+    "book": "M&M",
+    "page": 86,
+    "pdfPage": 46,
+    "group": "Croakoa",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "Leap 6 (leap icon printed in place of the Speed icon)",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Leap Squash",
+        "text": "(Reach 6) 2d6+10, knock Prone & Grapple (escape DC 13, when target escapes, the Brute falls Prone). OR:"
+      },
+      {
+        "name": "Squish",
+        "text": "(If Grappling) 3d6+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A solid mass of wet, mossy muscle that loves to crush its foes.",
+    "tactics": {
+      "easier": "Instead of using Squish, Leap Squash from hero to hero.",
+      "harder": "Target Weak heroes to Leap Squash then Squish."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Croakoa Hunter",
+    "book": "M&M",
+    "page": 86,
+    "pdfPage": 46,
+    "group": "Croakoa",
+    "habitat": null,
+    "levelText": "7",
+    "level": 7,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "Leap 6 (leap icon printed in place of the Speed icon)",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Voracious Eater",
+        "text": "Whenever you hit a smaller creature with your tongue, pull it to you and swallow it. Swallowed creatures deal double damage to you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sticky Tongue",
+        "text": "(Reach 6) 3d6+10 to all Swallowed creatures, then to an outside creature."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": null,
+      "harder": "Jump away with Swallowed heroes, near allies or tadpoles."
+    },
+    "groupTraits": [],
+    "notes": "Flavor and tactics continue at top of page 87; flavor and easier tactic are 'xx' placeholders."
+  },
+  {
+    "name": "Croakoa Royal Defender",
+    "book": "M&M",
+    "page": 87,
+    "pdfPage": 46,
+    "group": "Croakoa",
+    "habitat": null,
+    "levelText": "7",
+    "level": 7,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "Leap 6 (leap icon printed in place of the Speed icon)",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Protect the Brood!",
+        "text": "Can leap to Interpose for allies within Reach 6. Adjacent enemies are knocked Prone when you land."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Polliwhomp",
+        "text": "1d6+10. Double damage if you took damage this round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Speedy, tough and loyal guards to their tribe.",
+    "tactics": {
+      "easier": "Use Protect the Brood minimally.",
+      "harder": "If undamaged this round, use Darters to make you deal additional damage."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Croakoa Brood Queen",
+    "book": "M&M",
+    "page": 87,
+    "pdfPage": 46,
+    "group": "Croakoa",
+    "habitat": null,
+    "levelText": "7",
+    "level": 7,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 1,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Crushing Weight",
+        "text": "The brood queen can occupy the space of enemies."
+      },
+      {
+        "name": "On Death",
+        "text": "Summon 100 Croakoa Tadpoles."
+      }
+    ],
+    "actionsIntro": "Hatch Brood. Summon 1 Croakoa Tadpole/hero Then choose 1:",
+    "actions": [
+      {
+        "name": "Poisonous Spit",
+        "text": "(Range 8) 2d6+10, Poisoned OR:"
+      },
+      {
+        "name": "Crushing Roll",
+        "text": "Move into the space of an adjacent enemy, d66 damage, Prone, Restrained."
+      }
+    ],
+    "bloodied": {
+      "name": "Danger Croak!",
+      "text": "(40hp) Enemies are Dazed until she dies."
+    },
+    "lastStand": null,
+    "flavor": "The innumerable egg sacs on her back shimmer like pearls—dangerous, deadly pearls.",
+    "tactics": {
+      "easier": "Telegraph that she BADLY wants to get next to a hero to roll over them.",
+      "harder": "Use Poisonous Spit to encourage heroes to approach, then use Crushing Roll to restrain."
+    },
+    "groupTraits": [],
+    "notes": "Sidebar under the block: \"100 tadpoles?! Yes, she's full of them. The heroes should probably run.\""
+  },
+  {
+    "name": "Writhing Balloons",
+    "book": "M&M",
+    "page": 87,
+    "pdfPage": 46,
+    "group": "Croakoa",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": "Hazard",
+    "role": "regular",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 4,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [
+      "bludgeoning"
+    ],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Balloony",
+        "text": "Immune to bludgeoning damage."
+      },
+      {
+        "name": "Obvious Weapon!",
+        "text": "(3 balloons) Inflated skins filled with a surprise! When damaged: Summon 1d4 Crokoa Tadpoles."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Winds can shift, directing the Balloon in a different direction. Heroes can kick it back towards enemies. \"Waste\" a powerful attack popping a balloon.",
+      "harder": "Float them near a hero using AoE attacks, Use a"
+    },
+    "groupTraits": [],
+    "notes": "Listed under 'Crokoa Traps & Tactics'; has a level and Fly 4 but no HP printed. Harder tactic is cut off mid-sentence in the draft. Bog Spikes and Muck Net Trap (same section, no HP) were skipped as traps."
+  },
+  {
+    "name": "Blue Drake",
+    "book": "M&M",
+    "page": 88,
+    "pdfPage": 47,
+    "group": null,
+    "habitat": "Coast & Sky",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 12,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "(AoE, Reach 1) Deal 1d12 damage (ignores metal armor)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shocking Bite",
+        "text": "1d12+5 (ignores metal armor)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Wyvern",
+    "book": "M&M",
+    "page": 88,
+    "pdfPage": 47,
+    "group": null,
+    "habitat": "Coast & Sky",
+    "levelText": "11",
+    "level": 11,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 110,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 10,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claws",
+        "text": "2d10+10. And:"
+      },
+      {
+        "name": "Stinger",
+        "text": "(Reach 2) 1d10+5, On damage, Poisoned until healed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": null,
+      "harder": "Spread the Poison out, use claws to bait out Defend, then use stinger!"
+    },
+    "groupTraits": [],
+    "notes": "Flavor 'xx' placeholder; only the harder tactic is printed."
+  },
+  {
+    "name": "Harpy",
+    "book": "M&M",
+    "page": 88,
+    "pdfPage": 47,
+    "group": "Harpies",
+    "habitat": "Coast & Sky",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Skittish",
+        "text": "When an ally Interposes, a harpie's attack misses."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Luring Song",
+        "text": "(Reach 8) 1d4+6 (can't be Interposed). On hit, move the target 2 spaces closer. OR:"
+      },
+      {
+        "name": "Vicious Claws",
+        "text": "1d4+6 with advantage, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Harpy Matriarch",
+    "book": "M&M",
+    "page": 88,
+    "pdfPage": 47,
+    "group": "Harpies",
+    "habitat": "Coast & Sky",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Skittish",
+        "text": "When an ally Interposes, a harpie's attack misses."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Luring Song",
+        "text": "(Reach 8) 1d4+6 (can't be Interposed). On hit, move the target 3 spaces closer. OR:"
+      },
+      {
+        "name": "Vicious Claws (2x)",
+        "text": "1d4+6 with advantage, Vicious."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Harpies need to have heroes separated enough to attack effectively.",
+      "harder": "Lure heroes off a cliff >:D"
+    },
+    "groupTraits": [],
+    "notes": "Block starts at bottom of page 88 and continues on page 89."
+  },
+  {
+    "name": "Storm Giant",
+    "book": "M&M",
+    "page": 89,
+    "pdfPage": 47,
+    "group": null,
+    "habitat": "Coast & Sky",
+    "levelText": "19",
+    "level": 19,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 290,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mighty Strikes",
+        "text": "Treat dice you roll less than 10, as 10."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Thunderstride",
+        "text": "2d20 damage to any enemies within Reach 2 of your movement this round. OR:"
+      },
+      {
+        "name": "Lightning Spear",
+        "text": "(Reach 8) 2d20+30. Deal Primary Die damage to the next nearest enemy."
+      }
+    ],
+    "bloodied": {
+      "name": "Forked Lightning",
+      "text": "(Reaction: at 145 HP) 4d20 divided as you wish among up to 4 different creatures, on damage Dazed."
+    },
+    "lastStand": null,
+    "flavor": "The mightiest of all giantkin, they are physically and magically formidable and are driven by an inexplicable wanderlust. Their thirst for adventure often leads them to compete with heroes for treasure and glory. Legendary are the great ships of the Storm Giant—impossible in scale, and always commanding a tailwind. They are known to tame Stormdrakes, sea creatures, as well as elementals of all types. Less honorable Stormgiants often ally with Pirates and mercenaries and command entire fleets.",
+    "tactics": {
+      "easier": "Storm Giants may not deal lethal Wounds to an honorable heroes who yield to them as supreme.",
+      "harder": "Thunder Stride whenever you can damage 3 or more heroes with it to make them split up. Use Lightning Spear on low HP heroes since it will still deal some damage even if Interposed."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Reef Shark",
+    "book": "M&M",
+    "page": 90,
+    "pdfPage": 48,
+    "group": "Sharks",
+    "habitat": "Coast & Sky",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage VS damaged creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "2d4, Grappled (escape DC 11). OR:"
+      },
+      {
+        "name": "Shake",
+        "text": "(VS grappled creature) 2d4+10, end Grapple."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Hunter Shark",
+    "book": "M&M",
+    "page": 90,
+    "pdfPage": 48,
+    "group": "Sharks",
+    "habitat": "Coast & Sky",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage VS damaged creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "4d4, Grappled (escape DC 12). OR:"
+      },
+      {
+        "name": "Shake",
+        "text": "(VS grappled creature) 4d4+20, end Grapple."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Giant Shark",
+    "book": "M&M",
+    "page": 90,
+    "pdfPage": 48,
+    "group": "Sharks",
+    "habitat": "Coast & Sky",
+    "levelText": "10",
+    "level": 10,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 110,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage VS damaged creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "4d4, Grappled (escape DC 16). OR:"
+      },
+      {
+        "name": "Shake",
+        "text": "(VS grappled creature) 4d4+40, end Grapple."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Breeze Mote",
+    "book": "M&M",
+    "page": 90,
+    "pdfPage": 48,
+    "group": "Air Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 15,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Turbulent Aura",
+        "text": "Half damage from Ranged attacks."
+      },
+      {
+        "name": "Razor Winds",
+        "text": "On crit, +10 damage (instead of rolling additional dice)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slicing Gale",
+        "text": "1d4. OR:"
+      },
+      {
+        "name": "Dizzying Vortex",
+        "text": "Daze and Restrain a small/tiny creature in the air (damaging the elemental ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Air Elementals heading prints a harder tactic for the family: \"Smaller wind elementals will lift creatures into the air to reduce their mobility or boost the effectiveness of fire elementals.\" Level header sits at the bottom of the previous column. A GM Advice box on the Vortex ability is printed with the heading."
+  },
+  {
+    "name": "Whirling Gust",
+    "book": "M&M",
+    "page": 90,
+    "pdfPage": 48,
+    "group": "Air Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 25,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Turbulent Aura",
+        "text": "Half damage from Ranged attacks."
+      },
+      {
+        "name": "Razor Winds",
+        "text": "On crit, +10 damage (instead of rolling additional dice)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slicing Gale (2x)",
+        "text": "1d4. OR:"
+      },
+      {
+        "name": "Dizzying Vortex",
+        "text": "Daze and Restrain in the air (damaging the elemental ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Air Elementals heading prints a harder tactic for the family: \"Smaller wind elementals will lift creatures into the air to reduce their mobility or boost the effectiveness of fire elementals.\""
+  },
+  {
+    "name": "Howling Gale",
+    "book": "M&M",
+    "page": 91,
+    "pdfPage": 48,
+    "group": "Air Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Turbulent Aura",
+        "text": "Half damage from Ranged attacks."
+      },
+      {
+        "name": "Razor Winds",
+        "text": "On crit, +10 damage (instead of rolling additional dice)."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Slicing Gale",
+        "text": "(Reach 2) 2d4, treat the highest die as primary."
+      },
+      {
+        "name": "Dizzying Vortex",
+        "text": "(Reach 2) Daze and Restrain in the air (damaging the elemental ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Air Elementals heading prints a harder tactic for the family: \"Smaller wind elementals will lift creatures into the air to reduce their mobility or boost the effectiveness of fire elementals.\""
+  },
+  {
+    "name": "Living Tornado",
+    "book": "M&M",
+    "page": 91,
+    "pdfPage": 48,
+    "group": "Air Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Turbulent Aura",
+        "text": "Half damage from Ranged attacks."
+      },
+      {
+        "name": "Razor Winds",
+        "text": "On crit, +10 damage (instead of rolling additional dice)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Maelstrom",
+        "text": "(Reach 3), move enemies anywhere else within Reach, they are Dazed and Restrained (damaging the elemental ends). Then:"
+      },
+      {
+        "name": "Slicing Gale",
+        "text": "(Cone 4) 2d4+10, treat the highest die as primary, this attack can crit."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Air Elementals heading prints a harder tactic for the family: \"Smaller wind elementals will lift creatures into the air to reduce their mobility or boost the effectiveness of fire elementals.\""
+  },
+  {
+    "name": "Water Weird",
+    "book": "M&M",
+    "page": 91,
+    "pdfPage": 48,
+    "group": "Water Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Water Blast",
+        "text": "(Reach 8) 2d8, on damage: Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Living Water",
+        "text": "Can enter the space of other creatures, Submerging them."
+      },
+      {
+        "name": "Submerge",
+        "text": "Grappled, and at the end of each round take a cumulative 1d20 damage (ignoring armor) for each consecutive round you've been Submerged."
+      },
+      {
+        "name": "Vulnerable to Lightning",
+        "text": "Submerged creatures also take the same amount."
+      }
+    ],
+    "notes": "Header: 'lvl 6 (escape DC 13)'."
+  },
+  {
+    "name": "Water Elemental",
+    "book": "M&M",
+    "page": 91,
+    "pdfPage": 48,
+    "group": "Water Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pull",
+        "text": "(Reach 8) 3d8, on damage: pull a smaller target into your space."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Living Water",
+        "text": "Can enter the space of other creatures, Submerging them."
+      },
+      {
+        "name": "Submerge",
+        "text": "Grappled, and at the end of each round take a cumulative 1d20 damage (ignoring armor) for each consecutive round you've been Submerged."
+      },
+      {
+        "name": "Vulnerable to Lightning",
+        "text": "Submerged creatures also take the same amount."
+      }
+    ],
+    "notes": "Header: 'lvl 10, large (escape DC 14)'."
+  },
+  {
+    "name": "Surging Tide",
+    "book": "M&M",
+    "page": 91,
+    "pdfPage": 48,
+    "group": "Water Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "16",
+    "level": 16,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 230,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pull (2x)",
+        "text": "(Reach 8) 3d8, on damage: pull a smaller target into your space."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Living Water",
+        "text": "Can enter the space of other creatures, Submerging them."
+      },
+      {
+        "name": "Submerge",
+        "text": "Grappled, and at the end of each round take a cumulative 1d20 damage (ignoring armor) for each consecutive round you've been Submerged."
+      },
+      {
+        "name": "Vulnerable to Lightning",
+        "text": "Submerged creatures also take the same amount."
+      }
+    ],
+    "notes": "Header: 'lvl 16, huge (escape DC 15)'."
+  },
+  {
+    "name": "Elemental Spark",
+    "book": "M&M",
+    "page": 91,
+    "pdfPage": 48,
+    "group": "Lightning Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 16,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 12,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [
+      "lightning"
+    ],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Lightning Strike",
+        "text": "(Reach 8). 1d8 damage, Can also damage another creature within Reach 2. OR:"
+      },
+      {
+        "name": "Electroswap",
+        "text": "Swap places with another creature."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Lightning speed",
+        "text": "Acts first before heroes. Can teleport instead of moving."
+      },
+      {
+        "name": "Elemental Lightning",
+        "text": "Immune to lightning damage. Whenever a hero is damaged by this creature, they gain 1 action. Dying creatures first gain hp. 2x damage against wet or flying targets"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Surging Bolt",
+    "book": "M&M",
+    "page": 91,
+    "pdfPage": 48,
+    "group": "Lightning Elementals",
+    "habitat": "Coast & Sky",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 12,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [
+      "lightning"
+    ],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Lightning Strike",
+        "text": "(Reach 8). 2d8 damage, Can also damage another creature within Reach 2. OR:"
+      },
+      {
+        "name": "Electroswap",
+        "text": "Swap places with another creature."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Lightning speed",
+        "text": "Acts first before heroes. Can teleport instead of moving."
+      },
+      {
+        "name": "Elemental Lightning",
+        "text": "Immune to lightning damage. Whenever a hero is damaged by this creature, they gain 1 action. Dying creatures first gain hp. 2x damage against wet or flying targets"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Commoner",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "1/8",
+    "level": 0.125,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 8,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Strike",
+        "text": "1d4"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Guard",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "1/4",
+    "level": 0.25,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 12,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Keepers of Peace",
+        "text": "Will arrest rather than killing foes."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bludgeon",
+        "text": "1d4+1"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Low-skilled watchmen. Their primary job is to alert other (more capable) people to come when needed.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "City Watch",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Keepers of Peace",
+        "text": "Will arrest rather than killing foes."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bludgeon",
+        "text": "1d6. Prone. OR:"
+      },
+      {
+        "name": "Stop Resisting!",
+        "text": "(vs Prone) Restrain (escape DC 10+1 for each adjacent ally)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A blunt instrument used by cities to keep the populace safe… or compliant.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "City Guard",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 32,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Keepers of Peace",
+        "text": "Will arrest rather than killing foes."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bludgeon",
+        "text": "1d8. Prone. OR:"
+      },
+      {
+        "name": "Stop Resisting!",
+        "text": "(vs Prone) Restrain (escape DC 12+1 for each adjacent ally)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Professionally trained and always vigilant, they will pounce on any civic missteps.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Royal Guard",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 35,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Keepers of Peace",
+        "text": "Will arrest rather than killing foes."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Royal Spear",
+        "text": "(Reach 2) 2d10. Prone."
+      },
+      {
+        "name": "Stop Resisting!",
+        "text": "(VS Prone) Restrain (escape DC 14+1 for each adjacent ally)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Highly skilled and fiercely loyal, they protect the monarch and nobility at all costs.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Noble",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "1/4",
+    "level": 0.25,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Come to My Aid!",
+        "text": "Allies can Interpose for you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Unarmed Strike",
+        "text": "1d4+1"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Rich, haughty and prone to sticking a dagger in the back of their enemies.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Sage (Priest)",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Blessings upon you!",
+        "text": "(1/round) The next attack an ally makes deals +10 damage, and the next time they are attacked it deals –10 damage. THEN:"
+      },
+      {
+        "name": "Smite",
+        "text": "(Reach 8) 2d8 damage (ignoring armor)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Pious & devout to the point of fanaticism, can call upon higher beings for assistance.",
+    "tactics": {
+      "easier": "Go last in a round, so heroes can take out the blessed ally before they can attack.",
+      "harder": "Go first in a round, bless lower HP allies."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Knight",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Defender of the Realm",
+        "text": "(1/round, Reach 4) Can Interpose for allies."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Greatsword",
+        "text": "1d8+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Honorable and well-trained, even a single knight is a dangerous foe.",
+    "tactics": {
+      "easier": "Interpose for lower damage allies, especially vs crits that ignore your heavy armor.",
+      "harder": "Interpose for stronger allies, especially vs attacks with modifiers that your Heavy armor can easily mitigate."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Knight Dragoon",
+    "book": "M&M",
+    "page": 95,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": "City & Village",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 25,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Dismounted",
+        "text": "At 0hp summon a Knight, Prone."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Lance",
+        "text": "(Reach 2) 1d8+20. +1 damage for each space moved toward target."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Fearsome warriors who act as one with their steeds to cover lots of ground swiftly.",
+    "tactics": {
+      "easier": "Stay close to heroes so that Lance has a lesser effect.",
+      "harder": "Hit and run. Charge in to attack then move away to build up another big Lance attack."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Spy",
+    "book": "M&M",
+    "page": 96,
+    "pdfPage": 51,
+    "group": "Infiltrators",
+    "habitat": "City & Village",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "I'm Outta Here!",
+        "text": "(1 use) When you would be crit in melee, Blind the attacker and move 4 instead."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Poisoned Daggers",
+        "text": "1d4+2 (with advantage). +20 damage on crit, and Poisoned (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Experts at getting in places they don't belong, spies will fight themselves out of a bad spot when necessary.",
+    "tactics": {
+      "easier": "Fight only long enough to flee! Spies don't want to kill, they want to escape notice.",
+      "harder": "Poison as many targets as you can, keep out of the melee."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Assassin",
+    "book": "M&M",
+    "page": 96,
+    "pdfPage": 51,
+    "group": "Infiltrators",
+    "habitat": "City & Village",
+    "levelText": "14",
+    "level": 14,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Killer",
+        "text": "You are Invisible until you attack. You automatically crit Distracted creatures: if it is adjacent to (or Taunted by) an ally, or if it cannot see you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cruel Blades",
+        "text": "1d4+5 with advantage. On crit, +100 damage. OR:"
+      },
+      {
+        "name": "Cruel Dart",
+        "text": "(Range 10) 1d4. On crit, +100 damage."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(60hp) Turn Invisible (until you attack) and move 8."
+    },
+    "lastStand": null,
+    "flavor": "Professional killers. By the time they show themselves, they've likely already won.",
+    "tactics": {
+      "easier": "Spread around your initial attack, and withdraw if ambushing doesn't kill your targets.",
+      "harder": "Take out a healer or other weak target down in your first strike. Bunch up to auto-crit on Distracted targets."
+    },
+    "groupTraits": [],
+    "notes": "Bloodied printed as 'When Bloodied (60hp).'"
+  },
+  {
+    "name": "Doppelganger",
+    "book": "M&M",
+    "page": 96,
+    "pdfPage": 51,
+    "group": "Infiltrators",
+    "habitat": "City & Village",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Shapeshifter",
+        "text": "(1/round Reach 6) When attacked, exchange places with an enemy, they are damaged instead."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Deceptive Strike",
+        "text": "3d4. On crit, swap places with an enemy."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Clever changelings and kidnappers that can replace their targets. Greedy, untrustworthy, and cruel.",
+    "tactics": {
+      "easier": "Use Shapeshifter only on weak attacks, or not at all.",
+      "harder": "Hold Shapeshifter and make heroes wary to attack—save it for a big hit and swap with a flimsy hero."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Rakshasa",
+    "book": "M&M",
+    "page": 97,
+    "pdfPage": 51,
+    "group": "Rakshasa",
+    "habitat": "City & Village",
+    "levelText": "9",
+    "level": 9,
+    "size": "Medium",
+    "kind": "Tiger-headed fiend",
+    "role": "solo",
+    "armor": "none",
+    "hp": 250,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Arcane Nullification",
+        "text": "Medium armor VS spells (ignore all damage modifiers)."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, Teleport 4 then choose one (rec. in order):",
+    "actions": [
+      {
+        "name": "Mystical Claw",
+        "text": "1d8+10. On damage: Teleport the target 4."
+      },
+      {
+        "name": "Lightning Bolt",
+        "text": "(Line12) 4d8+10."
+      },
+      {
+        "name": "Mystical Claw",
+        "text": "1d8+10. On damage: Teleport the target 4."
+      },
+      {
+        "name": "Fireblast",
+        "text": "(Reach 2) 4d8+10."
+      },
+      {
+        "name": "Mystical Claw",
+        "text": "1d8+10. On damage: Teleport the target 4."
+      },
+      {
+        "name": "Freezing Blades",
+        "text": "(Reach 6) 1d8/space moved in the area this round."
+      }
+    ],
+    "bloodied": {
+      "name": "Arcane Rebound",
+      "text": "At 125 HP, you begin shimmering mystically. (1 use) Negate damage taken, reflect it back at the attacker."
+    },
+    "lastStand": {
+      "name": "Tiger's Swiftness",
+      "text": "At 0 HP, the Rakshasa is dying! 90 more damage and it dies! Until then Mystical Claw gains (2x)."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Teleport Ranged heroes away or nearer to their allies.",
+      "harder": "Separate heroes, or teleport them into traps, pits, or cages."
+    },
+    "groupTraits": [],
+    "notes": "Actions printed under the label 'Solo.'. Mystical Claw appears three times in the recommended order, as printed."
+  },
+  {
+    "name": "Legion Soldier",
+    "book": "M&M",
+    "page": 98,
+    "pdfPage": 52,
+    "group": "Iron Legion",
+    "habitat": "City & Village",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Strike",
+        "text": "2d8"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Iron Legion",
+        "text": "Legionnaires adjacent to an ally have Medium armor and advantage on attacks; adjacent to 2 or more, Heavy armor and advantage 2."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Legion Veteran",
+    "book": "M&M",
+    "page": 98,
+    "pdfPage": 52,
+    "group": "Iron Legion",
+    "habitat": "City & Village",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 28,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Polearm",
+        "text": "(Reach 2) 2d8"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Iron Legion",
+        "text": "Legionnaires adjacent to an ally have Medium armor and advantage on attacks; adjacent to 2 or more, Heavy armor and advantage 2."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Legion Cavalry",
+    "book": "M&M",
+    "page": 98,
+    "pdfPage": 52,
+    "group": "Iron Legion",
+    "habitat": "City & Village",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Charge!",
+        "text": "2d8. +1 damage for each space moved toward target this turn."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Iron Legion",
+        "text": "Legionnaires adjacent to an ally have Medium armor and advantage on attacks; adjacent to 2 or more, Heavy armor and advantage 2."
+      }
+    ],
+    "notes": "No HP printed in the draft."
+  },
+  {
+    "name": "Legion Captain",
+    "book": "M&M",
+    "page": 98,
+    "pdfPage": 52,
+    "group": "Iron Legion",
+    "habitat": "City & Village",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Experienced Leader",
+        "text": "Counts as 2 Legionnaires (always has Medium armor and advantage on attacks)."
+      },
+      {
+        "name": "Back in line, soldier!",
+        "text": "(1 use) When a Legionnaire would die, give it 1 hp instead."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Polearm (2x)",
+        "text": "(Reach 2) 2d8. OR:"
+      },
+      {
+        "name": "Shoot",
+        "text": "(Range 8) 2d8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Iron Legion",
+        "text": "Legionnaires adjacent to an ally have Medium armor and advantage on attacks; adjacent to 2 or more, Heavy armor and advantage 2."
+      }
+    ],
+    "notes": "No HP printed in the draft."
+  },
+  {
+    "name": "Legion General",
+    "book": "M&M",
+    "page": 98,
+    "pdfPage": 52,
+    "group": "Iron Legion",
+    "habitat": "City & Village",
+    "levelText": "11",
+    "level": 11,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mighty Leader",
+        "text": "Counts as 3 Legionnaires (always has Heavy armor and advantage 2 on attacks)."
+      },
+      {
+        "name": "You'll die when I say so!",
+        "text": "(1/round) When a Legionnaire would die, give it 1 hp instead."
+      }
+    ],
+    "actionsIntro": "Efficient Killing Machines. Give 1 ally an additional turn. THEN:",
+    "actions": [
+      {
+        "name": "Polearm (2x)",
+        "text": "(Reach 2) 2d8. OR:"
+      },
+      {
+        "name": "Shoot",
+        "text": "(Range 12) 2d8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Iron Legion",
+        "text": "Legionnaires adjacent to an ally have Medium armor and advantage on attacks; adjacent to 2 or more, Heavy armor and advantage 2."
+      }
+    ],
+    "notes": "No HP printed in the draft."
+  },
+  {
+    "name": "Legion Siegeworks",
+    "book": "M&M",
+    "page": 98,
+    "pdfPage": 52,
+    "group": "Iron Legion",
+    "habitat": "City & Village",
+    "levelText": "12",
+    "level": 12,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 150,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 1,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Inanimate War Engine",
+        "text": "Ignore all damage below 10. Requires 2 adjacent Legionnaires to fire."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Catapult",
+        "text": "(Range 8–20, 3x3 area) 8d8, Prone. Must reload next turn."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Iron Legion",
+        "text": "Legionnaires adjacent to an ally have Medium armor and advantage on attacks; adjacent to 2 or more, Heavy armor and advantage 2."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Mote of Fire",
+    "book": "M&M",
+    "page": 101,
+    "pdfPage": 53,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "1",
+    "level": 1,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Singe",
+        "text": "1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Smaller Motes of Fire can be domesticated into reliable cooking, camp, or lamp fires. They can be good pets, as long as you keep them fed and don't try to give them scritches.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      }
+    ],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57."
+  },
+  {
+    "name": "Living Flame",
+    "book": "M&M",
+    "page": 101,
+    "pdfPage": 53,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Burn (2x)",
+        "text": "(Reach 2) 1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A Mote of Fire that is overfed can grow into a Living Flame. These creatures possess an endless appetite for all things burnable, and their hunger only grows with each new act of destruction.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      }
+    ],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57."
+  },
+  {
+    "name": "Roaring Blaze",
+    "book": "M&M",
+    "page": 101,
+    "pdfPage": 53,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Scorch (2x)",
+        "text": "(Reach 3) 1d10+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "They hunt in packs, circling their prey to cut off any chance of escape. The unique plural term for a group of Blazes is, aptly, a \"devastation.\"",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      }
+    ],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57."
+  },
+  {
+    "name": "Raging Inferno",
+    "book": "M&M",
+    "page": 101,
+    "pdfPage": 53,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 104,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Incinerate (2x)",
+        "text": "(Reach 4) 1d10+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Stronger elementals attack first, wasting powerful Searing Strikes.",
+      "harder": "Weaker elementals attack first to set up Searing Strikes for stronger elementals. Weaker ones can attack allied elementals to boost their power for a turn."
+    },
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      }
+    ],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57. Flavor is an 'XX' placeholder; tactics read as advice for the whole Fire Elemental family."
+  },
+  {
+    "name": "Firelord Blackflame",
+    "book": "M&M",
+    "page": 101,
+    "pdfPage": 53,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "9",
+    "level": 9,
+    "size": "Large",
+    "kind": null,
+    "role": "solo",
+    "armor": "none",
+    "hp": 200,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero, choose 1:",
+    "actions": [
+      {
+        "name": "Opening Move",
+        "text": "Summon 2 Motes of Fire/hero."
+      },
+      {
+        "name": "Incinerate",
+        "text": "(Cone 4) 1d10"
+      },
+      {
+        "name": "Heart of the Firelord",
+        "text": "Deal 1 fire damage to an ally, they act twice on their next turn."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(100hp) Summon 1 Living Flame/hero."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "(100hp) Summon 1 Roaring Blaze/hero."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Minimize the heroes in your Incinerate cone. Have his summoned creatures attacks creatures not yet damaged by fire. Keep him safely away from heroes, use his summons to protect him.",
+      "harder": "Incinerate all heroes once each round, and rely on the summons to deal most of the damage. Let him soak up damage so he can summon more enemies too soon. Include fire elementals in the Incinerate to boost their damage."
+    },
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      }
+    ],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57. Book note: \"If the heroes focus-fire him too quickly, they'll find themselves quickly overwhelmed with a Deadly encounter!\""
+  },
+  {
+    "name": "Fire Giant",
+    "book": "M&M",
+    "page": 102,
+    "pdfPage": 54,
+    "group": null,
+    "habitat": "Fiery Domain",
+    "levelText": "15",
+    "level": 15,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Deep Burn",
+        "text": "Roll with advantage against targets that have taken fire damage this round."
+      },
+      {
+        "name": "Cinder Armor",
+        "text": "Vulnerable to Ice. When crit or dealt Ice damage: (AoE, Reach 2) 1d20 fire damage & Blind 1 round."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Flamestrike",
+        "text": "(Reach 16) 1d20+10 damage. +1d20 if beyond Reach 8."
+      },
+      {
+        "name": "Molten Hammer",
+        "text": "(Cone 3) 1d20+10."
+      }
+    ],
+    "bloodied": {
+      "name": "Meltdown",
+      "text": "(60hp) (Reaction: Reach 8) 1d20 fire damage to all enemies."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Spread damage out to use Deep Burn as little as possible. Flamestrike nearby heroes.",
+      "harder": "Focus fire heroes to increase damage, use Molten Hammer on groups of heroes hoping to Interpose for one another. Remember, advantage from Blind & Deep Burn stack!"
+    },
+    "groupTraits": [],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57."
+  },
+  {
+    "name": "Steam Mephit",
+    "book": "M&M",
+    "page": 103,
+    "pdfPage": 54,
+    "group": null,
+    "habitat": "Fiery Domain",
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "Caustic Eruption. (Reach 2, AoE) 2d8."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Scald",
+        "text": "2d8"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These creatures are a great reminder as to why fire and water don't mix. Their scalding heat deals \"steam burns\" as nasty as any flame.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57."
+  },
+  {
+    "name": "Fire Snake",
+    "book": "M&M",
+    "page": 103,
+    "pdfPage": 54,
+    "group": null,
+    "habitat": "Fiery Domain",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Slither",
+        "text": "Can move through enemy spaces freely."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Scorch",
+        "text": "1d8 damage to all enemies you move through this turn."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Their fallen scales appear like small burnt coals. A distant relative of the phoenix, they set themselves ablaze instead of shedding their skins.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57."
+  },
+  {
+    "name": "Salamander",
+    "book": "M&M",
+    "page": 103,
+    "pdfPage": 54,
+    "group": null,
+    "habitat": "Fiery Domain",
+    "levelText": "7",
+    "level": 7,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Cruel",
+        "text": "Double damage VS interposing creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flaming Trident (2x)",
+        "text": "1d8+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "This amphibious creature burns constantly when exposed to oxygen. Anytime it emerges from the water, the combustible secretions of its skin catches alight.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Duplicate: an alternate layout of this block also appears on PDF page 57."
+  },
+  {
+    "name": "Young Red Dragon",
+    "book": "M&M",
+    "page": 105,
+    "pdfPage": 55,
+    "group": "Red Dragons",
+    "habitat": "Fiery Domain",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": "Wyrm, seeking to establish her domain",
+    "role": "solo",
+    "armor": "M",
+    "hp": 180,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero's turn choose 1 (recommended: in order)",
+    "actions": [
+      {
+        "name": "Immolating Breath",
+        "text": "Fly 8 into the air. Next turn deal 2d12+10 to a 4x4 area, then land knocking adjacent enemies Prone."
+      },
+      {
+        "name": "Crush",
+        "text": "(Prone creature, Reach 2) 2d12+10, 1 Wound."
+      },
+      {
+        "name": "Tooth & Claw",
+        "text": "(Reach 2) Move 6, 1d20+10 damage to 2 different targets."
+      },
+      {
+        "name": "Mighty Tail",
+        "text": "Knockback. (Cone 3) 1d12 damage (min 6), knockback 3, Prone."
+      }
+    ],
+    "bloodied": {
+      "name": "Immolate!",
+      "text": "At 90 HP: (Reach 12, AoE) 2d12 to all enemies."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0 HP, the Young Red Dragon is dying! 60 more damage and it dies! Until then, it is Enraged. Lose Medium armor, roll d20s instead of d12s."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Dragons shouldn't be easy (but you could take an additional turn in the air \"breathing in\" and you can telegraph the area you'll be targeting).",
+      "harder": "Take out your own whelps to enable Burninate! Combo Tail or Landing with Crush for big damage."
+    },
+    "groupTraits": [],
+    "notes": "Tactics are printed once after both Red Dragon blocks; copied to both."
+  },
+  {
+    "name": "Red Dragon",
+    "book": "M&M",
+    "page": 105,
+    "pdfPage": 55,
+    "group": "Red Dragons",
+    "habitat": "Fiery Domain",
+    "levelText": "12",
+    "level": 12,
+    "size": "Huge",
+    "kind": "Master of the Domain",
+    "role": "solo",
+    "armor": "M",
+    "hp": 330,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hatch Brood",
+        "text": "When Initiative is rolled, summon 2 Dragon Whelps/hero (minion size:d6)"
+      }
+    ],
+    "actionsIntro": "After each hero's turn choose 1 (recommended: in order)",
+    "actions": [
+      {
+        "name": "Immolating Breath",
+        "text": "Fly 10 into the air. Next turn choose a 6x6 area for 2d20+10 damage, then land knocking adjacent enemies Prone."
+      },
+      {
+        "name": "Crush",
+        "text": "(Prone creature, Reach 3) 2d20+20, 1 Wound."
+      },
+      {
+        "name": "Tooth & Claw",
+        "text": "(Reach 3) 1d20+10 damage to 2 different targets."
+      },
+      {
+        "name": "Massive Tail",
+        "text": "Knockback. (Cone 4) 1d20 damage (min 10), knockback 4, Prone."
+      },
+      {
+        "name": "BURNINATE!",
+        "text": "(If all Dragon Whelps are destroyed; 1 use) (Reach 30 AoE) 2d20+20."
+      }
+    ],
+    "bloodied": {
+      "name": "Fiery Doom Awaits!",
+      "text": "At 165 HP: Daze all enemies and end concentration. DC 17 WIL save or Frightened as well; fail by 10 or more, Dying."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0 HP, the Red Dragon is dying! 120 more damage and it dies! Lose Medium armor. Recharge BURNINATE!"
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Dragons shouldn't be easy (but you could take an additional turn in the air \"breathing in\" and you can telegraph the area you'll be targeting).",
+      "harder": "Take out your own whelps to enable Burninate! Combo Tail or Landing with Crush for big damage."
+    },
+    "groupTraits": [],
+    "notes": "Actions printed under the label 'Actions:'. Tactics are printed once after both Red Dragon blocks; copied to both."
+  },
+  {
+    "name": "Brimstone Blasthand",
+    "book": "M&M",
+    "page": 106,
+    "pdfPage": 56,
+    "group": "Brimstone Dwarves",
+    "habitat": "Fiery Domain",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 35,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 5,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Fire!",
+        "text": "(Cone 4) 4d8. Must spend an attack to reload after firing."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Start combat needing to reload",
+      "harder": "start combat loaded and ready to Fire!"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Brimstone Blackguard",
+    "book": "M&M",
+    "page": 106,
+    "pdfPage": 56,
+    "group": "Brimstone Dwarves",
+    "habitat": "Fiery Domain",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 5,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Blackguard",
+        "text": "You and adjacent allies reduce incoming damage by 5."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hack",
+        "text": "(Reach 2) 2d8+9"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Brimstone Whipmaster",
+    "book": "M&M",
+    "page": 106,
+    "pdfPage": 56,
+    "group": "Brimstone Dwarves",
+    "habitat": "Fiery Domain",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 5,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Obey!",
+        "text": "(Reach 6) Strike an ally for 1d8, give them 1 action to use immediately."
+      },
+      {
+        "name": "Get Over Here!",
+        "text": "(Reach 6) 1d8, pull anywhere closer."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Obey! on allies that are already low on HP.",
+      "harder": "Move the heroes into clumps to set up big AoE attacks from Blasthands. And whip Blasthands to make them reload faster."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Brimstone Scorchsmith",
+    "book": "M&M",
+    "page": 106,
+    "pdfPage": 56,
+    "group": "Brimstone Dwarves",
+    "habitat": "Fiery Domain",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 5,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Flame Forged",
+        "text": "When damaged, adjacent creatures take 5 fire damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Forge Take You!",
+        "text": "(2x) 2d8, Grappled (escape DC 13)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Place allies adjacent to be damaged by Flame Forged.",
+      "harder": "Combine with a Blackguard to protect allies from their damage. Whip them for tremendous fire damage when surrounded by heroes."
+    },
+    "groupTraits": [],
+    "notes": "Block continues at the top of the next column."
+  },
+  {
+    "name": "Cinderbelcher",
+    "book": "M&M",
+    "page": 106,
+    "pdfPage": 56,
+    "group": "Brimstone Dwarves",
+    "habitat": "Fiery Domain",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 2,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Pyretic End",
+        "text": "On death (Reach 3): 2d20 fire damage, Summon a Fire Elemental."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flamegout",
+        "text": "(Cone 4) 1d20+20. OR:"
+      },
+      {
+        "name": "Explosive Shell",
+        "text": "(2x2 area, Reach 12) 1d20+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "The fire elemental trapped within sees the heroes as its ally against the Dwarves.",
+      "harder": "The fire elemental attacks the heroes."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Iron Golem",
+    "book": "M&M",
+    "page": 106,
+    "pdfPage": 56,
+    "group": "Brimstone Dwarves",
+    "habitat": "Fiery Domain",
+    "levelText": "20",
+    "level": 20,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Iron Will",
+        "text": "Immune to being Hampered. Ignore any damage less than 10, reduce all damage taken to 10."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Iron Grip",
+        "text": "(Reach 2) 1d20, Grapple (escape DC 20). +1d20 for each round Grappled. Then:"
+      },
+      {
+        "name": "Dross Fumes",
+        "text": "(Reach 2, AoE) 1d20 damage."
+      }
+    ],
+    "bloodied": {
+      "name": "Mighty Leap",
+      "text": "(50hp) Immediately leap 12, knock creatures adjacent to where you land Prone. (1/round) You can use Iron Grip as a reaction when a creature would enter or leave your Reach."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavor is an 'xx' placeholder; no tactics printed."
+  },
+  {
+    "name": "Forge Tyrant Drunzir",
+    "book": "M&M",
+    "page": 107,
+    "pdfPage": 56,
+    "group": "Brimstone Dwarves",
+    "habitat": "Fiery Domain",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": "Brimstone Smith and his Manticore Mount",
+    "role": "solo",
+    "armor": "none",
+    "hp": 200,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Mounted Combatant: After each hero's turn choose 1:",
+    "actions": [
+      {
+        "name": "Maul",
+        "text": "Fly 10 then 2d6+6."
+      },
+      {
+        "name": "Venomous Stinger",
+        "text": "(Reach 2). d66"
+      }
+    ],
+    "bloodied": {
+      "name": "Intimidating Roar",
+      "text": "(100 hp) Heroes cannot move this round on a failed DC 15 WIL save."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0hp Drunzir's mount is slain. He loses flying, and gains Heavy armor. He cleaves off the manticore's stinger to wield as his weapon. After each hero's turn choose 1. Cruel Whip. Move 5, then (Reach 6) 2d6+6. On hit: pull 6 and Restrain (escape DC 15). OR: Venomous Stinger. D66 (with advantage is Restrained)."
+    },
+    "flavor": "As sturdy and hot-tempered as the caverns that forged him. Among the harsh clanging of hammers, screech of chains, and blasts of steam, Drunzir rules his domain from the great forge under the mountains. All who dwell in the burghs of brimstone fear his cruelty.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Printed as 'Venomous Stinger (Reach 2). d66'. Tactics are 'xx' placeholders."
+  },
+  {
+    "name": "Steam Mephit",
+    "book": "M&M",
+    "page": 108,
+    "pdfPage": 57,
+    "group": null,
+    "habitat": "Fiery Domain",
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "Caustic Eruption. (Reach 2, AoE) 2d8."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Scald",
+        "text": "2d8"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Alternate layout of the block on PDF page 54; kept as a separate entry. No flavor or tactics in this version."
+  },
+  {
+    "name": "Fire Snake",
+    "book": "M&M",
+    "page": 108,
+    "pdfPage": 57,
+    "group": null,
+    "habitat": "Fiery Domain",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Slither",
+        "text": "Can move through enemy spaces freely."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Scorch",
+        "text": "1d8 damage to any enemy you move through this turn."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Alternate layout of the block on PDF page 54; kept as a separate entry. Differs: Scorch hits 'any enemy' (PDF 54 says 'all enemies')."
+  },
+  {
+    "name": "Salamander",
+    "book": "M&M",
+    "page": 108,
+    "pdfPage": 57,
+    "group": null,
+    "habitat": "Fiery Domain",
+    "levelText": "7",
+    "level": 7,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Cruel",
+        "text": "Double damage VS interposing creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flaming Trident (2x)",
+        "text": "1d8+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Alternate layout of the block on PDF page 54; kept as a separate entry. No flavor or tactics in this version."
+  },
+  {
+    "name": "Mote of Fire",
+    "book": "M&M",
+    "page": 108,
+    "pdfPage": 57,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "1",
+    "level": 1,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Singe",
+        "text": "1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      }
+    ],
+    "notes": "Alternate layout of the block on PDF page 53; kept as a separate entry."
+  },
+  {
+    "name": "Living Flame",
+    "book": "M&M",
+    "page": 108,
+    "pdfPage": 57,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Burn (2x)",
+        "text": "(Reach 2) 1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      }
+    ],
+    "notes": "Alternate layout of the block on PDF page 53; kept as a separate entry."
+  },
+  {
+    "name": "Roaring Blaze",
+    "book": "M&M",
+    "page": 108,
+    "pdfPage": 57,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Scorch (2x)",
+        "text": "(Reach 3) 1d10+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      }
+    ],
+    "notes": "Alternate layout of the block on PDF page 53; kept as a separate entry."
+  },
+  {
+    "name": "Raging Inferno",
+    "book": "M&M",
+    "page": 108,
+    "pdfPage": 57,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 104,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Incinerate (2x)",
+        "text": "(Reach 4) 1d10+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Stronger elementals attack first, wasting Searing Strikes.",
+      "harder": "Weaker elementals attack first to set up Searing Strikes for stronger elementals. Weaker ones can attack allied elementals to boost their power for a turn."
+    },
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      }
+    ],
+    "notes": "Alternate layout of the block on PDF page 53; kept as a separate entry. Flavor is lorem ipsum placeholder; tactics continue at top of next column."
+  },
+  {
+    "name": "Firelord Blackflame",
+    "book": "M&M",
+    "page": 108,
+    "pdfPage": 57,
+    "group": "Fire Elementals",
+    "habitat": "Fiery Domain",
+    "levelText": "9",
+    "level": 9,
+    "size": "Large",
+    "kind": null,
+    "role": "solo",
+    "armor": "none",
+    "hp": 200,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Opening Move",
+        "text": "Summon 2 Motes of Fire/hero."
+      }
+    ],
+    "actionsIntro": "After each hero, choose 1:",
+    "actions": [
+      {
+        "name": "Incinerate",
+        "text": "(Cone 4) 1d10"
+      },
+      {
+        "name": "Heart of the Firelord",
+        "text": "Deal 1 fire damage to an ally, they act twice on their next turn."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(100hp) Summon 1 Living Flame/hero."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "(100hp) Summon 1 Roaring Blaze/hero."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Minimize the heroes in your Incinerate cone. Have his summoned creatures attacks creatures not yet damaged by fire. Keep him safely away from heroes, use his summons to protect him.",
+      "harder": "Incinerate all heroes once each round, and rely on the summons to deal most of the damage. Let him soak up damage so he can summon more enemies too soon. Include fire elementals in the Incinerate to boost their damage."
+    },
+    "groupTraits": [
+      {
+        "name": "Searing Strikes",
+        "text": "Deals 2x damage to creatures already dealt fire damage this round."
+      },
+      {
+        "name": "Stoke the Flames",
+        "text": "Ignore Wind or Fire damage (deal +LVL damage for 1 round)."
+      },
+      {
+        "name": "Vulnerable to Ice damage",
+        "text": "Steam Cloud (Reach 6, AoE LVL fire damage, obscured for 1 round)"
+      }
+    ],
+    "notes": "Alternate layout of the block on PDF page 53; kept as a separate entry. Header printed 'Level 9 Large Solo'. Differs: Opening Move is a separate trait, not a choose-1 option. Flavor is lorem ipsum placeholder. Book note: \"Heroes taking him down too quickly—they'll find themselves overwhelmed with a Deadly encounter!\""
+  },
+  {
+    "name": "Fire Giant",
+    "book": "M&M",
+    "page": 109,
+    "pdfPage": 57,
+    "group": null,
+    "habitat": "Fiery Domain",
+    "levelText": "15",
+    "level": 15,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "ice"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Cinder Armor",
+        "text": "Vulnerable to Ice. When crit or dealt Ice damage: (AoE, Reach 2) 1d20 fire damage & Blind 1 round."
+      },
+      {
+        "name": "Deep Burn",
+        "text": "Roll with advantage against targets that have taken fire damage this round."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Flamestrike",
+        "text": "(Reach 16) 1d20+10 damage. +1d20 if beyond Reach 8."
+      },
+      {
+        "name": "Molten Hammer",
+        "text": "(Cone 3) 1d20+10."
+      }
+    ],
+    "bloodied": {
+      "name": "Meltdown",
+      "text": "(Reaction: at 60 HP, Reach 8) 1d20 fire damage to all enemies."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Alternate layout of the block on PDF page 54; kept as a separate entry. 'Choose twice:' is printed at the end of the Deep Burn text. No flavor or tactics in this version."
+  },
+  {
+    "name": "Iron Goat",
+    "book": "M&M",
+    "page": 111,
+    "pdfPage": 58,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Stubborn",
+        "text": "Cannot be moved against its will except by Large+ creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ram",
+        "text": "2d8. Knockback a number of spaces equal to the distance moved toward the target."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Their primary mode of dealing with predators (or heroes) is to knock them off a steep cliff.",
+    "tactics": {
+      "easier": "Knock heroes straight back and chase them down.",
+      "harder": "Knock heroes off cliffs or into rocks for extra forced movement damage. Make them climb back up to reach you, then do it again!"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Ice Troll",
+    "book": "M&M",
+    "page": 111,
+    "pdfPage": 58,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "13",
+    "level": 13,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 166,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Regenerate",
+        "text": "Does not die at 0 HP. Only fire, radiant, or a crit while at 0 HP can kill it."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Claws",
+        "text": "(Reach 2) 1d12+10. On damage, Prone."
+      },
+      {
+        "name": "Bite",
+        "text": "(A Prone creature) 1d4+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Known for their brutality and ravenous appetites, there is a long-running debate among scholars about whether Trolls are a type of giant Goblin, or a goblinesque Giant.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Young Remorhaz",
+    "book": "M&M",
+    "page": 111,
+    "pdfPage": 58,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ambush Predator",
+        "text": "Acts before vs lower level heroes"
+      },
+      {
+        "name": "Living Blast Furnace",
+        "text": "(1/round) Creatures who come within Reach 1 suffer 1d10 fire damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Enwrap (2x)",
+        "text": "1d10, Grapple (escape DC 14) OR:"
+      },
+      {
+        "name": "Swallow",
+        "text": "(VS Grappled creature) Swallowed: D44 damage at the beginning of your turn, your attacks ignore armor."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Remorhaz develop their hunting skills early, and leave the nest at a very young age. Although smaller, and with softer carapaces, a Young Remorhaz is a still a formidable threat.",
+    "tactics": {
+      "easier": "Focus on grappling, only Swallow when nearing death.",
+      "harder": "Move often to apply Living Blast Furnace to all heroes each round. Swallow creatures who can easily ignore your armor anyway."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Remorhaz",
+    "book": "M&M",
+    "page": 111,
+    "pdfPage": 58,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "17",
+    "level": 17,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ambush Predator",
+        "text": "Acts first."
+      },
+      {
+        "name": "Living Blast Furnace",
+        "text": "(1/round) Creatures who come within Reach 1 suffer 2d10 fire damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Enwrap (2x)",
+        "text": "2d10, Grapple (escape DC 16) OR:"
+      },
+      {
+        "name": "Swallow",
+        "text": "(VS Grappled creature) Swallowed: D88 damage at the beginning of your turn, your attacks ignore armor."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A crested, centipede-like terror of the wastes. Remorhaz can spit blue flame, melting tunnels in the otherwise permanent ice at the edges of the world.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Yeti",
+    "book": "M&M",
+    "page": 111,
+    "pdfPage": 58,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 140,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Choose 1:",
+    "actions": [
+      {
+        "name": "Frost Breath",
+        "text": "(1 use, Cone 4) 3d10, Slowed."
+      },
+      {
+        "name": "Claws (2x)",
+        "text": "1d10+5."
+      },
+      {
+        "name": "Icicle Skewer",
+        "text": "(Range 8) 2d10, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Not just accustomed to the cold, Yetis live and breathe ice. Great bear-like brutes, they are found inhabiting caves on remote and forbidding mountain peaks, and do not welcome visitors.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Abominable Yeti",
+    "book": "M&M",
+    "page": 111,
+    "pdfPage": 58,
+    "group": null,
+    "habitat": "Icy & Mountain Peaks",
+    "levelText": "14",
+    "level": 14,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 180,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Choose 1:",
+    "actions": [
+      {
+        "name": "Claws (2x)",
+        "text": "2d10+10"
+      },
+      {
+        "name": "Dreadful Eye",
+        "text": "(Reach 12) 30 damage – WIL save; 10 or less, cannot move next turn."
+      },
+      {
+        "name": "Limb from Limb",
+        "text": "(vs a creature that crit you this round). 2d20+20, Grapple. If this drops them to 0 hp, target loses a limb (their choice: disadvantage on attacks or half speed until mended)—can be mended by spending 10hp worth of magical healing)."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 90hp gain Frost breath. (1 use, Cone 5) 2d20+20, Slowed."
+    },
+    "lastStand": null,
+    "flavor": "Yetis can live for well over 100 hundred years, and are not fully mature until near the end of that lifespan. Few have encountered a fully grown Yeti, and fewer yet returned to tell the tale.",
+    "tactics": {
+      "easier": "Use Dreadful Eye against close-range targets.",
+      "harder": "Lock back heroes with big melee dice using Dreadful Eye. Punish Cheats and other crit-fishing heroes with Limb from Limb."
+    },
+    "groupTraits": [],
+    "notes": null
+  }
+]

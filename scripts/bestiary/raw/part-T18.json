@@ -1,0 +1,3676 @@
+[
+  {
+    "name": "Alaric Draegoth, the Crimson Count",
+    "book": "M&M",
+    "page": 149,
+    "pdfPage": 77,
+    "group": "Vampires",
+    "habitat": null,
+    "levelText": "16",
+    "level": 16,
+    "size": "Medium",
+    "kind": "Vampire Lord",
+    "role": "solo",
+    "armor": "none",
+    "hp": 320,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "All ++",
+    "resist": [],
+    "vuln": [
+      "radiant"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sanguine Cloak",
+        "text": "(1/turn) Deal 1d10 necrotic damage whenever you are hit, the attack is reduced by this amount."
+      },
+      {
+        "name": "Sunscorn",
+        "text": "Vulnerable to radiant. After taking radiant damage, use Beguile as a Reaction, they roll with disadvantage."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn, summon 1 blood bat minion (d10) within 8 spaces, then choose 1:",
+    "actions": [
+      {
+        "name": "Ebonfang",
+        "text": "1d10+15 damage, your target is considered Bloodied for 1 round. Fly 8 before or afterward."
+      },
+      {
+        "name": "Beguile",
+        "text": "(If no one is Beguiled) Beguile a target on a failed DC 18 WIL save (w/ disadvantage if Bloodied)."
+      },
+      {
+        "name": "Beguiled",
+        "text": "Dazed. Cannot Defend or allow anyone to Interpose for you. Damage ends."
+      },
+      {
+        "name": "Beckon",
+        "text": "Move a Beguiled creature adjacent to you and bite them: 2d10+30 damage and 1 Wound."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 160 HP, gain Mistform. No longer vulnerable to radiant. Bat Decoy. (1/round) Whenever Alaric would take damage, instead first swap places with a bat minion."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Alaric is dying! 160 more damage and he dies. Until then, his Sanguine Cloak, attacks, and bats roll d20s instead of d10s."
+    },
+    "flavor": "Count Alaric is an ancient Vampire of such profound power that nature and reality are warped by his presence. Where he settles, nights grow unnaturally long, as though the sun is afraid to rise. Beasts become rabid and vicious, vermin reproduce until they fill the alleys. Before long, locals become despondent and hopeless as the Vampires he spawns run amok, and spread to nearby settlements. Once a region collapses under his influence, he will search for new hunting grounds.\n\nAlaric is rarely seen outside his estate, preferring his Thralls to bring him entertainment. Although he presents the air of a handsome sophisticate, Alaric is emotional, passionate, and prone to flights of fancy. The subjects of his obsessions are carelessly discarded the moment something else catches his eye. As long as the Count remains alive, everyone in his domain is in peril. If the heroes lack sufficient motivation, a friendly NPC may go missing, last seen at his estate.",
+    "tactics": {
+      "easier": "Bats: They may clump up near hero with high armor, or one with an AoE ability. Or they may move twice and instead of attacking.\nBeguile: Target heroes that are not Bloodied or ones with advantage on their WIL saves.\nBeckon. Use this less often, use Ebonfang more.\nMonologue. Arrogant and perilously self-absorbed, he may underestimate the heroes and spend a turn or two taunting them, telling them of his plans or insulting them for their impudence. \"You'd make lovely thralls…\"",
+      "harder": "Bats: Alaric is far deadlier with his bat swarms. If they’re being shut down, spread them out.\nMobility: Outdistance melee heroes using Ebonfang, targeting the back line with Beguile and Beckon at every opportunity."
+    },
+    "groupTraits": [],
+    "notes": "Header 'Level 16 Solo Vampire Lord'; actions intro printed after 'SOLO.'. 'Beguiled' bullet is a condition definition printed among the choices. Tactics are the page's 'To reduce/increase the difficulty' lists; separate 'Running Alaric' advice paragraph not included. Flavor is the two-paragraph page intro."
+  },
+  {
+    "name": "Drow Scout",
+    "book": "M&M",
+    "page": 152,
+    "pdfPage": 79,
+    "group": "Drow",
+    "habitat": "Underground",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Poisoned Crossbow",
+        "text": "(Range 8) 1d8+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Low-ranking warriors, who rely on stealth and speed. Their role is to soften targets for others with poisoned bolts.",
+    "tactics": {
+      "easier": "Stay near melee heroes to be easily dispatched.",
+      "harder": "Shoot from max Range. Spread out Poison then focus fire."
+    },
+    "groupTraits": [
+      {
+        "name": "Ambush Combatants",
+        "text": "Drow always go first in combat (unless surprised)."
+      },
+      {
+        "name": "Cruel Poisoners",
+        "text": "On Damage: Poisoned (healing ends). Roll d20s instead VS Poisoned or Restrained creatures."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Drow Warrior",
+    "book": "M&M",
+    "page": 152,
+    "pdfPage": 79,
+    "group": "Drow",
+    "habitat": "Underground",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Blade Flurry",
+        "text": "(2x) 1d8+5 OR:"
+      },
+      {
+        "name": "Poisoned Crossbow",
+        "text": "(Range 8) 1d8+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These serve as artisans, spies, or soldiers, hoping to gain favor or simply survive another cycle in the merciless hierarchy of Drow society and in the shadow of the noble houses.",
+    "tactics": {
+      "easier": "Use the Poisoned Crossbow for less damage output",
+      "harder": "Use Blade Flurry VS Hampered targets for tremendous damage output!"
+    },
+    "groupTraits": [
+      {
+        "name": "Ambush Combatants",
+        "text": "Drow always go first in combat (unless surprised)."
+      },
+      {
+        "name": "Cruel Poisoners",
+        "text": "On Damage: Poisoned (healing ends). Roll d20s instead VS Poisoned or Restrained creatures."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Drow Arachnomancer",
+    "book": "M&M",
+    "page": 152,
+    "pdfPage": 79,
+    "group": "Drow",
+    "habitat": "Underground",
+    "levelText": "7",
+    "level": 7,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Web Wall",
+        "text": "(Single Use) Fill up to 8 empty spaces in a straight line with tangled webs. Enemies or objects who touch this area are Restrained (escape DC 13). Lasts until you die."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Fanglash",
+        "text": "2d8. On Damage: Poison 2 (rolls are made with disadvantage 2; healing ends). OR:"
+      },
+      {
+        "name": "Pyrotoxin",
+        "text": "(Range 8) 2d20 (to a Poisoned creature; ending the condition) this damage cannot be Interposed or Defended."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Trained in elite Drow academies, he controls battles with sticky webs and venomous spells. His magic spreads poison or ignites it into searing energy.",
+    "tactics": {
+      "easier": "Move out into the open and use Fanglash on already Poisoned Heroes. Allow Web Wall to disappear when bloodied, crit or at will.",
+      "harder": "Use Web Wall to split up the party of heroes, and target low HP heroes with Pyrotoxin at max Range."
+    },
+    "groupTraits": [
+      {
+        "name": "Ambush Combatants",
+        "text": "Drow always go first in combat (unless surprised)."
+      },
+      {
+        "name": "Cruel Poisoners",
+        "text": "On Damage: Poisoned (healing ends). Roll d20s instead VS Poisoned or Restrained creatures."
+      }
+    ],
+    "notes": "Followed by a 'GM note!' box: a Restrained creature may not be Interposed for since it can't be pushed out of the way (GM may allow it for an easier encounter)."
+  },
+  {
+    "name": "Drow Elite Warrior",
+    "book": "M&M",
+    "page": 152,
+    "pdfPage": 79,
+    "group": "Drow",
+    "habitat": "Underground",
+    "levelText": "9",
+    "level": 9,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Deft Parry",
+        "text": "The first attack against you each round misses."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Blade Flurry",
+        "text": "(2x) 1d8+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Bodyguard for Drow nobility, they act as enforcers and shock troopers. In combat, he fights with precision and cruelty.",
+    "tactics": {
+      "easier": "Act first and target non-Hampered heroes",
+      "harder": "Act last and prioritize Hampered heroes."
+    },
+    "groupTraits": [
+      {
+        "name": "Ambush Combatants",
+        "text": "Drow always go first in combat (unless surprised)."
+      },
+      {
+        "name": "Cruel Poisoners",
+        "text": "On Damage: Poisoned (healing ends). Roll d20s instead VS Poisoned or Restrained creatures."
+      }
+    ],
+    "notes": "Page also has a 'No TPK!' box: Drow take captives rather than deal a final Wound."
+  },
+  {
+    "name": "Drider",
+    "book": "M&M",
+    "page": 152,
+    "pdfPage": 79,
+    "group": "Drow",
+    "habitat": "Underground",
+    "levelText": "11",
+    "level": 11,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Horrible Sight",
+        "text": "Upon first sight of this creature, enemies become Frightened on a failed DC 15 WIL save."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Charge",
+        "text": "3d20. On hit: Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Terrifying abominations—half Drow, half monstrous spider. Only the most dedicated Drow are allowed the privilege of becoming like their queen.",
+    "tactics": {
+      "easier": "Knock creatures Prone before attacking with Ranged Drow.",
+      "harder": "Follow up Drider attacks with Warrior's Blade Flurry."
+    },
+    "groupTraits": [
+      {
+        "name": "Ambush Combatants",
+        "text": "Drow always go first in combat (unless surprised)."
+      },
+      {
+        "name": "Cruel Poisoners",
+        "text": "On Damage: Poisoned (healing ends). Roll d20s instead VS Poisoned or Restrained creatures."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Drow Priestess",
+    "book": "M&M",
+    "page": 152,
+    "pdfPage": 79,
+    "group": "Drow",
+    "habitat": "Underground",
+    "levelText": "16",
+    "level": 16,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Dark Benediction",
+        "text": "Allies' attacks cannot miss."
+      },
+      {
+        "name": "Deathcry: Horrible Emergence",
+        "text": "Transform into a Drider."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Broodmother",
+        "text": "Summon 3 Spiderling minions within Reach 8 (size: d8). Then:"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Feared and fanatical servants of the Spider Queen, they wield cruel authority over the Drow. In any negotiation, she is the highest authority, and her word is absolute.",
+    "tactics": {
+      "easier": "Avoid movement, move minions in groups, toward heroes that have AoE abilities that can easily take them out. Minions act next round.",
+      "harder": "Minions act immediately, spread them out so that multiple are not easily taken out with single attacks."
+    },
+    "groupTraits": [
+      {
+        "name": "Ambush Combatants",
+        "text": "Drow always go first in combat (unless surprised)."
+      },
+      {
+        "name": "Cruel Poisoners",
+        "text": "On Damage: Poisoned (healing ends). Roll d20s instead VS Poisoned or Restrained creatures."
+      }
+    ],
+    "notes": "Broodmother ends with 'Then:' but nothing follows it in print."
+  },
+  {
+    "name": "Infested Husk",
+    "book": "M&M",
+    "page": 153,
+    "pdfPage": 79,
+    "group": "Drow Companions",
+    "habitat": "Underground",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "Summon 1d8 spiderling minions."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Mindless Charge",
+        "text": "1d8. On damage: Knock Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Listed under 'Drow Companions'; Drow family traits not applied."
+  },
+  {
+    "name": "Blood Spider",
+    "book": "M&M",
+    "page": 153,
+    "pdfPage": 79,
+    "group": "Drow Companions",
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 33,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Skitter",
+        "text": "When damaged, Move."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Enweb",
+        "text": "Restrain a creature (escape DC 10). OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(Hampered target) 2d12+5 (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Listed under 'Drow Companions'; Drow family traits not applied."
+  },
+  {
+    "name": "Deep Gnome",
+    "book": "M&M",
+    "page": 154,
+    "pdfPage": 80,
+    "group": "Deep Gnomes",
+    "habitat": "Underground",
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 5,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Rockmeld",
+        "text": "Ranged attacks have disadvantage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Rockstep",
+        "text": "Move through solid rock (as long as you don’t end movement there). Then:"
+      },
+      {
+        "name": "Hey, Over Here!",
+        "text": "(Range 8) 1d6+6. On hit, Taunted."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavor and tactics are 'xx' placeholders in the draft."
+  },
+  {
+    "name": "Deep Gnome Tinkerer",
+    "book": "M&M",
+    "page": 154,
+    "pdfPage": 80,
+    "group": "Deep Gnomes",
+    "habitat": "Underground",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 5,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Rockmeld",
+        "text": "Ranged attacks have disadvantage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Rockstep",
+        "text": "Move through solid rock (as long as you don’t end movement there). Then:"
+      },
+      {
+        "name": "Tinker!",
+        "text": "Summon 2 tinkerbot minions (size:d6), they act immediately."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavor and tactics are 'xx' placeholders in the draft."
+  },
+  {
+    "name": "Fungusfolk Sentinel",
+    "book": "M&M",
+    "page": 155,
+    "pdfPage": 80,
+    "group": "Fungusfolk",
+    "habitat": "Underground",
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 22,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hazardous Ground",
+        "text": "(Reach 6) Enemies suffer 1 damage/space moved in this area."
+      },
+      {
+        "name": "On Death: Calming Spores",
+        "text": "(Reach 2) Daze."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Enticing Spores",
+        "text": "(Reach 6) 1d4. On hit, spend 1 action moving toward you +1 damage/space moved."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Peacekeepers in fungus communes, their psychic connection to the earth warns and defends against threats.",
+    "tactics": {
+      "easier": "Don’t retreat. Target heroes adjacent to you and don't spend their action moving.",
+      "harder": "Continually withdraw to advantageous terrain. Force heroes to take damage pursuing."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Fungusfolk Psychotrope",
+    "book": "M&M",
+    "page": 155,
+    "pdfPage": 80,
+    "group": "Fungusfolk",
+    "habitat": "Underground",
+    "levelText": "3",
+    "level": 3,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 36,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death: Hallucinatory Spores",
+        "text": "(Reach 2) Hallucinate."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Headbutt",
+        "text": "1d4. On hit, Hallucinate: the GM immediately spends an action for you, moving or making a basic attack."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Spiritual mushroom visionaries, Psychotropes motivate their communites to …",
+    "tactics": {
+      "easier": "Move heroes randomly or safely while Hallucinating.",
+      "harder": "Stay close to Sentinels, make heroes retreat out of their reach while Hallucinating, or into other hazards."
+    },
+    "groupTraits": [],
+    "notes": "Flavor text is unfinished in the draft (ends with '…')."
+  },
+  {
+    "name": "Fungusfolk Sovereign",
+    "book": "M&M",
+    "page": 155,
+    "pdfPage": 80,
+    "group": "Fungusfolk",
+    "habitat": "Underground",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mycelial Network",
+        "text": "(Reach 100) Fungus folk gain advantage on attacks."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sovereign Command",
+        "text": "Trigger the On Death effect of an ally. Then:"
+      },
+      {
+        "name": "Choking Spores",
+        "text": "(Reach 12, AoE) 2d4 (ignoring Defense)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The eldest Fungusfolk share their wisdom telepathically, turning their peers into efficient warriors.",
+    "tactics": {
+      "easier": "Command a Sentinal to wast its Daze on an already Dazed hero, make a hero without any actions hallucinate.",
+      "harder": "Stay out of reach and command from cover or even a completely different cave system!"
+    },
+    "groupTraits": [],
+    "notes": "Tactics continue at the top of the next column."
+  },
+  {
+    "name": "Giant Spider",
+    "book": "M&M",
+    "page": 156,
+    "pdfPage": 81,
+    "group": "Deep Spiders",
+    "habitat": "Underground",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 27,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": 6,
+    "burrow": null,
+    "movementText": "climb",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shoot Web",
+        "text": "(Range 6) 1d8+2, Restrained (escape DC 12, or any slashing/fire damage). OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(vs Hampered target) 2d8+4. On damage, Poisoned (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "With webs strong as steel cables, these arachnids have grown to absurd proportions to compete with other creatures of the deep for food.",
+    "tactics": {
+      "easier": "Web up targets from a distance and and move in one by one. Let heroes target you one at a time.",
+      "harder": "Use traps or terrain for cover as you shoot web, have allies Hamper weak heroes and immediately bite!"
+    },
+    "groupTraits": [],
+    "notes": "Speed icon printed with the word 'CLIMB' and no number; recorded as Speed 6 with climb 6. Tactics are the 'Deep Spider Tactics' group lines (own tactics absent or 'xx')."
+  },
+  {
+    "name": "Ettercap",
+    "book": "M&M",
+    "page": 156,
+    "pdfPage": 81,
+    "group": "Deep Spiders",
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 49,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": 6,
+    "burrow": null,
+    "movementText": "climb",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Silenced",
+        "text": "Cannot cast spells or use other abilities that require speaking (e.g. Commander’s Orders)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Web Garrote",
+        "text": "1d8+2, Grappled (escape DC 13), Silenced until target escapes."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hunters that work symbiotically with giant spiders. They have primitive intelligence, and set traps and lures to compliment the great arachnids' webs.",
+    "tactics": {
+      "easier": "Web up targets from a distance and and move in one by one. Let heroes target you one at a time.",
+      "harder": "Use traps or terrain for cover as you shoot web, have allies Hamper weak heroes and immediately bite!"
+    },
+    "groupTraits": [],
+    "notes": "Speed icon printed with the word 'CLIMB' and no number; recorded as Speed 6 with climb 6. 'Silenced' is a condition definition box. Tactics are the 'Deep Spider Tactics' group lines (own tactics absent or 'xx')."
+  },
+  {
+    "name": "Nestweaver",
+    "book": "M&M",
+    "page": 156,
+    "pdfPage": 81,
+    "group": "Deep Spiders",
+    "habitat": "Underground",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 54,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": 6,
+    "burrow": null,
+    "movementText": "climb",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Infest",
+        "text": "Summon 2 spider minions (d8). Then choose 1:"
+      },
+      {
+        "name": "Shoot Web",
+        "text": "(Range 6) 1d8+2, Restrained (escape DC 12, or any slashing/fire damage). OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(Hampered target) 3d8+6 and Poisoned (magical healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These ancient spiders were once apex predators. Their young crowd the fissures of the deep, warming themselves on geothermal vents.",
+    "tactics": {
+      "easier": "Web up targets from a distance and and move in one by one. Let heroes target you one at a time.",
+      "harder": "Use traps or terrain for cover as you shoot web, have allies Hamper weak heroes and immediately bite!"
+    },
+    "groupTraits": [],
+    "notes": "Speed icon printed with the word 'CLIMB' and no number; recorded as Speed 6 with climb 6. Tactics are the 'Deep Spider Tactics' group lines (own tactics absent or 'xx')."
+  },
+  {
+    "name": "Grick Wormlet",
+    "book": "M&M",
+    "page": 156,
+    "pdfPage": 81,
+    "group": "Creatures of the Deep",
+    "habitat": "Underground",
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Tentacles",
+        "text": "1d4, if 2 or more wormlets hit a single creature, Grapple (escape DC 4)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Juvenile Gricks haven’t developed their predatory instincts, but will lash out blindly at any creature it doesn’t recognize.",
+    "tactics": {
+      "easier": "Grasp martial heroes with tentacles—but save the beak only for those that can take it.",
+      "harder": "Swarm targets with Wormlets to set up powerful beak attacks for their bigger kin. Wormlets may be easy to escape, but it still takes an action!"
+    },
+    "groupTraits": [
+      {
+        "name": "Eyeless Sight",
+        "text": "Can see in the dark."
+      }
+    ],
+    "notes": "Block split across pages 156-157. Tactics are the shared 'Grick Tactics' lines."
+  },
+  {
+    "name": "Grick",
+    "book": "M&M",
+    "page": 157,
+    "pdfPage": 81,
+    "group": "Creatures of the Deep",
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Grasping Tentacles",
+        "text": "2d4 with advantage. Grappled (escape DC 14, or when crit). OR:"
+      },
+      {
+        "name": "Crushing Beak",
+        "text": "(VS Grappled) 2d4+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A man-sized worm sporting thick leathery skin and a tentacle-laden beak. Flexible tunnellers and capable ambushers.",
+    "tactics": {
+      "easier": "Grasp martial heroes with tentacles—but save the beak only for those that can take it.",
+      "harder": "Swarm targets with Wormlets to set up powerful beak attacks for their bigger kin. Wormlets may be easy to escape, but it still takes an action!"
+    },
+    "groupTraits": [
+      {
+        "name": "Eyeless Sight",
+        "text": "Can see in the dark."
+      }
+    ],
+    "notes": "Tactics are the shared 'Grick Tactics' lines on p156."
+  },
+  {
+    "name": "Grick Alpha",
+    "book": "M&M",
+    "page": 157,
+    "pdfPage": 81,
+    "group": "Creatures of the Deep",
+    "habitat": "Underground",
+    "levelText": "12",
+    "level": 12,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hatch Brood",
+        "text": "Summon 2 Wormlets, then choose 1:"
+      },
+      {
+        "name": "Grasping Tentacles",
+        "text": "(Reach 2) 2d4+10 with advantage. Grappled (escape DC 14, or when crit). OR:"
+      },
+      {
+        "name": "Crushing Beak",
+        "text": "(VS Grappled) 2d4+30."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "When plentiful food is available, they grow additional tentacles and thick layers of muscle, bulking their body. Wormlets always follow, hoping for scraps the Alpha leaves behind.",
+    "tactics": {
+      "easier": "Grasp martial heroes with tentacles—but save the beak only for those that can take it.",
+      "harder": "Swarm targets with Wormlets to set up powerful beak attacks for their bigger kin. Wormlets may be easy to escape, but it still takes an action!"
+    },
+    "groupTraits": [
+      {
+        "name": "Eyeless Sight",
+        "text": "Can see in the dark."
+      }
+    ],
+    "notes": "Tactics are the shared 'Grick Tactics' lines on p156."
+  },
+  {
+    "name": "Deep Cnidar",
+    "book": "M&M",
+    "page": 157,
+    "pdfPage": 81,
+    "group": "Creatures of the Deep",
+    "habitat": "Underground",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Psion",
+        "text": "Roll an INT save for initiative instead, enemies are inflicted with Psionic Flames: Each action spent beyond the first each turn, deals 4 damage. Half damage if a 12 or higher is rolled."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stinging Tentacles",
+        "text": "1d8+10. On damage, Dazed. OR:"
+      },
+      {
+        "name": "Crushing Beak",
+        "text": "(VS a creature with fewer than 3 actions) 1d8+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Flying invertebrates with jellyfish-like bodies, which hide in holes and crevices to sting unsuspecting prey.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Eyeless Sight",
+        "text": "Can see in the dark."
+      }
+    ],
+    "notes": "Tactics are 'xx' placeholders. Spelled 'Cnidnar' in the Deep Spider Tactics text."
+  },
+  {
+    "name": "Umber Hulk",
+    "book": "M&M",
+    "page": 157,
+    "pdfPage": 81,
+    "group": "Creatures of the Deep",
+    "habitat": "Underground",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Confounding Pheromones",
+        "text": "(Reach 6) Heroes make a DC 15 WIL save at the end of their turns or become Confused—each time they fail, gain advantage 1 on the save this encounter."
+      },
+      {
+        "name": "Confused",
+        "text": "The GM spends 1 action this round."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Mandible & Claws (2×)",
+        "text": "1d10+10 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Powerful thick-shelled bipedal insects, they dig tunnels large enough for humanoids to walk through comfortably, searching for choice rocks to eat.",
+    "tactics": {
+      "easier": "Use Confusion to move heroes around, rather than attack.",
+      "harder": "Bait heroes around corners and into tight corridors, where they can’t escape your pheromones. Pit confused heroes against each other, or make them Interpose for you."
+    },
+    "groupTraits": [
+      {
+        "name": "Eyeless Sight",
+        "text": "Can see in the dark."
+      }
+    ],
+    "notes": "'Confused' is a condition definition box. Flavor/tactics continue in the next column."
+  },
+  {
+    "name": "Deep Giants",
+    "book": "M&M",
+    "page": 157,
+    "pdfPage": 81,
+    "group": "Creatures of the Deep",
+    "habitat": "Underground",
+    "levelText": "13",
+    "level": 13,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 166,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gnarled Eye Curse (Reach 12)",
+        "text": "1d12 psychic damage (ignoring defense), cursed: DC 15 WIL save required to Help, Interpose, or Target you (healing ends). Then:"
+      },
+      {
+        "name": "Club Sweep",
+        "text": "(Reach 2, 180°) 2d12+10, Knockback 2"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Cyclopean cousins of overground Giants, banished underground by their kin long ago. The stare of their single eye marks others as exiles, like them.",
+    "tactics": {
+      "easier": "Club carelessly, hitting allies. Dramatically curse heroes that damage you, even at close range.",
+      "harder": "Curse heroes using cover, or ones that are often buffed or in need of aid. Use chokepoints to funnel heroes into one big Club Sweep. Knock heroes back into tight clumps for better follow up attacks."
+    },
+    "groupTraits": [
+      {
+        "name": "Eyeless Sight",
+        "text": "Can see in the dark."
+      }
+    ],
+    "notes": "Name printed plural."
+  },
+  {
+    "name": "Cloaker",
+    "book": "M&M",
+    "page": 157,
+    "pdfPage": 81,
+    "group": "Creatures of the Deep",
+    "habitat": "Underground",
+    "levelText": "13",
+    "level": 13,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 110,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 10,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ambusher",
+        "text": "Cloakers always start first and heroes roll Initiative with disadvantage."
+      },
+      {
+        "name": "Mutual Harm",
+        "text": "You take half damage from attacks while Grappling (they take the other half)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Wrap",
+        "text": "2d10+20, Grappled (escape DC 16). OR:"
+      },
+      {
+        "name": "Horrifying Wail",
+        "text": "(Reach 6) Enemies make a DC 16 WIL save, or become Frightened and must spend an Action to move as far away as possible."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Flying black manta rays that imitate cloaks, capes, and blankets, to ensnare curious explorers in their voluminous folds. They can remain motionless for months on end, waiting to ambush.",
+    "tactics": {
+      "easier": "Release targets in surprise when hit.",
+      "harder": "If your Grapple target breaks free, fly out of reach and Wail. Then, Wrap a distant target."
+    },
+    "groupTraits": [
+      {
+        "name": "Eyeless Sight",
+        "text": "Can see in the dark."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Great Worm",
+    "book": "M&M",
+    "page": 157,
+    "pdfPage": 81,
+    "group": "Creatures of the Deep",
+    "habitat": "Underground",
+    "levelText": "16",
+    "level": 16,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 140,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": 8,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Tremor Sight",
+        "text": "Advantage vs any who moved this round."
+      },
+      {
+        "name": "Swallowed",
+        "text": "You take 20 damage at the start of your turn. Your attacks cannot miss and ignore armor."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crush",
+        "text": "(2×6 adjacent area) d88 damage on a failed DC 18 DEX save. (Creatures who fail can spend 1 Action to dive out of the way instead of taking this damage. They move half their speed and land Prone.) OR:"
+      },
+      {
+        "name": "Bite/Swallow",
+        "text": "(Reach 6) 1d4+40. On crit: Swallowed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Great Worms grind rocks to dust. They crawl deep below the crust of the world, eating anything that moves. Justifiably feared by all underground.",
+    "tactics": {
+      "easier": "Gorge yourself! Once most heroes are swallowed, your HP will melt away.",
+      "harder": "Swallow only targets that can easily bypass your armor anyway, then use Crush to slow down their friends’ actions."
+    },
+    "groupTraits": [
+      {
+        "name": "Eyeless Sight",
+        "text": "Can see in the dark."
+      }
+    ],
+    "notes": "'d88' is printed as-is (likely a typo). 'Swallowed' is a condition definition box. Flavor and tactics are on p158 (PDF 82)."
+  },
+  {
+    "name": "Troglodyte",
+    "book": "M&M",
+    "page": 161,
+    "pdfPage": 83,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 14,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claws",
+        "text": "1d6+3."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Foul, cruel, eyeless monsters of the dark.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Overwhelming Stench",
+        "text": "When rolling initiative VS Troglodytes, make a STR save instead."
+      },
+      {
+        "name": "Death Stench",
+        "text": "On death: Troglodytes Poison adjacent enemies for 1 round."
+      }
+    ],
+    "notes": "Tactics are 'xx' placeholders."
+  },
+  {
+    "name": "Troglodyte Tunneler",
+    "book": "M&M",
+    "page": 161,
+    "pdfPage": 83,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 14,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": 6,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Burrower",
+        "text": "Unseen until you attack (advantage on attacks when unseen)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "From Below!",
+        "text": "(If Burrowed) 1d6+3. On hit: Grappled (escape DC 10)."
+      },
+      {
+        "name": "Back Down Below!",
+        "text": "(If unburrowed and not Grappling) Burrow."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Bent and sinewy, Tunnelers are the labor caste of every Stinkhold and the reason no cavern is ever truly safe. Equipped with ever-growing claws or chitin-tipped tools harvested from monstrous bugs, these brutes can bore through soil and even solid rock, ambushing prey from below. Their rumblings echo through stone, sowing fear long before a raid.",
+    "tactics": {
+      "easier": "Avoid burrowing again, act as a regular Troglodyte.",
+      "harder": "Should always act first to set up advantaged attacks for their smelly comrades."
+    },
+    "groupTraits": [
+      {
+        "name": "Overwhelming Stench",
+        "text": "When rolling initiative VS Troglodytes, make a STR save instead."
+      },
+      {
+        "name": "Death Stench",
+        "text": "On death: Troglodytes Poison adjacent enemies for 1 round."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Troglodyte Muckthrower",
+    "book": "M&M",
+    "page": 161,
+    "pdfPage": 83,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Glob Lob",
+        "text": "(Range 6) 1d6+3, on hit: Blinded 1 round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Brew globs of toxic sludge from cave rot, bile, and fermented remains. They lob pungent globs that burn and blind, fouling the air with stomach-turning potency. They’re also key in preparing the pungent brew that powers Swollen Ones.",
+    "tactics": {
+      "easier": null,
+      "harder": "Further debilitate foes, adding the Blinded condition gives the Trogs an additional instance of advantage against the Heroes."
+    },
+    "groupTraits": [
+      {
+        "name": "Overwhelming Stench",
+        "text": "When rolling initiative VS Troglodytes, make a STR save instead."
+      },
+      {
+        "name": "Death Stench",
+        "text": "On death: Troglodytes Poison adjacent enemies for 1 round."
+      }
+    ],
+    "notes": "'Easier' tactic is an 'xx' placeholder."
+  },
+  {
+    "name": "Troglodyte Screecher",
+    "book": "M&M",
+    "page": 161,
+    "pdfPage": 83,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Remember!",
+        "text": "AoEs do not miss or crit, and ignore armor. Dazed creatures cannot be Dazed again."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Screech",
+        "text": "(AoE, Reach 2) 1d6+3 and Daze enemies."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These are both living alarm systems and battlefield disruptors, born with oversized lungs and sensory organs. Their unholy cries reverberate through caves, disorienting foes, and alerting kin. They are revered as “Voice of the Depths” in certain cults.",
+    "tactics": {
+      "easier": null,
+      "harder": "Greatly increase the survivability of the Trogs, and if positioned well can output as much damage as Champions. There is no need to have Screechers in an encounter that also has a Swollen One, their effects are redundant and can't be combined."
+    },
+    "groupTraits": [
+      {
+        "name": "Overwhelming Stench",
+        "text": "When rolling initiative VS Troglodytes, make a STR save instead."
+      },
+      {
+        "name": "Death Stench",
+        "text": "On death: Troglodytes Poison adjacent enemies for 1 round."
+      }
+    ],
+    "notes": "'Remember!' is a GM reminder box inside the block. 'Easier' tactic is an 'xx' placeholder."
+  },
+  {
+    "name": "Troglodyte Champion",
+    "book": "M&M",
+    "page": 161,
+    "pdfPage": 83,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 44,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Spiked Club",
+        "text": "3d6+9."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Scarred veterans of countless cave wars, Champions are the strongest and most ruthless warriors among the Troglodytes. They wield jagged weapons of obsidian, bone, or rusted metal scavenged from fallen adventurers. They lead warbands on surface raids at night and are considered chosen of The Deep Rot, the profane Deep Titan.",
+    "tactics": {
+      "easier": null,
+      "harder": "The only armored Troglodyte! Use them at higher levels to increase the challenge level without too greatly multiplying the number of monsters. Remember to keep the ratio of monsters to heroes no higher than 4 to 1 (minions excluded) for typical encounters."
+    },
+    "groupTraits": [
+      {
+        "name": "Overwhelming Stench",
+        "text": "When rolling initiative VS Troglodytes, make a STR save instead."
+      },
+      {
+        "name": "Death Stench",
+        "text": "On death: Troglodytes Poison adjacent enemies for 1 round."
+      }
+    ],
+    "notes": "Tactics call it 'the only armored Troglodyte' but no armor icon is printed. 'Easier' tactic is an 'xx' placeholder."
+  },
+  {
+    "name": "Troglodyte Swollen One",
+    "book": "M&M",
+    "page": 161,
+    "pdfPage": 83,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Throw",
+        "text": "Throw an adjacent ally up to 6 spaces. Then:"
+      },
+      {
+        "name": "Pervading Stench",
+        "text": "(AoE, Reach 12) 1d6+3 to all enemies, they are Dazed and Poisoned for 1 round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The apex of Troglodyte hierarchy, these foul and corpulent shamans are religious leaders who radiate a miasma so foul it can collapse the mind and curdle the blood. Their bodies are swollen and warped with tumors and glands that excrete sacred reeking fluids, that can command the hive's unwavering loyalty. They wear robes stitched from cured hide—often from their own disobediant kin.",
+    "tactics": {
+      "easier": null,
+      "harder": "These should act first, to help position Trogs deeper into the heroes' back lines, as well as to reduce the actions the heroes can take and their effectiveness by Dazing and Poisoning them. Trogs should mercilessly attack any who approach their revered Swollen Ones."
+    },
+    "groupTraits": [
+      {
+        "name": "Overwhelming Stench",
+        "text": "When rolling initiative VS Troglodytes, make a STR save instead."
+      },
+      {
+        "name": "Death Stench",
+        "text": "On death: Troglodytes Poison adjacent enemies for 1 round."
+      }
+    ],
+    "notes": "'Easier' tactic is an 'xx' placeholder; 'harder' line is prefixed 'xx' in print."
+  },
+  {
+    "name": "Fungal Hulk",
+    "book": "M&M",
+    "page": 162,
+    "pdfPage": 84,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 4,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Siege Vehicle",
+        "text": "Up to 4 med creatures can fit atop and direct this creature's movement. They gain Cover and Medium armor. When destroyed creatures on it fall Prone."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Squish",
+        "text": "(1 smaller creature in its path) 3d6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Towering molds animated by mycelial growths, used as mindlesss pack animals and seige engines. These aren't true living creatures, but walking compost heaps. Grown from ritual burial of the dead in \"spore pits.\"",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Printed in the Troglodytes section; not a Troglodyte, so family traits not applied. Tactics are 'xx' placeholders."
+  },
+  {
+    "name": "Gloom Moth",
+    "book": "M&M",
+    "page": 162,
+    "pdfPage": 84,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "6",
+    "level": 6,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 4,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Light-Absorbing Wings",
+        "text": "Radius of light & sound halved."
+      },
+      {
+        "name": "Gloom Dust",
+        "text": "(Reach 6) Troglodytes roll d12s instead of d6s. When damaged, deal 1d12 unblockable psychic damage to enemies."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Swollen Ones raise these massive house-sized moths for use in foul ceremonies and to aid on the battlefield. Their wings absorb light and mask the sound of the Troglodyte tunneling. If threatened, they shed blinding dust that causes migraines and vomiting.",
+    "tactics": {
+      "easier": null,
+      "harder": "Always remains airborne, out of reach of melee attacks. They are particularly nasty with Champions—changing EACH of their d6s to d12s! Ranged attacks are also much more difficult to land due to the lower light radius, heroes will need to figure out a way to better light the battlefield, or possibly use wind attacks to push the Gloommoth away! Any effect that depends on sound (e.g., Commander's Orders, Songweaver's Inspiration & Vicious Mockery) is likewise limited."
+    },
+    "groupTraits": [],
+    "notes": "Printed in the Troglodytes section; not a Troglodyte, so family traits not applied. 'Easier' tactic is an 'xx' placeholder."
+  },
+  {
+    "name": "IT That Hurls THE STONE",
+    "book": "M&M",
+    "page": 162,
+    "pdfPage": 84,
+    "group": "Troglodytes",
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": "Troglodyte and THE STONE",
+    "role": "solo",
+    "armor": "none",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "STONE, Armor & Weapon",
+        "text": "While IT holds THE STONE, IT has Heavy Armor."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn, pick 1 (alternate):",
+    "actions": [
+      {
+        "name": "HURL THE STONE!",
+        "text": "Range 12, 1d12+20 damage. On hit: Prone."
+      },
+      {
+        "name": "GET THE STONE!",
+        "text": "Go pick up THE STONE."
+      }
+    ],
+    "bloodied": {
+      "name": "Reek Aura",
+      "text": "At 65 HP creatures who start or end their turns within Reach 3 must make a DC 12 STR save or take 5 psychic damage and their choice of Poisoned or Dazed for 1 round."
+    },
+    "lastStand": {
+      "name": "Somehow Worse On the Inside!",
+      "text": "IT is dying! 40 more damage and IT dies. Until then, the DC of Reek Aura increases to 14 and the Reach 4."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Overwhelming Stench",
+        "text": "When rolling initiative VS Troglodytes, make a STR save instead."
+      },
+      {
+        "name": "Death Stench",
+        "text": "On death: Troglodytes Poison adjacent enemies for 1 round."
+      }
+    ],
+    "notes": "Header 'lvl 4 Solo Large Troglodyte and THE STONE'. Armor is Heavy only while holding THE STONE. Block split across the two columns of p162."
+  },
+  {
+    "name": "Skeleton",
+    "book": "M&M",
+    "page": 165,
+    "pdfPage": 85,
+    "group": "Corporeal Undead",
+    "habitat": "Underground",
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death: reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Grave Arrow",
+        "text": "1d4+3 (Range 8)"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Whether through foul magic or restless spirits, wandering skeletons are often found in the darkest places in the world.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Zombie",
+    "book": "M&M",
+    "page": 165,
+    "pdfPage": 85,
+    "group": "Corporeal Undead",
+    "habitat": "Underground",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 15,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death: reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crunch",
+        "text": "1d4+4, On damage: Grapple."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Stinking of rot, decaying flesh hangs from them like wax melting from a candle.",
+    "tactics": {
+      "easier": "Take the most direct line to target, regardless of danger.",
+      "harder": "Act first to Grapple and setup strong attacks from allies."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Ghoul",
+    "book": "M&M",
+    "page": 165,
+    "pdfPage": 85,
+    "group": "Corporeal Undead",
+    "habitat": "Underground",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death: reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sickening Claw",
+        "text": "1d4+8. On damage: Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Ghouls have remembered only one thing from life: hunger.",
+    "tactics": {
+      "easier": "Act first, targeting already Dazed heroes or ones who have not yet Defended this round.",
+      "harder": "Act last, targeting heroes who are Grappled, Prone, or not already Dazed."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Ogre Zombie",
+    "book": "M&M",
+    "page": 165,
+    "pdfPage": 85,
+    "group": "Corporeal Undead",
+    "habitat": "Underground",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 46,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death: reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Greatclub (2×)",
+        "text": "1d4+8. On crit: Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Act last so other monsters can't take advantage of heroes being knocked Prone.",
+      "harder": "Attack Grappled heroes."
+    },
+    "groupTraits": [],
+    "notes": "Flavor is an 'xx' placeholder."
+  },
+  {
+    "name": "Giant Zombie",
+    "book": "M&M",
+    "page": 165,
+    "pdfPage": 85,
+    "group": "Corporeal Undead",
+    "habitat": "Underground",
+    "levelText": "8",
+    "level": 8,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 73,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death: reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Decaying Swipe (2×)",
+        "text": "1d4+10. On damage: knockback Primary Die spaces."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Target ranged heroes in the open to minimize the negative effects of Knockback.",
+      "harder": "Target melee heroes near walls or their allies."
+    },
+    "groupTraits": [],
+    "notes": "Artwork overlaps the block; HP read from the text layer. Flavor is an 'xx' placeholder; tactics are at the top of the next column."
+  },
+  {
+    "name": "Flaming Skull",
+    "book": "M&M",
+    "page": 165,
+    "pdfPage": 85,
+    "group": "Corporeal Undead",
+    "habitat": "Underground",
+    "levelText": "8",
+    "level": 8,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death: reset to 1 HP."
+      }
+    ],
+    "actionsIntro": "Alternate your 2 abilities each round:",
+    "actions": [
+      {
+        "name": "Maniacal Laugh",
+        "text": "Charge up."
+      },
+      {
+        "name": "Fireblast",
+        "text": "(Reach 10, 6x6 AoE) 8d6. Half damage on DC 13 DEX save."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The reanimated, floating skull of evil pyromaniac wizards. A mirthless laugh always heralds this horror wreathed in an ethereal flame.",
+    "tactics": {
+      "easier": "Center Fireblast on yourself! Don't move while laughing.",
+      "harder": "Keep your distance, or distract with minions while you charge yourself."
+    },
+    "groupTraits": [],
+    "notes": "Actions intro printed as 'Actions. Alternate your 2 abilities each round:'."
+  },
+  {
+    "name": "Specter",
+    "book": "M&M",
+    "page": 166,
+    "pdfPage": 86,
+    "group": "Incorporeal Haunts",
+    "habitat": "Underground",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Deathly Touch",
+        "text": "1d4. On damage: set HP to 0."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Faint impressions left behind by particularly painful deaths—a common sight in dungeons.",
+    "tactics": {
+      "easier": "Attack only heroes who haven't yet Defend this round.",
+      "harder": "Stay in the air, out of melee reach. Target heroes who have already defended—multiple Specters gets deadly, fast!"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Ghost",
+    "book": "M&M",
+    "page": 166,
+    "pdfPage": 86,
+    "group": "Incorporeal Haunts",
+    "habitat": "Underground",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Start of Combat: Possess",
+        "text": "All heroes make a WIL save, the lowest is Possessed: Gain 1 action that only the Ghost can spend at will. The Ghost also takes damage whenever the hero does, and whenever they are healed."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Fearful Aspect",
+        "text": "Frighten 1 creature for this round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Those with unfinished business in the mortal realm. Sometimes friendly, sometimes fearsome.",
+    "tactics": {
+      "easier": "Move the possessed hero, or make basic attacks. Allow the party to RP with you, and be convinced to act on their behalf.",
+      "harder": "Use reactions so the possessed hero can’t. Interpose for monsters, negating an ally’s attack."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Wraith",
+    "book": "M&M",
+    "page": 166,
+    "pdfPage": 86,
+    "group": "Incorporeal Haunts",
+    "habitat": "Underground",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 94,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Soul Rend (2×)",
+        "text": "(Range 8) 1d4+10. On damage: deal 1 Wound."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Spirits of warriors denied a proper death a battle, or simply too angry to die.",
+    "tactics": {
+      "easier": "Attack unwounded heroes who have not yet defended.",
+      "harder": "Focus on heroes who area already Dying, or isolated ones with no allies to Interpose for them."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Banshee",
+    "book": "M&M",
+    "page": 166,
+    "pdfPage": 86,
+    "group": "Incorporeal Haunts",
+    "habitat": "Underground",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": "Baleful Horror",
+    "role": "solo",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero’s turn, choose 1:",
+    "actions": [
+      {
+        "name": "Deathly Wail (1 use, Reach 12)",
+        "text": "DC 13 WIL save or drop to 0 HP, on save lose half your max HP. Advantage on the save if their hearing is adequately protected."
+      },
+      {
+        "name": "Horrible Glare",
+        "text": "(Reach 8) 1d10, Frightened 1 round."
+      },
+      {
+        "name": "Ghastly Touch",
+        "text": "Fly 4 then 2d10."
+      }
+    ],
+    "bloodied": {
+      "name": "Hold fast hope!",
+      "text": "(35hp) Any dying heroes gain 1 HP and 1 action."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "(30hp). Deathly Wail Recharges, use it immediately."
+    },
+    "flavor": "The longer a haunt or spirit remains on the mortal realm after their death, the more frayed their image becomes, the poorer the reflection of the self they once were. A banshee is a spirit stripped of all humanity. In their voice, their touch, even their gaze...the only thing left is cruel calousness.",
+    "tactics": {
+      "easier": "Wail from afar, before moving in. Give the heroes time to stabilize.",
+      "harder": "Frighten and avoid melee heroes. Wail in the middle of the heroes, then immediately follow up on anyone who fails."
+    },
+    "groupTraits": [],
+    "notes": "Header 'lvl 3 solo, baleful horror'. Followed by a 'Note!' box: teach heroes to learn about dangerous monsters, and remind them they can retreat."
+  },
+  {
+    "name": "Grave Crow",
+    "book": "M&M",
+    "page": 168,
+    "pdfPage": 87,
+    "group": "Death Knights",
+    "habitat": "Underground",
+    "levelText": "",
+    "level": null,
+    "size": "Tiny",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doom Peck",
+        "text": "2 damage"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Clump up and attack heavily armored or high-health heroes that can easily shrug off their meager damage.",
+      "harder": "Spread out and attack Dying heroes to inflict Wounds more quickly."
+    },
+    "groupTraits": [],
+    "notes": "Listed under 'Death Knight Servants'. Flavor is an 'XX' placeholder."
+  },
+  {
+    "name": "Grave Squire",
+    "book": "M&M",
+    "page": 168,
+    "pdfPage": 87,
+    "group": "Death Knights",
+    "habitat": "Underground",
+    "levelText": "",
+    "level": null,
+    "size": "Medium",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Dark Devotion",
+        "text": "Can Interpose for knights."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Fervently devoted servants of the dark.",
+    "tactics": {
+      "easier": "Clump up, and Interpose against small attacks, or push Knights into disadvantageous positions when Interposing.",
+      "harder": "Spread out to avoid AoE damage, Interpose only against attacks that would bypass a Knight’s Armor or other above average attacks."
+    },
+    "groupTraits": [],
+    "notes": "Listed under 'Death Knight Servants'."
+  },
+  {
+    "name": "Hollow Knight",
+    "book": "M&M",
+    "page": 168,
+    "pdfPage": 87,
+    "group": "Death Knights",
+    "habitat": "Underground",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hollow One",
+        "text": "Cannot crit or be crit (ignore any additional dice/effects that happen when crit)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doomblade",
+        "text": "1d10+10 (Req: DC 12 WIL save to Interpose). On damage, 1 Wound."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A Grave Squire that dies in service to his master is sometimes raised as a Hollow Knight.",
+    "tactics": {
+      "easier": "Focus on front line heroes who don't rely on crits or additional modifies for their damage.",
+      "harder": "Use your speed to focus on back line heroes and classes that need crits or modifiers to deal extra damage."
+    },
+    "groupTraits": [],
+    "notes": "Listed under 'Death Knight Servants'; Death Knight family traits not applied."
+  },
+  {
+    "name": "Death Knight",
+    "book": "M&M",
+    "page": 169,
+    "pdfPage": 87,
+    "group": "Death Knights",
+    "habitat": "Underground",
+    "levelText": "9",
+    "level": 9,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "radiant"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Merciless Aura",
+        "text": "Enemies within Reach 1 cannot regain HP, when healed they instead suffer 1d10 damage."
+      },
+      {
+        "name": "Gravewalk",
+        "text": "(Reaction, 1 use) Instantly descend into the earth and erupt from the ground up to 6 spaces away. Creatures within Reach 2 are knocked Prone on a failed DC 14 DEX save."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doomblade",
+        "text": "1d10+20 (Req: DC 14 WIL save to Interpose). On damage, 1 Wound. THEN (optional):"
+      },
+      {
+        "name": "Call Servant",
+        "text": "(Single use) Summon 2 Grave Crows or 1 Grave Squire within Reach 6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Gravewalk for simple mobility during your turn, or get closer to back rank Ranged or undamaged heroes. Move out of Interpose Range of your Squires.",
+      "harder": "Save Gravewalk for when you are attacked or when a hero is being healed outside of your Aura's radius to stifle the healing and deal damage instead. That’ll make the heroes respect you!"
+    },
+    "groupTraits": [
+      {
+        "name": "Dread of Death",
+        "text": "WIL save instead of rolling for Initiative against Death Knights."
+      },
+      {
+        "name": "Hatred of light",
+        "text": "Vulnerable to Radiant. Immediately strikes back for half as much damage."
+      }
+    ],
+    "notes": "Own flavor/tactics are 'xx' placeholders; tactics are the shared 'Death Knight Tactics' lines. Radiant vulnerability comes from the family trait."
+  },
+  {
+    "name": "Death Knight Marshal",
+    "book": "M&M",
+    "page": 169,
+    "pdfPage": 87,
+    "group": "Death Knights",
+    "habitat": "Underground",
+    "levelText": "12",
+    "level": 12,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "radiant"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Merciless Aura",
+        "text": "Enemies within Reach 2 cannot regain HP, when healed they instead suffer 2d10 damage."
+      },
+      {
+        "name": "Gravewalk",
+        "text": "(Reaction, 1 use) Instantly descend into the earth and erupt from the ground up to 6 spaces away. Creatures within Reach 2 are knocked Prone on a failed DC 16 DEX save."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doomblade",
+        "text": "1d10+25 (Req: DC 16 WIL save to Interpose). On damage, 1 Wound. Then:"
+      },
+      {
+        "name": "Call Servant",
+        "text": "Summon 2 Grave Crows or 1 Grave Squire within Reach 8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Gravewalk for simple mobility during your turn, or get closer to back rank Ranged or undamaged heroes. Move out of Interpose Range of your Squires.",
+      "harder": "Save Gravewalk for when you are attacked or when a hero is being healed outside of your Aura's radius to stifle the healing and deal damage instead. That’ll make the heroes respect you!"
+    },
+    "groupTraits": [
+      {
+        "name": "Dread of Death",
+        "text": "WIL save instead of rolling for Initiative against Death Knights."
+      },
+      {
+        "name": "Hatred of light",
+        "text": "Vulnerable to Radiant. Immediately strikes back for half as much damage."
+      }
+    ],
+    "notes": "Own flavor/tactics are 'xx' placeholders; tactics are the shared 'Death Knight Tactics' lines. Radiant vulnerability comes from the family trait."
+  },
+  {
+    "name": "Death Knight Baron",
+    "book": "M&M",
+    "page": 169,
+    "pdfPage": 87,
+    "group": "Death Knights",
+    "habitat": "Underground",
+    "levelText": "16",
+    "level": 16,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "radiant"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Merciless Aura",
+        "text": "Enemies within Reach 3 cannot regain HP, when healed they instead suffer 3d10 damage."
+      },
+      {
+        "name": "Gravewalk",
+        "text": "(Reaction, 2 uses) Instantly descend into the earth and erupt from the ground up to 10 spaces away. Creatures within Reach 3 are knocked Prone on a failed DC 18 DEX save."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doomblade",
+        "text": "1d10+30 (Req: DC 18 WIL save to Interpose). On damage, 1 Wound. Then:"
+      },
+      {
+        "name": "Call Servant",
+        "text": "Summon 2 Grave Crows and 1 Grave Squire within Reach 10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Gravewalk for simple mobility during your turn, or get closer to back rank Ranged or undamaged heroes. Move out of Interpose Range of your Squires.",
+      "harder": "Save Gravewalk for when you are attacked or when a hero is being healed outside of your Aura's radius to stifle the healing and deal damage instead. That’ll make the heroes respect you!"
+    },
+    "groupTraits": [
+      {
+        "name": "Dread of Death",
+        "text": "WIL save instead of rolling for Initiative against Death Knights."
+      },
+      {
+        "name": "Hatred of light",
+        "text": "Vulnerable to Radiant. Immediately strikes back for half as much damage."
+      }
+    ],
+    "notes": "Own flavor/tactics are 'xx' placeholders; tactics are the shared 'Death Knight Tactics' lines. Radiant vulnerability comes from the family trait."
+  },
+  {
+    "name": "Death Knight Regent",
+    "book": "M&M",
+    "page": 169,
+    "pdfPage": 87,
+    "group": "Death Knights",
+    "habitat": "Underground",
+    "levelText": "20",
+    "level": 20,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 160,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "radiant"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Merciless Aura",
+        "text": "Enemies within Reach 4 cannot regain HP, when healed they instead suffer 4d10 damage."
+      },
+      {
+        "name": "Gravewalk",
+        "text": "(Reaction, 2 uses) Instantly descend into the earth and erupt from the ground up to 12 spaces away. Creatures within Reach 4 are knocked Prone on a failed DC 20 DEX save."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doomblade",
+        "text": "1d10+40 (Req: DC 20 WIL save to Interpose). On damage, 1 Wound. Then:"
+      },
+      {
+        "name": "Call Servant",
+        "text": "Summon 2 Grave Crows and 2 Grave Squires within Reach 12."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Use Gravewalk for simple mobility during your turn, or get closer to back rank Ranged or undamaged heroes. Move out of Interpose Range of your Squires.",
+      "harder": "Save Gravewalk for when you are attacked or when a hero is being healed outside of your Aura's radius to stifle the healing and deal damage instead. That’ll make the heroes respect you!"
+    },
+    "groupTraits": [
+      {
+        "name": "Dread of Death",
+        "text": "WIL save instead of rolling for Initiative against Death Knights."
+      },
+      {
+        "name": "Hatred of light",
+        "text": "Vulnerable to Radiant. Immediately strikes back for half as much damage."
+      }
+    ],
+    "notes": "Own flavor/tactics are 'xx' placeholders; tactics are the shared 'Death Knight Tactics' lines. Radiant vulnerability comes from the family trait."
+  },
+  {
+    "name": "Cranial Hound",
+    "book": "M&M",
+    "page": 173,
+    "pdfPage": 89,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death: Psiwave",
+        "text": "(Reach 1, AoE) Daze enemies."
+      },
+      {
+        "name": "Seed Thought",
+        "text": "Make them move or perform a basic attack (without spending one of their actions)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Mind Bend",
+        "text": "3d6. On damage, Daze & Seed Thought"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Shock troops of the Psionic Despots. These slimy, dog-like creatures have exposed brain tissue all over their bodies.",
+    "tactics": {
+      "easier": "Use Seed Thought to make heroes run away, then chase after them next turn!",
+      "harder": "Partner with Psionic Scourges or Despots. Rush in, Daze heroes, and use Seed Thought to move them towards your masters to finish off."
+    },
+    "groupTraits": [],
+    "notes": "'Seed Thought' is a definition box."
+  },
+  {
+    "name": "Psionic Scourge",
+    "book": "M&M",
+    "page": 173,
+    "pdfPage": 89,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "12",
+    "level": 12,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death: Psiwave",
+        "text": "(Reach 3, AoE) Daze enemies."
+      },
+      {
+        "name": "Seed Thought",
+        "text": "Make them move or perform a basic attack (without spending one of their actions)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Psi Blast",
+        "text": "(Reach 6) 3d6+20. Daze & Seed Thought"
+      },
+      {
+        "name": "XX",
+        "text": "(vs Dazed Creature) Grapple, gain Cover, attack that miss you damage them (escape DC 15)."
+      },
+      {
+        "name": "Consume!",
+        "text": "(vs Grappled) 3d20+20 & 2 Wounds."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Coiled masses of tentacles concealing massive cerebral bodies…",
+    "tactics": {
+      "easier": "Engage heroes 1-on-1 using Psi Blast, use Seed Though to move heroes randomly.",
+      "harder": "Gang up with allies, Grapple the heroes they leave Dazed!"
+    },
+    "groupTraits": [],
+    "notes": "Second action's name is an 'XX' placeholder in the draft. Flavor is unfinished ('…')."
+  },
+  {
+    "name": "Cerebral Hulks",
+    "book": "M&M",
+    "page": 173,
+    "pdfPage": 89,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "16",
+    "level": 16,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 200,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Brawn",
+        "text": "Advantage vs Dazed creatures. Can freely move smaller creatures it is Grappling."
+      },
+      {
+        "name": "On Death: Psiwave",
+        "text": "(Reach 3, AoE) Daze enemies."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bring to Master (2x)",
+        "text": "3d6+10, Grappled (escape DC 16)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Giant, hunch-backed humanoids with four strong arms terminating in masses of sticky suction cups.",
+    "tactics": {
+      "easier": "Refrain from moving your Grappled target.",
+      "harder": "Immediately retreat with a Grappled creature to a Psionic Scourge or Despot for the finishing blow."
+    },
+    "groupTraits": [],
+    "notes": "Name printed plural."
+  },
+  {
+    "name": "Psionic Despot",
+    "book": "M&M",
+    "page": 173,
+    "pdfPage": 89,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "18",
+    "level": 18,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 230,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "levitate",
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Etherquake",
+        "text": "When crit, (1 use, Reach 8, AoE) 3d6+20. On damage, Daze & Seed Thought."
+      },
+      {
+        "name": "Seed Thought",
+        "text": "Make them move or perform a basic attack (without spending one of their actions)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Psi Blast (2x)",
+        "text": "(Reach 9) 3d6+10. On damage, Daze & Seed Thought. OR:"
+      },
+      {
+        "name": "XX",
+        "text": "(vs Dazed Creature) Grapple, gain Cover, attack that miss you damage them (escape DC 18)."
+      },
+      {
+        "name": "Consume!",
+        "text": "(vs Grappled) 4d20+20 & 2 Wounds."
+      }
+    ],
+    "bloodied": {
+      "name": "Gravity Break",
+      "text": "(Reach 8) Restrain all enemies in the air this round (they cannot move normally but can BE moved)."
+    },
+    "lastStand": null,
+    "flavor": "The masterminds of psychic forces from beyond the void. These tentacle-faced humanoids are unmatched in their intelligence, psychic powers, and casual cruelty.",
+    "tactics": {
+      "easier": "Take a break on the back lines - issue psychic commands to your forces, and psychic taunts to the heroes.",
+      "harder": "Have allies isolate a hero with Seed Thought or Bring to Master, then, Consume!"
+    },
+    "groupTraits": [],
+    "notes": "Speed printed '6 (levitate)'. Second action's name is an 'XX' placeholder. Has a BLOODIED entry but is not marked solo/legendary."
+  },
+  {
+    "name": "Gibbering Mouther",
+    "book": "M&M",
+    "page": 174,
+    "pdfPage": 90,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Reality Warping Utterings!",
+        "text": "Enemies begin combat Confused: their attacks are made with disadvantage. The GM chooses a new target for attacks that miss (ignoring range limitations)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gnashing Teeth, Blinding Spittle",
+        "text": "(Reach ANY) 1d4+10. On miss, Blinded. On crit, swap places with another creature."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Choose another enemy to be struck, or choose randomly.",
+      "harder": "Force heroes to attack allies or self when confused."
+    },
+    "groupTraits": [],
+    "notes": "Flavor is an 'xx' placeholder."
+  },
+  {
+    "name": "Otyugh",
+    "book": "M&M",
+    "page": 174,
+    "pdfPage": 90,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 104,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Overwhelming Belch",
+        "text": "When Crit, Daze or Poison others within Reach 3 (their choice)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Tentacles (2x)",
+        "text": "(Reach 2) 1d8+10. On damage, Grappled. OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(if Grappling 1 creature) 1d8+20. OR:"
+      },
+      {
+        "name": "Slam",
+        "text": "(if Grappling 2 creatures) 1d8+20 to both, ending Grapple."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavor and tactics are 'xx' placeholders."
+  },
+  {
+    "name": "Chimera",
+    "book": "M&M",
+    "page": 174,
+    "pdfPage": 90,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "11",
+    "level": 11,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Venomous Tail",
+        "text": "(When crit, Reach 2) Poison an enemy."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Fire Breath",
+        "text": "(1 use, Cone 5) 7d10, DC 15 DEX save for half. OR choose twice:"
+      },
+      {
+        "name": "Ram",
+        "text": "1d10+10. On damage, Knockback 2 & Prone."
+      },
+      {
+        "name": "Maul",
+        "text": "(VS Prone creature) 2d10+10."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 65 HP, recharge Fire Breath."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavor and tactics are 'xx' placeholders. Has a Bloodied entry but is not marked solo/legendary."
+  },
+  {
+    "name": "Suspension Vat",
+    "book": "M&M",
+    "page": 174,
+    "pdfPage": 90,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": "Hazard",
+    "role": "regular",
+    "armor": "none",
+    "hp": 1,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Inanimate Object",
+        "text": "Reduce all damage taken by 10."
+      },
+      {
+        "name": "Volatile Hazard!",
+        "text": "When damaged, the vat shatters in a rush of green liquid. (Reach 3), 2d6. Knockback to edge of Reach. On crit, Prone as well. Psychic abilities cannot be used this round."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "An enormous glass tube containing a transparent green liquid and, in some cases, a half-conscious body suspended upright.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Under 'Aberration Traps & Hazards'; immobile object, speed set to null. Block split across columns."
+  },
+  {
+    "name": "Dampening Bell",
+    "book": "M&M",
+    "page": 174,
+    "pdfPage": 90,
+    "group": "Aberrations",
+    "habitat": "Underground",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": "Hazard",
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Inanimate Object",
+        "text": "Reduce all damage taken by 10."
+      },
+      {
+        "name": "Static Weapon",
+        "text": "Instead of attacking, a creature can ring this: (Reach 6), Non-Aberrations are Dazed on a failed DC 12 WIL save."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A large bell-like device covered with knobs, buttons, and glass panels displaying obscurely backlit runes.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Under 'Aberration Traps & Hazards'; immobile object, speed set to null."
+  },
+  {
+    "name": "Lidless Pest",
+    "book": "M&M",
+    "page": 176,
+    "pdfPage": 91,
+    "group": "Ocular Beings",
+    "habitat": "Underground",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Eye Ray",
+        "text": "(Reach 8) roll 1d4 or choose:"
+      },
+      {
+        "name": "1 Fear Ray",
+        "text": "2d4, Frightened 1 round."
+      },
+      {
+        "name": "2 Gravitation Ray",
+        "text": "2d6, Knockback 2."
+      },
+      {
+        "name": "3 Frost Ray",
+        "text": "2d6, Slowed."
+      },
+      {
+        "name": "4 Fire Ray",
+        "text": "2d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Cast off floating eyes, lacking any will of their own and subject only to their master's whim. Their abilities are a faint shadow of their progenitor's power.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Eye HATE you!",
+        "text": "When crit with Piercing or Slashing, attacker rolls 1d20 instead of any other dice. Immediately use 1 ray."
+      }
+    ],
+    "notes": "No tactics printed."
+  },
+  {
+    "name": "Gnosis (Dark Oracle)",
+    "book": "M&M",
+    "page": 176,
+    "pdfPage": 91,
+    "group": "Ocular Beings",
+    "habitat": "Underground",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Deepsight",
+        "text": "When combat begins, roll 1d4 and 1d12. You may replace ANY die rolled with one of the values. Reroll them at the end of your turn."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gorging Gaze",
+        "text": "(Reach 12). 1d4+10. On crit, Frightened. Then:"
+      },
+      {
+        "name": "Rake & Bite",
+        "text": "1d4+10. On crit, Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Eye HATE you!",
+        "text": "When crit with Piercing or Slashing, attacker rolls 1d20 instead of any other dice. Immediately use 1 ray."
+      }
+    ],
+    "notes": "Block continues at the top of the second column. No flavor or tactics printed."
+  },
+  {
+    "name": "Farseer",
+    "book": "M&M",
+    "page": 176,
+    "pdfPage": 91,
+    "group": "Ocular Beings",
+    "habitat": "Underground",
+    "levelText": "7",
+    "level": 7,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Farsight",
+        "text": "When combat begins, roll 4d4. 1/round you may replace any die rolled with one of those."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Piercing Ray",
+        "text": "(Reach 12) 1d4+10. On crit, +10 to EVERY additional die rolled. OR:"
+      },
+      {
+        "name": "Void Ray",
+        "text": "Reroll ALL of your Farsight dice."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Ocular Beings that grew only a pair of massive eyes—one that sees the future, and one that sees the past. Less intelligent than their peers, but equally cruel.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Eye HATE you!",
+        "text": "When crit with Piercing or Slashing, attacker rolls 1d20 instead of any other dice. Immediately use 1 ray."
+      }
+    ],
+    "notes": "No tactics printed."
+  },
+  {
+    "name": "Ocular Tyrant",
+    "book": "M&M",
+    "page": 176,
+    "pdfPage": 91,
+    "group": "Ocular Beings",
+    "habitat": "Underground",
+    "levelText": "18",
+    "level": 18,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 240,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Eye Rays",
+        "text": "(Reach 10, save DC 16) roll 2d6 or choose twice:"
+      },
+      {
+        "name": "Warping Ray",
+        "text": "2d6+10, Dazed and exchange places with target."
+      },
+      {
+        "name": "Petrification Ray",
+        "text": "2d4+10, on crit: permanently Dazed (healing ends; 3 stacks, Petrified)."
+      },
+      {
+        "name": "Heat Ray",
+        "text": "2d6+10 psychic damage (ignores defense)."
+      },
+      {
+        "name": "Gravitation Ray",
+        "text": "4d6+10. Knockback Primary Die spaces."
+      },
+      {
+        "name": "Charm Ray",
+        "text": "Force an enemy to move then make 2 basic attacks; move and 1 attack on a WIL save (this does not spend their actions)."
+      },
+      {
+        "name": "Death Ray",
+        "text": "2d20+10 damage, half on STR save."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(130hp). Immediately use Warping Ray."
+    },
+    "lastStand": null,
+    "flavor": "Six eyes sprung from a ever-grimacing floating head. Each eye possesses a unique and dangerous magical gaze, and two never look in the same place.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Eye HATE you!",
+        "text": "When crit with Piercing or Slashing, attacker rolls 1d20 instead of any other dice. Immediately use 1 ray."
+      }
+    ],
+    "notes": "Block continues onto p177 (Bloodied line and flavor). Bloodied threshold printed as 130hp (not half of 240). Not marked solo/legendary. No tactics printed."
+  },
+  {
+    "name": "Hollow Tyrant",
+    "book": "M&M",
+    "page": 177,
+    "pdfPage": 91,
+    "group": "Ocular Beings",
+    "habitat": "Underground",
+    "levelText": "20",
+    "level": 20,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 300,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Undead",
+        "text": "The first time this drops to 0hp, reset to 30 hp."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Eye Rays",
+        "text": "(Reach 10, save DC 17) roll 2d6 or choose twice:"
+      },
+      {
+        "name": "Warping Ray",
+        "text": "2d6+10, Dazed and exchange places with target."
+      },
+      {
+        "name": "Petrification Ray",
+        "text": "2d4+10, on crit: permanently Dazed (healing ends; 3 stacks, Petrified)."
+      },
+      {
+        "name": "Heat Ray",
+        "text": "2d6+10 psychic damage (ignores defense)."
+      },
+      {
+        "name": "Gravitation Ray",
+        "text": "4d6+10. Knockback Primary Die spaces."
+      },
+      {
+        "name": "Charm Ray",
+        "text": "Force an enemy to move then make 2 basic attacks; move and 1 attack on a WIL save (this does not spend their actions)."
+      },
+      {
+        "name": "Death Ray",
+        "text": "2d20+10 damage, 1 wound, half on STR save."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(130hp). Immediately use Warping Ray."
+    },
+    "lastStand": null,
+    "flavor": "Made immortal through ancient and forbidden magics, these tyrants retain their intelligence in undeath, but become more and more paranoid as the ages pass.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Eye HATE you!",
+        "text": "When crit with Piercing or Slashing, attacker rolls 1d20 instead of any other dice. Immediately use 1 ray."
+      }
+    ],
+    "notes": "Bloodied threshold printed as 130hp (same as Ocular Tyrant; not half of 300). Not marked solo/legendary. No tactics printed."
+  },
+  {
+    "name": "Eye Sprout",
+    "book": "M&M",
+    "page": 177,
+    "pdfPage": 91,
+    "group": "Ocular Beings",
+    "habitat": "Underground",
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": "Hazard",
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Obvious Hazard!",
+        "text": "Ocular Beings have Advantage against creatures an Eye Sprout can see. Eye Rays can be fired from the position of the Eye Sprout."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Ocular Tyrants are always keeping an eye out for potential threats. They plant pieces of themselves around their lairs, which sprout into gazing eye-stalks.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Under 'Ocular Being Traps and Hazards', header 'minion, small'. Included because it is a minion-style hazard; no level or HP printed. Speed null (stationary)."
+  }
+]

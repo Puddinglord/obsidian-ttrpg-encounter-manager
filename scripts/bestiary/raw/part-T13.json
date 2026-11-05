@@ -1,0 +1,3267 @@
+[
+  {
+    "name": "Goblin Minion",
+    "book": "M&M",
+    "page": 6,
+    "pdfPage": 4,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Missed Me!",
+        "text": "Whenever an attack misses you, deal 2 psychic damage (ignoring armor)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d6 (follows minion rules)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The cannon fodder of goblin society: lazy, sneaky, and only slightly more threatening than a thrown boot. Their job? Get in the way, hurl insults, and die hilariously.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Tactics lines are placeholder \"xx\" in the source; left null."
+  },
+  {
+    "name": "Goblin",
+    "book": "M&M",
+    "page": 6,
+    "pdfPage": 4,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 15,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Missed Me!",
+        "text": "Whenever an attack misses you, deal 2 psychic damage (ignoring armor)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d6 (or Shoot, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The backbone of any raiding party, especially when it comes to setting up makeshift traps, stealing food, and heckling anything with a pulse.",
+    "tactics": {
+      "easier": "Very injured Goblins can run past multiple heroes, and less injured Goblins can remain adjacent to melee heroes rather than running away to same them an action moving.",
+      "harder": "If a hero is within Reach 6, run up to them, stab, then run away in hopes of triggering an Opportunity Attack. Goad heroes into it with verbal taunts: \"You can't catch me!\" feigning fear (especially if you miss, or seeing them survive your best stab) \"Ahh! Run awaayy!\""
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Goblin Ratrider",
+    "book": "M&M",
+    "page": 6,
+    "pdfPage": 4,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Missed Me!",
+        "text": "Whenever an attack misses you, deal 2 psychic damage (ignoring armor)."
+      },
+      {
+        "name": "CHAAARGE!",
+        "text": "If you move at least 4 spaces in a straight line, attack with advantage once."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite & Stab (2×)",
+        "text": "1d6. On crit: Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Riding into battle atop mangy giant rats, these goblins are thrill-seekers and scouts. Their mounts are as diseased and unpredictable as their riders.",
+    "tactics": {
+      "easier": "Can stay more stationary or spread their damage around, don't attack Prone targets.",
+      "harder": "Hunt down backline and isolated heroes. Stay out of reach of melee heroes, set up powerful attacks for Bugbears when they knock Heroes Prone."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Goblin Taskmaster",
+    "book": "M&M",
+    "page": 6,
+    "pdfPage": 4,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Missed Me!",
+        "text": "Whenever an attack misses you, deal 2 psychic damage (ignoring armor)."
+      },
+      {
+        "name": "Meat Shield",
+        "text": "Can force other goblins to Interpose for him."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d6 (or Shoot, Range 8). Then:"
+      },
+      {
+        "name": "Get in here!",
+        "text": "Call a goblin minion to the fight."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mean enough to boss other goblins around and survive the attempt. They often work under the heel of Bugbears, screaming secondhand orders and threats they usually can't deliver on.",
+    "tactics": {
+      "easier": "May \"run out\" of minions to call to the battlefield or their minions may be out of position to Interpose for them.",
+      "harder": "Keep a minion within Interpose range at all times!"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Nilbog",
+    "book": "M&M",
+    "page": 6,
+    "pdfPage": 4,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Backwards Chaos",
+        "text": "Attacks that would hit a Nilbog instead miss, attacks that would miss, hit instead."
+      },
+      {
+        "name": "Neener Neener!",
+        "text": "When a hero's attack misses a Goblin or when a hero could opportunity attack a Goblin, but doesn't: Deal 4 psychic damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The chosen fools—when one arises, logic dies. Entire warrens descend into laughter, worship, and property damage. Minions throw themselves off ledges in reverence and Taskmasters weep in frustration.",
+    "tactics": {
+      "easier": "Stay near heroes with smaller weapons (d4, d6) or Cheats. Keep Goblins at a distance.",
+      "harder": "Stay near heroes with larger weapons (d10, d12) who will have a harder time hitting. Constantly move Goblins in and out of melee range."
+    },
+    "groupTraits": [],
+    "notes": "No actions printed."
+  },
+  {
+    "name": "Bugbear",
+    "book": "M&M",
+    "page": 7,
+    "pdfPage": 4,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cleave",
+        "text": "2d6+2. OR:"
+      },
+      {
+        "name": "Javelin",
+        "text": "1d6 (Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Big, brutish, and permanently grumpy, Bugbears are the heavy muscle of Goblin society. They despise noise and disorder—Bugbears tolerate Goblins' antics in exchange for servitude and a steady supply of things to hit.",
+    "tactics": {
+      "easier": "Attack from Range or spread damage out. Attack first in a round while heroes can still Interpose & Defend.",
+      "harder": "Bugbears are patient ambushers,they can start combat hidden, attacking any hero who has strayed too far from his party, or their back lines."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bugbear Chieftain",
+    "book": "M&M",
+    "page": 7,
+    "pdfPage": 4,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "I want results!",
+        "text": "Goblins gain +2 speed and advantage on attacks."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cleave",
+        "text": "(Reach 2) 2d6+10, can also damage a 2nd target within Reach."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Chieftains rule with fear, iron clubs, and a zero-tolerance policy for goblin antics (except the useful kind). Under their leadership, goblins become surprisingly efficient raiders—at least for a few weeks.",
+    "tactics": {
+      "easier": "Use cleave to also strike a goblin that is in your way.",
+      "harder": "Target only heroes. Force a goblin to Interpose for you."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Krogg, Goblin King",
+    "book": "M&M",
+    "page": 7,
+    "pdfPage": 4,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": "Angry Bugbear",
+    "role": "solo",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+, DEX+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero’s turn, choose one:",
+    "actions": [
+      {
+        "name": "Manglemaul",
+        "text": "Move 6. 2d6+2 damage, Grappled (escape DC 10). OR:"
+      },
+      {
+        "name": "Crack Skulls",
+        "text": "Move 6. Swing a Grappled creature at another creature. Both take 2d6+2 damage, ending the Grapple."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 45 HP, Krogg’s damage increases to 2d8+2."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0 HP Krogg is dying! If he takes 20 more damage he dies. Until then, he has Medium Armor."
+    },
+    "flavor": "All hail Krogg, the Goblin King! Goblins respect Krogg, because when Krogg issues a decree, he does so with his fists. He's not, strictly speaking, of \"royal blood\", but anyone capable of keeping a Goblins on-task for more than a few minutes deserves the title \"King\".",
+    "tactics": {
+      "easier": "Have the Manglemaul jam after using Crack Skulls. Krogg gets verbally frustrated with the “stupid weapon” it loses the ability to Grapple, or he could spend a turn fixing it.",
+      "harder": "Manglemaul may retain the Grappled target, so Crack Skulls can be used again next turn. Or you could also knock heroes Prone after Cracking Skulls. Move more frequently, end your turn out of reach of melee heroes."
+    },
+    "groupTraits": [],
+    "notes": "Header: \"lvl 2 Solo Angry Bugbear\"; actions labelled \"ACTIONS:\". Harder tactic continues in the next column."
+  },
+  {
+    "name": "Vermis & Skittersnack",
+    "book": "M&M",
+    "page": 8,
+    "pdfPage": 5,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Large",
+    "kind": "Goblin & Large Rat Cavalry",
+    "role": "solo",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+, DEX+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mangy Rat",
+        "text": "When Skittersnack is struck, summon 1 giant flea (a d4 minion, on hit: 1 damage)."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn, alternate using your 2 abilities:",
+    "actions": [
+      {
+        "name": "Chaaarrge!",
+        "text": "Move 10 in a straight line, deal 2d6 damage to all in your path (2 spaces wide)."
+      },
+      {
+        "name": "Itchy Fleas",
+        "text": "Move 4. Skittersnack summons 1 giant flea/hero (they act at the end of each round)."
+      }
+    ],
+    "bloodied": {
+      "name": "Flea Bitten Varmint!",
+      "text": "At 60 HP Skittersnack summons 3 Giant Fleas per hero."
+    },
+    "lastStand": {
+      "name": "Fleas, Please!",
+      "text": "Veris & Skittersnack are dying! 30 more damage and they die. Until then, they perform both actions each turn."
+    },
+    "flavor": "Vermis is more than a nuisance, he's a menace! And that rat Skittersnack is a bad influence at best. Vermis rides through town at all hours, yelling obscenities and stealing anything he can't eat. Even worse, Skittersnack has started developing a following... of fleas! It's high time someone stopped the duo's reign of terror.",
+    "tactics": {
+      "easier": "When using Chaaarrge!, ensure you hit minions, and fewer heroes. Keep giant fleas clumped up or near heroes that can easily use an AoE, so they are easier to eliminate.",
+      "harder": "Line up multiple heroes with Chaaarrge! Kill as few of your own minions as possible. Spread out giant fleas so they are harder to kill in large numbers."
+    },
+    "groupTraits": [],
+    "notes": "Header: \"lvl 3 Solo Goblin & Large Rat Cavalry\"; no separate size token, size Large inferred from the rat mount. Last Stand misspells \"Veris\" in source."
+  },
+  {
+    "name": "Kobold Minion",
+    "book": "M&M",
+    "page": 11,
+    "pdfPage": 6,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d4 (follows minion rules)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Kobold",
+    "book": "M&M",
+    "page": 11,
+    "pdfPage": 6,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 12,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d4+2 (or Sling, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A loyal friend and a tenacious enemy. Unthreatening… until they're surrounded by friends!",
+    "tactics": {
+      "easier": "Attack from Range, and stay spread out.",
+      "harder": "Keep them close together to maximize Nooooo!"
+    },
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Kobold Sneak",
+    "book": "M&M",
+    "page": 11,
+    "pdfPage": 6,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 15,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Revenge!",
+        "text": "When an ally dies, you may move 6 before using your Nooooo! ability."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d4+2 (or Sling, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A hyperactive blur of speed, dashing around the battlefield.",
+    "tactics": {
+      "easier": "Stay on the frontlines, making them likely to die before making use of their ability.",
+      "harder": "Keep them away from danger, but always close enough to dash in when an ally dies."
+    },
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Kobold Trapper",
+    "book": "M&M",
+    "page": 11,
+    "pdfPage": 6,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Trap!",
+        "text": "When an enemy moves adjacent to you or an ally, they trigger one of your traps! (1/encounter each).\n• Trap: BEEES! Deal 5d4 damage (doesn’t miss). Half as much to ALL adjacent creatures.\n• Trap: HIDDEN NET! Restrained (escape DC 10)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Throw Scorpion (2×)",
+        "text": "(Range 8) 1d4+2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Damage (but don't kill) other kobolds with BEES!",
+      "harder": "Position yourself to use BEES! to strike multiple heroes, and kill 1 weakened kobold to trigger lots of Nooooo! attacks."
+    },
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": "Flavour is placeholder \"XX\" in the source; left null."
+  },
+  {
+    "name": "Kobold Clanger",
+    "book": "M&M",
+    "page": 11,
+    "pdfPage": 6,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 16,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "CLANG!",
+        "text": "Allies who hear your clanging, roll 1 additional die WHENEVER they attack."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Preoccupied Noisemaker",
+        "text": "Doesn't attack."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The height of kobold fashion: butket on head, frying pan armor and ladle drumsticks. The louder the noise, the better the party.",
+    "tactics": {
+      "easier": "Wander close into battle. Being Grappled or knocked Prone could temporarily silence them.",
+      "harder": "Keep them in the back lines and running away from heroes. Never end your turn within reach of a melee hero, or without cover from ranged attacks!"
+    },
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": "Flavour and tactics continue at the top of the next column."
+  },
+  {
+    "name": "Kobold Denwarden",
+    "book": "M&M",
+    "page": 11,
+    "pdfPage": 6,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hold!",
+        "text": "Adjacent allies gain Medium Armor."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab (2×)",
+        "text": "1d4+4 (or Sling, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Equal parts big brother and parental figure, Denwardens would do anything to protect their kin.",
+    "tactics": {
+      "easier": "Keep them separated from allies, and spread their attacks between heroes.",
+      "harder": "Place them in the center of Kobold lines, increasing the power of both \"Hold!\" and \"Nooooo!\""
+    },
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Kobold Dragon Relic",
+    "book": "M&M",
+    "page": 11,
+    "pdfPage": 6,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "3x",
+    "level": null,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Time-Worn Stone",
+        "text": "Ignores non-critical damage. Take a max of 1 damage per turn."
+      },
+      {
+        "name": "Frenzied Devotion",
+        "text": "Kobolds roll d8s instead of d4s and take a max of 10 damage from attacks."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "When a kobold clan finds a suitable effigy for their devotion, a fanatical fervor overtakes them. This is often bad news for their neighbors.",
+    "tactics": {
+      "easier": "Spread Kobolds out, making the Relic easy to attack and reducing the times each Kobold can attack. Ignore the 1 damage/turn limit.",
+      "harder": "A very special relic could also double the Reach of Nooooo! Or it could also trigger whenever the relic is attacked."
+    },
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": "Header: \"Lvl 3x (triple the lvl of all nearby Kobolds), Large\". No actions printed."
+  },
+  {
+    "name": "Narbles & His Stack of Friends",
+    "book": "M&M",
+    "page": 12,
+    "pdfPage": 7,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": "Kobold Friendstack",
+    "role": "solo",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Noooo!",
+        "text": "When Bloodied and at Last Stand, the top kobold is defeated and falls off. The rest immediately move and make an attack for free."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn.",
+    "actions": [
+      {
+        "name": "Bonk",
+        "text": "Move 4, then 2d4+4. On crit: dazed."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 34hp, Toads is defeated. Narbles grabs his frying pan and uses it as a shield (gain Medium Armor) and each turn: Stab. Move 6, then 3d4+4. On hit: poisoned (healing ends)"
+    },
+    "lastStand": {
+      "name": "",
+      "text": "(20): At 0 HP, Pasketti is defeated. 20 more damage and Narbles is defeated. Until then each turn: Move 8, then: Bonk. 2d4+4. On crit: Dazed. Then: Stab: 3d4+4. On hit: Poisoned (healing ends)"
+    },
+    "flavor": "One day, Narbles had a stroke of genius. What if he had six arms and three heads? So he got his pals together and devised a way to make it happen: The Mighty Friendstack - as tall as a dwarf, with only a small a fraction of his stability.",
+    "tactics": {
+      "easier": "Stab targets that area already poisoned. Skip the immediate turn at Bloodied and Last Stand, if needed.",
+      "harder": "When using Stab, always attack targets that are not Poisoned. When you reach Last Stand, Narbles uses the pan more effectively as a shield, giving him H armor instead of M."
+    },
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": "Name printed with subtitle \"(Pasketti and Toads)\". Header \"lvl 2 Solo Kobold Friendstack\", no size printed. Actions labelled \"SOLO:\". Last Stand printed as \"LAST STAND (20):\". Flavour taken from the page's intro paragraph; the in-block flavour is placeholder \"xx\"."
+  },
+  {
+    "name": "Cricket & Hamshake",
+    "book": "M&M",
+    "page": 13,
+    "pdfPage": 7,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": "Kobold & his huge hill giant pal",
+    "role": "solo",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": "Cricket 30 HP; Hamshake 120 HP",
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "Legendary Duo: After each player’s turn choose Cricket or Hamshake to act (rec. alternate).",
+    "actions": [
+      {
+        "name": "Cricket (30 HP). Kick!",
+        "text": "Move 6, 1d4 damage."
+      },
+      {
+        "name": "Hamshake (120 HP). BIG KICK!",
+        "text": "Move 8, 1d4+30, Prone."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "If either are reduced below half HP, the other will Interpose for them 1/round."
+    },
+    "lastStand": {
+      "name": "NOOOOO!",
+      "text": "If either is killed, the other attacks each turn instead and always attacks with advantage."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Have Cricket attack more often than Hamshake. Allow the duo to separate a good distance from each other, making Interposing harder.",
+      "harder": "Have Hamshake attack more often than Cricket. Keep the duo together, for easier Interposing."
+    },
+    "groupTraits": [
+      {
+        "name": "Nooooo!",
+        "text": "Whenever an ally within Reach 2 dies, attack once for free."
+      }
+    ],
+    "notes": "Two creatures in one block with separate HP; no size token (Cricket is a kobold, Hamshake a huge hill giant), size left at default. Flavour is placeholder \"xx\"."
+  },
+  {
+    "name": "Pixie",
+    "book": "M&M",
+    "page": 17,
+    "pdfPage": 9,
+    "group": "Tiny Fey",
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 14,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Fey Trick",
+        "text": "1d4+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Tricksters of the forest, flickering in and out of sight at will. Make sure to bring a gift if you ever venture into the borderland of the woods, or hear giggling from the barn.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Flutter & Feint",
+        "text": "Attackers have disadvantage and miss on 2 or less."
+      }
+    ],
+    "notes": "No tactics in the block; family-wide \"Tiny Fey Tactics\" apply: easier \"Stay in melee range of the Heroes, especially those rolling larger damage dice or those with AoE abilities.\" harder \"Move out of melee range after attacking. Go after heroes with smaller damage dice.\""
+  },
+  {
+    "name": "Faerie",
+    "book": "M&M",
+    "page": 17,
+    "pdfPage": 9,
+    "group": "Tiny Fey",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Tricksy Magic",
+        "text": "(Range 6) 1d4+10 psychic damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Tiny, mischievous winged humanoids that go about their jokes and schemes with boundless enthusiasm. Being the butt of their jokes is often exhausting, and sometimes dangerous.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Flutter & Feint",
+        "text": "Attackers have disadvantage and miss on 2 or less."
+      }
+    ],
+    "notes": "No tactics in the block; family-wide \"Tiny Fey Tactics\" apply: easier \"Stay in melee range of the Heroes, especially those rolling larger damage dice or those with AoE abilities.\" harder \"Move out of melee range after attacking. Go after heroes with smaller damage dice.\""
+  },
+  {
+    "name": "Faerie Troubadour",
+    "book": "M&M",
+    "page": 17,
+    "pdfPage": 9,
+    "group": "Tiny Fey",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Invigorating Presence",
+        "text": "(Reach 4) Fey gain Med armor and advantage on attacks."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Clamorous Chorus",
+        "text": "(Reach 4) Enemies make a WIL save, each takes 15 psychic damage minus the save."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Faeries love music. The troubadour plays their discordant tunes whenever mischief is underway, escalating whatever chaos other Faeries are causing nearby.",
+    "tactics": {
+      "easier": "Isolate yourself from other Fey to limit your boons.",
+      "harder": "Stay near allies to grant them additional survivability."
+    },
+    "groupTraits": [
+      {
+        "name": "Flutter & Feint",
+        "text": "Attackers have disadvantage and miss on 2 or less."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Faerie Merrymaker",
+    "book": "M&M",
+    "page": 17,
+    "pdfPage": 9,
+    "group": "Tiny Fey",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 38,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Prank Bomb",
+        "text": "(Range 4) 2d4+10. On hit, choose 1:\n• Sticky Gum: Slowed for 1 Round.\n• Smelly Gas: Poisoned for 1 Round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The merrymaker specialize in practical jokes, and are never seen without their bag of tricks. Watch your step!",
+    "tactics": {
+      "easier": "Choose Sticky Gum vs Ranged heroes.",
+      "harder": "Combo Smelly Gas with Faerie Troubadour's Clamorous Chorus."
+    },
+    "groupTraits": [
+      {
+        "name": "Flutter & Feint",
+        "text": "Attackers have disadvantage and miss on 2 or less."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Faerie Trickmage",
+    "book": "M&M",
+    "page": 17,
+    "pdfPage": 9,
+    "group": "Tiny Fey",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Stop Hitting Yourselves!",
+        "text": "Reaction, 1/Round. (Reach 4) Swap the position of two creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Illusory Assault",
+        "text": "(Reach 4) Create 3 illusory fey minions (d4) in empty spaces adjacent to a hero. They attack immediately."
+      },
+      {
+        "name": "Minions & Advantage",
+        "text": "If a minion would attack with advantage, increment their die one step instead."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Trickmages use illusion magic to drag passers-by into the convoluted plots, often hiding their true motives until the final act. \"The more elaborate the setup, the better the punchline.\"",
+    "tactics": {
+      "easier": "Swap positions with your minions.",
+      "harder": "Swap positions so the Heroes hit each other with attacks, and focus your minions one one Hero."
+    },
+    "groupTraits": [
+      {
+        "name": "Flutter & Feint",
+        "text": "Attackers have disadvantage and miss on 2 or less."
+      }
+    ],
+    "notes": "\"Minions & Advantage\" is an italic boxed note under Illusory Assault, not a separate action."
+  },
+  {
+    "name": "Sprite",
+    "book": "M&M",
+    "page": 18,
+    "pdfPage": 10,
+    "group": "Seelie Fey",
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Spritely Evasion",
+        "text": "Attackers have disadvantage and miss on 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Giggle",
+        "text": "(Reach 4) 1d4. Your next attack deals a max of 1 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Minor fey that appear to mortals as a winged ball of light. Often seen at dusk fluttering by the streams, groves or meadows to which they are bound.",
+    "tactics": {
+      "easier": "Stay in melee with Heroes.",
+      "harder": "Attack at max Reach and move each turn."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Forest Gnome",
+    "book": "M&M",
+    "page": 18,
+    "pdfPage": 10,
+    "group": "Seelie Fey",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Weeee!",
+        "text": "When Riding a creature, attacks are made against you with disadvantage, and any that miss you damage them."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite, Pinch, & Pull",
+        "text": "1d4+3. On hit, gain Riding."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Amongst the smallest of the forest residents, living peacefully in small communes alongside their critter friends. They do not tolerate rude guests, however.",
+    "tactics": {
+      "easier": "Leap off a target after 1 round.",
+      "harder": "Ride and attack the same target as long as possible."
+    },
+    "groupTraits": [],
+    "notes": "Header \"lvl 1, small\" is partly hidden behind the quote in the page image; confirmed from the text layer."
+  },
+  {
+    "name": "Satyr",
+    "book": "M&M",
+    "page": 19,
+    "pdfPage": 10,
+    "group": "Seelie Fey",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Revel!",
+        "text": "When you crit leap 3."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cloven Hooves",
+        "text": "3d6, choose which die is primary."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Satyrs roam the woodland realm in small bands, always looking for a new place to revel. One should be wary of partaking in their merriment, lest they wake, unable to find the way home.",
+    "tactics": {
+      "easier": "Leap away from ranged heroes, do not leap away from melee-focused heroes.",
+      "harder": "Stay adjacent to ranged heroes making them move or attack with disadvantage; or leap away from melee-focused heroes to make them spend actions moving."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Faerie Dragon",
+    "book": "M&M",
+    "page": 19,
+    "pdfPage": 10,
+    "group": "Seelie Fey",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Iridescent Glamor",
+        "text": "Attacks deal a max of 10 damage against you. The attacker takes any remaining damage"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Enchanting Touch",
+        "text": "2d6 (ignoring Defense), on hit: target follows you this turn. OR:"
+      },
+      {
+        "name": "Liminal Breath",
+        "text": "(1 use, Cone 4) 3d6 damage, Daze."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(20hp): Iridescent Glamor improves to 5 damage."
+    },
+    "lastStand": null,
+    "flavor": "Mages seek out the Faeries Dragons as the most powerful familiar one can court. Highly intelligent, they are silent and communicate through telepathy. They are pure magic, born from the ley-currents of the forest and only found if they wish it so.",
+    "tactics": {
+      "easier": "Focus on unarmored Heroes, and use Liminal Breath on one or two targets.",
+      "harder": "Use Enchanting Touch to separate a heavily armored heroes from the party, setup a long Centaur charge, or to group heroes together for Liminal Breath"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Centaur",
+    "book": "M&M",
+    "page": 19,
+    "pdfPage": 10,
+    "group": "Seelie Fey",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Charge",
+        "text": "Deal +1 damage for each space you moved toward your target this turn."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hooves",
+        "text": "1d10+10"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Proud hunters of the forest, reclusive and nomadic. While herds of centaurs can be found all over the world, those dwelling amongst the fey insist on their role as protectors of the forest and its inhabitants. Distrustful of strangers, one would be wise to bring proof of great deeds to earn their esteem.",
+    "tactics": {
+      "easier": "Stay in melee combat after charging in.",
+      "harder": "Maximize the distance you Charge each turn."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Unicorn",
+    "book": "M&M",
+    "page": 19,
+    "pdfPage": 10,
+    "group": "Seelie Fey",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Iridescent Glamor",
+        "text": "Attacks deal a max of 10 damage against you. The attacker takes any remaining damage"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hooves (2x)",
+        "text": "1d4+10. On crit, Prone. OR:"
+      },
+      {
+        "name": "Luminous Horn",
+        "text": "(If crit this round) d44 damage. Target gains advantage on their next roll."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(50hp): Can use Luminous Horn freely. (1/round) Radiant Beauty. The nearest other creature Interposes for them on a failed DC 15 WIL save."
+    },
+    "lastStand": null,
+    "flavor": "Unicorns are beings of light made manifest, believed to have been sent by the moon itself as guardians of the deep forest. Once abundant when the world was young, they now only reveal themselves to those of pure intent.",
+    "tactics": {
+      "easier": "Stay near other monsters and have them Interpose for you instead of a Hero.",
+      "harder": "Use Luminous Horn at every opportunity. Stay near a Hero, to use Radiant Beauty on them."
+    },
+    "groupTraits": [],
+    "notes": "\"d44 damage\" is printed as-is (possibly a typo)."
+  },
+  {
+    "name": "Will-o-Wisp",
+    "book": "M&M",
+    "page": 20,
+    "pdfPage": 11,
+    "group": "Unseelie Fey",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Vanish",
+        "text": "(1/round, Reach 12) when damaged, teleport."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Lure",
+        "text": "(Reach 12) DC 13 WIL save or move a target 4 spaces and deal them 10 psychic damage. 2 spaces and 5 damage on save."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The Unseelie counterpart to the Sprite, appearing as ghastly orbs of light floating above swamps and bogs. Their ethereal allure has brought many a wanderer to a watery grave.",
+    "tactics": {
+      "easier": "When hit, teleport near another Hero. Use Lure to move Heroes without purpose.",
+      "harder": "When hit, teleport out of melee/movement range. Use Lure to separate the party, with hazards, or set up stronger monster attacks, like a Nixie in water."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Brollachan",
+    "book": "M&M",
+    "page": 20,
+    "pdfPage": 11,
+    "group": "Unseelie Fey",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 44,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Look-not-at-me",
+        "text": "Heroes can choose to close their eyes and be Blinded, otherwise you spend one of their actions each round."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Dark Tendril",
+        "text": "2d8+6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A formless creature of shadow that covets the shape worn by others. It enters the eyes of fools who stare at it too long, taking possession of their form until their bodies succumb or their will is spent.",
+    "tactics": {
+      "easier": "Use the target’s action to attack higher armor Heroes.",
+      "harder": "Use the target’s action to move them next to a stronger monster, like a Bogey, a Nixie in water, or to deal damage to a weaker Hero."
+    },
+    "groupTraits": [],
+    "notes": "Flavour and tactics continue at the top of the next column."
+  },
+  {
+    "name": "Nixie",
+    "book": "M&M",
+    "page": 20,
+    "pdfPage": 11,
+    "group": "Unseelie Fey",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Waterbound",
+        "text": "Moving on land is difficult terrain."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Abduct",
+        "text": "1d8, Grappled (escape DC 13 or lightning damage ends). OR:"
+      },
+      {
+        "name": "Drown",
+        "text": "(target in water) 2d8+10, Grappled, Silenced, and suffer 1 Wound each round (escape DC 13 or lightning damage ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Solitary watchers found in still bodies of water. They play dreadfully enchanting music on unseen instruments to draw the weak-hearted to their demise, calling out for companionship they can never grasp.",
+    "tactics": {
+      "easier": "Leave the water to chase down heroes.",
+      "harder": "If possible, stay in the water and have other monsters (Brollican, Will-o-Wisp, or Bogey) bring targets to you,"
+    },
+    "groupTraits": [],
+    "notes": "Harder tactic ends with a comma in the source."
+  },
+  {
+    "name": "Redcap",
+    "book": "M&M",
+    "page": 21,
+    "pdfPage": 11,
+    "group": "Unseelie Fey",
+    "habitat": null,
+    "levelText": "7",
+    "level": 7,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Murderous Mayhem",
+        "text": "The Redcap suffers 10 damage each round it fails to deal damage."
+      }
+    ],
+    "actionsIntro": "Choose Twice:",
+    "actions": [
+      {
+        "name": "Iron Boots",
+        "text": "1d10. On damage, Prone."
+      },
+      {
+        "name": "Cursed Iron Sickle",
+        "text": "(VS Prone) 1d10, on damage +20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Often mistaken for a forest gnomes, these vile and murderous fey delight in violence, and get their names from their habit of soaking their caps in the blood of their victims.",
+    "tactics": {
+      "easier": "Use Iron Boots, even against Prone creatures. Target high defense heroes",
+      "harder": "Many Redcaps can gang up on a single target."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Jabberwocky",
+    "book": "M&M",
+    "page": 21,
+    "pdfPage": 11,
+    "group": "Unseelie Fey",
+    "habitat": null,
+    "levelText": "19",
+    "level": 19,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 240,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mad Babbling",
+        "text": "Initiative is a WIL save instead. 1-9: the Jabberwocky can make you perform 2 actions this round, 10-19: 1 action (this does not spend any existing actions)."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Eyes of Flame",
+        "text": "(Reach 12, max 1 target). 2d10. Target takes this damage again at the end of their turn until extinguished (if the Jabberwocky is crit, water is used, or spending an action dropping Prone and rolling ends)."
+      },
+      {
+        "name": "Claws That Catch",
+        "text": "(Reach 2) 1d10, Grappled (escape DC 19, or when crit)."
+      },
+      {
+        "name": "Jaws that Bite",
+        "text": "(vs Grappled target) 4d10."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 120 hp use Mad Babbling again, all heroes roll with disadvantage."
+    },
+    "lastStand": null,
+    "flavor": "Jabberwockies are false dragons that babble incessantly, drawing in their prey with a maddening allure. Gazing too long into its eyes is said to reveal both the true shape of the world, and the incomprehensible horror in the space behind it.",
+    "tactics": {
+      "easier": "Use actions from Mad Babbling to move Heroes randomly, and attack each other. Use Claws That Catch more often.",
+      "harder": "Use actions from Mad Babbling to set up attacks for other monsters, such as Bogeys and Nixies, and to attack or interpose against each other. Use Jaws that Bite more often."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gremlin",
+    "book": "M&M",
+    "page": 22,
+    "pdfPage": 12,
+    "group": "Gremlins",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 38,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Come Get Some!",
+        "text": "If no heroes are Taunted, you may Taunt ALL heroes for 1 Round."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Weeee!",
+        "text": "1d6+10. Riding (escape DC 10)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Diminutive troublemakers with a craving for chaos and disorder. No two gremlins are alike, their patterns of fur and horns as varied as the targets of their vexation.",
+    "tactics": {
+      "easier": "Taunt melee heroes that are near you.",
+      "harder": "Taunt with a Gremlin that is further away or behind cover and not riding a hero; this makes all attacks against riding Gremlins made with disadvantage and more likely to hit the hero they're riding!"
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gremlin Wrestler",
+    "book": "M&M",
+    "page": 22,
+    "pdfPage": 12,
+    "group": "Gremlins",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 46,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Come Get Some!",
+        "text": "If no heroes are Taunted, you may Taunt all heroes for 1 Round."
+      },
+      {
+        "name": "Punching Up",
+        "text": "Can Grapple Med/Large creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "I’mma Mess You Up!",
+        "text": "2d6+10. On hit: Grappled (escape DC 12). If Grappled, knock Prone as well."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Nasty bullies who immobilize much larger opponents with a mix of innate physical strength and fey magic.",
+    "tactics": {
+      "easier": "Switch from hero to hero, abstain from knocking Prone.",
+      "harder": "Focus on one hero, knock Prone as much as possible. Always Taunt with the highest HP gremlin to protect those who are lower on HP."
+    },
+    "groupTraits": [],
+    "notes": "Harder tactic continues onto printed page 23."
+  },
+  {
+    "name": "Gremlin Roastmaster",
+    "book": "M&M",
+    "page": 23,
+    "pdfPage": 12,
+    "group": "Gremlins",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 68,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Take a look at this tough guy!",
+        "text": "(Reach 6) Heroes that miss attacks suffer 5 psychic damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cheap Shot",
+        "text": "1d6+10, (+10 VS Hampered creatures)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Gremlins notorious enough to lead their own gang of bullies through insults and intimidation. Always on the lookout for new victims to strengthen their vile reputation.",
+    "tactics": {
+      "easier": "Limit \"Take a look at this tough guy!\" to 1/round.",
+      "harder": "Stay near the heroes that are attacking taunting Gremlins to activate “Take a look at this tough guy!” as often as possible. Focus your Cheap Shots on heroes that are being hampered by Wrestlers."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bogey",
+    "book": "M&M",
+    "page": 23,
+    "pdfPage": 12,
+    "group": "Gremlins",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Taste for Violence",
+        "text": "If a Bogey has 2 or more adjacent heroes, it uses a d20 for its attacks."
+      }
+    ],
+    "actionsIntro": "Choose Twice:",
+    "actions": [
+      {
+        "name": "Smash and Grab",
+        "text": "1d10+5. Grappled (escape DC 14)."
+      },
+      {
+        "name": "Headbutt",
+        "text": "(If Grappling) 1d10+10 damage and Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Distant cousins of Gremlins. Their lanky, hulking forms bely their cunning nature. Unlike most Fey, Bogeys are overtly malicious, taking cruel satisfaction in the pain and sadness of those they lure into the dark.",
+    "tactics": {
+      "easier": "Focus on isolated heroes.",
+      "harder": "Stay near groups of heroes to maximize damage."
+    },
+    "groupTraits": [],
+    "notes": "Printed in the Gremlins section; described as distant cousins of Gremlins."
+  },
+  {
+    "name": "Gremlin Minion",
+    "book": "M&M",
+    "page": 25,
+    "pdfPage": 13,
+    "group": "Gremlins",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bully",
+        "text": "1d6 (1d8 instead vs a Blinded or Ridden target)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Printed alongside Razzle, Gremlin Iconoclast."
+  },
+  {
+    "name": "Razzle, Gremlin Iconoclast",
+    "book": "M&M",
+    "page": 25,
+    "pdfPage": 13,
+    "group": "Gremlins",
+    "habitat": null,
+    "levelText": "7",
+    "level": 7,
+    "size": "Small",
+    "kind": "Insufferable Rascal",
+    "role": "solo",
+    "armor": "M",
+    "hp": 180,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "\"The Boys.\"",
+        "text": "When combat begins, 2 Gremlin minions/hero arrive as well."
+      },
+      {
+        "name": "Endless Stream of Vile Insults",
+        "text": "All heroes are permanently Taunted by Razzle."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn choose 1:",
+    "actions": [
+      {
+        "name": "Get ‘em Boys!",
+        "text": "(If no minions died last turn) All minions move then attack."
+      },
+      {
+        "name": "Poke Eyes, Pull Hair",
+        "text": "(If a minion died last turn) Teleport to an enemy, gain Riding and attack for 1d6+6. On hit: Blinded 1 round. Then (if the heroes outnumber the gremlins) summon 1 minion/hero."
+      }
+    ],
+    "bloodied": {
+      "name": "“Razzle Dazzle!”",
+      "text": "At 90 HP A flash of glitter Blinds all heroes for 1 round. Razzle may teleport 8 and summon 1 minion/hero."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0 HP, Razzle is losing his cool! 70 more damage and he’s banished to the Wildscapes. 3 Gremlin Minions/hero arrive to protect him. Razzle turns invisible until the end of the next Hero's turn."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Have your minions spread out and attack many different heroes. Summon fewer minions when Bloodied and at his Last Stand.",
+      "harder": "Have minions prioritize Blinded and Ridden heroes for more damage. Increment the damage die on all his minions from d6 to d10."
+    },
+    "groupTraits": [],
+    "notes": "Header \"Level 7 Small, Insufferable Rascal\" does not say Solo, but the block uses ACTIONS/BLOODIED/LAST STAND, so role set to solo. No flavour paragraph in the block; lore, quest hook and quips are on the surrounding page."
+  },
+  {
+    "name": "Mav, The Winter Queen",
+    "book": "M&M",
+    "page": 27,
+    "pdfPage": 14,
+    "group": "Fey",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": "Avatar of Seasons",
+    "role": "solo",
+    "armor": "M",
+    "hp": 280,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "All+",
+    "resist": [
+      "Ice"
+    ],
+    "vuln": [
+      "Fire"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ice Avatar",
+        "text": "Resistant to Ice, vulnerable to Fire: when dealt Fire damage, her next attack is made with advantage."
+      },
+      {
+        "name": "Wind Ward",
+        "text": "Attacks from Range 6 or beyond have disadvantage against Mav."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn choose 1 (Rec. use Winter's Wrath as an opening move):",
+    "actions": [
+      {
+        "name": "Winter’s Wrath",
+        "text": "(1 use, remains until Last Stand) Create a 6x6 area of wintry storm within Reach 8. Enemies in the area take 10 damage. They take 10 more whenever they enter the area and if they end their turn there."
+      },
+      {
+        "name": "Wolf-Spirit’s Bite",
+        "text": "Move 10, 1d10+8. Drag target 2 spaces in any direction."
+      },
+      {
+        "name": "Stormlord’s Gust",
+        "text": "(Reach 8) All heroes make a DC 15 STR Save. Move all heroes that fail up to 4 spaces in the same direction; on success, half as far."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 140 HP, Mav’s Winter's Wrath increases to 8x8. Mav is no longer vulnerable to Fire. Your forced movement moves twice as far."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0 HP, Mav is thawing out! 100 more damage and she’s banished to the Wildscapes. Her WInter's Wrath is ended, Mav summons icy shards that cover the ground within Reach 12. Enemies suffer 3 damage for each space they move in the area."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Stray outside of your Winter’s Wrath, preventing heroes from taking damage in it. Her Wind Ward could falter after taking a crit, or Fire damage. Icy shards can deal less damage or be destroyed once used.",
+      "harder": "Stay within Winter’s Wrath and make the heroes come to you. Drag and push heroes into the storm. Keep ranged attackers outside of your Wind Ward. At Last Stand, use Stormlord’s Gust to more heroes across as many shards as possible."
+    },
+    "groupTraits": [],
+    "notes": "Header \"Level 10 Solo Avatar of Seasons\"; actions labelled \"SOLO:\". No flavour paragraph in the block; lore, quest hook and quotes are on the page."
+  },
+  {
+    "name": "Warpig",
+    "book": "M&M",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gore",
+        "text": "1d10"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Armored warthogs, trained to gore the furthest creature away.",
+    "tactics": {
+      "easier": "Go after melee heroes and stay within reach after attacking, making yourself vulnerable to follow up attacks.",
+      "harder": "Go after ranged heroes, force them to move or have disadvantage on attacks. Continually move out of melee reach."
+    },
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": "Orcish Special Abilities attached; Tough as Nails says \"Orcs\", so may not apply to Warpigs."
+  },
+  {
+    "name": "Orc",
+    "book": "M&M",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 22,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Enrage",
+        "text": "When crit: deal 5 to an adjacent enemy."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Battleaxe",
+        "text": "1d10+4. OR:"
+      },
+      {
+        "name": "Javelin",
+        "text": "(Range 8) 1d6+4"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Attack from Range to deal less damage and waste Enrage.",
+      "harder": "Use melee attacks as much as possible, Always stay adjacent to enemies Enrage has a target."
+    },
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": "Flavour is placeholder \"xx\" in the source; tactics continue at the top of the next column."
+  },
+  {
+    "name": "Orc Raider",
+    "book": "M&M",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Enrage",
+        "text": "When crit: deal 5 to an adjacent enemy."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Twin Strike (2x)",
+        "text": "1d10+4. OR:"
+      },
+      {
+        "name": "Javelin",
+        "text": "(Range 8) 1d6+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": "Flavour is placeholder \"xx\" with \"Tactics: see Orc.\" in the source."
+  },
+  {
+    "name": "Orc Battlebard",
+    "book": "M&M",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Stand Your Ground!",
+        "text": "Allied Orcs attacks with advantage so long as you have not moved (or been moved) since your last turn."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Battle Horn (1/encounter)",
+        "text": "Trigger every allied Orc's Enrage ability. OR:"
+      },
+      {
+        "name": "Battleaxe",
+        "text": "1d10+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A key figure in every Orc Horde, Battlebards can often turn the tide in favour of their warband.",
+    "tactics": {
+      "easier": "The Battlebard’s own bloodlust is too much; have him move into battle, to attack. Hint at how his ability works to encourage heroes to Assess.",
+      "harder": "Start in an elevated position on the battlefield. Go last in a round, to save Battle Horn for when allies are all in position."
+    },
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Orc Elite",
+    "book": "M&M",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Enrage",
+        "text": "When crit: deal 5 to an adjacent enemy."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cleave",
+        "text": "2d10+4, to up to 2 enemies in Reach. OR:"
+      },
+      {
+        "name": "Heavy Javelin",
+        "text": "(Range 8) 2d6+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": "Flavour is placeholder \"xx\" with \"Tactics: see Orc.\" in the source."
+  },
+  {
+    "name": "Orc Warchief",
+    "book": "M&M",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Enrage",
+        "text": "When crit: deal 5 to an adjacent enemy."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Warchief's Axe",
+        "text": "2d10+4, then:"
+      },
+      {
+        "name": "Call the Horde",
+        "text": "Summon 1 Orc to the battlefield."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Summon Orcs in a bad positions, they act next round",
+      "harder": "Move away after attacking, then summon an Orc between you and the hero, it can attack immediately."
+    },
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": "Flavour is placeholder \"xx\" in the source."
+  },
+  {
+    "name": "High Orc Flamecaller",
+    "book": "M&M",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Touch Not the Flamecaller!",
+        "text": "When damaged, choose 1 Orc to move and trigger their Enrage ability."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pillar of Flame",
+        "text": "(AoE, Reach 8) 1d10+10 to ALL creatures in a 2×2 area. Orcs there trigger their Enrage ability."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Catch other orcs in Pillar of Flame.",
+      "harder": "Stay near heroes that deal small amounts of damage frequently to get more out of your special ability."
+    },
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": "Flavour is placeholder \"xx\" in the source."
+  },
+  {
+    "name": "Orc Giant",
+    "book": "M&M",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "14",
+    "level": 14,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Big Mad",
+        "text": "When crit, deal 10 (Reach 2)."
+      },
+      {
+        "name": "Furious Charge",
+        "text": "2d10 to smaller creatures whenever you move through their space. On damage, Prone."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Smash",
+        "text": "(vs Prone, Reach 2) 2d10+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Protectors of the High flamecaller.",
+    "tactics": {
+      "easier": "Move through allies to get to a desired target.",
+      "harder": "Combos extremely well with Flamecallers, Medium armor means he takes far less damage from Pillar of Flame and can deal tremendous damage whenever the Flamecaller is damaged."
+    },
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": "Flavour printed as \"XX. Protectors of the High flamecaller.\" (placeholder dropped). Both tactics lines use the easier icon in the source; second assigned to harder by position."
+  },
+  {
+    "name": "Flamebound Ancestor",
+    "book": "M&M",
+    "page": 33,
+    "pdfPage": 17,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Medium",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Flamebound",
+        "text": "Harmlessly unsummoned when the Flamecaller dies."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Strike",
+        "text": "1d10 (follows minion rules)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Summoned by Hordecaller Kerem. Orcish Special Abilities not attached (summoned spirit)."
+  },
+  {
+    "name": "Hordecaller Kerem",
+    "book": "M&M",
+    "page": 33,
+    "pdfPage": 17,
+    "group": "Orcs",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": "Orc Lord",
+    "role": "solo",
+    "armor": "M",
+    "hp": 250,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+, WIL+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hordecaller",
+        "text": "When crit, summon 1 Flamebound Ancestor/hero (place them within Reach 6)."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn, Move 4 then choose one:",
+    "actions": [
+      {
+        "name": "Ancestors of Flame",
+        "text": "(If there are more heroes than Orcs) Use Hordecaller."
+      },
+      {
+        "name": "Command the Horde",
+        "text": "(1/round) Command your horde to move then attack."
+      },
+      {
+        "name": "Flameslash",
+        "text": "(Reach 6) 2d10+4."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 125 HP \"Ancestors, I call upon you!\" Use Hordecaller."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0 HP Kerem is dying! 100 more damage and he dies. Use Hordecaller at the end of each turn."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Command the Horde when there are fewer Ancestors of Flame, and spread them out.",
+      "harder": "Save Command the Horde until right after you summon more minions for max damage."
+    },
+    "groupTraits": [
+      {
+        "name": "Battlelust",
+        "text": "Heroes have disadvantage on Initiative against an Orcish band."
+      },
+      {
+        "name": "Tough as Nails",
+        "text": "Orcs have Medium armor, except against magic damage."
+      }
+    ],
+    "notes": "Header \"lvl 10 Solo Orc Lord\". No flavour paragraph in the block; lore, running notes and quest hook are on the page."
+  },
+  {
+    "name": "Bandit Minion",
+    "book": "M&M",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d8 (follows minion rules)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "New criminal recruits, still in training.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Bandit",
+    "book": "M&M",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 12,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d8+1 (or Shoot, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Criminals with an affinity for gold and witty remarks. Most prefer the term \"Outlaw,\" it sounds more threatening.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Bandit Hunter",
+    "book": "M&M",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 22,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Battlebow",
+        "text": "2d8+2 (Range 12)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Having half a dozen bows pointed at you from the shadows is a great way to apply leverage in any negotiation.",
+    "tactics": {
+      "easier": "Stay near melee heroes to attack with disadvantage.",
+      "harder": "Move each turn, stay at max Range and seek cover."
+    },
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Bandit Bruiser",
+    "book": "M&M",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 24,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bash",
+        "text": "2d8+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Black Market contracts are built on trust (never in writing). When trust is broken, Bruisers come in to \"talk things out.\"",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Bandit Assassin",
+    "book": "M&M",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 24,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sneak",
+        "text": "You are invisible until you attack."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Poison Blade (2×)",
+        "text": "1d8+2. On damage: Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Lethal strikers with a mind for tactical precision. Most live in the realm of myth and legend.",
+    "tactics": {
+      "easier": "Hint at their presence, allow heroes a chance to spot them before they attack. Target already Dazed heroes.",
+      "harder": "Spread Dazed out as much as possible. Have extra Assassins join combat midway through once melee heroes who could interpose are already occupied."
+    },
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Bandit Mage",
+    "book": "M&M",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Spark Step",
+        "text": "When damaged, teleport 4."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Arc Lightning",
+        "text": "(Range 12) 3d8. Also strikes the next closest creature. On miss: damage self instead."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A little self-training and a lot of stolen spellbooks. can make anyone a half-decent spellcaster.",
+    "tactics": {
+      "easier": "Strike heroes who are near bandits to include them in the damage. Teleport to poor locations.",
+      "harder": "Teleport up high (e.g., into trees, cliffsides), or into cover."
+    },
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": "Level header printed at the bottom of page 34; block body on page 35."
+  },
+  {
+    "name": "Bandit Captain",
+    "book": "M&M",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 36,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slice (3×)",
+        "text": "1d8+1 (or Shoot, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Wrangling a bunch of professional law-breakers isn't the most glamorous job, but those who succeed wear the title with pride.",
+    "tactics": {
+      "easier": "Attack from Range",
+      "harder": "Get into the thick of the action and deal far more damage."
+    },
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Bandit Ice Mage",
+    "book": "M&M",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ice Shield",
+        "text": "Reduce all non-critical damage by 10."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Arctic Chill",
+        "text": "(Cone 3) 4d8, Slowed. OR:"
+      },
+      {
+        "name": "Ice Shard",
+        "text": "(Range 12) 3d8, Slowed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": null,
+      "harder": "Target melee heroes to slow them down then run away!"
+    },
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": "Flavour is placeholder \"XX\" and the easier tactic is placeholder \"x\" in the source; left null."
+  },
+  {
+    "name": "Bandit Fire Mage",
+    "book": "M&M",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Fiery Shield",
+        "text": "Melee attackers suffer 2 fire damage and gain Smoldering."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Heart's Fire",
+        "text": "(Reach 8) An ally can move or attack. Then:"
+      },
+      {
+        "name": "Pyromancy",
+        "text": "(Range 8) 3d8. +10 to a Smoldering target, ending the condition."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A little self-training and a lot of stolen spellbooks. can make anyone a half-decent spellcaster.",
+    "tactics": {
+      "easier": "Move allies with heart's fire instead of attacking mroe often.",
+      "harder": "Select bandits with powerful single attacks like bruisers, hunters, or mages."
+    },
+    "groupTraits": [
+      {
+        "name": "Parry",
+        "text": "Treat attacks against you that roll 2 as a miss."
+      }
+    ],
+    "notes": "Flavour text is identical to Bandit Mage's in the source."
+  }
+]
