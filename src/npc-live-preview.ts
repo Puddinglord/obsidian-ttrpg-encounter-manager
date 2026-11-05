@@ -59,7 +59,7 @@ export function npcLivePreview(plugin: NimbleStatblocksPlugin) {
 			const byName = new Map<string, NpcInfo>();
 			for (const n of npcs) for (const name of [n.name, ...n.aliases]) if (name.length >= 3 && !byName.has(name)) byName.set(name, n);
 			const names = [...byName.keys()].sort((a, b) => b.length - a.length).map(escape);
-			const mention = names.length ? new RegExp(`(?<![\\p{L}\\p{N}_\\[|])(${names.join('|')})(?![\\p{L}\\p{N}_\\]])`, 'gu') : null;
+			const mention = names.length ? new RegExp(`(^|[^\\p{L}\\p{N}_\\[|])(${names.join('|')})(?![\\p{L}\\p{N}_\\]])`, 'gu') : null;
 			const sel = view.state.selection.ranges;
 			const touches = (a: number, b: number) => sel.some(r => r.from <= b && r.to >= a);
 			const decos: Range<Decoration>[] = [];
@@ -81,8 +81,9 @@ export function npcLivePreview(plugin: NimbleStatblocksPlugin) {
 				if (!mention || !plugin.settings.autoLinkNpcs) continue;
 				mention.lastIndex = 0;
 				for (let m = mention.exec(text); m; m = mention.exec(text)) {
-					const a = from + m.index, b = a + m[1].length;
-					const npc = byName.get(m[1]);
+					// m[1] is the boundary character before the name (no lookbehind: old iOS lacks it).
+					const a = from + m.index + m[1].length, b = a + m[2].length;
+					const npc = byName.get(m[2]);
 					if (!npc || npc.path === sourcePath) continue;
 					if (links.some(([x, y]) => a < y && b > x) || skippable(view, a)) continue;
 					decos.push(Decoration.mark({ class: 'nimble-npc-lp-mention', attributes: { 'data-npc': npc.path } }).range(a, b));

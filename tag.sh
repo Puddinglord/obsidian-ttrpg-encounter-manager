@@ -10,6 +10,12 @@ fi
 
 VERSION=$1
 
+MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+if [ "$VERSION" != "$MANIFEST_VERSION" ]; then
+    echo "manifest.json is at $MANIFEST_VERSION; bump it (and versions.json) to $VERSION first"
+    exit 1
+fi
+
 # Stage and commit any changes
 git add -A
 git commit -m "Release $VERSION" || echo "Nothing to commit"

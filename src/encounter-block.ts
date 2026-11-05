@@ -1,6 +1,7 @@
 // ```nimble-encounter blocks: a prepared encounter in a note, with live
 // difficulty against the party and one click to run it in the tracker.
 
+import { resumeSavedFight, savedFightsFor } from './saved-fight';
 import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterDef, encounterBlockSource, parseEncounterBlock } from './encounter-def';
@@ -208,10 +209,16 @@ function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, d
 		return b;
 	};
 	btn('Run', 'play', 'mod-cta', () => void runEncounter(plugin, def, ctx.sourcePath), 'Load this encounter into the tracker');
-	btn('Add to current', 'plus', '', async () => {
+	btn('Add to current', 'plus', '', () => void (async () => {
 		for (const f of found) plugin.encounters.add(f.monster, f.sourceFile, f.count);
 		await plugin.showTracker();
 		new Notice(`Added ${def.name}'s monsters to the current encounter`);
-	}, 'Add these monsters to the encounter already in the tracker');
+	})(), 'Add these monsters to the encounter already in the tracker');
 	btn('Edit', 'pencil', '', () => new BuilderModal(plugin, def, save).open(), 'Edit monsters with the encounter builder');
+	// A fight saved from this block can be picked up where it stopped.
+	const saved = savedFightsFor(plugin.app, ctx.sourcePath, def.name)[0];
+	if (saved) {
+		const b = btn(`Resume round ${saved.round}`, 'history', 'encounter-resume', () => void resumeSavedFight(plugin, saved.file), `Saved ${saved.saved.replace('T', ' ')}`);
+		b.addClass('mod-warning');
+	}
 }

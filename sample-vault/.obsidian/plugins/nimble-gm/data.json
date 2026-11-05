@@ -1,0 +1,19 @@
+{
+	"activeCampaign": "Campaigns/The Old Quarter",
+	"party": [
+		{ "id": "hero-brakka", "name": "Brakka", "className": "Berserker", "level": 2, "maxHp": 28, "defense": 12, "maxWounds": 6 },
+		{ "id": "hero-wren", "name": "Wren", "className": "Hunter", "level": 2, "maxHp": 19, "defense": 14, "maxWounds": 6 },
+		{ "id": "hero-ilse", "name": "Ilse", "className": "Mage", "level": 2, "maxHp": 14, "defense": 11, "maxWounds": 6 },
+		{ "id": "hero-tomas", "name": "Tomas", "className": "Oathsworn", "level": 2, "maxHp": 24, "defense": 17, "maxWounds": 6 }
+	],
+	"campaigns": {
+		"Campaigns/The Old Quarter": {
+			"party": [
+				{ "id": "hero-brakka", "name": "Brakka", "className": "Berserker", "level": 2, "maxHp": 28, "defense": 12, "maxWounds": 6 },
+				{ "id": "hero-wren", "name": "Wren", "className": "Hunter", "level": 2, "maxHp": 19, "defense": 14, "maxWounds": 6 },
+				{ "id": "hero-ilse", "name": "Ilse", "className": "Mage", "level": 2, "maxHp": 14, "defense": 11, "maxWounds": 6 },
+				{ "id": "hero-tomas", "name": "Tomas", "className": "Oathsworn", "level": 2, "maxHp": 24, "defense": 17, "maxWounds": 6 }
+			]
+		}
+	}
+}

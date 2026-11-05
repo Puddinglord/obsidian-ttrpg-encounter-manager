@@ -20,6 +20,7 @@ import { BuilderModal } from './builder-modal';
 import { parseDice } from './dice';
 import { BOX_PRESETS, boxColor, newBox } from './box-def';
 import { safeName } from './campaign-model';
+import { NPC_CARD_BLOCK } from './npc-card-def';
 
 type ArgKind = 'monster' | 'add' | 'list' | 'condition' | 'image' | 'dice' | 'box' | 'npc';
 
@@ -94,6 +95,7 @@ const COMMANDS: SlashCommand[] = [
 	{ name: 'condition', aliases: ['cond', 'status'], icon: 'activity', desc: 'Condition rules', hint: '/condition dazed', arg: 'condition' },
 	{ name: 'box', aliases: ['callout'], icon: 'square-dashed', desc: 'Any box type', hint: '/box treasure', arg: 'box' },
 	{ name: 'npc', aliases: ['who'], icon: 'user-round', desc: 'Link an NPC, or create one', hint: '/npc kevori', arg: 'npc' },
+	{ name: 'npc-card', aliases: ['portrait', 'character'], icon: 'contact-round', desc: 'NPC card with portrait', insert: () => ({ text: NPC_CARD_BLOCK, block: true }) },
 	...Object.entries(BOX_PRESETS).filter(([id]) => id !== 'npc' && id !== 'note').map(([id, p]): SlashCommand => ({
 		name: id, aliases: p.aliases, icon: p.icon, desc: p.desc,
 		insert: () => ({ text: newBox(id), block: true, inside: true }),
@@ -117,7 +119,7 @@ const COMMANDS: SlashCommand[] = [
 ];
 
 /** Menu order for a bare "/": what a GM reaches for at the table first. */
-const ORDER = ['monster', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
+const ORDER = ['monster', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
 const rank = (c: SlashCommand) => { const i = ORDER.indexOf(c.name); return i === -1 ? ORDER.length : i; };
 
 function commandMatches(c: SlashCommand, q: string): number {

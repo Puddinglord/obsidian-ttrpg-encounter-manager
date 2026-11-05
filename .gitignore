@@ -23,3 +23,9 @@ e2e/artifacts
 
 # Licensed / third-party content for local prototyping (maps, adventure notes, Nimble draft stats)
 prototypes/private/
+
+# Built by scripts/package-sample-vault.mjs
+Nimble-GM-Sample-Vault.zip
+
+# The sample vault ships its plugin settings (the party)
+!sample-vault/.obsidian/plugins/nimble-gm/data.json

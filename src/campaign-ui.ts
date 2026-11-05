@@ -3,15 +3,15 @@
 // ```nimble-campaign dashboard block on a campaign's home note.
 
 import { Menu, setIcon } from 'obsidian';
+import { portraitOf, renderAvatar } from './npc-card';
 import type NimbleStatblocksPlugin from '../main';
 import { Campaign, Chapter, NoteKind, NoteRef, Section } from './campaign-model';
 import { SECTION_FOR } from './campaigns';
 import { ChapterPicker, NamePrompt } from './campaign-modals';
-import { onLongPress } from './touch';
 
 export const KIND_ICON: Record<NoteKind, string> = {
 	campaign: 'castle', chapter: 'book-marked', scene: 'clapperboard', map: 'map', npc: 'user-round', location: 'map-pin',
-	session: 'calendar-days', monster: 'skull', handout: 'scroll-text', note: 'file-text',
+	session: 'calendar-days', monster: 'skull', handout: 'scroll-text', combat: 'swords', note: 'file-text',
 };
 const SECTION_ICON: Record<string, string> = { NPCs: 'users-round', Locations: 'map-pin', Sessions: 'calendar-days', Monsters: 'skull', Handouts: 'scroll-text', Assets: 'image', Maps: 'map' };
 
@@ -35,7 +35,9 @@ function iconBtn(parent: HTMLElement, icon: string, label: string, onClick: (e: 
 function noteRow(parent: HTMLElement, plugin: NimbleStatblocksPlugin, n: NoteRef, opts: OutlineOptions, sourcePath?: string): HTMLElement {
 	const row = parent.createEl('a', { cls: `campaign-note kind-${n.kind}`, href: '#', attr: { 'data-path': n.path } });
 	if (n.path === opts.current) row.addClass('is-current');
-	setIcon(row.createSpan({ cls: 'campaign-note-icon' }), KIND_ICON[n.kind]);
+	const portrait = n.kind === 'npc' ? portraitOf(plugin.app, n.path) : null;
+	if (portrait) renderAvatar(row, portrait, 'campaign-note-avatar');
+	else setIcon(row.createSpan({ cls: 'campaign-note-icon' }), KIND_ICON[n.kind]);
 	const title = n.area && n.title.startsWith(n.area) ? n.title.slice(n.area.length).replace(/^[\s:.\-–—]+/, '') : n.title;
 	if (n.area) row.createSpan({ cls: 'campaign-note-area', text: n.area });
 	row.createSpan({ cls: 'campaign-note-title', text: title });
@@ -45,7 +47,7 @@ function noteRow(parent: HTMLElement, plugin: NimbleStatblocksPlugin, n: NoteRef
 	});
 	// Obsidian's page preview on hover (desktop), like any internal link.
 	row.addEventListener('mouseover', (e) => {
-		plugin.app.workspace.trigger('hover-link', { event: e, source: 'nimble-statblocks', hoverParent: parent, targetEl: row, linktext: n.path, sourcePath: sourcePath ?? '' });
+		plugin.app.workspace.trigger('hover-link', { event: e, source: 'nimble-gm', hoverParent: parent, targetEl: row, linktext: n.path, sourcePath: sourcePath ?? '' });
 	});
 	return row;
 }
@@ -80,10 +82,10 @@ export function renderPartyLine(el: HTMLElement, plugin: NimbleStatblocksPlugin,
 		line.createSpan({ text: `${c.heroes ?? plugin.settings.defaultPartySize ?? 4} heroes · level ${c.level ?? 1}` });
 		line.createSpan({ cls: 'campaign-party-hint', text: 'Add heroes' });
 	}
-	line.addEventListener('click', async () => {
+	line.addEventListener('click', () => void (async () => {
 		if (plugin.settings.activeCampaign !== c.folder) await plugin.campaigns.setActive(c.folder);
 		plugin.openParty();
-	});
+	})());
 }
 
 export function renderOutline(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, opts: OutlineOptions): void {
@@ -226,6 +228,6 @@ export function campaignMenu(plugin: NimbleStatblocksPlugin, e: MouseEvent | Poi
 	}
 	m.addSeparator();
 	m.addItem(i => i.setTitle('New campaign…').setIcon('plus').onClick(() => plugin.newCampaign()));
-	m.showAtMouseEvent(e as MouseEvent);
+	m.showAtMouseEvent(e);
 }
 

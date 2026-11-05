@@ -8,10 +8,13 @@ import { awaitingLastStand, EncounterStore, HpResult, isDown, isHero, isMinionGr
 import { conditionLabel, formatLevel, groupAttack, lastStandEffect, minionDie, monsterRole, parseHpCommand } from './rules';
 import { appendRichText } from './markdown';
 import { closePopover, isPopoverOpenFor, openPopover } from './popover';
-import { describeMonster } from './suggest';
-import { HpPadModal } from './hp-pad';
+import { openHpCalculator } from './hp-pad';
 import { confirmAction, isTouch } from './touch';
 import { HpCommand } from './rules';
+import { openPluginSettings } from './internals';
+import { slideThumb } from './segmented';
+import { saveFight } from './saved-fight';
+import { legendaryOption } from './tracker-text';
 
 export const ENCOUNTER_VIEW_TYPE = 'nimble-encounter-tracker';
 
@@ -35,6 +38,9 @@ interface Prompt {
 	label?: string;
 	monsterName?: string;
 	action?: { label: string; run: () => void };
+	/** Legendary prompts: the choice the GM picked, and what it rolled. */
+	chosen?: number;
+	rolled?: string;
 }
 
 export class EncounterTrackerView extends ItemView {
@@ -43,7 +49,8 @@ export class EncounterTrackerView extends ItemView {
 	private prompts: Prompt[] = [];
 	private flash = new Map<string, string>();
 	private logOpen = false;
-	private quickQuery = '';
+	/** Last turn shown, so the turn control can slide from it. */
+	private lastTurn: number | undefined;
 
 	constructor(leaf: WorkspaceLeaf, private plugin: NimbleStatblocksPlugin) {
 		super(leaf);
@@ -69,7 +76,7 @@ export class EncounterTrackerView extends ItemView {
 	render(): void {
 		const container = this.root;
 		const scrollTop = container.scrollTop;
-		const focusedHp = (document.activeElement as HTMLElement | null)?.dataset?.hpFor;
+		const focusedHp = (container.doc.activeElement as HTMLElement | null)?.dataset?.hpFor;
 		container.empty();
 		container.addClass('nimble-encounter-tracker');
 
@@ -80,16 +87,18 @@ export class EncounterTrackerView extends ItemView {
 		if (multiMode) this.renderEncounterPicker(container);
 
 		if (enc) {
-			this.renderRoundBar(container, enc);
-			this.renderQuickAdd(container, enc);
+			this.renderControls(container, enc);
 			this.renderPrompts(container, enc);
 			this.renderViewer(container, enc);
 			if (enc.creatures.length === 0) {
 				const empty = container.createDiv({ cls: 'empty-message' });
 				empty.createEl('p', { text: 'No one here yet.' });
-				empty.createEl('p', { cls: 'empty-hint', text: 'Add monsters above, or run an encounter from a note.' });
+				empty.createEl('p', { cls: 'empty-hint', text: 'Use Add monster, or Run an encounter block in a note.' });
 			} else {
-				for (const { side, creatures } of EncounterStore.sides(enc)) {
+				// Whoever's turn it is goes on top.
+				const sides = EncounterStore.sides(enc);
+				if (enc.phase === 'monsters') sides.reverse();
+				for (const { side, creatures } of sides) {
 					if (!creatures.length) continue;
 					const head = container.createDiv({ cls: 'side-header' });
 					head.createSpan({ text: side === 'hero' ? 'Heroes' : 'Monsters' });
@@ -155,6 +164,7 @@ export class EncounterTrackerView extends ItemView {
 			if (enc.sourcePath) {
 				menu.addItem(i => i.setTitle('Append summary to source note').setIcon('file-plus').onClick(() => void this.appendSummary(enc)));
 			}
+			menu.addItem(i => i.setTitle('Save fight to a note').setIcon('save').onClick(() => void this.saveToNote(enc)));
 			menu.addSeparator();
 			menu.addItem(i => i.setTitle('Restart (round 1, keep combatants)').setIcon('rotate-ccw').onClick(() => this.store.start(enc.id)));
 			menu.addItem(i => i.setTitle(this.plugin.settings.multipleEncounters ? 'Delete encounter' : 'Clear encounter').setIcon('trash-2').onClick(async () => {
@@ -170,10 +180,7 @@ export class EncounterTrackerView extends ItemView {
 	}
 
 	private openSettings(): void {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const setting = (this.app as any).setting;
-		setting?.open?.();
-		setting?.openTabById?.(this.plugin.manifest.id);
+		openPluginSettings(this.app, this.plugin.manifest.id);
 	}
 
 	private async appendSummary(enc: Encounter): Promise<void> {
@@ -214,103 +221,107 @@ export class EncounterTrackerView extends ItemView {
 		add.onclick = () => { this.prompts = []; this.store.create(`Encounter ${this.store.encounters.length + 1}`); };
 	}
 
-	private renderRoundBar(container: HTMLElement, enc: Encounter): void {
-		const bar = container.createDiv({ cls: 'round-bar' });
+	/**
+	 * The controls that stay pinned to the top while the list scrolls: the
+	 * combat button (Start, or Next round and End), the round, whose turn it is,
+	 * and the add buttons.
+	 */
+	private renderControls(container: HTMLElement, enc: Encounter): void {
+		const box = container.createDiv({ cls: 'tracker-controls' });
+		const inCombat = !!enc.phase && enc.phase !== 'setup';
 		const round = enc.round ?? 1;
-		const counter = bar.createDiv({ cls: 'round-counter' });
-		const prev = counter.createEl('button', { cls: 'round-btn', text: '‹', attr: { 'aria-label': 'Previous round' } });
-		prev.disabled = round <= 1;
-		prev.onclick = () => this.store.setRound(enc.id, round - 1);
-		counter.createSpan({ cls: 'round-label', text: `Round ${round}` });
-		const next = counter.createEl('button', { cls: 'round-btn', text: '›', attr: { 'aria-label': 'Round up' } });
-		next.onclick = () => this.store.setRound(enc.id, round + 1);
 
-		const phases = bar.createDiv({ cls: 'phase-pills', attr: { role: 'group', 'aria-label': 'Whose turn' } });
-		const pill = (phase: 'heroes' | 'monsters', text: string) => {
-			const b = phases.createEl('button', { cls: `phase-pill phase-${phase}`, text, attr: { 'aria-pressed': String(enc.phase === phase) } });
-			if (enc.phase === phase) b.addClass('is-active');
-			b.onclick = () => this.store.setPhase(enc.id, phase);
-		};
-		pill('heroes', "Heroes' turn");
-		pill('monsters', "Monsters' turn");
-
-		const action = bar.createEl('button', { cls: 'mod-cta round-action' });
-		if (!enc.phase || enc.phase === 'setup') {
-			setIcon(action.createSpan(), 'play');
-			action.createSpan({ text: 'Start combat' });
-			action.setAttr('aria-label', 'Start combat');
-			action.onclick = () => { this.prompts = []; this.store.start(enc.id); };
+		const top = box.createDiv({ cls: 'tracker-combat-row' });
+		const primary = top.createEl('button', { cls: 'mod-cta round-action' });
+		if (!inCombat && enc.paused) {
+			// Ended earlier: pick it back up, or start over.
+			setIcon(primary.createSpan({ cls: 'round-action-icon' }), 'play');
+			primary.createSpan({ text: `Resume round ${enc.paused.round}` });
+			primary.onclick = () => { this.prompts = []; this.store.resume(enc.id); };
+			const fresh = top.createEl('button', { cls: 'tracker-end tracker-new-fight' });
+			setIcon(fresh.createSpan({ cls: 'round-action-icon' }), 'rotate-ccw');
+			fresh.createSpan({ text: 'New fight' });
+			fresh.onclick = () => { this.prompts = []; this.store.start(enc.id); };
+		} else if (!inCombat) {
+			setIcon(primary.createSpan({ cls: 'round-action-icon' }), 'swords');
+			primary.createSpan({ text: 'Start combat' });
+			primary.disabled = enc.creatures.length === 0;
+			primary.onclick = () => { this.prompts = []; this.store.start(enc.id); };
 		} else {
-			setIcon(action.createSpan(), 'skip-forward');
-			action.createSpan({ text: 'Next round' });
-			action.setAttr('aria-label', 'Next round');
-			action.onclick = () => {
+			setIcon(primary.createSpan({ cls: 'round-action-icon' }), 'skip-forward');
+			primary.createSpan({ text: 'Next round' });
+			primary.onclick = () => {
 				const expired = this.store.nextRound(enc.id);
 				this.prompts = this.prompts.filter(p => p.kind !== 'legendary');
 				if (expired.length) new Notice(`Wore off: ${expired.join(', ')}`);
 			};
+			const save = top.createEl('button', { cls: 'tracker-save', attr: { 'aria-label': 'Save the fight to a note' } });
+			setIcon(save, 'save');
+			save.onclick = () => void this.saveToNote(enc);
+			const end = top.createEl('button', { cls: 'tracker-end' });
+			setIcon(end.createSpan({ cls: 'round-action-icon' }), 'square');
+			end.createSpan({ text: 'End' });
+			end.onclick = () => this.endCombat(enc);
 		}
-		if (enc.phase === 'setup' && enc.creatures.some(isHero)) {
+
+		if (inCombat) {
+			const stepper = box.createDiv({ cls: 'round-stepper' });
+			const prev = stepper.createEl('button', { cls: 'round-btn', attr: { 'aria-label': 'Previous round' } });
+			setIcon(prev, 'chevron-left');
+			prev.disabled = round <= 1;
+			prev.onclick = () => this.store.setRound(enc.id, round - 1);
+			stepper.createSpan({ cls: 'round-label', text: `Round ${round}` });
+			const next = stepper.createEl('button', { cls: 'round-btn', attr: { 'aria-label': 'Round up' } });
+			setIcon(next, 'chevron-right');
+			next.onclick = () => this.store.setRound(enc.id, round + 1);
+
+			const seg = box.createDiv({ cls: 'turn-segmented', attr: { role: 'radiogroup' } });
+			const side = (phase: 'heroes' | 'monsters', text: string, list: EncounterCreature[]) => {
+				const on = enc.phase === phase;
+				const b = seg.createEl('button', { cls: `phase-pill phase-${phase}${on ? ' is-active' : ''}`, attr: { role: 'radio', 'aria-checked': String(on), 'aria-pressed': String(on) } });
+				b.createSpan({ cls: 'phase-pill-text', text });
+				const up = list.filter(c => !isDown(c));
+				if (up.length) b.createSpan({ cls: 'phase-pill-count', text: `${up.filter(c => c.done).length}/${up.length}` });
+				b.onclick = () => this.store.setPhase(enc.id, phase);
+			};
+			const heroes = enc.creatures.filter(isHero);
+			side('heroes', "Heroes' turn", heroes);
+			side('monsters', "Monsters' turn", enc.creatures.filter(c => !isHero(c)));
+			const turn = enc.phase === 'monsters' ? 1 : 0;
+			seg.dataset.phase = enc.phase;
+			slideThumb(seg, turn, 2, this.lastTurn);
+			this.lastTurn = turn;
+		}
+
+		// Add buttons scroll with the list; only the combat controls stay pinned.
+		const tools = container.createDiv({ cls: 'tracker-tools' });
+		const add = tools.createEl('button', { cls: 'tracker-add-monster' });
+		setIcon(add.createSpan(), 'plus');
+		add.createSpan({ text: 'Add monster' });
+		add.onclick = () => this.plugin.openAddMonsterModal();
+		if (this.plugin.settings.party.length && !enc.creatures.some(isHero)) {
+			const party = tools.createEl('button', { cls: 'quick-add-party' });
+			setIcon(party.createSpan(), 'users');
+			party.createSpan({ text: 'Add party' });
+			party.onclick = () => this.store.addParty(enc.id);
 		}
 	}
 
-	private renderQuickAdd(container: HTMLElement, enc: Encounter): void {
-		const box = container.createDiv({ cls: 'quick-add' });
-		const icon = box.createSpan({ cls: 'quick-add-icon' });
-		setIcon(icon, 'plus');
-		const input = box.createEl('input', {
-			type: 'text',
-			cls: 'quick-add-input',
-			attr: { placeholder: 'Add monster… (e.g. 3 goblin)', 'aria-label': 'Add a monster: type a name, optionally with a count first', autocomplete: 'off' },
-		});
-		input.value = this.quickQuery;
-		const results = box.createDiv({ cls: 'quick-add-results', attr: { role: 'listbox' } });
-		let matches: MonsterIndexEntry[] = [];
-		let active = 0;
-		const parse = () => {
-			const m = input.value.trim().match(/^(\d+)\s*[x×]?\s+(.*)$/i);
-			return m ? { count: Number(m[1]), q: m[2].trim() } : { count: 1, q: input.value.trim() };
-		};
-		const draw = () => {
-			results.empty();
-			const { q } = parse();
-			this.quickQuery = input.value;
-			if (!q) { matches = []; results.hide(); return; }
-			const ql = q.toLowerCase();
-			matches = this.plugin.index.all()
-				.filter(e => e.name.toLowerCase().includes(ql))
-				.sort((a, b) => (a.name.toLowerCase().startsWith(ql) ? 0 : 1) - (b.name.toLowerCase().startsWith(ql) ? 0 : 1) || a.name.length - b.name.length)
-				.slice(0, 8);
-			active = Math.min(active, Math.max(0, matches.length - 1));
-			if (!matches.length) { results.createDiv({ cls: 'quick-add-empty', text: 'No monster by that name' }); results.show(); return; }
-			matches.forEach((e, i) => {
-				const r = results.createDiv({ cls: `quick-add-result${i === active ? ' is-active' : ''}`, attr: { role: 'option' } });
-				r.createSpan({ cls: 'quick-add-name', text: e.name });
-				r.createSpan({ cls: 'quick-add-meta', text: describeMonster(e) });
-				r.addEventListener('mousedown', (ev) => { ev.preventDefault(); add(e, ev.shiftKey ? 2 : parse().count); });
-			});
-			results.show();
-		};
-		const add = (e: MonsterIndexEntry, count: number) => {
-			this.quickQuery = '';
-			void this.plugin.addToEncounter(e.monster, e.filePath || undefined, count);
-		};
-		input.addEventListener('input', () => { active = 0; draw(); });
-		input.addEventListener('focus', draw);
-		input.addEventListener('blur', () => window.setTimeout(() => results.hide(), 120));
-		input.addEventListener('keydown', (e) => {
-			if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(matches.length - 1, active + 1); draw(); }
-			else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(0, active - 1); draw(); }
-			else if (e.key === 'Enter' && matches[active]) { e.preventDefault(); add(matches[active], e.shiftKey ? 2 : parse().count); }
-			else if (e.key === 'Escape') { input.value = ''; this.quickQuery = ''; draw(); }
-		});
-		results.hide();
-		if (this.plugin.settings.party.length && !enc.creatures.some(isHero)) {
-			const party = box.createEl('button', { cls: 'quick-add-party', attr: { 'aria-label': 'Add your party' } });
-			setIcon(party.createSpan(), 'users');
-			party.createSpan({ text: 'Party' });
-			party.onclick = () => this.store.addParty(enc.id);
-		}
+	private endCombat(enc: Encounter): void {
+		this.store.end(enc.id);
+		this.prompts = [];
+	}
+
+	private async saveToNote(enc: Encounter): Promise<void> {
+		const file = await saveFight(this.plugin, enc);
+		if (!file) return;
+		this.plugin.rerenderNotes(); // the source note's encounter block now offers Resume
+		let notice: Notice | null = null;
+		notice = new Notice(createFragment(f => {
+			f.appendText(`Fight saved to ${file.basename}. `);
+			const open = f.createEl('a', { text: 'Open it', href: '#' });
+			open.addEventListener('click', (e) => { e.preventDefault(); void this.app.workspace.getLeaf('tab').openFile(file); notice?.hide(); });
+		}), 6000);
 	}
 
 	// ------------------------------------------------------------------------
@@ -327,6 +338,7 @@ export class EncounterTrackerView extends ItemView {
 	private renderPrompts(container: HTMLElement, enc: Encounter): void {
 		this.prompts = this.prompts.filter(p => !p.creatureId || enc.creatures.some(c => c.id === p.creatureId));
 		for (const p of this.prompts) {
+			if (p.kind === 'legendary' && p.lines?.length) { this.renderLegendaryPrompt(container, enc, p); continue; }
 			const box = container.createDiv({ cls: `tracker-prompt prompt-${p.kind}` });
 			const head = box.createDiv({ cls: 'prompt-head' });
 			head.createSpan({ cls: 'prompt-title', text: p.title });
@@ -344,6 +356,65 @@ export class EncounterTrackerView extends ItemView {
 				const b = box.createEl('button', { cls: 'mod-cta prompt-action', text: p.action.label });
 				b.onclick = () => { p.action!.run(); this.prompts = this.prompts.filter(q => q !== p); this.render(); };
 			}
+		}
+	}
+
+	/**
+	 * A legendary monster's turn: one button per choice. Picking one rolls it
+	 * and shows just that rule, so there's no wall of text to read mid-fight.
+	 */
+	private renderLegendaryPrompt(container: HTMLElement, enc: Encounter, p: Prompt): void {
+		const creature = p.creatureId ? enc.creatures.find(c => c.id === p.creatureId) : undefined;
+		const name = creature?.label || p.monsterName || '';
+		const box = container.createDiv({ cls: 'tracker-prompt prompt-legendary legendary-card' });
+		const head = box.createDiv({ cls: 'prompt-head' });
+		const title = head.createDiv({ cls: 'legendary-card-title' });
+		setIcon(title.createSpan({ cls: 'legendary-card-icon' }), 'zap');
+		const t = title.createDiv();
+		t.createDiv({ cls: 'prompt-title', text: `${name} acts` });
+		t.createDiv({ cls: 'legendary-card-sub', text: p.title.replace(/^.*?acts\s*/, '') || (p.text ?? '') });
+		const x = head.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Dismiss' } });
+		setIcon(x, 'x');
+		x.onclick = () => { this.prompts = this.prompts.filter(q => q !== p); this.render(); };
+
+		const options = (p.lines ?? []).map(legendaryOption);
+		const list = box.createDiv({ cls: 'legendary-options', attr: { role: 'radiogroup' } });
+		options.forEach((o, i) => {
+			const picked = p.chosen === i;
+			const b = list.createEl('button', {
+				cls: `legendary-option${picked ? ' is-picked' : ''}${p.chosen !== undefined && !picked ? ' is-other' : ''}`,
+				attr: { role: 'radio', 'aria-checked': String(picked) },
+			});
+			b.createSpan({ cls: 'legendary-option-name', text: o.name });
+			const meta = b.createSpan({ cls: 'legendary-option-meta' });
+			if (o.tag) meta.createSpan({ cls: 'legendary-option-tag', text: o.tag });
+			if (o.save) meta.createSpan({ cls: 'legendary-option-tag is-save', text: 'Save' });
+			if (o.dice) meta.createSpan({ cls: 'legendary-option-dice', text: o.dice });
+			b.onclick = () => {
+				p.chosen = i;
+				p.rolled = undefined;
+				if (o.dice) {
+					const entry = this.plugin.rollDice(o.dice, `${name}: ${o.name}`, o.save ? 'effect' : 'attack');
+					if (entry) p.rolled = entry.outcome === 'miss' ? 'Miss' : `${entry.total}${entry.outcome === 'crit' ? ' crit!' : ''}`;
+				}
+				this.store.log(enc, `${name} uses ${o.name}${p.rolled ? ` (${p.rolled})` : ''}`);
+				this.render();
+			};
+		});
+
+		const chosen = p.chosen !== undefined ? options[p.chosen] : undefined;
+		if (chosen) {
+			const detail = box.createDiv({ cls: 'legendary-detail' });
+			if (p.rolled) {
+				const res = detail.createDiv({ cls: `legendary-result${p.rolled === 'Miss' ? ' is-miss' : /crit/.test(p.rolled) ? ' is-crit' : ''}` });
+				res.createSpan({ cls: 'legendary-result-label', text: chosen.save ? 'Damage on a failed save' : 'Rolled' });
+				res.createSpan({ cls: 'legendary-result-total', text: p.rolled });
+			}
+			this.rich(detail.createDiv({ cls: 'legendary-detail-text' }), chosen.text, name, chosen.save ? 'effect' : 'attack');
+			const done = detail.createEl('button', { cls: 'mod-cta legendary-done', text: 'Done' });
+			done.onclick = () => { this.prompts = this.prompts.filter(q => q !== p); this.render(); };
+		} else {
+			box.createDiv({ cls: 'legendary-hint', text: 'Pick one to roll it.' });
 		}
 	}
 
@@ -408,7 +479,7 @@ export class EncounterTrackerView extends ItemView {
 		const main = item.createDiv({ cls: 'creature-main' });
 		const turn = main.createEl('button', {
 			cls: `turn-toggle${c.done ? ' is-done' : ''}`,
-			attr: { 'aria-pressed': String(!!c.done), 'aria-label': c.done ? `${c.label} has gone (click to undo)` : `Mark ${c.label}'s turn as done` },
+			attr: { 'aria-pressed': String(!!c.done), 'aria-label': c.done ? 'Undo turn' : 'Mark turn done' },
 		});
 		setIcon(turn, c.done ? 'check-circle-2' : 'circle');
 		turn.onclick = () => this.toggleDone(enc, c);
@@ -417,32 +488,49 @@ export class EncounterTrackerView extends ItemView {
 		const label = nameBox.createEl('button', { cls: 'creature-label', text: c.label, attr: { 'aria-expanded': String(this.expanded.has(c.id)) } });
 		label.onclick = () => { if (this.expanded.has(c.id)) this.expanded.delete(c.id); else this.expanded.add(c.id); this.render(); };
 		if (!isHero(c)) this.plugin.hover.attach(label, () => this.entryFor(c));
-		const meta: string[] = [];
+		const meta = nameBox.createSpan({ cls: 'creature-meta' });
+		const part = (text: string) => { if (meta.childElementCount) meta.createSpan({ cls: 'meta-sep', text: '·' }); return meta.createSpan({ text }); };
 		if (isHero(c)) {
-			if (c.monster.type) meta.push(String(c.monster.type));
-			if (c.defense !== undefined) meta.push(`DEF ${c.defense}`);
+			if (c.monster.type) part(String(c.monster.type));
+			if (c.defense !== undefined) {
+				if (meta.childElementCount) meta.createSpan({ cls: 'meta-sep', text: '·' });
+				const def = meta.createSpan({ cls: 'meta-defense', attr: { 'aria-label': 'Defense' } });
+				setIcon(def.createSpan({ cls: 'meta-icon' }), 'shield');
+				def.createSpan({ text: String(c.defense) });
+			}
 		} else {
 			const lvl = formatLevel(c.monster.level);
-			if (lvl) meta.push(`Lvl ${lvl}`);
-			if (role === 'legendary') meta.push(c.monster.roleLabel || 'Legendary');
-			if (c.monster.armor !== 'none') meta.push(c.monster.armor === 'medium' ? 'Armor M' : 'Armor H');
+			if (lvl) part(`Lvl ${lvl}`);
+			if (role === 'legendary') part(c.monster.roleLabel || 'Legendary');
+			if (role !== 'minion') {
+				if (meta.childElementCount) meta.createSpan({ cls: 'meta-sep', text: '·' });
+				const armor = c.monster.armor;
+				const badge = meta.createSpan({
+					cls: `armor-chip armor-${armor}`,
+					attr: { 'aria-label': armor === 'none' ? 'No armor' : armor === 'medium' ? 'Medium armor: −10 damage per hit. Crits ignore it.' : 'Heavy armor: −20 damage per hit. Crits ignore it.' },
+				});
+				setIcon(badge.createSpan({ cls: 'meta-icon' }), armor === 'none' ? 'shield-off' : armor === 'heavy' ? 'shield-plus' : 'shield');
+				badge.createSpan({ text: armor === 'none' ? 'No armor' : armor === 'medium' ? 'Medium' : 'Heavy' });
+			}
 		}
-		if (meta.length) nameBox.createSpan({ cls: 'creature-meta', text: meta.join(' · ') });
+		if (!meta.childElementCount) meta.remove();
 
-		this.renderHpButton(main, enc, c);
-
-		const more = main.createEl('button', { cls: 'clickable-icon creature-more', attr: { 'aria-label': `${c.label} options` } });
+		const more = main.createEl('button', { cls: 'clickable-icon creature-more', attr: { 'aria-label': 'More' } });
 		setIcon(more, 'more-vertical');
 		more.onclick = (e) => this.creatureMenu(e, enc, c);
 
-		// HP bar or minion pips
-		if (isMinionGroup(c)) this.renderMinionPips(item, enc, c);
-		else if (c.maxHp > 0) {
-			const bar = item.createDiv({ cls: 'creature-hp-bar' });
-			const fill = bar.createDiv({ cls: 'creature-hp-fill' });
-			fill.style.width = `${(c.currentHp / c.maxHp) * 100}%`;
-			if (role === 'legendary') bar.createDiv({ cls: 'hp-half-mark', attr: { title: 'Bloodied' } });
+		// HP line: the bar (or minion pips) with the HP button beside it, so names get the full width above.
+		const hpRow = item.createDiv({ cls: 'creature-hp-row' });
+		if (isMinionGroup(c)) this.renderMinionPips(hpRow, item, enc, c);
+		else {
+			const bar = hpRow.createDiv({ cls: 'creature-hp-bar' });
+			if (c.maxHp > 0) {
+				const fill = bar.createDiv({ cls: 'creature-hp-fill' });
+				fill.style.width = `${(c.currentHp / c.maxHp) * 100}%`;
+				if (role === 'legendary') bar.createDiv({ cls: 'hp-half-mark', attr: { 'aria-label': 'Bloodied' } });
+			}
 		}
+		this.renderHpButton(hpRow, enc, c);
 
 		if (isHero(c)) this.renderHeroPips(item, enc, c);
 		if (role === 'legendary') this.renderLegendaryLine(item, enc, c);
@@ -484,24 +572,21 @@ export class EncounterTrackerView extends ItemView {
 			text,
 			attr: {
 				'data-hp-for': c.id,
-				'aria-label': `${c.label}: ${text}`,
-				title: isMinionGroup(c)
-					? 'Type damage: any hit drops one; big hits drop more. +1 brings one back.'
-					: 'Type 7 for damage, 7! for a crit, +7 to heal, =20 to set, t5 for temp HP' + (isHero(c) ? '' : ', 7v / 7r for vulnerable / resisted'),
+				'aria-haspopup': 'dialog',
 			},
 		});
 		hp.onclick = () => this.startHpEntry(hp, enc, c);
 	}
 
-	private renderMinionPips(item: HTMLElement, enc: Encounter, c: EncounterCreature): void {
+	private renderMinionPips(hpRow: HTMLElement, item: HTMLElement, enc: Encounter, c: EncounterCreature): void {
+		const pips = hpRow.createDiv({ cls: 'pips minion-pips', attr: { role: 'group' } });
 		const row = item.createDiv({ cls: 'minion-row' });
-		const pips = row.createDiv({ cls: 'pips minion-pips', attr: { role: 'group', 'aria-label': `${c.label}: ${c.alive} of ${c.count} standing` } });
 		for (let i = 0; i < (c.count ?? 0); i++) {
 			const up = i < (c.alive ?? 0);
-			const pip = pips.createEl('button', { cls: `pip minion-pip${up ? ' is-on' : ''}`, attr: { 'aria-label': up ? 'Drop one' : 'Bring one back' } });
+			const pip = pips.createEl('button', { cls: `pip minion-pip${up ? ' is-on' : ''}`, attr: { 'aria-pressed': String(up) } });
 			pip.onclick = () => this.store.setAlive(enc.id, c.id, up ? (c.alive ?? 0) - 1 : (c.alive ?? 0) + 1);
 		}
-		const attack = row.createEl('button', { cls: 'group-attack', attr: { 'aria-label': `Roll a group attack for ${c.alive} ${c.monster.name}s` } });
+		const attack = row.createEl('button', { cls: 'group-attack' });
 		setIcon(attack.createSpan(), 'dices');
 		attack.createSpan({ text: `Group attack ×${c.alive}` });
 		attack.disabled = !c.alive;
@@ -533,21 +618,25 @@ export class EncounterTrackerView extends ItemView {
 
 	private renderHeroPips(item: HTMLElement, enc: Encounter, c: EncounterCreature): void {
 		const row = item.createDiv({ cls: 'hero-row' });
-		const actions = row.createDiv({ cls: 'pips action-pips', attr: { role: 'group', 'aria-label': `Actions: ${c.actions ?? 3} of 3` } });
-		actions.createSpan({ cls: 'pips-label', text: 'Actions' });
+		const actions = row.createDiv({ cls: 'pips action-pips', attr: { role: 'group' } });
+		const al = actions.createSpan({ cls: 'pips-label', attr: { title: 'Actions' } });
+		setIcon(al.createSpan({ cls: 'pips-icon' }), 'zap');
+		al.createSpan({ cls: 'pips-label-text', text: 'Actions' });
 		const dying = c.currentHp <= 0 && !isDown(c);
 		for (let i = 0; i < 3; i++) {
 			const on = i < (c.actions ?? 3);
-			const pip = actions.createEl('button', { cls: `pip action-pip${on ? ' is-on' : ''}`, attr: { 'aria-label': on ? 'Spend an action' : 'Regain an action' } });
+			const pip = actions.createEl('button', { cls: `pip action-pip${on ? ' is-on' : ''}`, attr: { 'aria-pressed': String(on) } });
 			if (dying && i > 0) pip.addClass('is-blocked');
 			pip.onclick = () => this.store.setActions(enc.id, c.id, on ? i : i + 1);
 		}
 		const max = c.maxWounds ?? 6;
-		const wounds = row.createDiv({ cls: 'pips wound-pips', attr: { role: 'group', 'aria-label': `Wounds: ${c.wounds ?? 0} of ${max}` } });
-		wounds.createSpan({ cls: 'pips-label', text: 'Wounds' });
+		const wounds = row.createDiv({ cls: 'pips wound-pips', attr: { role: 'group' } });
+		const wl = wounds.createSpan({ cls: 'pips-label', attr: { title: 'Wounds' } });
+		setIcon(wl.createSpan({ cls: 'pips-icon' }), 'heart-crack');
+		wl.createSpan({ cls: 'pips-label-text', text: 'Wounds' });
 		for (let i = 0; i < max; i++) {
 			const on = i < (c.wounds ?? 0);
-			const pip = wounds.createEl('button', { cls: `pip wound-pip${on ? ' is-on' : ''}`, attr: { 'aria-label': on ? 'Remove a Wound' : 'Add a Wound' } });
+			const pip = wounds.createEl('button', { cls: `pip wound-pip${on ? ' is-on' : ''}`, attr: { 'aria-pressed': String(on) } });
 			pip.onclick = () => this.store.setWounds(enc.id, c.id, on ? i : i + 1);
 		}
 	}
@@ -589,8 +678,8 @@ export class EncounterTrackerView extends ItemView {
 	private renderDetails(item: HTMLElement, enc: Encounter, c: EncounterCreature): void {
 		const d = item.createDiv({ cls: 'creature-details' });
 		const quick = d.createDiv({ cls: 'quick-hp' });
-		const step = (text: string, input: string, title: string) => {
-			const b = quick.createEl('button', { cls: 'hp-btn', text, attr: { 'aria-label': title } });
+		const step = (text: string, input: string, _title: string) => {
+			const b = quick.createEl('button', { cls: 'hp-btn', text });
 			b.onclick = () => this.applyInput(enc, c, input);
 		};
 		if (isMinionGroup(c)) {
@@ -682,44 +771,10 @@ export class EncounterTrackerView extends ItemView {
 		}
 	}
 
-	/** Swap the HP readout for a text box. */
+	/** The HP calculator: a popover beside the HP button (a bottom sheet on phones). */
 	private startHpEntry(display: HTMLElement, enc: Encounter, c: EncounterCreature): void {
-		if (isTouch()) {
-			new HpPadModal(this.app, c, this.plugin.settings.autoArmor, (cmd) => this.applyCmd(enc, c, cmd)).open();
-			return;
-		}
-		const input = createEl('input', {
-			type: 'text',
-			cls: 'hp-input',
-			attr: {
-				placeholder: isMinionGroup(c) ? 'dmg / +1' : 'dmg · 7! · +heal',
-				inputmode: 'text',
-				enterkeyhint: 'done',
-				'aria-label': `Change HP for ${c.label}`,
-				'data-hp-for': c.id,
-			},
-		});
-		let done = false;
-		const cancel = () => {
-			if (done) return;
-			done = true;
-			if (input.isConnected) input.replaceWith(display);
-		};
-		const apply = () => {
-			if (done) return;
-			if (input.value.trim() === '') { cancel(); return; }
-			if (parseHpCommand(input.value) === null) { input.addClass('is-invalid'); return; }
-			done = true;
-			this.applyInput(enc, c, input.value);
-		};
-		input.onkeydown = (e) => {
-			if (e.key === 'Enter') { e.preventDefault(); apply(); }
-			else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancel(); display.focus(); }
-		};
-		input.oninput = () => input.removeClass('is-invalid');
-		input.onblur = cancel;
-		display.replaceWith(input);
-		input.focus();
+		if (isPopoverOpenFor(display)) { closePopover(); return; }
+		openHpCalculator(display, c, this.plugin.settings.autoArmor, (cmd) => this.applyCmd(enc, c, cmd));
 	}
 
 	// ------------------------------------------------------------------------
@@ -736,14 +791,12 @@ export class EncounterTrackerView extends ItemView {
 			else if (c.currentHp <= 0) auto.push(monsterRole(c.monster) === 'legendary' && c.lastStand ? 'Last Stand' : 'Defeated');
 			else if (c.currentHp <= c.maxHp / 2 && monsterRole(c.monster) !== 'legendary') auto.push('Bloodied');
 		}
-		for (const name of auto) {
-			const tag = row.createSpan({ cls: 'condition-tag auto-condition', text: name });
-			const cond = this.plugin.condition(name);
-		}
+		for (const name of auto) row.createSpan({ cls: 'condition-tag auto-condition', text: name });
 		for (const applied of c.conditions) this.renderConditionChip(row, enc, c, applied);
-		const add = row.createEl('button', { cls: 'add-condition-btn', attr: { 'aria-label': `Add a condition to ${c.label}` } });
+		const add = row.createEl('button', { cls: 'add-condition-btn' });
 		setIcon(add, 'plus');
 		if (!c.conditions.length && !auto.length) add.createSpan({ text: 'Status' });
+		else add.setAttr('aria-label', 'Add status');
 		add.onclick = (e) => { e.stopPropagation(); this.showConditionPicker(add, enc, c); };
 	}
 
@@ -797,8 +850,7 @@ export class EncounterTrackerView extends ItemView {
 		openPopover(anchor, (el, close) => {
 			el.addClass('condition-picker');
 			el.setAttr('role', 'dialog');
-			el.setAttr('aria-label', `Conditions for ${c.label}`);
-			const search = el.createEl('input', { type: 'search', cls: 'condition-search', attr: { placeholder: `Status for ${c.label}…`, 'aria-label': 'Filter conditions' } });
+			const search = el.createEl('input', { type: 'search', cls: 'condition-search', attr: { placeholder: `Status for ${c.label}…` } });
 			const dur = el.createDiv({ cls: 'popover-row' });
 			dur.createSpan({ cls: 'popover-label', text: 'Lasts' });
 			const seg = dur.createDiv({ cls: 'nimble-segmented' });
@@ -953,7 +1005,6 @@ class NoteModal extends Modal {
 		this.titleEl.setText(`Note for ${this.label}`);
 		const area = this.contentEl.createEl('textarea', { cls: 'nimble-note-input', attr: { rows: '3', placeholder: 'e.g. Hiding behind the crates; charmed by Ilse' } });
 		area.value = this.value;
-		area.style.width = '100%';
 		area.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.save(area.value); } });
 		new Setting(this.contentEl)
 			.addButton(b => b.setButtonText('Cancel').onClick(() => this.close()))

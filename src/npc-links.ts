@@ -40,7 +40,7 @@ export class NpcLinker {
 			}
 		}
 		const names = [...byName.keys()].sort((a, b) => b.length - a.length).map(escape);
-		const re = names.length ? new RegExp(`(?<![\\p{L}\\p{N}_])(${names.join('|')})(?![\\p{L}\\p{N}_])`, 'gu') : null;
+		const re = names.length ? new RegExp(`(^|[^\\p{L}\\p{N}_])(${names.join('|')})(?![\\p{L}\\p{N}_])`, 'gu') : null;
 		const entry = { re, byName };
 		this.cache.set(camp, entry);
 		return entry;
@@ -68,7 +68,7 @@ export class NpcLinker {
 		if (!this.plugin.settings.autoLinkNpcs) return;
 		const { re, byName } = this.matcher(ctx.sourcePath);
 		if (!re) return;
-		const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+		const walker = el.doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
 			acceptNode: (n) => ((n.parentElement?.closest(SKIP)) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
 		});
 		const nodes: Text[] = [];
@@ -78,14 +78,16 @@ export class NpcLinker {
 			re.lastIndex = 0;
 			if (!re.test(text)) continue;
 			re.lastIndex = 0;
-			const frag = document.createDocumentFragment();
+			const frag = createFragment();
 			let last = 0;
 			for (let m = re.exec(text); m; m = re.exec(text)) {
-				const npc = byName.get(m[1]);
+				// m[1] is the boundary character before the name (no lookbehind: old iOS lacks it).
+				const name = m[2], start = m.index + m[1].length;
+				const npc = byName.get(name);
 				if (!npc || npc.path === ctx.sourcePath) continue; // a note doesn't link to itself
-				frag.append(text.slice(last, m.index));
-				frag.append(this.mention(m[1], npc, ctx.sourcePath));
-				last = m.index + m[1].length;
+				frag.append(text.slice(last, start));
+				frag.append(this.mention(name, npc, ctx.sourcePath));
+				last = start + name.length;
 			}
 			if (!last) continue;
 			frag.append(text.slice(last));

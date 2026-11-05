@@ -1,7 +1,7 @@
 #!/bin/bash
 # deploy.sh - Build and deploy to Obsidian vault for testing
 
-VAULT_PLUGIN_DIR="$HOME/Documents/DevVault/.obsidian/plugins/nimble-statblocks"
+VAULT_PLUGIN_DIR="$HOME/Documents/DevVault/.obsidian/plugins/nimble-gm"
 
 # Build
 echo "Building..."

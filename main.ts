@@ -1,5 +1,5 @@
 import { Events, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
-import { EditorView } from '@codemirror/view';
+import { editorSuggests, editorView, openPluginSettings } from './src/internals';
 import {
 	DEFAULT_SETTINGS, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings, normalizeConditions,
 	RollLogEntry, uid,
@@ -25,6 +25,8 @@ import { keywordPattern } from './src/markdown';
 import { openPopover } from './src/popover';
 import { CampaignStore } from './src/campaigns';
 import { registerBoxBlock } from './src/box-block';
+import { registerNpcCard } from './src/npc-card';
+import { registerFightBlock, saveFight } from './src/saved-fight';
 import { NpcLinker } from './src/npc-links';
 import { npcLivePreview } from './src/npc-live-preview';
 import { registerTables } from './src/tables';
@@ -101,7 +103,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	/** Hold a screen wake lock on mobile while the active encounter is in combat. */
 	syncWakeLock(): void {
 		const enc = this.encounters?.active;
-		const want = Platform.isMobile && this.settings.keepScreenOn && document.visibilityState === 'visible'
+		const want = Platform.isMobile && this.settings.keepScreenOn && activeDocument.visibilityState === 'visible'
 			&& !!enc && !!enc.phase && enc.phase !== 'setup';
 		const api = (navigator as Navigator & { wakeLock?: WakeLock }).wakeLock;
 		if (want && !this.wakeLock && !this.wakePending && api) {
@@ -134,7 +136,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.addRibbonIcon('castle', 'Nimble campaign', () => this.openCampaignView());
 		this.addRibbonIcon('swords', 'Nimble encounter tracker', () => this.activateEncounterView());
 		this.addRibbonIcon('book-open', 'Nimble bestiary', () => this.openBestiary());
-		this.registerHoverLinkSource('nimble-statblocks', { display: 'Nimble Statblocks', defaultMod: true });
+		this.registerHoverLinkSource('nimble-gm', { display: 'Nimble GM', defaultMod: true });
 
 		this.registerMarkdownCodeBlockProcessor('nimble', (source, el, ctx) => {
 			const monster = parseStatblock(source);
@@ -150,6 +152,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		});
 		registerEncounterBlock(this);
 		registerBoxBlock(this);
+		registerNpcCard(this);
+		registerFightBlock(this);
 		new NpcLinker(this);
 		registerTables(this);
 		registerTooltips(this);
@@ -173,8 +177,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		const slash = new NimbleSlashSuggest(this.app, this);
 		this.registerEditorSuggest(slash);
 		// Put ours ahead of Obsidian's core "/" menu; it only claims input that matches a Nimble command.
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const suggests: unknown[] | undefined = (this.app.workspace as any).editorSuggest?.suggests;
+		const suggests = editorSuggests(this.app.workspace);
 		if (suggests?.includes(slash)) { suggests.remove(slash); suggests.unshift(slash); }
 
 		this.registerCommands();
@@ -239,6 +242,17 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		};
 		this.addCommand({ id: 'next-round', name: 'Next round', checkCallback: withActive(id => this.encounters.nextRound(id)) });
 		this.addCommand({ id: 'start-combat', name: 'Start combat (round 1, heroes first)', checkCallback: withActive(id => this.encounters.start(id)) });
+		this.addCommand({ id: 'end-combat', name: 'End combat', checkCallback: withActive(id => { this.encounters.end(id); }) });
+		this.addCommand({ id: 'resume-combat', name: 'Resume combat', checkCallback: (checking) => {
+			const enc = this.encounters.active;
+			if (!enc?.paused) return false;
+			if (!checking) this.encounters.resume(enc.id);
+			return true;
+		} });
+		this.addCommand({ id: 'save-fight', name: 'Save fight to a note', checkCallback: withActive(id => {
+			const enc = this.encounters.find(id);
+			if (enc) void saveFight(this, enc).then(f => { if (f) { this.rerenderNotes(); new Notice(`Fight saved to ${f.basename}`); } });
+		}) });
 		this.addCommand({
 			id: 'add-party',
 			name: 'Add the party to the encounter',
@@ -273,7 +287,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.addCommand({ id: 'new-campaign', name: 'New campaign…', callback: () => this.newCampaign() });
 		this.addCommand({
 			id: 'switch-campaign', name: 'Switch campaign…',
-			callback: () => new CampaignPicker(this.app, this.campaigns.campaigns, async (c) => { await this.campaigns.setActive(c.folder); await this.campaigns.open(c.home.path); }).open(),
+			callback: () => new CampaignPicker(this.app, this.campaigns.campaigns, (c) => { void (async () => { await this.campaigns.setActive(c.folder); await this.campaigns.open(c.home.path); })(); }).open(),
 		});
 		this.addCommand({ id: 'new-chapter', name: 'New chapter…', checkCallback: inCampaign(c => promptChapter(this, c)) });
 		this.addCommand({ id: 'new-scene', name: 'New scene…', callback: () => newSceneAnywhere(this) });
@@ -299,7 +313,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	// Settings
 
 	async loadSettings() {
-		const data = (await this.loadData()) || {};
+		const data = ((await this.loadData()) || {}) as Partial<NimbleStatblocksSettings>;
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 		const s = this.settings;
 		s.customConditions = s.customConditions || [];
@@ -424,7 +438,6 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		el.setAttr('role', 'button');
 		el.setAttr('tabindex', '0');
 		el.setAttr('aria-label', `Roll ${expression}`);
-		const nimble = kind === 'attack' && this.settings.nimbleAttackRolls;
 		el.setAttr('title', `Roll ${expression}`);
 		const roll = (e: Event) => {
 			e.preventDefault();
@@ -473,19 +486,18 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		void this.saveSettings();
 		this.events.trigger('roll-log-changed');
 
+		// Classes go on our own wrapper rather than the notice element, which
+		// moved (noticeEl → messageEl) in Obsidian 1.8.7.
 		const frag = createFragment(f => {
-			f.createDiv({ cls: 'nimble-roll-notice-label', text: entry.label });
-			f.createDiv({
+			const body = f.createDiv({ cls: entry.outcome ? ['nimble-roll-notice', `is-${entry.outcome}`] : 'nimble-roll-notice' });
+			body.createDiv({ cls: 'nimble-roll-notice-label', text: entry.label });
+			body.createDiv({
 				cls: 'nimble-roll-notice-total',
 				text: entry.outcome === 'miss' ? 'MISS' : entry.outcome === 'crit' ? `${entry.total} CRIT!` : String(entry.total),
 			});
-			f.createDiv({ cls: 'nimble-roll-notice-detail', text: `${entry.expression}: ${entry.detail}` });
+			body.createDiv({ cls: 'nimble-roll-notice-detail', text: `${entry.expression}: ${entry.detail}` });
 		});
-		const show = () => {
-			const notice = new Notice(frag, 6000);
-			notice.noticeEl.addClass('nimble-roll-notice');
-			if (entry.outcome) notice.noticeEl.addClass(`is-${entry.outcome}`);
-		};
+		const show = () => { new Notice(frag, 6000); };
 		if (wait) void wait.then(show); else show();
 		return entry;
 	}
@@ -510,9 +522,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.app.workspace.getLeavesOfType('markdown').forEach((leaf) => {
 			const view = leaf.view;
 			if (!(view instanceof MarkdownView)) return;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const cm = (view.editor as any)?.cm as EditorView | undefined;
-			cm?.dispatch({});
+			editorView(view.editor)?.dispatch({});
 		});
 	}
 
@@ -521,10 +531,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	openSettings(): void {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const setting = (this.app as any).setting;
-		setting?.open?.();
-		setting?.openTabById?.(this.manifest.id);
+		openPluginSettings(this.app, this.manifest.id);
 	}
 
 	// ------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-import { App, Modal, Notice, PluginSettingTab, Setting, setIcon } from 'obsidian';
+import { App, Modal, Notice, PluginSettingTab, Setting } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { NIMBLE_CONDITIONS, NimbleCondition } from './types';
 import { renderPartyEditor } from './party';
@@ -67,7 +67,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 			.addToggle(t => t.setValue(this.plugin.settings.styleTables).onChange(async (v) => {
 				this.plugin.settings.styleTables = v;
 				await this.plugin.saveSettings();
-				document.body.toggleClass('nimble-tables', v);
+				this.containerEl.doc.body.toggleClass('nimble-tables', v);
 			}));
 
 		new Setting(containerEl).setName('Stat blocks').setHeading();

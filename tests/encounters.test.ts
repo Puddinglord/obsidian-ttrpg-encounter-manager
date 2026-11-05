@@ -85,3 +85,59 @@ describe('EncounterStore', () => {
 		expect(g.conditions).toEqual([]);
 	});
 });
+
+describe('ending combat', () => {
+	it('goes back to setup, keeps HP and the log, and reports the rounds fought', () => {
+		const { store: s } = store();
+		const [g] = s.add(goblin, 'Goblin.md', 1);
+		const enc = s.active!;
+		expect(s.end(enc.id)).toBe(0); // not fighting yet: nothing to end
+		s.start(enc.id);
+		s.applyHp(enc.id, g.id, { kind: 'damage', amount: 5, crit: false });
+		s.setDone(enc.id, g.id, true);
+		s.nextRound(enc.id);
+		s.nextRound(enc.id);
+		expect(s.end(enc.id)).toBe(3);
+		expect(enc.phase).toBe('setup');
+		expect(enc.creatures[0].currentHp).toBe(7);
+		expect(enc.creatures.every(c => !c.done)).toBe(true);
+		expect(enc.log?.[0].text).toBe('Combat ends after 3 rounds');
+		s.start(enc.id);
+		expect([enc.round, enc.phase]).toEqual([1, 'heroes']);
+	});
+});
+
+describe('resume and restore', () => {
+	it('ending remembers where combat stopped, and resume goes back to it', () => {
+		const { store: s } = store();
+		const [g] = s.add(goblin, 'Goblin.md', 1);
+		const enc = s.active!;
+		expect(s.resume(enc.id)).toBe(false);
+		s.start(enc.id);
+		s.nextRound(enc.id);
+		s.setPhase(enc.id, 'monsters');
+		s.end(enc.id);
+		expect(enc.paused).toEqual({ round: 2, phase: 'monsters' });
+		expect(s.resume(enc.id)).toBe(true);
+		expect([enc.round, enc.phase, enc.paused]).toEqual([2, 'monsters', undefined]);
+		s.end(enc.id);
+		s.start(enc.id);
+		expect([enc.round, enc.paused]).toEqual([1, undefined]);
+		expect(g.id).toBeTruthy();
+	});
+
+	it('restores a saved snapshot into the active encounter without sharing objects', () => {
+		const { store: s } = store();
+		s.add(goblin, 'Goblin.md', 2);
+		const enc = s.active!;
+		s.start(enc.id);
+		s.applyHp(enc.id, enc.creatures[0].id, { kind: 'damage', amount: 4, crit: false });
+		const snap = JSON.parse(JSON.stringify(enc));
+		s.applyHp(enc.id, enc.creatures[0].id, { kind: 'damage', amount: 4, crit: false });
+		s.restore(snap);
+		expect(s.active!.id).toBe(enc.id);
+		expect(s.active!.creatures[0].currentHp).toBe(8);
+		snap.creatures[0].currentHp = 1;
+		expect(s.active!.creatures[0].currentHp).toBe(8);
+	});
+});

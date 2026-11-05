@@ -1,4 +1,4 @@
-# Nimble Statblocks - Development Guide
+# Nimble GM - Development Guide
 
 An Obsidian plugin (TypeScript, bundled with esbuild) that renders Nimble TTRPG monster stat blocks, `nimble:` inline references, and an encounter tracker.
 
@@ -100,7 +100,7 @@ To cover a new scenario, add notes to `e2e/fixtures/vault/` and a `test('...', a
 
 ## Installing in a vault by hand
 
-Copy `main.js`, `manifest.json` and `styles.css` to `<vault>/.obsidian/plugins/nimble-statblocks/`, then reload Obsidian or toggle the plugin. `./deploy.sh` does this for `~/Documents/DevVault`.
+Copy `main.js`, `manifest.json` and `styles.css` to `<vault>/.obsidian/plugins/nimble-gm/`, then reload Obsidian or toggle the plugin. `./deploy.sh` does this for `~/Documents/DevVault`.
 
 ## Common tasks
 

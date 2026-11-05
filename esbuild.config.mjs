@@ -1,6 +1,6 @@
 import esbuild from "esbuild";
 import process from "process";
-import builtins from "builtin-modules";
+import { builtinModules } from "node:module";
 
 const banner =
 `/*
@@ -10,35 +10,6 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
-
-// 3D dice: three.js + src/dice3d/renderer.ts are built into their own IIFE and
-// embedded in main.js as a string, evaluated only on the first 3D roll.
-// Import it as `import SRC from 'dice3d-bundle'`.
-const dice3dBundle = {
-	name: "dice3d-bundle",
-	setup(build) {
-		build.onResolve({ filter: /^dice3d-bundle$/ }, () => ({ path: "dice3d-bundle", namespace: "dice3d" }));
-		build.onLoad({ filter: /.*/, namespace: "dice3d" }, async () => {
-			const r = await esbuild.build({
-				entryPoints: ["src/dice3d/renderer.ts"],
-				bundle: true,
-				format: "iife",
-				globalName: "__nimbleDice3dLib",
-				minify: true,
-				legalComments: "none",
-				target: "es2018",
-				write: false,
-				metafile: true,
-				logLevel: "silent",
-			});
-			return {
-				contents: r.outputFiles[0].text,
-				loader: "text",
-				watchFiles: Object.keys(r.metafile.inputs).map(f => f.replace(/^(?!\/)/, process.cwd() + "/")),
-			};
-		});
-	},
-};
 
 const context = await esbuild.context({
 	banner: {
@@ -60,13 +31,13 @@ const context = await esbuild.context({
 		"@lezer/common",
 		"@lezer/highlight",
 		"@lezer/lr",
-		...builtins],
+		...builtinModules],
 	format: "cjs",
 	target: "es2018",
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
-	plugins: [dice3dBundle],
+	minify: prod,
 	outfile: "main.js",
 });
 

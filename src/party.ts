@@ -27,12 +27,12 @@ export function renderPartyEditor(container: HTMLElement, plugin: NimbleStatbloc
 		};
 		const text = (value: string, placeholder: string, label: string, set: (v: string) => void) => {
 			const input = field(placeholder, label).createEl('input', { type: 'text', value, attr: { placeholder, 'aria-label': `${hero.name} ${label}` } });
-			input.addEventListener('change', async () => { set(input.value.trim()); await save(); });
+			input.addEventListener('change', () => { set(input.value.trim()); void save(); });
 		};
 		const num = (value: number | undefined, placeholder: string, label: string, set: (n: number | undefined) => void) => {
 			const short = ({ level: 'Lvl', 'max HP': 'HP', Defense: 'DEF', 'max Wounds': 'Wounds' } as Record<string, string>)[label] ?? label;
 			const input = field(short, label.replace(/\s+/g, '-').toLowerCase()).createEl('input', { type: 'number', cls: 'nimble-party-num', value: value !== undefined ? String(value) : '', attr: { placeholder, 'aria-label': `${hero.name} ${label}`, min: '0', inputmode: 'numeric' } });
-			input.addEventListener('change', async () => { const n = parseInt(input.value, 10); set(Number.isFinite(n) ? n : undefined); await save(); });
+			input.addEventListener('change', () => { const n = parseInt(input.value, 10); set(Number.isFinite(n) ? n : undefined); void save(); });
 		};
 		text(hero.name, 'Name', 'name', v => { hero.name = v || 'Hero'; });
 		text(hero.className || '', 'Class', 'class', v => { hero.className = v || undefined; });
@@ -42,7 +42,7 @@ export function renderPartyEditor(container: HTMLElement, plugin: NimbleStatbloc
 		num(hero.maxWounds, '6', 'max Wounds', n => { hero.maxWounds = n; });
 		const del = row.createEl('button', { cls: 'clickable-icon nimble-party-del', attr: { 'aria-label': `Remove ${hero.name}` } });
 		setIcon(del, 'trash-2');
-		del.addEventListener('click', async () => { party.splice(i, 1); await save(); rerender(); });
+		del.addEventListener('click', () => { party.splice(i, 1); void save().then(rerender); });
 	});
 	if (!party.length) table.createDiv({ cls: 'nimble-party-empty', text: 'No heroes yet.' });
 

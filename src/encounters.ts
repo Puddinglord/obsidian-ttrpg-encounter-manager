@@ -168,7 +168,7 @@ export class EncounterStore extends Events {
 		return {
 			id: uid(),
 			side: 'monster',
-			monster: JSON.parse(JSON.stringify(monster)),
+			monster: JSON.parse(JSON.stringify(monster)) as NimbleMonster,
 			label: nextLabel(enc.creatures.map(c => c.label), monster.name),
 			currentHp: hp,
 			maxHp: hp,
@@ -518,15 +518,65 @@ export class EncounterStore extends Events {
 		this.commit();
 	}
 
+	/** Pick an ended fight back up at the round and turn it stopped on. */
+	resume(encId: string): boolean {
+		const enc = this.find(encId);
+		if (!enc?.paused) return false;
+		enc.round = enc.paused.round;
+		enc.phase = enc.paused.phase;
+		delete enc.paused;
+		this.log(enc, `Combat resumes. Round ${enc.round}: ${enc.phase === 'heroes' ? 'heroes\'' : 'monsters\''} turn`, false);
+		this.commit();
+		return true;
+	}
+
+	/**
+	 * Put a saved fight back in the tracker exactly as it was: a new encounter
+	 * in multi mode, or the active one in single mode.
+	 */
+	restore(snapshot: Encounter): Encounter | null {
+		const copy = JSON.parse(JSON.stringify(snapshot)) as Encounter;
+		let enc: Encounter | null;
+		if (this.s.multipleEncounters) {
+			enc = { ...copy, id: uid() };
+			this.s.encounters.push(enc);
+			this.s.activeEncounterId = enc.id;
+		} else {
+			enc = this.ensureActive();
+			if (!enc) return null;
+			Object.assign(enc, copy, { id: enc.id });
+			if (!copy.paused) delete enc.paused;
+		}
+		enc.creatures = enc.creatures || [];
+		enc.log = enc.log || [];
+		this.log(enc, `Fight restored from a saved note (round ${enc.round ?? 1})`, false);
+		this.commit();
+		return enc;
+	}
+
 	/** Start combat: round 1, heroes first. */
 	start(encId: string): void {
 		const enc = this.find(encId);
 		if (!enc) return;
+		delete enc.paused;
 		enc.round = 1;
 		for (const c of enc.creatures) c.done = false;
 		enc.phase = 'heroes';
 		this.log(enc, 'Combat starts. Round 1: heroes\' turn', false);
 		this.commit();
+	}
+
+	/** End combat: back to setup. Combatants, HP and the log stay. Returns the rounds fought. */
+	end(encId: string): number {
+		const enc = this.find(encId);
+		if (!enc || !enc.phase || enc.phase === 'setup') return 0;
+		const rounds = enc.round ?? 1;
+		enc.paused = { round: rounds, phase: enc.phase };
+		enc.phase = 'setup';
+		for (const c of enc.creatures) c.done = false;
+		this.log(enc, `Combat ends after ${rounds} round${rounds === 1 ? '' : 's'}`, false);
+		this.commit();
+		return rounds;
 	}
 
 	/** Mark a combatant's turn done (or undo it). Ending a turn counts its conditions down. Returns expired condition names. */

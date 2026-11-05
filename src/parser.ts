@@ -56,7 +56,7 @@ export function parseStatblock(content: string): NimbleMonster | null {
 
 		return monster as NimbleMonster;
 	} catch (e) {
-		console.error('Nimble Statblocks: parse error', e);
+		console.error('Nimble GM: parse error', e);
 		return null;
 	}
 }
@@ -207,7 +207,7 @@ const oneLine = (s: string) => s.replace(/\s*\n\s*/g, ' ').trim();
 
 export function toStatblockSource(m: NimbleMonster): string {
 	const lines: string[] = [`name: ${m.name}`];
-	const kv = (key: string, value: unknown) => {
+	const kv = (key: string, value: string | number | null | undefined) => {
 		if (value === undefined || value === null || value === '') return;
 		lines.push(`${key}: ${oneLine(String(value))}`);
 	};
