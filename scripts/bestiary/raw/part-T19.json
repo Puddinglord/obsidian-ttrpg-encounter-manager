@@ -1,0 +1,5743 @@
+[
+  {
+    "name": "Goblin Minion",
+    "book": "GMG",
+    "page": 11,
+    "pdfPage": 6,
+    "group": null,
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Missed Me!",
+        "text": "Whenever you survive an attack, deal 2 psychic damage (ignoring Defense)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d6.*"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'A Tiny Rescue' (The Garden of Death, Ch. 1). Header: 'minion, small'; '*follows minion rules'."
+  },
+  {
+    "name": "Goblin",
+    "book": "GMG",
+    "page": 11,
+    "pdfPage": 6,
+    "group": null,
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 15,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Didn't Hurt!",
+        "text": "Whenever you survive an attack, deal 2 psychic damage (ignoring Defense)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d6 (or Shoot, Range 8). Can't crit."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'A Tiny Rescue' (The Garden of Death, Ch. 1). Identical example block also printed on PDF p.4 (printed p.7, 'Running Monsters'); not duplicated."
+  },
+  {
+    "name": "Goblin Ratrider",
+    "book": "GMG",
+    "page": 11,
+    "pdfPage": 6,
+    "group": null,
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Nice Try!",
+        "text": "Whenever you survive an attack, deal 2 psychic damage (ignoring Defense)."
+      },
+      {
+        "name": "CHAAARGE!",
+        "text": "If you move at least 4 spaces in a straight line, your next attack is advantaged."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite & Stab (2×)",
+        "text": "1d6. On crit, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'A Tiny Rescue' (The Garden of Death, Ch. 1)."
+  },
+  {
+    "name": "Giant Spider",
+    "book": "GMG",
+    "page": 13,
+    "pdfPage": 7,
+    "group": null,
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shoot Web",
+        "text": "(Range 6) 1d8+2, Restrained (escape DC 12, or any slashing/fire damage). Or:"
+      },
+      {
+        "name": "Bite",
+        "text": "(vs Hampered) 1d8+5, Poisoned (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'Goblins of the Crystal Crag' (The Garden of Death, Ch. 2)."
+  },
+  {
+    "name": "Krogg, Goblin King",
+    "book": "GMG",
+    "page": 14,
+    "pdfPage": 8,
+    "group": null,
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": "Angry Bugbear",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 28,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+, DEX+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero's turn, choose one:",
+    "actions": [
+      {
+        "name": "Manglemaul",
+        "text": "Move 6. 2d6, Grappled (escape DC 10). Or:"
+      },
+      {
+        "name": "Crack Skulls",
+        "text": "Move 6. Swing a Grappled creature at another creature. Both take 2d6, ending the Grapple."
+      }
+    ],
+    "bloodied": {
+      "name": "Enraged",
+      "text": "Krogg's damage increases to d8s."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'Goblins of the Crystal Crag' (The Garden of Death, Ch. 2). Header 'lvl 2 Legendary Angry Bugbear'. A nearby sidebar describes him: 'Bugbear, strong, crafty (smarter than average goblins). Wears a crown of metal scraps. Wields a Manglemaul, a warhammer with a bear trap on the end.'"
+  },
+  {
+    "name": "Giant Venus Flytrap",
+    "book": "GMG",
+    "page": 17,
+    "pdfPage": 9,
+    "group": null,
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 20,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Vengeful Plant",
+        "text": "Also acts whenever a Seedling dies."
+      }
+    ],
+    "actionsIntro": "Choose 1:",
+    "actions": [
+      {
+        "name": "Tangle",
+        "text": "(Reach 12, up to 2 different targets) 1d6+2, Grappled (escape DC 12, or any fire or slashing damage)."
+      },
+      {
+        "name": "Reel In",
+        "text": "(If Grappling) pull target adjacent, then Bite."
+      },
+      {
+        "name": "Bite",
+        "text": "(Reach 3) 1d6+15 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'Greenthumb's Base' (The Garden of Death, Ch. 3). Not labelled Legendary/Solo despite HP per hero; role set to regular."
+  },
+  {
+    "name": "Briarbane Seedling",
+    "book": "GMG",
+    "page": 17,
+    "pdfPage": 9,
+    "group": null,
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 12,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Thorn Seed",
+        "text": "(Range 6) 1d6+2. Can't crit."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'Greenthumb's Base' (The Garden of Death, Ch. 3)."
+  },
+  {
+    "name": "Briarbane Rootbreaker",
+    "book": "GMG",
+    "page": 17,
+    "pdfPage": 9,
+    "group": null,
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Peeling Bark",
+        "text": "Being hit degrades armor (H » M » None)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam (2×)",
+        "text": "1d6+5. On damage, Knockback 2 or Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'Greenthumb's Base' (The Garden of Death, Ch. 3). Armor printed as 'H*' (asterisk refers to Peeling Bark)."
+  },
+  {
+    "name": "Pinky",
+    "book": "GMG",
+    "page": 17,
+    "pdfPage": 9,
+    "group": null,
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Panic",
+        "text": "Attacks have disadvantage vs you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Protect Me!",
+        "text": "Command a Rootbreaker to attack."
+      },
+      {
+        "name": "Escape",
+        "text": "(Reaction, when Bloodied) Use Cloak of Lesser Windform to turn Invisible and run away."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'Greenthumb's Base' (The Garden of Death, Ch. 3). Escape is printed in italics in its own section."
+  },
+  {
+    "name": "Greenthumb, Lichling",
+    "book": "GMG",
+    "page": 19,
+    "pdfPage": 10,
+    "group": null,
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": "Botanical Wizard",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 40,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "INT+, WIL+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Briarmancy",
+        "text": "Move 4. Summon 1 plant minion/hero (each moves and attacks for 1d4 damage at the end of every round)."
+      },
+      {
+        "name": "Thorn Shot",
+        "text": "Move 4. (Range 8) 2d4+8."
+      }
+    ],
+    "bloodied": {
+      "name": "Thorny Roots",
+      "text": "All heroes make DC 11 DEX save or suffer 2d4 damage and Restrained; half damage on a save (escape: DC 11 STR or DEX, or any slashing or radiant damage)."
+    },
+    "lastStand": {
+      "name": "Barkskin",
+      "text": "Greenthumb regains 10 HP per hero and Heavy Armor. Being hit degrades the armor (H » M » None). He can also choose twice each turn."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Starter adventure 'Greenthumb's Base' (The Garden of Death, Ch. 3). Header 'Lvl 3 Legendary Botanical Wizard'. Last Stand armor icon '[ar]H' rendered as 'Heavy Armor'."
+  },
+  {
+    "name": "Kobold Minion",
+    "book": "GMG",
+    "page": 29,
+    "pdfPage": 15,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d4.*"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Small, maniacal dragonlings. Fiercely protective of their own.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "*follows minion rules"
+  },
+  {
+    "name": "Kobold",
+    "book": "GMG",
+    "page": 29,
+    "pdfPage": 15,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Nooooo!",
+        "text": "When an ally within Reach 2 dies, attack for free."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d4 (or Sling, Range 8). Can't crit."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Small, maniacal dragonlings. Fiercely protective of their own.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Kobold Sneak",
+    "book": "GMG",
+    "page": 29,
+    "pdfPage": 15,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sneaky!",
+        "text": "You may move before using your Nooooo! ability."
+      },
+      {
+        "name": "Nooooo!",
+        "text": "When an ally within Reach 2 dies, attack for free."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "2d4 (or Sling, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Small, maniacal dragonlings. Fiercely protective of their own.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Kobold Clanger",
+    "book": "GMG",
+    "page": 29,
+    "pdfPage": 15,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 16,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "CLANG!",
+        "text": "Allies who hear your clanging roll 1 additional die whenever they attack."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Preoccupied Noisemaker",
+        "text": "Doesn't attack (Clang, clang!)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Small, maniacal dragonlings. Fiercely protective of their own.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Kobold Trapper",
+    "book": "GMG",
+    "page": 29,
+    "pdfPage": 15,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Nooooo!",
+        "text": "When an ally within Reach 2 dies, attack for free."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Throw Scorpion",
+        "text": "(Range 8) 2d4+2."
+      },
+      {
+        "name": "Trap!",
+        "text": "When an enemy moves adjacent to you or an ally, they trigger one of your traps! (1/encounter each)."
+      },
+      {
+        "name": "Trap: BEEES!",
+        "text": "Deal 4d4 damage (doesn't miss). Half as much to ALL adjacent creatures."
+      },
+      {
+        "name": "Trap: HIDDEN NET!",
+        "text": "Restrained (escape DC 10)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Small, maniacal dragonlings. Fiercely protective of their own.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Trap! and its two Trap options are printed in italics in a separate section after Throw Scorpion."
+  },
+  {
+    "name": "Kobold Denwarden",
+    "book": "GMG",
+    "page": 29,
+    "pdfPage": 15,
+    "group": "Kobolds",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Nooooo!",
+        "text": "When an ally within Reach 2 dies, attack for free."
+      },
+      {
+        "name": "Hoooold!",
+        "text": "Adjacent allies gain Medium Armor."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab (2×)",
+        "text": "2d4+2 (or Sling, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Small, maniacal dragonlings. Fiercely protective of their own.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Goblin Minion",
+    "book": "GMG",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Missed Me!",
+        "text": "Whenever you survive an attack, deal 2 psychic damage back (ignoring Defense)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d6.*"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Green, cunning, & thriving on the edge of chaos. Will mock you mercilessly if given the chance.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "*follows minion rules. Wording differs slightly from the starter-adventure Goblin Minion (adds 'back')."
+  },
+  {
+    "name": "Goblin",
+    "book": "GMG",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 15,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Didn't Hurt!",
+        "text": "Whenever you survive an attack, deal 2 psychic damage back (ignoring Defense)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d6 (or Shoot, Range 8). Can't crit."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Green, cunning, & thriving on the edge of chaos. Will mock you mercilessly if given the chance.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Wording differs slightly from the starter-adventure Goblin and the p.7 example (adds 'back')."
+  },
+  {
+    "name": "Bugbear",
+    "book": "GMG",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bash",
+        "text": "(Reach 2) 3d6. On damage, target's next attack is disadvantaged. Or:"
+      },
+      {
+        "name": "Javelin",
+        "text": "2d6 (Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Green, cunning, & thriving on the edge of chaos. Will mock you mercilessly if given the chance.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Goblin Ratrider",
+    "book": "GMG",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Haha, Nice Try!",
+        "text": "Whenever you survive an attack, deal 2 psychic damage back (ignoring Defense)."
+      },
+      {
+        "name": "CHAAARGE!",
+        "text": "If you move at least 4 spaces in a straight line, your next attack is advantaged."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite & Stab (2×)",
+        "text": "1d6. On crit, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Green, cunning, & thriving on the edge of chaos. Will mock you mercilessly if given the chance.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Wording differs slightly from the starter-adventure Goblin Ratrider (adds 'back')."
+  },
+  {
+    "name": "Goblin Taskmaster",
+    "book": "GMG",
+    "page": 30,
+    "pdfPage": 16,
+    "group": "Goblins",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Gotta Do Better Than That!",
+        "text": "Whenever you survive an attack, deal 2 psychic damage back (ignoring Defense)."
+      },
+      {
+        "name": "Meat Shield",
+        "text": "Can force other Goblins to Interpose for you."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stab",
+        "text": "1d6 (or Shoot, Range 8). Then:"
+      },
+      {
+        "name": "Get In Here!",
+        "text": "Call a Goblin Minion to the fight."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Green, cunning, & thriving on the edge of chaos. Will mock you mercilessly if given the chance.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bandit Minion",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Inept",
+        "text": "Your attacks miss on 8."
+      },
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "I'll Cut Ya!",
+        "text": "1d8.*"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "You've got money, they want money… a perfect match! (hand it over)",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "*follows minion rules"
+  },
+  {
+    "name": "Bandit",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Inept",
+        "text": "Your attacks miss on 8."
+      },
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hand It Over!",
+        "text": "1d8 (or Shoot, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "You've got money, they want money… a perfect match! (hand it over)",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bandit Hunter",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 17,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Battlebow",
+        "text": "2d8 (Range 12)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "You've got money, they want money… a perfect match! (hand it over)",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bandit Bruiser",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 27,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "And STAY Down!",
+        "text": "2d8. On damage, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "You've got money, they want money… a perfect match! (hand it over)",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bandit Assassin",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sneak",
+        "text": "You are Invisible until you attack."
+      },
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Poison Blade (2×)",
+        "text": "1d8. On damage, Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "You've got money, they want money… a perfect match! (hand it over)",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bandit Mage",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Spark Step",
+        "text": "When damaged, teleport 4."
+      },
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Arc Lightning",
+        "text": "(Range 12) 3d8. Also hits the next closest creature (friend or foe \"Out of the way!\")."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "You've got money, they want money… a perfect match! (hand it over)",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Bandit Captain",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Bandits",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 35,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Strict Training",
+        "text": "Your allies are NOT Inept."
+      },
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slice (3×)",
+        "text": "1d8 (or Shoot, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "You've got money, they want money… a perfect match! (hand it over)",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Snakeman Minion",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Snakemen",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Medium",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Strike",
+        "text": "1d6 (or Spit, Range 8).*"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "*Aggressive Hissing noises*",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "*follows minion rules"
+  },
+  {
+    "name": "Snakeman",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Snakemen",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 21,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Coiling Strike",
+        "text": "On melee crit, Grapple (escape DC 10)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slash",
+        "text": "2d6 (or Spit, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "*Aggressive Hissing noises*",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Cobra Captain",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Snakemen",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 52,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Coiling Command",
+        "text": "(1/round) An ally Grapples an enemy adjacent to it (escape DC 10)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slash (2×)",
+        "text": "2d6 (or Spit, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "*Aggressive Hissing noises*",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Giant Cobra",
+    "book": "GMG",
+    "page": 31,
+    "pdfPage": 16,
+    "group": "Snakemen",
+    "habitat": null,
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 84,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Coiling Strike",
+        "text": "On melee crit, Grapple (escape DC 10)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crush",
+        "text": "2d6+20. Advantage vs smaller creatures."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "*Aggressive Hissing noises*",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Stirge",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Dungeon Denizens",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Evasive Flier",
+        "text": "Attacks against you are disadvantaged."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Latch On",
+        "text": "1d4+2. Can't crit. On hit, Latched On: Riding; your attacks can't miss or be Defended/Interposed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a fly Speed is printed."
+  },
+  {
+    "name": "Greater Stirge",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Dungeon Denizens",
+    "levelText": "6",
+    "level": 6,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 64,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": 10,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Evasive Flier",
+        "text": "Attacks against you are disadvantaged."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Latch On",
+        "text": "1d12+10. On hit, Latched On: Riding; your attacks can't miss or be Defended/Interposed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a fly Speed is printed."
+  },
+  {
+    "name": "Tiny Mimic",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": "Mimics",
+    "habitat": "Dungeon Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 22,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pseudopod",
+        "text": "2d4 (escape DC 9). Or:"
+      },
+      {
+        "name": "Bite",
+        "text": "(a Grappled creature) 2d4+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Ambusher",
+        "text": "Mimics always start combat first and enemies roll Initiative with disadvantage."
+      },
+      {
+        "name": "Sticky",
+        "text": "Mimic hits also Grapple and can Grapple any number of creatures. When crit: release 1 creature (attacker's choice)."
+      }
+    ],
+    "notes": "Header lists disguises: (Cup, Shoe, Apple, Potion)."
+  },
+  {
+    "name": "Small Mimic",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": "Mimics",
+    "habitat": "Dungeon Denizens",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pseudopod",
+        "text": "2d6 (escape DC 11). Or:"
+      },
+      {
+        "name": "Bite",
+        "text": "(a Grappled creature) 2d6+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Ambusher",
+        "text": "Mimics always start combat first and enemies roll Initiative with disadvantage."
+      },
+      {
+        "name": "Sticky",
+        "text": "Mimic hits also Grapple and can Grapple any number of creatures. When crit: release 1 creature (attacker's choice)."
+      }
+    ],
+    "notes": "Header lists disguises: (Pack, Shield, Weapon, Chair)."
+  },
+  {
+    "name": "Medium Mimic",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": "Mimics",
+    "habitat": "Dungeon Denizens",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 64,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pseudopod",
+        "text": "2d8+8 (esc DC13). Or:"
+      },
+      {
+        "name": "Bite",
+        "text": "(a Grappled creature) 2d8+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Ambusher",
+        "text": "Mimics always start combat first and enemies roll Initiative with disadvantage."
+      },
+      {
+        "name": "Sticky",
+        "text": "Mimic hits also Grapple and can Grapple any number of creatures. When crit: release 1 creature (attacker's choice)."
+      }
+    ],
+    "notes": "Header lists disguises: (Table, Treasure Chest, Barrel, Door)."
+  },
+  {
+    "name": "Gray Ooze",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Dungeon Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Goopy 2",
+        "text": "(1/round) When crit or dealt slashing damage: summon 2 ooze minions."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch",
+        "text": "1d6, Digested."
+      },
+      {
+        "name": "Digested",
+        "text": "Deal an additional 2 damage for each time the target has been Digested already this encounter."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Digested is an italic note printed after the action."
+  },
+  {
+    "name": "Ochre Jelly",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Dungeon Denizens",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 46,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Goopy 3",
+        "text": "(1/round) When crit or dealt slashing damage: summon 3 ooze minions."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch",
+        "text": "1d6+6, Digested."
+      },
+      {
+        "name": "Digested",
+        "text": "Deal an additional 3 damage for each time the target has been Digested already this encounter."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Digested is an italic note printed after the action."
+  },
+  {
+    "name": "Black Pudding",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Dungeon Denizens",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 94,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Goopy 5",
+        "text": "(1/round) When crit or dealt slashing damage: summon 5 ooze minions."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch (2×)",
+        "text": "(Reach 2) 1d6+6, Digested."
+      },
+      {
+        "name": "Digested",
+        "text": "Deal an additional 5 damage for each time the target has been Digested already this encounter."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Digested is an italic note printed after the action."
+  },
+  {
+    "name": "Elder Ooze",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Dungeon Denizens",
+    "levelText": "12",
+    "level": 12,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 148,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Goopy 6",
+        "text": "(1/round) When crit or dealt slashing damage: summon 6 ooze minions."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch (3×)",
+        "text": "(Reach 3) 1d6+6, Digested."
+      },
+      {
+        "name": "Digested",
+        "text": "Deal an additional 6 damage for each time the target has been Digested already this encounter."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Digested is an italic note printed after the action."
+  },
+  {
+    "name": "Ooze Minion",
+    "book": "GMG",
+    "page": 32,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Dungeon Denizens",
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch",
+        "text": "1d6, Digested 0.*"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "For some creatures, YOU are the loot at the end of the dungeon.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "*follows minion rules"
+  },
+  {
+    "name": "Gnoll",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 21,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage vs damaged creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ravage",
+        "text": "1d8+2. Or:"
+      },
+      {
+        "name": "Shoot",
+        "text": "(Range 10) 1d8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gnoll Packleader",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 52,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage vs damaged creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bark Orders",
+        "text": "2 allies can move. Then:"
+      },
+      {
+        "name": "Ravage (2×)",
+        "text": "1d8+2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Worg",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "1",
+    "level": 1,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Savage",
+        "text": "Crits on 5+ vs Grappled creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Rip Apart",
+        "text": "2d6, Grappled (escape DC 10)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Blue Drake",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 25,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": 12,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shocking Bite",
+        "text": "2d8 (ignores metal armor)."
+      },
+      {
+        "name": "Burst Lightning",
+        "text": "On death, (Reach 1, AoE) 2d8 (ignores metal armor)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a fly Speed is printed. Burst Lightning is printed in italics below the action."
+  },
+  {
+    "name": "Griffon",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 52,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": 12,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Talons",
+        "text": "1d8+10, Grappled (escape DC 12). Or:"
+      },
+      {
+        "name": "Fly & Drop",
+        "text": "(if Grappling) Fly upward 12 and release (6d6 fall damage, landing Prone)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a fly Speed is printed."
+  },
+  {
+    "name": "Bulette",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 88,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": 6,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Burst Forth!",
+        "text": "When the Bulette enters Combat, the heaviest creature is targeted with Leap & Bite."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Drag Below",
+        "text": "(vs Grappled) 1d20+10 and burrow away (leaving a tunnel 2 spaces wide). Or:"
+      },
+      {
+        "name": "Leap & Bite",
+        "text": "Leap 6, 1d20+20, Grapple (escape DC 14)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a burrow Speed is printed; walking Speed left at default 6. Italic GM note: 'Burrowing. Yes, heroes can jump down and follow the tunnels a Bulette leaves—at their own peril!'"
+  },
+  {
+    "name": "Troll",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Regenerate",
+        "text": "Does not die at 0 HP. Only fire, radiant, or a crit while already at 0 HP can kill it."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Claws",
+        "text": "(Reach 2) 1d6+10. On damage, Prone."
+      },
+      {
+        "name": "Bite",
+        "text": "(vs Prone) 1d20+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Hill Giant",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "10",
+    "level": 10,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 130,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Punt (2×)",
+        "text": "(Reach 2) 1d4+13, Knockback Primary Die spaces. Or:"
+      },
+      {
+        "name": "Boulder!",
+        "text": "(Range 12, 2×2 AoE) 1d4+30, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Roc",
+    "book": "GMG",
+    "page": 33,
+    "pdfPage": 17,
+    "group": null,
+    "habitat": "Hill & Field",
+    "levelText": "17",
+    "level": 17,
+    "size": "Gargantuan",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 236,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": 20,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pluck Up",
+        "text": "(Reach 4, target up to 2 creatures) 1d12+20. On hit, Grappled (escape DC 17). Or:"
+      },
+      {
+        "name": "Crush & Drop",
+        "text": "Fly upward 20 spaces, deal 2d20 damage to Grappled creatures, then release (10d6 fall damage)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Mighty brutes and cunning beasts, always on the lookout for easy prey.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a fly Speed is printed."
+  },
+  {
+    "name": "Skeleton",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 9,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [
+      "Piercing hits (not crits)"
+    ],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death, reset to 1 HP."
+      },
+      {
+        "name": "Just Bones!",
+        "text": "Resistant to Piercing hits (not crits)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Grave Arrow",
+        "text": "(Range 8) 1d4. Can't crit."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Zombie",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 14,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death, reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crunch",
+        "text": "1d4+2. On damage, Grapple (escape DC 10). Can't crit."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Ghoul",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death, reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sickening Claw",
+        "text": "1d4+4. On damage, Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Specter",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Radiant"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Corrupt",
+        "text": "Vul. to Radiant: your next attack gains advantage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Deathly Touch",
+        "text": "1d4. On damage, set HP to 0."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a fly Speed is printed."
+  },
+  {
+    "name": "Ogre Zombie",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death, reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Greatclub",
+        "text": "1d4+18. On crit, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Mummy",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 75,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cursed Slam",
+        "text": "1d4+20. On damage, Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Giant Zombie",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "8",
+    "level": 8,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Unliving, Undying",
+        "text": "(1 use) On death, reset to 1 HP."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Decaying Swipe (2×)",
+        "text": "1d4+10. On damage, Prone or Knockback Primary Die spaces."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Wraith",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Radiant"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Corrupt",
+        "text": "Vul. to Radiant: your next attack gains advantage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Soul Rend (2×)",
+        "text": "(Range 8) 1d4+10. On damage, deal 1 Wound."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a fly Speed is printed."
+  },
+  {
+    "name": "Mummy Lord",
+    "book": "GMG",
+    "page": 34,
+    "pdfPage": 18,
+    "group": "Undead",
+    "habitat": null,
+    "levelText": "21",
+    "level": 21,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 260,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Cursed Gaze",
+        "text": "When crit, inflict a Wound on failed DC 20 INT save."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Scarab Swarm",
+        "text": "(Reach 6) Summon 6 scarab minions (size:d6). Then:"
+      },
+      {
+        "name": "Slam (2×)",
+        "text": "1d4+20. On damage, Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Hate the living for not being dead, hate themselves for having died.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Briarbane Seedling",
+    "book": "GMG",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Briarbanes",
+    "habitat": "Forest Denizens",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 12,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Thorn Seed",
+        "text": "(Range 6) 1d6+2. Can't crit."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Soulless, thorny plant beings fertilized by blood.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Same block also appears in the starter adventure (PDF p.9)."
+  },
+  {
+    "name": "Briarbane Acidpod",
+    "book": "GMG",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Briarbanes",
+    "habitat": "Forest Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 18,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Grab",
+        "text": "Grapple (escape DC 12)."
+      },
+      {
+        "name": "Caustic Eruption",
+        "text": "On death, (Reach 1, AoE) 4d6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Soulless, thorny plant beings fertilized by blood.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Caustic Eruption is printed in italics below the action."
+  },
+  {
+    "name": "Briarbane Tangler",
+    "book": "GMG",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Briarbanes",
+    "habitat": "Forest Denizens",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 24,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Peeling Bark",
+        "text": "Being hit degrades armor (H » M » None)."
+      }
+    ],
+    "actionsIntro": "Choose twice:",
+    "actions": [
+      {
+        "name": "Tangle",
+        "text": "(Reach 6) 1d6, Grappled (escape DC 12, or any fire or slashing damage)."
+      },
+      {
+        "name": "Pull",
+        "text": "(vs Grappled) Move them 4 spaces."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Soulless, thorny plant beings fertilized by blood.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Armor printed as 'H*' (asterisk refers to Peeling Bark)."
+  },
+  {
+    "name": "Briarbane Rootbreaker",
+    "book": "GMG",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Briarbanes",
+    "habitat": "Forest Denizens",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 58,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Peeling Bark",
+        "text": "Being hit degrades armor (H » M » None)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam (2×)",
+        "text": "1d6+5. On damage, Knockback 2 or Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Soulless, thorny plant beings fertilized by blood.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Armor printed as 'H*' (asterisk refers to Peeling Bark). Same block also appears in the starter adventure (PDF p.9)."
+  },
+  {
+    "name": "Duskprowler",
+    "book": "GMG",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Forest Keepers",
+    "habitat": "Forest Denizens",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 70,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Illusory Aura",
+        "text": "Attacks against the Duskprowler have Disadvantage 2. Damage suppresses this effect until the end of the next hero's turn."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ravage (2×)",
+        "text": "1d8+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Every shadow hides a predator, every branch and leaf conspires against you, the forest is alive—and you are not welcome.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Basilisk",
+    "book": "GMG",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Forest Keepers",
+    "habitat": "Forest Denizens",
+    "levelText": "7",
+    "level": 7,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stone Gaze",
+        "text": "(Reach 16) Lithify 1 creature who can see you. Then:"
+      },
+      {
+        "name": "Envenom",
+        "text": "d44, advantage vs creatures with fewer than 3 actions."
+      },
+      {
+        "name": "Lithify",
+        "text": "Max actions reduced by 1 (lasts for 10 min, can stack). Lithified 3 times: Petrified!"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Every shadow hides a predator, every branch and leaf conspires against you, the forest is alive—and you are not welcome.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Envenom damage printed as 'd44' (likely a typo; transcribed as printed). Lithify is an italic note below the actions."
+  },
+  {
+    "name": "Druid",
+    "book": "GMG",
+    "page": 35,
+    "pdfPage": 18,
+    "group": "Forest Keepers",
+    "habitat": "Forest Denizens",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Beastshift",
+        "text": "Gain +4 Speed and Medium Armor until the beginning of your next turn. (2×) 1d4+10 with advantage. Or:"
+      },
+      {
+        "name": "Hurricane",
+        "text": "(Reach 3, AoE) 4d4+10 to enemies. On damage, move targets anywhere within Reach."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Every shadow hides a predator, every branch and leaf conspires against you, the forest is alive—and you are not welcome.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Beastshift armor icon '[ar]M' rendered as 'Medium Armor'."
+  },
+  {
+    "name": "Cultist",
+    "book": "GMG",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Cultists/Horrors",
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 22,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Fanatical Offering!",
+        "text": "Lose 2 HP, afflict adjacent enemies with Despair. Then:"
+      },
+      {
+        "name": "Dreadful Blade",
+        "text": "1d6+4."
+      },
+      {
+        "name": "Despair",
+        "text": "Disadvantage on all rolls (dealing or healing any damage ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Driven by twisted beliefs, fanatical cultists perform dark rituals to awaken ancient evils, unleashing horrors that feast on fear and despair.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Despair is an italic note below the actions."
+  },
+  {
+    "name": "Fanatic",
+    "book": "GMG",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Cultists/Horrors",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 44,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Fanatical Offering!",
+        "text": "Lose 2 HP, afflict adjacent enemies with Despair. Or:"
+      },
+      {
+        "name": "Whispers of Madness",
+        "text": "(vs Despairing) Grapple. (escape DC 13, or any radiant damage). 3d6+6 psychic damage (can't be Defended or Interposed)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Driven by twisted beliefs, fanatical cultists perform dark rituals to awaken ancient evils, unleashing horrors that feast on fear and despair.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Despair is defined in the Cultist block."
+  },
+  {
+    "name": "Doomsayer",
+    "book": "GMG",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Cultists/Horrors",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 66,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Feverish Chant",
+        "text": "Reduce all damage done to allies who can hear you to 1."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ecstatic Outburst",
+        "text": "3d6 psychic damage to all Despairing enemies (ignoring Defense)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Driven by twisted beliefs, fanatical cultists perform dark rituals to awaken ancient evils, unleashing horrors that feast on fear and despair.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Stenchling",
+    "book": "GMG",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Cultists/Horrors",
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 14,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "1d6+1. Can't crit."
+      },
+      {
+        "name": "Putrid Cloud",
+        "text": "On death, (Reach 2, AoE) 2d6 to enemies."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Driven by twisted beliefs, fanatical cultists perform dark rituals to awaken ancient evils, unleashing horrors that feast on fear and despair.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Putrid Cloud is printed in italics below the action."
+  },
+  {
+    "name": "Spiny Fiend",
+    "book": "GMG",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Cultists/Horrors",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 48,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Spines",
+        "text": "Melee attackers take 4 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claws (2×)",
+        "text": "1d6+4. Or:"
+      },
+      {
+        "name": "Shoot Spine",
+        "text": "(Range 12) 1d6+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Driven by twisted beliefs, fanatical cultists perform dark rituals to awaken ancient evils, unleashing horrors that feast on fear and despair.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Glabrezu",
+    "book": "GMG",
+    "page": 36,
+    "pdfPage": 19,
+    "group": "Cultists/Horrors",
+    "habitat": null,
+    "levelText": "14",
+    "level": 14,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doomclaw (2×)",
+        "text": "(Reach 2) 1d6+20. On damage, Grappled (escape DC 16; if Grappled by both claws, must escape from each). Or:"
+      },
+      {
+        "name": "Tear Asunder",
+        "text": "(A creature Grappled by both claws) 50 unpreventable damage. Then, if the target is Dying: DC 16 STR save or be torn in two, dying instantly."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Driven by twisted beliefs, fanatical cultists perform dark rituals to awaken ancient evils, unleashing horrors that feast on fear and despair.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Giant Spider",
+    "book": "GMG",
+    "page": 37,
+    "pdfPage": 19,
+    "group": null,
+    "habitat": "Underground",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shoot Web",
+        "text": "(Range 6) 1d8+2, Restrained (escape DC 12, or any slashing/fire damage). Or:"
+      },
+      {
+        "name": "Bite",
+        "text": "(vs Hampered) 1d8+5, Poisoned (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Nightmarish denizens of the deep, these monstrous beings lurk in dark tunnels and cavernous depths, ready to ensnare or devour any intruders.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Same block also appears in the starter adventure (PDF p.7)."
+  },
+  {
+    "name": "Ettercap",
+    "book": "GMG",
+    "page": 37,
+    "pdfPage": 19,
+    "group": null,
+    "habitat": "Underground",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Web Garrote",
+        "text": "1d8+10, Grappled (escape DC 12) and Silenced until escape."
+      },
+      {
+        "name": "Silenced",
+        "text": "Cannot cast spells or use other abilities that require speaking (e.g., Commander's Orders)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Nightmarish denizens of the deep, these monstrous beings lurk in dark tunnels and cavernous depths, ready to ensnare or devour any intruders.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Silenced is an italic note below the action."
+  },
+  {
+    "name": "Nestweaver",
+    "book": "GMG",
+    "page": 37,
+    "pdfPage": 19,
+    "group": null,
+    "habitat": "Underground",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Swarm",
+        "text": "Summon 3 spider minions (size:d8). Then choose 1:"
+      },
+      {
+        "name": "Shoot Web",
+        "text": "(Range 6) 1d8+2, Restrained (escape DC 12, or any slashing/fire damage). Or:"
+      },
+      {
+        "name": "Bite",
+        "text": "(vs Hampered) 1d8+10, Poisoned (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Nightmarish denizens of the deep, these monstrous beings lurk in dark tunnels and cavernous depths, ready to ensnare or devour any intruders.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Umber Hulk",
+    "book": "GMG",
+    "page": 37,
+    "pdfPage": 19,
+    "group": null,
+    "habitat": "Underground",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Confounding Pheromones",
+        "text": "(Reach 3) Enemies make a DC 14 WIL save or become Confused (each time they fail, gain advantage 1 on the save this encounter). Then:"
+      },
+      {
+        "name": "Mandible & Claws (2×)",
+        "text": "1d10+10."
+      },
+      {
+        "name": "Confused",
+        "text": "The GM spends 1 action this round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Nightmarish denizens of the deep, these monstrous beings lurk in dark tunnels and cavernous depths, ready to ensnare or devour any intruders.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Confused is an italic note below the actions."
+  },
+  {
+    "name": "Cloaker",
+    "book": "GMG",
+    "page": 37,
+    "pdfPage": 19,
+    "group": null,
+    "habitat": "Underground",
+    "levelText": "13",
+    "level": 13,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 110,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": null,
+    "fly": 10,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ambusher",
+        "text": "Cloakers always start first and heroes roll Initiative with disadvantage."
+      },
+      {
+        "name": "Mutual Harm",
+        "text": "You take half damage from attacks while Grappling a creature (they take the other half)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Wrap",
+        "text": "2d10+20, Grappled (escape DC 15). Or:"
+      },
+      {
+        "name": "Horrifying Wail",
+        "text": "(Reach 6, AoE) All others make a DC 15 WIL save, or become Frightened and must spend an Action to move as far away as possible."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Nightmarish denizens of the deep, these monstrous beings lurk in dark tunnels and cavernous depths, ready to ensnare or devour any intruders.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Only a fly Speed is printed."
+  },
+  {
+    "name": "Great Worm",
+    "book": "GMG",
+    "page": 37,
+    "pdfPage": 19,
+    "group": null,
+    "habitat": "Underground",
+    "levelText": "16",
+    "level": 16,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 140,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": 8,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Tremor Sight",
+        "text": "Advantage vs targets who moved this round, Disadvantage otherwise."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crush",
+        "text": "(Line 3×6, AoE) d88 damage on a failed DC 18 DEX save. (Creatures who fail can spend 1 Action to dive out of the way instead of taking this damage. They move half their speed and land Prone.) Or:"
+      },
+      {
+        "name": "Bite",
+        "text": "(Reach 6) 1d4+50. On crit, Swallowed."
+      },
+      {
+        "name": "Swallowed",
+        "text": "You take 20 damage at the start of your turn. Your attacks cannot miss and ignore armor."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Nightmarish denizens of the deep, these monstrous beings lurk in dark tunnels and cavernous depths, ready to ensnare or devour any intruders.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Crush damage printed as 'd88' (likely a typo; transcribed as printed). Only a burrow Speed is printed; walking Speed left at default 6. Swallowed is an italic note below the actions."
+  },
+  {
+    "name": "Pudge the Blunderer",
+    "book": "GMG",
+    "page": 41,
+    "pdfPage": 21,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": "Dumb Ogre",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 28,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+, INT–",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero's turn, choose one (recommended to alternate):",
+    "actions": [
+      {
+        "name": "Move & Smack",
+        "text": "Move 8, attack for 1d8. On damage, Prone."
+      },
+      {
+        "name": "Grab & Throw",
+        "text": "1d8. On damage, (Reach 6) throw them at another target, both take another 1d8 damage and are knocked Prone."
+      }
+    ],
+    "bloodied": {
+      "name": "Quaking Stomp!",
+      "text": "Heroes are knocked Prone on a failed DC 12 STR save."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Pudge regains 7 HP per hero, and rolls d12s for each attack."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Worked example in the Legendary Monster Builder section. Header 'LVL 2 Legendary Dumb Ogre'. Size not printed (Ogre); left at default Medium."
+  },
+  {
+    "name": "Kelebek, Entomancer",
+    "book": "GMG",
+    "page": 41,
+    "pdfPage": 21,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": "Bug Druid",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 20,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "INT+ WIL+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": "After each hero's turn, choose Kelebek OR Poppy to act (rec. alternate).",
+    "actions": [
+      {
+        "name": "Vinelash",
+        "text": "Move 6, then 2d6. On damage, move target to an unoccupied space within Reach 6."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "When Kelebek is bloodied, Poppy always Interposes for him. Both roll 3d6 instead."
+    },
+    "lastStand": {
+      "name": "Noxious Gas",
+      "text": "When Poppy dies, all heroes have a max of 2 actions each turn."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Half of the shared 'Kelebek & Poppy' block (header 'LVL 3 Legendary Bug Druid & His Stinky Pet', under 'Legendary Teams'). Split into two entries because each has its own HP; the 'LEGENDARY DUO:' line, BLOODIED and LAST STAND lines are shared and copied to both."
+  },
+  {
+    "name": "Poppy, Giant Stinkbug",
+    "book": "GMG",
+    "page": 41,
+    "pdfPage": 21,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": "Stinky Pet",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 24,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Stink Cloud",
+        "text": "(1/round, Reach 2) When damaged, enemies make a STR save or spend their next action vomiting, and they can't take reactions this round (DC: the damage done or 10, whichever is higher)."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose Kelebek OR Poppy to act (rec. alternate).",
+    "actions": [
+      {
+        "name": "Crushing Mandibles",
+        "text": "Move 6. 2d6, up to 2 adjacent creatures."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "When Kelebek is bloodied, Poppy always Interposes for him. Both roll 3d6 instead."
+    },
+    "lastStand": {
+      "name": "Noxious Gas",
+      "text": "When Poppy dies, all heroes have a max of 2 actions each turn."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Half of the shared 'Kelebek & Poppy' block (header 'LVL 3 Legendary Bug Druid & His Stinky Pet'). Size not printed; left at default Medium. BLOODIED/LAST STAND shared with Kelebek."
+  },
+  {
+    "name": "Grimbeak, the Unyielding",
+    "book": "GMG",
+    "page": 42,
+    "pdfPage": 22,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Large",
+    "kind": "Owlbear",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 40,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Brutal",
+        "text": "Treat the highest die rolled as the Primary Die. On crit, knock Prone."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Beak",
+        "text": "Move 8. Attack for 2d6 damage."
+      },
+      {
+        "name": "Rend & Tear",
+        "text": "Attack for 2d6+5 damage."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "Gain: Savage Screech. (1 use, Reach 12, AoE) 2d6 psychic damage (ignoring Defense). DC 11 WIL save or Frightened 1 round."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Grimbeak regains 10 HP per hero and rolls d10s instead of d6s."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Thorn Quickblade",
+    "book": "GMG",
+    "page": 43,
+    "pdfPage": 22,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": "Human Criminal",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 44,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "DEX+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Strike Back",
+        "text": "When crit, make a Heart Piercer or Stormquill attack in return."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Stormquill (Crossbow)",
+        "text": "2d4+10 (Range 8)."
+      },
+      {
+        "name": "Heart Piercer (Rapier)",
+        "text": "Move 6, 2d4 damage. On crit, Dazed."
+      }
+    ],
+    "bloodied": {
+      "name": "Smoke Bomb",
+      "text": "Thorn immediately Blinds all enemies for 1 round, then moves 6, ignoring Opportunity Attacks."
+    },
+    "lastStand": {
+      "name": "Fight or Flight",
+      "text": "Thorn regains 13 HP per hero and (1/turn) can Strike Back or Move when hit."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Ravager of the Lowlands",
+    "book": "GMG",
+    "page": 44,
+    "pdfPage": 23,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": "Manticore",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 48,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+ DEX+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Feral Instinct",
+        "text": "Whenever Ravager is crit, he can fly 10, ignoring opportunity attacks."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Claw",
+        "text": "Fly 10, (Reach 2) 1d12+5."
+      },
+      {
+        "name": "Ravage",
+        "text": "(Reach 2) 1d12+12."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "Gain: Venomous Stinger. (1 use, Reach 3) 5d12 damage. Poisoned."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Ravager regains 17 HP per hero and the first time each turn he takes damage, he attacks for 1d12."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Queen Aranya, Broodmother",
+    "book": "GMG",
+    "page": 45,
+    "pdfPage": 23,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": "Matriarch of Spiders",
+    "role": "legendary",
+    "armor": "M",
+    "hp": null,
+    "hpPerHero": 44,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Weave Web",
+        "text": "Creatures she hits are entangled in a sticky web (Dazed)."
+      },
+      {
+        "name": "Flammable Webs",
+        "text": "Fire damage suppresses Weave Web for 1 turn."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Impale",
+        "text": "(Reach 2) 2d8+8 damage. Then skitter away up to 8 spaces."
+      },
+      {
+        "name": "Hatch Brood",
+        "text": "Summon 1 spiderling minion/hero (size:d8); they act only when commanded."
+      },
+      {
+        "name": "Dinner Time!",
+        "text": "Command all of your spiderling minions to move 6 then attack."
+      }
+    ],
+    "bloodied": {
+      "name": "Avenge Your Queen, My Brood!",
+      "text": "Summon 3 spiderling minions/hero within Reach 8."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Aranya regains 12 HP per hero and uses Hatch Brood after each of her turns."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Nalzar, Apex Predator",
+    "book": "GMG",
+    "page": 46,
+    "pdfPage": 24,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": "Grey Drake",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 56,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+ DEX+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Tail Swipe",
+        "text": "When dealt slashing or lightning damage: (Reach 3) knock an enemy Prone."
+      },
+      {
+        "name": "Torn Wings",
+        "text": "Each slashing crit reduces the Wing Buffet DC by 1."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Wing Buffet",
+        "text": "Fly 10, then land. (Cone 10, AoE) 1d10, Prone on failed DC 14 STR save (advantage if behind cover or another hero)."
+      },
+      {
+        "name": "Devour",
+        "text": "Move 2, (vs Prone, Reach 2) 3d10+10."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "+2 to Wing Buffet DC and +1d10 damage."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Nalzar regains 20 HP per hero and each turn she moves 6, then uses Devour (ignoring the Prone requirement)."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Florindris, Bane of the Forest",
+    "book": "GMG",
+    "page": 47,
+    "pdfPage": 24,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "7",
+    "level": 7,
+    "size": "Large",
+    "kind": "Floral Dragon",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 64,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL+",
+    "resist": [
+      "necrotic"
+    ],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Aura of Wind",
+        "text": "Ranged attacks against you have disadvantage. At the end of your turn, push adjacent creatures 2 spaces away."
+      },
+      {
+        "name": "Wither",
+        "text": "Resistant to necrotic damage, but it suppresses Aura of Wind until the end of the next hero's turn."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Gust",
+        "text": "(Reach 8) Move a target 1d10 spaces."
+      },
+      {
+        "name": "Rend",
+        "text": "Fly 10. (Reach 2, up to 2 targets) 1d10+10. On hit, gain Thornblight."
+      },
+      {
+        "name": "Thornblight",
+        "text": "Suffer 2 damage for each space you are forcibly moved. Healing ends this effect."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "Enemies within Reach 12 gain Thornblight. Gain: Petal Storm. (1 use, Reach 8, AoE) 2d10+10, half on a DC 13 DEX save."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Florindris regains 23 HP per hero, and Aura of Wind and Gust move creatures twice as far."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Thornblight is an italic note (not a choice) printed below the legendary options."
+  },
+  {
+    "name": "General Flameheart",
+    "book": "GMG",
+    "page": 48,
+    "pdfPage": 25,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "8",
+    "level": 8,
+    "size": "Huge",
+    "kind": "Flame Titan",
+    "role": "legendary",
+    "armor": "M",
+    "hp": null,
+    "hpPerHero": 64,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR++ WIL+",
+    "resist": [
+      "fire"
+    ],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Cinder Armor",
+        "text": "Resistant to fire. When damaged, deal 5 fire damage to all adjacent creatures."
+      },
+      {
+        "name": "Extinguish Flame",
+        "text": "Cold or radiant crits extinguish all areas ignited by Molten Fury and suppress Cinder Armor until the end of the next hero's turn."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Inferno Cleave",
+        "text": "Move 6 then strike a 3×2 square area for 2d10+10 fire damage."
+      },
+      {
+        "name": "Molten Fury",
+        "text": "Lob a molten fireball at the furthest hero not already in the flames, igniting a 2×2 square area. Creatures there take 2d10+10 damage; and another 10 damage at the end of each of their turns if they remain in the area."
+      }
+    ],
+    "bloodied": {
+      "name": "Flamespawn",
+      "text": "Each Molten Fury spawns an Elemental Fireling minion."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Flameheart regains 19 HP per hero, his attacks increase to a 3×3 area. Spawn a Fireling on each of his turns."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "The Elemental Fireling minion block is printed inside this stat block (separate entry)."
+  },
+  {
+    "name": "Elemental Fireling",
+    "book": "GMG",
+    "page": 48,
+    "pdfPage": 25,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Medium",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Flameburst",
+        "text": "(Reach 1, AoE) 1d10.*"
+      },
+      {
+        "name": "Explode",
+        "text": "On death, (Reach 1, AoE) 1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "*follows minion rules. Printed inside General Flameheart's stat block (spawned by Flamespawn). Explode is printed in italics."
+  },
+  {
+    "name": "Vael, Undying Necromancer",
+    "book": "GMG",
+    "page": 49,
+    "pdfPage": 25,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "9",
+    "level": 9,
+    "size": "Medium",
+    "kind": "Luminary of Malice",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 64,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "INT++ WIL++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Protect Master!",
+        "text": "Whenever Vael would fail a save or take 20 or more damage, he may sacrifice his Lifebinding Spirit, Bane, instead."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, Bane attacks for 1d12+6 then Vael chooses one:",
+    "actions": [
+      {
+        "name": "DOOM",
+        "text": "(Range 12, undamaged target) DC 14 WIL save or 2d12+20. Half on save."
+      },
+      {
+        "name": "Veilwalker's Rebuke",
+        "text": "(Range 8) 2d12+6. Double damage against those behind Cover. (1/round) You may swap places with them."
+      },
+      {
+        "name": "Cruelty's Edge",
+        "text": "1d4+2. On hit, DC 14 WIL save or Dazed and Frightened. Then move 6."
+      },
+      {
+        "name": "Resummon Bane",
+        "text": "(1/round) Move 6 and resummon Bane."
+      }
+    ],
+    "bloodied": {
+      "name": "Shield of Cruelty",
+      "text": "(Reaction, 1 use) If Vael would be damaged, instead he may reflect that much radiant damage back at the attacker."
+    },
+    "lastStand": {
+      "name": "DEATH, AN OLD FRIEND",
+      "text": "Vael regains 24 HP per hero. The hero that most recently damaged him is reduced to 0 HP, and Bane is sacrificed into a Vengeful Spirit and can't be resummoned: (Reach 3, AoE) 1d12+6 at the end of each of Vael's turns."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Titan of the Deep Woods",
+    "book": "GMG",
+    "page": 50,
+    "pdfPage": 26,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "10",
+    "level": 10,
+    "size": "Gargantuan",
+    "kind": "Skeleton",
+    "role": "legendary",
+    "armor": "H",
+    "hp": null,
+    "hpPerHero": 64,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR+++",
+    "resist": [
+      "piercing"
+    ],
+    "vuln": [
+      "bludgeoning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Splintering Legions",
+        "text": "Bludgeoning damage or any crit causes bones to splinter off and animate, forming a skeletal minion (size:d10)."
+      },
+      {
+        "name": "Brittle Bones",
+        "text": "Resistant to piercing, vulnerable to bludgeoning."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose 1 (rec. alternate):",
+    "actions": [
+      {
+        "name": "Devastating Strike",
+        "text": "(Reach 4) 1d4+30 damage. On hit, Knockback 6."
+      },
+      {
+        "name": "Crushing Stomp",
+        "text": "Move 10. Deal 1d4+20 damage to up to 2 targets along the path. On hit, Prone."
+      },
+      {
+        "name": "Beckoning Doom",
+        "text": "The 2 furthest heroes make a DC 16 WIL save or are moved adjacent to Titan (disadvantage if any skeleton is adjacent)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": {
+      "name": "Shattered Legion",
+      "text": "At 0 HP the Titan collapses into 4 skeleton minions/hero (size:d10). If any remain, they reassemble into the Titan the next evening."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "No BLOODIED entry printed."
+  },
+  {
+    "name": "Ul'vek, Psionic Despot",
+    "book": "GMG",
+    "page": 51,
+    "pdfPage": 26,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "11",
+    "level": 11,
+    "size": "Medium",
+    "kind": "Brain-Eating Aberration",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 84,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "INT++ WIL++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mind Shield",
+        "text": "Whenever Ul'vek would fail a save or take more than 30 damage while he has any creatures Dominated, he may avoid the attack instead, but all Dominated creatures come to their senses."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one (rec. alternate):",
+    "actions": [
+      {
+        "name": "Dominate",
+        "text": "(If no creatures are Dominated) Choose half of the heroes to suffer 2d12 psychic damage (ignoring Defense). DC 15 WIL save or Dominated as well."
+      },
+      {
+        "name": "Dominated",
+        "text": "Your rolls are disadvantaged. Ul'vek spends your first action on each of your turns: moving, making a weapon attack, or casting a cantrip. Damage ends."
+      },
+      {
+        "name": "Consume",
+        "text": "(Dominated creature) DC 15 DEX save or 6d12 and Grappled (escape DC 15), half on save. Cannot be Defended or Interposed against."
+      },
+      {
+        "name": "Control",
+        "text": "Teleport 8. (Reach 8) DC 15 STR save, force an enemy to spend one Action to move, make a weapon attack, or cast a cantrip. On save, they move half as far or attack with disadvantage."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "Gain: Illusory Shift (1 use). Reaction (when attacked): Swap places with a Dominated creature, making them the new target of the attack."
+    },
+    "lastStand": {
+      "name": "DOMINATION!",
+      "text": "Ul'vek regains 30 HP per hero, and every hero makes a DC 15 WIL save or becomes Dominated. Dominated no longer ends on taking damage."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Dominated is an italic condition note printed between the Dominate and Consume options (not itself a choice)."
+  },
+  {
+    "name": "Dravok, All-Seeing Tyrant",
+    "book": "GMG",
+    "page": 52,
+    "pdfPage": 27,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "12",
+    "level": 12,
+    "size": "Large",
+    "kind": "Aberration, all TEETH & EYES",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 90,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "INT++ WIL++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "My plans, FLAWLESS!",
+        "text": "Attacks against Dravok are Disadvantaged, Dravok makes all saves with +1 advantage."
+      },
+      {
+        "name": "Weakness",
+        "text": "Taking 20 or more piercing or slashing damage at a time: Dravok's plans are FLAWED! (until the end of the next hero's turn.)"
+      }
+    ],
+    "actionsIntro": "After each hero's turn, move 6 then either use Eye Ray (Range 10, choose, perform in order, or roll randomly) OR Terrible Maw. 4d4. +10 damage for ANY 4 rolled.",
+    "actions": [
+      {
+        "name": "1. Warping Ray",
+        "text": "2d6+10. Exchange places with target and knock Prone."
+      },
+      {
+        "name": "2. Petrification Ray",
+        "text": "2d6+10. Permanently Dazed (Can stack, healing ends; 3 stacks: Petrified)."
+      },
+      {
+        "name": "3. Terror Ray",
+        "text": "2d6+10 psychic damage & TERRIFIED: Frightened, and your screams give allies within Reach 6 disadvantage on rolls. Ends when Dravok's plans are FLAWED."
+      },
+      {
+        "name": "4. Gravitation Ray",
+        "text": "2d6, move target that many spaces. Forced movement deals +5 damage instead of rolling additional dice."
+      },
+      {
+        "name": "5. Charm Ray",
+        "text": "Spend 3 Actions for an enemy (you cannot spend any limited resources, they regain any spent actions afterward)."
+      },
+      {
+        "name": "6. Death Ray",
+        "text": "d66, gain 1 Wound."
+      }
+    ],
+    "bloodied": {
+      "name": "To Dust!",
+      "text": "Petrification Ray every enemy. His save DC increases to 18."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Dravok regains 32 HP per hero. Each turn he uses Warping Ray then another attack. Gain: Devastation Beam. (1 use, Line 10×2, AoE) d66, gain 1 Wound."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Eye Ray options are numbered 1–6 (for rolling randomly); Terrible Maw is described only in the LEGENDARY line."
+  },
+  {
+    "name": "Azriel, Lord of Pain & Flame",
+    "book": "GMG",
+    "page": 53,
+    "pdfPage": 27,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "14",
+    "level": 14,
+    "size": "Huge",
+    "kind": "Balor Cruelty Incarnate",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 120,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "PAIN!",
+        "text": "ALL Primary Dice rolled against Azriel crit on 1 less than the max. When crit, the attacker takes the exploding damage instead of Azriel."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose 1 (rec. alternate):",
+    "actions": [
+      {
+        "name": "Crackling Whip",
+        "text": "Move 6. (Reach 6) 2d12+10, pull adjacent to Azriel."
+      },
+      {
+        "name": "Doom Sword",
+        "text": "(Reach 2, AoE) 2d12+20."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "Gain: Rending Winds. (Reach 12, AoE) DC 17 STR save or Rended: take 2 damage/space moved (healing ends). Azriel can use Crackling Whip twice each turn."
+    },
+    "lastStand": {
+      "name": "YES, MORE PAIN!",
+      "text": "Azriel regains 50 HP per hero, EVERY hit against him is a crit."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Gloomwing the Cruel",
+    "book": "GMG",
+    "page": 54,
+    "pdfPage": 28,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "15",
+    "level": 15,
+    "size": "Huge",
+    "kind": "Rot Dragon",
+    "role": "legendary",
+    "armor": "H",
+    "hp": null,
+    "hpPerHero": 100,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Aura of Rot",
+        "text": "(Reach 6) enemies suffer 5 necrotic damage at the end of their turns."
+      },
+      {
+        "name": "Light Sensitivity",
+        "text": "Radiant damage suppresses Aura of Rot until the end of the next hero's turn."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one:",
+    "actions": [
+      {
+        "name": "Claws",
+        "text": "Move 6, then (Reach 2) 2d10+10. On damage, Cruelty's Gift."
+      },
+      {
+        "name": "Cruelty's Gift",
+        "text": "Healing is halved and Vulnerable to necrotic damage. Healing ends."
+      },
+      {
+        "name": "Bite",
+        "text": "(Reach 2) 2d20+10 necrotic."
+      },
+      {
+        "name": "Tail",
+        "text": "(Cone 4, AoE) 1d10+10, Knockback Primary Die spaces."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "Gain: Rot Breath (1 use). Fly 10, then (Cone 8, AoE) DC 17 DEX save or 8d10 necrotic, half on save."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Gloomwing regains 30 HP per hero, Light Sensitivity ends, and the damage and Reach of Aura of Rot is doubled."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Cruelty's Gift is an italic condition note printed between Claws and Bite (not itself a choice)."
+  },
+  {
+    "name": "Alaric Draegoth, the Crimson Count",
+    "book": "GMG",
+    "page": 55,
+    "pdfPage": 28,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "16",
+    "level": 16,
+    "size": "Medium",
+    "kind": "Vampire Lord",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 90,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL++",
+    "resist": [],
+    "vuln": [
+      "radiant"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sanguine Cloak",
+        "text": "The 1st time you are attacked each turn, deal 1d10 and reduce the Primary Die by this amount."
+      },
+      {
+        "name": "Sunscorn",
+        "text": "Vulnerable to radiant. After taking radiant damage, use Beguile as a Reaction, they roll with disadvantage."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, summon 1 blood bat minion (d10) within 8 spaces, then choose 1 (rec. alternate):",
+    "actions": [
+      {
+        "name": "Ebonfang",
+        "text": "1d10+10, target is considered Bloodied for 1 round. Fly 8 before or afterward."
+      },
+      {
+        "name": "Beguile",
+        "text": "(If no creature is Beguiled) Beguile a target on a failed DC 18 WIL save (w/ disadvantage if Bloodied)."
+      },
+      {
+        "name": "Beguiled",
+        "text": "Dazed. Cannot Defend or allow anyone to Interpose for you. Damage ends."
+      },
+      {
+        "name": "Beckon & Feast",
+        "text": "Move a Beguiled creature adjacent to you and bite them: 1d10+30 damage and 1 Wound."
+      }
+    ],
+    "bloodied": {
+      "name": "Mistform",
+      "text": "No longer vulnerable to radiant, gain: Bat Decoy (1/round). Whenever Alaric would take damage, instead first swap places with a bat minion."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Regains 25 HP per hero. Sanguine Cloak, attacks, and bats roll d20s instead of d10s."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Beguiled is an italic condition note printed between Beguile and Beckon & Feast (not itself a choice)."
+  },
+  {
+    "name": "Caerys, the Hollow Star",
+    "book": "GMG",
+    "page": 57,
+    "pdfPage": 29,
+    "group": "Legendary Monsters",
+    "habitat": null,
+    "levelText": "20",
+    "level": 20,
+    "size": "Medium",
+    "kind": "World-Ending Cataclysm",
+    "role": "legendary",
+    "armor": "H",
+    "hp": null,
+    "hpPerHero": 125,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "ALL+++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ravages of Time",
+        "text": "At the beginning of each round, enemies suffer 1 Wound."
+      },
+      {
+        "name": "Slipstream",
+        "text": "3/encounter when she would suffer any negative effect she can swap places with a creature of her choice making them the target instead. All heroes recover 1 Wound."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose 1 not yet chosen (reset when all have been chosen):",
+    "actions": [
+      {
+        "name": "Wormhole",
+        "text": "Teleport 12. 3d20 to a creature adjacent to where you began or ended."
+      },
+      {
+        "name": "Immensity",
+        "text": "(Reach 12) 3d20, Prone on failed DC 20 STR save (disadvantage if within Reach 4). Half on save."
+      },
+      {
+        "name": "Glimpse Your End",
+        "text": "DC 20 WIL save or DOOMED: Concentration ends, the next damage roll against you is maximized."
+      },
+      {
+        "name": "Plasma Storm",
+        "text": "(Reach 6, AoE) DC 20 DEX save or 2d20 lightning and 2d20 fire damage. Half on save."
+      },
+      {
+        "name": "Singularity",
+        "text": "(Reach 2) 2d20+40 bludgeoning damage."
+      },
+      {
+        "name": "Desire & End",
+        "text": "(Reach 12) DC 20 INT save or 2d20+20 damage and choose an ally to suffer the same damage. Half on save."
+      }
+    ],
+    "bloodied": {
+      "name": "Gravitational Mastery",
+      "text": "(Reach 16) Move ALL objects and creatures anywhere within the area. Gravitational Lensing. The hero with the most HP is marked by Caerys. She takes half damage from all sources and her mark takes the other half, until the mark drops to 0 HP."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "Lose Heavy Armor. Use Gravitational Mastery again, then Caerys regains 60 HP per hero and she chooses twice each turn. If still alive after 1 round: Reset Time: she resets back to full HP."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Printed in all caps under the title line 'SHE WHO IS OUR DESIRE & END'. Uses 'ACTIONS:' rather than 'LEGENDARY:'. Last Stand '[ar]H' rendered as 'Heavy Armor'."
+  },
+  {
+    "name": "Rat Swarm",
+    "book": "GMG",
+    "page": 87,
+    "pdfPage": 44,
+    "group": null,
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 3,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can enter the space of other creatures. When damaged, reduce HP by 1 (AoE attacks reduce HP by 2)."
+      },
+      {
+        "name": "Persistent",
+        "text": "When damaged, summon a rat minion. (size:d4)"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gnaw",
+        "text": "(Reach 0) HPd4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'Vermin's Vengeance'."
+  },
+  {
+    "name": "The Rat Prince",
+    "book": "GMG",
+    "page": 87,
+    "pdfPage": 44,
+    "group": null,
+    "habitat": null,
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": "Prince of Grime",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 35,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "DEX+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Princely Protection!",
+        "text": "(1/round) Rats can Interpose for you."
+      },
+      {
+        "name": "OPENING MOVE",
+        "text": "At Initiative, summon 2 Rat Minions/hero (size: d4; his minions act at the end of each round)."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose one:",
+    "actions": [
+      {
+        "name": "Filthblast",
+        "text": "(Range 8) 1d4+5. Can't miss if a rat is next to your target. Or:"
+      },
+      {
+        "name": "My Darlings!",
+        "text": "(If there are fewer rats than heroes) Summon 1 Rat Minion/hero."
+      }
+    ],
+    "bloodied": {
+      "name": "Verminous Devotion!",
+      "text": "Rats can now Interpose 1/turn."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'Vermin's Vengeance'. Header 'LVL 3 Legendary Prince of Grime'. OPENING MOVE is printed before the LEGENDARY line (stored as a trait). No Last Stand printed."
+  },
+  {
+    "name": "Wax Golem",
+    "book": "GMG",
+    "page": 91,
+    "pdfPage": 46,
+    "group": null,
+    "habitat": null,
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 22,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sticky",
+        "text": "Can Grapple any number of creatures. When crit: release 1 creature (attacker's choice)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Wax Grip",
+        "text": "1d10. On hit, Grappled (escape DC 10). Or:"
+      },
+      {
+        "name": "Crush",
+        "text": "(a Grappled creature) 2d10 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'The Hidden Honey Cavern'."
+  },
+  {
+    "name": "Giant Slug",
+    "book": "GMG",
+    "page": 91,
+    "pdfPage": 46,
+    "group": null,
+    "habitat": null,
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Discordant Song",
+        "text": "Enemies who can hear make an INT save instead of rolling Initiative. The first creature heroes target each round is chosen at random."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Dissolving Slime",
+        "text": "1d4. Dazed.*"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'The Hidden Honey Cavern'. *follows minion rules."
+  },
+  {
+    "name": "Heytet-Seqat, Scorpion Queen",
+    "book": "GMG",
+    "page": 95,
+    "pdfPage": 48,
+    "group": null,
+    "habitat": null,
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": "Scorpion Immortal",
+    "role": "solo",
+    "armor": "M",
+    "hp": null,
+    "hpPerHero": 40,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Trampling Movement",
+        "text": "Can move through spaces of smaller creatures, knocking them Prone."
+      },
+      {
+        "name": "Soft Underbelly",
+        "text": "Hits from Prone melee attackers automatically crit her."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, move 6 then choose 1:",
+    "actions": [
+      {
+        "name": "Claw",
+        "text": "1d6+6. On damage, Grappled (escape DC 13, or when she is crit)."
+      },
+      {
+        "name": "Deadly Stinger",
+        "text": "(vs Prone or Grappled) 1d6+15."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "She drips acid blood, dealing 1d6 damage to any creature she walks over."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'The Lost Temple of Heytet-Seqat'. Header 'Lvl 5, Large Solo Scorpion Immortal'; uses a 'LEGENDARY:' line. No Last Stand printed."
+  },
+  {
+    "name": "Bandit",
+    "book": "GMG",
+    "page": 99,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": null,
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Inept",
+        "text": "Your attacks miss on 8."
+      },
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Hand It Over!",
+        "text": "1d8 (or Shoot, Range 8)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'The Vanishing Caravans'. Exact reprint of the bestiary entry on printed p.31."
+  },
+  {
+    "name": "Bandit Bruiser",
+    "book": "GMG",
+    "page": 99,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 27,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "And STAY Down!",
+        "text": "2d8. On damage, Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'The Vanishing Caravans'. Exact reprint of the bestiary entry on printed p.31."
+  },
+  {
+    "name": "Bandit Assassin",
+    "book": "GMG",
+    "page": 99,
+    "pdfPage": 50,
+    "group": null,
+    "habitat": null,
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sneak",
+        "text": "You are Invisible until you attack."
+      },
+      {
+        "name": "Mortal Panic",
+        "text": "Attacks miss you on a 2 or less."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Poison Blade (2×)",
+        "text": "1d8. On damage, Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'The Vanishing Caravans'. Exact reprint of the bestiary entry on printed p.31."
+  },
+  {
+    "name": "Lindworm",
+    "book": "GMG",
+    "page": 103,
+    "pdfPage": 52,
+    "group": null,
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Huge",
+    "kind": "Serpent",
+    "role": "solo",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 44,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR/DEX+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Fiercely Jealous",
+        "text": "Attacks those nearest the Golden Egg."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose 1 (rec. alternate):",
+    "actions": [
+      {
+        "name": "Constrict",
+        "text": "Move 8, 1d6+6. Grappled (escape DC 12)."
+      },
+      {
+        "name": "Squeeze",
+        "text": "(vs Grappled) 1d6+10."
+      },
+      {
+        "name": "Spit Acid",
+        "text": "(Range 8) 1d6+6. On crit, Blind 1 round."
+      },
+      {
+        "name": "Desperate Purge",
+        "text": "When crit, Grappled, or Bloodied, it regurgitates its most recent meal."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'Raid on the Royal Nest'. Header 'Lvl 4 Solo, Huge Serpent'; uses a 'LEGENDARY:' line. Desperate Purge is an italic note at the bottom of the block. The adjacent 'Golden Egg' sidebar (holder gets advantage on attacks and saves) is not part of the block."
+  },
+  {
+    "name": "Bog Giant",
+    "book": "GMG",
+    "page": 107,
+    "pdfPage": 54,
+    "group": null,
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 30,
+    "hpText": null,
+    "speed": 8,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Adamant",
+        "text": "Acts after every 2 heroes."
+      },
+      {
+        "name": "Sightless",
+        "text": "Disadvantage vs quiet targets, advantage vs loud."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Smash",
+        "text": "(Reach 2) 1d4+12."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'The Hag's Legacy'. HP per hero but not labelled Legendary/Solo; role set to regular."
+  },
+  {
+    "name": "Dregatha, Thrice-Chinned",
+    "book": "GMG",
+    "page": 107,
+    "pdfPage": 54,
+    "group": null,
+    "habitat": null,
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": "evil crone",
+    "role": "legendary",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": 40,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "INT/WIL+",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Spit Curse",
+        "text": "When crit: DC 12 INT save, or 1 Wound."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose 1 (rec. alternate):",
+    "actions": [
+      {
+        "name": "Bug Swarm",
+        "text": "Summon 1 minion/hero (size:d4). Or:"
+      },
+      {
+        "name": "Cruel Claw",
+        "text": "Move 6. 1d6+10. On damage, Dazed."
+      }
+    ],
+    "bloodied": {
+      "name": "Squirm, little worms!",
+      "text": "All heroes are shrunk down to half size. They deal half damage and suffer double damage. Damage or Healing ends."
+    },
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'The Hag's Legacy'. Header 'Lvl 4, evil crone' does not say Legendary, but the block uses a 'LEGENDARY:' line; role set to legendary. No Last Stand printed."
+  },
+  {
+    "name": "Stenchling",
+    "book": "GMG",
+    "page": 110,
+    "pdfPage": 56,
+    "group": null,
+    "habitat": null,
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 14,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "1d6+1. Can't crit."
+      },
+      {
+        "name": "Putrid Cloud",
+        "text": "On death, (Reach 2, AoE) 2d6 to enemies."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'Beyond the Crimson Veil'. Exact reprint of the bestiary entry on printed p.36."
+  },
+  {
+    "name": "Glabrezu",
+    "book": "GMG",
+    "page": 110,
+    "pdfPage": 56,
+    "group": null,
+    "habitat": null,
+    "levelText": "14",
+    "level": 14,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Doomclaw (2×)",
+        "text": "(Reach 2) 1d6+20. On damage, Grappled (escape DC 16; if Grappled by both claws, must escape from each). Or:"
+      },
+      {
+        "name": "Tear Asunder",
+        "text": "(A creature Grappled by both claws) 50 unpreventable damage. Then, if the target is Dying: DC 16 STR save or be torn in two, dying instantly."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'Beyond the Crimson Veil'. Exact reprint of the bestiary entry on printed p.36."
+  },
+  {
+    "name": "Incubus/Succubus",
+    "book": "GMG",
+    "page": 111,
+    "pdfPage": 56,
+    "group": null,
+    "habitat": null,
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Infernal Allure",
+        "text": "At the beginning of each round, 1 hero is Allured on a failed DC 15 WIL save (you spend one of their actions this round). They gain advantage on the save for each time they fail this encounter."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Brimstone Whip",
+        "text": "(Reach 3) 2d6+6 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Adventure 'Beyond the Crimson Veil'."
+  }
+]

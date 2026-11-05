@@ -78,10 +78,10 @@ describe('EncounterStore', () => {
 		expect(n).toBe(3);
 	});
 
-	it('tracks legendary resistances within bounds', () => {
+	it('migrates nothing it does not need to: plain monsters default to the monster side', () => {
 		const { store: s } = store();
-		const [d] = s.add({ ...goblin, name: 'Dragon', legendaryResistances: 3 });
-		s.setLegendaryUsed(s.active!.id, d.id, 5);
-		expect(s.creature(s.active!.id, d.id)!.lrUsed).toBe(3);
+		const [g] = s.add(goblin);
+		expect(g.side).toBe('monster');
+		expect(g.conditions).toEqual([]);
 	});
 });

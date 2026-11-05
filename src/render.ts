@@ -1,15 +1,27 @@
-// The one stat block renderer, used by note code blocks, the tracker's viewer
-// and hover previews.
+// The one stat block renderer, used by note code blocks, the bestiary, the
+// tracker's viewer and hover previews.
 
-import { App } from 'obsidian';
+import { App, setIcon } from 'obsidian';
 import { NimbleMonster } from './types';
 import { parseMovement } from './parser';
-import { appendRichText, DICE_RE } from './markdown';
+import { appendRichText, DICE_RE, RichTextOptions } from './markdown';
 import { appendIcon, IconName } from './icons';
+import { armorLabel, formatLevel, monsterRole, monsterSaves, scaledHp } from './rules';
+import { NIMBLE_STORE_URL } from './bestiary';
 
 /** 'attack' dice follow Nimble attack rules; 'effect' dice (saves, abilities, phases) are plain sums. */
 export type DiceKind = 'attack' | 'effect';
 export type DiceHandler = (el: HTMLElement, expression: string, label: string, kind: DiceKind) => void;
+
+export interface StatblockAction {
+	label: string;
+	icon?: string;
+	title?: string;
+	cls?: string;
+	onClick: (ev: MouseEvent) => void;
+	/** A chevron beside the button that opens more choices. */
+	menu?: (ev: MouseEvent) => void;
+}
 
 export interface RenderOptions {
 	app: App;
@@ -19,35 +31,83 @@ export interface RenderOptions {
 	compact?: boolean;
 	/** When set, an "Add to Encounter" button is shown. */
 	onAdd?: (ev: MouseEvent) => void;
+	/** Extra buttons in a footer bar (hover cards, bestiary). */
+	actions?: StatblockAction[];
 	/** When set, dice expressions become clickable. */
 	onDice?: DiceHandler;
+	/** Condition names to mark up in rules text, and what to do with them. */
+	keywords?: RegExp;
+	onKeyword?: (el: HTMLElement, word: string) => void;
+	/** Party size for per-hero HP. */
+	partySize?: number;
+	/** Hide flavour text and tactics (tight spaces). */
+	brief?: boolean;
 }
 
 export function renderStatblock(container: HTMLElement, monster: NimbleMonster, opts: RenderOptions): HTMLElement {
+	const role = monsterRole(monster);
 	const block = container.createDiv({ cls: 'nimble-statblock' });
 	if (opts.variant !== 'block') block.addClass('inline');
 	if (opts.variant === 'hover') block.addClass('hover-preview');
 	if (opts.compact) block.addClass('is-compact');
-	const isSolo = monster.monsterType === 'solo';
-	if (isSolo) block.addClass('solo-monster');
+	block.addClass(`role-${role}`);
+	if (role === 'legendary') block.addClass('solo-monster');
 	block.setAttr('data-monster', monster.name);
 
-	if (isSolo) renderSolo(block, monster, opts);
-	else renderRegular(block, monster, opts);
+	header(block, monster, opts);
+	defenses(block, monster, opts);
+	abilities(block, monster, opts);
+	actions(block, monster, opts);
+	phases(block, monster, opts);
 
-	if (monster.description) {
-		block.createEl('hr');
-		const p = block.createEl('p', { cls: 'monster-description' });
-		appendRichText(p, monster.description);
+	if (!opts.brief && monster.description) {
+		appendRichText(block.createEl('p', { cls: 'monster-description' }), monster.description, textOpts(opts, monster.name, ''));
+	}
+	// Easier/Harder are prep notes: in full stat blocks and the bestiary, not the hover card.
+	if (!opts.brief && opts.variant !== 'hover' && (monster.tactics?.easier || monster.tactics?.harder)) {
+		const t = block.createDiv({ cls: 'monster-tactics' });
+		const row = (label: string, icon: string, text?: string) => {
+			if (!text) return;
+			const r = t.createDiv({ cls: 'tactic-row' });
+			const l = r.createSpan({ cls: 'tactic-label', attr: { title: label } });
+			setIcon(l, icon);
+			l.createSpan({ text: label });
+			appendRichText(r.createSpan({ cls: 'tactic-text' }), text, textOpts(opts, monster.name, ''));
+		};
+		row('Easier', 'chevron-down', monster.tactics?.easier);
+		row('Harder', 'chevron-up', monster.tactics?.harder);
+	}
+
+	if (monster.source || monster.bundledId) {
+		const src = block.createDiv({ cls: 'monster-source' });
+		if (monster.source) src.createSpan({ text: monster.source });
+		if (monster.bundledId) {
+			src.createSpan({ text: ' · Nimble TTRPG © Nimble Co. · ' });
+			src.createEl('a', { text: 'Get the books', href: NIMBLE_STORE_URL, cls: 'external-link', attr: { target: '_blank', rel: 'noopener' } });
+		}
 	}
 
 	wireWikiLinks(block, opts.app, opts.sourcePath);
 
 	if (opts.onAdd) {
-		block.createEl('hr');
 		const btn = block.createEl('button', { text: '+ Add to Encounter', cls: 'add-btn' });
-		btn.setAttr('aria-label', `Add ${monster.name} to encounter (Shift-click to add 2)`);
+		btn.setAttr('aria-label', `Add ${monster.name}`);
 		btn.addEventListener('click', (ev) => opts.onAdd?.(ev));
+	}
+	if (opts.actions?.length) {
+		const bar = block.createDiv({ cls: 'statblock-actions' });
+		for (const a of opts.actions) {
+			const host = a.menu ? bar.createDiv({ cls: `statblock-split ${a.cls || ''}` }) : bar;
+			const b = host.createEl('button', { cls: `statblock-action ${a.cls || ''}`, attr: { 'aria-label': a.title || a.label } });
+			if (a.icon) setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
+			b.createSpan({ text: a.label });
+			b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.onClick(ev); });
+			if (a.menu) {
+				const more = host.createEl('button', { cls: `statblock-action statblock-action-more ${a.cls || ''}`, attr: { 'aria-label': `More ways to ${a.label.toLowerCase()}` } });
+				setIcon(more, 'chevron-down');
+				more.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.menu!(ev); });
+			}
+		}
 	}
 	return block;
 }
@@ -56,38 +116,85 @@ export function renderStatblock(container: HTMLElement, monster: NimbleMonster, 
 
 function badge(parent: HTMLElement, cls: string, icon: IconName, value: string, title: string): void {
 	const el = parent.createSpan({ cls: `stat-badge ${cls}` });
-	el.setAttr('title', title);
 	el.setAttr('aria-label', title);
 	appendIcon(el, icon);
 	el.createSpan({ cls: 'badge-value', text: value });
 }
 
-const ARMOR_LABEL = { none: 'No armor', medium: 'Medium armor', heavy: 'Heavy armor' } as const;
-
-function coreBadges(parent: HTMLElement, monster: NimbleMonster, withMovement: boolean): void {
-	badge(parent, 'hp-badge', 'heart', String(monster.hp), `${monster.hp} HP`);
-	if (monster.armor !== 'none') {
-		badge(parent, 'armor-badge', 'shield', monster.armor === 'medium' ? 'M' : 'H', ARMOR_LABEL[monster.armor]);
+function textOpts(opts: RenderOptions, monsterName: string, what: string, kind: DiceKind = 'effect'): RichTextOptions {
+	const out: RichTextOptions = {};
+	if (opts.onDice) {
+		const label = what ? `${monsterName}: ${what}` : monsterName;
+		out.onDice = (el: HTMLElement, expr: string) => opts.onDice?.(el, expr, label, kind);
 	}
-	if (withMovement) {
-		const movement = parseMovement(monster.movement);
-		if (movement.display) badge(parent, 'move-badge', 'arrow', movement.display, `Speed ${monster.movement}`);
+	if (opts.keywords && opts.onKeyword) {
+		out.keywords = opts.keywords;
+		out.onKeyword = opts.onKeyword;
 	}
-	const saves: string[] = [];
-	if (monster.str) saves.push(`STR${monster.str}`);
-	if (monster.dex) saves.push(`DEX${monster.dex}`);
-	if (monster.will) saves.push(`WIL${monster.will}`);
-	if (saves.length) badge(parent, 'saves-badge', 'star', saves.join(' '), `Saves: ${saves.join(', ')}`);
+	return out;
 }
 
-function abilitiesBox(block: HTMLElement, monster: NimbleMonster, boxCls: string, itemCls: string, opts: RenderOptions): void {
-	if (!monster.abilities?.length) return;
-	const box = block.createDiv({ cls: boxCls });
-	for (const ab of monster.abilities) {
-		const item = box.createDiv({ cls: itemCls });
-		item.createEl('strong', { cls: 'ability-name', text: `${ab.name}${ab.isLegendary ? ' (L)' : ''}.` });
-		item.appendText(' ');
-		appendRichText(item, ab.description, diceOpts(opts, monster.name, ab.name));
+function header(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void {
+	const role = monsterRole(m);
+	const top = block.createDiv({ cls: 'monster-header' });
+	const line: string[] = [];
+	const lvl = formatLevel(m.level);
+	if (lvl) line.push(`Lvl ${lvl}`);
+	if (role === 'legendary') line.push(m.roleLabel || 'Legendary');
+	if (role === 'minion') line.push('Minion');
+	if (m.size && m.size.toLowerCase() !== 'medium') line.push(m.size);
+	if (m.type) line.push(m.type);
+	if (m.cr && !lvl) line.push(`CR ${m.cr}`);
+	if (line.length) top.createDiv({ cls: 'monster-kicker', text: line.join(' · ') });
+	top.createEl(role === 'legendary' ? 'h2' : 'div', { cls: 'monster-name', text: m.name });
+
+	const badges = block.createDiv({ cls: 'monster-badges' });
+	if (role === 'minion') {
+		badge(badges, 'hp-badge minion-badge', 'heart', 'Minion', 'Minion');
+	} else if (m.hpPerHero) {
+		const size = opts.partySize ?? 4;
+		badge(badges, 'hp-badge', 'heart', `${m.hpPerHero}/hero`, `${scaledHp(m, size)} HP for ${size} heroes`);
+	} else {
+		badge(badges, 'hp-badge', 'heart', String(m.hp), `${m.hp} HP`);
+	}
+	if (m.armor !== 'none') {
+		badge(badges, 'armor-badge', 'shield', m.armor === 'medium' ? 'M' : 'H', armorLabel(m.armor));
+	}
+	const movement = parseMovement(m.movement);
+	if (movement.display) badge(badges, 'move-badge', 'arrow', movement.display, `Speed ${m.movement}`);
+	const saves = monsterSaves(m);
+	if (saves) badge(badges, 'saves-badge', 'star', saves.replace(/-/g, '−'), `Saves: ${saves}`);
+}
+
+function defenses(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void {
+	const rows: [string, string | undefined][] = [
+		['Resistant', m.resistances?.join(', ')],
+		['Vulnerable', m.vulnerabilities?.join(', ')],
+		['Immune', m.immunities?.join(', ')],
+		['Senses', m.senses],
+		['Languages', m.languages],
+	];
+	const shown = rows.filter(([, v]) => v);
+	if (!shown.length) return;
+	const box = block.createDiv({ cls: 'monster-defenses' });
+	for (const [label, value] of shown) {
+		const p = box.createEl('p');
+		p.createEl('strong', { text: `${label}:` });
+		p.appendText(' ');
+		appendRichText(p, value!, textOpts(opts, m.name, label));
+	}
+}
+
+function abilities(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void {
+	if (!m.abilities?.length) return;
+	const box = block.createDiv({ cls: 'monster-abilities' });
+	for (const ab of m.abilities) {
+		const item = box.createDiv({ cls: 'ability-item' });
+		if (ab.name) {
+			item.createEl('strong', { cls: 'ability-name', text: `${ab.name.replace(/[.:]$/, '')}.` });
+			item.appendText(' ');
+		}
+		appendRichText(item, ab.description, textOpts(opts, m.name, ab.name));
 	}
 }
 
@@ -98,120 +205,38 @@ function attackLabel(raw: string): string {
 	return before;
 }
 
-function diceOpts(opts: RenderOptions, monsterName: string, what: string, kind: DiceKind = 'effect') {
-	if (!opts.onDice) return {};
-	const label = what ? `${monsterName}: ${what}` : monsterName;
-	return { onDice: (el: HTMLElement, expr: string) => opts.onDice?.(el, expr, label, kind) };
-}
-
 /** Attack lines that call for a save (breath weapons etc.) can't miss or crit. */
 export function attackDiceKind(raw: string): DiceKind {
-	return /\bsaves?\b/i.test(raw) ? 'effect' : 'attack';
+	return /\bsaves?\b|\bAoE\b/i.test(raw) ? 'effect' : 'attack';
 }
 
-function actions(section: HTMLElement, monster: NimbleMonster, listCls: string, opts: RenderOptions): void {
-	if (monster.multiattack) {
-		appendRichText(section.createEl('p', { cls: 'multiattack' }), monster.multiattack, diceOpts(opts, monster.name, ''));
+function actions(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void {
+	if (!m.attacks?.length && !m.multiattack) return;
+	const role = monsterRole(m);
+	const section = block.createDiv({ cls: 'monster-actions' });
+	if (role === 'legendary' || m.actionText) {
+		const head = section.createEl('p', { cls: 'actions-intro' });
+		head.createEl('strong', { text: role === 'legendary' ? `${(m.roleLabel || 'Legendary').toUpperCase()}:` : 'ACTIONS:' });
+		head.appendText(' ');
+		appendRichText(head, m.actionText || "After each hero's turn, choose one:", textOpts(opts, m.name, ''));
 	}
-	const list = section.createEl('ul', { cls: listCls });
-	for (const atk of monster.attacks || []) {
-		appendRichText(list.createEl('li'), atk.raw, diceOpts(opts, monster.name, attackLabel(atk.raw), attackDiceKind(atk.raw)));
+	if (m.multiattack) appendRichText(section.createEl('p', { cls: 'multiattack' }), m.multiattack, textOpts(opts, m.name, ''));
+	const list = section.createEl('ul', { cls: 'actions-list' });
+	for (const atk of m.attacks || []) {
+		appendRichText(list.createEl('li'), atk.raw, textOpts(opts, m.name, attackLabel(atk.raw), role === 'minion' ? 'effect' : attackDiceKind(atk.raw)));
 	}
 }
 
-function renderSolo(block: HTMLElement, monster: NimbleMonster, opts: RenderOptions): void {
-	const headerRow = block.createDiv({ cls: 'solo-header-row' });
-	const left = headerRow.createDiv({ cls: 'solo-header-left' });
-	const parts: string[] = [];
-	if (monster.level) parts.push(`Level ${monster.level}`);
-	parts.push('Solo');
-	if (monster.size) parts.push(monster.size);
-	if (monster.type) parts.push(monster.type);
-	left.createSpan({ text: parts.join(' '), cls: 'solo-level-type' });
-
-	const right = headerRow.createDiv({ cls: 'solo-header-right' });
-	coreBadges(right, monster, true);
-	right.querySelectorAll('.stat-badge').forEach(b => b.addClass('solo-stat-badge'));
-
-	block.createEl('h2', { text: monster.name, cls: 'monster-name solo-name' });
-
-	defensesAndSenses(block, monster);
-	abilitiesBox(block, monster, 'solo-abilities-box', 'solo-ability-item', opts);
-	block.createEl('hr');
-
-	if (monster.attacks?.length || monster.multiattack) {
-		const section = block.createDiv({ cls: 'solo-actions-section' });
-		const header = section.createEl('p', { cls: 'solo-action-header' });
-		header.createEl('strong', { text: 'ACTIONS:' });
-		header.appendText(' ');
-		appendRichText(header, monster.actionText || "After each hero's turn, choose one:");
-		actions(section, monster, 'solo-actions-list', opts);
-	}
-
-	if (monster.bloodied) {
-		const s = block.createDiv({ cls: 'solo-phase-section bloodied-section' });
-		s.createEl('strong', { cls: 'phase-label', text: 'BLOODIED:' });
+function phases(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void {
+	const phase = (label: string, cls: string, text?: string) => {
+		if (!text) return;
+		const s = block.createDiv({ cls: `phase-section ${cls}` });
+		s.createEl('strong', { cls: 'phase-label', text: `${label}:` });
 		s.appendText(' ');
-		appendRichText(s, monster.bloodied, diceOpts(opts, monster.name, 'Bloodied'));
-	}
-	if (monster.lastStand) {
-		const s = block.createDiv({ cls: 'solo-phase-section laststand-section' });
-		s.createEl('strong', { cls: 'phase-label', text: 'LAST STAND:' });
-		s.appendText(' ');
-		appendRichText(s, monster.lastStand, diceOpts(opts, monster.name, 'Last Stand'));
-	}
-	if (monster.legendaryResistances) {
-		const s = block.createDiv({ cls: 'solo-phase-section' });
-		s.createEl('strong', { text: `Legendary Resistances (${monster.legendaryResistances}/Day).` });
-		s.appendText(' Can choose to succeed on a failed save.');
-	}
-}
-
-function defensesAndSenses(block: HTMLElement, monster: NimbleMonster): void {
-	const line = (parent: HTMLElement, label: string, text: string) => {
-		const p = parent.createEl('p');
-		p.createEl('strong', { text: `${label}:` });
-		p.appendText(' ');
-		appendRichText(p, text);
+		appendRichText(s, text, textOpts(opts, m.name, label === 'BLOODIED' ? 'Bloodied' : 'Last Stand'));
 	};
-	if (monster.resistances?.length || monster.immunities?.length) {
-		const d = block.createDiv({ cls: 'monster-defenses' });
-		if (monster.resistances?.length) line(d, 'Resistances', monster.resistances.join(', '));
-		if (monster.immunities?.length) line(d, 'Immunities', monster.immunities.join(', '));
-	}
-	if (monster.senses || monster.languages) {
-		const s = block.createDiv({ cls: 'monster-senses' });
-		if (monster.senses) line(s, 'Senses', monster.senses);
-		if (monster.languages) line(s, 'Languages', monster.languages);
-	}
-}
-
-function renderRegular(block: HTMLElement, monster: NimbleMonster, opts: RenderOptions): void {
-	const headerRow = block.createDiv({ cls: 'monster-header-row' });
-	const left = headerRow.createDiv({ cls: 'monster-header-left' });
-	left.createSpan({ text: monster.name, cls: 'monster-name-inline' });
-
-	const info: string[] = [];
-	if (monster.type) info.push(monster.type);
-	if (monster.cr) info.push(`CR ${monster.cr}`);
-	if (info.length) left.createSpan({ text: info.join(', '), cls: 'monster-info-inline' });
-
-	// Order: Level, Size, HP, Armor, Movement, Saves
-	const right = headerRow.createDiv({ cls: 'monster-header-right' });
-	if (monster.level) badge(right, 'level-badge', 'skull', String(monster.level), `Level ${monster.level}`);
-	if (monster.size && monster.size.toLowerCase() !== 'medium') {
-		badge(right, 'size-badge', 'size', monster.size.toUpperCase(), `Size: ${monster.size}`);
-	}
-	coreBadges(right, monster, true);
-
-	defensesAndSenses(block, monster);
-	abilitiesBox(block, monster, 'monster-abilities-box', 'ability-item', opts);
-
-	if (monster.attacks?.length || monster.multiattack) {
-		if (!monster.abilities?.length) block.createEl('hr');
-		const section = block.createDiv({ cls: 'monster-actions-section' });
-		actions(section, monster, 'actions-list', opts);
-	}
+	phase('BLOODIED', 'bloodied-section', m.bloodied);
+	phase('LAST STAND', 'laststand-section', m.lastStand);
 }
 
 // ----------------------------------------------------------------------------

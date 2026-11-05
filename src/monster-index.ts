@@ -1,4 +1,6 @@
-// Vault-wide index of every monster defined in a ```nimble block.
+// Index of every monster: those defined in ```nimble blocks across the vault,
+// plus the Nimble bestiary bundled with the plugin. A vault note with the same
+// name as a bundled monster replaces it (that's how GMs customise one).
 
 import { App, Events, TFile } from 'obsidian';
 import { MonsterIndexEntry, NimbleMonster } from './types';
@@ -10,9 +12,32 @@ export class MonsterIndex extends Events {
 	/** file path -> lowercase names defined there. */
 	private byFile = new Map<string, string[]>();
 	ready = false;
+	/** Bundled monsters, by lowercase name. */
+	private bundled = new Map<string, MonsterIndexEntry>();
+	private bundledById = new Map<string, MonsterIndexEntry>();
 
 	constructor(private app: App) {
 		super();
+	}
+
+	setBundled(entries: MonsterIndexEntry[]): void {
+		this.bundled.clear();
+		this.bundledById.clear();
+		for (const e of entries) {
+			const key = e.name.toLowerCase();
+			if (!this.bundled.has(key)) this.bundled.set(key, e);
+			if (e.monster.bundledId) this.bundledById.set(e.monster.bundledId, e);
+		}
+		this.trigger('changed');
+	}
+
+	/** A bundled monster by its stable id (even if a vault note overrides its name). */
+	getBundled(id: string): MonsterIndexEntry | undefined {
+		return this.bundledById.get(id);
+	}
+
+	get bundledCount(): number {
+		return this.bundled.size;
 	}
 
 	async build(): Promise<void> {
@@ -25,15 +50,24 @@ export class MonsterIndex extends Events {
 	}
 
 	get(name: string): MonsterIndexEntry | undefined {
-		return this.byName.get(name.trim().toLowerCase())?.[0];
+		const key = name.trim().toLowerCase();
+		return this.byName.get(key)?.[0] ?? this.bundled.get(key);
 	}
 
+	/** Every monster, vault notes first-class; bundled ones unless a note overrides the name. */
 	all(): MonsterIndexEntry[] {
+		const vault = [...this.byName.values()].map(list => list[0]);
+		const bundled = [...this.bundled.entries()].filter(([key]) => !this.byName.has(key)).map(([, e]) => e);
+		return [...vault, ...bundled].sort((a, b) => a.name.localeCompare(b.name));
+	}
+
+	/** Only monsters written in vault notes. */
+	vaultOnly(): MonsterIndexEntry[] {
 		return [...this.byName.values()].map(list => list[0]).sort((a, b) => a.name.localeCompare(b.name));
 	}
 
 	get size(): number {
-		return this.byName.size;
+		return this.byName.size + [...this.bundled.keys()].filter(k => !this.byName.has(k)).length;
 	}
 
 	async update(file: TFile): Promise<void> {

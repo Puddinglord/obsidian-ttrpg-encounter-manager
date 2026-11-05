@@ -47,7 +47,7 @@ async function waitFor(fn, { timeout = 30000, interval = 250, what = 'condition'
 	throw new Error(`Timed out waiting for ${what}${lastErr ? `: ${lastErr.message}` : ''}`);
 }
 
-export async function launchObsidian({ settings } = {}) {
+export async function launchObsidian({ settings, vaultDir } = {}) {
 	if (!existsSync(OBSIDIAN_BIN)) throw new Error(`Obsidian not found at ${OBSIDIAN_BIN}. Set OBSIDIAN_BIN.`);
 	for (const f of ['main.js', 'manifest.json', 'styles.css']) {
 		if (!existsSync(join(ROOT, f))) throw new Error(`${f} missing, run npm run build first`);
@@ -56,12 +56,14 @@ export async function launchObsidian({ settings } = {}) {
 	const work = mkdtempSync(join(tmpdir(), 'nimble-e2e-'));
 	const vault = join(work, 'vault');
 	const userData = join(work, 'userdata');
-	cpSync(FIXTURE_VAULT, vault, { recursive: true });
+	cpSync(vaultDir || FIXTURE_VAULT, vault, { recursive: true });
 	const pluginDir = join(vault, '.obsidian', 'plugins', PLUGIN_ID);
 	mkdirSync(pluginDir, { recursive: true });
 	for (const f of ['main.js', 'manifest.json', 'styles.css']) cpSync(join(ROOT, f), join(pluginDir, f));
 	if (settings) writeFileSync(join(pluginDir, 'data.json'), JSON.stringify(settings));
 	writeFileSync(join(vault, '.obsidian', 'community-plugins.json'), JSON.stringify([PLUGIN_ID]));
+	// DOM menus instead of macOS native ones, so tests can see and click menu items.
+	writeFileSync(join(vault, '.obsidian', 'app.json'), JSON.stringify({ nativeMenus: false }));
 	mkdirSync(userData, { recursive: true });
 	writeFileSync(join(userData, 'obsidian.json'), JSON.stringify({
 		vaults: { e2evault000000001: { path: vault, ts: Date.now(), open: true } },

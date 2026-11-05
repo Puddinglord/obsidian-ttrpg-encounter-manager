@@ -20,3 +20,6 @@ data.json
 
 # e2e screenshots
 e2e/artifacts
+
+# Licensed / third-party content for local prototyping (maps, adventure notes, Nimble draft stats)
+prototypes/private/

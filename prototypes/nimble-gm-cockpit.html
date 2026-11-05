@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nimble GM Cockpit — prototype</title>
+<style>
+:root{
+  --bg:#1e1e1e; --bg2:#262626; --bg3:#2f2f2f; --bg4:#383838; --border:#3a3a3a;
+  --text:#dcddde; --muted:#9a9a9a; --faint:#6b6b6b;
+  --accent:#8b6cef; --accent2:#a68bff;
+  --hero:#4f9cf0; --foe:#e05d5d; --minion:#d48a5a; --leg:#e0b341; --ok:#5fbf7a;
+  --radius:6px; --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.5 var(--font)}
+button{font:inherit;color:inherit;background:var(--bg4);border:1px solid var(--border);border-radius:5px;padding:3px 9px;cursor:pointer}
+button:hover{background:#444}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{background:var(--accent2)}
+button.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+button.ghost:hover{color:var(--text);background:var(--bg3)}
+button.sm{padding:1px 6px;font-size:12px}
+button.danger{border-color:#7a3434;color:#f0a0a0}
+button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+input,select{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px 6px}
+input[type=number]{width:58px}
+input:focus,select:focus{outline:1px solid var(--accent)}
+.hidden{display:none!important}
+.muted{color:var(--muted)} .faint{color:var(--faint)}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+
+/* ---------- shell ---------- */
+#app{display:grid;grid-template-columns:44px 240px 1fr 390px;grid-template-rows:38px 1fr;height:100vh;transition:opacity .2s}
+#app.flash{opacity:.35}
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 12px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.topbar .title{font-weight:600}
+.topbar .proto{font-size:11px;color:var(--faint);border:1px dashed var(--faint);border-radius:4px;padding:0 6px}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;padding:3px 12px;color:var(--muted)}
+.seg button.on{background:var(--accent);color:#fff}
+.seg button.on.enc{background:var(--foe)}
+.pill{font-size:12px;border-radius:999px;padding:1px 8px;background:var(--bg4);color:var(--muted)}
+.pill.live{background:#5a2323;color:#ffb3b3;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.6}}
+.ribbon{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:6px}
+.ribbon button{width:32px;height:32px;padding:0;background:transparent;border:0;font-size:16px;color:var(--muted)}
+.ribbon button:hover,.ribbon button.on{background:var(--bg4);color:var(--text)}
+.explorer{background:var(--bg2);border-right:1px solid var(--border);overflow:auto;padding:8px 6px;font-size:13px}
+.explorer .vault{font-weight:600;padding:2px 8px 8px;color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:.06em}
+.tree-folder{padding:3px 8px;color:var(--muted);user-select:none}
+.tree-item{padding:3px 8px 3px 22px;border-radius:4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tree-item:hover{background:var(--bg3)}
+.tree-item.on{background:var(--bg4);color:#fff}
+.tree-item .ct{float:right;color:var(--faint);font-size:11px}
+.center{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.tabbar{display:flex;gap:2px;padding:6px 8px 0;background:var(--bg2);border-bottom:1px solid var(--border);overflow:hidden}
+.tab{padding:5px 14px;border-radius:6px 6px 0 0;background:var(--bg3);color:var(--muted);font-size:13px;cursor:pointer;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab.on{background:var(--bg);color:var(--text)}
+#view{flex:1;overflow:auto;position:relative}
+.right{background:var(--bg2);border-left:1px solid var(--border);overflow:auto;display:flex;flex-direction:column}
+.panel{padding:10px 12px;border-bottom:1px solid var(--border)}
+.panel h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:6px}
+.nimble-notice{font-size:11px;color:var(--muted);border:1px solid #4a3f6a;background:#221d33;border-radius:6px;padding:8px 10px;margin:10px 0}
+.nimble-notice a,.sb .src a{color:var(--accent2)}
+.credit{font-size:11px;color:var(--faint);padding:8px 12px;margin-top:auto;border-top:1px solid var(--border)}
+
+/* ---------- doc ---------- */
+.doc{max-width:780px;margin:0 auto;padding:26px 36px 140px}
+.doc h1{font-size:28px;margin:6px 0 4px}
+.doc h2{font-size:20px;margin:30px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border);scroll-margin-top:12px}
+.doc h2 .goto{font-size:12px;font-weight:400;margin-left:8px}
+.doc h3{font-size:16px;margin:18px 0 4px}
+.crumbs{font-size:12px;color:var(--faint)}
+.props{display:grid;grid-template-columns:120px 1fr;gap:2px 10px;font-size:13px;margin:10px 0 18px;padding:8px 10px;background:var(--bg2);border-radius:var(--radius)}
+.props .k{color:var(--muted)}
+.wl{color:var(--accent2);cursor:pointer}
+.wl:hover{text-decoration:underline}
+.callout{border-left:3px solid;border-radius:var(--radius);padding:8px 12px;margin:12px 0;background:var(--bg2)}
+.callout .ct{font-weight:600;font-size:13px;margin-bottom:2px}
+.callout.read{border-color:#5b8def;font-style:italic}
+.callout.read .ct{font-style:normal;color:#8fb2ff}
+.callout.secret{border-color:#c0504d;background:#2a2020}
+.callout.secret .ct{color:#ff9a96}
+.callout.trap{border-color:var(--leg)}
+.callout.trap .ct{color:var(--leg)}
+.callout.info{border-color:var(--faint)}
+body.player .gm-only{display:none!important}
+.mref{display:inline-flex;align-items:center;gap:3px;background:#3a2a2a;color:#ffc2bd;border-radius:4px;padding:0 2px 0 6px;font-size:13px;cursor:pointer;white-space:nowrap}
+.mref .add{border:0;background:transparent;color:#ff8f87;padding:0 4px;font-weight:700}
+.mref .add:hover{background:#5a3a3a}
+.dice{color:var(--leg);border-bottom:1px dashed var(--leg);cursor:pointer;white-space:nowrap}
+.dice:hover{background:#3d3420}
+.dc{background:#24304a;color:#a8c2ff;border-radius:4px;padding:0 5px;cursor:pointer;white-space:nowrap}
+table.tbl{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0}
+table.tbl td,table.tbl th{border:1px solid var(--border);padding:4px 8px;text-align:left;vertical-align:top}
+table.tbl th{background:var(--bg2)}
+code{background:var(--bg3);border-radius:3px;padding:0 4px;font-size:12px}
+pre.src{background:#161616;border:1px solid var(--border);border-radius:var(--radius);padding:10px;font-size:12px;overflow:auto;color:#c9c9c9;margin:8px 0 0}
+.doc ul{padding-left:20px}
+.doc li{margin:2px 0}
+
+/* encounter block */
+.encblock{border:1px solid #5a3434;background:linear-gradient(180deg,#2b2020,#232323);border-radius:8px;padding:10px 12px;margin:14px 0}
+.encblock.done{border-color:#2f5a3a;background:linear-gradient(180deg,#1f2a22,#232323)}
+.eb-head{display:flex;align-items:center;gap:8px;font-size:15px}
+.eb-mons{margin:6px 0;font-size:13px;display:flex;flex-wrap:wrap;gap:4px 10px}
+.eb-meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+.diff{font-size:11px;font-weight:600;border-radius:4px;padding:1px 7px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.diff.Trivial{background:#2e2e2e;color:#aaa}.diff.Easy{background:#22412c;color:#8fe0a6}.diff.Medium{background:#3b3a1f;color:#e6d77c}.diff.Hard{background:#4a301d;color:#ffb37a}.diff.Deadly{background:#4d1f1f;color:#ff8a8a}.diff.VeryDeadly{background:#5c1030;color:#ff8ac0}
+.resolved{font-size:12px;color:var(--ok)}
+
+/* stat block */
+.sb{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px}
+.sb.legendary{border:2px solid #6d5520;background:linear-gradient(180deg,#2c2718,#262626)}
+.sb.minion{border-style:dashed}
+.sb-top{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.sb-name{font-size:19px;font-weight:700;margin:1px 0 6px}
+.sb-stats{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.badge{display:inline-flex;gap:4px;align-items:center;background:var(--bg4);border-radius:4px;padding:1px 7px;font-size:12px;font-weight:600}
+.badge.hp{background:#3e2424;color:#ffb0b0}.badge.ar{background:#2a3446;color:#a9c4ff}.badge.mv{background:#263a2c;color:#a5e3b5}.badge.sv{background:#3a3326;color:#ecd39a}.badge.mn{background:#3d2c22;color:#f2b48a}
+.sb p{margin:4px 0}
+.sb .sec{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--leg);margin:8px 0 2px;font-weight:700}
+.sb .flav{color:var(--muted);font-style:italic;margin-top:8px}
+.sb .tac{display:grid;grid-template-columns:auto 1fr;gap:2px 6px;font-size:12px;margin-top:6px;color:var(--muted)}
+.sb .src{font-size:11px;color:var(--faint);margin-top:8px}
+
+/* bestiary */
+.split{display:grid;grid-template-columns:340px 1fr;height:100%}
+.split>.l{border-right:1px solid var(--border);overflow:auto;padding:12px}
+.split>.r{overflow:auto;padding:18px 26px}
+.search{width:100%;padding:6px 10px;font-size:14px;margin-bottom:8px}
+.filters{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.chip{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:1px 9px;cursor:pointer;color:var(--muted);background:transparent}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.mlist .mi{display:grid;grid-template-columns:38px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:5px;cursor:pointer}
+.mlist .mi:hover{background:var(--bg3)}
+.mlist .mi.on{background:var(--bg4)}
+.mlist .lv{font-size:12px;font-weight:700;text-align:center;background:var(--bg4);border-radius:4px;padding:1px 0}
+.mlist .mi .sub{font-size:11px;color:var(--muted)}
+
+/* builder / home */
+.builder{max-width:1000px;margin:0 auto;padding:22px 30px;display:grid;grid-template-columns:1fr 330px;gap:22px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.card h4{margin:0 0 8px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.meter{position:relative;height:16px;background:var(--bg);border-radius:8px;margin:20px 0 26px}
+.meter .fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px;transition:width .25s}
+.meter .tick{position:absolute;top:-4px;bottom:-4px;width:1px;background:var(--faint)}
+.meter .tl{position:absolute;top:20px;font-size:10px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.meter .tt{position:absolute;top:-18px;font-size:10px;color:var(--faint);transform:translateX(-50%)}
+.warn{font-size:12px;color:#ffcf7a;margin:3px 0}
+.warn.ok{color:var(--ok)}
+.bline{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)}
+.home{max-width:1000px;margin:0 auto;padding:26px 32px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+/* map */
+.mapwrap{position:relative;height:100%;overflow:hidden;background:#0b0b0b;user-select:none}
+.mapwrap svg{display:block;width:100%;height:100%;touch-action:none}
+.maptools{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;z-index:3;background:rgba(30,30,30,.88);padding:6px 8px;border-radius:8px;border:1px solid var(--border);max-width:calc(100% - 70px);font-size:12px}
+.zoomtools{position:absolute;right:10px;top:10px;z-index:3;display:flex;flex-direction:column;gap:4px}
+.zoomtools button{width:30px;height:30px;padding:0}
+.pin{cursor:pointer}
+.popover{position:absolute;z-index:5;width:330px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.6);padding:10px 12px;font-size:13px}
+.popover h4{margin:0 0 4px;font-size:15px}
+.token{cursor:grab}
+.token:active{cursor:grabbing}
+.token.dead{opacity:.35}
+.legend{position:absolute;right:10px;bottom:10px;z-index:3;font-size:11px;color:var(--muted);background:rgba(30,30,30,.85);padding:4px 8px;border-radius:6px}
+
+/* tracker */
+.trk-head{padding:10px 12px;background:linear-gradient(180deg,#341f1f,#262626);border-bottom:1px solid var(--border)}
+.trk-head .nm{font-weight:700;font-size:15px}
+.phases{display:flex;gap:4px;margin-top:8px}
+.phases span{flex:1;text-align:center;font-size:11px;padding:3px 0;border-radius:4px;background:var(--bg);color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
+.phases span.on{background:var(--accent);color:#fff}
+.phases span.on.m{background:var(--foe)}
+.banner{margin:8px 10px 0;border-radius:8px;padding:8px 10px;font-size:13px;border:1px solid}
+.banner.leg{background:#30290f;border-color:#7a6320}
+.banner.blood{background:#3a1818;border-color:#7a2a2a}
+.banner.last{background:#2a1530;border-color:#6a3a80}
+.banner.trap{background:#1a2a36;border-color:#2f5a7a}
+.banner .bt{font-weight:700;margin-bottom:3px}
+.banner ul{margin:3px 0 6px;padding-left:16px}
+.sect{padding:8px 12px 2px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center}
+.cr{margin:6px 10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;border-left:4px solid var(--hero)}
+.cr.foe{border-left-color:var(--foe)} .cr.minion{border-left-color:var(--minion)} .cr.legendary{border-left-color:var(--leg)}
+.cr.active{box-shadow:0 0 0 1px var(--accent) inset}
+.cr.flash{animation:flash 1s}
+@keyframes flash{0%{background:#4a3b6a}100%{background:var(--bg)}}
+.cr.done{opacity:.6}
+.cr.out{opacity:.35}
+.cr .top{display:flex;align-items:center;gap:6px}
+.cr .nm{font-weight:600;cursor:default}
+.cr .hpbar{height:6px;background:#3a2525;border-radius:3px;overflow:hidden;margin:5px 0 4px;position:relative}
+.cr .hpbar i{display:block;height:100%;background:var(--ok);transition:width .25s}
+.cr .hpbar i.b{background:#e0a341}.cr .hpbar i.d{background:var(--foe)}
+.cr .hpbar .half{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#fff6}
+.pips{display:inline-flex;gap:3px;vertical-align:middle;flex-wrap:wrap}
+.pip{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--hero);cursor:pointer}
+.pip.on{background:var(--hero)}
+.pip.w{border-radius:2px;border-color:#c55}
+.pip.w.on{background:#c55}
+.pip.m{border-color:var(--minion);width:10px;height:10px}
+.pip.m.on{background:var(--minion)}
+.rx{font-size:11px;padding:0 6px}
+.rx.used{text-decoration:line-through;opacity:.5}
+.dmg{display:flex;gap:4px;align-items:center;margin-top:5px;flex-wrap:wrap}
+.dmg input[type=number]{width:52px}
+.dmg label{font-size:12px;color:var(--muted);display:inline-flex;gap:2px;align-items:center}
+.calc{font-size:12px;color:var(--muted);margin-top:3px}
+.cond{display:inline-block;font-size:11px;background:#3b3050;color:#d4c4ff;border-radius:4px;padding:0 6px;margin:2px 3px 0 0;cursor:pointer}
+.cond.auto{background:#4a2a2a;color:#ffb0b0;cursor:default}
+.log{font-size:12px;max-height:180px;overflow:auto}
+.log div{padding:2px 0;border-bottom:1px solid #2c2c2c}
+.log .crit{color:var(--leg);font-weight:700}.log .miss{color:var(--faint)}
+#toast{position:fixed;right:410px;bottom:18px;z-index:50;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.toast{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;box-shadow:0 6px 20px rgba(0,0,0,.5);font-size:13px;animation:tin .2s;max-width:420px}
+.toast .big{font-size:22px;font-weight:700}
+.toast.crit{border-color:var(--leg)} .toast.miss{opacity:.8}
+@keyframes tin{from{transform:translateY(10px);opacity:0}}
+#hover{position:fixed;z-index:60;width:340px;pointer-events:none}
+.condpick{position:absolute;z-index:40;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:3px;width:250px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.condpick button{font-size:12px;text-align:left}
+.note-callout{font-size:12px;color:var(--muted);border:1px dashed var(--border);border-radius:6px;padding:8px 10px;margin:10px 0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <span class="title">Nimble GM</span>
+    <span class="proto">prototype · static HTML · not wired to Obsidian</span>
+    <select id="scenarioPick" title="Switch example adventure"></select>
+    <span class="spacer"></span>
+    <span id="livePill"></span>
+    <div class="seg" id="modeSeg">
+      <button data-act="setMode" data-v="explore">Explore</button>
+      <button data-act="setMode" data-v="encounter">Encounter</button>
+    </div>
+    <label class="row" style="font-size:12px;color:var(--muted)"><input type="checkbox" id="playerView" data-act="togglePlayer"> Player view</label>
+  </div>
+  <nav class="ribbon">
+    <button title="Campaign home" data-act="go" data-v="home">⌂</button>
+    <button title="Adventure" data-act="openDoc" data-id="">📜</button>
+    <button title="Map" data-act="go" data-v="map">🗺</button>
+    <button title="Bestiary" data-act="go" data-v="bestiary">🐾</button>
+    <button title="Encounter builder" data-act="go" data-v="builder">⚖</button>
+  </nav>
+  <aside class="explorer" id="explorer"></aside>
+  <main class="center">
+    <div class="tabbar" id="tabbar"></div>
+    <div id="view"></div>
+  </main>
+  <aside class="right" id="right"></aside>
+</div>
+<div id="toast"></div>
+<div id="hover"></div>
+
+<script>window.SCENARIOS = {};</script>
+<script src="scenarios/nimble-bestiary.js"></script>
+<script src="scenarios/sunken-mill.js"></script>
+<!-- Private, git-ignored content (licensed map + adventure notes + Nimble draft stats). A missing file is fine. -->
+<script src="private/cragmaw-hideout.js"></script>
+<script>
+/* ============================================================
+   SCENARIO
+   ============================================================ */
+const params = new URLSearchParams(location.search);
+const SCN_ID = params.get('s') || (SCENARIOS.cragmaw ? 'cragmaw' : 'sunken-mill');
+const SC = SCENARIOS[SCN_ID] || SCENARIOS['sunken-mill'];
+const MON = SC.monsters, PARTY = SC.party, MAP = SC.map;
+const LS_PINS = 'nimble-proto-pins-' + SC.id;
+try { const saved = JSON.parse(localStorage.getItem(LS_PINS) || 'null'); if(saved) for(const p of SC.pins){ if(saved[p.id]){ p.x = saved[p.id][0]; p.y = saved[p.id][1]; } } } catch(e){}
+
+const NIMBLE_NOTICE = `Nimble GM is an independent product published under the Nimble 3rd Party Creator License. Nimble TTRPG © Nimble Co. Nimble text is included with permission. This tool is free to use for anyone who already owns the content, is trying the system out, or can't afford it right now. If you enjoy Nimble and are able, please support the game by <a href="https://nimbleRPG.com" target="_blank" rel="noopener">buying the official books at nimbleRPG.com</a>.`;
+const CONDITIONS = {
+  Blind:"Can't see. Attacks against you have advantage, and your attacks have disadvantage.",
+  Dazed:'Heroes lose 1 action; monsters lose their move OR 1 attack on their next turn.',
+  Empowered:'Attack damage increased by X.', Weakened:'Attack damage reduced by X.',
+  Frightened:'Disadvantage on rolls when the source of fear is near; Speed halved moving closer to it.',
+  Grappled:'Attacks against grappler and grappled have advantage.',
+  Incapacitated:"Can't do anything. Attacks against you have advantage, and melee hits crit.",
+  Invisible:'Your attacks have advantage, and attacks against you have disadvantage.',
+  Poisoned:'Disadvantage (healing typically ends it).',
+  Prone:'Movement costs double, disadvantage on attacks. Melee against you has advantage, ranged disadvantage. 3 spaces to stand.',
+  Restrained:"Can't move. Attacks against you have advantage.",
+  Silenced:"Can't cast spells or use abilities that need speech.",
+  Slowed:'Speed halved during your next turn.',
+  Taunted:'Disadvantage on attacks except against the most recent taunter.',
+  Smoldering:'Minor status. Some abilities care about it.', Distracted:'Minor status. Some abilities care about it.',
+};
+
+const S = {
+  view:'doc', doc:SC.docs[0].id, mode:'explore', player:false,
+  selMon:SC.firstMonster || Object.keys(MON)[0], bq:'', bfilter:{role:null, armor:null, tag:null},
+  builder:{id:null, name:'New encounter', items:{}},
+  encounters:JSON.parse(JSON.stringify(SC.encounters)),
+  resolved:{},
+  partyHp:Object.fromEntries(PARTY.map(h=>[h.id,{hp:h.max, wounds:0}])),
+  combat:null, rolls:[], session:[...(SC.session||[])],
+  pins:SC.pins, mapNotes:SC.mapNotes||[],
+  overlays:Object.fromEntries((MAP.overlays||[]).map(o=>[o.id, false])),
+  lit:true, vb:null, popPin:null, popNote:null, sel:null, addPin:false, movePins:false, explored:[],
+};
+S.builder.items = {...Object.values(S.encounters)[0].items};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const lv = l => !l ? 'min' : l>0.3 && l<0.34 ? '1/3' : l===0.5 ? '1/2' : String(l);
+let _id = 0; const uid = () => 'x' + (++_id).toString(36);
+const partySize = () => PARTY.length;
+const partyLevel = () => PARTY.reduce((a,h)=>a+h.level,0) / PARTY.length;
+const monHp = m => (m.role==='legendary' && m.hpPerHero) ? m.hpPerHero*partySize() : m.hp;
+const docById = id => SC.docs.find(d=>d.id===id);
+
+/* rich text: dice, DCs, and wiki-style tokens.
+   {mon:id}  {mon:id|label}  [[doc:id|label]]  [[doc:id#anchor|label]]  [[pin:id|label]]  [[trap:id|label]]  **bold** */
+function rich(text){
+  const hold = []; const put = h => `\u0000${hold.push(h)-1}\u0000`;
+  let s = String(text ?? '');
+  s = s.replace(/\{mon:([\w-]+)(?:\|([^}]+))?\}/g, (m, id, label) => MON[id] ? put(monRef(id, label)) : m);
+  s = s.replace(/\[\[(doc|pin|enc|trap):([\w-]+)(?:#([\w-]+))?\|([^\]]+)\]\]/g, (m, kind, id, anchor, label) =>
+    put(`<span class="wl" data-act="${({doc:'openDoc', pin:'openPin', enc:'loadBuilder', trap:'trap'})[kind]}" data-id="${id}" data-anchor="${anchor||''}">${esc(label)}</span>`));
+  s = esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  s = s.replace(/\b(\d*d\d+(?:\s?[+-]\s?\d+)?)\b/g, '<span class="dice" data-roll="$1">$1</span>');
+  s = s.replace(/\bDC (\d+)( (?:STR|DEX|INT|WIL|Might|Finesse|Stealth|Perception|Examination|Insight|Influence|Arcana|Lore|Naturecraft)(?: save| check)?)?/g, (m, n) => `<span class="dc" data-roll="d20" data-dc="${n}" title="Roll d20 vs DC ${n}">${m}</span>`);
+  return s.replace(/\u0000(\d+)\u0000/g, (m, i) => hold[+i]);
+}
+
+/* ---------- dice ---------- */
+function roll(expr, {nimble=true, label=''}={}){
+  const m = expr.replace(/\s/g,'').match(/^(\d*)d(\d+)([+-]\d+)?$/i);
+  if(!m) return null;
+  const n = +(m[1]||1), d = +m[2], mod = +(m[3]||0);
+  const dice = Array.from({length:n}, () => 1 + Math.floor(Math.random()*d));
+  const ex = []; let miss=false, crit=false;
+  if(nimble && d!==20){
+    if(dice[0]===1) miss = true;
+    else { let r = dice[0]; while(r===d && ex.length<20){ crit=true; r = 1+Math.floor(Math.random()*d); ex.push(r);} }
+  }
+  const total = miss ? 0 : dice.reduce((a,b)=>a+b,0) + ex.reduce((a,b)=>a+b,0) + mod;
+  return {expr, dice, ex, mod, total, miss, crit, label, d};
+}
+function showRoll(r, extra=''){
+  if(!r) return;
+  S.rolls.unshift({...r, extra, time:Date.now()}); S.rolls = S.rolls.slice(0,30);
+  const det = `[${r.dice.map((v,i)=> i===0 && r.crit ? v+'!' : v).join(', ')}]${r.ex.length? ' +explode ['+r.ex.join(', ')+']':''}${r.mod? (r.mod>0?' +':' ')+r.mod:''}`;
+  const t = document.createElement('div');
+  t.className = 'toast' + (r.crit?' crit':'') + (r.miss?' miss':'');
+  t.innerHTML = `<div class="muted" style="font-size:11px">${esc(r.label || r.expr)} · ${esc(r.expr)}</div>
+    <div><span class="big">${r.miss ? 'MISS' : r.total}</span> ${r.crit?'<b style="color:var(--leg)"> CRIT</b>':''} ${esc(extra)}</div>
+    <div class="faint" style="font-size:11px">${esc(det)}</div>`;
+  $('#toast').prepend(t); setTimeout(()=>t.remove(), 4200); trimToasts();
+  renderRight();
+}
+function toast(html, ms=3500){ const t=document.createElement('div'); t.className='toast'; t.innerHTML=html; $('#toast').prepend(t); setTimeout(()=>t.remove(),ms); trimToasts(); }
+function trimToasts(){ const c = $('#toast').children; while(c.length > 3) c[c.length-1].remove(); }
+
+/* ---------- encounter math (GM Guide: Combat Encounter Guidelines) ---------- */
+function encValue(items){
+  const avg = partyLevel(); let v = 0, nonMinions = 0, minions = 0;
+  for(const [mid,c] of Object.entries(items)){
+    const m = MON[mid]; if(!m||!c) continue;
+    if(m.role==='minion'){ v += c * avg/2; minions += c; }
+    else if(m.role==='legendary'){ v += m.level * partySize(); nonMinions += partySize(); }
+    else { v += m.level*c; nonMinions += c; }
+  }
+  return {v, nonMinions, minions};
+}
+function difficulty(items){
+  const budget = PARTY.reduce((a,h)=>a+h.level,0);
+  const {v, nonMinions, minions} = encValue(items);
+  const pct = budget ? v/budget : 0;
+  const label = pct < .3 ? 'Trivial' : pct < .625 ? 'Easy' : pct < .875 ? 'Medium' : pct < 1.125 ? 'Hard' : pct < 1.375 ? 'Deadly' : 'Very Deadly';
+  return {budget, v, pct, label, nonMinions, minions};
+}
+function encWarnings(items){
+  const w = []; const d = difficulty(items); const lvl = partyLevel();
+  const hasLeg = Object.keys(items).some(k => MON[k]?.role==='legendary' && items[k]);
+  const per = d.nonMinions / partySize();
+  if(!hasLeg && d.nonMinions && (per < 1 || per > 3)) w.push(`${d.nonMinions} non-minion monster${d.nonMinions>1?'s':''} for ${partySize()} heroes. The GM Guide suggests 1–3 per hero.`);
+  for(const [k,c] of Object.entries(items)){
+    const m = MON[k]; if(!m || !c) continue;
+    if(m.armor==='M' && lvl < 3) w.push(`${m.name} has Medium armor. The guide holds armor back until level 3.`);
+    if(m.armor==='H' && lvl < 8) w.push(`${m.name} has Heavy armor. The guide holds it back until level 8.`);
+  }
+  if(d.pct > 1.5) w.push('Over 150% of budget: past Very Deadly.');
+  return w;
+}
+const diffChip = items => { const d = difficulty(items); return `<span class="diff ${d.label.replace(' ','')}">${d.label} · ${Math.round(d.pct*100)}%</span>`; };
+const itemsLine = items => Object.entries(items).filter(([,c])=>c).map(([k,c])=>`<span>${c}× ${monRef(k)}${MON[k].role==='minion'?' <span class="faint">(minions)</span>':''}${MON[k].role==='legendary'?' <span style="color:var(--leg)">(legendary)</span>':''}</span>`).join('');
+
+/* ============================================================
+   RENDER: shell
+   ============================================================ */
+function render(){
+  document.body.classList.toggle('player', S.player);
+  document.querySelectorAll('#modeSeg button').forEach(b => { b.classList.toggle('on', b.dataset.v===S.mode); b.classList.toggle('enc', b.dataset.v==='encounter'); });
+  document.querySelectorAll('.ribbon button').forEach(b => b.classList.toggle('on', b.dataset.v===S.view || (b.dataset.act==='openDoc' && S.view==='doc')));
+  $('#livePill').innerHTML = S.combat ? `<span class="pill live">● Live: ${esc(S.combat.name)} · Round ${S.combat.round}</span>` : '';
+  renderExplorer(); renderTabs(); renderView(); renderRight();
+}
+function renderExplorer(){
+  const it = (on, act, attrs, label, ct='') => `<div class="tree-item ${on?'on':''}" data-act="${act}" ${attrs}>${label}${ct?`<span class="ct">${ct}</span>`:''}</div>`;
+  const folders = [...new Set(SC.docs.map(d=>d.folder))];
+  $('#explorer').innerHTML = `
+    <div class="vault">${esc(SC.campaign)}</div>
+    ${it(S.view==='home','go','data-v="home"','⌂ Campaign Home')}
+    ${folders.map(f => `<div class="tree-folder">▾ ${esc(f)}</div>` + SC.docs.filter(d=>d.folder===f).map(d => it(S.view==='doc' && S.doc===d.id, 'openDoc', `data-id="${d.id}"`, `${d.icon||'📄'} ${esc(d.title)}`)).join('')).join('')}
+    <div class="tree-folder">▾ Maps</div>
+    ${it(S.view==='map','go','data-v="map"',`🗺 ${esc(MAP.name)}`)}
+    <div class="tree-folder">▾ Bestiary</div>
+    ${it(S.view==='bestiary','go','data-v="bestiary"','🐾 All monsters', Object.keys(MON).length)}
+    <div class="tree-folder">▾ Encounters</div>
+    ${Object.values(S.encounters).map(e => `<div class="tree-item" data-act="loadBuilder" data-id="${e.id}">⚔ ${esc(e.name)}${S.resolved[e.id]?' <span class="resolved">✓</span>':''}</div>`).join('')}
+    ${it(S.view==='builder','go','data-v="builder"','＋ Encounter builder')}
+    <div class="note-callout">Every item here would be an ordinary Markdown note in your vault. Monsters, encounters and maps are notes with frontmatter, so Bases, search and backlinks work on them.</div>
+    <div class="nimble-notice">${NIMBLE_NOTICE}</div>`;
+}
+function renderTabs(){
+  const cur = S.view==='doc' ? 'doc:'+S.doc : S.view;
+  const tabs = ['doc:'+SC.docs[0].id, 'map', 'bestiary', cur].filter((v,i,a)=>a.indexOf(v)===i);
+  const title = v => v.startsWith('doc:') ? docById(v.slice(4)).title : ({home:'Campaign Home', map:MAP.name, bestiary:'Bestiary', builder:'Encounter builder'})[v];
+  $('#tabbar').innerHTML = tabs.map(v=>`<div class="tab ${v===cur?'on':''}" ${v.startsWith('doc:')?`data-act="openDoc" data-id="${v.slice(4)}"`:`data-act="go" data-v="${v}"`}>${esc(title(v))}</div>`).join('');
+}
+function renderView(){
+  const v = $('#view'); const st = v.scrollTop; const prevDoc = v.dataset.doc;
+  v.innerHTML = ({home:viewHome, doc:viewDoc, map:viewMap, bestiary:viewBestiary, builder:viewBuilder})[S.view]();
+  v.dataset.doc = S.view==='doc' ? S.doc : '';
+  if(S.view==='doc' && prevDoc===S.doc) v.scrollTop = st; else if(S.view==='doc') v.scrollTop = 0;
+  if(S.view==='map') wireMap();
+}
+
+/* ============================================================
+   VIEW: campaign home
+   ============================================================ */
+function viewHome(){
+  return `<div class="home">
+    <div class="crumbs">${esc(SC.campaign)}</div><h1 style="margin-top:4px">${esc(SC.campaign)}</h1>
+    <p class="muted">${rich(SC.home.blurb)}</p>
+    <div class="grid3">
+      <div class="card"><h4>Party · ${esc(SC.home.partyName)}</h4>
+        ${PARTY.map(h=>{const p=S.partyHp[h.id]; return `<div class="row" style="justify-content:space-between"><span>${h.name} <span class="faint">${h.cls} ${h.level}</span></span><span>${p.hp}/${h.max} <span style="color:#c55">${'▮'.repeat(p.wounds)}</span></span></div>`}).join('')}
+      </div>
+      <div class="card"><h4>Prepped encounters</h4>
+        ${Object.values(S.encounters).map(e=>`<div class="row" style="justify-content:space-between;margin:3px 0"><span class="wl" data-act="loadBuilder" data-id="${e.id}">${esc(e.name)}</span><span>${S.resolved[e.id]?'<span class="resolved">✓ done</span>':diffChip(e.items)}</span></div>`).join('')}
+      </div>
+      <div class="card"><h4>Session log</h4>
+        ${S.session.slice(-4).reverse().map(s=>`<div style="margin-bottom:6px"><b>${esc(s.t)}</b><br><span class="muted">${esc(s.text)}</span></div>`).join('')}
+      </div>
+    </div>
+    <div class="note-callout">In Obsidian this page would be a note with embedded views: the party (from hero notes), a Base of encounter notes filtered to <code>status: prepped</code>, and the latest session notes.</div>
+    ${SC.credit?`<div class="note-callout">${rich(SC.credit)}</div>`:''}
+    <div class="nimble-notice">${NIMBLE_NOTICE}</div>
+  </div>`;
+}
+
+/* ============================================================
+   VIEW: documents
+   ============================================================ */
+function monRef(mid, label){
+  const m = MON[mid];
+  return `<span class="mref" data-mon="${mid}" data-act="openMon" data-id="${mid}">${esc(label || m.name)}<button class="add gm-only" title="Add to builder (shift: add 2)" data-act="quickAdd" data-id="${mid}">+</button></span>`;
+}
+function encBlock(id){
+  const e = S.encounters[id]; const d = difficulty(e.items); const done = S.resolved[id];
+  const src = `\`\`\`nimble-encounter\nname: ${e.name}\nmap: "[[${MAP.name}]]"\narea: ${e.area||''}\nmonsters:\n${Object.entries(e.items).map(([k,c])=>`  - ${c} [[${MON[k].name}]]`).join('\n')}\n\`\`\``;
+  return `<div class="encblock gm-only ${done?'done':''}">
+    <div class="eb-head"><span>⚔</span><b>${esc(e.name)}</b>${diffChip(e.items)}<span class="spacer"></span>${done?`<span class="resolved">✓ ${esc(done)}</span>`:''}</div>
+    <div class="eb-mons">${itemsLine(e.items)}</div>
+    <div class="eb-meta">Uses ${d.v.toFixed(1)} of a ${d.budget}-level budget · ${partySize()} heroes, level ${partyLevel()}${e.tip?` · ${rich(e.tip)}`:''}</div>
+    <div class="row">
+      <button class="primary" data-act="runEnc" data-id="${id}">▶ Run encounter</button>
+      ${e.box?`<button data-act="showArea" data-id="${id}">🗺 Show on map</button>`:''}
+      <button data-act="loadBuilder" data-id="${id}">Edit in builder</button>
+      <button class="ghost" data-act="toggleSrc" data-id="src-${id}">‹/› Markdown</button>
+    </div>
+    <pre class="src hidden" id="src-${id}">${esc(src)}</pre>
+  </div>`;
+}
+function block(b){
+  const [t, a, c] = b;
+  switch(t){
+    case 'h2': return `<h2 id="${c||''}">${rich(a)}${c && S.pins.some(p=>p.id===c)?`<span class="wl goto gm-only" data-act="openPin" data-id="${c}">📍 on map</span>`:''}</h2>`;
+    case 'h3': return `<h3>${rich(a)}</h3>`;
+    case 'p': return `<p>${rich(a)}</p>`;
+    case 'read': return `<div class="callout read"><div class="ct">📖 Read aloud</div>${rich(a)}</div>`;
+    case 'secret': return `<div class="callout secret gm-only"><div class="ct">🔒 GM secret</div>${rich(a)}</div>`;
+    case 'trap': return `<div class="callout trap gm-only"><div class="ct">⚠ ${esc(a)}</div>${rich(c)}${b[3]?`<div class="row" style="margin-top:6px"><button class="sm" data-act="trap" data-id="${b[3]}">▶ Trigger it</button></div>`:''}</div>`;
+    case 'info': return `<div class="callout info ${b[3]?'gm-only':''}"><div class="ct">${esc(a)}</div>${rich(c)}</div>`;
+    case 'enc': return S.encounters[a] ? encBlock(a) : '';
+    case 'ul': return `<ul>${a.map(x=>`<li>${rich(x)}</li>`).join('')}</ul>`;
+    case 'table': return `<table class="tbl"><tr>${a.map(h=>`<th>${rich(h)}</th>`).join('')}</tr>${c.map(r=>`<tr>${r.map(x=>`<td>${rich(x)}</td>`).join('')}</tr>`).join('')}</table>`;
+  }
+  return '';
+}
+function viewDoc(){
+  const d = docById(S.doc);
+  return `<div class="doc">
+    <div class="crumbs">${esc(SC.campaign)} / ${esc(d.folder)}</div>
+    <h1>${esc(d.title)}</h1>
+    ${d.props?`<div class="props gm-only">${d.props.map(([k,v])=>`<span class="k">${esc(k)}</span><span>${rich(v)}</span>`).join('')}</div>`:''}
+    ${d.blocks.map(block).join('')}
+  </div>`;
+}
+
+/* ============================================================
+   STAT BLOCK
+   ============================================================ */
+function statblock(mid, {compact=false}={}){
+  const m = MON[mid];
+  const hp = m.role==='minion' ? `<span class="badge mn">Minion${m.die?` · d${m.die}`:''}</span>` : (m.role==='legendary' && m.hpPerHero) ? `<span class="badge hp">♥ ${m.hpPerHero}/hero = ${monHp(m)}</span>` : `<span class="badge hp">♥ ${m.hp}</span>`;
+  const ar = m.armor==='M' ? '<span class="badge ar" title="Medium armor: −10 damage from each attack. Crits ignore it.">⛨ M −10</span>' : m.armor==='H' ? '<span class="badge ar" title="Heavy armor: −20 damage from each attack. Crits ignore it.">⛨ H −20</span>' : '';
+  const extra = ['fly','swim','climb','burrow'].filter(k=>m[k]).map(k=>` · ${k} ${m[k]}`).join('');
+  const mv = `<span class="badge mv">➜ ${m.speed ?? 6}${extra}</span>`;
+  const sv = m.saves ? `<span class="badge sv">★ ${esc(m.saves)}</span>` : '';
+  const rv = [m.resist?.length?`Resist ${m.resist.join(', ')}`:'', m.vuln?.length?`Vulnerable ${m.vuln.join(', ')}`:'', m.immune?.length?`Immune ${m.immune.join(', ')}`:''].filter(Boolean).join(' · ');
+  let h = `<div class="sb ${m.role}">
+    <div class="sb-top"><span>Lvl ${lv(m.level)} · ${esc(m.size||'Medium')} ${esc(m.type||'')}</span><span>${m.role==='regular'?'':m.role}</span></div>
+    <div class="sb-name">${esc(m.name)}</div>
+    <div class="sb-stats">${hp}${ar}${mv}${sv}</div>`;
+  if(rv) h += `<p class="muted" style="font-size:12px">${esc(rv)}</p>`;
+  for(const t of m.traits||[]) h += `<p><b>${esc(t.name)}.</b> ${rich(t.text)}</p>`;
+  if(m.role==='minion') h += `<p class="muted" style="font-size:12px">Minion: dies to any damage. Attacks can't crit and ignore (dis)advantage. Several minions on one hero are one combined attack.</p>`;
+  for(const a of m.actions||[]) h += `<p>• <b>${esc(a.name)}.</b> ${rich(a.text)}</p>`;
+  if(m.legendary){
+    h += `<div class="sec">Legendary · after each hero's turn, choose one</div>`;
+    for(const a of m.legendary) h += `<p>• <b>${esc(a.name)}.</b> ${rich(a.text)}</p>`;
+    if(m.bloodied) h += `<div class="sec" style="color:#ff8a8a">Bloodied</div><p><b>${esc(m.bloodied.name)}.</b> ${rich(m.bloodied.text)}</p>`;
+    if(m.lastStand) h += `<div class="sec" style="color:#d6a4ff">Last Stand</div><p><b>${esc(m.lastStand.name)}.</b> ${rich(m.lastStand.text)}</p>`;
+  }
+  if(!compact && m.flavor) h += `<div class="flav">${esc(m.flavor)}</div>`;
+  if(!compact && m.tactics) h += `<div class="tac"><span>▼ easier</span><span>${esc(m.tactics.easier)}</span><span>▲ harder</span><span>${esc(m.tactics.harder)}</span></div>`;
+  if(!compact && m.source) h += `<div class="src">Source: ${esc(m.source)}${m.basedOn?` · ${esc(m.basedOn)}`:''} · Nimble TTRPG © Nimble Co. · <a href="https://nimbleRPG.com" target="_blank" rel="noopener">Buy the books at nimbleRPG.com</a></div>`;
+  return h + '</div>';
+}
+function monSource(mid){
+  const m = MON[mid];
+  return `---\nnimble: monster\nlevel: ${lv(m.level)}\nsize: ${(m.size||'medium').toLowerCase()}\nrole: ${m.role}\narmor: ${m.armor}\n${(m.role==='legendary' && m.hpPerHero)?`hp-per-hero: ${m.hpPerHero}`:m.role==='minion'?`minion-die: d${m.die||'?'}`:`hp: ${m.hp}`}\ntags: [${(m.tags||[]).join(', ')}]\nsource: ${m.source||''}\n---\n# ${m.name}\n\n\`\`\`nimble\n${(m.traits||[]).map(t=>`${t.name}. ${t.text}`).join('\n')}\n${(m.actions||[]).concat(m.legendary||[]).map(a=>`- ${a.name}. ${a.text}`).join('\n')}\n\`\`\``;
+}
+
+/* ============================================================
+   VIEW: bestiary
+   ============================================================ */
+function viewBestiary(){
+  const chip = (k,v,label) => `<button class="chip ${S.bfilter[k]===v?'on':''}" data-act="bfilter" data-k="${k}" data-v="${v}">${label}</button>`;
+  const tags = [...new Set(Object.values(MON).flatMap(m=>m.tags||[]))].sort();
+  const q = S.bq.toLowerCase(); const f = S.bfilter;
+  const list = Object.entries(MON).filter(([k,m]) =>
+    (!q || (m.name+' '+(m.type||'')+' '+(m.tags||[]).join(' ')).toLowerCase().includes(q)) &&
+    (!f.role || m.role===f.role) && (!f.armor || m.armor===f.armor) && (!f.tag || (m.tags||[]).includes(f.tag))
+  ).sort((a,b)=>a[1].level-b[1].level);
+  return `<div class="split">
+    <div class="l">
+      <input class="search" id="bq" placeholder="Search name, type, tag…" value="${esc(S.bq)}" data-input="bq">
+      <div class="filters">${chip('role','minion','Minion')}${chip('role','regular','Regular')}${chip('role','legendary','Legendary')}${chip('armor','M','Armor M')}${chip('armor','H','Armor H')}</div>
+      <div class="filters">${tags.map(t=>chip('tag',t,'#'+t)).join('')}</div>
+      <div class="mlist">${list.map(([k,m])=>`<div class="mi ${S.selMon===k?'on':''}" data-act="selMon" data-id="${k}">
+          <span class="lv">${lv(m.level)}</span><span>${esc(m.name)}<div class="sub">${esc(m.size||'Medium')} ${esc(m.type||'')}${m.role!=='regular'?' · '+m.role:''}${m.armor!=='none'?' · armor '+m.armor:''}</div></span>
+          <button class="sm" data-act="quickAdd" data-id="${k}" title="Add to builder">＋</button></div>`).join('') || '<p class="muted">No matches.</p>'}</div>
+      <div class="note-callout">Search covers every monster note in the vault. The filters are frontmatter fields, so a Base can show the same list as a table.</div>
+    </div>
+    <div class="r">
+      ${statblock(S.selMon)}
+      <div class="row" style="margin-top:10px">
+        <button class="primary" data-act="quickAdd" data-id="${S.selMon}">＋ Add to encounter builder</button>
+        ${S.combat?`<button data-act="addToCombat" data-id="${S.selMon}">⚔ Add to the live encounter</button>`:''}
+        <button class="ghost" data-act="toggleSrc" data-id="msrc">‹/› Note source</button>
+      </div>
+      <pre class="src hidden" id="msrc">${esc(monSource(S.selMon))}</pre>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   VIEW: encounter builder
+   ============================================================ */
+function viewBuilder(){
+  const b = S.builder; const d = difficulty(b.items); const w = encWarnings(b.items);
+  const pct = Math.min(d.pct, 1.75) / 1.75 * 100;
+  const color = {Trivial:'#777', Easy:'#4caf6d', Medium:'#c9b648', Hard:'#e08a41', Deadly:'#e05d5d', 'Very Deadly':'#d0408a'}[d.label];
+  const ticks = [[.5,'Easy'],[.75,'Medium'],[1,'Hard'],[1.25,'Deadly'],[1.5,'Very Deadly']].map(([p,l])=>`<span class="tick" style="left:${p/1.75*100}%"></span><span class="tl" style="left:${p/1.75*100}%">${l}</span><span class="tt" style="left:${p/1.75*100}%">${Math.round(p*100)}%</span>`).join('');
+  const rows = Object.entries(b.items).filter(([,c])=>c).map(([k,c])=>{ const m=MON[k];
+    const val = m.role==='minion' ? `${(c*partyLevel()/2).toFixed(1)} lvl` : m.role==='legendary' ? `${m.level*partySize()} lvl` : `${+(m.level*c).toFixed(2)} lvl`;
+    return `<div class="bline"><span>${monRef(k)} <span class="faint" style="font-size:12px">lvl ${lv(m.level)}${m.role!=='regular'?' · '+m.role:''}</span></span>
+      <span class="row"><button class="sm" data-act="bcount" data-id="${k}" data-d="-1">−</button><b style="width:22px;text-align:center">${c}</b><button class="sm" data-act="bcount" data-id="${k}" data-d="1">＋</button></span>
+      <span class="faint" style="font-size:12px;width:60px;text-align:right">${val}</span></div>`; }).join('');
+  return `<div class="builder">
+    <div>
+      <div class="crumbs">Encounters</div>
+      <input value="${esc(b.name)}" data-input="bname" style="font-size:22px;font-weight:700;background:transparent;border:0;width:100%;padding:4px 0">
+      <div class="card"><h4>Difficulty</h4>
+        <div class="row"><span class="diff ${d.label.replace(' ','')}" style="font-size:13px">${d.label}</span><span class="muted">${d.v.toFixed(1)} monster levels of a ${d.budget}-level budget (${partySize()} heroes × level ${partyLevel()})</span></div>
+        <div class="meter"><div class="fill" style="width:${pct}%;background:${color}"></div>${ticks}</div>
+        ${w.length ? w.map(x=>`<div class="warn">⚠ ${esc(x)}</div>`).join('') : '<div class="warn ok">✓ Within the GM Guide\'s guidelines.</div>'}
+      </div>
+      <div class="card"><h4>Monsters</h4>${rows || '<p class="muted">Add monsters from the bestiary, or with ＋ on any monster link.</p>'}
+        <div class="row" style="margin-top:10px"><button data-act="go" data-v="bestiary">🐾 Browse bestiary</button></div></div>
+      <div class="row">
+        <button class="primary" data-act="saveEnc">💾 Save encounter</button>
+        <button data-act="runBuilder">▶ Run now</button>
+        <button class="ghost" data-act="toggleSrc" data-id="bsrc">‹/› Embed in a note</button>
+      </div>
+      <pre class="src hidden" id="bsrc">${esc('```nimble-encounter\nname: '+b.name+'\nmonsters:\n'+Object.entries(b.items).filter(([,c])=>c).map(([k,c])=>`  - ${c} [[${MON[k].name}]]`).join('\n')+'\n```')}</pre>
+    </div>
+    <div>
+      <div class="card"><h4>How the math works</h4>
+        <p style="font-size:12px" class="muted">Budget = total hero levels. Spending 50% is Easy, 75% Medium, 100% Hard, 125% Deadly and 150% Very Deadly. Under about 30% is marked Trivial.<br><br>
+        Minions: 2 per hero count as 1 monster of hero level, so each minion is worth half the party's level.<br>
+        Legendary monsters fight the whole party, so they count as their level × number of heroes.</p></div>
+      <div class="card"><h4>Saved encounters</h4>
+        ${Object.values(S.encounters).map(e=>`<div class="row" style="justify-content:space-between;margin:4px 0"><span class="wl" data-act="loadBuilder" data-id="${e.id}">${esc(e.name)}</span>${S.resolved[e.id]?'<span class="resolved">✓</span>':diffChip(e.items)}</div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   VIEW: map  (viewBox units = grid squares)
+   ============================================================ */
+const PIN_ICON = {area:'', encounter:'⚔', poi:'◆', secret:'🔒', note:'✎', town:'🏘'};
+function fullBox(){ return {x:0, y:0, w:MAP.cols, h:MAP.rows}; }
+const tokSize = m => ({Large:2, Huge:3, Gargantuan:4})[m.size] || 1;
+function tokenList(){
+  const toks = [];
+  if(!S.combat) return toks;
+  for(const h of S.combat.heroes) toks.push({id:h.id, label:h.name.slice(0,2), kind:'hero', size:1, dead:h.wounds>=6, title:`${h.name} (${h.hp}/${h.max})`});
+  for(const f of S.combat.foes){
+    const m = MON[f.mid];
+    if(m.role==='minion'){ for(let i=0;i<f.count;i++) toks.push({id:`${f.id}#${i}`, label:'', kind:'minion', size:1, dead:i>=f.alive, owner:f.id, title:f.label}); }
+    else toks.push({id:f.id, label:f.short || f.label.slice(0,2), kind:m.role==='legendary'?'leg':'foe', size:tokSize(m), dead:f.hp<=0 && !(m.role==='legendary' && f.lastStand && f.hp>0), title:`${f.label}${S.player?'':` (${f.hp}/${f.max})`}`});
+  }
+  return toks;
+}
+function mapSvg(){
+  const vb = S.vb || fullBox();
+  const col = {hero:'#4f9cf0', foe:'#e05d5d', minion:'#d48a5a', leg:'#e0b341'};
+  const T = S.combat ? S.combat.tokens : {};
+  const pins = S.pins.filter(p => !(S.player && (p.kind==='secret' || !p.revealed)));
+  const img = (S.lit || !MAP.unlit) ? MAP.image : MAP.unlit;
+  let s = `<svg id="mapSvg" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}" preserveAspectRatio="xMidYMid meet">
+    <defs><pattern id="grid" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0 L0 0 0 1" fill="none" stroke="rgba(0,0,0,.5)" stroke-width="0.025"/></pattern></defs>
+    <rect x="-60" y="-60" width="${MAP.cols+120}" height="${MAP.rows+120}" fill="#0b0b0b"/>
+    <image href="${esc(img)}" x="0" y="0" width="${MAP.cols}" height="${MAP.rows}" preserveAspectRatio="none"/>
+    ${(MAP.overlays||[]).filter(o=>S.overlays[o.id]).map(o=>`<image href="${esc(o.image)}" x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" preserveAspectRatio="none" opacity="${o.opacity??0.9}" pointer-events="none"/>`).join('')}
+    <rect x="0" y="0" width="${MAP.cols}" height="${MAP.rows}" fill="url(#grid)" pointer-events="none"/>`;
+  s += `<g class="gm-only">${S.mapNotes.map(n=>`<g data-act="mapNote" data-id="${n.id}" style="cursor:pointer" transform="translate(${n.x},${n.y})" class="scaled"><rect x="-.28" y="-.28" width=".56" height=".56" rx=".1" fill="#e0b341" opacity=".95"/><text text-anchor="middle" y=".16" font-size=".42">✎</text><title>${esc(n.text)}</title></g>`).join('')}</g>`;
+  const pinsSvg = pins.map(p=>{ const c = p.kind==='secret'?'#c0504d':p.kind==='encounter'?'#e05d5d':'#a68bff'; const done = p.enc && p.enc.length && p.enc.every(e=>S.resolved[e]);
+    return `<g class="pin scaled" data-pin="${p.id}" transform="translate(${p.x},${p.y})" opacity="${S.combat?.55:1}">
+      <circle r=".55" fill="${c}" opacity=".3"/><circle r=".36" fill="#1e1e1e" stroke="${c}" stroke-width=".06"/>
+      <text text-anchor="middle" y=".14" font-size=".38" font-weight="700" fill="#eee" pointer-events="none">${p.num ?? PIN_ICON[p.kind]}</text>
+      ${S.combat?'':`<text text-anchor="middle" y=".95" font-size=".34" fill="#eee" stroke="#000" stroke-width=".09" paint-order="stroke" pointer-events="none">${esc(p.name)}</text>`}
+      ${done?'<text x=".3" y="-.25" font-size=".4" fill="#5fbf7a" pointer-events="none">✓</text>':''}</g>`; }).join('');
+  if(S.combat) s += pinsSvg;
+  s += tokenList().map(t=>{ const p = T[t.id] || {x:0,y:0}; const r = t.size/2 - .08; const cx = p.x + t.size/2, cy = p.y + t.size/2;
+      const sel = S.sel && (S.sel===t.id || S.sel===t.owner);
+      return `<g class="token ${t.dead?'dead':''}" data-tok="${t.id}" transform="translate(${cx},${cy})">
+        <circle r="${t.kind==='minion'?r-.12:r}" fill="${col[t.kind]}" stroke="${sel?'#fff':t.kind==='leg'?'#fff3c4':'#111'}" stroke-width="${sel?.09:.05}"/>
+        <text text-anchor="middle" y="${t.size>1?.22:.14}" font-size="${t.size>1?.6:.38}" font-weight="700" fill="#111" pointer-events="none">${esc(t.label)}</text>
+        ${t.dead?`<text text-anchor="middle" y=".22" font-size=".7" fill="#000" pointer-events="none">✕</text>`:''}<title>${esc(t.title)}</title></g>`; }).join('');
+  if(S.player){
+    const holes = [...S.pins.filter(p=>p.revealed).map(p=>[p.x,p.y,p.r||MAP.reveal]), ...S.explored];
+    if(S.combat) for(const h of S.combat.heroes){ const p = T[h.id]; if(p) holes.push([p.x+.5, p.y+.5, MAP.sight||5]); }
+    s += `<defs><mask id="fogm" maskUnits="userSpaceOnUse" x="-60" y="-60" width="${MAP.cols+120}" height="${MAP.rows+120}"><rect x="-60" y="-60" width="${MAP.cols+120}" height="${MAP.rows+120}" fill="white"/>${holes.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="black"/>`).join('')}</mask>
+      <filter id="fogblur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation=".5"/></filter></defs>
+      <rect x="-60" y="-60" width="${MAP.cols+120}" height="${MAP.rows+120}" fill="#050505" mask="url(#fogm)" filter="url(#fogblur)" pointer-events="none"/>`;
+  }
+  if(!S.combat) s += pinsSvg;
+  return s + '</svg>';
+}
+function viewMap(){
+  const p = S.pins.find(x=>x.id===S.popPin);
+  let pop = '';
+  if(p){
+    pop = `<div class="popover" style="left:12px;bottom:12px">
+      <div class="row"><h4>${p.num?`<span class="faint">${p.num}.</span> `:''}${esc(p.name)}</h4><span class="spacer"></span><button class="ghost sm" data-act="closePin">✕</button></div>
+      <div>${rich(S.player ? (p.playerText||'') : p.text)}</div>
+      ${p.enc ? p.enc.map(e=>`<div class="row gm-only" style="margin-top:8px"><span>⚔ ${esc(S.encounters[e].name)}</span>${S.resolved[e]?'<span class="resolved">✓</span>':diffChip(S.encounters[e].items)}<span class="spacer"></span><button class="primary sm" data-act="runEnc" data-id="${e}">▶ Run</button></div>`).join('') : ''}
+      <div class="row gm-only" style="margin-top:10px">
+        ${p.doc?`<button class="sm" data-act="openDoc" data-id="${p.doc.split('#')[0]}" data-anchor="${p.doc.split('#')[1]||''}">📜 Open note</button>`:''}
+        <button class="sm" data-act="reveal" data-id="${p.id}">${p.revealed?'🙈 Hide from players':'👁 Reveal to players'}</button>
+      </div></div>`;
+  }
+  if(S.popNote){ const n = S.mapNotes.find(x=>x.id===S.popNote);
+    pop += `<div class="popover gm-only" style="right:56px;bottom:40px"><div class="row"><b>✎ Map note</b><span class="spacer"></span><button class="ghost sm" data-act="closeNote">✕</button></div><div>${rich(n.text)}</div></div>`; }
+  const ov = (MAP.overlays||[]).map(o=>`<label class="row gm-only" style="gap:3px"><input type="checkbox" data-act="overlay" data-id="${o.id}" ${S.overlays[o.id]?'checked':''}>${esc(o.name)}</label>`).join('');
+  return `<div class="mapwrap" id="mapwrap">
+    <div class="maptools">
+      ${S.combat ? `<b style="color:#ffb3b3">⚔ ${esc(S.combat.name)}</b><span class="muted">Drag tokens. Click one to find its card.</span>` : `<b>${esc(MAP.name)}</b>`}
+      <span class="gm-only row" style="gap:6px">
+        <button class="sm ${S.addPin?'on':''}" data-act="toggleAddPin">📍 ${S.addPin?'Click the map…':'Add pin'}</button>
+        <button class="sm ${S.movePins?'on':''}" data-act="toggleMovePins" title="Drag pins to fix their positions">✥ Move pins</button>
+        ${S.movePins?'<button class="sm" data-act="copyPins">📋 Copy positions</button>':''}
+        ${MAP.unlit?`<button class="sm" data-act="toggleLit">${S.lit?'💡 Lit':'🌑 Unlit'}</button>`:''}
+        ${ov}
+      </span>
+    </div>
+    <div class="zoomtools"><button data-act="zoom" data-v="1.4" title="Zoom in">＋</button><button data-act="zoom" data-v="0.714" title="Zoom out">−</button><button data-act="fit" title="Fit map">⤢</button></div>
+    ${mapSvg()}${pop}
+    <div class="legend">Scroll to zoom · drag to pan · 1 square = 5 ft${S.player?' · <b>Player view</b>: fog lifts around revealed areas and the heroes':''}</div>
+  </div>`;
+}
+
+/* ---------- map interaction ---------- */
+function svgPoint(svg, e){ const pt = svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+function scalePins(){
+  const svg = $('#mapSvg'); if(!svg) return;
+  const vb = S.vb || fullBox(); const k = Math.max(0.3, Math.min(2.2, Math.max(vb.w / (svg.clientWidth || 1), vb.h / (svg.clientHeight || 1)) * 42));
+  svg.querySelectorAll('.scaled').forEach(g => { const t = g.getAttribute('transform').replace(/\s*scale\([^)]*\)/,''); g.setAttribute('transform', `${t} scale(${k})`); });
+}
+function setVB(vb){ S.vb = vb; const svg = $('#mapSvg'); if(svg){ svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); scalePins(); } }
+function zoomAt(f, cx, cy){
+  const vb = S.vb || fullBox(); const w = Math.max(4, Math.min(MAP.cols*2, vb.w / f)); const h = vb.h * w / vb.w;
+  setVB({x: cx - (cx-vb.x) * w/vb.w, y: cy - (cy-vb.y) * h/vb.h, w, h});
+}
+function wireMap(){
+  const svg = $('#mapSvg'); if(!svg) return;
+  if(!S.vb) S.vb = padBox(fullBox(), .3);
+  setVB(S.vb);
+  svg.addEventListener('wheel', e => { e.preventDefault(); const p = svgPoint(svg, e); zoomAt(e.deltaY < 0 ? 1.15 : 1/1.15, p.x, p.y); }, {passive:false});
+  let drag = null;
+  svg.addEventListener('pointerdown', e => {
+    const tok = e.target.closest('[data-tok]'); const pin = e.target.closest('[data-pin]');
+    const p = svgPoint(svg, e);
+    if(tok && S.combat) drag = {kind:'tok', id:tok.dataset.tok, g:tok, moved:false};
+    else if(pin && S.movePins && !S.player) drag = {kind:'pin', id:pin.dataset.pin, g:pin, moved:false};
+    else if(pin) drag = {kind:'pinclick', id:pin.dataset.pin, moved:false};
+    else if(e.target.closest('[data-act]')) return;
+    else drag = {kind:'pan', sx:e.clientX, sy:e.clientY, vb:{...(S.vb||fullBox())}, moved:false};
+    svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener('pointermove', e => {
+    if(!drag) return;
+    if(drag.kind==='pan'){ const dx = e.clientX-drag.sx, dy = e.clientY-drag.sy; if(Math.abs(dx)+Math.abs(dy) > 3) drag.moved = true;
+      const kk = Math.max(drag.vb.w / svg.clientWidth, drag.vb.h / svg.clientHeight);
+      setVB({...drag.vb, x: drag.vb.x - dx*kk, y: drag.vb.y - dy*kk}); return; }
+    if(drag.kind==='pinclick') return;
+    drag.moved = true; const p = svgPoint(svg, e);
+    const t = drag.g.getAttribute('transform'); const sc = (t.match(/scale\([^)]*\)/)||[''])[0];
+    drag.g.setAttribute('transform', `translate(${p.x},${p.y}) ${sc}`);
+  });
+  svg.addEventListener('pointerup', e => {
+    if(!drag) return; const d = drag; drag = null; const p = svgPoint(svg, e);
+    if(d.kind==='pan'){
+      if(!d.moved && S.addPin){ const id = uid(); S.pins.push({id, x:+p.x.toFixed(1), y:+p.y.toFixed(1), kind:'note', name:'New note', text:'A pin dropped here would create a linked note, e.g. `Locations/New note.md`.', revealed:false}); S.addPin=false; S.popPin=id; renderView(); }
+      else if(!d.moved && (S.popPin || S.popNote)){ S.popPin = null; S.popNote = null; renderView(); }
+      return; }
+    if(d.kind==='pinclick'){ S.popPin = d.id; S.popNote = null; renderView(); return; }
+    if(d.kind==='pin'){ const pin = S.pins.find(x=>x.id===d.id); pin.x = +p.x.toFixed(1); pin.y = +p.y.toFixed(1); savePins(); renderView(); return; }
+    if(d.kind==='tok'){
+      const id = d.id; const owner = id.includes('#') ? id.split('#')[0] : id;
+      if(d.moved){ const size = (tokenList().find(t=>t.id===id)||{size:1}).size;
+        S.combat.tokens[id] = {x:Math.max(0,Math.min(MAP.cols-size,Math.round(p.x - size/2))), y:Math.max(0,Math.min(MAP.rows-size,Math.round(p.y - size/2)))};
+        if(S.combat.heroes.some(h=>h.id===id)) S.explored.push([S.combat.tokens[id].x+.5, S.combat.tokens[id].y+.5, MAP.sight||5]); }
+      S.sel = owner; renderView(); renderRight();
+      const card = document.getElementById('cr-'+owner); if(card){ card.scrollIntoView({block:'nearest', behavior:'smooth'}); card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash'); }
+    }
+  });
+}
+function savePins(){ localStorage.setItem(LS_PINS, JSON.stringify(Object.fromEntries(S.pins.map(p=>[p.id,[p.x,p.y]])))); }
+function padBox(b, pad=1.5){
+  const el = $('#mapSvg') || $('#view'); const ar = (el.clientWidth||1000)/(el.clientHeight||700);
+  let w = b.w + pad*2, h = b.h + pad*2; if(w/h < ar) w = h*ar; else h = w/ar;
+  return {x: b.x + b.w/2 - w/2, y: b.y + b.h/2 - h/2, w, h};
+}
+
+/* ============================================================
+   COMBAT STATE — Nimble 3.2 core rules
+   ============================================================ */
+function mark(occ, x, y, size){ for(let i=0;i<size;i++) for(let j=0;j<size;j++) occ.add(`${x+i},${y+j}`); }
+function free(occ, x, y, size){ if(x<0||y<0||x+size>MAP.cols||y+size>MAP.rows) return false; for(let i=0;i<size;i++) for(let j=0;j<size;j++) if(occ.has(`${x+i},${y+j}`)) return false; return true; }
+function placeAround(occ, start, size, preset){
+  if(preset && free(occ, preset[0], preset[1], size)){ mark(occ, preset[0], preset[1], size); return {x:preset[0], y:preset[1]}; }
+  const [sx, sy] = preset || start || [Math.floor(MAP.cols/2), Math.floor(MAP.rows/2)];
+  for(let r=0; r<14; r++) for(let dy=-r; dy<=r; dy++) for(let dx=-r; dx<=r; dx++){
+    if(Math.max(Math.abs(dx),Math.abs(dy))!==r) continue;
+    if(free(occ, sx+dx, sy+dy, size)){ mark(occ, sx+dx, sy+dy, size); return {x:sx+dx, y:sy+dy}; }
+  }
+  return {x:sx, y:sy};
+}
+function startCombat(encId){
+  const e = S.encounters[encId] || {id:'adhoc', name:S.builder.name, items:{...S.builder.items}};
+  const foes = []; const tokens = {}; const occ = new Set(); const counts = {};
+  for(const [mid,c] of Object.entries(e.items)){
+    const m = MON[mid]; if(!c) continue;
+    if(m.role==='minion'){ foes.push({id:uid(), mid, label:(e.names&&e.names[mid]&&e.names[mid][0]) || `${m.name}s`, count:c, alive:c, conds:[]}); }
+    else for(let i=0;i<c;i++){ counts[mid]=(counts[mid]||0)+1; const hp = monHp(m);
+      const nm = (e.names && e.names[mid] && e.names[mid][i]) || (c>1 ? `${m.name} ${String.fromCharCode(64+counts[mid])}` : m.name);
+      foes.push({id:uid(), mid, label:nm, short:(e.short && e.short[mid] && e.short[mid][i]) || nm.replace(/[^A-Z0-9]/g,'').slice(0,2) || nm.slice(0,2), hp, max:hp, conds:[], bloodied:false, lastStand:false, acted:false}); }
+  }
+  const heroes = PARTY.map(h => ({...h, hp:S.partyHp[h.id].hp, wounds:S.partyHp[h.id].wounds, actions:3, initRoll:null, done:false, react:{}, conds:[]}));
+  heroes.forEach(h => tokens[h.id] = placeAround(occ, e.heroStart, 1));
+  const used = {};
+  for(const f of foes){ const m = MON[f.mid]; const size = tokSize(m); const pre = (e.place||{})[f.mid] || [];
+    if(m.role==='minion'){ for(let j=0;j<f.count;j++){ const i = used[f.mid] || 0; used[f.mid] = i+1; tokens[`${f.id}#${j}`] = placeAround(occ, e.foeStart, 1, pre[i]); } }
+    else { const i = used[f.mid] || 0; used[f.mid] = i+1; tokens[f.id] = placeAround(occ, e.foeStart, size, pre[i]); }
+  }
+  S.combat = {encId:e.id, name:e.name, round:1, phase:'initiative', heroes, foes, tokens, banners:[], log:[], dmgLog:{}, started:Date.now()};
+  S.pendingBox = e.box || null;
+  for(const b of e.onStart || []) S.combat.banners.push({kind:'trap', title:b.title, text:b.text});
+  clog(`Encounter started: ${e.name}`);
+}
+function clog(text){ S.combat && S.combat.log.unshift({r:S.combat.round, text}); }
+const legAlive = () => S.combat.foes.some(f => MON[f.mid].role==='legendary' && f.hp>0);
+const hero = id => S.combat.heroes.find(h=>h.id===id);
+const foe = id => S.combat.foes.find(f=>f.id===id);
+const initActions = (total, nat) => (nat===20 || total>=20) ? 3 : total>=10 ? 2 : 1;
+
+function damageFoe(f, raw, crit, type){
+  const m = MON[f.mid]; const parts = [String(raw)]; let dmg = raw; const armor = f.armor || m.armor;
+  if(m.role==='minion'){
+    const kills = Math.max(1, Math.floor(raw / (m.die||6))); const k = Math.min(kills, f.alive); f.alive -= k;
+    const msg = `${k} ${m.name}${k>1?'s':''} down${kills>1?` (${raw} damage ÷ d${m.die||6} overkill)`:''}`;
+    S.combat.dmgLog[f.id] = msg; clog(msg); return;
+  }
+  if(type && (m.immune||[]).includes(type)){ S.combat.dmgLog[f.id] = `${raw} ${type}: immune`; clog(`${f.label} is immune to ${type}`); return; }
+  if(armor!=='none'){ const r = armor==='M'?10:20; if(crit) parts.push('crit ignores armor'); else { dmg -= r; parts.push(`− ${r} armor`); } }
+  if(type && (m.vuln||[]).includes(type)){ dmg += 10; parts.push('+ 10 vulnerable'); }
+  if(type && (m.resist||[]).includes(type)){ dmg -= 10; parts.push('− 10 resistant'); }
+  dmg = Math.max(0, dmg); const before = f.hp; f.hp = Math.max(0, f.hp - dmg);
+  S.combat.dmgLog[f.id] = `${parts.join(' ')} = ${dmg} damage`;
+  clog(`${f.label} takes ${dmg}${crit?' (crit)':''} → ${f.hp}/${f.max}`);
+  if(m.role==='legendary'){
+    const bloodied = () => { f.bloodied = true; if(m.bloodied){ S.combat.banners.push({kind:'blood', title:`${f.label} is Bloodied${m.bloodied.name && m.bloodied.name!=='Bloodied' ? ': '+m.bloodied.name : ''}`, text:m.bloodied.text}); clog(`${f.label} is Bloodied`); } };
+    if(!f.bloodied && f.hp <= f.max/2 && f.hp>0) bloodied();
+    if(f.hp<=0 && !f.lastStand && m.lastStand){
+      if(!f.bloodied) bloodied();
+      f.lastStand = true;
+      const extra = m.lastStandPerHero ? m.lastStandPerHero*partySize() : (m.lastStandHp||0);
+      if(extra){ f.hp = extra; f.max = Math.max(f.max, extra); }
+      if(m.lastStandArmor) f.armor = m.lastStandArmor;
+      S.combat.banners.push({kind:'last', title:`${f.label}: LAST STAND${m.lastStand.name && m.lastStand.name!=='Last Stand' ? '. '+m.lastStand.name : ''}`, text:m.lastStand.text + (extra?` (Tracker: ${extra} HP left${m.lastStandArmor?`, now armor ${m.lastStandArmor}`:''}.)`:'')}); clog(`${f.label} makes a Last Stand`); }
+    else if(f.hp<=0 && before>0) clog(`${f.label} is defeated`);
+  } else if(f.hp<=0 && before>0) clog(`${f.label} is defeated`);
+}
+function damageHero(h, raw, crit, defend){
+  let dmg = raw; const parts=[String(raw)];
+  if(defend){ if(h.react.defend) { toast('Already Defended this round.'); return; }
+    h.react.defend = true; h.actions = Math.max(0, h.actions-1);
+    if(crit) parts.push('Defend (crit ignores Defense)'); else { dmg = Math.max(0, dmg - h.def); parts.push(`− ${h.def} Defend`); } }
+  if(h.hp<=0){ const w = crit?3:2; h.wounds = Math.min(6, h.wounds + w); parts.push(`while Dying: +${w} Wounds`); clog(`${h.name} hit while Dying: +${w} Wounds (${h.wounds}/6)`); }
+  else { h.hp = Math.max(0, h.hp - dmg); if(h.hp===0){ h.wounds = Math.min(6, h.wounds+1); parts.push('→ 0 HP: +1 Wound, Dying'); clog(`${h.name} drops to 0 HP: Dying, ${h.wounds} Wound${h.wounds>1?'s':''}`);} else clog(`${h.name} takes ${dmg} → ${h.hp}/${h.max}`); }
+  if(h.wounds>=6) clog(`${h.name} has died (6 Wounds)`);
+  S.combat.dmgLog[h.id] = parts.join(' ') + (h.hp>0?` = ${dmg}`:'');
+}
+
+/* ============================================================
+   RIGHT SIDEBAR
+   ============================================================ */
+function renderRight(){
+  $('#right').innerHTML = ((S.mode==='encounter' && S.combat) ? trackerHtml() : (S.mode==='encounter' ? noCombatHtml() : exploreSideHtml()))
+    + (SC.credit ? `<div class="credit">${rich(SC.credit)}</div>` : '');
+}
+function rollLogHtml(){
+  return `<div class="panel"><h3>🎲 Recent rolls</h3><div class="log">${S.rolls.map(r=>`<div><span class="${r.crit?'crit':''} ${r.miss?'miss':''}">${r.miss?'miss':r.total}${r.crit?' crit':''}</span> <span class="muted">${esc(r.label||'')} ${esc(r.expr)} ${esc(r.extra||'')}</span></div>`).join('') || '<span class="faint">Click any dice like 2d6 to roll it. Attacks follow Nimble rules: a 1 on the first die misses, the max explodes.</span>'}</div></div>`;
+}
+function exploreSideHtml(){
+  return `<div class="panel"><h3>Party · ${esc(SC.home.partyName)}</h3>
+    ${PARTY.map(h=>{const p=S.partyHp[h.id]; const pct=p.hp/h.max*100; return `<div style="margin-bottom:7px"><div class="row" style="justify-content:space-between"><span>${h.name} <span class="faint" style="font-size:12px">${h.cls} ${h.level} · DEF ${h.def}</span></span><span style="font-size:12px">${p.hp}/${h.max}</span></div>
+      <div class="cr" style="margin:0;padding:0;border:0;background:transparent"><div class="hpbar"><i class="${pct<=50?'b':''}" style="width:${pct}%"></i></div></div>
+      <span class="pips">${Array.from({length:6},(_,i)=>`<span class="pip w ${i<p.wounds?'on':''}" title="Wounds"></span>`).join('')}</span></div>`}).join('')}
+    <div class="row"><button class="sm" data-act="rest" data-v="breath">Catch Breath</button><button class="sm" data-act="rest" data-v="safe">Safe Rest</button></div></div>
+    <div class="panel"><h3>Quick add</h3>
+      <input class="search" placeholder="Monster name…" data-input="qa" id="qa" style="margin:0">
+      <div id="qares" class="mlist" style="margin-top:6px"></div>
+      <div class="faint" style="font-size:12px;margin-top:4px">Adds to the encounter builder: <b>${esc(S.builder.name)}</b> (${diffChip(S.builder.items)})</div></div>
+    <div class="panel"><h3>Session log</h3>${S.session.slice().reverse().map(s=>`<div style="font-size:12px;margin-bottom:6px"><b>${esc(s.t)}</b> <span class="muted">${esc(s.text)}</span></div>`).join('')}</div>
+    ${rollLogHtml()}`;
+}
+function noCombatHtml(){
+  return `<div class="panel"><h3>Encounter mode</h3><p class="muted" style="font-size:13px">No encounter is running. Start one from any encounter block, a map pin or the builder.</p>
+    ${Object.values(S.encounters).map(e=>`<div class="row" style="margin:6px 0"><span>${esc(e.name)}</span><span class="spacer"></span>${S.resolved[e.id]?'<span class="resolved">✓</span>':`${diffChip(e.items)}<button class="primary sm" data-act="runEnc" data-id="${e.id}">▶ Run</button>`}</div>`).join('')}</div>${rollLogHtml()}`;
+}
+function condChips(c){
+  return c.conds.map(n=>`<span class="cond" title="${esc(CONDITIONS[n]||'')} (click to remove)" data-act="rmCond" data-id="${c.id}" data-v="${esc(n)}">${esc(n)} ✕</span>`).join('') +
+    `<button class="ghost sm" data-act="condPick" data-id="${c.id}" title="Add condition">＋ cond</button>`;
+}
+function trackerHtml(){
+  const C = S.combat; const ph = C.phase;
+  let h = `<div class="trk-head"><div class="row"><span class="nm">${esc(C.name)}</span><span class="spacer"></span><span class="pill">Round ${C.round}</span></div>
+    <div class="phases"><span class="${ph==='initiative'?'on':''}">Initiative</span><span class="${ph==='heroes'?'on':''}">Heroes' turn</span><span class="${ph==='monsters'?'on m':''}">Monsters' turn</span></div></div>`;
+  for(const [i,b] of C.banners.entries()){
+    h += `<div class="banner ${b.kind}"><div class="bt">${esc(b.title)}</div>${b.html || rich(b.text)}<div class="row" style="margin-top:5px"><button class="sm" data-act="dismissBanner" data-v="${i}">Done</button></div></div>`;
+  }
+  if(ph==='initiative'){
+    h += `<div class="sect">Roll Initiative</div><div class="panel muted" style="font-size:12px">Each hero rolls d20 + DEX. A total of 1–9 starts with 1 action, 10–19 with 2, 20+ (or a natural 20) with all 3. Heroes go first, then the monsters act together.</div>`;
+    for(const x of C.heroes){
+      h += `<div class="cr" id="cr-${x.id}"><div class="top"><span class="nm">${esc(x.name)}</span><span class="faint" style="font-size:12px">init +${x.init}</span><span class="spacer"></span>
+        <input type="number" id="init-${x.id}" placeholder="total" value="${x.initRoll??''}"><button class="sm" data-act="rollInit" data-id="${x.id}">🎲</button></div>
+        ${x.initRoll!=null?`<div class="calc">Rolled ${x.initRoll}: starts with <b>${x.actions}</b> action${x.actions>1?'s':''}</div>`:''}</div>`;
+    }
+    h += `<div class="panel"><div class="row"><button data-act="rollAllInit">🎲 Roll for everyone</button><button class="primary" data-act="beginRound">Begin round 1 →</button></div></div>`;
+  } else {
+    const allDone = C.heroes.every(x=>x.done || x.wounds>=6);
+    h += `<div class="sect">Heroes<span class="spacer"></span>${ph==='heroes' && allDone ? `<button class="primary sm" data-act="monstersTurn">Monsters' turn →</button>`:''}</div>`;
+    for(const x of C.heroes) h += heroCard(x);
+    h += `<div class="sect">Monsters<span class="spacer"></span>${ph==='monsters'?`<button class="primary sm" data-act="endRound">End round ${C.round} →</button>`:ph==='heroes' && !allDone ? `<button class="ghost sm" data-act="monstersTurn">skip to monsters</button>`:''}</div>`;
+    for(const f of C.foes) h += foeCard(f);
+  }
+  h += `<div class="panel"><div class="row"><button data-act="go" data-v="bestiary">＋ Add monster</button><span class="spacer"></span><button class="danger" data-act="endCombat">End encounter</button></div></div>`;
+  h += `<div class="panel"><h3>Combat log</h3><div class="log">${C.log.map(l=>`<div><span class="faint">R${l.r}</span> ${esc(l.text)}</div>`).join('')}</div></div>`;
+  return h + rollLogHtml();
+}
+function heroCard(x){
+  const C = S.combat; const dying = x.hp<=0 && x.wounds<6; const dead = x.wounds>=6;
+  const pct = x.hp/x.max*100; const active = C.phase==='heroes' && !x.done && !dead;
+  const rx = ['defend','interpose','oa','help'].map(k=>`<button class="sm rx ${x.react[k]?'used':''}" data-act="react" data-id="${x.id}" data-v="${k}" title="${({defend:'Reduce one attack by your Defense (1 action)',interpose:'Take a hit for an ally within Reach 2 (1 action)',oa:'Melee attack w/ disadvantage as an enemy leaves (1 action)',help:'Let an ally reroll (1 action)'})[k]}">${({defend:'Defend',interpose:'Interpose',oa:'Opp. attack',help:'Help'})[k]}</button>`).join('');
+  return `<div class="cr ${x.done?'done':''} ${dead?'out':''} ${S.sel===x.id?'active':''}" id="cr-${x.id}">
+    <div class="top"><span class="nm">${esc(x.name)}</span><span class="faint" style="font-size:12px">${x.cls} · DEF ${x.def}</span><span class="spacer"></span><b>${x.hp}</b><span class="faint">/${x.max}</span></div>
+    <div class="hpbar"><i class="${pct<=50?'b':''} ${pct<=0?'d':''}" style="width:${pct}%"></i></div>
+    <div class="row" style="font-size:12px"><span class="muted">Actions</span><span class="pips">${[0,1,2].map(i=>`<span class="pip ${i<(dying?Math.min(1,x.actions):x.actions)?'on':''}" data-act="pip" data-id="${x.id}" data-v="${i}" title="Click to spend or regain"></span>`).join('')}</span>
+      <span class="muted" style="margin-left:8px">Wounds</span><span class="pips">${Array.from({length:6},(_,i)=>`<span class="pip w ${i<x.wounds?'on':''}" data-act="wound" data-id="${x.id}" data-v="${i}"></span>`).join('')}</span></div>
+    <div class="row" style="margin-top:4px">${rx}</div>
+    <div>${dying?'<span class="cond auto">Dying: max 1 action</span>':''}${dead?'<span class="cond auto">Dead</span>':''}${condChips(x)}</div>
+    <div class="dmg"><input type="number" id="dmg-${x.id}" placeholder="dmg"><label><input type="checkbox" id="crit-${x.id}">crit</label><label><input type="checkbox" id="def-${x.id}">Defend</label>
+      <button class="sm" data-act="hitHero" data-id="${x.id}">Hit</button><button class="sm" data-act="healHero" data-id="${x.id}">Heal</button>
+      <span class="spacer"></span>${active?`<button class="primary sm" data-act="endTurn" data-id="${x.id}">End turn</button>`:x.done?'<span class="faint" style="font-size:12px">✓ acted</span>':''}</div>
+    ${C.dmgLog[x.id]?`<div class="calc">${esc(C.dmgLog[x.id])}</div>`:''}
+  </div>`;
+}
+function foeCard(f){
+  const m = MON[f.mid]; const C = S.combat;
+  if(m.role==='minion'){
+    return `<div class="cr minion ${f.alive<=0?'out':''} ${S.sel===f.id?'active':''}" id="cr-${f.id}">
+      <div class="top"><span class="nm" data-mon="${f.mid}">${esc(f.label)}</span><span class="faint" style="font-size:12px">minions${m.die?` · d${m.die}`:''}</span><span class="spacer"></span><b>${f.alive}</b><span class="faint">/${f.count}</span><button class="sm ghost" data-act="addMinion" data-id="${f.id}" title="Another one joins (e.g. Get In Here!)">＋1</button></div>
+      <div class="pips" style="margin:5px 0">${Array.from({length:f.count},(_,i)=>`<span class="pip m ${i<f.alive?'on':''}"></span>`).join('')}</div>
+      <div style="font-size:12px" class="gm-only">${(m.actions||[]).map(a=>`<div>• <b>${esc(a.name)}.</b> ${rich(a.text)}</div>`).join('')}${(m.traits||[]).map(t=>`<div class="muted">${esc(t.name)}: ${rich(t.text)}</div>`).join('')}</div>
+      <div class="dmg"><input type="number" id="dmg-${f.id}" placeholder="dmg"><button class="sm" data-act="hitFoe" data-id="${f.id}">Hit</button>
+        <span class="spacer"></span><input type="number" id="ga-${f.id}" value="${Math.max(1,Math.min(f.alive, 3))}" min="1" max="${f.alive}" style="width:42px" title="How many attack together"><button class="sm" data-act="groupAttack" data-id="${f.id}">Group attack</button></div>
+      <div class="calc">${esc(C.dmgLog[f.id] || 'Any damage kills one. Damage of 2× the die or more kills extra. Minions on the same hero attack as one roll.')}</div>
+    </div>`;
+  }
+  const pct = f.hp/f.max*100; const leg = m.role==='legendary'; const armor = f.armor || m.armor;
+  const types = ['','fire','cold','lightning','acid','poison','necrotic','radiant','psychic','slashing','piercing','bludgeoning'];
+  return `<div class="cr ${leg?'legendary':'foe'} ${f.hp<=0?'out':''} ${S.sel===f.id?'active':''} ${C.phase==='monsters'&&f.acted?'done':''}" id="cr-${f.id}">
+    <div class="top"><span class="nm" data-mon="${f.mid}">${esc(f.label)}</span>${armor!=='none'?`<span class="badge ar">⛨ ${armor}</span>`:''}${leg?'<span class="badge sv">Legendary</span>':''}<span class="spacer"></span>
+      ${S.player ? `<span class="muted">${f.hp<=0?'Defeated':pct<=50?'Bloodied':'Healthy'}</span>` : `<b>${f.hp}</b><span class="faint">/${f.max}</span>`}</div>
+    ${S.player?'':`<div class="hpbar"><span class="half"></span><i class="${pct<=50?'b':''}" style="width:${pct}%"></i></div>`}
+    ${leg?`<div style="font-size:12px">${f.bloodied?'<span class="cond auto">Bloodied</span>':'<span class="faint">Bloodied at '+Math.floor(f.max/2)+'</span>'} ${m.lastStand?(f.lastStand?'<span class="cond auto" style="background:#3a2450;color:#e0c4ff">Last Stand</span>':'<span class="faint">· then Last Stand</span>'):''}</div>`:''}
+    <div style="font-size:12px;margin-top:3px" class="gm-only">${(m.legendary||m.actions||[]).map(a=>`<div>• <b>${esc(a.name)}.</b> ${rich(a.text)}</div>`).join('')}${(m.traits||[]).map(t=>`<div class="muted">${esc(t.name)}: ${rich(t.text)}</div>`).join('')}</div>
+    <div>${condChips(f)}</div>
+    <div class="dmg"><input type="number" id="dmg-${f.id}" placeholder="dmg"><label><input type="checkbox" id="crit-${f.id}">crit</label>
+      <select id="type-${f.id}" title="Damage type (for resist/vulnerable)">${types.map(t=>`<option value="${t}">${t||'type…'}</option>`).join('')}</select>
+      <button class="sm" data-act="hitFoe" data-id="${f.id}">Hit</button><button class="sm ghost" data-act="healFoe" data-id="${f.id}">Heal</button>
+      <span class="spacer"></span>${C.phase==='monsters' && !leg && f.hp>0 ? `<button class="sm ${f.acted?'':'primary'}" data-act="acted" data-id="${f.id}">${f.acted?'✓ acted':'Acted'}</button>`:''}</div>
+    ${C.dmgLog[f.id]?`<div class="calc">${esc(C.dmgLog[f.id])}</div>`:''}
+  </div>`;
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+const val = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+const chk = id => { const el = document.getElementById(id); return !!(el && el.checked); };
+function afterMapRender(){ if(S.pendingBox && $('#mapSvg')){ setVB(padBox(S.pendingBox, .5)); S.pendingBox = null; } }
+const A = {
+  go: d => { S.view = d.v; S.popPin = null; render(); afterMapRender(); },
+  openDoc: d => { S.view='doc'; S.doc = d.id || SC.docs[0].id; render(); if(d.anchor){ const el = document.getElementById(d.anchor); if(el) el.scrollIntoView({behavior:'smooth'}); } },
+  setMode: d => { S.mode = d.v; if(d.v==='encounter'){ S.view='map'; } render(); afterMapRender(); },
+  togglePlayer: () => { S.player = $('#playerView').checked; render(); },
+  openMon: (d, e) => { if(e.target.closest('.add')) return; S.selMon = d.id; S.view='bestiary'; render(); },
+  selMon: (d, e) => { if(e.target.closest('button')) return; S.selMon = d.id; render(); },
+  quickAdd: (d, e) => { e.stopPropagation(); const n = e.shiftKey?2:1; S.builder.items[d.id] = (S.builder.items[d.id]||0)+n;
+    toast(`Added ${n}× <b>${esc(MON[d.id].name)}</b> to <b>${esc(S.builder.name)}</b> ${diffChip(S.builder.items)}`); render(); },
+  bfilter: d => { S.bfilter[d.k] = S.bfilter[d.k]===d.v ? null : d.v; render(); },
+  bcount: d => { S.builder.items[d.id] = Math.max(0,(S.builder.items[d.id]||0)+(+d.d)); render(); },
+  loadBuilder: d => { const e = S.encounters[d.id]; S.builder = {id:e.id, name:e.name, items:{...e.items}}; S.view='builder'; render(); },
+  saveEnc: () => { const b = S.builder; const id = b.id || uid(); const prev = S.encounters[id] || {};
+    S.encounters[id] = {...prev, id, name:b.name, items:{...b.items}}; b.id = id;
+    toast(`Saved <b>${esc(b.name)}</b>. In Obsidian this writes <code>Encounters/${esc(b.name)}.md</code>.`); render(); },
+  runBuilder: () => { A.saveEnc(); A.runEnc({id:S.builder.id}); },
+  runEnc: d => {
+    if(S.combat && !confirm(`End "${S.combat.name}" and start a new encounter?`)) return;
+    $('#app').classList.add('flash');
+    setTimeout(()=>{ startCombat(d.id); S.mode='encounter'; S.view='map'; S.popPin=null; S.popNote=null; render(); afterMapRender(); $('#app').classList.remove('flash'); }, 180);
+  },
+  showArea: d => { const e = S.encounters[d.id]; S.view='map'; S.popPin = e.area || null; S.pendingBox = e.box; render(); afterMapRender(); },
+  toggleSrc: d => document.getElementById(d.id).classList.toggle('hidden'),
+  openPin: d => { const p = S.pins.find(x=>x.id===d.id); S.view='map'; S.popPin = d.id; S.pendingBox = p ? {x:p.x-5, y:p.y-4, w:10, h:8} : null; render(); afterMapRender(); },
+  closePin: () => { S.popPin = null; renderView(); },
+  closeNote: () => { S.popNote = null; renderView(); },
+  reveal: d => { const p = S.pins.find(x=>x.id===d.id); p.revealed = !p.revealed; renderView(); },
+  toggleAddPin: () => { S.addPin = !S.addPin; S.movePins = false; renderView(); },
+  toggleMovePins: () => { S.movePins = !S.movePins; S.addPin = false; renderView(); },
+  copyPins: () => { const txt = JSON.stringify(Object.fromEntries(S.pins.map(p=>[p.id,[p.x,p.y]]))); navigator.clipboard?.writeText(txt); toast(`Pin positions copied:<br><code style="font-size:11px">${esc(txt.slice(0,200))}…</code>`, 6000); },
+  toggleLit: () => { S.lit = !S.lit; renderView(); },
+  overlay: d => { S.overlays[d.id] = !S.overlays[d.id]; renderView(); },
+  zoom: d => { const vb = S.vb || fullBox(); zoomAt(+d.v, vb.x+vb.w/2, vb.y+vb.h/2); },
+  fit: () => setVB(padBox(fullBox(), .3)),
+  mapNote: d => { S.popNote = d.id; renderView(); },
+  trap: d => { const t = SC.traps[d.id]; if(t.overlay) S.overlays[t.overlay] = true;
+    if(S.combat) S.combat.banners.push({kind:'trap', title:t.title, text:t.text}); else toast(`<b>${esc(t.title)}</b><br>${rich(t.text)}`, 8000);
+    S.view='map'; S.pendingBox = t.box || null; render(); afterMapRender();
+    if(t.roll) showRoll(roll(t.roll, {nimble:false, label:t.title})); },
+  rest: d => { for(const h of PARTY){ const p=S.partyHp[h.id]; if(d.v==='safe'){ p.hp=h.max; p.wounds=Math.max(0,p.wounds-1);} else p.hp=Math.min(h.max, p.hp+Math.ceil(h.max/3)); }
+    S.session.push({t:'Now', text: d.v==='safe' ? 'Safe Rest: HP restored, 1 Wound healed each.' : 'Catch Breath: heroes spend Hit Dice (approximated).'}); render(); },
+  // combat
+  rollInit: d => { const x = hero(d.id); const typed = val('init-'+x.id);
+    let total, nat;
+    if(typed!=='' && x.initRoll==null){ total = +typed; } else { nat = 1+Math.floor(Math.random()*20); total = nat + x.init; showRoll({expr:`d20+${x.init}`, dice:[nat], ex:[], mod:x.init, total, miss:false, crit:nat===20, label:`${x.name} initiative`}); }
+    x.initRoll = total; x.actions = initActions(total, nat); renderRight(); },
+  rollAllInit: () => { for(const x of S.combat.heroes){ x.initRoll=null; const el=document.getElementById('init-'+x.id); if(el) el.value=''; A.rollInit({id:x.id}); } },
+  beginRound: () => { const C=S.combat; C.heroes.forEach(x=>{ if(x.initRoll==null){ x.actions = 2; } }); C.phase='heroes'; clog('Round 1: heroes act first'); render(); },
+  pip: d => { const x = hero(d.id); const i=+d.v; x.actions = (i < x.actions) ? i : i+1; renderRight(); },
+  wound: d => { const x = hero(d.id); const i=+d.v; x.wounds = (i < x.wounds) ? i : i+1; renderRight(); },
+  react: d => { const x = hero(d.id); if(x.react[d.v]){ x.react[d.v]=false; x.actions=Math.min(3,x.actions+1); } else { if(x.actions<=0){ toast(`${esc(x.name)} has no actions left for a reaction.`); return; } x.react[d.v]=true; x.actions--; clog(`${x.name} uses ${d.v==='oa'?'Opportunity Attack':d.v[0].toUpperCase()+d.v.slice(1)}`); } renderRight(); },
+  hitHero: d => { const x = hero(d.id); const n = +val('dmg-'+x.id); if(!n) return; damageHero(x, n, chk('crit-'+x.id), chk('def-'+x.id)); renderRight(); if(S.view==='map') renderView(); },
+  healHero: d => { const x = hero(d.id); const n = +val('dmg-'+x.id); if(!n) return; const was = x.hp; x.hp = Math.min(x.max, x.hp+n); S.combat.dmgLog[x.id] = `healed ${x.hp-was}${was<=0?' (no longer Dying)':''}`; clog(`${x.name} heals to ${x.hp}`); renderRight(); },
+  endTurn: d => { const x = hero(d.id); const C = S.combat; x.done = true; x.actions = 3; x.react = {}; clog(`${x.name} ends their turn`);
+    C.banners = C.banners.filter(b=>b.kind!=='leg');
+    if(legAlive()){ for(const f of C.foes.filter(f=>MON[f.mid].role==='legendary' && f.hp>0)){ const m = MON[f.mid];
+        C.banners.push({kind:'leg', title:`⚡ ${f.label} acts after ${x.name}'s turn`, html:`Choose one:<ul>${m.legendary.map(a=>`<li><b>${esc(a.name)}.</b> ${rich(a.text)}</li>`).join('')}</ul>`}); } }
+    renderRight(); },
+  monstersTurn: () => { const C=S.combat; C.phase='monsters'; C.foes.forEach(f=>f.acted=false); clog('Monsters act'); renderRight(); },
+  acted: d => { const f = foe(d.id); f.acted = !f.acted; renderRight(); },
+  endRound: () => { const C=S.combat; C.round++; C.phase='heroes'; C.heroes.forEach(x=>x.done=false); C.banners = C.banners.filter(b=>b.kind!=='leg'); clog(`Round ${C.round} begins`); render(); },
+  hitFoe: d => { const f = foe(d.id); const n = +val('dmg-'+f.id); if(!n) return; damageFoe(f, n, chk('crit-'+f.id), val('type-'+f.id)); renderRight(); if(S.view==='map') renderView(); },
+  healFoe: d => { const f = foe(d.id); const n = +val('dmg-'+f.id); if(!n) return; f.hp = Math.min(f.max, f.hp+n); clog(`${f.label} regains ${n}`); renderRight(); },
+  addMinion: d => { const f = foe(d.id); const occ = new Set(Object.values(S.combat.tokens).map(t=>`${t.x},${t.y}`));
+    const anchor = S.combat.tokens[`${f.id}#0`] || {x:Math.floor(MAP.cols/2), y:Math.floor(MAP.rows/2)};
+    // re-pack: dead tokens sit after alive ones, so grow both
+    S.combat.tokens[`${f.id}#${f.count}`] = placeAround(occ, [anchor.x, anchor.y], 1); f.count++; f.alive++;
+    clog(`Another ${MON[f.mid].name} joins the fight`); renderRight(); if(S.view==='map') renderView(); },
+  groupAttack: d => { const f = foe(d.id); const m = MON[f.mid]; const die = m.die||6; const n = Math.max(1, Math.min(f.alive, +val('ga-'+f.id)||1));
+    const dice = Array.from({length:n},()=>1+Math.floor(Math.random()*die)); const total = dice.filter(v=>v>1).reduce((a,b)=>a+b,0);
+    showRoll({expr:`${n}d${die}`, dice, ex:[], mod:0, total, miss:total===0, crit:false, label:`${n} ${m.name}s attack together`}, '(1s miss, no crits, one Defend covers it)');
+    clog(`${n} ${m.name}s attack together for ${total}`); },
+  dismissBanner: d => { S.combat.banners.splice(+d.v,1); renderRight(); },
+  rmCond: d => { const c = hero(d.id) || foe(d.id); c.conds = c.conds.filter(x=>x!==d.v); renderRight(); },
+  condPick: (d, e) => { closePick(); const c = hero(d.id) || foe(d.id); const r = e.target.getBoundingClientRect();
+    const el = document.createElement('div'); el.className='condpick'; el.id='condpick'; el.style.left = Math.min(r.left, innerWidth-260)+'px'; el.style.top = Math.min(r.bottom+4, innerHeight-260)+'px';
+    el.innerHTML = Object.entries(CONDITIONS).map(([n,t])=>`<button title="${esc(t)}" data-act="addCond" data-id="${c.id}" data-v="${n}">${n}</button>`).join(''); document.body.appendChild(el); e.stopPropagation(); },
+  addCond: d => { const c = hero(d.id) || foe(d.id); if(!c.conds.includes(d.v)) c.conds.push(d.v); clog(`${c.name||c.label} is ${d.v}`); closePick(); renderRight(); },
+  addToCombat: d => { const m = MON[d.id]; const C = S.combat; const occ = new Set(Object.values(C.tokens).map(t=>`${t.x},${t.y}`));
+    const f = m.role==='minion' ? {id:uid(), mid:d.id, label:m.name+'s', count:2, alive:2, conds:[]} : {id:uid(), mid:d.id, label:m.name+' (reinforcement)', short:'+', hp:monHp(m), max:monHp(m), conds:[], acted:false};
+    C.foes.push(f); const vb = S.vb || fullBox(); const at = [Math.floor(vb.x+vb.w/2), Math.floor(vb.y+vb.h/2)];
+    if(m.role==='minion'){ C.tokens[f.id+'#0']=placeAround(occ, at, 1); C.tokens[f.id+'#1']=placeAround(occ, at, 1); } else C.tokens[f.id]=placeAround(occ, at, tokSize(m));
+    clog(`${f.label} joins the fight`); S.view='map'; S.mode='encounter'; render(); },
+  endCombat: () => { const C = S.combat;
+    const downed = C.foes.reduce((a,f)=> a + (MON[f.mid].role==='minion' ? f.count-f.alive : f.hp<=0 ? 1 : 0), 0);
+    const total = C.foes.reduce((a,f)=> a + (MON[f.mid].role==='minion' ? f.count : 1), 0);
+    const hurt = C.heroes.filter(h=>h.wounds>S.partyHp[h.id].wounds).map(h=>{const n=h.wounds-S.partyHp[h.id].wounds; return `${h.name} +${n} Wound${n>1?'s':''}`});
+    for(const h of C.heroes) S.partyHp[h.id] = {hp:h.hp, wounds:h.wounds};
+    const summary = `${C.round} round${C.round>1?'s':''}, ${downed}/${total} foes down${hurt.length?'. '+hurt.join(', '):''}.`;
+    S.resolved[C.encId] = summary; S.session.push({t:C.name, text:summary});
+    const e = S.encounters[C.encId]; if(e && e.area){ const p = S.pins.find(x=>x.id===e.area); if(p) p.revealed = true; }
+    S.combat = null; S.mode='explore';
+    toast(`<b>Encounter over.</b> ${esc(summary)}<br><span class="muted">Appended to today's session note. The encounter block is marked resolved.</span>`, 5000); render(); },
+};
+function closePick(){ const p = $('#condpick'); if(p) p.remove(); }
+
+/* ---------- global event wiring ---------- */
+document.addEventListener('click', e => {
+  if(!e.target.closest('#condpick') && !e.target.closest('[data-act="condPick"]')) closePick();
+  if(e.target.closest('#mapSvg [data-pin]') || e.target.closest('#mapSvg [data-tok]')) return; // handled by pointer events
+  const r = e.target.closest('[data-roll]');
+  if(r){ const expr = r.dataset.roll; const dc = r.dataset.dc;
+    const res = roll(expr, {nimble: !r.dataset.plain && !dc, label: dc ? `vs DC ${dc}` : (r.closest('.sb,.cr')?.querySelector('.sb-name,.nm')?.textContent || 'roll')});
+    showRoll(res, dc ? (res.total >= +dc ? '✓ success' : '✗ fail') : ''); return; }
+  const a = e.target.closest('[data-act]');
+  if(a && A[a.dataset.act]) A[a.dataset.act](a.dataset, e);
+});
+document.addEventListener('input', e => {
+  const k = e.target.dataset.input; if(!k) return;
+  if(k==='bq'){ S.bq = e.target.value; const pos = e.target.selectionStart; renderView(); const n=$('#bq'); n.focus(); n.setSelectionRange(pos,pos); }
+  if(k==='bname'){ S.builder.name = e.target.value; }
+  if(k==='qa'){ const q = e.target.value.toLowerCase(); $('#qares').innerHTML = q ? Object.entries(MON).filter(([,m])=>m.name.toLowerCase().includes(q)).slice(0,6)
+      .map(([k,m])=>`<div class="mi" data-act="quickAdd" data-id="${k}"><span class="lv">${lv(m.level)}</span><span>${esc(m.name)}<div class="sub">${m.role}</div></span><span></span></div>`).join('') : ''; }
+});
+document.addEventListener('keydown', e => {
+  if(e.key==='Enter' && e.target.id && e.target.id.startsWith('dmg-')){ const id = e.target.id.slice(4); (hero(id) ? A.hitHero : A.hitFoe)({id}); }
+});
+document.addEventListener('mouseover', e => {
+  const m = e.target.closest('[data-mon]'); const hv = $('#hover');
+  if(!m || S.player){ hv.innerHTML=''; hv.dataset.cur=''; return; }
+  if(hv.dataset.cur === m.dataset.mon && hv.innerHTML) return;
+  hv.dataset.cur = m.dataset.mon; hv.innerHTML = statblock(m.dataset.mon, {compact:true});
+  const r = m.getBoundingClientRect(); const hh = hv.offsetHeight || 300;
+  hv.style.left = Math.max(8, Math.min(r.left, innerWidth-360))+'px';
+  hv.style.top = (r.bottom + hh + 10 > innerHeight ? Math.max(10, r.top - hh - 6) : r.bottom + 6) + 'px';
+});
+addEventListener('resize', () => scalePins());
+
+$('#scenarioPick').innerHTML = Object.values(SCENARIOS).map(s=>`<option value="${s.id}" ${s.id===SC.id?'selected':''}>${esc(s.campaign)}</option>`).join('');
+$('#scenarioPick').addEventListener('change', e => { location.search = '?s=' + e.target.value; });
+
+render();
+</script>
+</body>
+</html>

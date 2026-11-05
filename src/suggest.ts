@@ -6,16 +6,22 @@ import {
 } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { MonsterIndexEntry } from './types';
+import { formatLevel, monsterRole } from './rules';
 
-function describe(entry: MonsterIndexEntry): string {
+export function describeMonster(entry: MonsterIndexEntry): string {
 	const m = entry.monster;
 	const parts: string[] = [];
-	if (m.level) parts.push(`Lvl ${m.level}`);
-	if (m.monsterType === 'solo') parts.push('Solo');
+	const lvl = formatLevel(m.level);
+	if (lvl) parts.push(`Lvl ${lvl}`);
+	const role = monsterRole(m);
+	if (role === 'legendary') parts.push(m.roleLabel || 'Legendary');
+	if (role === 'minion') parts.push('Minion');
 	if (m.type) parts.push(m.type);
-	parts.push(`${m.hp} HP`);
+	if (role !== 'minion') parts.push(m.hpPerHero ? `${m.hpPerHero} HP/hero` : `${m.hp} HP`);
+	if (m.armor !== 'none') parts.push(m.armor === 'medium' ? 'Armor M' : 'Armor H');
 	return parts.join(' · ');
 }
+const describe = describeMonster;
 
 export class InlineRefSuggest extends EditorSuggest<MonsterIndexEntry> {
 	constructor(app: App, private plugin: NimbleStatblocksPlugin) {
@@ -61,7 +67,7 @@ export class InlineRefSuggest extends EditorSuggest<MonsterIndexEntry> {
 	renderSuggestion(entry: MonsterIndexEntry, el: HTMLElement): void {
 		el.addClass('nimble-suggestion');
 		el.createDiv({ text: entry.name, cls: 'nimble-suggestion-name' });
-		el.createDiv({ text: `${describe(entry)} · ${entry.filePath}`, cls: 'nimble-suggestion-note' });
+		el.createDiv({ text: `${describe(entry)} · ${entry.bundled ? entry.monster.source || 'Bestiary' : entry.filePath}`, cls: 'nimble-suggestion-note' });
 	}
 
 	selectSuggestion(entry: MonsterIndexEntry): void {
@@ -88,7 +94,7 @@ export class AddMonsterModal extends FuzzySuggestModal<MonsterIndexEntry> {
 		]);
 		this.emptyStateText = plugin.index.size
 			? 'No matching monsters.'
-			: 'No monsters found. Add a ```nimble code block to a note first.';
+			: 'No monsters found. Turn on the bundled bestiary in settings, or add a ```nimble code block to a note.';
 	}
 
 	getItems(): MonsterIndexEntry[] {
@@ -102,10 +108,10 @@ export class AddMonsterModal extends FuzzySuggestModal<MonsterIndexEntry> {
 	renderSuggestion(match: FuzzyMatch<MonsterIndexEntry>, el: HTMLElement): void {
 		super.renderSuggestion(match, el);
 		el.addClass('nimble-suggestion');
-		el.createDiv({ text: describe(match.item), cls: 'nimble-suggestion-note' });
+		el.createDiv({ text: `${describe(match.item)}${match.item.bundled ? ` · ${match.item.monster.source ?? ''}` : ''}`, cls: 'nimble-suggestion-note' });
 	}
 
 	onChooseItem(entry: MonsterIndexEntry, evt: MouseEvent | KeyboardEvent): void {
-		void this.plugin.addToEncounter(entry.monster, entry.filePath, evt.shiftKey ? 2 : 1);
+		void this.plugin.addToEncounter(entry.monster, entry.filePath || undefined, evt.shiftKey ? 2 : 1);
 	}
 }

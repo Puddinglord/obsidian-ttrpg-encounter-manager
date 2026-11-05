@@ -1,0 +1,3773 @@
+[
+  {
+    "name": "Bug",
+    "book": "M&M",
+    "page": 59,
+    "pdfPage": 30,
+    "group": "Swarming Bugs",
+    "habitat": "Forest",
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "1d4. On hit: deal 2 damage instead."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Wherever there is A bug—there are MORE BUGS nearby.",
+    "tactics": {
+      "easier": "Focus fire on heroes with high armor or near heroes with strong AoE abilities.",
+      "harder": "Multiple small creatures can fit in a single space. Surrounding a hero with 10–20 minions can get deadly FAST (especially if they have low armor or no AoE abilities)!"
+    },
+    "groupTraits": [],
+    "notes": "Bug Minion summoned by other Swarming Bugs. Group trait Swarming Pheromones applies only to non-minion bugs, so omitted here. Section is part of the Giant Bugs chapter."
+  },
+  {
+    "name": "Giant Bug",
+    "book": "M&M",
+    "page": 59,
+    "pdfPage": 30,
+    "group": "Swarming Bugs",
+    "habitat": "Forest",
+    "levelText": "1/3",
+    "level": 0.3333,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 12,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "1d4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Many giant bug species are able to eat anything and live anywhere—infesting caves, wildernesses, and even urban environs.",
+    "tactics": {
+      "easier": "Stay in melee reach or clump together with other bugs.",
+      "harder": "Move out of melee reach after attacking; summon minions in places that block movement and obstruct heroes' plans."
+    },
+    "groupTraits": [
+      {
+        "name": "Swarming Pheromones",
+        "text": "At the end of each round: non-minion bugs summon a Bug Minion."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Toughrider Bug",
+    "book": "M&M",
+    "page": 59,
+    "pdfPage": 30,
+    "group": "Swarming Bugs",
+    "habitat": "Forest",
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 20,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Strong Jaws",
+        "text": "1d4+4. On hit: Riding."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "They possess a tough chitin coat and powerful jaws able to grip anything to the death, can fell entire forests if left unchecked.",
+    "tactics": {
+      "easier": "Focus fire on heroes with high armor or near heroes with strong AoE abilities.",
+      "harder": "When Riding, attacks that miss you damage the Ridden target! Medium armor means these combo well with the Bonfire Bug's Eruption damage, taking no damage from it."
+    },
+    "groupTraits": [
+      {
+        "name": "Swarming Pheromones",
+        "text": "At the end of each round: non-minion bugs summon a Bug Minion."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Acidshot Bug",
+    "book": "M&M",
+    "page": 59,
+    "pdfPage": 30,
+    "group": "Swarming Bugs",
+    "habitat": "Forest",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Acid Splash",
+        "text": "Melee attackers take 2 damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acid Shot",
+        "text": "(Range 6) 1d4+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "They possess caustic sacs of acid and the deft skill to fire them at long range. They also ooze it at anyone who ventures too close.",
+    "tactics": {
+      "easier": "Move adjacent to heroes and attack with disadvantage.",
+      "harder": "Stay at range (e.g., trees, ceiling of a tunnel) shoot, then move further away."
+    },
+    "groupTraits": [
+      {
+        "name": "Swarming Pheromones",
+        "text": "At the end of each round: non-minion bugs summon a Bug Minion."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Jacker Bug",
+    "book": "M&M",
+    "page": 59,
+    "pdfPage": 30,
+    "group": "Swarming Bugs",
+    "habitat": "Forest",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hijacked",
+        "text": "(1/round) when able, you must Interpose for your Hijacker for free (healing ends)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Jacker Toxin",
+        "text": "1d4+4. On damage: Hijacked."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "When stung, every drop of blood in your body bends towards protecting your toxic captor until you die.",
+    "tactics": {
+      "easier": "Attack first, allowing heroes to easily Defend. Foreshadow the effects of the Toxin (via an NPC or Naturecraft checks).",
+      "harder": "Attack with them last, after a hero has already Defended or attack in pairs to get damage through."
+    },
+    "groupTraits": [
+      {
+        "name": "Swarming Pheromones",
+        "text": "At the end of each round: non-minion bugs summon a Bug Minion."
+      }
+    ],
+    "notes": "Hijacked is a boxed condition definition (applies to the hero), stored as a trait."
+  },
+  {
+    "name": "Bonfire Bug",
+    "book": "M&M",
+    "page": 59,
+    "pdfPage": 30,
+    "group": "Swarming Bugs",
+    "habitat": "Forest",
+    "levelText": "3",
+    "level": 3,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death: Skittering Eruption",
+        "text": "Move 3 then deal 10 damage to all adjacent creatures."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sizzle",
+        "text": "1d4+4."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "DO NOT APPROACH. Many have been injured or killed by these infernal insects. Molting season makes them AGGRESSIVE.",
+    "tactics": {
+      "easier": "Allow a hero who kills one to knock it in a direction where it will explode and take out other bugs.",
+      "harder": "Skitter toward heroes who are clumped closely together, or start a chain reaction with other bonfire bugs!"
+    },
+    "groupTraits": [
+      {
+        "name": "Swarming Pheromones",
+        "text": "At the end of each round: non-minion bugs summon a Bug Minion."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Hivedriver Bug",
+    "book": "M&M",
+    "page": 59,
+    "pdfPage": 30,
+    "group": "Swarming Bugs",
+    "habitat": "Forest",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Distress Call",
+        "text": "When attacked, summon a Bug Minion."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Swarm",
+        "text": "Summon a Bug Minion. THEN:"
+      },
+      {
+        "name": "Bite",
+        "text": "2d4+8. On crit: move a Bug Minion."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "These bugs live long enough to grow to the size of a wagon and become a living hive. KILL ON SIGHT.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Swarming Pheromones",
+        "text": "At the end of each round: non-minion bugs summon a Bug Minion."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Vicejaw Bug",
+    "book": "M&M",
+    "page": 60,
+    "pdfPage": 31,
+    "group": "Mighty Bugs",
+    "habitat": "Forest",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 25,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Vicejaw",
+        "text": "(Reach 2) 2d10+8. On Hit: Grappled (escape DC 12). Attacks that miss you damage Grappled target."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Dedicated soldiers used to protect a colony. Has long, vice-like mandibles with a powerful grip!",
+    "tactics": {
+      "easier": "Let go of heroes after 1 round in order to attack another.",
+      "harder": "Aim for weak backline heroes. Isolate them from their allies (remember: Grappled targets are attacked w/advantage)."
+    },
+    "groupTraits": [
+      {
+        "name": "Chitinous Plating",
+        "text": "Reduce all non-critical damage by 10."
+      }
+    ],
+    "notes": "Header printed as \"large, lvl 4\"."
+  },
+  {
+    "name": "Thrum Bug",
+    "book": "M&M",
+    "page": 60,
+    "pdfPage": 31,
+    "group": "Mighty Bugs",
+    "habitat": "Forest",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 25,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ominous Vibrations",
+        "text": "(Reach 4) Enemies make a WIL Save. They suffer 12 damage – their save result. On Damage: Frightened for 1 round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Herbivorous bugs with hollow resonance chambers and legs that can mimic sounds from other terrifying creatures.",
+    "tactics": {
+      "easier": "Aim for only 1 or 2 heroes, prioritizing heroes with high WIL saves (Shepherd, Stormshifter, Songweaver, Psion)",
+      "harder": "Hit as many heroes as possible, prioritizing heroes with poor WIL saves (The Cheat, Shadowmancer, Artificer)."
+    },
+    "groupTraits": [
+      {
+        "name": "Chitinous Plating",
+        "text": "Reduce all non-critical damage by 10."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Spit Bug",
+    "book": "M&M",
+    "page": 60,
+    "pdfPage": 31,
+    "group": "Mighty Bugs",
+    "habitat": "Forest",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gooey Spit",
+        "text": "(Range 8) 1d10+5. On hit: Restrained (escape DC 12). OR:"
+      },
+      {
+        "name": "Acid Spit",
+        "text": "(Range 8) 2d10+5."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Not technically \"spit\" as the projectiles originate from its other end—but scholars agreed naming it that would have been too crude.",
+    "tactics": {
+      "easier": "Use Acid Spit when in melee (rolling with disadvantage).",
+      "harder": "Climb to a high spot (ceiling of a cave or tree branch), Restrain as many heroes as possible to use up their actions and grant your allies advantage."
+    },
+    "groupTraits": [
+      {
+        "name": "Chitinous Plating",
+        "text": "Reduce all non-critical damage by 10."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Maneater Bug",
+    "book": "M&M",
+    "page": 60,
+    "pdfPage": 31,
+    "group": "Mighty Bugs",
+    "habitat": "Forest",
+    "levelText": "5",
+    "level": 5,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Stalker",
+        "text": "Starts first, anywhere on the battlefield."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Quick Strike (2x)",
+        "text": "1d10+10. On damage: Grappled and –5 to their Initiative roll. OR:"
+      },
+      {
+        "name": "Devour",
+        "text": "(A Grappled creature) 2d20+10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A misnomer—will gladly devour ANY person it can ambush.",
+    "tactics": {
+      "easier": "Quick Strike a hero who already got a low Initiative roll.",
+      "harder": "Quick Strike 2 different heroes with a higher Initiative to really tilt the odds in your favor."
+    },
+    "groupTraits": [
+      {
+        "name": "Chitinous Plating",
+        "text": "Reduce all non-critical damage by 10."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Rhino Bug",
+    "book": "M&M",
+    "page": 60,
+    "pdfPage": 31,
+    "group": "Mighty Bugs",
+    "habitat": "Forest",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Charge",
+        "text": "Move 6 in a line, 2d10+10 damage to all creatures moved through. On damage: Prone."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Among the strongest bugs in the world, many attempts have been made to tame them, but to no avail. They flip each other over with their horns in contests of dominance.",
+    "tactics": {
+      "easier": "Target a single hero (and some other bugs) with Charge.",
+      "harder": "Combo with Vicejaws, Maneaters, and Spitbugs to line up many heroes for a powerful Charge."
+    },
+    "groupTraits": [
+      {
+        "name": "Chitinous Plating",
+        "text": "Reduce all non-critical damage by 10."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Ballistic Bug",
+    "book": "M&M",
+    "page": 60,
+    "pdfPage": 31,
+    "group": "Mighty Bugs",
+    "habitat": "Forest",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Noxious Blast",
+        "text": "(Cone 4) 3d10+10. Poisoned for 1 round. Can’t use this attack next round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "When disturbed it displays a spectacular defense mechanism: a noxious eruption of boiling oil.",
+    "tactics": {
+      "easier": "Waste the attack on few heroes or include some allied bugs.",
+      "harder": "Combo with Grappling bugs to move heroes into the blast zone, making it harder for them to escape while Poisoned!"
+    },
+    "groupTraits": [
+      {
+        "name": "Chitinous Plating",
+        "text": "Reduce all non-critical damage by 10."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Slug Swarm",
+    "book": "M&M",
+    "page": 63,
+    "pdfPage": 32,
+    "group": null,
+    "habitat": "Dungeon Denizens",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 6,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 2,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can enter the space of other creatures. When damaged, reduce HP by 1. AoE attacks"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Dissolving Touch",
+        "text": "(Reach 0, AoE) HPd12, Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": null,
+      "harder": "Could drop down onto heroes from above!"
+    },
+    "groupTraits": [],
+    "notes": "Lone block on page 63 opposite the Dungeon Denizens chapter title. Swarm trait text ends mid-sentence (\"AoE attacks\") in the draft; transcribed as printed. Only a harder tactic is printed."
+  },
+  {
+    "name": "Ooze Minion",
+    "book": "M&M",
+    "page": 64,
+    "pdfPage": 33,
+    "group": "Oozes",
+    "habitat": "Dungeon Denizens",
+    "levelText": "",
+    "level": null,
+    "size": "Small",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch",
+        "text": "1d6."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Oozes often move very slowly or can easily become distracted by detritus in the dungeon.",
+      "harder": "Oozes can be particularly nasty when falling from above, against heroes with slashing attacks, pit traps, or slashing traps."
+    },
+    "groupTraits": [],
+    "notes": "Tactics are printed once for the whole Oozes family."
+  },
+  {
+    "name": "Gray Ooze",
+    "book": "M&M",
+    "page": 64,
+    "pdfPage": 33,
+    "group": "Oozes",
+    "habitat": "Dungeon Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 28,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Goopy 2",
+        "text": "When crit or dealt slashing damage: summon 2 ooze minions."
+      },
+      {
+        "name": "Digested",
+        "text": "Deal an additional 2 damage for each time the target has been Digested this encounter."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch (2×)",
+        "text": "1d6+2, Digested."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Gray oozes are mindless puddles of corrosive goop, attracted by noise and light. Darkened by accumulated soot. Suspiciously clean hallways are left in their wake.",
+    "tactics": {
+      "easier": "Oozes often move very slowly or can easily become distracted by detritus in the dungeon.",
+      "harder": "Oozes can be particularly nasty when falling from above, against heroes with slashing attacks, pit traps, or slashing traps."
+    },
+    "groupTraits": [],
+    "notes": "Tactics are printed once for the whole Oozes family. Digested is a boxed sub-definition under Acidic Touch."
+  },
+  {
+    "name": "Ochre Jelly",
+    "book": "M&M",
+    "page": 64,
+    "pdfPage": 33,
+    "group": "Oozes",
+    "habitat": "Dungeon Denizens",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 52,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Goopy 3",
+        "text": "When crit or dealt slashing damage: summon 3 ooze minions."
+      },
+      {
+        "name": "Digested",
+        "text": "Deal an additional 3 damage for each time the target has been Digested this encounter."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch (2×)",
+        "text": "1d6+3, Digested."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Digested iron has dyed them an earthen hue. Especially attracted to the scent of metal.",
+    "tactics": {
+      "easier": "Oozes often move very slowly or can easily become distracted by detritus in the dungeon.",
+      "harder": "Oozes can be particularly nasty when falling from above, against heroes with slashing attacks, pit traps, or slashing traps."
+    },
+    "groupTraits": [],
+    "notes": "Tactics are printed once for the whole Oozes family. Digested is a boxed sub-definition under Acidic Touch."
+  },
+  {
+    "name": "Black Pudding",
+    "book": "M&M",
+    "page": 64,
+    "pdfPage": 33,
+    "group": "Oozes",
+    "habitat": "Dungeon Denizens",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Goopy 5",
+        "text": "When crit or dealt slashing damage: summon 5 ooze minions."
+      },
+      {
+        "name": "Digested",
+        "text": "Deal an additional 5 damage for each time the target has been Digested this encounter."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch (2×)",
+        "text": "(Reach 2) 1d6+5, Digested."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "An ash-colored mass, too dense to see through. Named by starving, delirious adventurers. They camouflage themselves in dirt and stone to ensnare and devour prey.",
+    "tactics": {
+      "easier": "Oozes often move very slowly or can easily become distracted by detritus in the dungeon.",
+      "harder": "Oozes can be particularly nasty when falling from above, against heroes with slashing attacks, pit traps, or slashing traps."
+    },
+    "groupTraits": [],
+    "notes": "Tactics are printed once for the whole Oozes family. Digested is a boxed sub-definition under Acidic Touch."
+  },
+  {
+    "name": "Elder Ooze",
+    "book": "M&M",
+    "page": 64,
+    "pdfPage": 33,
+    "group": "Oozes",
+    "habitat": "Dungeon Denizens",
+    "levelText": "12",
+    "level": 12,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 150,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Goopy 6",
+        "text": "When crit or dealt slashing damage: summon 6 ooze minions."
+      },
+      {
+        "name": "Digested",
+        "text": "Deal an additional 6 damage for each time the target has been Digested this encounter."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Acidic Touch (3×)",
+        "text": "(Reach 3) 1d6+6, Digested."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "When an ooze reaches a certain size, it begins to exhibit signs of rational intelligence: tool use, problem solving, even trap setting. It remains a mystery to sages how the intelligence of an Elder Ooze is evenly dispersed through its constituent cells.",
+    "tactics": {
+      "easier": "Oozes often move very slowly or can easily become distracted by detritus in the dungeon.",
+      "harder": "Oozes can be particularly nasty when falling from above, against heroes with slashing attacks, pit traps, or slashing traps."
+    },
+    "groupTraits": [],
+    "notes": "Tactics are printed once for the whole Oozes family. Digested is a boxed sub-definition under Acidic Touch."
+  },
+  {
+    "name": "Wax Golem",
+    "book": "M&M",
+    "page": 66,
+    "pdfPage": 34,
+    "group": "Dungeon Golems",
+    "habitat": "Dungeon Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 28,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sticky",
+        "text": "Grapples on hit. Can Grapple any number of creatures. When crit: release 1 creature (attacker’s choice)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Wax Grip",
+        "text": "1d4 (escape DC 10). OR:"
+      },
+      {
+        "name": "Crush",
+        "text": "(a Grappled creature) 1d12."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Due to its malleability, wax is traditionally used by novice mages to practice their golemcraft. Magic schools and apprentice’s workshops are cluttered with Wax Golems of questionable obedience and craftsmanship.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Tactics lines are placeholders (\"xx\") in the draft; omitted."
+  },
+  {
+    "name": "Clay Golem",
+    "book": "M&M",
+    "page": 66,
+    "pdfPage": 34,
+    "group": "Dungeon Golems",
+    "habitat": "Dungeon Denizens",
+    "levelText": "14",
+    "level": 14,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 160,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Subsuming Grasp",
+        "text": "When attacked in melee, req. 1 action to retrieve weapon. On damage: Restrain (escape DC 16) or Prone (target’s choice)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claggy Heave (2x)",
+        "text": "(Reach 6) 2d10+10 OR:"
+      },
+      {
+        "name": "Earthen Slam",
+        "text": "4d10+20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Clay is the most common material used for Golems, offering a powerful and durable final product, despite its relative ease to work with.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Tactics lines are placeholders (\"xx\") in the draft; omitted."
+  },
+  {
+    "name": "Stone Golem",
+    "book": "M&M",
+    "page": 66,
+    "pdfPage": 34,
+    "group": "Dungeon Golems",
+    "habitat": "Dungeon Denizens",
+    "levelText": "16",
+    "level": 16,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 140,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "Bludgeoning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Stone Shards",
+        "text": "Vulnerable to Bludgeoning, deal 2d12 damage to others in Reach 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam (2x)",
+        "text": "(Reach 2) 4d8+5, on damage, Prone."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(70hp). Gain Access to Sundering Beam. (Line 12) d88 damage, ignores cover."
+    },
+    "lastStand": null,
+    "flavor": "Stone Golems are a status symbol, even amongst archmages. Stone represents permanence, and is the most unforgiving material to work with while crafting a Golem’s shell.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Header \"lvl 16, large\" is printed at the bottom of the left column, block continues at top of the next column. \"d88\" printed as-is (likely a typo, e.g. 8d8). HP 140 is lower than the lvl 14 Clay Golem's 160 in the draft. Tactics lines are placeholders (\"xx\"); omitted."
+  },
+  {
+    "name": "Cockatrice",
+    "book": "M&M",
+    "page": 68,
+    "pdfPage": 35,
+    "group": "Ambushers & Scavengers",
+    "habitat": "Dungeon Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Lithify",
+        "text": "Max actions reduced by 1 (lasts for 10 min, can stack). Lithified 3 times: Petrified."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stony Peck",
+        "text": "3d4+3. On damage, Lithify."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A bloodline of fowl carrying a terrible curse. Half snake, half chicken, a Cockatrice’s bite turns its prey to stone. For this reason, it is always hungry and irritable.",
+    "tactics": {
+      "easier": "Attack different heroes, especially ones with high Defense.",
+      "harder": "Focus a single, low Defense, hero."
+    },
+    "groupTraits": [],
+    "notes": "Lithify is a boxed condition definition, stored as a trait."
+  },
+  {
+    "name": "Lithogallus the Impeccable",
+    "book": "M&M",
+    "page": 68,
+    "pdfPage": 35,
+    "group": "Ambushers & Scavengers",
+    "habitat": "Dungeon Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": "Ornery Cockatrice",
+    "role": "solo",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Lithify",
+        "text": "Max actions reduced by 1 (lasts for 10 min, can stack). Lithified 3 times: Petrified."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose 1:",
+    "actions": [
+      {
+        "name": "Heelspur",
+        "text": "Fly 4, then 2d4."
+      },
+      {
+        "name": "Stony Peck",
+        "text": "3d4+2. On damage, Lithify."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(25): Creatures lose 1 stack of Lithify."
+    },
+    "lastStand": null,
+    "flavor": "The cockatrice matriarch, has a reputation: Aggressive and loud—her disagreeable temperament is notable even among Cockatrices. She spreads fear wherever she roams, leaving a trail of petrified bodies in her wake and squawking loudly at no one in particular.",
+    "tactics": {
+      "easier": "Use heelspur as much as possible.",
+      "harder": "Use Stony Peck as much as possible."
+    },
+    "groupTraits": [],
+    "notes": "Header \"lvl 1 solo ornery cockatrice\"; actions intro printed as \"Actions. After each hero's turn, choose 1:\". No size printed. Lithify is a boxed condition definition."
+  },
+  {
+    "name": "Carrion Worm",
+    "book": "M&M",
+    "page": 68,
+    "pdfPage": 35,
+    "group": "Ambushers & Scavengers",
+    "habitat": "Dungeon Denizens",
+    "levelText": "4",
+    "level": 4,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Foul Aura",
+        "text": "(Reach 2) Befouled. Creatures in the area are Dazed and take 2d10 psychic damage; they take this damage again if they end their turn here."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Foul Excretion",
+        "text": "(Reach 8) shoot a “projectile” and Befoul the space where it lands."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "If what goes IN it is smelly, just imagine the smells that come OUT—on second thought. Don't. Smells so foul it can break your mind.",
+    "tactics": {
+      "easier": "Stay at range.",
+      "harder": "Engage in melee to hit multiple heroes with your aura."
+    },
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Stirge",
+    "book": "M&M",
+    "page": 68,
+    "pdfPage": 35,
+    "group": "Stirges",
+    "habitat": "Dungeon Denizens",
+    "levelText": "1/2",
+    "level": 0.5,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Evasive Flier",
+        "text": "Attack against you are disadvantaged."
+      },
+      {
+        "name": "Latched On",
+        "text": "You move where your target moves until either dies. Your attacks can’t miss or be Defended/Interposed against. Attacks that miss you damage your target instead."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Latch On",
+        "text": "1d4+2. On hit: Latched On."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Abyssal mosquitos that appear in places where the dead have been left unburied. If unchecked, a Stirge will drain a body—living or dead—of every drop of blood before laying eggs in it.",
+    "tactics": {
+      "easier": "Delatch after a round or two.",
+      "harder": "Attack heroes with high Defense, combos well with creatures who Poison, Blind, or otherwise give additional Disadvantage."
+    },
+    "groupTraits": [],
+    "notes": "Tactics are from the shared \"Stirge Tactics\" box. Latched On is a boxed condition definition."
+  },
+  {
+    "name": "Greater Stirge",
+    "book": "M&M",
+    "page": 68,
+    "pdfPage": 35,
+    "group": "Stirges",
+    "habitat": "Dungeon Denizens",
+    "levelText": "6",
+    "level": 6,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Evasive Flier",
+        "text": "Attack against you are disadvantaged."
+      },
+      {
+        "name": "Latched On",
+        "text": "You move where your target moves until either dies. Your attacks can’t miss or be Defended/Interposed against. Attacks that miss you damage your target instead."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Latch On",
+        "text": "1d12+10. On hit: Latched On."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The queens of a Stirge swarm are larger, more intelligent, and more aggressive than their peers. They will lead a swarm for hours, waiting for a moment when their prey is weakened or distracted to strike.",
+    "tactics": {
+      "easier": "Delatch after a round or two.",
+      "harder": "Attack heroes with high Defense, combos well with creatures who Poison, Blind, or otherwise give additional Disadvantage."
+    },
+    "groupTraits": [],
+    "notes": "Block starts at bottom of page 68 and continues on page 69. Tactics are from the shared \"Stirge Tactics\" box."
+  },
+  {
+    "name": "Rat Swarm",
+    "book": "M&M",
+    "page": 69,
+    "pdfPage": 35,
+    "group": "Ambushers & Scavengers",
+    "habitat": "Dungeon Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 3,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can enter the space of other creatures. When damaged, reduce HP by 1. (AoE attacks reduce HP by 2)."
+      },
+      {
+        "name": "Persistent",
+        "text": "When damaged, summon a rat minion. (size:1d4)"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Gnaw",
+        "text": "(Reach 0) HPd4"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "\"size:1d4\" refers to the summoned rat minion, not this creature."
+  },
+  {
+    "name": "Spider Swarm",
+    "book": "M&M",
+    "page": 69,
+    "pdfPage": 35,
+    "group": "Ambushers & Scavengers",
+    "habitat": "Dungeon Denizens",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 3,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can enter the space of other creatures. When damaged, reduce HP by 1. AoE attacks reduce HP by 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Binding Webs",
+        "text": "(Reach 0) Restrained (escape DC 11) OR:"
+      },
+      {
+        "name": "Feassst!",
+        "text": "(Reach 0, vs Restrained creatures) HPd8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Spider Swarm Horde",
+    "book": "M&M",
+    "page": 69,
+    "pdfPage": 35,
+    "group": "Ambushers & Scavengers",
+    "habitat": "Dungeon Denizens",
+    "levelText": "3",
+    "level": 3,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 6,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swarm",
+        "text": "Can enter the space of other creatures. When damaged, reduce HP by 1. AoE attacks reduce HP by 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Binding Webs",
+        "text": "(Reach 0) Restrained (escape DC 13) OR:"
+      },
+      {
+        "name": "Feassst!",
+        "text": "(Reach 0, AoE, vs Restrained creatures) HPd8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": null
+  },
+  {
+    "name": "Basilisk",
+    "book": "M&M",
+    "page": 69,
+    "pdfPage": 35,
+    "group": "Ambushers & Scavengers",
+    "habitat": "Dungeon Denizens",
+    "levelText": "7",
+    "level": 7,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 48,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ossify",
+        "text": "Max actions reduced by 1 for 10 min. Creatures Ossified 3 times become Petrified."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Stone Gaze",
+        "text": "Ossify 1 creature, then:"
+      },
+      {
+        "name": "Envenom",
+        "text": "1d8+10, advantage vs Dazed targets."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavour (\"XX\") and tactics (\"xx\") are placeholders in the draft; omitted. Ossify is a boxed condition definition; block continues into the next column."
+  },
+  {
+    "name": "Book Mimic",
+    "book": "M&M",
+    "page": 71,
+    "pdfPage": 36,
+    "group": "Mimics",
+    "habitat": "Dungeon Denizens",
+    "levelText": "3",
+    "level": 3,
+    "size": "Tiny",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 25,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 2,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Too Close!",
+        "text": "Blinded until they escape (DC 11). Move with them and your attacks can't be Interposed. You take half damage from attacks (they take the other half)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Read THIS!",
+        "text": "(Reach 3) 1d4+4, on hit: Too Close!"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Stories of possessed books are well known among scholars, these are usually Book Mimics, looking to feast on a sleep-deprived mage.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Ambusher",
+        "text": "Mimics always start combat first and enemies roll Initiative with disadvantage."
+      }
+    ],
+    "notes": "Too Close! is a condition definition, stored as a trait. Tactics are placeholders (\"xx\") in the draft; omitted."
+  },
+  {
+    "name": "Clothing Mimic",
+    "book": "M&M",
+    "page": 71,
+    "pdfPage": 36,
+    "group": "Mimics",
+    "habitat": "Dungeon Denizens",
+    "levelText": "4",
+    "level": 4,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 2,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Worn",
+        "text": "They are Restrained until they escape (DC 12). Move with your target, your attacks can't be Interposed, and you take half damage from attacks (they take the other half)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Enwrap",
+        "text": "(Reach 4) Pull yourself toward a target, attack for 1d6+6 damage and Worn."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Clothing Mimics often feature in bedtime stories meant to discipline messy kids. They are quite real, however. These mimics have been reported to imitate everything from warm clothing in cold regions, to fashionable garbs in big cities.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Ambusher",
+        "text": "Mimics always start combat first and enemies roll Initiative with disadvantage."
+      }
+    ],
+    "notes": "Worn is a condition definition, stored as a trait. Tactics are placeholders (\"xx\") in the draft; omitted."
+  },
+  {
+    "name": "Treasure Chest Mimic",
+    "book": "M&M",
+    "page": 71,
+    "pdfPage": 36,
+    "group": "Mimics",
+    "habitat": "Dungeon Denizens",
+    "levelText": "5",
+    "level": 5,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 2,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Wow, A Treasure Chest!",
+        "text": "(Optional) Heroes make a WIL save, the lowest is tempted to open it!"
+      },
+      {
+        "name": "Ambusher",
+        "text": "Deal +10 damage on your first attack in an encounter."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pseudopod (2x)",
+        "text": "(Reach 6) 1d6. On hit Grappled (escape DC 13, can Grapple multiple creatures). OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(a Grappled or adjacent creature) Pull them toward you then deal 2d12+10 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The common Chest Mimic was historically very effective against adventurers, making it infamous. In time however, its main prey learned to avoid it, and it has since become endangered.",
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Ambusher",
+        "text": "Mimics always start combat first and enemies roll Initiative with disadvantage."
+      }
+    ],
+    "notes": "Tactics are placeholders (\"xx\") in the draft; omitted."
+  },
+  {
+    "name": "Door Mimic",
+    "book": "M&M",
+    "page": 71,
+    "pdfPage": 36,
+    "group": "Mimics",
+    "habitat": "Dungeon Denizens",
+    "levelText": "10",
+    "level": 10,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 0,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Totally a Real Door!",
+        "text": "Has heavy armor (and can't attack) on one side. Opens as a door normally, after some in the party pass through slam shut, splitting the party, attacking the heroes on the unarmored side."
+      },
+      {
+        "name": "Ambusher",
+        "text": "Deal +20 damage on your first attack in an encounter."
+      },
+      {
+        "name": "Unlock",
+        "text": "DC 15 Finesse check (rolling with disadvantage) or audibly unlocks when bloodied."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pseudopod (2x)",
+        "text": "(Reach 8) 1d12. OR:"
+      },
+      {
+        "name": "Bite",
+        "text": "(a Grappled or adjacent creature) Pull them toward you then deal 2d12+20 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Ambusher",
+        "text": "Mimics always start combat first and enemies roll Initiative with disadvantage."
+      }
+    ],
+    "notes": "Header printed \"lvl 10, large (Escape DC:15)\". Armor not shown as a stat icon (heavy armor on one side only, per trait). Flavour (\"XX\") and tactics (\"xx\") are placeholders; omitted."
+  },
+  {
+    "name": "Hallway Mimic",
+    "book": "M&M",
+    "page": 71,
+    "pdfPage": 36,
+    "group": "Mimics",
+    "habitat": "Dungeon Denizens",
+    "levelText": "x",
+    "level": null,
+    "size": "Huge",
+    "kind": null,
+    "role": "solo",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": "20xLVL",
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Perfectly Normal Hallway…",
+        "text": "Appears as a trivial-to-jump pit initially, as heroes attempt to cross, roll Initiative! Pull the hero who rolled the lowest into the Pit and Bite!"
+      },
+      {
+        "name": "Ambusher",
+        "text": "Deal +2x LVL damage on your first attack."
+      },
+      {
+        "name": "Escape!",
+        "text": "Heroes can attempt to escape the Pit any way that makes sense. Spending an action to pull others out (must go Prone to reach them without rope), teleporting, flying, jumping, or any appropriate skill check (DC 10+1/2 lvl) rolled with disadvantage since the mimic is STICKY!"
+      }
+    ],
+    "actionsIntro": "After each hero's turn, pull a Grappled hero 4 spaces then choose one:",
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "(Reach 0, AoE:all in the pit) 1d6+LVL."
+      },
+      {
+        "name": "Pseudopod",
+        "text": "(Reach 12) 1d6+LVL damage. On hit: Grappled (escape DC 10+1/2 LVL)."
+      }
+    ],
+    "bloodied": {
+      "name": "Swinging Blades",
+      "text": "At half HP, trigger swinging blades on each side above the Pit. Any creature adjacent to the Pit (being pulled in or climbing out) suffers LVL damage on a failed DEX save."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0 hp, the Mimic is dying! 10xLVL more damage and it dies. Until then the floor on both sides of the Pit slopes downward, before each hero's turn, move them 3 spaces nearer the Pit!"
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Ambusher",
+        "text": "Mimics always start combat first and enemies roll Initiative with disadvantage."
+      }
+    ],
+    "notes": "Scaling level: header \"lvl x, solo huge\", HP 20xLVL. No Speed printed (default 6 applied, though it is a stationary pit). Escape! is a box printed below the block."
+  },
+  {
+    "name": "Shadow Dragon",
+    "book": "M&M",
+    "page": 74,
+    "pdfPage": 38,
+    "group": "Shadow Dragon",
+    "habitat": "Dungeon Denizens",
+    "levelText": "8",
+    "level": 8,
+    "size": "Huge",
+    "kind": "Winged Nightmare",
+    "role": "solo",
+    "armor": "M",
+    "hp": 230,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Enervating Shadows",
+        "text": "On damage, target loses 1 action, summon a Umbral Minion."
+      },
+      {
+        "name": "Life, from Death",
+        "text": "Whenever a Dying creature damages you or a minion, they heal that many HP."
+      }
+    ],
+    "actionsIntro": "After each hero's turn, choose 1:",
+    "actions": [
+      {
+        "name": "Entropic Breath (1 use, Cone 5)",
+        "text": "5d10."
+      },
+      {
+        "name": "Ebon Claws",
+        "text": "(Reach 3) 3d10."
+      },
+      {
+        "name": "Umbral Tail",
+        "text": "(Cone 3) 2d10, Knockback 3."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(115hp): Summon 1 Umbral Minion/hero."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "(80). Summon 2 Umbral Minions/hero. Recharge Entropic Breath."
+    },
+    "flavor": null,
+    "tactics": {
+      "easier": "Leave your Umbral Minions near heroes who are dying or low on actions. When summoned, make them wait until the end of the round to act.",
+      "harder": "Protect your Umbral Minions preciously. Make the heroes work to regain their actions back!"
+    },
+    "groupTraits": [],
+    "notes": "Header \"lvl 8 Huge Solo Winged Nightmare\"; actions intro printed as \"SOLO. After each hero's turn, choose1:\". Tactics are from the \"Running a Shadow Dragon\" sidebar on page 75. Umbral Minion stat box inside this block is a separate entry."
+  },
+  {
+    "name": "Umbral Minion",
+    "book": "M&M",
+    "page": 74,
+    "pdfPage": 38,
+    "group": "Shadow Dragon",
+    "habitat": "Dungeon Denizens",
+    "levelText": "",
+    "level": null,
+    "size": "Medium",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "On Death",
+        "text": "Grant attacker 1 action."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Strike",
+        "text": "1d10."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": "Leave your Umbral Minions near heroes who are dying or low on actions. When summoned, make them wait until the end of the round to act.",
+      "harder": "Protect your Umbral Minions preciously. Make the heroes work to regain their actions back!"
+    },
+    "groupTraits": [],
+    "notes": "Small inset box inside the Shadow Dragon block; no level, size or HP printed. Tactics are from the \"Running a Shadow Dragon\" sidebar."
+  },
+  {
+    "name": "Snakeman Minion",
+    "book": "M&M",
+    "page": 72,
+    "pdfPage": 39,
+    "group": "Snakemen",
+    "habitat": "Desert Sands",
+    "levelText": "",
+    "level": null,
+    "size": "Medium",
+    "kind": null,
+    "role": "minion",
+    "armor": "none",
+    "hp": null,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Strike",
+        "text": "(Reach 8) 1d6 (follows minion rules)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": {
+      "easier": null,
+      "harder": "Unique for minions, Snakemen can strike from a distance, us it to your advantage to stay away from danger!"
+    },
+    "groupTraits": [],
+    "notes": "Printed page numbers restart in the draft here (this spread is numbered 72/73 after a 74/75 spread). Flavour (\"XX\") and easier tactic (\"xx\") are placeholders; omitted."
+  },
+  {
+    "name": "Snakeman",
+    "book": "M&M",
+    "page": 73,
+    "pdfPage": 39,
+    "group": "Snakemen",
+    "habitat": "Desert Sands",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Coiling Strike",
+        "text": "On melee crit: Grapple (escape DC 10)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slash",
+        "text": "1d6+6 (or Spit, Range 8)"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavour (\"XX\") and tactics (\"xx\") are placeholders in the draft; omitted."
+  },
+  {
+    "name": "Cobra Captain",
+    "book": "M&M",
+    "page": 73,
+    "pdfPage": 39,
+    "group": "Snakemen",
+    "habitat": "Desert Sands",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slash (2×)",
+        "text": "1d6+6 (or Spit, Range 8)"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavour (\"XX\") and tactics (\"xx\") are placeholders in the draft; omitted."
+  },
+  {
+    "name": "Giant Cobra",
+    "book": "M&M",
+    "page": 73,
+    "pdfPage": 39,
+    "group": "Snakemen",
+    "habitat": "Desert Sands",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 76,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crush",
+        "text": "2d6+20. Advantage vs. smaller creatures."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Flavour (\"XX\") and tactics (\"xx\") are placeholders in the draft; omitted."
+  },
+  {
+    "name": "Lindworm",
+    "book": "M&M",
+    "page": 73,
+    "pdfPage": 39,
+    "group": "Snakemen",
+    "habitat": "Desert Sands",
+    "levelText": "4",
+    "level": 4,
+    "size": "Huge",
+    "kind": "Serpent",
+    "role": "solo",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Acid Blood",
+        "text": "When crit, (Reach 1) deal 2d6 damage."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn, choose 1:",
+    "actions": [
+      {
+        "name": "Coil",
+        "text": "Move 6. 2d6, Grapple (escape DC 10)."
+      },
+      {
+        "name": "Squeeze",
+        "text": "(vs Grappled Creature) 2d6+10."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 60 HP Move 8, Poison any creature adjacent to your path (lasts until healed)."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "At 0 HP the Lindworm is dying! 40 more damage and it dies. Until then, each turn it may also Spit Acid. (Range 8) 1d6+10."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Header \"lvl 4 solo, huge serpent\". Flavour (\"XX\") and tactics (\"xx\") are placeholders in the draft; omitted."
+  },
+  {
+    "name": "Dune Stalker",
+    "book": "M&M",
+    "page": 74,
+    "pdfPage": 40,
+    "group": "Persistence Hunters",
+    "habitat": "Desert Sands",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Skirmisher",
+        "text": "After making an attack, move up to 4 spaces."
+      },
+      {
+        "name": "Rended",
+        "text": "Take 2 damage per space moved. Healing ends."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Rend",
+        "text": "1d8+2. On damage, Rended."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Unyielding Stalkers",
+        "text": "Heroes roll a STR save instead of Initiative."
+      }
+    ],
+    "notes": "Rended is a boxed condition definition, stored as a trait."
+  },
+  {
+    "name": "Giant Vulture",
+    "book": "M&M",
+    "page": 74,
+    "pdfPage": 40,
+    "group": "Persistence Hunters",
+    "habitat": "Desert Sands",
+    "levelText": "3",
+    "level": 3,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 8,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Feathery Gale",
+        "text": "(Cone 4) 1d4+2 Knockback that many spaces. OR:"
+      },
+      {
+        "name": "Beak and Talon",
+        "text": "2d8+2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Unyielding Stalkers",
+        "text": "Heroes roll a STR save instead of Initiative."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Chalice Beetle",
+    "book": "M&M",
+    "page": 74,
+    "pdfPage": 40,
+    "group": "Persistence Hunters",
+    "habitat": "Desert Sands",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 40,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Ram",
+        "text": "2d8+5. On damage, Knockback 2."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Unyielding Stalkers",
+        "text": "Heroes roll a STR save instead of Initiative."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Mummified Beast",
+    "book": "M&M",
+    "page": 74,
+    "pdfPage": 40,
+    "group": "Persistence Hunters",
+    "habitat": "Desert Sands",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 4,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "fire"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bound and Embalmed",
+        "text": "Vulnerable to fire damage, until extinguished, +2 speed and your attacks deal +5 fire damage."
+      },
+      {
+        "name": "Optional: Dead-Eye Curse",
+        "text": "After combat, anyone that took damage from a mummified beast makes a DC 12 STR save or falls victim to the Dead-Eyed Curse: They gain advantage on STR saves, +2 damage to their melee attacks and they suffer 1 Wound at the beginning of each day (or slower at GM discretion) until cleansed. If killed while cursed, they return to life as a dead-eyed foe (a mindless, hostile monster). A level appropriate quest could have them cured of the curse—possibly even after death if you like!"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Cursed Bite",
+        "text": "2d10+5. On damage, Grappled (escape DC 12)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Unyielding Stalkers",
+        "text": "Heroes roll a STR save instead of Initiative."
+      }
+    ],
+    "notes": "Optional: Dead-Eye Curse is a boxed sidebar inside the block."
+  },
+  {
+    "name": "Sand Elemental",
+    "book": "M&M",
+    "page": 74,
+    "pdfPage": 40,
+    "group": "Persistence Hunters",
+    "habitat": "Desert Sands",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 10,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Arid Ephemeral",
+        "text": "Reduce all damage to 1 until soaked by liquid."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sandstorm",
+        "text": "(AoE, Reach 2) 2d8+3. Move all affected creatures up to 2 spaces."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Unyielding Stalkers",
+        "text": "Heroes roll a STR save instead of Initiative."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Cactus Viper",
+    "book": "M&M",
+    "page": 75,
+    "pdfPage": 40,
+    "group": "Ambush Predators",
+    "habitat": "Desert Sands",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Serpentine Movements",
+        "text": "Invisible until you attack. You benefit twice as much from advantage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Venomous Bite",
+        "text": "(Reach 2) 1d4. On crit: +20 damage and Poisoned until healed (except Dwarves & Hunters)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Something Feels… Off",
+        "text": "Combat with ambush predators starts with a hero making a DC 15 Survival check. Another hero makes a DC 15 Perception check (with disadvantage, if the Survival check failed). If the Perception check fails, the monsters go first (heroes skip their first turn, but start combat with 3 actions)!"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Flying Centipede",
+    "book": "M&M",
+    "page": 75,
+    "pdfPage": 40,
+    "group": "Ambush Predators",
+    "habitat": "Desert Sands",
+    "levelText": "2",
+    "level": 2,
+    "size": "Small",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 30,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": 6,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "lightning"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Bug Zap",
+        "text": "Vulnerable to lightning, adjacent creatures take 5 acid damage."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Snap!",
+        "text": "1d4+6. On damage: Riding (Escape DC 8). OR:"
+      },
+      {
+        "name": "Dissolving Saliva",
+        "text": "(If Riding) 1d20."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Something Feels… Off",
+        "text": "Combat with ambush predators starts with a hero making a DC 15 Survival check. Another hero makes a DC 15 Perception check (with disadvantage, if the Survival check failed). If the Perception check fails, the monsters go first (heroes skip their first turn, but start combat with 3 actions)!"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Giant Scorpion",
+    "book": "M&M",
+    "page": 75,
+    "pdfPage": 40,
+    "group": "Ambush Predators",
+    "habitat": "Desert Sands",
+    "levelText": "7",
+    "level": 7,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": "Climb (no value printed)",
+    "saves": null,
+    "resist": [],
+    "vuln": [
+      "cold"
+    ],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Diapause",
+        "text": "Vulnerable to cold damage, advantage on next attack."
+      },
+      {
+        "name": "Grappling",
+        "text": "If Grappling a creature with both claws, gain advantage 2 on attacks. Each claw must be escaped idividually to end the Grapple."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Claw (2x)",
+        "text": "1d10+1, Grappled (escape DC 13). THEN:"
+      },
+      {
+        "name": "Sting",
+        "text": "1d4+5. On damage, envenomed: +20 damage."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Something Feels… Off",
+        "text": "Combat with ambush predators starts with a hero making a DC 15 Survival check. Another hero makes a DC 15 Perception check (with disadvantage, if the Survival check failed). If the Perception check fails, the monsters go first (heroes skip their first turn, but start combat with 3 actions)!"
+      }
+    ],
+    "notes": "Climb icon printed without a number, so climb left null. Grappling is a boxed note under the actions."
+  },
+  {
+    "name": "Sand Shark",
+    "book": "M&M",
+    "page": 75,
+    "pdfPage": 40,
+    "group": "Ambush Predators",
+    "habitat": "Desert Sands",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 90,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": 8,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ambusher",
+        "text": "The first attack each encounter deals max damage (36)."
+      },
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage against damaged targets."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "3d12."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Something Feels… Off",
+        "text": "Combat with ambush predators starts with a hero making a DC 15 Survival check. Another hero makes a DC 15 Perception check (with disadvantage, if the Survival check failed). If the Perception check fails, the monsters go first (heroes skip their first turn, but start combat with 3 actions)!"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Elder Sand Shark",
+    "book": "M&M",
+    "page": 75,
+    "pdfPage": 40,
+    "group": "Ambush Predators",
+    "habitat": "Desert Sands",
+    "levelText": "12",
+    "level": 12,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 140,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": 10,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Ambusher",
+        "text": "The first attack each encounter deals max damage (60)."
+      },
+      {
+        "name": "Bloodthirsty",
+        "text": "Advantage on attacks against damaged targets."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "3d20"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [
+      {
+        "name": "Something Feels… Off",
+        "text": "Combat with ambush predators starts with a hero making a DC 15 Survival check. Another hero makes a DC 15 Perception check (with disadvantage, if the Survival check failed). If the Perception check fails, the monsters go first (heroes skip their first turn, but start combat with 3 actions)!"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Scarab Swarm",
+    "book": "M&M",
+    "page": 76,
+    "pdfPage": 41,
+    "group": null,
+    "habitat": "Desert Sands",
+    "levelText": "8",
+    "level": 8,
+    "size": "Large",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 4,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mighty Swarm",
+        "text": "Can enter the space of other creatures to Grapple them (escape DC 14) and move Grappled creatures with you. Can only be damaged by AoE attacks, which reduce HP by 1."
+      },
+      {
+        "name": "Swarm Note",
+        "text": "If it makes sense, any creatures within a swarm when it is attacked may also take damage!"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crunch!",
+        "text": "(Reach 0, AoE) HPd8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "No family heading on this page (follows Ambush Predators). Swarm Note is a box printed after the Scarab Swarm Horde, applied to both swarms."
+  },
+  {
+    "name": "Scarab Swarm Horde",
+    "book": "M&M",
+    "page": 76,
+    "pdfPage": 41,
+    "group": null,
+    "habitat": "Desert Sands",
+    "levelText": "10",
+    "level": 10,
+    "size": "Huge",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 6,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mighty Swarm",
+        "text": "Can enter the space of other creatures to Grapple them (escape DC 16) and move Grappled creatures with you. Can only be damaged by AoE attacks, which reduce HP by 1."
+      },
+      {
+        "name": "Swarm Note",
+        "text": "If it makes sense, any creatures within a swarm when it is attacked may also take damage!"
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Crunch!",
+        "text": "(Reach 0, AoE) HPd8."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "No family heading on this page. Flavour and tactics are placeholders (\"xx\") in the draft; omitted."
+  },
+  {
+    "name": "Mummy",
+    "book": "M&M",
+    "page": 76,
+    "pdfPage": 41,
+    "group": null,
+    "habitat": "Desert Sands",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": "Undead",
+    "role": "regular",
+    "armor": "none",
+    "hp": 54,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Slam (2×)",
+        "text": "1d8+4. On damage: Dazed."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(at 27hp) Summon a Scarab Swarm."
+    },
+    "lastStand": null,
+    "flavor": "Once a figure of prominence, their body preserved for an afterlife they never reached.",
+    "tactics": {
+      "easier": "Target high-defense or already Dazed heroes. If guarding a tomb, it will not pursue the heroes if they escape.",
+      "harder": "Target Grappled heroes and ones not already Dazed."
+    },
+    "groupTraits": [],
+    "notes": "Header \"lvl 6, undead\"; no size printed."
+  },
+  {
+    "name": "Mummy Lord",
+    "book": "M&M",
+    "page": 76,
+    "pdfPage": 41,
+    "group": null,
+    "habitat": "Desert Sands",
+    "levelText": "21",
+    "level": 21,
+    "size": "Medium",
+    "kind": "Undead",
+    "role": "regular",
+    "armor": "none",
+    "hp": 280,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Cursed Gaze",
+        "text": "When crit: DC 20 INT save, or suffer 1 Wound."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Infest",
+        "text": "Summon a Scarab Swarm with 2 HP. Then:"
+      },
+      {
+        "name": "Slam (2×)",
+        "text": "1d8+20. On damage: Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A king in life, now cursed in death. Still wears a symbol of its status from its former life.",
+    "tactics": {
+      "easier": "Your Scarab Swarms act next round, and attack heroes you aren't attacking.",
+      "harder": "Your Scarab Swarms act immediately upon being summoned, focus Slam on Grappled heroes."
+    },
+    "groupTraits": [],
+    "notes": "Header \"lvl 21, undead\"; no size printed."
+  },
+  {
+    "name": "Audun, Desert's Maw",
+    "book": "M&M",
+    "page": 77,
+    "pdfPage": 41,
+    "group": null,
+    "habitat": "Desert Sands",
+    "levelText": "6",
+    "level": 6,
+    "size": "Large",
+    "kind": "Sudden Pit of Teeth",
+    "role": "solo",
+    "armor": "none",
+    "hp": 180,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": "STR++",
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Climb, Everyone!",
+        "text": "CLIMB!! Combat with Audun begins when it appears suddenly under the Heroes’ feet. On an Initiative roll of 20+ heroes begin combat 10 spaces away from Audun’s mouth; 10+, 8 spaces; less than that, 6 spaces. Moving away from Audun is Difficult Terrain."
+      },
+      {
+        "name": "How to Harm Audun?",
+        "text": "Running straight toward its mouth is certainly an option (though likely an ill-advised one), but ranged attacks are a bit safer, and its Grappling tentacles can be attacked as normal."
+      },
+      {
+        "name": "Eaten",
+        "text": "Restrained (escape DC 13), duffer X damage when Eaten and at the end of each of your turns. Gain advantage on all attacks against Audun."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn, choose 1:",
+    "actions": [
+      {
+        "name": "Tentacle",
+        "text": "(Target the furthest non-Grappled enemy) 1d4+10. On hit, Grappled (escape DC 13 or any slashing or cold damage)."
+      },
+      {
+        "name": "Reel In & Devour",
+        "text": "(If half or more heroes are Grappled) Pull all Grappled creatures 2 spaces closer to its mouth. Any hero there is Eaten!"
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 90 HP, Sandquake. All heroes must make a DC 13 DEX save (with disadvantage if Grappled) or be pulled 4 spaces closer, 2 spaces instead on save."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "at 0 HP Audun is Dying! 60 more damage and it dies (spitting out any eaten heroes). Until then, it can choose TWICE on each of its turns."
+    },
+    "flavor": null,
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Header \"lvl 6, large sudden pit of teeth\" does not say solo; role set to solo because it uses the solo ACTIONS/BLOODIED/LAST STAND format. Eaten is a box below the block; \"duffer X damage\" printed as-is (placeholder X, likely \"suffer\"). No Speed printed (default 6 applied)."
+  },
+  {
+    "name": "Sea Hag",
+    "book": "M&M",
+    "page": 79,
+    "pdfPage": 42,
+    "group": "Hags",
+    "habitat": "Swamp & Bog",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 50,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Blackwater Eye",
+        "text": "(1/round) when damaged, Frighten (DC 12 WIL)."
+      },
+      {
+        "name": "Drowning",
+        "text": "Silenced, suffer 1 Wound at the end of your turn while drowning (spend 2 actions retching to end)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sick Claws (2x)",
+        "text": "1d8+4 On crit: Drowning."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(25hp). Drown Ye! Heroes gain Drowning on a failed DC 12 STR save."
+    },
+    "lastStand": null,
+    "flavor": "Hideous polluters of coves and bays, these hags ensnare passers-by with glints of treasure. They love to curse a sailor, then send them away to sink their ship.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Header printed \"lvl, 4\". Drowning is a boxed condition definition. Tactics are placeholders (\"xx\"); omitted."
+  },
+  {
+    "name": "Green Hag",
+    "book": "M&M",
+    "page": 79,
+    "pdfPage": 42,
+    "group": "Hags",
+    "habitat": "Swamp & Bog",
+    "levelText": "7",
+    "level": 7,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 80,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Naughty Child!",
+        "text": "When Crit, ignore damage from exploding dice, deal that much damage back."
+      },
+      {
+        "name": "Hobbled",
+        "text": "Half speed, ALL Reactions cost +1 action."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Sweets for My Dearie!",
+        "text": "Move an enemy 6 spaces. Then:"
+      },
+      {
+        "name": "Sick Claw (2x)",
+        "text": "1d12+5. On damage, Poisoned (healing ends)."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(40 hp). Bitter Curse. Heroes are Hobbled on a failed DC 13 WIL save."
+    },
+    "lastStand": null,
+    "flavor": "In swamps they wallow in secrets and schemes, practicing obscure and unknown magics. They are proud of their cunning and trick mortals into dooming themselves willingly.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Header printed \"lvl, 7\". Hobbled is a boxed condition definition. Tactics are placeholders (\"xx\"); omitted."
+  },
+  {
+    "name": "Night Hag",
+    "book": "M&M",
+    "page": 79,
+    "pdfPage": 42,
+    "group": "Hags",
+    "habitat": "Swamp & Bog",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 120,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Gloam Step (1/Round)",
+        "text": "When damaged, teleport adjacent to an enemy, Frighten them."
+      },
+      {
+        "name": "Terror",
+        "text": "Attack with disadvantage. On miss, damage self."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Umbral Curse (2x)",
+        "text": "(Reach 6) 1d8+10. On crit: Terror."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "(60 hp). Waking Nightmare. Heroes gain Terror on a failed DC 15 WIL save."
+    },
+    "lastStand": null,
+    "flavor": "The cruelest of their kin. Their thirst for misery is so strong that they have toppled entire cities by turning every inhabitant against their neighbor.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Header printed \"lvl, 10\". Block continues from the bottom of the first column to the top of the second. Terror is a boxed condition definition. Tactics are placeholders (\"xx\"); omitted."
+  },
+  {
+    "name": "Vesha, the Beauty",
+    "book": "M&M",
+    "page": 79,
+    "pdfPage": 42,
+    "group": "Hags",
+    "habitat": "Swamp & Bog",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": "Odious Center of Attention",
+    "role": "solo",
+    "armor": "none",
+    "hp": 220,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Hagified",
+        "text": "(max 1 creature) Allies are frightened of you and require a WIL save to Help, Interpose, or Target. Any negative condition Vesha gains, is also applied to you."
+      },
+      {
+        "name": "Made Beautiful",
+        "text": "Vesha also benefits from any beneficial spell or ability cast on an ally."
+      },
+      {
+        "name": "Don’t look at me, I’m hideous!",
+        "text": "When Vesha is crit, end Hagified and Made Beautiful. Attacker makes a DC 14 WIL save or loses 1 action retching or gaping in horror."
+      }
+    ],
+    "actionsIntro": "After each hero’s turn, move 3 then choose 1:",
+    "actions": [
+      {
+        "name": "Hag’s Curse",
+        "text": "(Reach 6) 1d8+10, on damage: Vesha is Made Beautiful and you are Hagified."
+      },
+      {
+        "name": "Jealous Outburst",
+        "text": "(Reach 6) 2d8+20 (vs a Hagified creature)."
+      }
+    ],
+    "bloodied": {
+      "name": "",
+      "text": "At 110hp, select 1 hero to be Rotcursed: Whenever they take damage, deal 10 more."
+    },
+    "lastStand": {
+      "name": "",
+      "text": "(80hp). At 0hp, Vesha is dying! 80 more damage and she dies! Until then ALL heroes are Rotcursed."
+    },
+    "flavor": "Depending on when and how you meet her, Vesha may appear a shriveled and hideous crone, or the fairest maiden in the land. This primordial hag drains the beauty from those whose appearances she covets, softening and de-aging her own features. But her efforts are ultimately futile. Her cruel and covetous nature corrupts any fair looks she attains, and within mere days she becomes uglier than before.",
+    "tactics": null,
+    "groupTraits": [],
+    "notes": "Header \"lvl 8, odious center of attention\"; actions intro printed as \"Solo. After each hero’s turn, move 3 then choose 1:\". No size printed. Tactics are placeholders (\"xx\"); omitted."
+  },
+  {
+    "name": "Lizardfolk Reedstalker",
+    "book": "M&M",
+    "page": 82,
+    "pdfPage": 44,
+    "group": "Lizardfolk",
+    "habitat": "Swamp & Bog",
+    "levelText": "1",
+    "level": 1,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 26,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Sneak",
+        "text": "You are Invisible until you attack."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Blowpipe",
+        "text": "(Range 8) 1d8, On damage: Poisoned for 1 round (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Slight and agile, Reedstalkers patrol tribal borders and watch for intruders. They move unseen through trees and muck, striking from afar with blowpipes and poisoned darts.",
+    "tactics": {
+      "easier": "Attack already Poisoned heroes, act after Scalebreakers",
+      "harder": "Attacks from Invisible can't be Defended or Interposed!"
+    },
+    "groupTraits": [
+      {
+        "name": "Muck Walkers",
+        "text": "Double movement while in Muck instead of treating it as Difficult Terrain."
+      },
+      {
+        "name": "Cold-Blooded",
+        "text": "Lizardfolk despise the cold, and if hit by any Ice-based attack, are Poisoned for 1 round. Saves against Ice spells are made with Disadvantage."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Lizardfolk Scalebreaker",
+    "book": "M&M",
+    "page": 82,
+    "pdfPage": 44,
+    "group": "Lizardfolk",
+    "habitat": "Swamp & Bog",
+    "levelText": "3",
+    "level": 3,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 42,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bash",
+        "text": "2d8+2. +10 VS Hampered creatures."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "The muscle of a Lizardfolk tribe. They charge forward without hesitation, driven by dedicated fervor for their Greatscale or Shaman.",
+    "tactics": {
+      "easier": "Act first and target non-Hampered heroes",
+      "harder": "Act last and prioritize Hampered heroes."
+    },
+    "groupTraits": [
+      {
+        "name": "Muck Walkers",
+        "text": "Double movement while in Muck instead of treating it as Difficult Terrain."
+      },
+      {
+        "name": "Cold-Blooded",
+        "text": "Lizardfolk despise the cold, and if hit by any Ice-based attack, are Poisoned for 1 round. Saves against Ice spells are made with Disadvantage."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Lizardfolk Hunter",
+    "book": "M&M",
+    "page": 82,
+    "pdfPage": 44,
+    "group": "Lizardfolk",
+    "habitat": "Swamp & Bog",
+    "levelText": "4",
+    "level": 4,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 34,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Gotcha!",
+        "text": "(1 use) When an enemy moves adjacent, Restrain them with a net (escape DC 12, or any fire/slashing damage)."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Javelin",
+        "text": "(Range 8) 2d8+10 OR:"
+      },
+      {
+        "name": "Club",
+        "text": "2d8"
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Powerful ranged attackers who carry nets for capturing prey who get too close (and to set up their Scalebreakers underlings).",
+    "tactics": {
+      "easier": "“Forget” to use your net; attack from up close.",
+      "harder": "Net is wet/reinforced (unaffected by fire/slashing damage). Use Muck to get at maximum Range before attacking."
+    },
+    "groupTraits": [
+      {
+        "name": "Muck Walkers",
+        "text": "Double movement while in Muck instead of treating it as Difficult Terrain."
+      },
+      {
+        "name": "Cold-Blooded",
+        "text": "Lizardfolk despise the cold, and if hit by any Ice-based attack, are Poisoned for 1 round. Saves against Ice spells are made with Disadvantage."
+      }
+    ],
+    "notes": "Tactics continue at the top of the next column."
+  },
+  {
+    "name": "Lizardfolk Broodguard",
+    "book": "M&M",
+    "page": 82,
+    "pdfPage": 44,
+    "group": "Lizardfolk",
+    "habitat": "Swamp & Bog",
+    "levelText": "6",
+    "level": 6,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "H",
+    "hp": 54,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Swift Defense",
+        "text": "(1/round) Can Interpose within Reach 4."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Shell Bash",
+        "text": "2d8+10. On Crit: Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Broodguards are massive warriors chosen to protect the brood. They carry heavy snapping-turtle shells to defend their allies.",
+    "tactics": {
+      "easier": "Interpose against crits or other attacks good VS heavy armor. Hold position near other lizardfolk and forego attacking.",
+      "harder": "Protect high-damage allies like Hunters. Interpose against attacks that are less effective against Heavy armor."
+    },
+    "groupTraits": [
+      {
+        "name": "Muck Walkers",
+        "text": "Double movement while in Muck instead of treating it as Difficult Terrain."
+      },
+      {
+        "name": "Cold-Blooded",
+        "text": "Lizardfolk despise the cold, and if hit by any Ice-based attack, are Poisoned for 1 round. Saves against Ice spells are made with Disadvantage."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "name": "Lizardfolk Shaman",
+    "book": "M&M",
+    "page": 82,
+    "pdfPage": 44,
+    "group": "Lizardfolk",
+    "habitat": "Swamp & Bog",
+    "levelText": "8",
+    "level": 8,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 60,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Broodward",
+        "text": "When damaged, choose 1 other Lizardfolk to immediately move and attack."
+      },
+      {
+        "name": "Mother to us all",
+        "text": "Upon Death, Lizardfolk roll d20s for the rest of the encounter."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Swampsong",
+        "text": "Lizardfolk attack with d10s this round."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Female Lazir who hold deep spiritual authority as shamans—maternal figures and ancestral conduits. Will sacrifice themselves to goad their allies to fight more fervently.",
+    "tactics": {
+      "easier": "Warn that the shaman isn’t being protected. \"It’s almost as if she wants to sacrifice herself.\"",
+      "harder": "Charge forward, egg the heroes into attacking the shaman."
+    },
+    "groupTraits": [
+      {
+        "name": "Muck Walkers",
+        "text": "Double movement while in Muck instead of treating it as Difficult Terrain."
+      },
+      {
+        "name": "Cold-Blooded",
+        "text": "Lizardfolk despise the cold, and if hit by any Ice-based attack, are Poisoned for 1 round. Saves against Ice spells are made with Disadvantage."
+      }
+    ],
+    "notes": "Mother to us all is printed below a divider like a Bloodied line; it is an on-death effect, stored as a trait."
+  },
+  {
+    "name": "Lizardfolk Greatscale",
+    "book": "M&M",
+    "page": 82,
+    "pdfPage": 44,
+    "group": "Lizardfolk",
+    "habitat": "Swamp & Bog",
+    "levelText": "10",
+    "level": 10,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "M",
+    "hp": 100,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Mighty Scales",
+        "text": "Attacks miss you on 1 and 2."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Tail Swipe",
+        "text": "2d8 to all enemies within Reach 2. On damage, Prone. Then:"
+      },
+      {
+        "name": "Crush",
+        "text": "2d8+10. On crit: Dazed."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "A tribe’s chieftain—a scarred, veteran Broodguard. Leadership is earned through strength; challengers test him in brutal combat to prove the tribe’s might.",
+    "tactics": {
+      "easier": "Tailswipe a small number of heroes. Crush a non-Prone target.",
+      "harder": "Act last, combo with Scalebreaker and Raptor for big damage."
+    },
+    "groupTraits": [
+      {
+        "name": "Muck Walkers",
+        "text": "Double movement while in Muck instead of treating it as Difficult Terrain."
+      },
+      {
+        "name": "Cold-Blooded",
+        "text": "Lizardfolk despise the cold, and if hit by any Ice-based attack, are Poisoned for 1 round. Saves against Ice spells are made with Disadvantage."
+      }
+    ],
+    "notes": "Level header \"lvl 10\" is at the bottom of page 82; the rest of the block is at the top of page 83."
+  },
+  {
+    "name": "Swamp Raptor",
+    "book": "M&M",
+    "page": 83,
+    "pdfPage": 44,
+    "group": "Lizardfolk Companions",
+    "habitat": "Swamp & Bog",
+    "levelText": "2",
+    "level": 2,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 28,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 10,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Pack Tactics",
+        "text": "Advantage when an ally is adjacent to target."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Pounce",
+        "text": "1d8+10. On crit: Prone & Restrained (Escape DC 10, or any damage to the Raptor)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Domesticated by the Lizardfolk, Swamp Raptors hunt, guard, and carry messages through the bogs. The fiercest defend hatcheries, attacking any without the tribe’s scent. When they die, their hides and bones are repurposed for tools and armor.",
+    "tactics": {
+      "easier": "Spread the Raptors and allies out, attacking different targets.",
+      "harder": "Use their speed to attack isolated heroes in packs. They'll gain advantage from Pack Tactics, Prone, AND Restrained!"
+    },
+    "groupTraits": [],
+    "notes": "Lizardfolk Special Abilities (Muck Walkers, Cold-Blooded) not applied to companions since they are not Lizardfolk."
+  },
+  {
+    "name": "Hydra",
+    "book": "M&M",
+    "page": 83,
+    "pdfPage": 44,
+    "group": "Lizardfolk Companions",
+    "habitat": "Swamp & Bog",
+    "levelText": "13",
+    "level": 13,
+    "size": "Medium",
+    "kind": null,
+    "role": "regular",
+    "armor": "none",
+    "hp": 160,
+    "hpPerHero": null,
+    "hpText": null,
+    "speed": 6,
+    "fly": null,
+    "swim": null,
+    "climb": null,
+    "burrow": null,
+    "movementText": null,
+    "saves": null,
+    "resist": [],
+    "vuln": [],
+    "immune": [],
+    "minionDie": null,
+    "traits": [
+      {
+        "name": "Uh, guys…",
+        "text": "Starts with 2 heads. Gain 1 additional head at 120hp, 90hp, 60hp, and 30hp."
+      }
+    ],
+    "actionsIntro": null,
+    "actions": [
+      {
+        "name": "Bite",
+        "text": "(Reach 3) 1d20 per head, you may split the damage dice among any creature in Reach. On damage, poisoned (healing ends)."
+      }
+    ],
+    "bloodied": null,
+    "lastStand": null,
+    "flavor": "Young hydras are captured and tamed through ritual using mist, drums, and pheromones. In peace, they are fed offerings—often trespassers. When one grows too large, the Lizardfolk deem it sacred, abandoning their village so the beast may rule the swamp.",
+    "tactics": {
+      "easier": "Spread the attacks out, or attack a Dying hero with all heads, it only counts as a single attack and is not likely to crit!",
+      "harder": "Attack a single hero for devastating damage!"
+    },
+    "groupTraits": [],
+    "notes": "No size printed. Lizardfolk Special Abilities not applied to companions."
+  }
+]
