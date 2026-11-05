@@ -1,6 +1,9 @@
-import { App, Modal, Notice, PluginSettingTab, Setting } from 'obsidian';
+import { App, Modal, Notice, PluginSettingTab, Setting, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { NIMBLE_CONDITIONS, NimbleCondition } from './types';
+import { renderPartyEditor } from './party';
+import { DICE3D_MATERIALS } from './dice3d';
+import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
 
 export class NimbleSettingsTab extends PluginSettingTab {
 	constructor(app: App, private plugin: NimbleStatblocksPlugin) {
@@ -11,11 +14,66 @@ export class NimbleSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
+		const notice = containerEl.createDiv({ cls: 'nimble-notice' });
+		notice.createDiv({ text: NIMBLE_ATTRIBUTION });
+		const support = notice.createDiv({ text: `${NIMBLE_SUPPORT_NOTICE.replace(' at nimbleRPG.com.', '')} ` });
+		support.createEl('a', { text: 'nimbleRPG.com', href: NIMBLE_STORE_URL, cls: 'external-link', attr: { target: '_blank', rel: 'noopener' } });
+
+		new Setting(containerEl).setName('Bestiary').setHeading();
+
+		new Setting(containerEl)
+			.setName('Include the Nimble bestiary')
+			.setDesc(`Over 500 monsters from the GM Guide and Monsters & More, searchable in the bestiary and usable anywhere with nimble: references. A note in your vault with the same name replaces the bundled version.`)
+			.addToggle(t => t
+				.setValue(this.plugin.settings.bundledBestiary)
+				.onChange(async (v) => {
+					this.plugin.settings.bundledBestiary = v;
+					await this.plugin.saveSettings();
+					this.plugin.loadBundledBestiary();
+				}));
+
+		new Setting(containerEl)
+			.setName('Nimble slash commands')
+			.setDesc('Nimble commands in the / menu.')
+			.addToggle(t => t
+				.setValue(this.plugin.settings.slashCommands)
+				.onChange(async (v) => { this.plugin.settings.slashCommands = v; await this.plugin.saveSettings(); }));
+
+		new Setting(containerEl).setName('Campaigns').setHeading();
+		new Setting(containerEl)
+			.setName('Campaigns folder')
+			.setDesc('Where New campaign creates folders.')
+			.addText(t => t.setPlaceholder('Campaigns').setValue(this.plugin.settings.campaignsFolder).onChange(async (v) => {
+				this.plugin.settings.campaignsFolder = v.trim() || 'Campaigns';
+				await this.plugin.saveSettings();
+			}));
+
+		new Setting(containerEl)
+			.setName('Link NPC names as you read')
+			.setDesc('Notes with "nimble: npc" (or #npc) are linked wherever they\'re mentioned. Files aren\'t changed.')
+			.addToggle(t => t.setValue(this.plugin.settings.autoLinkNpcs).onChange(async (v) => {
+				this.plugin.settings.autoLinkNpcs = v;
+				await this.plugin.saveSettings();
+				this.plugin.rerenderNotes();
+			}));
+
+		new Setting(containerEl).setName('Party').setHeading();
+		this.renderParty(containerEl);
+
+		new Setting(containerEl).setName('Notes').setHeading();
+		new Setting(containerEl)
+			.setName('Styled tables')
+			.setDesc('Applies to every table in your notes.')
+			.addToggle(t => t.setValue(this.plugin.settings.styleTables).onChange(async (v) => {
+				this.plugin.settings.styleTables = v;
+				await this.plugin.saveSettings();
+				document.body.toggleClass('nimble-tables', v);
+			}));
+
 		new Setting(containerEl).setName('Stat blocks').setHeading();
 
 		new Setting(containerEl)
 			.setName('Stat block style')
-			.setDesc('Book is roomy and easy to read. Compact uses tighter spacing and smaller text, good for prep notes full of monsters.')
 			.addDropdown(d => d
 				.addOption('book', 'Book')
 				.addOption('compact', 'Compact')
@@ -28,7 +86,6 @@ export class NimbleSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Clickable dice')
-			.setDesc('Dice in stat blocks (like 2d6+3) roll when clicked. Results show in a notice and in the tracker\'s roll log.')
 			.addToggle(t => t
 				.setValue(this.plugin.settings.clickableDice)
 				.onChange(async (v) => {
@@ -39,7 +96,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Nimble attack rolls')
-			.setDesc('Dice in attack lines use Nimble\'s rules: a 1 on the first die is a miss, and its max is a crit that explodes. Attacks that call for a save, and dice in abilities, always roll a plain sum.')
+			.setDesc('Attack dice miss on 1 and explode on max.')
 			.addToggle(t => t
 				.setValue(this.plugin.settings.nimbleAttackRolls)
 				.onChange(async (v) => {
@@ -49,8 +106,37 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
+			.setName('3D dice')
+			.addToggle(t => t
+				.setValue(this.plugin.settings.dice3d)
+				.onChange(async (v) => {
+					this.plugin.settings.dice3d = v;
+					await this.plugin.saveSettings();
+					this.display();
+				}));
+		if (this.plugin.settings.dice3d) {
+			type ColourKey = 'dicePrimaryColor' | 'diceColor' | 'diceExplosionColor';
+			type MaterialKey = 'diceMaterialPrimary' | 'diceMaterialNormal' | 'diceMaterialCrit';
+			const role = (name: string, colourKey: ColourKey, materialKey: MaterialKey) => new Setting(containerEl)
+				.setName(name).setClass('nimble-dice-colour')
+				.addDropdown(d => {
+					for (const m of DICE3D_MATERIALS) d.addOption(m.id, m.label);
+					d.setValue(this.plugin.settings[materialKey]).onChange(async (v) => { this.plugin.settings[materialKey] = v; await this.plugin.saveSettings(); });
+				})
+				.addColorPicker(c => c.setValue(this.plugin.settings[colourKey]).onChange(async (v) => {
+					this.plugin.settings[colourKey] = v;
+					await this.plugin.saveSettings();
+				}));
+			role('Primary die', 'dicePrimaryColor', 'diceMaterialPrimary');
+			role('Other dice', 'diceColor', 'diceMaterialNormal');
+			role('Crit dice', 'diceExplosionColor', 'diceMaterialCrit');
+			new Setting(containerEl).setClass('nimble-dice-colour').addButton(b => b.setButtonText('Test roll: 2d6 attack').onClick(() => this.plugin.rollDice('2d6+2', 'Test roll', 'attack')))
+				.addButton(b => b.setButtonText('Test a crit').onClick(() => this.plugin.rollDice('2d6+2', 'Test crit', 'attack', [6, 3, 6, 2])));
+		}
+
+		new Setting(containerEl)
 			.setName('Tap to preview on mobile')
-			.setDesc('On mobile, tap a monster reference once to preview its stat block and again to open its note. When off, tapping opens the note right away.')
+			.setDesc('First tap previews, second tap opens.')
 			.addToggle(t => t
 				.setValue(this.plugin.settings.mobileTapToPreview)
 				.onChange(async (v) => {
@@ -58,11 +144,21 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
+		new Setting(containerEl)
+			.setName('Keep the screen on during combat')
+			.setDesc('Phones and tablets, while combat is running.')
+			.addToggle(t => t
+				.setValue(this.plugin.settings.keepScreenOn)
+				.onChange(async (v) => {
+					this.plugin.settings.keepScreenOn = v;
+					await this.plugin.saveSettings();
+					this.plugin.syncWakeLock();
+				}));
+
 		new Setting(containerEl).setName('Encounters').setHeading();
 
 		new Setting(containerEl)
 			.setName('Multiple encounters')
-			.setDesc('Create and switch between named encounters. When off, the tracker holds a single encounter.')
 			.addToggle(t => t
 				.setValue(this.plugin.settings.multipleEncounters)
 				.onChange(async (v) => {
@@ -71,13 +167,38 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					this.plugin.encounters.trigger('changed');
 				}));
 
+		new Setting(containerEl)
+			.setName('Apply monster armor automatically')
+			.setDesc('Typed damage: ! crit, v vulnerable, r resisted.')
+			.addToggle(t => t
+				.setValue(this.plugin.settings.autoArmor)
+				.onChange(async (v) => { this.plugin.settings.autoArmor = v; await this.plugin.saveSettings(); }));
+
+		new Setting(containerEl)
+			.setName('Minion overkill')
+			.setDesc('One more minion drops per full die of damage.')
+			.addToggle(t => t
+				.setValue(this.plugin.settings.minionOverkill)
+				.onChange(async (v) => { this.plugin.settings.minionOverkill = v; await this.plugin.saveSettings(); }));
+
 		this.renderCustomConditions(containerEl);
+	}
+
+	private renderParty(containerEl: HTMLElement): void {
+		const camp = this.plugin.campaigns?.active;
+		if (camp) containerEl.createEl('p', { cls: 'setting-item-description', text: `Party for ${camp.name}` });
+		renderPartyEditor(containerEl, this.plugin, () => this.display());
+		const save = async () => { await this.plugin.saveSettings(); this.plugin.encounters.trigger('changed'); };
+		new Setting(containerEl)
+			.setName('Party size when no party is set')
+			.setDesc('Used until heroes are added.')
+			.addSlider(sl => sl.setLimits(1, 8, 1).setValue(this.plugin.settings.defaultPartySize).setDynamicTooltip()
+				.onChange(async v => { this.plugin.settings.defaultPartySize = v; await save(); }));
 	}
 
 	private renderCustomConditions(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName('Custom conditions')
-			.setDesc('Add your own conditions to apply to creatures in encounters.')
 			.setHeading();
 
 		const add = containerEl.createDiv({ cls: 'custom-condition-add' });

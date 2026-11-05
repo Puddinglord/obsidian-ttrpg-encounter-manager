@@ -1,374 +1,625 @@
-/* Nimble Statblocks Styles */
+/* Nimble Statblocks: stat blocks, bestiary, encounter tracker, encounter blocks, maps.
+   Uses Obsidian's theme variables so it follows light/dark themes. */
+
+body {
+	--nimble-hp: #c0504d;
+	--nimble-hp-bg: rgba(192, 80, 77, 0.14);
+	--nimble-armor: #4a78c2;
+	--nimble-armor-bg: rgba(74, 120, 194, 0.15);
+	--nimble-move: #3f8f5a;
+	--nimble-move-bg: rgba(63, 143, 90, 0.14);
+	--nimble-save: #9a7a2e;
+	--nimble-save-bg: rgba(154, 122, 46, 0.16);
+	--nimble-legendary: #c89a2c;
+	--nimble-minion: #c77a3f;
+	--nimble-hero: #4f8fd8;
+	--nimble-ok: #4caf6d;
+	--nimble-warn: #d9a33c;
+	--nimble-radius: 8px;
+}
 
 /* ============================================
-   STATBLOCK STYLES
+   STAT BLOCK
    ============================================ */
 
 .nimble-statblock {
 	background: var(--background-secondary);
-	border: 2px solid var(--background-modifier-border);
-	border-radius: 8px;
-	padding: 1rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--nimble-radius);
+	padding: 0.85rem 1rem;
 	margin: 1rem 0;
 	font-family: var(--font-text);
+	line-height: 1.45;
 }
-
-.nimble-statblock.solo-monster {
-	border-color: #8b0000;
-	border-width: 3px;
+.nimble-statblock.inline { margin: 0; }
+.nimble-statblock.role-legendary {
+	border: 2px solid color-mix(in srgb, var(--nimble-legendary) 65%, transparent);
+	background: linear-gradient(180deg, color-mix(in srgb, var(--nimble-legendary) 9%, var(--background-secondary)), var(--background-secondary) 120px);
 }
+.nimble-statblock.role-minion { border-style: dashed; }
+.nimble-statblock p { margin: 0.25rem 0; }
 
-/* Solo Monster Header Row */
-.nimble-statblock .solo-header-row {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-	margin-bottom: 0.25rem;
-}
-
-.nimble-statblock .solo-header-left {
-	flex: 1;
-}
-
-.nimble-statblock .solo-level-type {
-	font-size: 0.85rem;
+.nimble-statblock .monster-kicker {
+	font-size: 0.72rem;
 	font-weight: 600;
-	color: var(--text-muted);
+	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.nimble-statblock .solo-header-right {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-	align-items: center;
-}
-
-.nimble-statblock .solo-stat-badge {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.25rem;
-	padding: 0.2rem 0.5rem;
-	border-radius: 4px;
-	font-size: 0.8rem;
-	font-weight: 700;
-}
-
-.nimble-statblock .solo-stat-badge svg {
-	flex-shrink: 0;
-}
-
-.nimble-statblock .solo-stat-badge.hp-badge {
-	background: #4a7c4e;
-	color: white;
-}
-
-.nimble-statblock .solo-stat-badge.armor-badge {
-	background: #5a5a5a;
-	color: white;
-}
-
-.nimble-statblock .solo-stat-badge.saves-badge {
-	background: #6b5b7a;
-	color: white;
-}
-
-.nimble-statblock .solo-name {
-	margin-top: 0.25rem;
-}
-
-/* Solo Abilities - Single Combined Box */
-.nimble-statblock .solo-abilities-box {
-	background: var(--background-primary-alt);
-	border: 1px solid var(--background-modifier-border);
-	padding: 0.5rem 0.75rem;
-	margin: 0.5rem 0;
-	border-radius: 4px;
-}
-
-.nimble-statblock .solo-ability-item {
-	line-height: 1.4;
-	margin: 0.4rem 0;
-}
-
-.nimble-statblock .solo-ability-item:first-child {
-	margin-top: 0;
-}
-
-.nimble-statblock .solo-ability-item:last-child {
-	margin-bottom: 0;
-}
-
-/* Solo Actions Section */
-.nimble-statblock .solo-actions-section {
-	margin: 0.5rem 0;
-}
-
-.nimble-statblock .solo-action-header {
-	margin: 0 0 0.5rem 0;
-}
-
-.nimble-statblock .solo-actions-list {
-	margin: 0;
-	padding-left: 1.25rem;
-}
-
-.nimble-statblock .solo-actions-list li {
-	margin: 0.35rem 0;
-	line-height: 1.4;
-}
-
-/* Solo Phase Sections (Bloodied, Last Stand) */
-.nimble-statblock .solo-phase-section {
-	margin: 0.75rem 0;
-	line-height: 1.4;
-}
-
-.nimble-statblock .solo-phase-section .phase-label {
-	color: #e61919;
-}
-
-.nimble-statblock .solo-phase-section strong:not(.phase-label) {
-	color: #e61919;
-}
-
-/* Regular Monster Header Row */
-.nimble-statblock .monster-header-row {
-	display: flex;
-	justify-content: space-between;
-	align-items: baseline;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-	margin-bottom: 0.25rem;
-}
-
-.nimble-statblock .monster-header-left {
-	display: flex;
-	align-items: baseline;
-	gap: 0.5rem;
-	flex-wrap: wrap;
-	min-width: 0;
-}
-
-.nimble-statblock .monster-name-inline {
-	font-size: 1.3rem;
-	font-weight: 700;
-	color: var(--text-accent);
-	font-variant: small-caps;
-}
-
-.nimble-statblock .monster-info-inline {
-	font-size: 0.8rem;
 	color: var(--text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.3px;
 }
-
-.nimble-statblock .monster-level-type {
-	font-size: 0.85rem;
-	font-weight: 600;
-	color: var(--text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.nimble-statblock .monster-header-right {
-	display: flex;
-	gap: 0.5rem;
-	align-items: center;
-	flex-shrink: 0;
-}
-
-/* Stat badges (shared between solo and regular) */
-.nimble-statblock .stat-badge {
-	white-space: nowrap;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.25rem;
-	padding: 0.2rem 0.5rem;
-	border-radius: 4px;
-	font-size: 0.8rem;
-	font-weight: 700;
-}
-
-.nimble-statblock .stat-badge svg {
-	flex-shrink: 0;
-}
-
-.nimble-statblock .stat-badge.hp-badge {
-	background: #4a7c4e;
-	color: white;
-}
-
-.nimble-statblock .stat-badge.armor-badge {
-	background: #5a5a5a;
-	color: white;
-}
-
-.nimble-statblock .stat-badge.saves-badge {
-	background: #6b5b7a;
-	color: white;
-}
-
-.nimble-statblock .stat-badge.move-badge {
-	background: #3d6e8f;
-	color: white;
-}
-
-.nimble-statblock .stat-badge.level-badge {
-	background: #2a2a2a;
-	color: white;
-}
-
-.nimble-statblock .stat-badge.size-badge {
-	background: #7a5c3e;
-	color: white;
-}
-
-/* Monster speed, defenses, senses */
-.nimble-statblock .monster-speed {
-	margin: 0.25rem 0;
-}
-
-.nimble-statblock .monster-defenses,
-.nimble-statblock .monster-senses {
-	margin: 0.25rem 0;
-}
-
-.nimble-statblock .monster-defenses p,
-.nimble-statblock .monster-senses p {
-	margin: 0.15rem 0;
-}
-
-/* Regular monster abilities box */
-.nimble-statblock .monster-abilities-box {
-	background: var(--background-primary-alt);
-	border: 1px solid var(--background-modifier-border);
-	padding: 0.5rem 0.75rem;
-	margin: 0.5rem 0;
-	border-radius: 4px;
-}
-
-.nimble-statblock .monster-abilities-box .ability-item {
-	line-height: 1.4;
-	margin: 0.4rem 0;
-}
-
-.nimble-statblock .monster-abilities-box .ability-item:first-child {
-	margin-top: 0;
-}
-
-.nimble-statblock .monster-abilities-box .ability-item:last-child {
-	margin-bottom: 0;
-}
-
-/* Regular monster actions section */
-.nimble-statblock .monster-actions-section {
-	margin: 0.5rem 0;
-}
-
-.nimble-statblock .monster-actions-section .actions-header {
-	margin: 0 0 0.5rem 0;
-}
-
-.nimble-statblock .monster-actions-section .actions-list {
-	margin: 0;
-	padding-left: 1.25rem;
-}
-
-.nimble-statblock .monster-actions-section .actions-list li {
-	margin: 0.35rem 0;
-	line-height: 1.4;
-}
-
 .nimble-statblock .monster-name {
-	margin: 0 0 0.25rem 0;
-	font-size: 1.4rem;
-	color: var(--text-accent);
+	font-size: 1.25rem;
+	font-weight: 700;
+	line-height: 1.2;
+	margin: 0.1rem 0 0.45rem;
+	color: var(--text-normal);
 }
+.nimble-statblock h2.monster-name { font-size: 1.4rem; }
 
-.nimble-statblock .monster-type {
-	margin: 0;
-	font-style: italic;
-	font-size: 0.9rem;
-	color: var(--text-muted);
+.nimble-statblock .monster-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.55rem; }
+.nimble-statblock .stat-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.1rem 0.5rem;
+	border-radius: 4px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
 }
+.nimble-statblock .stat-badge svg { flex-shrink: 0; }
+.nimble-statblock .hp-badge { background: var(--nimble-hp-bg); color: var(--nimble-hp); }
+.nimble-statblock .minion-badge { background: color-mix(in srgb, var(--nimble-minion) 16%, transparent); color: var(--nimble-minion); }
+.nimble-statblock .armor-badge { background: var(--nimble-armor-bg); color: var(--nimble-armor); }
+.nimble-statblock .move-badge { background: var(--nimble-move-bg); color: var(--nimble-move); }
+.nimble-statblock .saves-badge { background: var(--nimble-save-bg); color: var(--nimble-save); }
 
-.nimble-statblock hr {
-	border: none;
+.nimble-statblock .monster-defenses { font-size: 0.88em; color: var(--text-muted); margin-bottom: 0.35rem; }
+.nimble-statblock .monster-abilities {
+	background: var(--background-primary-alt);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 0.45rem 0.7rem;
+	margin: 0.4rem 0;
+}
+.nimble-statblock .ability-item { margin: 0.3rem 0; }
+.nimble-statblock .ability-item:first-child { margin-top: 0; }
+.nimble-statblock .ability-item:last-child { margin-bottom: 0; }
+
+.nimble-statblock .monster-actions { margin: 0.45rem 0; }
+.nimble-statblock .actions-intro { margin-bottom: 0.25rem; }
+.nimble-statblock.role-legendary .actions-intro strong { color: var(--nimble-legendary); }
+.nimble-statblock .actions-list { margin: 0; padding-left: 1.2rem; }
+.nimble-statblock .actions-list li { margin: 0.2rem 0; }
+
+.nimble-statblock .phase-section { margin: 0.35rem 0; padding: 0.35rem 0.6rem; border-radius: 6px; border-left: 3px solid; }
+.nimble-statblock .bloodied-section { border-color: var(--nimble-hp); background: var(--nimble-hp-bg); }
+.nimble-statblock .laststand-section { border-color: #8e5bd0; background: rgba(142, 91, 208, 0.12); }
+.nimble-statblock .phase-label { letter-spacing: 0.03em; }
+
+.nimble-statblock .monster-description { font-style: italic; color: var(--text-muted); margin-top: 0.55rem; }
+.nimble-statblock .monster-tactics { margin-top: 0.4rem; font-size: 0.86em; display: grid; gap: 0.2rem; }
+.nimble-statblock .tactic-row { display: grid; grid-template-columns: auto 1fr; gap: 0.45rem; color: var(--text-muted); }
+.nimble-statblock .tactic-label { display: inline-flex; align-items: center; gap: 0.15rem; font-weight: 600; color: var(--text-faint); }
+.nimble-statblock .tactic-label svg { width: 14px; height: 14px; }
+.nimble-statblock .monster-source { margin-top: 0.55rem; font-size: 0.75rem; color: var(--text-faint); }
+.nimble-statblock .monster-source a { color: var(--text-faint); text-decoration: underline; }
+
+.nimble-statblock .add-btn { margin-top: 0.6rem; width: 100%; }
+.nimble-statblock .statblock-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	margin-top: 0.65rem;
+	padding-top: 0.55rem;
 	border-top: 1px solid var(--background-modifier-border);
-	margin: 0.75rem 0;
 }
+.nimble-statblock .statblock-action { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; padding: 0.2rem 0.6rem; height: auto; }
+.nimble-statblock .statblock-action-icon { display: inline-flex; }
+.nimble-statblock .statblock-action-icon svg { width: 14px; height: 14px; }
 
-.nimble-statblock .core-stats p,
-.nimble-statblock p {
-	margin: 0.25rem 0;
-}
+.nimble-statblock.is-compact { padding: 0.55rem 0.7rem; font-size: 0.9em; }
+.nimble-statblock.is-compact .monster-name { font-size: 1.05rem; margin-bottom: 0.3rem; }
 
-.nimble-statblock .saves {
-	text-align: center;
-	padding: 0.5rem 0;
-}
-
-.nimble-statblock h4 {
-	margin: 0.5rem 0 0.25rem 0;
-	font-size: 1rem;
+/* Clickable things inside rules text */
+.nimble-dice.is-clickable {
 	color: var(--text-accent);
+	border-bottom: 1px dashed var(--text-accent);
+	cursor: pointer;
+	font-weight: 600;
+	white-space: nowrap;
 }
+.nimble-dice.is-clickable:hover, .nimble-dice.is-clickable:focus-visible { background: var(--background-modifier-hover); border-radius: 3px; outline: none; }
+.nimble-condition-ref {
+	text-decoration: underline dotted;
+	text-underline-offset: 2px;
+	cursor: help;
+	border-radius: 3px;
+}
+.nimble-condition-ref:hover, .nimble-condition-ref:focus-visible { background: var(--background-modifier-hover); outline: none; }
 
-/* Abilities Box */
-.nimble-statblock .abilities-callout {
+/* ============================================
+   HOVER PREVIEW AND POPOVERS
+   ============================================ */
+
+.nimble-hover-preview {
+	position: fixed;
+	z-index: var(--layer-popover);
+	width: min(420px, calc(100vw - 24px));
+	max-height: 75vh;
+	overflow: auto;
 	background: var(--background-primary);
 	border: 1px solid var(--background-modifier-border);
-	padding: 0.6rem 0.75rem;
-	margin: 0.5rem 0;
-	border-radius: 6px;
+	border-radius: 10px;
+	box-shadow: var(--shadow-l);
 }
-
-.nimble-statblock .ability-item {
-	margin: 0.35rem 0;
-	line-height: 1.4;
+.nimble-hover-preview.is-pinned { border-color: var(--interactive-accent); }
+.nimble-hover-preview .hover-preview-bar {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.15rem 0.3rem 0.15rem 0.7rem;
+	background: var(--background-primary);
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-size: 0.72rem;
+	color: var(--text-faint);
 }
+.nimble-hover-preview .hover-preview-body { padding: 0.5rem; }
+.nimble-hover-preview .nimble-statblock { margin: 0; }
 
-.nimble-statblock .ability-item:first-child {
-	margin-top: 0;
+.nimble-popover {
+	position: fixed;
+	z-index: calc(var(--layer-popover) + 1);
+	max-width: calc(100vw - 16px);
+	overflow: auto;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	box-shadow: var(--shadow-l);
+	padding: 0.6rem 0.7rem;
+	font-size: 0.88rem;
 }
+.nimble-popover .popover-title { font-weight: 700; margin-bottom: 0.25rem; }
+.nimble-popover .popover-body { color: var(--text-muted); line-height: 1.45; }
+.nimble-popover .popover-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.nimble-popover .popover-label { font-size: 0.78rem; color: var(--text-muted); min-width: 2.6rem; }
+.nimble-popover .popover-remove { margin-top: 0.6rem; width: 100%; }
 
-.nimble-statblock .ability-item:last-child {
-	margin-bottom: 0;
-}
-
-.nimble-statblock .ability-name {
-	color: var(--text-accent);
-}
-
-.nimble-statblock .monster-description {
+.nimble-segmented { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--background-modifier-border); border-radius: 6px; overflow: hidden; }
+.nimble-segmented button {
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+	padding: 0.15rem 0.55rem;
+	height: auto;
 	font-size: 0.8rem;
 	color: var(--text-muted);
-	font-style: italic;
-	line-height: 1.4;
-	margin: 0.5rem 0 0 0;
+}
+.nimble-segmented button + button { border-left: 1px solid var(--background-modifier-border); }
+.nimble-segmented button:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-segmented button.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
+
+.condition-picker .condition-search { width: 100%; }
+.condition-picker .condition-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; margin-top: 0.55rem; max-height: 300px; overflow: auto; }
+.condition-picker .condition-option { justify-content: flex-start; font-size: 0.82rem; height: auto; padding: 0.25rem 0.5rem; }
+.condition-picker .condition-option.is-minor { color: var(--text-muted); }
+.condition-picker .condition-option.is-applied { background: var(--interactive-accent); color: var(--text-on-accent); }
+.condition-picker .picker-empty { grid-column: 1 / -1; color: var(--text-muted); }
+
+.nimble-notice {
+	font-size: 0.78rem;
+	color: var(--text-muted);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	border-radius: 6px;
+	padding: 0.5rem 0.65rem;
+	margin: 0.5rem 0 1rem;
+	display: grid;
+	gap: 0.25rem;
 }
 
-.nimble-statblock .add-btn {
-	width: 100%;
-	padding: 0.5rem;
-	margin-top: 0.5rem;
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
+/* ============================================
+   ENCOUNTER TRACKER
+   ============================================ */
+
+.nimble-encounter-tracker { padding: 0.5rem 0.6rem 1.5rem; font-size: 0.9rem; }
+.nimble-encounter-tracker button { cursor: pointer; }
+.nimble-encounter-tracker button:focus-visible { box-shadow: 0 0 0 2px var(--interactive-accent); }
+
+.nimble-encounter-tracker .encounter-header { display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.4rem; }
+.nimble-encounter-tracker .encounter-title { flex: 1; margin: 0; font-size: 1.05rem; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-encounter-tracker .encounter-title-input { flex: 1; font-weight: 600; }
+.nimble-encounter-tracker .encounter-picker { display: flex; gap: 0.3rem; margin-bottom: 0.5rem; }
+.nimble-encounter-tracker .encounter-select { flex: 1; min-width: 0; }
+
+.nimble-encounter-tracker .round-bar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	padding: 0.4rem;
+	background: var(--background-secondary);
+	border-radius: var(--nimble-radius);
+	margin-bottom: 0.45rem;
+}
+.nimble-encounter-tracker .round-counter { display: flex; align-items: center; gap: 0.15rem; }
+.nimble-encounter-tracker .round-label { font-weight: 700; min-width: 4.4rem; text-align: center; }
+.nimble-encounter-tracker .round-btn { padding: 0 0.45rem; height: 1.6rem; box-shadow: none; }
+.nimble-encounter-tracker .phase-pills { display: inline-flex; border: 1px solid var(--background-modifier-border); border-radius: 999px; overflow: hidden; }
+.nimble-encounter-tracker .phase-pill { border: none; border-radius: 0; box-shadow: none; background: transparent; height: 1.6rem; padding: 0 0.6rem; font-size: 0.76rem; color: var(--text-muted); }
+.nimble-encounter-tracker .phase-pill.phase-heroes.is-active { background: var(--nimble-hero); color: #fff; }
+.nimble-encounter-tracker .phase-pill.phase-monsters.is-active { background: var(--nimble-hp); color: #fff; }
+.nimble-encounter-tracker .round-action { margin-left: auto; display: inline-flex; align-items: center; gap: 0.3rem; height: 1.8rem; }
+.nimble-encounter-tracker .round-action svg { width: 15px; height: 15px; }
+.nimble-encounter-tracker .tracker-hint { font-size: 0.78rem; color: var(--text-muted); margin: -0.15rem 0 0.45rem; }
+
+.nimble-encounter-tracker .quick-add { position: relative; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.5rem; }
+.nimble-encounter-tracker .quick-add-icon { position: absolute; left: 0.5rem; top: 50%; transform: translateY(-50%); color: var(--text-faint); display: inline-flex; pointer-events: none; }
+.nimble-encounter-tracker .quick-add-icon svg { width: 15px; height: 15px; }
+.nimble-encounter-tracker .quick-add-input { flex: 1; padding-left: 1.8rem; min-width: 0; }
+.nimble-encounter-tracker .quick-add-party { display: inline-flex; align-items: center; gap: 0.25rem; }
+.nimble-encounter-tracker .quick-add-party svg { width: 14px; height: 14px; }
+.nimble-encounter-tracker .quick-add-results {
+	position: absolute;
+	top: calc(100% + 2px);
+	left: 0;
+	right: 0;
+	z-index: 10;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: var(--shadow-s);
+	padding: 0.2rem;
+}
+.nimble-encounter-tracker .quick-add-result { display: flex; flex-direction: column; padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; }
+.nimble-encounter-tracker .quick-add-result.is-active, .nimble-encounter-tracker .quick-add-result:hover { background: var(--background-modifier-hover); }
+.nimble-encounter-tracker .quick-add-meta { font-size: 0.75rem; color: var(--text-muted); }
+.nimble-encounter-tracker .quick-add-empty { padding: 0.3rem 0.5rem; color: var(--text-muted); }
+
+.nimble-encounter-tracker .tracker-prompt { border-radius: var(--nimble-radius); padding: 0.45rem 0.6rem; margin-bottom: 0.45rem; border: 1px solid; font-size: 0.86rem; }
+.nimble-encounter-tracker .prompt-legendary { border-color: color-mix(in srgb, var(--nimble-legendary) 60%, transparent); background: color-mix(in srgb, var(--nimble-legendary) 12%, transparent); }
+.nimble-encounter-tracker .prompt-bloodied { border-color: color-mix(in srgb, var(--nimble-hp) 60%, transparent); background: var(--nimble-hp-bg); }
+.nimble-encounter-tracker .prompt-laststand { border-color: rgba(142, 91, 208, 0.6); background: rgba(142, 91, 208, 0.12); }
+.nimble-encounter-tracker .prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; }
+.nimble-encounter-tracker .prompt-title { font-weight: 700; }
+.nimble-encounter-tracker .prompt-lines { margin: 0.25rem 0 0; padding-left: 1.1rem; }
+.nimble-encounter-tracker .prompt-action { margin-top: 0.4rem; }
+
+.nimble-encounter-tracker .statblock-viewer { margin-bottom: 0.6rem; }
+.nimble-encounter-tracker .viewer-header { display: flex; align-items: center; gap: 0.2rem; margin-bottom: 0.3rem; }
+.nimble-encounter-tracker .viewer-title { flex: 1; font-weight: 700; }
+
+.nimble-encounter-tracker .side-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	margin: 0.6rem 0.1rem 0.25rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	color: var(--text-muted);
+}
+.nimble-encounter-tracker .side-count { font-weight: 500; text-transform: none; letter-spacing: 0; }
+.nimble-encounter-tracker .creature-list { grid-template-columns: minmax(0, 1fr); list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+
+.nimble-encounter-tracker .creature-item {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-left: 3px solid var(--nimble-hp);
+	border-radius: var(--nimble-radius);
+	padding: 0.35rem 0.45rem 0.4rem;
+	transition: opacity 0.15s, background 0.15s;
+}
+.nimble-encounter-tracker .creature-item.role-hero { border-left-color: var(--nimble-hero); }
+.nimble-encounter-tracker .creature-item.role-minion { border-left-color: var(--nimble-minion); }
+.nimble-encounter-tracker .creature-item.role-legendary { border-left-color: var(--nimble-legendary); border-left-width: 4px; }
+.nimble-encounter-tracker .creature-item.is-done { opacity: 0.62; }
+.nimble-encounter-tracker .creature-item.is-down { opacity: 0.42; }
+.nimble-encounter-tracker .creature-item.is-down .creature-label { text-decoration: line-through; }
+.nimble-encounter-tracker .creature-item.is-waiting { background: var(--background-primary); }
+.nimble-encounter-tracker .creature-item.dragging { opacity: 0.4; }
+.nimble-encounter-tracker .creature-item.drag-over { border-color: var(--interactive-accent); }
+
+.nimble-encounter-tracker .creature-main { display: flex; align-items: center; gap: 0.3rem; }
+.nimble-encounter-tracker .turn-toggle {
+	flex-shrink: 0;
+	width: 1.75rem;
+	height: 1.75rem;
+	padding: 0;
+	border-radius: 50%;
+	box-shadow: none;
+	background: transparent;
+	color: var(--text-faint);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+.nimble-encounter-tracker .turn-toggle:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.nimble-encounter-tracker .turn-toggle.is-done { color: var(--nimble-ok); }
+.nimble-encounter-tracker .turn-toggle svg { width: 19px; height: 19px; }
+.nimble-encounter-tracker .creature-name-box { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.nimble-encounter-tracker .creature-label {
+	display: block;
+	max-width: 100%;
+	min-width: 0;
+	background: transparent;
+	box-shadow: none;
 	border: none;
-	border-radius: 4px;
+	padding: 0;
+	height: auto;
+	justify-content: flex-start;
+	font-weight: 600;
+	color: var(--text-normal);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-align: left;
+}
+.nimble-encounter-tracker .creature-label:hover { color: var(--text-accent); }
+.nimble-encounter-tracker .creature-meta { font-size: 0.72rem; color: var(--text-muted); }
+.nimble-encounter-tracker .label-edit-input { width: 100%; }
+.nimble-encounter-tracker .hp-display {
+	flex-shrink: 0;
+	min-width: 4.4rem;
+	height: 1.75rem;
+	padding: 0 0.5rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	background: var(--background-primary);
+	box-shadow: none;
+	border: 1px solid var(--background-modifier-border);
+}
+.nimble-encounter-tracker .hp-display:hover { border-color: var(--interactive-accent); }
+.nimble-encounter-tracker .hp-input { width: 6.5rem; height: 1.75rem; flex-shrink: 0; }
+.nimble-encounter-tracker .hp-input.is-invalid { border-color: var(--text-error); }
+.nimble-encounter-tracker .creature-more { flex-shrink: 0; }
+
+.nimble-encounter-tracker .creature-hp-bar { position: relative; height: 4px; background: var(--background-modifier-border); border-radius: 2px; margin: 0.35rem 0 0.1rem; overflow: hidden; }
+.nimble-encounter-tracker .creature-hp-fill { height: 100%; background: var(--nimble-ok); transition: width 0.25s; }
+.nimble-encounter-tracker .hp-wounded .creature-hp-fill { background: var(--nimble-warn); }
+.nimble-encounter-tracker .hp-critical .creature-hp-fill, .nimble-encounter-tracker .hp-dead .creature-hp-fill { background: var(--nimble-hp); }
+.nimble-encounter-tracker .role-hero .creature-hp-fill { background: var(--nimble-hero); }
+.nimble-encounter-tracker .hp-half-mark { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--text-faint); }
+
+.nimble-encounter-tracker .pips { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 3px; }
+.nimble-encounter-tracker .pips-label { font-size: 0.7rem; color: var(--text-muted); margin-right: 0.15rem; }
+.nimble-encounter-tracker .pip {
+	width: 13px;
+	height: 13px;
+	padding: 0;
+	min-height: 0;
+	border-radius: 50%;
+	box-shadow: none;
+	background: transparent;
+	border: 1.5px solid var(--text-faint);
+}
+.nimble-encounter-tracker .action-pip { border-color: var(--nimble-hero); }
+.nimble-encounter-tracker .action-pip.is-on { background: var(--nimble-hero); }
+.nimble-encounter-tracker .action-pip.is-blocked { opacity: 0.35; }
+.nimble-encounter-tracker .wound-pip { border-radius: 2px; border-color: var(--nimble-hp); }
+.nimble-encounter-tracker .wound-pip.is-on { background: var(--nimble-hp); }
+.nimble-encounter-tracker .minion-pip { width: 11px; height: 11px; border-color: var(--nimble-minion); }
+.nimble-encounter-tracker .minion-pip.is-on { background: var(--nimble-minion); }
+.nimble-encounter-tracker .hero-row, .nimble-encounter-tracker .minion-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem 0.8rem; margin: 0.3rem 0 0.1rem 2rem; }
+.nimble-encounter-tracker .group-attack { margin-left: auto; display: inline-flex; align-items: center; gap: 0.25rem; height: 1.5rem; font-size: 0.75rem; padding: 0 0.5rem; }
+.nimble-encounter-tracker .group-attack svg { width: 13px; height: 13px; }
+
+.nimble-encounter-tracker .legendary-line { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; margin: 0.25rem 0 0 2rem; }
+.nimble-encounter-tracker .phase-chip { font-size: 0.7rem; padding: 0 0.4rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); color: var(--text-muted); cursor: help; }
+.nimble-encounter-tracker .phase-chip.is-on { background: var(--nimble-hp); border-color: var(--nimble-hp); color: #fff; }
+.nimble-encounter-tracker .phase-chip.laststand.is-on { background: #8e5bd0; border-color: #8e5bd0; }
+.nimble-encounter-tracker .laststand-btn { height: 1.4rem; font-size: 0.74rem; padding: 0 0.5rem; }
+
+.nimble-encounter-tracker .creature-flash { margin: 0.25rem 0 0 2rem; font-size: 0.76rem; color: var(--text-accent); }
+.nimble-encounter-tracker .creature-note { margin: 0.25rem 0 0 2rem; font-size: 0.78rem; color: var(--text-muted); font-style: italic; }
+
+.nimble-encounter-tracker .conditions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; margin: 0.3rem 0 0 2rem; }
+.nimble-encounter-tracker .condition-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.05rem 0.25rem 0.05rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.74rem;
+	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	color: var(--text-normal);
 	cursor: pointer;
 }
-
-.nimble-statblock .add-btn:hover {
-	background: var(--interactive-accent-hover);
+.nimble-encounter-tracker .condition-tag:hover { background: color-mix(in srgb, var(--interactive-accent) 30%, transparent); }
+.nimble-encounter-tracker .condition-tag.is-minor { background: var(--background-modifier-hover); color: var(--text-muted); }
+.nimble-encounter-tracker .condition-tag.auto-condition { background: var(--nimble-hp-bg); color: var(--nimble-hp); padding-right: 0.5rem; cursor: help; }
+.nimble-encounter-tracker .condition-rounds {
+	font-size: 0.66rem;
+	font-weight: 700;
+	min-width: 1rem;
+	text-align: center;
+	border-radius: 999px;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	padding: 0 0.25rem;
 }
+.nimble-encounter-tracker .remove-condition { opacity: 0.55; padding: 0 0.15rem; }
+.nimble-encounter-tracker .remove-condition:hover { opacity: 1; color: var(--text-error); }
+.nimble-encounter-tracker .add-condition-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	height: 1.25rem;
+	padding: 0 0.4rem;
+	font-size: 0.72rem;
+	border-radius: 999px;
+	box-shadow: none;
+	background: transparent;
+	border: 1px dashed var(--background-modifier-border);
+	color: var(--text-muted);
+}
+.nimble-encounter-tracker .add-condition-btn svg { width: 12px; height: 12px; }
+.nimble-encounter-tracker .add-condition-btn:hover { color: var(--text-normal); border-color: var(--text-muted); }
+
+.nimble-encounter-tracker .creature-details { margin: 0.45rem 0 0 2rem; padding-top: 0.4rem; border-top: 1px dashed var(--background-modifier-border); font-size: 0.84rem; }
+.nimble-encounter-tracker .quick-hp { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.35rem; }
+.nimble-encounter-tracker .hp-btn { height: 1.5rem; padding: 0 0.5rem; font-size: 0.78rem; }
+.nimble-encounter-tracker .creature-actions { margin: 0.2rem 0; padding-left: 1.1rem; }
+.nimble-encounter-tracker .creature-abilities { color: var(--text-muted); display: grid; gap: 0.2rem; margin-bottom: 0.3rem; }
+.nimble-encounter-tracker .link-btn { background: transparent; box-shadow: none; border: none; padding: 0; height: auto; color: var(--text-accent); font-size: 0.8rem; }
+
+.nimble-encounter-tracker .empty-message { text-align: center; color: var(--text-muted); padding: 1rem 0.5rem; }
+.nimble-encounter-tracker .empty-hint { font-size: 0.82rem; }
+
+.nimble-encounter-tracker .combat-log { margin-top: 0.8rem; font-size: 0.8rem; }
+.nimble-encounter-tracker .combat-log summary { cursor: pointer; color: var(--text-muted); font-weight: 600; }
+.nimble-encounter-tracker .combat-log ul { list-style: none; margin: 0.3rem 0 0; padding: 0; max-height: 220px; overflow: auto; }
+.nimble-encounter-tracker .combat-log li { padding: 0.15rem 0; border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-encounter-tracker .log-round { font-weight: 700; color: var(--text-faint); }
+
+.nimble-encounter-tracker .roll-log { margin-top: 0.8rem; }
+.nimble-encounter-tracker .roll-log-header { display: flex; align-items: center; justify-content: space-between; }
+.nimble-encounter-tracker .roll-log-header h4 { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+.nimble-encounter-tracker .roll-log-list { list-style: none; margin: 0.3rem 0 0; padding: 0; }
+.nimble-encounter-tracker .roll-log-entry { padding: 0.25rem 0; border-bottom: 1px solid var(--background-modifier-border); font-size: 0.8rem; }
+.nimble-encounter-tracker .roll-log-entry:first-child .roll-log-total { color: var(--text-accent); }
+.nimble-encounter-tracker .roll-log-top { display: flex; justify-content: space-between; gap: 0.5rem; }
+.nimble-encounter-tracker .roll-log-total { font-weight: 700; font-variant-numeric: tabular-nums; }
+.nimble-encounter-tracker .roll-log-entry.is-crit .roll-log-total { color: var(--nimble-legendary); }
+.nimble-encounter-tracker .roll-log-entry.is-miss .roll-log-total { color: var(--text-faint); }
+.nimble-encounter-tracker .roll-log-detail { color: var(--text-faint); font-size: 0.74rem; }
+
+/* ============================================
+   BESTIARY
+   ============================================ */
+
+.nimble-bestiary { padding: 0 !important; }
+.nimble-bestiary .bestiary-layout { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); height: 100%; }
+.nimble-bestiary .bestiary-side { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--background-modifier-border); padding: 0.75rem; gap: 0.5rem; }
+.nimble-bestiary .bestiary-detail { overflow: auto; padding: 1rem 1.5rem 2rem; }
+.nimble-bestiary .bestiary-detail .nimble-statblock { max-width: 720px; }
+.nimble-bestiary .bestiary-search { position: relative; }
+.nimble-bestiary .bestiary-search-icon { position: absolute; left: 0.55rem; top: 50%; transform: translateY(-50%); color: var(--text-faint); display: inline-flex; pointer-events: none; }
+.nimble-bestiary .bestiary-search-icon svg { width: 15px; height: 15px; }
+.nimble-bestiary .bestiary-search-input { width: 100%; padding-left: 1.9rem; }
+.nimble-bestiary .bestiary-filters { display: grid; gap: 0.35rem; }
+.nimble-bestiary .bestiary-filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; font-size: 0.8rem; }
+.nimble-bestiary .bestiary-filter-label { width: 3.4rem; color: var(--text-muted); }
+.nimble-bestiary .bestiary-level-input { width: 3.4rem; }
+.nimble-bestiary .bestiary-habitat { flex: 1; min-width: 0; }
+.nimble-bestiary .bestiary-count { font-size: 0.76rem; color: var(--text-muted); }
+.nimble-bestiary .bestiary-list { flex: 1; overflow: auto; min-height: 120px; margin: 0 -0.3rem; }
+.nimble-bestiary .bestiary-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.4rem; border-radius: 6px; cursor: pointer; }
+.nimble-bestiary .bestiary-row:hover { background: var(--background-modifier-hover); }
+.nimble-bestiary .bestiary-row.is-selected { background: var(--background-modifier-active-hover); }
+.nimble-bestiary .bestiary-row-text { flex: 1; min-width: 0; }
+.nimble-bestiary .bestiary-row-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-bestiary .bestiary-row-meta { font-size: 0.74rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-bestiary .bestiary-row.role-legendary .bestiary-level { background: color-mix(in srgb, var(--nimble-legendary) 25%, transparent); }
+.nimble-bestiary .bestiary-row.role-minion .bestiary-level { background: color-mix(in srgb, var(--nimble-minion) 22%, transparent); }
+.nimble-bestiary .bestiary-tag { font-size: 0.68rem; padding: 0 0.35rem; border-radius: 4px; background: var(--background-modifier-hover); color: var(--text-muted); }
+.nimble-bestiary .bestiary-row-add { opacity: 0; }
+.nimble-bestiary .bestiary-row:hover .bestiary-row-add, .nimble-bestiary .bestiary-row.is-selected .bestiary-row-add { opacity: 1; }
+.nimble-bestiary .bestiary-empty { padding: 1rem; color: var(--text-muted); text-align: center; }
+.nimble-bestiary .bestiary-attribution { margin: 0; }
+.bestiary-level, .nimble-builder-modal .bestiary-level {
+	flex-shrink: 0;
+	min-width: 2.2rem;
+	text-align: center;
+	font-size: 0.74rem;
+	font-weight: 700;
+	padding: 0.05rem 0.2rem;
+	border-radius: 4px;
+	background: var(--background-modifier-hover);
+}
+
+/* ============================================
+   ENCOUNTER BLOCK AND BUILDER
+   ============================================ */
+
+.nimble-encounter-block {
+	border: 1px solid color-mix(in srgb, var(--nimble-hp) 40%, var(--background-modifier-border));
+	border-radius: var(--nimble-radius);
+	background: var(--background-secondary);
+	padding: 0.7rem 0.85rem;
+	margin: 0.75rem 0;
+}
+.nimble-encounter-block .encounter-block-head { display: flex; align-items: center; gap: 0.5rem; font-size: 1.05rem; }
+.nimble-encounter-block .encounter-block-icon { color: var(--nimble-hp); display: inline-flex; }
+.nimble-encounter-block .encounter-block-name { font-weight: 700; flex: 1; }
+.nimble-encounter-block .encounter-block-monsters { display: flex; flex-wrap: wrap; gap: 0.35rem 0.8rem; margin: 0.5rem 0; }
+.nimble-encounter-block .encounter-block-monster { display: inline-flex; align-items: center; gap: 0.3rem; }
+.nimble-encounter-block .encounter-block-count { font-weight: 700; color: var(--text-muted); }
+.nimble-encounter-block .encounter-block-meta, .nimble-encounter-block .encounter-block-notes { font-size: 0.8rem; color: var(--text-muted); }
+.nimble-encounter-block .encounter-block-notes { font-style: italic; margin-top: 0.25rem; }
+.nimble-encounter-block .encounter-block-empty { color: var(--text-muted); font-size: 0.85rem; }
+.encounter-block-warning { font-size: 0.8rem; color: var(--nimble-warn); margin-top: 0.2rem; }
+.encounter-block-warning::before { content: "⚠ "; }
+.nimble-encounter-block .encounter-block-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+.nimble-encounter-block .encounter-block-actions button { display: inline-flex; align-items: center; gap: 0.3rem; }
+.nimble-encounter-block .encounter-block-actions svg { width: 14px; height: 14px; }
+
+.nimble-difficulty { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.1rem 0.5rem; border-radius: 4px; white-space: nowrap; }
+.diff-trivial { background: var(--background-modifier-hover); color: var(--text-muted); }
+.diff-easy { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
+.diff-medium { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
+.diff-hard { background: rgba(224, 138, 65, 0.2); color: #c9702a; }
+.diff-deadly { background: rgba(224, 93, 93, 0.2); color: #d24c4c; }
+.diff-very-deadly { background: rgba(208, 64, 138, 0.2); color: #c23a82; }
+
+.nimble-builder-modal { width: min(860px, 94vw); }
+.nimble-builder-modal .builder-top { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.nimble-builder-modal .builder-name { flex: 1; font-size: 1.1rem; font-weight: 600; min-width: 200px; }
+.nimble-builder-modal .builder-party { font-size: 0.85rem; color: var(--text-muted); }
+.nimble-builder-modal .builder-rating { margin: 0.75rem 0; }
+.nimble-builder-modal .builder-rating-head { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted); }
+.nimble-builder-modal .builder-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+.nimble-meter { position: relative; height: 10px; border-radius: 5px; background: var(--background-modifier-border); margin: 0.6rem 0 1.4rem; }
+.nimble-meter-fill { height: 100%; border-radius: 5px; transition: width 0.2s; background: currentColor; }
+.nimble-meter-fill.diff-trivial { color: var(--text-faint); }
+.nimble-meter-fill.diff-easy { color: #4caf6d; }
+.nimble-meter-fill.diff-medium { color: #c9b648; }
+.nimble-meter-fill.diff-hard { color: #e08a41; }
+.nimble-meter-fill.diff-deadly { color: #e05d5d; }
+.nimble-meter-fill.diff-very-deadly { color: #d0408a; }
+.nimble-meter-tick { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--text-faint); }
+.nimble-meter-label { position: absolute; top: 14px; transform: translateX(-50%); font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; }
+.nimble-builder-modal .builder-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.nimble-builder-modal .builder-col { min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.nimble-builder-modal .builder-col-title { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+.nimble-builder-modal .builder-search { width: 100%; }
+.nimble-builder-modal .builder-results, .nimble-builder-modal .builder-picked { height: 300px; overflow: auto; border: 1px solid var(--background-modifier-border); border-radius: 6px; padding: 0.25rem; }
+.nimble-builder-modal .builder-result { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.4rem; border-radius: 5px; cursor: pointer; }
+.nimble-builder-modal .builder-result:hover, .nimble-builder-modal .builder-result:focus-visible { background: var(--background-modifier-hover); outline: none; }
+.nimble-builder-modal .builder-result-text { flex: 1; min-width: 0; }
+.nimble-builder-modal .builder-result-name { font-weight: 600; }
+.nimble-builder-modal .builder-result-meta { font-size: 0.74rem; color: var(--text-muted); }
+.nimble-builder-modal .builder-result-add { color: var(--text-faint); display: inline-flex; }
+.nimble-builder-modal .builder-more, .nimble-builder-modal .builder-empty { font-size: 0.8rem; color: var(--text-muted); padding: 0.4rem; }
+.nimble-builder-modal .builder-pick { display: flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.2rem; }
+.nimble-builder-modal .builder-pick-count { min-width: 1.6rem; text-align: center; font-weight: 700; }
+.nimble-builder-modal .builder-pick-name.is-missing { color: var(--text-error); text-decoration: line-through; }
+.nimble-builder-modal .builder-notes { width: 100%; margin-top: 0.75rem; resize: vertical; }
+
+/* Settings: party rows */
+/* Settings: party table */
+.nimble-party-table { display: grid; gap: 0.3rem; margin: 0.5rem 0 0.6rem; }
+.nimble-party-head, .nimble-party-row { display: grid; grid-template-columns: minmax(7rem, 1.4fr) minmax(6rem, 1.2fr) 3.6rem 4.2rem 4.2rem 4.6rem 2rem; gap: 0.4rem; align-items: center; }
+.nimble-party-head { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); padding: 0 0.15rem; }
+.nimble-party-row input { width: 100%; min-width: 0; }
+.nimble-party-row input.nimble-party-num { text-align: center; }
+.nimble-party-empty { color: var(--text-muted); font-size: 0.85rem; padding: 0.3rem 0; }
+.nimble-party-actions { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
+.nimble-party-actions button { display: inline-flex; align-items: center; gap: 0.35rem; }
+.nimble-party-actions svg { width: 15px; height: 15px; }
+.nimble-party-modal { width: min(760px, 94vw); }
+.nimble-bestiary .bestiary-attribution { font-size: 0.74rem; color: var(--text-muted); border-top: 1px solid var(--background-modifier-border); padding-top: 0.4rem; display: grid; gap: 0.3rem; }
+.nimble-bestiary .bestiary-attribution summary { cursor: pointer; color: var(--text-faint); }
+.nimble-bestiary .bestiary-attribution a { color: var(--text-muted); }
+
+/* ============================================
+   KEPT FROM EARLIER VERSIONS
+   ============================================ */
 
 .nimble-error {
 	color: var(--text-error);
@@ -378,441 +629,6 @@
 	border-radius: 4px;
 }
 
-/* ============================================
-   ENCOUNTER TRACKER STYLES
-   ============================================ */
-
-.nimble-encounter-tracker {
-	padding: 0.5rem;
-	font-family: var(--font-interface);
-}
-
-.nimble-encounter-tracker .encounter-header h3 {
-	margin: 0 0 0.5rem 0;
-	font-size: 1rem;
-}
-
-.nimble-encounter-tracker .new-encounter-form {
-	display: flex;
-	gap: 0.25rem;
-	margin-bottom: 0.5rem;
-}
-
-.nimble-encounter-tracker .encounter-name-input {
-	flex: 1;
-	padding: 0.25rem 0.5rem;
-}
-
-.nimble-encounter-tracker .add-encounter-btn {
-	padding: 0.25rem 0.75rem;
-	font-weight: bold;
-}
-
-.nimble-encounter-tracker .encounter-selector {
-	margin-bottom: 0.5rem;
-}
-
-.nimble-encounter-tracker .encounter-select {
-	width: 100%;
-	padding: 0.25rem;
-}
-
-.nimble-encounter-tracker .delete-encounter-btn {
-	width: 100%;
-	padding: 0.25rem;
-	margin-bottom: 0.5rem;
-	background: transparent;
-	border: 1px solid var(--text-error);
-	color: var(--text-error);
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.nimble-encounter-tracker .clear-btn-container {
-	display: flex;
-	gap: 0.5rem;
-	margin-bottom: 0.5rem;
-}
-
-.nimble-encounter-tracker .clear-btn-container .delete-encounter-btn {
-	margin-bottom: 0;
-}
-
-.nimble-encounter-tracker .confirm-btn {
-	flex: 1;
-	padding: 0.25rem;
-	background: var(--text-error);
-	border: 1px solid var(--text-error);
-	color: white;
-	border-radius: 4px;
-	cursor: pointer;
-	font-weight: 600;
-}
-
-.nimble-encounter-tracker .confirm-btn:hover {
-	background: #c0392b;
-}
-
-.nimble-encounter-tracker .cancel-btn {
-	flex: 1;
-	padding: 0.25rem;
-	background: transparent;
-	border: 1px solid var(--background-modifier-border);
-	color: var(--text-muted);
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.nimble-encounter-tracker .cancel-btn:hover {
-	background: var(--background-modifier-hover);
-}
-
-.nimble-encounter-tracker .empty-message {
-	color: var(--text-muted);
-	font-size: 0.85rem;
-	text-align: center;
-}
-
-.nimble-encounter-tracker .creature-list {
-	list-style: none;
-	padding: 0;
-	margin: 0;
-}
-
-.nimble-encounter-tracker .creature-item {
-	background: var(--background-primary);
-	border: 1px solid var(--background-modifier-border);
-	border-left: 4px solid #888;
-	border-radius: 4px;
-	padding: 0.5rem;
-	margin-bottom: 0.5rem;
-	transition: transform 0.1s, opacity 0.1s;
-}
-
-.nimble-encounter-tracker .creature-item.dragging {
-	opacity: 0.5;
-	transform: scale(0.98);
-}
-
-.nimble-encounter-tracker .creature-item.drag-over {
-	border-top: 2px solid var(--interactive-accent);
-	padding-top: calc(0.5rem - 1px);
-}
-
-.nimble-encounter-tracker .creature-item.hp-healthy {
-	border-left-color: #28a745;
-}
-
-.nimble-encounter-tracker .creature-item.hp-wounded {
-	border-left-color: #ffc107;
-}
-
-.nimble-encounter-tracker .creature-item.hp-critical {
-	border-left-color: #dc3545;
-}
-
-.nimble-encounter-tracker .creature-item.hp-dead {
-	border-left-color: #6c757d;
-	opacity: 0.6;
-}
-
-.nimble-encounter-tracker .creature-header {
-	display: flex;
-	align-items: center;
-	margin-bottom: 0.25rem;
-}
-
-.nimble-encounter-tracker .drag-handle {
-	cursor: grab;
-	color: var(--text-muted);
-	padding: 0 0.3rem 0 0;
-	font-size: 0.85rem;
-	user-select: none;
-	line-height: 1;
-}
-
-.nimble-encounter-tracker .drag-handle:hover {
-	color: var(--text-normal);
-}
-
-.nimble-encounter-tracker .drag-handle:active {
-	cursor: grabbing;
-}
-
-.nimble-encounter-tracker .creature-buttons {
-	display: flex;
-	gap: 0.25rem;
-	margin-left: auto;
-}
-
-.nimble-encounter-tracker .creature-label {
-	all: unset;
-	box-sizing: border-box;
-	font-size: inherit;
-	font-weight: 600;
-	cursor: pointer;
-	padding: 2px 4px;
-	border-radius: 3px;
-	transition: background 0.1s, color 0.1s;
-}
-
-.nimble-encounter-tracker .creature-label:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-accent);
-}
-
-.nimble-encounter-tracker .creature-label.viewing {
-	color: var(--text-accent);
-	background: var(--background-modifier-hover);
-}
-
-.nimble-encounter-tracker .label-container {
-	flex: 1;
-}
-
-.nimble-encounter-tracker .label-edit-input {
-	font-weight: 600;
-	font-size: inherit;
-	padding: 2px 4px;
-	border: 1px solid var(--interactive-accent);
-	border-radius: 3px;
-	background: var(--background-primary);
-	width: 100%;
-	max-width: 150px;
-}
-
-.nimble-encounter-tracker .remove-btn {
-	padding: 0 0.5rem;
-	background: transparent;
-	border: none;
-	color: var(--text-muted);
-	cursor: pointer;
-}
-
-.nimble-encounter-tracker .remove-btn:hover {
-	color: var(--text-error);
-}
-
-.nimble-encounter-tracker .edit-btn {
-	padding: 0.2rem 0.4rem;
-	background: transparent;
-	border: none;
-	color: var(--text-muted);
-	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.nimble-encounter-tracker .edit-btn:hover {
-	color: var(--text-accent);
-}
-
-.nimble-encounter-tracker .edit-btn svg {
-	width: 14px;
-	height: 14px;
-}
-
-/* Stat Block Viewer */
-.nimble-encounter-tracker .statblock-viewer {
-	margin-bottom: 0.5rem;
-}
-
-.nimble-encounter-tracker .viewer-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 0.5rem;
-}
-
-.nimble-encounter-tracker .viewer-title {
-	font-weight: 600;
-	font-size: 1rem;
-	color: var(--text-accent);
-}
-
-.nimble-encounter-tracker .close-viewer-btn {
-	padding: 0.25rem 0.5rem;
-	font-size: 0.8rem;
-	background: var(--background-modifier-hover);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.nimble-encounter-tracker .close-viewer-btn:hover {
-	background: var(--background-modifier-active-hover);
-}
-
-.nimble-encounter-tracker .viewer-statblock {
-	max-height: 400px;
-	overflow-y: auto;
-}
-
-.nimble-encounter-tracker .viewer-statblock .nimble-statblock {
-	margin: 0;
-	max-width: none;
-	font-size: 0.85rem;
-}
-
-.nimble-encounter-tracker .viewer-statblock .nimble-statblock .monster-name {
-	font-size: 1.1rem;
-}
-
-.nimble-encounter-tracker .viewer-statblock .nimble-statblock h4 {
-	font-size: 0.9rem;
-}
-
-.nimble-encounter-tracker .viewer-divider {
-	border: none;
-	border-top: 2px solid var(--background-modifier-border);
-	margin: 0.75rem 0;
-}
-
-.nimble-encounter-tracker .hp-controls {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.25rem;
-}
-
-.nimble-encounter-tracker .hp-btn {
-	width: 32px;
-	height: 28px;
-	padding: 0;
-	border: 1px solid var(--background-modifier-border);
-	background: var(--background-primary);
-	border-radius: 4px;
-	cursor: pointer;
-}
-
-.nimble-encounter-tracker .hp-btn:hover {
-	background: var(--background-modifier-hover);
-}
-
-.nimble-encounter-tracker .hp-display {
-	font-variant-numeric: tabular-nums;
-	min-width: 60px;
-	text-align: center;
-	font-weight: bold;
-}
-
-/* Conditions */
-.nimble-encounter-tracker .conditions-row {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.25rem;
-	margin-top: 0.35rem;
-	align-items: center;
-}
-
-.nimble-encounter-tracker .condition-tag {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.2rem;
-	padding: 0.15rem 0.4rem;
-	font-size: 0.75rem;
-	background: var(--background-modifier-hover);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 3px;
-	cursor: pointer;
-}
-
-.nimble-encounter-tracker .condition-tag:hover {
-	background: var(--background-modifier-active-hover);
-}
-
-.nimble-encounter-tracker .condition-tag.auto-condition {
-	background: rgba(220, 53, 69, 0.2);
-	border-color: rgba(220, 53, 69, 0.5);
-	color: var(--text-normal);
-}
-
-.nimble-encounter-tracker .condition-tag .remove-condition {
-	font-weight: bold;
-	opacity: 0.6;
-	cursor: pointer;
-	margin-left: 0.1rem;
-}
-
-.nimble-encounter-tracker .condition-tag .remove-condition:hover {
-	opacity: 1;
-	color: var(--text-error);
-}
-
-.nimble-encounter-tracker .add-condition-btn {
-	width: 22px;
-	height: 22px;
-	padding: 0;
-	font-size: 0.85rem;
-	font-weight: bold;
-	border: 1px dashed var(--background-modifier-border);
-	background: transparent;
-	border-radius: 3px;
-	cursor: pointer;
-	color: var(--text-muted);
-}
-
-.nimble-encounter-tracker .add-condition-btn:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
-}
-
-/* Condition Picker Dropdown */
-.condition-picker {
-	position: fixed;
-	z-index: var(--layer-popover, 1000);
-	background: var(--background-primary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	max-height: 250px;
-	overflow-y: auto;
-	min-width: 150px;
-}
-
-.condition-picker .picker-option {
-	padding: 0.4rem 0.6rem;
-	cursor: pointer;
-	font-size: 0.85rem;
-}
-
-.condition-picker .picker-option:hover {
-	background: var(--background-modifier-hover);
-}
-
-.condition-picker .picker-empty {
-	padding: 0.5rem;
-	color: var(--text-muted);
-	font-size: 0.85rem;
-	text-align: center;
-}
-
-/* Condition Viewer */
-.nimble-encounter-tracker .condition-viewer {
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	padding: 0.5rem;
-	margin-bottom: 0.5rem;
-}
-
-.nimble-encounter-tracker .condition-title {
-	color: #dc3545;
-}
-
-.nimble-encounter-tracker .condition-description {
-	margin: 0.25rem 0 0 0;
-	font-size: 0.9rem;
-	line-height: 1.4;
-}
-
-.nimble-encounter-tracker .close-viewer-btn.small {
-	padding: 0.15rem 0.4rem;
-	font-size: 0.75rem;
-}
-
-/* Custom Conditions Settings */
 .custom-condition-add {
 	background: var(--background-secondary);
 	border: 1px solid var(--background-modifier-border);
@@ -855,112 +671,14 @@
 	gap: 0.25rem;
 }
 
-/* ============================================
-   INLINE REFERENCE STYLES
-   ============================================ */
 
-.nimble-inline-ref {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.25rem;
-	padding: 0.1rem 0.4rem;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
-	font-size: 0.9em;
-	vertical-align: baseline;
-}
 
-.nimble-inline-ref.nimble-inline-found {
-	border-color: var(--text-accent);
-}
 
-.nimble-inline-ref.nimble-inline-unresolved {
-	border-color: var(--text-error);
-	opacity: 0.8;
-}
 
-.nimble-inline-name {
-	color: var(--text-accent);
-	text-decoration: none;
-	font-weight: 500;
-	cursor: pointer;
-}
 
-.nimble-inline-name:hover {
-	text-decoration: underline;
-}
 
-.nimble-inline-name.unresolved {
-	color: var(--text-muted);
-	cursor: default;
-}
 
-.nimble-inline-add-btn {
-	padding: 0 0.35rem;
-	font-size: 0.85em;
-	font-weight: bold;
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border: none;
-	border-radius: 3px;
-	cursor: pointer;
-	line-height: 1.2;
-}
 
-.nimble-inline-add-btn:hover {
-	background: var(--interactive-accent-hover);
-}
-
-.nimble-inline-unknown {
-	color: var(--text-error);
-	font-size: 0.8em;
-	padding: 0 0.2rem;
-}
-
-/* ============================================
-   WIKILINK STYLES IN STATBLOCKS
-   ============================================ */
-
-.nimble-statblock a.nimble-wikilink {
-	color: var(--text-accent);
-	text-decoration: none;
-	cursor: pointer;
-}
-
-.nimble-statblock a.nimble-wikilink:hover {
-	text-decoration: underline;
-}
-
-/* ============================================
-   HOVER PREVIEW STYLES
-   ============================================ */
-
-.nimble-hover-preview {
-	background: var(--background-primary);
-	border: 2px solid var(--background-modifier-border);
-	border-radius: 8px;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-	padding: 0.5rem;
-	max-width: 400px;
-	max-height: 500px;
-	overflow: auto;
-}
-
-.nimble-hover-preview .nimble-statblock {
-	margin: 0;
-	border: none;
-	max-width: none;
-	padding: 0.5rem;
-}
-
-.nimble-hover-preview .nimble-statblock .add-btn {
-	display: none;
-}
-
-/* ============================================
-   FOCUS + DICE
-   ============================================ */
 
 .nimble-statblock button:focus-visible,
 .nimble-encounter-tracker button:focus-visible,
@@ -969,20 +687,6 @@
 .condition-picker .picker-option:focus-visible {
 	outline: 2px solid var(--interactive-accent);
 	outline-offset: 1px;
-}
-
-.nimble-dice.is-clickable {
-	font-weight: 600;
-	color: var(--text-accent);
-	border-bottom: 1px dashed var(--text-accent);
-	cursor: pointer;
-	white-space: nowrap;
-	border-radius: 2px;
-	transition: background 0.1s;
-}
-
-.nimble-dice.is-clickable:hover {
-	background: var(--background-modifier-hover);
 }
 
 .nimble-roll-notice .nimble-roll-notice-label {
@@ -1011,333 +715,991 @@
 	color: var(--color-yellow, #e0ac00);
 }
 
-/* ============================================
-   COMPACT STYLE
-   ============================================ */
-
-.nimble-statblock.is-compact {
-	padding: 0.6rem 0.75rem;
-	margin: 0.5rem 0;
-	font-size: 0.88em;
-	line-height: 1.35;
-}
-
-.nimble-statblock.is-compact p,
-.nimble-statblock.is-compact li {
-	margin: 0.15rem 0;
-}
-
-.nimble-statblock.is-compact hr {
-	margin: 0.4rem 0;
-}
-
-.nimble-statblock.is-compact .monster-abilities-box,
-.nimble-statblock.is-compact .solo-abilities-box {
-	padding: 0.35rem 0.5rem;
-	margin: 0.35rem 0;
-}
-
-.nimble-statblock.is-compact .monster-name-inline,
-.nimble-statblock.is-compact .solo-name {
-	font-size: 1.15rem;
-}
-
-.nimble-statblock.is-compact .stat-badge {
-	font-size: 0.72rem;
-	padding: 0.1rem 0.35rem;
-}
-
-.nimble-statblock.is-compact .add-btn {
-	padding: 0.25rem;
-}
-
-/* ============================================
-   TRACKER ADDITIONS
-   ============================================ */
-
-.nimble-encounter-tracker .encounter-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.5rem;
-	margin-bottom: 0.5rem;
-}
-
-.nimble-encounter-tracker .encounter-header h3 {
-	margin: 0;
-}
-
-.nimble-encounter-tracker .round-counter {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.15rem;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 999px;
-	padding: 0.1rem;
-}
-
-.nimble-encounter-tracker .round-btn {
-	all: unset;
-	cursor: pointer;
-	width: 1.5rem;
-	height: 1.5rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 999px;
-	font-size: 1rem;
-	color: var(--text-muted);
-}
-
-.nimble-encounter-tracker .round-btn:hover:not(:disabled) {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
-}
-
-.nimble-encounter-tracker .round-btn:disabled {
-	opacity: 0.3;
-	cursor: default;
-}
-
-.nimble-encounter-tracker .round-label {
-	font-size: 0.8rem;
-	font-weight: 700;
-	padding: 0 0.25rem;
-	font-variant-numeric: tabular-nums;
-}
-
-.nimble-encounter-tracker .encounter-summary {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	gap: 0.25rem 0.5rem;
-	font-size: 0.78rem;
-	color: var(--text-muted);
-	margin-bottom: 0.6rem;
-	font-variant-numeric: tabular-nums;
-}
-
-.nimble-encounter-tracker .encounter-hp-bar,
-.nimble-encounter-tracker .creature-hp-bar {
-	flex-basis: 100%;
-	height: 4px;
-	border-radius: 2px;
-	background: var(--background-modifier-border);
-	overflow: hidden;
-}
-
-.nimble-encounter-tracker .encounter-hp-fill,
-.nimble-encounter-tracker .creature-hp-fill {
-	height: 100%;
-	background: var(--interactive-accent);
-	transition: width 0.2s ease;
-}
-
-.nimble-encounter-tracker .creature-hp-bar {
-	margin-top: 0.4rem;
-}
-
-.nimble-encounter-tracker .hp-healthy .creature-hp-fill { background: #4caf50; }
-.nimble-encounter-tracker .hp-wounded .creature-hp-fill { background: #e6a817; }
-.nimble-encounter-tracker .hp-critical .creature-hp-fill { background: #dc3545; }
-
-.nimble-encounter-tracker .encounter-toolbar {
-	display: flex;
-	gap: 0.4rem;
-	align-items: stretch;
-	margin-bottom: 0.5rem;
-}
-
-.nimble-encounter-tracker .encounter-toolbar .clear-btn-container {
-	flex: 1;
-	margin: 0;
-}
-
-.nimble-encounter-tracker .encounter-toolbar .delete-encounter-btn {
-	margin: 0;
-	height: 100%;
-}
-
-.nimble-encounter-tracker .add-monster-btn {
-	flex: 1;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.3rem;
-	padding: 0.25rem 0.5rem;
-}
-
-.nimble-encounter-tracker .add-monster-btn svg {
-	width: 14px;
-	height: 14px;
-}
-
-.nimble-encounter-tracker .empty-message .empty-hint {
-	font-size: 0.78rem;
-	opacity: 0.85;
-}
-
-.nimble-encounter-tracker .hp-controls {
-	flex-wrap: wrap;
-}
-
-.nimble-encounter-tracker .hp-display {
-	all: unset;
-	box-sizing: border-box;
-	cursor: text;
-	min-width: 60px;
-	text-align: center;
-	font-weight: bold;
-	font-variant-numeric: tabular-nums;
-	padding: 0.15rem 0.35rem;
-	border-radius: 4px;
-	border: 1px dashed transparent;
-}
-
-.nimble-encounter-tracker .hp-display:hover {
-	border-color: var(--background-modifier-border);
-	background: var(--background-modifier-hover);
-}
-
-.nimble-encounter-tracker .hp-input {
-	width: 6.5rem;
-	height: 28px;
-	padding: 0 0.35rem;
-	text-align: center;
-	font-variant-numeric: tabular-nums;
-}
-
-.nimble-encounter-tracker .hp-input.is-invalid {
-	border-color: var(--text-error);
-	box-shadow: 0 0 0 1px var(--text-error);
-}
-
-.nimble-encounter-tracker .creature-item.is-solo {
-	border-left-color: #8b0000;
-}
-
-.nimble-encounter-tracker .legendary-row {
-	display: flex;
-	align-items: center;
-	gap: 0.3rem;
-	margin-top: 0.4rem;
-	font-size: 0.75rem;
-	color: var(--text-muted);
-}
-
-.nimble-encounter-tracker .legendary-label {
-	margin-right: 0.15rem;
-}
-
-.nimble-encounter-tracker .legendary-pip {
-	all: unset;
-	cursor: pointer;
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	background: #8b0000;
-	border: 2px solid #8b0000;
-	box-sizing: border-box;
-}
-
-.nimble-encounter-tracker .legendary-pip.is-spent {
-	background: transparent;
-	opacity: 0.6;
-}
-
-.nimble-encounter-tracker .phase-banner {
-	margin-top: 0.4rem;
-	padding: 0.3rem 0.5rem;
-	font-size: 0.78rem;
-	line-height: 1.35;
-	border-radius: 4px;
-	background: rgba(220, 53, 69, 0.12);
-	border-left: 3px solid #dc3545;
-}
-
-.nimble-encounter-tracker .phase-banner strong {
-	color: #dc3545;
-}
-
-.nimble-encounter-tracker .viewer-open-btn {
-	margin-left: auto;
-	margin-right: 0.25rem;
-}
-
-/* Roll log */
-.nimble-encounter-tracker .roll-log {
-	margin-top: 1rem;
-	border-top: 1px solid var(--background-modifier-border);
-	padding-top: 0.5rem;
-}
-
-.nimble-encounter-tracker .roll-log-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-
-.nimble-encounter-tracker .roll-log-header h4 {
-	margin: 0;
-	font-size: 0.85rem;
-	color: var(--text-muted);
-}
-
-.nimble-encounter-tracker .roll-log-list {
-	list-style: none;
-	margin: 0.25rem 0 0;
-	padding: 0;
-}
-
-.nimble-encounter-tracker .roll-log-entry {
-	padding: 0.3rem 0.4rem;
-	border-radius: 4px;
-	font-size: 0.8rem;
-}
-
-.nimble-encounter-tracker .roll-log-entry:first-child {
-	background: var(--background-secondary);
-}
-
-.nimble-encounter-tracker .roll-log-top {
-	display: flex;
-	justify-content: space-between;
-	gap: 0.5rem;
-}
-
-.nimble-encounter-tracker .roll-log-label {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.nimble-encounter-tracker .roll-log-total {
-	font-weight: 800;
-	font-variant-numeric: tabular-nums;
-}
-
-.nimble-encounter-tracker .roll-log-entry.is-miss .roll-log-total { color: var(--text-error); }
-.nimble-encounter-tracker .roll-log-entry.is-crit .roll-log-total { color: var(--color-yellow, #e0ac00); }
-
-.nimble-encounter-tracker .roll-log-detail {
-	color: var(--text-muted);
-	font-size: 0.72rem;
-	font-variant-numeric: tabular-nums;
-}
-
-/* Suggestions */
-.nimble-suggestion .nimble-suggestion-note {
-	font-size: 0.75em;
-	color: var(--text-muted);
-}
-
-/* Hover preview sits above Obsidian's own popovers. */
-.nimble-hover-preview {
-	position: fixed;
-	z-index: var(--layer-popover, 1000);
-}
-
 .nimble-error {
 	font-size: 0.9em;
 }
+
+/* ============================================
+   GM MAP (```nimble-map)
+   ============================================ */
+
+.nimble-map { margin: 0.75rem 0; border: 1px solid var(--background-modifier-border); border-radius: var(--nimble-radius); overflow: hidden; background: var(--background-secondary); }
+.nimble-map-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; padding: 0.35rem 0.45rem; border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-map-btn { display: inline-flex; align-items: center; gap: 0.3rem; height: 1.7rem; padding: 0 0.55rem; font-size: 0.8rem; }
+.nimble-map-btn svg { width: 14px; height: 14px; }
+.nimble-map-btn.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
+.nimble-map-spacer { flex: 1; }
+.nimble-map-hint { padding: 0.3rem 0.6rem; font-size: 0.78rem; color: var(--text-muted); background: var(--background-primary-alt); border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-map-body { display: flex; }
+.nimble-map-viewport { position: relative; flex: 1; height: 480px; overflow: hidden; background: #111; cursor: grab; touch-action: none; resize: vertical; outline: none; }
+.nimble-map-viewport:active { cursor: grabbing; }
+.nimble-map-viewport.mode-add { cursor: crosshair; }
+.nimble-map-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--interactive-accent); }
+.nimble-map-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; --nimble-map-inv: 1; }
+.nimble-map-stage img { display: block; max-width: none !important; width: 100%; height: 100%; user-select: none; pointer-events: none; margin: 0; }
+.nimble-map-grid { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(to right, rgba(0,0,0,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.35) 1px, transparent 1px); }
+.nimble-map-layer { position: absolute; inset: 0; pointer-events: none; }
+.nimble-map-pin, .nimble-map-token { position: absolute; pointer-events: auto; }
+.nimble-map-pin { width: 0; height: 0; cursor: pointer; z-index: 2; }
+.nimble-map-pin-inner { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%) scale(var(--nimble-map-inv)); transform-origin: 50% 100%; }
+.nimble-map-pin-icon { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--interactive-accent); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.45); }
+.nimble-map-pin-icon svg { width: 15px; height: 15px; color: #fff; transform: rotate(45deg); }
+.nimble-map-pin-label { order: -1; margin-bottom: 3px; padding: 0 0.35rem; border-radius: 4px; background: rgba(0,0,0,.72); color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.nimble-map .pin-label-short { display: none; }
+.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key .pin-label-full { display: none; }
+.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key .pin-label-short { display: inline; }
+.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin:not(.has-key) .nimble-map-pin-label { display: none; }
+.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .pin-label-full { display: inline !important; }
+.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .pin-label-short { display: none !important; }
+.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .nimble-map-pin-label { display: block !important; }
+.nimble-map-pin:is(:hover, :focus-visible) { z-index: 5; }
+.nimble-map.hide-labels .nimble-map-pin-label { display: none; }
+.nimble-map.hide-labels .nimble-map-pin:hover .nimble-map-pin-label { display: block; }
+.nimble-map-pin:hover .nimble-map-pin-icon, .nimble-map-pin:focus-visible .nimble-map-pin-icon { filter: brightness(1.15); box-shadow: 0 0 0 3px rgba(255,255,255,.5); }
+.nimble-map-pin.is-unlinked .nimble-map-pin-icon { opacity: 0.8; border-style: dashed; }
+.nimble-map-pin.is-dragging { cursor: grabbing; z-index: 5; }
+.nimble-map-pin.kind-area .nimble-map-pin-icon { background: #6d55c8; }
+.nimble-map-pin.kind-encounter .nimble-map-pin-icon { background: #c0504d; }
+.nimble-map-pin.kind-npc .nimble-map-pin-icon { background: #3f8f5a; }
+.nimble-map-pin.kind-treasure .nimble-map-pin-icon { background: #c89a2c; }
+.nimble-map-pin.kind-danger .nimble-map-pin-icon { background: #7a1f1f; }
+.nimble-map-pin.kind-note .nimble-map-pin-icon { background: #5a6270; }
+.nimble-map-pin.kind-secret .nimble-map-pin-icon { background: #333; }
+.nimble-map-token { width: 0; height: 0; z-index: 3; cursor: grab; }
+.nimble-map-token .nimble-map-token-text, .nimble-map-token.in-tray .nimble-map-token-text { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; font-size: 11px; font-weight: 800; color: #111; background: var(--nimble-hp); border: 2px solid #111; box-shadow: 0 2px 5px rgba(0,0,0,.5); }
+.nimble-map-tokens .nimble-map-token .nimble-map-token-text { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%) scale(var(--nimble-map-inv)); }
+.nimble-map-token.role-hero .nimble-map-token-text { background: var(--nimble-hero); }
+.nimble-map-token.role-minion .nimble-map-token-text { background: var(--nimble-minion); }
+.nimble-map-token.role-legendary .nimble-map-token-text { background: var(--nimble-legendary); border-color: #fff3c4; }
+.nimble-map-token.is-done { opacity: 0.6; }
+.nimble-map-token.is-down { opacity: 0.3; filter: grayscale(1); }
+.nimble-map-tray { width: 150px; flex-shrink: 0; border-left: 1px solid var(--background-modifier-border); padding: 0.4rem; overflow: auto; max-height: 480px; display: flex; flex-direction: column; gap: 0.35rem; }
+.nimble-map-tray-title { font-size: 0.72rem; color: var(--text-muted); }
+.nimble-map-tray-empty { font-size: 0.78rem; color: var(--text-muted); }
+.nimble-map-token.in-tray { position: static; width: auto; height: auto; display: flex; align-items: center; gap: 0.4rem; cursor: grab; font-size: 0.8rem; }
+.nimble-map-token-ghost { position: fixed; z-index: var(--layer-popover); transform: translate(-50%, -50%); pointer-events: none; padding: 0.15rem 0.5rem; border-radius: 999px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 0.8rem; font-weight: 600; }
+
+/* ============================================
+   INLINE MONSTER REFERENCES  (`nimble:Name`)
+   A split pill: [level | name | +]
+   ============================================ */
+
+.nimble-inline-ref {
+	--ref-tint: var(--interactive-accent);
+	display: inline-flex;
+	align-items: stretch;
+	height: 1.5em;
+	max-width: 100%;
+	/* An inline-flex box's baseline is its first item's text baseline, so the
+	   name lines up with the surrounding sentence instead of sinking below it. */
+	vertical-align: baseline;
+	/* Baseline alignment leaves the box optically low; lift it ~2px without changing line spacing. */
+	position: relative;
+	top: -0.12em;
+	margin: 0 0.1em;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--ref-tint) 32%, transparent);
+	background: color-mix(in srgb, var(--ref-tint) 9%, var(--background-primary));
+	font-size: 0.92em;
+	line-height: 1;
+	overflow: hidden;
+	transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+.nimble-inline-ref:hover { border-color: color-mix(in srgb, var(--ref-tint) 60%, transparent); box-shadow: 0 1px 4px color-mix(in srgb, var(--ref-tint) 18%, transparent); }
+.nimble-inline-ref.role-legendary { --ref-tint: var(--nimble-legendary); }
+.nimble-inline-ref.role-minion { --ref-tint: var(--nimble-minion); }
+
+.nimble-inline-level {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 0.45em 0 0.6em;
+	font-size: 0.78em;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--ref-tint) 80%, var(--text-normal));
+	background: color-mix(in srgb, var(--ref-tint) 14%, transparent);
+	border-right: 1px solid color-mix(in srgb, var(--ref-tint) 22%, transparent);
+	cursor: default;
+}
+
+.nimble-inline-name {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 0.6em;
+	color: var(--text-normal);
+	font-weight: 600;
+	text-decoration: none !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+.nimble-inline-name:hover { color: color-mix(in srgb, var(--ref-tint) 75%, var(--text-normal)); }
+
+.nimble-inline-ref .nimble-inline-add-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75em;
+	height: auto;
+	min-height: 0;
+	margin: 0;
+	padding: 0 0.1em 0 0;
+	border: none;
+	border-left: 1px solid color-mix(in srgb, var(--ref-tint) 22%, transparent);
+	border-radius: 0;
+	box-shadow: none !important;
+	background: transparent;
+	color: color-mix(in srgb, var(--ref-tint) 85%, var(--text-normal));
+	cursor: pointer;
+	transition: background 0.12s, color 0.12s;
+}
+.nimble-inline-ref .nimble-inline-add-btn svg { width: 0.95em; height: 0.95em; stroke-width: 2.6; }
+.nimble-inline-ref .nimble-inline-add-btn:hover { background: var(--ref-tint); color: #fff; }
+.nimble-inline-ref .nimble-inline-add-btn:focus-visible { outline: none; background: var(--ref-tint); color: #fff; }
+
+.nimble-inline-ref.nimble-inline-unresolved {
+	--ref-tint: var(--text-faint);
+	border-style: dashed;
+	background: transparent;
+}
+.nimble-inline-name.unresolved { color: var(--text-muted); font-weight: 500; cursor: default; }
+.nimble-inline-unknown {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 0.55em;
+	font-size: 0.8em;
+	font-weight: 700;
+	color: var(--text-error);
+	border-left: 1px dashed var(--background-modifier-border);
+}
+
+
+.nimble-encounter-block .encounter-block-meta, .nimble-encounter-block .encounter-block-notes { font-size: 0.8rem; color: var(--text-muted); }
+.nimble-encounter-block .encounter-block-notes { font-style: italic; margin-top: 0.25rem; }
+.nimble-encounter-block .encounter-block-empty { color: var(--text-muted); font-size: 0.85rem; }
+.encounter-block-warning { font-size: 0.8rem; color: var(--nimble-warn); margin-top: 0.2rem; }
+.encounter-block-warning::before { content: "⚠ "; }
+.nimble-encounter-block .encounter-block-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+.nimble-encounter-block .encounter-block-actions button { display: inline-flex; align-items: center; gap: 0.3rem; }
+.nimble-encounter-block .encounter-block-actions svg { width: 14px; height: 14px; }
+
+.nimble-difficulty { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.1rem 0.5rem; border-radius: 4px; white-space: nowrap; }
+.diff-trivial { background: var(--background-modifier-hover); color: var(--text-muted); }
+.diff-easy { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
+.diff-medium { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
+.diff-hard { background: rgba(224, 138, 65, 0.2); color: #c9702a; }
+.diff-deadly { background: rgba(224, 93, 93, 0.2); color: #d24c4c; }
+.diff-very-deadly { background: rgba(208, 64, 138, 0.2); color: #c23a82; }
+
+.nimble-builder-modal { width: min(860px, 94vw); }
+.nimble-builder-modal .builder-top { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.nimble-builder-modal .builder-name { flex: 1; font-size: 1.1rem; font-weight: 600; min-width: 200px; }
+.nimble-builder-modal .builder-party { font-size: 0.85rem; color: var(--text-muted); }
+.nimble-builder-modal .builder-rating { margin: 0.75rem 0; }
+.nimble-builder-modal .builder-rating-head { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted); }
+.nimble-builder-modal .builder-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+.nimble-meter { position: relative; height: 10px; border-radius: 5px; background: var(--background-modifier-border); margin: 0.6rem 0 1.4rem; }
+.nimble-meter-fill { height: 100%; border-radius: 5px; transition: width 0.2s; background: currentColor; }
+.nimble-meter-fill.diff-trivial { color: var(--text-faint); }
+.nimble-meter-fill.diff-easy { color: #4caf6d; }
+.nimble-meter-fill.diff-medium { color: #c9b648; }
+.nimble-meter-fill.diff-hard { color: #e08a41; }
+.nimble-meter-fill.diff-deadly { color: #e05d5d; }
+.nimble-meter-fill.diff-very-deadly { color: #d0408a; }
+.nimble-meter-tick { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--text-faint); }
+.nimble-meter-label { position: absolute; top: 14px; transform: translateX(-50%); font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; }
+.nimble-builder-modal .builder-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.nimble-builder-modal .builder-col { min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.nimble-builder-modal .builder-col-title { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+.nimble-builder-modal .builder-search { width: 100%; }
+.nimble-builder-modal .builder-results, .nimble-builder-modal .builder-picked { height: 300px; overflow: auto; border: 1px solid var(--background-modifier-border); border-radius: 6px; padding: 0.25rem; }
+.nimble-builder-modal .builder-result { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.4rem; border-radius: 5px; cursor: pointer; }
+.nimble-builder-modal .builder-result:hover, .nimble-builder-modal .builder-result:focus-visible { background: var(--background-modifier-hover); outline: none; }
+.nimble-builder-modal .builder-result-text { flex: 1; min-width: 0; }
+.nimble-builder-modal .builder-result-name { font-weight: 600; }
+.nimble-builder-modal .builder-result-meta { font-size: 0.74rem; color: var(--text-muted); }
+.nimble-builder-modal .builder-result-add { color: var(--text-faint); display: inline-flex; }
+.nimble-builder-modal .builder-more, .nimble-builder-modal .builder-empty { font-size: 0.8rem; color: var(--text-muted); padding: 0.4rem; }
+.nimble-builder-modal .builder-pick { display: flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.2rem; }
+.nimble-builder-modal .builder-pick-count { min-width: 1.6rem; text-align: center; font-weight: 700; }
+.nimble-builder-modal .builder-pick-name.is-missing { color: var(--text-error); text-decoration: line-through; }
+.nimble-builder-modal .builder-notes { width: 100%; margin-top: 0.75rem; resize: vertical; }
+
+/* Settings: party rows */
+/* Settings: party table */
+.nimble-party-table { display: grid; gap: 0.3rem; margin: 0.5rem 0 0.6rem; }
+.nimble-party-head, .nimble-party-row { display: grid; grid-template-columns: minmax(7rem, 1.4fr) minmax(6rem, 1.2fr) 3.6rem 4.2rem 4.2rem 4.6rem 2rem; gap: 0.4rem; align-items: center; }
+.nimble-party-head { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); padding: 0 0.15rem; }
+.nimble-party-row input { width: 100%; min-width: 0; }
+.nimble-party-row input.nimble-party-num { text-align: center; }
+.nimble-party-empty { color: var(--text-muted); font-size: 0.85rem; padding: 0.3rem 0; }
+.nimble-party-actions { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
+.nimble-party-actions button { display: inline-flex; align-items: center; gap: 0.35rem; }
+.nimble-party-actions svg { width: 15px; height: 15px; }
+.nimble-party-modal { width: min(760px, 94vw); }
+.nimble-bestiary .bestiary-attribution { font-size: 0.74rem; color: var(--text-muted); border-top: 1px solid var(--background-modifier-border); padding-top: 0.4rem; display: grid; gap: 0.3rem; }
+.nimble-bestiary .bestiary-attribution summary { cursor: pointer; color: var(--text-faint); }
+.nimble-bestiary .bestiary-attribution a { color: var(--text-muted); }
+
+/* ============================================
+   SLASH COMMANDS AND NIMBLE CALLOUTS
+   ============================================ */
+
+.nimble-slash-item { display: flex !important; align-items: center; gap: 0.6rem; }
+.nimble-slash-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 6px; background: var(--background-modifier-hover); color: var(--text-muted); }
+.nimble-slash-icon svg { width: 16px; height: 16px; }
+.suggestion-item.is-selected .nimble-slash-icon { background: var(--interactive-accent); color: var(--text-on-accent); }
+.nimble-slash-text { flex: 1; min-width: 0; }
+.nimble-slash-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-slash-detail { font-size: 0.78em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-slash-badge { flex-shrink: 0; font-size: 0.7rem; font-weight: 700; padding: 0.05rem 0.45rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.callout[data-callout="nimble-read"] { --callout-color: 91, 141, 239; --callout-icon: lucide-book-open-text; font-style: italic; }
+.callout[data-callout="nimble-read"] .callout-title { font-style: normal; }
+.callout[data-callout="nimble-secret"] { --callout-color: 192, 80, 77; --callout-icon: lucide-eye-off; }
+.callout[data-callout="nimble-trap"] { --callout-color: 217, 163, 60; --callout-icon: lucide-triangle-alert; }
+.callout[data-callout="nimble-npc"] { --callout-color: 63, 143, 90; --callout-icon: lucide-user-round; }
+.callout[data-callout="nimble-condition"] { --callout-color: 142, 91, 208; --callout-icon: lucide-activity; }
+.nimble-slash-badge.diff-easy { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
+.nimble-slash-badge.diff-medium { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
+.nimble-slash-badge.diff-hard { background: rgba(224, 138, 65, 0.2); color: #c9702a; }
+.nimble-slash-badge.diff-deadly { background: rgba(224, 93, 93, 0.2); color: #d24c4c; }
+.nimble-slash-badge.diff-very-deadly { background: rgba(208, 64, 138, 0.2); color: #c23a82; }
+
+/* ============================================
+   ENCOUNTER CHIPS: one pill = [− 3× +] [lvl] [name]
+   ============================================ */
+
+.nimble-encounter-block .encounter-block-monsters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; }
+.encounter-chip {
+	--ref-tint: var(--interactive-accent);
+	display: inline-flex;
+	align-items: stretch;
+	height: 1.65em;
+	font-size: 0.92em;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--ref-tint) 32%, transparent);
+	background: color-mix(in srgb, var(--ref-tint) 9%, var(--background-primary));
+	overflow: hidden;
+	transition: border-color 0.12s, box-shadow 0.12s;
+}
+.encounter-chip:focus-within { border-color: color-mix(in srgb, var(--ref-tint) 60%, transparent); }
+.encounter-chip.role-legendary { --ref-tint: var(--nimble-legendary); }
+.encounter-chip.role-minion { --ref-tint: var(--nimble-minion); }
+.encounter-chip.role-unknown { --ref-tint: var(--text-faint); border-style: dashed; background: transparent; }
+
+/* The monster pill inside the chip loses its own frame. */
+.encounter-chip .nimble-inline-ref {
+	height: auto;
+	font-size: 1em;
+	top: 0;
+	margin: 0;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none !important;
+	border-left: 1px solid color-mix(in srgb, var(--ref-tint) 22%, transparent);
+}
+.encounter-chip .nimble-inline-add-btn { display: none !important; }
+.encounter-chip .nimble-inline-name { padding-right: 0.75em; }
+
+
+/* Difficulty chip opens the balancer */
+.nimble-difficulty.is-button { display: inline-flex; align-items: center; gap: 0.35rem; border: none; box-shadow: none; height: auto; cursor: pointer; font-family: inherit; }
+.nimble-difficulty.is-button:hover { filter: brightness(0.95); box-shadow: 0 0 0 1px currentColor inset; }
+.nimble-difficulty .diff-chevron { display: inline-flex; opacity: 0.75; }
+.nimble-difficulty .diff-chevron svg { width: 12px; height: 12px; }
+.encounter-block-meta .encounter-party-link { color: var(--text-muted); text-decoration: underline dotted; text-underline-offset: 2px; }
+.encounter-block-meta .encounter-party-link:hover { color: var(--text-accent); }
+
+/* Balance panel (popover and builder) */
+.nimble-balance { display: grid; gap: 0.5rem; }
+.nimble-balance .balance-title { font-weight: 700; }
+.nimble-balance .balance-list { display: grid; gap: 0.3rem; }
+.nimble-balance .balance-option { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; height: auto; padding: 0.4rem 0.55rem; text-align: left; white-space: normal; }
+.nimble-balance .balance-option-text { flex: 1; }
+.nimble-balance .balance-empty { color: var(--text-muted); font-size: 0.85rem; padding: 0.2rem 0; }
+.nimble-builder-modal .builder-balance { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 0.6rem; margin-top: 0.6rem; }
+.nimble-builder-modal .builder-balance-label { font-size: 0.8rem; color: var(--text-muted); padding-top: 0.2rem; }
+.nimble-builder-modal .builder-balance .balance-list { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+
+/* Buttons styled as difficulty chips keep their colours over Obsidian's button styles. */
+.nimble-difficulty.is-button.diff-trivial { background: var(--background-modifier-hover); color: var(--text-muted); }
+.nimble-difficulty.is-button.diff-easy { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
+.nimble-difficulty.is-button.diff-medium { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
+.nimble-difficulty.is-button.diff-hard { background: rgba(224, 138, 65, 0.2); color: #c9702a; }
+.nimble-difficulty.is-button.diff-deadly { background: rgba(224, 93, 93, 0.2); color: #d24c4c; }
+.nimble-difficulty.is-button.diff-very-deadly { background: rgba(208, 64, 138, 0.2); color: #c23a82; }
+.nimble-balance .balance-targets { justify-self: start; }
+
+/* ============================================
+   TOUCH, PHONE AND TABLET
+   Bottom sheets, the HP keypad, finger-sized targets and narrow layouts.
+   ============================================ */
+
+/* Bottom sheets (phones): popovers and the stat block preview */
+.nimble-popover.is-sheet, .nimble-hover-preview.is-sheet {
+	left: 0 !important;
+	right: 0 !important;
+	top: auto !important;
+	bottom: 0;
+	width: 100% !important;
+	max-width: none;
+	max-height: 78vh !important;
+	border-radius: 14px 14px 0 0;
+	border-bottom: none;
+	padding-bottom: calc(0.8rem + env(safe-area-inset-bottom, 0px) + var(--mobile-toolbar-height, 0px));
+	animation: nimble-sheet-in 0.18s ease-out;
+	overscroll-behavior: contain;
+}
+.nimble-popover.is-sheet { padding-left: 1rem; padding-right: 1rem; font-size: 0.95rem; }
+.nimble-hover-preview.is-sheet .hover-preview-bar { font-size: 0.85rem; font-weight: 600; color: var(--text-normal); padding: 0.1rem 0.4rem 0.3rem 1rem; }
+.nimble-hover-preview.is-sheet .hover-preview-close { width: 2.5rem; height: 2.5rem; }
+.sheet-handle { width: 2.4rem; height: 4px; border-radius: 2px; background: var(--background-modifier-border-hover, var(--text-faint)); margin: 0.45rem auto 0.5rem; flex-shrink: 0; }
+.nimble-hover-preview.is-sheet .sheet-handle { position: sticky; top: 0; z-index: 2; margin: 0 auto; padding: 0; height: 18px; width: 100%; background: var(--background-primary); }
+.nimble-hover-preview.is-sheet .sheet-handle::after { content: ""; display: block; width: 2.4rem; height: 4px; margin: 7px auto; border-radius: 2px; background: var(--text-faint); }
+.nimble-hover-preview.is-sheet .hover-preview-bar { top: 18px; }
+@keyframes nimble-sheet-in { from { transform: translateY(24px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .nimble-popover.is-sheet, .nimble-hover-preview.is-sheet { animation: none; } }
+
+/* Group attack: how many minions attack */
+.nimble-encounter-tracker .group-attack-all, .group-attack-all { width: 100%; margin-bottom: 0.4rem; }
+.nimble-encounter-tracker .phase-chip { cursor: pointer; }
+
+/* Map pin / token cards (touch) */
+.nimble-pin-card .pin-card-actions, .nimble-popover .pin-card-actions { display: flex; gap: 0.4rem; margin-top: 0.6rem; flex-wrap: wrap; }
+.nimble-popover .pin-card-actions button { flex: 1; }
+
+/* HP keypad */
+.nimble-hp-pad { width: min(380px, 96vw); }
+.nimble-hp-pad .hp-pad-sub { color: var(--text-muted); font-size: 0.85rem; margin-top: -0.3rem; }
+.nimble-hp-pad .hp-pad-display {
+	margin: 0.6rem 0 0.15rem;
+	padding: 0.35rem 0.8rem;
+	border-radius: 10px;
+	background: var(--background-secondary);
+	font-size: 2.2rem;
+	font-weight: 700;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	min-height: 3.4rem;
+	letter-spacing: 0.02em;
+}
+.nimble-hp-pad .hp-pad-display.is-empty { color: var(--text-faint); }
+.nimble-hp-pad .hp-pad-preview { min-height: 1.3rem; font-size: 0.82rem; color: var(--text-muted); text-align: right; padding: 0 0.3rem; }
+.nimble-hp-pad .hp-pad-toggles { display: flex; gap: 0.4rem; margin: 0.5rem 0; }
+.nimble-hp-pad .hp-pad-toggles button { flex: 1; height: 2.4rem; box-shadow: none; border: 1px solid var(--background-modifier-border); background: transparent; }
+.nimble-hp-pad .hp-pad-toggles button[aria-pressed="true"] { background: var(--interactive-accent); border-color: var(--interactive-accent); color: var(--text-on-accent); }
+.nimble-hp-pad .hp-pad-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin: 0.4rem 0 0.6rem; }
+.nimble-hp-pad .hp-pad-keys button { height: 3.1rem; font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.nimble-hp-pad .hp-pad-keys button.is-fn { font-size: 1.05rem; color: var(--text-muted); background: var(--background-secondary); }
+.nimble-hp-pad .hp-pad-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.nimble-hp-pad .hp-pad-actions button { height: 2.9rem; font-size: 1rem; font-weight: 600; }
+
+/* Bestiary: filter toggle and the narrow (phone / slim pane) layout */
+.nimble-bestiary .bestiary-search { display: flex; align-items: center; gap: 0.3rem; }
+.nimble-bestiary .bestiary-filter-toggle { display: none; position: relative; flex-shrink: 0; }
+.nimble-bestiary .bestiary-filter-toggle.has-active::after { content: ""; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--interactive-accent); }
+.nimble-bestiary .bestiary-back { display: none; }
+.nimble-bestiary .bestiary-layout.is-narrow { grid-template-columns: minmax(0, 1fr); }
+.nimble-bestiary .bestiary-side, .nimble-bestiary .bestiary-detail { min-width: 0; }
+.nimble-bestiary .is-narrow .bestiary-level-input { width: 4.5rem; flex: none; }
+body.is-phone .nimble-bestiary .bestiary-side, body.is-phone .nimble-bestiary .bestiary-detail { padding-bottom: 5.5rem; }
+.nimble-bestiary .is-narrow .bestiary-side { border-right: none; min-height: 0; height: 100%; }
+.nimble-bestiary .is-narrow .bestiary-filter-toggle { display: inline-flex; }
+.nimble-bestiary .is-narrow:not(.filters-open) .bestiary-filters { display: none; }
+.nimble-bestiary .is-narrow .bestiary-detail { display: none; padding: 0.5rem 0.75rem 2rem; }
+.nimble-bestiary .is-narrow.show-detail .bestiary-side { display: none; }
+.nimble-bestiary .is-narrow.show-detail .bestiary-detail { display: block; height: 100%; }
+.nimble-bestiary .is-narrow .bestiary-back {
+	display: inline-flex; align-items: center; gap: 0.2rem;
+	position: sticky; top: 0; z-index: 2;
+	margin: 0 0 0.4rem -0.3rem; padding: 0 0.6rem 0 0.3rem; height: 2.2rem;
+	background: var(--background-primary); box-shadow: none; color: var(--text-accent);
+}
+.nimble-bestiary .is-narrow .bestiary-back svg { width: 18px; height: 18px; }
+.nimble-bestiary .is-narrow .bestiary-row-add { opacity: 1; }
+.nimble-bestiary .is-narrow .bestiary-filter-row { flex-wrap: wrap; }
+.nimble-bestiary .is-narrow .bestiary-filter-label { width: 100%; }
+
+/* Party editor: cards when narrow. Labels only show on cards. */
+.nimble-party-table { container-type: inline-size; }
+.nimble-party-field { display: contents; }
+.nimble-party-field-label { display: none; }
+@container (max-width: 560px) {
+	.nimble-party-head { display: none; }
+	.nimble-party-row {
+		grid-template-columns: repeat(4, minmax(0, 1fr)) 2.4rem;
+		gap: 0.45rem 0.4rem;
+		padding: 0.55rem;
+		border: 1px solid var(--background-modifier-border);
+		border-radius: var(--nimble-radius, 8px);
+	}
+	.nimble-party-field { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+	.nimble-party-field-label { display: block; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+	.nimble-party-field.field-name { grid-column: 1 / 3; }
+	.nimble-party-field.field-class { grid-column: 3 / 5; }
+	.nimble-party-del { grid-column: 5; grid-row: 1; align-self: end; }
+}
+
+/* Builder: stack the columns on narrow screens */
+@media (max-width: 640px) {
+	.nimble-builder-modal .builder-cols { grid-template-columns: 1fr; }
+	.nimble-builder-modal .builder-col:last-child { order: -1; }
+	.nimble-builder-modal .builder-results { height: auto; max-height: 42vh; }
+	.nimble-builder-modal .builder-picked { height: auto; min-height: 3rem; max-height: 30vh; }
+	.nimble-builder-modal .nimble-meter-label { font-size: 0.6rem; }
+	.nimble-builder-modal .nimble-meter-tick:nth-of-type(odd) .nimble-meter-label { top: -16px; }
+	.nimble-builder-modal .nimble-meter { margin-top: 1.3rem; }
+	.nimble-builder-modal .builder-name { min-width: 0; }
+}
+
+/* Maps on phones: a shorter viewport and the token tray underneath */
+body.is-phone .nimble-map-viewport { flex: none; height: 60vh; resize: none; }
+body.is-phone .nimble-map-body, body.is-phone .nimble-map-main { flex-direction: column; }
+body.is-phone .nimble-map-tray { width: auto; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
+
+/* Finger-sized targets wherever the main pointer is a finger */
+@media (pointer: coarse) {
+	.nimble-map-viewport { resize: none; }
+
+	/* Encounter chips and bestiary: no hover, so show the controls */
+	.nimble-bestiary .bestiary-row-add { opacity: 1; }
+	.nimble-bestiary .bestiary-row { padding: 0.5rem 0.4rem; }
+	.nimble-segmented button { padding: 0.4rem 0.7rem; font-size: 0.85rem; }
+	.nimble-statblock .statblock-action { padding: 0.45rem 0.8rem; font-size: 0.88rem; }
+	.nimble-inline-ref .nimble-inline-add-btn { min-width: 1.6em; }
+
+	/* Tracker */
+	.nimble-encounter-tracker .turn-toggle { width: 2.5rem; height: 2.5rem; }
+	.nimble-encounter-tracker .turn-toggle svg { width: 24px; height: 24px; }
+	.nimble-encounter-tracker .hp-display { height: 2.5rem; min-width: 4.8rem; font-size: 1rem; }
+	.nimble-encounter-tracker .creature-more { width: 2.5rem; height: 2.5rem; }
+	.nimble-encounter-tracker .round-btn, .nimble-encounter-tracker .phase-pill { height: 2.3rem; }
+	.nimble-encounter-tracker .round-btn { padding: 0 0.7rem; }
+	.nimble-encounter-tracker .pips { gap: 8px; }
+	.nimble-encounter-tracker .pip { width: 22px; height: 22px; border-width: 2px; }
+	.nimble-encounter-tracker .minion-pip { width: 20px; height: 20px; }
+	.nimble-encounter-tracker .group-attack { height: 2.2rem; padding: 0 0.75rem; font-size: 0.82rem; }
+	.nimble-encounter-tracker .phase-chip { padding: 0.25rem 0.65rem; font-size: 0.78rem; }
+	.nimble-encounter-tracker .condition-tag { padding-top: 0.25rem; padding-bottom: 0.25rem; font-size: 0.8rem; }
+	.nimble-encounter-tracker .remove-condition { opacity: 0.8; min-width: 1.8rem; min-height: 1.8rem; }
+	.nimble-encounter-tracker .add-condition-btn { height: 2rem; padding: 0 0.7rem; }
+	.nimble-encounter-tracker .add-condition-btn svg { width: 15px; height: 15px; }
+	.nimble-encounter-tracker .quick-add-input { height: 2.5rem; font-size: 16px; }
+	.nimble-encounter-tracker .creature-label { padding: 0.35rem 0; }
+
+	/* Map */
+	.nimble-map-toolbar button { min-height: 2.3rem; }
+
+	/* Builder and party */
+	.nimble-builder-modal .builder-result { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+	.nimble-builder-modal .builder-pick .clickable-icon { width: 2.3rem; height: 2.3rem; }
+	.nimble-party-row input { min-height: 2.4rem; font-size: 16px; }
+}
+
+/* iOS zooms into inputs under 16px; keep typing fields at 16px on phones */
+body.is-phone .nimble-encounter-tracker input, body.is-phone .nimble-bestiary input, body.is-phone .nimble-builder-modal input, body.is-phone .nimble-builder-modal textarea { font-size: 16px; }
+
+/* Obsidian's tablet theme pads every button (.is-tablet button:not(.clickable-icon)),
+   which outranks the compact controls above. Put their padding back. */
+body.is-tablet :is(.turn-toggle, .pip, .creature-label, .stepper-btn, .nimble-inline-add-btn, .link-btn, .hp-pad-keys button) { padding: 0; }
+body.is-tablet :is(.round-btn, .phase-pill, .group-attack, .laststand-btn, .hp-btn, .phase-chip, .add-condition-btn, .hp-display, .nimble-map-btn, .statblock-action, .bestiary-back, .nimble-difficulty.is-button) { padding-left: 0.6rem; padding-right: 0.6rem; }
+body.is-tablet .nimble-encounter-tracker .remove-condition { padding: 0 0.15rem; }
+body.is-tablet .nimble-segmented button { padding: 0.4rem 0.7rem; }
+body.is-tablet .condition-picker .condition-option { padding: 0.25rem 0.5rem; }
+body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: none; }
+
+/* ============================================
+   CAMPAIGNS: the Campaign panel and the ```nimble-campaign dashboard
+   ============================================ */
+
+.nimble-campaign-view { padding: 0.6rem 0.6rem 2rem; font-size: 0.9rem; }
+.nimble-campaign-view .campaign-switcher { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.5rem; }
+.nimble-campaign-view .campaign-switch-btn {
+	flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.45rem; justify-content: flex-start;
+	height: auto; padding: 0.45rem 0.55rem; border-radius: 8px; box-shadow: none;
+	background: var(--background-secondary); border: 1px solid var(--background-modifier-border);
+	font-weight: 700; font-size: 0.95rem; text-align: left;
+}
+.nimble-campaign-view .campaign-switch-btn:hover { border-color: var(--interactive-accent); }
+.nimble-campaign-view .campaign-switch-icon { display: inline-flex; color: var(--text-accent); }
+.nimble-campaign-view .campaign-switch-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-campaign-view .campaign-switch-chevron { display: inline-flex; color: var(--text-faint); }
+.nimble-campaign-view .campaign-switch-btn svg, .nimble-campaign-view .campaign-switcher .clickable-icon svg { width: 16px; height: 16px; }
+
+.campaign-party {
+	display: inline-flex; align-items: center; gap: 0.4rem; height: auto; padding: 0.25rem 0.6rem;
+	border-radius: 999px; box-shadow: none; background: color-mix(in srgb, var(--nimble-hero, var(--interactive-accent)) 14%, transparent);
+	border: none; color: var(--text-normal); font-size: 0.8rem; font-weight: 600; max-width: 100%;
+}
+.campaign-party:hover { background: color-mix(in srgb, var(--nimble-hero, var(--interactive-accent)) 24%, transparent); }
+.campaign-party-icon { display: inline-flex; color: var(--nimble-hero, var(--interactive-accent)); }
+.campaign-party-icon svg { width: 14px; height: 14px; }
+.campaign-party-hint { color: var(--text-accent); font-weight: 500; }
+.campaign-party-hint::before { content: "· "; color: var(--text-faint); }
+
+.campaign-continue {
+	display: flex; align-items: center; gap: 0.45rem; width: 100%; height: auto; margin: 0.6rem 0 0.2rem;
+	padding: 0.5rem 0.7rem; border-radius: 8px; justify-content: flex-start; text-align: left;
+}
+.campaign-continue svg { width: 15px; height: 15px; }
+.campaign-continue-label { font-weight: 700; }
+.campaign-continue-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.9; font-weight: 500; }
+
+.campaign-heading {
+	display: flex; align-items: center; justify-content: space-between; margin: 0.9rem 0 0.2rem; padding: 0 0.2rem;
+	font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);
+}
+.campaign-heading .clickable-icon { padding: 2px; }
+.campaign-heading svg { width: 14px; height: 14px; }
+
+.campaign-group { margin: 0.1rem 0; }
+.campaign-group-head {
+	display: flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.25rem; border-radius: 6px; cursor: pointer; min-height: 1.9rem;
+}
+.campaign-group-head:hover { background: var(--background-modifier-hover); }
+.campaign-group-head:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--interactive-accent); }
+.campaign-chevron { display: inline-flex; color: var(--text-faint); transition: transform 0.12s; transform: rotate(90deg); }
+.campaign-group.is-collapsed .campaign-chevron { transform: none; }
+.campaign-chevron svg { width: 14px; height: 14px; }
+.campaign-group-head .clickable-icon { padding: 2px; opacity: 0.55; }
+.campaign-group-head:hover .clickable-icon, .campaign-group-head .clickable-icon:focus-visible { opacity: 1; }
+.campaign-group-head .clickable-icon svg { width: 14px; height: 14px; }
+.campaign-chapter-head.is-current .campaign-chapter-name { color: var(--text-accent); }
+.campaign-chapter-title { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.campaign-chapter-label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-accent); }
+.campaign-chapter-name { font-weight: 700; color: var(--text-normal); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.campaign-chapter-name:hover { text-decoration: underline; }
+.campaign-section-icon { display: inline-flex; color: var(--text-muted); }
+.campaign-section-icon svg { width: 14px; height: 14px; }
+.campaign-section-name { flex: 1; min-width: 0; font-weight: 600; }
+.campaign-count { font-size: 0.7rem; color: var(--text-faint); font-variant-numeric: tabular-nums; padding: 0 0.2rem; }
+
+.campaign-group-body { padding-left: 0.95rem; margin-left: 0.4rem; border-left: 1px solid var(--background-modifier-border); }
+.campaign-note {
+	display: flex; align-items: center; gap: 0.4rem; padding: 0.22rem 0.4rem; border-radius: 5px;
+	color: var(--text-normal); text-decoration: none; min-height: 1.75rem;
+}
+.campaign-note:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.campaign-note.is-current { background: color-mix(in srgb, var(--interactive-accent) 16%, transparent); font-weight: 600; }
+.campaign-note-icon { display: inline-flex; color: var(--text-faint); flex-shrink: 0; }
+.campaign-note-icon svg { width: 14px; height: 14px; }
+.campaign-note.kind-map .campaign-note-icon, .campaign-note.is-current .campaign-note-icon { color: var(--text-accent); }
+.campaign-note-area {
+	flex-shrink: 0; min-width: 2rem; text-align: center; font-size: 0.68rem; font-weight: 700; font-variant-numeric: tabular-nums;
+	padding: 0 0.25rem; border-radius: 4px; background: var(--background-modifier-hover); color: var(--text-muted);
+}
+.campaign-note-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.campaign-loose .campaign-note { padding-left: 0.3rem; }
+.campaign-empty { font-size: 0.8rem; color: var(--text-muted); padding: 0.3rem 0.4rem; }
+.campaign-add-inline { display: inline-block; font-size: 0.8rem; padding: 0.25rem 0.4rem; }
+
+.campaign-welcome { text-align: center; padding: 1.5rem 0.75rem; color: var(--text-muted); }
+.campaign-welcome h4 { color: var(--text-normal); margin: 0 0 0.4rem; }
+.campaign-welcome p { font-size: 0.85rem; margin: 0 0 0.9rem; }
+
+/* The dashboard block on a campaign's home note */
+.nimble-campaign-block {
+	border: 1px solid var(--background-modifier-border); border-radius: var(--nimble-radius, 8px);
+	padding: 0.7rem 0.85rem 0.6rem; background: var(--background-secondary); font-size: 0.92rem;
+}
+.nimble-campaign-block .campaign-block-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.nimble-campaign-block .campaign-block-panel { display: inline-flex; align-items: center; gap: 0.35rem; margin-left: auto; height: auto; padding: 0.25rem 0.6rem; font-size: 0.8rem; box-shadow: none; }
+.nimble-campaign-block .campaign-block-panel svg { width: 14px; height: 14px; }
+.nimble-campaign-block .campaign-heading:first-child { margin-top: 0.6rem; }
+
+/* Dialogs */
+.nimble-name-prompt .nimble-name-input { width: 100%; margin-bottom: 0.5rem; }
+.nimble-new-campaign .setting-item-control input[type="number"] { width: 5rem; }
+
+/* Touch: roomier rows */
+@media (pointer: coarse) {
+	.campaign-note { min-height: 2.6rem; padding: 0.4rem 0.5rem; }
+	.campaign-group-head { min-height: 2.6rem; }
+	.campaign-group-head .clickable-icon { opacity: 1; padding: 6px; }
+	.campaign-heading .clickable-icon { padding: 6px; }
+	.campaign-party { padding: 0.45rem 0.75rem; font-size: 0.85rem; }
+	.campaign-continue { padding: 0.75rem 0.85rem; }
+}
+body.is-tablet :is(.campaign-party, .campaign-continue, .campaign-switch-btn, .campaign-block-panel) { padding-left: 0.6rem; padding-right: 0.6rem; }
+
+/* ============================================
+   BOXES: ```box read-aloud / look / treasure / trap / secret …
+   --box-color comes from the fence line (or the type's preset).
+   ============================================ */
+
+.nimble-box {
+	--box-tint: color-mix(in srgb, var(--box-color) 9%, var(--background-primary));
+	--box-edge: color-mix(in srgb, var(--box-color) 55%, transparent);
+	margin: 0.9rem 0;
+	border-radius: 10px;
+	background: var(--box-tint);
+	border: 1px solid color-mix(in srgb, var(--box-color) 28%, transparent);
+	border-left: 4px solid var(--box-color);
+	overflow: hidden;
+}
+.nimble-box-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem 0.15rem 0.6rem; }
+.nimble-box-icon {
+	flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+	width: 1.9rem; height: 1.9rem; padding: 0; border-radius: 8px; box-shadow: none; border: none; cursor: pointer;
+	background: color-mix(in srgb, var(--box-color) 18%, transparent); color: var(--box-color);
+	transition: transform 0.12s, background 0.12s;
+}
+.nimble-box-icon:hover { background: color-mix(in srgb, var(--box-color) 30%, transparent); transform: scale(1.06); }
+.nimble-box-icon svg { width: 17px; height: 17px; stroke-width: 2.2; }
+.nimble-box-title {
+	flex: 1; min-width: 0; cursor: pointer; user-select: none;
+	font-size: 0.74rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
+	color: color-mix(in srgb, var(--box-color) 80%, var(--text-normal));
+}
+.nimble-box-chevron { display: inline-flex; color: var(--text-faint); cursor: pointer; transition: transform 0.15s; }
+.nimble-box-chevron svg { width: 15px; height: 15px; }
+.nimble-box.is-folded .nimble-box-chevron { transform: rotate(-90deg); }
+.nimble-box.is-folded .nimble-box-body { display: none; }
+.nimble-box.is-folded .nimble-box-head { padding-bottom: 0.5rem; }
+.nimble-box-body { padding: 0.2rem 1.1rem 0.8rem 0.95rem; line-height: 1.6; }
+.nimble-box-body > :first-child { margin-top: 0.15rem; }
+.nimble-box-body > :last-child { margin-bottom: 0; }
+.nimble-box-body p { margin: 0.35rem 0; }
+.nimble-box-body ul, .nimble-box-body ol { margin: 0.3rem 0; padding-inline-start: 1.45rem; }
+.nimble-box-body li { margin: 0.18rem 0; }
+.nimble-box-body li::marker { color: var(--box-color); }
+.nimble-box-body table { margin: 0.35rem 0; font-size: 0.92em; width: 100%; }
+.nimble-box-body th { color: color-mix(in srgb, var(--box-color) 75%, var(--text-normal)); }
+.nimble-box-body strong { color: var(--text-normal); }
+.nimble-box-empty { color: var(--text-faint); font-style: italic; font-size: 0.85rem; }
+.nimble-box.is-bold .nimble-box-body { font-weight: 600; }
+.nimble-box.is-italic .nimble-box-body { font-style: italic; }
+
+/* Fonts */
+.box-font-serif .nimble-box-body { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Book Antiqua", serif; font-size: 1.06em; }
+.box-font-hand .nimble-box-body { font-family: "Bradley Hand", "Segoe Print", "Chalkboard SE", "Comic Neue", "Patrick Hand", cursive; font-size: 1.1em; }
+.box-font-mono .nimble-box-body { font-family: var(--font-monospace); font-size: 0.92em; }
+
+/* The read-aloud is where a GM's eye goes first: give it room. */
+.nimble-box.box-read-aloud .nimble-box-body { font-size: 1.08em; line-height: 1.65; }
+.nimble-box.box-read-aloud.box-font-serif .nimble-box-body { font-size: 1.12em; }
+
+/* Banner: a solid header strip */
+.nimble-box.box-style-banner { border-left-width: 1px; background: var(--background-primary); }
+.box-style-banner .nimble-box-head { background: var(--box-color); padding: 0.4rem 0.75rem 0.4rem 0.6rem; }
+.box-style-banner .nimble-box-icon { background: rgba(255,255,255,0.18); color: #fff; }
+.box-style-banner .nimble-box-title, .box-style-banner .nimble-box-chevron { color: #fff; }
+.box-style-banner .nimble-box-body { padding-top: 0.6rem; padding-left: 1rem; }
+
+/* Old note: warm paper, serif, a soft ragged shadow */
+.nimble-box.box-style-parchment {
+	--paper: #f3e6c8; --ink: #3b2a17;
+	background: radial-gradient(ellipse at 20% 0%, rgba(255,255,255,.35), transparent 55%), radial-gradient(ellipse at 100% 100%, rgba(120,80,30,.16), transparent 60%), var(--paper);
+	color: var(--ink); border: 1px solid #c9b28a; border-left: 1px solid #c9b28a; border-radius: 4px;
+	box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 6px 16px -8px rgba(60,40,10,.45), inset 0 0 28px rgba(120,80,30,.18);
+}
+.box-style-parchment .nimble-box-title { color: #7a4f1d; }
+.box-style-parchment .nimble-box-icon { background: rgba(122,79,29,.12); color: #7a4f1d; }
+.box-style-parchment .nimble-box-body, .box-style-parchment .nimble-box-body strong { color: var(--ink); }
+.box-style-parchment .nimble-box-body a { color: #8a3b12; }
+.box-style-parchment .nimble-box-body li::marker { color: #7a4f1d; }
+.box-style-parchment.box-font-sans .nimble-box-body { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; }
+
+/* Letter: lined paper */
+.nimble-box.box-style-letter {
+	--ink: #23324d;
+	background: repeating-linear-gradient(transparent 0 1.55em, rgba(70,110,170,.18) 1.55em calc(1.55em + 1px)), #fbfaf5;
+	color: var(--ink); border: 1px solid #dcd6c6; border-left: 3px double #e08b8b; border-radius: 3px;
+	box-shadow: 0 4px 14px -8px rgba(0,0,0,.4);
+}
+.box-style-letter .nimble-box-body { line-height: 1.55em; color: var(--ink); }
+.box-style-letter .nimble-box-body strong { color: var(--ink); }
+.box-style-letter .nimble-box-title { color: #6b5a3a; }
+.box-style-letter .nimble-box-icon { background: rgba(35,50,77,.08); color: #23324d; }
+
+/* Stone: an engraved slab */
+.nimble-box.box-style-stone {
+	background: linear-gradient(160deg, #4a4f57, #33373d 60%, #2b2e33); color: #e9e6df;
+	border: 1px solid #22252a; border-left: 1px solid #22252a; border-radius: 6px;
+	box-shadow: inset 0 1px 0 rgba(255,255,255,.08), inset 0 -2px 6px rgba(0,0,0,.35), 0 4px 12px -6px rgba(0,0,0,.6);
+}
+.box-style-stone .nimble-box-title { color: color-mix(in srgb, var(--box-color) 55%, #f3efe6); text-shadow: 0 1px 0 rgba(0,0,0,.6); letter-spacing: 0.14em; }
+.box-style-stone .nimble-box-icon { background: rgba(0,0,0,.25); color: color-mix(in srgb, var(--box-color) 60%, #fff); box-shadow: inset 0 1px 2px rgba(0,0,0,.5); }
+.box-style-stone .nimble-box-body, .box-style-stone .nimble-box-body strong { color: #e9e6df; }
+.box-style-stone .nimble-box-body a { color: color-mix(in srgb, var(--box-color) 50%, #fff); }
+
+/* Minimal: just a rule and an icon */
+.nimble-box.box-style-minimal { background: transparent; border: none; border-left: 2px solid var(--box-edge); border-radius: 0; }
+.box-style-minimal .nimble-box-head { padding-top: 0.2rem; }
+.box-style-minimal .nimble-box-icon { background: transparent; }
+
+@media (pointer: coarse) {
+	.nimble-box-icon { width: 2.3rem; height: 2.3rem; }
+	.nimble-box-body { padding-left: 1rem; }
+}
+
+/* NPCs: chips for links to NPC notes, a light underline for plain mentions */
+a.internal-link.nimble-npc-link {
+	display: inline-flex; align-items: baseline; gap: 0.25em; text-decoration: none;
+	padding: 0 0.4em 0 0.35em; margin-right: 0.08em; border-radius: 999px; position: relative; top: -0.05em;
+	background: color-mix(in srgb, #22a35a 14%, transparent); color: color-mix(in srgb, #22a35a 70%, var(--text-normal));
+	border: 1px solid color-mix(in srgb, #22a35a 30%, transparent); font-weight: 600; font-size: 0.95em;
+}
+a.internal-link.nimble-npc-link:hover { background: color-mix(in srgb, #22a35a 24%, transparent); text-decoration: none; }
+.nimble-npc-icon { display: inline-flex; align-self: center; }
+.nimble-npc-icon svg { width: 0.85em; height: 0.85em; stroke-width: 2.5; }
+a.internal-link.nimble-npc-mention {
+	color: inherit; text-decoration: underline dotted color-mix(in srgb, #22a35a 70%, transparent); text-decoration-thickness: 2px; text-underline-offset: 3px;
+}
+a.internal-link.nimble-npc-mention:hover { color: color-mix(in srgb, #22a35a 75%, var(--text-normal)); }
+.nimble-slash-swatch { width: 0.8rem; height: 0.8rem; border-radius: 3px; flex-shrink: 0; margin-left: auto; }
+
+/* NPCs in Live Preview */
+.nimble-npc-lp-link .cm-hmd-internal-link, .nimble-npc-lp-link .cm-underline, .cm-hmd-internal-link.nimble-npc-lp-link {
+	color: color-mix(in srgb, #22a35a 70%, var(--text-normal)); font-weight: 600; text-decoration: none;
+	background: color-mix(in srgb, #22a35a 14%, transparent); border-radius: 4px;
+}
+.nimble-npc-lp-icon { display: inline-flex; vertical-align: -0.1em; margin-right: 0.15em; color: #22a35a; }
+.nimble-npc-lp-icon svg { width: 0.85em; height: 0.85em; stroke-width: 2.5; }
+.nimble-npc-lp-mention { text-decoration: underline dotted color-mix(in srgb, #22a35a 70%, transparent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.nimble-npc-lp-link .cm-underline, .nimble-npc-lp-link .cm-hmd-internal-link { text-decoration: none !important; padding: 0 0.15em; }
+
+/* ---------- Box editor: a small tabbed panel ---------- */
+.nimble-popover.nimble-box-editor { padding: 0; width: 304px; overflow: hidden; border-radius: 12px; font-size: 0.86rem; }
+.nimble-popover.nimble-box-editor.is-sheet { width: 100% !important; }
+.nimble-popover.nimble-box-editor .bxe-head { display: flex; align-items: center; gap: 0.55rem; padding: 0.75rem 0.85rem 0.55rem; }
+.nimble-popover.nimble-box-editor .bxe-badge {
+	flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+	background: color-mix(in srgb, var(--box-color) 20%, transparent); color: var(--box-color);
+}
+.nimble-popover.nimble-box-editor .bxe-badge svg { width: 17px; height: 17px; stroke-width: 2.2; }
+.nimble-popover.nimble-box-editor .bxe-title {
+	flex: 1; min-width: 0; height: 2rem; padding: 0 0.4rem; border: 1px solid transparent; border-radius: 6px; background: transparent;
+	font-weight: 600; font-size: 0.95rem; box-shadow: none;
+}
+.nimble-popover.nimble-box-editor .bxe-title:hover { border-color: var(--background-modifier-border); }
+.nimble-popover.nimble-box-editor .bxe-title:focus { border-color: var(--box-color); background: var(--background-primary); box-shadow: none; }
+.nimble-popover.nimble-box-editor .bxe-tabs { display: flex; gap: 0.25rem; padding: 0 0.85rem; border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-popover.nimble-box-editor .bxe-tab {
+	height: auto; padding: 0.45rem 0.55rem 0.5rem; margin-bottom: -1px; border: none; border-radius: 0; box-shadow: none; background: transparent;
+	color: var(--text-muted); font-size: 0.82rem; font-weight: 600; border-bottom: 2px solid transparent; cursor: pointer;
+}
+.nimble-popover.nimble-box-editor .bxe-tab:hover { color: var(--text-normal); background: transparent; }
+.nimble-popover.nimble-box-editor .bxe-tab.is-active { color: var(--text-normal); border-bottom-color: var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-pages { padding: 0.7rem 0.85rem 0.35rem; }
+.nimble-popover.nimble-box-editor .bxe-page { min-height: 190px; }
+
+.nimble-popover.nimble-box-editor .bxe-types { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 0.3rem; }
+.nimble-popover.nimble-box-editor .bxe-type {
+	display: flex; align-items: center; gap: 0.5rem; height: 2rem; padding: 0 0.5rem; justify-content: flex-start;
+	border: none; box-shadow: none; background: transparent; border-radius: 7px; font-size: 0.84rem; color: var(--text-normal); cursor: pointer;
+}
+.nimble-popover.nimble-box-editor .bxe-type:hover { background: var(--background-modifier-hover); }
+.nimble-popover.nimble-box-editor .bxe-type.is-active { background: color-mix(in srgb, var(--box-color) 16%, transparent); font-weight: 600; }
+.nimble-popover.nimble-box-editor .bxe-type-icon { display: inline-flex; color: var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-type-icon svg { width: 15px; height: 15px; }
+.nimble-popover.nimble-box-editor .bxe-type-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.nimble-popover.nimble-box-editor .bxe-search { width: 100%; margin-bottom: 0.55rem; }
+.nimble-popover.nimble-box-editor .bxe-icons { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; max-height: 196px; overflow-y: auto; margin: 0 -0.2rem; padding: 0 0.2rem; }
+.nimble-popover.nimble-box-editor .bxe-icon {
+	aspect-ratio: 1; height: auto; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+	border: none; box-shadow: none; background: transparent; border-radius: 7px; color: var(--text-muted); cursor: pointer;
+}
+.nimble-popover.nimble-box-editor .bxe-icon:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-popover.nimble-box-editor .bxe-icon.is-active { background: color-mix(in srgb, var(--box-color) 20%, transparent); color: var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-icon svg { width: 17px; height: 17px; }
+.nimble-popover.nimble-box-editor .bxe-none { grid-column: 1 / -1; padding: 1rem 0.4rem; text-align: center; color: var(--text-muted); font-size: 0.8rem; }
+
+.nimble-popover.nimble-box-editor .bxe-section { margin-bottom: 0.85rem; }
+.nimble-popover.nimble-box-editor .bxe-label { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+.nimble-popover.nimble-box-editor .bxe-swatches { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.nimble-popover.nimble-box-editor .bxe-swatch {
+	position: relative; width: 1.15rem; height: 1.15rem; padding: 0; border-radius: 50%; border: none; box-shadow: none; cursor: pointer;
+	background: var(--sw);
+}
+.nimble-popover.nimble-box-editor .bxe-swatch.is-active { box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 4px var(--sw, var(--box-color)); }
+.nimble-popover.nimble-box-editor .bxe-swatch-custom { display: inline-flex; align-items: center; justify-content: center; background: var(--background-modifier-hover); color: var(--text-muted); overflow: hidden; }
+.nimble-popover.nimble-box-editor .bxe-swatch-custom svg { width: 12px; height: 12px; }
+.nimble-popover.nimble-box-editor .bxe-swatch-custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.nimble-popover.nimble-box-editor .bxe-swatch-custom.is-active { background: var(--box-color); color: #fff; box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 4px var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-styles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; }
+.nimble-popover.nimble-box-editor .bxe-style { display: flex; flex-direction: column; align-items: stretch; gap: 0.25rem; height: auto; padding: 0; border: none; box-shadow: none; background: transparent; cursor: pointer; }
+.nimble-popover.nimble-box-editor .bxe-style-swatch { height: 2.1rem; border-radius: 6px; border: 1px solid var(--background-modifier-border); }
+.nimble-popover.nimble-box-editor .bxe-style-swatch.box-style-card { background: color-mix(in srgb, var(--box-color) 14%, var(--background-primary)); border-left: 3px solid var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-style-swatch.box-style-banner { background: var(--background-primary); border-top: 8px solid var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-style-swatch.box-style-parchment { background: radial-gradient(ellipse at 100% 100%, rgba(120,80,30,.2), transparent 60%), #f3e6c8; border-color: #c9b28a; }
+.nimble-popover.nimble-box-editor .bxe-style-swatch.box-style-letter { background: repeating-linear-gradient(transparent 0 6px, rgba(70,110,170,.25) 6px 7px), #fbfaf5; border-left: 3px double #e08b8b; }
+.nimble-popover.nimble-box-editor .bxe-style-swatch.box-style-stone { background: linear-gradient(160deg, #4a4f57, #2b2e33); border-color: #22252a; }
+.nimble-popover.nimble-box-editor .bxe-style-swatch.box-style-minimal { background: transparent; border: none; border-left: 2px solid var(--box-color); border-radius: 0; }
+.nimble-popover.nimble-box-editor .bxe-style-label { font-size: 0.72rem; color: var(--text-muted); text-align: center; }
+.nimble-popover.nimble-box-editor .bxe-style.is-active .bxe-style-swatch { box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 4px var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-style.is-active .bxe-style-label { color: var(--text-normal); font-weight: 600; }
+.nimble-popover.nimble-box-editor .bxe-text { display: flex; align-items: center; gap: 0.4rem; }
+.nimble-popover.nimble-box-editor .bxe-fonts { display: inline-flex; background: var(--background-modifier-hover); border-radius: 8px; padding: 2px; }
+.nimble-popover.nimble-box-editor .bxe-font { height: 1.75rem; min-width: 2.4rem; padding: 0 0.45rem; border: none; box-shadow: none; background: transparent; border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; }
+.nimble-popover.nimble-box-editor .bxe-font.box-font-serif { font-family: Georgia, "Iowan Old Style", serif; }
+.nimble-popover.nimble-box-editor .bxe-font.box-font-hand { font-family: "Bradley Hand", "Segoe Print", cursive; }
+.nimble-popover.nimble-box-editor .bxe-font.box-font-mono { font-family: var(--font-monospace); }
+.nimble-popover.nimble-box-editor .bxe-font.is-active { background: var(--background-primary); color: var(--text-normal); box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+.nimble-popover.nimble-box-editor .bxe-toggle { width: 1.9rem; height: 1.9rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: none; box-shadow: none; background: transparent; border-radius: 7px; color: var(--text-muted); cursor: pointer; }
+.nimble-popover.nimble-box-editor .bxe-toggle:hover { background: var(--background-modifier-hover); }
+.nimble-popover.nimble-box-editor .bxe-toggle.is-active { background: color-mix(in srgb, var(--box-color) 20%, transparent); color: var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-toggle svg { width: 15px; height: 15px; }
+.nimble-popover.nimble-box-editor .bxe-fold { display: flex; align-items: center; justify-content: space-between; font-size: 0.84rem; cursor: pointer; padding: 0.15rem 0 0.4rem; }
+.nimble-popover.nimble-box-editor .bxe-switch { appearance: none; -webkit-appearance: none; width: 2rem; height: 1.15rem; border-radius: 999px; background: var(--background-modifier-border); position: relative; cursor: pointer; transition: background .15s; margin: 0; }
+.nimble-popover.nimble-box-editor .bxe-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: calc(1.15rem - 4px); height: calc(1.15rem - 4px); border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.nimble-popover.nimble-box-editor .bxe-switch:checked { background: var(--box-color); }
+.nimble-popover.nimble-box-editor .bxe-switch:checked::after { transform: translateX(0.85rem); }
+.nimble-popover.nimble-box-editor .bxe-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0.85rem 0.6rem; border-top: 1px solid var(--background-modifier-border); }
+.nimble-popover.nimble-box-editor .bxe-reset { height: auto; padding: 0.2rem 0; border: none; box-shadow: none; background: transparent; color: var(--text-muted); font-size: 0.78rem; cursor: pointer; }
+.nimble-popover.nimble-box-editor .bxe-reset:hover { color: var(--text-normal); background: transparent; text-decoration: underline; }
+.nimble-popover.nimble-box-editor .bxe-note { font-size: 0.72rem; color: var(--text-faint); }
+body.is-tablet .nimble-box-editor :is(.bxe-tab, .bxe-type, .bxe-icon, .bxe-swatch, .bxe-style, .bxe-font, .bxe-toggle, .bxe-reset) { padding-left: revert-layer; }
+body.is-tablet .nimble-box-editor :is(.bxe-icon, .bxe-swatch, .bxe-toggle, .bxe-style) { padding: 0; }
+body.is-tablet .nimble-box-editor .bxe-tab { padding: 0.45rem 0.55rem 0.5rem; }
+body.is-tablet .nimble-box-editor .bxe-type { padding: 0 0.5rem; }
+body.is-tablet .nimble-box-editor .bxe-font { padding: 0 0.45rem; }
+@media (pointer: coarse) {
+	.nimble-popover.nimble-box-editor .bxe-type { height: 2.5rem; }
+	.nimble-popover.nimble-box-editor .bxe-icons { grid-template-columns: repeat(6, 1fr); max-height: 240px; }
+	.nimble-popover.nimble-box-editor .bxe-swatch { width: 1.7rem; height: 1.7rem; }
+	.nimble-popover.nimble-box-editor .bxe-font, .nimble-popover.nimble-box-editor .bxe-toggle { height: 2.3rem; min-width: 2.6rem; }
+	.nimble-popover.nimble-box-editor .bxe-tab { padding: 0.65rem 0.75rem; }
+}
+
+/* ---------- Live Preview: no frame around our blocks on hover ---------- */
+.markdown-source-view.mod-cm6 .cm-embed-block:is(:has(> .block-language-box), :has(> .block-language-nimble-encounter), :has(> .block-language-nimble-map), :has(> .block-language-nimble-campaign), :has(> .block-language-nimble)):hover {
+	box-shadow: none !important; border-radius: 0; background: transparent;
+}
+/* The "edit source" button sits quietly in the box's header instead of on its corner. */
+.markdown-source-view.mod-cm6 .cm-embed-block:has(> .block-language-box) > .edit-block-button {
+	top: calc(0.9rem + 0.6rem); right: 2.6rem; padding: 4px; border-radius: 6px; opacity: 0; transition: opacity .12s;
+	background: transparent; color: var(--text-faint);
+}
+.markdown-source-view.mod-cm6 .cm-embed-block:has(> .block-language-box):hover > .edit-block-button { opacity: 1; }
+.markdown-source-view.mod-cm6 .cm-embed-block:has(> .block-language-box) > .edit-block-button:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.markdown-source-view.mod-cm6 .cm-embed-block:is(:has(> .block-language-nimble-encounter), :has(> .block-language-nimble-map), :has(> .block-language-nimble-campaign), :has(> .block-language-nimble)) > .edit-block-button {
+	opacity: 0; transition: opacity .12s; top: 0.5rem; right: 0.5rem;
+}
+.markdown-source-view.mod-cm6 .cm-embed-block:is(:has(> .block-language-nimble-encounter), :has(> .block-language-nimble-map), :has(> .block-language-nimble-campaign), :has(> .block-language-nimble)):hover > .edit-block-button { opacity: 1; }
+@media (pointer: coarse) { .markdown-source-view.mod-cm6 .cm-embed-block > .edit-block-button { opacity: 1 !important; } }
+
+/* ---------- Tables ---------- */
+.nimble-box-body table, body.nimble-tables .markdown-rendered table, body.nimble-tables .markdown-source-view.mod-cm6 .cm-table-widget table {
+	--tbl-accent: var(--box-color, var(--interactive-accent));
+	border-collapse: separate; border-spacing: 0; width: 100%;
+	border: 1px solid var(--background-modifier-border); border-radius: 10px; overflow: hidden; font-size: 0.92em;
+	background: var(--background-primary);
+}
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered, body.nimble-tables .cm-table-widget) table :is(th, td) {
+	border: none; border-top: 1px solid var(--background-modifier-border); padding: 0.55rem 0.8rem; vertical-align: top; text-align: left;
+}
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered, body.nimble-tables .cm-table-widget) table thead th {
+	border-top: none; background: color-mix(in srgb, var(--tbl-accent) 10%, var(--background-secondary));
+	color: var(--text-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding-top: 0.5rem; padding-bottom: 0.5rem;
+}
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--text-normal) 2.5%, transparent); }
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table tbody tr:hover td { background: color-mix(in srgb, var(--tbl-accent) 7%, transparent); }
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table tbody td:first-child { font-weight: 600; }
+.nimble-box-body table { background: color-mix(in srgb, var(--background-primary) 70%, transparent); }
+/* Old-paper and stone boxes keep their own look */
+.box-style-parchment .nimble-box-body table, .box-style-letter .nimble-box-body table { background: rgba(255,255,255,.35); border-color: rgba(120,80,30,.3); color: inherit; }
+.box-style-parchment .nimble-box-body table :is(th, td), .box-style-letter .nimble-box-body table :is(th, td) { border-top-color: rgba(120,80,30,.25); color: inherit; }
+.box-style-parchment .nimble-box-body table thead th { background: rgba(122,79,29,.12); color: #7a4f1d; }
+.box-style-stone .nimble-box-body table { background: rgba(0,0,0,.18); border-color: rgba(255,255,255,.1); }
+.box-style-stone .nimble-box-body table :is(th, td) { border-top-color: rgba(255,255,255,.08); color: #e9e6df; }
+.box-style-stone .nimble-box-body table thead th { background: rgba(0,0,0,.25); color: #cfcabe; }
+
+/* DC columns: the number as a pill */
+.nimble-dc-cell { white-space: nowrap; width: 1%; text-align: center !important; }
+.nimble-dc {
+	display: inline-flex; align-items: center; justify-content: center; min-width: 2.1rem; padding: 0.05rem 0.45rem; border-radius: 999px;
+	font-weight: 800; font-size: 0.9em; font-variant-numeric: tabular-nums;
+	background: color-mix(in srgb, var(--tbl-accent, var(--interactive-accent)) 18%, transparent); color: color-mix(in srgb, var(--tbl-accent, var(--interactive-accent)) 75%, var(--text-normal));
+}
+.nimble-dc.is-none { background: transparent; color: var(--text-faint); font-weight: 500; }
+.box-style-parchment .nimble-dc { background: rgba(122,79,29,.16); color: #7a4f1d; }
+.setting-item.nimble-dice-colour { padding-left: 1.2rem; border-top: none; }
+
+/* ---------- Encounter chips: the count is a button, nothing moves on hover ---------- */
+.encounter-chip .encounter-count {
+	display: inline-flex; align-items: center; gap: 0.25em; height: auto; min-height: 0; margin: 0; padding: 0 0.55em;
+	border: none; border-radius: 0; box-shadow: none !important; background: transparent; cursor: pointer;
+	font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: inherit;
+}
+.encounter-chip .encounter-count:hover, .encounter-chip .encounter-count:focus-visible { background: color-mix(in srgb, var(--ref-tint) 16%, transparent); color: var(--text-normal); outline: none; }
+.encounter-shift { font-size: 0.72em; font-weight: 800; padding: 0 0.35em; border-radius: 4px; line-height: 1.5; }
+.encounter-shift.is-up { background: color-mix(in srgb, #e05d5d 22%, transparent); color: #d24c4c; }
+.encounter-shift.is-down { background: color-mix(in srgb, #3b82f6 22%, transparent); color: #3b82f6; }
+body.is-tablet .encounter-chip .encounter-count { padding: 0 0.55em; }
+
+.nimble-popover.encounter-count-editor { padding: 0.75rem 0.85rem; display: grid; gap: 0.6rem; }
+.encounter-count-editor .popover-title { margin: 0; }
+.encounter-count-editor .ece-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.encounter-count-editor .ece-label { font-size: 0.78rem; color: var(--text-muted); }
+.encounter-count-editor .ece-stepper { display: inline-flex; align-items: center; gap: 0.2rem; background: var(--background-modifier-hover); border-radius: 8px; padding: 2px; }
+.encounter-count-editor .ece-step { width: 1.9rem; height: 1.9rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: none; box-shadow: none; background: transparent; border-radius: 6px; cursor: pointer; }
+.encounter-count-editor .ece-step:hover:not(:disabled) { background: var(--background-primary); }
+.encounter-count-editor .ece-step:disabled { opacity: 0.35; cursor: default; }
+.encounter-count-editor .ece-step svg { width: 15px; height: 15px; }
+.encounter-count-editor .ece-n { min-width: 1.8rem; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+.encounter-count-editor .ece-shift { display: inline-flex; background: var(--background-modifier-hover); border-radius: 8px; padding: 2px; }
+.encounter-count-editor .ece-shift-btn { height: 1.8rem; padding: 0 0.55rem; border: none; box-shadow: none; background: transparent; border-radius: 6px; font-size: 0.78rem; color: var(--text-muted); cursor: pointer; }
+.encounter-count-editor .ece-shift-btn.is-active { background: var(--background-primary); color: var(--text-normal); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+.encounter-count-editor .ece-shift-btn:disabled { opacity: 0.4; cursor: default; }
+.encounter-count-editor .ece-hint { font-size: 0.76rem; color: var(--text-muted); line-height: 1.4; min-height: 2.1em; }
+.encounter-count-editor .ece-remove { height: 1.9rem; border: none; box-shadow: none; background: transparent; color: var(--text-error); font-size: 0.8rem; justify-self: start; padding: 0 0.2rem; cursor: pointer; }
+.encounter-count-editor .ece-remove:hover { text-decoration: underline; background: transparent; }
+@media (pointer: coarse) { .encounter-count-editor .ece-step, .encounter-count-editor .ece-shift-btn { height: 2.4rem; min-width: 2.4rem; } }
+body.is-tablet .encounter-count-editor :is(.ece-step) { padding: 0; }
+body.is-tablet .encounter-count-editor .ece-shift-btn { padding: 0 0.55rem; }
+
+/* ---------- Difficulty tag: a proper pill ---------- */
+.nimble-difficulty {
+	display: inline-flex; align-items: center; gap: 0.4rem; height: 1.65rem; padding: 0 0.7rem; border-radius: 999px;
+	font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em; line-height: 1;
+	border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+}
+.nimble-difficulty.is-button { height: 1.75rem; padding: 0 0.6rem 0 0.75rem; }
+.nimble-difficulty.is-button:hover { filter: none; box-shadow: none; border-color: currentColor; }
+.nimble-difficulty .diff-chevron { display: inline-flex; opacity: 0.7; }
+.nimble-difficulty .diff-chevron svg { width: 13px; height: 13px; }
+body.is-tablet .nimble-difficulty.is-button { padding: 0 0.6rem 0 0.75rem; }
+
+/* ---------- Hover card: proper buttons, a split Add, a draggable bar ---------- */
+.nimble-statblock .statblock-actions { gap: 0.4rem; align-items: center; }
+.nimble-statblock .statblock-action { height: 2rem; padding: 0 0.8rem; font-size: 0.84rem; border-radius: 7px; gap: 0.35rem; }
+.nimble-statblock .statblock-action-icon svg { width: 15px; height: 15px; }
+.nimble-statblock .statblock-split { display: inline-flex; align-items: stretch; }
+.nimble-statblock .statblock-split > .statblock-action:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; padding-right: 0.7rem; }
+.nimble-statblock .statblock-split > .statblock-action-more { border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.45rem; margin-left: 1px; }
+.nimble-statblock .statblock-action-more svg { width: 14px; height: 14px; }
+body.is-tablet .nimble-statblock .statblock-action { padding: 0 0.8rem; }
+body.is-tablet .nimble-statblock .statblock-split > .statblock-action-more { padding: 0 0.45rem; }
+@media (pointer: coarse) { .nimble-statblock .statblock-action { height: 2.5rem; } }
+.nimble-hover-preview .hover-preview-bar.is-draggable { cursor: grab; user-select: none; }
+.nimble-hover-preview.is-dragging, .nimble-hover-preview.is-dragging .hover-preview-bar { cursor: grabbing; }
+.nimble-hover-preview.is-dragging { box-shadow: 0 18px 40px -10px rgba(0,0,0,.45); }
+.nimble-hover-preview.is-sheet .hover-preview-bar.is-draggable { cursor: default; }
+.nimble-popover.encounter-count-editor { width: 284px !important; overflow-x: hidden; }
+.nimble-popover.encounter-count-editor.is-sheet { width: 100% !important; }
+.encounter-count-editor .ece-shift-btn { padding: 0 0.5rem; }
+
+/* Previewing a note (an NPC) in the hover card or sheet */
+.nimble-hover-preview .hover-note { padding: 0.35rem 0.45rem 0.2rem; }
+.hover-note-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+.hover-note-icon { flex-shrink: 0; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: color-mix(in srgb, #22a35a 16%, transparent); color: #22a35a; }
+.hover-note-icon svg { width: 18px; height: 18px; }
+.hover-note-title { font-weight: 800; font-size: 1.1rem; line-height: 1.2; }
+.hover-note-sub { font-size: 0.82rem; color: var(--text-muted); }
+.hover-note-body { font-size: 0.92rem; line-height: 1.55; }
+.hover-note-body > :first-child { margin-top: 0; }
+.hover-note .statblock-actions { display: flex; gap: 0.4rem; margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--background-modifier-border); }
+.hover-note .statblock-action { display: inline-flex; align-items: center; gap: 0.35rem; height: 2.4rem; padding: 0 0.9rem; border-radius: 8px; }
+.hover-note .statblock-action svg { width: 15px; height: 15px; }
+.nimble-hover-preview .hover-preview-open {
+	height: 1.9rem; padding: 0 0.8rem; margin-left: auto; margin-right: 0.25rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+	background: var(--interactive-accent); color: var(--text-on-accent); box-shadow: none; border: none;
+}
+.nimble-hover-preview.is-sheet .hover-preview-open { height: 2.3rem; padding: 0 1rem; }
+body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
