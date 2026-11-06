@@ -9,7 +9,7 @@
 //   - `order:` sorts notes; without it, names sort naturally (N2 before N10).
 // Nothing else is required. Drop a note into a chapter folder and it shows up.
 
-export type NoteKind = 'campaign' | 'chapter' | 'scene' | 'map' | 'npc' | 'location' | 'session' | 'monster' | 'handout' | 'note';
+export type NoteKind = 'campaign' | 'chapter' | 'scene' | 'map' | 'npc' | 'location' | 'session' | 'monster' | 'handout' | 'combat' | 'note';
 
 export interface NoteInfo {
 	path: string;
@@ -59,7 +59,7 @@ export interface Campaign {
 	loose: NoteRef[];
 }
 
-const KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'map', 'npc', 'location', 'session', 'monster', 'handout', 'note'];
+const KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'map', 'npc', 'location', 'session', 'monster', 'handout', 'combat', 'note'];
 
 const basename = (path: string) => path.replace(/^.*\//, '').replace(/\.md$/i, '');
 const parentOf = (path: string) => (path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '');
@@ -69,8 +69,16 @@ const num = (v: unknown): number | undefined => {
 };
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : typeof v === 'number' ? String(v) : undefined);
 
+/** String(v) for a frontmatter value (lists joined with commas); '' for missing values and objects. */
+export function fmText(v: unknown): string {
+	if (v === undefined || v === null) return '';
+	if (Array.isArray(v)) return v.map(fmText).join(',');
+	if (typeof v === 'string') return v;
+	return typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint' ? String(v) : '';
+}
+
 export function noteKind(fm: Record<string, unknown>): NoteKind {
-	const k = String(fm.nimble ?? '').toLowerCase().trim();
+	const k = fmText(fm.nimble).toLowerCase().trim();
 	return (KINDS as string[]).includes(k) ? k as NoteKind : 'note';
 }
 
@@ -104,7 +112,8 @@ export function buildCampaigns(notes: NoteInfo[]): Campaign[] {
 		const folder = parentOf(home.path);
 		// Notes that belong to a deeper campaign (one nested inside this folder) aren't ours.
 		const nested = folders.filter(f => f !== folder && inside(f, folder) && f.length > folder.length);
-		const mine = md.filter(n => n !== home && inside(n.path, folder) && !nested.some(f => inside(n.path, f)));
+		// Saved fights (nimble: combat) are reached from their encounter, not listed as scenes.
+		const mine = md.filter(n => n !== home && inside(n.path, folder) && !nested.some(f => inside(n.path, f)) && noteKind(n.fm) !== 'combat');
 		const rel = (p: string) => (folder ? p.slice(folder.length + 1) : p);
 
 		// Group by the first folder under the campaign.

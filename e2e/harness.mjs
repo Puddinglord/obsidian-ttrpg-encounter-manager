@@ -14,7 +14,7 @@ import { chromium } from 'playwright-core';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE_VAULT = join(ROOT, 'e2e', 'fixtures', 'vault');
-const PLUGIN_ID = 'nimble-statblocks';
+const PLUGIN_ID = 'nimble-gm';
 
 const OBSIDIAN_BIN = process.env.OBSIDIAN_BIN || {
 	darwin: '/Applications/Obsidian.app/Contents/MacOS/Obsidian',
@@ -131,7 +131,7 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 		/** Run a function inside Obsidian with `app` and `plugin` in scope. */
 		eval: (fn, arg) => page.evaluate(async ([src, a]) => {
 			const app = window.app;
-			const plugin = app.plugins.plugins['nimble-statblocks'];
+			const plugin = app.plugins.plugins['nimble-gm'];
 			const result = await (0, eval)(`(${src})`)(app, plugin, a);
 			// Only plain data can cross back to Node; drop Obsidian objects like TFile.
 			try { return result === undefined ? undefined : JSON.parse(JSON.stringify(result)); } catch { return undefined; }

@@ -9,7 +9,7 @@ export function isTouch(): boolean {
 
 /** Phone-sized screen: popovers become bottom sheets, two-pane views stack. */
 export function isPhone(): boolean {
-	return Platform.isPhone || (typeof document !== 'undefined' && document.body.hasClass('is-phone'));
+	return Platform.isPhone || (typeof activeDocument !== 'undefined' && activeDocument.body.hasClass('is-phone'));
 }
 
 /**

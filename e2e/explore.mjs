@@ -101,7 +101,7 @@ try {
 	}
 
 	// Settings tab
-	await o.eval((app) => { app.setting.open(); app.setting.openTabById('nimble-statblocks'); });
+	await o.eval((app) => { app.setting.open(); app.setting.openTabById('nimble-gm'); });
 	await page.waitForTimeout(500);
 	await shot('08-settings');
 	await o.eval((app) => app.setting.close());

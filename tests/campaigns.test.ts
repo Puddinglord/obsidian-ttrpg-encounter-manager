@@ -91,3 +91,17 @@ describe('helpers', () => {
 		expect(safeName('  ')).toBe('Untitled');
 	});
 });
+
+describe('saved fights', () => {
+	it('are not listed as scenes or section notes', () => {
+		const [c] = buildCampaigns([
+			n('Campaigns/A/A.md', { nimble: 'campaign' }),
+			n('Campaigns/A/Ch/Ch.md', { nimble: 'chapter' }),
+			n('Campaigns/A/Ch/Room.md', { nimble: 'scene' }),
+			n('Campaigns/A/Ch/Fights/Room - Goblins.md', { nimble: 'combat' }),
+			n('Campaigns/A/Fights/Ambush.md', { nimble: 'combat' }),
+		]);
+		expect(c.chapters[0].scenes.map(s => s.title)).toEqual(['Room']);
+		expect(c.sections.map(s => s.name)).toEqual([]);
+	});
+});

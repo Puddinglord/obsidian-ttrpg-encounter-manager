@@ -4,7 +4,7 @@
 import { App, setIcon } from 'obsidian';
 import { NimbleMonster } from './types';
 import { parseMovement } from './parser';
-import { appendRichText, DICE_RE, RichTextOptions } from './markdown';
+import { appendRichText, DICE_RE, execWithLead, RichTextOptions } from './markdown';
 import { appendIcon, IconName } from './icons';
 import { armorLabel, formatLevel, monsterRole, monsterSaves, scaledHp } from './rules';
 import { NIMBLE_STORE_URL } from './bestiary';
@@ -200,7 +200,7 @@ function abilities(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): v
 
 function attackLabel(raw: string): string {
 	const plain = raw.replace(/[*_]/g, '');
-	const m = DICE_RE.exec(plain);
+	const m = execWithLead(DICE_RE, plain);
 	const before = (m ? plain.slice(0, m.index) : plain).replace(/[\s.:,(-]+$/, '').trim();
 	return before;
 }
@@ -255,17 +255,17 @@ export function wireWikiLinks(container: HTMLElement, app: App, sourcePath: stri
 			e.preventDefault();
 			e.stopPropagation();
 			const newLeaf = e.metaKey || e.ctrlKey;
-			app.workspace.openLinkText(target, sourcePath, newLeaf);
+			void app.workspace.openLinkText(target, sourcePath, newLeaf);
 		});
 		anchor.addEventListener('auxclick', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			if (e.button === 1) app.workspace.openLinkText(target, sourcePath, true);
+			if (e.button === 1) void app.workspace.openLinkText(target, sourcePath, true);
 		});
 		anchor.addEventListener('mouseover', (event) => {
 			app.workspace.trigger('hover-link', {
 				event,
-				source: 'nimble-statblocks',
+				source: 'nimble-gm',
 				hoverParent: container,
 				targetEl: anchor,
 				linktext: target,

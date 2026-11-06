@@ -20,7 +20,7 @@ import {
 } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { defaultLabels, dieShape, DieShape, relabel, topIndex } from './geometry';
-import { ANIMATED, applyLook, ShaderLook } from './shaders';
+import { ANIMATED, applyLook } from './shaders';
 
 export type DiceMaterial = 'classic' | 'gem' | 'metal' | 'glitter' | 'lava' | 'frost' | 'nebula' | 'opal' | 'marble';
 export interface Die3d { sides: number; value: number; role: 'primary' | 'normal' | 'explosion' }
@@ -106,7 +106,7 @@ function atlasGrid(shape: DieShape) {
 /** The die's body colour, one cell per face (a soft lighter centre so faces read as surfaces). */
 function bodyAtlas(shape: DieShape, color: string): CanvasTexture {
 	const { cols, rows } = atlasGrid(shape);
-	const canvas = document.createElement('canvas');
+	const canvas = createEl('canvas');
 	canvas.width = cols * CELL;
 	canvas.height = rows * CELL;
 	const g = canvas.getContext('2d')!;
@@ -141,7 +141,7 @@ function inkFor(material: DiceMaterial, color: string): Ink {
 /** The numbers, on a transparent atlas, using this die's own labels. */
 function numberAtlas(shape: DieShape, labels: number[], ink: Ink): CanvasTexture {
 	const { cols, rows } = atlasGrid(shape);
-	const canvas = document.createElement('canvas');
+	const canvas = createEl('canvas');
 	canvas.width = cols * CELL;
 	canvas.height = rows * CELL;
 	const g = canvas.getContext('2d')!;
@@ -230,7 +230,7 @@ function buildGeometry(shape: DieShape): Built {
 }
 
 function ringTexture(): CanvasTexture {
-	const c = document.createElement('canvas');
+	const c = createEl('canvas');
 	c.width = c.height = 128;
 	const g = c.getContext('2d')!;
 	const grad = g.createRadialGradient(64, 64, 34, 64, 64, 62);
@@ -281,7 +281,7 @@ function makeDieMeshes(shape: DieShape, labels: number[], color: string, materia
 			? new MeshPhysicalMaterial({ map: tex, metalness: 1, roughness: 0.24, clearcoat: 0.35, clearcoatRoughness: 0.1, envMapIntensity: 1.25 })
 			: new MeshPhysicalMaterial({ map: tex, metalness: 0, roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.16, envMapIntensity: 0.6 });
 		// Procedural looks paint their own surface; the colour atlas is just the fallback.
-		if (material !== 'classic' && material !== 'metal') applyLook(body, material as ShaderLook, color, time);
+		if (material !== 'classic' && material !== 'metal') applyLook(body, material, color, time);
 		if (material === 'frost') body.depthWrite = false;
 		const mesh = new Mesh(built.geometry, body);
 		mesh.castShadow = true;
@@ -330,12 +330,8 @@ let current: { cancel: () => void } | null = null;
 function getStage(): Stage {
 	if (idleTimer) { window.clearTimeout(idleTimer); idleTimer = null; }
 	if (stage) return stage;
-	const canvas = document.createElement('canvas');
-	canvas.className = 'nimble-dice3d-overlay';
-	Object.assign(canvas.style, {
-		position: 'fixed', inset: '0', width: '100vw', height: '100vh', pointerEvents: 'none',
-		zIndex: 'calc(var(--layer-popover, 30) + 5)', opacity: '1', transition: 'opacity 0.35s ease',
-	});
+	const canvas = createEl('canvas');
+	canvas.className = 'nimble-dice3d-overlay'; // full-window, click-through; see styles.css
 	const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: (window.devicePixelRatio || 1) < 2, powerPreference: 'low-power', premultipliedAlpha: true });
 	renderer.setClearColor(0x000000, 0);
 	renderer.outputColorSpace = SRGBColorSpace;
@@ -487,7 +483,7 @@ function record(t: Table, bodies: Body[], shapes: DieShape[], dampAt = 100): { s
 	// A die is at rest after CALM_STEPS quiet steps in a row (cannon's own sleep can
 	// miss a die that keeps micro-jittering against a wall or another die).
 	const CALM_STEPS = 15;
-	const calm = new Array(n).fill(0);
+	const calm = new Array<number>(n).fill(0);
 	for (; steps < MAX_STEPS; steps++) {
 		// Past ~2 s, damp hard so a straggler stops rocking instead of holding up the roll.
 		if (steps === dampAt) for (const b of bodies) { b.linearDamping = 0.9; b.angularDamping = 0.95; }
@@ -590,8 +586,8 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	if (fadeTimer) { window.clearTimeout(fadeTimer); fadeTimer = null; }
 	const t0 = performance.now();
 	const s = getStage();
-	if (!s.canvas.isConnected) document.body.appendChild(s.canvas);
-	s.canvas.style.opacity = '1';
+	if (!s.canvas.isConnected) s.canvas.ownerDocument.body.appendChild(s.canvas);
+	s.canvas.classList.remove('is-fading');
 	resize(s);
 	const ext = floorExtent(s);
 	const stageMs = performance.now() - t0;
@@ -756,9 +752,9 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 			stopAfter = shimmer ? elapsed + 2100 : elapsed;
 		}
 		if (elapsed >= stopAfter) return;
-		raf = requestAnimationFrame(tick);
+		raf = window.requestAnimationFrame(tick);
 	};
-	raf = requestAnimationFrame(tick);
+	raf = window.requestAnimationFrame(tick);
 
 	const report = () => {
 		const shownValues = meshes.map((m, i) => labels[i][topIndex(shapes[i], m.group.quaternion).index]);
@@ -772,7 +768,7 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	};
 
 	const cleanup = () => {
-		cancelAnimationFrame(raf);
+		window.cancelAnimationFrame(raf);
 		for (const m of meshes) {
 			s.scene.remove(m.group);
 			for (const mat of m.materials) mat.dispose();
@@ -795,7 +791,7 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 		// Keep the result on screen for a moment, then fade out and free the GPU.
 		fadeTimer = window.setTimeout(() => {
 			if (!stage || cancelled) return;
-			stage.canvas.style.opacity = '0';
+			stage.canvas.classList.add('is-fading');
 			fadeTimer = window.setTimeout(() => {
 				if (cancelled) return;
 				cleanup();

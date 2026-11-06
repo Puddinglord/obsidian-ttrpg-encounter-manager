@@ -362,7 +362,7 @@ export function balanceEncounter(groups: BalanceGroup[], partyLevels: number[], 
 	}
 
 	const scored: { s: BalanceSuggestion; score: number }[] = [];
-	const counts = new Array(all.length).fill(0);
+	const counts = new Array<number>(all.length).fill(0);
 	const visit = (i: number) => {
 		if (i === all.length) {
 			if (counts.every(c => c === 0)) return;

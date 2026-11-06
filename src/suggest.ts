@@ -2,11 +2,13 @@
 
 import {
 	App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo,
-	FuzzySuggestModal, FuzzyMatch, TFile, prepareFuzzySearch,
+	SuggestModal, TFile, prepareFuzzySearch, setIcon,
 } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { MonsterIndexEntry } from './types';
 import { formatLevel, monsterRole } from './rules';
+import { parseCountQuery } from './tracker-text';
+import { isHero as isHeroCreature } from './encounters';
 
 export function describeMonster(entry: MonsterIndexEntry): string {
 	const m = entry.monster;
@@ -83,35 +85,133 @@ export class InlineRefSuggest extends EditorSuggest<MonsterIndexEntry> {
 	}
 }
 
-export class AddMonsterModal extends FuzzySuggestModal<MonsterIndexEntry> {
+/** Bestiary entries for a search: name matches first (prefix before substring), then fuzzy ones. */
+export function searchMonsters(all: MonsterIndexEntry[], query: string, limit = 60): MonsterIndexEntry[] {
+	const q = query.trim().toLowerCase();
+	if (!q) return [...all].sort((a, b) => a.name.localeCompare(b.name)).slice(0, limit);
+	const direct = all.filter(e => e.name.toLowerCase().includes(q))
+		.sort((a, b) => (a.name.toLowerCase().startsWith(q) ? 0 : 1) - (b.name.toLowerCase().startsWith(q) ? 0 : 1) || a.name.length - b.name.length);
+	if (direct.length >= limit) return direct.slice(0, limit);
+	const seen = new Set(direct);
+	const fuzzy = prepareFuzzySearch(q);
+	const loose = all.filter(e => !seen.has(e))
+		.map(e => ({ e, r: fuzzy(`${e.name} ${e.monster.type ?? ''} ${e.monster.group ?? ''}`) }))
+		.filter((x): x is { e: MonsterIndexEntry; r: NonNullable<typeof x.r> } => !!x.r)
+		.sort((a, b) => b.r.score - a.r.score)
+		.map(x => x.e);
+	return [...direct, ...loose].slice(0, limit);
+}
+
+type RoleFilter = 'all' | 'regular' | 'minion' | 'legendary' | 'mine';
+
+/**
+ * The tracker's Add monster dialog: search the bestiary, filter by role, and
+ * add from any row with its own quantity. Row buttons keep the dialog open so
+ * a whole fight can be built in one go; Enter adds the selected row and closes.
+ */
+export class AddMonsterModal extends SuggestModal<MonsterIndexEntry> {
+	private count = 1;
+	private counts = new Map<string, number>();
+	private role: RoleFilter = 'all';
+
 	constructor(app: App, private plugin: NimbleStatblocksPlugin) {
 		super(app);
-		this.setPlaceholder('Add a monster to the encounter…');
+		this.modalEl.addClass('nimble-add-monster-modal');
+		this.setPlaceholder('Search the bestiary');
+		this.limit = 60;
 		this.setInstructions([
-			{ command: '↵', purpose: 'add one' },
-			{ command: 'shift ↵', purpose: 'add two' },
-			{ command: 'esc', purpose: 'close' },
+			{ command: '↑↓', purpose: 'move' },
+			{ command: '↵', purpose: 'add and close' },
+			{ command: '3 goblin', purpose: 'add several' },
 		]);
 		this.emptyStateText = plugin.index.size
 			? 'No matching monsters.'
 			: 'No monsters found. Turn on the bundled bestiary in settings, or add a ```nimble code block to a note.';
+		this.renderFilters();
 	}
 
-	getItems(): MonsterIndexEntry[] {
-		return this.plugin.index.all();
+	private key(e: MonsterIndexEntry): string { return `${e.filePath}|${e.name}`; }
+
+	private renderFilters(): void {
+		const bar = createDiv({ cls: 'nimble-add-filters' });
+		const options: [RoleFilter, string][] = [['all', 'All'], ['regular', 'Regular'], ['minion', 'Minion'], ['legendary', 'Legendary'], ['mine', 'My monsters']];
+		for (const [role, label] of options) {
+			const b = bar.createEl('button', { cls: `nimble-add-filter${role === this.role ? ' is-active' : ''}`, text: label });
+			b.addEventListener('mousedown', (e) => e.preventDefault()); // keep typing in the search box
+			b.addEventListener('click', () => {
+				this.role = role;
+				bar.querySelectorAll('.nimble-add-filter').forEach(x => x.toggleClass('is-active', x === b));
+				this.inputEl.dispatchEvent(new Event('input'));
+				this.inputEl.focus();
+			});
+		}
+		this.inputEl.parentElement?.after(bar);
 	}
 
-	getItemText(entry: MonsterIndexEntry): string {
-		return entry.name;
+	private inFight(e: MonsterIndexEntry): number {
+		const enc = this.plugin.encounters.active;
+		return (enc?.creatures ?? []).filter(c => !isHeroCreature(c) && c.monster.name === e.monster.name)
+			.reduce((n, c) => n + (c.count ?? 1), 0);
 	}
 
-	renderSuggestion(match: FuzzyMatch<MonsterIndexEntry>, el: HTMLElement): void {
-		super.renderSuggestion(match, el);
-		el.addClass('nimble-suggestion');
-		el.createDiv({ text: `${describe(match.item)}${match.item.bundled ? ` · ${match.item.monster.source ?? ''}` : ''}`, cls: 'nimble-suggestion-note' });
+	getSuggestions(input: string): MonsterIndexEntry[] {
+		const { count, query } = parseCountQuery(input);
+		this.count = count;
+		let all = this.plugin.index.all();
+		if (this.role === 'mine') all = all.filter(e => !e.bundled);
+		else if (this.role !== 'all') all = all.filter(e => monsterRole(e.monster) === this.role);
+		return searchMonsters(all, query, this.limit);
 	}
 
-	onChooseItem(entry: MonsterIndexEntry, evt: MouseEvent | KeyboardEvent): void {
-		void this.plugin.addToEncounter(entry.monster, entry.filePath || undefined, evt.shiftKey ? 2 : 1);
+	renderSuggestion(entry: MonsterIndexEntry, el: HTMLElement): void {
+		const m = entry.monster;
+		const role = monsterRole(m);
+		el.addClass('nimble-add-row');
+		el.createSpan({ cls: `nimble-add-level role-${role}`, text: formatLevel(m.level) || '–' });
+		const text = el.createDiv({ cls: 'nimble-add-text' });
+		const name = text.createDiv({ cls: 'nimble-add-name' });
+		name.createSpan({ text: entry.name });
+		const here = this.inFight(entry);
+		const badge = name.createSpan({ cls: 'nimble-add-here', text: here ? `${here} in fight` : '' });
+		text.createDiv({ cls: 'nimble-add-meta', text: `${describe(entry)}${entry.bundled && m.source ? ` · ${m.source}` : !entry.bundled ? ' · your note' : ''}` });
+
+		// Quantity: − n +, starting from the count typed in the search ("3 goblin").
+		const k = this.key(entry);
+		const n = () => this.counts.get(k) ?? this.count;
+		const qty = el.createDiv({ cls: 'nimble-add-qty' });
+		const stop = (b: HTMLElement) => {
+			b.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+			b.addEventListener('mousemove', (e) => e.stopPropagation());
+		};
+		const minus = qty.createEl('button', { cls: 'nimble-add-step', attr: { 'aria-label': 'One fewer' } });
+		setIcon(minus, 'minus');
+		const val = qty.createSpan({ cls: 'nimble-add-n', text: String(n()) });
+		const plus = qty.createEl('button', { cls: 'nimble-add-step', attr: { 'aria-label': 'One more' } });
+		setIcon(plus, 'plus');
+		const set = (v: number) => { this.counts.set(k, Math.max(1, Math.min(50, v))); val.setText(String(n())); add.lastElementChild?.setText(`Add ${n()}`); };
+		for (const b of [minus, plus]) stop(b);
+		minus.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); set(n() - 1); });
+		plus.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); set(n() + 1); });
+
+		const add = el.createEl('button', { cls: 'nimble-add-btn mod-cta' });
+		setIcon(add.createSpan(), 'plus');
+		add.createSpan({ text: n() > 1 ? `Add ${n()}` : 'Add' });
+		stop(add);
+		add.addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			void this.plugin.addToEncounter(entry.monster, entry.filePath || undefined, n()).then(() => {
+				const total = this.inFight(entry);
+				badge.setText(total ? `${total} in fight` : '');
+				el.addClass('is-added');
+				add.lastElementChild?.setText('Added');
+				window.setTimeout(() => { el.removeClass('is-added'); add.lastElementChild?.setText(n() > 1 ? `Add ${n()}` : 'Add'); }, 1100);
+			});
+		});
+	}
+
+	onChooseSuggestion(entry: MonsterIndexEntry, evt: MouseEvent | KeyboardEvent): void {
+		const n = this.counts.get(this.key(entry)) ?? (evt.shiftKey && this.count === 1 ? 2 : this.count);
+		void this.plugin.addToEncounter(entry.monster, entry.filePath || undefined, n);
 	}
 }

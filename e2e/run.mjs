@@ -55,7 +55,6 @@ async function resetEncounter(o, { party = [] } = {}) {
 			view.viewingCreatureId = null;
 			view.expanded?.clear();
 			view.flash?.clear();
-			view.quickQuery = '';
 		}
 		plugin.encounters.trigger('changed');
 		document.querySelectorAll('.notice').forEach(n => n.remove());
@@ -106,7 +105,7 @@ const rectsOverlap = (a, b) => a.left < b.right && b.left < a.right && a.top < b
 // Rendering
 
 test('plugin loads cleanly', async (o) => {
-	const loaded = await o.eval((app) => !!app.plugins.plugins['nimble-statblocks']?._loaded);
+	const loaded = await o.eval((app) => !!app.plugins.plugins['nimble-gm']?._loaded);
 	assert.ok(loaded);
 	assert.ok(await o.eval((app, plugin) => plugin.index.bundledCount) >= 500, 'bundled bestiary loaded');
 });
@@ -338,12 +337,24 @@ test('hover preview is interactive: roll dice inside it, it pins, never covers i
 	assert.equal(await o.page.locator(PREVIEW).count(), 0);
 });
 
-test('clicking an inline reference opens its note', async (o) => {
+test('clicking an inline reference opens a quick look; Open page (or Cmd-click) goes to the note', async (o) => {
 	await o.openFile('Adventure.md');
+	const Q = '.modal.nimble-record-modal';
 	await o.page.locator(`${R} .nimble-inline-name`, { hasText: 'Goblin Boss' }).click();
-	await o.page.waitForTimeout(400);
-	assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Bestiary/Goblin Boss.md');
+	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the quick-look modal' });
+	assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Adventure.md', 'no page jump');
+	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss');
+	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Goblin Boss');
 	assert.equal(await o.page.locator(PREVIEW).count(), 0);
+	await o.page.locator(`${Q} .record-btn`, { hasText: 'Open page' }).click();
+	await o.page.waitForTimeout(400);
+	assert.equal(await o.page.locator(Q).count(), 0);
+	assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Bestiary/Goblin Boss.md');
+	await o.openFile('Adventure.md');
+	await o.page.locator(`${R} .nimble-inline-name`, { hasText: 'Goblin Boss' }).click({ modifiers: ['Meta'] });
+	await o.page.waitForTimeout(400);
+	assert.equal(await o.page.locator(Q).count(), 0, 'Cmd-click skips the quick look');
+	await o.eval((app) => { app.workspace.getLeavesOfType('markdown').slice(1).forEach(l => l.detach()); });
 });
 
 test('index updates live: new, renamed and deleted monsters', async (o) => {
@@ -398,7 +409,7 @@ test('autocomplete inserts a monster reference', async (o) => {
 
 test('bestiary: search, role filter, add to the tracker', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app) => app.commands.executeCommandById('nimble-statblocks:open-bestiary'));
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:open-bestiary'));
 	const B = '.nimble-bestiary';
 	await o.page.waitForSelector(`${B} .bestiary-row`, { timeout: 5000 });
 	const total = Number((await o.page.locator(`${B} .bestiary-count`).textContent()).match(/^(\d+) monsters$/)?.[1]);
@@ -463,29 +474,32 @@ test('add to encounter: button, shift-click, inline +, unique labels', async (o)
 	assert.equal(await o.page.locator(`${T} .side-header .side-count`).textContent(), '0/4 gone');
 	assert.deepEqual(await o.page.locator(`${T} .creature-label`).allTextContents(), ['Goblin-2', 'Goblin-3', 'Goblin Boss-1', 'Goblin-4']);
 	assert.equal(await card(o, 'Goblin Boss-1').locator('.hp-display').textContent(), '36/36');
-	assert.match(await card(o, 'Goblin Boss-1').locator('.creature-meta').textContent(), /Lvl 2 · Armor M/);
+	assert.match(await card(o, 'Goblin Boss-1').locator('.creature-meta').textContent(), /Lvl 2.*Medium/);
+	assert.equal(await card(o, 'Goblin Boss-1').locator('.armor-chip.armor-medium').count(), 1, 'armor shows as a badge');
 });
 
 test('add-monster search adds from anywhere', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app) => app.commands.executeCommandById('nimble-statblocks:add-monster'));
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:add-monster'));
 	await o.page.waitForSelector('.prompt-input');
 	await o.page.keyboard.type('young dragon');
-	await o.waitFor(() => o.page.evaluate(() => document.querySelector('.prompt .suggestion-item.is-selected')?.textContent.startsWith('Young Dragon')),
+	await o.waitFor(() => o.page.evaluate(() => document.querySelector('.prompt .suggestion-item.is-selected .nimble-add-name')?.textContent === 'Young Dragon'),
 		{ timeout: 3000, what: 'Young Dragon to be the selected suggestion' });
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	assert.deepEqual((await creatures(o)).map(c => c.label), ['Young Dragon-1']);
 });
 
-test('quick add: "3 goblin minion" makes one minion group', async (o) => {
+test('add monster dialog: "3 goblin minion" makes one minion group', async (o) => {
 	await resetEncounter(o);
-	const input = o.page.locator(`${T} .quick-add-input`);
-	await input.click();
+	const M = '.nimble-add-monster-modal';
+	await o.page.locator(`${T} .tracker-add-monster`).click();
+	await o.page.waitForSelector(`${M} input`, { timeout: 3000 });
 	await o.page.keyboard.type('3 goblin minion');
-	await o.waitFor(() => o.page.evaluate((T) => document.querySelector(`${T} .quick-add-result.is-active .quick-add-name`)?.textContent === 'Goblin Minion', T),
-		{ timeout: 3000, what: 'Goblin Minion as the first quick-add result' });
-	assert.match(await o.page.locator(`${T} .quick-add-result.is-active .quick-add-meta`).textContent(), /Minion/);
+	await o.waitFor(() => o.page.evaluate((M) => document.querySelector(`${M} .suggestion-item.is-selected .nimble-add-name`)?.textContent === 'Goblin Minion', M),
+		{ timeout: 3000, what: 'Goblin Minion as the first result' });
+	assert.match(await o.page.locator(`${M} .suggestion-item.is-selected .nimble-add-meta`).textContent(), /Minion/);
+	assert.equal(await o.page.locator(`${M} .suggestion-item.is-selected .nimble-add-n`).textContent(), '3', 'the row quantity starts at the typed count');
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	const [group] = await creatures(o);
@@ -497,12 +511,24 @@ test('quick add: "3 goblin minion" makes one minion group', async (o) => {
 	assert.equal(await row.locator('.minion-pip.is-on').count(), 3);
 	assert.equal(await row.locator('.hp-display').textContent(), '3/3');
 	assert.match(await row.locator('.group-attack').textContent(), /Group attack ×3/);
-	assert.equal(await input.inputValue(), '');
+	assert.equal(await o.page.locator(M).count(), 0, 'the dialog closes after adding');
 
 	// Unknown names say so.
-	await o.page.locator(`${T} .quick-add-input`).click();
+	await o.page.locator(`${T} .tracker-add-monster`).click();
+	await o.page.waitForSelector(`${M} input`, { timeout: 3000 });
 	await o.page.keyboard.type('zzz nobody');
-	assert.equal(await o.page.locator(`${T} .quick-add-empty`).textContent(), 'No monster by that name');
+	await o.waitFor(async () => /No matching monsters/.test(await o.page.locator(`${M} .suggestion-empty`).textContent().catch(() => '')), { what: 'the empty state' });
+
+	// Row buttons: pick a quantity, Add, and the dialog stays open for the next monster.
+	await o.page.keyboard.press('Meta+A');
+	await o.page.keyboard.type('goblin boss');
+	const rowEl = o.page.locator(`${M} .suggestion-item`).filter({ has: o.page.locator('.nimble-add-name > span:first-child', { hasText: exact('Goblin Boss') }) }).first();
+	await rowEl.hover();
+	await rowEl.locator('.nimble-add-step[aria-label="One more"]').click();
+	await rowEl.locator('.nimble-add-btn').click();
+	await o.waitFor(async () => /2 in fight/.test(await rowEl.locator('.nimble-add-here').textContent()), { what: 'the in-fight badge' });
+	assert.equal(await o.page.locator(M).count(), 1, 'still open after adding from a row');
+	assert.equal((await creatures(o)).filter(c => c.label.startsWith('Goblin Boss')).length, 2);
 	await o.page.keyboard.press('Escape');
 
 	// The group attack rolls one die per minion into the roll log.
@@ -517,9 +543,10 @@ test('turn flow: party, Start combat, heroes then monsters, Next round', async (
 	await resetEncounter(o, { party: PARTY });
 	await o.page.locator(`${T} .quick-add-party`).click();
 	await o.page.waitForTimeout(100);
-	await o.page.locator(`${T} .quick-add-input`).click();
+	await o.page.locator(`${T} .tracker-add-monster`).click();
+	await o.page.waitForSelector('.nimble-add-monster-modal input', { timeout: 3000 });
 	await o.page.keyboard.type('3 goblin minion');
-	await o.waitFor(() => o.page.evaluate((T) => !!document.querySelector(`${T} .quick-add-result.is-active`), T), { timeout: 3000, what: 'quick-add results' });
+	await o.waitFor(() => o.page.evaluate(() => !!document.querySelector('.nimble-add-monster-modal .suggestion-item.is-selected')), { timeout: 3000, what: 'add monster results' });
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(150);
 	assert.deepEqual((await creatures(o)).map(c => [c.label, c.side]), [['Aria', 'hero'], ['Bram', 'hero'], ['Goblin Minion', 'monster']]);
@@ -531,7 +558,7 @@ test('turn flow: party, Start combat, heroes then monsters, Next round', async (
 	assert.equal(await action.textContent(), 'Start combat');
 	await action.click();
 	assert.deepEqual(await encounter(o).then(e => [e.round, e.phase]), [1, 'heroes']);
-	assert.equal(await o.page.locator(`${T} .phase-pill.is-active`).textContent(), "Heroes' turn");
+	assert.equal(await o.page.locator(`${T} .phase-pill.is-active .phase-pill-text`).textContent(), "Heroes' turn");
 	assert.equal(await action.textContent(), 'Next round');
 	assert.ok(await card(o, 'Goblin Minion').evaluate(el => el.classList.contains('is-waiting')));
 
@@ -541,7 +568,7 @@ test('turn flow: party, Start combat, heroes then monsters, Next round', async (
 	assert.match(await o.page.locator(`${T} .side-header`).first().textContent(), /1\/2 gone/);
 	await card(o, 'Bram').locator('.turn-toggle').click();
 	assert.equal((await encounter(o)).phase, 'monsters');
-	assert.equal(await o.page.locator(`${T} .phase-pill.is-active`).textContent(), "Monsters' turn");
+	assert.equal(await o.page.locator(`${T} .phase-pill.is-active .phase-pill-text`).textContent(), "Monsters' turn");
 	assert.ok(await card(o, 'Aria').evaluate(el => el.classList.contains('is-done')));
 	await card(o, 'Goblin Minion').locator('.turn-toggle').click();
 	assert.equal(await o.page.locator(`${T} .turn-toggle.is-done`).count(), 3);
@@ -558,6 +585,111 @@ test('turn flow: party, Start combat, heroes then monsters, Next round', async (
 	assert.equal((await encounter(o)).phase, 'monsters');
 });
 
+test('tracker controls: calculator modes, quick look from the tracker, End and save', async (o) => {
+	await resetEncounter(o, { party: PARTY });
+	await o.eval(async (app, plugin) => {
+		plugin.settings.dice3d = false;
+		const id = plugin.encounters.ensureActive().id;
+		plugin.encounters.addParty(id);
+		await plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
+		await plugin.addToEncounter(plugin.index.get('Krogg, Goblin King').monster, undefined, 1);
+	});
+	await o.page.waitForTimeout(300);
+	const action = o.page.locator(`${T} .round-action`);
+	assert.equal(await action.textContent(), 'Start combat');
+	assert.equal(await o.page.locator(`${T} .tracker-end, ${T} .turn-segmented`).count(), 0, 'no End or turn control before combat');
+
+	// Calculator by tapping: starts on Damage, switch to Heal, preview, apply.
+	await typeHp(o, 'Aria', '6');
+	await card(o, 'Aria').locator('.hp-display').click();
+	const pad = o.page.locator('.nimble-hp-pad');
+	assert.equal(await pad.locator('.hp-pad-mode.is-active').textContent(), 'Damage');
+	await pad.locator('.hp-pad-mode', { hasText: 'Heal' }).click();
+	for (const k of ['3']) await pad.locator('.hp-pad-keys button', { hasText: exact(k) }).click();
+	assert.match(await pad.locator('.hp-pad-preview').textContent(), /→ 7\/10/);
+	assert.equal(await pad.locator('.hp-pad-apply').textContent(), 'Heal 3');
+	await pad.locator('.hp-pad-apply').click();
+	assert.equal((await creatures(o)).find(c => c.label === 'Aria').hp, 7);
+	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 0, 'closes after applying');
+
+	// Crit toggle on a monster with armor shows the working.
+	const boss = (await creatures(o)).find(c => c.label.startsWith('Goblin Boss'));
+	await card(o, boss.label).locator('.hp-display').click();
+	await o.page.keyboard.type('8');
+	await pad.locator('.hp-pad-crit').click();
+	assert.match(await pad.locator('.hp-pad-preview').textContent(), /crit ignores armor/);
+	await o.page.keyboard.press('Escape');
+
+	// Start, then the legendary card after a hero's turn: pick one, it rolls and logs.
+	await action.click();
+	assert.equal(await action.textContent(), 'Next round');
+	assert.equal(await o.page.locator(`${T} .turn-segmented .phase-pill`).count(), 2);
+	assert.match(await o.page.locator(`${T} .phase-pill.phase-heroes .phase-pill-count`).textContent(), /0\/2/);
+	await card(o, 'Aria').locator('.turn-toggle').click();
+	assert.equal(await o.page.locator(`${T} .tracker-prompt`).count(), 0, 'no legendary helper card any more');
+
+	// Clicking a combatant opens their sheet over the tracker, with the fight's state.
+	const Q = '.modal.nimble-record-modal';
+	const krogg = (await creatures(o)).find(c => c.label.startsWith('Krogg'));
+	await card(o, krogg.label).locator('.creature-label').click();
+	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the quick look' });
+	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Krogg, Goblin King');
+	assert.match(await o.page.locator(`${Q} .record-sub`).textContent(), /Legendary|Solo/);
+	assert.equal(await o.page.locator(`${Q} .record-btn`, { hasText: 'Open in bestiary' }).count(), 1);
+	await o.page.locator(`${Q} .record-hp-btn`).click();
+	await o.page.keyboard.type('10');
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForTimeout(200);
+	assert.equal((await creatures(o)).find(c => c.label === krogg.label).hp, krogg.hp - 10, 'HP from the modal');
+	assert.match(await o.page.locator(`${Q} .record-hp-btn`).textContent(), new RegExp(`^${krogg.hp - 10}/`), 'the strip stays live');
+	await o.page.locator(`${Q} .record-turn`).click();
+	assert.equal((await creatures(o)).find(c => c.label === krogg.label).done, true);
+	await o.page.keyboard.press('Escape');
+	assert.equal(await o.page.locator(Q).count(), 0);
+
+	// A hero's quick look shows actions and Wounds.
+	await card(o, 'Bram').locator('.creature-label').click();
+	await o.waitFor(async () => (await o.page.locator(`${Q} .record-pip-group.is-wounds`).count()) === 1, { what: 'hero pips' });
+	await o.page.locator(`${Q} .is-wounds .record-pip`).first().click();
+	assert.equal((await creatures(o)).find(c => c.label === 'Bram').wounds, 1);
+	await o.page.keyboard.press('Escape');
+
+	// End combat: no callout, just Resume / New fight. HP is kept.
+	await o.page.locator(`${T} .tracker-end`).click();
+	await o.page.waitForTimeout(150);
+	assert.equal((await encounter(o)).phase, 'setup');
+	assert.equal(await o.page.locator(`${T} .tracker-prompt`).count(), 0, 'no "combat over" callout');
+	assert.equal(await action.textContent(), 'Resume round 1');
+	assert.equal((await creatures(o)).find(c => c.label === 'Aria').hp, 7);
+	await action.click();
+	assert.deepEqual(await encounter(o).then(e => [e.round, e.phase]), [1, 'heroes'], 'resumes where it stopped');
+	await o.page.locator(`${T} .tracker-end`).click();
+	await o.page.locator(`${T} .tracker-new-fight`).click();
+	assert.equal(await action.textContent(), 'Next round', 'New fight starts round 1');
+
+	// Save the fight to a note; the note resumes it, and the source block offers Resume.
+	await o.eval(async (app, plugin) => {
+		for (const f of ['Fights/Saved fight test.md', 'Saved fight test.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+		await app.vault.create('Saved fight test.md', '```nimble-encounter\nname: Current Encounter\nmonsters:\n- 1 Goblin\n```\n');
+		plugin.encounters.active.sourcePath = 'Saved fight test.md';
+	});
+	await o.page.locator(`${T} .tracker-save`).click();
+	await o.waitFor(() => o.eval((app) => !!app.vault.getAbstractFileByPath('Fights/Saved fight test - Current Encounter.md')), { what: 'the fight note' });
+	const note = await o.eval((app) => app.vault.adapter.read('Fights/Saved fight test - Current Encounter.md'));
+	assert.match(note, /nimble: combat/);
+	assert.match(note, /\| Aria \| 7\/10 \|/, 'the digest lists everyone');
+	await typeHp(o, 'Aria', '5');
+	await o.openFile('Saved fight test.md', 'preview');
+	await o.eval((app, plugin) => plugin.rerenderNotes());
+	const resume = o.page.locator(`${R} .encounter-resume`);
+	await o.waitFor(async () => (await resume.count()) === 1, { what: 'Resume on the encounter block' });
+	await resume.click();
+	await o.page.waitForTimeout(300);
+	assert.equal((await creatures(o)).find(c => c.label === 'Aria').hp, 7, 'restored from the save');
+	await o.openFile('Fights/Saved fight test - Current Encounter.md', 'preview');
+	assert.equal(await o.page.locator(`${R} .nimble-fight-card .nimble-fight-resume`).count(), 1, 'the note renders a Resume card');
+});
+
 test('typed damage, healing and set; invalid input is flagged', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster, 'Bestiary/Goblin.md'));
@@ -570,26 +702,23 @@ test('typed damage, healing and set; invalid input is flagged', async (o) => {
 	assert.equal((await creatures(o))[0].hp, 2);
 	assert.ok(await row.evaluate(el => el.classList.contains('hp-critical')));
 	assert.equal(await row.locator('.hp-display').textContent(), '2/12');
+	// The calculator ignores keys it doesn't know, won't apply nothing, and Escape closes it.
 	await row.locator('.hp-display').click();
 	await o.page.keyboard.type('lots');
 	await o.page.keyboard.press('Enter');
-	assert.ok(await row.locator('.hp-input.is-invalid').count());
+	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 1, 'nothing to apply: the calculator stays open');
+	assert.equal((await creatures(o))[0].hp, 2);
 	await o.page.keyboard.press('Escape');
-	assert.equal(await row.locator('.hp-input').count(), 0);
+	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 0);
+	assert.equal(await row.locator('.hp-display').textContent(), '2/12', 'the HP button never changes size or swaps out');
 
-	// Quick buttons live in the details panel (click the name).
-	await row.locator('.creature-label').click();
-	await parkMouse(o);
-	assert.equal(await row.locator('.creature-label').getAttribute('aria-expanded'), 'true');
-	await row.locator('.creature-details .hp-btn', { hasText: '−5' }).click();
+	// Down at 0 HP, and back up.
+	await typeHp(o, 'Goblin-1', '5');
 	assert.equal((await creatures(o))[0].hp, 0);
 	assert.ok(await row.evaluate(el => el.classList.contains('is-down')));
 	assert.match(await row.locator('.conditions-row').textContent(), /Defeated/);
-	await row.locator('.creature-details .hp-btn', { hasText: '+5' }).click();
+	await typeHp(o, 'Goblin-1', '+5');
 	assert.equal((await creatures(o))[0].hp, 5);
-	await row.locator('.creature-label').click();
-	await parkMouse(o);
-	assert.equal(await row.locator('.creature-details').count(), 0);
 });
 
 test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
@@ -764,24 +893,12 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 	assert.equal(await last.count(), 0);
 	assert.equal(await row.locator('.laststand-btn').count(), 0);
 	assert.equal(await row.locator('.phase-chip.laststand.is-on').textContent(), 'Last Stand');
-	assert.match(await row.locator('.creature-meta').textContent(), /Armor M/);
+	assert.match(await row.locator('.creature-meta .armor-chip').textContent(), /Medium/);
 	// His new armor applies.
 	await typeHp(o, label, '15');
 	krogg = (await creatures(o)).find(c => c.label === label);
 	assert.equal(krogg.hp, 15);
 
-	// He acts after each hero's turn.
-	await o.page.locator(`${T} .round-action`).click();
-	await card(o, 'Aria').locator('.turn-toggle').click();
-	const turn = o.page.locator(`${T} .tracker-prompt.prompt-legendary`);
-	assert.equal(await turn.count(), 1);
-	assert.equal(await turn.locator('.prompt-title').textContent(), `⚡ ${label} acts after Aria's turn`);
-	assert.match(await turn.locator('.prompt-lines').textContent(), /Manglemaul[\s\S]*Crack Skulls/);
-	await card(o, 'Bram').locator('.turn-toggle').click();
-	assert.equal(await turn.count(), 1, 'one legendary prompt at a time');
-	assert.match(await turn.locator('.prompt-title').textContent(), /after Bram's turn/);
-	await turn.locator('[aria-label="Dismiss"]').click();
-	assert.equal(await turn.count(), 0);
 });
 
 test('rename, round counter, clear all', async (o) => {
@@ -794,13 +911,15 @@ test('rename, round counter, clear all', async (o) => {
 	await o.page.keyboard.press('Enter');
 	assert.equal((await creatures(o))[0].label, 'Sneaky Pete');
 
+	assert.equal(await o.page.locator(`${T} .round-label`).count(), 0, 'no round counter until combat starts');
+	await o.page.locator(`${T} .round-action`).click();
 	const up = o.page.locator(`${T} .round-btn[aria-label="Round up"]`);
 	await up.click();
 	await up.click();
 	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Round 3');
 	await o.page.locator(`${T} .round-btn[aria-label="Previous round"]`).click();
 	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Round 2');
-	await o.eval((app) => app.commands.executeCommandById('nimble-statblocks:next-round'));
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:next-round'));
 	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Round 3');
 
 	// Encounter options menu → Clear encounter → confirm in the dialog.
@@ -809,7 +928,7 @@ test('rename, round counter, clear all', async (o) => {
 	await o.page.locator('.modal-container button', { hasText: exact('Clear') }).click();
 	await o.page.waitForTimeout(150);
 	assert.equal((await creatures(o)).length, 0);
-	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Round 1');
+	assert.equal(await o.page.locator(`${T} .round-label`).count(), 0, 'back to setup');
 	assert.equal(await o.page.locator(`${T} .round-action`).textContent(), 'Start combat');
 });
 
@@ -817,10 +936,11 @@ test('creature menu: view stat block, duplicate, add note', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md'));
 	await creatureMenu(o, 'Goblin Boss-1', 'View stat block');
-	assert.equal(await o.page.locator(`${T} .statblock-viewer .viewer-title`).textContent(), 'Goblin Boss-1');
-	assert.equal(await o.page.locator(`${T} .statblock-viewer .monster-name`).textContent(), 'Goblin Boss');
-	await o.page.locator(`${T} .statblock-viewer [aria-label="Close stat block"]`).click();
-	assert.equal(await o.page.locator(`${T} .statblock-viewer`).count(), 0);
+	const Q = '.modal.nimble-record-modal';
+	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss-1');
+	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Goblin Boss');
+	await o.page.keyboard.press('Escape');
+	assert.equal(await o.page.locator(Q).count(), 0);
 
 	await creatureMenu(o, 'Goblin Boss-1', 'Duplicate');
 	assert.deepEqual((await creatures(o)).map(c => c.label), ['Goblin Boss-1', 'Goblin Boss-2']);
@@ -915,6 +1035,15 @@ test('boxes: /treasure inserts one, the icon editor restyles and saves; NPCs lin
 	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-npc-link`).count()) === 1, { what: 'the NPC chip' });
 	const mentions = await o.page.locator(`${R} .nimble-npc-mention`).allInnerTexts();
 	assert.deepEqual(mentions, ['Captain Mara', 'Mara Vell']);
+	// Clicking an NPC opens their note in the quick look; you stay on the page.
+	await o.page.locator(`${R} .nimble-npc-link`).click();
+	const Q = '.modal.nimble-record-modal';
+	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the NPC quick look' });
+	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Mara Vell');
+	assert.equal(await o.page.locator(`${Q} .record-sub`).textContent(), 'Smuggler');
+	assert.match(await o.page.locator(`${Q} .record-note`).innerText(), /A smuggler/);
+	assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Campaigns/Test/Test.md');
+	await o.page.keyboard.press('Escape');
 	await o.eval(async (app) => { for (const f of ['Box.md', 'Campaigns/Test/NPCs/Mara Vell.md', 'Campaigns/Test/Test.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); } });
 	await o.page.waitForTimeout(700); // let the campaign index settle before the next test
 });
@@ -1160,7 +1289,7 @@ test('cancelling HP entry does not swallow the next click', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster, undefined, 2));
 	await card(o, 'Goblin-1').locator('.hp-display').click();
-	assert.equal(await card(o, 'Goblin-1').locator('.hp-input').count(), 1);
+	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 1);
 	// Click straight from one HP box to the next one.
 	await typeHp(o, 'Goblin-2', '5');
 	const list = await creatures(o);
@@ -1196,7 +1325,7 @@ test('compact style and dice toggle apply to open notes', async (o) => {
 
 test('settings tab: party editor, toggles and attribution', async (o) => {
 	await resetEncounter(o, { party: PARTY });
-	await o.eval((app) => { app.setting.open(); app.setting.openTabById('nimble-statblocks'); });
+	await o.eval((app) => { app.setting.open(); app.setting.openTabById('nimble-gm'); });
 	await o.page.waitForTimeout(300);
 	const C = '.vertical-tab-content';
 	try {
@@ -1268,10 +1397,11 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 		await p.waitForTimeout(400);
 		const before = (await creatures(o)).find(c => c.label.startsWith('Goblin Taskmaster'));
 		await tap(p.locator(`${T} .creature-item`).filter({ hasText: 'Goblin Taskmaster' }).locator('.hp-display'));
-		assert.equal(await p.locator('.nimble-hp-pad').count(), 1, 'HP pad opens on tap');
+		assert.equal(await p.locator('.nimble-hp-pad').count(), 1, 'HP calculator opens on tap');
 		for (const k of ['1', '5']) await tap(p.locator('.hp-pad-keys button', { hasText: exact(k) }));
 		assert.match(await p.locator('.hp-pad-preview').innerText(), /15 − 10 \(Medium armor\) = 5/);
-		await tap(p.locator('.hp-pad-actions button', { hasText: 'Damage' }));
+		assert.equal(await p.locator('.nimble-hp-pad.is-sheet').count(), 1, 'a bottom sheet on phones');
+		await tap(p.locator('.hp-pad-apply'));
 		const after = (await creatures(o)).find(c => c.label.startsWith('Goblin Taskmaster'));
 		assert.equal(after.hp, before.hp - 5);
 
@@ -1348,6 +1478,61 @@ test('3D dice: an attack roll animates, then the notice shows the result', async
 	assert.equal(await o.page.evaluate(() => getComputedStyle(document.querySelector('canvas.nimble-dice3d-overlay') ?? document.body).pointerEvents), 'none');
 	await o.waitFor(async () => (await o.page.locator('canvas.nimble-dice3d-overlay').count()) === 0, { what: 'the overlay to go away', timeout: 8000 });
 	await o.eval((app, plugin) => { plugin.settings.dice3d = false; document.querySelectorAll('.notice').forEach(n => n.remove()); });
+});
+
+test('NPC card: empty portrait slot, choose an image, secret blur, lightbox, panel avatar', async (o) => {
+	await resetEncounter(o);
+	// A 2×3 PNG, so the image has a real size to lay out.
+	const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAIAAAA2iEnWAAAAFklEQVR4nGP4z8Dwn4GBgYGJAQoYGAAeBgEEhSb/JAAAAABJRU5ErkJggg==';
+	await o.eval(async (app, plugin, png) => {
+		for (const f of ['Campaigns/Card/NPCs/Marta Hale.md', 'Campaigns/Card/Assets/marta.png', 'Campaigns/Card/Card.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+		for (const d of ['Campaigns', 'Campaigns/Card', 'Campaigns/Card/NPCs', 'Campaigns/Card/Assets']) if (!app.vault.getAbstractFileByPath(d)) await app.vault.createFolder(d);
+		await app.vault.create('Campaigns/Card/Card.md', '---\nnimble: campaign\n---\n');
+		const bin = Uint8Array.from(atob(png), c => c.charCodeAt(0));
+		await app.vault.createBinary('Campaigns/Card/Assets/marta.png', bin.buffer);
+		await app.vault.create('Campaigns/Card/NPCs/Marta Hale.md', '---\nnimble: npc\nrole: Miller\'s widow\n---\n```nimble-npc\nlook: Soot on her apron\nwants: The mill back\nvoice:\nsecret: She sold the water rights\n```\n\nShe runs the mill.\n');
+	}, PNG);
+	await o.openFile('Campaigns/Card/NPCs/Marta Hale.md', 'preview');
+	const cardEl = o.page.locator(`${R} .nimble-npc-card`);
+	await o.waitFor(async () => (await cardEl.count()) === 1, { what: 'the NPC card' });
+	assert.equal(await cardEl.locator('.nimble-npc-name').innerText(), 'Marta Hale', 'name from the note title');
+	assert.match(await cardEl.locator('.nimble-npc-role').innerText(), /miller's widow/i, 'role from properties');
+	assert.equal(await cardEl.locator('.nimble-npc-field').count(), 4);
+	assert.equal(await cardEl.locator('.nimble-npc-value.is-empty').count(), 1, 'empty voice shows a dash');
+	assert.equal(await cardEl.locator('.nimble-npc-portrait.is-empty').count(), 1, 'no portrait yet: an add slot');
+
+	// Secret starts blurred and reveals on click.
+	const secret = cardEl.locator('.nimble-npc-field.is-secret');
+	assert.notEqual(await secret.locator('.nimble-npc-value').evaluate(el => getComputedStyle(el).filter), 'none');
+	await secret.locator('.nimble-npc-value').click();
+	await o.waitFor(async () => (await secret.locator('.nimble-npc-value').evaluate(el => getComputedStyle(el).filter)) === 'none', { what: 'the secret to unblur' });
+
+	// Choose an image from the vault through the slot's menu.
+	await cardEl.locator('.nimble-npc-portrait').click();
+	await o.page.locator('.menu .menu-item', { hasText: 'Choose from vault' }).click();
+	await o.page.keyboard.type('marta.png', { delay: 10 });
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => /portrait: "?\[\[.*marta\.png\]\]/.test(await o.eval((app) => app.vault.adapter.read('Campaigns/Card/NPCs/Marta Hale.md'))), { what: 'the portrait property' });
+	const img = o.page.locator(`${R} .nimble-npc-card .nimble-npc-portrait img`);
+	await o.waitFor(async () => (await img.count()) === 1 && await img.evaluate(el => el.complete && el.naturalWidth > 0), { what: 'the portrait to render' });
+
+	// Click to enlarge.
+	await o.page.locator(`${R} .nimble-npc-card .nimble-npc-portrait`).click();
+	const modal = o.page.locator('.modal.nimble-portrait-modal');
+	await o.waitFor(async () => (await modal.count()) === 1, { what: 'the portrait lightbox' });
+	assert.match(await modal.locator('.nimble-portrait-caption').innerText(), /Marta Hale/);
+	await o.page.keyboard.press('Escape');
+
+	// Campaign panel shows the portrait as the NPC's avatar.
+	await o.eval(async (app, plugin) => { await plugin.campaigns.setActive('Campaigns/Card'); await plugin.openCampaignView(); });
+	const avatar = o.page.locator('.campaign-note[data-path="Campaigns/Card/NPCs/Marta Hale.md"] .campaign-note-avatar img');
+	await o.waitFor(async () => (await avatar.count()) === 1, { what: 'the panel avatar' });
+
+	// Live Preview renders the card too.
+	await o.openFile('Campaigns/Card/NPCs/Marta Hale.md', 'source');
+	await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: ed.lastLine(), ch: 0 }); });
+	await o.waitFor(async () => (await o.page.locator(`${S} .nimble-npc-card img`).count()) === 1, { what: 'the card in Live Preview' });
+	await o.eval(async (app, plugin) => plugin.campaigns.setActive(null));
 });
 
 test('no console errors during the run', async (o) => {

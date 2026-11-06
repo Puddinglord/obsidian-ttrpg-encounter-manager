@@ -128,7 +128,7 @@ export class MonsterIndex extends Events {
 			}
 			return monsters;
 		} catch (e) {
-			console.error(`Nimble Statblocks: error indexing ${file.path}`, e);
+			console.error(`Nimble GM: error indexing ${file.path}`, e);
 			return [];
 		}
 	}

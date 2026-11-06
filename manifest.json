@@ -1,9 +1,10 @@
 {
-	"id": "nimble-statblocks",
-	"name": "Nimble Statblocks",
+	"id": "nimble-gm",
+	"name": "Nimble GM",
 	"version": "1.0.0",
-	"minAppVersion": "1.0.0",
-	"description": "Create Nimble TTRPG monster stat blocks and track encounters.",
+	"minAppVersion": "1.7.2",
+	"description": "Run Nimble TTRPG games from your notes: campaigns, a bundled bestiary, encounter blocks rated for your party, a combat tracker, GM maps and 3D dice.",
 	"author": "Dakotah",
+	"authorUrl": "https://github.com/Puddinglord",
 	"isDesktopOnly": false
 }

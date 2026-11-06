@@ -21,7 +21,7 @@ export class BuilderModal extends Modal {
 	/** `onSave` writes the result back (editing a block); without it the modal inserts a new block. */
 	constructor(private plugin: NimbleStatblocksPlugin, def?: EncounterDef, private onSave?: (def: EncounterDef) => void) {
 		super(plugin.app);
-		this.def = def ? JSON.parse(JSON.stringify(def)) : { name: 'New encounter', party: plugin.settings.party.length > 0, monsters: [] };
+		this.def = def ? JSON.parse(JSON.stringify(def)) as EncounterDef : { name: 'New encounter', party: plugin.settings.party.length > 0, monsters: [] };
 	}
 
 	onOpen(): void {

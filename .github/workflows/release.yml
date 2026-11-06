@@ -22,7 +22,20 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Tag matches manifest version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION=$(node -p "require('./manifest.json').version")
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "Tag $TAG doesn't match manifest.json version $VERSION (Obsidian needs them identical, no 'v')"
+            exit 1
+          fi
+          node -e "const v=require('./versions.json'); if(!v['$VERSION']) { console.error('versions.json has no entry for $VERSION'); process.exit(1) }"
+
+      - name: Lint (Obsidian review rules)
+        run: npm run lint
 
       - name: Unit tests
         run: npm test
@@ -38,6 +51,10 @@ jobs:
           fi
           ls -la main.js manifest.json styles.css
 
+      - name: Package the sample vault
+        # A ready-to-open vault with the plugin already installed.
+        run: node scripts/package-sample-vault.mjs
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -45,5 +62,6 @@ jobs:
             main.js
             manifest.json
             styles.css
+            Nimble-GM-Sample-Vault.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

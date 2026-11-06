@@ -1,4 +1,4 @@
-/* Nimble Statblocks: stat blocks, bestiary, encounter tracker, encounter blocks, maps.
+/* Nimble GM: stat blocks, bestiary, encounter tracker, encounter blocks, maps.
    Uses Obsidian's theme variables so it follows light/dark themes. */
 
 body {
@@ -172,7 +172,8 @@ body {
 
 .nimble-popover {
 	position: fixed;
-	z-index: calc(var(--layer-popover) + 1);
+	/* Above modals too: the HP calculator opens from the quick-look modal */
+	z-index: calc(var(--layer-modal, 50) + 2);
 	max-width: calc(100vw - 16px);
 	overflow: auto;
 	background: var(--background-primary);
@@ -236,49 +237,76 @@ body {
 .nimble-encounter-tracker .encounter-picker { display: flex; gap: 0.3rem; margin-bottom: 0.5rem; }
 .nimble-encounter-tracker .encounter-select { flex: 1; min-width: 0; }
 
-.nimble-encounter-tracker .round-bar {
+/* Controls pinned to the top: combat button, round, whose turn, add buttons */
+.nimble-encounter-tracker { --tracker-bg: var(--background-secondary); }
+.workspace-split.mod-root .nimble-encounter-tracker { --tracker-bg: var(--background-primary); }
+.nimble-encounter-tracker .tracker-controls {
+	position: sticky;
+	top: -0.5rem;
+	z-index: 5;
 	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
+	flex-direction: column;
 	gap: 0.4rem;
-	padding: 0.4rem;
-	background: var(--background-secondary);
-	border-radius: var(--nimble-radius);
-	margin-bottom: 0.45rem;
+	margin: 0 -0.6rem 0.3rem;
+	padding: 0.5rem 0.6rem 0.55rem;
+	background: var(--tracker-bg);
+	border-bottom: 1px solid var(--background-modifier-border);
 }
-.nimble-encounter-tracker .round-counter { display: flex; align-items: center; gap: 0.15rem; }
-.nimble-encounter-tracker .round-label { font-weight: 700; min-width: 4.4rem; text-align: center; }
-.nimble-encounter-tracker .round-btn { padding: 0 0.45rem; height: 1.6rem; box-shadow: none; }
-.nimble-encounter-tracker .phase-pills { display: inline-flex; border: 1px solid var(--background-modifier-border); border-radius: 999px; overflow: hidden; }
-.nimble-encounter-tracker .phase-pill { border: none; border-radius: 0; box-shadow: none; background: transparent; height: 1.6rem; padding: 0 0.6rem; font-size: 0.76rem; color: var(--text-muted); }
-.nimble-encounter-tracker .phase-pill.phase-heroes.is-active { background: var(--nimble-hero); color: #fff; }
-.nimble-encounter-tracker .phase-pill.phase-monsters.is-active { background: var(--nimble-hp); color: #fff; }
-.nimble-encounter-tracker .round-action { margin-left: auto; display: inline-flex; align-items: center; gap: 0.3rem; height: 1.8rem; }
-.nimble-encounter-tracker .round-action svg { width: 15px; height: 15px; }
-.nimble-encounter-tracker .tracker-hint { font-size: 0.78rem; color: var(--text-muted); margin: -0.15rem 0 0.45rem; }
+.nimble-encounter-tracker .tracker-combat-row { display: flex; gap: 0.4rem; }
+.nimble-encounter-tracker .round-action,
+.nimble-encounter-tracker .tracker-end,
+.nimble-encounter-tracker .tracker-tools button {
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+	height: 2.1rem; font-weight: 600;
+}
+.nimble-encounter-tracker .round-action { flex: 1; min-width: 0; }
+.nimble-encounter-tracker .round-action:disabled { opacity: 0.5; cursor: default; }
+.nimble-encounter-tracker .tracker-end { flex: 0 0 auto; padding: 0 0.75rem; color: var(--text-muted); }
+.nimble-encounter-tracker .tracker-end:hover { color: var(--text-error); }
+.nimble-encounter-tracker .tracker-new-fight:hover { color: var(--text-normal); }
+.nimble-encounter-tracker .tracker-save { flex: 0 0 auto; width: 2.4rem; height: 2.1rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); }
+.nimble-encounter-tracker .tracker-save:hover { color: var(--text-normal); }
+.nimble-encounter-tracker .tracker-save svg { width: 16px; height: 16px; }
+.nimble-encounter-tracker .round-action-sub { font-weight: 500; opacity: 0.8; font-size: 0.82em; }
+.nimble-encounter-tracker .round-action-icon, .nimble-encounter-tracker .tracker-tools button > span:first-child { display: inline-flex; }
+.nimble-encounter-tracker .round-action svg, .nimble-encounter-tracker .tracker-end svg, .nimble-encounter-tracker .tracker-tools svg { width: 15px; height: 15px; }
+.nimble-encounter-tracker .tracker-end:not(.tracker-new-fight) svg { width: 12px; height: 12px; fill: currentColor; }
 
-.nimble-encounter-tracker .quick-add { position: relative; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.5rem; }
-.nimble-encounter-tracker .quick-add-icon { position: absolute; left: 0.5rem; top: 50%; transform: translateY(-50%); color: var(--text-faint); display: inline-flex; pointer-events: none; }
-.nimble-encounter-tracker .quick-add-icon svg { width: 15px; height: 15px; }
-.nimble-encounter-tracker .quick-add-input { flex: 1; padding-left: 1.8rem; min-width: 0; }
-.nimble-encounter-tracker .quick-add-party { display: inline-flex; align-items: center; gap: 0.25rem; }
-.nimble-encounter-tracker .quick-add-party svg { width: 14px; height: 14px; }
-.nimble-encounter-tracker .quick-add-results {
-	position: absolute;
-	top: calc(100% + 2px);
-	left: 0;
-	right: 0;
-	z-index: 10;
-	background: var(--background-primary);
+.nimble-encounter-tracker .round-stepper {
+	display: flex; align-items: center; justify-content: space-between;
+	height: 2.1rem; border-radius: 8px;
+	background: var(--background-modifier-form-field, var(--background-primary));
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	box-shadow: var(--shadow-s);
-	padding: 0.2rem;
 }
-.nimble-encounter-tracker .quick-add-result { display: flex; flex-direction: column; padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; }
-.nimble-encounter-tracker .quick-add-result.is-active, .nimble-encounter-tracker .quick-add-result:hover { background: var(--background-modifier-hover); }
-.nimble-encounter-tracker .quick-add-meta { font-size: 0.75rem; color: var(--text-muted); }
-.nimble-encounter-tracker .quick-add-empty { padding: 0.3rem 0.5rem; color: var(--text-muted); }
+.nimble-encounter-tracker .round-stepper .round-btn {
+	height: 100%; width: 2.4rem; padding: 0; border-radius: 7px;
+	background: transparent; box-shadow: none; border: none; color: var(--text-muted);
+	display: inline-flex; align-items: center; justify-content: center;
+}
+.nimble-encounter-tracker .round-stepper .round-btn:hover:not(:disabled) { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-encounter-tracker .round-stepper .round-btn:disabled { opacity: 0.35; cursor: default; }
+.nimble-encounter-tracker .round-stepper .round-btn svg { width: 17px; height: 17px; }
+.nimble-encounter-tracker .round-label { font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+
+.nimble-encounter-tracker .turn-segmented {
+	display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px;
+	border-radius: 9px; background: var(--background-modifier-border);
+}
+.nimble-encounter-tracker .phase-pill {
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+	height: 2rem; padding: 0 0.4rem; border: none; border-radius: 7px; box-shadow: none;
+	background: transparent; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; min-width: 0;
+}
+.nimble-encounter-tracker .phase-pill:hover:not(.is-active) { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-encounter-tracker .phase-pill-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-encounter-tracker .phase-pill-count { font-size: 0.7rem; font-weight: 500; opacity: 0.75; font-variant-numeric: tabular-nums; }
+.nimble-encounter-tracker .turn-segmented { --seg-pad: 3px; --seg-gap: 3px; --seg-color: var(--nimble-hero); }
+.nimble-encounter-tracker .turn-segmented[data-phase="monsters"] { --seg-color: var(--nimble-hp); }
+.nimble-encounter-tracker .phase-pill.is-active { color: #fff; }
+
+.nimble-encounter-tracker .tracker-tools { display: flex; gap: 0.4rem; margin: 0.15rem 0 0.35rem; }
+.nimble-encounter-tracker .tracker-tools button { flex: 1; min-width: 0; font-weight: 500; }
+.nimble-encounter-tracker .tracker-hint { font-size: 0.78rem; color: var(--text-muted); margin: -0.15rem 0 0.45rem; }
 
 .nimble-encounter-tracker .tracker-prompt { border-radius: var(--nimble-radius); padding: 0.45rem 0.6rem; margin-bottom: 0.45rem; border: 1px solid; font-size: 0.86rem; }
 .nimble-encounter-tracker .prompt-legendary { border-color: color-mix(in srgb, var(--nimble-legendary) 60%, transparent); background: color-mix(in srgb, var(--nimble-legendary) 12%, transparent); }
@@ -288,6 +316,9 @@ body {
 .nimble-encounter-tracker .prompt-title { font-weight: 700; }
 .nimble-encounter-tracker .prompt-lines { margin: 0.25rem 0 0; padding-left: 1.1rem; }
 .nimble-encounter-tracker .prompt-action { margin-top: 0.4rem; }
+.nimble-encounter-tracker .prompt-text { text-wrap: pretty; }
+
+
 
 .nimble-encounter-tracker .statblock-viewer { margin-bottom: 0.6rem; }
 .nimble-encounter-tracker .viewer-header { display: flex; align-items: center; gap: 0.2rem; margin-bottom: 0.3rem; }
@@ -325,7 +356,8 @@ body {
 .nimble-encounter-tracker .creature-item.dragging { opacity: 0.4; }
 .nimble-encounter-tracker .creature-item.drag-over { border-color: var(--interactive-accent); }
 
-.nimble-encounter-tracker .creature-main { display: flex; align-items: center; gap: 0.3rem; }
+.nimble-encounter-tracker .creature-main { display: flex; align-items: flex-start; gap: 0.3rem; }
+.nimble-encounter-tracker .creature-main .turn-toggle, .nimble-encounter-tracker .creature-main .creature-more { margin-top: -0.1rem; }
 .nimble-encounter-tracker .turn-toggle {
 	flex-shrink: 0;
 	width: 1.75rem;
@@ -361,12 +393,22 @@ body {
 	text-align: left;
 }
 .nimble-encounter-tracker .creature-label:hover { color: var(--text-accent); }
-.nimble-encounter-tracker .creature-meta { font-size: 0.72rem; color: var(--text-muted); }
+.nimble-encounter-tracker .creature-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0.1rem 0.3rem; font-size: 0.72rem; color: var(--text-muted); min-width: 0; }
+.nimble-encounter-tracker .meta-sep { color: var(--text-faint); }
+.nimble-encounter-tracker .meta-icon { display: inline-flex; }
+.nimble-encounter-tracker .meta-icon svg { width: 11px; height: 11px; }
+.nimble-encounter-tracker .meta-defense { display: inline-flex; align-items: center; gap: 0.15rem; font-weight: 600; color: var(--text-normal); font-variant-numeric: tabular-nums; }
+.nimble-encounter-tracker .meta-defense .meta-icon { color: var(--nimble-hero); }
+.nimble-encounter-tracker .armor-chip { display: inline-flex; align-items: center; gap: 0.2rem; padding: 0 0.35rem; border-radius: 999px; font-weight: 600; line-height: 1.35; }
+.nimble-encounter-tracker .armor-chip.armor-none { color: var(--text-faint); padding: 0; font-weight: 500; }
+.nimble-encounter-tracker .armor-chip.armor-medium { background: color-mix(in srgb, #5b8bd6 18%, transparent); color: color-mix(in srgb, #5b8bd6 85%, var(--text-normal)); }
+.nimble-encounter-tracker .armor-chip.armor-heavy { background: color-mix(in srgb, #7a6ad0 22%, transparent); color: color-mix(in srgb, #7a6ad0 85%, var(--text-normal)); }
 .nimble-encounter-tracker .label-edit-input { width: 100%; }
 .nimble-encounter-tracker .hp-display {
 	flex-shrink: 0;
-	min-width: 4.4rem;
-	height: 1.75rem;
+	min-width: 5.2rem;
+	height: 1.9rem;
+	justify-content: center;
 	padding: 0 0.5rem;
 	font-weight: 700;
 	font-variant-numeric: tabular-nums;
@@ -374,12 +416,12 @@ body {
 	box-shadow: none;
 	border: 1px solid var(--background-modifier-border);
 }
-.nimble-encounter-tracker .hp-display:hover { border-color: var(--interactive-accent); }
-.nimble-encounter-tracker .hp-input { width: 6.5rem; height: 1.75rem; flex-shrink: 0; }
-.nimble-encounter-tracker .hp-input.is-invalid { border-color: var(--text-error); }
+.nimble-encounter-tracker .hp-display:hover, .nimble-encounter-tracker .hp-display[aria-expanded="true"] { border-color: var(--interactive-accent); }
 .nimble-encounter-tracker .creature-more { flex-shrink: 0; }
 
-.nimble-encounter-tracker .creature-hp-bar { position: relative; height: 4px; background: var(--background-modifier-border); border-radius: 2px; margin: 0.35rem 0 0.1rem; overflow: hidden; }
+.nimble-encounter-tracker .creature-hp-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem; }
+.nimble-encounter-tracker .creature-hp-row .minion-pips { flex: 1; min-width: 0; }
+.nimble-encounter-tracker .creature-hp-bar { position: relative; flex: 1; min-width: 0; height: 6px; background: var(--background-modifier-border); border-radius: 3px; overflow: hidden; }
 .nimble-encounter-tracker .creature-hp-fill { height: 100%; background: var(--nimble-ok); transition: width 0.25s; }
 .nimble-encounter-tracker .hp-wounded .creature-hp-fill { background: var(--nimble-warn); }
 .nimble-encounter-tracker .hp-critical .creature-hp-fill, .nimble-encounter-tracker .hp-dead .creature-hp-fill { background: var(--nimble-hp); }
@@ -387,7 +429,11 @@ body {
 .nimble-encounter-tracker .hp-half-mark { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--text-faint); }
 
 .nimble-encounter-tracker .pips { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 3px; }
-.nimble-encounter-tracker .pips-label { font-size: 0.7rem; color: var(--text-muted); margin-right: 0.15rem; }
+.nimble-encounter-tracker .pips-label { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-right: 0.2rem; }
+.nimble-encounter-tracker .pips-icon { display: inline-flex; }
+.nimble-encounter-tracker .pips-icon svg { width: 13px; height: 13px; }
+.nimble-encounter-tracker .action-pips .pips-icon { color: var(--nimble-hero); }
+.nimble-encounter-tracker .wound-pips .pips-icon { color: var(--nimble-hp); }
 .nimble-encounter-tracker .pip {
 	width: 13px;
 	height: 13px;
@@ -405,20 +451,27 @@ body {
 .nimble-encounter-tracker .wound-pip.is-on { background: var(--nimble-hp); }
 .nimble-encounter-tracker .minion-pip { width: 11px; height: 11px; border-color: var(--nimble-minion); }
 .nimble-encounter-tracker .minion-pip.is-on { background: var(--nimble-minion); }
-.nimble-encounter-tracker .hero-row, .nimble-encounter-tracker .minion-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem 0.8rem; margin: 0.3rem 0 0.1rem 2rem; }
+.nimble-encounter-tracker .hero-row, .nimble-encounter-tracker .minion-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem 0.9rem; margin: 0.4rem 0 0.1rem; }
+.nimble-encounter-tracker .hero-row { justify-content: space-between; }
+.nimble-encounter-tracker .hero-row .pips { flex-wrap: nowrap; }
+/* Narrow cards: icons only, so actions and wounds still share a line */
+.nimble-encounter-tracker .creature-item { container-type: inline-size; }
+@container (max-width: 360px) {
+	.nimble-encounter-tracker .pips-label-text { display: none; }
+}
 .nimble-encounter-tracker .group-attack { margin-left: auto; display: inline-flex; align-items: center; gap: 0.25rem; height: 1.5rem; font-size: 0.75rem; padding: 0 0.5rem; }
 .nimble-encounter-tracker .group-attack svg { width: 13px; height: 13px; }
 
-.nimble-encounter-tracker .legendary-line { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; margin: 0.25rem 0 0 2rem; }
+.nimble-encounter-tracker .legendary-line { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; margin: 0.35rem 0 0; }
 .nimble-encounter-tracker .phase-chip { font-size: 0.7rem; padding: 0 0.4rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); color: var(--text-muted); cursor: help; }
 .nimble-encounter-tracker .phase-chip.is-on { background: var(--nimble-hp); border-color: var(--nimble-hp); color: #fff; }
 .nimble-encounter-tracker .phase-chip.laststand.is-on { background: #8e5bd0; border-color: #8e5bd0; }
 .nimble-encounter-tracker .laststand-btn { height: 1.4rem; font-size: 0.74rem; padding: 0 0.5rem; }
 
-.nimble-encounter-tracker .creature-flash { margin: 0.25rem 0 0 2rem; font-size: 0.76rem; color: var(--text-accent); }
-.nimble-encounter-tracker .creature-note { margin: 0.25rem 0 0 2rem; font-size: 0.78rem; color: var(--text-muted); font-style: italic; }
+.nimble-encounter-tracker .creature-flash { margin: 0.3rem 0 0; font-size: 0.76rem; color: var(--text-accent); }
+.nimble-encounter-tracker .creature-note { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--text-muted); font-style: italic; }
 
-.nimble-encounter-tracker .conditions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; margin: 0.3rem 0 0 2rem; }
+.nimble-encounter-tracker .conditions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; margin: 0.4rem 0 0; }
 .nimble-encounter-tracker .condition-tag {
 	display: inline-flex;
 	align-items: center;
@@ -1072,31 +1125,112 @@ body {
 .nimble-pin-card .pin-card-actions, .nimble-popover .pin-card-actions { display: flex; gap: 0.4rem; margin-top: 0.6rem; flex-wrap: wrap; }
 .nimble-popover .pin-card-actions button { flex: 1; }
 
-/* HP keypad */
-.nimble-hp-pad { width: min(380px, 96vw); }
-.nimble-hp-pad .hp-pad-sub { color: var(--text-muted); font-size: 0.85rem; margin-top: -0.3rem; }
-.nimble-hp-pad .hp-pad-display {
-	margin: 0.6rem 0 0.15rem;
-	padding: 0.35rem 0.8rem;
-	border-radius: 10px;
-	background: var(--background-secondary);
-	font-size: 2.2rem;
-	font-weight: 700;
-	text-align: right;
-	font-variant-numeric: tabular-nums;
-	min-height: 3.4rem;
-	letter-spacing: 0.02em;
+/* HP calculator (popover beside the HP button; a bottom sheet on phones) */
+.nimble-popover.nimble-hp-pad {
+	--calc-color: var(--nimble-hp);
+	box-sizing: border-box;
+	max-width: calc(100vw - 16px);
+	padding: 0.6rem;
+	display: flex; flex-direction: column; gap: 0.45rem;
+	outline: none;
 }
+.nimble-hp-pad[data-mode="heal"] { --calc-color: var(--nimble-ok); }
+.nimble-hp-pad[data-mode="set"] { --calc-color: var(--interactive-accent); }
+.nimble-hp-pad[data-mode="temp"] { --calc-color: var(--nimble-hero); }
+.nimble-hp-pad.is-shake { animation: nimble-shake 0.25s; }
+@keyframes nimble-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.nimble-hp-pad .hp-pad-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.nimble-hp-pad .hp-pad-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-hp-pad .hp-pad-sub { color: var(--text-muted); font-size: 0.75rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.nimble-hp-pad .hp-pad-modes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 2px; border-radius: 8px; background: var(--background-modifier-border); }
+.nimble-hp-pad .hp-pad-mode { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; height: 1.85rem; padding: 0 0.2rem; border: none; border-radius: 6px; box-shadow: none; background: transparent; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+.nimble-hp-pad .hp-pad-mode:hover:not(.is-active) { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-hp-pad .hp-pad-modes { --seg-pad: 2px; --seg-gap: 2px; --seg-color: var(--calc-color); }
+.nimble-hp-pad .hp-pad-mode.is-active { color: #fff; }
+.nimble-hp-pad .hp-pad-screen {
+	display: flex; align-items: center; gap: 0.3rem;
+	height: 3rem; padding: 0 0.3rem 0 0.7rem; border-radius: 9px;
+	background: var(--background-secondary);
+	border: 1px solid color-mix(in srgb, var(--calc-color) 45%, transparent);
+}
+.nimble-hp-pad .hp-pad-sign { font-size: 1.4rem; font-weight: 700; color: var(--calc-color); min-width: 1rem; }
+.nimble-hp-pad .hp-pad-display { flex: 1; text-align: right; font-size: 1.9rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 .nimble-hp-pad .hp-pad-display.is-empty { color: var(--text-faint); }
-.nimble-hp-pad .hp-pad-preview { min-height: 1.3rem; font-size: 0.82rem; color: var(--text-muted); text-align: right; padding: 0 0.3rem; }
-.nimble-hp-pad .hp-pad-toggles { display: flex; gap: 0.4rem; margin: 0.5rem 0; }
-.nimble-hp-pad .hp-pad-toggles button { flex: 1; height: 2.4rem; box-shadow: none; border: 1px solid var(--background-modifier-border); background: transparent; }
-.nimble-hp-pad .hp-pad-toggles button[aria-pressed="true"] { background: var(--interactive-accent); border-color: var(--interactive-accent); color: var(--text-on-accent); }
-.nimble-hp-pad .hp-pad-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin: 0.4rem 0 0.6rem; }
-.nimble-hp-pad .hp-pad-keys button { height: 3.1rem; font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.nimble-hp-pad .hp-pad-keys button.is-fn { font-size: 1.05rem; color: var(--text-muted); background: var(--background-secondary); }
-.nimble-hp-pad .hp-pad-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
-.nimble-hp-pad .hp-pad-actions button { height: 2.9rem; font-size: 1rem; font-weight: 600; }
+.nimble-hp-pad .hp-pad-back { color: var(--text-muted); }
+.nimble-hp-pad .hp-pad-toggles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0.3rem; }
+.nimble-hp-pad .hp-pad-toggles.is-off { visibility: hidden; }
+.nimble-hp-pad .hp-pad-toggles button { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; height: 1.8rem; padding: 0 0.2rem; font-size: 0.76rem; box-shadow: none; border: 1px solid var(--background-modifier-border); background: var(--background-primary); }
+.nimble-hp-pad .hp-pad-toggles button.is-active { background: var(--calc-color); border-color: var(--calc-color); color: #fff; }
+.nimble-hp-pad .hp-pad-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
+.nimble-hp-pad .hp-pad-keys button { height: 2.35rem; padding: 0; font-size: 1.1rem; font-weight: 600; font-variant-numeric: tabular-nums; box-shadow: none; background: var(--background-primary); border: 1px solid var(--background-modifier-border); }
+.nimble-hp-pad .hp-pad-keys button:hover { background: var(--background-modifier-hover); }
+.nimble-hp-pad .hp-pad-keys button.is-fn { font-size: 0.9rem; color: var(--text-muted); background: var(--background-secondary); }
+.nimble-hp-pad .hp-pad-keys .hp-pad-crit { font-weight: 700; letter-spacing: 0.02em; }
+.nimble-hp-pad .hp-pad-keys .hp-pad-crit.is-active { background: var(--calc-color); border-color: var(--calc-color); color: #fff; }
+.nimble-hp-pad .hp-pad-keys .hp-pad-crit:disabled { opacity: 0.35; cursor: default; }
+.nimble-hp-pad .hp-pad-preview { min-height: 1.1rem; font-size: 0.76rem; color: var(--text-muted); text-align: center; font-variant-numeric: tabular-nums; }
+.nimble-hp-pad .hp-pad-apply { height: 2.4rem; font-weight: 700; background: var(--calc-color); border-color: var(--calc-color); color: #fff; }
+.nimble-hp-pad .hp-pad-apply:disabled { background: var(--background-modifier-hover); border-color: var(--background-modifier-border); color: var(--text-faint); cursor: default; }
+.nimble-hp-pad .hp-pad-preview.is-hint { color: var(--text-faint); }
+/* Phones: thumb-sized keys in the bottom sheet */
+.nimble-popover.is-sheet.nimble-hp-pad { padding: 0.5rem 0.9rem calc(0.9rem + env(safe-area-inset-bottom)); gap: 0.55rem; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-mode { height: 2.5rem; font-size: 0.9rem; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-screen { height: 3.6rem; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-display { font-size: 2.3rem; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-toggles button { height: 2.4rem; font-size: 0.88rem; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-keys { gap: 0.45rem; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-keys button { height: 3.1rem; font-size: 1.4rem; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-apply { height: 3rem; font-size: 1.05rem; }
+@media (pointer: coarse) {
+	.nimble-hp-pad .hp-pad-keys button { height: 2.9rem; font-size: 1.25rem; }
+	.nimble-hp-pad .hp-pad-mode, .nimble-hp-pad .hp-pad-toggles button { height: 2.3rem; }
+	.nimble-hp-pad .hp-pad-apply { height: 2.8rem; }
+	.nimble-hp-pad .hp-pad-mode { font-size: 0.82rem; }
+	/* Icons only on touch: actions and wounds stay on one line with finger-sized pips */
+	.nimble-encounter-tracker .pips-label-text { display: none; }
+	.nimble-encounter-tracker .hero-row .pips { gap: 6px; }
+	.nimble-encounter-tracker .hero-row .pip { width: 20px; height: 20px; }
+	.nimble-encounter-tracker .pips-icon svg { width: 15px; height: 15px; }
+}
+
+/* Add monster dialog */
+.nimble-add-monster-modal { width: min(640px, 96vw); }
+.nimble-add-monster-modal .nimble-add-filters { display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0.45rem 0.75rem 0.5rem; border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-add-monster-modal .nimble-add-filter { height: 1.7rem; padding: 0 0.65rem; border-radius: 999px; font-size: 0.78rem; box-shadow: none; background: var(--background-secondary); border: 1px solid var(--background-modifier-border); color: var(--text-muted); }
+.nimble-add-monster-modal .nimble-add-filter:hover { color: var(--text-normal); }
+.nimble-add-monster-modal .nimble-add-filter.is-active { background: var(--interactive-accent); border-color: var(--interactive-accent); color: var(--text-on-accent); }
+.nimble-add-monster-modal .nimble-add-row { display: flex; align-items: center; gap: 0.65rem; transition: background 0.2s; }
+.nimble-add-monster-modal .nimble-add-row.is-added { background: color-mix(in srgb, var(--nimble-ok) 14%, transparent); }
+.nimble-add-monster-modal .nimble-add-level {
+	flex-shrink: 0; min-width: 2.1rem; height: 1.6rem; padding: 0 0.35rem; border-radius: 6px;
+	display: inline-flex; align-items: center; justify-content: center;
+	font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums;
+	background: color-mix(in srgb, var(--nimble-hp) 14%, transparent); color: var(--nimble-hp);
+}
+.nimble-add-monster-modal .nimble-add-level.role-minion { background: color-mix(in srgb, var(--nimble-minion) 16%, transparent); color: var(--nimble-minion); }
+.nimble-add-monster-modal .nimble-add-level.role-legendary { background: color-mix(in srgb, var(--nimble-legendary) 18%, transparent); color: var(--nimble-legendary); }
+.nimble-add-monster-modal .nimble-add-text { flex: 1; min-width: 0; }
+.nimble-add-monster-modal .nimble-add-name { display: flex; align-items: baseline; gap: 0.45rem; font-weight: 600; }
+.nimble-add-monster-modal .nimble-add-here:not(:empty) { font-size: 0.7rem; font-weight: 600; padding: 0 0.4rem; border-radius: 999px; background: color-mix(in srgb, var(--nimble-ok) 18%, transparent); color: color-mix(in srgb, var(--nimble-ok) 80%, var(--text-normal)); }
+.nimble-add-monster-modal .nimble-add-meta { font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-add-monster-modal .nimble-add-qty { display: inline-flex; align-items: center; flex-shrink: 0; border: 1px solid var(--background-modifier-border); border-radius: 8px; background: var(--background-primary); height: 1.9rem; }
+.nimble-add-monster-modal .nimble-add-step { width: 1.8rem; height: 100%; padding: 0; border: none; box-shadow: none; background: transparent; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; }
+.nimble-add-monster-modal .nimble-add-step:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.nimble-add-monster-modal .nimble-add-step svg { width: 13px; height: 13px; }
+.nimble-add-monster-modal .nimble-add-n { min-width: 1.4rem; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.nimble-add-monster-modal .nimble-add-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.25rem; height: 1.9rem; padding: 0 0.7rem; min-width: 4.6rem; justify-content: center; }
+.nimble-add-monster-modal .nimble-add-btn svg { width: 13px; height: 13px; }
+/* Desktop: row controls show on hover or when the row is selected, so the list stays calm */
+@media (hover: hover) and (pointer: fine) {
+	.nimble-add-monster-modal .nimble-add-row :is(.nimble-add-qty, .nimble-add-btn) { opacity: 0; transition: opacity 0.12s; }
+	.nimble-add-monster-modal .nimble-add-row:is(:hover, .is-selected, .is-added) :is(.nimble-add-qty, .nimble-add-btn) { opacity: 1; }
+}
+body.is-phone .nimble-add-monster-modal .nimble-add-meta { white-space: normal; }
+body.is-phone .nimble-add-monster-modal .nimble-add-row { flex-wrap: wrap; }
+body.is-phone .nimble-add-monster-modal .nimble-add-text { flex-basis: calc(100% - 3rem); }
+body.is-phone .nimble-add-monster-modal .nimble-add-qty { margin-left: 2.75rem; height: 2.4rem; }
+body.is-phone .nimble-add-monster-modal .nimble-add-step { width: 2.4rem; }
+body.is-phone .nimble-add-monster-modal .nimble-add-btn { flex: 1; height: 2.4rem; }
 
 /* Bestiary: filter toggle and the narrow (phone / slim pane) layout */
 .nimble-bestiary .bestiary-search { display: flex; align-items: center; gap: 0.3rem; }
@@ -1177,8 +1311,6 @@ body.is-phone .nimble-map-tray { width: auto; max-height: none; border-left: non
 	.nimble-encounter-tracker .turn-toggle svg { width: 24px; height: 24px; }
 	.nimble-encounter-tracker .hp-display { height: 2.5rem; min-width: 4.8rem; font-size: 1rem; }
 	.nimble-encounter-tracker .creature-more { width: 2.5rem; height: 2.5rem; }
-	.nimble-encounter-tracker .round-btn, .nimble-encounter-tracker .phase-pill { height: 2.3rem; }
-	.nimble-encounter-tracker .round-btn { padding: 0 0.7rem; }
 	.nimble-encounter-tracker .pips { gap: 8px; }
 	.nimble-encounter-tracker .pip { width: 22px; height: 22px; border-width: 2px; }
 	.nimble-encounter-tracker .minion-pip { width: 20px; height: 20px; }
@@ -1188,7 +1320,11 @@ body.is-phone .nimble-map-tray { width: auto; max-height: none; border-left: non
 	.nimble-encounter-tracker .remove-condition { opacity: 0.8; min-width: 1.8rem; min-height: 1.8rem; }
 	.nimble-encounter-tracker .add-condition-btn { height: 2rem; padding: 0 0.7rem; }
 	.nimble-encounter-tracker .add-condition-btn svg { width: 15px; height: 15px; }
-	.nimble-encounter-tracker .quick-add-input { height: 2.5rem; font-size: 16px; }
+	.nimble-encounter-tracker .round-action, .nimble-encounter-tracker .tracker-end, .nimble-encounter-tracker .tracker-tools button { height: 2.6rem; font-size: 0.95rem; }
+	.nimble-encounter-tracker .tracker-save { height: 2.6rem; width: 2.8rem; }
+	.nimble-encounter-tracker .round-stepper { height: 2.6rem; }
+	.nimble-encounter-tracker .round-stepper .round-btn { width: 3rem; }
+	.nimble-encounter-tracker .phase-pill { height: 2.5rem; font-size: 0.88rem; }
 	.nimble-encounter-tracker .creature-label { padding: 0.35rem 0; }
 
 	/* Map */
@@ -1703,3 +1839,196 @@ body.is-tablet .nimble-statblock .statblock-split > .statblock-action-more { pad
 }
 .nimble-hover-preview.is-sheet .hover-preview-open { height: 2.3rem; padding: 0 1rem; }
 body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
+
+.nimble-note-input {
+	width: 100%;
+}
+
+/* 3D dice: a full-window, click-through canvas above popovers. */
+.nimble-dice3d-overlay {
+	position: fixed;
+	inset: 0;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+	z-index: calc(var(--layer-popover, 30) + 5);
+	opacity: 1;
+	transition: opacity 0.35s ease;
+}
+
+.nimble-dice3d-overlay.is-fading {
+	opacity: 0;
+}
+
+/* ---------- NPC cards (```nimble-npc) ---------- */
+.nimble-hidden { display: none; }
+.nimble-npc-card {
+	--npc-color: #22a35a;
+	container-type: inline-size;
+	display: flex; gap: 1rem; align-items: flex-start;
+	margin: 0.9rem 0; padding: 0.85rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--npc-color) 6%, var(--background-primary));
+	border: 1px solid color-mix(in srgb, var(--npc-color) 24%, var(--background-modifier-border));
+}
+.nimble-npc-portrait {
+	position: relative; flex: 0 0 auto;
+	width: clamp(120px, 32%, 220px); aspect-ratio: 3 / 4;
+	border-radius: 9px; overflow: hidden; cursor: zoom-in;
+	background: var(--background-secondary);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--npc-color) 35%, transparent), 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+.nimble-npc-portrait img {
+	display: block; width: 100%; height: 100%;
+	object-fit: cover; object-position: var(--nimble-portrait-position, center 25%);
+}
+.nimble-npc-portrait-edit {
+	position: absolute; top: 6px; right: 6px; padding: 4px; border-radius: 6px;
+	background: rgba(0, 0, 0, 0.55); color: #fff; opacity: 0; transition: opacity 0.12s;
+}
+.nimble-npc-portrait:hover .nimble-npc-portrait-edit, .nimble-npc-portrait-edit:focus-visible { opacity: 1; }
+.nimble-npc-portrait-edit:hover { background: rgba(0, 0, 0, 0.75); color: #fff; }
+.nimble-npc-portrait-edit svg { width: 15px; height: 15px; }
+.nimble-npc-portrait.is-empty {
+	display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
+	cursor: pointer; box-shadow: none; padding: 0.5rem; text-align: center;
+	border: 2px dashed color-mix(in srgb, var(--npc-color) 40%, var(--background-modifier-border));
+	color: var(--text-muted);
+	transition: background 0.12s, border-color 0.12s;
+}
+.nimble-npc-portrait.is-empty:hover, .nimble-npc-portrait.is-drop-target {
+	background: color-mix(in srgb, var(--npc-color) 10%, var(--background-secondary));
+	border-color: var(--npc-color); color: var(--text-normal);
+}
+.nimble-npc-portrait.is-drop-target { box-shadow: 0 0 0 3px color-mix(in srgb, var(--npc-color) 35%, transparent); }
+.nimble-npc-portrait-icon svg { width: 34px; height: 34px; stroke-width: 1.6; color: color-mix(in srgb, var(--npc-color) 70%, var(--text-muted)); }
+.nimble-npc-portrait-hint { font-size: 0.78rem; line-height: 1.25; }
+.nimble-npc-info { flex: 1; min-width: 0; }
+.nimble-npc-name { font-family: var(--font-text-theme, var(--font-text)); font-size: 1.35rem; font-weight: 700; line-height: 1.2; color: var(--text-normal); }
+.nimble-npc-role {
+	margin-top: 0.15rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+	color: color-mix(in srgb, var(--npc-color) 80%, var(--text-normal));
+}
+.nimble-npc-fields { margin-top: 0.65rem; display: grid; grid-template-columns: max-content 1fr; gap: 0.4rem 0.8rem; }
+.nimble-npc-field { display: contents; }
+.nimble-npc-label {
+	display: inline-flex; align-items: center; align-self: start; gap: 0.3rem; padding-top: 0.22rem; line-height: 1.2;
+	font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint);
+}
+.nimble-npc-label-icon svg { width: 12px; height: 12px; }
+.nimble-npc-value { min-width: 0; font-size: 0.95em; }
+.nimble-npc-value > :first-child { margin-top: 0; }
+.nimble-npc-value > :last-child { margin-bottom: 0; }
+.nimble-npc-value.is-empty { color: var(--text-faint); }
+.nimble-npc-field.is-secret .nimble-npc-label { color: color-mix(in srgb, #64748b 85%, var(--text-normal)); }
+.nimble-npc-field.is-secret .nimble-npc-value {
+	cursor: pointer; border-radius: 6px; padding: 0 0.3rem; margin: 0 -0.3rem;
+	background: color-mix(in srgb, #64748b 12%, transparent);
+	filter: blur(5px); transition: filter 0.15s;
+}
+.nimble-npc-field.is-secret:not(.is-revealed) .nimble-npc-value:hover { filter: blur(3px); }
+.nimble-npc-field.is-secret.is-revealed .nimble-npc-value { filter: none; cursor: auto; }
+@container (max-width: 420px) {
+	.nimble-npc-card { flex-direction: column; align-items: stretch; }
+	.nimble-npc-portrait { width: 100%; aspect-ratio: 4 / 3; }
+	.nimble-npc-portrait img { object-position: var(--nimble-portrait-position, center 20%); }
+}
+
+/* Avatars (Campaign panel) */
+.nimble-npc-avatar { display: inline-flex; flex-shrink: 0; border-radius: 50%; overflow: hidden; background: var(--background-secondary); }
+.nimble-npc-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+.campaign-note-avatar { width: 18px; height: 18px; box-shadow: 0 0 0 1px var(--background-modifier-border); }
+
+/* Portrait lightbox */
+.modal.nimble-portrait-modal { width: auto; max-width: min(92vw, 900px); padding: 0; overflow: hidden; }
+.nimble-portrait-modal .modal-content { display: flex; flex-direction: column; }
+.nimble-portrait-full { display: block; max-width: 100%; max-height: 78vh; object-fit: contain; margin: 0 auto; background: var(--background-secondary); }
+.nimble-portrait-caption { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.25rem 0.75rem; padding: 0.75rem 1rem; }
+.nimble-portrait-caption .nimble-npc-role { margin-top: 0; }
+.nimble-portrait-popout { margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem; }
+.nimble-portrait-popout svg { width: 15px; height: 15px; }
+
+/* Sliding segmented-control thumb (see segmented.ts) */
+.has-thumb { position: relative; isolation: isolate; }
+.has-thumb > button { position: relative; z-index: 1; background: transparent; }
+.has-thumb > button.is-active, .has-thumb > button.is-active:hover { background: transparent; }
+.has-thumb > .seg-thumb {
+	position: absolute;
+	z-index: 0;
+	top: var(--seg-pad, 2px);
+	bottom: var(--seg-pad, 2px);
+	left: var(--seg-pad, 2px);
+	width: calc((100% - 2 * var(--seg-pad, 2px) - (var(--seg-n, 2) - 1) * var(--seg-gap, 2px)) / var(--seg-n, 2));
+	transform: translateX(calc(var(--seg-i, 0) * (100% + var(--seg-gap, 2px))));
+	border-radius: 6px;
+	background: var(--seg-color, var(--interactive-accent));
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+	transition: transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.28s;
+	pointer-events: none;
+}
+.has-thumb > .seg-thumb.no-slide { transition: none; }
+@media (prefers-reduced-motion: reduce) { .has-thumb > .seg-thumb { transition: none; } }
+
+/* Saved fight notes (```nimble-fight) */
+.nimble-fight-card { margin: 0.9rem 0; padding: 0.7rem 0.8rem; border-radius: 12px; border: 1px solid var(--background-modifier-border); background: var(--background-secondary); }
+.nimble-fight-head { display: flex; align-items: center; gap: 0.6rem; }
+.nimble-fight-icon { flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--nimble-hp) 16%, transparent); color: var(--nimble-hp); }
+.nimble-fight-icon svg { width: 16px; height: 16px; }
+.nimble-fight-titles { flex: 1; min-width: 0; }
+.nimble-fight-title { font-weight: 700; }
+.nimble-fight-sub { font-size: 0.8rem; color: var(--text-muted); }
+.nimble-fight-resume { display: inline-flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
+.nimble-fight-resume svg { width: 14px; height: 14px; }
+.nimble-fight-list { margin-top: 0.6rem; display: grid; gap: 0.2rem; }
+.nimble-fight-row { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.2rem 0.5rem; border-radius: 6px; border-left: 3px solid var(--nimble-hp); background: var(--background-primary); font-size: 0.88rem; }
+.nimble-fight-row.side-hero { border-left-color: var(--nimble-hero); }
+.nimble-fight-row.is-down { opacity: 0.5; text-decoration: line-through; }
+.nimble-fight-name { font-weight: 600; }
+.nimble-fight-conds { flex: 1; font-size: 0.78rem; color: var(--text-muted); }
+.nimble-fight-hp { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 600; }
+.nimble-encounter-block .encounter-resume { margin-left: auto; }
+
+/* Quick look (record-modal.ts): a sheet over what you're doing, no page jump */
+.modal.nimble-record-modal { width: min(640px, 94vw); max-height: 88vh; }
+.nimble-record-modal .modal-content { display: flex; flex-direction: column; gap: 0.7rem; }
+.nimble-record-modal .record-head { display: flex; align-items: center; gap: 0.7rem; padding-right: 1.8rem; }
+.nimble-record-modal .record-avatar { width: 44px; height: 44px; box-shadow: 0 0 0 1px var(--background-modifier-border); }
+.nimble-record-modal .record-titles { flex: 1; min-width: 0; }
+.nimble-record-modal .record-title { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+.nimble-record-modal .record-sub { font-size: 0.82rem; color: var(--text-muted); }
+.nimble-record-modal .record-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+.nimble-record-modal .record-btn { display: inline-flex; align-items: center; gap: 0.3rem; height: 2rem; }
+.nimble-record-modal .record-btn svg { width: 14px; height: 14px; }
+.nimble-record-modal .record-strip { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.6rem 0.7rem; border-radius: 10px; background: var(--background-secondary); border: 1px solid var(--background-modifier-border); }
+.nimble-record-modal .record-strip.is-down { opacity: 0.6; }
+.nimble-record-modal .record-strip-row { display: flex; align-items: center; gap: 0.6rem; }
+.nimble-record-modal .record-turn { display: inline-flex; align-items: center; gap: 0.35rem; height: 2.1rem; flex-shrink: 0; }
+.nimble-record-modal .record-turn svg { width: 16px; height: 16px; }
+.nimble-record-modal .record-turn.is-done { color: var(--nimble-ok); }
+.nimble-record-modal .record-hp { flex: 1; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.nimble-record-modal .record-hp-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--background-modifier-border); overflow: hidden; }
+.nimble-record-modal .record-hp-fill { height: 100%; width: var(--fill, 100%); background: var(--nimble-ok); transition: width 0.25s; }
+.nimble-record-modal .record-hp-btn { flex-shrink: 0; min-width: 5.6rem; height: 2.1rem; font-weight: 700; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.nimble-record-modal .record-pips { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+.nimble-record-modal .record-pip-group { display: inline-flex; align-items: center; gap: 4px; }
+.nimble-record-modal .record-pip-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-right: 0.3rem; }
+.nimble-record-modal .record-pip { width: 16px; height: 16px; padding: 0; min-height: 0; box-shadow: none; background: transparent; border: 1.5px solid var(--nimble-hero); border-radius: 50%; }
+.nimble-record-modal .record-pip.is-on { background: var(--nimble-hero); }
+.nimble-record-modal .is-wounds .record-pip { border-radius: 3px; border-color: var(--nimble-hp); }
+.nimble-record-modal .is-wounds .record-pip.is-on { background: var(--nimble-hp); }
+.nimble-record-modal .record-conds { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.nimble-record-modal .record-cond { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.05rem 0.2rem 0.05rem 0.55rem; border-radius: 999px; font-size: 0.8rem; background: color-mix(in srgb, var(--interactive-accent) 18%, transparent); }
+.nimble-record-modal .record-cond-rounds { font-size: 0.7rem; color: var(--text-muted); }
+.nimble-record-modal .record-cond-x { height: 1.3rem; width: 1.3rem; padding: 0; box-shadow: none; background: transparent; color: var(--text-muted); }
+.nimble-record-modal .record-body { overflow-y: auto; min-height: 0; }
+.nimble-record-modal .record-body .nimble-statblock { margin: 0; }
+.nimble-record-modal .record-empty { color: var(--text-muted); font-style: italic; padding: 0.5rem 0; }
+@media (pointer: coarse) {
+	.nimble-record-modal .record-btn, .nimble-record-modal .record-turn, .nimble-record-modal .record-hp-btn { height: 2.6rem; }
+	.nimble-record-modal .record-pip { width: 22px; height: 22px; }
+}
+body.is-phone .nimble-record-modal .record-head { flex-wrap: wrap; }
+body.is-phone .nimble-record-modal .record-actions { width: 100%; }
+body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justify-content: center; }
+body.is-phone .nimble-record-modal .record-strip-row { flex-wrap: wrap; }
+body.is-phone .nimble-record-modal .record-turn { flex: 1; justify-content: center; }

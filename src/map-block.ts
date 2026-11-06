@@ -150,7 +150,7 @@ class MapBlock extends MarkdownRenderChild {
 		const ih = this.img.naturalHeight;
 		if (!vw || !vh || !iw) return;
 		// Tall maps get a taller viewport (once, on desktop) instead of a thumbnail in a letterbox.
-		if (!this.sized && !document.body.hasClass('is-phone') && ih > 0) {
+		if (!this.sized && !this.viewport.doc.body.hasClass('is-phone') && ih > 0) {
 			this.sized = true;
 			const want = Math.round(Math.max(360, Math.min(window.innerHeight * 0.8, vw * (ih / iw))));
 			if (Math.abs(want - vh) > 40) { this.viewport.style.height = `${want}px`; this.fit(); return; }
@@ -297,7 +297,7 @@ class MapBlock extends MarkdownRenderChild {
 
 			el.addEventListener('mouseover', (event) => {
 				if (!pin.link || this.mode === 'move') return;
-				this.app.workspace.trigger('hover-link', { event, source: 'nimble-statblocks', hoverParent: this, targetEl: el, linktext: pin.link, sourcePath: this.ctx.sourcePath });
+				this.app.workspace.trigger('hover-link', { event, source: 'nimble-gm', hoverParent: this, targetEl: el, linktext: pin.link, sourcePath: this.ctx.sourcePath });
 			});
 			el.addEventListener('click', (e) => {
 				if (this.mode === 'move' || el.dataset.dragged || Date.now() < this.quietUntil) { delete el.dataset.dragged; return; }
@@ -472,11 +472,12 @@ class MapBlock extends MarkdownRenderChild {
 		el.addEventListener('pointerdown', (e) => {
 			if (e.button !== 0) return;
 			e.preventDefault();
-			const ghost = document.body.createDiv({ cls: 'nimble-map-token-ghost', text: c.label });
+			const doc = el.doc;
+			const ghost = doc.body.createDiv({ cls: 'nimble-map-token-ghost', text: c.label });
 			const move = (ev: PointerEvent) => { ghost.style.left = `${ev.clientX}px`; ghost.style.top = `${ev.clientY}px`; };
 			const up = (ev: PointerEvent) => {
-				document.removeEventListener('pointermove', move);
-				document.removeEventListener('pointerup', up);
+				doc.removeEventListener('pointermove', move);
+				doc.removeEventListener('pointerup', up);
 				ghost.remove();
 				const r = this.viewport.getBoundingClientRect();
 				if (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) {
@@ -484,8 +485,8 @@ class MapBlock extends MarkdownRenderChild {
 				}
 			};
 			move(e);
-			document.addEventListener('pointermove', move);
-			document.addEventListener('pointerup', up);
+			doc.addEventListener('pointermove', move);
+			doc.addEventListener('pointerup', up);
 		});
 	}
 
@@ -535,7 +536,7 @@ class PinModal extends Modal {
 		if (this.onDelete) s.addButton(b => b.setButtonText('Delete').setWarning().onClick(() => { this.onDelete!(); this.close(); }));
 		s.addButton(b => b.setButtonText('Cancel').onClick(() => this.close()));
 		s.addButton(b => b.setButtonText('Save').setCta().onClick(() => this.submit()));
-		window.setTimeout(() => (labelInput as HTMLInputElement | null)?.focus(), 0);
+		window.setTimeout(() => labelInput?.focus(), 0);
 	}
 
 	private submit(): void {

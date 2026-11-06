@@ -58,16 +58,17 @@ export interface NimbleMonster {
 	/** Stable id for monsters that ship with the plugin. */
 	bundledId?: string;
 
-	// Legacy fields from older notes. Read by the parser, folded into the fields above.
-	/** @deprecated use role */
+	// Legacy fields from older notes, still read for back-compat (not @deprecated
+	// on purpose: the parser and renderer have to keep using them).
+	/** Legacy: new notes use `role`. */
 	monsterType?: 'regular' | 'solo';
-	/** @deprecated use saves */
+	/** Legacy: new notes use `saves`. */
 	str?: string;
-	/** @deprecated use saves */
+	/** Legacy: new notes use `saves`. */
 	dex?: string;
-	/** @deprecated use saves */
+	/** Legacy: new notes use `saves`. */
 	will?: string;
-	/** @deprecated D&D challenge rating; shown only if a note still has it */
+	/** D&D challenge rating from older notes; shown only if a note still has it. */
 	cr?: number | string;
 	multiattack?: string;
 }
@@ -127,6 +128,8 @@ export interface Encounter {
 	/** Note this encounter was loaded from, if any. */
 	sourcePath?: string;
 	log?: EncounterLogEntry[];
+	/** Set when combat was ended, so it can be resumed where it stopped. */
+	paused?: { round: number; phase: 'heroes' | 'monsters' };
 }
 
 export interface PartyMember {

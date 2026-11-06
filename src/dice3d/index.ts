@@ -1,10 +1,9 @@
-// 3D dice, loaded on demand. three.js and the renderer are built into a
-// separate bundle that ships inside main.js as a string (see
-// esbuild.config.mjs); it's only evaluated on the first roll, so plugin
+// 3D dice, loaded on demand. three.js and the renderer sit behind a dynamic
+// import; esbuild (cjs, no splitting) inlines it into main.js inside a lazy
+// module initializer, so three.js only runs on the first roll and plugin
 // startup doesn't pay for it.
 
-import RENDERER_SRC from 'dice3d-bundle';
-import type { Dice3dOptions, DiceMaterial, Die3d, RollStats } from './renderer';
+import type { Dice3dOptions, Die3d, RollStats } from './renderer';
 
 export type { Dice3dOptions, DiceMaterial, Die3d, RollStats } from './renderer';
 
@@ -18,12 +17,10 @@ interface RendererLib {
 let lib: RendererLib | null = null;
 let loadMs = 0;
 
-function load(): RendererLib {
+async function load(): Promise<RendererLib> {
 	if (lib) return lib;
 	const t0 = performance.now();
-	// The bundle is an IIFE that assigns `__nimbleDice3dLib`; keep it local.
-	// eslint-disable-next-line @typescript-eslint/no-implied-eval
-	lib = new Function(`${RENDERER_SRC}\nreturn __nimbleDice3dLib;`)() as RendererLib;
+	lib = await import('./renderer');
 	loadMs = performance.now() - t0;
 	return lib;
 }
@@ -36,7 +33,7 @@ export function dice3dSupported(): boolean {
 	if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
 	if (webgl === null) {
 		try {
-			const c = document.createElement('canvas');
+			const c = createEl('canvas');
 			webgl = !!(c.getContext('webgl2') || c.getContext('webgl'));
 		} catch {
 			webgl = false;
@@ -48,7 +45,7 @@ export function dice3dSupported(): boolean {
 /** Throw the dice; resolves once they've all landed (explosions included). */
 export async function roll3d(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	if (!dice.length || !dice3dSupported()) return;
-	await load().roll(dice, opts);
+	await (await load()).roll(dice, opts);
 }
 
 /** Timings of the last roll, for tuning (not needed to use the dice). */

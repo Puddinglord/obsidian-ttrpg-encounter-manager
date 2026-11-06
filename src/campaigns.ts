@@ -4,7 +4,7 @@
 import { debounce, Events, normalizePath, Notice, TFile, TFolder } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import {
-	adjacentScene, buildCampaigns, Campaign, campaignOf, Chapter, chapterOf, nextOrder, NoteInfo, safeName,
+	adjacentScene, buildCampaigns, Campaign, campaignOf, Chapter, chapterOf, fmText, nextOrder, NoteInfo, safeName,
 } from './campaign-model';
 import { campaignHome, chapterHome, locationNote, npcNote, sceneNote, sessionNote } from './campaign-templates';
 
@@ -23,7 +23,7 @@ export interface NpcInfo {
 
 /** A note is an NPC when its properties say `nimble: npc`, or it's tagged #npc. */
 export function isNpc(fm: Record<string, unknown>, tags: string[]): boolean {
-	if (String(fm.nimble ?? '').toLowerCase() === 'npc') return true;
+	if (fmText(fm.nimble).toLowerCase() === 'npc') return true;
 	return tags.some(t => t.replace(/^#/, '').toLowerCase() === 'npc');
 }
 
@@ -58,7 +58,7 @@ export class CampaignStore extends Events {
 	rebuild(): void {
 		const notes: NoteInfo[] = this.app.vault.getMarkdownFiles().map(f => ({
 			path: f.path,
-			fm: (this.app.metadataCache.getFileCache(f)?.frontmatter ?? {}) as Record<string, unknown>,
+			fm: this.app.metadataCache.getFileCache(f)?.frontmatter ?? {},
 		}));
 		this.campaigns = buildCampaigns(notes);
 		this.npcs = [];
@@ -71,7 +71,7 @@ export class CampaignStore extends Events {
 				path: f.path,
 				name: f.basename,
 				aliases: list(fm.aliases ?? fm.alias),
-				role: typeof fm.role === 'string' ? fm.role : undefined,
+				role: typeof fm.role === 'string' && fm.role ? fm.role : undefined,
 				campaign: campaignOf(this.campaigns, f.path)?.folder,
 			});
 		}

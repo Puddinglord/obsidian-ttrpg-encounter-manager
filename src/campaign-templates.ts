@@ -1,6 +1,8 @@
 // Starter notes for campaigns. Light on structure: headings a GM can fill or
 // delete, frontmatter the campaign panel reads, nothing that breaks if removed.
 
+import { NPC_CARD_BLOCK } from './npc-card-def';
+
 const fm = (fields: Record<string, string | number | undefined>) =>
 	'---\n' + Object.entries(fields).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => `${k}: ${v}`).join('\n') + '\n---\n';
 
@@ -45,12 +47,9 @@ export function sceneNote(name: string, order: number): string {
 `;
 }
 
-export function npcNote(name: string): string {
-	return fm({ nimble: 'npc' }) + `
-
-> [!nimble-npc] ${name}
-> **Wants:**
-> **Voice:**
+export function npcNote(_name: string): string {
+	return fm({ nimble: 'npc', role: '""', portrait: '""' }) + `
+${NPC_CARD_BLOCK}
 
 ## What they know
 -
