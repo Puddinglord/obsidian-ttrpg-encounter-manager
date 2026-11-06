@@ -14,9 +14,11 @@ It isn't a virtual tabletop. Everything here is for the GM.
 
 ![An encounter block rated for a party of four level 2 heroes](docs/images/encounter-block.png)
 
-**A tracker that does Nimble's math.** Heroes go first, then monsters. Tap a monster's HP for a damage calculator that applies crits, armor, vulnerabilities and minion overkill, and shows the math before you commit. Legendary monsters get a pick-one card after each hero's turn, and Bloodied and Last Stand appear as prompts.
+**A tracker that does Nimble's math.** Heroes go first, then monsters. Tap a monster's HP for a damage calculator that applies crits, armor, vulnerabilities and minion overkill, and shows the math before you commit. Bloodied and Last Stand appear as prompts.
 
-![A legendary monster's choices in the tracker](docs/images/boss.png)
+**No page jumps.** Click a monster pill, an NPC, or anyone in the tracker and their sheet opens in a quick look over what you're doing: the full Nimble stat block (or the NPC's note), with HP, turn, actions and Wounds when they're in the fight. **Open page** is there when you do want the note.
+
+![The quick look: a legendary monster's stat block and HP, opened from the tracker](docs/images/boss.png)
 
 **525 monsters, ready to drop in.** Every monster from the Nimble GM Guide and Monsters & More is bundled and searchable. Hover any `` `nimble:Goblin` `` reference for its stat block, or write your own monsters as notes.
 

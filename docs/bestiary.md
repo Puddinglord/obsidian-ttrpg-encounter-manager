@@ -15,7 +15,7 @@ Turn the bundled bestiary off in settings if you only want your own monsters.
 
 ## Monster references
 
-Write `` `nimble:Goblin` `` (inline code) anywhere in a note. It shows as a reference chip you can hover for the full stat block, with an **Add** button that puts the monster in the tracker. `/monster goblin` inserts one for you, with autocomplete.
+Write `` `nimble:Goblin` `` (inline code) anywhere in a note. It shows as a reference chip. Hover it for the stat block, or click it for a quick look: the full stat block in a window over your note, with **Add to fight** and **Open page**. Cmd/Ctrl-click goes straight to the page. The chip's **+** button puts the monster in the tracker. `/monster goblin` inserts one for you, with autocomplete.
 
 - **Hover previews** stay open while you move into them. Click inside to pin one; drag its top bar to move it. Its **Add** button has a menu with Add 2, Add tougher (+1 level) and Add weaker (−1 level). Easier/Harder notes appear in full stat blocks and the bestiary, not the hover card. Escape closes the preview.
 

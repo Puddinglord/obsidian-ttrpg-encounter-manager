@@ -30,7 +30,8 @@ if (process.env.THEME === 'dark') await page.evaluate(() => { document.body.remo
 /** Sidebars: 'left' shows the Campaign panel, 'right' the tracker. */
 async function layout({ left = false, right = false } = {}) {
 	await o.eval(async (app, plugin, [left, right]) => {
-		document.querySelectorAll('.menu, .nimble-popover, .modal-container').forEach(n => n.remove());
+		document.querySelectorAll('.menu, .nimble-popover').forEach(n => n.remove());
+		document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click());
 		plugin.hover.hide();
 		// One tab only, so stale tabs from earlier shots don't show.
 		const leaves = [];
@@ -121,7 +122,9 @@ const shots = {
 		await typeHp('The Alchemist', '31');
 		await page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: 'Ilse' }) }).locator('.turn-toggle').click();
 		await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
-		await page.waitForTimeout(400);
+		// Her quick look, opened from the tracker.
+		await page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: 'The Alchemist' }) }).locator('.creature-label').click();
+		await page.waitForTimeout(700);
 	},
 	async map() {
 		await layout();

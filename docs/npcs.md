@@ -55,7 +55,7 @@ The portrait is saved in the `portrait` property, as a link like `"[[Tobren Kask
 
 ## Links and mentions
 
-- **Links become chips.** `[[Tobren Kask]]` shows as a green person chip, in reading view and Live Preview.
+- **Links become chips.** `[[Tobren Kask]]` shows as a green person chip, in reading view and Live Preview. Clicking a chip or a linked mention opens the NPC's note in a quick look over your page, with **Open page** if you want to go there; Cmd/Ctrl-click opens the page directly.
 - **Mentions are linked as you read.** The NPC's name or an alias anywhere in that campaign's notes gets a dotted underline and a hover preview. In Live Preview, Cmd/Ctrl-click opens the note. Your files aren't changed. Turn this off with **Link NPC names as you read** in settings.
 - **`/npc`** searches the campaign's NPCs and inserts a link. Typing a new name offers **New NPC**, which creates the note in the campaign's NPCs folder.
 - **Generic creatures** (a cultist, a zombie) are better as bestiary references (`` `nimble:Cultist` ``). NPCs are the named people with their own pages, and they can carry a stat block too.

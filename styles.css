@@ -172,7 +172,8 @@ body {
 
 .nimble-popover {
 	position: fixed;
-	z-index: calc(var(--layer-popover) + 1);
+	/* Above modals too: the HP calculator opens from the quick-look modal */
+	z-index: calc(var(--layer-modal, 50) + 2);
 	max-width: calc(100vw - 16px);
 	overflow: auto;
 	background: var(--background-primary);
@@ -317,47 +318,7 @@ body {
 .nimble-encounter-tracker .prompt-action { margin-top: 0.4rem; }
 .nimble-encounter-tracker .prompt-text { text-wrap: pretty; }
 
-/* Legendary turn: pick-one buttons */
-.nimble-encounter-tracker .legendary-card { padding: 0.55rem 0.6rem 0.6rem; }
-.nimble-encounter-tracker .legendary-card-title { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
-.nimble-encounter-tracker .legendary-card-icon {
-	flex-shrink: 0; width: 1.7rem; height: 1.7rem; border-radius: 50%;
-	display: inline-flex; align-items: center; justify-content: center;
-	background: var(--nimble-legendary); color: #fff;
-}
-.nimble-encounter-tracker .legendary-card-icon svg { width: 15px; height: 15px; }
-.nimble-encounter-tracker .legendary-card-sub { font-size: 0.74rem; color: var(--text-muted); }
-.nimble-encounter-tracker .legendary-options { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }
-.nimble-encounter-tracker .legendary-option {
-	display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
-	width: 100%; height: auto; min-height: 2.3rem; padding: 0.35rem 0.6rem;
-	border-radius: 8px; box-shadow: none; text-align: left;
-	background: var(--background-primary);
-	border: 1px solid color-mix(in srgb, var(--nimble-legendary) 35%, var(--background-modifier-border));
-	transition: background 0.12s, border-color 0.12s, opacity 0.12s;
-}
-.nimble-encounter-tracker .legendary-option:hover { border-color: var(--nimble-legendary); background: color-mix(in srgb, var(--nimble-legendary) 8%, var(--background-primary)); }
-.nimble-encounter-tracker .legendary-option.is-picked { background: var(--nimble-legendary); border-color: var(--nimble-legendary); color: #fff; }
-.nimble-encounter-tracker .legendary-option.is-other { opacity: 0.55; }
-.nimble-encounter-tracker .legendary-option-name { flex: 1 1 auto; font-weight: 600; min-width: 0; line-height: 1.25; white-space: normal; overflow-wrap: anywhere; }
-.nimble-encounter-tracker .legendary-option-meta { display: inline-flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
-.nimble-encounter-tracker .legendary-option-tag { font-size: 0.68rem; padding: 0.05rem 0.35rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); }
-.nimble-encounter-tracker .legendary-option-dice { font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-accent); }
-.nimble-encounter-tracker .legendary-option.is-picked :is(.legendary-option-tag, .legendary-option-dice) { background: rgba(255, 255, 255, 0.22); color: #fff; }
-.nimble-encounter-tracker .legendary-option.is-picked .legendary-option-dice { background: none; }
-.nimble-encounter-tracker .legendary-hint { margin-top: 0.35rem; font-size: 0.74rem; color: var(--text-muted); text-align: center; }
-.nimble-encounter-tracker .legendary-detail { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed color-mix(in srgb, var(--nimble-legendary) 45%, transparent); display: flex; flex-direction: column; gap: 0.4rem; }
-.nimble-encounter-tracker .legendary-result { display: flex; align-items: baseline; justify-content: space-between; }
-.nimble-encounter-tracker .legendary-result-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
-.nimble-encounter-tracker .legendary-result-total { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-.nimble-encounter-tracker .legendary-result.is-crit .legendary-result-total { color: var(--nimble-legendary); }
-.nimble-encounter-tracker .legendary-result.is-miss .legendary-result-total { color: var(--text-faint); }
-.nimble-encounter-tracker .legendary-detail-text { font-size: 0.85rem; line-height: 1.45; }
-.nimble-encounter-tracker .legendary-done { align-self: stretch; height: 2rem; }
-@media (pointer: coarse) {
-	.nimble-encounter-tracker .legendary-option { min-height: 2.9rem; }
-	.nimble-encounter-tracker .legendary-done { height: 2.6rem; }
-}
+
 
 .nimble-encounter-tracker .statblock-viewer { margin-bottom: 0.6rem; }
 .nimble-encounter-tracker .viewer-header { display: flex; align-items: center; gap: 0.2rem; margin-bottom: 0.3rem; }
@@ -2026,3 +1987,48 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 .nimble-fight-conds { flex: 1; font-size: 0.78rem; color: var(--text-muted); }
 .nimble-fight-hp { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 600; }
 .nimble-encounter-block .encounter-resume { margin-left: auto; }
+
+/* Quick look (record-modal.ts): a sheet over what you're doing, no page jump */
+.modal.nimble-record-modal { width: min(640px, 94vw); max-height: 88vh; }
+.nimble-record-modal .modal-content { display: flex; flex-direction: column; gap: 0.7rem; }
+.nimble-record-modal .record-head { display: flex; align-items: center; gap: 0.7rem; padding-right: 1.8rem; }
+.nimble-record-modal .record-avatar { width: 44px; height: 44px; box-shadow: 0 0 0 1px var(--background-modifier-border); }
+.nimble-record-modal .record-titles { flex: 1; min-width: 0; }
+.nimble-record-modal .record-title { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+.nimble-record-modal .record-sub { font-size: 0.82rem; color: var(--text-muted); }
+.nimble-record-modal .record-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+.nimble-record-modal .record-btn { display: inline-flex; align-items: center; gap: 0.3rem; height: 2rem; }
+.nimble-record-modal .record-btn svg { width: 14px; height: 14px; }
+.nimble-record-modal .record-strip { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.6rem 0.7rem; border-radius: 10px; background: var(--background-secondary); border: 1px solid var(--background-modifier-border); }
+.nimble-record-modal .record-strip.is-down { opacity: 0.6; }
+.nimble-record-modal .record-strip-row { display: flex; align-items: center; gap: 0.6rem; }
+.nimble-record-modal .record-turn { display: inline-flex; align-items: center; gap: 0.35rem; height: 2.1rem; flex-shrink: 0; }
+.nimble-record-modal .record-turn svg { width: 16px; height: 16px; }
+.nimble-record-modal .record-turn.is-done { color: var(--nimble-ok); }
+.nimble-record-modal .record-hp { flex: 1; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.nimble-record-modal .record-hp-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--background-modifier-border); overflow: hidden; }
+.nimble-record-modal .record-hp-fill { height: 100%; width: var(--fill, 100%); background: var(--nimble-ok); transition: width 0.25s; }
+.nimble-record-modal .record-hp-btn { flex-shrink: 0; min-width: 5.6rem; height: 2.1rem; font-weight: 700; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.nimble-record-modal .record-pips { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+.nimble-record-modal .record-pip-group { display: inline-flex; align-items: center; gap: 4px; }
+.nimble-record-modal .record-pip-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-right: 0.3rem; }
+.nimble-record-modal .record-pip { width: 16px; height: 16px; padding: 0; min-height: 0; box-shadow: none; background: transparent; border: 1.5px solid var(--nimble-hero); border-radius: 50%; }
+.nimble-record-modal .record-pip.is-on { background: var(--nimble-hero); }
+.nimble-record-modal .is-wounds .record-pip { border-radius: 3px; border-color: var(--nimble-hp); }
+.nimble-record-modal .is-wounds .record-pip.is-on { background: var(--nimble-hp); }
+.nimble-record-modal .record-conds { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.nimble-record-modal .record-cond { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.05rem 0.2rem 0.05rem 0.55rem; border-radius: 999px; font-size: 0.8rem; background: color-mix(in srgb, var(--interactive-accent) 18%, transparent); }
+.nimble-record-modal .record-cond-rounds { font-size: 0.7rem; color: var(--text-muted); }
+.nimble-record-modal .record-cond-x { height: 1.3rem; width: 1.3rem; padding: 0; box-shadow: none; background: transparent; color: var(--text-muted); }
+.nimble-record-modal .record-body { overflow-y: auto; min-height: 0; }
+.nimble-record-modal .record-body .nimble-statblock { margin: 0; }
+.nimble-record-modal .record-empty { color: var(--text-muted); font-style: italic; padding: 0.5rem 0; }
+@media (pointer: coarse) {
+	.nimble-record-modal .record-btn, .nimble-record-modal .record-turn, .nimble-record-modal .record-hp-btn { height: 2.6rem; }
+	.nimble-record-modal .record-pip { width: 22px; height: 22px; }
+}
+body.is-phone .nimble-record-modal .record-head { flex-wrap: wrap; }
+body.is-phone .nimble-record-modal .record-actions { width: 100%; }
+body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justify-content: center; }
+body.is-phone .nimble-record-modal .record-strip-row { flex-wrap: wrap; }
+body.is-phone .nimble-record-modal .record-turn { flex: 1; justify-content: center; }

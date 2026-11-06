@@ -2,7 +2,7 @@
 
 ![The tracker mid-fight: one hound down, one Bloodied](images/tracker.png)
 
-![A legendary monster's choices after each hero's turn](images/boss.png)
+![A combatant's quick look, opened from the tracker](images/boss.png)
 
 Nimble turn order: heroes act first, in any order, then the monsters.
 
@@ -26,6 +26,15 @@ Click or tap a combatant's HP. A calculator opens beside the tracker (a bottom s
 - The line above the button shows the result before you apply it, armor included: `15 − 10 (Medium armor) = 5 → 19/24`.
 - With a keyboard you can just type: `12` then Enter for damage, `12!` for a crit, `+5` to heal, `=20` to set HP, `t5` for temp HP, `12v` / `12r` for vulnerable / resisted. Escape closes it.
 
+## Quick look
+
+Click anyone's name in the tracker (or **View stat block** in their ⋯ menu) and their sheet opens over the tracker instead of sending you to their page:
+
+- **Monsters** show their full Nimble stat block, with clickable dice and condition names.
+- **Heroes** show their page, if your vault has a note with their name.
+- At the top is the fight: **Mark turn done**, the HP bar and HP button (tap for the calculator), actions and Wounds for heroes, and statuses. It stays live as the fight changes.
+- **Open page** (or **Open in bestiary**) goes to the note when you do want it. Escape closes the quick look.
+
 ## Reading a card
 
 Each card shows the name, then a line with the level (or a hero's class and their Defense shield) and the monster's armor: **No armor**, **Medium** (−10 per hit) or **Heavy** (−20). Below that is the HP bar with the HP button beside it.
@@ -35,7 +44,7 @@ Each card shows the name, then a line with the level (or a hero's class and thei
 - **Monster armor:** Medium (−10) and Heavy (−20) are subtracted automatically, and crits ignore armor.
 - **Heroes:** action pips (set them from Initiative: 1–9 → 1, 10–19 → 2, 20+ → 3) and Wound pips sit on one line under the HP bar. Dropping to 0 HP adds 1 Wound and makes the hero Dying; damage while Dying adds 2 Wounds (3 on a crit).
 - **Minions** share one row with a pip each. Any hit drops one; big hits drop more (one per full die of damage). **Group attack** rolls all of them at once: 1s miss, no crits, and one Defend covers the total.
-- **Legendary monsters** have HP scaled to the party. After each hero's turn, a card shows their choices as buttons, with each one's area and dice. Pick one and it rolls, shows just that rule, and goes in the combat log. Bloodied and Last Stand appear as prompts, and **Apply** handles Last Stand HP (regain per hero, or a final damage pool with armor).
+- **Legendary monsters** have HP scaled to the party, and act after each hero's turn: click their name to see their choices, with clickable dice. Bloodied and Last Stand appear as prompts, and **Apply** handles Last Stand HP (regain per hero, or a final damage pool with armor).
 - **Statuses:** all the 3.2 conditions plus minor statuses and your own custom ones. Apply one for a set number of rounds or until removed; Empowered and Weakened take a value. Durations count down when that combatant's turn ends.
 - **Combat log and summary:** in the ⋯ menu, **Copy summary**, or **Append summary to source note** for your session log.
 

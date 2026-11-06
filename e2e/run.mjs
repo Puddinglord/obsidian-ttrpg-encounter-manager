@@ -337,12 +337,24 @@ test('hover preview is interactive: roll dice inside it, it pins, never covers i
 	assert.equal(await o.page.locator(PREVIEW).count(), 0);
 });
 
-test('clicking an inline reference opens its note', async (o) => {
+test('clicking an inline reference opens a quick look; Open page (or Cmd-click) goes to the note', async (o) => {
 	await o.openFile('Adventure.md');
+	const Q = '.modal.nimble-record-modal';
 	await o.page.locator(`${R} .nimble-inline-name`, { hasText: 'Goblin Boss' }).click();
-	await o.page.waitForTimeout(400);
-	assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Bestiary/Goblin Boss.md');
+	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the quick-look modal' });
+	assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Adventure.md', 'no page jump');
+	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss');
+	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Goblin Boss');
 	assert.equal(await o.page.locator(PREVIEW).count(), 0);
+	await o.page.locator(`${Q} .record-btn`, { hasText: 'Open page' }).click();
+	await o.page.waitForTimeout(400);
+	assert.equal(await o.page.locator(Q).count(), 0);
+	assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Bestiary/Goblin Boss.md');
+	await o.openFile('Adventure.md');
+	await o.page.locator(`${R} .nimble-inline-name`, { hasText: 'Goblin Boss' }).click({ modifiers: ['Meta'] });
+	await o.page.waitForTimeout(400);
+	assert.equal(await o.page.locator(Q).count(), 0, 'Cmd-click skips the quick look');
+	await o.eval((app) => { app.workspace.getLeavesOfType('markdown').slice(1).forEach(l => l.detach()); });
 });
 
 test('index updates live: new, renamed and deleted monsters', async (o) => {
@@ -573,7 +585,7 @@ test('turn flow: party, Start combat, heroes then monsters, Next round', async (
 	assert.equal((await encounter(o)).phase, 'monsters');
 });
 
-test('tracker controls: calculator modes, End combat, legendary choice card', async (o) => {
+test('tracker controls: calculator modes, quick look from the tracker, End and save', async (o) => {
 	await resetEncounter(o, { party: PARTY });
 	await o.eval(async (app, plugin) => {
 		plugin.settings.dice3d = false;
@@ -614,19 +626,33 @@ test('tracker controls: calculator modes, End combat, legendary choice card', as
 	assert.equal(await o.page.locator(`${T} .turn-segmented .phase-pill`).count(), 2);
 	assert.match(await o.page.locator(`${T} .phase-pill.phase-heroes .phase-pill-count`).textContent(), /0\/2/);
 	await card(o, 'Aria').locator('.turn-toggle').click();
-	const legendary = o.page.locator(`${T} .legendary-card`);
-	await o.waitFor(async () => (await legendary.count()) === 1, { what: 'the legendary card' });
-	const options = legendary.locator('.legendary-option');
-	assert.ok(await options.count() >= 2, 'one button per choice');
-	assert.equal(await legendary.locator('.legendary-detail').count(), 0, 'no wall of text before a pick');
-	const first = (await options.first().locator('.legendary-option-name').textContent()).trim();
-	await options.first().click();
-	await o.page.waitForTimeout(150);
-	assert.equal(await legendary.locator('.legendary-option.is-picked').count(), 1);
-	assert.equal(await legendary.locator('.legendary-detail').count(), 1);
-	assert.ok((await o.eval((app, plugin) => plugin.encounters.active.log[0].text)).includes(`uses ${first}`), 'the pick is logged');
-	await legendary.locator('.legendary-done').click();
-	assert.equal(await legendary.count(), 0);
+	assert.equal(await o.page.locator(`${T} .tracker-prompt`).count(), 0, 'no legendary helper card any more');
+
+	// Clicking a combatant opens their sheet over the tracker, with the fight's state.
+	const Q = '.modal.nimble-record-modal';
+	const krogg = (await creatures(o)).find(c => c.label.startsWith('Krogg'));
+	await card(o, krogg.label).locator('.creature-label').click();
+	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the quick look' });
+	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Krogg, Goblin King');
+	assert.match(await o.page.locator(`${Q} .record-sub`).textContent(), /Legendary|Solo/);
+	assert.equal(await o.page.locator(`${Q} .record-btn`, { hasText: 'Open in bestiary' }).count(), 1);
+	await o.page.locator(`${Q} .record-hp-btn`).click();
+	await o.page.keyboard.type('10');
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForTimeout(200);
+	assert.equal((await creatures(o)).find(c => c.label === krogg.label).hp, krogg.hp - 10, 'HP from the modal');
+	assert.match(await o.page.locator(`${Q} .record-hp-btn`).textContent(), new RegExp(`^${krogg.hp - 10}/`), 'the strip stays live');
+	await o.page.locator(`${Q} .record-turn`).click();
+	assert.equal((await creatures(o)).find(c => c.label === krogg.label).done, true);
+	await o.page.keyboard.press('Escape');
+	assert.equal(await o.page.locator(Q).count(), 0);
+
+	// A hero's quick look shows actions and Wounds.
+	await card(o, 'Bram').locator('.creature-label').click();
+	await o.waitFor(async () => (await o.page.locator(`${Q} .record-pip-group.is-wounds`).count()) === 1, { what: 'hero pips' });
+	await o.page.locator(`${Q} .is-wounds .record-pip`).first().click();
+	assert.equal((await creatures(o)).find(c => c.label === 'Bram').wounds, 1);
+	await o.page.keyboard.press('Escape');
 
 	// End combat: no callout, just Resume / New fight. HP is kept.
 	await o.page.locator(`${T} .tracker-end`).click();
@@ -686,19 +712,13 @@ test('typed damage, healing and set; invalid input is flagged', async (o) => {
 	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 0);
 	assert.equal(await row.locator('.hp-display').textContent(), '2/12', 'the HP button never changes size or swaps out');
 
-	// Quick buttons live in the details panel (click the name).
-	await row.locator('.creature-label').click();
-	await parkMouse(o);
-	assert.equal(await row.locator('.creature-label').getAttribute('aria-expanded'), 'true');
-	await row.locator('.creature-details .hp-btn', { hasText: '−5' }).click();
+	// Down at 0 HP, and back up.
+	await typeHp(o, 'Goblin-1', '5');
 	assert.equal((await creatures(o))[0].hp, 0);
 	assert.ok(await row.evaluate(el => el.classList.contains('is-down')));
 	assert.match(await row.locator('.conditions-row').textContent(), /Defeated/);
-	await row.locator('.creature-details .hp-btn', { hasText: '+5' }).click();
+	await typeHp(o, 'Goblin-1', '+5');
 	assert.equal((await creatures(o))[0].hp, 5);
-	await row.locator('.creature-label').click();
-	await parkMouse(o);
-	assert.equal(await row.locator('.creature-details').count(), 0);
 });
 
 test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
@@ -879,19 +899,6 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 	krogg = (await creatures(o)).find(c => c.label === label);
 	assert.equal(krogg.hp, 15);
 
-	// He acts after each hero's turn.
-	await o.page.locator(`${T} .round-action`).click();
-	await card(o, 'Aria').locator('.turn-toggle').click();
-	const turn = o.page.locator(`${T} .tracker-prompt.prompt-legendary`);
-	assert.equal(await turn.count(), 1);
-	assert.equal(await turn.locator('.prompt-title').textContent(), `${label} acts`);
-	assert.equal(await turn.locator('.legendary-card-sub').textContent(), "after Aria's turn");
-	assert.deepEqual(await turn.locator('.legendary-option-name').allTextContents(), ['Manglemaul', 'Crack Skulls']);
-	await card(o, 'Bram').locator('.turn-toggle').click();
-	assert.equal(await turn.count(), 1, 'one legendary prompt at a time');
-	assert.match(await turn.locator('.legendary-card-sub').textContent(), /after Bram's turn/);
-	await turn.locator('[aria-label="Dismiss"]').click();
-	assert.equal(await turn.count(), 0);
 });
 
 test('rename, round counter, clear all', async (o) => {
@@ -929,10 +936,11 @@ test('creature menu: view stat block, duplicate, add note', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md'));
 	await creatureMenu(o, 'Goblin Boss-1', 'View stat block');
-	assert.equal(await o.page.locator(`${T} .statblock-viewer .viewer-title`).textContent(), 'Goblin Boss-1');
-	assert.equal(await o.page.locator(`${T} .statblock-viewer .monster-name`).textContent(), 'Goblin Boss');
-	await o.page.locator(`${T} .statblock-viewer [aria-label="Close stat block"]`).click();
-	assert.equal(await o.page.locator(`${T} .statblock-viewer`).count(), 0);
+	const Q = '.modal.nimble-record-modal';
+	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss-1');
+	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Goblin Boss');
+	await o.page.keyboard.press('Escape');
+	assert.equal(await o.page.locator(Q).count(), 0);
 
 	await creatureMenu(o, 'Goblin Boss-1', 'Duplicate');
 	assert.deepEqual((await creatures(o)).map(c => c.label), ['Goblin Boss-1', 'Goblin Boss-2']);
@@ -1027,6 +1035,15 @@ test('boxes: /treasure inserts one, the icon editor restyles and saves; NPCs lin
 	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-npc-link`).count()) === 1, { what: 'the NPC chip' });
 	const mentions = await o.page.locator(`${R} .nimble-npc-mention`).allInnerTexts();
 	assert.deepEqual(mentions, ['Captain Mara', 'Mara Vell']);
+	// Clicking an NPC opens their note in the quick look; you stay on the page.
+	await o.page.locator(`${R} .nimble-npc-link`).click();
+	const Q = '.modal.nimble-record-modal';
+	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the NPC quick look' });
+	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Mara Vell');
+	assert.equal(await o.page.locator(`${Q} .record-sub`).textContent(), 'Smuggler');
+	assert.match(await o.page.locator(`${Q} .record-note`).innerText(), /A smuggler/);
+	assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Campaigns/Test/Test.md');
+	await o.page.keyboard.press('Escape');
 	await o.eval(async (app) => { for (const f of ['Box.md', 'Campaigns/Test/NPCs/Mara Vell.md', 'Campaigns/Test/Test.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); } });
 	await o.page.waitForTimeout(700); // let the campaign index settle before the next test
 });

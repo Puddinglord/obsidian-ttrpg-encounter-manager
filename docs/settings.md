@@ -26,7 +26,6 @@ Your heroes: name, class, level, max HP, Defense and max Wounds. This is the par
 - **Clickable dice:** make dice expressions in notes and stat blocks rollable.
 - **Nimble attack rolls:** attack dice miss on a 1 and explode on their max.
 - **3D dice:** throw physical dice across the screen. Choose finishes and colours for the primary die, the other dice and crit dice, decide whether phones get them too, and use **Test a crit** to preview an explosion chain. See [Dice](dice.md).
-- **Tap to preview on mobile:** the first tap on a reference previews it, the second opens it.
 - **Keep the screen on during combat:** for phones and tablets, while combat is running.
 
 ## Encounters

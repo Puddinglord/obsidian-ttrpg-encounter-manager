@@ -134,15 +134,6 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				.addButton(b => b.setButtonText('Test a crit').onClick(() => this.plugin.rollDice('2d6+2', 'Test crit', 'attack', [6, 3, 6, 2])));
 		}
 
-		new Setting(containerEl)
-			.setName('Tap to preview on mobile')
-			.setDesc('First tap previews, second tap opens.')
-			.addToggle(t => t
-				.setValue(this.plugin.settings.mobileTapToPreview)
-				.onChange(async (v) => {
-					this.plugin.settings.mobileTapToPreview = v;
-					await this.plugin.saveSettings();
-				}));
 
 		new Setting(containerEl)
 			.setName('Keep the screen on during combat')

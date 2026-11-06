@@ -2,6 +2,7 @@
 // both Reading view (post processor) and Live Preview (editor widget).
 
 import { Component, MarkdownRenderer, Platform, setIcon, TFile } from 'obsidian';
+import { openRecord } from './record-modal';
 import type NimbleStatblocksPlugin from '../main';
 import { MonsterIndexEntry } from './types';
 import { formatLevel, monsterRole } from './rules';
@@ -47,18 +48,10 @@ export function createInlineRef(plugin: NimbleStatblocksPlugin, monsterName: str
 	name.addEventListener('click', (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		if (Platform.isMobile && plugin.settings.mobileTapToPreview) {
-			if (name.dataset.previewShowing === 'true') {
-				plugin.hover.hide();
-				plugin.openMonster(entry, sourcePath);
-			} else {
-				plugin.hover.show(name, entry, true);
-				name.dataset.previewShowing = 'true';
-			}
-			return;
-		}
 		plugin.hover.hide();
-		plugin.openMonster(entry, sourcePath, e.metaKey || e.ctrlKey);
+		// Cmd/Ctrl-click goes straight to the page; a plain click opens the quick look.
+		if (e.metaKey || e.ctrlKey) { plugin.openMonster(entry, sourcePath, true); return; }
+		openRecord(plugin, { kind: 'monster', entry, sourcePath });
 	});
 	plugin.hover.attach(name, entry);
 

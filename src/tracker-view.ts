@@ -14,7 +14,7 @@ import { HpCommand } from './rules';
 import { openPluginSettings } from './internals';
 import { slideThumb } from './segmented';
 import { saveFight } from './saved-fight';
-import { legendaryOption } from './tracker-text';
+import { openRecord } from './record-modal';
 
 export const ENCOUNTER_VIEW_TYPE = 'nimble-encounter-tracker';
 
@@ -28,7 +28,7 @@ export function hpClass(current: number, max: number): string {
 
 interface Prompt {
 	id: string;
-	kind: 'legendary' | 'bloodied' | 'laststand' | 'info';
+	kind: 'bloodied' | 'laststand' | 'info';
 	title: string;
 	/** Rules text with clickable dice. */
 	text?: string;
@@ -38,14 +38,9 @@ interface Prompt {
 	label?: string;
 	monsterName?: string;
 	action?: { label: string; run: () => void };
-	/** Legendary prompts: the choice the GM picked, and what it rolled. */
-	chosen?: number;
-	rolled?: string;
 }
 
 export class EncounterTrackerView extends ItemView {
-	viewingCreatureId: string | null = null;
-	private expanded = new Set<string>();
 	private prompts: Prompt[] = [];
 	private flash = new Map<string, string>();
 	private logOpen = false;
@@ -89,7 +84,6 @@ export class EncounterTrackerView extends ItemView {
 		if (enc) {
 			this.renderControls(container, enc);
 			this.renderPrompts(container, enc);
-			this.renderViewer(container, enc);
 			if (enc.creatures.length === 0) {
 				const empty = container.createDiv({ cls: 'empty-message' });
 				empty.createEl('p', { text: 'No one here yet.' });
@@ -170,7 +164,6 @@ export class EncounterTrackerView extends ItemView {
 			menu.addItem(i => i.setTitle(this.plugin.settings.multipleEncounters ? 'Delete encounter' : 'Clear encounter').setIcon('trash-2').onClick(async () => {
 				const verb = this.plugin.settings.multipleEncounters ? 'Delete' : 'Clear';
 				if (!await confirmAction(this.app, `${verb} "${enc.name}"?`, 'Everyone in it and its combat log will be removed.', verb, true)) return;
-				this.viewingCreatureId = null;
 				this.prompts = [];
 				if (this.plugin.settings.multipleEncounters) this.store.delete(enc.id);
 				else this.store.clear(enc.id);
@@ -215,7 +208,7 @@ export class EncounterTrackerView extends ItemView {
 			const opt = select.createEl('option', { text: `${e.name} (${e.creatures.length})`, value: e.id });
 			opt.selected = e.id === this.plugin.settings.activeEncounterId;
 		}
-		select.onchange = () => { this.viewingCreatureId = null; this.prompts = []; this.store.setActive(select.value || null); };
+		select.onchange = () => { this.prompts = []; this.store.setActive(select.value || null); };
 		const add = row.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'New encounter' } });
 		setIcon(add, 'plus');
 		add.onclick = () => { this.prompts = []; this.store.create(`Encounter ${this.store.encounters.length + 1}`); };
@@ -252,7 +245,6 @@ export class EncounterTrackerView extends ItemView {
 			primary.createSpan({ text: 'Next round' });
 			primary.onclick = () => {
 				const expired = this.store.nextRound(enc.id);
-				this.prompts = this.prompts.filter(p => p.kind !== 'legendary');
 				if (expired.length) new Notice(`Wore off: ${expired.join(', ')}`);
 			};
 			const save = top.createEl('button', { cls: 'tracker-save', attr: { 'aria-label': 'Save the fight to a note' } });
@@ -328,7 +320,6 @@ export class EncounterTrackerView extends ItemView {
 	// Prompts (legendary turns, Bloodied, Last Stand)
 
 	private pushPrompt(p: Prompt): void {
-		if (p.kind === 'legendary') this.prompts = this.prompts.filter(x => !(x.kind === 'legendary' && x.creatureId === p.creatureId));
 		this.prompts = [p, ...this.prompts.filter(x => x.id !== p.id)].slice(0, 6);
 		this.scrollToPrompts = true;
 	}
@@ -338,7 +329,6 @@ export class EncounterTrackerView extends ItemView {
 	private renderPrompts(container: HTMLElement, enc: Encounter): void {
 		this.prompts = this.prompts.filter(p => !p.creatureId || enc.creatures.some(c => c.id === p.creatureId));
 		for (const p of this.prompts) {
-			if (p.kind === 'legendary' && p.lines?.length) { this.renderLegendaryPrompt(container, enc, p); continue; }
 			const box = container.createDiv({ cls: `tracker-prompt prompt-${p.kind}` });
 			const head = box.createDiv({ cls: 'prompt-head' });
 			head.createSpan({ cls: 'prompt-title', text: p.title });
@@ -359,65 +349,6 @@ export class EncounterTrackerView extends ItemView {
 		}
 	}
 
-	/**
-	 * A legendary monster's turn: one button per choice. Picking one rolls it
-	 * and shows just that rule, so there's no wall of text to read mid-fight.
-	 */
-	private renderLegendaryPrompt(container: HTMLElement, enc: Encounter, p: Prompt): void {
-		const creature = p.creatureId ? enc.creatures.find(c => c.id === p.creatureId) : undefined;
-		const name = creature?.label || p.monsterName || '';
-		const box = container.createDiv({ cls: 'tracker-prompt prompt-legendary legendary-card' });
-		const head = box.createDiv({ cls: 'prompt-head' });
-		const title = head.createDiv({ cls: 'legendary-card-title' });
-		setIcon(title.createSpan({ cls: 'legendary-card-icon' }), 'zap');
-		const t = title.createDiv();
-		t.createDiv({ cls: 'prompt-title', text: `${name} acts` });
-		t.createDiv({ cls: 'legendary-card-sub', text: p.title.replace(/^.*?acts\s*/, '') || (p.text ?? '') });
-		const x = head.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Dismiss' } });
-		setIcon(x, 'x');
-		x.onclick = () => { this.prompts = this.prompts.filter(q => q !== p); this.render(); };
-
-		const options = (p.lines ?? []).map(legendaryOption);
-		const list = box.createDiv({ cls: 'legendary-options', attr: { role: 'radiogroup' } });
-		options.forEach((o, i) => {
-			const picked = p.chosen === i;
-			const b = list.createEl('button', {
-				cls: `legendary-option${picked ? ' is-picked' : ''}${p.chosen !== undefined && !picked ? ' is-other' : ''}`,
-				attr: { role: 'radio', 'aria-checked': String(picked) },
-			});
-			b.createSpan({ cls: 'legendary-option-name', text: o.name });
-			const meta = b.createSpan({ cls: 'legendary-option-meta' });
-			if (o.tag) meta.createSpan({ cls: 'legendary-option-tag', text: o.tag });
-			if (o.save) meta.createSpan({ cls: 'legendary-option-tag is-save', text: 'Save' });
-			if (o.dice) meta.createSpan({ cls: 'legendary-option-dice', text: o.dice });
-			b.onclick = () => {
-				p.chosen = i;
-				p.rolled = undefined;
-				if (o.dice) {
-					const entry = this.plugin.rollDice(o.dice, `${name}: ${o.name}`, o.save ? 'effect' : 'attack');
-					if (entry) p.rolled = entry.outcome === 'miss' ? 'Miss' : `${entry.total}${entry.outcome === 'crit' ? ' crit!' : ''}`;
-				}
-				this.store.log(enc, `${name} uses ${o.name}${p.rolled ? ` (${p.rolled})` : ''}`);
-				this.render();
-			};
-		});
-
-		const chosen = p.chosen !== undefined ? options[p.chosen] : undefined;
-		if (chosen) {
-			const detail = box.createDiv({ cls: 'legendary-detail' });
-			if (p.rolled) {
-				const res = detail.createDiv({ cls: `legendary-result${p.rolled === 'Miss' ? ' is-miss' : /crit/.test(p.rolled) ? ' is-crit' : ''}` });
-				res.createSpan({ cls: 'legendary-result-label', text: chosen.save ? 'Damage on a failed save' : 'Rolled' });
-				res.createSpan({ cls: 'legendary-result-total', text: p.rolled });
-			}
-			this.rich(detail.createDiv({ cls: 'legendary-detail-text' }), chosen.text, name, chosen.save ? 'effect' : 'attack');
-			const done = detail.createEl('button', { cls: 'mod-cta legendary-done', text: 'Done' });
-			done.onclick = () => { this.prompts = this.prompts.filter(q => q !== p); this.render(); };
-		} else {
-			box.createDiv({ cls: 'legendary-hint', text: 'Pick one to roll it.' });
-		}
-	}
-
 	/** Rules text with clickable dice and condition names. */
 	private rich(el: HTMLElement, text: string, label: string, kind: 'attack' | 'effect' = 'effect'): void {
 		appendRichText(el, text, {
@@ -434,27 +365,6 @@ export class EncounterTrackerView extends ItemView {
 				span.onclick = (e) => { e.stopPropagation(); this.plugin.showConditionInfo(span, word); };
 			},
 		});
-	}
-
-	// ------------------------------------------------------------------------
-	// Stat block viewer
-
-	private renderViewer(container: HTMLElement, enc: Encounter): void {
-		const creature = enc.creatures.find(c => c.id === this.viewingCreatureId);
-		if (!creature || isHero(creature)) return;
-		const viewer = container.createDiv({ cls: 'statblock-viewer' });
-		const header = viewer.createDiv({ cls: 'viewer-header' });
-		header.createSpan({ text: creature.label, cls: 'viewer-title' });
-		const entry = this.entryFor(creature);
-		if (entry.bundled || creature.sourceFile) {
-			const open = header.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': entry.bundled ? 'Open in the bestiary' : 'Open source note' } });
-			setIcon(open, entry.bundled ? 'book-open' : 'file-symlink');
-			open.onclick = () => this.plugin.openMonster(entry);
-		}
-		const close = header.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Close stat block' } });
-		setIcon(close, 'x');
-		close.onclick = () => { this.viewingCreatureId = null; this.render(); };
-		this.plugin.renderStatblock(viewer.createDiv({ cls: 'viewer-statblock' }), creature.monster, creature.sourceFile || '', 'inline');
 	}
 
 	private entryFor(c: EncounterCreature): MonsterIndexEntry {
@@ -485,8 +395,9 @@ export class EncounterTrackerView extends ItemView {
 		turn.onclick = () => this.toggleDone(enc, c);
 
 		const nameBox = main.createDiv({ cls: 'creature-name-box' });
-		const label = nameBox.createEl('button', { cls: 'creature-label', text: c.label, attr: { 'aria-expanded': String(this.expanded.has(c.id)) } });
-		label.onclick = () => { if (this.expanded.has(c.id)) this.expanded.delete(c.id); else this.expanded.add(c.id); this.render(); };
+		const label = nameBox.createEl('button', { cls: 'creature-label', text: c.label, attr: { 'aria-haspopup': 'dialog' } });
+		// Their sheet opens over the tracker, with the fight's state; no page jump.
+		label.onclick = () => openRecord(this.plugin, { kind: 'combatant', encId: enc.id, creatureId: c.id });
 		if (!isHero(c)) this.plugin.hover.attach(label, () => this.entryFor(c));
 		const meta = nameBox.createSpan({ cls: 'creature-meta' });
 		const part = (text: string) => { if (meta.childElementCount) meta.createSpan({ cls: 'meta-sep', text: '·' }); return meta.createSpan({ text }); };
@@ -540,27 +451,12 @@ export class EncounterTrackerView extends ItemView {
 
 		this.renderConditions(item, enc, c);
 		if (c.note) item.createDiv({ cls: 'creature-note', text: c.note });
-		if (this.expanded.has(c.id)) this.renderDetails(item, enc, c);
 	}
 
 	private toggleDone(enc: Encounter, c: EncounterCreature): void {
 		const done = !c.done;
 		const expired = this.store.setDone(enc.id, c.id, done);
 		if (expired.length) new Notice(`${c.label}: ${expired.join(', ')} wore off`);
-		// Legendary monsters act after each hero's turn.
-		if (done && isHero(c)) {
-			for (const leg of enc.creatures.filter(x => !isHero(x) && monsterRole(x.monster) === 'legendary' && !isDown(x))) {
-				this.pushPrompt({
-					id: `leg-${leg.id}`,
-					kind: 'legendary',
-					creatureId: leg.id,
-					title: `⚡ ${leg.label} acts after ${c.label}'s turn`,
-					text: leg.monster.actionText || "Choose one:",
-					lines: (leg.monster.attacks || []).map(a => a.raw),
-				});
-			}
-			this.render();
-		}
 	}
 
 	private renderHpButton(main: HTMLElement, enc: Encounter, c: EncounterCreature): void {
@@ -675,45 +571,10 @@ export class EncounterTrackerView extends ItemView {
 		chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(); } });
 	}
 
-	private renderDetails(item: HTMLElement, enc: Encounter, c: EncounterCreature): void {
-		const d = item.createDiv({ cls: 'creature-details' });
-		const quick = d.createDiv({ cls: 'quick-hp' });
-		const step = (text: string, input: string, _title: string) => {
-			const b = quick.createEl('button', { cls: 'hp-btn', text });
-			b.onclick = () => this.applyInput(enc, c, input);
-		};
-		if (isMinionGroup(c)) {
-			step('−1', '1', 'Drop one');
-			step('+1', '+1', 'Bring one back');
-		} else {
-			step('−1', '1', 'Damage 1');
-			step('−5', '5', 'Damage 5');
-			step('−10', '10', 'Damage 10');
-			step('+1', '+1', 'Heal 1');
-			step('+5', '+5', 'Heal 5');
-		}
-		if (!isHero(c)) {
-			if (c.monster.attacks?.length) {
-				const ul = d.createEl('ul', { cls: 'creature-actions' });
-				for (const a of c.monster.attacks) this.rich(ul.createEl('li'), a.raw, c.label, monsterRole(c.monster) === 'minion' ? 'effect' : 'attack');
-			}
-			if (c.monster.abilities?.length) {
-				const ab = d.createDiv({ cls: 'creature-abilities' });
-				for (const a of c.monster.abilities) {
-					const p = ab.createDiv();
-					if (a.name) p.createEl('strong', { text: `${a.name.replace(/[.:]$/, '')}. ` });
-					this.rich(p, a.description, c.label);
-				}
-			}
-			const full = d.createEl('button', { cls: 'link-btn', text: 'Full stat block' });
-			full.onclick = () => { this.viewingCreatureId = c.id; this.render(); this.root.scrollTop = 0; };
-		}
-	}
-
 	private creatureMenu(e: MouseEvent, enc: Encounter, c: EncounterCreature): void {
 		const menu = new Menu();
 		if (!isHero(c)) {
-			menu.addItem(i => i.setTitle('View stat block').setIcon('scroll').onClick(() => { this.viewingCreatureId = c.id; this.render(); this.root.scrollTop = 0; }));
+			menu.addItem(i => i.setTitle('View stat block').setIcon('scroll').onClick(() => openRecord(this.plugin, { kind: 'combatant', encId: enc.id, creatureId: c.id })));
 			const entry = this.entryFor(c);
 			if (entry.bundled || c.sourceFile) menu.addItem(i => i.setTitle(entry.bundled ? 'Open in bestiary' : 'Open note').setIcon(entry.bundled ? 'book-open' : 'file-symlink').onClick(() => this.plugin.openMonster(entry)));
 			menu.addItem(i => i.setTitle(isMinionGroup(c) ? 'Add one more' : 'Duplicate').setIcon('copy-plus').onClick(() => this.store.duplicate(enc.id, c.id)));
@@ -732,7 +593,6 @@ export class EncounterTrackerView extends ItemView {
 		}));
 		menu.addSeparator();
 		menu.addItem(i => i.setTitle('Remove').setIcon('trash-2').onClick(() => {
-			if (this.viewingCreatureId === c.id) this.viewingCreatureId = null;
 			this.store.remove(enc.id, c.id);
 		}));
 		menu.showAtMouseEvent(e);
