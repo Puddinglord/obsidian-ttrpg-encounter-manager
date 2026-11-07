@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-	balanceEncounter, describeChange, formatLevel, groupAttack, heroDamage, initiativeActions, lastStandEffect, levelValue, minionDie, minionKills, monsterDamage,
+	balanceEncounter, budgetPhrase, describeChange, formatLevel, groupAttack, heroDamage, initiativeActions, lastStandEffect, levelValue, minionDie, minionKills, monsterDamage,
 	monsterRole, monsterSaves, parseHpCommand, rateEncounter, scaledHp, tickConditions,
 } from '../src/rules';
 import { NimbleMonster } from '../src/types';
@@ -213,5 +213,11 @@ describe('balanceEncounter', () => {
 		expect(describeChange({ name: 'Harpy', from: 0, to: 2 })).toBe('Add 2 Harpies');
 		expect(describeChange({ name: 'Snakeman', from: 0, to: 2 })).toBe('Add 2 Snakemen');
 		expect(describeChange({ name: 'Goblin', from: 0, to: 2 })).toBe('Add 2 Goblins');
+	});
+});
+
+describe('budgetPhrase', () => {
+	it.each([[6, 'a 6-level budget'], [8, 'an 8-level budget'], [11, 'an 11-level budget'], [18, 'an 18-level budget'], [12, 'a 12-level budget'], [80, 'an 80-level budget'], [1, 'a 1-level budget']])('%s → %s', (n, out) => {
+		expect(budgetPhrase(n)).toBe(out);
 	});
 });

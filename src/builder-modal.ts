@@ -4,7 +4,7 @@
 import { MarkdownView, Modal, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterDef, encounterBlockSource } from './encounter-def';
-import { BalanceTarget, formatLevel, levelValue, monsterRole, rateEncounter } from './rules';
+import { BalanceTarget, budgetPhrase, formatLevel, levelValue, monsterRole, rateEncounter } from './rules';
 import { renderBalance } from './balance-ui';
 import { partyLevels, ratingChip, runEncounter } from './encounter-block';
 import { describeMonster } from './suggest';
@@ -143,7 +143,7 @@ export class BuilderModal extends Modal {
 		const r = rateEncounter(groups, levels);
 		const head = el.createDiv({ cls: 'builder-rating-head' });
 		ratingChip(head, r.label, r.pct);
-		head.createSpan({ cls: 'builder-rating-text', text: `${r.value.toFixed(1)} monster levels of a ${r.budget}-level budget (${levels.length} heroes)` });
+		head.createSpan({ cls: 'builder-rating-text', text: `${r.value.toFixed(1)} monster levels of ${budgetPhrase(r.budget)} (${levels.length} heroes)` });
 		const meter = el.createDiv({ cls: 'nimble-meter' });
 		const fill = meter.createDiv({ cls: `nimble-meter-fill diff-${r.label.toLowerCase().replace(/\s+/g, '-')}` });
 		fill.style.width = `${Math.min(r.pct, 1.75) / 1.75 * 100}%`;

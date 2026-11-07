@@ -32,3 +32,4 @@ Ember-Vault-Sample-Adventure.zip
 
 # Built landing page (scripts/build-site.mjs)
 _site
+/listing-screenshots/

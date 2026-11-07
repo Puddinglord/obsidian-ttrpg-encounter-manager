@@ -255,6 +255,13 @@ export interface EncounterRating {
 	warnings: string[];
 }
 
+/** "a 6-level budget", "an 8-level budget": the article that reads right before a number. */
+export function budgetPhrase(budget: number): string {
+	const n = String(Math.round(budget));
+	const an = /^8/.test(n) || /^1[18](\d{3})*$/.test(n);
+	return `${an ? 'an' : 'a'} ${budget}-level budget`;
+}
+
 /** Rate a list of monsters against party levels (one entry per hero). */
 export function rateEncounter(groups: { monster: NimbleMonster; count: number }[], partyLevels: number[]): EncounterRating {
 	const heroes = partyLevels.length || 1;

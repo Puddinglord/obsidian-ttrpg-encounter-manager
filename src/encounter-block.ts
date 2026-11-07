@@ -5,7 +5,7 @@ import { resumeSavedFight, savedFightsFor } from './saved-fight';
 import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterDef, encounterBlockSource, parseEncounterBlock } from './encounter-def';
-import { monsterRole, rateEncounter, shiftLabel, shiftMonster, SHIFT_DAMAGE, SHIFT_HP } from './rules';
+import { budgetPhrase, monsterRole, rateEncounter, shiftLabel, shiftMonster, SHIFT_DAMAGE, SHIFT_HP } from './rules';
 import { createInlineRef } from './inline-ref';
 import { BuilderModal } from './builder-modal';
 import { EncounterTemplate } from './encounters';
@@ -193,7 +193,7 @@ function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, d
 	if (!def.monsters.length) list.createDiv({ cls: 'encounter-block-empty', text: 'No monsters yet.' });
 
 	const meta = card.createDiv({ cls: 'encounter-block-meta' });
-	if (found.length) meta.createSpan({ text: `${rating.value.toFixed(1)} of a ${rating.budget}-level budget · ` });
+	if (found.length) meta.createSpan({ text: `${rating.value.toFixed(1)} of ${budgetPhrase(rating.budget)} · ` });
 	const party = meta.createEl('a', { cls: 'encounter-party-link', text: partyText(plugin, levels), attr: { href: '#' } });
 	party.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); plugin.openParty(); });
 	for (const w of rating.warnings) card.createDiv({ cls: 'encounter-block-warning', text: w });
