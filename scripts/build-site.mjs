@@ -32,7 +32,10 @@ const options = {
 	minify: true,
 	sourcemap: false,
 	loader: { '.md': 'text' },
-	alias: { obsidian: join(root, 'demo/obsidian-shim.ts') },
+	alias: {
+		obsidian: join(root, 'demo/obsidian-shim.ts'),
+		'sample-vault-settings': join(root, 'sample-vault', '.obsidian', 'plugins', 'nimble-gm', 'data.json'),
+	},
 	logLevel: 'info',
 	metafile: true,
 };

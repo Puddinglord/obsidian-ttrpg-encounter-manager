@@ -49,6 +49,19 @@ jobs:
       - name: Build the site and live demo
         run: node scripts/build-site.mjs && touch _site/.nojekyll
 
+      - name: Package the sample adventure
+        # The sample vault with the latest released plugin installed, served at
+        # <site>/Ember-Vault-Sample-Adventure.zip. The release workflow re-runs this after each release.
+        run: |
+          if gh release download --pattern main.js --pattern manifest.json --pattern styles.css --dir release --clobber; then
+            cp release/main.js release/manifest.json release/styles.css .
+            node scripts/package-sample-vault.mjs _site
+          else
+            echo "No release yet; skipping the sample adventure."
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

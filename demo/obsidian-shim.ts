@@ -16,8 +16,10 @@ function applyOpts(el: HTMLElement, o?: ElOpts): void {
 	if (o.attr) for (const [k, v] of Object.entries(o.attr)) { if (v != null && v !== false) el.setAttribute(k, String(v)); }
 }
 
+// This file is what supplies createEl, so it has to build elements with the
+// browser's own createElement underneath.
 function make<K extends keyof HTMLElementTagNameMap>(doc: Document, tag: K, o?: ElOpts, cb?: (el: HTMLElementTagNameMap[K]) => void): HTMLElementTagNameMap[K] {
-	const el = doc.createElement(tag);
+	const el = doc.createElement(tag, {});
 	applyOpts(el, o);
 	cb?.(el);
 	return el;
@@ -26,19 +28,20 @@ function make<K extends keyof HTMLElementTagNameMap>(doc: Document, tag: K, o?: 
 // Obsidian's DOM helpers, added to the prototypes like the app does.
 const N = Node.prototype as unknown as Record<string, unknown>;
 const E = HTMLElement.prototype as unknown as Record<string, unknown>;
-const ownerDoc = (n: Node): Document => (n.nodeType === 9 ? (n as Document) : n.ownerDocument ?? document);
+const ownerDoc = (n: Node): Document => (n.nodeType === 9 ? (n as Document) : n.ownerDocument ?? activeDocument);
+const appendNew = (parent: Node, tag: keyof HTMLElementTagNameMap, o?: ElOpts, cb?: (el: HTMLElement) => void): HTMLElement => {
+	const el = make(ownerDoc(parent), tag, o, cb);
+	parent.appendChild(el);
+	return el;
+};
 if (!N.createEl) {
-	N.createEl = function (this: Node, tag: keyof HTMLElementTagNameMap, o?: ElOpts, cb?: (el: HTMLElement) => void) {
-		const el = make(ownerDoc(this), tag, o, cb);
-		this.appendChild(el);
-		return el;
-	};
-	N.createDiv = function (this: Node, o?: ElOpts, cb?: (el: HTMLElement) => void) { return (this as unknown as { createEl: (t: string, o?: ElOpts, cb?: unknown) => HTMLElement }).createEl('div', o, cb); };
-	N.createSpan = function (this: Node, o?: ElOpts, cb?: (el: HTMLElement) => void) { return (this as unknown as { createEl: (t: string, o?: ElOpts, cb?: unknown) => HTMLElement }).createEl('span', o, cb); };
+	N.createEl = function (this: Node, tag: keyof HTMLElementTagNameMap, o?: ElOpts, cb?: (el: HTMLElement) => void) { return appendNew(this, tag, o, cb); };
+	N.createDiv = function (this: Node, o?: ElOpts, cb?: (el: HTMLElement) => void) { return appendNew(this, 'div', o, cb); };
+	N.createSpan = function (this: Node, o?: ElOpts, cb?: (el: HTMLElement) => void) { return appendNew(this, 'span', o, cb); };
 	N.appendText = function (this: Node, t: string) { this.appendChild(ownerDoc(this).createTextNode(t)); };
 	N.empty = function (this: Node) { while (this.firstChild) this.removeChild(this.firstChild); };
 	N.detach = function (this: Node) { this.parentNode?.removeChild(this); };
-	N.instanceOf = function (this: Node, type: { new (): unknown }) { return this instanceof type; };
+	N.instanceOf = function (this: Node, type: { new (): unknown; prototype: object }) { return Object.prototype.isPrototypeOf.call(type.prototype, this) as boolean; };
 	Object.defineProperty(N, 'doc', { get(this: Node) { return ownerDoc(this); }, configurable: true });
 	Object.defineProperty(N, 'win', { get(this: Node) { return ownerDoc(this).defaultView ?? window; }, configurable: true });
 	E.addClass = function (this: HTMLElement, ...c: string[]) { this.classList.add(...c.flatMap(s => s.split(' ').filter(Boolean))); };
@@ -47,19 +50,19 @@ if (!N.createEl) {
 	E.hasClass = function (this: HTMLElement, c: string) { return this.classList.contains(c); };
 	E.setAttr = function (this: HTMLElement, k: string, v: string | number | boolean | null) { if (v == null || v === false) this.removeAttribute(k); else this.setAttribute(k, String(v)); };
 	E.setText = function (this: HTMLElement, t: string) { this.textContent = t; };
-	E.show = function (this: HTMLElement) { this.style.display = ''; };
-	E.hide = function (this: HTMLElement) { this.style.display = 'none'; };
 	E.toggle = function (this: HTMLElement, on: boolean) { this.style.display = on ? '' : 'none'; };
+	E.show = function (this: HTMLElement & { toggle: (on: boolean) => void }) { this.toggle(true); };
+	E.hide = function (this: HTMLElement & { toggle: (on: boolean) => void }) { this.toggle(false); };
 	E.setCssProps = function (this: HTMLElement, props: Record<string, string>) { for (const [k, v] of Object.entries(props)) this.style.setProperty(k, v); };
 	E.setCssStyles = function (this: HTMLElement, s: Partial<CSSStyleDeclaration>) { Object.assign(this.style, s); };
 	E.onClickEvent = function (this: HTMLElement, cb: (e: MouseEvent) => void) { this.addEventListener('click', cb); };
-	const g = globalThis as unknown as Record<string, unknown>;
-	g.createEl = (tag: keyof HTMLElementTagNameMap, o?: ElOpts, cb?: (el: HTMLElement) => void) => make(document, tag, o, cb);
-	g.createDiv = (o?: ElOpts, cb?: (el: HTMLElement) => void) => make(document, 'div', o, cb);
-	g.createSpan = (o?: ElOpts, cb?: (el: HTMLElement) => void) => make(document, 'span', o, cb);
-	g.createFragment = (cb?: (f: DocumentFragment) => void) => { const f = document.createDocumentFragment(); cb?.(f); return f; };
-	g.activeDocument = document;
+	const g = window as unknown as Record<string, unknown>;
+	g.activeDocument = window.document;
 	g.activeWindow = window;
+	g.createEl = (tag: keyof HTMLElementTagNameMap, o?: ElOpts, cb?: (el: HTMLElement) => void) => make(activeDocument, tag, o, cb);
+	g.createDiv = (o?: ElOpts, cb?: (el: HTMLElement) => void) => make(activeDocument, 'div', o, cb);
+	g.createSpan = (o?: ElOpts, cb?: (el: HTMLElement) => void) => make(activeDocument, 'span', o, cb);
+	g.createFragment = (cb?: (f: DocumentFragment) => void) => { const f = new DocumentFragment(); cb?.(f); return f; };
 }
 
 // Lucide icons (ISC licence) for the handful the demo shows.
@@ -114,11 +117,15 @@ const ICONS: Record<string, string> = {
 	'eye-off': '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
 };
 
+const svgParser = new DOMParser();
 export function setIcon(parent: HTMLElement, name: string): void {
 	parent.empty();
 	const body = ICONS[name];
 	if (!body) return;
-	parent.insertAdjacentHTML('beforeend', `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-${name}">${body}</svg>`);
+	// The markup is the fixed table above, parsed as XML; the name only ever becomes a class.
+	const svg = svgParser.parseFromString(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`, 'image/svg+xml').documentElement;
+	svg.classList.add('svg-icon', `lucide-${name}`);
+	parent.appendChild(parent.doc.importNode(svg, true));
 }
 
 export const Platform = {
@@ -130,7 +137,7 @@ export const Platform = {
 	isMobileApp: false,
 	isIosApp: false,
 	isAndroidApp: false,
-	isMacOS: /Mac/.test(navigator.platform),
+	isMacOS: false, // nothing the demo shows depends on it
 };
 
 /** Toasts land in the demo's notice stack (see demo.ts). */
@@ -138,7 +145,7 @@ export class Notice {
 	noticeEl: HTMLElement;
 	messageEl: HTMLElement;
 	constructor(message: string | DocumentFragment, duration = 4000) {
-		const host = document.querySelector('.demo-notices') ?? document.body;
+		const host = activeDocument.querySelector('.demo-notices') ?? activeDocument.body;
 		this.noticeEl = this.messageEl = host.createDiv({ cls: 'notice' });
 		if (typeof message === 'string') this.messageEl.setText(message); else this.messageEl.appendChild(message);
 		window.setTimeout(() => this.hide(), duration);
@@ -221,6 +228,11 @@ export class ExtraButtonComponent extends Unused {}
 export class Vault {}
 export class Workspace {}
 export const apiVersion = '1.7.2';
+export function requireApiVersion(v: string): boolean {
+	const [a, b] = [apiVersion, v].map(x => x.split('.').map(Number));
+	for (let i = 0; i < 3; i++) if ((a[i] ?? 0) !== (b[i] ?? 0)) return (a[i] ?? 0) > (b[i] ?? 0);
+	return true;
+}
 
 // ---------------------------------------------------------------------------
 // Views, modals, menus and settings rows: small working versions, for the tracker.
@@ -254,7 +266,7 @@ export class Modal extends Component {
 		this.contentEl = this.modalEl.createDiv({ cls: 'modal-content' });
 	}
 	open(): void {
-		document.body.appendChild(this.bg);
+		activeDocument.body.appendChild(this.bg);
 		this.onOpen();
 		this.bg.addEventListener('keydown', (e) => { if (e.key === 'Escape') this.close(); });
 	}
@@ -337,7 +349,7 @@ export class Menu {
 	showAtMouseEvent(e: MouseEvent): void { this.showAtPosition({ x: e.clientX, y: e.clientY }); }
 	showAtPosition(p: { x: number; y: number }): void {
 		this.hide();
-		const el = document.body.createDiv({ cls: 'menu demo-menu' });
+		const el = activeDocument.body.createDiv({ cls: 'menu demo-menu' });
 		for (const it of this.items) {
 			if (it === 'sep') { el.createDiv({ cls: 'menu-separator' }); continue; }
 			const row = el.createDiv({ cls: `menu-item${it.disabled ? ' is-disabled' : ''}${it.warning ? ' is-warning' : ''}` });
@@ -350,6 +362,6 @@ export class Menu {
 		el.style.left = `${Math.min(p.x, window.innerWidth - 240)}px`;
 		el.style.top = `${Math.min(p.y, window.innerHeight - el.offsetHeight - 8)}px`;
 		openMenu = el;
-		window.setTimeout(() => document.addEventListener('pointerdown', (e) => { if (!el.contains(e.target as Node)) this.hide(); }, { once: true, capture: true }), 0);
+		window.setTimeout(() => activeDocument.addEventListener('pointerdown', (e) => { if (!el.contains(e.target as Node)) this.hide(); }, { once: true, capture: true }), 0);
 	}
 }

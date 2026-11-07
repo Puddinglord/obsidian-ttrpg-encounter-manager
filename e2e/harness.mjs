@@ -8,7 +8,7 @@ import { spawn } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
+import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 
@@ -65,6 +65,9 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 	// DOM menus instead of macOS native ones, so tests can see and click menu items.
 	writeFileSync(join(vault, '.obsidian', 'app.json'), JSON.stringify({ nativeMenus: false }));
 	mkdirSync(userData, { recursive: true });
+	// OBSIDIAN_ASAR=/path/to/obsidian-1.15.0.asar runs a newer app version than the installer ships,
+	// the same way Obsidian's own updates do. Handy for testing APIs added after the installed version.
+	if (process.env.OBSIDIAN_ASAR) cpSync(process.env.OBSIDIAN_ASAR, join(userData, basename(process.env.OBSIDIAN_ASAR)));
 	writeFileSync(join(userData, 'obsidian.json'), JSON.stringify({
 		vaults: { e2evault000000001: { path: vault, ts: Date.now(), open: true } },
 		updateDisabled: true,

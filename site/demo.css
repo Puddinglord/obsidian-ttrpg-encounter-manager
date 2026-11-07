@@ -86,7 +86,7 @@
 
 .demo-encounter { margin: 16px 0; transition: transform .25s; }
 .demo-encounter.is-bumped { transform: scale(1.015); }
-.demo-add { height: 26px !important; width: 26px; padding: 0 !important; border-radius: 999px !important; --icon-size: 14px; }
+:is(.obs, .nimble-hover-preview, .nimble-popover) button.demo-add { height: 26px; width: 26px; padding: 0; border-radius: 999px; --icon-size: 14px; }
 
 /* Pick-a-monster popover */
 .demo-pick { display: grid; gap: 2px; }
@@ -126,7 +126,7 @@
 .demo-head { text-align: center; position: relative; z-index: 4; padding-top: 8px; }
 
 /* Fit the window to the visitor's screen: the note scrolls inside it, like Obsidian. */
-.obs-window { display: flex; flex-direction: column; height: clamp(440px, calc(100vh - 68px - 160px), 800px); height: clamp(440px, calc(100svh - 68px - 160px), 800px); }
+.obs-window { display: flex; flex-direction: column; height: clamp(440px, calc(100svh - 68px - 160px), 800px); }
 .obs-tabs { flex: none; }
 .obs-body { flex: 1; min-height: 0; }
 .obs-view { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
@@ -142,7 +142,7 @@
 }
 
 /* ---------- Tabs ---------- */
-.obs .obs-tab { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: 8px 8px 0 0; font: 13px var(--font-text); color: var(--text-muted); cursor: pointer; }
+.obs .obs-tab { appearance: none; width: auto; text-decoration: none; margin: 0; border: 0; background: none; box-shadow: none; outline: none; letter-spacing: inherit; line-height: inherit; text-align: inherit; text-transform: inherit; justify-content: normal; min-height: auto; box-sizing: border-box; display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: 8px 8px 0 0; font: 13px var(--font-text); color: var(--text-muted); cursor: pointer; }
 .obs .obs-tab.is-active { background: var(--background-primary); color: var(--text-normal); }
 .obs .obs-tab .obs-tab-x { margin-left: 16px; }
 .obs-tab-icon { display: inline-flex; --icon-size: 14px; }

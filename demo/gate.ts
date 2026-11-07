@@ -11,8 +11,8 @@ const LINES = [
 	'Roll to light it again.',
 ];
 
-const root = document.documentElement;
-const gate = document.getElementById('site-gate');
+const root = activeDocument.documentElement;
+const gate = activeDocument.getElementById('site-gate');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = (ms: number) => new Promise<void>(r => window.setTimeout(r, ms));
 
@@ -40,12 +40,11 @@ function burnAway(ox: number, oy: number): Promise<void> {
 	return new Promise((resolve) => {
 		const k = 2; // work at half the screen's resolution, then smooth it up
 		const W = Math.ceil(window.innerWidth / k), H = Math.ceil(window.innerHeight / k);
-		const canvas = document.createElement('canvas');
-		canvas.className = 'gate-burn';
+		const canvas = createEl('canvas', { cls: 'gate-burn' });
 		const view = canvas.getContext('2d')!;
 		const dpr = Math.min(2, window.devicePixelRatio || 1);
 		canvas.width = window.innerWidth * dpr; canvas.height = window.innerHeight * dpr;
-		const work = document.createElement('canvas');
+		const work = createEl('canvas');
 		work.width = W; work.height = H;
 		const wctx = work.getContext('2d')!;
 		const img = wctx.createImageData(W, H);
@@ -72,7 +71,7 @@ function burnAway(ox: number, oy: number): Promise<void> {
 			}
 		}
 
-		document.body.appendChild(canvas);
+		activeDocument.body.appendChild(canvas);
 		gate?.classList.add('is-burning');
 		const start = performance.now();
 		const duration = 1700;
@@ -109,10 +108,10 @@ function burnAway(ox: number, oy: number): Promise<void> {
 			view.globalAlpha = 0.38;
 			view.drawImage(work, 0, 0, canvas.width, canvas.height);
 			view.filter = 'none'; view.globalAlpha = 1; view.globalCompositeOperation = 'source-over';
-			if (p < 1) requestAnimationFrame(frame);
+			if (p < 1) window.requestAnimationFrame(frame);
 			else { canvas.remove(); resolve(); }
 		};
-		requestAnimationFrame(frame);
+		window.requestAnimationFrame(frame);
 	});
 }
 
@@ -135,18 +134,17 @@ async function play(): Promise<void> {
 	await wait(reduceMotion ? 0 : 500);
 	for (const line of LINES) {
 		if (done) return;
-		const p = document.createElement('p');
-		p.className = 'gm-line';
+		const p = createEl('p', { cls: 'gm-line' });
 		linesEl?.appendChild(p);
 		await typeLine(p, line);
 		await wait(reduceMotion ? 0 : 450);
 	}
 	if (done || !die) return;
 	die.hidden = false;
-	requestAnimationFrame(() => die.classList.add('is-ready'));
+	window.requestAnimationFrame(() => die.classList.add('is-ready'));
 	die.focus({ preventScroll: true });
 
-	die.addEventListener('click', async () => {
+	const roll = async (): Promise<void> => {
 		if (done) return;
 		done = true;
 		die.classList.add('is-rolling');
@@ -156,15 +154,16 @@ async function play(): Promise<void> {
 				primaryColor: '#ff6a1f', diceColor: '#ece6d8', explosionColor: '#ff3d2e',
 				materials: { primary: 'lava' }, scale: 2.4,
 			}).catch(() => undefined);
-			await Promise.race([thrown, wait(document.hidden ? 300 : 6000)]);
+			await Promise.race([thrown, wait(activeDocument.hidden ? 300 : 6000)]);
 		}
-		if (result) { result.hidden = false; requestAnimationFrame(() => result.classList.add('is-shown')); }
+		if (result) { result.hidden = false; window.requestAnimationFrame(() => result.classList.add('is-shown')); }
 		await wait(reduceMotion ? 300 : 1100);
 		if (reduceMotion) { gate.classList.add('is-leaving'); await wait(300); finish(); return; }
-		document.querySelector('.nimble-dice3d-overlay')?.classList.add('is-fading');
+		activeDocument.querySelector('.nimble-dice3d-overlay')?.classList.add('is-fading');
 		await burnAway(window.innerWidth / 2, window.innerHeight / 2);
 		finish();
-	}, { once: true });
+	};
+	die.addEventListener('click', () => { void roll(); }, { once: true });
 }
 
 void play();

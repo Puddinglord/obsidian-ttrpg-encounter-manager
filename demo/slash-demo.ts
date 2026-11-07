@@ -42,7 +42,7 @@ export function roll(expression: string, kind: DiceKind = 'effect', threeD = tru
 		const d3 = diceForRoll(dice.sides, dice.count, result.rolls, nimble, 'lava');
 		const thrown = roll3d(d3, { ...DICE_COLORS, materials: { primary: 'classic', normal: 'classic', explosion: 'lava' } }).catch(() => undefined);
 		// Background tabs pause animation, so don't wait forever for the dice to land.
-		landed = Promise.race([thrown, new Promise(r => window.setTimeout(r, document.hidden ? 500 : 20000))]);
+		landed = Promise.race([thrown, new Promise(r => window.setTimeout(r, activeDocument.hidden ? 500 : 20000))]);
 	}
 	return { result, landed };
 }
@@ -159,7 +159,6 @@ function build(root: HTMLElement): void {
 	note.createEl('h1', { text: 'Session prep' });
 	const blocksEl = note.createDiv({ cls: 'sd-blocks', attr: { 'aria-live': 'polite' } });
 	const line = note.createDiv({ cls: 'sd-line' });
-	line.createSpan({ cls: 'sd-caret', attr: { 'aria-hidden': 'true' } });
 	const input = line.createEl('input', {
 		cls: 'sd-input',
 		attr: {
@@ -168,6 +167,8 @@ function build(root: HTMLElement): void {
 			role: 'combobox', 'aria-autocomplete': 'list', 'aria-expanded': 'false', 'aria-controls': 'sd-menu-list',
 		},
 	});
+	// After the input, so the CSS can hide it while the input has focus or text.
+	line.createSpan({ cls: 'sd-caret', attr: { 'aria-hidden': 'true' } });
 
 	const menu = win.createDiv({ cls: 'suggestion-container sd-menu', attr: { hidden: 'true' } });
 	const list = menu.createDiv({ cls: 'suggestion', attr: { id: 'sd-menu-list', role: 'listbox', 'aria-label': 'Slash commands' } });
@@ -317,8 +318,8 @@ function build(root: HTMLElement): void {
 		menu.style.left = `${left}px`;
 		const below = l.top - w.top < w.height * 0.55;
 		menu.toggleClass('is-above', !below);
-		if (below) { menu.style.top = `${l.bottom - w.top + 6}px`; menu.style.bottom = ''; }
-		else { menu.style.bottom = `${w.bottom - l.top + 6}px`; menu.style.top = ''; }
+		if (below) { menu.style.top = `${l.bottom - w.top + 6}px`; menu.style.removeProperty('bottom'); }
+		else { menu.style.bottom = `${w.bottom - l.top + 6}px`; menu.style.removeProperty('top'); }
 	}
 
 	function update(): void {
@@ -514,5 +515,5 @@ function build(root: HTMLElement): void {
 	window.addEventListener('resize', () => { if (isOpen()) place(); });
 }
 
-const root = document.getElementById('slash-demo');
+const root = activeDocument.getElementById('slash-demo');
 if (root) build(root);

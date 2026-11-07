@@ -13,13 +13,12 @@ import { parseDice, rollNimbleAttack, rollPlain } from '../src/dice';
 import { dice3dSupported, roll3d, diceForRoll } from '../src/dice3d';
 import { closePopover, isPopoverOpenFor, openPopover } from '../src/popover';
 import { renderBalance } from '../src/balance-ui';
-import { ratingChip } from '../src/encounter-block';
 import { EncounterDef } from '../src/encounter-def';
 import { DEFAULT_SETTINGS, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleMonster, NimbleStatblocksSettings, PartyMember, RollLogEntry } from '../src/types';
 import { EncounterStore, isHero } from '../src/encounters';
 import { EncounterTrackerView } from '../src/tracker-view';
 import { keywordPattern } from '../src/markdown';
-import sampleSettings from '../sample-vault/.obsidian/plugins/nimble-gm/data.json';
+import sampleSettings from 'sample-vault-settings';
 
 import hound from '../sample-vault/Campaigns/The Old Quarter/Monsters/Quicksilver Hound.md';
 import construct from '../sample-vault/Campaigns/The Old Quarter/Monsters/Quicksilver Construct.md';
@@ -44,7 +43,7 @@ const byName = new Map(entries.map(e => [e.name.toLowerCase(), e]));
 
 // The sample vault's party, plus a few spares when you add heroes.
 const ROSTER: PartyMember[] = [
-	...(sampleSettings.party as PartyMember[]),
+	...sampleSettings.party,
 	{ id: 'hero-pell', name: 'Pell', className: 'Shepherd', level: 2, maxHp: 22, defense: 13, maxWounds: 6 },
 	{ id: 'hero-orla', name: 'Orla', className: 'Shadowmancer', level: 2, maxHp: 16, defense: 12, maxWounds: 6 },
 	{ id: 'hero-kit', name: 'Kit', className: 'Cheat', level: 2, maxHp: 17, defense: 13, maxWounds: 6 },
@@ -69,7 +68,7 @@ let def: EncounterDef = {
 	party: true,
 	monsters: [{ name: 'Quicksilver Hound', count: 4 }],
 	notes: 'They slip through the gaps between crates to come at heroes from two sides. When two are down, the rest flee through the copper tubes.',
-} as EncounterDef;
+};
 
 // ---------------------------------------------------------------------------
 // Dice: the plugin's rules decide the roll, 3D dice show it, a notice reports it.
@@ -108,7 +107,7 @@ function rollDice(expression: string, label: string, kind: DiceKind = 'effect'):
 		const d3 = diceForRoll(dice.sides, dice.count, result.rolls, nimble, 'lava');
 		const thrown = roll3d(d3, { ...DICE_COLORS, materials: { primary: 'classic', normal: 'classic', explosion: 'lava' } }).catch(() => undefined);
 		// Background tabs pause animation, so don't wait forever for the dice to land.
-		landed = Promise.race([thrown, new Promise(r => window.setTimeout(r, document.hidden ? 500 : 20000))]);
+		landed = Promise.race([thrown, new Promise(r => window.setTimeout(r, activeDocument.hidden ? 500 : 20000))]);
 	}
 	return logRoll({ label: label || result.expression, expression: result.expression, total: result.total, detail: result.detail, outcome: result.outcome }, landed);
 }
@@ -345,7 +344,7 @@ const done = new Set<string>();
 function markDone(key: string): void {
 	if (done.has(key)) return;
 	done.add(key);
-	document.querySelector(`.demo-try [data-try="${key}"]`)?.classList.add('is-done');
+	activeDocument.querySelector(`.demo-try [data-try="${key}"]`)?.classList.add('is-done');
 }
 
 function build(root: HTMLElement): void {
@@ -422,10 +421,10 @@ function build(root: HTMLElement): void {
 
 // Touch screens can't hover: say "tap".
 if (window.matchMedia('(hover: none)').matches) {
-	const hint = document.querySelector('.demo-try [data-try="hover"]');
+	const hint = activeDocument.querySelector('.demo-try [data-try="hover"]');
 	if (hint?.lastChild) hint.lastChild.textContent = 'Tap a monster';
 }
 
-const root = document.getElementById('demo-root');
+const root = activeDocument.getElementById('demo-root');
 if (root) build(root);
 import './slash-demo'; import './tiles';

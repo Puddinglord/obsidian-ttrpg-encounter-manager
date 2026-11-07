@@ -17,7 +17,7 @@ The quickest way to learn Ember Vault is to open a vault where everything is alr
 
 ## Open it
 
-1. Download **Ember-Vault-Sample-Adventure.zip** from the [latest release](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/releases/latest) and unzip it anywhere.
+1. Download **[Ember-Vault-Sample-Adventure.zip](https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/Ember-Vault-Sample-Adventure.zip)** and unzip it anywhere.
 2. In Obsidian, choose **Open another vault → Open folder as vault** and pick the unzipped **Ember Vault Sample Vault** folder.
 3. When Obsidian asks whether you trust the vault, choose **Trust author and enable plugins**. Ember Vault is already installed inside it.
 4. Open **Start Here**.

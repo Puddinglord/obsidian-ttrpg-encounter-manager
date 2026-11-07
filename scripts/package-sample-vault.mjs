@@ -1,16 +1,21 @@
 // Builds Ember-Vault-Sample-Adventure.zip from sample-vault/: the vault plus the
-// freshly built plugin in .obsidian/plugins/<id>/, enabled, so it opens ready
-// to play. Run after `npm run build`. Used by the release workflow.
+// plugin (main.js, manifest.json, styles.css in the project root) in
+// .obsidian/plugins/<id>/, enabled, so it opens ready to play.
+//
+//   node scripts/package-sample-vault.mjs [outDir]   (default: the project root)
+//
+// The Pages workflow runs it with the latest release's files and publishes the
+// zip on the landing page.
 
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'sample-vault');
-const OUT = join(ROOT, 'Ember-Vault-Sample-Adventure.zip');
+const OUT = join(resolve(process.argv[2] || ROOT), 'Ember-Vault-Sample-Adventure.zip');
 const NAME = 'Ember Vault Sample Vault';
 
 if (!existsSync(SRC)) { console.log('No sample-vault/ folder; skipping.'); process.exit(0); }
