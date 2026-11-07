@@ -6,7 +6,7 @@ import { formatLevel } from './rules';
 import { ArmorType, MonsterIndexEntry, NimbleMonster } from './types';
 
 export const NIMBLE_ATTRIBUTION =
-	'Nimble GM is an independent product published under the Nimble 3rd Party Creator License. Nimble TTRPG © Nimble Co. Nimble text is included with permission.';
+	'Ember Vault is an independent product published under the Nimble 3rd Party Creator License. Nimble TTRPG © Nimble Co. Nimble text is included with permission.';
 export const NIMBLE_SUPPORT_NOTICE =
 	'This tool is free to use for anyone who already owns the content, is trying the system out, or can\'t afford it right now. If you enjoy Nimble and are able, please support the game by buying the official books at nimbleRPG.com.';
 export const NIMBLE_STORE_URL = 'https://nimbleRPG.com';

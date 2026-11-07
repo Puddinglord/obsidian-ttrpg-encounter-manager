@@ -1,12 +1,14 @@
-# Nimble GM for Obsidian
+# Ember Vault
 
 A GM companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.2 rules), built into Obsidian. Prep and run your game from your own notes. It includes a campaign manager, a bundled bestiary of 525 monsters, encounter blocks rated against your party, a combat tracker, GM maps with pins, NPC portrait cards, styled read-aloud boxes and 3D dice.
 
 It isn't a virtual tabletop. Everything here is for the GM.
 
+**Website:** <https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/>
+
 ![A scene from the sample adventure, with the Campaign panel](docs/images/campaign-panel.png)
 
-> Nimble GM is an independent product published under the Nimble 3rd Party Creator License. Nimble TTRPG © Nimble Co. Nimble text is included with permission. This tool is free to use for anyone who already owns the content, is trying the system out, or can't afford it right now. If you enjoy Nimble and are able, please support the game by buying the official books at [nimbleRPG.com](https://nimbleRPG.com).
+> Ember Vault is an independent product published under the Nimble 3rd Party Creator License. Nimble TTRPG © Nimble Co. Nimble text is included with permission. This tool is free to use for anyone who already owns the content, is trying the system out, or can't afford it right now. If you enjoy Nimble and are able, please support the game by buying the official books at [nimbleRPG.com](https://nimbleRPG.com).
 
 ## What it does
 
@@ -41,15 +43,15 @@ It isn't a virtual tabletop. Everything here is for the GM.
 
 ## Install
 
-In Obsidian, open **Settings → Community plugins → Browse**, search for **Nimble GM**, then **Install** and **Enable**.
+In Obsidian, open **Settings → Community plugins → Browse**, search for **Ember Vault**, then **Install** and **Enable**.
 
 ## Try the sample adventure
 
-**[The Quicksilver Vaults](docs/sample-adventure.md)** is a ready-made vault: a seven-room dungeon with a map, NPCs, custom monsters, a legendary boss and a party already set up. Download **Nimble-GM-Sample-Vault.zip** from the [latest release](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/releases/latest), open the folder as a vault, and follow its **Start Here** note.
+**[The Quicksilver Vaults](docs/sample-adventure.md)** is a ready-made vault: a seven-room dungeon with a map, NPCs, custom monsters, a legendary boss and a party already set up. Download **Ember-Vault-Sample-Adventure.zip** from the [latest release](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/releases/latest), open the folder as a vault, and follow its **Start Here** note.
 
 ## Quick start in your own vault
 
-1. Open **Settings → Nimble GM** and add your party (name, class, level, HP, Defense).
+1. Open **Settings → Ember Vault** and add your party (name, class, level, HP, Defense).
 2. Type `/` in a note: `/encounter 3 goblin, 2 wolf` writes an encounter block rated against your party.
 3. Click **Run** on the block. The tracker opens with the monsters and your heroes.
 4. Click **Start combat**. Heroes go first; tick each one off as they act, then the monsters go. Click **Next round**.
@@ -83,7 +85,7 @@ The plugin's code is [MIT-licensed](LICENSE). Bundled Nimble content and the thi
 
 ## Development
 
-See [CLAUDE_CODE_GUIDE.md](CLAUDE_CODE_GUIDE.md).
+See [CLAUDE_CODE_GUIDE.md](CLAUDE_CODE_GUIDE.md). Releasing and the landing page (`site/`) are covered in [RELEASING.md](RELEASING.md).
 
 | Command | Does |
 |---|---|

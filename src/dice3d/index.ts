@@ -3,7 +3,7 @@
 // module initializer, so three.js only runs on the first roll and plugin
 // startup doesn't pay for it.
 
-import type { Dice3dOptions, Die3d, RollStats } from './renderer';
+import type { Dice3dOptions, DiceMaterial, Die3d, RollStats } from './renderer';
 
 export type { Dice3dOptions, DiceMaterial, Die3d, RollStats } from './renderer';
 
@@ -52,4 +52,19 @@ export async function roll3d(dice: Die3d[], opts: Dice3dOptions): Promise<void> 
 export function dice3dLastStats(): (RollStats & { bundleLoadMs: number }) | null {
 	const s = lib?.stats.last;
 	return s ? { ...s, bundleLoadMs: loadMs } : null;
+}
+
+/**
+ * The dice to throw for a roll that's already decided. For a Nimble attack the
+ * first die is the primary; dice past `count` are crit explosions. On a crit the
+ * primary die takes the crit look too, so every die that crit burns the same way.
+ */
+export function diceForRoll(sides: number, count: number, rolls: number[], nimble: boolean, critMaterial?: DiceMaterial): Die3d[] {
+	const crit = nimble && rolls.length > count;
+	return rolls.map((value, i) => {
+		const role: Die3d['role'] = nimble && i === 0 ? 'primary' : i >= count ? 'explosion' : 'normal';
+		const die: Die3d = { sides, value, role };
+		if (crit && critMaterial && (i === 0 || i >= count)) die.material = critMaterial;
+		return die;
+	});
 }

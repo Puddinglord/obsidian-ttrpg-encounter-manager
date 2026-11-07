@@ -56,7 +56,7 @@ export function parseStatblock(content: string): NimbleMonster | null {
 
 		return monster as NimbleMonster;
 	} catch (e) {
-		console.error('Nimble GM: parse error', e);
+		console.error('Ember Vault: parse error', e);
 		return null;
 	}
 }

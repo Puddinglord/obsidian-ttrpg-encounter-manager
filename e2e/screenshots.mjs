@@ -111,6 +111,17 @@ const shots = {
 		}, T);
 		await page.waitForTimeout(300);
 	},
+	// The HP calculator open on a hound, showing its math before you commit.
+	async 'hp-calculator'() {
+		await shots.tracker();
+		const row = page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: 'Quicksilver Hound-4' }) }).first();
+		await row.scrollIntoViewIfNeeded();
+		await row.locator('.hp-display').click();
+		await page.waitForTimeout(300);
+		await page.keyboard.type('9');
+		await page.locator('.nimble-popover button', { hasText: 'Vulnerable' }).first().click();
+		await page.waitForTimeout(400);
+	},
 	async boss() {
 		await resetTracker();
 		await layout({ right: true });

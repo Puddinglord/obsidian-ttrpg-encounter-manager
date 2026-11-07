@@ -1,6 +1,6 @@
-# Nimble GM user guide
+# Ember Vault user guide
 
-Nimble GM turns an Obsidian vault into a GM screen for the [Nimble TTRPG](https://nimbleRPG.com). Your adventure stays in ordinary Markdown notes, and the plugin adds the tools you need at the table on top of them.
+Ember Vault turns an Obsidian vault into a GM screen for the [Nimble TTRPG](https://nimbleRPG.com). Your adventure stays in ordinary Markdown notes, and the plugin adds the tools you need at the table on top of them.
 
 New here? Start with **[Getting started](getting-started.md)**, or download the **[sample adventure](sample-adventure.md)** and open it as a vault. It's a short dungeon with every feature already set up.
 

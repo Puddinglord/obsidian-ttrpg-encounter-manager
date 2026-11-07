@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Nimble TTRPG Encounter Builder for Obsidian | Ember Vault</title>
+	<meta name="description" content="Free, open-source Obsidian plugin for Nimble TTRPG GMs. Build rated encounters, track combat, roll dice and drop in 525 monsters, all inside your notes.">
+	<link rel="canonical" href="https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/">
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="Ember Vault">
+	<meta property="og:url" content="https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/">
+	<meta property="og:title" content="Ember Vault: faster Nimble fights, straight from your Obsidian notes">
+	<meta property="og:description" content="A free, open-source Obsidian plugin for Nimble TTRPG GMs. Encounters, monsters, combat math and dice right in your notes.">
+	<meta property="og:image" content="https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/images/tracker.png">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="800">
+	<meta property="og:image:alt" content="The Ember Vault combat tracker mid-fight, beside a scene note">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Ember Vault: faster Nimble fights, straight from your Obsidian notes">
+	<meta name="twitter:description" content="A free, open-source Obsidian plugin for Nimble TTRPG GMs. Encounters, monsters, combat math and dice right in your notes.">
+	<meta name="twitter:image" content="https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/images/tracker.png">
+	<meta name="theme-color" content="#120f16">
+	<link rel="icon" href="favicon.svg" type="image/svg+xml">
+	<link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="preload" href="fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="stylesheet" href="plugin.css?v=9">
+	<link rel="stylesheet" href="style.css?v=9">
+	<link rel="stylesheet" href="demo.css?v=9">
+	<link rel="stylesheet" href="interactive.css?v=9">
+	<script>document.documentElement.classList.add('js');try{if(/[?&]intro\b/.test(location.search)||!sessionStorage.getItem('ev-intro'))document.documentElement.classList.add('gate-on')}catch(e){document.documentElement.classList.add('gate-on')}</script>
+	<script src="main.js?v=9" defer></script>
+	<script type="module" src="demo/gate.js?v=9"></script>
+	<script type="module" src="demo/demo.js?v=9"></script>
+	<script type="application/ld+json">
+	{"@context":"https://schema.org","@graph":[
+	{"@type":"WebSite","name":"Ember Vault","url":"https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/"},
+	{"@type":"SoftwareApplication","name":"Ember Vault","alternateName":"Nimble GM",
+	"description":"Free, open-source Obsidian plugin for Nimble TTRPG game masters: encounter builder with difficulty ratings, combat tracker, 525-monster bestiary, dice and GM maps in plain Markdown notes.",
+	"url":"https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/",
+	"applicationCategory":"GameApplication","applicationSubCategory":"Obsidian plugin",
+	"operatingSystem":"Windows, macOS, Linux, iOS, Android",
+	"softwareRequirements":"Obsidian 1.7.2 or later",
+	"isAccessibleForFree":true,
+	"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
+	"license":"https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/blob/main/LICENSE",
+	"downloadUrl":"https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/releases/latest",
+	"screenshot":"https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/images/tracker.png",
+	"sameAs":["https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager"],
+	"author":{"@type":"Person","name":"Dakotah","url":"https://github.com/Puddinglord"}}]}
+	</script>
+</head>
+<body>
+	<svg width="0" height="0" class="defs" aria-hidden="true">
+		<defs>
+			<linearGradient id="ember" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb259"/><stop offset=".55" stop-color="#ff6a1f"/><stop offset="1" stop-color="#d9400f"/></linearGradient>
+			<symbol id="d20" viewBox="0 0 100 100"><path d="M50 2 93 27V73L50 98 7 73V27Z" fill="url(#ember)"/><path d="M50 2 7 27 50 24Z" fill="#fff" opacity=".28"/><path d="M50 2 50 24 93 27Z" fill="#fff" opacity=".12"/><path d="M7 27 19 71 50 24Z" fill="#fff" opacity=".16"/><path d="M7 27 7 73 19 71Z" fill="#fff" opacity=".06"/><path d="M93 27 50 24 81 71Z" fill="#000" opacity=".06"/><path d="M93 27 81 71 93 73Z" fill="#000" opacity=".16"/><path d="M7 73 50 98 19 71Z" fill="#000" opacity=".1"/><path d="M19 71 50 98 81 71Z" fill="#000" opacity=".2"/><path d="M81 71 50 98 93 73Z" fill="#000" opacity=".28"/><path d="M50 24 19 71H81Z" fill="#fff" opacity=".1"/><path d="M50 2 93 27V73L50 98 7 73V27ZM50 24 19 71H81ZM50 2V24M7 27 50 24 93 27M7 27 19 71 7 73M93 27 81 71 93 73M19 71 50 98 81 71" fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+			<linearGradient id="flame-out" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff5a14"/><stop offset=".6" stop-color="#ff8a2b"/><stop offset="1" stop-color="#ffcf6b"/></linearGradient>
+			<linearGradient id="flame-in" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#fff8e1"/></linearGradient>
+			<linearGradient id="wood" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a3420"/><stop offset=".5" stop-color="#8a5636"/><stop offset="1" stop-color="#4a2a19"/></linearGradient>
+			<linearGradient id="iron" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a3540"/><stop offset=".5" stop-color="#77707f"/><stop offset="1" stop-color="#2c2831"/></linearGradient>
+			<symbol id="torch-body" viewBox="0 0 64 128">
+				<defs>
+					<linearGradient id="haft" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b2214"/><stop offset=".35" stop-color="#7a4a2c"/><stop offset=".6" stop-color="#5c3520"/><stop offset="1" stop-color="#2e1a10"/></linearGradient>
+					<linearGradient id="collar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#26232b"/><stop offset=".45" stop-color="#8a8494"/><stop offset=".6" stop-color="#55505d"/><stop offset="1" stop-color="#1e1b22"/></linearGradient>
+					<radialGradient id="char" cx=".5" cy=".3" r=".7"><stop offset="0" stop-color="#4a2c1e"/><stop offset=".7" stop-color="#22140e"/><stop offset="1" stop-color="#140c08"/></radialGradient>
+				</defs>
+				<path d="M27.5 66h9l-1.6 56.5a3 3 0 0 1-5.8 0Z" fill="url(#haft)"/>
+				<path d="M30 72c1 12-.5 26 .6 44M33.6 70c-.8 14 .8 30-.2 48" stroke="#2a170d" stroke-width=".8" fill="none" opacity=".7"/>
+				<rect x="25.5" y="60" width="13" height="8" rx="2" fill="url(#collar)"/>
+				<rect x="25.5" y="61.2" width="13" height="1.2" fill="#b9b2c2" opacity=".5"/>
+				<path d="M19 34c0-5 6-8 13-8s13 3 13 8l-3.5 24c-.4 2.4-4.6 4-9.5 4s-9.1-1.6-9.5-4Z" fill="url(#char)"/>
+				<path d="M20 38c7 3 17 3 24 0M20.8 44c7 3.4 15.4 3.4 22.4 0M21.7 50c6.4 3 14.2 3 20.6 0M22.6 55.5c5.6 2.6 13.2 2.6 18.8 0" stroke="#5b3a28" stroke-width="1.4" fill="none" opacity=".8"/>
+				<g class="torch-coals"><circle cx="27" cy="31" r="1.6"/><circle cx="35" cy="29.5" r="1.3"/><circle cx="31.5" cy="33" r="1.1"/><circle cx="38.5" cy="33" r="1"/><circle cx="24.5" cy="35" r=".9"/></g>
+			</symbol>
+			<symbol id="torch-flame" viewBox="0 0 64 128"><path d="M32 2C38 16 50 22 48 36c-1 9-8 12-16 12s-15-3-16-12C14 24 24 20 26 10c3 6 5 9 6 12 1-6 0-12 0-20Z" fill="url(#flame-out)"/><path d="M32 20c3 8 9 11 8 18-1 5-4 7-8 7s-7-2-8-7c-1-6 5-9 8-18Z" fill="url(#flame-in)"/></symbol>
+			<symbol id="d20-line" viewBox="0 0 100 100"><path d="M50 2 93 27V73L50 98 7 73V27ZM50 24 19 71H81ZM50 2V24M7 27 50 24 93 27M7 27 19 71 7 73M93 27 81 71 93 73M19 71 50 98 81 71" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></symbol>
+		</defs>
+	</svg>
+
+	<div class="site-gate" id="site-gate" role="dialog" aria-modal="true" aria-label="Opening scene" data-embers>
+		<div class="gate-sky" aria-hidden="true"></div>
+		<a class="logo gate-logo" href="./" aria-label="Ember Vault home"><svg class="logo-mark" aria-hidden="true"><use href="#d20"/></svg><span>Ember <b>Vault</b></span></a>
+		<div class="gate-inner">
+			<p class="gm-tag"><span>GM</span></p>
+			<div class="gm-lines" aria-live="polite"></div>
+			<button class="gate-d20" type="button" hidden><img src="d20.svg" alt="" width="120" height="120"><span>Roll the d20</span></button>
+			<p class="gm-result" hidden><b>Natural 20.</b> The torch roars back to life.</p>
+		</div>
+		<button class="gate-skip" type="button">Skip the intro</button>
+	</div>
+
+	<header class="nav">
+		<div class="wrap nav-inner">
+			<a class="logo" href="./" aria-label="Ember Vault home"><svg class="logo-mark" aria-hidden="true"><use href="#d20"/></svg><span>Ember <b>Vault</b></span></a>
+			<nav class="nav-links" aria-label="Sections">
+				<a href="#faster">Faster play</a>
+				<a href="#notes">Your notes</a>
+				<a href="#features">Features</a>
+				<a href="#sample">Sample adventure</a>
+				<a href="docs/">Guide</a>
+			</nav>
+			<a class="btn btn-ember btn-sm" href="#install">Get it free</a>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="hero" data-embers>
+			<div class="hero-sky" aria-hidden="true"></div>
+			<div class="torchlight" aria-hidden="true"></div>
+			<svg class="float-shard s1" aria-hidden="true"><use href="#d20"/></svg>
+			<svg class="float-shard s2" aria-hidden="true"><use href="#d20"/></svg>
+			<svg class="float-shard s3" aria-hidden="true"><use href="#d20-line"/></svg>
+
+			<div class="wrap hero-copy">
+				<p class="chip"><svg aria-hidden="true"><use href="#d20"/></svg>Free, open-source Obsidian plugin for Nimble GMs</p>
+				<h1>A GM toolkit as <em>nimble</em> as you are.</h1>
+				<p class="lede">Manage your campaign, encounters, NPCs, dice rolls and more in Obsidian, so you spend more time at the table and less time in your notes.</p>
+				<div class="cta">
+					<a class="btn btn-ember" href="#install">Install free Obsidian plugin</a>
+					<a class="btn btn-glass" href="#demo">Try the live demo</a>
+				</div>
+			</div>
+
+			<div class="wrap demo-wrap" id="demo">
+				<div class="demo-head">
+					<ul class="demo-try">
+						<li data-try="hover"><b>1</b>Hover a monster</li>
+						<li data-try="dice"><b>2</b>Roll an attack</li>
+						<li data-try="run"><b>3</b>Run the fight</li>
+						<li data-try="damage"><b>4</b>Damage a hound</li>
+					</ul>
+				</div>
+				<div class="demo" id="demo-stage">
+					<div class="demo-frame" id="demo-root">
+						<img src="images/tracker.png" alt="Ember Vault encounter block in an Obsidian note, with the combat tracker running four Quicksilver Hounds against the party" width="1200" height="800">
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="faster" class="section vault" data-embers>
+			<div class="wrap">
+				<header class="section-head reveal">
+					<h2>Less looking things up. More playing.</h2>
+				</header>
+
+				<div class="steps">
+					<article class="step reveal">
+						<div class="step-copy">
+							<span class="step-num" aria-label="Step 1"><span class="torch-glow"></span><span class="die-embers" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span><b>1</b></span>
+							<h3>Build a fight in one line</h3>
+							<p>Type <code>/encounter 4 quicksilver hound</code>. You get a block that rates the fight against your party, from Easy to Very Deadly, and suggests tweaks to hit the difficulty you want.</p>
+						</div>
+						<figure class="pane">
+							<img src="images/encounter-block.png" alt="Encounter block rated Easy for a party of four level 2 heroes, with Run and Edit buttons" loading="lazy" width="1200" height="800">
+						</figure>
+					</article>
+
+					<article class="step flip reveal">
+						<div class="step-copy">
+							<span class="step-num" aria-label="Step 2"><span class="torch-glow"></span><span class="die-embers" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span><b>2</b></span>
+							<h3>Let it do the math</h3>
+							<p>Tap a monster's HP. The calculator applies crits, armor, vulnerabilities and minion overkill, and shows you the sum before you commit. Bloodied and Last Stand pop up when they happen.</p>
+						</div>
+						<figure class="pane">
+							<img src="images/hp-calculator.png" alt="The HP calculator open on a Quicksilver Hound, showing 9 damage plus 10 for vulnerability before it is applied" loading="lazy" width="1200" height="800">
+						</figure>
+					</article>
+
+					<article class="step reveal">
+						<div class="step-copy">
+							<span class="step-num" aria-label="Step 3"><span class="torch-glow"></span><span class="die-embers" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span><b>3</b></span>
+							<h3>Stat blocks pop up over your note</h3>
+							<p>Click any monster or NPC and their sheet opens over your note, with HP, turn and actions. Close it and you're right where you left off.</p>
+						</div>
+						<figure class="pane">
+							<img src="images/boss.png" alt="Quick look showing a legendary monster's stat block and HP over the scene note" loading="lazy" width="1200" height="800">
+						</figure>
+					</article>
+				</div>
+			</div>
+		</section>
+
+		<section id="notes" class="section ash notes">
+			<div class="wrap notes-grid">
+				<div class="reveal">
+					<h2>Powered by the simplicity of Markdown.</h2>
+					<p>Your adventure, your NPCs and your homebrew monsters are text files in a folder you control. Ember Vault adds the tools on top. Turn the plugin off and every note is still there, still readable.</p>
+					<ul class="facets">
+						<li>Runs on your device with nothing to sign up for</li>
+						<li>Works offline, at the table or on the train</li>
+						<li>Syncs however you already sync Obsidian</li>
+						<li>Write your own monsters as ordinary notes</li>
+					</ul>
+				</div>
+
+				<figure class="code-card reveal">
+					<div class="code-bar"><span></span><span></span><span></span><b>Q6 Storage Vault.md</b></div>
+<pre><code><span class="c-mute">---
+nimble: scene
+area: Q6
+---</span>
+
+<span class="c-b">**Four Quicksilver Hounds**</span> lurk among the crates.
+
+<span class="c-fence">```nimble-encounter</span>
+<span class="c-key">name:</span> Hounds among the crates
+<span class="c-key">party:</span> true
+<span class="c-key">monsters:</span>
+- 4 Quicksilver Hound
+<span class="c-fence">```</span>
+
+<span class="c-fence">```box trap</span>
+<span class="c-b">**Trigger:**</span> opening more than two crates.
+<span class="c-fence">```</span></code></pre>
+				</figure>
+			</div>
+		</section>
+
+		<section id="slash" class="section obsidian slash-section" data-embers>
+			<div class="wrap">
+				<header class="section-head reveal">
+					<h2>Type a slash. Get a tool.</h2>
+				</header>
+				<!-- Interactive slash-command playground: built by demo/slash-demo.ts -->
+				<div class="slash-demo reveal" id="slash-demo"></div>
+			</div>
+		</section>
+
+		<section id="features" class="section ash">
+			<div class="wrap">
+				<header class="section-head reveal">
+					<h2>The rest of your GM toolkit</h2>
+				</header>
+
+				<div class="bento">
+					<article class="tile tile-wide tile-img reveal">
+						<div class="crop" style="--y: -12%"><img src="images/map.png" alt="GM map in Obsidian with a pin on every room, linked to its note" loading="lazy" width="1200" height="800"></div>
+						<div class="tile-copy"><h3>Maps with pins</h3><p>A pin on every room, linked to its note. Drag fighters on as tokens.</p></div>
+					</article>
+					<article class="tile tile-stat reveal">
+						<h3><b class="big">525</b> monsters, ready to drop in</h3>
+						<p>Every monster from the Nimble GM Guide and Monsters &amp; More, bundled and searchable.</p>
+					</article>
+					<article class="tile tile-img reveal">
+						<div class="crop" style="--zoom: 160%; --x: -53%; --y: -12%"><img src="images/npc-card.png" alt="NPC character card with a portrait, notes and a blurred secret" loading="lazy" width="1200" height="800"></div>
+						<div class="tile-copy"><h3>NPCs with faces</h3><p>Portrait cards, with a secret you reveal when nobody's looking.</p></div>
+					</article>
+					<article class="tile reveal">
+						<span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/><path d="M6 8h2M6 12h2M16 8h2M16 12h2"/></svg></span>
+						<h3>Read-aloud boxes</h3>
+						<p>Read-aloud text, traps, treasure and clues, each styled so you spot them mid-session.</p>
+						<!-- Callout types: built by demo/tiles.ts -->
+						<div class="tile-demo" id="tile-boxes-demo"></div>
+					</article>
+					<article class="tile reveal">
+						<span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01M10 14h.01M15 6h.01M18 9h.01"/></svg></span>
+						<h3>Dice, two ways</h3>
+						<p>Choose between quick dice results or 3D dice.</p>
+						<!-- Quick vs 3D dice buttons and result card: built by demo/tiles.ts -->
+						<div class="tile-demo" id="tile-dice-demo"></div>
+					</article>
+				</div>
+			</div>
+		</section>
+
+		<section id="sample" class="section obsidian sample" data-embers>
+			<div class="wrap sample-grid">
+				<div class="reveal">
+					<h2>Delve into the Quicksilver Vaults</h2>
+					<p>Can your party survive the madness of Magistrix Vess? Seven rooms beneath the old quarter, a map, NPCs, custom monsters and a half-mercury boss, ready to run. Download the vault, open it in Obsidian, and mind the quicksilver.</p>
+					<div class="cta cta-left">
+						<a class="btn btn-ember" href="https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/releases/latest">Download the adventure</a>
+					</div>
+				</div>
+				<figure class="pane reveal">
+					<img src="images/campaign-panel.png" alt="The sample adventure's first room, with the Campaign panel listing every scene" loading="lazy" width="1200" height="800">
+				</figure>
+			</div>
+		</section>
+
+		<section id="install" class="section ash install">
+			<div class="wrap narrow">
+				<header class="section-head reveal">
+					<h2>Install in about a minute</h2>
+				</header>
+				<ol class="install-steps reveal">
+					<li>Open Obsidian and go to <b>Settings → Community plugins → Browse</b>.</li>
+					<li>Search for <b>Ember Vault</b>, then click <b>Install</b> and <b>Enable</b>.</li>
+					<li>Add your party in <b>Settings → Ember Vault</b>, then type <code>/encounter</code> in any note.</li>
+				</ol>
+				<div class="cta reveal">
+					<a class="btn btn-ember" href="obsidian://show-plugin?id=nimble-gm">Open in Obsidian</a>
+					<a class="btn btn-quiet" href="docs/getting-started.html">Getting started guide</a>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<footer class="foot" data-embers>
+		<div class="wrap foot-grid">
+			<div>
+				<a class="logo" href="./" aria-label="Ember Vault home"><svg class="logo-mark" aria-hidden="true"><use href="#d20"/></svg><span>Ember <b>Vault</b></span></a>
+				<p class="support">Free for anyone who owns the books, is trying Nimble out, or can't afford it right now. If you enjoy Nimble and you're able, please buy the official books at <a href="https://nimbleRPG.com">nimbleRPG.com</a>.</p>
+			</div>
+			<nav class="foot-links" aria-label="Project links">
+				<a href="https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager">Source on GitHub</a>
+				<a href="docs/">User guide</a>
+				<a href="https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/issues">Report a bug</a>
+			</nav>
+		</div>
+		<div class="wrap legal">
+			<p>Ember Vault is an independent product published under the Nimble 3rd Party Creator License. Nimble TTRPG © Nimble Co. Nimble text is included with permission. Not affiliated with or endorsed by Nimble Co. or Obsidian (Dynalist Inc.).</p>
+			<p>Plugin code is <a href="https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/blob/main/LICENSE">MIT-licensed</a>. The sample adventure and its art are © their creators and used with permission (<a href="https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/blob/main/NOTICE.md">NOTICE</a>). Fonts: Fraunces and Figtree, SIL Open Font License.</p>
+		</div>
+	</footer>
+</body>
+</html>

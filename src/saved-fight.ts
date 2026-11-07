@@ -86,7 +86,7 @@ export async function saveFight(plugin: NimbleStatblocksPlugin, enc: Encounter):
 		if (existing) await app.vault.process(existing, () => body);
 		return file;
 	} catch (e) {
-		console.error('Nimble GM: could not save the fight', e);
+		console.error('Ember Vault: could not save the fight', e);
 		new Notice("Couldn't save the fight. See the developer console for details.");
 		return null;
 	}

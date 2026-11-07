@@ -9,4 +9,4 @@ The adventure text, art and map in this vault are © their creators and included
 
 ## Monsters and rules
 
-Nimble rules terms are © Nimble Co., used under the Nimble 3rd Party Creator License. Nimble GM is an independent product, not affiliated with Nimble Co. Buy the books at [nimbleRPG.com](https://nimbleRPG.com).
+Nimble rules terms are © Nimble Co., used under the Nimble 3rd Party Creator License. Ember Vault is an independent product, not affiliated with Nimble Co. Buy the books at [nimbleRPG.com](https://nimbleRPG.com).

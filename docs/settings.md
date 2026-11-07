@@ -1,6 +1,6 @@
 # Settings
 
-Open **Settings → Nimble GM**, or type `/settings` in a note.
+Open **Settings → Ember Vault**, or type `/settings` in a note.
 
 ## Bestiary
 
