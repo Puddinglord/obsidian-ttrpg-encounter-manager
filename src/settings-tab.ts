@@ -53,6 +53,11 @@ export class NimbleSettingsTab extends PluginSettingTab {
 
 	/** Obsidian before 1.13. */
 	display(): void {
+		this.drawLegacy();
+	}
+
+	/** Draws every row into the settings page, for Obsidian before 1.13. */
+	private drawLegacy(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 		for (const section of this.sections()) {
@@ -74,7 +79,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 	private refresh(): void {
 		// 1.13+: rebuild the definitions and redraw the open page.
 		if (requireApiVersion('1.13.0')) this.update();
-		else this.display();
+		else this.drawLegacy();
 	}
 
 	private sections(): Section[] {
@@ -111,10 +116,12 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				{
 					name: 'Campaigns folder',
 					desc: 'Where New campaign creates folders.',
-					render: (setting) => setting.addText(t => t.setPlaceholder('Campaigns').setValue(s.campaignsFolder).onChange(async (v) => {
-						s.campaignsFolder = v.trim() || 'Campaigns';
-						await save();
-					})),
+					render: (setting) => {
+						setting.addText(t => t.setPlaceholder('Campaigns').setValue(s.campaignsFolder).onChange(async (v) => {
+							s.campaignsFolder = v.trim() || 'Campaigns';
+							await save();
+						}));
+					},
 				},
 				{
 					name: 'Link NPC names as you read',
@@ -133,15 +140,17 @@ export class NimbleSettingsTab extends PluginSettingTab {
 			{ heading: 'Stat blocks', rows: [
 				{
 					name: 'Stat block style',
-					render: (setting) => setting.addDropdown(d => d
-						.addOption('book', 'Book')
-						.addOption('compact', 'Compact')
-						.setValue(s.statblockStyle)
-						.onChange(async (v) => {
-							s.statblockStyle = v as 'book' | 'compact';
-							await save();
-							this.plugin.rerenderNotes();
-						})),
+					render: (setting) => {
+						setting.addDropdown(d => d
+							.addOption('book', 'Book')
+							.addOption('compact', 'Compact')
+							.setValue(s.statblockStyle)
+							.onChange(async (v) => {
+								s.statblockStyle = v as 'book' | 'compact';
+								await save();
+								this.plugin.rerenderNotes();
+							}));
+					},
 				},
 				{
 					name: 'Clickable dice',
@@ -202,12 +211,14 @@ export class NimbleSettingsTab extends PluginSettingTab {
 			{
 				name: 'Party size when no party is set',
 				desc: 'Used until heroes are added.',
-				render: (setting) => setting.addSlider(sl => showSliderValue(sl.setLimits(1, 8, 1).setValue(this.plugin.settings.defaultPartySize))
-					.onChange(async v => {
-						this.plugin.settings.defaultPartySize = v;
-						await this.plugin.saveSettings();
-						this.plugin.encounters.trigger('changed');
-					})),
+				render: (setting) => {
+					setting.addSlider(sl => showSliderValue(sl.setLimits(1, 8, 1).setValue(this.plugin.settings.defaultPartySize))
+						.onChange(async v => {
+							this.plugin.settings.defaultPartySize = v;
+							await this.plugin.saveSettings();
+							this.plugin.encounters.trigger('changed');
+						}));
+				},
 			},
 		];
 	}
@@ -219,15 +230,17 @@ export class NimbleSettingsTab extends PluginSettingTab {
 		type MaterialKey = 'diceMaterialPrimary' | 'diceMaterialNormal' | 'diceMaterialCrit';
 		const role = (name: string, colourKey: ColourKey, materialKey: MaterialKey): Row => ({
 			name, visible, cls: 'nimble-dice-colour',
-			render: (setting) => setting
-				.addDropdown(d => {
-					for (const m of DICE3D_MATERIALS) d.addOption(m.id, m.label);
-					d.setValue(s[materialKey]).onChange(async (v) => { s[materialKey] = v; await this.plugin.saveSettings(); });
-				})
-				.addColorPicker(c => c.setValue(s[colourKey]).onChange(async (v) => {
-					s[colourKey] = v;
-					await this.plugin.saveSettings();
-				})),
+			render: (setting) => {
+				setting
+					.addDropdown(d => {
+						for (const m of DICE3D_MATERIALS) d.addOption(m.id, m.label);
+						d.setValue(s[materialKey]).onChange(async (v) => { s[materialKey] = v; await this.plugin.saveSettings(); });
+					})
+					.addColorPicker(c => c.setValue(s[colourKey]).onChange(async (v) => {
+						s[colourKey] = v;
+						await this.plugin.saveSettings();
+					}));
+			},
 		});
 		return [
 			role('Primary die', 'dicePrimaryColor', 'diceMaterialPrimary'),
@@ -237,9 +250,11 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				name: '',
 				searchable: false,
 				visible, cls: 'nimble-dice-colour',
-				render: (setting) => setting
-					.addButton(b => b.setButtonText('Test roll: 2d6 attack').onClick(() => this.plugin.rollDice('2d6+2', 'Test roll', 'attack')))
-					.addButton(b => b.setButtonText('Test a crit').onClick(() => this.plugin.rollDice('2d6+2', 'Test crit', 'attack', [6, 3, 6, 2]))),
+				render: (setting) => {
+					setting
+						.addButton(b => b.setButtonText('Test roll: 2d6 attack').onClick(() => this.plugin.rollDice('2d6+2', 'Test roll', 'attack')))
+						.addButton(b => b.setButtonText('Test a crit').onClick(() => this.plugin.rollDice('2d6+2', 'Test crit', 'attack', [6, 3, 6, 2])));
+				},
 			},
 		];
 	}
@@ -248,28 +263,32 @@ export class NimbleSettingsTab extends PluginSettingTab {
 		let name = '';
 		let desc = '';
 		const add: Section = { heading: 'Custom conditions', cls: 'custom-condition-add', rows: [
-			{ name: 'Condition name', render: (setting) => setting.addText(t => t.setPlaceholder('e.g., Burning').onChange(v => { name = v; })) },
-			{ name: 'Description', render: (setting) => setting.addTextArea(t => t
-				.setPlaceholder('e.g., Takes 1d6 fire damage at the start of each turn.')
-				.onChange(v => { desc = v; })) },
+			{ name: 'Condition name', render: (setting) => { setting.addText(t => t.setPlaceholder('e.g., Burning').onChange(v => { name = v; })); } },
+			{ name: 'Description', render: (setting) => {
+				setting.addTextArea(t => t
+					.setPlaceholder('e.g., Takes 1d6 fire damage at the start of each turn.')
+					.onChange(v => { desc = v; }));
+			} },
 			{
 				name: '',
 				searchable: false,
-				render: (setting) => setting.addButton(btn => btn
-					.setButtonText('Add condition')
-					.setCta()
-					.onClick(async () => {
-						const trimmed = name.trim();
-						if (!trimmed) { new Notice('Please enter a condition name'); return; }
-						if (this.plugin.getAllConditions().some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
-							new Notice('A condition with this name already exists');
-							return;
-						}
-						this.plugin.settings.customConditions.push({ name: trimmed, description: desc.trim() || 'No description provided.' });
-						await this.plugin.saveSettings();
-						this.refresh();
-						new Notice(`Added condition: ${trimmed}`);
-					})),
+				render: (setting) => {
+					setting.addButton(btn => btn
+						.setButtonText('Add condition')
+						.setCta()
+						.onClick(async () => {
+							const trimmed = name.trim();
+							if (!trimmed) { new Notice('Please enter a condition name'); return; }
+							if (this.plugin.getAllConditions().some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
+								new Notice('A condition with this name already exists');
+								return;
+							}
+							this.plugin.settings.customConditions.push({ name: trimmed, description: desc.trim() || 'No description provided.' });
+							await this.plugin.saveSettings();
+							this.refresh();
+							new Notice(`Added condition: ${trimmed}`);
+						}));
+				},
 			},
 		] };
 
@@ -278,14 +297,16 @@ export class NimbleSettingsTab extends PluginSettingTab {
 		const list: Section = { cls: 'custom-conditions-list', rows: custom.map((condition, i) => ({
 			name: condition.name,
 			desc: condition.description,
-			render: (setting) => setting
-				.addExtraButton(b => b.setIcon('pencil').setTooltip('Edit').onClick(() => this.openEditModal(i)))
-				.addExtraButton(b => b.setIcon('trash').setTooltip('Delete').onClick(async () => {
-					custom.splice(i, 1);
-					await this.plugin.saveSettings();
-					this.refresh();
-					new Notice(`Deleted condition: ${condition.name}`);
-				})),
+			render: (setting) => {
+				setting
+					.addExtraButton(b => b.setIcon('pencil').setTooltip('Edit').onClick(() => this.openEditModal(i)))
+					.addExtraButton(b => b.setIcon('trash').setTooltip('Delete').onClick(async () => {
+						custom.splice(i, 1);
+						await this.plugin.saveSettings();
+						this.refresh();
+						new Notice(`Deleted condition: ${condition.name}`);
+					}));
+			},
 		})) };
 		return [add, list];
 	}
