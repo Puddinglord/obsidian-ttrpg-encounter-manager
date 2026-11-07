@@ -27,7 +27,9 @@ export function registerTooltips(plugin: NimbleStatblocksPlugin): void {
 			else r.addedNodes.forEach(n => { if (n.instanceOf(Element)) sweep(n); });
 		}
 	});
-	obs.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['title'] });
+	// The main window, where the plugin loads.
+	const body = activeDocument.body;
+	obs.observe(body, { subtree: true, childList: true, attributes: true, attributeFilter: ['title'] });
 	plugin.register(() => obs.disconnect());
-	plugin.app.workspace.onLayoutReady(() => sweep(document.body));
+	plugin.app.workspace.onLayoutReady(() => sweep(body));
 }

@@ -18,7 +18,8 @@ interface Rule {
 	re: RegExp;
 	/** Group 1 is leading context standing in for a lookbehind (see execWithLead). */
 	lead?: boolean;
-	build: (m: RegExpExecArray, doc: Document, opts: RichTextOptions) => Node;
+	/** Appends what the match renders as to `parent`. */
+	build: (m: RegExpExecArray, parent: HTMLElement, opts: RichTextOptions) => void;
 }
 
 // No lookbehinds: iOS before 16.4 can't parse them. Patterns that need one
@@ -45,30 +46,22 @@ export function execWithLead(re: RegExp, text: string): RegExpExecArray | null {
 }
 
 function emphasis(tag: 'strong' | 'em' | 'both') {
-	return (m: RegExpExecArray, doc: Document, opts: RichTextOptions): Node => {
+	return (m: RegExpExecArray, parent: HTMLElement, opts: RichTextOptions): void => {
 		const inner = m[1];
-		if (tag === 'both') {
-			const strong = doc.createElement('strong');
-			const em = doc.createElement('em');
-			strong.appendChild(em);
-			appendRichText(em, inner, opts);
-			return strong;
-		}
-		const el = doc.createElement(tag);
+		const el = tag === 'both' ? parent.createEl('strong').createEl('em') : parent.createEl(tag);
 		appendRichText(el, inner, opts);
-		return el;
 	};
 }
 
 const RULES: Rule[] = [
 	{
 		re: /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/,
-		build: (m, doc) => {
-			const a = doc.createElement('a');
-			a.className = 'nimble-wikilink internal-link';
-			a.setAttribute('data-link', m[1].trim());
-			a.textContent = (m[2] ?? m[1]).trim();
-			return a;
+		build: (m, parent) => {
+			parent.createEl('a', {
+				cls: 'nimble-wikilink internal-link',
+				text: (m[2] ?? m[1]).trim(),
+				attr: { 'data-link': m[1].trim() },
+			});
 		},
 	},
 	{ re: /\*\*\*(.+?)\*\*\*/, build: emphasis('both') },
@@ -82,14 +75,10 @@ const RULES: Rule[] = [
 const DICE_RULE: Rule = {
 	re: DICE_RE,
 	lead: true,
-	build: (m, doc, opts) => {
-		const span = doc.createElement('span');
-		span.className = 'nimble-dice';
+	build: (m, parent, opts) => {
 		const expression = m[0].replace(/\s+/g, '').replace('−', '-');
-		span.textContent = m[0];
-		span.setAttribute('data-dice', expression);
+		const span = parent.createSpan({ cls: 'nimble-dice', text: m[0], attr: { 'data-dice': expression } });
 		opts.onDice?.(span, expression);
-		return span;
 	},
 };
 
@@ -97,12 +86,9 @@ function keywordRule(re: RegExp): Rule {
 	return {
 		re,
 		lead: true,
-		build: (m, doc, opts) => {
-			const span = doc.createElement('span');
-			span.className = 'nimble-keyword';
-			span.textContent = m[0];
+		build: (m, parent, opts) => {
+			const span = parent.createSpan({ cls: 'nimble-keyword', text: m[0] });
 			opts.onKeyword?.(span, m[0]);
-			return span;
 		},
 	};
 }
@@ -132,7 +118,7 @@ export function appendRichText(parent: HTMLElement, text: string, opts: RichText
 			return;
 		}
 		if (best.m.index > 0) parent.appendChild(doc.createTextNode(rest.slice(0, best.m.index)));
-		parent.appendChild(best.rule.build(best.m, doc, opts));
+		best.rule.build(best.m, parent, opts);
 		rest = rest.slice(best.m.index + best.m[0].length);
 	}
 }

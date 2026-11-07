@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Quaternion, Vector3 } from 'three';
 import { defaultLabels, DIE_SIDES, dieShape, relabel, restingRotation, shapeFor, topIndex, valueOnTop } from '../src/dice3d/geometry';
+import { diceForRoll } from '../src/dice3d';
 
 describe('3D dice geometry', () => {
 	it.each(DIE_SIDES)('d%i has the right faces and values', (sides) => {
@@ -106,5 +107,24 @@ describe('dice looks', () => {
 		for (const hook of ['#include <common>', '#include <emissivemap_fragment>', '#include <opaque_fragment>']) expect(frag).toContain(hook);
 		const vert = ShaderLib.physical.vertexShader;
 		for (const hook of ['#include <common>', '#include <begin_vertex>']) expect(vert).toContain(hook);
+	});
+});
+
+describe('diceForRoll', () => {
+	it('marks the primary die and leaves a normal hit alone', () => {
+		const dice = diceForRoll(6, 1, [4], true, 'lava');
+		expect(dice).toEqual([{ sides: 6, value: 4, role: 'primary' }]);
+	});
+
+	it('gives every die that crit the crit look: the primary and its explosions', () => {
+		const dice = diceForRoll(6, 2, [6, 3, 6, 2], true, 'lava');
+		expect(dice.map(d => [d.role, d.material])).toEqual([
+			['primary', 'lava'], ['normal', undefined], ['explosion', 'lava'], ['explosion', 'lava'],
+		]);
+	});
+
+	it('never adds a crit look to plain (non-attack) rolls', () => {
+		const dice = diceForRoll(6, 3, [6, 6, 6], false, 'lava');
+		expect(dice.every(d => d.role === 'normal' && !d.material)).toBe(true);
 	});
 });

@@ -23,7 +23,13 @@ import { defaultLabels, dieShape, DieShape, relabel, topIndex } from './geometry
 import { ANIMATED, applyLook } from './shaders';
 
 export type DiceMaterial = 'classic' | 'gem' | 'metal' | 'glitter' | 'lava' | 'frost' | 'nebula' | 'opal' | 'marble';
-export interface Die3d { sides: number; value: number; role: 'primary' | 'normal' | 'explosion' }
+export interface Die3d {
+	sides: number;
+	value: number;
+	role: 'primary' | 'normal' | 'explosion';
+	/** This die's look, overriding the per-role one (a crit's primary die burns like its explosions). */
+	material?: DiceMaterial;
+}
 export interface Dice3dOptions {
 	primaryColor: string;
 	diceColor: string;
@@ -32,6 +38,8 @@ export interface Dice3dOptions {
 	material?: DiceMaterial;
 	/** Per-role looks; each falls back to `material`. */
 	materials?: { primary?: DiceMaterial; normal?: DiceMaterial; explosion?: DiceMaterial };
+	/** Size multiplier for the dice on screen (default 1). */
+	scale?: number;
 }
 
 export interface RollStats {
@@ -320,6 +328,8 @@ interface Stage {
 	ringTex: CanvasTexture;
 	env: Texture;
 	pxPerUnit: number;
+	/** Size multiplier from the current roll's options. */
+	scale: number;
 }
 
 let stage: Stage | null = null;
@@ -357,7 +367,7 @@ function getStage(): Stage {
 	floor.receiveShadow = true;
 	scene.add(floor);
 	const camera = new PerspectiveCamera(32, 1, 0.1, 200);
-	stage = { renderer, scene, camera, canvas, sun, floor, ringTex: ringTexture(), env, pxPerUnit: 36 };
+	stage = { renderer, scene, camera, canvas, sun, floor, ringTex: ringTexture(), env, pxPerUnit: 36, scale: 1 };
 	return stage;
 }
 
@@ -367,7 +377,7 @@ function resize(s: Stage): void {
 	s.renderer.setSize(w, h, false);
 	s.camera.aspect = w / h;
 	// A die (radius 1) is about 2 × pxPerUnit pixels across, whatever the window size.
-	s.pxPerUnit = Math.max(26, Math.min(40, Math.min(w, h) / 16));
+	s.pxPerUnit = Math.max(26, Math.min(40, Math.min(w, h) / 16)) * s.scale;
 	const fov = (s.camera.fov * Math.PI) / 180;
 	const dist = (h / 2) / (Math.tan(fov / 2) * s.pxPerUnit);
 	const elev = (78 * Math.PI) / 180;
@@ -588,11 +598,12 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	const s = getStage();
 	if (!s.canvas.isConnected) s.canvas.ownerDocument.body.appendChild(s.canvas);
 	s.canvas.classList.remove('is-fading');
+	s.scale = Math.max(0.5, Math.min(4, opts.scale ?? 1));
 	resize(s);
 	const ext = floorExtent(s);
 	const stageMs = performance.now() - t0;
 	const tSim = performance.now();
-	const materialOf = (d: Die3d): DiceMaterial => opts.materials?.[d.role] ?? opts.material ?? 'classic';
+	const materialOf = (d: Die3d): DiceMaterial => d.material ?? opts.materials?.[d.role] ?? opts.material ?? 'classic';
 
 	const shown = dice.slice(0, MAX_DICE);
 	const shapes = shown.map(d => dieShape(d.sides));

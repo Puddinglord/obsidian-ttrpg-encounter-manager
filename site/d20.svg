@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+	<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb259"/><stop offset=".55" stop-color="#ff6a1f"/><stop offset="1" stop-color="#c93d0b"/></linearGradient></defs>
+	<path d="M50 2 93 27V73L50 98 7 73V27Z" fill="url(#g)"/>
+	<path d="M50 2 7 27 50 24Z" fill="#fff" opacity=".28"/>
+	<path d="M50 2 50 24 93 27Z" fill="#fff" opacity=".12"/>
+	<path d="M7 27 19 71 50 24Z" fill="#fff" opacity=".16"/>
+	<path d="M7 27 7 73 19 71Z" fill="#fff" opacity=".06"/>
+	<path d="M93 27 50 24 81 71Z" fill="#000" opacity=".06"/>
+	<path d="M93 27 81 71 93 73Z" fill="#000" opacity=".16"/>
+	<path d="M7 73 50 98 19 71Z" fill="#000" opacity=".1"/>
+	<path d="M19 71 50 98 81 71Z" fill="#000" opacity=".2"/>
+	<path d="M81 71 50 98 93 73Z" fill="#000" opacity=".28"/>
+	<path d="M50 24 19 71H81Z" fill="#fff" opacity=".1"/>
+	<path d="M50 2 93 27V73L50 98 7 73V27ZM50 24 19 71H81ZM50 2V24M7 27 50 24 93 27M7 27 19 71 7 73M93 27 81 71 93 73M19 71 50 98 81 71" fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="1.6" stroke-linejoin="round"/>
+</svg>

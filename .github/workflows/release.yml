@@ -62,6 +62,6 @@ jobs:
             main.js
             manifest.json
             styles.css
-            Nimble-GM-Sample-Vault.zip
+            Ember-Vault-Sample-Adventure.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-// Builds Nimble-GM-Sample-Vault.zip from sample-vault/: the vault plus the
+// Builds Ember-Vault-Sample-Adventure.zip from sample-vault/: the vault plus the
 // freshly built plugin in .obsidian/plugins/<id>/, enabled, so it opens ready
 // to play. Run after `npm run build`. Used by the release workflow.
 
@@ -10,8 +10,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'sample-vault');
-const OUT = join(ROOT, 'Nimble-GM-Sample-Vault.zip');
-const NAME = 'Nimble GM Sample Vault';
+const OUT = join(ROOT, 'Ember-Vault-Sample-Adventure.zip');
+const NAME = 'Ember Vault Sample Vault';
 
 if (!existsSync(SRC)) { console.log('No sample-vault/ folder; skipping.'); process.exit(0); }
 for (const f of ['main.js', 'manifest.json', 'styles.css']) {

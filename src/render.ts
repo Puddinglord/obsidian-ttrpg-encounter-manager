@@ -121,11 +121,11 @@ function badge(parent: HTMLElement, cls: string, icon: IconName, value: string, 
 	el.createSpan({ cls: 'badge-value', text: value });
 }
 
-function textOpts(opts: RenderOptions, monsterName: string, what: string, kind: DiceKind = 'effect'): RichTextOptions {
+function textOpts(opts: RenderOptions, monsterName: string, what: string, kind: DiceKind | ((el: HTMLElement) => DiceKind) = 'effect'): RichTextOptions {
 	const out: RichTextOptions = {};
 	if (opts.onDice) {
 		const label = what ? `${monsterName}: ${what}` : monsterName;
-		out.onDice = (el: HTMLElement, expr: string) => opts.onDice?.(el, expr, label, kind);
+		out.onDice = (el: HTMLElement, expr: string) => opts.onDice?.(el, expr, label, typeof kind === 'function' ? kind(el) : kind);
 	}
 	if (opts.keywords && opts.onKeyword) {
 		out.keywords = opts.keywords;
@@ -205,9 +205,29 @@ function attackLabel(raw: string): string {
 	return before;
 }
 
-/** Attack lines that call for a save (breath weapons etc.) can't miss or crit. */
+/** Where an attack's rider starts ("On a hit: …"). Dice after it are effects, not the attack. */
+const RIDER_RE = /\bon (?:a )?(?:hit|crit|damage)\b/i;
+
+/**
+ * Attack lines that call for a save (breath weapons etc.) can't miss or crit.
+ * A save in an on-hit rider ("On a hit: STR save or Slowed") or one made to
+ * Interpose doesn't make the attack itself a save.
+ */
 export function attackDiceKind(raw: string): DiceKind {
-	return /\bsaves?\b|\bAoE\b/i.test(raw) ? 'effect' : 'attack';
+	const head = raw.split(RIDER_RE)[0].replace(/\([^)]*\binterpose\b[^)]*\)/gi, '');
+	return /\bsaves?\b|\bAoE\b/i.test(head) ? 'effect' : 'attack';
+}
+
+/** True when `el` comes after an on-hit rider in `line` (its dice are the rider's, e.g. "Slowed for 1d4 rounds"). */
+export function inRider(el: HTMLElement, line: HTMLElement): boolean {
+	let before = '';
+	const walker = line.doc.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+	while (walker.nextNode()) {
+		const n = walker.currentNode;
+		if (el.contains(n) || el.compareDocumentPosition(n) & Node.DOCUMENT_POSITION_FOLLOWING) break;
+		before += n.textContent ?? '';
+	}
+	return RIDER_RE.test(before);
 }
 
 function actions(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void {
@@ -223,7 +243,10 @@ function actions(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): voi
 	if (m.multiattack) appendRichText(section.createEl('p', { cls: 'multiattack' }), m.multiattack, textOpts(opts, m.name, ''));
 	const list = section.createEl('ul', { cls: 'actions-list' });
 	for (const atk of m.attacks || []) {
-		appendRichText(list.createEl('li'), atk.raw, textOpts(opts, m.name, attackLabel(atk.raw), role === 'minion' ? 'effect' : attackDiceKind(atk.raw)));
+		const li = list.createEl('li');
+		const base: DiceKind = role === 'minion' ? 'effect' : attackDiceKind(atk.raw);
+		const kind = (el: HTMLElement): DiceKind => base === 'attack' && inRider(el, li) ? 'effect' : base;
+		appendRichText(li, atk.raw, textOpts(opts, m.name, attackLabel(atk.raw), kind));
 	}
 }
 

@@ -1,4 +1,4 @@
-# Nimble GM - Development Guide
+# Ember Vault - Development Guide
 
 An Obsidian plugin (TypeScript, bundled with esbuild) that renders Nimble TTRPG monster stat blocks, `nimble:` inline references, and an encounter tracker.
 

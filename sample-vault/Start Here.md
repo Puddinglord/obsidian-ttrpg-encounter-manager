@@ -1,8 +1,8 @@
 # Start here
 
-This vault holds a short, ready-to-run Nimble adventure, **The Quicksilver Vaults**, for four level 2 heroes. It's also a tour of the Nimble GM plugin: every feature is used somewhere in it. Work through the list below and you'll have seen them all.
+This vault holds a short, ready-to-run Nimble adventure, **The Quicksilver Vaults**, for four level 2 heroes. It's also a tour of the Ember Vault plugin: every feature is used somewhere in it. Work through the list below and you'll have seen them all.
 
-> When Obsidian asks whether you trust this vault, choose **Trust author and enable plugins**. That turns on Nimble GM, which is already installed here.
+> When Obsidian asks whether you trust this vault, choose **Trust author and enable plugins**. That turns on Ember Vault, which is already installed here.
 
 ## A ten-minute tour
 
@@ -23,6 +23,6 @@ This vault holds a short, ready-to-run Nimble adventure, **The Quicksilver Vault
 - Add an NPC with the **+** next to NPCs. It comes with an empty portrait slot: click it to upload art.
 - Start your own campaign with **New campaign** in the Campaign panel. This one can stay as a reference.
 
-The full guide is on GitHub: [Nimble GM user guide](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/tree/main/docs).
+The full guide is on GitHub: [Ember Vault user guide](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/tree/main/docs).
 
 Credits are in [[Credits]].

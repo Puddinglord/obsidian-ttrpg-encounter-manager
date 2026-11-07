@@ -18,6 +18,8 @@ The controls stay pinned to the top of the tracker while the list scrolls.
 
 ## HP: the calculator
 
+![The HP calculator open on a Quicksilver Hound: 9 damage plus 10 for vulnerability, shown before it is applied](images/hp-calculator.png)
+
 Click or tap a combatant's HP. A calculator opens beside the tracker (a bottom sheet on phones):
 
 - It starts on **Damage**. Switch to **Heal**, **Set** or **Temp** HP at the top.

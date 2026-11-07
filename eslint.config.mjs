@@ -7,7 +7,7 @@ export default defineConfig([
 	globalIgnores([
 		"node_modules", "main.js", "esbuild.config.mjs", "version-bump.mjs",
 		"e2e", "scripts", "prototypes", "tests", "vitest.config.mjs",
-		"src/data", "sample-vault", "docs",
+		"src/data", "sample-vault", "docs", "site", "demo", "_site",
 	]),
 	...obsidianmd.configs.recommended,
 	{

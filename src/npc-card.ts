@@ -206,7 +206,7 @@ class NpcCard extends MarkdownRenderChild {
 			await this.setPortrait(created);
 			new Notice(`Saved portrait to ${created.path}`);
 		} catch (err) {
-			console.error('Nimble GM: could not save the portrait', err);
+			console.error('Ember Vault: could not save the portrait', err);
 			new Notice("Couldn't save the portrait. See the developer console for details.");
 		}
 	}

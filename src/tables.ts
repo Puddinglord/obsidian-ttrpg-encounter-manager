@@ -23,8 +23,10 @@ export function registerTables(plugin: NimbleStatblocksPlugin): void {
 			});
 		});
 	});
-	const apply = () => document.body.toggleClass('nimble-tables', plugin.settings.styleTables);
+	// The main window's body (the settings tab toggles it there too).
+	const body = activeDocument.body;
+	const apply = () => body.toggleClass('nimble-tables', plugin.settings.styleTables);
 	apply();
-	plugin.register(() => document.body.removeClass('nimble-tables'));
+	plugin.register(() => body.removeClass('nimble-tables'));
 	(plugin as unknown as { applyTableStyle: () => void }).applyTableStyle = apply;
 }

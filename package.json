@@ -11,7 +11,9 @@
 		"test": "vitest run",
 		"test:e2e": "npm run build && node e2e/run.mjs",
 		"lint": "eslint .",
-		"screenshots": "npm run build && node e2e/screenshots.mjs"
+		"screenshots": "npm run build && node e2e/screenshots.mjs",
+		"site": "node scripts/build-site.mjs",
+		"site:serve": "node scripts/build-site.mjs --serve"
 	},
 	"keywords": [],
 	"author": "Dakotah",
@@ -27,6 +29,7 @@
 		"eslint": "^9.39.5",
 		"eslint-plugin-obsidianmd": "^0.5.0",
 		"happy-dom": "^21.0.4",
+		"marked": "^18.1.3",
 		"obsidian": "latest",
 		"playwright-core": "^1.64.1",
 		"three": "^0.170.0",

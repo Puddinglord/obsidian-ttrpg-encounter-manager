@@ -110,7 +110,7 @@ const COMMANDS: SlashCommand[] = [
 	{ name: 'party', aliases: ['heroes', 'pc'], icon: 'user-cog', desc: 'Edit the party', action: (p) => p.openParty() },
 	{ name: 'bestiary', aliases: ['monsters', 'b'], icon: 'book-open', desc: 'Open the bestiary', action: (p) => void p.openBestiary() },
 	{ name: 'tracker', aliases: ['combat', 'initiative'], icon: 'swords', desc: 'Open the encounter tracker', action: (p) => void p.activateEncounterView() },
-	{ name: 'settings', aliases: ['options'], icon: 'settings', desc: 'Nimble GM settings', action: (p) => p.openSettings() },
+	{ name: 'settings', aliases: ['options'], icon: 'settings', desc: 'Ember Vault settings', action: (p) => p.openSettings() },
 	{ name: 'party-table', icon: 'users-round', desc: 'Table of your heroes', insert: (p) => {
 		if (!p.settings.party.length) { new Notice('Set up your party in the plugin settings first'); return null; }
 		const rows = p.settings.party.map(h => `| ${h.name} | ${h.className ?? ''} | ${h.level} | ${h.maxHp} | ${h.defense ?? ''} |`);

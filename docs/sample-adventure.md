@@ -1,6 +1,6 @@
 # Sample adventure: The Quicksilver Vaults
 
-The quickest way to learn Nimble GM is to open a vault where everything is already set up. **The Quicksilver Vaults** is a short dungeon for four level 2 heroes, adapted for Nimble from the Mythic Archive adventure by Dakotah Cote, with illustrations by Nagy Sz. Attila.
+The quickest way to learn Ember Vault is to open a vault where everything is already set up. **The Quicksilver Vaults** is a short dungeon for four level 2 heroes, adapted for Nimble from the Mythic Archive adventure by Dakotah Cote, with illustrations by Nagy Sz. Attila.
 
 > *In the Year of Burning Stars, Magistrix Sylvie Vess discovered ancient formulas promising transformation of base metals into philosopher's mercury. Her research consumed her, driving her to construct these vaults beneath the city's oldest quarter.*
 
@@ -17,9 +17,9 @@ The quickest way to learn Nimble GM is to open a vault where everything is alrea
 
 ## Open it
 
-1. Download **Nimble-GM-Sample-Vault.zip** from the [latest release](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/releases/latest) and unzip it anywhere.
-2. In Obsidian, choose **Open another vault → Open folder as vault** and pick the unzipped **Nimble GM Sample Vault** folder.
-3. When Obsidian asks whether you trust the vault, choose **Trust author and enable plugins**. Nimble GM is already installed inside it.
+1. Download **Ember-Vault-Sample-Adventure.zip** from the [latest release](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/releases/latest) and unzip it anywhere.
+2. In Obsidian, choose **Open another vault → Open folder as vault** and pick the unzipped **Ember Vault Sample Vault** folder.
+3. When Obsidian asks whether you trust the vault, choose **Trust author and enable plugins**. Ember Vault is already installed inside it.
 4. Open **Start Here**.
 
 The sample vault is separate from your own vaults, so nothing you do in it touches your notes. To use the adventure in your own vault, copy the `Campaigns/The Old Quarter` folder across.

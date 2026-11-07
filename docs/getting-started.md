@@ -3,7 +3,7 @@
 ## Install
 
 1. In Obsidian, open **Settings → Community plugins** and turn off Restricted mode if it's on.
-2. Select **Browse**, search for **Nimble GM**, then select **Install** and **Enable**.
+2. Select **Browse**, search for **Ember Vault**, then select **Install** and **Enable**.
 
 Three icons appear in the left ribbon:
 
@@ -13,13 +13,13 @@ Three icons appear in the left ribbon:
 | Swords | The **encounter tracker** |
 | Book | The **bestiary** |
 
-Everything is also in the command palette (Cmd/Ctrl+P). Type "Nimble" to see the commands.
+Everything is also in the command palette (Cmd/Ctrl+P). Type "Ember Vault" to see the commands.
 
 > Want to see it working first? Download the [sample adventure](sample-adventure.md). It's a ready-made vault with a dungeon, a map, NPCs and encounters.
 
 ## Your first fight, in two minutes
 
-1. **Add your party.** Open **Settings → Nimble GM → Party** and add each hero's name, class, level, max HP and Defense. Encounters are rated against these heroes.
+1. **Add your party.** Open **Settings → Ember Vault → Party** and add each hero's name, class, level, max HP and Defense. Encounters are rated against these heroes.
 2. **Write an encounter.** In any note, type `/encounter 3 goblin, 2 wolf` and press Enter. You get an encounter block with its difficulty (Easy to Very Deadly) worked out for your party.
 3. **Run it.** Select **Run** on the block. The tracker opens with the goblins, the wolves and your heroes.
 4. **Play.** Select **Start combat**. Heroes go first, in any order; tick each one off when they've acted. Then the monsters go. Select **Next round** to start again.

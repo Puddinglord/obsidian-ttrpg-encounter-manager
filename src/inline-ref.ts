@@ -71,13 +71,16 @@ export function createInlineRef(plugin: NimbleStatblocksPlugin, monsterName: str
 }
 
 /** Re-render every inline reference on screen, e.g. after the index changes. */
-export function refreshInlineRefs(plugin: NimbleStatblocksPlugin, root: ParentNode = document): void {
-	root.querySelectorAll<HTMLElement>('.nimble-inline-ref[data-nimble-ref]').forEach((el) => {
+export function refreshInlineRefs(plugin: NimbleStatblocksPlugin, root?: ParentNode): void {
+	// By default, every window with a leaf in it: the main one and any popouts.
+	const roots = new Set<ParentNode>(root ? [root] : [activeDocument]);
+	if (!root) plugin.app.workspace.iterateAllLeaves((leaf) => { roots.add(leaf.view.containerEl.doc); });
+	roots.forEach(r => r.querySelectorAll<HTMLElement>('.nimble-inline-ref[data-nimble-ref]').forEach((el) => {
 		if (el.closest('.cm-content')) return; // Live Preview widgets refresh themselves
 		if (plugin.hover.isAnchoredIn(el)) plugin.hover.hide();
 		const fresh = createInlineRef(plugin, el.dataset.nimbleRef || '', el.dataset.sourcePath || '');
 		el.replaceWith(fresh);
-	});
+	}));
 }
 
 // ----------------------------------------------------------------------------
@@ -94,23 +97,33 @@ export class HoverPreview {
 	private hideTimer: number | null = null;
 	private pinned = false;
 	private cleanup: (() => void) | null = null;
+	/** Documents (main window, popouts) that already have the dismiss listeners. */
+	private listening = new Set<Document>();
 
 	constructor(private plugin: NimbleStatblocksPlugin) {
-		plugin.registerDomEvent(document, 'keydown', (e: KeyboardEvent) => {
-			if (e.key === 'Escape' && this.el && !document.querySelector('.nimble-popover')) this.hide();
+		this.listen(activeDocument);
+		plugin.registerEvent(plugin.app.workspace.on('active-leaf-change', () => { if (!this.pinned) this.hide(); }));
+		plugin.registerEvent(plugin.app.workspace.on('file-open', () => this.hide()));
+		plugin.register(() => this.hide());
+	}
+
+	/** Escape, scrolling away and clicking elsewhere close the preview. Once per window. */
+	private listen(doc: Document): void {
+		if (this.listening.has(doc)) return;
+		this.listening.add(doc);
+		const plugin = this.plugin;
+		plugin.registerDomEvent(doc, 'keydown', (e: KeyboardEvent) => {
+			if (e.key === 'Escape' && this.el && !this.el.doc.querySelector('.nimble-popover')) this.hide();
 		});
-		plugin.registerDomEvent(document, 'scroll', (e: Event) => {
+		plugin.registerDomEvent(doc, 'scroll', (e: Event) => {
 			if (this.el && !this.pinned && !this.el.contains(e.target as Node)) this.hide();
 		}, { capture: true });
-		plugin.registerDomEvent(document, 'pointerdown', (e: PointerEvent) => {
+		plugin.registerDomEvent(doc, 'pointerdown', (e: PointerEvent) => {
 			const t = e.target as HTMLElement;
 			if (!this.el || this.el.contains(t) || t.closest('.nimble-popover')) return;
 			if (this.anchor && this.anchor.contains(t)) return;
 			this.hide();
 		});
-		plugin.registerEvent(plugin.app.workspace.on('active-leaf-change', () => { if (!this.pinned) this.hide(); }));
-		plugin.registerEvent(plugin.app.workspace.on('file-open', () => this.hide()));
-		plugin.register(() => this.hide());
 	}
 
 	get isOpen(): boolean { return !!this.el; }
@@ -182,7 +195,9 @@ export class HoverPreview {
 		this.hide();
 		this.anchor = anchor;
 		this.pinned = pinned;
-		const el = document.body.createDiv({ cls: 'nimble-hover-preview' });
+		// In the anchor's own window, so it shows up in popouts too.
+		this.listen(anchor.doc);
+		const el = anchor.doc.body.createDiv({ cls: 'nimble-hover-preview' });
 		el.id = 'nimble-hover-preview-active';
 		el.setAttr('role', 'dialog');
 		el.setAttr('aria-label', label);
@@ -220,7 +235,7 @@ export class HoverPreview {
 			el.addClass('is-sheet');
 			el.prepend(createDiv({ cls: 'sheet-handle', attr: { 'aria-hidden': 'true' } }));
 			this.pin();
-			window.requestAnimationFrame(() => this.keepAnchorVisible(anchor, el));
+			el.win.requestAnimationFrame(() => this.keepAnchorVisible(anchor, el));
 		} else {
 			this.position(el, anchor);
 		}
@@ -249,12 +264,13 @@ export class HoverPreview {
 			const dx = e.clientX - r.left, dy = e.clientY - r.top;
 			el.addClass('is-dragging');
 			bar.setPointerCapture(e.pointerId);
+			const win = el.win;
 			const move = (ev: PointerEvent) => {
-				const x = Math.max(4 - r.width + 60, Math.min(window.innerWidth - 60, ev.clientX - dx));
-				const y = Math.max(4, Math.min(window.innerHeight - 40, ev.clientY - dy));
+				const x = Math.max(4 - r.width + 60, Math.min(win.innerWidth - 60, ev.clientX - dx));
+				const y = Math.max(4, Math.min(win.innerHeight - 40, ev.clientY - dy));
 				el.style.left = `${x}px`;
 				el.style.top = `${y}px`;
-				el.style.maxHeight = `${Math.max(200, window.innerHeight - y - 12)}px`;
+				el.style.maxHeight = `${Math.max(200, win.innerHeight - y - 12)}px`;
 			};
 			const up = () => { el.removeClass('is-dragging'); bar.removeEventListener('pointermove', move); bar.removeEventListener('pointerup', up); bar.removeEventListener('pointercancel', up); };
 			bar.addEventListener('pointermove', move);
@@ -273,6 +289,7 @@ export class HoverPreview {
 	}
 
 	hide(): void {
+		const doc = this.el?.doc ?? this.anchor?.doc ?? activeDocument;
 		this.cancelHide();
 		if (this.showTimer) { window.clearTimeout(this.showTimer); this.showTimer = null; }
 		this.el?.remove();
@@ -282,14 +299,14 @@ export class HoverPreview {
 		this.pinned = false;
 		if (this.anchor) delete this.anchor.dataset.previewShowing;
 		this.anchor = null;
-		document.querySelectorAll<HTMLElement>('[data-preview-showing]').forEach(n => delete n.dataset.previewShowing);
+		doc.querySelectorAll<HTMLElement>('[data-preview-showing]').forEach(n => delete n.dataset.previewShowing);
 	}
 
 	private scheduleHide(): void {
 		this.cancelHide();
 		this.hideTimer = window.setTimeout(() => {
 			// Leave it while a condition popover opened from inside is showing.
-			if (document.querySelector('.nimble-popover') && this.el?.matches(':hover')) return;
+			if (this.el && this.el.doc.querySelector('.nimble-popover') && this.el.matches(':hover')) return;
 			this.hide();
 		}, 300);
 	}
@@ -301,8 +318,8 @@ export class HoverPreview {
 	/** Below the anchor if it fits, else above; never on top of the anchor (it would block clicks on it). */
 	private position(preview: HTMLElement, anchor: HTMLElement): void {
 		const rect = anchor.getBoundingClientRect();
-		const vw = window.innerWidth;
-		const vh = window.innerHeight;
+		const vw = anchor.win.innerWidth;
+		const vh = anchor.win.innerHeight;
 		const margin = 12;
 		const gap = 6;
 		preview.style.left = `${Math.max(margin, rect.left)}px`;

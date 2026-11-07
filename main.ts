@@ -32,7 +32,7 @@ import { npcLivePreview } from './src/npc-live-preview';
 import { registerTables } from './src/tables';
 import { registerTooltips } from './src/tooltips';
 import { monsterRole, shiftMonster } from './src/rules';
-import { DiceMaterial, dice3dSupported, Die3d, roll3d } from './src/dice3d';
+import { DiceMaterial, dice3dSupported, diceForRoll, roll3d } from './src/dice3d';
 import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/campaign-view';
 import { CampaignPicker, NewCampaignModal } from './src/campaign-modals';
 import { newSceneAnywhere, promptChapter, promptSectionNote } from './src/campaign-ui';
@@ -136,7 +136,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.addRibbonIcon('castle', 'Nimble campaign', () => this.openCampaignView());
 		this.addRibbonIcon('swords', 'Nimble encounter tracker', () => this.activateEncounterView());
 		this.addRibbonIcon('book-open', 'Nimble bestiary', () => this.openBestiary());
-		this.registerHoverLinkSource('nimble-gm', { display: 'Nimble GM', defaultMod: true });
+		this.registerHoverLinkSource('nimble-gm', { display: 'Ember Vault', defaultMod: true });
 
 		this.registerMarkdownCodeBlockProcessor('nimble', (source, el, ctx) => {
 			const monster = parseStatblock(source);
@@ -185,7 +185,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 
 		// Phones and tablets: keep the screen awake while combat is running.
 		this.registerEvent(this.encounters.on('changed', () => this.syncWakeLock()));
-		this.registerDomEvent(document, 'visibilitychange', () => { this.wakeLock = null; this.syncWakeLock(); });
+		this.registerDomEvent(activeDocument, 'visibilitychange', () => { this.wakeLock = null; this.syncWakeLock(); });
 		this.register(() => { void this.wakeLock?.release().catch(() => undefined); this.wakeLock = null; });
 		this.app.workspace.onLayoutReady(() => this.syncWakeLock());
 
@@ -467,11 +467,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	private show3dDice(sides: number, count: number, rolls: number[], nimble: boolean): Promise<void> | undefined {
 		const s = this.settings;
 		if (!s.dice3d || (Platform.isPhone && !s.dice3dOnPhone) || !dice3dSupported()) return undefined;
-		const dice: Die3d[] = rolls.map((value, i) => ({
-			sides,
-			value,
-			role: nimble && i === 0 ? 'primary' : i >= count ? 'explosion' : 'normal',
-		}));
+		const dice = diceForRoll(sides, count, rolls, nimble, s.diceMaterialCrit as DiceMaterial);
 		return roll3d(dice, {
 			primaryColor: s.dicePrimaryColor, diceColor: s.diceColor, explosionColor: s.diceExplosionColor,
 			materials: { primary: s.diceMaterialPrimary as DiceMaterial, normal: s.diceMaterialNormal as DiceMaterial, explosion: s.diceMaterialCrit as DiceMaterial },
