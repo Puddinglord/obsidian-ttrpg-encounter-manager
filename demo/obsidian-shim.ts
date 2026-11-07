@@ -41,7 +41,7 @@ if (!N.createEl) {
 	N.appendText = function (this: Node, t: string) { this.appendChild(ownerDoc(this).createTextNode(t)); };
 	N.empty = function (this: Node) { while (this.firstChild) this.removeChild(this.firstChild); };
 	N.detach = function (this: Node) { this.parentNode?.removeChild(this); };
-	N.instanceOf = function (this: Node, type: { new (): unknown; prototype: object }) { return Object.prototype.isPrototypeOf.call(type.prototype, this) as boolean; };
+	N.instanceOf = function (this: Node, type: { new (): unknown; prototype: object }) { return Boolean(Object.prototype.isPrototypeOf.call(type.prototype, this)); };
 	Object.defineProperty(N, 'doc', { get(this: Node) { return ownerDoc(this); }, configurable: true });
 	Object.defineProperty(N, 'win', { get(this: Node) { return ownerDoc(this).defaultView ?? window; }, configurable: true });
 	E.addClass = function (this: HTMLElement, ...c: string[]) { this.classList.add(...c.flatMap(s => s.split(' ').filter(Boolean))); };
