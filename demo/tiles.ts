@@ -117,7 +117,7 @@ function buildDice(root: HTMLElement): void {
 	});
 }
 
-const boxesRoot = document.getElementById('tile-boxes-demo');
+const boxesRoot = activeDocument.getElementById('tile-boxes-demo');
 if (boxesRoot) buildBoxes(boxesRoot);
-const diceRoot = document.getElementById('tile-dice-demo');
+const diceRoot = activeDocument.getElementById('tile-dice-demo');
 if (diceRoot) buildDice(diceRoot);

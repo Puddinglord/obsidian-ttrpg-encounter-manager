@@ -26,8 +26,8 @@ To preview locally: `npm run site:serve`, then open <http://localhost:8765>. The
 Obsidian installs from the GitHub release whose tag exactly matches `manifest.json`'s `version` (no `v` prefix).
 
 1. Make sure `main` has everything and CI is green.
-2. `./tag.sh 1.0.0` tags `main` and pushes it. `.github/workflows/release.yml` then lints, tests, builds, and creates the release with `main.js`, `manifest.json`, `styles.css` and `Ember-Vault-Sample-Adventure.zip`.
-3. Check the release page has all four files. Delete the old `0.0.x-alpha` releases if you don't want them showing up.
+2. `./tag.sh 1.0.0` tags `main` and pushes it. `.github/workflows/release.yml` then lints, tests, builds, and creates the release with `main.js`, `manifest.json` and `styles.css`, generated release notes and build provenance attestations. It then re-runs the landing page workflow, which packages `Ember-Vault-Sample-Adventure.zip` with the new release and publishes it on the landing page. (The directory review flags any other file attached to a release.)
+3. Check the release page has the three files and the landing page's **Download the adventure** button gets the zip. Delete the old `0.0.x-alpha` releases if you don't want them showing up.
 
 ### 3. Submit to the Obsidian community directory
 

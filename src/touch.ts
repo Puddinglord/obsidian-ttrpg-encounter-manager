@@ -1,6 +1,7 @@
 // Touch and small-screen helpers. Desktop with a mouse is unaffected.
 
 import { App, Modal, Platform, Setting } from 'obsidian';
+import { setWarningButton } from './compat';
 
 /** A coarse pointer (finger) is the main input: phones, tablets, touch laptops. */
 export function isTouch(): boolean {
@@ -70,7 +71,7 @@ export function confirmAction(app: App, title: string, body: string, cta = 'OK',
 					.addButton(b => b.setButtonText('Cancel').onClick(() => this.close()))
 					.addButton(b => {
 						b.setButtonText(cta).onClick(() => { answered = true; resolve(true); this.close(); });
-						if (warning) b.setWarning(); else b.setCta();
+						if (warning) setWarningButton(b); else b.setCta();
 					});
 			}
 			onClose() { if (!answered) resolve(false); this.contentEl.empty(); }

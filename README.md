@@ -47,7 +47,7 @@ In Obsidian, open **Settings → Community plugins → Browse**, search for **Em
 
 ## Try the sample adventure
 
-**[The Quicksilver Vaults](docs/sample-adventure.md)** is a ready-made vault: a seven-room dungeon with a map, NPCs, custom monsters, a legendary boss and a party already set up. Download **Ember-Vault-Sample-Adventure.zip** from the [latest release](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/releases/latest), open the folder as a vault, and follow its **Start Here** note.
+**[The Quicksilver Vaults](docs/sample-adventure.md)** is a ready-made vault: a seven-room dungeon with a map, NPCs, custom monsters, a legendary boss and a party already set up. Download **[Ember-Vault-Sample-Adventure.zip](https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/Ember-Vault-Sample-Adventure.zip)**, unzip it, open the folder as a vault, and follow its **Start Here** note.
 
 ## Quick start in your own vault
 

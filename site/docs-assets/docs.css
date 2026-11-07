@@ -103,8 +103,8 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .doc p { margin: 0 0 1.05em; }
 .doc .lede { font-size: 19.5px; line-height: 1.6; color: #463c4c; text-wrap: pretty; }
 .doc strong { font-weight: 680; color: #120e15; }
-.doc article a:where(:not(.doc-card, .anchor)) { color: var(--ember-text); text-decoration: underline; text-decoration-color: rgba(226, 72, 15, .35); text-decoration-thickness: 1.5px; text-underline-offset: 3px; transition: text-decoration-color .15s, color .15s; }
-.doc article a:where(:not(.doc-card, .anchor)):hover { color: var(--ember-deep); text-decoration-color: currentColor; }
+.doc article a:where(:not(.doc-card, .anchor)) { color: var(--ember-text); text-decoration: none; border-bottom: 1.5px solid rgba(226, 72, 15, .35); transition: border-color .15s, color .15s; }
+.doc article a:where(:not(.doc-card, .anchor)):hover { color: var(--ember-deep); border-bottom-color: currentColor; }
 .doc ul, .doc ol { margin: 0 0 1.2em; padding-left: 1.4em; }
 .doc li { margin: .3em 0; padding-left: .2em; }
 .doc li > ul, .doc li > ol { margin: .3em 0 .4em; }
@@ -158,7 +158,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .toc-inline { display: none; }
 
 /* Edit link and pager */
-.edit { margin-top: 56px !important; padding-top: 22px; border-top: 1px solid var(--ash-2); font-size: 14.5px; }
+.doc .edit { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--ash-2); font-size: 14.5px; }
 .edit a { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-weight: 550; }
 .edit a:hover { color: var(--ember-text); }
 .edit .i { width: 16px; height: 16px; }
@@ -263,5 +263,6 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 }
 
 @media (prefers-reduced-motion: reduce) {
-	*, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+	/* :is() counts its strongest argument, so this outranks every rule on the page without !important. */
+	:is(*, #reduce#motion#everywhere), :is(*, #reduce#motion#everywhere)::before, :is(*, #reduce#motion#everywhere)::after { animation: none; transition: none; scroll-behavior: auto; }
 }

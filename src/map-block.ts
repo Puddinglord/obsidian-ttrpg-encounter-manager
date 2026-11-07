@@ -9,6 +9,7 @@ import { EncounterCreature } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
 import { monsterRole } from './rules';
 import { confirmAction, isTouch, onLongPress } from './touch';
+import { setWarningButton } from './compat';
 import { closePopover, isPopoverOpenFor, openPopover } from './popover';
 
 const PIN_ICON: Record<PinKind, string> = {
@@ -533,7 +534,7 @@ class PinModal extends Modal {
 			d.setValue(this.pin.kind).onChange(v => { this.pin.kind = v as PinKind; });
 		});
 		const s = new Setting(c);
-		if (this.onDelete) s.addButton(b => b.setButtonText('Delete').setWarning().onClick(() => { this.onDelete!(); this.close(); }));
+		if (this.onDelete) s.addButton(b => setWarningButton(b.setButtonText('Delete')).onClick(() => { this.onDelete!(); this.close(); }));
 		s.addButton(b => b.setButtonText('Cancel').onClick(() => this.close()));
 		s.addButton(b => b.setButtonText('Save').setCta().onClick(() => this.submit()));
 		window.setTimeout(() => labelInput?.focus(), 0);

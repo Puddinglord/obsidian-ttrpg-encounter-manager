@@ -1326,40 +1326,45 @@ test('compact style and dice toggle apply to open notes', async (o) => {
 test('settings tab: party editor, toggles and attribution', async (o) => {
 	await resetEncounter(o, { party: PARTY });
 	await o.eval((app) => { app.setting.open(); app.setting.openTabById('nimble-gm'); });
-	await o.page.waitForTimeout(300);
 	const C = '.vertical-tab-content';
+	// Obsidian 1.13+ opens settings in a window of their own.
+	const sp = await o.waitFor(async () => {
+		for (const pg of o.browser.contexts().flatMap(c => c.pages())) {
+			if (await pg.locator(`${C} .nimble-notice`).count().catch(() => 0)) return pg;
+		}
+	}, { timeout: 5000, what: 'the settings tab' });
 	try {
-		const names = await o.page.locator(`${C} .setting-item-name`).allTextContents();
+		const names = await sp.locator(`${C} .setting-item-name`).allTextContents();
 		for (const n of ['Include the Nimble bestiary', 'Nimble slash commands', 'Party', 'Stat block style', 'Clickable dice', 'Nimble attack rolls', 'Multiple encounters',
 			'Apply monster armor automatically', 'Minion overkill', 'Custom conditions']) assert.ok(names.includes(n), `missing setting ${n}`);
 
 		// Attribution and the link to buy the books.
-		const notice = o.page.locator(`${C} .nimble-notice`).first();
+		const notice = sp.locator(`${C} .nimble-notice`).first();
 		assert.match(await notice.textContent(), /Nimble 3rd Party Creator License/);
 		const link = notice.locator('a', { hasText: 'nimbleRPG.com' });
 		assert.equal(await link.getAttribute('href'), 'https://nimbleRPG.com');
 
 		// Party editor: one row per hero, with their values.
-		const rows = o.page.locator(`${C} .nimble-party-row`);
+		const rows = sp.locator(`${C} .nimble-party-row`);
 		assert.equal(await rows.count(), 2);
 		assert.equal(await rows.first().locator('input[aria-label="Aria name"]').inputValue(), 'Aria');
 		assert.equal(await rows.first().locator('input[aria-label="Aria max HP"]').inputValue(), '10');
 		assert.equal(await rows.nth(1).locator('input[aria-label="Bram class"]').inputValue(), 'Commander');
-		await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-settings.png') });
-		await o.page.locator(`${C} button`, { hasText: 'Add hero' }).click();
-		await o.page.waitForTimeout(150);
+		await sp.screenshot({ path: join(ARTIFACTS, 'showcase-settings.png') });
+		await sp.locator(`${C} button`, { hasText: 'Add hero' }).click();
+		await sp.waitForTimeout(150);
 		assert.equal(await rows.count(), 3);
 		assert.equal(await o.eval((app, plugin) => plugin.settings.party.length), 3);
 		await rows.nth(2).locator('input').first().fill('Cyra');
-		await o.page.keyboard.press('Tab'); // commits on change
-		await o.page.waitForTimeout(100);
+		await sp.keyboard.press('Tab'); // commits on change
+		await sp.waitForTimeout(100);
 		assert.equal(await o.eval((app, plugin) => plugin.settings.party[2].name), 'Cyra');
 		await rows.nth(2).locator('button[aria-label^="Remove"]').click();
-		await o.page.waitForTimeout(150);
+		await sp.waitForTimeout(150);
 		assert.equal(await o.eval((app, plugin) => plugin.settings.party.length), 2);
 
 		// Toggling the bundled bestiary from settings empties and refills the index.
-		const toggle = o.page.locator(`${C} .setting-item`, { hasText: 'Include the Nimble bestiary' }).locator('.checkbox-container');
+		const toggle = sp.locator(`${C} .setting-item`, { hasText: 'Include the Nimble bestiary' }).locator('.checkbox-container');
 		await toggle.click();
 		await o.waitFor(() => o.eval((app, plugin) => plugin.index.bundledCount === 0 && !plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to unload' });
 		await toggle.click();

@@ -131,8 +131,7 @@ body {
 }
 .nimble-dice.is-clickable:hover, .nimble-dice.is-clickable:focus-visible { background: var(--background-modifier-hover); border-radius: 3px; outline: none; }
 .nimble-condition-ref {
-	text-decoration: underline dotted;
-	text-underline-offset: 2px;
+	border-bottom: 1px dotted currentColor;
 	cursor: help;
 	border-radius: 3px;
 }
@@ -548,7 +547,8 @@ body {
    BESTIARY
    ============================================ */
 
-.nimble-bestiary { padding: 0 !important; }
+/* Beats Obsidian's .workspace-leaf-content .view-content padding. */
+.workspace-leaf-content .view-content.nimble-bestiary { padding: 0; }
 .nimble-bestiary .bestiary-layout { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); height: 100%; }
 .nimble-bestiary .bestiary-side { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--background-modifier-border); padding: 0.75rem; gap: 0.5rem; }
 .nimble-bestiary .bestiary-detail { overflow: auto; padding: 1rem 1.5rem 2rem; }
@@ -791,7 +791,7 @@ body {
 .nimble-map-viewport.mode-add { cursor: crosshair; }
 .nimble-map-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--interactive-accent); }
 .nimble-map-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; --nimble-map-inv: 1; }
-.nimble-map-stage img { display: block; max-width: none !important; width: 100%; height: 100%; user-select: none; pointer-events: none; margin: 0; }
+.nimble-map .nimble-map-viewport .nimble-map-stage img { display: block; max-width: none; width: 100%; height: 100%; user-select: none; pointer-events: none; margin: 0; }
 .nimble-map-grid { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(to right, rgba(0,0,0,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.35) 1px, transparent 1px); }
 .nimble-map-layer { position: absolute; inset: 0; pointer-events: none; }
 .nimble-map-pin, .nimble-map-token { position: absolute; pointer-events: auto; }
@@ -801,12 +801,11 @@ body {
 .nimble-map-pin-icon svg { width: 15px; height: 15px; color: #fff; transform: rotate(45deg); }
 .nimble-map-pin-label { order: -1; margin-bottom: 3px; padding: 0 0.35rem; border-radius: 4px; background: rgba(0,0,0,.72); color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .nimble-map .pin-label-short { display: none; }
-.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key .pin-label-full { display: none; }
-.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key .pin-label-short { display: inline; }
-.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin:not(.has-key) .nimble-map-pin-label { display: none; }
-.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .pin-label-full { display: inline !important; }
-.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .pin-label-short { display: none !important; }
-.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .nimble-map-pin-label { display: block !important; }
+/* Zoomed out, labels shrink to their key (or hide) until you hover or focus the pin. */
+.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key:not(:hover, :focus-visible) .pin-label-full { display: none; }
+.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key:not(:hover, :focus-visible) .pin-label-short { display: inline; }
+.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin:not(.has-key, :hover, :focus-visible) .nimble-map-pin-label { display: none; }
+.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .nimble-map-pin-label { display: block; }
 .nimble-map-pin:is(:hover, :focus-visible) { z-index: 5; }
 .nimble-map.hide-labels .nimble-map-pin-label { display: none; }
 .nimble-map.hide-labels .nimble-map-pin:hover .nimble-map-pin-label { display: block; }
@@ -884,13 +883,15 @@ body {
 	padding: 0 0.6em;
 	color: var(--text-normal);
 	font-weight: 600;
-	text-decoration: none !important;
+	text-decoration: none;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	cursor: pointer;
 }
 .nimble-inline-name:hover { color: color-mix(in srgb, var(--ref-tint) 75%, var(--text-normal)); }
+/* Obsidian underlines links on hover (a:hover); the pill never does. */
+.nimble-inline-ref .nimble-inline-name, .nimble-inline-ref .nimble-inline-name:hover { text-decoration: none; }
 
 .nimble-inline-ref .nimble-inline-add-btn {
 	display: inline-flex;
@@ -904,12 +905,13 @@ body {
 	border: none;
 	border-left: 1px solid color-mix(in srgb, var(--ref-tint) 22%, transparent);
 	border-radius: 0;
-	box-shadow: none !important;
+	box-shadow: none;
 	background: transparent;
 	color: color-mix(in srgb, var(--ref-tint) 85%, var(--text-normal));
 	cursor: pointer;
 	transition: background 0.12s, color 0.12s;
 }
+.nimble-inline-ref .nimble-inline-add-btn:is(:hover, :focus-visible, .mobile-tap) { box-shadow: none; }
 .nimble-inline-ref .nimble-inline-add-btn svg { width: 0.95em; height: 0.95em; stroke-width: 2.6; }
 .nimble-inline-ref .nimble-inline-add-btn:hover { background: var(--ref-tint); color: #fff; }
 .nimble-inline-ref .nimble-inline-add-btn:focus-visible { outline: none; background: var(--ref-tint); color: #fff; }
@@ -1002,7 +1004,7 @@ body {
    SLASH COMMANDS AND NIMBLE CALLOUTS
    ============================================ */
 
-.nimble-slash-item { display: flex !important; align-items: center; gap: 0.6rem; }
+.suggestion-container .suggestion-item.nimble-slash-item { display: flex; align-items: center; gap: 0.6rem; }
 .nimble-slash-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 6px; background: var(--background-modifier-hover); color: var(--text-muted); }
 .nimble-slash-icon svg { width: 16px; height: 16px; }
 .suggestion-item.is-selected .nimble-slash-icon { background: var(--interactive-accent); color: var(--text-on-accent); }
@@ -1054,10 +1056,11 @@ body {
 	border: none;
 	border-radius: 0;
 	background: transparent;
-	box-shadow: none !important;
+	box-shadow: none;
 	border-left: 1px solid color-mix(in srgb, var(--ref-tint) 22%, transparent);
 }
-.encounter-chip .nimble-inline-add-btn { display: none !important; }
+.encounter-chip .nimble-inline-ref:hover { box-shadow: none; }
+.encounter-chip .nimble-inline-ref .nimble-inline-add-btn { display: none; }
 .encounter-chip .nimble-inline-name { padding-right: 0.75em; }
 
 
@@ -1066,7 +1069,8 @@ body {
 .nimble-difficulty.is-button:hover { filter: brightness(0.95); box-shadow: 0 0 0 1px currentColor inset; }
 .nimble-difficulty .diff-chevron { display: inline-flex; opacity: 0.75; }
 .nimble-difficulty .diff-chevron svg { width: 12px; height: 12px; }
-.encounter-block-meta .encounter-party-link { color: var(--text-muted); text-decoration: underline dotted; text-underline-offset: 2px; }
+.encounter-block-meta .encounter-party-link, .encounter-block-meta .encounter-party-link:hover { text-decoration: none; }
+.encounter-block-meta .encounter-party-link { color: var(--text-muted); border-bottom: 1px dotted currentColor; }
 .encounter-block-meta .encounter-party-link:hover { color: var(--text-accent); }
 
 /* Balance panel (popover and builder) */
@@ -1096,13 +1100,13 @@ body {
 
 /* Bottom sheets (phones): popovers and the stat block preview */
 .nimble-popover.is-sheet, .nimble-hover-preview.is-sheet {
-	left: 0 !important;
-	right: 0 !important;
-	top: auto !important;
+	left: 0;
+	right: 0;
+	top: auto;
 	bottom: 0;
-	width: 100% !important;
+	width: 100%;
 	max-width: none;
-	max-height: 78vh !important;
+	max-height: 78vh;
 	border-radius: 14px 14px 0 0;
 	border-bottom: none;
 	padding-bottom: calc(0.8rem + env(safe-area-inset-bottom, 0px) + var(--mobile-toolbar-height, 0px));
@@ -1264,7 +1268,7 @@ body.is-phone .nimble-bestiary .bestiary-side, body.is-phone .nimble-bestiary .b
 
 /* Party editor: cards when narrow. Labels only show on cards. */
 .nimble-party-table { container-type: inline-size; }
-.nimble-party-field { display: contents; }
+.nimble-party-field { display: flex; flex-direction: column; min-width: 0; }
 .nimble-party-field-label { display: none; }
 @container (max-width: 560px) {
 	.nimble-party-head { display: none; }
@@ -1587,8 +1591,9 @@ a.internal-link.nimble-npc-link {
 a.internal-link.nimble-npc-link:hover { background: color-mix(in srgb, #22a35a 24%, transparent); text-decoration: none; }
 .nimble-npc-icon { display: inline-flex; align-self: center; }
 .nimble-npc-icon svg { width: 0.85em; height: 0.85em; stroke-width: 2.5; }
+a.internal-link.nimble-npc-mention, a.internal-link.nimble-npc-mention:hover { text-decoration: none; }
 a.internal-link.nimble-npc-mention {
-	color: inherit; text-decoration: underline dotted color-mix(in srgb, #22a35a 70%, transparent); text-decoration-thickness: 2px; text-underline-offset: 3px;
+	color: inherit; border-bottom: 2px dotted color-mix(in srgb, #22a35a 70%, transparent);
 }
 a.internal-link.nimble-npc-mention:hover { color: color-mix(in srgb, #22a35a 75%, var(--text-normal)); }
 .nimble-slash-swatch { width: 0.8rem; height: 0.8rem; border-radius: 3px; flex-shrink: 0; margin-left: auto; }
@@ -1600,12 +1605,19 @@ a.internal-link.nimble-npc-mention:hover { color: color-mix(in srgb, #22a35a 75%
 }
 .nimble-npc-lp-icon { display: inline-flex; vertical-align: -0.1em; margin-right: 0.15em; color: #22a35a; }
 .nimble-npc-lp-icon svg { width: 0.85em; height: 0.85em; stroke-width: 2.5; }
-.nimble-npc-lp-mention { text-decoration: underline dotted color-mix(in srgb, #22a35a 70%, transparent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
-.nimble-npc-lp-link .cm-underline, .nimble-npc-lp-link .cm-hmd-internal-link { text-decoration: none !important; padding: 0 0.15em; }
+.nimble-npc-lp-mention { border-bottom: 2px dotted color-mix(in srgb, #22a35a 70%, transparent); }
+.nimble-npc-lp-link .cm-underline, .nimble-npc-lp-link .cm-hmd-internal-link { padding: 0 0.15em; }
+/* No link underline on NPC links and mentions. Obsidian's strongest underline rule is
+   .markdown-source-view.mod-cm6 .cm-hmd-internal-link .cm-underline:hover, so these go one class further. */
+.markdown-source-view.mod-cm6 .cm-line :is(.nimble-npc-lp-link, .nimble-npc-lp-mention) :is(.cm-underline, .cm-hmd-internal-link),
+.markdown-source-view.mod-cm6 .cm-line :is(.nimble-npc-lp-link, .nimble-npc-lp-mention) :is(.cm-underline, .cm-hmd-internal-link):hover,
+.markdown-source-view.mod-cm6 .cm-line :is(.cm-hmd-internal-link, .cm-underline):is(.nimble-npc-lp-link, .nimble-npc-lp-mention),
+.markdown-source-view.mod-cm6 .cm-line :is(.cm-hmd-internal-link, .cm-underline):is(.nimble-npc-lp-link, .nimble-npc-lp-mention):hover,
+.markdown-source-view.mod-cm6 .cm-line .nimble-npc-lp-mention { text-decoration: none; }
 
 /* ---------- Box editor: a small tabbed panel ---------- */
 .nimble-popover.nimble-box-editor { padding: 0; width: 304px; overflow: hidden; border-radius: 12px; font-size: 0.86rem; }
-.nimble-popover.nimble-box-editor.is-sheet { width: 100% !important; }
+.nimble-popover.nimble-box-editor.is-sheet { width: 100%; }
 .nimble-popover.nimble-box-editor .bxe-head { display: flex; align-items: center; gap: 0.55rem; padding: 0.75rem 0.85rem 0.55rem; }
 .nimble-popover.nimble-box-editor .bxe-badge {
 	flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
@@ -1708,21 +1720,25 @@ body.is-tablet .nimble-box-editor .bxe-font { padding: 0 0.45rem; }
 }
 
 /* ---------- Live Preview: no frame around our blocks on hover ---------- */
-.markdown-source-view.mod-cm6 .cm-embed-block:is(:has(> .block-language-box), :has(> .block-language-nimble-encounter), :has(> .block-language-nimble-map), :has(> .block-language-nimble-campaign), :has(> .block-language-nimble)):hover {
-	box-shadow: none !important; border-radius: 0; background: transparent;
+/* Obsidian marks each code block's frame with cm-lang-<language>. */
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-box, .cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble):hover {
+	box-shadow: none; border-radius: 0; background: transparent;
 }
 /* The "edit source" button sits quietly in the box's header instead of on its corner. */
-.markdown-source-view.mod-cm6 .cm-embed-block:has(> .block-language-box) > .edit-block-button {
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block.cm-lang-box > .edit-block-button {
 	top: calc(0.9rem + 0.6rem); right: 2.6rem; padding: 4px; border-radius: 6px; opacity: 0; transition: opacity .12s;
 	background: transparent; color: var(--text-faint);
 }
-.markdown-source-view.mod-cm6 .cm-embed-block:has(> .block-language-box):hover > .edit-block-button { opacity: 1; }
-.markdown-source-view.mod-cm6 .cm-embed-block:has(> .block-language-box) > .edit-block-button:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
-.markdown-source-view.mod-cm6 .cm-embed-block:is(:has(> .block-language-nimble-encounter), :has(> .block-language-nimble-map), :has(> .block-language-nimble-campaign), :has(> .block-language-nimble)) > .edit-block-button {
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block.cm-lang-box:hover > .edit-block-button { opacity: 1; }
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block.cm-lang-box > .edit-block-button:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble) > .edit-block-button {
 	opacity: 0; transition: opacity .12s; top: 0.5rem; right: 0.5rem;
 }
-.markdown-source-view.mod-cm6 .cm-embed-block:is(:has(> .block-language-nimble-encounter), :has(> .block-language-nimble-map), :has(> .block-language-nimble-campaign), :has(> .block-language-nimble)):hover > .edit-block-button { opacity: 1; }
-@media (pointer: coarse) { .markdown-source-view.mod-cm6 .cm-embed-block > .edit-block-button { opacity: 1 !important; } }
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble):hover > .edit-block-button { opacity: 1; }
+@media (pointer: coarse) {
+	.markdown-source-view.mod-cm6 .cm-embed-block > .edit-block-button,
+	.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-box, .cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble) > .edit-block-button { opacity: 1; }
+}
 
 /* ---------- Tables ---------- */
 .nimble-box-body table, body.nimble-tables .markdown-rendered table, body.nimble-tables .markdown-source-view.mod-cm6 .cm-table-widget table {
@@ -1751,7 +1767,9 @@ body.is-tablet .nimble-box-editor .bxe-font { padding: 0 0.45rem; }
 .box-style-stone .nimble-box-body table thead th { background: rgba(0,0,0,.25); color: #cfcabe; }
 
 /* DC columns: the number as a pill */
-.nimble-dc-cell { white-space: nowrap; width: 1%; text-align: center !important; }
+.nimble-dc-cell { white-space: nowrap; width: 1%; text-align: center; }
+/* Beats Obsidian's .markdown-rendered th[align=…] and the styled-table rule above. */
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered, .markdown-rendered, .cm-table-widget) table :is(th, td).nimble-dc-cell { text-align: center; }
 .nimble-dc {
 	display: inline-flex; align-items: center; justify-content: center; min-width: 2.1rem; padding: 0.05rem 0.45rem; border-radius: 999px;
 	font-weight: 800; font-size: 0.9em; font-variant-numeric: tabular-nums;
@@ -1760,13 +1778,16 @@ body.is-tablet .nimble-box-editor .bxe-font { padding: 0 0.45rem; }
 .nimble-dc.is-none { background: transparent; color: var(--text-faint); font-weight: 500; }
 .box-style-parchment .nimble-dc { background: rgba(122,79,29,.16); color: #7a4f1d; }
 .setting-item.nimble-dice-colour { padding-left: 1.2rem; border-top: none; }
+/* Settings rows that draw their own content (attribution, party table) in Obsidian 1.13+. */
+.setting-item.nimble-setting-block { display: block; }
 
 /* ---------- Encounter chips: the count is a button, nothing moves on hover ---------- */
 .encounter-chip .encounter-count {
 	display: inline-flex; align-items: center; gap: 0.25em; height: auto; min-height: 0; margin: 0; padding: 0 0.55em;
-	border: none; border-radius: 0; box-shadow: none !important; background: transparent; cursor: pointer;
+	border: none; border-radius: 0; box-shadow: none; background: transparent; cursor: pointer;
 	font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: inherit;
 }
+.encounter-chip .encounter-count:is(:hover, :focus-visible, .mobile-tap) { box-shadow: none; }
 .encounter-chip .encounter-count:hover, .encounter-chip .encounter-count:focus-visible { background: color-mix(in srgb, var(--ref-tint) 16%, transparent); color: var(--text-normal); outline: none; }
 .encounter-shift { font-size: 0.72em; font-weight: 800; padding: 0 0.35em; border-radius: 4px; line-height: 1.5; }
 .encounter-shift.is-up { background: color-mix(in srgb, #e05d5d 22%, transparent); color: #d24c4c; }
@@ -1821,8 +1842,8 @@ body.is-tablet .nimble-statblock .statblock-split > .statblock-action-more { pad
 .nimble-hover-preview.is-dragging, .nimble-hover-preview.is-dragging .hover-preview-bar { cursor: grabbing; }
 .nimble-hover-preview.is-dragging { box-shadow: 0 18px 40px -10px rgba(0,0,0,.45); }
 .nimble-hover-preview.is-sheet .hover-preview-bar.is-draggable { cursor: default; }
-.nimble-popover.encounter-count-editor { width: 284px !important; overflow-x: hidden; }
-.nimble-popover.encounter-count-editor.is-sheet { width: 100% !important; }
+.nimble-popover.encounter-count-editor { width: 284px; overflow-x: hidden; }
+.nimble-popover.encounter-count-editor.is-sheet { width: 100%; }
 .encounter-count-editor .ece-shift-btn { padding: 0 0.5rem; }
 
 /* Previewing a note (an NPC) in the hover card or sheet */
@@ -1914,7 +1935,8 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 	color: color-mix(in srgb, var(--npc-color) 80%, var(--text-normal));
 }
 .nimble-npc-fields { margin-top: 0.65rem; display: grid; grid-template-columns: max-content 1fr; gap: 0.4rem 0.8rem; }
-.nimble-npc-field { display: contents; }
+.nimble-npc-field { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; gap: inherit; }
+@supports not (grid-template-columns: subgrid) { .nimble-npc-field { grid-template-columns: max-content 1fr; } }
 .nimble-npc-label {
 	display: inline-flex; align-items: center; align-self: start; gap: 0.3rem; padding-top: 0.22rem; line-height: 1.2;
 	font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint);
