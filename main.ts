@@ -32,7 +32,9 @@ import { npcLivePreview } from './src/npc-live-preview';
 import { registerTables } from './src/tables';
 import { registerTooltips } from './src/tooltips';
 import { monsterRole, shiftMonster } from './src/rules';
-import { DiceMaterial, dice3dSupported, diceForRoll, roll3d } from './src/dice3d';
+import { dice3dLastStats, dice3dSupported, diceForRoll, roll3d } from './src/dice3d';
+import { dressDice, rollEvent, rollOptions } from './src/dice3d/looks';
+import { migrateDice } from './src/dice3d/styles';
 import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/campaign-view';
 import { CampaignPicker, NewCampaignModal } from './src/campaign-modals';
 import { newSceneAnywhere, promptChapter, promptSectionNote } from './src/campaign-ui';
@@ -322,6 +324,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		s.party = s.party || [];
 		s.campaigns = s.campaigns || {};
 		s.activeCampaign = s.activeCampaign ?? null;
+		// 1.0.4 dice styles; older saves only have per-role colours, which carry over.
+		s.dice = migrateDice(data.dice, data);
+		for (const k of ['dicePrimaryColor', 'diceColor', 'diceExplosionColor', 'diceMaterialPrimary', 'diceMaterialNormal', 'diceMaterialCrit'] as const) delete s[k];
 		// Older conditions were renamed in the 3.2 rules.
 		const renamed: Record<string, string> = { Blinded: 'Blind' };
 		for (const enc of s.encounters) {
@@ -459,19 +464,35 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		const rng = forced ? (() => { let i = 0; return () => (forced[i++ % forced.length] - 0.5) / dice.sides; })() : undefined;
 		const result = nimble ? rollNimbleAttack(dice, rng) : rollPlain(dice, rng);
 		// The roll is decided here; 3D dice just show it, and the notice waits for them to land.
-		const landed = this.show3dDice(dice.sides, dice.count, result.rolls, nimble);
+		const landed = this.show3dDice(dice.sides, dice.count, result.rolls, nimble, result.outcome);
 		return this.logRoll({ label: label || result.expression, expression: result.expression, total: result.total, detail: result.detail, outcome: result.outcome }, landed);
 	}
 
+	/** Timings and results of the last 3D roll (for tuning and tests). */
+	diceStats() {
+		return dice3dLastStats();
+	}
+
+	/**
+	 * Show off a look: one of each die (d4 to d20) in it, thrown on screen. Values
+	 * are given in that order, or random. Nothing is logged; it's just the dice.
+	 */
+	rollLookPreview(styleId: string, values?: number[]): Promise<void> | undefined {
+		if (!dice3dSupported()) return undefined;
+		const d = this.settings.dice;
+		const prev = { normal: d.normal, primary: d.primary, perDie: d.perDie };
+		d.normal = styleId; d.primary = ''; d.perDie = {};
+		const dice = dressDice(this, [4, 6, 8, 10, 12, 20].map((sides, i) => ({ sides, role: 'normal' as const, value: values?.[i] ?? 1 + Math.floor(Math.random() * sides) })), false);
+		Object.assign(d, prev);
+		return roll3d(dice, rollOptions(d)).catch((e) => { console.warn('Nimble: 3D dice failed', e); });
+	}
+
 	/** Roll 3D dice for a result. Resolves when they've landed (at once when 3D is off). */
-	private show3dDice(sides: number, count: number, rolls: number[], nimble: boolean): Promise<void> | undefined {
+	private show3dDice(sides: number, count: number, rolls: number[], nimble: boolean, outcome?: 'miss' | 'crit'): Promise<void> | undefined {
 		const s = this.settings;
 		if (!s.dice3d || (Platform.isPhone && !s.dice3dOnPhone) || !dice3dSupported()) return undefined;
-		const dice = diceForRoll(sides, count, rolls, nimble, s.diceMaterialCrit as DiceMaterial);
-		return roll3d(dice, {
-			primaryColor: s.dicePrimaryColor, diceColor: s.diceColor, explosionColor: s.diceExplosionColor,
-			materials: { primary: s.diceMaterialPrimary as DiceMaterial, normal: s.diceMaterialNormal as DiceMaterial, explosion: s.diceMaterialCrit as DiceMaterial },
-		})
+		const dice = dressDice(this, diceForRoll(sides, count, rolls, nimble), outcome === 'crit');
+		return roll3d(dice, rollOptions(s.dice, rollEvent(sides, rolls.slice(0, count), outcome)))
 			.catch((e) => { console.warn('Nimble: 3D dice failed, showing the result only', e); });
 	}
 

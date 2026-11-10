@@ -1,5 +1,6 @@
 // Shared data types and defaults. Nothing in here may import 'obsidian', so the
 // pure modules that use it stay unit-testable in plain Node.
+import { DEFAULT_DICE, DiceSettings } from './dice3d/styles';
 
 export type ArmorType = 'none' | 'medium' | 'heavy';
 /** How a monster plays at the table. Solo is the Monsters & More name for a legendary monster. */
@@ -188,14 +189,15 @@ export interface NimbleStatblocksSettings {
 	dice3d: boolean;
 	/** 3D dice on phones too (off by default until tested on more devices). */
 	dice3dOnPhone: boolean;
-	/** Colours of the 3D dice: the primary die of an attack, the others, and crit (exploding) dice. */
-	dicePrimaryColor: string;
-	diceColor: string;
-	diceExplosionColor: string;
-	/** Finish (material/shader) per role, e.g. classic, gem, lava. */
-	diceMaterialPrimary: string;
-	diceMaterialNormal: string;
-	diceMaterialCrit: string;
+	/** How the 3D dice look and move: styles, presets, imported sets, size, speed, effects. */
+	dice: DiceSettings;
+	/** 1.0.3 and before: per-role colours and looks. Read once to fill in `dice`, then removed. */
+	dicePrimaryColor?: string;
+	diceColor?: string;
+	diceExplosionColor?: string;
+	diceMaterialPrimary?: string;
+	diceMaterialNormal?: string;
+	diceMaterialCrit?: string;
 	/** Include the Nimble bestiary that ships with the plugin. */
 	bundledBestiary: boolean;
 	/** Subtract Medium/Heavy armor from damage typed into the tracker (crits ignore it). */
@@ -239,12 +241,7 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	rollLog: [],
 	dice3d: true,
 	dice3dOnPhone: false,
-	dicePrimaryColor: '#7c3aed',
-	diceColor: '#ece6d8',
-	diceExplosionColor: '#e0a030',
-	diceMaterialPrimary: 'classic',
-	diceMaterialNormal: 'classic',
-	diceMaterialCrit: 'lava',
+	dice: DEFAULT_DICE,
 	bundledBestiary: true,
 	autoArmor: true,
 	minionOverkill: true,

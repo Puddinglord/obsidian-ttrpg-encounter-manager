@@ -8,27 +8,61 @@
 // faces so the landed face shows the rolled value, and then replay the throw.
 // Nimble crits explode: each extra die pops out of the last one as its own
 // short simulation, with the dice already on the table as obstacles.
+//
+// Dice from an imported set are 3D models with their numbers painted on. They
+// roll on a body of the model's own shape, and instead of renumbering, the
+// model is turned by one of the die's symmetries so the rolled value is on top.
 
 import {
 	Body, Box, ContactMaterial, ConvexPolyhedron, Material as PhysMaterial, Plane, Quaternion as CQuat, Shape, Vec3, World,
 } from 'cannon-es';
 import {
-	AmbientLight, BackSide, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, Float32BufferAttribute,
+	AmbientLight, BackSide, Box3, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, Float32BufferAttribute,
 	FrontSide, Group, LineBasicMaterial, LineSegments, Material, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial,
-	PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PMREMGenerator, Quaternion, Scene, ShadowMaterial, SRGBColorSpace, Texture,
+	MeshPhysicalMaterialParameters, Object3D, PCFShadowMap, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PMREMGenerator, Quaternion, Scene, ShadowMaterial, SRGBColorSpace, Texture,
 	Vector3, WebGLRenderer,
 } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { defaultLabels, dieShape, DieShape, relabel, topIndex } from './geometry';
-import { ANIMATED, applyLook } from './shaders';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { Burst, disposeEffectSprites, makeBurst } from './effects';
+import { defaultLabels, dieShape, DieShape, hasModelLayout, modelCorrection, modelShape, relabel, topIndex } from './geometry';
+import { ANIMATED, applyLook, ShaderLook } from './shaders';
+import type { Blend, EffectId, Finish, FontId, RollEvent } from './styles';
+import { FONTS } from './styles';
+import { drawTexture } from './textures';
 
+/** The looks before 1.0.4, still accepted (the landing page demo uses them). */
 export type DiceMaterial = 'classic' | 'gem' | 'metal' | 'glitter' | 'lava' | 'frost' | 'nebula' | 'opal' | 'marble';
+
+/** Everything about how one die is drawn, already resolved from settings. */
+export interface DieLook {
+	/** Body colours; a die picks one. */
+	body: string[];
+	label: string;
+	/** Outline around the numbers; '' for none. */
+	outline: string;
+	/** Lines along the edges; '' for none. */
+	edge: string;
+	finish: Finish;
+	/** A built-in texture id ('none' for plain). */
+	texture: string;
+	/** An image to use as the texture instead (a URL three.js can load). */
+	textureUrl?: string;
+	blend: Blend;
+	font: FontId;
+	labelScale: number;
+}
+
 export interface Die3d {
 	sides: number;
 	value: number;
 	role: 'primary' | 'normal' | 'explosion';
 	/** This die's look, overriding the per-role one (a crit's primary die burns like its explosions). */
 	material?: DiceMaterial;
+	/** Full look (1.0.4 styles). Takes priority over `material` and the colour options. */
+	look?: DieLook;
+	/** A glTF model to roll instead of our own die, when its set has one for this size. */
+	modelUrl?: string;
 }
 export interface Dice3dOptions {
 	primaryColor: string;
@@ -40,6 +74,23 @@ export interface Dice3dOptions {
 	materials?: { primary?: DiceMaterial; normal?: DiceMaterial; explosion?: DiceMaterial };
 	/** Size multiplier for the dice on screen (default 1). */
 	scale?: number;
+	/** Playback speed (default 1). */
+	speed?: number;
+	/** How hard the dice are thrown (default 1). */
+	force?: number;
+	/** How long the dice stay after landing, ms (default 1700). */
+	stayMs?: number;
+	shadows?: 'off' | 'soft' | 'sharp';
+	/** An effect for how the roll went. */
+	effect?: { event: RollEvent; kind: EffectId };
+}
+
+const LEGACY: Record<DiceMaterial, Finish> = { classic: 'plastic', gem: 'glass', metal: 'metal', glitter: 'glitter', lava: 'lava', frost: 'frost', nebula: 'nebula', opal: 'opal', marble: 'marble' };
+
+/** A look from the old colour + material options. */
+export function legacyLook(color: string, material: DiceMaterial): DieLook {
+	const finish = LEGACY[material] ?? 'plastic';
+	return { body: [color], label: '', outline: '', edge: material === 'classic' || material === 'glitter' ? 'auto' : '', finish, texture: 'none', blend: 'multiply', font: 'inter', labelScale: 1 };
 }
 
 export interface RollStats {
@@ -67,6 +118,13 @@ export interface RollStats {
 	overshoot: number;
 	/** Length of each recorded segment (throw, then each explosion), in ms of playback. */
 	segmentsMs: number[];
+	/** Dice drawn from imported 3D models. */
+	models?: number;
+	/** Effect bursts played. */
+	effects?: number;
+	/** Screen pixels per die radius (bigger = bigger dice), and the table's half-size in die radii. */
+	pxPerUnit?: number;
+	table?: { x: number; z: number };
 }
 
 export const stats: { last: RollStats | null } = { last: null };
@@ -111,13 +169,17 @@ function atlasGrid(shape: DieShape) {
 	return { cols, rows: Math.ceil(n / cols) };
 }
 
-/** The die's body colour, one cell per face (a soft lighter centre so faces read as surfaces). */
-function bodyAtlas(shape: DieShape, color: string): CanvasTexture {
+/** The die's body: its colour (a soft lighter centre so faces read as surfaces), then its texture. */
+function bodyAtlas(shape: DieShape, color: string, look: DieLook, seed: number, image: HTMLImageElement | null): { map: CanvasTexture; bump: CanvasTexture | null } {
 	const { cols, rows } = atlasGrid(shape);
 	const canvas = createEl('canvas');
 	canvas.width = cols * CELL;
 	canvas.height = rows * CELL;
 	const g = canvas.getContext('2d')!;
+	const textured = image || (look.texture && look.texture !== 'none');
+	const bumpCanvas = textured ? createEl('canvas') : null;
+	const bg = bumpCanvas?.getContext('2d') ?? null;
+	if (bumpCanvas) { bumpCanvas.width = canvas.width; bumpCanvas.height = canvas.height; }
 	shape.faces.forEach((_, i) => {
 		const x0 = (i % cols) * CELL, y0 = Math.floor(i / cols) * CELL;
 		const grad = g.createRadialGradient(x0 + CELL / 2, y0 + CELL / 2, 4, x0 + CELL / 2, y0 + CELL / 2, CELL * 0.75);
@@ -125,29 +187,56 @@ function bodyAtlas(shape: DieShape, color: string): CanvasTexture {
 		grad.addColorStop(1, shade(color, 0.88));
 		g.fillStyle = grad;
 		g.fillRect(x0, y0, CELL, CELL);
+		if (!textured || !bg) return;
+		// Draw the texture once into the bump canvas (greys), then blend it onto the colour.
+		bg.save();
+		bg.beginPath();
+		bg.rect(x0, y0, CELL, CELL);
+		bg.clip();
+		if (image) bg.drawImage(image, x0 - (i * 37) % 40, y0 - (i * 53) % 40, CELL + 40, CELL + 40);
+		else drawTexture(bg, look.texture, x0, y0, CELL, seed * 31 + i);
+		bg.restore();
+		g.save();
+		g.beginPath();
+		g.rect(x0, y0, CELL, CELL);
+		g.clip();
+		if (look.blend === 'hue') {
+			g.globalCompositeOperation = 'luminosity';
+			g.drawImage(bumpCanvas!, x0, y0, CELL, CELL, x0, y0, CELL, CELL);
+			g.globalCompositeOperation = 'color';
+			g.fillStyle = color;
+			g.fillRect(x0, y0, CELL, CELL);
+		} else {
+			g.globalCompositeOperation = look.blend;
+			g.drawImage(bumpCanvas!, x0, y0, CELL, CELL, x0, y0, CELL, CELL);
+		}
+		g.restore();
 	});
-	const tex = new CanvasTexture(canvas);
-	tex.colorSpace = SRGBColorSpace;
-	return tex;
+	const map = new CanvasTexture(canvas);
+	map.colorSpace = SRGBColorSpace;
+	return { map, bump: bumpCanvas ? new CanvasTexture(bumpCanvas) : null };
 }
 
 type Ink = { fill: string; stroke: string | null; engrave?: boolean };
 
-function inkFor(material: DiceMaterial, color: string): Ink {
+function inkFor(look: DieLook, color: string): Ink {
 	const light = luminance(color) > 0.55;
-	if (material === 'gem') return light ? { fill: '#1b1814', stroke: 'rgba(255,255,255,0.7)' } : { fill: '#ffffff', stroke: 'rgba(0,0,0,0.55)' };
-	if (material === 'metal') return { fill: light ? '#2a2724' : '#f4efe6', stroke: null, engrave: true };
-	// Dark or busy surfaces: warm light numbers with a dark edge, so they read over cracks and stars.
-	if (material === 'lava') return { fill: '#fff1d6', stroke: 'rgba(20,8,0,0.85)' };
-	if (material === 'nebula') return { fill: '#ffffff', stroke: 'rgba(0,0,0,0.75)' };
-	// Pale surfaces: dark numbers with a light edge.
-	if (material === 'frost') return { fill: '#0f2238', stroke: 'rgba(255,255,255,0.75)' };
-	if (material === 'opal' || material === 'marble') return { fill: '#1d1a17', stroke: 'rgba(255,255,255,0.6)' };
-	return { fill: light ? '#1d1a17' : '#fbf8f2', stroke: light ? null : 'rgba(0,0,0,0.25)' };
+	const engrave = look.finish === 'metal' || look.finish === 'chrome';
+	if (look.label) return { fill: look.label, stroke: look.outline || null, engrave };
+	// No label colour (the old options): pick one that reads on this surface.
+	switch (look.finish) {
+		case 'glass': return light ? { fill: '#1b1814', stroke: 'rgba(255,255,255,0.7)' } : { fill: '#ffffff', stroke: 'rgba(0,0,0,0.55)' };
+		case 'metal': return { fill: light ? '#2a2724' : '#f4efe6', stroke: null, engrave: true };
+		case 'lava': return { fill: '#fff1d6', stroke: 'rgba(20,8,0,0.85)' };
+		case 'nebula': return { fill: '#ffffff', stroke: 'rgba(0,0,0,0.75)' };
+		case 'frost': return { fill: '#0f2238', stroke: 'rgba(255,255,255,0.75)' };
+		case 'opal': case 'marble': return { fill: '#1d1a17', stroke: 'rgba(255,255,255,0.6)' };
+		default: return { fill: light ? '#1d1a17' : '#fbf8f2', stroke: light ? null : 'rgba(0,0,0,0.25)' };
+	}
 }
 
 /** The numbers, on a transparent atlas, using this die's own labels. */
-function numberAtlas(shape: DieShape, labels: number[], ink: Ink): CanvasTexture {
+function numberAtlas(shape: DieShape, labels: number[], ink: Ink, look: DieLook): CanvasTexture {
 	const { cols, rows } = atlasGrid(shape);
 	const canvas = createEl('canvas');
 	canvas.width = cols * CELL;
@@ -156,12 +245,14 @@ function numberAtlas(shape: DieShape, labels: number[], ink: Ink): CanvasTexture
 	g.textAlign = 'center';
 	g.textBaseline = 'middle';
 	g.lineJoin = 'round';
-	const font = FONT_SCALE[shape.sides] ?? 0.3;
+	const font = (FONT_SCALE[shape.sides] ?? 0.3) * look.labelScale;
+	const face = FONTS.find(f => f.id === look.font) ?? FONTS[0];
+	const family = face.css.startsWith('var(') ? (getComputedStyle(activeDocument.body).getPropertyValue('--font-interface').trim() || 'sans-serif') : face.css;
 	const draw = (text: string, cx: number, cy: number, angle: number, size: number) => {
 		g.save();
 		g.translate(cx, cy);
 		g.rotate(angle);
-		g.font = `800 ${Math.round(size)}px "Inter", "Helvetica Neue", Arial, sans-serif`;
+		g.font = `${face.weight} ${Math.round(size)}px ${family}`;
 		const y = size * 0.04;
 		const underline = text === '6' || text === '9';
 		const bar = () => g.fillRect(-size * 0.22, size * 0.42, size * 0.44, Math.max(2, size * 0.07));
@@ -255,25 +346,46 @@ function ringTexture(): CanvasTexture {
 
 interface DieMeshes {
 	group: Group;
-	body: MeshPhysicalMaterial;
+	/** Materials that glow when the die crits (emissive pulse). */
+	glow: (MeshStandardMaterial | MeshPhysicalMaterial)[];
+	/** Body materials whose colour dims on a miss. */
+	tint: (MeshStandardMaterial | MeshPhysicalMaterial)[];
 	materials: Material[];
 	textures: Texture[];
 }
 
-function makeDieMeshes(shape: DieShape, labels: number[], color: string, material: DiceMaterial, time: { value: number }): DieMeshes {
+const SHADER_LOOKS: ReadonlySet<string> = new Set(['glitter', 'lava', 'frost', 'nebula', 'opal', 'marble']);
+
+/** Physical-material settings for each real finish. */
+function finishProps(finish: Finish, color: string): MeshPhysicalMaterialParameters {
+	switch (finish) {
+		case 'metal': return { metalness: 1, roughness: 0.24, clearcoat: 0.35, clearcoatRoughness: 0.1, envMapIntensity: 1.25 };
+		case 'chrome': return { metalness: 1, roughness: 0.05, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.8 };
+		case 'resin': return { metalness: 0, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 0.9, sheen: 0.2, sheenColor: new Color(color) };
+		case 'pristine': return { metalness: 0, roughness: 0.8, clearcoat: 1, clearcoatRoughness: 0.1, envMapIntensity: 0.8 };
+		case 'velvet': return { metalness: 0, roughness: 0.95, sheen: 1, sheenRoughness: 0.8, sheenColor: new Color(shade(color, 1.6)), envMapIntensity: 0.3 };
+		case 'stone': return { metalness: 0, roughness: 0.95, envMapIntensity: 0.25 };
+		case 'wood': return { metalness: 0, roughness: 0.7, clearcoat: 0.25, clearcoatRoughness: 0.4, envMapIntensity: 0.35 };
+		case 'iridescent': return { metalness: 0.35, roughness: 0.18, iridescence: 1, iridescenceIOR: 1.8, iridescenceThicknessRange: [300, 700], clearcoat: 0.8, envMapIntensity: 1.3 };
+		default: return { metalness: 0, roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.16, envMapIntensity: 0.6 };
+	}
+}
+
+function makeDieMeshes(shape: DieShape, labels: number[], look: DieLook, color: string, time: { value: number }, seed: number, image: HTMLImageElement | null): DieMeshes {
 	const built = buildGeometry(shape);
 	const group = new Group();
 	const materials: Material[] = [];
 	const textures: Texture[] = [];
 	let body: MeshPhysicalMaterial;
-	if (material === 'gem') {
+	if (look.finish === 'glass' || look.finish === 'frosted') {
 		// Glass you can see the note through: real transparency, strong reflections, a little rainbow sheen.
+		const frosted = look.finish === 'frosted';
 		const props = {
-			color: new Color(color), roughness: 0.04, metalness: 0, transparent: true, opacity: 0.62,
-			clearcoat: 1, clearcoatRoughness: 0.02, iridescence: 0.75, iridescenceIOR: 1.35, specularIntensity: 1,
+			color: new Color(color), roughness: frosted ? 0.38 : 0.04, metalness: 0, transparent: true, opacity: frosted ? 0.8 : 0.62,
+			clearcoat: 1, clearcoatRoughness: frosted ? 0.3 : 0.02, iridescence: frosted ? 0.2 : 0.75, iridescenceIOR: 1.35, specularIntensity: 1,
 			emissive: new Color(color), emissiveIntensity: 0.12, envMapIntensity: 1.6,
 		};
-		const back = new MeshPhysicalMaterial({ ...props, side: BackSide, opacity: 0.5, depthWrite: false });
+		const back = new MeshPhysicalMaterial({ ...props, side: BackSide, opacity: frosted ? 0.7 : 0.5, depthWrite: false });
 		body = new MeshPhysicalMaterial({ ...props, side: FrontSide, depthWrite: false });
 		const backMesh = new Mesh(built.geometry, back);
 		backMesh.renderOrder = 1;
@@ -283,36 +395,103 @@ function makeDieMeshes(shape: DieShape, labels: number[], color: string, materia
 		group.add(backMesh, front);
 		materials.push(back, body);
 	} else {
-		const tex = bodyAtlas(shape, color);
-		textures.push(tex);
-		body = material === 'metal'
-			? new MeshPhysicalMaterial({ map: tex, metalness: 1, roughness: 0.24, clearcoat: 0.35, clearcoatRoughness: 0.1, envMapIntensity: 1.25 })
-			: new MeshPhysicalMaterial({ map: tex, metalness: 0, roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.16, envMapIntensity: 0.6 });
-		// Procedural looks paint their own surface; the colour atlas is just the fallback.
-		if (material !== 'classic' && material !== 'metal') applyLook(body, material, color, time);
-		if (material === 'frost') body.depthWrite = false;
+		const tex = bodyAtlas(shape, color, look, seed, image);
+		textures.push(tex.map);
+		if (tex.bump) textures.push(tex.bump);
+		body = new MeshPhysicalMaterial({ map: tex.map, ...finishProps(look.finish, color) });
+		if (tex.bump) { body.bumpMap = tex.bump; body.bumpScale = look.finish === 'stone' || look.finish === 'wood' ? 1.4 : 0.6; }
+		// Animated looks paint their own surface; the colour atlas is just the fallback.
+		if (SHADER_LOOKS.has(look.finish)) applyLook(body, look.finish as ShaderLook, color, time);
+		if (look.finish === 'frost') body.depthWrite = false;
 		const mesh = new Mesh(built.geometry, body);
 		mesh.castShadow = true;
 		group.add(mesh);
 		materials.push(body);
-		if (material === 'classic' || material === 'glitter') {
-			const lineMat = new LineBasicMaterial({ color: shade(color, 0.55), transparent: true, opacity: 0.45 });
-			group.add(new LineSegments(built.edges, lineMat));
-			materials.push(lineMat);
-		}
+	}
+	const edge = look.edge === 'auto' ? shade(color, 0.55) : look.edge;
+	if (edge) {
+		const lineMat = new LineBasicMaterial({ color: edge, transparent: true, opacity: 0.5 });
+		group.add(new LineSegments(built.edges, lineMat));
+		materials.push(lineMat);
 	}
 	// Numbers ride on top as their own layer, so they stay crisp and readable on every material.
-	const numbers = numberAtlas(shape, labels, inkFor(material, color));
+	const numbers = numberAtlas(shape, labels, inkFor(look, color), look);
 	textures.push(numbers);
+	const metallic = look.finish === 'metal' || look.finish === 'chrome';
 	const numMat = new MeshStandardMaterial({
-		map: numbers, transparent: true, alphaTest: 0.35, depthWrite: false, roughness: 0.45, metalness: material === 'metal' ? 0.6 : 0,
+		map: numbers, transparent: true, alphaTest: 0.35, depthWrite: false, roughness: 0.45, metalness: metallic ? 0.6 : 0,
 		polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
 	});
 	const numMesh = new Mesh(built.geometry, numMat);
 	numMesh.renderOrder = 3;
 	group.add(numMesh);
 	materials.push(numMat);
-	return { group, body, materials, textures };
+	return { group, glow: [body], tint: [body], materials, textures };
+}
+
+// ---------------------------------------------------------------------------
+// Model dice (imported sets): glTF, loaded once per file and cloned per die
+
+const modelCache = new Map<string, Promise<Object3D | null>>();
+
+function loadModel(url: string): Promise<Object3D | null> {
+	let p = modelCache.get(url);
+	if (!p) {
+		p = new GLTFLoader().loadAsync(url).then(gltf => {
+			const root = gltf.scene;
+			// Fit the model to our dice (corners at radius 1), centred.
+			const box = new Box3().setFromObject(root);
+			const centre = box.getCenter(new Vector3());
+			let r = 0;
+			root.traverse(o => {
+				const m = o as Mesh;
+				if (!m.isMesh) return;
+				m.updateWorldMatrix(true, false);
+				const pos = m.geometry.getAttribute('position');
+				const v = new Vector3();
+				for (let i = 0; i < pos.count; i++) r = Math.max(r, v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld).sub(centre).length());
+			});
+			const holder = new Group();
+			root.position.sub(centre);
+			holder.add(root);
+			holder.scale.setScalar(r > 0 ? 1 / r : 1);
+			return holder;
+		}).catch((e) => { console.warn('Nimble: could not load a dice model', url, e); return null; });
+		modelCache.set(url, p);
+	}
+	return p;
+}
+
+function makeModelMeshes(template: Object3D): DieMeshes {
+	const group = new Group();
+	const inner = template.clone(true);
+	const materials: Material[] = [];
+	const glow: MeshStandardMaterial[] = [];
+	inner.traverse(o => {
+		const m = o as Mesh;
+		if (!m.isMesh) return;
+		m.castShadow = true;
+		// Own material copies, so a crit can glow without lighting up every die from the set.
+		const own = (Array.isArray(m.material) ? m.material : [m.material]).map(mat => mat.clone());
+		m.material = Array.isArray(m.material) ? own : own[0];
+		for (const mat of own) {
+			materials.push(mat);
+			if ((mat as MeshStandardMaterial).isMeshStandardMaterial) glow.push(mat as MeshStandardMaterial);
+		}
+	});
+	group.add(inner);
+	return { group, glow, tint: glow, materials, textures: [] };
+}
+
+/** Load images used as textures (vault pictures), so atlases can draw them. */
+function loadImage(url: string): Promise<HTMLImageElement | null> {
+	return new Promise(resolve => {
+		const img = new Image();
+		img.crossOrigin = 'anonymous';
+		img.onload = () => resolve(img);
+		img.onerror = () => resolve(null);
+		img.src = url;
+	});
 }
 
 // ---------------------------------------------------------------------------
@@ -371,13 +550,16 @@ function getStage(): Stage {
 	return stage;
 }
 
-function resize(s: Stage): void {
+function resize(s: Stage, count = 1): void {
 	const w = window.innerWidth, h = window.innerHeight;
 	s.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 	s.renderer.setSize(w, h, false);
 	s.camera.aspect = w / h;
 	// A die (radius 1) is about 2 × pxPerUnit pixels across, whatever the window size.
-	s.pxPerUnit = Math.max(26, Math.min(40, Math.min(w, h) / 16)) * s.scale;
+	// Big dice on a small screen shrink just enough that this many still fit on the table.
+	const need = 1.4 + 0.8 * Math.sqrt(Math.max(1, count));
+	const fit = Math.min((w / 2) * 0.9, (h / 2) * 0.82) / need;
+	s.pxPerUnit = Math.min(Math.max(26, Math.min(40, Math.min(w, h) / 16)) * s.scale, Math.max(26, fit));
 	const fov = (s.camera.fov * Math.PI) / 180;
 	const dist = (h / 2) / (Math.tan(fov / 2) * s.pxPerUnit);
 	const elev = (78 * Math.PI) / 180;
@@ -414,6 +596,19 @@ function teardown(): void {
 	stage.floor.geometry.dispose();
 	for (const b of geometryCache.values()) { b.geometry.dispose(); b.edges.dispose(); }
 	geometryCache.clear();
+	for (const p of modelCache.values()) {
+		void p.then(root => root?.traverse(o => {
+			const m = o as Mesh;
+			if (!m.isMesh) return;
+			m.geometry.dispose();
+			for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
+				for (const v of Object.values(mat)) if (v instanceof Texture) v.dispose();
+				mat.dispose();
+			}
+		}));
+	}
+	modelCache.clear();
+	disposeEffectSprites();
 	stage = null;
 }
 
@@ -524,7 +719,7 @@ function lastPose(seg: Segment, k: number): Resting {
 }
 
 /** The opening throw: all non-explosion dice in from a random edge. */
-function simulateThrow(shapes: DieShape[], ext: { x: number; z: number }): { seg: Segment; flatness: number } {
+function simulateThrow(shapes: DieShape[], ext: { x: number; z: number }, force = 1): { seg: Segment; flatness: number } {
 	const t = makeTable(ext);
 	// Throw from one edge (mostly the near or side edges, like a hand across the table).
 	const edge = [0, 0, 1, 2, 3][Math.floor(Math.random() * 5)]; // 0 near, 1 right, 2 left, 3 far
@@ -555,9 +750,9 @@ function simulateThrow(shapes: DieShape[], ext: { x: number; z: number }): { seg
 		b.quaternion.copy(q);
 		const aim = new Vec3(target.x - b.position.x, 0, target.z - b.position.z);
 		aim.normalize();
-		const speed = rand(12, 18);
-		b.velocity.set(aim.x * speed, rand(2, 6), aim.z * speed);
-		b.angularVelocity.set(rand(-22, 22), rand(-14, 14), rand(-22, 22));
+		const speed = rand(12, 18) * force;
+		b.velocity.set(aim.x * speed, rand(2, 6) * Math.sqrt(force), aim.z * speed);
+		b.angularVelocity.set(rand(-22, 22) * force, rand(-14, 14) * force, rand(-22, 22) * force);
 		return b;
 	});
 	const r = record(t, bodies, shapes);
@@ -591,25 +786,56 @@ function simulatePop(shape: DieShape, from: Resting, resting: { shape: DieShape;
 
 // ---------------------------------------------------------------------------
 
-export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
+let rollSeq = 0;
+
+export async function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
+	const my = ++rollSeq;
 	current?.cancel();
+	current = null;
 	if (fadeTimer) { window.clearTimeout(fadeTimer); fadeTimer = null; }
 	const t0 = performance.now();
+	const shown = dice.slice(0, MAX_DICE);
+	const materialOf = (d: Die3d): DiceMaterial => d.material ?? opts.materials?.[d.role] ?? opts.material ?? 'classic';
+	const roleColor = (d: Die3d) => d.role === 'primary' ? opts.primaryColor : d.role === 'explosion' ? (opts.explosionColor ?? opts.primaryColor) : opts.diceColor;
+	// A crit's primary die takes the crit look (its `material`), even with full looks.
+	const looks = shown.map(d => d.look ?? legacyLook(roleColor(d), materialOf(d)));
+	const colors = looks.map(l => l.body[Math.floor(Math.random() * l.body.length)] ?? '#ece6d8');
+
+	// Models and texture images load first (cached after the first roll).
+	const models = await Promise.all(shown.map(d => (d.modelUrl && hasModelLayout(d.sides) ? loadModel(d.modelUrl) : Promise.resolve(null))));
+	const imageUrls = [...new Set(looks.map(l => l.textureUrl).filter((u): u is string => !!u))];
+	const loaded = await Promise.all(imageUrls.map(loadImage));
+	const images = new Map(imageUrls.map((u, i) => [u, loaded[i]]));
+	if (my !== rollSeq) return; // a newer roll started while we were loading
+
 	const s = getStage();
 	if (!s.canvas.isConnected) s.canvas.ownerDocument.body.appendChild(s.canvas);
 	s.canvas.classList.remove('is-fading');
 	s.scale = Math.max(0.5, Math.min(4, opts.scale ?? 1));
-	resize(s);
+	const shadows = opts.shadows ?? 'soft';
+	s.renderer.shadowMap.enabled = shadows !== 'off';
+	s.floor.visible = shadows !== 'off';
+	const mapSize = shadows === 'sharp' ? 2048 : 1024;
+	if (s.sun.shadow.mapSize.x !== mapSize || (s.renderer.shadowMap.type === PCFShadowMap) !== (shadows === 'sharp')) {
+		s.renderer.shadowMap.type = shadows === 'sharp' ? PCFShadowMap : PCFSoftShadowMap;
+		s.sun.shadow.mapSize.set(mapSize, mapSize);
+		s.sun.shadow.radius = shadows === 'sharp' ? 1 : 5;
+		s.sun.shadow.map?.dispose();
+		(s.sun.shadow as unknown as { map: unknown }).map = null;
+	}
+	resize(s, shown.length);
 	const ext = floorExtent(s);
 	const stageMs = performance.now() - t0;
 	const tSim = performance.now();
-	const materialOf = (d: Die3d): DiceMaterial => d.material ?? opts.materials?.[d.role] ?? opts.material ?? 'classic';
+	const speed = Math.max(0.25, Math.min(3, opts.speed ?? 1));
+	const force = Math.max(0.4, Math.min(2, opts.force ?? 1));
 
-	const shown = dice.slice(0, MAX_DICE);
-	const shapes = shown.map(d => dieShape(d.sides));
+	const isModel = shown.map((_, i) => !!models[i]);
+	const shapes = shown.map((d, i) => (isModel[i] ? modelShape(d.sides)! : dieShape(d.sides)));
 	const wave1 = shown.map((d, i) => i).filter(i => shown[i].role !== 'explosion');
 	const chain = shown.map((d, i) => i).filter(i => shown[i].role === 'explosion');
-	const colorOf = (d: Die3d) => d.role === 'primary' ? opts.primaryColor : d.role === 'explosion' ? (opts.explosionColor ?? opts.primaryColor) : opts.diceColor;
+	// A model d10's kites aren't flat, so "lying flat" is a little looser for it.
+	const flatEnough = (idx: number[]) => (idx.some(i => isModel[i] && shapes[i].sides === 10) ? 0.9 : 0.97);
 
 	// 1. Simulate. Retry a throw that leaves a die propped up at an angle (rare).
 	const segments: Segment[] = [];
@@ -618,9 +844,9 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	{
 		let best: { seg: Segment; flatness: number } | null = null;
 		for (let tries = 0; tries < 4; tries++) {
-			const attempt = simulateThrow(wave1.map(i => shapes[i]), ext);
+			const attempt = simulateThrow(wave1.map(i => shapes[i]), ext, force);
 			if (!best || attempt.flatness > best.flatness) best = attempt;
-			if (attempt.flatness > 0.97) break;
+			if (attempt.flatness > flatEnough(wave1)) break;
 			retries++;
 		}
 		const seg = { ...best!.seg, dice: wave1 };
@@ -634,7 +860,7 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 		for (let tries = 0; tries < 3; tries++) {
 			const attempt = simulatePop(shapes[di], popFrom, resting, ext);
 			if (!best || attempt.flatness > best.flatness) best = attempt;
-			if (attempt.flatness > 0.97) break;
+			if (attempt.flatness > flatEnough([di])) break;
 			retries++;
 		}
 		const seg: Segment = { dice: [di], steps: best!.steps, frames: best!.frames, burstAt: popFrom.pos.clone(), speed: 1.25 };
@@ -643,12 +869,15 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 		popFrom = finalPose[di]!;
 	}
 
-	// 2. Relabel: whatever face physics left on top now shows the rolled value.
+	// 2. Make the landed face show the rolled value: renumber our dice, turn model dice.
+	const value = (d: Die3d, shape: DieShape) => Math.min(Math.max(1, d.value), shape.sides);
 	const labels = shown.map((d, i) => {
 		const shape = shapes[i];
+		if (isModel[i]) return defaultLabels(shape);
 		const top = topIndex(shape, finalPose[i]!.quat).index;
-		return relabel(shape, defaultLabels(shape), top, Math.min(Math.max(1, d.value), shape.sides));
+		return relabel(shape, defaultLabels(shape), top, value(d, shape));
 	});
+	const correction = shown.map((d, i) => (isModel[i] ? modelCorrection(shapes[i], finalPose[i]!.quat, value(d, shapes[i])) : null));
 	const simMs = performance.now() - tSim;
 	// How far any die's centre ever got past a wall (or below the floor). A hard hit can sink a
 	// die a little into a wall for a frame; anything past ~0.6 would mean it really escaped.
@@ -664,7 +893,9 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	// 3. Build the dice.
 	const time = { value: 0 };
 	const meshes = shown.map((d, i) => {
-		const m = makeDieMeshes(shapes[i], labels[i], colorOf(d), materialOf(d), time);
+		const m = isModel[i]
+			? makeModelMeshes(models[i]!)
+			: makeDieMeshes(shapes[i], labels[i], looks[i], colors[i], time, i + 1, looks[i].textureUrl ? images.get(looks[i].textureUrl) ?? null : null);
 		m.group.visible = false;
 		s.scene.add(m.group);
 		return m;
@@ -683,7 +914,7 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	const landedAt = tcur - GAP;
 
 	const rings: { mesh: Mesh; mat: MeshBasicMaterial; start: number }[] = [];
-	const burst = (at: Vector3, color: string, start: number) => {
+	const ring = (at: Vector3, color: string, start: number) => {
 		const mat = new MeshBasicMaterial({ map: s.ringTex, color: new Color(color), transparent: true, depthWrite: false, side: DoubleSide, opacity: 0 });
 		const mesh = new Mesh(new PlaneGeometry(1, 1), mat);
 		mesh.rotation.x = -Math.PI / 2;
@@ -694,7 +925,39 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 		extraObjects.push(mesh);
 		rings.push({ mesh, mat, start });
 	};
-	segments.forEach((seg, k) => { if (seg.burstAt) burst(seg.burstAt, colorOf(shown[seg.dice[0]]), starts[k]); });
+	// Crit tint: the die's colour, unless it's a model (its colour is in its textures) or too grey to read.
+	const FIRE = '#ff6a00';
+	const critTint = (i: number) => {
+		if (isModel[i]) return FIRE;
+		const c = new Color(colors[i]);
+		const hsl = { h: 0, s: 0, l: 0 };
+		c.getHSL(hsl);
+		return hsl.s < 0.25 || hsl.l > 0.85 || hsl.l < 0.12 ? FIRE : colors[i];
+	};
+	segments.forEach((seg, k) => { if (seg.burstAt) ring(seg.burstAt, critTint(seg.dice[0]), starts[k]); });
+
+	// Effects for how the roll went.
+	const bursts: { b: Burst; start: number }[] = [];
+	const effect = opts.effect;
+	const addBurst = (at: Vector3, tint: string, start: number) => {
+		if (!effect || effect.kind === 'none' || bursts.length >= 8) return;
+		const b = makeBurst(effect.kind, new Vector3(at.x, 0, at.z), tint);
+		if (!b) return;
+		b.object.visible = false;
+		s.scene.add(b.object);
+		bursts.push({ b, start });
+	};
+	const primaryIdx = Math.max(0, shown.findIndex(d => d.role === 'primary'));
+	if (effect?.event === 'crit') {
+		segments.forEach((seg, k) => { if (seg.burstAt) addBurst(seg.burstAt, colors[seg.dice[0]], starts[k]); });
+		if (finalPose[primaryIdx]) addBurst(finalPose[primaryIdx].pos, colors[primaryIdx], landedAt);
+	} else if (effect?.event === 'miss') {
+		if (finalPose[primaryIdx]) addBurst(finalPose[primaryIdx].pos, colors[primaryIdx], landedAt);
+	} else if (effect) {
+		shown.forEach((_, i) => { if (finalPose[i]) addBurst(finalPose[i].pos, colors[i], landedAt + i * 60); });
+	}
+	// A miss dims the die that missed.
+	const dimmed = effect?.event === 'miss' ? meshes[primaryIdx]?.tint.map(m => ({ m, from: m.color.clone() })) ?? [] : [];
 
 	const qa = new Quaternion(), qb = new Quaternion();
 	const apply = (elapsed: number) => {
@@ -712,6 +975,8 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 				qa.set(fr[a + 3], fr[a + 4], fr[a + 5], fr[a + 6]);
 				qb.set(fr[b + 3], fr[b + 4], fr[b + 5], fr[b + 6]);
 				g.quaternion.slerpQuaternions(qa, qb, u);
+				const c = correction[di];
+				if (c) g.quaternion.multiply(c);
 				// An exploding die grows out of the one it popped from.
 				if (seg.burstAt) g.scale.setScalar(Math.min(1, 0.3 + local / 220));
 			});
@@ -720,15 +985,22 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 			const u = (elapsed - r.start) / 480;
 			r.mesh.visible = u >= 0 && u <= 1;
 			if (!r.mesh.visible) continue;
-			r.mesh.scale.setScalar(1.6 + u * 5);
-			r.mat.opacity = 1 - u;
+			r.mesh.scale.setScalar(1.6 + u * 6);
+			r.mat.opacity = Math.min(1, 1.4 * (1 - u));
 		}
+		for (const { b, start } of bursts) b.update(elapsed - start);
 		// Crit dice glow, gently pulsing.
 		shown.forEach((d, i) => {
 			if (d.role !== 'explosion') return;
-			meshes[i].body.emissive.set(colorOf(d));
-			meshes[i].body.emissiveIntensity = 0.18 + 0.14 * Math.sin(elapsed / 160);
+			for (const m of meshes[i].glow) {
+				m.emissive.set(critTint(i));
+				m.emissiveIntensity = (isModel[i] ? 0.35 : 0.18) + 0.14 * Math.sin(elapsed / 160);
+			}
 		});
+		if (dimmed.length) {
+			const k = Math.max(0, Math.min(1, (elapsed - landedAt) / 450));
+			for (const { m, from } of dimmed) m.color.copy(from).multiplyScalar(1 - 0.5 * k);
+		}
 	};
 
 	// Render loop: runs only while something moves (or glows).
@@ -748,7 +1020,7 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 		if (startMs < 0) { startMs = w0 - t0; begin = w0; }
 		if (last) frameMs.push(ts - last);
 		last = ts;
-		const elapsed = w0 - begin;
+		const elapsed = (w0 - begin) * speed;
 		time.value = elapsed / 1000;
 		apply(elapsed);
 		s.renderer.render(s.scene, s.camera);
@@ -758,9 +1030,10 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 			landedMs = performance.now() - t0;
 			report();
 			resolveLanded();
-			// Animated looks and crit glow keep moving while the dice are on show; still dice can stop.
-			const shimmer = chain.length > 0 || shown.some(d => ANIMATED.has(materialOf(d)));
-			stopAfter = shimmer ? elapsed + 2100 : elapsed;
+			// Animated looks, crit glow and effects keep moving while the dice are on show; still dice can stop.
+			const shimmer = chain.length > 0 || looks.some(l => ANIMATED.has(l.finish));
+			const effectsEnd = bursts.reduce((m, x) => Math.max(m, x.start + 2000), 0);
+			stopAfter = Math.max(shimmer ? elapsed + 2100 : elapsed, effectsEnd, dimmed.length ? landedAt + 500 : 0);
 		}
 		if (elapsed >= stopAfter) return;
 		raf = window.requestAnimationFrame(tick);
@@ -768,13 +1041,18 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	raf = window.requestAnimationFrame(tick);
 
 	const report = () => {
-		const shownValues = meshes.map((m, i) => labels[i][topIndex(shapes[i], m.group.quaternion).index]);
+		const shownValues = meshes.map((m, i) => {
+			const q = m.group.quaternion;
+			if (!isModel[i]) return labels[i][topIndex(shapes[i], q).index];
+			return defaultLabels(shapes[i])[topIndex(shapes[i], q).index];
+		});
 		const sorted = (xs: number[]) => xs.slice().sort((a, b) => a - b);
 		const p95 = (xs: number[]) => (xs.length ? sorted(xs)[Math.floor(xs.length * 0.95)] : 0);
 		const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 		stats.last = {
 			stageMs, simMs, startMs, landedMs, frames: frameMs.length, avgFrameMs: avg(frameMs), p95FrameMs: p95(frameMs),
 			avgWorkMs: avg(workMs), p95WorkMs: p95(workMs), retries, shown: shownValues, inBounds, overshoot: Math.round(overshoot * 100) / 100, segmentsMs: segments.map(g => Math.round((g.steps * STEP * 1000) / (g.speed ?? 1))),
+			models: isModel.filter(Boolean).length, effects: bursts.length, pxPerUnit: Math.round(s.pxPerUnit * 10) / 10, table: { x: Math.round(ext.x * 100) / 100, z: Math.round(ext.z * 100) / 100 },
 		};
 	};
 
@@ -787,6 +1065,7 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 		}
 		for (const o of extraObjects) { s.scene.remove(o); o.geometry.dispose(); }
 		for (const m of extraMaterials) m.dispose();
+		for (const { b } of bursts) { s.scene.remove(b.object); b.dispose(); }
 	};
 	let cancelled = false;
 	current = {
@@ -797,20 +1076,80 @@ export function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 		},
 	};
 
-	return landed.then(() => {
-		if (cancelled) return;
-		// Keep the result on screen for a moment, then fade out and free the GPU.
+	await landed;
+	if (cancelled) return;
+	// Keep the result on screen for a moment, then fade out and free the GPU.
+	const stay = Math.max(500, opts.stayMs ?? 1700);
+	fadeTimer = window.setTimeout(() => {
+		if (!stage || cancelled) return;
+		stage.canvas.classList.add('is-fading');
 		fadeTimer = window.setTimeout(() => {
-			if (!stage || cancelled) return;
-			stage.canvas.classList.add('is-fading');
-			fadeTimer = window.setTimeout(() => {
-				if (cancelled) return;
-				cleanup();
-				current = null;
-				if (stage) stage.canvas.remove();
-				// Keep the renderer briefly so a quick re-roll starts warm.
-				idleTimer = window.setTimeout(teardown, 20000);
-			}, 380);
-		}, 1700);
-	});
+			if (cancelled) return;
+			cleanup();
+			current = null;
+			if (stage) stage.canvas.remove();
+			// Keep the renderer briefly so a quick re-roll starts warm.
+			idleTimer = window.setTimeout(teardown, 20000);
+		}, 380);
+	}, stay);
+}
+
+// ---------------------------------------------------------------------------
+// Settings preview: one die turning slowly on its own small canvas.
+
+export function preview(canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }): () => void {
+	let stopped = false;
+	let raf = 0;
+	const w = canvas.clientWidth || 160, h = canvas.clientHeight || 160;
+	const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
+	renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+	renderer.setSize(w, h, false);
+	renderer.outputColorSpace = SRGBColorSpace;
+	const scene = new Scene();
+	const pmrem = new PMREMGenerator(renderer);
+	const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+	pmrem.dispose();
+	scene.environment = env;
+	scene.environmentIntensity = 0.55;
+	scene.add(new AmbientLight(0xffffff, 0.35));
+	const sun = new DirectionalLight(0xffffff, 2.1);
+	sun.position.set(-4, 6, 5);
+	scene.add(sun);
+	const camera = new PerspectiveCamera(30, w / h, 0.1, 50);
+	camera.position.set(0, 1.2, 4.6);
+	camera.lookAt(0, 0, 0);
+	const time = { value: 0 };
+	let meshes: DieMeshes | null = null;
+	const color = die.look.body[0] ?? '#ece6d8';
+	const stop = () => {
+		if (stopped) return;
+		stopped = true;
+		window.cancelAnimationFrame(raf);
+		if (meshes) { for (const m of meshes.materials) m.dispose(); for (const t of meshes.textures) t.dispose(); }
+		env.dispose();
+		renderer.dispose();
+	};
+	void (async () => {
+		const model = die.modelUrl && hasModelLayout(die.sides) ? await loadModel(die.modelUrl) : null;
+		const image = die.look.textureUrl ? await loadImage(die.look.textureUrl) : null;
+		if (stopped) return;
+		if (model) meshes = makeModelMeshes(model);
+		else {
+			const shape = dieShape(die.sides);
+			meshes = makeDieMeshes(shape, defaultLabels(shape), die.look, color, time, 1, image);
+		}
+		scene.add(meshes.group);
+		const t0 = performance.now();
+		const tick = () => {
+			if (stopped) return;
+			if (!canvas.isConnected) { stop(); return; }
+			const t = (performance.now() - t0) / 1000;
+			time.value = t;
+			meshes!.group.rotation.set(0.5 + Math.sin(t * 0.4) * 0.3, t * 0.6, 0.2);
+			renderer.render(scene, camera);
+			raf = window.requestAnimationFrame(tick);
+		};
+		tick();
+	})();
+	return stop;
 }
