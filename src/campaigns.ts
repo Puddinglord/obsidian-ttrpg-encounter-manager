@@ -1,12 +1,14 @@
 // Live campaign index for the vault, plus the active campaign. The active
 // campaign follows the note you open, and each campaign keeps its own party.
 
-import { debounce, Events, normalizePath, Notice, TFile, TFolder } from 'obsidian';
+import { debounce, Events, normalizePath, Notice, TAbstractFile, TFile, TFolder } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import {
-	adjacentScene, buildCampaigns, Campaign, campaignOf, Chapter, chapterOf, fmText, nextOrder, NoteInfo, safeName,
+	adjacentScene, buildCampaigns, Campaign, campaignOf, canMoveInto, Chapter, chapterOf, fmText, joinPath, nextOrder, NoteInfo, parentOf, safeName,
 } from './campaign-model';
-import { campaignHome, chapterHome, locationNote, npcNote, sceneNote, sessionNote } from './campaign-templates';
+import {
+	blankNote, campaignHome, chapterHome, handoutNote, locationNote, mapNote, monsterNote, npcNote, sceneNote, sessionNote, StarterKind,
+} from './campaign-templates';
 
 export type NewNoteKind = 'scene' | 'npc' | 'location' | 'session';
 
@@ -56,11 +58,13 @@ export class CampaignStore extends Events {
 	}
 
 	rebuild(): void {
-		const notes: NoteInfo[] = this.app.vault.getMarkdownFiles().map(f => ({
+		// Every file and folder, not just notes: empty folders and an Assets folder full of images still show.
+		const notes: NoteInfo[] = this.app.vault.getFiles().map(f => ({
 			path: f.path,
-			fm: this.app.metadataCache.getFileCache(f)?.frontmatter ?? {},
+			fm: f.extension === 'md' ? this.app.metadataCache.getFileCache(f)?.frontmatter ?? {} : {},
 		}));
-		this.campaigns = buildCampaigns(notes);
+		const folders = this.app.vault.getAllFolders(false).map(f => f.path);
+		this.campaigns = buildCampaigns(notes, folders);
 		this.npcs = [];
 		for (const f of this.app.vault.getMarkdownFiles()) {
 			const cache = this.app.metadataCache.getFileCache(f);
@@ -187,11 +191,22 @@ export class CampaignStore extends Events {
 		await this.app.vault.createFolder(p).catch(() => undefined);
 	}
 
+	/** `path`, or `path` with " 2", " 3"… before the extension if it's taken. */
+	private available(path: string, folder = false): string {
+		const p = normalizePath(path);
+		const slash = p.lastIndexOf('/');
+		const dot = p.lastIndexOf('.');
+		const hasExt = !folder && dot > slash + 1;
+		const base = hasExt ? p.slice(0, dot) : p;
+		const ext = hasExt ? p.slice(dot) : '';
+		let out = p;
+		for (let i = 2; this.app.vault.getAbstractFileByPath(out); i++) out = `${base} ${i}${ext}`;
+		return out;
+	}
+
 	private async createNote(path: string, body: string): Promise<TFile> {
-		let p = normalizePath(path);
-		const base = p.replace(/\.md$/, '');
-		for (let i = 2; this.app.vault.getAbstractFileByPath(p); i++) p = `${base} ${i}.md`;
-		await this.ensureFolder(p.slice(0, p.lastIndexOf('/')));
+		const p = this.available(path);
+		await this.ensureFolder(parentOf(p));
 		const file = await this.app.vault.create(p, body);
 		this.rebuildSoon();
 		return file;
@@ -229,17 +244,126 @@ export class CampaignStore extends Events {
 	}
 
 	async createScene(ch: Chapter, name: string): Promise<TFile> {
-		return this.createNote(`${ch.folder}/${safeName(name)}.md`, sceneNote(name, nextOrder(ch.scenes)));
+		return this.createStarter(ch.folder, 'scene', name);
 	}
 
 	async createInSection(c: Campaign, kind: Exclude<NewNoteKind, 'scene'>, name: string): Promise<TFile> {
-		const folder = `${c.folder}/${SECTION_FOR[kind]}`;
-		if (kind === 'session') {
-			const date = new Date().toISOString().slice(0, 10);
-			const last = this.lastScene(c);
-			return this.createNote(`${folder}/${safeName(name)}.md`, sessionNote(name, date, last?.replace(/^.*\//, '').replace(/\.md$/, '')));
+		return this.createStarter(`${c.folder}/${SECTION_FOR[kind]}`, kind, name);
+	}
+
+	/**
+	 * A new note from a starter, in any folder. Scenes in a chapter go to the end
+	 * of it; a map can start with its image already set.
+	 */
+	async createStarter(folder: string, kind: StarterKind, name: string, opts: { image?: string } = {}): Promise<TFile> {
+		const path = this.available(`${joinPath(folder, safeName(name))}.md`);
+		const c = this.of(path);
+		const ch = c && chapterOf(c, path);
+		let body: string;
+		switch (kind) {
+			case 'scene': body = sceneNote(name, nextOrder(ch?.scenes ?? [])); break;
+			case 'npc': body = npcNote(name); break;
+			case 'location': body = locationNote(name); break;
+			case 'monster': body = monsterNote(name); break;
+			case 'handout': body = handoutNote(name); break;
+			case 'session': {
+				const last = c && this.lastScene(c);
+				body = sessionNote(name, new Date().toISOString().slice(0, 10), last?.replace(/^.*\//, '').replace(/\.md$/, ''));
+				break;
+			}
+			case 'map': {
+				const img = opts.image ? this.app.vault.getAbstractFileByPath(opts.image) : null;
+				body = mapNote(name, img instanceof TFile ? this.app.metadataCache.fileToLinktext(img, path, false) : undefined);
+				break;
+			}
+			default: body = blankNote();
 		}
-		return this.createNote(`${folder}/${safeName(name)}.md`, kind === 'npc' ? npcNote(name) : locationNote(name));
+		return this.createNote(path, body);
+	}
+
+	/** A new folder (a section) in the campaign. Returns its path. */
+	async createFolder(parent: string, name: string): Promise<string> {
+		const path = this.available(joinPath(parent, safeName(name)), true);
+		await this.app.vault.createFolder(path);
+		this.rebuild();
+		return path;
+	}
+
+	/**
+	 * Move notes, files or folders into `target`, keeping links working (Obsidian
+	 * rewrites them). A note moved into a chapter joins the end of its scenes.
+	 * Returns the new paths of what moved.
+	 */
+	async move(paths: string[], target: string): Promise<string[]> {
+		const moved: string[] = [];
+		const dest = this.app.vault.getAbstractFileByPath(target);
+		if (target && !(dest instanceof TFolder)) return moved;
+		const c = this.of(joinPath(target, 'x'));
+		const ch = c?.chapters.find(x => x.folder === target);
+		let order = ch ? nextOrder(ch.scenes) : 0;
+		for (const p of paths) {
+			const f = this.app.vault.getAbstractFileByPath(p);
+			if (!f || !canMoveInto(f.path, target)) continue;
+			if (c && f.path === c.folder) continue; // the campaign itself
+			if (f instanceof TFile && this.campaigns.some(x => x.home.path === f.path)) continue; // a campaign's home note
+			const to = this.available(joinPath(target, f.name), f instanceof TFolder);
+			await this.app.fileManager.renameFile(f, to);
+			if (ch && f instanceof TFile && f.extension === 'md' && !ch.maps.some(m => m.path === p)) {
+				const n = order++;
+				await this.app.fileManager.processFrontMatter(f, (fmData: Record<string, unknown>) => { fmData.order = n; });
+			}
+			moved.push(f.path);
+		}
+		this.rebuild();
+		if (moved.length) {
+			const where = target === c?.folder ? c.name : target.replace(/^.*\//, '');
+			new Notice(moved.length === 1 ? `Moved ${moved[0].replace(/^.*\//, '').replace(/\.md$/, '')} to ${where}` : `Moved ${moved.length} items to ${where}`);
+		}
+		return moved;
+	}
+
+	/** Rename a note, file or folder in place. Keeps the extension. Returns the new path, or null. */
+	async rename(path: string, name: string): Promise<string | null> {
+		const f = this.app.vault.getAbstractFileByPath(path);
+		if (!f) return null;
+		const ext = f instanceof TFile ? `.${f.extension}` : '';
+		const to = normalizePath(joinPath(parentOf(f.path), safeName(name.replace(new RegExp(`${ext.replace('.', '\\.')}$`, 'i'), '')) + ext));
+		if (to === f.path) return to;
+		if (this.app.vault.getAbstractFileByPath(to)) { new Notice(`"${to.replace(/^.*\//, '')}" already exists here.`); return null; }
+		await this.app.fileManager.renameFile(f, to);
+		this.rebuild();
+		return to;
+	}
+
+	/** Rename a chapter: its folder, and its home note too when the two share a name. */
+	async renameChapter(ch: Chapter, name: string): Promise<void> {
+		const oldName = ch.folder.replace(/^.*\//, '');
+		const homeName = ch.home.path.replace(/^.*\//, '').replace(/\.md$/, '');
+		const folder = await this.rename(ch.folder, name);
+		if (!folder || homeName !== oldName) return;
+		await this.rename(`${folder}/${homeName}.md`, name);
+	}
+
+	/** Move to Obsidian's trash (it follows the user's "Deleted files" setting). */
+	async trash(path: string): Promise<void> {
+		const f: TAbstractFile | null = this.app.vault.getAbstractFileByPath(path);
+		if (!f) return;
+		await this.app.fileManager.trashFile(f);
+		this.rebuild();
+	}
+
+	/** Copy files picked from the device into a folder. Returns the new paths. */
+	async importFiles(folder: string, files: File[]): Promise<string[]> {
+		await this.ensureFolder(folder);
+		const out: string[] = [];
+		for (const file of files) {
+			const path = this.available(joinPath(folder, safeName(file.name)));
+			await this.app.vault.createBinary(path, await file.arrayBuffer());
+			out.push(path);
+		}
+		this.rebuild();
+		if (out.length) new Notice(out.length === 1 ? `Added ${out[0].replace(/^.*\//, '')}` : `Added ${out.length} files`);
+		return out;
 	}
 
 	/** "Session 4" when there are three already. */

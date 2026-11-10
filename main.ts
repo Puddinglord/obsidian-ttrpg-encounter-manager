@@ -533,14 +533,22 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	// ------------------------------------------------------------------------
 	// Campaigns
 
-	async openCampaignView(): Promise<void> {
-		let leaf: WorkspaceLeaf | null = this.app.workspace.getLeavesOfType(CAMPAIGN_VIEW_TYPE)[0] ?? null;
-		if (!leaf) {
-			leaf = this.app.workspace.getLeftLeaf(false);
-			if (!leaf) return;
-			await leaf.setViewState({ type: CAMPAIGN_VIEW_TYPE, active: true });
-		}
-		await this.app.workspace.revealLeaf(leaf);
+	private openingCampaignView: Promise<void> | null = null;
+
+	/** Show the Campaign panel, opening it if needed. Two calls at once still give one panel. */
+	openCampaignView(): Promise<void> {
+		this.openingCampaignView ??= (async () => {
+			// Shown once is enough: don't auto-open a second panel after an update or reload.
+			if (!this.settings.campaignPanelShown) { this.settings.campaignPanelShown = true; await this.saveSettings(); }
+			let leaf: WorkspaceLeaf | null = this.app.workspace.getLeavesOfType(CAMPAIGN_VIEW_TYPE)[0] ?? null;
+			if (!leaf) {
+				leaf = this.app.workspace.getLeftLeaf(false);
+				if (!leaf) return;
+				await leaf.setViewState({ type: CAMPAIGN_VIEW_TYPE, active: true });
+			}
+			await this.app.workspace.revealLeaf(leaf);
+		})().finally(() => { this.openingCampaignView = null; });
+		return this.openingCampaignView;
 	}
 
 	newCampaign(): void {

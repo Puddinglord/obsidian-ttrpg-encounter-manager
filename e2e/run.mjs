@@ -6,7 +6,7 @@
 //
 // Screenshots of failures (and a few showcase shots) go to e2e/artifacts/.
 
-import { mkdirSync, rmSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -1538,6 +1538,383 @@ test('NPC card: empty portrait slot, choose an image, secret blur, lightbox, pan
 	await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: ed.lastLine(), ch: 0 }); });
 	await o.waitFor(async () => (await o.page.locator(`${S} .nimble-npc-card img`).count()) === 1, { what: 'the card in Live Preview' });
 	await o.eval(async (app, plugin) => plugin.campaigns.setActive(null));
+});
+
+// ---------------------------------------------------------------------------
+// Campaign panel: folders, the New note picker, menus, drag and drop
+
+const CP = '.nimble-campaign-view';
+const cgroup = (o, folder) => o.page.locator(`${CP} .campaign-group[data-folder="${folder}"]`);
+const crow = (o, path) => o.page.locator(`${CP} .campaign-note[data-path="${path}"]`);
+const menuTitles = (o) => o.page.evaluate(() => [...document.querySelectorAll('.menu .menu-item-title')].map(e => e.textContent));
+const clickMenu = (o, title) => o.page.locator('.menu .menu-item', { hasText: exact(title) }).click();
+const exists = (o, path) => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), path);
+const read = (o, path) => o.eval((app, _p, path) => app.vault.adapter.read(path), path);
+const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+/** Panel sections, in the order shown. */
+const panelSections = (o) => o.page.evaluate((cp) => [...document.querySelectorAll(`${cp} .campaign-section-name`)].map(e => e.textContent), CP);
+
+/** A new campaign straight out of "New campaign" (starter folders on), shown in the panel. */
+async function freshCampaign(o, name) {
+	await o.eval(async (app, plugin, name) => {
+		document.querySelectorAll('.menu').forEach(n => n.remove());
+		document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click());
+		app.vault.setConfig('trashOption', 'local'); // deletes go to .trash in the test vault
+		const old = app.vault.getAbstractFileByPath(`Campaigns/${name}`);
+		if (old) await app.vault.delete(old, true);
+		await plugin.campaigns.createCampaign({ name, level: 1, heroes: 4, starter: true, firstChapter: 'Chapter 1' });
+		await plugin.openCampaignView();
+	}, name);
+	await o.waitFor(async () => (await panelSections(o)).length >= 5, { what: 'the starter folders in the panel' });
+}
+
+async function endCampaign(o, name) {
+	await o.eval(async (app, plugin, name) => {
+		document.querySelectorAll('.menu').forEach(n => n.remove());
+		document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click());
+		const f = app.vault.getAbstractFileByPath(`Campaigns/${name}`);
+		if (f) await app.vault.delete(f, true);
+		await plugin.campaigns.setActive(null);
+	}, name);
+	await o.page.waitForTimeout(500);
+}
+
+/** Open the New note picker from a folder's + button. */
+async function openPicker(o, folder) {
+	await cgroup(o, folder).locator('.campaign-group-head button.campaign-add-scene').click();
+	await o.page.locator('.nimble-new-note').waitFor();
+}
+const activeStarter = (o) => o.page.locator('.nimble-new-note .nimble-starter.is-active').getAttribute('data-kind');
+async function createFromPicker(o, name, kind) {
+	if (kind) await o.page.locator(`.nimble-new-note .nimble-starter[data-kind="${kind}"]`).click();
+	await o.page.locator('.nimble-new-note .nimble-name-input').fill(name);
+	await o.page.locator('.nimble-new-note .nimble-name-input').press('Enter');
+}
+
+test('campaign panel: a new campaign shows its empty starter folders, each with a +', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	assert.deepEqual(await panelSections(o), ['Sessions', 'NPCs', 'Locations', 'Monsters', 'Assets']);
+	for (const name of ['Sessions', 'NPCs', 'Locations', 'Monsters', 'Assets']) {
+		const g = cgroup(o, `Campaigns/Fresh/${name}`);
+		assert.equal(await g.locator('.campaign-group-head button.campaign-add-scene').count(), 1, `${name} has a +`);
+		assert.match(await g.locator('.campaign-empty').innerText(), /Nothing here yet/);
+	}
+	assert.match(await cgroup(o, 'Campaigns/Fresh/NPCs').locator('.campaign-empty').innerText(), /\+ New NPC/);
+	assert.match(await cgroup(o, 'Campaigns/Fresh/Assets').locator('.campaign-empty').innerText(), /\+ Add files/);
+	// The Campaign heading is there from the start, with its New folder and + buttons.
+	const heading = o.page.locator(`${CP} .campaign-heading-folders`);
+	assert.equal(await heading.locator('button[aria-label="New folder"]').count(), 1);
+	await heading.locator('button[aria-label="New note or folder"]').click();
+	assert.deepEqual(await menuTitles(o), ['New session log', 'New NPC', 'New location', 'New note…', 'New chapter', 'New folder']);
+	await o.page.keyboard.press('Escape');
+	await o.page.screenshot({ path: join(ARTIFACTS, 'campaign-fresh.png') });
+
+	// The dashboard block on the home note lists the same folders.
+	await o.openFile('Campaigns/Fresh/Fresh.md', 'preview');
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-campaign-block .campaign-section-name`).count()) === 5, { what: 'folders in the dashboard block' });
+	await endCampaign(o, 'Fresh');
+});
+
+test('campaign panel: vaults from before the fix show their empty folders after updating', async (o) => {
+	// A campaign written to disk the way 1.0.2 left it, while the plugin is off.
+	await o.eval(async (app) => { await app.plugins.disablePlugin('nimble-gm'); });
+	const root = join(o.vault, 'Campaigns', 'Old Vault');
+	for (const d of ['NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets', 'Factions', 'Act 1']) mkdirSync(join(root, d), { recursive: true });
+	writeFileSync(join(root, 'Old Vault.md'), '---\nnimble: campaign\nlevel: 2\n---\n');
+	writeFileSync(join(root, 'Act 1', 'Act 1.md'), '---\nnimble: chapter\norder: 1\n---\n');
+	writeFileSync(join(root, 'Assets', 'handout.pdf'), '%PDF-1.4\n%%EOF\n');
+	await o.waitFor(() => o.eval((app) => !!app.vault.getAbstractFileByPath('Campaigns/Old Vault/Assets/handout.pdf') && !!app.vault.getAbstractFileByPath('Campaigns/Old Vault/Factions')), { what: 'Obsidian to see the files' });
+	// "Update": turn the plugin back on.
+	await o.eval(async (app) => { await app.plugins.enablePlugin('nimble-gm'); });
+	await o.waitFor(() => o.eval((app) => !!app.plugins.plugins['nimble-gm']?._loaded), { what: 'the plugin to load' });
+	await o.eval(async (app, plugin) => {
+		await o_wait(() => plugin.campaigns.campaigns.some(c => c.folder === 'Campaigns/Old Vault'));
+		await plugin.campaigns.setActive('Campaigns/Old Vault');
+		await plugin.openCampaignView();
+		function o_wait(fn) { return new Promise(r => { const t = setInterval(() => { if (fn()) { clearInterval(t); r(); } }, 50); }); }
+	});
+	await o.waitFor(async () => (await panelSections(o)).length === 6, { what: 'the old campaign\'s folders' });
+	assert.deepEqual(await panelSections(o), ['Sessions', 'NPCs', 'Locations', 'Factions', 'Monsters', 'Assets']);
+	assert.equal(await crow(o, 'Campaigns/Old Vault/Assets/handout.pdf').count(), 1);
+	assert.equal(await cgroup(o, 'Campaigns/Old Vault/Factions').locator('button.campaign-add-scene').count(), 1);
+	await endCampaign(o, 'Old Vault');
+});
+
+test('campaign panel: a folder made in the file explorer shows up, and + adds a note to it', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	await o.eval(async (app) => { await app.vault.createFolder('Campaigns/Fresh/Factions'); });
+	await cgroup(o, 'Campaigns/Fresh/Factions').waitFor();
+	assert.match(await cgroup(o, 'Campaigns/Fresh/Factions').locator('.campaign-empty').innerText(), /\+ New note/);
+	await openPicker(o, 'Campaigns/Fresh/Factions');
+	assert.equal(await o.page.locator('.nimble-new-note .modal-title').innerText(), 'New in Factions');
+	assert.equal(await activeStarter(o), 'note');
+	await createFromPicker(o, 'Zhentarim');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Factions/Zhentarim.md'), { what: 'the new note' });
+	assert.equal(await read(o, 'Campaigns/Fresh/Factions/Zhentarim.md'), '');
+	await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === 'Campaigns/Fresh/Factions/Zhentarim.md', { what: 'the note to open' });
+	await crow(o, 'Campaigns/Fresh/Factions/Zhentarim.md').waitFor();
+	// The empty-folder link opens the same picker.
+	await cgroup(o, 'Campaigns/Fresh/Locations').locator('.campaign-empty a').click();
+	await o.page.locator('.nimble-new-note').waitFor();
+	assert.equal(await activeStarter(o), 'location');
+	await o.page.keyboard.press('Escape');
+	await endCampaign(o, 'Fresh');
+});
+
+test('New note picker: each starter writes its template where it was opened', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	await o.eval(async (app, _p, png) => {
+		const bytes = Uint8Array.from(atob(png), c => c.charCodeAt(0));
+		await app.vault.createBinary('Campaigns/Fresh/Assets/cave.png', bytes.buffer);
+		await app.vault.createFolder('Campaigns/Fresh/Factions');
+	}, PNG);
+	await cgroup(o, 'Campaigns/Fresh/Factions').waitFor();
+
+	// NPCs: NPC is picked for you.
+	await openPicker(o, 'Campaigns/Fresh/NPCs');
+	assert.equal(await activeStarter(o), 'npc');
+	await createFromPicker(o, 'Sister Garaele');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/NPCs/Sister Garaele.md'), { what: 'the NPC' });
+	assert.match(await read(o, 'Campaigns/Fresh/NPCs/Sister Garaele.md'), /nimble: npc[\s\S]*```nimble-npc/);
+
+	// Any starter can go in any folder.
+	await openPicker(o, 'Campaigns/Fresh/Factions');
+	await createFromPicker(o, 'Phandalin', 'location');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Factions/Phandalin.md'), { what: 'the location' });
+	assert.match(await read(o, 'Campaigns/Fresh/Factions/Phandalin.md'), /nimble: location/);
+
+	// Sessions: suggests the next session's name.
+	await openPicker(o, 'Campaigns/Fresh/Sessions');
+	assert.equal(await activeStarter(o), 'session');
+	assert.equal(await o.page.locator('.nimble-new-note .nimble-name-input').inputValue(), 'Session 1');
+	await o.page.locator('.nimble-new-note .nimble-name-input').press('Enter');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Sessions/Session 1.md'), { what: 'the session log' });
+	assert.match(await read(o, 'Campaigns/Fresh/Sessions/Session 1.md'), /nimble: session\ndate: \d{4}-\d\d-\d\d/);
+
+	// Monsters: a stat block the bestiary picks up under its name.
+	await openPicker(o, 'Campaigns/Fresh/Monsters');
+	assert.equal(await activeStarter(o), 'monster');
+	await createFromPicker(o, 'Quarry Boss');
+	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Quarry Boss')?.filePath === 'Campaigns/Fresh/Monsters/Quarry Boss.md'), { what: 'the monster in the index' });
+
+	// Map: pick the image from the campaign's files.
+	await openPicker(o, 'Campaigns/Fresh/Factions');
+	await o.page.locator('.nimble-new-note .nimble-starter[data-kind="map"]').click();
+	await o.page.locator('.nimble-new-note .nimble-starter-map select').selectOption('Campaigns/Fresh/Assets/cave.png');
+	await createFromPicker(o, 'Cave Map');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Factions/Cave Map.md'), { what: 'the map' });
+	assert.match(await read(o, 'Campaigns/Fresh/Factions/Cave Map.md'), /nimble: map[\s\S]*```nimble-map\nimage: \[\[cave\.png\]\]\npins:/);
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map img, ${S} .nimble-map img`).count()) >= 1, { what: 'the map image to render' });
+
+	// Handout, chosen with the arrow keys from the tile before it.
+	await openPicker(o, 'Campaigns/Fresh/Factions');
+	await o.page.locator('.nimble-new-note .nimble-starter[data-kind="monster"]').click();
+	await o.page.locator('.nimble-new-note .nimble-starter[data-kind="monster"]').press('ArrowRight');
+	assert.equal(await activeStarter(o), 'handout');
+	await createFromPicker(o, 'Letter from Iarno');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Factions/Letter from Iarno.md'), { what: 'the handout' });
+	assert.match(await read(o, 'Campaigns/Fresh/Factions/Letter from Iarno.md'), /nimble: handout/);
+
+	// A chapter's + starts on Scene and puts it at the end of the chapter.
+	await openPicker(o, 'Campaigns/Fresh/Chapter 1');
+	assert.equal(await activeStarter(o), 'scene');
+	assert.equal(await o.page.locator('.nimble-new-note .nimble-starter[data-kind="session"]').count(), 0, 'no session logs in a chapter');
+	await createFromPicker(o, 'The Bridge');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Chapter 1/The Bridge.md'), { what: 'the scene' });
+	assert.match(await read(o, 'Campaigns/Fresh/Chapter 1/The Bridge.md'), /nimble: scene\norder: 2/);
+	await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-group[data-folder="Campaigns/Fresh/Chapter 1"] .campaign-note-title`).allInnerTexts()).join() === 'Opening Scene,The Bridge', { what: 'the scene in the chapter' });
+	await endCampaign(o, 'Fresh');
+});
+
+test('campaign panel: Assets lists its files and + adds files from this device', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	await o.eval(async (app, _p, png) => {
+		const bytes = Uint8Array.from(atob(png), c => c.charCodeAt(0));
+		await app.vault.createBinary('Campaigns/Fresh/Assets/cave.png', bytes.buffer);
+	}, PNG);
+	await crow(o, 'Campaigns/Fresh/Assets/cave.png').waitFor();
+
+	const chooser = o.page.waitForEvent('filechooser');
+	await cgroup(o, 'Campaigns/Fresh/Assets').locator('.campaign-group-head button.campaign-add-scene').click();
+	await (await chooser).setFiles([
+		{ name: 'Letter.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n%%EOF\n') },
+		{ name: 'cave.png', mimeType: 'image/png', buffer: Buffer.from(PNG, 'base64') },
+	]);
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Assets/Letter.pdf'), { what: 'the imported PDF' });
+	assert.ok(await exists(o, 'Campaigns/Fresh/Assets/cave 2.png'), 'a name clash gets a number, nothing is overwritten');
+	await crow(o, 'Campaigns/Fresh/Assets/Letter.pdf').waitFor();
+	assert.equal(await cgroup(o, 'Campaigns/Fresh/Assets').locator('.campaign-count').innerText(), '3');
+
+	// Clicking a file opens it in Obsidian's viewer.
+	await crow(o, 'Campaigns/Fresh/Assets/cave.png').click();
+	await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === 'Campaigns/Fresh/Assets/cave.png', { what: 'the image to open' });
+
+	// The New note picker can add files instead, into the folder it came from.
+	await openPicker(o, 'Campaigns/Fresh/NPCs');
+	const chooser2 = o.page.waitForEvent('filechooser');
+	await o.page.locator('.nimble-new-note .nimble-starter-files').click();
+	await (await chooser2).setFiles([{ name: 'portrait.png', mimeType: 'image/png', buffer: Buffer.from(PNG, 'base64') }]);
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/NPCs/portrait.png'), { what: 'the file in NPCs' });
+	await crow(o, 'Campaigns/Fresh/NPCs/portrait.png').waitFor();
+	await endCampaign(o, 'Fresh');
+});
+
+test('campaign panel: New folder makes a section you can add to', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	await o.page.locator(`${CP} .campaign-heading-folders button[aria-label="New folder"]`).click();
+	await o.page.locator('.nimble-name-prompt .nimble-name-input').fill('Handouts');
+	await o.page.locator('.nimble-name-prompt .nimble-name-input').press('Enter');
+	await cgroup(o, 'Campaigns/Fresh/Handouts').waitFor();
+	assert.ok(await exists(o, 'Campaigns/Fresh/Handouts'));
+	await openPicker(o, 'Campaigns/Fresh/Handouts');
+	assert.equal(await activeStarter(o), 'handout');
+	await o.page.keyboard.press('Escape');
+	// A second folder with the same name doesn't clash.
+	await o.page.locator(`${CP} .campaign-heading-folders button[aria-label="New note or folder"]`).click();
+	await clickMenu(o, 'New folder');
+	await o.page.locator('.nimble-name-prompt .nimble-name-input').fill('Handouts');
+	await o.page.locator('.nimble-name-prompt .nimble-name-input').press('Enter');
+	await cgroup(o, 'Campaigns/Fresh/Handouts 2').waitFor();
+	await endCampaign(o, 'Fresh');
+});
+
+test('campaign panel: right-click to move, rename and delete notes, folders and chapters', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	await o.eval(async (app) => {
+		await app.vault.createFolder('Campaigns/Fresh/Factions');
+		await app.vault.create('Campaigns/Fresh/Factions/Zhentarim.md', 'A faction.\n');
+		await app.vault.create('Campaigns/Fresh/Factions/Harpers.md', 'Another.\n');
+	});
+	const zh = crow(o, 'Campaigns/Fresh/Factions/Zhentarim.md');
+	await zh.waitFor();
+
+	await zh.click({ button: 'right' });
+	const titles = await menuTitles(o);
+	for (const t of ['Open in new tab', 'Move to chapter or folder…', 'Rename…', 'Delete']) assert.ok(titles.includes(t), `menu has ${t}: ${titles}`);
+	// Move into a chapter: it becomes the chapter's last scene.
+	await clickMenu(o, 'Move to chapter or folder…');
+	await o.page.locator('.prompt-input').fill('Chapter 1');
+	await o.page.locator('.prompt-input').press('Enter');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Chapter 1/Zhentarim.md'), { what: 'the move into the chapter' });
+	await o.waitFor(async () => /order: 2/.test(await read(o, 'Campaigns/Fresh/Chapter 1/Zhentarim.md')), { what: 'the scene order' });
+	await crow(o, 'Campaigns/Fresh/Chapter 1/Zhentarim.md').waitFor();
+
+	// Rename.
+	await crow(o, 'Campaigns/Fresh/Chapter 1/Zhentarim.md').click({ button: 'right' });
+	await clickMenu(o, 'Rename…');
+	const input = o.page.locator('.nimble-name-prompt .nimble-name-input');
+	assert.equal(await input.inputValue(), 'Zhentarim');
+	await input.fill('The Black Network');
+	await input.press('Enter');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Chapter 1/The Black Network.md'), { what: 'the rename' });
+
+	// Delete asks first, then goes to the trash.
+	await crow(o, 'Campaigns/Fresh/Chapter 1/The Black Network.md').click({ button: 'right' });
+	await clickMenu(o, 'Delete');
+	await o.page.locator('.modal-container button', { hasText: exact('Delete') }).click();
+	await o.waitFor(async () => !(await exists(o, 'Campaigns/Fresh/Chapter 1/The Black Network.md')), { what: 'the delete' });
+
+	// Folder: rename keeps its notes, delete takes them along.
+	await cgroup(o, 'Campaigns/Fresh/Factions').locator('.campaign-group-head').click({ button: 'right' });
+	assert.ok((await menuTitles(o)).includes('New note…'));
+	await clickMenu(o, 'Rename folder…');
+	await input.fill('Guilds');
+	await input.press('Enter');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Guilds/Harpers.md'), { what: 'the folder rename' });
+	await cgroup(o, 'Campaigns/Fresh/Guilds').locator('.campaign-group-head').click({ button: 'right' });
+	await clickMenu(o, 'Delete folder');
+	assert.match(await o.page.locator('.modal-container .modal-content').innerText(), /1 item inside/);
+	await o.page.locator('.modal-container button', { hasText: exact('Delete') }).click();
+	await o.waitFor(async () => !(await exists(o, 'Campaigns/Fresh/Guilds')), { what: 'the folder delete' });
+	assert.equal(await cgroup(o, 'Campaigns/Fresh/Guilds').count(), 0);
+
+	// Chapter: rename renames its folder and its home note.
+	await cgroup(o, 'Campaigns/Fresh/Chapter 1').locator('.campaign-group-head').click({ button: 'right' });
+	await clickMenu(o, 'Rename chapter…');
+	await input.fill('Act One');
+	await input.press('Enter');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Act One/Act One.md'), { what: 'the chapter rename' });
+	assert.ok(await exists(o, 'Campaigns/Fresh/Act One/Opening Scene.md'));
+	await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-chapter-name`).allInnerTexts()).join() === 'Act One', { what: 'the renamed chapter in the panel' });
+	await endCampaign(o, 'Fresh');
+});
+
+test('campaign panel: drag notes between folders and chapters, and in from the file explorer', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	await o.eval(async (app) => {
+		await app.vault.create('Campaigns/Fresh/NPCs/Mara.md', '---\nnimble: npc\n---\n');
+		await app.vault.create('Campaigns/Fresh/Locations/Docks.md', '---\nnimble: location\n---\n');
+		for (const d of ['Old notes', 'Old notes/Factions']) if (!app.vault.getAbstractFileByPath(d)) await app.vault.createFolder(d);
+		await app.vault.create('Old notes/Ledger.md', 'From before the campaign.\n');
+		await app.vault.create('Old notes/Factions/Harpers.md', 'A faction.\n');
+	});
+	await crow(o, 'Campaigns/Fresh/NPCs/Mara.md').waitFor();
+
+	// Folder to folder.
+	await crow(o, 'Campaigns/Fresh/NPCs/Mara.md').dragTo(cgroup(o, 'Campaigns/Fresh/Locations').locator('.campaign-group-head'));
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Locations/Mara.md'), { what: 'the drag into Locations' });
+	await crow(o, 'Campaigns/Fresh/Locations/Mara.md').waitFor();
+
+	// Folder to chapter: joins the end of the scenes.
+	await crow(o, 'Campaigns/Fresh/Locations/Docks.md').dragTo(cgroup(o, 'Campaigns/Fresh/Chapter 1').locator('.campaign-group-head'));
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Chapter 1/Docks.md'), { what: 'the drag into the chapter' });
+	await o.waitFor(async () => /order: 2/.test(await read(o, 'Campaigns/Fresh/Chapter 1/Docks.md')), { what: 'the scene order' });
+
+	// Chapter back out to the top of the campaign.
+	await crow(o, 'Campaigns/Fresh/Chapter 1/Docks.md').dragTo(o.page.locator(`${CP} .campaign-heading-folders`));
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Docks.md'), { what: 'the drag to the campaign folder' });
+	await o.page.locator(`${CP} .campaign-loose .campaign-note[data-path="Campaigns/Fresh/Docks.md"]`).waitFor();
+
+	// Migrating: drag a note and then a whole folder in from Obsidian's file explorer.
+	await o.eval(async (app) => {
+		const leaf = app.workspace.getRightLeaf(false);
+		await leaf.setViewState({ type: 'file-explorer', active: true });
+		app.workspace.revealLeaf(leaf);
+		leaf.view.revealInFolder(app.vault.getAbstractFileByPath('Old notes/Ledger.md'));
+	});
+	const explorerFile = o.page.locator('.workspace-split.mod-right-split .nav-file-title[data-path="Old notes/Ledger.md"]');
+	await explorerFile.waitFor();
+	await explorerFile.dragTo(cgroup(o, 'Campaigns/Fresh/NPCs').locator('.campaign-group-head'));
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/NPCs/Ledger.md'), { what: 'the drop from the file explorer' });
+	const explorerFolder = o.page.locator('.workspace-split.mod-right-split .nav-folder-title[data-path="Old notes/Factions"]');
+	await explorerFolder.waitFor();
+	await explorerFolder.dragTo(o.page.locator(`${CP} .campaign-heading-folders`));
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Factions/Harpers.md'), { what: 'the folder dropped into the campaign' });
+	await crow(o, 'Campaigns/Fresh/Factions/Harpers.md').waitFor();
+	assert.ok((await panelSections(o)).includes('Factions'));
+
+	await o.eval(async (app) => {
+		app.workspace.getLeavesOfType('file-explorer').filter(l => l.getRoot() === app.workspace.rightSplit).forEach(l => l.detach());
+		const old = app.vault.getAbstractFileByPath('Old notes');
+		if (old) await app.vault.delete(old, true);
+	});
+	await endCampaign(o, 'Fresh');
+});
+
+test('campaign panel: long-press opens the same menus on touch', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	await o.eval(async (app) => { await app.vault.create('Campaigns/Fresh/NPCs/Mara.md', '---\nnimble: npc\n---\n'); });
+	const row = crow(o, 'Campaigns/Fresh/NPCs/Mara.md');
+	await row.waitFor();
+	await o.page.waitForTimeout(500); // let the panel finish re-rendering after the new note
+	const press = async (loc) => {
+		await loc.evaluate((el) => {
+			const r = el.getBoundingClientRect();
+			el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 7, clientX: r.x + 10, clientY: r.y + r.height / 2 }));
+		});
+		await o.page.waitForTimeout(650);
+		await loc.evaluate((el) => el.ownerDocument.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 7 })));
+	};
+	await press(row);
+	assert.ok((await menuTitles(o)).includes('Move to chapter or folder…'), 'note menu on long-press');
+	await o.page.keyboard.press('Escape');
+	await press(cgroup(o, 'Campaigns/Fresh/NPCs').locator('.campaign-group-head'));
+	assert.ok((await menuTitles(o)).includes('Rename folder…'), 'folder menu on long-press');
+	await o.page.keyboard.press('Escape');
+	// The long-press didn't also collapse the folder or open the note.
+	assert.equal(await cgroup(o, 'Campaigns/Fresh/NPCs').getAttribute('class'), 'campaign-group');
+	await endCampaign(o, 'Fresh');
 });
 
 test('no console errors during the run', async (o) => {

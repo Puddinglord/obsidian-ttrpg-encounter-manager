@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adjacentScene, buildCampaigns, campaignOf, chapterOf, nextOrder, safeName } from '../src/campaign-model';
+import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, isFileFolder, nextOrder, safeName } from '../src/campaign-model';
 
 const n = (path: string, fm: Record<string, unknown> = {}) => ({ path, fm });
 
@@ -43,7 +43,7 @@ describe('buildCampaigns', () => {
 	});
 
 	it('treats other folders as sections and keeps loose notes', () => {
-		expect(vecna.sections.map(s => s.name)).toEqual(['NPCs', 'Sessions']);
+		expect(vecna.sections.map(s => s.name)).toEqual(['Assets', 'NPCs', 'Sessions']);
 		expect(vecna.loose.map(l => l.title)).toEqual(['Ideas']);
 	});
 
@@ -78,6 +78,81 @@ describe('buildCampaigns', () => {
 		expect(a.chapters).toEqual([]);
 		expect(a.sections).toEqual([]);
 		expect(campaignOf(nested, 'A/B/Ch/Scene.md')?.name).toBe('B');
+	});
+});
+
+describe('folders and files', () => {
+	// A campaign straight out of "New campaign": the starter folders are empty.
+	const fresh = () => buildCampaigns([
+		n('Campaigns/New/New.md', { nimble: 'campaign' }),
+		n('Campaigns/New/Chapter 1/Chapter 1.md', { nimble: 'chapter' }),
+		n('Campaigns/New/Chapter 1/Opening Scene.md', { nimble: 'scene' }),
+		n('Campaigns/New/Assets/map.png'),
+		n('Campaigns/New/Assets/Handout.PDF'),
+		n('Campaigns/New/Assets/maps/cave.jpg'),
+		n('Campaigns/New/cover.png'),
+		n('Campaigns/New/.hidden/secret.md'),
+		n('Campaigns/New/Fights/Ambush.md', { nimble: 'combat' }),
+	], [
+		'Campaigns', 'Campaigns/New', 'Campaigns/New/Chapter 1', 'Campaigns/New/NPCs', 'Campaigns/New/Locations',
+		'Campaigns/New/Sessions', 'Campaigns/New/Monsters', 'Campaigns/New/Assets', 'Campaigns/New/Assets/maps',
+		'Campaigns/New/Factions', 'Campaigns/New/Factions/Guilds', 'Campaigns/New/.hidden', 'Campaigns/New/Fights', 'Elsewhere',
+	])[0];
+
+	it('lists empty folders as sections', () => {
+		const c = fresh();
+		expect(c.sections.map(s => s.name)).toEqual(['Assets', 'Factions', 'Locations', 'Monsters', 'NPCs', 'Sessions']);
+		expect(c.sections.find(s => s.name === 'NPCs')).toEqual({ folder: 'Campaigns/New/NPCs', name: 'NPCs', notes: [], files: [] });
+		expect(c.chapters.map(ch => ch.name)).toEqual(['Chapter 1']);
+	});
+
+	it('lists files that are not notes, including ones in subfolders', () => {
+		const assets = fresh().sections.find(s => s.name === 'Assets')!;
+		expect(assets.notes).toEqual([]);
+		expect(assets.files.map(f => [f.name, f.ext])).toEqual([['cave.jpg', 'jpg'], ['Handout.PDF', 'pdf'], ['map.png', 'png']]);
+	});
+
+	it('leaves out hidden folders, loose files and folders of saved fights', () => {
+		const c = fresh();
+		expect(c.sections.some(s => s.name.startsWith('.') || s.name === 'Fights')).toBe(false);
+		expect(c.loose).toEqual([]);
+	});
+
+	it('still works when no folder list is given', () => {
+		const c = buildCampaigns([n('C/C.md', { nimble: 'campaign' }), n('C/NPCs/Bo.md', { nimble: 'npc' })])[0];
+		expect(c.sections.map(s => [s.name, s.notes.length, s.files.length])).toEqual([['NPCs', 1, 0]]);
+	});
+
+	it('does not give a nested campaign\'s folder to its parent', () => {
+		const [a] = buildCampaigns([n('A/A.md', { nimble: 'campaign' }), n('A/B/B.md', { nimble: 'campaign' })], ['A', 'A/B', 'A/B/NPCs']);
+		expect(a.sections).toEqual([]);
+	});
+
+	it('suggests a starter from the folder name', () => {
+		expect(defaultKindFor('NPCs')).toBe('npc');
+		expect(defaultKindFor('locations')).toBe('location');
+		expect(defaultKindFor('Sessions')).toBe('session');
+		expect(defaultKindFor('Monsters')).toBe('monster');
+		expect(defaultKindFor('Handouts')).toBe('handout');
+		expect(defaultKindFor('Maps')).toBe('map');
+		expect(defaultKindFor('Factions')).toBe('note');
+		expect(defaultKindFor('Anything', true)).toBe('scene');
+	});
+
+	it('knows which folders hold files rather than notes', () => {
+		expect(isFileFolder({ name: 'Assets', notes: [], files: [] })).toBe(true);
+		expect(isFileFolder({ name: 'Factions', notes: [], files: [] })).toBe(false);
+		expect(isFileFolder({ name: 'Art dump', notes: [], files: [{ path: 'x.png', name: 'x.png', ext: 'png' }] })).toBe(true);
+		// Notes win: an Assets folder someone keeps notes in gets the New note picker.
+		expect(isFileFolder({ name: 'Assets', notes: [{ path: 'a.md', title: 'a', kind: 'note' }], files: [] })).toBe(false);
+	});
+
+	it('only allows moves that change something and stay sane', () => {
+		expect(canMoveInto('C/NPCs/Bo.md', 'C/Factions')).toBe(true);
+		expect(canMoveInto('C/NPCs/Bo.md', 'C/NPCs')).toBe(false);
+		expect(canMoveInto('C/Factions', 'C/Factions/Guilds')).toBe(false);
+		expect(canMoveInto('C/Factions', 'C/Factions')).toBe(false);
+		expect(canMoveInto('Old/Notes', 'C/Factions')).toBe(true);
 	});
 });
 
