@@ -2097,44 +2097,55 @@ test('3D dice: settings from 1.0.3 carry over after updating', async (o) => {
 	await o.eval(async (app, plugin) => { plugin.settings.dice.styles = []; plugin.settings.dice.primary = 'ember'; await plugin.saveSettings(); });
 });
 
-test('Dice workshop: roll a pool, stage a crit chain and a miss, pick effects with a preview', async (o) => {
+test('Dice Workshop: tests beside their effects, primary die, pool chips, look, motion', async (o) => {
 	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
-	await diceReset(o, { effects: { crit: 'ring', miss: 'ring', max: 'stars', min: 'gloom' } });
+	await diceReset(o, { effects: { crit: 'ring', miss: 'ring', max: 'supernova', min: 'gloom' } });
 	await o.eval((app, plugin) => plugin.openSettings());
-	await o.page.locator('.nimble-dice-workshop-cta button', { hasText: 'Open dice workshop' }).click();
+	await o.page.locator('.nimble-dice-workshop-cta button', { hasText: 'Open Dice Workshop' }).click();
 	const ws = o.page.locator('.modal.nimble-dice-workshop');
 	await ws.waitFor();
-	assert.equal(await o.page.locator('.modal-container').count(), 2, 'the workshop opens over settings');
-	// Pool: 2d6 + the starting d20.
-	await ws.locator('.nimble-workshop-die[data-sides="6"] .nimble-workshop-die-add').click();
-	await ws.locator('.nimble-workshop-die[data-sides="6"] .nimble-workshop-die-add').click();
-	await ws.locator('.setting-item', { hasText: '2d6 + 1d20' }).waitFor();
-	let st = await throwAndLand(o, () => document.querySelector('.nimble-dice-workshop .setting-item button.mod-cta').click());
-	assert.equal(st.shown.length, 3);
-	assert.match(await ws.locator('.nimble-workshop-result').innerText(), new RegExp(`^2d6 \\+ 1d20: ${st.shown.join(', ')}$`), 'the result line matches the dice on screen');
-	// Crit chain: a d8 exploding three times, one ring per explosion.
-	await ws.locator('.setting-item', { hasText: 'Attack die' }).locator('select').first().selectOption('8');
-	await ws.locator('.setting-item', { hasText: 'Attack die' }).locator('select').nth(1).selectOption('3');
+	assert.equal(await ws.locator('.modal-title').innerText(), 'Dice Workshop');
+	assert.equal(await o.page.locator('.modal-container').count(), 2, 'it opens over settings');
+	assert.deepEqual(await ws.locator('.nimble-workshop-moment').allInnerTexts(), ['Crit', 'Miss', 'Max', 'Min', 'Pool']);
+	assert.equal(await ws.locator('select[data-field="primary"]').inputValue(), '4', 'the primary die starts as a d4');
+	// Crit: a d4 exploding twice by default, one burst per explosion.
+	let st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="crit"]').click());
+	assert.equal(st.segmentsMs.length, 3);
+	assert.deepEqual(st.shown.slice(0, 2), [4, 4]);
+	assert.equal(st.effects, 2);
+	// Bigger primary die, more explosions.
+	await ws.locator('select[data-field="primary"]').selectOption('8');
+	await ws.locator('select[data-field="explosions"]').selectOption('3');
 	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="crit"]').click());
-	assert.equal(st.segmentsMs.length, 4, 'the throw plus three explosions');
 	assert.deepEqual(st.shown.slice(0, 3), [8, 8, 8]);
-	assert.equal(st.effects, 3, 'one burst per explosion');
-	// Miss.
+	assert.equal(st.effects, 3);
+	// Miss on the primary die.
 	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="miss"]').click());
 	assert.deepEqual(st.shown, [1]);
-	assert.equal(st.effects, 1);
-	// Max roll on the pool: every die on its highest face.
+	// Pool chips: starts 2d6 + 1d20; click adds, right-click removes.
+	assert.deepEqual(await ws.locator('.nimble-workshop-die.has-dice').evaluateAll(els => els.map(e => e.textContent)), ['d62', 'd201']);
+	await ws.locator('.nimble-workshop-die[data-sides="4"]').click();
+	await ws.locator('.nimble-workshop-die[data-sides="20"]').click({ button: 'right' });
+	assert.deepEqual(await ws.locator('.nimble-workshop-die.has-dice').evaluateAll(els => els.map(e => e.textContent)), ['d41', 'd62']);
+	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="pool"]').click());
+	assert.equal(st.shown.length, 3);
+	assert.match(await ws.locator('.nimble-workshop-result').innerText(), new RegExp(`^Pool · 1d4 \\+ 2d6 · ${st.shown.join(', ')}$`));
+	// Max rolls the pool with every die on its highest face.
 	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="max"]').click());
-	assert.deepEqual(st.shown.slice().sort((a, b) => a - b), [6, 6, 20]);
-	// Changing an effect saves it and previews it straight away.
-	st = await throwAndLand(o, () => { const sel = document.querySelector('.nimble-dice-workshop select[data-event="miss"]'); sel.value = 'smoke'; sel.dispatchEvent(new Event('change')); });
-	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.effects.miss), 'smoke');
+	assert.deepEqual(st.shown.slice().sort((a, b) => a - b), [4, 6, 6]);
+	assert.equal(st.effects, 3);
+	// Changing an effect saves it and plays it straight away.
+	st = await throwAndLand(o, () => { const sel = document.querySelector('.nimble-dice-workshop select[data-event="miss"]'); sel.value = 'shatter'; sel.dispatchEvent(new Event('change')); });
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.effects.miss), 'shatter');
 	assert.deepEqual(st.shown, [1], 'the preview is a miss');
+	// Size slider saves.
+	await ws.locator('input[aria-label="Size"]').evaluate(el => { el.value = '200'; el.dispatchEvent(new Event('input')); el.dispatchEvent(new Event('change')); });
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.size), 2);
 	// Try a look, then keep it.
-	await ws.locator('.setting-item', { hasText: 'Look' }).locator('select').selectOption('oak');
-	st = await throwAndLand(o, () => document.querySelector('.nimble-dice-workshop .setting-item button.mod-cta').click());
+	await ws.locator('select[data-field="look"]').selectOption('oak');
+	await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="pool"]').click());
 	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.normal), 'bone', 'trying a look doesn\'t change your dice');
-	await ws.locator('button', { hasText: 'Use for all dice' }).click();
+	await ws.locator('.nimble-workshop-keep').click();
 	await o.waitFor(() => o.eval((app, plugin) => plugin.settings.dice.normal === 'oak'), { what: 'the look to be kept' });
 	await o.page.screenshot({ path: join(ARTIFACTS, 'dice-workshop.png') });
 	// The command palette opens it too.

@@ -164,9 +164,9 @@ export function renderDiceStudio(el: HTMLElement, plugin: NimbleStatblocksPlugin
 	// Workshop: roll pools, stage crits and misses, pick effects with a preview.
 	const ws = root.createDiv({ cls: 'nimble-dice-workshop-cta' });
 	const wsText = ws.createDiv();
-	wsText.createDiv({ cls: 'nimble-dice-studio-heading', text: 'Dice workshop' });
-	wsText.createDiv({ cls: 'setting-item-description', text: 'Roll a pool of dice, test a crit explosion or a miss, and try every effect.' });
-	const wsBtn = ws.createEl('button', { cls: 'mod-cta', text: 'Open dice workshop' });
+	wsText.createDiv({ cls: 'nimble-dice-studio-heading', text: 'Dice Workshop' });
+	wsText.createDiv({ cls: 'setting-item-description', text: 'Roll test dice and try effects.' });
+	const wsBtn = ws.createEl('button', { cls: 'mod-cta', text: 'Open Dice Workshop' });
 	wsBtn.addEventListener('click', () => plugin.openDiceWorkshop());
 
 	// Gallery
