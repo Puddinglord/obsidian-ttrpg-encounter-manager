@@ -3,14 +3,15 @@
 // module initializer, so three.js only runs on the first roll and plugin
 // startup doesn't pay for it.
 
-import type { Dice3dOptions, DiceMaterial, Die3d, RollStats } from './renderer';
+import type { Dice3dOptions, DiceMaterial, Die3d, DieLook, RollStats } from './renderer';
 
-export type { Dice3dOptions, DiceMaterial, Die3d, RollStats } from './renderer';
+export type { Dice3dOptions, DiceMaterial, Die3d, DieLook, RollStats } from './renderer';
 
 export { DICE3D_MATERIALS } from './materials';
 
 interface RendererLib {
 	roll: (dice: Die3d[], opts: Dice3dOptions) => Promise<void>;
+	preview: (canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }) => () => void;
 	stats: { last: RollStats | null };
 }
 
@@ -46,6 +47,12 @@ export function dice3dSupported(): boolean {
 export async function roll3d(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	if (!dice.length || !dice3dSupported()) return;
 	await (await load()).roll(dice, opts);
+}
+
+/** A slowly turning die on `canvas`, for settings. Returns a function that stops it (it also stops when the canvas leaves the page). */
+export async function preview3d(canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }): Promise<() => void> {
+	if (!dice3dSupported()) return () => {};
+	return (await load()).preview(canvas, die);
 }
 
 /** Timings of the last roll, for tuning (not needed to use the dice). */

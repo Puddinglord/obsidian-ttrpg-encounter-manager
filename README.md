@@ -75,7 +75,7 @@ The full guide is in **[docs/](docs/README.md)**:
 
 ## Privacy
 
-- **No network use.** The plugin makes no network requests and sends no data anywhere. The one exception is an NPC portrait you set to an `https://` image URL, which loads from that address.
+- **No network use.** The plugin makes no network requests and sends no data anywhere. There are two exceptions, both things you ask for: an NPC portrait you set to an `https://` image URL loads from that address, and **Import link** in the 3D dice settings downloads the dice set at the link you paste.
 - **Clipboard.** It writes to the clipboard only when you click a **Copy** button (encounter summaries, roll results, encounter blocks).
 - **Your files.** Everything it writes is plain Markdown in your vault, plus its own settings file.
 

@@ -11,6 +11,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { launchObsidian } from './harness.mjs';
+import { createServer } from 'node:http';
+import { strToU8, zipSync } from 'fflate';
 
 const ARTIFACTS = join(dirname(fileURLToPath(import.meta.url)), 'artifacts');
 rmSync(ARTIFACTS, { recursive: true, force: true });
@@ -1479,6 +1481,13 @@ test('3D dice: an attack roll animates, then the notice shows the result', async
 	assert.equal(await o.page.locator('.nimble-roll-notice').count(), 0, 'the notice waits for the dice');
 	await o.waitFor(async () => (await o.page.locator('.nimble-roll-notice').count()) === 1, { what: 'the roll notice after landing', timeout: 8000 });
 	assert.match(await o.page.locator('.nimble-roll-notice').innerText(), /Dice test/);
+	// Dice are the top layer, above modals, notices and menus.
+	const layers = await o.page.evaluate(() => {
+		const z = (sel) => { const el = document.querySelector(sel); return el ? Number(getComputedStyle(el).zIndex) : null; };
+		const probe = (cls) => { const d = document.createElement('div'); d.className = cls; document.body.appendChild(d); const v = Number(getComputedStyle(d).zIndex); d.remove(); return v; };
+		return { dice: z('canvas.nimble-dice3d-overlay'), modal: probe('modal-container'), notice: probe('notice-container'), menu: probe('menu') };
+	});
+	assert.ok(layers.dice > layers.modal && layers.dice > layers.notice && layers.dice > layers.menu, `dice above everything ${JSON.stringify(layers)}`);
 	// The overlay fades away afterwards and never blocks clicks.
 	assert.equal(await o.page.evaluate(() => getComputedStyle(document.querySelector('canvas.nimble-dice3d-overlay') ?? document.body).pointerEvents), 'none');
 	await o.waitFor(async () => (await o.page.locator('canvas.nimble-dice3d-overlay').count()) === 0, { what: 'the overlay to go away', timeout: 8000 });
@@ -1915,6 +1924,379 @@ test('campaign panel: long-press opens the same menus on touch', async (o) => {
 	// The long-press didn't also collapse the folder or open the note.
 	assert.equal(await cgroup(o, 'Campaigns/Fresh/NPCs').getAttribute('class'), 'campaign-group');
 	await endCampaign(o, 'Fresh');
+});
+
+// ---------------------------------------------------------------------------
+// 3D dice (1.0.4): sizes, looks, imported model sets, effects, settings
+
+const webgl = (o) => o.page.evaluate(() => { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); });
+
+/** Fast dice for tests: quick playback, short stay, no effects unless a test asks. */
+async function diceReset(o, extra = {}) {
+	await o.eval((app, plugin, extra) => {
+		document.querySelectorAll('.notice, .modal-container').forEach(n => n.remove());
+		plugin.settings.dice3d = true;
+		Object.assign(plugin.settings.dice, { normal: 'bone', primary: 'ember', crit: 'molten', perDie: {}, size: 1, speed: 3, stayMs: 500, shadows: 'soft', effects: { crit: 'none', miss: 'none', max: 'none', min: 'none' } }, extra);
+	}, extra);
+}
+
+/** Run `start` (which throws dice) and wait for that throw to land. Returns its stats. */
+async function throwAndLand(o, start, arg) {
+	const before = JSON.stringify(await o.eval((app, plugin) => plugin.diceStats()));
+	await o.eval(start, arg);
+	return o.waitFor(async () => {
+		const st = await o.eval((app, plugin) => plugin.diceStats());
+		return st && JSON.stringify(st) !== before ? st : null;
+	}, { what: 'the dice to land', timeout: 15000 });
+}
+
+/** A Dice So Nice style module zip with one model die: a flat-shaded d20 built for the test. */
+function testDiceZip(id = 'test-glow') {
+	const P = 1.618033988749895;
+	const V = [[-1, P, 0], [1, P, 0], [-1, -P, 0], [1, -P, 0], [0, -1, P], [0, 1, P], [0, -1, -P], [0, 1, -P], [P, 0, -1], [P, 0, 1], [-P, 0, -1], [-P, 0, 1]];
+	const F = [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]];
+	const pos = new Float32Array(F.flatMap(f => f.flatMap(i => V[i])));
+	const bytes = Buffer.from(pos.buffer);
+	const gltf = {
+		asset: { version: '2.0' }, scene: 0, scenes: [{ nodes: [0] }], nodes: [{ mesh: 0 }],
+		meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
+		materials: [{ pbrMetallicRoughness: { baseColorFactor: [0.2, 0.8, 0.5, 1], metallicFactor: 0.2, roughnessFactor: 0.4 } }],
+		buffers: [{ byteLength: bytes.length, uri: 'dice_20.bin' }],
+		bufferViews: [{ buffer: 0, byteLength: bytes.length }],
+		accessors: [{ bufferView: 0, componentType: 5126, count: pos.length / 3, type: 'VEC3', min: [-P, -P, -P], max: [P, P, P] }],
+	};
+	const script = `Hooks.once('diceSoNiceReady', (dice3d) => {\n  dice3d.addSystem({ id: "${id}", name: "Test Glow", group: "Tests" }, false);\n  dice3d.addDicePreset({ type: "d20", labels: "", modelFile: "modules/${id}/models/dice_20.gltf", system: "${id}" });\n  dice3d.addColorset({ name: '${id}-ember', description: 'Test Ember', foreground: '#fff1d6', background: '#c2410c', outline: 'black', texture: 'marble', material: 'metal' });\n});`;
+	return Buffer.from(zipSync({
+		[`${id}/module.json`]: strToU8(JSON.stringify({ id, title: 'Test Glow Dice Set', version: '1.0.0', authors: [{ name: 'Ember Vault tests' }], scripts: ['diceset.js'] })),
+		[`${id}/diceset.js`]: strToU8(script),
+		[`${id}/models/dice_20.gltf`]: strToU8(JSON.stringify(gltf)),
+		[`${id}/models/dice_20.bin`]: new Uint8Array(bytes),
+		[`${id}/models/notes.js`]: strToU8('alert(1)'),
+	}));
+}
+
+test('3D dice: every size from 50% to 300% lands on screen showing the rolled values', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	await diceReset(o);
+	const values = [3, 5, 7, 9, 11, 17];
+	const px = {};
+	for (const [w, h] of [[1400, 900], [390, 844]]) {
+		await o.page.setViewportSize({ width: w, height: h });
+		for (const size of [0.5, 1, 2, 3]) {
+			await o.eval((app, plugin, size) => { plugin.settings.dice.size = size; }, size);
+			const st = await throwAndLand(o, (app, plugin, values) => plugin.rollLookPreview('bone', values), values);
+			assert.deepEqual(st.shown, values, `${w}×${h} at ${size * 100}%: the dice show the rolled values`);
+			assert.ok(st.inBounds, `${w}×${h} at ${size * 100}%: every die stays on the table (overshoot ${st.overshoot})`);
+			px[`${w}-${size}`] = st.pxPerUnit;
+		}
+		// Bigger setting, bigger dice, until that many dice wouldn't fit on this screen.
+		const steps = [0.5, 1, 2, 3].map(z => px[`${w}-${z}`]);
+		assert.ok(steps.every((v, i) => i === 0 || v >= steps[i - 1]), `${w}: dice never get smaller as the setting grows ${JSON.stringify(steps)}`);
+		assert.ok(steps[3] > steps[1] * 1.5, `${w}: 300% is clearly bigger than 100%`);
+	}
+	// One die has room to be the full three times the size.
+	await o.page.setViewportSize({ width: 1400, height: 900 });
+	const one = {};
+	for (const size of [1, 3]) {
+		await o.eval((app, plugin, size) => { plugin.settings.dice.size = size; }, size);
+		const st = await throwAndLand(o, (app, plugin) => plugin.rollDice('1d20', 'Big', 'effect', [12]));
+		assert.deepEqual(st.shown, [12]);
+		assert.ok(st.inBounds);
+		one[size] = st.pxPerUnit;
+	}
+	assert.ok(Math.abs(one[3] / one[1] - 3) < 0.05, `a single die at 300% is three times as big (${one[1]} → ${one[3]})`);
+	await o.page.setViewportSize({ width: 1400, height: 900 });
+	await o.page.screenshot({ path: join(ARTIFACTS, 'dice-large.png') });
+	await o.eval((app, plugin) => { plugin.settings.dice.size = 1; });
+});
+
+test('3D dice: a roll from inside a modal draws above the modal', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	await diceReset(o, { stayMs: 3000 });
+	await o.eval((app, plugin) => plugin.openSettings());
+	await o.page.locator('.modal-container').first().waitFor();
+	await o.eval((app, plugin) => plugin.rollDice('1d20', 'From a modal', 'effect', [11]));
+	await o.waitFor(async () => (await o.page.locator('canvas.nimble-dice3d-overlay').count()) === 1, { what: 'the overlay' });
+	const order = await o.page.evaluate(() => {
+		const dice = document.querySelector('canvas.nimble-dice3d-overlay');
+		const modal = document.querySelector('.modal-container');
+		return { dice: Number(getComputedStyle(dice).zIndex), modal: Number(getComputedStyle(modal).zIndex), diceParent: dice.parentElement === document.body };
+	});
+	assert.ok(order.dice > order.modal, `dice (${order.dice}) above the modal (${order.modal})`);
+	assert.ok(order.diceParent, 'the overlay is a direct child of the page, not trapped under a modal');
+	await o.page.screenshot({ path: join(ARTIFACTS, 'dice-over-modal.png') });
+	await o.eval(() => document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click()));
+	await diceReset(o);
+});
+
+test('3D dice: every preset look rolls, with the right values', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	await diceReset(o);
+	const presets = await o.eval((app, plugin) => [...document.querySelectorAll('x')].length === 0 && plugin.settings.dice && null);
+	void presets;
+	const ids = ['ember', 'bone', 'molten', 'rainbow', 'obsidian', 'gilded', 'silver', 'sea', 'velvet', 'oak', 'granite', 'parchment', 'dragon', 'starfield', 'nebula', 'opal', 'frost', 'marble', 'glitter'];
+	for (const id of ids) {
+		const values = [2, 4, 6, 8, 10, 20];
+		const st = await throwAndLand(o, (app, plugin, [id, values]) => plugin.rollLookPreview(id, values), [id, values]);
+		assert.deepEqual(st.shown, values, `${id} shows the rolled values`);
+	}
+});
+
+test('3D dice: crit, miss, max and min play their effects', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	await diceReset(o, { effects: { crit: 'ring', miss: 'ring', max: 'confetti', min: 'gloom' } });
+	const crit = await throwAndLand(o, (app, plugin) => plugin.rollDice('2d6+2', 'Crit', 'attack', [6, 3, 6, 2]));
+	assert.equal(crit.segmentsMs.length - 1, 2, 'two dice explode');
+	assert.equal(crit.effects, 2, 'one gold ring per explosion, none again when the chain lands');
+	const miss = await throwAndLand(o, (app, plugin) => plugin.rollDice('2d6+2', 'Miss', 'attack', [1, 4]));
+	assert.equal(miss.effects, 1, 'a burst on the die that missed');
+	const max = await throwAndLand(o, (app, plugin) => plugin.rollDice('1d20', 'Nat 20', 'effect', [20]));
+	assert.equal(max.effects, 1);
+	const min = await throwAndLand(o, (app, plugin) => plugin.rollDice('2d6', 'Snake eyes', 'effect', [1, 1]));
+	assert.equal(min.effects, 2);
+	const plain = await throwAndLand(o, (app, plugin) => plugin.rollDice('2d6', 'Plain', 'effect', [3, 4]));
+	assert.equal(plain.effects, 0, 'no effect on an ordinary roll');
+	await diceReset(o);
+	const off = await throwAndLand(o, (app, plugin) => plugin.rollDice('1d20', 'Nat 20, effects off', 'effect', [20]));
+	assert.equal(off.effects, 0, 'None turns an effect off');
+	await o.eval(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+});
+
+test('3D dice: every effect plays (no shader errors), on light and dark themes', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	const ids = await o.eval(() => null) ?? ['ring', 'sparks', 'embers', 'stars', 'twinkle', 'shooting', 'nebula', 'supernova', 'arcane', 'confetti', 'smoke', 'shatter', 'gloom'];
+	for (const theme of ['theme-light', 'theme-dark']) {
+		await o.eval((app, plugin, theme) => { document.body.classList.remove('theme-light', 'theme-dark'); document.body.classList.add(theme); }, theme);
+		for (const fx of ids) {
+			await diceReset(o, { speed: 3, effects: { crit: 'none', miss: 'none', max: fx, min: 'none' } });
+			const st = await throwAndLand(o, (app, plugin) => plugin.workshopRoll({ pool: [{ sides: 6, count: 1 }], test: 'max' }));
+			assert.equal(st.effects, 1, `${fx} (${theme}) plays`);
+		}
+	}
+	await o.eval(() => { document.body.classList.remove('theme-dark'); document.body.classList.add('theme-light'); });
+	await o.page.waitForTimeout(800); // let the last effects finish drawing (shader errors would show in the console check)
+	await diceReset(o);
+});
+
+test('3D dice: settings from 1.0.3 carry over after updating', async (o) => {
+	await o.eval(async (app, plugin) => {
+		const data = JSON.parse(JSON.stringify(plugin.settings));
+		delete data.dice;
+		Object.assign(data, { dicePrimaryColor: '#ff0000', diceMaterialPrimary: 'gem', diceColor: '#ece6d8', diceMaterialNormal: 'classic', diceExplosionColor: '#e0a030', diceMaterialCrit: 'lava' });
+		await plugin.saveData(data);
+		await app.plugins.disablePlugin('nimble-gm');
+		await app.plugins.enablePlugin('nimble-gm');
+	});
+	await o.waitFor(() => o.eval((app) => !!app.plugins.plugins['nimble-gm']?._loaded), { what: 'the plugin to load' });
+	const d = await o.eval((app, plugin) => ({ dice: plugin.settings.dice, legacy: 'dicePrimaryColor' in plugin.settings }));
+	assert.equal(d.dice.normal, 'bone', 'untouched other dice map to the Bone preset');
+	assert.equal(d.dice.crit, 'molten', 'untouched crit dice map to Molten');
+	assert.equal(d.dice.primary, 'legacy-primary', 'a changed primary die becomes a look of its own');
+	assert.deepEqual(d.dice.styles.map(s => [s.name, s.body[0], s.finish]), [['My primary die', '#ff0000', 'glass']]);
+	assert.equal(d.legacy, false, 'the old fields are gone');
+	await o.eval(async (app, plugin) => { plugin.settings.dice.styles = []; plugin.settings.dice.primary = 'ember'; await plugin.saveSettings(); });
+});
+
+test('Dice Workshop: tests beside their effects, primary die, pool chips, look, motion', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	await diceReset(o, { effects: { crit: 'ring', miss: 'ring', max: 'supernova', min: 'gloom' } });
+	await o.eval((app, plugin) => plugin.openSettings());
+	await o.page.locator('.nimble-dice-workshop-cta button', { hasText: 'Open Dice Workshop' }).click();
+	const ws = o.page.locator('.modal.nimble-dice-workshop');
+	await ws.waitFor();
+	assert.equal(await ws.locator('.modal-title').innerText(), 'Dice Workshop');
+	assert.equal(await o.page.locator('.modal-container').count(), 2, 'it opens over settings');
+	assert.deepEqual(await ws.locator('.nimble-workshop-moment').allInnerTexts(), ['Crit', 'Miss', 'Max', 'Min', 'Pool']);
+	assert.equal(await ws.locator('select[data-field="primary"]').inputValue(), '4', 'the primary die starts as a d4');
+	// Crit: a d4 exploding twice by default, one burst per explosion.
+	let st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="crit"]').click());
+	assert.equal(st.segmentsMs.length, 3);
+	assert.deepEqual(st.shown.slice(0, 2), [4, 4]);
+	assert.equal(st.effects, 2);
+	// Bigger primary die, more explosions.
+	await ws.locator('select[data-field="primary"]').selectOption('8');
+	await ws.locator('select[data-field="explosions"]').selectOption('3');
+	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="crit"]').click());
+	assert.deepEqual(st.shown.slice(0, 3), [8, 8, 8]);
+	assert.equal(st.effects, 3);
+	// Miss on the primary die.
+	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="miss"]').click());
+	assert.deepEqual(st.shown, [1]);
+	// Pool chips: starts 2d6 + 1d20; click adds, right-click removes.
+	assert.deepEqual(await ws.locator('.nimble-workshop-die.has-dice').evaluateAll(els => els.map(e => e.textContent)), ['d62', 'd201']);
+	await ws.locator('.nimble-workshop-die[data-sides="4"]').click();
+	await ws.locator('.nimble-workshop-die[data-sides="20"]').click({ button: 'right' });
+	assert.deepEqual(await ws.locator('.nimble-workshop-die.has-dice').evaluateAll(els => els.map(e => e.textContent)), ['d41', 'd62']);
+	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="pool"]').click());
+	assert.equal(st.shown.length, 3);
+	assert.match(await ws.locator('.nimble-workshop-result').innerText(), new RegExp(`^Pool · 1d4 \\+ 2d6 · ${st.shown.join(', ')}$`));
+	// Max rolls the pool with every die on its highest face.
+	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="max"]').click());
+	assert.deepEqual(st.shown.slice().sort((a, b) => a - b), [4, 6, 6]);
+	assert.equal(st.effects, 3);
+	// Changing an effect saves it and plays it straight away.
+	st = await throwAndLand(o, () => { const sel = document.querySelector('.nimble-dice-workshop select[data-event="miss"]'); sel.value = 'shatter'; sel.dispatchEvent(new Event('change')); });
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.effects.miss), 'shatter');
+	assert.deepEqual(st.shown, [1], 'the preview is a miss');
+	// Size slider saves.
+	await ws.locator('input[aria-label="Size"]').evaluate(el => { el.value = '200'; el.dispatchEvent(new Event('input')); el.dispatchEvent(new Event('change')); });
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.size), 2);
+	// Try a look, then keep it.
+	await ws.locator('select[data-field="look"]').selectOption('oak');
+	await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="pool"]').click());
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.normal), 'bone', 'trying a look doesn\'t change your dice');
+	await ws.locator('.nimble-workshop-keep').click();
+	await o.waitFor(() => o.eval((app, plugin) => plugin.settings.dice.normal === 'oak'), { what: 'the look to be kept' });
+	await o.page.screenshot({ path: join(ARTIFACTS, 'dice-workshop.png') });
+	// The command palette opens it too.
+	await o.eval(() => document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click()));
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:dice-workshop'));
+	await o.page.locator('.modal.nimble-dice-workshop').waitFor();
+	await o.eval(() => document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click()));
+	await diceReset(o);
+});
+
+test('Dice settings: gallery, new look, edit it, assign it, preview, delete', async (o) => {
+	await diceReset(o);
+	await o.eval((app, plugin) => plugin.openSettings());
+	const studio = o.page.locator('.nimble-dice-studio');
+	await studio.waitFor();
+	assert.ok(await studio.locator('.nimble-dice-card').count() >= 20, 'every preset is in the gallery');
+	await studio.locator('.nimble-dice-card[data-style="oak"]').click();
+	await o.waitFor(async () => (await o.page.locator('.nimble-dice-editor-name').innerText()) === 'Oak', { what: 'the editor to show Oak' });
+	assert.match(await o.page.locator('.nimble-dice-editor').innerText(), /built-in look/);
+	assert.equal(await o.page.locator('.nimble-dice-preview-canvas').count(), 1);
+	// New look: an editable copy of the selected one.
+	await o.page.locator('.nimble-dice-card-new').click();
+	await o.waitFor(async () => (await o.page.locator('.nimble-dice-editor-name').innerText()) === 'Oak (mine)', { what: 'the new look' });
+	const fields = o.page.locator('.nimble-dice-fields');
+	await fields.locator('.setting-item', { hasText: 'Finish' }).locator('select').selectOption('chrome');
+	await o.waitFor(() => o.eval((app, plugin) => plugin.settings.dice.styles.at(-1)?.finish === 'chrome'), { what: 'the finish to save' });
+	await o.page.locator('.nimble-dice-fields .setting-item', { hasText: 'Font' }).locator('select').selectOption('mono');
+	await o.page.locator('.nimble-dice-editor-actions button', { hasText: 'Use for all dice' }).click();
+	const mine = await o.eval((app, plugin) => plugin.settings.dice.styles.at(-1));
+	assert.equal(mine.font, 'mono');
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.normal), mine.id);
+	// Per die size.
+	const d20 = o.page.locator('.nimble-dice-perdie-cell', { hasText: 'd20' }).locator('select');
+	await d20.selectOption('rainbow');
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.perDie.d20), 'rainbow');
+	// Size, speed, effects.
+	await o.page.locator('.setting-item', { hasText: 'Effect on a miss' }).locator('select').selectOption('smoke');
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.effects.miss), 'smoke');
+	await o.page.screenshot({ path: join(ARTIFACTS, 'dice-settings.png') });
+	// Delete asks first, then whatever used it falls back.
+	await o.page.locator('.nimble-dice-card', { hasText: 'Oak (mine)' }).click();
+	await o.page.locator('.nimble-dice-editor-actions button', { hasText: 'Delete' }).click();
+	await o.page.locator('.modal-container').last().locator('button', { hasText: exact('Delete') }).click();
+	await o.waitFor(() => o.eval((app, plugin, id) => !plugin.settings.dice.styles.some(s => s.id === id) && plugin.settings.dice.normal === 'bone', mine.id), { what: 'the delete' });
+	await o.eval(() => document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click()));
+	await diceReset(o);
+});
+
+test('Dice import: a Dice So Nice set (zip, then by link) rolls its own models on the rolled number', async (o) => {
+	await diceReset(o);
+	await o.eval((app, plugin) => plugin.openSettings());
+	await o.page.locator('.nimble-dice-import').waitFor();
+	const chooser = o.page.waitForEvent('filechooser');
+	await o.page.locator('.nimble-dice-import button', { hasText: 'Import file…' }).click();
+	await (await chooser).setFiles([{ name: 'test-glow.zip', mimeType: 'application/zip', buffer: testDiceZip() }]);
+	await o.waitFor(() => o.eval((app, plugin) => plugin.settings.dice.sets.some(s => s.id === 'test-glow')), { what: 'the set to import', timeout: 15000 });
+	const set = await o.eval((app, plugin) => plugin.settings.dice.sets.find(s => s.id === 'test-glow'));
+	assert.deepEqual(set.models, { 20: 'models/dice_20.gltf' });
+	assert.equal(set.name, 'Test Glow');
+	const files = await o.eval(async (app, plugin) => {
+		const dir = `${plugin.manifest.dir}/dice-sets/test-glow`;
+		const a = app.vault.adapter;
+		return { gltf: await a.exists(`${dir}/models/dice_20.gltf`), bin: await a.exists(`${dir}/models/dice_20.bin`), js: await a.exists(`${dir}/models/notes.js`) || await a.exists(`${dir}/diceset.js`) };
+	});
+	assert.deepEqual(files, { gltf: true, bin: true, js: false }, 'models kept, scripts never stored');
+	// Its look and colour set are in the gallery.
+	await o.page.locator('.nimble-dice-card[data-style="set:test-glow"]').waitFor();
+	assert.equal(await o.page.locator('.nimble-dice-card', { hasText: 'Test Ember' }).count(), 1);
+	await o.eval(() => document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click()));
+	if (await webgl(o)) {
+		await diceReset(o, { perDie: { d20: 'set:test-glow' } });
+		for (const v of [13, 1, 20]) {
+			const st = await throwAndLand(o, (app, plugin, v) => plugin.rollDice('1d20', 'Model', 'effect', [v]), v);
+			assert.equal(st.models, 1, 'the d20 is the imported model');
+			assert.deepEqual(st.shown, [v], `the model shows ${v}`);
+		}
+		// A crit with model dice: the extra dice still pop out of the one that crit, with the burst and glow.
+		await diceReset(o, { primary: 'set:test-glow', crit: '', normal: 'set:test-glow', effects: { crit: 'ring', miss: 'none', max: 'none', min: 'none' } });
+		const crit = await throwAndLand(o, (app, plugin) => plugin.rollDice('1d20+2', 'Model crit', 'attack', [20, 20, 7]));
+		assert.equal(crit.models, 3, 'the crit dice are the imported model too');
+		assert.deepEqual(crit.shown, [20, 20, 7]);
+		assert.equal(crit.segmentsMs.length, 3, 'two dice explode out of the ones before them');
+		assert.equal(crit.effects, 2, 'one burst per explosion');
+		await diceReset(o, { perDie: { d20: 'set:test-glow' } });
+		// Sizes the set doesn't have fall back to the look's colours.
+		const d6 = await throwAndLand(o, (app, plugin) => plugin.rollLookPreview('set:test-glow', [1, 2, 3, 4, 5, 6]));
+		assert.equal(d6.models, 1, 'only the d20 is a model');
+		assert.deepEqual(d6.shown, [1, 2, 3, 4, 5, 6]);
+	}
+	// By link: a module.json whose download is the zip (how The Rollsmith delivers sets).
+	const server = createServer((req, res) => {
+		if (req.url === '/module.json') { res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ id: 'linked-glow', download: `http://127.0.0.1:${server.address().port}/set.zip` })); return; }
+		if (req.url === '/set.zip') { res.setHeader('content-type', 'application/zip'); res.end(testDiceZip('linked-glow')); return; }
+		res.statusCode = 404; res.end();
+	});
+	await new Promise(r => server.listen(0, '127.0.0.1', r));
+	try {
+		await o.eval((app, plugin) => plugin.openSettings());
+		await o.page.locator('.nimble-dice-import-url').fill(`http://127.0.0.1:${server.address().port}/module.json`);
+		await o.page.locator('.nimble-dice-import button', { hasText: 'Import link' }).click();
+		await o.waitFor(() => o.eval((app, plugin) => plugin.settings.dice.sets.some(s => s.id === 'linked-glow')), { what: 'the linked set', timeout: 15000 });
+		// A link that isn't a dice set says so.
+		await o.page.locator('.nimble-dice-import-url').fill(`http://127.0.0.1:${server.address().port}/nothing`);
+		await o.page.locator('.nimble-dice-import button', { hasText: 'Import link' }).click();
+		await o.waitFor(async () => (await notices(o)).some(n => /Couldn't import/.test(n)), { what: 'the error notice' });
+	} finally { server.close(); }
+	// Removing a set deletes its files and its look.
+	await o.page.locator('.nimble-dice-set').first().locator('button', { hasText: 'Edit' }).click();
+	assert.equal(await o.page.locator('.nimble-dice-editor-name').innerText(), 'Test Glow');
+	await o.page.locator('.nimble-dice-editor-actions button', { hasText: 'Remove set' }).click();
+	await o.page.locator('.modal-container').last().locator('button', { hasText: exact('Delete') }).click();
+	await o.waitFor(() => o.eval(async (app, plugin) => !plugin.settings.dice.sets.some(s => s.id === 'test-glow') && !(await app.vault.adapter.exists(`${plugin.manifest.dir}/dice-sets/test-glow`))), { what: 'the set to go' });
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.perDie.d20 ?? ''), '', 'nothing points at the removed set');
+	await o.eval(async (app, plugin) => {
+		document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click());
+		plugin.settings.dice.sets = plugin.settings.dice.sets.filter(s => s.id !== 'linked-glow');
+		plugin.settings.dice.styles = plugin.settings.dice.styles.filter(s => !/glow/.test(s.id));
+		await plugin.saveSettings();
+	});
+	await diceReset(o);
+});
+
+test('Dice import: a Dice So Nice export brings over your looks and saves', async (o) => {
+	await diceReset(o);
+	await o.eval(async (app, plugin) => { plugin.settings.dice.styles = []; await plugin.saveSettings(); });
+	await o.eval((app, plugin) => plugin.openSettings());
+	const exportJson = {
+		appearance: {
+			global: { labelColor: '#ffffff', diceColor: '#7a1f1f', outlineColor: '#000000', edgeColor: '#7a1f1f', colorset: 'custom', texture: 'marble', material: 'glass', font: 'auto', system: 'standard' },
+			d20: { labelColor: '#ffd700', diceColor: '#101010', outlineColor: '#000000', edgeColor: '#101010', colorset: 'custom', texture: 'stars', material: 'pristine', font: 'auto', system: 'standard' },
+		},
+		saves: { 'Wood night': { appearance: { global: { labelColor: '#111111', diceColor: '#a0522d', texture: 'wood', material: 'wood', font: 'Georgia', system: 'standard' } } } },
+	};
+	const chooser = o.page.waitForEvent('filechooser');
+	await o.page.locator('.nimble-dice-import button', { hasText: 'Import file…' }).click();
+	await (await chooser).setFiles([{ name: 'fvtt-dicesonice-export.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(exportJson)) }]);
+	await o.waitFor(() => o.eval((app, plugin) => plugin.settings.dice.styles.length === 3), { what: 'the looks to import' });
+	const styles = await o.eval((app, plugin) => plugin.settings.dice.styles.map(s => [s.name, s.body[0], s.finish, s.texture]));
+	assert.deepEqual(styles, [['Dice So Nice', '#7a1f1f', 'glass', 'marble'], ['Dice So Nice (d20)', '#101010', 'pristine', 'stars'], ['Wood night', '#a0522d', 'wood', 'wood']]);
+	await o.page.locator('.nimble-dice-card', { hasText: 'Wood night' }).waitFor();
+	// Bad file: a clear message, nothing added.
+	const chooser2 = o.page.waitForEvent('filechooser');
+	await o.page.locator('.nimble-dice-import button', { hasText: 'Import file…' }).click();
+	await (await chooser2).setFiles([{ name: 'other.json', mimeType: 'application/json', buffer: Buffer.from('{"hello":1}') }]);
+	await o.waitFor(async () => (await notices(o)).some(n => /no Dice So Nice appearance/.test(n)), { what: 'the error notice' });
+	await o.eval(async (app, plugin) => {
+		document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click());
+		plugin.settings.dice.styles = [];
+		await plugin.saveSettings();
+	});
+	await diceReset(o);
 });
 
 test('no console errors during the run', async (o) => {
