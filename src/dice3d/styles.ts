@@ -95,6 +95,7 @@ export interface ImportedSet {
 
 export const EFFECTS = [
 	{ id: 'none', label: 'None' },
+	{ id: 'ring', label: 'Ring burst' },
 	{ id: 'sparks', label: 'Sparks' },
 	{ id: 'embers', label: 'Embers' },
 	{ id: 'confetti', label: 'Confetti' },
@@ -107,6 +108,9 @@ export type EffectId = typeof EFFECTS[number]['id'];
 
 /** What happened, for effects: an attack miss or crit, or every die on its highest or lowest face. */
 export type RollEvent = 'crit' | 'miss' | 'max' | 'min';
+
+/** Each event's own colour for effects that take one (the ring burst): gold for a crit, red for a miss. */
+export const EVENT_TINT: Record<RollEvent, string> = { crit: '#f2b705', miss: '#e0242c', max: '#f2b705', min: '#7b3fe4' };
 
 export type DieKey = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20' | 'd100';
 export const DIE_KEYS: DieKey[] = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'];
@@ -172,7 +176,7 @@ export const DEFAULT_DICE: DiceSettings = {
 	throwForce: 'normal',
 	stayMs: 1700,
 	shadows: 'soft',
-	effects: { crit: 'sparks', miss: 'smoke', max: 'stars', min: 'gloom' },
+	effects: { crit: 'ring', miss: 'ring', max: 'stars', min: 'gloom' },
 	sets: [],
 };
 

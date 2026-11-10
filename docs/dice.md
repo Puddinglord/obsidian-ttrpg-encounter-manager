@@ -42,10 +42,10 @@ A look you own can change:
 
 ### Crits and effects
 
-A crit's extra dice burst out of the die that exploded, with a ring of fire, and the crit dice glow while they're on screen. Each kind of roll can also play an effect: sparks, embers, confetti, starburst, smoke, shatter, gloom, or none.
+A crit's extra dice burst out of the die that exploded, and the crit dice glow while they're on screen. Each kind of roll can also play an effect: ring burst, sparks, embers, confetti, starburst, smoke, shatter, gloom, or none. The ring burst takes the roll's colour: gold for a crit, red for a miss.
 
-- **Effect on a crit**: plays with each explosion.
-- **Effect on a miss**: an attack that rolls a 1. The die that missed also dims.
+- **Effect on a crit**: plays once as each die explodes out (a gold ring burst by default).
+- **Effect on a miss**: an attack that rolls a 1 (a red ring burst from under the die by default). The die that missed also dims.
 - **Effect on a max roll**: every die on its highest face, like a natural 20.
 - **Effect on a min roll**: every die on a 1 (not an attack).
 

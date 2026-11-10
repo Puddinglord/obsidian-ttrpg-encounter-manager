@@ -2018,9 +2018,10 @@ test('3D dice: every preset look rolls, with the right values', async (o) => {
 
 test('3D dice: crit, miss, max and min play their effects', async (o) => {
 	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
-	await diceReset(o, { effects: { crit: 'sparks', miss: 'shatter', max: 'confetti', min: 'gloom' } });
+	await diceReset(o, { effects: { crit: 'ring', miss: 'ring', max: 'confetti', min: 'gloom' } });
 	const crit = await throwAndLand(o, (app, plugin) => plugin.rollDice('2d6+2', 'Crit', 'attack', [6, 3, 6, 2]));
-	assert.ok(crit.effects >= 2, `sparks on the crit (${crit.effects})`);
+	assert.equal(crit.segmentsMs.length - 1, 2, 'two dice explode');
+	assert.equal(crit.effects, 2, 'one gold ring per explosion, none again when the chain lands');
 	const miss = await throwAndLand(o, (app, plugin) => plugin.rollDice('2d6+2', 'Miss', 'attack', [1, 4]));
 	assert.equal(miss.effects, 1, 'a burst on the die that missed');
 	const max = await throwAndLand(o, (app, plugin) => plugin.rollDice('1d20', 'Nat 20', 'effect', [20]));
@@ -2121,12 +2122,12 @@ test('Dice import: a Dice So Nice set (zip, then by link) rolls its own models o
 			assert.deepEqual(st.shown, [v], `the model shows ${v}`);
 		}
 		// A crit with model dice: the extra dice still pop out of the one that crit, with the burst and glow.
-		await diceReset(o, { primary: 'set:test-glow', crit: '', normal: 'set:test-glow', effects: { crit: 'sparks', miss: 'none', max: 'none', min: 'none' } });
+		await diceReset(o, { primary: 'set:test-glow', crit: '', normal: 'set:test-glow', effects: { crit: 'ring', miss: 'none', max: 'none', min: 'none' } });
 		const crit = await throwAndLand(o, (app, plugin) => plugin.rollDice('1d20+2', 'Model crit', 'attack', [20, 20, 7]));
 		assert.equal(crit.models, 3, 'the crit dice are the imported model too');
 		assert.deepEqual(crit.shown, [20, 20, 7]);
 		assert.equal(crit.segmentsMs.length, 3, 'two dice explode out of the ones before them');
-		assert.ok(crit.effects >= 3, `a burst for each explosion and the landing (${crit.effects})`);
+		assert.equal(crit.effects, 2, 'one burst per explosion');
 		await diceReset(o, { perDie: { d20: 'set:test-glow' } });
 		// Sizes the set doesn't have fall back to the look's colours.
 		const d6 = await throwAndLand(o, (app, plugin) => plugin.rollLookPreview('set:test-glow', [1, 2, 3, 4, 5, 6]));
