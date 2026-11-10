@@ -161,6 +161,14 @@ export function renderDiceStudio(el: HTMLElement, plugin: NimbleStatblocksPlugin
 	if (!findStyle(d, selected)) selected = d.normal;
 	const root = el.createDiv({ cls: 'nimble-dice-studio' });
 
+	// Workshop: roll pools, stage crits and misses, pick effects with a preview.
+	const ws = root.createDiv({ cls: 'nimble-dice-workshop-cta' });
+	const wsText = ws.createDiv();
+	wsText.createDiv({ cls: 'nimble-dice-studio-heading', text: 'Dice workshop' });
+	wsText.createDiv({ cls: 'setting-item-description', text: 'Roll a pool of dice, test a crit explosion or a miss, and try every effect.' });
+	const wsBtn = ws.createEl('button', { cls: 'mod-cta', text: 'Open dice workshop' });
+	wsBtn.addEventListener('click', () => plugin.openDiceWorkshop());
+
 	// Gallery
 	root.createDiv({ cls: 'nimble-dice-studio-heading', text: 'Dice looks' });
 	const grid = root.createDiv({ cls: 'nimble-dice-gallery', attr: { role: 'listbox', 'aria-label': 'Dice looks' } });

@@ -8,6 +8,18 @@ Clicking a dice expression throws real dice across the screen. They tumble, coll
 
 Everything below is in **Settings → Ember Vault → 3D dice**.
 
+### Dice workshop
+
+**Open dice workshop** (in the 3D dice settings, or **Open dice workshop** in the command palette) opens a workshop on top of settings:
+
+- **Roll a pool**: add any mix of up to 12 dice and throw them.
+- **Test a moment**: a crit (pick the die and how many times it explodes), a miss, a max roll or a min roll.
+- **Effects**: pick the effect for each moment. Changing one plays it straight away, and ▶ replays it.
+- **Look**: try any look on every die, then **Use for all dice** to keep it.
+- **Size and motion**: dice size, speed, throw, shadows and how long the dice stay.
+
+Rolls in the workshop aren't logged. Effects, size and motion you change there are saved.
+
 ### Looks
 
 The gallery shows every look: the presets, your own, and any you've imported. Click one to see it turning in the preview (pick d4 to d20 under it), then:

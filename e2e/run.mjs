@@ -2081,6 +2081,54 @@ test('3D dice: settings from 1.0.3 carry over after updating', async (o) => {
 	await o.eval(async (app, plugin) => { plugin.settings.dice.styles = []; plugin.settings.dice.primary = 'ember'; await plugin.saveSettings(); });
 });
 
+test('Dice workshop: roll a pool, stage a crit chain and a miss, pick effects with a preview', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	await diceReset(o, { effects: { crit: 'ring', miss: 'ring', max: 'stars', min: 'gloom' } });
+	await o.eval((app, plugin) => plugin.openSettings());
+	await o.page.locator('.nimble-dice-workshop-cta button', { hasText: 'Open dice workshop' }).click();
+	const ws = o.page.locator('.modal.nimble-dice-workshop');
+	await ws.waitFor();
+	assert.equal(await o.page.locator('.modal-container').count(), 2, 'the workshop opens over settings');
+	// Pool: 2d6 + the starting d20.
+	await ws.locator('.nimble-workshop-die[data-sides="6"] .nimble-workshop-die-add').click();
+	await ws.locator('.nimble-workshop-die[data-sides="6"] .nimble-workshop-die-add').click();
+	await ws.locator('.setting-item', { hasText: '2d6 + 1d20' }).waitFor();
+	let st = await throwAndLand(o, () => document.querySelector('.nimble-dice-workshop .setting-item button.mod-cta').click());
+	assert.equal(st.shown.length, 3);
+	assert.match(await ws.locator('.nimble-workshop-result').innerText(), new RegExp(`^2d6 \\+ 1d20: ${st.shown.join(', ')}$`), 'the result line matches the dice on screen');
+	// Crit chain: a d8 exploding three times, one ring per explosion.
+	await ws.locator('.setting-item', { hasText: 'Attack die' }).locator('select').first().selectOption('8');
+	await ws.locator('.setting-item', { hasText: 'Attack die' }).locator('select').nth(1).selectOption('3');
+	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="crit"]').click());
+	assert.equal(st.segmentsMs.length, 4, 'the throw plus three explosions');
+	assert.deepEqual(st.shown.slice(0, 3), [8, 8, 8]);
+	assert.equal(st.effects, 3, 'one burst per explosion');
+	// Miss.
+	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="miss"]').click());
+	assert.deepEqual(st.shown, [1]);
+	assert.equal(st.effects, 1);
+	// Max roll on the pool: every die on its highest face.
+	st = await throwAndLand(o, () => document.querySelector('.nimble-workshop-moment[data-event="max"]').click());
+	assert.deepEqual(st.shown.slice().sort((a, b) => a - b), [6, 6, 20]);
+	// Changing an effect saves it and previews it straight away.
+	st = await throwAndLand(o, () => { const sel = document.querySelector('.nimble-dice-workshop select[data-event="miss"]'); sel.value = 'smoke'; sel.dispatchEvent(new Event('change')); });
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.effects.miss), 'smoke');
+	assert.deepEqual(st.shown, [1], 'the preview is a miss');
+	// Try a look, then keep it.
+	await ws.locator('.setting-item', { hasText: 'Look' }).locator('select').selectOption('oak');
+	st = await throwAndLand(o, () => document.querySelector('.nimble-dice-workshop .setting-item button.mod-cta').click());
+	assert.equal(await o.eval((app, plugin) => plugin.settings.dice.normal), 'bone', 'trying a look doesn\'t change your dice');
+	await ws.locator('button', { hasText: 'Use for all dice' }).click();
+	await o.waitFor(() => o.eval((app, plugin) => plugin.settings.dice.normal === 'oak'), { what: 'the look to be kept' });
+	await o.page.screenshot({ path: join(ARTIFACTS, 'dice-workshop.png') });
+	// The command palette opens it too.
+	await o.eval(() => document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click()));
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:dice-workshop'));
+	await o.page.locator('.modal.nimble-dice-workshop').waitFor();
+	await o.eval(() => document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click()));
+	await diceReset(o);
+});
+
 test('Dice settings: gallery, new look, edit it, assign it, preview, delete', async (o) => {
 	await diceReset(o);
 	await o.eval((app, plugin) => plugin.openSettings());

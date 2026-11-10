@@ -34,6 +34,9 @@ import { registerTooltips } from './src/tooltips';
 import { monsterRole, shiftMonster } from './src/rules';
 import { dice3dLastStats, dice3dSupported, diceForRoll, roll3d } from './src/dice3d';
 import { dressDice, rollEvent, rollOptions } from './src/dice3d/looks';
+import type { Die3d } from './src/dice3d';
+import type { RollEvent } from './src/dice3d/styles';
+import { DiceWorkshopModal } from './src/dice-workshop';
 import { migrateDice } from './src/dice3d/styles';
 import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/campaign-view';
 import { CampaignPicker, NewCampaignModal } from './src/campaign-modals';
@@ -277,6 +280,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.addCommand({ id: 'insert-encounter-template', name: 'Insert encounter block', editorCallback: (editor) => editor.replaceSelection(ENCOUNTER_TEMPLATE) });
 		this.addCommand({ id: 'insert-reference', name: 'Insert monster reference', editorCallback: (editor) => editor.replaceSelection('`nimble:') });
 		this.addCommand({ id: 'clear-roll-log', name: 'Clear roll log', callback: () => this.clearRollLog() });
+		this.addCommand({ id: 'dice-workshop', name: 'Open dice workshop', callback: () => this.openDiceWorkshop() });
 
 		// Campaigns
 		const inCampaign = (fn: (c: NonNullable<CampaignStore['active']>) => void) => (checking: boolean) => {
@@ -485,6 +489,43 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		const dice = dressDice(this, [4, 6, 8, 10, 12, 20].map((sides, i) => ({ sides, role: 'normal' as const, value: values?.[i] ?? 1 + Math.floor(Math.random() * sides) })), false);
 		Object.assign(d, prev);
 		return roll3d(dice, rollOptions(d)).catch((e) => { console.warn('Nimble: 3D dice failed', e); });
+	}
+
+	/**
+	 * Dice workshop: throw dice for show (nothing is logged). A pool of dice, or a
+	 * staged moment (a crit chain, a miss, every die on max or min), optionally in
+	 * one look instead of the configured ones. Returns the values thrown.
+	 */
+	workshopRoll(o: { style?: string; pool?: { sides: number; count: number }[]; test?: RollEvent; sides?: number; explosions?: number }): { values: number[]; landed?: Promise<void> } {
+		const d = this.settings.dice;
+		const sides = o.sides ?? 20;
+		let dice: Die3d[];
+		let event: RollEvent | undefined;
+		if (o.test === 'crit') {
+			// A Nimble crit chain: the primary die and every explosion but the last land on max.
+			const n = Math.max(1, Math.min(5, o.explosions ?? 1));
+			const rolls = [...Array<number>(n).fill(sides), 1 + Math.floor(Math.random() * (sides - 1))];
+			dice = diceForRoll(sides, 1, rolls, true);
+			event = 'crit';
+		} else if (o.test === 'miss') {
+			dice = diceForRoll(sides, 1, [1], true);
+			event = 'miss';
+		} else {
+			const pool = (o.pool?.length ? o.pool : [{ sides, count: 1 }]).flatMap(p => Array.from({ length: p.count }, () => p.sides)).slice(0, 12);
+			dice = pool.map(n => ({ sides: n, role: 'normal' as const, value: o.test === 'max' ? n : o.test === 'min' ? 1 : 1 + Math.floor(Math.random() * n) }));
+			event = o.test ?? (dice.every(x => x.value === x.sides) ? 'max' : dice.every(x => x.value === 1) && dice.some(x => x.sides > 2) ? 'min' : undefined);
+		}
+		const values = dice.map(x => x.value);
+		if (!dice3dSupported() || !dice.length) return { values };
+		const prev = { normal: d.normal, primary: d.primary, crit: d.crit, perDie: d.perDie };
+		if (o.style) { d.normal = o.style; d.primary = ''; d.crit = ''; d.perDie = {}; }
+		const dressed = dressDice(this, dice, event === 'crit');
+		Object.assign(d, prev);
+		return { values, landed: roll3d(dressed, rollOptions(d, event)).catch((e) => { console.warn('Nimble: 3D dice failed', e); }) };
+	}
+
+	openDiceWorkshop(): void {
+		new DiceWorkshopModal(this).open();
 	}
 
 	/** Roll 3D dice for a result. Resolves when they've landed (at once when 3D is off). */
