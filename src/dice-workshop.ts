@@ -125,25 +125,25 @@ export class DiceWorkshopModal extends Modal {
 			}, { 'data-event': ev });
 		}
 
-		// Size and motion
+		// Size and motion: sliders stacked on the left, choices stacked on the right.
 		const motion = c.createDiv({ cls: 'nimble-workshop-motion' });
-		const slider = (label: string, min: number, max: number, step: number, value: number, set: (v: number) => void) => {
-			const f = this.field(motion, label);
+		const sliders = motion.createDiv({ cls: 'nimble-workshop-motion-col' });
+		const choices = motion.createDiv({ cls: 'nimble-workshop-motion-col' });
+		const slider = (label: string, min: number, max: number, step: number, value: number, unit: string, set: (v: number) => void) => {
+			const f = this.field(sliders, label);
 			const input = f.createEl('input', { type: 'range', cls: 'slider', attr: { min: String(min), max: String(max), step: String(step), 'aria-label': label } });
 			input.value = String(value);
 			const out = f.createSpan({ cls: 'nimble-workshop-value' });
-			const show = () => out.setText(label === 'Stay' ? `${input.value}s` : `${input.value}%`);
+			const show = () => out.setText(`${input.value}${unit}`);
 			show();
 			input.addEventListener('input', show);
 			input.addEventListener('change', () => { set(Number(input.value)); this.save(); });
 		};
-		slider('Size', 50, 300, 10, Math.round(this.d.size * 100), v => { this.d.size = v / 100; });
-		slider('Speed', 50, 200, 10, Math.round(this.d.speed * 100), v => { this.d.speed = v / 100; });
-		slider('Stay', 1, 8, 0.5, this.d.stayMs / 1000, v => { this.d.stayMs = v * 1000; });
-		const throwF = this.field(motion, 'Throw');
-		this.select(throwF, 'Throw', { gentle: 'Gentle', normal: 'Normal', strong: 'Hard' }, this.d.throwForce, v => { this.d.throwForce = v as 'gentle' | 'normal' | 'strong'; this.save(); });
-		const shadowF = this.field(motion, 'Shadows');
-		this.select(shadowF, 'Shadows', { off: 'Off', soft: 'Soft', sharp: 'Sharp' }, this.d.shadows, v => { this.d.shadows = v as 'off' | 'soft' | 'sharp'; this.save(); });
+		slider('Size', 50, 300, 10, Math.round(this.d.size * 100), '%', v => { this.d.size = v / 100; });
+		slider('Stay', 1, 8, 0.5, this.d.stayMs / 1000, 's', v => { this.d.stayMs = v * 1000; });
+		slider('Speed', 50, 200, 10, Math.round(this.d.speed * 100), '%', v => { this.d.speed = v / 100; });
+		this.select(this.field(choices, 'Throw'), 'Throw', { gentle: 'Gentle', normal: 'Normal', strong: 'Hard' }, this.d.throwForce, v => { this.d.throwForce = v as 'gentle' | 'normal' | 'strong'; this.save(); });
+		this.select(this.field(choices, 'Shadows'), 'Shadows', { off: 'Off', soft: 'Soft', sharp: 'Sharp' }, this.d.shadows, v => { this.d.shadows = v as 'off' | 'soft' | 'sharp'; this.save(); });
 
 		this.resultEl = c.createDiv({ cls: 'nimble-workshop-result', attr: { 'aria-live': 'polite' } });
 		if (!this.plugin.settings.dice3d) this.resultEl.setText('3D dice are off in settings.');

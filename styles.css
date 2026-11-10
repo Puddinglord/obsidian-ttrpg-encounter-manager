@@ -2170,7 +2170,11 @@ body.is-phone .nimble-record-modal .record-turn { flex: 1; justify-content: cent
 .nimble-workshop-die.has-dice { border-color: var(--interactive-accent); color: var(--text-accent); background: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-primary)); }
 .nimble-workshop-die-count { position: absolute; top: -0.45rem; right: -0.35rem; min-width: 1.05rem; height: 1.05rem; padding: 0 0.2rem; border-radius: 999px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 0.65rem; line-height: 1.05rem; }
 .nimble-workshop-clear { padding: 0.2rem; }
-.nimble-workshop-motion { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-top: 1rem; }
-.nimble-workshop-motion input[type="range"] { width: 6.5rem; }
+.nimble-workshop-motion { display: grid; grid-template-columns: 1fr auto; gap: 1rem 2rem; margin-top: 1rem; align-items: start; }
+.nimble-workshop-motion-col { display: flex; flex-direction: column; gap: 0.6rem; }
+.nimble-workshop-motion .nimble-workshop-field { display: grid; grid-template-columns: 4.6rem 1fr auto; align-items: center; gap: 0.6rem; min-height: 2rem; }
+.nimble-workshop-motion-col + .nimble-workshop-motion-col .nimble-workshop-field { grid-template-columns: 5.4rem auto; }
+.nimble-workshop-motion input[type="range"] { width: 100%; min-width: 7rem; }
+@media (max-width: 560px) { .nimble-workshop-motion { grid-template-columns: 1fr; } }
 .nimble-workshop-value { font-size: var(--font-ui-smaller); color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 2.6rem; }
 .nimble-workshop-result { margin-top: 0.9rem; min-height: 1.4em; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-accent); }
