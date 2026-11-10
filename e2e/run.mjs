@@ -2062,6 +2062,22 @@ test('3D dice: crit, miss, max and min play their effects', async (o) => {
 	await o.eval(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
 });
 
+test('3D dice: every effect plays (no shader errors), on light and dark themes', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	const ids = await o.eval(() => null) ?? ['ring', 'sparks', 'embers', 'stars', 'twinkle', 'shooting', 'nebula', 'supernova', 'arcane', 'confetti', 'smoke', 'shatter', 'gloom'];
+	for (const theme of ['theme-light', 'theme-dark']) {
+		await o.eval((app, plugin, theme) => { document.body.classList.remove('theme-light', 'theme-dark'); document.body.classList.add(theme); }, theme);
+		for (const fx of ids) {
+			await diceReset(o, { speed: 3, effects: { crit: 'none', miss: 'none', max: fx, min: 'none' } });
+			const st = await throwAndLand(o, (app, plugin) => plugin.workshopRoll({ pool: [{ sides: 6, count: 1 }], test: 'max' }));
+			assert.equal(st.effects, 1, `${fx} (${theme}) plays`);
+		}
+	}
+	await o.eval(() => { document.body.classList.remove('theme-dark'); document.body.classList.add('theme-light'); });
+	await o.page.waitForTimeout(800); // let the last effects finish drawing (shader errors would show in the console check)
+	await diceReset(o);
+});
+
 test('3D dice: settings from 1.0.3 carry over after updating', async (o) => {
 	await o.eval(async (app, plugin) => {
 		const data = JSON.parse(JSON.stringify(plugin.settings));
