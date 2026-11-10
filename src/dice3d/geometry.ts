@@ -3,6 +3,7 @@
 // classes only (no WebGL), so it runs in unit tests.
 
 import { Quaternion, Vector3 } from 'three';
+import { MODEL_LAYOUTS } from './model-layout';
 
 export const DIE_SIDES = [4, 6, 8, 10, 12, 20] as const;
 export type DieSides = typeof DIE_SIDES[number];
@@ -226,4 +227,94 @@ export function relabel(shape: DieShape, labels: number[], top: number, value: n
 	[out[top], out[j]] = [out[j], out[top]];
 	if (oTop >= 0 && oJ >= 0 && oTop !== j && oJ !== top && oTop !== oJ) [out[oTop], out[oJ]] = [out[oJ], out[oTop]];
 	return out;
+}
+
+// ---------------------------------------------------------------------------
+// Model dice. A die from an imported dice set is a 3D model with its numbers
+// painted on, so we can't renumber it. Instead physics rolls a body of the
+// model's own shape, and the model is turned by one of the shape's symmetries
+// so the face with the rolled value ends up where physics put the top face.
+
+const modelCache = new Map<number, DieShape>();
+
+/** Can imported model dice be rolled for this many sides? */
+export function hasModelLayout(sides: number): boolean {
+	return sides in MODEL_LAYOUTS;
+}
+
+/**
+ * The shape model dice are built around, as a DieShape: same corners and face
+ * values as the models. A d4 is read from its top corner (the one opposite the
+ * face it rests on), so it carries vertexValues like our own d4.
+ */
+export function modelShape(sides: number): DieShape | null {
+	const layout = MODEL_LAYOUTS[sides];
+	if (!layout) return null;
+	const hit = modelCache.get(sides);
+	if (hit) return hit;
+	const vertices = layout.vertices.map(([x, y, z]) => new Vector3(x, y, z).normalize());
+	// Faces as the layout gives them (a model d10's kites aren't quite flat, so no hull here).
+	// The normal is the direction of the face's centre, which is exact for these solids and
+	// moves with the die's symmetries; corners are wound counter-clockwise from outside.
+	const faces: DieFace[] = layout.faces.map((lf, i) => {
+		const centroid = lf.reduce((acc, v) => acc.add(vertices[v]), new Vector3()).divideScalar(lf.length);
+		const normal = centroid.clone().normalize();
+		const [a, b, c] = lf.map(v => vertices[v]);
+		const wound = new Vector3().subVectors(b, a).cross(new Vector3().subVectors(c, a)).dot(normal) > 0;
+		return { verts: wound ? lf.slice() : lf.slice().reverse(), normal, centroid, value: layout.values[i] };
+	});
+	let vertexValues: number[] | undefined;
+	if (layout.readsDown) {
+		// Each corner sits opposite one face; that face's value is read when the corner points up.
+		vertexValues = vertices.map((_, v) => faces.find(f => !f.verts.includes(v))?.value ?? 0);
+	}
+	const inradius = Math.min(...faces.map(f => f.normal.dot(f.centroid)));
+	const shape: DieShape = { sides: sides as DieSides, vertices, faces, vertexValues, inradius };
+	modelCache.set(sides, shape);
+	return shape;
+}
+
+/** Direction of the face (d4: corner) at `index`, in the die's own frame. */
+function dirOf(shape: DieShape, index: number): Vector3 {
+	return shape.vertexValues ? shape.vertices[index].clone().normalize() : shape.faces[index].normal.clone();
+}
+
+/**
+ * A rotation of the die onto itself that carries face (d4: corner) `from` to
+ * where `to` is. Every die here is face-transitive, so one always exists.
+ */
+export function symmetryRotation(shape: DieShape, from: number, to: number): Quaternion {
+	const a = dirOf(shape, from), b = dirOf(shape, to);
+	const align = new Quaternion().setFromUnitVectors(a, b);
+	const verts = shape.vertices;
+	const matches = (q: Quaternion) => verts.every(v => {
+		const p = v.clone().applyQuaternion(q);
+		return verts.some(w => w.distanceToSquared(p) < 1e-6);
+	});
+	// Try every twist about b that lands one of the corners on another corner.
+	const ref = verts.find(v => Math.abs(v.clone().normalize().dot(a)) < 0.999) ?? verts[0];
+	const r = ref.clone().applyQuaternion(align);
+	const perp = (v: Vector3) => v.clone().sub(b.clone().multiplyScalar(v.dot(b)));
+	const rp = perp(r);
+	for (const w of verts) {
+		const wp = perp(w);
+		if (Math.abs(wp.length() - rp.length()) > 1e-4 || Math.abs(w.dot(b) - r.dot(b)) > 1e-4) continue;
+		const angle = Math.atan2(new Vector3().crossVectors(rp, wp).dot(b), rp.dot(wp));
+		const q = new Quaternion().setFromAxisAngle(b, angle).multiply(align);
+		if (matches(q)) return q;
+	}
+	return align;
+}
+
+/**
+ * How to turn a model die so it shows `value`: given the pose physics left it
+ * in, the extra rotation (applied in the die's own frame) that puts the
+ * value's face where the top face is.
+ */
+export function modelCorrection(shape: DieShape, rotation: Quaternion, value: number): Quaternion {
+	const top = topIndex(shape, rotation).index;
+	const labels = defaultLabels(shape);
+	const want = labels.indexOf(value);
+	if (want < 0 || want === top) return new Quaternion();
+	return symmetryRotation(shape, want, top);
 }

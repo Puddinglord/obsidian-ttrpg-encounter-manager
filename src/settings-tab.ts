@@ -4,7 +4,7 @@ import { showSliderValue } from './compat';
 import type NimbleStatblocksPlugin from '../main';
 import { NIMBLE_CONDITIONS, NimbleCondition } from './types';
 import { renderPartyEditor } from './party';
-import { DICE3D_MATERIALS } from './dice3d';
+import { diceAssignmentRows, diceMotionRows, renderDiceStudio } from './dice-settings';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
 
 /** One settings row. `block` rows draw their own content instead of a name and controls. */
@@ -224,38 +224,14 @@ export class NimbleSettingsTab extends PluginSettingTab {
 	}
 
 	private diceRows(): Row[] {
-		const s = this.plugin.settings;
-		const visible = () => s.dice3d;
-		type ColourKey = 'dicePrimaryColor' | 'diceColor' | 'diceExplosionColor';
-		type MaterialKey = 'diceMaterialPrimary' | 'diceMaterialNormal' | 'diceMaterialCrit';
-		const role = (name: string, colourKey: ColourKey, materialKey: MaterialKey): Row => ({
-			name, visible, cls: 'nimble-dice-colour',
-			render: (setting) => {
-				setting
-					.addDropdown(d => {
-						for (const m of DICE3D_MATERIALS) d.addOption(m.id, m.label);
-						d.setValue(s[materialKey]).onChange(async (v) => { s[materialKey] = v; await this.plugin.saveSettings(); });
-					})
-					.addColorPicker(c => c.setValue(s[colourKey]).onChange(async (v) => {
-						s[colourKey] = v;
-						await this.plugin.saveSettings();
-					}));
-			},
-		});
+		const visible = () => this.plugin.settings.dice3d;
 		return [
-			role('Primary die', 'dicePrimaryColor', 'diceMaterialPrimary'),
-			role('Other dice', 'diceColor', 'diceMaterialNormal'),
-			role('Crit dice', 'diceExplosionColor', 'diceMaterialCrit'),
 			{
-				name: '',
-				searchable: false,
-				visible, cls: 'nimble-dice-colour',
-				render: (setting) => {
-					setting
-						.addButton(b => b.setButtonText('Test roll: 2d6 attack').onClick(() => this.plugin.rollDice('2d6+2', 'Test roll', 'attack')))
-						.addButton(b => b.setButtonText('Test a crit').onClick(() => this.plugin.rollDice('2d6+2', 'Test crit', 'attack', [6, 3, 6, 2])));
-				},
+				name: 'Dice looks', searchable: false, visible,
+				block: (el) => renderDiceStudio(el, this.plugin, () => this.refresh()),
 			},
+			...diceAssignmentRows(this.plugin, visible, () => this.refresh()),
+			...diceMotionRows(this.plugin, visible),
 		];
 	}
 

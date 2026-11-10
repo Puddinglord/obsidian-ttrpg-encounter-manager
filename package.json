@@ -1,6 +1,6 @@
 {
 	"name": "nimble-gm",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Run Nimble TTRPG games from your notes: campaigns, a bundled bestiary, encounter blocks rated for your party, a combat tracker, GM maps and 3D dice.",
 	"main": "main.js",
 	"scripts": {
@@ -37,5 +37,8 @@
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.72.1",
 		"vitest": "^5.1.0"
+	},
+	"dependencies": {
+		"fflate": "^0.8.3"
 	}
 }
