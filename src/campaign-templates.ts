@@ -3,6 +3,29 @@
 
 import { NPC_CARD_BLOCK } from './npc-card-def';
 
+/** What "New note" can start from. `note` is a blank page. */
+export type StarterKind = 'note' | 'scene' | 'npc' | 'location' | 'session' | 'map' | 'monster' | 'handout';
+
+export interface Starter {
+	kind: StarterKind;
+	label: string;
+	icon: string;
+	/** Example name for the name box. */
+	placeholder: string;
+}
+
+/** Starters in the order the New note picker shows them. */
+export const STARTERS: Starter[] = [
+	{ kind: 'note', label: 'Note', icon: 'file-text', placeholder: 'Name, e.g. The Zhentarim' },
+	{ kind: 'scene', label: 'Scene', icon: 'clapperboard', placeholder: 'Scene name, e.g. The Collapsed Bridge' },
+	{ kind: 'npc', label: 'NPC', icon: 'user-round', placeholder: 'Name, e.g. Sister Garaele' },
+	{ kind: 'location', label: 'Location', icon: 'map-pin', placeholder: 'Place, e.g. Phandalin' },
+	{ kind: 'session', label: 'Session log', icon: 'calendar-days', placeholder: 'Session name' },
+	{ kind: 'map', label: 'Map', icon: 'map', placeholder: 'Map name, e.g. Cragmaw Hideout' },
+	{ kind: 'monster', label: 'Monster', icon: 'skull', placeholder: 'Monster name, e.g. Goblin Boss' },
+	{ kind: 'handout', label: 'Handout', icon: 'scroll-text', placeholder: 'Handout name, e.g. Letter from Iarno' },
+];
+
 const fm = (fields: Record<string, string | number | undefined>) =>
 	'---\n' + Object.entries(fields).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => `${k}: ${v}`).join('\n') + '\n---\n';
 
@@ -82,5 +105,55 @@ export function sessionNote(name: string, date: string, lastScene?: string): str
 
 ## Loose threads
 -
+`;
+}
+
+/** A blank note: no properties, nothing to delete. */
+export function blankNote(): string {
+	return '';
+}
+
+/** A map note. `image` is link text for the map picture, or empty to fill in later. */
+export function mapNote(_name: string, image?: string): string {
+	return fm({ nimble: 'map' }) + `
+*What this map shows. Click a pin to open its note.*
+
+\`\`\`nimble-map
+image: ${image ? `[[${image}]]` : ''}
+pins:
+\`\`\`
+`;
+}
+
+export function monsterNote(name: string): string {
+	const title = name.replace(/[\r\n]+/g, ' ').trim() || 'Monster';
+	return fm({ nimble: 'monster' }) + `
+\`\`\`nimble
+name: ${title}
+level: 1
+size: Medium
+type: Humanoid
+hp: 21
+armor: none
+movement: 6
+saves: STR+
+abilities:
+- Trait: What makes it dangerous.
+attacks:
+- **Strike.** 1d8+2.
+\`\`\`
+
+## Tactics
+-
+`;
+}
+
+export function handoutNote(_name: string): string {
+	return fm({ nimble: 'handout' }) + `
+> [!quote] For the players
+> The text, letter or clue exactly as the heroes see it.
+
+## GM notes
+- When and how they get it
 `;
 }

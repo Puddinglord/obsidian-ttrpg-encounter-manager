@@ -9,7 +9,7 @@ Three icons appear in the left ribbon:
 
 | Icon | Opens |
 |---|---|
-| Castle | The **Campaign panel**: chapters, scenes, NPCs and sessions |
+| Castle | The **Campaign panel**: chapters, scenes and every folder in the campaign (NPCs, sessions, assets…) |
 | Swords | The **encounter tracker** |
 | Book | The **bestiary** |
 
@@ -31,7 +31,7 @@ To damage a monster, click its HP: a calculator opens on Damage. Enter `12` and 
 1. Select the castle icon, then **New campaign**. Give it a name, a starting level and the number of heroes.
 2. The plugin makes a folder with a home note, a first chapter and an opening scene.
 3. Write the scene. Type `/read-aloud` for boxed text, `/encounter` for a fight, `/npc` to link a character.
-4. Add more scenes with **+** in the Campaign panel. Use **Next scene** / **Previous scene** (bind them to hotkeys) to step through them at the table.
+4. Add more scenes with **+** in the Campaign panel. Every folder has a **+** too, and you can drag notes between them. Use **Next scene** / **Previous scene** (bind them to hotkeys) to step through them at the table.
 
 See [Campaigns](campaigns.md) for how it's laid out, and how to build it by hand.
 
