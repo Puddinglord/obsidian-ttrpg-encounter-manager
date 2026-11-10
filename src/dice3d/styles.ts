@@ -98,8 +98,13 @@ export const EFFECTS = [
 	{ id: 'ring', label: 'Ring burst' },
 	{ id: 'sparks', label: 'Sparks' },
 	{ id: 'embers', label: 'Embers' },
-	{ id: 'confetti', label: 'Confetti' },
 	{ id: 'stars', label: 'Starburst' },
+	{ id: 'twinkle', label: 'Twinkling stars' },
+	{ id: 'shooting', label: 'Shooting stars' },
+	{ id: 'nebula', label: 'Nebula' },
+	{ id: 'supernova', label: 'Supernova' },
+	{ id: 'arcane', label: 'Arcane circle' },
+	{ id: 'confetti', label: 'Confetti' },
 	{ id: 'smoke', label: 'Smoke' },
 	{ id: 'shatter', label: 'Shatter' },
 	{ id: 'gloom', label: 'Gloom' },
@@ -176,7 +181,7 @@ export const DEFAULT_DICE: DiceSettings = {
 	throwForce: 'normal',
 	stayMs: 1700,
 	shadows: 'soft',
-	effects: { crit: 'ring', miss: 'ring', max: 'stars', min: 'gloom' },
+	effects: { crit: 'ring', miss: 'ring', max: 'supernova', min: 'gloom' },
 	sets: [],
 };
 

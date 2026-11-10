@@ -20,11 +20,11 @@ import {
 	AmbientLight, BackSide, Box3, BufferGeometry, CanvasTexture, Color, DirectionalLight, DoubleSide, EdgesGeometry, Float32BufferAttribute,
 	FrontSide, Group, LineBasicMaterial, LineSegments, Material, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial,
 	MeshPhysicalMaterialParameters, Object3D, PCFShadowMap, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PMREMGenerator, Quaternion, Scene, ShadowMaterial, SRGBColorSpace, Texture,
-	Vector3, WebGLRenderer,
+	Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Burst, disposeEffectSprites, EVENT_PALETTES, makeBurst, paletteFrom } from './effects';
+import { Burst, disposeEffectSprites, makeBurst, paletteFor } from './effects';
 import { defaultLabels, dieShape, DieShape, hasModelLayout, modelCorrection, modelShape, relabel, topIndex } from './geometry';
 import { ANIMATED, applyLook, ShaderLook } from './shaders';
 import type { Blend, EffectId, Finish, FontId, RollEvent } from './styles';
@@ -942,25 +942,26 @@ export async function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	const bursts: { b: Burst; start: number }[] = [];
 	const effect = opts.effect;
 	const dark = activeDocument.body.classList.contains('theme-dark');
-	const addBurst = (at: Vector3, tint: string, start: number) => {
+	const pointScale = s.renderer.getDrawingBufferSize(new Vector2()).y / (2 * Math.tan((s.camera.fov * Math.PI) / 360));
+	const addBurst = (at: Vector3, start: number) => {
 		if (!effect || effect.kind === 'none' || bursts.length >= 8) return;
 		// The ring burst wears the event's colours (gold crit, red miss); other effects take the die's colour.
-		const palette = effect.kind === 'ring' ? EVENT_PALETTES[effect.event][dark ? 'dark' : 'light'] : paletteFrom(tint, dark);
-		const b = makeBurst(effect.kind, new Vector3(at.x, 0, at.z), { palette, dark, pxPerUnit: s.pxPerUnit, rising: effect.event === 'crit' || effect.event === 'max' });
+		// Each effect has its own colours (the ring and arcane circle wear the event's: gold crit, red miss).
+		const palette = paletteFor(effect.kind, effect.event, dark);
+		const b = makeBurst(effect.kind, new Vector3(at.x, 0, at.z), { palette, dark, pointScale, rising: effect.event === 'crit' || effect.event === 'max' });
 		if (!b) return;
 		b.object.visible = false;
 		s.scene.add(b.object);
 		bursts.push({ b, start });
 	};
 	const primaryIdx = Math.max(0, shown.findIndex(d => d.role === 'primary'));
-	const tintFor = (i: number) => (effect?.event === 'crit' ? critTint(i) : colors[i]);
 	if (effect?.event === 'crit') {
 		// Once per explosion, as each die bursts out. Not again when the chain lands.
-		segments.forEach((seg, k) => { if (seg.burstAt) addBurst(seg.burstAt, tintFor(seg.dice[0]), starts[k]); });
+		segments.forEach((seg, k) => { if (seg.burstAt) addBurst(seg.burstAt, starts[k]); });
 	} else if (effect?.event === 'miss') {
-		if (finalPose[primaryIdx]) addBurst(finalPose[primaryIdx].pos, tintFor(primaryIdx), landedAt);
+		if (finalPose[primaryIdx]) addBurst(finalPose[primaryIdx].pos, landedAt);
 	} else if (effect) {
-		shown.forEach((_, i) => { if (finalPose[i]) addBurst(finalPose[i].pos, tintFor(i), landedAt + i * 60); });
+		shown.forEach((_, i) => { if (finalPose[i]) addBurst(finalPose[i].pos, landedAt + i * 60); });
 	}
 	// A miss dims the die that missed.
 	const dimmed = effect?.event === 'miss' ? meshes[primaryIdx]?.tint.map(m => ({ m, from: m.color.clone() })) ?? [] : [];

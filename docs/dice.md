@@ -54,11 +54,23 @@ A look you own can change:
 
 ### Crits and effects
 
-A crit's extra dice burst out of the die that exploded, and the crit dice glow while they're on screen. Each kind of roll can also play an effect: ring burst, sparks, embers, confetti, starburst, smoke, shatter, gloom, or none. The ring burst takes the roll's colour: gold for a crit, red for a miss.
+A crit's extra dice burst out of the die that exploded, and the crit dice glow while they're on screen. Each kind of roll can also play an effect:
+
+| Effect | What you see |
+|---|---|
+| Ring burst | A shockwave along the table: gold for a crit, red for a miss |
+| Sparks, Embers | Hot streaks flying out, or embers drifting up |
+| Starburst, Twinkling stars, Shooting stars | Glints bursting out, a dome of stars winking in and out, or stars streaking away |
+| Nebula | A swirling cosmic cloud with stars glinting inside |
+| Supernova | A white-hot flash with rays and a racing shock ring |
+| Arcane circle | A rotating rune circle under the dice, in the roll's colour |
+| Confetti, Smoke, Shatter, Gloom | A party, a billow of smoke, glass shards, or a dark mist |
+
+Effects are tuned for both light and dark themes.
 
 - **Effect on a crit**: plays once as each die explodes out (a gold ring burst by default).
 - **Effect on a miss**: an attack that rolls a 1 (a red ring burst from under the die by default). The die that missed also dims.
-- **Effect on a max roll**: every die on its highest face, like a natural 20.
+- **Effect on a max roll**: every die on its highest face, like a natural 20 (a supernova by default).
 - **Effect on a min roll**: every die on a 1 (not an attack).
 
 **Test roll**, **Test crit**, **Test miss** and **Test natural 20** try them out.

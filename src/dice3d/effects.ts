@@ -37,8 +37,12 @@ export interface BurstOptions {
 	palette: Palette;
 	/** Dark theme: layers glow. Light theme: layers cover, with dark rims. */
 	dark: boolean;
-	/** Screen pixels per world unit, so particle sizes match the dice. */
-	pxPerUnit: number;
+	/**
+	 * Device pixels per world unit at distance 1 (drawing-buffer height ÷ 2·tan(fov/2)).
+	 * A particle's size in world units × this ÷ its depth = its size on screen, so
+	 * motes match the dice at any size, window or pixel ratio.
+	 */
+	pointScale: number;
 	/** A crit or max (flash, sparks and embers rise) rather than a miss (stays low on the table). */
 	rising?: boolean;
 }
@@ -132,7 +136,21 @@ const glintTex = () => canvasTex('glint', (g, s) => {
 const chipTex = () => canvasTex('chip', (g, s) => {
 	g.fillStyle = '#ffffff';
 	g.beginPath();
-	g.roundRect(s * 0.3, s * 0.38, s * 0.4, s * 0.24, s * 0.05);
+	g.roundRect(s * 0.1, s * 0.3, s * 0.8, s * 0.4, s * 0.08);
+	g.fill();
+}, 64);
+
+/** An angular glass shard. */
+const shardTex = () => canvasTex('shard', (g, s) => {
+	g.fillStyle = '#ffffff';
+	g.beginPath();
+	g.moveTo(s * 0.5, s * 0.04); g.lineTo(s * 0.86, s * 0.62); g.lineTo(s * 0.42, s * 0.96); g.lineTo(s * 0.16, s * 0.46);
+	g.closePath();
+	g.fill();
+	g.fillStyle = 'rgba(0,0,0,0.25)';
+	g.beginPath();
+	g.moveTo(s * 0.5, s * 0.04); g.lineTo(s * 0.42, s * 0.96); g.lineTo(s * 0.16, s * 0.46);
+	g.closePath();
 	g.fill();
 }, 64);
 
@@ -403,7 +421,7 @@ function motes(at: Vector3, p: Palette, o: BurstOptions, s: MoteSpec): Layer {
 	const mat = new ShaderMaterial({
 		vertexShader: MOTE_VERT, fragmentShader: MOTE_FRAG, ...blendAdd,
 		uniforms: {
-			uMap: { value: s.tex() }, uScale: { value: o.pxPerUnit * 9 }, uRim: { value: p.rim },
+			uMap: { value: s.tex() }, uScale: { value: o.pointScale }, uRim: { value: p.rim },
 			uRimAmt: { value: o.dark || !glow ? 0 : 0.6 }, uSolid: { value: solidity(o, glow) },
 		},
 	});
@@ -460,7 +478,168 @@ function flash(at: Vector3, p: Palette, o: BurstOptions, size: number, life = 85
 }
 
 // ---------------------------------------------------------------------------
-// Effects
+// Shader effects drawn on the table: a quad with a fragment shader, so they can
+// be detailed (noise, swirls, rays, glyphs) at the cost of one draw call.
+
+const NOISE = /* glsl */`
+float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float vnoise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), u.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * vnoise(p); p = p * 2.03 + 17.1; a *= 0.5; } return v; }
+`;
+
+const FLOOR_VERT = /* glsl */`
+varying vec2 vUv;
+void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+
+const FLOOR_HEAD = /* glsl */`
+uniform float uT;
+uniform float uSeed;
+uniform vec3 uCore;
+uniform vec3 uBright;
+uniform vec3 uMid;
+uniform vec3 uDeep;
+uniform float uSolid;
+uniform float uAlpha;
+varying vec2 vUv;
+${NOISE}
+`;
+
+/** A swirling cosmic cloud with stars glinting inside it. */
+const NEBULA_FRAG = FLOOR_HEAD + /* glsl */`
+void main() {
+	vec2 q = vUv * 2.0 - 1.0;
+	float grow = 1.0 - pow(2.0, -5.0 * uT);
+	float r = length(q) / mix(0.3, 1.0, grow);
+	float swirl = 2.2 * (1.0 - clamp(r, 0.0, 1.0)) + uT * 1.4;
+	vec2 p = mat2(cos(swirl), -sin(swirl), sin(swirl), cos(swirl)) * q * 2.4 + uSeed;
+	float n = fbm(p + vec2(uT * 0.5, -uT * 0.35));
+	float n2 = fbm(p * 1.9 - vec2(uT * 0.4, uT * 0.2) + 3.7);
+	float disc = 1.0 - smoothstep(0.35, 1.0, r);
+	float dens = disc * smoothstep(0.32, 0.8, n);
+	vec3 col = mix(uDeep, uMid, smoothstep(0.2, 0.8, n2));
+	col = mix(col, uBright, smoothstep(0.55, 0.9, n * n2 * 1.8));
+	col = mix(col, uCore, pow(dens, 3.0) * 0.6);
+	// Stars: sparse cells that twinkle.
+	vec2 cell = floor(vUv * 150.0);
+	float h = h21(cell + floor(uSeed));
+	vec2 fr = fract(vUv * 150.0) - 0.5;
+	float star = step(0.985, h) * smoothstep(0.35, 0.0, length(fr)) * (0.55 + 0.45 * sin(uT * 30.0 + h * 60.0)) * disc;
+	float fade = smoothstep(0.0, 0.12, uT) * (1.0 - smoothstep(0.55, 1.0, uT));
+	float a = clamp(dens * 0.9 + star, 0.0, 1.0) * fade * uAlpha;
+	col = mix(col, uCore, star);
+	gl_FragColor = vec4(col * a, a * uSolid);
+}`;
+
+/** A star going off: white-hot core, rays, and a thin racing shock ring. */
+const SUPERNOVA_FRAG = FLOOR_HEAD + /* glsl */`
+void main() {
+	vec2 q = vUv * 2.0 - 1.0;
+	float r = length(q);
+	float ang = atan(q.y, q.x);
+	float R = 1.0 - pow(2.0, -8.0 * uT);
+	float core = exp(-r * r * 30.0) * (1.0 - smoothstep(0.0, 0.45, uT)) * 1.6;
+	float glow = exp(-r * r * 6.0) * (1.0 - uT) * 0.5;
+	float n = vnoise(vec2(ang * 3.0 + uSeed, uT * 2.0));
+	float rays = (pow(abs(sin(ang * 7.0 + uSeed)), 24.0) * 0.8 + pow(abs(sin(ang * 13.0 - uSeed * 1.7)), 40.0) * 0.6) * (0.6 + 0.6 * n);
+	rays *= (1.0 - smoothstep(0.05, R * 1.1, r)) * (1.0 - smoothstep(0.35, 0.9, uT));
+	float ring = smoothstep(R - 0.06, R, r) * (1.0 - smoothstep(R, R + 0.015, r)) * (1.0 - smoothstep(0.5, 1.0, uT));
+	float a = clamp(core + glow + rays + ring, 0.0, 1.0) * uAlpha;
+	vec3 col = mix(uMid, uBright, clamp(rays + ring, 0.0, 1.0));
+	col = mix(col, uCore, clamp(core, 0.0, 1.0));
+	gl_FragColor = vec4(col * a, a * uSolid);
+}`;
+
+/** A magic circle: two rings, ticks, rotating glyph dashes and a star polygon. */
+const ARCANE_FRAG = FLOOR_HEAD + /* glsl */`
+float line(float d, float w) { return 1.0 - smoothstep(0.0, w, abs(d)); }
+void main() {
+	vec2 q = vUv * 2.0 - 1.0;
+	float scaleIn = mix(0.75, 1.0, 1.0 - pow(1.0 - min(uT / 0.25, 1.0), 3.0));
+	q /= scaleIn;
+	float r = length(q);
+	float ang = atan(q.y, q.x);
+	float spin = uT * 1.6;
+	float rings = line(r - 0.92, 0.012) + line(r - 0.84, 0.008) + line(r - 0.5, 0.01);
+	// Ticks between the outer rings, turning one way.
+	float tick = step(0.82, fract((ang + spin) * 36.0 / 6.2832)) * step(0.84, r) * step(r, 0.92);
+	// Glyph dashes on the middle band, turning the other way.
+	float g = fract((ang - spin * 0.7) * 12.0 / 6.2832);
+	float glyph = step(0.15, g) * step(g, 0.55) * line(r - 0.68, 0.035) * step(0.3, h21(vec2(floor((ang - spin * 0.7) * 12.0 / 6.2832), uSeed)));
+	// A six-pointed star inscribed in the inner ring.
+	float star = 0.0;
+	for (int k = 0; k < 6; k++) {
+		float th = float(k) * 1.0472 + spin * 0.5;
+		vec2 a = vec2(cos(th), sin(th)) * 0.5, b = vec2(cos(th + 2.0944), sin(th + 2.0944)) * 0.5;
+		vec2 pa = q - a, ba = b - a;
+		float hh = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+		star += line(length(pa - ba * hh), 0.008);
+	}
+	float shape = clamp(rings + tick * 0.8 + glyph * 0.9 + star * 0.7, 0.0, 1.0) * step(r, 1.0);
+	float fade = smoothstep(0.0, 0.12, uT) * (1.0 - smoothstep(0.65, 1.0, uT));
+	float pulse = 0.85 + 0.15 * sin(uT * 18.0);
+	float a = shape * fade * pulse * uAlpha + exp(-r * r * 3.0) * 0.12 * fade;
+	vec3 col = mix(uMid, uBright, shape);
+	gl_FragColor = vec4(col * a, a * uSolid);
+}`;
+
+/** A detailed effect drawn by a shader on a quad lying on the table. */
+function floorFx(at: Vector3, p: Palette, o: BurstOptions, frag: string, radius: number, life: number, y = 0.06, delay = 0): Layer {
+	const mat = new ShaderMaterial({
+		vertexShader: FLOOR_VERT, fragmentShader: frag, ...blendAdd,
+		uniforms: {
+			uT: { value: 0 }, uSeed: { value: Math.random() * 40 }, uCore: { value: p.core }, uBright: { value: p.bright }, uMid: { value: p.mid }, uDeep: { value: p.deep },
+			uSolid: { value: solidity(o) }, uAlpha: { value: o.dark ? 1 : 0.95 },
+		},
+	});
+	const mesh = new Mesh(new PlaneGeometry(2, 2), mat);
+	mesh.rotation.x = -Math.PI / 2;
+	mesh.position.set(at.x, y, at.z);
+	mesh.scale.setScalar(radius);
+	mesh.renderOrder = 11;
+	return {
+		object: mesh,
+		update(t) {
+			const u = (t - delay) / life;
+			mesh.visible = u >= 0 && u < 1;
+			if (mesh.visible) mat.uniforms.uT.value = u;
+			return u < 1;
+		},
+		dispose() { mesh.geometry.dispose(); mat.dispose(); },
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Each effect's own colours (the ring and arcane circle take the event's).
+
+export const EFFECT_PALETTES: Partial<Record<EffectId, { dark: Palette; light: Palette }>> = {
+	sparks: EVENT_PALETTES.crit,
+	stars: EVENT_PALETTES.crit,
+	supernova: EVENT_PALETTES.crit,
+	embers: { dark: pal('#fff1c1', '#ff9f43', '#ff5a1f', '#c2290a', '#5a1004'), light: pal('#ff9f1c', '#f26b0f', '#d9480f', '#a61e0a', '#5a1004') },
+	twinkle: { dark: pal('#ffffff', '#dbe8ff', '#9cc3ff', '#5b7fd6', '#1d2b5a'), light: pal('#7b9bff', '#4a6ee0', '#3557c4', '#22378a', '#121f4f') },
+	shooting: { dark: pal('#ffffff', '#dbe8ff', '#9cc3ff', '#5b7fd6', '#1d2b5a'), light: pal('#7b9bff', '#4a6ee0', '#3557c4', '#22378a', '#121f4f') },
+	nebula: { dark: pal('#ffe6ff', '#ff7ad9', '#8a5cff', '#3b2a9c', '#120a3a'), light: pal('#f06ad0', '#b45cf5', '#7c4ddb', '#3b1886', '#1a0b40') },
+	shatter: { dark: pal('#f2f2f8', '#aab0c4', '#6b7085', '#363a4a', '#111218'), light: pal('#6b7085', '#4a4e60', '#343747', '#1f2130', '#0b0c10') },
+	gloom: EVENT_PALETTES.min,
+};
+
+/** The colours a burst uses: the event's for the ring and arcane circle, the effect's own otherwise. */
+export function paletteFor(kind: EffectId, event: 'crit' | 'miss' | 'max' | 'min', dark: boolean): Palette {
+	const set = kind === 'ring' || kind === 'arcane' ? EVENT_PALETTES[event] : (EFFECT_PALETTES[kind] ?? EVENT_PALETTES[event]);
+	return set[dark ? 'dark' : 'light'];
+}
+
+// ---------------------------------------------------------------------------
+// Effects: layers put together. Sizes are in die radii (a die is 2 across).
+
+const dome = (rMin: number, rMax: number, yMin: number, yMax: number): [number, number, number] => {
+	const a = Math.random() * Math.PI * 2, r = rMin + Math.random() * (rMax - rMin);
+	return [Math.cos(a) * r, yMin + Math.random() * (yMax - yMin), Math.sin(a) * r];
+};
 
 function layersFor(kind: Exclude<EffectId, 'none'>, at: Vector3, p: Palette, o: BurstOptions): Layer[] {
 	const L: (Layer | null)[] = [];
@@ -468,24 +647,23 @@ function layersFor(kind: Exclude<EffectId, 'none'>, at: Vector3, p: Palette, o: 
 		case 'ring': {
 			if (o.rising) {
 				// Crit: ring first, a frame of flash, then a few hot streaks, then embers drifting up.
-				const ring: ShockSpec = { radius: 4.4, life: 420, width: 0.3, fill: 0.16 };
-				L.push(shockShadow(at, p, o, ring), shockwave(at, p, o, ring), flash(at, p, o, 3.4));
-				L.push(streaks(at, p, o, { count: 16, speed: 7, up: 8, life: 380, gravity: -24, drag: 2.2, width: 0.08, stretch: 0.07, delay: 25 }));
+				const ring: ShockSpec = { radius: 5.2, life: 440, width: 0.3, fill: 0.16 };
+				L.push(shockShadow(at, p, o, ring), shockwave(at, p, o, ring), flash(at, p, o, 3.6));
+				L.push(streaks(at, p, o, { count: 18, speed: 9, up: 9, life: 420, gravity: -24, drag: 2.2, width: 0.1, stretch: 0.07, delay: 25 }));
 				L.push(motes(at, p, o, {
-					count: 8, life: 780, delay: 50, stagger: 90, size: 0.2, endSize: 0.2, pop: true, gravity: 2.2, drag: 2.5, wander: 5, flicker: 0.35, tex: softTex,
-					launch: () => { const a = Math.random() * Math.PI * 2, r = 0.4 + Math.random() * 0.6; return { pos: [Math.cos(a) * r, 0.5 + Math.random() * 0.5, Math.sin(a) * r], vel: [Math.cos(a) * vary(1.6, 0.4), vary(2.6, 0.4), Math.sin(a) * vary(1.6, 0.4)] }; },
+					count: 10, life: 820, delay: 50, stagger: 90, size: 0.32, endSize: 0.2, pop: true, gravity: 2.2, drag: 2.5, wander: 5, flicker: 0.35, tex: softTex,
+					launch: () => { const a = Math.random() * Math.PI * 2, r = 0.4 + Math.random() * 0.8; return { pos: [Math.cos(a) * r, 0.5 + Math.random() * 0.5, Math.sin(a) * r], vel: [Math.cos(a) * vary(2, 0.4), vary(3, 0.4), Math.sin(a) * vary(2, 0.4)] }; },
 				}));
 			} else {
-				// Miss: no flash. A ring at the die's base and low particles skidding out along the table,
-				// darkening as they slow, then gone.
-				const ring: ShockSpec = { radius: 3.8, life: 520, width: 0.32, fill: 0.1 };
+				// Miss: no flash. A ring at the die's base and low particles skidding out along the table.
+				const ring: ShockSpec = { radius: 4.6, life: 540, width: 0.32, fill: 0.1 };
 				L.push(shockShadow(at, p, o, ring), shockwave(at, p, o, ring));
 				L.push(motes(at, p, o, {
-					count: 14, life: 560, stagger: 40, size: 0.26, endSize: 0.2, gravity: -1.5, drag: 5, tex: softTex,
+					count: 18, life: 600, stagger: 40, size: 0.34, endSize: 0.2, gravity: -1.5, drag: 5, tex: softTex,
 					launch: (i, n) => {
 						const a = (i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.52;
-						const sp = vary(9, 0.4);
-						return { pos: [Math.cos(a) * 0.55, 0.1, Math.sin(a) * 0.55], vel: [Math.cos(a) * sp, 0.3, Math.sin(a) * sp] };
+						const sp = vary(11, 0.4);
+						return { pos: [Math.cos(a) * 0.6, 0.1, Math.sin(a) * 0.6], vel: [Math.cos(a) * sp, 0.3, Math.sin(a) * sp] };
 					},
 					color: (pp, u, out) => { ramp(pp, 0.35 + u * 0.65, out); },
 				}));
@@ -493,43 +671,79 @@ function layersFor(kind: Exclude<EffectId, 'none'>, at: Vector3, p: Palette, o: 
 			break;
 		}
 		case 'sparks':
-			L.push(flash(at, p, o, 3), streaks(at, p, o, { count: 22, speed: 9, up: 7, life: 460, gravity: -26, drag: 1.8, width: 0.07, stretch: 0.07, delay: 20 }));
-			L.push(motes(at, p, o, { count: 7, life: 800, delay: 60, stagger: 120, size: 0.16, endSize: 0.2, pop: true, gravity: 2.5, drag: 2, wander: 6, flicker: 0.35, tex: softTex,
-				launch: () => ({ pos: [(Math.random() - 0.5) * 0.8, 0.6, (Math.random() - 0.5) * 0.8], vel: [(Math.random() - 0.5) * 3, vary(2.5, 0.4), (Math.random() - 0.5) * 3] }) }));
+			L.push(flash(at, p, o, 3.6), streaks(at, p, o, { count: 36, speed: 12, up: 9, life: 560, gravity: -26, drag: 1.6, width: 0.1, stretch: 0.075, delay: 20 }));
+			L.push(motes(at, p, o, { count: 12, life: 900, delay: 60, stagger: 140, size: 0.26, endSize: 0.2, pop: true, gravity: 2.5, drag: 2, wander: 6, flicker: 0.4, tex: softTex,
+				launch: () => ({ pos: dome(0, 0.8, 0.5, 0.8), vel: [(Math.random() - 0.5) * 4, vary(3, 0.4), (Math.random() - 0.5) * 4] }) }));
 			break;
 		case 'embers':
-			L.push(flash(at, p, o, 2, 120));
-			L.push(motes(at, p, o, { count: 18, life: 1300, stagger: 350, size: 0.16, endSize: 0.2, pop: true, gravity: 2.6, drag: 1.6, wander: 8, flicker: 0.4, tex: softTex,
-				launch: () => { const a = Math.random() * Math.PI * 2, r = 0.4 + Math.random() * 0.7; return { pos: [Math.cos(a) * r, 0.3 + Math.random() * 0.5, Math.sin(a) * r], vel: [(Math.random() - 0.5) * 1.4, vary(2, 0.4), (Math.random() - 0.5) * 1.4] }; } }));
+			L.push(flash(at, p, o, 2.6, 140));
+			L.push(motes(at, p, o, { count: 48, life: 1900, stagger: 420, size: 0.4, endSize: 0.2, pop: true, gravity: 3.4, drag: 1.3, wander: 12, flicker: 0.45, tex: softTex,
+				launch: () => ({ pos: dome(0.4, 2.6, 0.2, 0.9), vel: [(Math.random() - 0.5) * 2.6, vary(3, 0.4), (Math.random() - 0.5) * 2.6] }) }));
 			break;
 		case 'confetti':
-			L.push(motes(at, p, o, { count: 46, life: 1700, stagger: 80, size: 0.26, endSize: 0.8, gravity: -9, drag: 2.2, wander: 10, tex: chipTex, glow: false, alpha: 0.6,
+			L.push(motes(at, p, o, { count: 90, life: 2200, stagger: 100, size: 0.55, endSize: 0.85, gravity: -9, drag: 1.8, wander: 14, tex: chipTex, glow: false, alpha: 0.65,
 				color: (_p, _u, out, seed) => { out.set(['#f43f5e', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#eab308'][Math.floor(seed) % 6]); },
-				launch: () => { const a = Math.random() * Math.PI * 2, sp = vary(3.5, 0.4); return { pos: [0, 1, 0], vel: [Math.cos(a) * sp, vary(11, 0.3), Math.sin(a) * sp] }; } }));
+				launch: () => { const a = Math.random() * Math.PI * 2, sp = vary(6.5, 0.4); return { pos: [0, 1, 0], vel: [Math.cos(a) * sp, vary(14, 0.3), Math.sin(a) * sp] }; } }));
 			break;
 		case 'stars': {
-			const ring: ShockSpec = { radius: 4.2, life: 460, width: 0.14, fill: 0.08 };
-			L.push(shockShadow(at, p, o, ring), shockwave(at, p, o, ring), flash(at, p, o, 3.6, 110));
-			L.push(motes(at, p, o, { count: 9, life: 760, delay: 30, stagger: 160, size: 0.7, endSize: 0.2, pop: true, gravity: 0.6, drag: 2.6, tex: glintTex,
-				launch: () => { const a = Math.random() * Math.PI * 2, sp = vary(3.5, 0.4); return { pos: [0, 0.6 + Math.random() * 0.8, 0], vel: [Math.cos(a) * sp, vary(1.5, 0.4), Math.sin(a) * sp] }; } }));
+			const ring: ShockSpec = { radius: 4.8, life: 480, width: 0.14, fill: 0.08 };
+			L.push(shockShadow(at, p, o, ring), shockwave(at, p, o, ring), flash(at, p, o, 4, 110));
+			L.push(motes(at, p, o, { count: 14, life: 900, delay: 30, stagger: 180, size: 1.1, endSize: 0.2, pop: true, gravity: 0.6, drag: 2.6, tex: glintTex,
+				launch: () => { const a = Math.random() * Math.PI * 2, sp = vary(5, 0.4); return { pos: [0, 0.6 + Math.random() * 0.8, 0], vel: [Math.cos(a) * sp, vary(2, 0.4), Math.sin(a) * sp] }; } }));
 			break;
 		}
+		case 'twinkle':
+			// A dome of stars winking in and out above the dice.
+			L.push(motes(at, p, o, { count: 42, life: 1500, stagger: 600, size: 0.75, endSize: 0.5, pop: true, gravity: 0.4, drag: 3, wander: 1.5, flicker: 0.75, tex: glintTex,
+				color: (pp, u, out, seed) => { (seed % 3 < 1 ? out.copy(pp.core) : seed % 3 < 2 ? out.copy(pp.bright) : out.copy(EVENT_PALETTES.crit[o.dark ? 'dark' : 'light'].bright)).lerp(pp.mid, u * 0.5); },
+				launch: () => ({ pos: dome(0.6, 4, 0.4, 3), vel: [0, vary(0.4, 0.5), 0] }) }));
+			L.push(motes(at, p, o, { count: 30, life: 1300, stagger: 500, size: 0.18, endSize: 0.4, gravity: 0.3, drag: 3, flicker: 0.9, tex: softTex,
+				launch: () => ({ pos: dome(0.5, 4.2, 0.3, 2.6), vel: [0, 0.2, 0] }) }));
+			break;
+		case 'shooting':
+			// Shooting stars arcing out from the dice, with long tapering tails.
+			L.push(flash(at, p, o, 2.4, 100));
+			L.push(streaks(at, p, o, { count: 9, speed: 15, up: 7, life: 900, gravity: -7, drag: 0.6, width: 0.12, stretch: 0.13, delay: 0 }));
+			L.push(streaks(at, p, o, { count: 7, speed: 11, up: 9, life: 1000, gravity: -6, drag: 0.6, width: 0.09, stretch: 0.12, delay: 160 }));
+			L.push(motes(at, p, o, { count: 16, life: 1100, delay: 150, stagger: 400, size: 0.5, endSize: 0.3, pop: true, gravity: 0.2, drag: 3, flicker: 0.7, tex: glintTex,
+				launch: () => ({ pos: dome(1.2, 4, 0.8, 2.6), vel: [0, 0.3, 0] }) }));
+			break;
+		case 'nebula':
+			L.push(floorFx(at, p, o, NEBULA_FRAG, 5.5, 1900, 0.3));
+			L.push(motes(at, p, o, { count: 18, life: 1500, delay: 200, stagger: 700, size: 0.6, endSize: 0.4, pop: true, gravity: 0.3, drag: 3, flicker: 0.8, tex: glintTex,
+				color: (pp, _u, out, seed) => { out.copy(seed % 2 < 1 ? pp.core : pp.bright); },
+				launch: () => ({ pos: dome(0.5, 3.6, 0.5, 2), vel: [0, 0.25, 0] }) }));
+			break;
+		case 'supernova':
+			L.push(floorFx(at, p, o, SUPERNOVA_FRAG, 6.5, 900, 0.08), flash(at, p, o, 5, 120));
+			L.push(motes(at, p, o, { count: 12, life: 1000, delay: 60, stagger: 200, size: 0.9, endSize: 0.2, pop: true, gravity: 0.5, drag: 2.4, tex: glintTex,
+				launch: () => { const a = Math.random() * Math.PI * 2, sp = vary(6, 0.4); return { pos: [0, 0.8, 0], vel: [Math.cos(a) * sp, vary(1.5, 0.4), Math.sin(a) * sp] }; } }));
+			break;
+		case 'arcane':
+			L.push(floorFx(at, p, o, ARCANE_FRAG, 3.6, 1600, 0.05));
+			L.push(motes(at, p, o, { count: 20, life: 1100, delay: 250, stagger: 700, size: 0.28, endSize: 0.3, pop: true, gravity: 2.4, drag: 2, flicker: 0.5, tex: softTex,
+				launch: () => { const a = Math.random() * Math.PI * 2; return { pos: [Math.cos(a) * 3.2, 0.1, Math.sin(a) * 3.2], vel: [0, vary(2.2, 0.4), 0] }; } }));
+			break;
 		case 'smoke':
-			L.push(motes(at, p, o, { count: 12, life: 1700, stagger: 160, size: 1.1, endSize: 2.4, gravity: 1.3, drag: 1.8, wander: 3, tex: softTex, glow: false, alpha: 0.22,
-				color: (_p, u, out) => { out.set(o.dark ? '#a3a3a8' : '#5f5f66').lerp(new Color(o.dark ? '#5a5a60' : '#8c8c94'), u); },
-				launch: () => { const a = Math.random() * Math.PI * 2; return { pos: [Math.cos(a) * 0.4, 0.4, Math.sin(a) * 0.4], vel: [Math.cos(a) * vary(0.9, 0.4), vary(1, 0.4), Math.sin(a) * vary(0.9, 0.4)] }; } }));
+			// Billowing puffs: big, soft, growing as they drift up and out.
+			L.push(motes(at, p, o, { count: 22, life: 2200, stagger: 220, size: 3, endSize: 2.6, gravity: 1.4, drag: 1.4, wander: 3, tex: softTex, glow: false, alpha: o.dark ? 0.32 : 0.36,
+				color: (_p, u, out) => { out.set(o.dark ? '#c4c4cc' : '#55555e').lerp(new Color(o.dark ? '#74747c' : '#8a8a94'), u); },
+				launch: () => { const a = Math.random() * Math.PI * 2; return { pos: [Math.cos(a) * 0.6, 0.5, Math.sin(a) * 0.6], vel: [Math.cos(a) * vary(2.8, 0.4), vary(1.8, 0.4), Math.sin(a) * vary(2.8, 0.4)] }; } }));
 			break;
 		case 'shatter':
-			L.push(flash(at, p, o, 2, 80));
-			L.push(motes(at, p, o, { count: 18, life: 900, size: 0.26, endSize: 0.6, gravity: -28, drag: 0.8, tex: chipTex, glow: false, alpha: 0.6,
-				color: (pp, u, out) => { out.copy(pp.deep).lerp(pp.rim, 0.3 + u * 0.6); },
-				launch: () => { const a = Math.random() * Math.PI * 2, sp = vary(5, 0.4); return { pos: [0, 0.7, 0], vel: [Math.cos(a) * sp, vary(7, 0.4), Math.sin(a) * sp] }; } }));
+			L.push(flash(at, p, o, 2.6, 80));
+			L.push(motes(at, p, o, { count: 36, life: 1100, size: 0.8, endSize: 0.6, gravity: -30, drag: 0.6, tex: shardTex, glow: false, alpha: 0.7,
+				color: (pp, u, out, seed) => { (o.dark ? out.copy(seed % 3 < 1 ? pp.core : pp.bright) : out.copy(seed % 3 < 1 ? pp.bright : pp.mid)).lerp(pp.deep, u * 0.7); },
+				launch: () => { const a = Math.random() * Math.PI * 2, sp = vary(8.5, 0.4); return { pos: [0, 0.8, 0], vel: [Math.cos(a) * sp, vary(10, 0.4), Math.sin(a) * sp] }; } }));
+			L.push(motes(at, p, o, { count: 12, life: 700, size: 1.2, endSize: 1.8, gravity: 0, drag: 4, tex: softTex, glow: false, alpha: 0.3,
+				color: (pp, _u, out) => { out.copy(pp.mid); },
+				launch: () => { const a = Math.random() * Math.PI * 2; return { pos: [0, 0.4, 0], vel: [Math.cos(a) * vary(4, 0.4), 0.5, Math.sin(a) * vary(4, 0.4)] }; } }));
 			break;
 		case 'gloom': {
-			const ring: ShockSpec = { radius: 3.4, life: 1000, width: 0.55, fill: 0.35, alpha: 0.7 };
+			const ring: ShockSpec = { radius: 4, life: 1100, width: 0.55, fill: 0.35, alpha: 0.8 };
 			L.push(shockShadow(at, p, o, ring), shockwave(at, p, o, ring));
-			L.push(motes(at, p, o, { count: 10, life: 1500, stagger: 200, size: 0.9, endSize: 2, gravity: 0.3, drag: 2.4, wander: 2, tex: softTex, glow: false, alpha: 0.25,
-				launch: () => { const a = Math.random() * Math.PI * 2; return { pos: [Math.cos(a) * 0.5, 0.2, Math.sin(a) * 0.5], vel: [Math.cos(a) * vary(1.4, 0.4), 0.2, Math.sin(a) * vary(1.4, 0.4)] }; } }));
+			L.push(motes(at, p, o, { count: 14, life: 1700, stagger: 220, size: 1.6, endSize: 1.8, gravity: 0.3, drag: 2.4, wander: 2, tex: softTex, glow: false, alpha: 0.35,
+				launch: () => { const a = Math.random() * Math.PI * 2; return { pos: [Math.cos(a) * 0.6, 0.2, Math.sin(a) * 0.6], vel: [Math.cos(a) * vary(2, 0.4), 0.2, Math.sin(a) * vary(2, 0.4)] }; } }));
 			break;
 		}
 	}
