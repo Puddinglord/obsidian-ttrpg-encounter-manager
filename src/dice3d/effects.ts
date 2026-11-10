@@ -132,14 +132,6 @@ const glintTex = () => canvasTex('glint', (g, s) => {
 	}
 });
 
-/** Small rounded chip for confetti and shards. */
-const chipTex = () => canvasTex('chip', (g, s) => {
-	g.fillStyle = '#ffffff';
-	g.beginPath();
-	g.roundRect(s * 0.1, s * 0.3, s * 0.8, s * 0.4, s * 0.08);
-	g.fill();
-}, 64);
-
 /** An angular glass shard. */
 const shardTex = () => canvasTex('shard', (g, s) => {
 	g.fillStyle = '#ffffff';
@@ -478,6 +470,137 @@ function flash(at: Vector3, p: Palette, o: BurstOptions, size: number, life = 85
 }
 
 // ---------------------------------------------------------------------------
+// Confetti: paper that tumbles. Each piece spins in the screen plane and flips
+// end over end (squashing to an edge and showing a darker back), flutters side
+// to side, and falls slowly at its own terminal speed, like real paper.
+
+const CONFETTI_VERT = /* glsl */`
+attribute vec3 iPos;
+attribute vec2 iSize;
+attribute float iRot;
+attribute float iFlip;
+attribute vec3 iColor;
+attribute float iShape;
+attribute float iAlpha;
+varying vec2 vUv;
+varying vec3 vColor;
+varying float vShape;
+varying float vFlip;
+varying float vAlpha;
+void main() {
+	vec4 mv = modelViewMatrix * vec4(iPos, 1.0);
+	vec2 c = position.xy * iSize;
+	c.y *= max(abs(iFlip), 0.06);          // edge-on when it flips through 90°
+	float s = sin(iRot), k = cos(iRot);
+	mv.xy += vec2(c.x * k - c.y * s, c.x * s + c.y * k);
+	vUv = position.xy + 0.5;
+	vColor = iColor; vShape = iShape; vFlip = iFlip; vAlpha = iAlpha;
+	gl_Position = projectionMatrix * mv;
+}`;
+
+const CONFETTI_FRAG = /* glsl */`
+uniform float uSolid;
+varying vec2 vUv;
+varying vec3 vColor;
+varying float vShape;
+varying float vFlip;
+varying float vAlpha;
+void main() {
+	vec2 q = vUv - 0.5;
+	float a;
+	if (vShape < 0.5) {
+		// Rectangle with softly rounded corners.
+		vec2 d = abs(q) - vec2(0.42, 0.40);
+		a = 1.0 - smoothstep(0.0, 0.06, length(max(d, 0.0)));
+	} else {
+		a = 1.0 - smoothstep(0.42, 0.5, length(q));
+	}
+	a *= vAlpha;
+	if (a < 0.01) discard;
+	// Lit front, darker back, a sheen as it faces the light.
+	float facing = abs(vFlip);
+	vec3 col = vColor * (vFlip > 0.0 ? 1.0 : 0.72) * (0.78 + 0.22 * facing) + vec3(0.35) * pow(facing, 12.0);
+	gl_FragColor = vec4(col * a, a * uSolid);
+}`;
+
+function confetti(at: Vector3, o: BurstOptions, count: number): Layer {
+	const n = count;
+	const quad = new PlaneGeometry(1, 1);
+	const geo = new InstancedBufferGeometry();
+	geo.index = quad.index;
+	geo.setAttribute('position', quad.getAttribute('position'));
+	geo.instanceCount = n;
+	const pos = new Float32Array(n * 3), vel = new Float32Array(n * 3), col = new Float32Array(n * 3), size = new Float32Array(n * 2);
+	const rot = new Float32Array(n), flip = new Float32Array(n), shape = new Float32Array(n), alpha = new Float32Array(n);
+	const spin = new Float32Array(n), flipRate = new Float32Array(n), phase = new Float32Array(n), sway = new Float32Array(n), fall = new Float32Array(n), life = new Float32Array(n), birth = new Float32Array(n);
+	// A festive palette that holds on both themes (no white on a light page).
+	const colours = (o.dark ? ['#ff5e7e', '#ffb84d', '#ffe066', '#4ecdc4', '#5aa9ff', '#a78bfa', '#ffffff', '#f2c14e'] : ['#ff4d6d', '#ff9f1c', '#f5c400', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899', '#e0a000']).map(h => new Color(h));
+	for (let i = 0; i < n; i++) {
+		// Out of a cannon: a cone up and away from the dice, a few at a time.
+		const a = Math.random() * Math.PI * 2;
+		const lift = vary(14, 0.3), out = vary(6, 0.5);
+		pos.set([at.x + (Math.random() - 0.5) * 0.6, 0.9, at.z + (Math.random() - 0.5) * 0.6], i * 3);
+		vel.set([Math.cos(a) * out, lift, Math.sin(a) * out], i * 3);
+		const ribbon = Math.random() < 0.18;
+		const w = vary(0.3, 0.25);
+		size.set(ribbon ? [w * 0.45, w * 2.2] : [w, w * vary(0.6, 0.3)], i * 2);
+		shape[i] = !ribbon && Math.random() < 0.22 ? 1 : 0;
+		const c = colours[Math.floor(Math.random() * colours.length)];
+		col.set([c.r, c.g, c.b], i * 3);
+		rot[i] = Math.random() * Math.PI * 2;
+		spin[i] = (Math.random() - 0.5) * 9;
+		flipRate[i] = vary(9, 0.5) * (Math.random() < 0.5 ? -1 : 1);
+		phase[i] = Math.random() * Math.PI * 2;
+		sway[i] = vary(1.6, 0.5);
+		fall[i] = vary(2.4, 0.35);
+		life[i] = vary(2400, 0.25);
+		birth[i] = Math.random() * 140;
+	}
+	const attr = (name: string, arr: Float32Array, sz: number) => { const b = new InstancedBufferAttribute(arr, sz); geo.setAttribute(name, b); return b; };
+	const aPos = attr('iPos', pos, 3), aRot = attr('iRot', rot, 1), aFlip = attr('iFlip', flip, 1), aAlpha = attr('iAlpha', alpha, 1);
+	attr('iSize', size, 2); attr('iColor', col, 3); attr('iShape', shape, 1);
+	const mat = new ShaderMaterial({ vertexShader: CONFETTI_VERT, fragmentShader: CONFETTI_FRAG, ...blendAdd, uniforms: { uSolid: { value: 1 } } });
+	const mesh = new Mesh(geo, mat);
+	mesh.frustumCulled = false;
+	mesh.renderOrder = 13;
+	let last = 0;
+	return {
+		object: mesh,
+		update(t) {
+			if (t < 0) { mesh.visible = false; return true; }
+			mesh.visible = true;
+			const dt = Math.min(0.05, Math.max(0, t - last) / 1000);
+			last = t;
+			let alive = false;
+			for (let i = 0; i < n; i++) {
+				const age = t - birth[i];
+				const u = age / life[i];
+				if (u >= 1) { alpha[i] = 0; continue; }
+				alive = true;
+				if (age < 0) { alpha[i] = 0; continue; }
+				const k = i * 3;
+				// Air resistance: fast sideways at first, then paper settles to a slow, fluttering fall.
+				const damp = Math.exp(-2.4 * dt);
+				vel[k] *= damp; vel[k + 2] *= damp;
+				vel[k + 1] += -16 * dt;
+				if (vel[k + 1] < -fall[i]) vel[k + 1] += (-fall[i] - vel[k + 1]) * Math.min(1, 6 * dt);
+				const s = age / 1000;
+				const flutter = vel[k + 1] < 0 ? 1 : 0.2;
+				pos[k] += (vel[k] + Math.sin(s * 3.1 + phase[i]) * sway[i] * flutter) * dt;
+				pos[k + 1] = Math.max(0.04, pos[k + 1] + vel[k + 1] * dt);
+				pos[k + 2] += (vel[k + 2] + Math.cos(s * 2.7 + phase[i]) * sway[i] * flutter) * dt;
+				rot[i] += spin[i] * dt;
+				flip[i] = Math.cos(s * flipRate[i] + phase[i]);
+				alpha[i] = Math.min(1, age / 60) * (1 - Math.pow(Math.max(0, u - 0.7) / 0.3, 2));
+			}
+			aPos.needsUpdate = aRot.needsUpdate = aFlip.needsUpdate = aAlpha.needsUpdate = true;
+			return alive;
+		},
+		dispose() { geo.dispose(); quad.dispose(); mat.dispose(); },
+	};
+}
+
+// ---------------------------------------------------------------------------
 // Shader effects drawn on the table: a quad with a fragment shader, so they can
 // be detailed (noise, swirls, rays, glyphs) at the cost of one draw call.
 
@@ -681,9 +804,7 @@ function layersFor(kind: Exclude<EffectId, 'none'>, at: Vector3, p: Palette, o: 
 				launch: () => ({ pos: dome(0.4, 2.6, 0.2, 0.9), vel: [(Math.random() - 0.5) * 2.6, vary(3, 0.4), (Math.random() - 0.5) * 2.6] }) }));
 			break;
 		case 'confetti':
-			L.push(motes(at, p, o, { count: 90, life: 2200, stagger: 100, size: 0.55, endSize: 0.85, gravity: -9, drag: 1.8, wander: 14, tex: chipTex, glow: false, alpha: 0.65,
-				color: (_p, _u, out, seed) => { out.set(['#f43f5e', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#eab308'][Math.floor(seed) % 6]); },
-				launch: () => { const a = Math.random() * Math.PI * 2, sp = vary(6.5, 0.4); return { pos: [0, 1, 0], vel: [Math.cos(a) * sp, vary(14, 0.3), Math.sin(a) * sp] }; } }));
+			L.push(confetti(at, o, 120));
 			break;
 		case 'stars': {
 			const ring: ShockSpec = { radius: 4.8, life: 480, width: 0.14, fill: 0.08 };
