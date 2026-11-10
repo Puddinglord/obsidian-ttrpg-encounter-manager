@@ -2146,3 +2146,27 @@ body.is-phone .nimble-record-modal .record-turn { flex: 1; justify-content: cent
 .setting-item.nimble-dice-perdie { flex-wrap: wrap; }
 .setting-item.nimble-dice-perdie .setting-item-control { flex-basis: 100%; }
 .nimble-dice-tests .setting-item-control { flex-wrap: wrap; justify-content: flex-start; }
+
+/* Dice workshop (modal over settings) */
+.nimble-dice-workshop-cta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem; border-radius: var(--radius-m); background: color-mix(in srgb, var(--interactive-accent) 9%, var(--background-secondary)); }
+.modal.nimble-dice-workshop { width: min(860px, 94vw); }
+.nimble-workshop-body { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 720px) { .nimble-workshop-body { grid-template-columns: 1fr; } }
+.nimble-workshop-col .setting-item { padding: 0.5rem 0; }
+.nimble-workshop-heading { font-weight: 700; font-size: var(--font-ui-small); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0.9rem 0 0.35rem; }
+.nimble-workshop-pool { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.35rem; }
+.nimble-workshop-die { display: flex; flex-direction: column; gap: 0.2rem; }
+.nimble-workshop-die-add { height: 3.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem; box-shadow: none; border: 1px solid var(--background-modifier-border); background: var(--background-primary); }
+.nimble-workshop-die.has-dice .nimble-workshop-die-add { border-color: var(--interactive-accent); background: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-primary)); }
+.nimble-workshop-die-name { font-weight: 700; }
+.nimble-workshop-die-count { font-size: 0.72rem; color: var(--text-accent); font-weight: 600; }
+.nimble-workshop-die-minus { height: 1.4rem; padding: 0; box-shadow: none; font-size: 0.9rem; }
+.nimble-workshop-moments { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.nimble-workshop-moment { height: auto; padding: 0.6rem 0.7rem; display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; text-align: left; white-space: normal; box-shadow: none; border: 1px solid var(--background-modifier-border); }
+.nimble-workshop-moment-label { font-weight: 700; }
+.nimble-workshop-moment-desc { font-size: 0.75rem; color: var(--text-muted); }
+.nimble-workshop-moment.is-crit { border-left: 3px solid #e8a400; }
+.nimble-workshop-moment.is-miss { border-left: 3px solid #d11f1f; }
+.nimble-workshop-moment.is-max { border-left: 3px solid #f0b000; }
+.nimble-workshop-moment.is-min { border-left: 3px solid #6d3fd6; }
+.nimble-workshop-result { margin-top: 0.9rem; min-height: 1.4em; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-accent); }
