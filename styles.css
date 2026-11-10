@@ -1910,7 +1910,9 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 	width: 100vw;
 	height: 100vh;
 	pointer-events: none;
-	z-index: calc(var(--layer-popover, 30) + 5);
+	/* Above everything Obsidian draws (modals 50, notices 60, menus 65, tooltips 70, dragged items 80): dice are
+	   always the top layer. Click-through, so nothing underneath stops working. */
+	z-index: calc(var(--layer-dragged-item, 80) + 10);
 	opacity: 1;
 	transition: opacity 0.35s ease;
 }

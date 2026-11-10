@@ -1481,6 +1481,13 @@ test('3D dice: an attack roll animates, then the notice shows the result', async
 	assert.equal(await o.page.locator('.nimble-roll-notice').count(), 0, 'the notice waits for the dice');
 	await o.waitFor(async () => (await o.page.locator('.nimble-roll-notice').count()) === 1, { what: 'the roll notice after landing', timeout: 8000 });
 	assert.match(await o.page.locator('.nimble-roll-notice').innerText(), /Dice test/);
+	// Dice are the top layer, above modals, notices and menus.
+	const layers = await o.page.evaluate(() => {
+		const z = (sel) => { const el = document.querySelector(sel); return el ? Number(getComputedStyle(el).zIndex) : null; };
+		const probe = (cls) => { const d = document.createElement('div'); d.className = cls; document.body.appendChild(d); const v = Number(getComputedStyle(d).zIndex); d.remove(); return v; };
+		return { dice: z('canvas.nimble-dice3d-overlay'), modal: probe('modal-container'), notice: probe('notice-container'), menu: probe('menu') };
+	});
+	assert.ok(layers.dice > layers.modal && layers.dice > layers.notice && layers.dice > layers.menu, `dice above everything ${JSON.stringify(layers)}`);
 	// The overlay fades away afterwards and never blocks clicks.
 	assert.equal(await o.page.evaluate(() => getComputedStyle(document.querySelector('canvas.nimble-dice3d-overlay') ?? document.body).pointerEvents), 'none');
 	await o.waitFor(async () => (await o.page.locator('canvas.nimble-dice3d-overlay').count()) === 0, { what: 'the overlay to go away', timeout: 8000 });
@@ -2001,6 +2008,25 @@ test('3D dice: every size from 50% to 300% lands on screen showing the rolled va
 	await o.page.setViewportSize({ width: 1400, height: 900 });
 	await o.page.screenshot({ path: join(ARTIFACTS, 'dice-large.png') });
 	await o.eval((app, plugin) => { plugin.settings.dice.size = 1; });
+});
+
+test('3D dice: a roll from inside a modal draws above the modal', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	await diceReset(o, { stayMs: 3000 });
+	await o.eval((app, plugin) => plugin.openSettings());
+	await o.page.locator('.modal-container').first().waitFor();
+	await o.eval((app, plugin) => plugin.rollDice('1d20', 'From a modal', 'effect', [11]));
+	await o.waitFor(async () => (await o.page.locator('canvas.nimble-dice3d-overlay').count()) === 1, { what: 'the overlay' });
+	const order = await o.page.evaluate(() => {
+		const dice = document.querySelector('canvas.nimble-dice3d-overlay');
+		const modal = document.querySelector('.modal-container');
+		return { dice: Number(getComputedStyle(dice).zIndex), modal: Number(getComputedStyle(modal).zIndex), diceParent: dice.parentElement === document.body };
+	});
+	assert.ok(order.dice > order.modal, `dice (${order.dice}) above the modal (${order.modal})`);
+	assert.ok(order.diceParent, 'the overlay is a direct child of the page, not trapped under a modal');
+	await o.page.screenshot({ path: join(ARTIFACTS, 'dice-over-modal.png') });
+	await o.eval(() => document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click()));
+	await diceReset(o);
 });
 
 test('3D dice: every preset look rolls, with the right values', async (o) => {
