@@ -24,7 +24,7 @@ import {
 } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Burst, disposeEffectSprites, makeBurst } from './effects';
+import { Burst, disposeEffectSprites, EVENT_PALETTES, makeBurst, paletteFrom } from './effects';
 import { defaultLabels, dieShape, DieShape, hasModelLayout, modelCorrection, modelShape, relabel, topIndex } from './geometry';
 import { ANIMATED, applyLook, ShaderLook } from './shaders';
 import type { Blend, EffectId, Finish, FontId, RollEvent } from './styles';
@@ -934,27 +934,33 @@ export async function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 		c.getHSL(hsl);
 		return hsl.s < 0.25 || hsl.l > 0.85 || hsl.l < 0.12 ? FIRE : colors[i];
 	};
-	segments.forEach((seg, k) => { if (seg.burstAt) ring(seg.burstAt, critTint(seg.dice[0]), starts[k]); });
+	// The plain ring marks an explosion only when no crit effect is set; otherwise the effect is the marker.
+	const critEffect = opts.effect?.event === 'crit' && opts.effect.kind !== 'none';
+	if (!critEffect) segments.forEach((seg, k) => { if (seg.burstAt) ring(seg.burstAt, critTint(seg.dice[0]), starts[k]); });
 
 	// Effects for how the roll went.
 	const bursts: { b: Burst; start: number }[] = [];
 	const effect = opts.effect;
+	const dark = activeDocument.body.classList.contains('theme-dark');
 	const addBurst = (at: Vector3, tint: string, start: number) => {
 		if (!effect || effect.kind === 'none' || bursts.length >= 8) return;
-		const b = makeBurst(effect.kind, new Vector3(at.x, 0, at.z), tint);
+		// The ring burst wears the event's colours (gold crit, red miss); other effects take the die's colour.
+		const palette = effect.kind === 'ring' ? EVENT_PALETTES[effect.event][dark ? 'dark' : 'light'] : paletteFrom(tint, dark);
+		const b = makeBurst(effect.kind, new Vector3(at.x, 0, at.z), { palette, dark, pxPerUnit: s.pxPerUnit, rising: effect.event === 'crit' || effect.event === 'max' });
 		if (!b) return;
 		b.object.visible = false;
 		s.scene.add(b.object);
 		bursts.push({ b, start });
 	};
 	const primaryIdx = Math.max(0, shown.findIndex(d => d.role === 'primary'));
+	const tintFor = (i: number) => (effect?.event === 'crit' ? critTint(i) : colors[i]);
 	if (effect?.event === 'crit') {
-		segments.forEach((seg, k) => { if (seg.burstAt) addBurst(seg.burstAt, colors[seg.dice[0]], starts[k]); });
-		if (finalPose[primaryIdx]) addBurst(finalPose[primaryIdx].pos, colors[primaryIdx], landedAt);
+		// Once per explosion, as each die bursts out. Not again when the chain lands.
+		segments.forEach((seg, k) => { if (seg.burstAt) addBurst(seg.burstAt, tintFor(seg.dice[0]), starts[k]); });
 	} else if (effect?.event === 'miss') {
-		if (finalPose[primaryIdx]) addBurst(finalPose[primaryIdx].pos, colors[primaryIdx], landedAt);
+		if (finalPose[primaryIdx]) addBurst(finalPose[primaryIdx].pos, tintFor(primaryIdx), landedAt);
 	} else if (effect) {
-		shown.forEach((_, i) => { if (finalPose[i]) addBurst(finalPose[i].pos, colors[i], landedAt + i * 60); });
+		shown.forEach((_, i) => { if (finalPose[i]) addBurst(finalPose[i].pos, tintFor(i), landedAt + i * 60); });
 	}
 	// A miss dims the die that missed.
 	const dimmed = effect?.event === 'miss' ? meshes[primaryIdx]?.tint.map(m => ({ m, from: m.color.clone() })) ?? [] : [];
@@ -1032,7 +1038,7 @@ export async function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 			resolveLanded();
 			// Animated looks, crit glow and effects keep moving while the dice are on show; still dice can stop.
 			const shimmer = chain.length > 0 || looks.some(l => ANIMATED.has(l.finish));
-			const effectsEnd = bursts.reduce((m, x) => Math.max(m, x.start + 2000), 0);
+			const effectsEnd = bursts.reduce((m, x) => Math.max(m, x.start + 2200), 0);
 			stopAfter = Math.max(shimmer ? elapsed + 2100 : elapsed, effectsEnd, dimmed.length ? landedAt + 500 : 0);
 		}
 		if (elapsed >= stopAfter) return;
