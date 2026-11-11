@@ -1398,9 +1398,8 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	const input = o.page.locator(`${S} .prompt-input`);
 	const rows = o.page.locator(`${S} .suggestion-item`);
 	const names = () => o.page.locator(`${S} .nimble-spot-name`).allInnerTexts();
-	// Cmd/Ctrl+K reaches Obsidian as its "Insert Markdown link" command: through the Insert menu on macOS, through
-	// the hotkey everywhere else. Run that command the way the menu and the hotkey do (synthetic ⌘K is hit-and-miss
-	// in a test window because the macOS menu bar gets first refusal).
+	// Cmd/Ctrl+K is Obsidian's hotkey for "Insert Markdown link"; its hotkey manager runs that command, which the
+	// plugin shares. Most steps run the command directly; a real key press is checked below, in three places.
 	const pressK = () => o.eval((app) => { app.commands.executeCommandById('editor:insert-link'); });
 	const openIt = async () => { await pressK(); await input.waitFor(); };
 
@@ -1482,17 +1481,22 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	assert.equal(await o.page.locator(S).count(), 0, 'a selection keeps the link shortcut');
 	assert.match(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), /\[The\]\(/, 'and makes the link');
 	await o.eval((app, _p, line0) => { const ed = app.workspace.activeEditor.editor; ed.setLine(0, line0); ed.setCursor({ line: 0, ch: 0 }); }, line0);
-	// On macOS the key arrives through the menu bar's Insert → Markdown Link; that opens Spotlight too.
-	const viaMenu = await o.page.evaluate(() => {
-		try {
-			const remote = window.require('@electron/remote');
-			const item = remote.Menu.getApplicationMenu()?.items.find(i => /Insert/.test(i.label))?.submenu.items.find(i => /Markdown Link/i.test(i.label));
-			if (!item) return false;
-			item.click({}, remote.getCurrentWindow(), remote.getCurrentWebContents());
-			return true;
-		} catch { return false; }
-	});
-	if (viaMenu) await input.waitFor(); else await openIt();
+	// The key itself, wherever the focus is: an editor, a note in reading view, a sidebar panel.
+	const keyOpens = async (where) => {
+		await o.page.keyboard.press('Meta+k');
+		await input.waitFor({ timeout: 5000 }).catch(() => { throw new Error(`Cmd+K did not open Spotlight with focus in ${where}`); });
+		await o.page.waitForTimeout(350); // a person doesn't press it again within a fifth of a second
+		await o.page.keyboard.press('Meta+k');
+		await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: `Cmd+K to close Spotlight (${where})` });
+	};
+	await keyOpens('the editor');
+	await o.openFile('Adventure.md', 'preview');
+	await o.page.locator(`${R} h1, ${R} p`).first().click();
+	await keyOpens('reading view');
+	await o.eval(async (app, plugin) => { await plugin.activateEncounterView(); });
+	await o.page.locator(`${T}`).first().click({ position: { x: 5, y: 5 } });
+	await keyOpens('the tracker sidebar');
+	await openIt();
 	await o.page.screenshot({ path: join(ARTIFACTS, 'spotlight.png') });
 	await o.page.keyboard.press('Escape');
 	// Spotlight's own command works whatever the setting, and outside an editor.
@@ -2064,17 +2068,20 @@ test('campaign panel: drag notes between folders and chapters, and in from the f
 	await crow(o, 'Campaigns/Fresh/NPCs/Mara.md').waitFor();
 
 	// Folder to folder.
+	await o.page.waitForTimeout(800); // the panel re-renders a beat after each move; a drag started mid-render loses its row
 	await crow(o, 'Campaigns/Fresh/NPCs/Mara.md').dragTo(cgroup(o, 'Campaigns/Fresh/Locations').locator('.campaign-group-head'));
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Locations/Mara.md'), { what: 'the drag into Locations' });
 	await crow(o, 'Campaigns/Fresh/Locations/Mara.md').waitFor();
 
 	// Folder to chapter: it's kept with the chapter. A location isn't a scene, so it isn't numbered as one.
+	await o.page.waitForTimeout(800); // the panel re-renders a beat after each move; a drag started mid-render loses its row
 	await crow(o, 'Campaigns/Fresh/Locations/Docks.md').dragTo(cgroup(o, 'Campaigns/Fresh/Chapter 1').locator('.campaign-group-head'));
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Chapter 1/Docks.md'), { what: 'the drag into the chapter' });
 	await crow(o, 'Campaigns/Fresh/Chapter 1/Docks.md').waitFor();
 	assert.doesNotMatch(await read(o, 'Campaigns/Fresh/Chapter 1/Docks.md'), /order:/);
 
 	// Chapter back out to the top of the campaign.
+	await o.page.waitForTimeout(800); // the panel re-renders a beat after each move; a drag started mid-render loses its row
 	await crow(o, 'Campaigns/Fresh/Chapter 1/Docks.md').dragTo(o.page.locator(`${CP} .campaign-heading-folders`));
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Docks.md'), { what: 'the drag to the campaign folder' });
 	await o.page.locator(`${CP} .campaign-loose .campaign-note[data-path="Campaigns/Fresh/Docks.md"]`).waitFor();
@@ -2088,10 +2095,12 @@ test('campaign panel: drag notes between folders and chapters, and in from the f
 	});
 	const explorerFile = o.page.locator('.workspace-split.mod-right-split .nav-file-title[data-path="Old notes/Ledger.md"]');
 	await explorerFile.waitFor();
+	await o.page.waitForTimeout(800); // the panel re-renders a beat after each move; a drag started mid-render loses its row
 	await explorerFile.dragTo(cgroup(o, 'Campaigns/Fresh/NPCs').locator('.campaign-group-head'));
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/NPCs/Ledger.md'), { what: 'the drop from the file explorer' });
 	const explorerFolder = o.page.locator('.workspace-split.mod-right-split .nav-folder-title[data-path="Old notes/Factions"]');
 	await explorerFolder.waitFor();
+	await o.page.waitForTimeout(800); // the panel re-renders a beat after each move; a drag started mid-render loses its row
 	await explorerFolder.dragTo(o.page.locator(`${CP} .campaign-heading-folders`));
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Factions/Harpers.md'), { what: 'the folder dropped into the campaign' });
 	await crow(o, 'Campaigns/Fresh/Factions/Harpers.md').waitFor();
@@ -2169,6 +2178,40 @@ test('campaign panel: chapter files and maps are listed, real titles are kept, m
 	await o.page.locator('.modal-container button', { hasText: exact('Delete') }).click();
 	await o.waitFor(async () => !(await exists(o, 'Campaigns/Fresh/Chapters/Act 2')), { what: 'the chapter delete' });
 	assert.ok(await exists(o, 'Campaigns/Fresh/Chapters/Act 3/Keep.md'), 'the chapter beside it is untouched');
+	await endCampaign(o, 'Fresh');
+});
+
+test('campaign panel: the search bar under the switcher opens Spotlight; the key hint follows the setting', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	const bar = o.page.locator(`${CP} .campaign-search`);
+	const SPOT = '.modal-container .prompt.nimble-spotlight';
+	assert.ok(await o.page.evaluate((cp) => document.querySelector(`${cp} .campaign-search`)?.previousElementSibling?.classList.contains('campaign-switcher'), CP), 'right under the switcher');
+	assert.equal(await bar.getAttribute('aria-label'), 'Search (opens Spotlight)');
+
+	await bar.click();
+	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Spotlight from the panel search bar' });
+	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Spotlight to close' });
+	// Keyboard: focus and Enter.
+	await bar.focus();
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Spotlight via Enter on the search bar' });
+	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Spotlight to close' });
+
+	// The key hint only shows when the shortcut is on.
+	const was = await o.eval((app, plugin) => plugin.settings.spotlightKey);
+	for (const on of [true, false]) {
+		await o.eval((app, plugin, on) => { plugin.settings.spotlightKey = on; plugin.campaigns.trigger('changed'); }, on);
+		await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-search-kbd`).count()) === (on ? 1 : 0), { what: `key hint ${on ? 'shown' : 'hidden'}` });
+		if (on) await o.page.screenshot({ path: join(ARTIFACTS, 'campaign-search-bar.png'), clip: { x: 0, y: 0, width: 700, height: 420 } });
+	}
+	await o.eval((app, plugin, was) => { plugin.settings.spotlightKey = was; }, was);
+	// It fits a narrow sidebar without spilling.
+	await o.waitFor(() => o.page.evaluate((cp) => {
+		const el = document.querySelector(`${cp} .campaign-search`);
+		return !!el?.parentElement && el.scrollWidth <= el.clientWidth + 1 && el.getBoundingClientRect().right <= el.parentElement.getBoundingClientRect().right + 1;
+	}, CP), { what: 'the search bar to sit inside the panel', timeout: 5000 });
 	await endCampaign(o, 'Fresh');
 });
 

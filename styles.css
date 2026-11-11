@@ -1383,6 +1383,23 @@ body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: non
 .nimble-campaign-view .campaign-switch-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nimble-campaign-view .campaign-switch-chevron { display: inline-flex; color: var(--text-faint); }
 .nimble-campaign-view .campaign-switch-btn svg, .nimble-campaign-view .campaign-switcher .clickable-icon svg { width: 16px; height: 16px; }
+/* Search bar under the switcher: a button that looks like a field and opens Spotlight */
+.nimble-campaign-view .campaign-search {
+	display: flex; align-items: center; gap: 0.45rem; justify-content: flex-start; width: 100%; min-width: 0;
+	height: auto; margin-bottom: 0.5rem; padding: 0.45rem 0.55rem; border-radius: 8px; box-shadow: none;
+	background: var(--background-primary); border: 1px solid var(--background-modifier-border);
+	color: var(--text-muted); font-weight: 400; font-size: 0.95rem; text-align: left;
+}
+.nimble-campaign-view .campaign-search:hover { border-color: var(--interactive-accent); }
+.nimble-campaign-view .campaign-search:focus-visible { border-color: var(--interactive-accent); outline: 2px solid var(--interactive-accent); outline-offset: 1px; }
+.nimble-campaign-view .campaign-search-icon { display: inline-flex; flex: none; color: var(--text-faint); }
+.nimble-campaign-view .campaign-search-icon svg { width: 16px; height: 16px; }
+.nimble-campaign-view .campaign-search-placeholder { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-campaign-view .campaign-search-kbd {
+	flex: none; padding: 0 0.35rem; border-radius: 4px; line-height: 1.5;
+	border: 1px solid var(--background-modifier-border); background: var(--background-secondary);
+	color: var(--text-faint); font-family: var(--font-interface); font-size: var(--font-ui-smaller); white-space: nowrap;
+}
 
 .campaign-party {
 	display: inline-flex; align-items: center; gap: 0.4rem; height: auto; padding: 0.25rem 0.6rem;
@@ -1514,8 +1531,9 @@ body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: non
 	.campaign-heading .clickable-icon { padding: 6px; }
 	.campaign-party { padding: 0.45rem 0.75rem; font-size: 0.85rem; }
 	.campaign-continue { padding: 0.75rem 0.85rem; }
+	.nimble-campaign-view .campaign-search { min-height: 2.6rem; }
 }
-body.is-tablet :is(.campaign-party, .campaign-continue, .campaign-switch-btn, .campaign-block-panel) { padding-left: 0.6rem; padding-right: 0.6rem; }
+body.is-tablet :is(.campaign-party, .campaign-continue, .campaign-switch-btn, .campaign-search, .campaign-block-panel) { padding-left: 0.6rem; padding-right: 0.6rem; }
 
 /* ============================================
    BOXES: ```box read-aloud / look / treasure / trap / secret …

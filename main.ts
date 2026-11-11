@@ -339,12 +339,13 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	/**
-	 * Cmd/Ctrl+K belongs to Obsidian's "Insert Markdown link", and on macOS the
-	 * menu bar's Insert → Markdown Link item owns the key outright, so a key
-	 * listener or a hotkey of our own never sees it. Instead that one command is
-	 * wrapped: with the setting on and no text selected (an empty link is all it
-	 * would insert), it opens Spotlight; with text selected it makes the link as
-	 * always. Undone when the plugin unloads, and it changes none of the user's hotkeys.
+	 * Cmd/Ctrl+K belongs to Obsidian's "Insert Markdown link". The key reaches the
+	 * page in every focus state, and Obsidian's hotkey manager runs that command's
+	 * checkCallback (the macOS menu item only shows the key; Obsidian ignores menu
+	 * clicks that come from a modified accelerator). So that one command is wrapped:
+	 * with the setting on and no text selected (an empty link is all it would
+	 * insert), it opens Spotlight; with text selected it makes the link as always.
+	 * Undone when the plugin unloads, and it changes none of the user's hotkeys.
 	 */
 	private shareInsertLinkKey(): void {
 		const cmd = findCommand(this.app, INSERT_LINK);
@@ -378,6 +379,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			use.addEventListener('click', () => {
 				this.settings.spotlightKey = true;
 				void this.saveSettings();
+				this.campaigns.trigger('changed'); // the Campaign panel's search bar shows the key
 				new Notice(`${key} now opens Spotlight. You can turn that off in the plugin's settings.`);
 			});
 			row.createEl('button', { text: 'Not now' });

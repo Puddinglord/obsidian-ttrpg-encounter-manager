@@ -120,7 +120,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				{
 					name: 'Open Spotlight with Cmd/Ctrl+K',
 					desc: 'Spotlight searches adversaries, NPCs and notes, rolls dice and runs commands. Cmd/Ctrl+K is Obsidian\'s Insert Markdown link key: with this on, it opens Spotlight when no text is selected, and still makes a link when some is. You can also give the Spotlight command any key under Hotkeys.',
-					render: toggle(() => s.spotlightKey, v => { s.spotlightKey = v; }),
+					render: toggle(() => s.spotlightKey, v => { s.spotlightKey = v; }, () => this.plugin.campaigns.trigger('changed')), // the Campaign panel's search bar shows the key
 				},
 			] },
 			{ heading: 'Campaigns', rows: [

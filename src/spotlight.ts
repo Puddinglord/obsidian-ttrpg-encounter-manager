@@ -53,7 +53,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		// The key that opens Spotlight also closes it (hotkeys don't reach commands while a dialog is open).
 		// The keypress that opened it can arrive here too, so it's ignored for a moment.
 		const born = Date.now();
-		this.scope.register(['Mod'], 'k', () => { if (Date.now() - born > 250) this.close(); return false; });
+		this.scope.register(['Mod'], 'k', () => { if (Date.now() - born > 150) this.close(); return false; });
 	}
 
 	onOpen(): void {

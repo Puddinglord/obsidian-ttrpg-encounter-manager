@@ -13,6 +13,7 @@ Use **New campaign**, from the castle icon in the ribbon or the command palette.
 The panel in the left sidebar is home base. From it you can:
 
 - switch campaigns
+- open [Spotlight](spotlight.md) from the search bar under the campaign name, to find adversaries, NPCs and notes or roll dice
 - see and edit the party
 - **Continue** where you left off
 - browse chapters and their scenes (map buttons sit on each chapter)

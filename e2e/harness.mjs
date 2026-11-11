@@ -122,6 +122,10 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 			if (!plugins.isEnabled()) await plugins.setEnable(true);
 			if (!plugins.plugins[id]) await plugins.enablePlugin(id);
 			document.querySelectorAll('.modal-container').forEach(m => m.remove());
+			// Removing the trust dialog's DOM leaves its key scope on the keymap, and that scope (Escape only, no
+			// parent) swallows every Obsidian hotkey in the window. Pop back to the app's root scope.
+			const keymap = window.app.keymap;
+			for (let i = 0; i < 10 && keymap?.scope && keymap.scope !== window.app.scope; i++) keymap.popScope(keymap.scope);
 		}, PLUGIN_ID);
 		await waitFor(() => page.evaluate(id => !!window.app.plugins?.plugins?.[id]?._loaded, PLUGIN_ID), { what: 'plugin to load' });
 	} catch (e) {
