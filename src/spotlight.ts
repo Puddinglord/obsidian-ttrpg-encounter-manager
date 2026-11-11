@@ -44,7 +44,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		this.emptyStateText = 'Nothing matches. Try a monster name, an NPC, 2d6+3, or > and a command.';
 		this.setInstructions([
 			{ command: '↵', purpose: 'open or roll' },
-			{ command: `${MOD} ↵`, purpose: 'add to encounter, keep open' },
+			{ command: `${MOD} ↵`, purpose: 'add or roll, and keep open' },
 			{ command: '3 goblin', purpose: 'add several' },
 			{ command: '>', purpose: 'commands' },
 		]);
@@ -83,20 +83,22 @@ export class SpotlightModal extends SuggestModal<Item> {
 		if (q.commandsOnly) return this.commands(q.text, 40);
 		if (!q.text) return this.home();
 
-		const monsters: Item[] = searchMonsters(this.plugin.index.all(), q.text, q.counted ? 20 : 8)
-			.map(entry => ({ kind: 'monster', entry, count: q.count, add: q.counted }));
-		if (q.counted) return monsters; // "3 goblin" is about adding monsters
+		// Monsters whose name holds what was typed. The bestiary search also returns loose (scattered-letter)
+		// matches, which are noise beside a real hit; they're only a fallback for when nothing matches outright.
+		const found = searchMonsters(this.plugin.index.all(), q.text, q.counted ? 20 : 8);
+		const named = found.filter(e => e.name.toLowerCase().includes(q.text));
+		const asItems = (list: MonsterIndexEntry[]): Item[] => list.map(entry => ({ kind: 'monster', entry, count: q.count, add: q.counted }));
+		if (q.counted) return asItems(named.length ? named : found.slice(0, 5)); // "3 goblin" is about adding monsters
 
 		const npcs: Item[] = rankByName(this.npcs(), q.text, n => [n.name, ...n.aliases], 5).map(npc => ({ kind: 'npc', npc }));
 		const notes: Item[] = rankByName(this.notes(), q.text, n => [n.note.title, n.note.area ? `${n.note.area} ${n.note.title}` : ''], 6);
 		const conditions: Item[] = rankByName(this.plugin.getAllConditions().filter(c => !c.auto), q.text, c => [c.name], 3)
 			.map(condition => ({ kind: 'condition', condition }));
-		const commands = this.commands(q.text, 5);
+		const commands = this.commands(q.text, 5, false);
+		const all = [...asItems(named), ...npcs, ...notes, ...conditions, ...commands];
+		if (!all.length) return [...asItems(found.slice(0, 5)), ...this.commands(q.text, 3)]; // a typo still finds something
 		// An exact name wins the top spot whatever it is; otherwise adversaries lead.
 		const exact = (i: Item) => this.title(i).toLowerCase() === q.text;
-		// Adversaries whose name holds the query lead; loose (fuzzy) ones go last, so they never bury an NPC or a scene that matches outright.
-		const named = (i: Item) => this.title(i).toLowerCase().includes(q.text);
-		const all = [...monsters.filter(named), ...npcs, ...notes, ...conditions, ...commands, ...monsters.filter(i => !named(i))];
 		return [...all.filter(exact), ...all.filter(i => !exact(i))];
 	}
 
@@ -133,14 +135,15 @@ export class SpotlightModal extends SuggestModal<Item> {
 	}
 
 	/** The plugin's commands that can run right now. Editor-only ones are left to the editor. */
-	private commands(query: string, limit: number): Item[] {
+	private commands(query: string, limit: number, allowLoose = true): Item[] {
 		const list = pluginCommands(this.app, this.plugin.manifest.id)
 			.filter(c => !c.id.endsWith(':spotlight') && !c.editorCallback && !c.editorCheckCallback)
 			.filter(c => { try { return !c.checkCallback || c.checkCallback(true) !== false; } catch { return false; } })
 			.map(c => ({ kind: 'command' as const, id: c.id, name: c.name.replace(/^[^:]+:\s*/, ''), icon: c.icon }));
 		if (!query) return list.sort((a, b) => a.name.localeCompare(b.name)).slice(0, limit);
 		const direct = rankByName(list, query, c => [c.name], limit);
-		if (direct.length >= limit) return direct;
+		// Loose matches only when nothing matches outright ("nxt rnd"), so "> new" lists the New… commands and nothing else.
+		if (direct.length || !allowLoose) return direct;
 		const fuzzy = prepareFuzzySearch(query);
 		const loose = list.filter(c => !direct.includes(c)).map(c => ({ c, r: fuzzy(c.name) })).filter(x => !!x.r)
 			.sort((a, b) => (b.r?.score ?? 0) - (a.r?.score ?? 0)).map(x => x.c);

@@ -407,6 +407,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			if (this.settings) return false;
 			ok = false;
 			next = migrateSettings(null);
+			next.spotlightOffered = true; // one notice about the settings is enough
 			const copy = await this.keepBrokenSettings();
 			this.settingsReadOnly = !copy;
 			new Notice(`Ember Vault couldn't read its settings, so it's using the defaults for now. ${copy
