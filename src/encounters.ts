@@ -6,7 +6,7 @@ import {
 	AppliedCondition, Encounter, EncounterCreature, EncounterPhase, NimbleMonster, NimbleStatblocksSettings, PartyMember, Side, uid,
 } from './types';
 import {
-	HpCommand, heroDamage, lastStandEffect, minionDie, minionKills, monsterDamage, monsterRole, parseHpCommand, scaledHp, tickConditions,
+	DamageMod, HpCommand, heroDamage, lastStandEffect, minionDie, minionKills, monsterDamage, monsterRole, parseHpCommand, scaledHp, tickConditions,
 	shiftMonster,
 } from './rules';
 
@@ -48,6 +48,45 @@ export function crossedThreshold(before: number, after: number, max: number): Hp
 	if (after <= half && before > half) return 'bloodied';
 	if (after > half && before <= half) return 'recovered';
 	return null;
+}
+
+/**
+ * What a hit does to a monster: armor first, then temp HP soaks what's left.
+ * The store applies this and the HP pad previews it, so the two always agree.
+ */
+export function monsterHit(c: Pick<EncounterCreature, 'monster' | 'currentHp' | 'tempHp'>, amount: number, crit: boolean, opts: { autoArmor: boolean; mod?: DamageMod }): {
+	/** After armor and Vulnerable/Resisted. */
+	applied: number;
+	/** Soaked by temp HP. */
+	absorbed: number;
+	/** What actually comes off HP. */
+	taken: number;
+	hp: number;
+	breakdown: string;
+} {
+	const r = monsterDamage(c.monster.armor, amount, crit, opts);
+	const absorbed = Math.min(c.tempHp ?? 0, r.applied);
+	const taken = r.applied - absorbed;
+	return { applied: r.applied, absorbed, taken, hp: Math.max(0, c.currentHp - taken), breakdown: r.breakdown };
+}
+
+/** True when loading something else over this encounter would lose a fight: it has started, was ended mid-way, or someone is hurt. */
+export function fightInProgress(enc: Encounter | null | undefined): boolean {
+	if (!enc || !enc.creatures.length) return false;
+	if ((enc.phase && enc.phase !== 'setup') || enc.paused) return true;
+	return enc.creatures.some(c => isMinionGroup(c) ? (c.alive ?? 0) < (c.count ?? 0) : c.currentHp < c.maxHp || (c.wounds ?? 0) > 0);
+}
+
+/**
+ * Whether two encounter states are the same fight at different moments.
+ * Combatant ids survive saving and restoring, and are new for every freshly
+ * loaded encounter, so they tell fights apart even in single-encounter mode,
+ * where every encounter shares one id.
+ */
+export function sameFight(a: Encounter, b: Encounter): boolean {
+	if (!a.creatures?.length || !b.creatures?.length) return a.id === b.id && !a.creatures?.length === !b.creatures?.length;
+	const ids = new Set(a.creatures.map(c => c.id));
+	return b.creatures.some(c => ids.has(c.id));
 }
 
 export const isMinionGroup = (c: EncounterCreature) => c.count !== undefined;
@@ -142,6 +181,7 @@ export class EncounterStore extends Events {
 		enc.round = 1;
 		enc.phase = 'setup';
 		enc.log = [];
+		delete enc.paused; // or the emptied encounter would still offer "Resume round N"
 		this.commit();
 	}
 
@@ -260,6 +300,7 @@ export class EncounterStore extends Events {
 			enc = this.ensureActive();
 			if (!enc) return null;
 			Object.assign(enc, this.blank(t.name, enc.id));
+			delete enc.paused;
 		}
 		enc.sourcePath = sourcePath;
 		if (t.withParty) for (const m of this.s.party) this.addHero(m, enc.id);
@@ -374,14 +415,10 @@ export class EncounterStore extends Events {
 			}
 		} else {
 			if (cmd.kind === 'damage') {
-				const r = monsterDamage(c.monster.armor, cmd.amount, cmd.crit, { autoArmor: this.s.autoArmor, mod: cmd.type });
-				let amount = r.applied;
-				if (c.tempHp) {
-					const absorbed = Math.min(c.tempHp, amount);
-					c.tempHp -= absorbed;
-					amount -= absorbed;
-				}
-				c.currentHp = Math.max(0, c.currentHp - amount);
+				const r = monsterHit(c, cmd.amount, cmd.crit, { autoArmor: this.s.autoArmor, mod: cmd.type });
+				const amount = r.taken;
+				if (c.tempHp) c.tempHp -= r.absorbed;
+				c.currentHp = r.hp;
 				breakdown = r.breakdown !== String(r.applied) ? r.breakdown : undefined;
 				events.push(`${c.label} takes ${amount}${cmd.crit ? ' (crit)' : ''}${breakdown ? ` [${breakdown}]` : ''} → ${c.currentHp}/${c.maxHp}`);
 				if (c.currentHp === 0 && before > 0 && !(monsterRole(c.monster) === 'legendary' && c.monster.lastStand && !c.lastStand)) {
@@ -417,7 +454,7 @@ export class EncounterStore extends Events {
 	applyLastStand(encId: string, creatureId: string): string | null {
 		const enc = this.find(encId);
 		const c = enc?.creatures.find(x => x.id === creatureId);
-		if (!enc || !c) return null;
+		if (!enc || !c || c.lastStand) return null; // a Last Stand happens once
 		const effect = lastStandEffect(c.monster.lastStand, this.partySize(enc));
 		c.lastStand = true;
 		let msg = `${c.label} makes a Last Stand`;

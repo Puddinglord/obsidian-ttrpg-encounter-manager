@@ -6,11 +6,11 @@ import { App, FuzzySuggestModal, Notice, setIcon, Setting, TFile } from 'obsidia
 import type NimbleStatblocksPlugin from '../main';
 import { showSliderValue } from './compat';
 import { pickFiles } from './campaign-modals';
-import { preview3d } from './dice3d';
+import { dice3dBlockedText, preview3d } from './dice3d';
 import { importFile, ImportResult, importUrl, removeSet } from './dice3d/importer';
 import { lookOf, modelUrlOf } from './dice3d/looks';
 import {
-	allStyles, BLENDS, cleanStyle, DIE_KEYS, DiceStyle, EFFECTS, EffectId, findStyle, FINISHES, FONTS, PRESETS, RollEvent, TEXTURES,
+	allStyles, BLENDS, cleanStyle, DIE_KEYS, DiceStyle, EFFECTS, EffectId, findStyle, FINISHES, FONTS, PRESETS, RollEvent, TEXTURES, useForAllDice,
 } from './dice3d/styles';
 import { confirmAction } from './touch';
 
@@ -160,6 +160,9 @@ export function renderDiceStudio(el: HTMLElement, plugin: NimbleStatblocksPlugin
 	const save = async () => { await plugin.saveSettings(); };
 	if (!findStyle(d, selected)) selected = d.normal;
 	const root = el.createDiv({ cls: 'nimble-dice-studio' });
+	// Reduced motion or no WebGL: the preview, "Roll them" and the Workshop can't draw, so say why.
+	const blocked = dice3dBlockedText();
+	if (blocked) root.createDiv({ cls: 'setting-item-description nimble-dice-blocked', text: blocked });
 
 	// Workshop: roll pools, stage crits and misses, pick effects with a preview.
 	const ws = root.createDiv({ cls: 'nimble-dice-workshop-cta' });
@@ -216,7 +219,7 @@ export function renderDiceStudio(el: HTMLElement, plugin: NimbleStatblocksPlugin
 		const b = actions.createEl('button', { text, cls: cta ? 'mod-cta' : '' });
 		b.addEventListener('click', () => void (async () => { await fn(); await save(); refresh(); })());
 	};
-	act('Use for all dice', () => { d.normal = st.id; d.primary = ''; for (const k of DIE_KEYS) delete d.perDie[k]; }, true);
+	act('Use for all dice', () => { new Notice(useForAllDice(d, st.id)); }, true);
 	act('Primary die', () => { d.primary = st.id; });
 	act('Crit dice', () => { d.crit = st.id; });
 	act('Roll them', () => { void plugin.rollLookPreview(st.id); });
@@ -271,8 +274,22 @@ export function renderDiceStudio(el: HTMLElement, plugin: NimbleStatblocksPlugin
 			const item = list.createDiv({ cls: 'nimble-dice-set' });
 			item.createSpan({ cls: 'nimble-dice-set-name', text: s.name });
 			item.createSpan({ cls: 'setting-item-description', text: Object.keys(s.models).map(n => `d${n}`).join(' ') });
-			const open = item.createEl('button', { text: 'Edit' });
-			open.addEventListener('click', () => { selected = `set:${s.id}`; refresh(); });
+			// A set saved without its own look (older imports with no usable models) has nothing to edit.
+			if (findStyle(d, `set:${s.id}`)) {
+				const open = item.createEl('button', { text: 'Edit' });
+				open.addEventListener('click', () => { selected = `set:${s.id}`; refresh(); });
+			}
+			const remove = item.createEl('button', { text: 'Remove', cls: 'mod-warning', attr: { 'aria-label': `Remove ${s.name}` } });
+			remove.addEventListener('click', () => void (async () => {
+				if (!(await confirmAction(plugin.app, `Delete the ${s.name} set and its files?`, 'Dice using it go back to the other-dice look.', 'Delete', true))) return;
+				const id = `set:${s.id}`;
+				await removeSet(plugin, s.id);
+				for (const k of ['normal', 'primary', 'crit'] as const) if (d[k] === id) d[k] = k === 'normal' ? 'bone' : '';
+				for (const k of DIE_KEYS) if (d.perDie[k] === id) delete d.perDie[k];
+				if (selected === id) selected = d.normal;
+				await save();
+				refresh();
+			})());
 		}
 	}
 }

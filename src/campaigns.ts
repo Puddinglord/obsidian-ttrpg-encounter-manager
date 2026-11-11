@@ -4,7 +4,7 @@
 import { debounce, Events, normalizePath, Notice, TAbstractFile, TFile, TFolder } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import {
-	adjacentScene, buildCampaigns, Campaign, campaignOf, canMoveInto, Chapter, chapterOf, fmText, joinPath, nextOrder, NoteInfo, parentOf, safeName,
+	adjacentScene, buildCampaigns, Campaign, campaignOf, canMoveInto, Chapter, chapterOf, fmText, homeFolderFor, isPlayable, joinPath, nextOrder, NoteInfo, noteKind, parentOf, safeName,
 } from './campaign-model';
 import {
 	blankNote, campaignHome, chapterHome, handoutNote, locationNote, mapNote, monsterNote, npcNote, sceneNote, sessionNote, StarterKind,
@@ -74,15 +74,18 @@ export class CampaignStore extends Events {
 			this.npcs.push({
 				path: f.path,
 				name: f.basename,
-				aliases: list(fm.aliases ?? fm.alias),
+				// A `title:` (the name as typed, when the file name couldn't hold it) is linked like an alias.
+				aliases: [...list(fm.aliases ?? fm.alias), ...(typeof fm.title === 'string' && fm.title.trim() && fm.title.trim() !== f.basename ? [fm.title.trim()] : [])],
 				role: typeof fm.role === 'string' && fm.role ? fm.role : undefined,
 				campaign: campaignOf(this.campaigns, f.path)?.folder,
 			});
 		}
 		this.ready = true;
-		// A campaign that no longer exists stops being active.
+		// A campaign that no longer exists stops being active. One whose folder is
+		// still there is only unreadable for a moment (its home note's properties are
+		// mid-edit, or not indexed yet), so it's left alone rather than swapping the party.
 		if (this.s.activeCampaign && !this.campaigns.some(c => c.folder === this.s.activeCampaign)) {
-			void this.setActive(this.campaigns[0]?.folder ?? null);
+			if (!this.app.vault.getFolderByPath(this.s.activeCampaign)) void this.setActive(this.campaigns[0]?.folder ?? null);
 		} else if (!this.s.activeCampaign && this.campaigns.length === 1) {
 			void this.setActive(this.campaigns[0].folder);
 		}
@@ -133,7 +136,7 @@ export class CampaignStore extends Events {
 		if (!c) return; // notes outside any campaign leave the active one alone
 		if (c.folder !== this.s.activeCampaign) void this.setActive(c.folder);
 		const ch = chapterOf(c, file.path);
-		if (ch && ch.scenes.some(s => s.path === file.path)) {
+		if (ch && ch.scenes.some(s => s.path === file.path && isPlayable(s))) {
 			const store = this.s.campaigns ?? (this.s.campaigns = {});
 			if (store[c.folder]?.last !== file.path) {
 				store[c.folder] = { ...(store[c.folder] ?? { party: [] }), last: file.path };
@@ -199,8 +202,11 @@ export class CampaignStore extends Events {
 		const hasExt = !folder && dot > slash + 1;
 		const base = hasExt ? p.slice(0, dot) : p;
 		const ext = hasExt ? p.slice(dot) : '';
+		// Most file systems Obsidian runs on ignore case, so "marta.md" clashes with "Marta.md".
+		const siblings = new Set((this.app.vault.getFolderByPath(parentOf(p)) ?? this.app.vault.getRoot()).children.map(c => c.path.toLowerCase()));
+		const taken = (x: string) => !!this.app.vault.getAbstractFileByPath(x) || siblings.has(x.toLowerCase());
 		let out = p;
-		for (let i = 2; this.app.vault.getAbstractFileByPath(out); i++) out = `${base} ${i}${ext}`;
+		for (let i = 2; taken(out); i++) out = `${base} ${i}${ext}`;
 		return out;
 	}
 
@@ -248,7 +254,8 @@ export class CampaignStore extends Events {
 	}
 
 	async createInSection(c: Campaign, kind: Exclude<NewNoteKind, 'scene'>, name: string): Promise<TFile> {
-		return this.createStarter(`${c.folder}/${SECTION_FOR[kind]}`, kind, name);
+		// The campaign's folder for this kind, even if it's been renamed (NPCs to Characters, say).
+		return this.createStarter(homeFolderFor(c, kind, c.folder), kind, name);
 	}
 
 	/**
@@ -307,10 +314,19 @@ export class CampaignStore extends Events {
 			if (c && f.path === c.folder) continue; // the campaign itself
 			if (f instanceof TFile && this.campaigns.some(x => x.home.path === f.path)) continue; // a campaign's home note
 			const to = this.available(joinPath(target, f.name), f instanceof TFolder);
+			const wasInChapter = !!this.chapterOf(p);
 			await this.app.fileManager.renameFile(f, to);
-			if (ch && f instanceof TFile && f.extension === 'md' && !ch.maps.some(m => m.path === p)) {
-				const n = order++;
-				await this.app.fileManager.processFrontMatter(f, (fmData: Record<string, unknown>) => { fmData.order = n; });
+			if (f instanceof TFile && f.extension === 'md') {
+				const fmNow = this.app.metadataCache.getFileCache(f)?.frontmatter ?? {};
+				const kind = noteKind(fmNow);
+				if (ch && (kind === 'scene' || kind === 'note')) {
+					// A scene (or plain note) joins the end of the chapter. NPCs, handouts and maps kept in a chapter aren't numbered.
+					const n = order++;
+					await this.app.fileManager.processFrontMatter(f, (fmData: Record<string, unknown>) => { fmData.order = n; });
+				} else if (!ch && wasInChapter && fmNow.order !== undefined && !(c && chapterOf(c, to))) {
+					// Leaving a chapter for a folder: drop its place in the chapter, or it would sort above everything there.
+					await this.app.fileManager.processFrontMatter(f, (fmData: Record<string, unknown>) => { delete fmData.order; });
+				}
 			}
 			moved.push(f.path);
 		}
@@ -368,7 +384,8 @@ export class CampaignStore extends Events {
 
 	/** "Session 4" when there are three already. */
 	nextSessionName(c: Campaign): string {
-		const sec = c.sections.find(s => s.name === SECTION_FOR.session);
+		const folder = homeFolderFor(c, 'session', c.folder);
+		const sec = c.sections.find(s => s.folder === folder);
 		const n = (sec?.notes.filter(x => x.kind === 'session').length ?? 0) + 1;
 		return `Session ${n}`;
 	}

@@ -43,5 +43,6 @@ harder: Move often; end turns out of melee reach.
 ```
 ````
 
-- Other fields: `abilities:`, `resistances:`, `vulnerabilities:` and `immunities:` lists, plus `minion die: d8`, `description:`, `source:`, `group:`.
+- Other fields: `abilities:`, `resistances:`, `vulnerabilities:` and `immunities:` lists, plus `minion die: d8`, `description:`, `source:`, `group:`. The three defence lists can also go on one line: `resistances: fire, cold`.
+- A ` # comment` after a short value, as in the example above, is ignored. Sentences (`description:`, `bloodied:`, `lastStand:` and the like) and the name are kept whole.
 - Notes in the older format (`monsterType: solo`, `str: +`, `dex: ++`, `will: -`) still work.

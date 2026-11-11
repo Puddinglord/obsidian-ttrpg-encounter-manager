@@ -4,7 +4,7 @@
 
 ## 3D dice
 
-Clicking a dice expression throws real dice across the screen. They tumble, collide and bounce differently every time, yet always land on the rolled result. The notice appears when they land. 3D dice switch off by themselves without WebGL or with reduced motion, and phones only get them if you turn that on.
+Clicking a dice expression throws real dice across the screen. They tumble, collide and bounce differently every time, yet always land on the rolled result. The notice appears when they land. 3D dice switch off by themselves without WebGL or with reduced motion, and phones only get them if you turn on **3D dice on phones** in settings. Dice without a real shape (a d100, a d30) and rolls of more than 12 dice skip the animation and show the result straight away.
 
 Everything below is in **Settings → Ember Vault → 3D dice**.
 
@@ -15,7 +15,7 @@ Everything below is in **Settings → Ember Vault → 3D dice**.
 - **Crit**, **Miss**: the primary die (d4 to start; pick the size and how many times a crit explodes).
 - **Max**, **Min**, **Pool**: the pool. Click a die to add it, right-click or long-press to take one away.
 - Changing an effect plays it straight away.
-- **Look** tries any look on every die; **Use for all dice** keeps it. Size, speed, stay time, throw and shadows sit underneath.
+- **Look** tries any look on every die; **Use for all dice** keeps it (crit dice keep their own look). Size, speed, stay time, throw and shadows sit underneath.
 
 Workshop rolls aren't logged. Effects, size and motion you change there are saved.
 
@@ -23,7 +23,7 @@ Workshop rolls aren't logged. Effects, size and motion you change there are save
 
 The gallery shows every look: the presets, your own, and any you've imported. Click one to see it turning in the preview (pick d4 to d20 under it), then:
 
-- **Use for all dice**, **Primary die** or **Crit dice** to put it to work
+- **Use for all dice**, **Primary die** or **Crit dice** to put it to work. **Use for all dice** leaves the crit look as it is.
 - **Roll them** to throw one of each die in that look
 - **New look** to make an editable copy of whichever look is selected
 

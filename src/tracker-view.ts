@@ -131,7 +131,12 @@ export class EncounterTrackerView extends ItemView {
 		if (enc?.sourcePath) {
 			const src = header.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Open the note this encounter came from' } });
 			setIcon(src, 'file-symlink');
-			src.onclick = () => this.app.workspace.openLinkText(enc.sourcePath!, '', false);
+			src.onclick = () => {
+				// openLinkText on a path that's gone would create an empty note there.
+				const file = this.app.vault.getFileByPath(enc.sourcePath!);
+				if (file) void this.app.workspace.openLinkText(file.path, '', false);
+				else new Notice('The note this encounter came from has been moved or deleted.');
+			};
 		}
 		const more = header.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Encounter options' } });
 		setIcon(more, 'more-horizontal');
@@ -328,6 +333,8 @@ export class EncounterTrackerView extends ItemView {
 
 	private renderPrompts(container: HTMLElement, enc: Encounter): void {
 		this.prompts = this.prompts.filter(p => !p.creatureId || enc.creatures.some(c => c.id === p.creatureId));
+		// A Last Stand already played (from the row's own button, or another tracker pane) needs no prompt.
+		this.prompts = this.prompts.filter(p => p.kind !== 'laststand' || !enc.creatures.find(c => c.id === p.creatureId)?.lastStand);
 		for (const p of this.prompts) {
 			const box = container.createDiv({ cls: `tracker-prompt prompt-${p.kind}` });
 			const head = box.createDiv({ cls: 'prompt-head' });

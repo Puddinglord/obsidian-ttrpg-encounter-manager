@@ -37,6 +37,8 @@ export interface Chapter {
 	level?: number;
 	scenes: NoteRef[];
 	maps: NoteRef[];
+	/** Images, PDFs and other files kept in the chapter's folder. */
+	files: FileRef[];
 }
 
 /** A file in a section that isn't a note: an image, a PDF, a canvas… */
@@ -69,6 +71,8 @@ export interface Campaign {
 	sections: Section[];
 	/** Notes sitting directly in the campaign folder. */
 	loose: NoteRef[];
+	/** Files (images, PDFs…) sitting directly in the campaign folder. */
+	looseFiles: FileRef[];
 }
 
 const KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'map', 'npc', 'location', 'session', 'monster', 'handout', 'combat', 'note'];
@@ -148,11 +152,48 @@ export function buildCampaigns(notes: NoteInfo[], folders: string[] = []): Campa
 		const mine = md.filter(n => n !== home && ours(n.path) && noteKind(n.fm) !== 'combat');
 		const rel = (p: string) => (folder ? p.slice(folder.length + 1) : p);
 
-		// Group by the first folder under the campaign.
+		const byName = (a: FileRef, b: FileRef) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+
+		// Chapters first. A chapter is the folder its `nimble: chapter` note sits in,
+		// at any depth (Campaign/Act 1, or Campaign/Chapters/Act 1), and everything
+		// under that folder is the chapter's. A chapter note loose in the campaign
+		// folder itself doesn't make the whole campaign a chapter.
+		const homesByFolder = new Map<string, NoteInfo[]>();
+		for (const n of mine) {
+			if (noteKind(n.fm) !== 'chapter') continue;
+			const f = parentOf(n.path);
+			if (f === folder) continue;
+			homesByFolder.set(f, [...(homesByFolder.get(f) ?? []), n]);
+		}
+		// A chapter folder inside another chapter's folder stays part of the outer one.
+		const chapterFolders = [...homesByFolder.keys()].filter(f => ![...homesByFolder.keys()].some(o => o !== f && inside(f, o)));
+		const chapterFor = (p: string) => chapterFolders.find(f => inside(p, f));
+
+		const chapters: Chapter[] = [];
+		for (const sub of chapterFolders) {
+			// Two chapter notes in one folder: the first in order is its home, the other is listed with the scenes.
+			const chHome = [...(homesByFolder.get(sub) ?? [])].sort((a, b) => byOrder(ref(a), ref(b)))[0];
+			const rest = mine.filter(n => n !== chHome && inside(n.path, sub)).map(ref);
+			chapters.push({
+				folder: sub,
+				home: ref(chHome),
+				name: str(chHome.fm.title) ?? basename(chHome.path),
+				label: str(chHome.fm.label),
+				order: num(chHome.fm.order),
+				level: num(chHome.fm.level),
+				scenes: rest.filter(r => r.kind !== 'map').sort(byOrder),
+				maps: rest.filter(r => r.kind === 'map').sort(byOrder),
+				files: others.filter(f => ours(f.path) && inside(f.path, sub)).map(f => fileRef(f.path)).sort(byName),
+			});
+		}
+
+		// Everything else is grouped by the first folder under the campaign.
 		const groups = new Map<string, NoteInfo[]>();
 		const files = new Map<string, FileRef[]>();
 		const loose: NoteRef[] = [];
+		const looseFiles: FileRef[] = [];
 		for (const n of mine) {
+			if (chapterFor(n.path)) continue;
 			const parts = rel(n.path).split('/');
 			if (parts.length === 1) { loose.push(ref(n)); continue; }
 			const g = groups.get(parts[0]) ?? [];
@@ -160,48 +201,31 @@ export function buildCampaigns(notes: NoteInfo[], folders: string[] = []): Campa
 			groups.set(parts[0], g);
 		}
 		for (const f of others) {
-			if (!ours(f.path)) continue;
+			if (!ours(f.path) || chapterFor(f.path)) continue;
 			const parts = rel(f.path).split('/');
-			if (parts.length === 1) continue; // files loose in the campaign folder stay out of the outline
+			if (parts.length === 1) { looseFiles.push(fileRef(f.path)); continue; }
 			const g = files.get(parts[0]) ?? [];
 			g.push(fileRef(f.path));
 			files.set(parts[0], g);
 		}
 		// Every folder directly under the campaign, including empty ones. A folder
-		// holding nothing but saved fights stays out, like the fights themselves.
+		// holding nothing but saved fights stays out, like the fights themselves,
+		// and so does one that only holds chapters (Campaign/Chapters/Act 1).
 		const names = new Set<string>([...groups.keys(), ...files.keys()]);
 		const fights = new Set(md.filter(n => ours(n.path) && noteKind(n.fm) === 'combat').map(n => rel(n.path).split('/')[0]));
+		const chapterParents = new Set(chapterFolders.map(f => rel(f).split('/')[0]));
 		for (const f of folders) {
 			if (hidden(f) || f === folder || !ours(f)) continue;
 			const name = rel(f).split('/')[0];
-			if (!names.has(name) && fights.has(name)) continue;
+			if (!names.has(name) && (fights.has(name) || chapterParents.has(name))) continue;
 			names.add(name);
 		}
 
-		const chapters: Chapter[] = [];
 		const sections: Section[] = [];
 		for (const name of names) {
-			const group = groups.get(name) ?? [];
 			const sub = folder ? `${folder}/${name}` : name;
-			// The chapter's home: a `nimble: chapter` note, preferring one directly in the folder.
-			const chapterHomes = group.filter(n => noteKind(n.fm) === 'chapter').sort((a, b) => a.path.split('/').length - b.path.split('/').length);
-			const chHome = chapterHomes[0];
-			if (chHome) {
-				const rest = group.filter(n => n !== chHome).map(ref);
-				chapters.push({
-					folder: sub,
-					home: ref(chHome),
-					name: str(chHome.fm.title) ?? basename(chHome.path),
-					label: str(chHome.fm.label),
-					order: num(chHome.fm.order),
-					level: num(chHome.fm.level),
-					scenes: rest.filter(r => r.kind !== 'map').sort(byOrder),
-					maps: rest.filter(r => r.kind === 'map').sort(byOrder),
-				});
-			} else {
-				const fs = (files.get(name) ?? []).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
-				sections.push({ folder: sub, name, notes: group.map(ref).sort(byOrder), files: fs });
-			}
+			if (chapterFolders.includes(sub)) continue;
+			sections.push({ folder: sub, name, notes: (groups.get(name) ?? []).map(ref).sort(byOrder), files: (files.get(name) ?? []).sort(byName) });
 		}
 		chapters.sort((a, b) => byOrder({ order: a.order, title: a.name }, { order: b.order, title: b.name }));
 		sections.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
@@ -217,6 +241,7 @@ export function buildCampaigns(notes: NoteInfo[], folders: string[] = []): Campa
 			chapters,
 			sections,
 			loose: loose.sort(byOrder),
+			looseFiles: looseFiles.sort(byName),
 		});
 	}
 	return campaigns.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
@@ -237,19 +262,33 @@ export function chapterOf(campaign: Campaign, path: string): Chapter | undefined
 
 /** Scenes across the whole campaign, in play order (chapter by chapter). */
 export function playOrder(campaign: Campaign): NoteRef[] {
-	return campaign.chapters.flatMap(ch => ch.scenes.filter(s => s.kind === 'scene' || s.kind === 'note'));
+	return campaign.chapters.flatMap(ch => ch.scenes.filter(isPlayable));
 }
 
-/** The scene before or after `path`, crossing chapter boundaries. */
+/** Is this something you play through (a scene, or a plain note in a chapter), as opposed to an NPC, handout or map kept there? */
+export const isPlayable = (n: NoteRef) => n.kind === 'scene' || n.kind === 'note';
+
+/**
+ * The scene before or after `path`, crossing chapter boundaries. From a note
+ * that isn't a scene, it goes by where the note sits: the campaign home leads
+ * to the first scene; a chapter note (or a map, handout or NPC kept in a
+ * chapter) leads on to that chapter's first scene, or back to the last scene
+ * of the chapter before.
+ */
 export function adjacentScene(campaign: Campaign, path: string, step: 1 | -1): NoteRef | undefined {
 	const list = playOrder(campaign);
 	const i = list.findIndex(s => s.path === path);
-	if (i < 0) {
-		// From a chapter home, "next" is its first scene.
-		const ch = campaign.chapters.find(c => c.home.path === path);
-		return step === 1 && ch ? ch.scenes[0] : undefined;
+	if (i >= 0) return list[i + step];
+	if (path === campaign.home.path) return step === 1 ? list[0] : undefined;
+	const ci = campaign.chapters.findIndex(c => c.home.path === path || inside(path, c.folder));
+	if (ci < 0) return undefined;
+	const scenes = (k: number) => campaign.chapters[k].scenes.filter(isPlayable);
+	if (step === 1) {
+		for (let k = ci; k < campaign.chapters.length; k++) if (scenes(k).length) return scenes(k)[0];
+		return undefined;
 	}
-	return list[i + step];
+	for (let k = ci - 1; k >= 0; k--) if (scenes(k).length) return scenes(k)[scenes(k).length - 1];
+	return undefined;
 }
 
 /** What a section's folder name suggests new notes in it should be. */
@@ -266,6 +305,31 @@ const FOLDER_KIND: Record<string, NoteKind> = {
 export function defaultKindFor(folderName: string, isChapter = false): NoteKind {
 	if (isChapter) return 'scene';
 	return FOLDER_KIND[folderName.trim().toLowerCase()] ?? 'note';
+}
+
+/** The folder a kind of note gets when the campaign doesn't have one for it yet. */
+const HOME_SECTION: Partial<Record<NoteKind, string>> = { npc: 'NPCs', location: 'Locations', session: 'Sessions', monster: 'Monsters', handout: 'Handouts' };
+
+/**
+ * Where a new note of `kind` goes when it's asked for in `from`.
+ *
+ * A chapter's notes are its scenes, and the top of the campaign is for loose
+ * notes, so an NPC, location, monster, handout or session log made from either
+ * is filed in the campaign's folder for that kind instead (the one named for it,
+ * or a renamed one such as "Characters"; made if it's missing). That way it's
+ * listed with the rest and doesn't get lost among a chapter's scenes. A folder
+ * of the GM's own (Factions…) keeps whatever is made in it.
+ */
+export function homeFolderFor(c: Campaign, kind: NoteKind, from: string): string {
+	const inChapter = c.chapters.some(ch => ch.folder === from);
+	if (from !== c.folder && !inChapter) return from;
+	if (kind === 'map' && inChapter) return from; // a chapter keeps its own maps
+	const fallback = HOME_SECTION[kind];
+	if (!fallback && kind !== 'map') return from; // scenes and plain notes stay put
+	const named = c.sections.filter(s => defaultKindFor(s.name) === kind);
+	const existing = named.find(s => s.name === fallback) ?? named[0];
+	if (existing) return existing.folder;
+	return fallback ? joinPath(c.folder, fallback) : from;
 }
 
 /** Folders that hold files rather than notes; their + adds files from disk. */

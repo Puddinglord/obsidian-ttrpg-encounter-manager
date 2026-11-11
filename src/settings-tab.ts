@@ -5,6 +5,7 @@ import type NimbleStatblocksPlugin from '../main';
 import { NIMBLE_CONDITIONS, NimbleCondition } from './types';
 import { renderPartyEditor } from './party';
 import { diceAssignmentRows, diceMotionRows, renderDiceStudio } from './dice-settings';
+import { confirmAction } from './touch';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
 
 /** One settings row. `block` rows draw their own content instead of a name and controls. */
@@ -75,6 +76,11 @@ export class NimbleSettingsTab extends PluginSettingTab {
 		}
 	}
 
+	/** Settings were re-read from disk (another device synced them): redraw the page if it's open. */
+	externalChange(): void {
+		if (this.containerEl.isConnected) this.refresh();
+	}
+
 	/** Redraw after a change that adds, removes or hides rows. */
 	private refresh(): void {
 		// 1.13+: rebuild the definitions and redraw the open page.
@@ -110,6 +116,11 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					name: 'Nimble slash commands',
 					desc: 'Nimble commands in the / menu.',
 					render: toggle(() => s.slashCommands, v => { s.slashCommands = v; }),
+				},
+				{
+					name: 'Open Spotlight with Cmd/Ctrl+K',
+					desc: 'Spotlight searches adversaries, NPCs and notes, rolls dice and runs commands. Cmd/Ctrl+K is Obsidian\'s Insert Markdown link key: with this on, it opens Spotlight when no text is selected, and still makes a link when some is. You can also give the Spotlight command any key under Hotkeys.',
+					render: toggle(() => s.spotlightKey, v => { s.spotlightKey = v; }, () => this.plugin.campaigns.trigger('changed')), // the Campaign panel's search bar shows the key
 				},
 			] },
 			{ heading: 'Campaigns', rows: [
@@ -164,6 +175,12 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				{
 					name: '3D dice',
 					render: toggle(() => s.dice3d, v => { s.dice3d = v; }, () => this.refresh()),
+				},
+				{
+					name: '3D dice on phones',
+					desc: 'Phones show just the result notice unless this is on. Tablets and computers always get 3D dice.',
+					visible: () => s.dice3d,
+					render: toggle(() => s.dice3dOnPhone, v => { s.dice3dOnPhone = v; }),
 				},
 				...this.diceRows(),
 				{
@@ -277,7 +294,10 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				setting
 					.addExtraButton(b => b.setIcon('pencil').setTooltip('Edit').onClick(() => this.openEditModal(i)))
 					.addExtraButton(b => b.setIcon('trash').setTooltip('Delete').onClick(async () => {
-						custom.splice(i, 1);
+						if (!(await confirmAction(this.app, `Delete "${condition.name}"?`, 'Combatants that already have it keep it.', 'Delete', true))) return;
+						const at = custom.indexOf(condition);
+						if (at < 0) return;
+						custom.splice(at, 1);
 						await this.plugin.saveSettings();
 						this.refresh();
 						new Notice(`Deleted condition: ${condition.name}`);

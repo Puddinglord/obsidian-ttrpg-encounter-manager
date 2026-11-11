@@ -1,7 +1,7 @@
 // The Campaign panel (left sidebar): switch campaigns, see the party, pick up
 // where you left off, and move through chapters and scenes.
 
-import { ItemView, MarkdownPostProcessorContext, MarkdownRenderChild, setIcon, WorkspaceLeaf } from 'obsidian';
+import { ItemView, MarkdownPostProcessorContext, MarkdownRenderChild, Platform, setIcon, WorkspaceLeaf } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { campaignMenu, renderOutline, renderPartyLine } from './campaign-ui';
 
@@ -49,6 +49,7 @@ export class CampaignView extends ItemView {
 			setIcon(home, 'house');
 			home.addEventListener('click', () => void store.open(c.home.path));
 		}
+		this.renderSearch(root);
 
 		if (!c) {
 			const empty = root.createDiv({ cls: 'campaign-welcome' });
@@ -66,6 +67,22 @@ export class CampaignView extends ItemView {
 			onToggle: () => this.render(),
 		});
 		root.scrollTop = scroll;
+	}
+
+	/**
+	 * A button dressed as a search field that opens Spotlight; typing happens in
+	 * the modal. The key chip only shows when the setting makes that key work.
+	 */
+	private renderSearch(root: HTMLElement): void {
+		const btn = root.createEl('button', { cls: 'campaign-search', attr: { 'aria-label': 'Search (opens Spotlight)' } });
+		setIcon(btn.createSpan({ cls: 'campaign-search-icon' }), 'search');
+		btn.createSpan({ cls: 'campaign-search-placeholder', text: 'Search or roll dice…' });
+		if (this.plugin.settings.spotlightKey && !Platform.isPhone) {
+			const mac = Platform.isMacOS || Platform.isIosApp;
+			btn.createSpan({ cls: 'campaign-search-kbd', text: mac ? '⌘K' : 'Ctrl K' });
+			btn.setAttr('aria-keyshortcuts', mac ? 'Meta+K' : 'Control+K');
+		}
+		btn.addEventListener('click', () => this.plugin.toggleSpotlight());
 	}
 }
 

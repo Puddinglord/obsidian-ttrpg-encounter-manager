@@ -11,6 +11,7 @@ import {
 } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { fmText, safeName } from './campaign-model';
+import { onLongPress } from './touch';
 import { IMAGE_EXTENSIONS, isRemote, parseNpcCard, portraitLink, SECRET_KEYS } from './npc-card-def';
 
 export function registerNpcCard(plugin: NimbleStatblocksPlugin): void {
@@ -50,8 +51,12 @@ export function renderAvatar(parent: HTMLElement, p: Portrait, cls = ''): HTMLEl
 }
 
 class NpcCard extends MarkdownRenderChild {
+	/** The note the card is in. Tracked through renames, which don't re-render the block. */
+	private path: string;
+
 	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
+		this.path = ctx.sourcePath;
 	}
 
 	private get app() { return this.plugin.app; }
@@ -61,14 +66,20 @@ class NpcCard extends MarkdownRenderChild {
 		// Adding a portrait changes the note's properties, not this block's text, so Obsidian won't re-render it for us.
 		let last = this.portraitKey();
 		this.registerEvent(this.app.metadataCache.on('changed', (f) => {
-			if (f.path !== this.ctx.sourcePath) return;
+			if (f.path !== this.path) return;
 			const key = this.portraitKey();
 			if (key !== last) { last = key; this.render(); }
+		}));
+		this.registerEvent(this.app.vault.on('rename', (f, oldPath) => {
+			if (oldPath !== this.path) return;
+			this.path = f.path;
+			last = this.portraitKey();
+			this.render(); // the name on the card follows the note's
 		}));
 	}
 
 	private note(): TFile | null {
-		return this.app.vault.getFileByPath(this.ctx.sourcePath);
+		return this.app.vault.getFileByPath(this.path);
 	}
 
 	private frontmatter(): Record<string, unknown> {
@@ -78,15 +89,18 @@ class NpcCard extends MarkdownRenderChild {
 
 	private portraitKey(): string {
 		const fm = this.frontmatter();
-		return `${fmText(fm.portrait ?? fm.image)}|${fmText(fm['portrait-position'])}|${fmText(fm.role)}`;
+		return `${fmText(fm.portrait ?? fm.image)}|${fmText(fm['portrait-position'])}|${fmText(fm.role)}|${fmText(fm.title)}`;
 	}
 
 	private render(): void {
 		const el = this.containerEl;
 		el.empty();
+		// The card's narrow layout is a container query on this wrapper (see styles.css).
+		el.addClass('nimble-npc-wrap');
 		const fm = this.frontmatter();
 		const def = parseNpcCard(this.source);
-		const name = def.name || this.note()?.basename || 'NPC';
+		// `title:` holds the name as typed when the file name couldn't (Sister "Red" Garaele).
+		const name = def.name || fmText(fm.title).trim() || this.note()?.basename || 'NPC';
 		const role = def.role || fmText(fm.role);
 
 		const card = el.createDiv({ cls: 'nimble-npc-card' });
@@ -109,7 +123,7 @@ class NpcCard extends MarkdownRenderChild {
 			const value = row.createDiv({ cls: 'nimble-npc-value' });
 			if (!f.value) { value.addClass('is-empty'); value.setText('—'); continue; }
 			if (secret) this.hideSecret(row, value);
-			void MarkdownRenderer.render(this.app, f.value, value, this.ctx.sourcePath, this);
+			void MarkdownRenderer.render(this.app, f.value, value, this.path, this);
 		}
 	}
 
@@ -127,7 +141,7 @@ class NpcCard extends MarkdownRenderChild {
 	}
 
 	private renderPortrait(frame: HTMLElement, fm: Record<string, unknown>, name: string, role: string): void {
-		const portrait = resolvePortrait(this.app, fm, this.ctx.sourcePath);
+		const portrait = resolvePortrait(this.app, fm, this.path);
 		if (portrait) {
 			const img = frame.createEl('img', { attr: { src: portrait.src, alt: `Portrait of ${name}`, draggable: 'false' } });
 			const pos = fmText(fm['portrait-position']);
@@ -137,13 +151,15 @@ class NpcCard extends MarkdownRenderChild {
 			const edit = frame.createEl('button', { cls: 'nimble-npc-portrait-edit clickable-icon', attr: { 'aria-label': 'Change portrait' } });
 			setIcon(edit, 'image-plus');
 			edit.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.menu(e, portrait); });
-			frame.addEventListener('contextmenu', (e) => { e.preventDefault(); this.menu(e, portrait); });
+			// Right-click, or a long press on touch screens (where there's no hover to reveal the button).
+			onLongPress(frame, (e) => this.menu(e, portrait));
 		} else {
 			frame.addClass('is-empty');
 			setIcon(frame.createDiv({ cls: 'nimble-npc-portrait-icon' }), 'user-round');
 			frame.createDiv({ cls: 'nimble-npc-portrait-hint', text: Platform.isMobile ? 'Add portrait' : 'Add portrait or drop an image' });
 			frame.setAttr('role', 'button');
 			frame.setAttr('tabindex', '0');
+			frame.setAttr('aria-label', 'Add portrait');
 			frame.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.menu(e, null); });
 			frame.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.upload(); } });
 		}
@@ -201,23 +217,24 @@ class NpcCard extends MarkdownRenderChild {
 		if (!IMAGE_EXTENSIONS.includes(ext)) { new Notice(`${file.name} isn't an image Obsidian can show`); return; }
 		const base = this.note()?.basename ?? 'NPC';
 		try {
-			const path = await this.app.fileManager.getAvailablePathForAttachment(`${safeName(base)} portrait.${ext}`, this.ctx.sourcePath);
+			const path = await this.app.fileManager.getAvailablePathForAttachment(`${safeName(base)} portrait.${ext}`, this.path);
 			const created = await this.app.vault.createBinary(path, await file.arrayBuffer());
-			await this.setPortrait(created);
-			new Notice(`Saved portrait to ${created.path}`);
+			if (await this.setPortrait(created)) new Notice(`Saved portrait to ${created.path}`);
+			else new Notice(`Saved the image to ${created.path}, but couldn't find this note to set it as the portrait.`);
 		} catch (err) {
 			console.error('Ember Vault: could not save the portrait', err);
 			new Notice("Couldn't save the portrait. See the developer console for details.");
 		}
 	}
 
-	private async setPortrait(img: TFile | null): Promise<void> {
+	private async setPortrait(img: TFile | null): Promise<boolean> {
 		const note = this.note();
-		if (!note) return;
+		if (!note) return false;
 		await this.app.fileManager.processFrontMatter(note, (fm: Record<string, unknown>) => {
 			if (img) fm.portrait = `[[${this.app.metadataCache.fileToLinktext(img, note.path, false)}]]`;
 			else delete fm.portrait;
 		});
+		return true;
 	}
 }
 

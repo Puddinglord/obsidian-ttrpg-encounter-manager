@@ -31,7 +31,8 @@ export function parseStatblock(content: string): NimbleMonster | null {
 			}
 
 			// List item - check BEFORE key-value to handle "- Name: description" format
-			if (trimmed.startsWith('-')) {
+			// "*" and "+" bullets count too, but need the space ("**Bold.** text" is not a bullet).
+			if (trimmed.startsWith('-') || /^[*+]\s/.test(trimmed)) {
 				currentList.push(trimmed.slice(1).trim());
 				continue;
 			}
@@ -61,8 +62,23 @@ export function parseStatblock(content: string): NimbleMonster | null {
 	}
 }
 
+/** Fields that hold a sentence or a name, where " # " may be part of the text. */
+const FREE_TEXT = new Set(['name', 'description', 'desc', 'flavor', 'flavour', 'bloodied', 'laststand', 'actiontext', 'actionsintro', 'easier', 'harder', 'multiattack', 'senses', 'languages', 'source']);
+
+/** "fire, cold" → ["fire", "cold"], for a defence list written on one line. */
+const inlineList = (value: string) => value.split(/[,;]/).map(s => s.trim()).filter(Boolean);
+
 function processKeyValue(monster: Partial<NimbleMonster>, key: string, value: string): void {
+	// A trailing YAML-style comment ("armor: heavy   # none, medium or heavy") is not part of
+	// the value. It needs a space on both sides, so #tags and [[Note#Heading]] are left alone.
+	if (!FREE_TEXT.has(key)) {
+		value = value.replace(/(^|\s+)#\s.*$/, '');
+		if (!value) return;
+	}
 	switch (key) {
+		case 'resistances': case 'resistance': monster.resistances = inlineList(value); break;
+		case 'immunities': case 'immunity': monster.immunities = inlineList(value); break;
+		case 'vulnerabilities': case 'vulnerability': monster.vulnerabilities = inlineList(value); break;
 		case 'name': monster.name = value; break;
 		case 'type': monster.type = value; break;
 		case 'size': monster.size = value; break;

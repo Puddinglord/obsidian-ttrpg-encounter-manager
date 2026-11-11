@@ -143,7 +143,8 @@ body {
 
 .nimble-hover-preview {
 	position: fixed;
-	z-index: var(--layer-popover);
+	/* Above modals (the builder and the quick look have hoverable monsters), below our popovers. */
+	z-index: calc(var(--layer-modal, 50) + 1);
 	width: min(420px, calc(100vw - 24px));
 	max-height: 75vh;
 	overflow: auto;
@@ -599,14 +600,15 @@ body {
 	padding: 0.7rem 0.85rem;
 	margin: 0.75rem 0;
 }
-.nimble-encounter-block .encounter-block-head { display: flex; align-items: center; gap: 0.5rem; font-size: 1.05rem; }
+/* Wraps: on a phone a long name and the difficulty pill don't fit on one line. */
+.nimble-encounter-block .encounter-block-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.5rem; font-size: 1.05rem; }
 .nimble-encounter-block .encounter-block-icon { color: var(--nimble-hp); display: inline-flex; }
-.nimble-encounter-block .encounter-block-name { font-weight: 700; flex: 1; }
+.nimble-encounter-block .encounter-block-name { font-weight: 700; flex: 1 1 9rem; min-width: 0; overflow-wrap: anywhere; }
 .nimble-encounter-block .encounter-block-monsters { display: flex; flex-wrap: wrap; gap: 0.35rem 0.8rem; margin: 0.5rem 0; }
 .nimble-encounter-block .encounter-block-monster { display: inline-flex; align-items: center; gap: 0.3rem; }
 .nimble-encounter-block .encounter-block-count { font-weight: 700; color: var(--text-muted); }
 .nimble-encounter-block .encounter-block-meta, .nimble-encounter-block .encounter-block-notes { font-size: 0.8rem; color: var(--text-muted); }
-.nimble-encounter-block .encounter-block-notes { font-style: italic; margin-top: 0.25rem; }
+.nimble-encounter-block .encounter-block-notes { font-style: italic; margin-top: 0.25rem; white-space: pre-line; }
 .nimble-encounter-block .encounter-block-empty { color: var(--text-muted); font-size: 0.85rem; }
 .encounter-block-warning { font-size: 0.8rem; color: var(--nimble-warn); margin-top: 0.2rem; }
 .encounter-block-warning::before { content: "⚠ "; }
@@ -830,7 +832,7 @@ body {
 .nimble-map-tray { width: 150px; flex-shrink: 0; border-left: 1px solid var(--background-modifier-border); padding: 0.4rem; overflow: auto; max-height: 480px; display: flex; flex-direction: column; gap: 0.35rem; }
 .nimble-map-tray-title { font-size: 0.72rem; color: var(--text-muted); }
 .nimble-map-tray-empty { font-size: 0.78rem; color: var(--text-muted); }
-.nimble-map-token.in-tray { position: static; width: auto; height: auto; display: flex; align-items: center; gap: 0.4rem; cursor: grab; font-size: 0.8rem; }
+.nimble-map-token.in-tray { position: static; width: auto; height: auto; display: flex; align-items: center; gap: 0.4rem; cursor: grab; font-size: 0.8rem; touch-action: none; }
 .nimble-map-token-ghost { position: fixed; z-index: var(--layer-popover); transform: translate(-50%, -50%); pointer-events: none; padding: 0.15rem 0.5rem; border-radius: 999px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 0.8rem; font-weight: 600; }
 
 /* ============================================
@@ -1302,6 +1304,14 @@ body.is-phone .nimble-bestiary .bestiary-side, body.is-phone .nimble-bestiary .b
 body.is-phone .nimble-map-viewport { flex: none; height: 60vh; resize: none; }
 body.is-phone .nimble-map-body, body.is-phone .nimble-map-main { flex-direction: column; }
 body.is-phone .nimble-map-tray { width: auto; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
+/* The same stacking in a narrow pane on any device (sidebar, split, hover preview, Canvas card).
+   .nimble-map is the container, so only elements inside it are restyled here. */
+.nimble-map { container-type: inline-size; }
+@container (max-width: 520px) {
+	.nimble-map-viewport { flex: none; }
+	.nimble-map-body { flex-direction: column; }
+	.nimble-map-tray { width: auto; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
+}
 
 /* Finger-sized targets wherever the main pointer is a finger */
 @media (pointer: coarse) {
@@ -1373,6 +1383,23 @@ body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: non
 .nimble-campaign-view .campaign-switch-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nimble-campaign-view .campaign-switch-chevron { display: inline-flex; color: var(--text-faint); }
 .nimble-campaign-view .campaign-switch-btn svg, .nimble-campaign-view .campaign-switcher .clickable-icon svg { width: 16px; height: 16px; }
+/* Search bar under the switcher: a button that looks like a field and opens Spotlight */
+.nimble-campaign-view .campaign-search {
+	display: flex; align-items: center; gap: 0.45rem; justify-content: flex-start; width: 100%; min-width: 0;
+	height: auto; margin-bottom: 0.5rem; padding: 0.45rem 0.55rem; border-radius: 8px; box-shadow: none;
+	background: var(--background-primary); border: 1px solid var(--background-modifier-border);
+	color: var(--text-muted); font-weight: 400; font-size: 0.95rem; text-align: left;
+}
+.nimble-campaign-view .campaign-search:hover { border-color: var(--interactive-accent); }
+.nimble-campaign-view .campaign-search:focus-visible { border-color: var(--interactive-accent); outline: 2px solid var(--interactive-accent); outline-offset: 1px; }
+.nimble-campaign-view .campaign-search-icon { display: inline-flex; flex: none; color: var(--text-faint); }
+.nimble-campaign-view .campaign-search-icon svg { width: 16px; height: 16px; }
+.nimble-campaign-view .campaign-search-placeholder { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-campaign-view .campaign-search-kbd {
+	flex: none; padding: 0 0.35rem; border-radius: 4px; line-height: 1.5;
+	border: 1px solid var(--background-modifier-border); background: var(--background-secondary);
+	color: var(--text-faint); font-family: var(--font-interface); font-size: var(--font-ui-smaller); white-space: nowrap;
+}
 
 .campaign-party {
 	display: inline-flex; align-items: center; gap: 0.4rem; height: auto; padding: 0.25rem 0.6rem;
@@ -1473,6 +1500,9 @@ body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: non
 .nimble-new-note .nimble-starter-map .setting-item { border: none; padding: 0.3rem 0; }
 .nimble-new-note .nimble-starter-map > .setting-item-description { margin-bottom: 0.5rem; }
 .nimble-new-note .nimble-starter-files { font-size: 0.82rem; }
+.nimble-new-note .nimble-starter-dest { display: flex; align-items: center; gap: 0.4rem; margin: -0.1rem 0 0.6rem; }
+.nimble-new-note .nimble-starter-dest-icon { display: inline-flex; flex-shrink: 0; }
+.nimble-new-note .nimble-starter-dest-icon svg { width: 14px; height: 14px; }
 .nimble-move-detail { display: block; color: var(--text-muted); }
 
 .campaign-welcome { text-align: center; padding: 1.5rem 0.75rem; color: var(--text-muted); }
@@ -1501,8 +1531,9 @@ body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: non
 	.campaign-heading .clickable-icon { padding: 6px; }
 	.campaign-party { padding: 0.45rem 0.75rem; font-size: 0.85rem; }
 	.campaign-continue { padding: 0.75rem 0.85rem; }
+	.nimble-campaign-view .campaign-search { min-height: 2.6rem; }
 }
-body.is-tablet :is(.campaign-party, .campaign-continue, .campaign-switch-btn, .campaign-block-panel) { padding-left: 0.6rem; padding-right: 0.6rem; }
+body.is-tablet :is(.campaign-party, .campaign-continue, .campaign-switch-btn, .campaign-search, .campaign-block-panel) { padding-left: 0.6rem; padding-right: 0.6rem; }
 
 /* ============================================
    BOXES: ```box read-aloud / look / treasure / trap / secret …
@@ -1923,9 +1954,11 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 
 /* ---------- NPC cards (```nimble-npc) ---------- */
 .nimble-hidden { display: none; }
+/* The block Obsidian hands us is the query container; the card inside it adapts.
+   (A container can't restyle itself, so the card can't be its own container.) */
+.nimble-npc-wrap { container-type: inline-size; }
 .nimble-npc-card {
 	--npc-color: #22a35a;
-	container-type: inline-size;
 	display: flex; gap: 1rem; align-items: flex-start;
 	margin: 0.9rem 0; padding: 0.85rem;
 	border-radius: 12px;
@@ -1950,6 +1983,8 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 .nimble-npc-portrait:hover .nimble-npc-portrait-edit, .nimble-npc-portrait-edit:focus-visible { opacity: 1; }
 .nimble-npc-portrait-edit:hover { background: rgba(0, 0, 0, 0.75); color: #fff; }
 .nimble-npc-portrait-edit svg { width: 15px; height: 15px; }
+/* Touch screens have no hover: keep the button showing. */
+@media (pointer: coarse) { .nimble-npc-portrait-edit { opacity: 1; } }
 .nimble-npc-portrait.is-empty {
 	display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
 	cursor: pointer; box-shadow: none; padding: 0.5rem; text-align: center;
@@ -1970,9 +2005,9 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 	margin-top: 0.15rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
 	color: color-mix(in srgb, var(--npc-color) 80%, var(--text-normal));
 }
-.nimble-npc-fields { margin-top: 0.65rem; display: grid; grid-template-columns: max-content 1fr; gap: 0.4rem 0.8rem; }
+.nimble-npc-fields { margin-top: 0.65rem; display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr); gap: 0.4rem 0.8rem; }
 .nimble-npc-field { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; gap: inherit; }
-@supports not (grid-template-columns: subgrid) { .nimble-npc-field { grid-template-columns: max-content 1fr; } }
+@supports not (grid-template-columns: subgrid) { .nimble-npc-field { grid-template-columns: fit-content(40%) minmax(0, 1fr); } }
 .nimble-npc-label {
 	display: inline-flex; align-items: center; align-self: start; gap: 0.3rem; padding-top: 0.22rem; line-height: 1.2;
 	font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint);
@@ -1990,10 +2025,17 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 }
 .nimble-npc-field.is-secret:not(.is-revealed) .nimble-npc-value:hover { filter: blur(3px); }
 .nimble-npc-field.is-secret.is-revealed .nimble-npc-value { filter: none; cursor: auto; }
+/* Narrow (hover previews, embeds, phones, split panes): a thumbnail beside the
+   name, then the rows across the full width. */
 @container (max-width: 420px) {
-	.nimble-npc-card { flex-direction: column; align-items: stretch; }
-	.nimble-npc-portrait { width: 100%; aspect-ratio: 4 / 3; }
-	.nimble-npc-portrait img { object-position: var(--nimble-portrait-position, center 20%); }
+	.nimble-npc-card { display: grid; grid-template-columns: minmax(64px, 26%) minmax(0, 1fr); align-items: center; gap: 0.7rem 0.8rem; padding: 0.7rem; }
+	.nimble-npc-portrait { width: 100%; }
+	.nimble-npc-info { display: contents; }
+	.nimble-npc-head { min-width: 0; overflow-wrap: anywhere; }
+	.nimble-npc-fields { grid-column: 1 / -1; margin-top: 0; }
+	.nimble-npc-portrait.is-empty { padding: 0.25rem; }
+	.nimble-npc-portrait-hint { display: none; }
+	.nimble-npc-portrait-icon svg { width: 26px; height: 26px; }
 }
 
 /* Avatars (Campaign panel) */
@@ -2009,6 +2051,31 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 .nimble-portrait-caption .nimble-npc-role { margin-top: 0; }
 .nimble-portrait-popout { margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem; }
 .nimble-portrait-popout svg { width: 15px; height: 15px; }
+
+/* ---------- Spotlight (Cmd/Ctrl+K) ---------- */
+.nimble-notice-title { font-weight: 700; margin-bottom: 0.2rem; }
+.nimble-notice-actions { display: flex; gap: 0.4rem; margin-top: 0.55rem; }
+.nimble-spotlight .nimble-spotlight-dice { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-spotlight .nimble-spotlight-die {
+	height: 1.7rem; padding: 0 0.6rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; font-variant-numeric: tabular-nums;
+	background: var(--background-secondary); box-shadow: none; border: 1px solid var(--background-modifier-border); color: var(--text-muted);
+}
+.nimble-spotlight .nimble-spotlight-die:hover { color: var(--text-normal); border-color: var(--interactive-accent); }
+.nimble-spotlight .nimble-spotlight-result { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-normal); }
+.nimble-spotlight .nimble-spot-row { display: flex; align-items: center; gap: 0.7rem; }
+.nimble-spotlight .nimble-spot-icon { flex: 0 0 1.9rem; height: 1.9rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: var(--background-secondary); color: var(--text-muted); }
+.nimble-spotlight .nimble-spot-icon svg { width: 16px; height: 16px; }
+.nimble-spotlight .nimble-spot-level { font-size: 0.8rem; font-weight: 700; background: color-mix(in srgb, var(--nimble-hp, #c0392b) 14%, transparent); color: var(--text-normal); }
+.nimble-spotlight .nimble-spot-level.role-minion { background: color-mix(in srgb, var(--nimble-minion) 16%, transparent); color: var(--nimble-minion); }
+.nimble-spotlight .nimble-spot-level.role-legendary { background: color-mix(in srgb, var(--nimble-legendary) 18%, transparent); color: var(--nimble-legendary); }
+.nimble-spotlight .nimble-spot-avatar { width: 100%; height: 100%; border-radius: 7px; }
+.nimble-spotlight .nimble-spot-text { flex: 1; min-width: 0; }
+.nimble-spotlight .nimble-spot-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-spotlight .nimble-spot-meta { font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-spotlight .nimble-spot-meta.is-long { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.nimble-spotlight .nimble-spot-tag { flex-shrink: 0; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-faint); }
+.nimble-spotlight .spot-hint .nimble-spot-name { font-weight: 500; }
+.nimble-spotlight .spot-roll .nimble-spot-icon { background: var(--interactive-accent); color: var(--text-on-accent); }
 
 /* Sliding segmented-control thumb (see segmented.ts) */
 .has-thumb { position: relative; isolation: isolate; }
@@ -2178,3 +2245,18 @@ body.is-phone .nimble-record-modal .record-turn { flex: 1; justify-content: cent
 @media (max-width: 560px) { .nimble-workshop-motion { grid-template-columns: 1fr; } }
 .nimble-workshop-value { font-size: var(--font-ui-smaller); color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 2.6rem; }
 .nimble-workshop-result { margin-top: 0.9rem; min-height: 1.4em; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-accent); }
+
+/* ============================================
+   PRINT / PDF EXPORT: no controls on paper
+   ============================================ */
+@media print {
+	.nimble-statblock .add-btn,
+	.nimble-statblock .statblock-actions,
+	.encounter-block-actions,
+	.nimble-map-toolbar,
+	.nimble-map-hint,
+	.nimble-map-tray,
+	.nimble-box-chevron,
+	.nimble-inline-add-btn,
+	.nimble-npc-portrait-edit { display: none !important; }
+}

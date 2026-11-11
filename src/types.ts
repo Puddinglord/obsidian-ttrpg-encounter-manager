@@ -1,6 +1,6 @@
 // Shared data types and defaults. Nothing in here may import 'obsidian', so the
 // pure modules that use it stay unit-testable in plain Node.
-import { DEFAULT_DICE, DiceSettings } from './dice3d/styles';
+import { DEFAULT_DICE, DiceSettings, migrateDice } from './dice3d/styles';
 
 export type ArmorType = 'none' | 'medium' | 'heavy';
 /** How a monster plays at the table. Solo is the Monsters & More name for a legendary monster. */
@@ -209,6 +209,10 @@ export interface NimbleStatblocksSettings {
 	defaultPartySize: number;
 	/** Nimble "/" commands in the editor. */
 	slashCommands: boolean;
+	/** Cmd/Ctrl+K opens Spotlight instead of inserting an empty Markdown link (selected text still becomes a link). */
+	spotlightKey: boolean;
+	/** The one-time "Use Cmd/Ctrl+K for Spotlight?" offer has been shown. */
+	spotlightOffered: boolean;
 	/** Give every table in notes the Nimble look (tables in boxes always have it). */
 	styleTables: boolean;
 	/** Link plain mentions of NPC names in reading view. */
@@ -248,6 +252,8 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	party: [],
 	defaultPartySize: 4,
 	slashCommands: true,
+	spotlightKey: false,
+	spotlightOffered: false,
 	campaignsFolder: 'Campaigns',
 	autoLinkNpcs: true,
 	styleTables: true,
@@ -292,6 +298,43 @@ export function normalizeConditions(list: unknown): AppliedCondition[] {
 			return null;
 		})
 		.filter((c): c is AppliedCondition => !!c);
+}
+
+/**
+ * Settings from whatever data.json holds (nothing yet, an older version, or a
+ * file that was damaged or edited by hand). Lists that aren't lists become
+ * empty and entries that aren't objects are dropped, so one bad value can't
+ * stop the plugin loading. Throws if the file's top level isn't an object.
+ */
+export function migrateSettings(saved: unknown): NimbleStatblocksSettings {
+	if (saved != null && (typeof saved !== 'object' || Array.isArray(saved))) throw new Error('Saved settings are not an object');
+	const data = (saved ?? {}) as Partial<NimbleStatblocksSettings>;
+	const s: NimbleStatblocksSettings = Object.assign({}, DEFAULT_SETTINGS, data);
+	const items = <T>(v: T[] | undefined): T[] => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object') : []);
+	const record = <T extends object>(v: T | undefined): T => (v && typeof v === 'object' && !Array.isArray(v) ? v : {} as T);
+	s.customConditions = items(s.customConditions).filter(c => typeof c.name === 'string');
+	s.encounters = items(s.encounters);
+	s.rollLog = items(s.rollLog);
+	s.party = items(s.party);
+	s.campaigns = record(s.campaigns);
+	s.activeCampaign = typeof s.activeCampaign === 'string' ? s.activeCampaign : null;
+	// 1.0.4 dice styles; older saves only have per-role colours, which carry over.
+	s.dice = migrateDice(data.dice, data);
+	for (const k of ['dicePrimaryColor', 'diceColor', 'diceExplosionColor', 'diceMaterialPrimary', 'diceMaterialNormal', 'diceMaterialCrit'] as const) delete s[k];
+	// Older conditions were renamed in the 3.2 rules.
+	const renamed: Record<string, string> = { Blinded: 'Blind' };
+	for (const enc of s.encounters) {
+		enc.creatures = items(enc.creatures);
+		enc.phase = enc.phase || 'setup';
+		enc.log = Array.isArray(enc.log) ? enc.log : [];
+		for (const c of enc.creatures) {
+			c.conditions = normalizeConditions(c.conditions).map(x => ({ ...x, name: renamed[x.name] ?? x.name }));
+			c.side = c.side || 'monster';
+			delete (c as { lrUsed?: number }).lrUsed;
+		}
+	}
+	s.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
+	return s;
 }
 
 let idCounter = 0;

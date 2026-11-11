@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Quaternion, Vector3 } from 'three';
-import { defaultLabels, DIE_SIDES, dieShape, relabel, restingRotation, shapeFor, topIndex, valueOnTop } from '../src/dice3d/geometry';
-import { diceForRoll } from '../src/dice3d';
+import { defaultLabels, DIE_SIDES, dieShape, exactShape, relabel, restingRotation, shapeFor, topIndex, valueOnTop } from '../src/dice3d/geometry';
+import { canRoll3d, dice3dBlockedText, diceForRoll, landedWithin, MAX_DICE_3D } from '../src/dice3d';
 
 describe('3D dice geometry', () => {
 	it.each(DIE_SIDES)('d%i has the right faces and values', (sides) => {
@@ -126,5 +126,79 @@ describe('diceForRoll', () => {
 	it('never adds a crit look to plain (non-attack) rolls', () => {
 		const dice = diceForRoll(6, 3, [6, 6, 6], false, 'lava');
 		expect(dice.every(d => d.role === 'normal' && !d.material)).toBe(true);
+	});
+});
+
+describe('can this roll be shown in 3D', () => {
+	const d = (sides: number, n = 1) => Array.from({ length: n }, () => ({ sides }));
+
+	it('yes for the dice that have a real shape', () => {
+		for (const sides of DIE_SIDES) expect(canRoll3d(d(sides, 2))).toBe(true);
+		expect(canRoll3d([...d(6, 3), ...d(20)])).toBe(true);
+	});
+
+	it('no when any die would land on a face that is not its result', () => {
+		for (const sides of [2, 3, 30, 100]) {
+			expect(exactShape(sides)).toBe(false);
+			expect(canRoll3d(d(sides))).toBe(false);
+			expect(canRoll3d([...d(6, 2), ...d(sides)])).toBe(false);
+		}
+	});
+
+	it('agrees with the shapes the renderer has', () => {
+		for (let sides = 1; sides <= 100; sides++) expect(canRoll3d(d(sides))).toBe(exactShape(sides));
+	});
+
+	it('no when there are more dice than fit on the table, crit explosions included', () => {
+		expect(canRoll3d(d(6, MAX_DICE_3D))).toBe(true);
+		expect(canRoll3d(d(6, MAX_DICE_3D + 1))).toBe(false);
+		expect(canRoll3d(diceForRoll(6, 12, [6, ...Array<number>(11).fill(2), 3], true))).toBe(false);
+		expect(canRoll3d([])).toBe(false);
+	});
+});
+
+describe('the result notice never waits for good', () => {
+	it('shows when the dice land', async () => {
+		vi.useFakeTimers();
+		const show = vi.fn();
+		let land!: () => void;
+		void landedWithin(new Promise<void>(r => { land = r; }), 6000).then(show);
+		await vi.advanceTimersByTimeAsync(1000);
+		expect(show).not.toHaveBeenCalled();
+		land();
+		await vi.advanceTimersByTimeAsync(0);
+		expect(show).toHaveBeenCalledTimes(1);
+		await vi.advanceTimersByTimeAsync(10000);
+		expect(show).toHaveBeenCalledTimes(1);
+		vi.useRealTimers();
+	});
+
+	it('shows after the timeout when they never land, and only once if they land late', async () => {
+		vi.useFakeTimers();
+		const show = vi.fn();
+		let land!: () => void;
+		void landedWithin(new Promise<void>(r => { land = r; }), 6000).then(show);
+		await vi.advanceTimersByTimeAsync(5999);
+		expect(show).not.toHaveBeenCalled();
+		await vi.advanceTimersByTimeAsync(1);
+		expect(show).toHaveBeenCalledTimes(1);
+		land();
+		await vi.advanceTimersByTimeAsync(100);
+		expect(show).toHaveBeenCalledTimes(1);
+		vi.useRealTimers();
+	});
+
+	it('shows at once when the animation fails', async () => {
+		const show = vi.fn();
+		await landedWithin(Promise.reject(new Error('render loop threw')), 6000).then(show);
+		expect(show).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('why 3D dice are not shown', () => {
+	it('names the reason and says rolls still show a notice', () => {
+		expect(dice3dBlockedText(null)).toBe('');
+		expect(dice3dBlockedText('motion')).toMatch(/^Reduced motion is on in your system settings.*notice\.$/);
+		expect(dice3dBlockedText('webgl')).toMatch(/^This device can't draw 3D.*notice\.$/);
 	});
 });

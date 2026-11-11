@@ -1,17 +1,16 @@
 // ```nimble-encounter blocks: a prepared encounter in a note, with live
 // difficulty against the party and one click to run it in the tracker.
 
-import { resumeSavedFight, savedFightsFor } from './saved-fight';
+import { confirmReplaceFight, resumeSavedFight, savedFightsFor } from './saved-fight';
 import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { EncounterDef, encounterBlockSource, parseEncounterBlock } from './encounter-def';
+import { EncounterDef, encounterBlockSource, parseEncounterBlock, replaceEncounterBlock } from './encounter-def';
 import { budgetPhrase, monsterRole, rateEncounter, shiftLabel, shiftMonster, SHIFT_DAMAGE, SHIFT_HP } from './rules';
 import { createInlineRef } from './inline-ref';
 import { BuilderModal } from './builder-modal';
 import { EncounterTemplate } from './encounters';
 import { renderBalance } from './balance-ui';
 import { closePopover, isPopoverOpenFor, openPopover } from './popover';
-import { confirmAction } from './touch';
 
 export function partyLevels(plugin: NimbleStatblocksPlugin): number[] {
 	const party = plugin.settings.party;
@@ -37,22 +36,21 @@ export function resolveDef(plugin: NimbleStatblocksPlugin, def: EncounterDef) {
 	return { found, missing };
 }
 
-export async function runEncounter(plugin: NimbleStatblocksPlugin, def: EncounterDef, sourcePath?: string): Promise<void> {
+/** Load an encounter into the tracker. False when nothing was loaded (no monsters found, or the GM kept the fight in progress). */
+export async function runEncounter(plugin: NimbleStatblocksPlugin, def: EncounterDef, sourcePath?: string): Promise<boolean> {
 	const { found, missing } = resolveDef(plugin, def);
-	if (!found.length) { new Notice('None of these monsters are in the bestiary or your notes yet.'); return; }
-	const active = plugin.encounters.active;
-	if (!plugin.settings.multipleEncounters && active && active.creatures.some(c => c.side !== 'hero') && active.phase !== 'setup') {
-		if (!await confirmAction(plugin.app, `Replace "${active.name}"?`, `The tracker is mid-fight. Load "${def.name}" instead?`, 'Replace', true)) return;
-	}
+	if (!found.length) { new Notice('None of these monsters are in the bestiary or your notes yet.'); return false; }
+	if (!await confirmReplaceFight(plugin, def.name)) return false;
 	plugin.encounters.loadTemplate({ name: def.name, monsters: found, withParty: def.party && plugin.settings.party.length > 0 }, sourcePath);
 	await plugin.activateEncounterView(false);
 	await plugin.showTracker();
 	new Notice(`${def.name} is in the tracker${missing.length ? `. Not found: ${missing.join(', ')}` : ''}`);
+	return true;
 }
 
 export function registerEncounterBlock(plugin: NimbleStatblocksPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-encounter', (source, el, ctx) => {
-		ctx.addChild(new EncounterBlockChild(plugin, el, parseEncounterBlock(source), ctx));
+		ctx.addChild(new EncounterBlockChild(plugin, el, parseEncounterBlock(source), ctx, source));
 	});
 }
 
@@ -61,7 +59,7 @@ export function registerEncounterBlock(plugin: NimbleStatblocksPlugin): void {
  * in after startup), the campaign (its level and party) and the party itself.
  */
 class EncounterBlockChild extends MarkdownRenderChild {
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private def: EncounterDef, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private def: EncounterDef, private ctx: MarkdownPostProcessorContext, private source: string) {
 		super(el);
 	}
 
@@ -77,20 +75,30 @@ class EncounterBlockChild extends MarkdownRenderChild {
 		// Don't yank the block out from under an open count editor or balance popover.
 		if (this.containerEl.querySelector('.encounter-count:focus, .nimble-difficulty:focus')) return;
 		this.containerEl.empty();
-		renderEncounterBlock(this.plugin, this.containerEl, this.def, this.ctx);
+		renderEncounterBlock(this.plugin, this.containerEl, this.def, this.ctx, this.source);
 	}
 }
 
-/** Rewrite a code block's body in its note. */
-function writeBack(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, next: EncounterDef): void {
+/**
+ * Rewrite a code block's body in its note. For a block in a callout or a list
+ * the section Obsidian reports is the whole callout or list, so the block's
+ * own fence is looked up (by its source) and nothing else is touched.
+ */
+async function writeBack(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: EncounterDef): Promise<void> {
 	const info = ctx.getSectionInfo(el);
 	const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
 	if (!info || !file) { new Notice('Could not find this block in the note to update it.'); return; }
-	void plugin.app.vault.process(file, (text) => {
-		const lines = text.split('\n');
-		lines.splice(info.lineStart + 1, info.lineEnd - info.lineStart - 1, ...encounterBlockSource(next).split('\n'));
-		return lines.join('\n');
-	});
+	let ok = false;
+	try {
+		await plugin.app.vault.process(file, (text) => {
+			const out = replaceEncounterBlock(text, info.lineStart, info.lineEnd, source, encounterBlockSource(next));
+			ok = out !== null;
+			return out ?? text;
+		});
+	} catch (e) {
+		console.error('Ember Vault: could not update the encounter block', e);
+	}
+	if (!ok) new Notice('Couldn\'t update this encounter: the note changed. Nothing was written. Try again.');
 }
 
 function partyText(plugin: NimbleStatblocksPlugin, levels: number[]): string {
@@ -100,8 +108,8 @@ function partyText(plugin: NimbleStatblocksPlugin, levels: number[]): string {
 		: `${levels.length} level-${levels[0] ?? 1} heroes (no party set)`;
 }
 
-function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext): void {
-	const save = (next: EncounterDef) => writeBack(plugin, el, ctx, next);
+function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, source: string): void {
+	const save = (next: EncounterDef) => void writeBack(plugin, el, ctx, source, next);
 	const card = el.createDiv({ cls: 'nimble-encounter-block' });
 	const head = card.createDiv({ cls: 'encounter-block-head' });
 	setIcon(head.createSpan({ cls: 'encounter-block-icon' }), 'swords');
@@ -210,15 +218,25 @@ function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, d
 	};
 	btn('Run', 'play', 'mod-cta', () => void runEncounter(plugin, def, ctx.sourcePath), 'Load this encounter into the tracker');
 	btn('Add to current', 'plus', '', () => void (async () => {
-		for (const f of found) plugin.encounters.add(f.monster, f.sourceFile, f.count);
+		if (plugin.settings.multipleEncounters && !plugin.encounters.active) {
+			new Notice('Create or select an encounter first');
+			await plugin.activateEncounterView();
+			return;
+		}
+		let added = 0;
+		for (const f of found) added += plugin.encounters.add(f.monster, f.sourceFile, f.count).length;
+		if (!added) {
+			new Notice(missing.length ? `Nothing added. Not found: ${missing.join(', ')}` : 'Nothing added: this encounter has no monsters yet.');
+			return;
+		}
 		await plugin.showTracker();
-		new Notice(`Added ${def.name}'s monsters to the current encounter`);
+		new Notice(`Added ${def.name}'s monsters to the current encounter${missing.length ? `. Not found: ${missing.join(', ')}` : ''}`);
 	})(), 'Add these monsters to the encounter already in the tracker');
 	btn('Edit', 'pencil', '', () => new BuilderModal(plugin, def, save).open(), 'Edit monsters with the encounter builder');
 	// A fight saved from this block can be picked up where it stopped.
 	const saved = savedFightsFor(plugin.app, ctx.sourcePath, def.name)[0];
 	if (saved) {
-		const b = btn(`Resume round ${saved.round}`, 'history', 'encounter-resume', () => void resumeSavedFight(plugin, saved.file), `Saved ${saved.saved.replace('T', ' ')}`);
+		const b = btn(`Resume round ${saved.round}`, 'history', 'encounter-resume', () => void resumeSavedFight(plugin, saved.file, ctx.sourcePath), `Saved ${saved.saved.replace('T', ' ')}`);
 		b.addClass('mod-warning');
 	}
 }

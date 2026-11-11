@@ -7,10 +7,10 @@
 // delete), and drag and drop of notes, files and folders between chapters and
 // folders, including straight from Obsidian's file explorer.
 
-import { Menu, setIcon, TFile, TFolder } from 'obsidian';
+import { Menu, Notice, setIcon, TFile, TFolder } from 'obsidian';
 import { portraitOf, renderAvatar } from './npc-card';
 import type NimbleStatblocksPlugin from '../main';
-import { Campaign, Chapter, defaultKindFor, FileRef, isFileFolder, NoteKind, NoteRef, Section } from './campaign-model';
+import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, NoteKind, NoteRef, Section } from './campaign-model';
 import { SECTION_FOR } from './campaigns';
 import { ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles } from './campaign-modals';
 import { STARTERS, StarterKind } from './campaign-templates';
@@ -226,15 +226,16 @@ export function renderOutline(el: HTMLElement, plugin: NimbleStatblocksPlugin, c
 	onLongPress(h, (e) => newMenu(plugin, c, e, opts));
 	dropTarget(h, plugin, c.folder);
 	const sections = orderedSections(c);
-	if (!sections.length && !c.loose.length) {
+	if (!sections.length && !c.loose.length && !c.looseFiles.length) {
 		const empty = el.createDiv({ cls: 'campaign-empty' });
 		empty.setText('Folders for NPCs, locations, factions and the like show up here. ');
 		const a = empty.createEl('a', { text: 'New folder', href: '#' });
 		a.addEventListener('click', (e) => { e.preventDefault(); promptFolder(plugin, c, opts); });
 	}
-	if (c.loose.length) {
+	if (c.loose.length || c.looseFiles.length) {
 		const loose = el.createDiv({ cls: 'campaign-loose' });
 		for (const n of c.loose) noteRow(loose, plugin, c, n, opts);
+		for (const f of c.looseFiles) fileRow(loose, plugin, c, f, opts);
 	}
 	for (const s of sections) renderSection(el, plugin, c, s, opts);
 }
@@ -258,7 +259,10 @@ function renderChapter(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campa
 		iconBtn(h, 'plus', `New in ${ch.name}`, () => promptNew(plugin, c, ch.folder, opts), 'campaign-add-scene');
 	}, (b) => {
 		b.addClass('campaign-scenes');
+		// Maps get a row too (as well as their button above), so they can be renamed, moved and deleted like anything else.
+		for (const m of ch.maps) noteRow(b, plugin, c, m, opts);
 		for (const s of ch.scenes) noteRow(b, plugin, c, s, opts);
+		for (const f of ch.files) fileRow(b, plugin, c, f, opts);
 		if (!ch.scenes.length) {
 			const add = b.createEl('a', { cls: 'campaign-add-inline', text: '+ First scene', href: '#' });
 			add.addEventListener('click', (e) => { e.preventDefault(); promptNew(plugin, c, ch.folder, opts); });
@@ -352,8 +356,8 @@ function chapterMenu(plugin: NimbleStatblocksPlugin, c: Campaign, ch: Chapter, e
 		new NamePrompt(plugin.app, 'Rename chapter', 'Chapter name', ch.folder.replace(/^.*\//, ''), 'Rename', (name) => void plugin.campaigns.renameChapter(ch, name)).open();
 	}));
 	m.addItem(i => i.setTitle('Delete chapter').setIcon('trash-2').setSection('danger').setWarning(true).onClick(() => void (async () => {
-		const n = ch.scenes.length + ch.maps.length;
-		const body = `Its folder${n ? ` and ${n} note${n === 1 ? '' : 's'}` : ''} go too. ${TRASH_NOTE}`;
+		const n = ch.scenes.length + ch.maps.length + ch.files.length;
+		const body = `Its folder${n ? ` and the ${n} item${n === 1 ? '' : 's'} in it` : ''} go too. ${TRASH_NOTE}`;
 		if (await confirmAction(plugin.app, `Delete the chapter "${ch.name}"?`, body, 'Delete', true)) await plugin.campaigns.trash(ch.folder);
 	})()));
 	if (folder instanceof TFolder) plugin.app.workspace.trigger('file-menu', m, folder, 'nimble-campaign');
@@ -366,8 +370,13 @@ const TRASH_NOTE = 'Deleted files follow your Obsidian setting under Files and l
 // Prompts
 
 async function openNew(plugin: NimbleStatblocksPlugin, p: Promise<{ path: string }>): Promise<void> {
-	const f = await p;
-	await plugin.campaigns.open(f.path);
+	try {
+		const f = await p;
+		await plugin.campaigns.open(f.path);
+	} catch (err) {
+		console.error('Ember Vault: could not create the note', err);
+		new Notice(`Couldn't create that: ${err instanceof Error ? err.message : 'see the developer console'}`);
+	}
 }
 
 /** Make sure a folder is open in the outline, so what was just added to it is visible. */
@@ -385,16 +394,22 @@ export function promptNew(plugin: NimbleStatblocksPlugin, c: Campaign, folder: s
 	const ch = c.chapters.find(x => x.folder === folder);
 	const name = folder === c.folder ? c.name : folder.replace(/^.*\//, '');
 	const kind = starterFor(ch ? '' : name, !!ch);
-	const images = c.sections.flatMap(s => s.files).filter(f => IMAGE.test(f.ext));
+	const images = [...c.sections.flatMap(s => s.files), ...c.chapters.flatMap(x => x.files), ...c.looseFiles].filter(f => IMAGE.test(f.ext));
 	new NewNoteModal(plugin.app, {
 		where: ch ? ch.name : name,
 		kinds: ch ? IN_CHAPTER : IN_FOLDER,
 		kind,
 		images,
 		suggest: (k) => (k === 'session' ? plugin.campaigns.nextSessionName(c) : ''),
+		// From a chapter or the top of the campaign, NPCs, locations and the like are filed in their own folder.
+		elsewhere: (k) => {
+			const to = homeFolderFor(c, k, folder);
+			return to === folder ? '' : to.replace(/^.*\//, '');
+		},
 		onSubmit: (k, n, extra) => {
-			expand(opts, folder);
-			void openNew(plugin, plugin.campaigns.createStarter(folder, k, n, extra));
+			const to = homeFolderFor(c, k, folder);
+			expand(opts, to);
+			void openNew(plugin, plugin.campaigns.createStarter(to, k, n, extra));
 		},
 		onAddFiles: () => addFiles(plugin, folder, opts),
 	}).open();

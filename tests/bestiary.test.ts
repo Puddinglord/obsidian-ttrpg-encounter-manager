@@ -48,8 +48,8 @@ describe('nimble-encounter blocks', () => {
 		['- 3x Goblin Minion', { name: 'Goblin Minion', count: 3 }],
 		['- 4 × Kobold', { name: 'Kobold', count: 4 }],
 		['- Ogre x2', { name: 'Ogre', count: 2 }],
-		['- [[Klarg|the boss]]', { name: 'Klarg', count: 1 }],
-		['- `nimble:Krogg, Goblin King`', { name: 'Krogg, Goblin King', count: 1 }],
+		['- [[Klarg|the boss]]', { name: 'Klarg', count: 1, written: '[[Klarg|the boss]]' }],
+		['- `nimble:Krogg, Goblin King`', { name: 'Krogg, Goblin King', count: 1, written: '`nimble:Krogg, Goblin King`' }],
 	])('%s', (line, out) => expect(parseMonsterLine(line)).toEqual(out));
 
 	it('parses and writes a block', () => {

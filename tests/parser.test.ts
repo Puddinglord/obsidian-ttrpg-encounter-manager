@@ -147,3 +147,73 @@ vulnerabilities:
 		expect(again).toEqual(original);
 	});
 });
+
+describe('forgiving input', () => {
+	it('parses the example in docs/bestiary.md as written, comments and all', async () => {
+		const { readFileSync } = await import('node:fs');
+		const doc = readFileSync('docs/bestiary.md', 'utf8');
+		const src = /```nimble\n([\s\S]*?)\n```/.exec(doc)![1];
+		expect(src).toContain('# e.g. 8, fly 10'); // the example still has its comments
+		const m = parseStatblock(src)!;
+		expect(m.name).toBe('Krogg, Goblin King');
+		expect(m.movement).toBe('6');
+		expect(m.armor).toBe('none');
+		expect(m.hpPerHero).toBe(28);
+		expect(m.role).toBe('legendary');
+		expect(m.roleLabel).toBe('Solo');
+		expect(m.attacks).toHaveLength(2);
+	});
+
+	it('drops a trailing comment from short values only', () => {
+		const m = parseStatblock(`name: Wolf # 3
+armor: heavy   # none, medium (M) or heavy (H)
+role: regular  # regular, minion, legendary or solo
+hp: 20 # flat
+movement: 8, fly 10 # fast
+type: Beast #pack
+saves: STR+ # strong
+description: Pick door # 2 or [[Lair#Den]].
+bloodied: At 10 HP # it howls.`)!;
+		expect(m.name).toBe('Wolf # 3');
+		expect(m.armor).toBe('heavy');
+		expect(m.role).toBe('regular');
+		expect(m.hp).toBe(20);
+		expect(m.movement).toBe('8, fly 10');
+		expect(m.type).toBe('Beast #pack');
+		expect(m.saves).toBe('STR+');
+		expect(m.description).toBe('Pick door # 2 or [[Lair#Den]].');
+		expect(m.bloodied).toBe('At 10 HP # it howls.');
+	});
+
+	it('keeps a "#" that is part of the value', () => {
+		const m = parseStatblock('name: Imp\ngroup: [[Fiends#Lesser]]\nhabitat: #swamp\nattacks:\n- Sting 1d4 # not a comment')!;
+		expect(m.group).toBe('[[Fiends#Lesser]]');
+		expect(m.habitat).toBe('#swamp');
+		expect(m.attacks?.[0].raw).toBe('Sting 1d4 # not a comment');
+	});
+
+	it('accepts * and + bullets', () => {
+		const m = parseStatblock(`name: Goblin
+attacks:
+* Shortsword 1d6
++ **Shortbow.** 1d6
+abilities:
+* Nimble Escape: Can hide
+- **Sneaky.** Hard to spot`)!;
+		expect(m.attacks?.map(a => a.raw)).toEqual(['Shortsword 1d6', '**Shortbow.** 1d6']);
+		expect(m.abilities).toEqual([{ name: 'Nimble Escape', description: 'Can hide' }, { name: 'Sneaky', description: 'Hard to spot' }]);
+	});
+
+	it('accepts defence lists on one line', () => {
+		const m = parseStatblock('name: Elemental\nresistances: fire, cold\nimmunities: poison\nvulnerabilities: thunder; radiant  # ouch\nhp: 30')!;
+		expect(m.resistances).toEqual(['fire', 'cold']);
+		expect(m.immunities).toEqual(['poison']);
+		expect(m.vulnerabilities).toEqual(['thunder', 'radiant']);
+		expect(m.hp).toBe(30);
+	});
+
+	it('still reads defence lists as bullets', () => {
+		const m = parseStatblock('name: Elemental\nresistances:\n- fire\n* cold')!;
+		expect(m.resistances).toEqual(['fire', 'cold']);
+	});
+});

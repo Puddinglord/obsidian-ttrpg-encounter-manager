@@ -4,9 +4,9 @@
 // before you apply it. Typing works too, with the same shorthand as always:
 // 12, 12!, +5, =20, t5, 12v, 12r, then Enter.
 
-import { DamageMod, HpCommand, monsterDamage, monsterRole } from './rules';
+import { DamageMod, HpCommand, monsterRole } from './rules';
 import { EncounterCreature } from './types';
-import { isHero, isMinionGroup } from './encounters';
+import { isHero, isMinionGroup, monsterHit } from './encounters';
 import { closePopover, openPopover } from './popover';
 import { setIcon } from 'obsidian';
 import { slideThumb } from './segmented';
@@ -191,7 +191,7 @@ export function openHpCalculator(
 	}, { cls: 'nimble-hp-pop', placement: 'side', sideOf: anchor.closest<HTMLElement>('.nimble-encounter-tracker'), width: matchMedia('(pointer: coarse)').matches ? 300 : 264 });
 }
 
-function previewText(c: EncounterCreature, mode: Mode, v: number, crit: boolean, mod: DamageMod | undefined, autoArmor: boolean): string {
+export function previewText(c: EncounterCreature, mode: Mode, v: number, crit: boolean, mod: DamageMod | undefined, autoArmor: boolean): string {
 	if (isMinionGroup(c)) {
 		const alive = c.alive ?? 0;
 		if (mode === 'damage') return `Drops at least 1 of ${alive}`;
@@ -207,9 +207,10 @@ function previewText(c: EncounterCreature, mode: Mode, v: number, crit: boolean,
 		const left = Math.max(0, c.currentHp + (c.tempHp ?? 0) - v);
 		return left <= 0 ? `Drops ${c.label} to 0: Dying, +1 Wound` : `→ ${Math.min(left, c.currentHp)}/${c.maxHp}`;
 	}
-	const r = monsterDamage(c.monster.armor, v, crit, { autoArmor, mod });
-	let text = `${r.breakdown} → ${Math.max(0, c.currentHp - r.applied)}/${c.maxHp}`;
-	if (monsterRole(c.monster) === 'legendary' && c.currentHp - r.applied <= c.maxHp / 2 && c.currentHp > c.maxHp / 2) text += ' · Bloodied';
+	// The store's own maths (armor, then temp HP), so the preview is what Apply does.
+	const r = monsterHit(c, v, crit, { autoArmor, mod });
+	let text = `${r.breakdown}${r.absorbed ? ` − ${r.absorbed} temp` : ''} → ${r.hp}/${c.maxHp}`;
+	if (monsterRole(c.monster) === 'legendary' && r.hp <= c.maxHp / 2 && c.currentHp > c.maxHp / 2) text += ' · Bloodied';
 	return text;
 }
 

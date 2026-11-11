@@ -76,7 +76,9 @@ export function refreshInlineRefs(plugin: NimbleStatblocksPlugin, root?: ParentN
 	const roots = new Set<ParentNode>(root ? [root] : [activeDocument]);
 	if (!root) plugin.app.workspace.iterateAllLeaves((leaf) => { roots.add(leaf.view.containerEl.doc); });
 	roots.forEach(r => r.querySelectorAll<HTMLElement>('.nimble-inline-ref[data-nimble-ref]').forEach((el) => {
-		if (el.closest('.cm-content')) return; // Live Preview widgets refresh themselves
+		// Live Preview's own widgets refresh themselves. Chips the post-processor drew
+		// inside a box, callout or embed in Live Preview don't, so those are redrawn here.
+		if (el.dataset.nimbleCm) return;
 		if (plugin.hover.isAnchoredIn(el)) plugin.hover.hide();
 		const fresh = createInlineRef(plugin, el.dataset.nimbleRef || '', el.dataset.sourcePath || '');
 		el.replaceWith(fresh);

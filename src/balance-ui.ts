@@ -3,7 +3,7 @@
 
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterDef } from './encounter-def';
-import { BALANCE_TARGETS, BalanceGroup, BalanceTarget, balanceEncounter, describeChange, monsterRole, rateEncounter } from './rules';
+import { BALANCE_TARGETS, BalanceGroup, BalanceTarget, balanceEncounter, describeChange, monsterRole, rateEncounter, shiftMonster } from './rules';
 import { partyLevels } from './encounter-block';
 
 const TARGETS = Object.keys(BALANCE_TARGETS) as BalanceTarget[];
@@ -20,7 +20,8 @@ function familyMinions(plugin: NimbleStatblocksPlugin, groups: BalanceGroup[]): 
 
 export function renderBalance(el: HTMLElement, plugin: NimbleStatblocksPlugin, def: EncounterDef, apply: (next: EncounterDef) => void, opts: { initial?: BalanceTarget; onTarget?: (t: BalanceTarget) => void; hideTitle?: boolean } = {}): void {
 	const groups: BalanceGroup[] = def.monsters
-		.map(m => ({ name: m.name, monster: plugin.index.get(m.name)?.monster, count: m.count }))
+		// As they'll be run: a tougher or weaker monster counts as its shifted level.
+		.map(m => { const e = plugin.index.get(m.name); return { name: m.name, monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })
 		.filter((g): g is BalanceGroup => !!g.monster);
 	const levels = partyLevels(plugin);
 	const current = rateEncounter(groups, levels);

@@ -11,7 +11,7 @@ Type `/` at the start of a line or after a space:
 | `/builder` | Opens the encounter builder |
 | `/legendary`, `/minion`, `/new-monster` | Stat block templates |
 | `/condition dazed` | The condition's rules as a callout |
-| `/read-aloud`, `/look`, `/treasure`, `/trap`, `/clue`… | Styled boxes (see Boxes below) |
+| `/read-aloud`, `/look`, `/treasure`, `/trap`, `/clue`… | Styled boxes (see [Boxes](boxes.md)) |
 | `/npc tobren` | Link an NPC, or create a new one |
 | `/npc-card` | An NPC card with a portrait slot |
 | `/map hideout` | A GM map block for an image in your vault |
