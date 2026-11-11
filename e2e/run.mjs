@@ -686,6 +686,15 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	const resume = o.page.locator(`${R} .encounter-resume`);
 	await o.waitFor(async () => (await resume.count()) === 1, { what: 'Resume on the encounter block' });
 	await resume.click();
+	// There's a fight with damage in the tracker, so it asks before replacing it; Cancel leaves it alone.
+	const replace = o.page.locator('.modal-container .modal', { hasText: 'Replace "Current Encounter"?' });
+	await replace.waitFor();
+	await replace.locator('button', { hasText: exact('Cancel') }).click();
+	await o.page.waitForTimeout(200);
+	assert.equal((await creatures(o)).find(c => c.label === 'Aria').hp, 2, 'cancelled: the fight in the tracker is untouched');
+	await resume.click();
+	await replace.waitFor();
+	await replace.locator('button', { hasText: exact('Replace') }).click();
 	await o.page.waitForTimeout(300);
 	assert.equal((await creatures(o)).find(c => c.label === 'Aria').hp, 7, 'restored from the save');
 	await o.openFile('Fights/Saved fight test - Current Encounter.md', 'preview');
@@ -1376,6 +1385,123 @@ test('settings tab: party editor, toggles and attribution', async (o) => {
 	}
 });
 
+test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice and adds to the encounter', async (o) => {
+	await resetEncounter(o);
+	await o.eval(async (app) => {
+		for (const f of ['Spot NPC.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+		await app.vault.create('Spot NPC.md', '---\nnimble: npc\nrole: Ferryman\naliases: [Old Tob]\n---\nHe ferries smugglers.\n');
+		app.workspace.getLeavesOfType('markdown').forEach(l => l.view?.editor?.blur?.());
+	});
+	await o.openFile('Adventure.md', 'source');
+	await o.waitFor(() => o.eval((app, plugin) => plugin.campaigns.npcs.some(n => n.name === 'Spot NPC')), { what: 'the NPC to be indexed' });
+	const S = '.modal-container .prompt.nimble-spotlight';
+	const input = o.page.locator(`${S} .prompt-input`);
+	const rows = o.page.locator(`${S} .suggestion-item`);
+	const names = () => o.page.locator(`${S} .nimble-spot-name`).allInnerTexts();
+	// Cmd/Ctrl+K reaches Obsidian as its "Insert Markdown link" command: through the Insert menu on macOS, through
+	// the hotkey everywhere else. Run that command the way the menu and the hotkey do (synthetic ⌘K is hit-and-miss
+	// in a test window because the macOS menu bar gets first refusal).
+	const pressK = () => o.eval((app) => { app.commands.executeCommandById('editor:insert-link'); });
+	const openIt = async () => { await pressK(); await input.waitFor(); };
+
+	// Until it's turned on, the key is Obsidian's alone.
+	const line0 = await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 0, ch: 0 }); ed.focus(); return ed.getLine(0); });
+	await pressK();
+	assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), `[]()${line0}`, 'off: an empty link, as Obsidian does');
+	assert.equal(await o.page.locator(S).count(), 0);
+	await o.eval((app, plugin, line0) => { app.workspace.activeEditor.editor.setLine(0, line0); plugin.settings.spotlightKey = true; }, line0);
+
+	// Opens from the editor, with pointers and the commands that make sense right now.
+	await o.eval((app) => { const ed = app.workspace.activeEditor?.editor; ed?.setCursor({ line: 0, ch: 0 }); ed?.focus(); });
+	await openIt();
+	const home = await names();
+	assert.ok(home.includes('Roll dice') && home.includes('Search adversaries'), `home: ${home}`);
+	assert.ok(home.includes('Add monster to encounter…'), `home commands: ${home}`);
+	assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getValue().includes('[]()')), false, 'no Markdown link was inserted');
+	// The same key closes it.
+	await pressK();
+	await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: 'Spotlight to close' });
+
+	// Adversaries: Enter is a quick look.
+	await openIt();
+	await input.fill('goblin');
+	await o.waitFor(async () => (await names())[0] === 'Goblin', { what: 'Goblin first' });
+	assert.match(await rows.first().innerText(), /Adversary/i);
+	await o.page.screenshot({ path: join(ARTIFACTS, 'spotlight-search.png') });
+	await o.page.keyboard.press('Enter');
+	await o.page.locator('.modal.nimble-record-modal').waitFor();
+	await o.page.keyboard.press('Escape');
+
+	// "3 goblin" adds three; Cmd+Enter on a plain search adds one and keeps the box open.
+	await openIt();
+	await input.fill('3 goblin');
+	await o.waitFor(async () => (await names())[0] === 'Add 3 × Goblin', { what: 'the add row' });
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => (await creatures(o)).filter(c => /^Goblin(-\d+)?$/.test(c.label)).length === 3, { what: 'three goblins in the tracker' });
+	await openIt();
+	await input.fill('goblin boss');
+	await o.waitFor(async () => (await names())[0] === 'Goblin Boss', { what: 'Goblin Boss first' });
+	await o.page.keyboard.press('Meta+Enter');
+	await o.waitFor(async () => (await creatures(o)).some(c => /^Goblin Boss/.test(c.label)), { what: 'the boss in the tracker' });
+	assert.equal(await o.page.locator(S).count(), 1, 'still open for the next one');
+	assert.equal(await input.inputValue(), '');
+
+	// Dice: typed, and from the quick row.
+	const before = await o.eval((app, plugin) => plugin.settings.rollLog.length);
+	await input.fill('2d6+3');
+	await o.waitFor(async () => (await names())[0] === 'Roll 2d6+3', { what: 'the roll row' });
+	await o.page.keyboard.press('Meta+Enter');
+	await o.waitFor(async () => /2d6\+3 → \d+/.test(await o.page.locator(`${S} .nimble-spotlight-result`).innerText().catch(() => '')), { what: 'the result in the box' });
+	await o.page.locator(`${S} .nimble-spotlight-die`, { hasText: exact('d20') }).click();
+	await o.waitFor(async () => /1d20 → \d+/.test(await o.page.locator(`${S} .nimble-spotlight-result`).innerText()), { what: 'the d20 result' });
+	await input.fill('d8');
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: 'Enter to roll and close' });
+	const log = await o.eval((app, plugin) => plugin.settings.rollLog.map(r => r.expression));
+	assert.equal(log.length, before + 3);
+	for (const e of ['2d6+3', '1d20', '1d8']) assert.ok(log.includes(e), `${e} is in the roll log: ${log}`);
+
+	// NPCs by name or alias; commands after ">".
+	await openIt();
+	await input.fill('old tob');
+	await o.waitFor(async () => (await names())[0] === 'Spot NPC', { what: 'the NPC by alias' });
+	await o.page.keyboard.press('Enter');
+	await o.page.locator('.modal.nimble-record-modal').waitFor();
+	await o.page.keyboard.press('Escape');
+	await openIt();
+	await input.fill('> bestiary');
+	await o.waitFor(async () => (await names())[0] === 'Open bestiary', { what: 'the command' });
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(() => o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').length > 0 || [...document.querySelectorAll('.workspace-leaf-content')].some(e => /bestiary/i.test(e.dataset.type || ''))), { what: 'the bestiary to open' });
+
+	// With text selected, the key still makes a link.
+	await o.openFile('Adventure.md', 'source');
+	await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.focus(); ed.setSelection({ line: 0, ch: 2 }, { line: 0, ch: 5 }); });
+	await pressK();
+	await o.page.waitForTimeout(300);
+	assert.equal(await o.page.locator(S).count(), 0, 'a selection keeps the link shortcut');
+	assert.match(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), /\[The\]\(/, 'and makes the link');
+	await o.eval((app, _p, line0) => { const ed = app.workspace.activeEditor.editor; ed.setLine(0, line0); ed.setCursor({ line: 0, ch: 0 }); }, line0);
+	// On macOS the key arrives through the menu bar's Insert → Markdown Link; that opens Spotlight too.
+	const viaMenu = await o.page.evaluate(() => {
+		try {
+			const remote = window.require('@electron/remote');
+			const item = remote.Menu.getApplicationMenu()?.items.find(i => /Insert/.test(i.label))?.submenu.items.find(i => /Markdown Link/i.test(i.label));
+			if (!item) return false;
+			item.click({}, remote.getCurrentWindow(), remote.getCurrentWebContents());
+			return true;
+		} catch { return false; }
+	});
+	if (viaMenu) await input.waitFor(); else await openIt();
+	await o.page.screenshot({ path: join(ARTIFACTS, 'spotlight.png') });
+	await o.page.keyboard.press('Escape');
+	// Spotlight's own command works whatever the setting, and outside an editor.
+	await o.eval((app, plugin) => { plugin.settings.spotlightKey = false; app.commands.executeCommandById('nimble-gm:spotlight'); });
+	await input.waitFor();
+	await o.page.keyboard.press('Escape');
+	await o.eval(async (app) => { const x = app.vault.getAbstractFileByPath('Spot NPC.md'); if (x) await app.vault.delete(x); });
+});
+
 test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', async (o) => {
 	const p = o.page;
 	await resetEncounter(o, { party: PARTY });
@@ -1542,6 +1668,48 @@ test('NPC card: empty portrait slot, choose an image, secret blur, lightbox, pan
 	const avatar = o.page.locator('.campaign-note[data-path="Campaigns/Card/NPCs/Marta Hale.md"] .campaign-note-avatar img');
 	await o.waitFor(async () => (await avatar.count()) === 1, { what: 'the panel avatar' });
 
+	// Narrow places keep the card readable: Obsidian's page preview (Cmd/Ctrl + hover) is about 370px wide inside.
+	await o.eval(async (app) => {
+		const x = app.vault.getAbstractFileByPath('Campaigns/Card/Hello.md');
+		if (x) await app.vault.delete(x);
+		await app.vault.create('Campaigns/Card/Hello.md', 'Ask [[Marta Hale]] about the mill.\n\n![[Marta Hale]]\n');
+	});
+	await o.openFile('Campaigns/Card/Hello.md', 'preview');
+	const npcLink = o.page.locator(`${R} a.internal-link`, { hasText: 'Marta Hale' }).first();
+	await npcLink.waitFor();
+	const popCard = o.page.locator('.popover.hover-popover .nimble-npc-card');
+	await o.waitFor(async () => {
+		if (await popCard.count()) return true;
+		await o.page.mouse.move(5, 5);
+		await o.page.keyboard.down('Meta');
+		await npcLink.hover();
+		await o.page.waitForTimeout(900);
+		await o.page.keyboard.up('Meta');
+		return (await popCard.count()) > 0;
+	}, { what: 'the page preview of the NPC note', interval: 100 });
+	const readable = (loc) => loc.evaluate((card) => {
+		const box = (sel) => card.querySelector(sel).getBoundingClientRect();
+		const c = card.getBoundingClientRect();
+		return {
+			card: Math.round(c.width), portrait: Math.round(box('.nimble-npc-portrait').width),
+			name: Math.round(box('.nimble-npc-name').width), nameLines: Math.round(box('.nimble-npc-name').height / parseFloat(getComputedStyle(card.querySelector('.nimble-npc-name')).lineHeight)),
+			value: Math.round(box('.nimble-npc-value').width), inside: box('.nimble-npc-value').right <= c.right + 1,
+		};
+	});
+	const inPop = await readable(popCard);
+	await o.page.screenshot({ path: join(ARTIFACTS, 'npc-card-hover-preview.png') });
+	assert.ok(inPop.card < 420, `the preview is a narrow place: ${JSON.stringify(inPop)}`);
+	assert.ok(inPop.portrait < inPop.card / 2, `the portrait leaves room for the text: ${JSON.stringify(inPop)}`);
+	assert.ok(inPop.value > inPop.card / 2 && inPop.inside, `rows have room to read: ${JSON.stringify(inPop)}`);
+	assert.equal(inPop.nameLines, 1, `the name sits on one line: ${JSON.stringify(inPop)}`);
+	await o.page.mouse.move(5, 5);
+	await o.page.keyboard.press('Escape');
+	// The same card embedded in another note (![[Marta Hale]]) at full width keeps the wide layout.
+	const embedded = o.page.locator(`${R} .markdown-embed .nimble-npc-card`);
+	await o.waitFor(async () => (await embedded.count()) === 1, { what: 'the embedded card' });
+	const wide = await readable(embedded);
+	assert.ok(wide.card > 420 && wide.value > 150, `embedded card is readable: ${JSON.stringify(wide)}`);
+
 	// Live Preview renders the card too.
 	await o.openFile('Campaigns/Card/NPCs/Marta Hale.md', 'source');
 	await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: ed.lastLine(), ch: 0 }); });
@@ -1575,7 +1743,8 @@ async function freshCampaign(o, name) {
 		await plugin.campaigns.createCampaign({ name, level: 1, heroes: 4, starter: true, firstChapter: 'Chapter 1' });
 		await plugin.openCampaignView();
 	}, name);
-	await o.waitFor(async () => (await panelSections(o)).length >= 5, { what: 'the starter folders in the panel' });
+	// The first chapter shows as a chapter once its note's properties are indexed (a beat after the folder appears).
+	await o.waitFor(async () => (await panelSections(o)).length >= 5 && (await cgroup(o, `Campaigns/${name}/Chapter 1`).locator('.campaign-chapter-head').count()) === 1, { what: 'the starter folders and first chapter in the panel' });
 }
 
 async function endCampaign(o, name) {
@@ -1733,6 +1902,40 @@ test('New note picker: each starter writes its template where it was opened', as
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Chapter 1/The Bridge.md'), { what: 'the scene' });
 	assert.match(await read(o, 'Campaigns/Fresh/Chapter 1/The Bridge.md'), /nimble: scene\norder: 2/);
 	await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-group[data-folder="Campaigns/Fresh/Chapter 1"] .campaign-note-title`).allInnerTexts()).join() === 'Opening Scene,The Bridge', { what: 'the scene in the chapter' });
+
+	// An NPC asked for from a chapter is filed with the campaign's NPCs, and the dialog says so first.
+	const dest = o.page.locator('.nimble-new-note .nimble-starter-dest');
+	await openPicker(o, 'Campaigns/Fresh/Chapter 1');
+	assert.equal(await dest.isVisible(), false, 'a scene stays in the chapter: nothing to say');
+	await o.page.locator('.nimble-new-note .nimble-starter[data-kind="npc"]').click();
+	assert.match(await dest.innerText(), /campaign's NPCs folder/);
+	await o.page.locator('.nimble-new-note .nimble-starter[data-kind="map"]').click();
+	assert.equal(await dest.isVisible(), false, 'a chapter keeps its own maps');
+	await createFromPicker(o, 'Old Mother Silt', 'npc');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/NPCs/Old Mother Silt.md'), { what: 'the NPC in the NPCs folder' });
+	assert.equal(await exists(o, 'Campaigns/Fresh/Chapter 1/Old Mother Silt.md'), false, 'not left among the chapter\'s scenes');
+	await crow(o, 'Campaigns/Fresh/NPCs/Old Mother Silt.md').waitFor();
+	assert.equal(await cgroup(o, 'Campaigns/Fresh/Chapter 1').locator('.campaign-count').innerText(), '2', 'the chapter still has two scenes');
+	// A kind with no folder yet gets one (the starter campaign has no Handouts folder).
+	await openPicker(o, 'Campaigns/Fresh/Chapter 1');
+	await createFromPicker(o, 'Torn Ledger Page', 'handout');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Handouts/Torn Ledger Page.md'), { what: 'the handout in a new Handouts folder' });
+	await crow(o, 'Campaigns/Fresh/Handouts/Torn Ledger Page.md').waitFor();
+	// The same from the top of the campaign: New note… → Location lands in Locations, not loose.
+	await o.page.locator(`${CP} .campaign-heading-folders button[aria-label="New note or folder"]`).click();
+	await clickMenu(o, 'New note…');
+	await o.page.locator('.nimble-new-note').waitFor();
+	await createFromPicker(o, 'The Docks', 'location');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Locations/The Docks.md'), { what: 'the location in Locations' });
+	// A renamed folder is used instead of making a second one.
+	await o.eval(async (app) => { await app.fileManager.renameFile(app.vault.getAbstractFileByPath('Campaigns/Fresh/NPCs'), 'Campaigns/Fresh/Characters'); });
+	await cgroup(o, 'Campaigns/Fresh/Characters').waitFor();
+	await openPicker(o, 'Campaigns/Fresh/Chapter 1');
+	await o.page.locator('.nimble-new-note .nimble-starter[data-kind="npc"]').click();
+	assert.match(await dest.innerText(), /campaign's Characters folder/);
+	await createFromPicker(o, 'Wick');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Characters/Wick.md'), { what: 'the NPC in the renamed folder' });
+	assert.equal(await exists(o, 'Campaigns/Fresh/NPCs'), false, 'no second NPCs folder');
 	await endCampaign(o, 'Fresh');
 });
 
@@ -1751,7 +1954,7 @@ test('campaign panel: Assets lists its files and + adds files from this device',
 		{ name: 'cave.png', mimeType: 'image/png', buffer: Buffer.from(PNG, 'base64') },
 	]);
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Assets/Letter.pdf'), { what: 'the imported PDF' });
-	assert.ok(await exists(o, 'Campaigns/Fresh/Assets/cave 2.png'), 'a name clash gets a number, nothing is overwritten');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Assets/cave 2.png'), { what: 'the clashing name to get a number (nothing is overwritten)' });
 	await crow(o, 'Campaigns/Fresh/Assets/Letter.pdf').waitFor();
 	assert.equal(await cgroup(o, 'Campaigns/Fresh/Assets').locator('.campaign-count').innerText(), '3');
 
@@ -1865,10 +2068,11 @@ test('campaign panel: drag notes between folders and chapters, and in from the f
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Locations/Mara.md'), { what: 'the drag into Locations' });
 	await crow(o, 'Campaigns/Fresh/Locations/Mara.md').waitFor();
 
-	// Folder to chapter: joins the end of the scenes.
+	// Folder to chapter: it's kept with the chapter. A location isn't a scene, so it isn't numbered as one.
 	await crow(o, 'Campaigns/Fresh/Locations/Docks.md').dragTo(cgroup(o, 'Campaigns/Fresh/Chapter 1').locator('.campaign-group-head'));
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Chapter 1/Docks.md'), { what: 'the drag into the chapter' });
-	await o.waitFor(async () => /order: 2/.test(await read(o, 'Campaigns/Fresh/Chapter 1/Docks.md')), { what: 'the scene order' });
+	await crow(o, 'Campaigns/Fresh/Chapter 1/Docks.md').waitFor();
+	assert.doesNotMatch(await read(o, 'Campaigns/Fresh/Chapter 1/Docks.md'), /order:/);
 
 	// Chapter back out to the top of the campaign.
 	await crow(o, 'Campaigns/Fresh/Chapter 1/Docks.md').dragTo(o.page.locator(`${CP} .campaign-heading-folders`));
@@ -1901,6 +2105,73 @@ test('campaign panel: drag notes between folders and chapters, and in from the f
 	await endCampaign(o, 'Fresh');
 });
 
+test('campaign panel: chapter files and maps are listed, real titles are kept, moves only number scenes', async (o) => {
+	await freshCampaign(o, 'Fresh');
+	const CH = 'Campaigns/Fresh/Chapter 1';
+
+	// A file added to a chapter is listed in it, and offered as the image for a new map.
+	const chooser = o.page.waitForEvent('filechooser');
+	await cgroup(o, CH).locator('.campaign-group-head').click({ button: 'right' });
+	await clickMenu(o, 'Add files…');
+	await (await chooser).setFiles([{ name: 'cave.png', mimeType: 'image/png', buffer: Buffer.from(PNG, 'base64') }]);
+	await crow(o, `${CH}/cave.png`).waitFor();
+	await openPicker(o, CH);
+	await o.page.locator('.nimble-new-note .nimble-starter[data-kind="map"]').click();
+	await o.page.locator('.nimble-new-note .nimble-starter-map select').selectOption(`${CH}/cave.png`);
+	await createFromPicker(o, 'Cave Map');
+	// The map has a row of its own (rename, move, delete), not just the button on the chapter.
+	await crow(o, `${CH}/Cave Map.md`).waitFor();
+	await crow(o, `${CH}/Cave Map.md`).click({ button: 'right' });
+	assert.ok((await menuTitles(o)).includes('Rename…'), 'a chapter map has the note menu');
+	await o.page.keyboard.press('Escape');
+	// A file dropped at the top of the campaign stays visible.
+	await o.eval(async (app, plugin, ch) => { await plugin.campaigns.move([`${ch}/cave.png`], 'Campaigns/Fresh'); }, CH);
+	await o.page.locator(`${CP} .campaign-loose .campaign-note[data-path="Campaigns/Fresh/cave.png"]`).waitFor();
+
+	// A name the file system can't hold keeps its real spelling in the panel.
+	await openPicker(o, CH);
+	await createFromPicker(o, 'Who goes there?');
+	await o.waitFor(() => exists(o, `${CH}/Who goes there-.md`), { what: 'the scene file' });
+	assert.match(await read(o, `${CH}/Who goes there-.md`), /title: "Who goes there\?"/);
+	await o.waitFor(async () => (await crow(o, `${CH}/Who goes there-.md`).locator('.campaign-note-title').innerText().catch(() => '')) === 'Who goes there?', { what: 'the typed name in the panel' });
+
+	// A second note whose name differs only by case gets a number instead of failing quietly.
+	await openPicker(o, 'Campaigns/Fresh/NPCs');
+	await createFromPicker(o, 'Mara');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/NPCs/Mara.md'), { what: 'Mara' });
+	await openPicker(o, 'Campaigns/Fresh/NPCs');
+	await createFromPicker(o, 'mara');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/NPCs/mara 2.md'), { what: 'the second mara' });
+
+	// An NPC moved into a chapter is kept there but isn't numbered as a scene…
+	await o.eval(async (app, plugin, ch) => { await plugin.campaigns.move(['Campaigns/Fresh/NPCs/Mara.md'], ch); }, CH);
+	await o.waitFor(() => exists(o, `${CH}/Mara.md`), { what: 'the NPC in the chapter' });
+	await o.page.waitForTimeout(400);
+	assert.doesNotMatch(await read(o, `${CH}/Mara.md`), /order:/);
+	// …and a scene moved out to a folder loses its place in the chapter.
+	assert.match(await read(o, `${CH}/Opening Scene.md`), /order: 1/);
+	await o.eval(async (app, plugin, ch) => { await plugin.campaigns.move([`${ch}/Opening Scene.md`], 'Campaigns/Fresh/Locations'); }, CH);
+	await o.waitFor(async () => (await exists(o, 'Campaigns/Fresh/Locations/Opening Scene.md')) && !/order:/.test(await read(o, 'Campaigns/Fresh/Locations/Opening Scene.md')), { what: 'the order to be dropped' });
+
+	// Chapters kept one folder down (Chapters/Act 2) are chapters of their own, and deleting one leaves the rest.
+	await o.eval(async (app) => {
+		for (const d of ['Campaigns/Fresh/Chapters', 'Campaigns/Fresh/Chapters/Act 2', 'Campaigns/Fresh/Chapters/Act 3']) await app.vault.createFolder(d);
+		await app.vault.create('Campaigns/Fresh/Chapters/Act 2/Act 2.md', '---\nnimble: chapter\norder: 2\n---\n');
+		await app.vault.create('Campaigns/Fresh/Chapters/Act 2/Gate.md', '---\nnimble: scene\n---\n');
+		await app.vault.create('Campaigns/Fresh/Chapters/Act 3/Act 3.md', '---\nnimble: chapter\norder: 3\n---\n');
+		await app.vault.create('Campaigns/Fresh/Chapters/Act 3/Keep.md', '---\nnimble: scene\n---\n');
+	});
+	await cgroup(o, 'Campaigns/Fresh/Chapters/Act 3').waitFor();
+	assert.deepEqual(await o.page.locator(`${CP} .campaign-chapter-name`).allInnerTexts(), ['Chapter 1', 'Act 2', 'Act 3']);
+	assert.equal(await cgroup(o, 'Campaigns/Fresh/Chapters/Act 2').locator('.campaign-note-title').allInnerTexts().then(a => a.join()), 'Gate');
+	await cgroup(o, 'Campaigns/Fresh/Chapters/Act 2').locator('.campaign-group-head').click({ button: 'right' });
+	await clickMenu(o, 'Delete chapter');
+	await o.page.locator('.modal-container button', { hasText: exact('Delete') }).click();
+	await o.waitFor(async () => !(await exists(o, 'Campaigns/Fresh/Chapters/Act 2')), { what: 'the chapter delete' });
+	assert.ok(await exists(o, 'Campaigns/Fresh/Chapters/Act 3/Keep.md'), 'the chapter beside it is untouched');
+	await endCampaign(o, 'Fresh');
+});
+
 test('campaign panel: long-press opens the same menus on touch', async (o) => {
 	await freshCampaign(o, 'Fresh');
 	await o.eval(async (app) => { await app.vault.create('Campaigns/Fresh/NPCs/Mara.md', '---\nnimble: npc\n---\n'); });
@@ -1924,6 +2195,108 @@ test('campaign panel: long-press opens the same menus on touch', async (o) => {
 	// The long-press didn't also collapse the folder or open the note.
 	assert.equal(await cgroup(o, 'Campaigns/Fresh/NPCs').getAttribute('class'), 'campaign-group');
 	await endCampaign(o, 'Fresh');
+});
+
+test('blocks inside callouts and lists: editing an encounter or a map rewrites only its own lines', async (o) => {
+	await resetEncounter(o);
+	const NOTE = 'Nested blocks.md';
+	const BODY = [
+		'Intro line.', '',
+		'> [!note] Ambush',
+		'> Before the fight.',
+		'> ```nimble-encounter',
+		'> name: Ambush',
+		'> monsters:',
+		'> - 2 Goblin',
+		'> ```',
+		'> After the fight.', '',
+		'- A list item',
+		'  ```nimble-encounter',
+		'  name: Listed',
+		'  monsters:',
+		'  - 1 Goblin',
+		'  ```',
+		'- Next item', '',
+		'> [!info] The cave',
+		'> Above the map.',
+		'> ```nimble-map',
+		'> image: [[nested-map.png]]',
+		'> pins:',
+		'> - 20, 20 | Gate',
+		'> ```',
+		'> Below the map.', '',
+		'```nimble-map',
+		'image: [[nested-map.png]]',
+		'pins:',
+		'```', '',
+		'Outro line.', '',
+	].join('\n');
+	await o.eval(async (app, _p, [note, body, png]) => {
+		for (const f of [note, 'nested-map.png', 'Nested embed.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+		await app.vault.createBinary('nested-map.png', Uint8Array.from(atob(png), c => c.charCodeAt(0)).buffer);
+		await app.vault.create(note, body);
+		await app.vault.create('Nested embed.md', `![[${note.replace('.md', '')}]]\n`);
+	}, [NOTE, BODY, PNG]);
+	await o.openFile(NOTE, 'preview');
+	const blocks = o.page.locator(`${R} .nimble-encounter-block`);
+	await o.waitFor(async () => (await blocks.count()) === 2 && (await o.page.locator(`${R} .nimble-map`).count()) === 2, { what: 'the nested blocks to render' });
+
+	// One more goblin, in the callout and then in the list item.
+	const bump = async (name) => {
+		const block = o.page.locator(`${R} .nimble-encounter-block`, { hasText: name });
+		await block.locator('.encounter-count').first().click();
+		await o.page.locator('.nimble-popover button[aria-label="One more"]').click();
+		await o.page.keyboard.press('Escape');
+		await o.page.waitForTimeout(500);
+	};
+	await bump('Ambush');
+	await o.waitFor(async () => (await read(o, NOTE)).includes('> - 3 Goblin'), { what: 'the callout encounter to save' });
+	await bump('Listed');
+	await o.waitFor(async () => (await read(o, NOTE)).includes('  - 2 Goblin'), { what: 'the list encounter to save' });
+	let text = await read(o, NOTE);
+	assert.equal(text, BODY.replace('> - 2 Goblin', '> - 3 Goblin').replace('  - 1 Goblin', '  - 2 Goblin'), 'only the two count lines changed');
+
+	// Add a pin to the map in the callout, then to the plain one.
+	const addPin = async (map, label) => {
+		await map.locator('button[aria-label="Add pin"]').click();
+		const view = map.locator('.nimble-map-viewport');
+		await view.evaluate(el => el.scrollIntoView({ block: 'center' }));
+		await o.page.waitForTimeout(200);
+		const box = await view.boundingBox();
+		await o.page.mouse.click(box.x + box.width * 0.6, box.y + box.height * 0.6);
+		await o.page.locator('.modal', { hasText: 'New pin' }).locator('input').first().fill(label);
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(500);
+	};
+	const maps = o.page.locator(`${R} .nimble-map`);
+	await o.waitFor(async () => (await maps.first().locator('button[aria-label="Add pin"]').count()) === 1, { what: 'the map toolbar' });
+	await addPin(maps.first(), 'Kennel');
+	await o.waitFor(async () => /\| Kennel/.test(await read(o, NOTE)), { what: 'the callout map to save' });
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map`).count()) === 2, { what: 'the maps to re-render' });
+	await addPin(o.page.locator(`${R} .nimble-map`).nth(1), 'Well');
+	await o.waitFor(async () => /\| Well/.test(await read(o, NOTE)), { what: 'the plain map to save' });
+	text = await read(o, NOTE);
+	const lines = text.split('\n');
+	for (const keep of ['Intro line.', '> [!note] Ambush', '> Before the fight.', '> After the fight.', '- A list item', '- Next item', '> [!info] The cave', '> Above the map.', '> Below the map.', 'Outro line.', '> - 20, 20 | Gate']) {
+		assert.ok(lines.includes(keep), `"${keep}" is still there:\n${text}`);
+	}
+	const kennel = lines.find(l => l.includes('| Kennel'));
+	const well = lines.find(l => l.includes('| Well'));
+	assert.match(kennel, /^> - /, 'the pin in the callout keeps its quote marker');
+	assert.match(well, /^- /, 'the pin in the plain map has none');
+	assert.equal(lines.filter(l => /^> ```/.test(l)).length, 4, 'the callout fences are intact');
+
+	// Embedded in another note: an edit either saves to the note the map lives in, or isn't offered. Never a pin that vanishes.
+	await o.openFile('Nested embed.md', 'preview');
+	const embedded = o.page.locator(`${R} .markdown-embed .nimble-map`);
+	await o.waitFor(async () => (await embedded.count()) === 2, { what: 'the embedded maps' });
+	await o.page.waitForTimeout(700);
+	if (await embedded.nth(1).locator('button[aria-label="Add pin"]').count()) {
+		await addPin(embedded.nth(1), 'Shrine');
+		await o.waitFor(async () => /^- .*\| Shrine/m.test(await read(o, NOTE)), { what: 'the pin added through the embed to save' });
+		assert.ok((await read(o, NOTE)).includes('> Below the map.'));
+	}
+	await o.eval(async (app) => { for (const f of ['Nested blocks.md', 'nested-map.png', 'Nested embed.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); } });
 });
 
 // ---------------------------------------------------------------------------
@@ -2299,6 +2672,48 @@ test('Dice import: a Dice So Nice export brings over your looks and saves', asyn
 	await diceReset(o);
 });
 
+test('settings: a change synced from another device is picked up, and a damaged file is set aside', async (o) => {
+	await resetEncounter(o, { party: PARTY });
+	const DIR = '.obsidian/plugins/nimble-gm';
+	const DATA = `${DIR}/data.json`;
+	const reload = async () => {
+		await o.eval(async (app) => { await app.plugins.disablePlugin('nimble-gm'); await app.plugins.enablePlugin('nimble-gm'); });
+		await o.waitFor(() => o.eval((app) => !!app.plugins.plugins['nimble-gm']?._loaded), { what: 'the plugin to load' });
+	};
+	// Another device changed the party; Sync delivered the file. Nothing here may write the old party back over it.
+	const good = await o.eval(async (app, plugin, data) => {
+		await plugin.saveSettings();
+		const good = await app.vault.adapter.read(data);
+		const j = JSON.parse(good);
+		j.party[0].name = 'Synced Hero';
+		await app.vault.adapter.write(data, JSON.stringify(j));
+		await plugin.onExternalSettingsChange();
+		return good;
+	}, DATA);
+	assert.equal(await o.eval((app, plugin) => plugin.settings.party[0].name), 'Synced Hero', 'the synced party is in use');
+	await o.eval(async (app, plugin) => { plugin.encounters.trigger('changed'); await plugin.saveSettings(); });
+	assert.equal(JSON.parse(await read(o, DATA)).party[0].name, 'Synced Hero', 'and the next save keeps it');
+
+	// A file a sync conflict left unreadable: the plugin still loads, and the bad file is kept beside it.
+	const errorsBefore = o.consoleErrors.length;
+	await o.eval(async (app, _p, data) => { await app.vault.adapter.write(data, '{broken'); }, DATA);
+	await reload();
+	assert.ok(await o.eval((app, plugin) => Array.isArray(plugin.settings.party) && Array.isArray(plugin.settings.encounters)), 'running on defaults');
+	const copies = await o.eval(async (app, _p, dir) => (await app.vault.adapter.list(dir)).files.filter(f => /data\.broken-/.test(f)), DIR);
+	assert.equal(copies.length, 1, 'one copy of the damaged file');
+	assert.equal(await read(o, copies[0]), '{broken');
+	// Oddly shaped but readable data loads without a fuss.
+	await o.eval(async (app, _p, data) => { await app.vault.adapter.write(data, JSON.stringify({ encounters: [null, { creatures: 'x' }], dice: { styles: [null] }, party: 'nope' })); }, DATA);
+	await reload();
+	assert.ok(await o.eval((app, plugin) => Array.isArray(plugin.settings.encounters) && plugin.settings.encounters.every(e => e && Array.isArray(e.creatures))), 'bad entries are dropped');
+
+	// Put the real settings back for the tests that follow.
+	await o.eval(async (app, _p, [data, good, copies]) => { for (const c of copies) await app.vault.adapter.remove(c); await app.vault.adapter.write(data, good); }, [DATA, good, copies]);
+	await reload();
+	await o.eval(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+	o.consoleErrors.length = errorsBefore; // the damaged file is reported to the console on purpose
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);
@@ -2306,7 +2721,11 @@ test('no console errors during the run', async (o) => {
 
 // ---------------------------------------------------------------------------
 
-const selected = tests.filter(t => !filter || t.name.includes(filter));
+// E2E_RANGE=10-20 runs tests 10..20 by position, plus any whose name contains the filter: for finding which earlier test upsets a later one.
+const range = process.env.E2E_RANGE?.split('-').map(Number);
+// A file-chooser wait left pending by a test that failed earlier must not take the whole run down with it.
+process.on('unhandledRejection', (e) => console.log(`      (ignored a late rejection: ${String(e?.message ?? e).split('\n')[0]})`));
+const selected = range ? tests.filter((t, i) => (i >= range[0] && i <= range[1]) || (filter && t.name.includes(filter))) : tests.filter(t => !filter || t.name.includes(filter));
 // 3D dice are off for the general run (notices would wait for them to land); one test turns them on.
 const o = await launchObsidian({ settings: { dice3d: false } });
 await o.page.setViewportSize?.({ width: 1400, height: 900 }).catch(() => {});

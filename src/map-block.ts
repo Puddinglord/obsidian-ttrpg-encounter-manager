@@ -4,7 +4,7 @@
 
 import { App, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { MapDef, mapBlockSource, MapPin, parseMapBlock, PIN_KINDS, PinKind } from './map-def';
+import { MapDef, mapBlockSource, MapPin, parseMapBlock, PIN_KINDS, PinKind, replaceMapBlock } from './map-def';
 import { EncounterCreature } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
 import { monsterRole } from './rules';
@@ -20,7 +20,7 @@ type Mode = 'view' | 'add' | 'move';
 
 export function registerMapBlock(plugin: NimbleStatblocksPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-map', (source, el, ctx) => {
-		ctx.addChild(new MapBlock(plugin, el, parseMapBlock(source), ctx));
+		ctx.addChild(new MapBlock(plugin, el, source, ctx));
 	});
 }
 
@@ -42,15 +42,29 @@ class MapBlock extends MarkdownRenderChild {
 	/** After a double-tap zoom, the synthesized click can land on a pin that moved under the finger. */
 	private quietUntil = 0;
 
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private def: MapDef, private ctx: MarkdownPostProcessorContext) {
+	private def: MapDef;
+	/** Add/Move controls were drawn (the block can be written back). */
+	private editable = false;
+
+	/** `source` is the block as it is in the note: what a save looks for, and what a failed save goes back to. */
+	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
+		this.def = parseMapBlock(source);
 	}
+
+	/** Embeds and hover previews don't get section info, so pins can't be saved from there. */
+	private canSave(): boolean { return !!this.ctx.getSectionInfo(this.containerEl); }
 
 	private get app(): App { return this.plugin.app; }
 	private get mapKey(): string { return `${this.ctx.sourcePath}::${this.def.image}`; }
 
 	onload(): void {
 		this.build();
+		// Section info can arrive just after the first render.
+		if (!this.editable) {
+			const t = window.setTimeout(() => { if (!this.editable && this.canSave()) this.build(); }, 400);
+			this.register(() => window.clearTimeout(t));
+		}
 		this.registerEvent(this.plugin.encounters.on('changed', () => { if (this.showTokens) this.renderTokens(); }));
 	}
 
@@ -76,8 +90,12 @@ class MapBlock extends MarkdownRenderChild {
 			b.createSpan({ text: label });
 			b.onclick = () => { this.mode = this.mode === mode ? 'view' : mode; this.build(); };
 		};
-		modeBtn('add', 'map-pin', 'Add pin');
-		modeBtn('move', 'move', 'Move pins');
+		this.editable = this.canSave();
+		if (!this.editable) this.mode = 'view';
+		if (this.editable) {
+			modeBtn('add', 'map-pin', 'Add pin');
+			modeBtn('move', 'move', 'Move pins');
+		}
 		const tokens = bar.createEl('button', { cls: `nimble-map-btn${this.showTokens ? ' is-active' : ''}`, attr: { 'aria-label': 'Show the current encounter as tokens', 'aria-pressed': String(this.showTokens) } });
 		setIcon(tokens.createSpan(), 'swords');
 		tokens.createSpan({ text: 'Encounter tokens' });
@@ -317,8 +335,10 @@ class MapBlock extends MarkdownRenderChild {
 				if (this.mode === 'move') return;
 				const menu = new Menu();
 				if (pin.link) menu.addItem(it => it.setTitle('Open note').setIcon('file-symlink').onClick(() => void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false)));
-				menu.addItem(it => it.setTitle('Edit pin…').setIcon('pencil').onClick(() => this.editPin(i)));
-				menu.addItem(it => it.setTitle('Delete pin').setIcon('trash-2').onClick(() => { this.def.pins.splice(i, 1); void this.save(); }));
+				if (this.canSave()) {
+					menu.addItem(it => it.setTitle('Edit pin…').setIcon('pencil').onClick(() => this.editPin(i)));
+					menu.addItem(it => it.setTitle('Delete pin').setIcon('trash-2').onClick(() => { this.def.pins.splice(i, 1); void this.save(); }));
+				} else if (!pin.link) return;
 				menu.showAtMouseEvent(e);
 			});
 			this.draggable(el, (x, y) => { pin.x = x; pin.y = y; void this.save(); }, () => this.mode === 'move');
@@ -338,6 +358,7 @@ class MapBlock extends MarkdownRenderChild {
 				const open = row.createEl('button', { cls: 'mod-cta', text: 'Open note' });
 				open.onclick = () => { close(); void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false); };
 			}
+			if (!this.canSave()) return;
 			const edit = row.createEl('button', { text: 'Edit' });
 			edit.onclick = () => { close(); this.editPin(i); };
 			const del = row.createEl('button', { cls: 'mod-warning', text: 'Delete' });
@@ -350,6 +371,7 @@ class MapBlock extends MarkdownRenderChild {
 
 	private editPin(i: number): void {
 		const pin = this.def.pins[i];
+		if (!pin || !this.canSave()) return;
 		new PinModal(this.app, { ...pin }, (next) => { this.def.pins[i] = next; void this.save(); }, () => { this.def.pins.splice(i, 1); void this.save(); }).open();
 	}
 
@@ -390,12 +412,28 @@ class MapBlock extends MarkdownRenderChild {
 		this.renderPins();
 		const info = this.ctx.getSectionInfo(this.containerEl);
 		const file = this.app.vault.getAbstractFileByPath(this.ctx.sourcePath);
-		if (!info || !(file instanceof TFile)) { new Notice('Could not save the map: block not found in the note.'); return; }
-		await this.app.vault.process(file, (text) => {
-			const lines = text.split('\n');
-			lines.splice(info.lineStart + 1, info.lineEnd - info.lineStart - 1, ...mapBlockSource(this.def).split('\n'));
-			return lines.join('\n');
-		});
+		const next = mapBlockSource(this.def);
+		let ok = false;
+		if (info && file instanceof TFile) {
+			try {
+				await this.app.vault.process(file, (text) => {
+					// In a callout or a list the section is the whole callout or list: only
+					// this block's own lines are replaced, and only if its fence is still there.
+					const out = replaceMapBlock(text, info.lineStart, info.lineEnd, this.source, next);
+					if (out === null) return text;
+					ok = true;
+					this.source = next;
+					return out;
+				});
+			} catch (e) {
+				console.error('Ember Vault: map save failed', e);
+			}
+		}
+		if (ok) return;
+		new Notice('Could not save the map: block not found in the note.');
+		// Back to what the note says, so no pin is left on screen that was never saved.
+		this.def = parseMapBlock(this.source);
+		this.renderPins();
 	}
 
 	// ------------------------------------------------------------------------
@@ -474,12 +512,22 @@ class MapBlock extends MarkdownRenderChild {
 			if (e.button !== 0) return;
 			e.preventDefault();
 			const doc = el.doc;
+			const win = doc.defaultView ?? window;
 			const ghost = doc.body.createDiv({ cls: 'nimble-map-token-ghost', text: c.label });
-			const move = (ev: PointerEvent) => { ghost.style.left = `${ev.clientX}px`; ghost.style.top = `${ev.clientY}px`; };
-			const up = (ev: PointerEvent) => {
+			// Keep the drag ours on touch, where the browser would otherwise scroll and cancel it.
+			try { el.setPointerCapture(e.pointerId); } catch { /* already lifted */ }
+			const move = (ev: PointerEvent) => { if (ev.pointerId === e.pointerId) { ghost.style.left = `${ev.clientX}px`; ghost.style.top = `${ev.clientY}px`; } };
+			const stop = () => {
 				doc.removeEventListener('pointermove', move);
 				doc.removeEventListener('pointerup', up);
+				doc.removeEventListener('pointercancel', cancel);
+				win.removeEventListener('blur', stop);
 				ghost.remove();
+			};
+			const cancel = (ev: PointerEvent) => { if (ev.pointerId === e.pointerId) stop(); };
+			const up = (ev: PointerEvent) => {
+				if (ev.pointerId !== e.pointerId) return;
+				stop();
 				const r = this.viewport.getBoundingClientRect();
 				if (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) {
 					this.setTokenPos(c.id, this.toPercent(ev.clientX, ev.clientY));
@@ -488,6 +536,8 @@ class MapBlock extends MarkdownRenderChild {
 			move(e);
 			doc.addEventListener('pointermove', move);
 			doc.addEventListener('pointerup', up);
+			doc.addEventListener('pointercancel', cancel);
+			win.addEventListener('blur', stop);
 		});
 	}
 

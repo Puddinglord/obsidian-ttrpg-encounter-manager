@@ -1,7 +1,7 @@
 import { Events, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
-import { editorSuggests, editorView, openPluginSettings } from './src/internals';
+import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/internals';
 import {
-	DEFAULT_SETTINGS, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings, normalizeConditions,
+	migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings,
 	RollLogEntry, uid,
 } from './src/types';
 import { parseStatblock, toStatblockSource } from './src/parser';
@@ -29,15 +29,15 @@ import { registerNpcCard } from './src/npc-card';
 import { registerFightBlock, saveFight } from './src/saved-fight';
 import { NpcLinker } from './src/npc-links';
 import { npcLivePreview } from './src/npc-live-preview';
-import { registerTables } from './src/tables';
-import { registerTooltips } from './src/tooltips';
+import { SpotlightModal } from './src/spotlight';
+import { registerTables, styleTablesIn } from './src/tables';
+import { registerTooltips, watchTooltips } from './src/tooltips';
 import { monsterRole, shiftMonster } from './src/rules';
-import { dice3dLastStats, dice3dSupported, diceForRoll, roll3d } from './src/dice3d';
+import { canRoll3d, dice3dLastStats, dice3dSupported, diceForRoll, landedWithin, roll3d } from './src/dice3d';
 import { dressDice, rollEvent, rollOptions } from './src/dice3d/looks';
 import type { Die3d } from './src/dice3d';
 import type { RollEvent } from './src/dice3d/styles';
 import { DiceWorkshopModal } from './src/dice-workshop';
-import { migrateDice } from './src/dice3d/styles';
 import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/campaign-view';
 import { CampaignPicker, NewCampaignModal } from './src/campaign-modals';
 import { newSceneAnywhere, promptChapter, promptSectionNote } from './src/campaign-ui';
@@ -89,6 +89,8 @@ monsters:
 \`\`\`
 `;
 
+const INSERT_LINK = 'editor:insert-link';
+
 export default class NimbleStatblocksPlugin extends Plugin {
 	settings: NimbleStatblocksSettings;
 	index: MonsterIndex;
@@ -104,6 +106,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	npcVersion = 0;
 	private wakeLock: WakeLockSentinel | null = null;
 	private wakePending = false;
+	private settingsTab?: NimbleSettingsTab;
+	/** data.json couldn't be read and couldn't be copied aside: nothing is saved, so the file isn't overwritten. */
+	private settingsReadOnly = false;
 
 	/** Hold a screen wake lock on mobile while the active encounter is in combat. */
 	syncWakeLock(): void {
@@ -162,6 +167,11 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		new NpcLinker(this);
 		registerTables(this);
 		registerTooltips(this);
+		// Pop-out windows opened later get table styling and tooltips too.
+		this.registerEvent(this.app.workspace.on('window-open', (_w, win) => {
+			styleTablesIn(this, win.document);
+			watchTooltips(this, win.document);
+		}));
 		this.registerMarkdownCodeBlockProcessor('nimble-campaign', (_source, el, ctx) => ctx.addChild(new CampaignBlock(this, el, ctx)));
 		registerMapBlock(this);
 
@@ -186,7 +196,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		if (suggests?.includes(slash)) { suggests.remove(slash); suggests.unshift(slash); }
 
 		this.registerCommands();
-		this.addSettingTab(new NimbleSettingsTab(this.app, this));
+		this.settingsTab = new NimbleSettingsTab(this.app, this);
+		this.addSettingTab(this.settingsTab);
 
 		// Phones and tablets: keep the screen awake while combat is running.
 		this.registerEvent(this.encounters.on('changed', () => this.syncWakeLock()));
@@ -233,6 +244,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	private registerCommands(): void {
+		// Spotlight: search and actions in one box. Any hotkey can be set for it; Cmd/Ctrl+K is shared with Insert link (see shareInsertLinkKey).
+		this.addCommand({ id: 'spotlight', name: 'Spotlight: search adversaries, roll dice, run commands', icon: 'search', callback: () => this.toggleSpotlight() });
+		this.app.workspace.onLayoutReady(() => { this.shareInsertLinkKey(); this.offerSpotlightKey(); });
 		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', callback: () => this.activateEncounterView() });
 		this.addCommand({ id: 'open-bestiary', name: 'Open bestiary', callback: () => this.openBestiary() });
 		this.addCommand({ id: 'add-monster', name: 'Add monster to encounter…', callback: () => this.openAddMonsterModal() });
@@ -315,38 +329,141 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.addCommand({ id: 'previous-scene', name: 'Previous scene', checkCallback: stepCmd(-1) });
 	}
 
+	private spotlight: SpotlightModal | null = null;
+
+	/** Open Spotlight, or close it if it's already up. */
+	toggleSpotlight(): void {
+		if (this.spotlight) { this.spotlight.close(); return; }
+		const modal = this.spotlight = new SpotlightModal(this, () => { if (this.spotlight === modal) this.spotlight = null; });
+		modal.open();
+	}
+
+	/**
+	 * Cmd/Ctrl+K belongs to Obsidian's "Insert Markdown link", and on macOS the
+	 * menu bar's Insert → Markdown Link item owns the key outright, so a key
+	 * listener or a hotkey of our own never sees it. Instead that one command is
+	 * wrapped: with the setting on and no text selected (an empty link is all it
+	 * would insert), it opens Spotlight; with text selected it makes the link as
+	 * always. Undone when the plugin unloads, and it changes none of the user's hotkeys.
+	 */
+	private shareInsertLinkKey(): void {
+		const cmd = findCommand(this.app, INSERT_LINK);
+		const original = cmd?.checkCallback;
+		if (!cmd || !original) return;
+		const wantsLink = () => {
+			const editor = this.app.workspace.activeEditor?.editor;
+			return !this.spotlight && !!editor && editor.hasFocus() && editor.somethingSelected();
+		};
+		const wrapped = (checking: boolean): boolean | void => {
+			if (!this.settings.spotlightKey || wantsLink()) return original.call(cmd, checking) as boolean | void;
+			if (!checking) this.toggleSpotlight();
+			return true;
+		};
+		cmd.checkCallback = wrapped;
+		this.register(() => { if (cmd.checkCallback === wrapped) cmd.checkCallback = original; });
+	}
+
+	/** Once, after the update that adds Spotlight: offer Cmd/Ctrl+K rather than taking it. */
+	private offerSpotlightKey(): void {
+		if (this.settings.spotlightOffered) return;
+		this.settings.spotlightOffered = true;
+		void this.saveSettings();
+		if (this.settings.spotlightKey) return;
+		const key = Platform.isMacOS ? '⌘K' : 'Ctrl+K';
+		const frag = createFragment((f) => {
+			f.createDiv({ text: 'New in Ember Vault: Spotlight', cls: 'nimble-notice-title' });
+			f.createDiv({ text: `Search adversaries, roll dice and run commands from one box. ${key} is Obsidian's Insert link key; Spotlight can share it (selected text still becomes a link).` });
+			const row = f.createDiv({ cls: 'nimble-notice-actions' });
+			const use = row.createEl('button', { cls: 'mod-cta', text: `Use ${key}` });
+			use.addEventListener('click', () => {
+				this.settings.spotlightKey = true;
+				void this.saveSettings();
+				new Notice(`${key} now opens Spotlight. You can turn that off in the plugin's settings.`);
+			});
+			row.createEl('button', { text: 'Not now' });
+		});
+		new Notice(frag, 0);
+	}
+
 	// ------------------------------------------------------------------------
 	// Settings
 
-	async loadSettings() {
-		const data = ((await this.loadData()) || {}) as Partial<NimbleStatblocksSettings>;
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
-		const s = this.settings;
-		s.customConditions = s.customConditions || [];
-		s.encounters = s.encounters || [];
-		s.rollLog = s.rollLog || [];
-		s.party = s.party || [];
-		s.campaigns = s.campaigns || {};
-		s.activeCampaign = s.activeCampaign ?? null;
-		// 1.0.4 dice styles; older saves only have per-role colours, which carry over.
-		s.dice = migrateDice(data.dice, data);
-		for (const k of ['dicePrimaryColor', 'diceColor', 'diceExplosionColor', 'diceMaterialPrimary', 'diceMaterialNormal', 'diceMaterialCrit'] as const) delete s[k];
-		// Older conditions were renamed in the 3.2 rules.
-		const renamed: Record<string, string> = { Blinded: 'Blind' };
-		for (const enc of s.encounters) {
-			enc.creatures = enc.creatures || [];
-			enc.phase = enc.phase || 'setup';
-			enc.log = enc.log || [];
-			for (const c of enc.creatures) {
-				c.conditions = normalizeConditions(c.conditions).map(x => ({ ...x, name: renamed[x.name] ?? x.name }));
-				c.side = c.side || 'monster';
-				delete (c as { lrUsed?: number }).lrUsed;
-			}
+	/**
+	 * Read settings from data.json. False when the file couldn't be read: at
+	 * startup the plugin then runs on defaults (the damaged file is copied aside
+	 * first); later on, the settings already in memory are kept.
+	 */
+	async loadSettings(): Promise<boolean> {
+		let next: NimbleStatblocksSettings;
+		let ok = true;
+		try {
+			const raw: unknown = await this.loadData();
+			// Obsidian hands back nothing for a file it can't parse, the same as for no file at all.
+			// Tell them apart, or the next save would quietly replace the damaged file with defaults.
+			if (raw == null && await this.settingsFileUnreadable()) throw new Error('data.json is not valid JSON');
+			next = migrateSettings(raw);
+		} catch (e) {
+			console.error('Nimble: could not read settings', e);
+			if (this.settings) return false;
+			ok = false;
+			next = migrateSettings(null);
+			const copy = await this.keepBrokenSettings();
+			this.settingsReadOnly = !copy;
+			new Notice(`Ember Vault couldn't read its settings, so it's using the defaults for now. ${copy
+				? `Your old settings file was kept as ${copy} in the plugin folder.`
+				: 'Nothing will be saved until data.json in the plugin folder is repaired or removed, so it isn\'t overwritten.'}`, 0);
 		}
-		s.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
+		// Keep the same object when re-reading, so anything holding `plugin.settings` sees the new data.
+		if (this.settings) {
+			const live = this.settings as unknown as Record<string, unknown>;
+			for (const k of Object.keys(live)) delete live[k];
+			Object.assign(live, next);
+		} else this.settings = next;
+		return ok;
+	}
+
+	private settingsPath(name = 'data.json'): string {
+		return normalizePath(`${this.manifest.dir ?? `${this.app.vault.configDir}/plugins/${this.manifest.id}`}/${name}`);
+	}
+
+	/** Is there a data.json with something in it that Obsidian couldn't read? */
+	private async settingsFileUnreadable(): Promise<boolean> {
+		try {
+			const path = this.settingsPath();
+			if (!(await this.app.vault.adapter.exists(path))) return false;
+			const text = (await this.app.vault.adapter.read(path)).trim();
+			return text !== '' && text !== 'null';
+		} catch {
+			return false;
+		}
+	}
+
+	/** Copy an unreadable data.json aside before anything saves over it. Returns the copy's name. */
+	private async keepBrokenSettings(): Promise<string | null> {
+		try {
+			const name = `data.broken-${Date.now()}.json`;
+			await this.app.vault.adapter.copy(this.settingsPath(), this.settingsPath(name));
+			return name;
+		} catch (e) {
+			console.error('Nimble: could not copy the unreadable settings file', e);
+			return null;
+		}
+	}
+
+	/** data.json changed outside this window (sync from another device): take it in, so the next save doesn't undo it. */
+	async onExternalSettingsChange(): Promise<void> {
+		if (!(await this.loadSettings())) return;
+		this.loadBundledBestiary();
+		this.encounters.trigger('changed');
+		this.events.trigger('roll-log-changed');
+		this.campaigns.trigger('changed');
+		(this as unknown as { applyTableStyle?: () => void }).applyTableStyle?.();
+		this.settingsTab?.externalChange();
+		this.rerenderNotes();
 	}
 
 	async saveSettings() {
+		if (this.settingsReadOnly) return;
 		await this.saveData(this.settings);
 	}
 
@@ -532,9 +649,14 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	private show3dDice(sides: number, count: number, rolls: number[], nimble: boolean, outcome?: 'miss' | 'crit'): Promise<void> | undefined {
 		const s = this.settings;
 		if (!s.dice3d || (Platform.isPhone && !s.dice3dOnPhone) || !dice3dSupported()) return undefined;
-		const dice = dressDice(this, diceForRoll(sides, count, rolls, nimble), outcome === 'crit');
-		return roll3d(dice, rollOptions(s.dice, rollEvent(sides, rolls.slice(0, count), outcome)))
+		const thrown = diceForRoll(sides, count, rolls, nimble);
+		// A d100, or more dice than fit on the table, would show faces that contradict the result.
+		if (!canRoll3d(thrown)) return undefined;
+		const dice = dressDice(this, thrown, outcome === 'crit');
+		const landed = roll3d(dice, rollOptions(s.dice, rollEvent(sides, rolls.slice(0, count), outcome)))
 			.catch((e) => { console.warn('Nimble: 3D dice failed, showing the result only', e); });
+		// Dice that never land (a minimised window draws no frames) mustn't hold the result back for good.
+		return landedWithin(landed, (6000 + 2000 * Math.max(0, rolls.length - count)) / (s.dice.speed || 1));
 	}
 
 	/** Record a roll (from the dice roller or the tracker) and show it, after `wait` if given. */

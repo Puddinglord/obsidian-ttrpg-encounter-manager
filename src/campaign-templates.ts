@@ -1,6 +1,7 @@
 // Starter notes for campaigns. Light on structure: headings a GM can fill or
 // delete, frontmatter the campaign panel reads, nothing that breaks if removed.
 
+import { safeName } from './campaign-model';
 import { NPC_CARD_BLOCK } from './npc-card-def';
 
 /** What "New note" can start from. `note` is a blank page. */
@@ -26,11 +27,21 @@ export const STARTERS: Starter[] = [
 	{ kind: 'handout', label: 'Handout', icon: 'scroll-text', placeholder: 'Handout name, e.g. Letter from Iarno' },
 ];
 
+/**
+ * File names can't hold : ? " / and a few others, so "Vecna: Eve of Ruin" is
+ * saved as "Vecna- Eve of Ruin". When that happens the name as typed goes in a
+ * `title:` property, which the Campaign panel and NPC cards show instead.
+ */
+const titleOf = (name: string): string | undefined => {
+	const t = name.replace(/\s+/g, ' ').trim();
+	return t && safeName(t) !== t ? JSON.stringify(t) : undefined;
+};
+
 const fm = (fields: Record<string, string | number | undefined>) =>
 	'---\n' + Object.entries(fields).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => `${k}: ${v}`).join('\n') + '\n---\n';
 
 export function campaignHome(name: string, level: number, heroes: number, system = 'Nimble'): string {
-	return fm({ nimble: 'campaign', system, level, heroes, status: 'active' }) + `
+	return fm({ nimble: 'campaign', title: titleOf(name), system, level, heroes, status: 'active' }) + `
 
 *One or two sentences on what this campaign is about.*
 
@@ -43,7 +54,7 @@ export function campaignHome(name: string, level: number, heroes: number, system
 }
 
 export function chapterHome(name: string, order: number, label?: string, level?: number): string {
-	return fm({ nimble: 'chapter', order, label: label ? JSON.stringify(label) : undefined, level }) + `
+	return fm({ nimble: 'chapter', title: titleOf(name), order, label: label ? JSON.stringify(label) : undefined, level }) + `
 
 ## Overview
 *What happens in this chapter, and how the heroes get pulled in.*
@@ -54,7 +65,7 @@ Scenes are the notes in this folder. Use **New scene** in the Campaign panel or 
 }
 
 export function sceneNote(name: string, order: number): string {
-	return fm({ nimble: 'scene', order }) + `
+	return fm({ nimble: 'scene', title: titleOf(name), order }) + `
 
 > [!nimble-read]- Read aloud
 > What the heroes see, hear and smell when they arrive.
@@ -70,8 +81,8 @@ export function sceneNote(name: string, order: number): string {
 `;
 }
 
-export function npcNote(_name: string): string {
-	return fm({ nimble: 'npc', role: '""', portrait: '""' }) + `
+export function npcNote(name: string): string {
+	return fm({ nimble: 'npc', title: titleOf(name), role: '""', portrait: '""' }) + `
 ${NPC_CARD_BLOCK}
 
 ## What they know
@@ -83,7 +94,7 @@ ${NPC_CARD_BLOCK}
 }
 
 export function locationNote(name: string): string {
-	return fm({ nimble: 'location' }) + `
+	return fm({ nimble: 'location', title: titleOf(name) }) + `
 
 *Sights, sounds, who's here.*
 
@@ -93,7 +104,7 @@ export function locationNote(name: string): string {
 }
 
 export function sessionNote(name: string, date: string, lastScene?: string): string {
-	return fm({ nimble: 'session', date }) + `
+	return fm({ nimble: 'session', title: titleOf(name), date }) + `
 
 ## Prep
 - [ ] Start at ${lastScene ? `[[${lastScene}]]` : 'the next scene'}
@@ -114,8 +125,8 @@ export function blankNote(): string {
 }
 
 /** A map note. `image` is link text for the map picture, or empty to fill in later. */
-export function mapNote(_name: string, image?: string): string {
-	return fm({ nimble: 'map' }) + `
+export function mapNote(name: string, image?: string): string {
+	return fm({ nimble: 'map', title: titleOf(name) }) + `
 *What this map shows. Click a pin to open its note.*
 
 \`\`\`nimble-map
@@ -127,7 +138,7 @@ pins:
 
 export function monsterNote(name: string): string {
 	const title = name.replace(/[\r\n]+/g, ' ').trim() || 'Monster';
-	return fm({ nimble: 'monster' }) + `
+	return fm({ nimble: 'monster', title: titleOf(name) }) + `
 \`\`\`nimble
 name: ${title}
 level: 1
@@ -148,8 +159,8 @@ attacks:
 `;
 }
 
-export function handoutNote(_name: string): string {
-	return fm({ nimble: 'handout' }) + `
+export function handoutNote(name: string): string {
+	return fm({ nimble: 'handout', title: titleOf(name) }) + `
 > [!quote] For the players
 > The text, letter or clue exactly as the heroes see it.
 

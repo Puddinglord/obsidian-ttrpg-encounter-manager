@@ -194,6 +194,18 @@ export function findStyle(d: DiceSettings, id: string | undefined): DiceStyle | 
 	return id ? (d.styles.find(s => s.id === id) ?? PRESETS.find(s => s.id === id)) : undefined;
 }
 
+/**
+ * "Use for all dice": every die takes this look, except crit dice, which keep
+ * the look chosen for them. Returns what to tell the user.
+ */
+export function useForAllDice(d: DiceSettings, id: string): string {
+	d.normal = id;
+	d.primary = '';
+	for (const k of DIE_KEYS) delete d.perDie[k];
+	const crit = d.crit && d.crit !== id ? findStyle(d, d.crit) : undefined;
+	return crit ? `Every die uses this look now. Crit dice keep theirs (${crit.name}).` : 'Every die uses this look now.';
+}
+
 export const dieKey = (sides: number): DieKey | undefined => (DIE_KEYS as string[]).includes(`d${sides}`) ? `d${sides}` as DieKey : undefined;
 
 /**
@@ -255,7 +267,7 @@ const LEGACY_DEFAULT = { primary: ['#7c3aed', 'classic', 'ember'], normal: ['#ec
 export function migrateDice(saved: unknown, legacy: LegacyDice): DiceSettings {
 	if (saved && typeof saved === 'object') {
 		const d = saved as Partial<DiceSettings>;
-		const styles = Array.isArray(d.styles) ? d.styles.map(s => cleanStyle(s)) : [];
+		const styles = Array.isArray(d.styles) ? d.styles.filter(s => s && typeof s === 'object').map(s => cleanStyle(s)) : [];
 		const effects = { ...DEFAULT_DICE.effects };
 		const ids = EFFECTS.map(e => e.id);
 		for (const k of Object.keys(effects) as RollEvent[]) effects[k] = oneOf(d.effects?.[k], ids, effects[k]);

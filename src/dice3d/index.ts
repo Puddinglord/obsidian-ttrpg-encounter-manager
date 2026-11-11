@@ -28,10 +28,10 @@ async function load(): Promise<RendererLib> {
 
 let webgl: boolean | null = null;
 
-/** WebGL is available and the user hasn't asked for reduced motion. */
-export function dice3dSupported(): boolean {
-	if (typeof window === 'undefined') return false;
-	if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
+/** Why 3D dice can't be shown here: the system asks for reduced motion, or there's no WebGL. Null when they can. */
+export function dice3dBlockedBy(): 'motion' | 'webgl' | null {
+	if (typeof window === 'undefined') return 'webgl';
+	if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return 'motion';
 	if (webgl === null) {
 		try {
 			const c = createEl('canvas');
@@ -40,7 +40,46 @@ export function dice3dSupported(): boolean {
 			webgl = false;
 		}
 	}
-	return webgl;
+	return webgl ? null : 'webgl';
+}
+
+/** WebGL is available and the user hasn't asked for reduced motion. */
+export function dice3dSupported(): boolean {
+	return dice3dBlockedBy() === null;
+}
+
+/** One plain line for settings and the Workshop when 3D dice can't be shown ('' when they can). */
+export function dice3dBlockedText(why: 'motion' | 'webgl' | null = dice3dBlockedBy()): string {
+	if (!why) return '';
+	const reason = why === 'motion' ? 'Reduced motion is on in your system settings' : 'This device can\'t draw 3D';
+	return `${reason}, so 3D dice aren't shown here. Rolls still show their result as a notice.`;
+}
+
+/** Die sizes the 3D roller has a real shape for (geometry.ts DIE_SIDES; kept here so this file stays free of three.js). */
+const EXACT_SIDES = [4, 6, 8, 10, 12, 20];
+/** Most dice the 3D roller puts on the table at once (renderer.ts MAX_DICE). */
+export const MAX_DICE_3D = 12;
+
+/**
+ * Can this roll be shown in 3D without contradicting its result? Not when a die
+ * has no real shape (a d100 or d30 would land on a face that isn't the result),
+ * and not when there are more dice than fit on the table (the ones shown
+ * wouldn't add up). Those rolls show their result as a notice straight away.
+ */
+export function canRoll3d(dice: { sides: number }[]): boolean {
+	return dice.length > 0 && dice.length <= MAX_DICE_3D && dice.every(d => EXACT_SIDES.includes(d.sides));
+}
+
+/**
+ * `landed`, or `ms` from now if the dice never land: animation frames stop in a
+ * minimised or hidden window, and a render error would leave it pending. Resolves once.
+ */
+export function landedWithin(landed: Promise<void>, ms: number): Promise<void> {
+	return new Promise<void>((resolve) => {
+		const timer = window.setTimeout(resolve, ms);
+		const done = () => { window.clearTimeout(timer); resolve(); };
+		landed.then(done, done);
+	});
 }
 
 /** Throw the dice; resolves once they've all landed (explosions included). */

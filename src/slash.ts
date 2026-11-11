@@ -19,8 +19,10 @@ import { describeMonster } from './suggest';
 import { BuilderModal } from './builder-modal';
 import { parseDice } from './dice';
 import { BOX_PRESETS, boxColor, newBox } from './box-def';
-import { safeName } from './campaign-model';
+import { homeFolderFor, safeName } from './campaign-model';
 import { NPC_CARD_BLOCK } from './npc-card-def';
+import { runEncounter } from './encounter-block';
+import { insideCodeFence, placeBlock, slashQuery } from './markdown';
 
 type ArgKind = 'monster' | 'add' | 'list' | 'condition' | 'image' | 'dice' | 'box' | 'npc';
 
@@ -95,7 +97,12 @@ const COMMANDS: SlashCommand[] = [
 	{ name: 'condition', aliases: ['cond', 'status'], icon: 'activity', desc: 'Condition rules', hint: '/condition dazed', arg: 'condition' },
 	{ name: 'box', aliases: ['callout'], icon: 'square-dashed', desc: 'Any box type', hint: '/box treasure', arg: 'box' },
 	{ name: 'npc', aliases: ['who'], icon: 'user-round', desc: 'Link an NPC, or create one', hint: '/npc kevori', arg: 'npc' },
-	{ name: 'npc-card', aliases: ['portrait', 'character'], icon: 'contact-round', desc: 'NPC card with portrait', insert: () => ({ text: NPC_CARD_BLOCK, block: true }) },
+	{ name: 'npc-card', aliases: ['portrait', 'character'], icon: 'contact-round', desc: 'NPC card with portrait', insert: (p) => {
+		// In the NPC's own note the card takes the note's name. Anywhere else (a minor character in a scene) it needs its own.
+		const f = p.app.workspace.getActiveFile();
+		const own = !!f && p.campaigns.npcs.some(n => n.path === f.path);
+		return { text: own ? NPC_CARD_BLOCK : NPC_CARD_BLOCK.replace('\n', '\nname: \n'), block: true };
+	} },
 	...Object.entries(BOX_PRESETS).filter(([id]) => id !== 'npc' && id !== 'note').map(([id, p]): SlashCommand => ({
 		name: id, aliases: p.aliases, icon: p.icon, desc: p.desc,
 		insert: () => ({ text: newBox(id), block: true, inside: true }),
@@ -131,15 +138,6 @@ function commandMatches(c: SlashCommand, q: string): number {
 	return -1;
 }
 
-/** True when the cursor is inside a fenced code block. */
-function inCodeFence(editor: Editor, line: number): boolean {
-	let open = false;
-	for (let i = Math.max(0, line - 400); i < line; i++) {
-		if (/^\s*(```|~~~)/.test(editor.getLine(i))) open = !open;
-	}
-	return open;
-}
-
 export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 	constructor(app: App, private plugin: NimbleStatblocksPlugin) {
 		super(app);
@@ -154,13 +152,13 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 	onTrigger(cursor: EditorPosition, editor: Editor): EditorSuggestTriggerInfo | null {
 		if (!this.plugin.settings.slashCommands) return null;
 		const before = editor.getLine(cursor.line).slice(0, cursor.ch);
-		const m = before.match(/(?:^|\s)\/([a-z-]*(?: [^/]*)?)$/i);
-		if (!m) return null;
-		const query = m[1];
-		const cmd = query.split(' ')[0].toLowerCase();
 		// Only keep the menu open for things that are (or could become) our commands.
-		if (!COMMANDS.some(c => commandMatches(c, cmd) >= 0)) return null;
-		if (inCodeFence(editor, cursor.line)) return null;
+		// Once an argument follows, the command has to be one of ours by name.
+		const query = slashQuery(before, (cmd, hasArg) => hasArg
+			? COMMANDS.some(c => c.name === cmd || !!c.aliases?.includes(cmd))
+			: COMMANDS.some(c => commandMatches(c, cmd) >= 0));
+		if (query === null) return null;
+		if (insideCodeFence(i => editor.getLine(i), cursor.line)) return null;
 		return { start: { line: cursor.line, ch: cursor.ch - query.length - 1 }, end: cursor, query };
 	}
 
@@ -231,18 +229,19 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 
 	/** Replace the slash text; blocks go on their own lines. The cursor lands at the end. */
 	private write(editor: Editor, start: EditorPosition, end: EditorPosition, text: string, block = false, inside = false): void {
-		let out = text;
-		if (block && editor.getLine(start.line).slice(0, start.ch).trim()) out = `\n${out}`;
+		// A block typed in a callout, a list item or an indented line keeps that line's
+		// prefix on every line, and goes below any text already on the line.
+		const out = block ? placeBlock(editor.getLine(start.line).slice(0, start.ch), text) : text;
 		// Callouts and references: the cursor stays at the end, ready to type into them.
 		// Fenced blocks: the cursor moves below the closing fence.
 		const lines = out.split('\n');
+		if (block) lines.pop(); // the line that follows the block
 		let cursor = { line: start.line + lines.length - 1, ch: (lines.length === 1 ? start.ch : 0) + lines[lines.length - 1].length };
 		if (block) {
-			const fenced = /^(```|~~~)/.test(lines[lines.length - 1]);
-			out += '\n';
+			const fenced = /(?:^|\n)(```|~~~)[^\n]*$/.test(text);
 			// Boxes: the cursor goes inside, at the end of the body, ready to type.
 			if (fenced && inside && lines.length >= 3) cursor = { line: cursor.line - 1, ch: lines[lines.length - 2].length };
-			else if (fenced) cursor = { line: cursor.line + 1, ch: 0 };
+			else if (fenced) cursor = { line: cursor.line + 1, ch: out.length - out.lastIndexOf('\n') - 1 };
 		}
 		editor.replaceRange(out, start, end);
 		editor.setCursor(cursor);
@@ -325,11 +324,8 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 				icon: 'play', title: 'Insert and run it now', detail: '',
 				run: (editor, start, end) => {
 					insert(def)!(editor, start, end);
-					for (const g of def.monsters) {
-						const e = this.plugin.index.get(g.name);
-						if (e) this.plugin.encounters.add(e.monster, e.filePath || undefined, g.count);
-					}
-					void this.plugin.showTracker();
+					// The same as pressing Run on the block: asks before replacing a fight in progress, adds the party, opens the tracker.
+					void runEncounter(this.plugin, def, this.plugin.app.workspace.getActiveFile()?.path);
 				},
 			});
 		} else {
@@ -386,7 +382,7 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 			items.push({
 				icon: 'user-plus',
 				title: `New NPC "${name}"`,
-				detail: `Creates ${camp.name}/NPCs/${safeName(name)} and links it`,
+				detail: `Creates ${homeFolderFor(camp, 'npc', camp.folder).replace(/^.*\//, '')}/${safeName(name)} in ${camp.name} and links it`,
 				run: (editor: Editor, start: EditorPosition, end: EditorPosition) => {
 					this.write(editor, start, end, `[[${safeName(name)}]]`);
 					void store.createInSection(camp, 'npc', name).then(() => new Notice(`Created NPC ${name}`));

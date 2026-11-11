@@ -16,20 +16,34 @@ function convert(el: Element): void {
 	setTooltip(el, title, { delay: 350 });
 }
 
-export function registerTooltips(plugin: NimbleStatblocksPlugin): void {
-	const sweep = (root: Element) => {
-		if (root.hasAttribute('title')) convert(root);
-		root.querySelectorAll?.('[title]').forEach(convert);
-	};
+function sweep(root: Element): void {
+	if (root.hasAttribute('title')) convert(root);
+	root.querySelectorAll?.('[title]').forEach(convert);
+}
+
+/** Documents (main window, pop-outs) already being watched. */
+const watched = new WeakSet<Document>();
+
+/** Moves our `title` tooltips into Obsidian's in one window, now and as they appear. Call for each pop-out window. */
+export function watchTooltips(plugin: NimbleStatblocksPlugin, doc: Document): void {
+	if (watched.has(doc)) return;
+	watched.add(doc);
 	const obs = new MutationObserver((records) => {
 		for (const r of records) {
 			if (r.type === 'attributes') convert(r.target as Element);
 			else r.addedNodes.forEach(n => { if (n.instanceOf(Element)) sweep(n); });
 		}
 	});
-	// The main window, where the plugin loads.
-	const body = activeDocument.body;
-	obs.observe(body, { subtree: true, childList: true, attributes: true, attributeFilter: ['title'] });
-	plugin.register(() => obs.disconnect());
-	plugin.app.workspace.onLayoutReady(() => sweep(body));
+	obs.observe(doc.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['title'] });
+	plugin.register(() => { obs.disconnect(); watched.delete(doc); });
+	sweep(doc.body);
+}
+
+export function registerTooltips(plugin: NimbleStatblocksPlugin): void {
+	// The main window, where the plugin loads, and any pop-out already open.
+	watchTooltips(plugin, activeDocument);
+	plugin.app.workspace.onLayoutReady(() => {
+		sweep(activeDocument.body);
+		plugin.app.workspace.iterateAllLeaves((leaf) => watchTooltips(plugin, leaf.view.containerEl.doc));
+	});
 }

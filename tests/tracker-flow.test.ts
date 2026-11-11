@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EncounterStore, isDown } from '../src/encounters';
+import { EncounterStore, fightInProgress, isDown, monsterHit, sameFight } from '../src/encounters';
 import { parseHpCommand } from '../src/rules';
 import { DEFAULT_SETTINGS, NimbleMonster, NimbleStatblocksSettings } from '../src/types';
 
@@ -169,5 +169,97 @@ describe('turns, rounds and conditions', () => {
 		store.applyHp(enc.id, enc.creatures[0].id, dmg('99'));
 		store.applyHp(enc.id, enc.creatures[2].id, dmg('2'));
 		expect(store.summary(enc.id)).toBe('**Ambush**: 1 round. Defeated: Goblin-1, 1 Goblin Minion. Still standing: Goblin-2 (15/15), 2 Goblin Minions.');
+	});
+});
+
+describe('review fixes', () => {
+	it('a cleared or freshly loaded encounter does not offer to resume the old fight', () => {
+		const { store } = setup();
+		store.add(goblin);
+		const enc = store.active!;
+		store.start(enc.id);
+		store.end(enc.id);
+		expect(enc.paused).toBeTruthy();
+		store.clear(enc.id);
+		expect(enc.paused).toBeUndefined();
+
+		store.add(goblin);
+		store.start(enc.id);
+		store.end(enc.id);
+		const loaded = store.loadTemplate({ name: 'Ambush', monsters: [{ monster: goblin, count: 1 }] })!;
+		expect(loaded.id).toBe(enc.id);
+		expect(loaded.paused).toBeUndefined();
+		expect(store.resume(loaded.id)).toBe(false);
+	});
+
+	it('Last Stand applies once', () => {
+		const { store } = setup();
+		const [k] = store.add(krogg);
+		const enc = store.active!.id;
+		store.applyHp(enc, k.id, dmg('200'));
+		expect(store.applyLastStand(enc, k.id)).toContain('Last Stand');
+		store.applyHp(enc, k.id, dmg('15!'));
+		const logged = store.active!.log!.length;
+		expect(store.applyLastStand(enc, k.id)).toBeNull();
+		expect(store.creature(enc, k.id)!.currentHp).toBe(5);
+		expect(store.active!.log!.length).toBe(logged);
+	});
+
+	it('knows when replacing the tracker would lose a fight', () => {
+		const { store, settings } = setup();
+		expect(fightInProgress(store.active)).toBe(false);
+		const [g] = store.add(goblin);
+		const enc = store.active!;
+		expect(fightInProgress(enc)).toBe(false); // set up, untouched: nothing to lose
+		store.applyHp(enc.id, g.id, dmg('3'));
+		expect(fightInProgress(enc)).toBe(true); // damage in setup
+		store.applyHp(enc.id, g.id, dmg('+3'));
+		expect(fightInProgress(enc)).toBe(false);
+		store.start(enc.id);
+		expect(fightInProgress(enc)).toBe(true); // running
+		store.end(enc.id);
+		expect(fightInProgress(enc)).toBe(true); // ended part-way: Resume is on offer
+		store.clear(enc.id);
+		expect(fightInProgress(enc)).toBe(false);
+
+		settings.party = [{ id: 'h1', name: 'Ana', level: 1, maxHp: 10 }];
+		const hero = store.addHero(settings.party[0])!;
+		store.setWounds(enc.id, hero.id, 1);
+		expect(fightInProgress(enc)).toBe(true); // Wounds
+		store.setWounds(enc.id, hero.id, 0);
+		const [m] = store.add(minion, undefined, 3);
+		expect(fightInProgress(enc)).toBe(false);
+		store.setAlive(enc.id, m.id, 2);
+		expect(fightInProgress(enc)).toBe(true); // a minion down
+	});
+
+	it('tells one fight from another, even when both use the single tracker encounter', () => {
+		const { store } = setup();
+		store.loadTemplate({ name: 'Current Encounter', monsters: [{ monster: goblin, count: 2 }] });
+		const first = JSON.parse(JSON.stringify(store.active!));
+		store.applyHp(store.active!.id, store.active!.creatures[0].id, dmg('5'));
+		expect(sameFight(first, store.active!)).toBe(true); // later in the same fight
+		store.loadTemplate({ name: 'Current Encounter', monsters: [{ monster: goblin, count: 2 }] });
+		expect(store.active!.id).toBe(first.id);
+		expect(sameFight(first, store.active!)).toBe(false); // same name and id, a new fight
+		// Restored from a note (a new id in multi mode), it's still the fight that was saved.
+		const multi = setup({ multipleEncounters: true });
+		const restored = multi.store.restore(first)!;
+		expect(restored.id).not.toBe(first.id);
+		expect(sameFight(first, restored)).toBe(true);
+	});
+
+	it('a hit on a monster with temp HP: the preview maths is what gets applied', () => {
+		const { store } = setup();
+		const [k] = store.add(knight);
+		const enc = store.active!.id;
+		store.applyHp(enc, k.id, dmg('t5'));
+		const before = store.creature(enc, k.id)!;
+		const hit = monsterHit(before, 20, false, { autoArmor: true }); // Medium armor takes 10 off
+		expect(hit).toMatchObject({ applied: 10, absorbed: 5, taken: 5, hp: 35 });
+		store.applyHp(enc, k.id, dmg('20'));
+		expect(store.creature(enc, k.id)).toMatchObject({ currentHp: hit.hp, tempHp: 0 });
+		// No temp HP left: nothing absorbed.
+		expect(monsterHit(store.creature(enc, k.id)!, 20, false, { autoArmor: true })).toMatchObject({ absorbed: 0, taken: 10, hp: 25 });
 	});
 });

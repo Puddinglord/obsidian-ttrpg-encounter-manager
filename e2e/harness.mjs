@@ -5,7 +5,7 @@
 // Nothing here touches the user's real Obsidian config or vaults.
 
 import { spawn } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, dirname, basename } from 'node:path';
@@ -60,7 +60,10 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 	const pluginDir = join(vault, '.obsidian', 'plugins', PLUGIN_ID);
 	mkdirSync(pluginDir, { recursive: true });
 	for (const f of ['main.js', 'manifest.json', 'styles.css']) cpSync(join(ROOT, f), join(pluginDir, f));
-	if (settings) writeFileSync(join(pluginDir, 'data.json'), JSON.stringify(settings));
+	// Tests start past the one-time "Use Cmd+K for Spotlight?" offer, unless one asks for it (spotlightOffered: false).
+	const dataFile = join(pluginDir, 'data.json');
+	const shipped = !settings && existsSync(dataFile) ? JSON.parse(readFileSync(dataFile, 'utf8')) : {};
+	writeFileSync(dataFile, JSON.stringify({ spotlightOffered: true, ...shipped, ...(settings || {}) }));
 	writeFileSync(join(vault, '.obsidian', 'community-plugins.json'), JSON.stringify([PLUGIN_ID]));
 	// DOM menus instead of macOS native ones, so tests can see and click menu items.
 	writeFileSync(join(vault, '.obsidian', 'app.json'), JSON.stringify({ nativeMenus: false }));

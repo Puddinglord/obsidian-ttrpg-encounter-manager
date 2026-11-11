@@ -6,7 +6,8 @@
 
 import { Modal, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { allStyles, DIE_KEYS, EFFECTS, EffectId, RollEvent } from './dice3d/styles';
+import { dice3dBlockedText } from './dice3d';
+import { allStyles, EFFECTS, EffectId, RollEvent, useForAllDice } from './dice3d/styles';
 import { onLongPress } from './touch';
 
 const SIZES = [4, 6, 8, 10, 12, 20];
@@ -94,10 +95,9 @@ export class DiceWorkshopModal extends Modal {
 		if (this.style) {
 			const keep = look.createEl('button', { cls: 'nimble-workshop-keep', text: 'Use for all dice' });
 			keep.addEventListener('click', () => {
-				this.d.normal = this.style; this.d.primary = ''; this.d.crit = '';
-				for (const k of DIE_KEYS) delete this.d.perDie[k];
+				const said = useForAllDice(this.d, this.style);
 				this.save();
-				this.resultEl.setText('Every die uses this look now.');
+				this.resultEl.setText(said);
 			});
 		}
 		const prim = this.field(top, 'Primary die');
@@ -145,6 +145,9 @@ export class DiceWorkshopModal extends Modal {
 		this.select(this.field(choices, 'Throw'), 'Throw', { gentle: 'Gentle', normal: 'Normal', strong: 'Hard' }, this.d.throwForce, v => { this.d.throwForce = v as 'gentle' | 'normal' | 'strong'; this.save(); });
 		this.select(this.field(choices, 'Shadows'), 'Shadows', { off: 'Off', soft: 'Soft', sharp: 'Sharp' }, this.d.shadows, v => { this.d.shadows = v as 'off' | 'soft' | 'sharp'; this.save(); });
 
+		// Reduced motion or no WebGL: the buttons above can't throw anything, so say why.
+		const blocked = dice3dBlockedText();
+		if (blocked) c.createDiv({ cls: 'setting-item-description nimble-dice-blocked', text: blocked });
 		this.resultEl = c.createDiv({ cls: 'nimble-workshop-result', attr: { 'aria-live': 'polite' } });
 		if (!this.plugin.settings.dice3d) this.resultEl.setText('3D dice are off in settings.');
 	}

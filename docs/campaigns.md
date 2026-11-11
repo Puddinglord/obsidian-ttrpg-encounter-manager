@@ -36,7 +36,9 @@ The panel in the left sidebar is home base. From it you can:
 | Monster | A stat block the bestiary picks up |
 | Handout | Player-facing text and GM notes |
 
-The folder decides what's picked first: NPC in NPCs, Scene in a chapter, Session log in Sessions, a blank Note in a folder of your own. You can pick any starter in any folder.
+The folder decides what's picked first: NPC in NPCs, Scene in a chapter, Session log in Sessions, a blank Note in a folder of your own. In a folder of your own, any starter is saved right there.
+
+A chapter holds its scenes, maps and notes. An NPC, location, monster or handout you make from a chapter's **+** is saved in the campaign's folder for it (**NPCs**, **Locations**, **Monsters**, **Handouts**), so it's listed with the rest and not among the chapter's scenes. The dialog says where it's going before you create it. If you've renamed one of those folders, say NPCs to Characters, that folder is used.
 
 On a folder of files like **Assets**, **+** adds files from your computer or phone instead. Every New dialog also has an **Add files from this device instead** link.
 
@@ -46,7 +48,8 @@ On a folder of files like **Assets**, **+** adds files from your computer or pho
 
 - **Drag** a note or file onto a chapter or folder to move it there. Drop it on the **Campaign** heading to move it to the top of the campaign.
 - **Drag from Obsidian's file explorer** to bring existing notes, or whole folders, into a campaign. This is the quickest way to move an older campaign over.
-- A note moved into a chapter becomes that chapter's last scene.
+- A scene or plain note moved into a chapter becomes that chapter's last scene. An NPC, handout or map moved there is kept with the chapter but isn't numbered as a scene.
+- Files you add to a chapter, or drop on the **Campaign** heading, are listed there too.
 - Links to moved notes are updated the way Obsidian always updates them (Settings → Files and links).
 
 **Right-click** a note, file, folder or chapter (or **long-press** it on a phone or tablet) for:
@@ -78,10 +81,11 @@ Campaigns/
 ```
 
 - A **campaign** is any folder holding a note with `nimble: campaign`.
-- A **chapter** is any folder inside it holding a note with `nimble: chapter`.
+- A **chapter** is any folder inside it holding a note with `nimble: chapter`. It can sit straight in the campaign folder or deeper, such as `Chapters/Act 1`.
 - Every other note in a chapter folder is a **scene**, even without frontmatter.
 - `order:` sorts notes. Without it, names sort naturally (Q2 before Q10).
 - `area:` is the short tag shown before a scene's title in the panel (Q1, Q2…). It's handy for matching map keys.
+- `title:` is the name shown in the panel when it differs from the file name. File names can't hold characters like `:` `?` and `"`, so a campaign you call "Vecna: Eve of Ruin" is saved as `Vecna- Eve of Ruin` with `title: "Vecna: Eve of Ruin"`, and the panel and NPC cards show the name you typed.
 - Any other folder in the campaign is a **section** (NPCs, Locations, Sessions, Monsters, Handouts or anything you like). Sections list their notes and any other files in them, and show up even while empty.
 
 A ```` ```nimble-campaign ```` block on the home note shows the same outline inside the note.

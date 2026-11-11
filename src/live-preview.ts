@@ -19,7 +19,10 @@ class InlineRefWidget extends WidgetType {
 	}
 
 	toDOM(): HTMLElement {
-		return createInlineRef(this.plugin, this.name, this.sourcePath);
+		const el = createInlineRef(this.plugin, this.name, this.sourcePath);
+		// Marks the chips CodeMirror redraws itself, so refreshInlineRefs leaves them alone.
+		el.dataset.nimbleCm = '1';
+		return el;
 	}
 
 	destroy(dom: HTMLElement): void {

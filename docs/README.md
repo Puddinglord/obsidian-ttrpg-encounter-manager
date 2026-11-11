@@ -23,6 +23,7 @@ New here? Start with **[Getting started](getting-started.md)**, or download the 
 |---|---|
 | [Combat tracker](tracker.md) | Running a fight, the HP calculator, armor, minions, legendary monsters, conditions |
 | [Dice](dice.md) | Clickable dice, Nimble attack rolls, 3D dice |
+| [Spotlight](spotlight.md) | Cmd/Ctrl+K: search adversaries, NPCs and notes, roll dice, run commands |
 | [Slash commands](slash-commands.md) | Every `/` command in one table |
 | [Phone and iPad](mobile.md) | Running the game from a touch screen, and syncing |
 

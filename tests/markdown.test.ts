@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appendRichText, DICE_RE, execWithLead, keywordPattern } from '../src/markdown';
+import { appendRichText, blockPrefix, DICE_RE, execWithLead, insideCodeFence, keywordPattern, placeBlock, slashQuery } from '../src/markdown';
 
 function html(text: string, dice = false): string {
 	const el = document.createElement('div');
@@ -86,5 +86,104 @@ describe('appendRichText', () => {
 		expect(m.index).toBe(5);
 		expect([m[1], m[2], m[3]]).toEqual(['2', '6', '+1']);
 		expect(execWithLead(DICE_RE, 'd8')!.index).toBe(0);
+	});
+});
+
+describe('insideCodeFence', () => {
+	const inside = (note: string, line: number) => { const lines = note.split('\n'); return insideCodeFence(i => lines[i], line); };
+
+	it('is right far down a long note, whatever the line 400 above is', () => {
+		// A 500-line code block, then prose: the old scan started inside the block and flipped.
+		const note = ['intro', '```js', ...Array.from({ length: 500 }, (_, i) => `line ${i}`), '```', ...Array.from({ length: 300 }, () => 'prose')];
+		const at = (line: number) => insideCodeFence(i => note[i], line);
+		expect(at(1)).toBe(false);
+		expect(at(2)).toBe(true);
+		expect(at(450)).toBe(true);
+		expect(at(502)).toBe(true); // the closing fence line itself
+		expect(at(503)).toBe(false);
+		expect(at(802)).toBe(false);
+	});
+
+	it('lets four backticks wrap three', () => {
+		const note = '````markdown\n```nimble\nname: Goblin\n```\nstill inside\n````\noutside';
+		expect(inside(note, 2)).toBe(true);
+		expect(inside(note, 4)).toBe(true);
+		expect(inside(note, 6)).toBe(false);
+	});
+
+	it('handles tilde fences and does not mix the two kinds', () => {
+		const note = '~~~\n```\ninside\n~~~\noutside\n```js```\nstill outside';
+		expect(inside(note, 2)).toBe(true);
+		expect(inside(note, 4)).toBe(false);
+		expect(inside(note, 6)).toBe(false); // ```js``` is inline code, not a fence
+	});
+
+	it('treats an unclosed fence as running to the end', () => {
+		const note = 'text\n  ```nimble\nname: Goblin\n\nmore';
+		expect(inside(note, 1)).toBe(false);
+		expect(inside(note, 4)).toBe(true);
+	});
+});
+
+describe('blocks inserted by slash commands', () => {
+	const BOX = '```box\nText\n```';
+
+	it('finds the prefix of a callout, a list item and an indented line', () => {
+		expect(blockPrefix('')).toEqual({ prefix: '', fresh: true });
+		expect(blockPrefix('> ')).toEqual({ prefix: '> ', fresh: true });
+		expect(blockPrefix('> > ')).toEqual({ prefix: '> > ', fresh: true });
+		expect(blockPrefix('- ')).toEqual({ prefix: '  ', fresh: true });
+		expect(blockPrefix('  12. ')).toEqual({ prefix: '      ', fresh: true });
+		expect(blockPrefix('\t')).toEqual({ prefix: '\t', fresh: true });
+		expect(blockPrefix('> - some text ')).toEqual({ prefix: '>   ', fresh: false });
+		expect(blockPrefix('Some text ')).toEqual({ prefix: '', fresh: false });
+	});
+
+	it('leaves a plain line as it was', () => {
+		expect(placeBlock('', BOX)).toBe('```box\nText\n```\n');
+		expect(placeBlock('Some text ', BOX)).toBe('\n```box\nText\n```\n');
+	});
+
+	it('keeps a block inside its callout', () => {
+		expect(`> ${placeBlock('> ', BOX)}`).toBe('> ```box\n> Text\n> ```\n> ');
+		expect(`> Intro ${placeBlock('> Intro ', BOX)}`).toBe('> Intro \n> ```box\n> Text\n> ```\n> ');
+	});
+
+	it('keeps a block inside its list item', () => {
+		expect(`- ${placeBlock('- ', BOX)}`).toBe('- ```box\n  Text\n  ```\n  ');
+		expect(`  - Step ${placeBlock('  - Step ', BOX)}`).toBe('  - Step \n    ```box\n    Text\n    ```\n    ');
+	});
+});
+
+describe('slashQuery', () => {
+	const NAMES = ['map', 'monster', 'roll', 'bestiary'];
+	const known = (cmd: string, hasArg: boolean) => hasArg ? NAMES.includes(cmd) : NAMES.some(n => n.startsWith(cmd));
+	const q = (before: string) => slashQuery(before, known);
+
+	it('finds a command at the start of a line or after a space', () => {
+		expect(q('/')).toBe('');
+		expect(q('/ma')).toBe('ma');
+		expect(q('Then /monster gob')).toBe('monster gob');
+		expect(q('/zzz')).toBeNull();
+		expect(q('/zzz goblin')).toBeNull();
+	});
+
+	it('allows "/" in the argument', () => {
+		expect(q('/map Assets/hideout')).toBe('map Assets/hideout');
+		expect(q('/map Assets/Maps/hide out')).toBe('map Assets/Maps/hide out');
+		expect(q('/map foo /zzz')).toBe('map foo /zzz');
+	});
+
+	it('takes the last command on the line', () => {
+		expect(q('/map foo /roll 2d6')).toBe('roll 2d6');
+	});
+
+	it('is not started by paths, URLs or and/or in prose', () => {
+		expect(q('see http://example.com')).toBeNull();
+		expect(q('see http://example.com/map now')).toBeNull();
+		expect(q('Assets/map')).toBeNull();
+		expect(q('fire and/or cold')).toBeNull();
+		expect(q('either / or')).toBeNull();
+		expect(q('/map2')).toBeNull();
 	});
 });

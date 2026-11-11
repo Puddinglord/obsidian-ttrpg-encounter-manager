@@ -4,7 +4,7 @@
 import { MarkdownView, Modal, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterDef, encounterBlockSource } from './encounter-def';
-import { BalanceTarget, budgetPhrase, formatLevel, levelValue, monsterRole, rateEncounter } from './rules';
+import { BalanceTarget, budgetPhrase, formatLevel, levelValue, monsterRole, rateEncounter, shiftMonster } from './rules';
 import { renderBalance } from './balance-ui';
 import { partyLevels, ratingChip, runEncounter } from './encounter-block';
 import { describeMonster } from './suggest';
@@ -63,7 +63,8 @@ export class BuilderModal extends Modal {
 
 		const bar = c.createDiv({ cls: 'modal-button-container' });
 		const run = bar.createEl('button', { text: 'Run now' });
-		run.addEventListener('click', () => { this.close(); void runEncounter(this.plugin, this.def); });
+		// Stays open if the GM decides to keep the fight that's in the tracker, so the build isn't lost.
+		run.addEventListener('click', () => void runEncounter(this.plugin, this.def).then(ran => { if (ran) this.close(); }));
 		const save = bar.createEl('button', { text: this.onSave ? 'Save' : 'Insert into note', cls: 'mod-cta' });
 		save.addEventListener('click', () => this.save());
 
@@ -75,14 +76,18 @@ export class BuilderModal extends Modal {
 	private save(): void {
 		if (this.onSave) { this.onSave(this.def); this.close(); return; }
 		const block = `\`\`\`nimble-encounter\n${encounterBlockSource(this.def)}\n\`\`\`\n`;
-		const md = this.app.workspace.getActiveViewOfType(MarkdownView)
-			?? this.app.workspace.getLeavesOfType('markdown').map(l => l.view).find((v): v is MarkdownView => v instanceof MarkdownView);
-		if (md) {
+		// Only the note the GM was last in, and only where there's a cursor to insert at:
+		// never some other open note, or a spot they can't see in reading view.
+		const view = this.app.workspace.getMostRecentLeaf()?.view;
+		const md = view instanceof MarkdownView ? view : null;
+		if (md && md.getMode() === 'source') {
 			md.editor.replaceSelection(block);
 			new Notice(`Inserted "${this.def.name}" into ${md.file?.basename ?? 'the note'}`);
 		} else {
 			void navigator.clipboard.writeText(block);
-			new Notice('No note open: the encounter block was copied to the clipboard');
+			new Notice(md
+				? `${md.file?.basename ?? 'The note'} is in reading view: the encounter block was copied to the clipboard. Paste it where you want it.`
+				: 'No note open to insert into: the encounter block was copied to the clipboard.');
 		}
 		this.close();
 	}
@@ -137,7 +142,8 @@ export class BuilderModal extends Modal {
 	private renderRating(): void {
 		const el = this.ratingEl;
 		el.empty();
-		const groups = this.def.monsters.map(m => ({ monster: this.plugin.index.get(m.name)?.monster, count: m.count }))
+		// Rated as they'll be run: a tougher or weaker monster counts as its shifted level.
+		const groups = this.def.monsters.map(m => { const e = this.plugin.index.get(m.name); return { monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })
 			.filter((g): g is { monster: NonNullable<typeof g.monster>; count: number } => !!g.monster);
 		const levels = partyLevels(this.plugin);
 		const r = rateEncounter(groups, levels);

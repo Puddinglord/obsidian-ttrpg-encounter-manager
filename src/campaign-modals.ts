@@ -108,6 +108,8 @@ export interface NewNoteOptions {
 	kind: StarterKind;
 	/** A suggested name for a starter (e.g. "Session 4"), or ''. */
 	suggest?: (kind: StarterKind) => string;
+	/** Name of the folder a starter is filed in when that isn't the one the dialog was opened from, or ''. */
+	elsewhere?: (kind: StarterKind) => string;
 	/** Images in the campaign, offered as the picture for a new map. */
 	images: FileRef[];
 	onSubmit: (kind: StarterKind, name: string, extra: { image?: string }) => void;
@@ -157,6 +159,8 @@ export class NewNoteModal extends Modal {
 		let typed = false;
 		input.addEventListener('input', () => { typed = true; });
 
+		const dest = c.createDiv({ cls: 'nimble-starter-dest setting-item-description', attr: { 'aria-live': 'polite' } });
+
 		const mapRow = c.createDiv({ cls: 'nimble-starter-map' });
 		if (this.o.images.length) {
 			new Setting(mapRow).setName('Map image').addDropdown(d => {
@@ -179,6 +183,13 @@ export class NewNoteModal extends Modal {
 			input.placeholder = s?.placeholder ?? 'Name';
 			if (!typed) { input.value = this.o.suggest?.(kind) ?? ''; }
 			mapRow.toggle(kind === 'map');
+			const folder = this.o.elsewhere?.(kind) ?? '';
+			dest.empty();
+			if (folder) {
+				setIcon(dest.createSpan({ cls: 'nimble-starter-dest-icon' }), 'folder-input');
+				dest.createSpan({ text: `Goes in the campaign's ${folder} folder.` });
+			}
+			dest.toggle(!!folder);
 			if (focusName) { input.focus(); input.select(); }
 		};
 

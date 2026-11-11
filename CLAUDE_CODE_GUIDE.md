@@ -23,6 +23,7 @@ src/
   builder-modal.ts      Encounter builder
   map-def.ts            ```nimble-map format (pure)         map-block.ts        its renderer (pins, tokens)
   slash.ts              "/" commands
+  spotlight.ts          Cmd/Ctrl+K box: search adversaries/NPCs/notes, roll dice, run commands (spotlight-def.ts is the pure query parser)
   inline-ref.ts         `nimble:Name` references and the interactive hover preview
   live-preview.ts       CodeMirror extension that renders references in Live Preview
   campaign-model.ts     Campaign structure from folders + frontmatter (pure, tested)
@@ -84,6 +85,7 @@ npm test             # unit tests (fast, no Obsidian needed)
 npm run test:e2e     # build, then drive a real Obsidian through the e2e suite
 node e2e/run.mjs dice           # only e2e tests whose name contains "dice"
 node e2e/explore.mjs /tmp/shots # screenshots of every fixture note and the tracker
+node e2e/layout-sweep.mjs       # every sample-vault note in the hover preview and at phone width; fails on crushed or spilling elements
 ```
 
 ## End-to-end tests

@@ -6,6 +6,7 @@ Open **Settings → Ember Vault**, or type `/settings` in a note.
 
 - **Include the Nimble bestiary:** the 525 bundled monsters. Turn it off if you only want your own. A note in your vault with the same name as a bundled monster always replaces it.
 - **Nimble slash commands:** show the Nimble commands in the `/` menu.
+- **Open Spotlight with Cmd/Ctrl+K:** off until you turn it on. [Spotlight](spotlight.md) then shares the key with Obsidian's Insert Markdown link: Spotlight when nothing is selected, a link when text is.
 
 ## Campaigns
 
@@ -25,7 +26,7 @@ Your heroes: name, class, level, max HP, Defense and max Wounds. This is the par
 - **Stat block style:** Book or Compact.
 - **Clickable dice:** make dice expressions in notes and stat blocks rollable.
 - **Nimble attack rolls:** attack dice miss on a 1 and explode on their max.
-- **3D dice:** throw physical dice across the screen. Choose finishes and colours for the primary die, the other dice and crit dice, decide whether phones get them too, and use **Test a crit** to preview an explosion chain. See [Dice](dice.md).
+- **3D dice:** throw physical dice across the screen. Choose finishes and colours for the primary die, the other dice and crit dice, turn on **3D dice on phones** if you want them there too, and use **Test crit** to preview an explosion chain. See [Dice](dice.md).
 - **Keep the screen on during combat:** for phones and tablets, while combat is running.
 
 ## Encounters

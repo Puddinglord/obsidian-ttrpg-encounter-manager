@@ -3,7 +3,7 @@
 // Nice export file. Model and image files are kept in the plugin's folder; the
 // set's scripts are read as data (see dsn-parse.ts) and never stored or run.
 
-import { normalizePath, requestUrl } from 'obsidian';
+import { normalizePath, Notice, requestUrl } from 'obsidian';
 import { unzipSync } from 'fflate';
 import type NimbleStatblocksPlugin from '../../main';
 import { parseDiceModule, parseDsnExport } from './dsn-parse';
@@ -81,7 +81,6 @@ export async function importZip(plugin: NimbleStatblocksPlugin, data: ArrayBuffe
 	const folder = setFolder(plugin, parsed.id);
 	const a = plugin.app.vault.adapter;
 	if (await a.exists(folder)) await a.rmdir(folder, true);
-	let kept = 0;
 	for (const n of names) {
 		if (!n.startsWith(root) || !KEEP.test(n)) continue;
 		const rel = safeRel(n.slice(root.length));
@@ -90,21 +89,24 @@ export async function importZip(plugin: NimbleStatblocksPlugin, data: ArrayBuffe
 		await ensureDir(plugin, out.slice(0, out.lastIndexOf('/')));
 		const bytes = files[n];
 		await a.writeBinary(out, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
-		kept++;
 	}
 	// Only keep model dice whose files actually came with the set.
 	const models: ImportedSet['models'] = {};
 	for (const [sides, rel] of Object.entries(parsed.models)) {
 		if (rel && await a.exists(normalizePath(`${folder}/${rel}`))) models[Number(sides)] = rel;
 	}
-	const set: ImportedSet = { id: parsed.id, name: parsed.name, author: parsed.author, version: parsed.version, models, added: Date.now() };
 	const styles: DiceStyle[] = [...parsed.styles];
-	if (Object.keys(models).length) {
-		styles.unshift(cleanStyle({ id: `set:${set.id}`, name: set.name, model: set.id, body: ['#9aa0a6'], label: '#ffffff', finish: 'plastic' }));
+	// No models we can use: nothing to keep as a set. Its colour looks (if any) still come in.
+	if (!Object.keys(models).length) {
+		if (await a.exists(folder)) await a.rmdir(folder, true);
+		if (!styles.length) throw new Error('That set has no dice models we can use.');
+		save(plugin, [], styles);
+		return { sets: [], styles, notes: [`${parsed.name} had no dice models we can use, so only its colours were added.`] };
 	}
-	const notes = kept ? [] : ['The set had no model or image files.'];
+	const set: ImportedSet = { id: parsed.id, name: parsed.name, author: parsed.author, version: parsed.version, models, added: Date.now() };
+	styles.unshift(cleanStyle({ id: `set:${set.id}`, name: set.name, model: set.id, body: ['#9aa0a6'], label: '#ffffff', finish: 'plastic' }));
 	save(plugin, [set], styles);
-	return { sets: [set], styles, notes };
+	return { sets: [set], styles, notes: [] };
 }
 
 /** Import from a link: a module.json (The Rollsmith's download links) or a zip. */
@@ -153,6 +155,9 @@ export async function importFile(plugin: NimbleStatblocksPlugin, file: File): Pr
 		throw new Error('Pick a dice set zip or a Dice So Nice export (.json).');
 	}
 	if (typeof json.download === 'string' && !json.appearance) {
+		// A module.json only points at the set: say where it's being fetched from, and only over http(s).
+		if (!/^https?:\/\//i.test(json.download)) throw new Error('That module.json has no download link.');
+		new Notice(`Downloading from ${new URL(json.download).host}…`);
 		const zip = await requestUrl({ url: json.download, throw: false });
 		if (zip.status >= 400) throw new Error(`The download answered with an error (${zip.status}).`);
 		return importZip(plugin, zip.arrayBuffer);

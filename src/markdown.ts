@@ -122,3 +122,64 @@ export function appendRichText(parent: HTMLElement, text: string, opts: RichText
 		rest = rest.slice(best.m.index + best.m[0].length);
 	}
 }
+
+// ----------------------------------------------------------------------------
+// Note structure, for the "/" commands. Pure, so it can be unit-tested.
+
+/**
+ * True when line number `line` is inside a fenced code block. Scans from the
+ * top of the note: a fence closes only on the same character, at least as long
+ * as the one that opened it (so ```` can wrap ```), and an unclosed fence runs
+ * to the end.
+ */
+export function insideCodeFence(getLine: (i: number) => string, line: number): boolean {
+	let fence: { char: string; len: number } | null = null;
+	for (let i = 0; i < line; i++) {
+		const text = getLine(i);
+		if (!fence) {
+			const open = /^[ \t]*(`{3,}|~{3,})(.*)$/.exec(text);
+			// A backtick fence's info string can't contain backticks: ```js``` is inline code.
+			if (open && !(open[1][0] === '`' && open[2].includes('`'))) fence = { char: open[1][0], len: open[1].length };
+		} else {
+			const close = /^[ \t]*(`{3,}|~{3,})[ \t]*$/.exec(text);
+			if (close && close[1][0] === fence.char && close[1].length >= fence.len) fence = null;
+		}
+	}
+	return !!fence;
+}
+
+/**
+ * What a block inserted on this line must start each of its lines with to stay
+ * inside the callout, quote, list item or indentation it was typed in.
+ * `before` is the line up to the insertion point. `fresh` is true when nothing
+ * but that structure comes before it, so the block can start right there.
+ */
+export function blockPrefix(before: string): { prefix: string; fresh: boolean } {
+	const m = /^((?:[ \t]*>)*[ \t]*)((?:[-*+]|\d+[.)])[ \t]+)?/.exec(before)!;
+	// Under a list item, lines continue at the indentation of the item's text.
+	const prefix = m[1] + ' '.repeat(m[2]?.length ?? 0);
+	return { prefix, fresh: m[0].length === before.length };
+}
+
+/** A block's text placed on (or, after other text, below) a line that starts with `before`. */
+export function placeBlock(before: string, text: string): string {
+	const { prefix, fresh } = blockPrefix(before);
+	const body = text.split('\n').join(`\n${prefix}`);
+	return `${fresh ? '' : `\n${prefix}`}${body}\n${prefix}`;
+}
+
+/**
+ * The slash command being typed at the end of `before` ("map Assets/hideout"),
+ * or null. A command starts with "/" at the start of the line or after
+ * whitespace, so the slashes in a path or a URL don't start one. The argument
+ * may contain "/"; of several candidates the last one `known` accepts wins.
+ */
+export function slashQuery(before: string, known: (cmd: string, hasArg: boolean) => boolean): string | null {
+	const re = /(?:^|\s)\/([a-z-]*)(?= |$)/gi;
+	let query: string | null = null;
+	for (let m = re.exec(before); m; m = re.exec(before)) {
+		const q = before.slice(m.index + m[0].indexOf('/') + 1);
+		if (known(m[1].toLowerCase(), q.length > m[1].length)) query = q;
+	}
+	return query;
+}

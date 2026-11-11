@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanStyle, DEFAULT_DICE, migrateDice, PRESETS, rollEvent, styleFor } from '../src/dice3d/styles';
+import { cleanStyle, DEFAULT_DICE, migrateDice, PRESETS, rollEvent, styleFor, useForAllDice } from '../src/dice3d/styles';
 
 describe('dice settings carry over from 1.0.3', () => {
 	it('untouched defaults map to the matching presets, nothing extra created', () => {
@@ -56,5 +56,29 @@ describe('styles and events', () => {
 		expect(rollEvent(6, [1, 3])).toBeUndefined();
 		expect(rollEvent(6, [6, 3, 6], 'crit')).toBe('crit');
 		expect(rollEvent(6, [1, 4], 'miss')).toBe('miss');
+	});
+});
+
+describe('use for all dice', () => {
+	it('puts the look on every die but leaves the crit look, and says so', () => {
+		const d = migrateDice({ normal: 'bone', primary: 'ember', crit: 'molten', perDie: { d20: 'ember' } }, {});
+		const said = useForAllDice(d, 'oak');
+		expect([d.normal, d.primary, d.crit, d.perDie]).toEqual(['oak', '', 'molten', {}]);
+		expect(said).toContain('Crit dice keep theirs');
+	});
+
+	it('says nothing about crits when they have no look of their own', () => {
+		const d = migrateDice({ crit: '' }, {});
+		expect(useForAllDice(d, 'oak')).toBe('Every die uses this look now.');
+		d.crit = 'oak';
+		expect(useForAllDice(d, 'oak')).toBe('Every die uses this look now.');
+	});
+});
+
+describe('damaged dice settings', () => {
+	it('drops styles and sets that are not objects', () => {
+		const d = migrateDice({ styles: [null, 'x', 3, { name: 'Mine' }], sets: [null, { id: 'a', name: 'A', models: {} }] }, {});
+		expect(d.styles.map(s => s.name)).toEqual(['Mine']);
+		expect(d.sets.map(s => s.id)).toEqual(['a']);
 	});
 });

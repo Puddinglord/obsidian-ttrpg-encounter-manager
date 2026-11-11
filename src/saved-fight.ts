@@ -9,7 +9,8 @@
 import { App, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, normalizePath, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { Encounter, EncounterCreature } from './types';
-import { isDown, isHero, isMinionGroup } from './encounters';
+import { fightInProgress, isDown, isHero, isMinionGroup, sameFight } from './encounters';
+import { confirmAction } from './touch';
 import { conditionLabel } from './rules';
 import { fmText, safeName } from './campaign-model';
 
@@ -61,9 +62,45 @@ export function fightNotePath(plugin: NimbleStatblocksPlugin, enc: Encounter): s
 	return normalizePath(`${base && base !== '/' ? `${base}/` : ''}Fights/${safeName(name)}.md`);
 }
 
+/**
+ * The note to save a fight to: its usual path, unless that note already holds
+ * a different fight (or isn't a fight note at all). Then the next free
+ * "<name> 2", "<name> 3"… so no other fight is overwritten.
+ */
+export async function freeFightNotePath(plugin: NimbleStatblocksPlugin, enc: Encounter): Promise<string> {
+	const first = fightNotePath(plugin, enc);
+	const stem = first.replace(/\.md$/, '');
+	for (let n = 1; n < 500; n++) {
+		const path = n === 1 ? first : `${stem} ${n}.md`;
+		const file = plugin.app.vault.getFileByPath(path);
+		if (!file) return path;
+		const saved = await readSavedFight(plugin.app, file);
+		if (saved && sameFight(saved, enc)) return path;
+	}
+	return `${stem} ${Date.now()}.md`;
+}
+
+/**
+ * Before anything replaces what's in the tracker: ask when that would lose a
+ * fight (started, ended part-way, or with someone already hurt). Run, Resume
+ * and the builder's "Run now" all come through here. True means go ahead.
+ */
+export async function confirmReplaceFight(plugin: NimbleStatblocksPlugin, incoming: string): Promise<boolean> {
+	// With several encounters, a new one is added next to the others; nothing is replaced.
+	if (plugin.settings.multipleEncounters) return true;
+	const active = plugin.encounters.active;
+	if (!active || !fightInProgress(active)) return true;
+	const round = active.paused?.round ?? active.round ?? 1;
+	const where = active.phase && active.phase !== 'setup' ? `in round ${round}` : active.paused ? `stopped at round ${round}` : 'already has damage on it';
+	const n = active.creatures.length;
+	return confirmAction(plugin.app, `Replace "${active.name}"?`,
+		`The tracker holds "${active.name}" (${n} combatant${n === 1 ? '' : 's'}), which is ${where}. Loading "${incoming}" replaces it, along with its HP, conditions and log. To keep it, cancel and save the fight to a note from the tracker first.`,
+		'Replace', true);
+}
+
 export async function saveFight(plugin: NimbleStatblocksPlugin, enc: Encounter): Promise<TFile | null> {
 	const { app } = plugin;
-	const path = fightNotePath(plugin, enc);
+	const path = await freeFightNotePath(plugin, enc);
 	const now = new Date();
 	const source = enc.sourcePath ? app.vault.getFileByPath(enc.sourcePath) : null;
 	const snapshot: Encounter = JSON.parse(JSON.stringify(enc)) as Encounter;
@@ -122,9 +159,12 @@ export function savedFightsFor(app: App, sourcePath: string, encounterName: stri
 	return out.sort((a, b) => b.saved.localeCompare(a.saved));
 }
 
-export async function resumeSavedFight(plugin: NimbleStatblocksPlugin, file: TFile): Promise<void> {
+/** `sourcePath`: the note the fight is being resumed for, when known (the saved one may have moved since). */
+export async function resumeSavedFight(plugin: NimbleStatblocksPlugin, file: TFile, sourcePath?: string): Promise<void> {
 	const snapshot = await readSavedFight(plugin.app, file);
 	if (!snapshot) { new Notice(`${file.basename} has no saved fight in it`); return; }
+	if (!await confirmReplaceFight(plugin, snapshot.name)) return;
+	if (sourcePath) snapshot.sourcePath = sourcePath;
 	plugin.encounters.restore(snapshot);
 	await plugin.showTracker();
 	new Notice(`Resumed ${snapshot.name}, round ${snapshot.paused?.round ?? snapshot.round ?? 1}`);
@@ -140,6 +180,16 @@ export function registerFightBlock(plugin: NimbleStatblocksPlugin): void {
 class FightCard extends MarkdownRenderChild {
 	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
+	}
+
+	/** Where this fight note's `source:` link points now, if it's a fight note and the link resolves. */
+	private sourceNote(): string | null {
+		const { app } = this.plugin;
+		const note = app.vault.getFileByPath(this.ctx.sourcePath);
+		const fm = note ? app.metadataCache.getFileCache(note)?.frontmatter : null;
+		if (!fm || fmText(fm.nimble).toLowerCase() !== 'combat') return null;
+		const link = fmText(fm.source).replace(/^\[\[|\]\]$/g, '').split('|')[0];
+		return (link ? app.metadataCache.getFirstLinkpathDest(link, this.ctx.sourcePath)?.path : null) ?? null;
 	}
 
 	onload(): void {
@@ -158,9 +208,14 @@ class FightCard extends MarkdownRenderChild {
 		resume.addEventListener('click', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			this.plugin.encounters.restore(enc);
-			void this.plugin.showTracker();
-			new Notice(`Resumed ${enc.name}`);
+			void (async () => {
+				if (!await confirmReplaceFight(this.plugin, enc.name)) return;
+				// The saved path goes stale when the source note moves; the fight note's own link follows it.
+				const source = this.sourceNote();
+				this.plugin.encounters.restore(source ? { ...enc, sourcePath: source } : enc);
+				await this.plugin.showTracker();
+				new Notice(`Resumed ${enc.name}`);
+			})();
 		});
 		const list = card.createDiv({ cls: 'nimble-fight-list' });
 		for (const c of enc.creatures) {

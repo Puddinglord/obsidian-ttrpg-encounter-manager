@@ -110,3 +110,59 @@ export function mapBlockSource(def: MapDef): string {
 	}
 	return lines.join('\n');
 }
+
+// ----------------------------------------------------------------------------
+// Finding the block in the note, to write pins back.
+
+export interface MapFence {
+	/** Line of the opening fence. */
+	open: number;
+	/** Line of the closing fence. */
+	close: number;
+	/** What every line of the body starts with: "> " in a callout, indentation under a list item. */
+	prefix: string;
+}
+
+const tidy = (s: string) => s.split(/\r?\n/).map(l => l.trim()).join('\n').replace(/\n+$/, '');
+
+/**
+ * The ```nimble-map fence inside lines `from..to` (inclusive). Obsidian reports
+ * the whole callout or list for a block nested in one, so the fence has to be
+ * looked for. With several maps in the range, the one whose body is `source` wins.
+ */
+export function findMapFence(lines: string[], from: number, to: number, source: string): MapFence | null {
+	const found: (MapFence & { body: string })[] = [];
+	const last = Math.min(to, lines.length - 1);
+	for (let i = Math.max(0, from); i <= last; i++) {
+		const m = /^((?:[ \t]*>)*[ \t]*)((?:[-*+]|\d+[.)])[ \t]+)?(`{3,}|~{3,})[ \t]*nimble-map\b/i.exec(lines[i]);
+		if (!m) continue;
+		// A fence on the list item's own line ("- ```nimble-map") continues at the item's indentation.
+		const prefix = m[1] + ' '.repeat(m[2]?.length ?? 0);
+		const bare = prefix.trimEnd();
+		const strip = (l: string) => l.startsWith(prefix) ? l.slice(prefix.length) : l.startsWith(bare) ? l.slice(bare.length) : l;
+		const closing = new RegExp(`^\\s*${m[3][0]}{${m[3].length},}\\s*$`);
+		let close = -1;
+		for (let j = i + 1; j <= last; j++) {
+			if (closing.test(strip(lines[j]))) { close = j; break; }
+		}
+		if (close < 0) continue;
+		found.push({ open: i, close, prefix, body: tidy(lines.slice(i + 1, close).map(strip).join('\n')) });
+		i = close;
+	}
+	const want = tidy(source);
+	const hit = found.find(f => f.body === want) ?? (found.length === 1 ? found[0] : null);
+	return hit ? { open: hit.open, close: hit.close, prefix: hit.prefix } : null;
+}
+
+/**
+ * The note's text with one map block's body replaced, keeping the fence lines
+ * and the callout/list prefix. Null when the block can't be found: write nothing.
+ */
+export function replaceMapBlock(text: string, from: number, to: number, oldSource: string, newSource: string): string | null {
+	const lines = text.split('\n');
+	const fence = findMapFence(lines, from, to, oldSource);
+	if (!fence) return null;
+	const cr = lines[fence.open].endsWith('\r') ? '\r' : '';
+	lines.splice(fence.open + 1, fence.close - fence.open - 1, ...newSource.split('\n').map(l => fence.prefix + l + cr));
+	return lines.join('\n');
+}

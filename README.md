@@ -68,6 +68,7 @@ The full guide is in **[docs/](docs/README.md)**:
 - [GM maps](docs/maps.md)
 - [Combat tracker](docs/tracker.md)
 - [Dice](docs/dice.md)
+- [Spotlight](docs/spotlight.md)
 - [Slash commands](docs/slash-commands.md)
 - [Phone and iPad](docs/mobile.md)
 - [Settings](docs/settings.md)
