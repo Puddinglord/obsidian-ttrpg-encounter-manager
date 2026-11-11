@@ -82,6 +82,7 @@ npm install          # once
 npm run dev          # watch build (main.js with inline sourcemap)
 npm run build        # type-check + production build
 npm test             # unit tests (fast, no Obsidian needed)
+npm run lint         # Obsidian's review checks: ESLint (TS) + stylelint (styles.css); fails on any warning
 npm run test:e2e     # build, then drive a real Obsidian through the e2e suite
 node e2e/run.mjs dice           # only e2e tests whose name contains "dice"
 node e2e/explore.mjs /tmp/shots # screenshots of every fixture note and the tracker
@@ -111,11 +112,21 @@ Copy `main.js`, `manifest.json` and `styles.css` to `<vault>/.obsidian/plugins/n
 - **New setting:** add to `NimbleStatblocksSettings` + `DEFAULT_SETTINGS`, then a control in `settings-tab.ts`.
 - **New tracker action:** add a method to `EncounterStore`, a unit test in `tests/encounters.test.ts`, and the button in `tracker-view.ts`.
 
+## Obsidian review checks
+
+The community directory's review bot flags things the `eslint-plugin-obsidianmd` recommended config misses, so `eslint.config.mjs` and `stylelint.config.mjs` add them and `npm run lint` fails on warnings. `.github/workflows/check.yml` runs it on every PR and push to main.
+
+- No "command"/"commands" anywhere in a command name; no type assertions that don't change the type.
+- CSS must be fully supported by Chromium 124 (Obsidian 1.6.5): no `display: contents`, no `clip-path` (draw shapes with SVG), no `column-gap` (use `gap`). Stylelint names the feature.
+- No `!important`; raise specificity instead (see the print rules in styles.css).
+- When the bot flags something new, add a rule for it here rather than only fixing the line.
+
 ## Releasing
 
-1. Bump `version` in `manifest.json`, `package.json` and add it to `versions.json`
-2. `npm test && npm run test:e2e`
-3. Push a tag; `.github/workflows/release.yml` builds and attaches `main.js`, `manifest.json`, `styles.css`
+Every PR merged into `main` is released by `.github/workflows/auto-release.yml` (details in RELEASING.md). Don't bump versions in a PR yourself.
+
+- Default is a patch release. When the user says a change is a minor or major release, add the `release: minor` or `release: major` label to the PR (`gh pr edit <n> --add-label "release: minor"`). For `release: skip`, only when they say not to release.
+- Run `npm test && npm run test:e2e` before merging; `release.yml` lints, tests, builds and attaches `main.js`, `manifest.json`, `styles.css`.
 
 ## Mobile
 

@@ -37,6 +37,6 @@ Cmd/Ctrl+K is Obsidian's key for **Insert Markdown link**, so Spotlight shares i
 
 This is off until you turn it on. The first time you run the plugin after updating it offers **Use ⌘K**; you can change your mind any time with **Open Spotlight with Cmd/Ctrl+K** in the plugin's settings. Your hotkey settings aren't touched.
 
-- To use a different key, set one for **Spotlight: search adversaries, roll dice, run commands** under **Settings → Hotkeys**. That works whether or not the Cmd/Ctrl+K sharing is on.
+- To use a different key, set one for **Spotlight: search adversaries, roll dice and more** under **Settings → Hotkeys**. That works whether or not the Cmd/Ctrl+K sharing is on.
 - On a phone or tablet without a keyboard, run that command from the command palette, or add it to the mobile toolbar.
 - If you've moved Insert Markdown link to another key yourself, Spotlight follows it there. Give the Spotlight command its own key instead.

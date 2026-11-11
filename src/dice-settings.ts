@@ -142,11 +142,18 @@ class ImagePicker extends FuzzySuggestModal<TFile> {
 	onChooseItem(f: TFile): void { this.onPick(f); }
 }
 
+let swatchCount = 0;
+
 /** A small picture of a look: its colours, a sample number, and its finish. */
 function swatch(parent: HTMLElement, st: DiceStyle): HTMLElement {
 	const sw = parent.createDiv({ cls: `nimble-dice-swatch finish-${st.finish}` });
-	const stops = st.body.length > 1 ? st.body.map((c, i) => `${c} ${Math.round((i / (st.body.length - 1)) * 100)}%`).join(', ') : `${st.body[0]}, ${st.body[0]}`;
-	sw.style.setProperty('--dice-body', `linear-gradient(135deg, ${stops})`);
+	// An SVG hexagon rather than a CSS clip-path, which Obsidian's review flags.
+	const id = `nimble-dice-swatch-${++swatchCount}`;
+	const svg = sw.createSvg('svg', { cls: 'nimble-dice-swatch-shape', attr: { viewBox: '0 0 100 100', preserveAspectRatio: 'none', 'aria-hidden': 'true' } });
+	const grad = svg.createSvg('defs').createSvg('linearGradient', { attr: { id, x1: '0', y1: '0', x2: '1', y2: '1' } });
+	const body = st.body.length ? st.body : ['#888'];
+	body.forEach((c, i) => grad.createSvg('stop', { attr: { offset: body.length > 1 ? `${Math.round((i / (body.length - 1)) * 100)}%` : '0%', 'stop-color': c } }));
+	svg.createSvg('polygon', { attr: { points: '50,0 100,25 100,75 50,100 0,75 0,25', fill: `url(#${id})` } });
 	sw.style.setProperty('--dice-label', st.label);
 	sw.style.setProperty('--dice-outline', st.outline || 'transparent');
 	sw.createSpan({ cls: 'nimble-dice-swatch-num', text: '20' });

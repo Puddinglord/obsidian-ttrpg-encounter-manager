@@ -106,13 +106,12 @@ class NpcCard extends MarkdownRenderChild {
 		const card = el.createDiv({ cls: 'nimble-npc-card' });
 		this.renderPortrait(card.createDiv({ cls: 'nimble-npc-portrait' }), fm, name, role);
 
-		const info = card.createDiv({ cls: 'nimble-npc-info' });
-		const head = info.createDiv({ cls: 'nimble-npc-head' });
+		const head = card.createDiv({ cls: 'nimble-npc-head' });
 		head.createDiv({ cls: 'nimble-npc-name', text: name });
 		if (role) head.createDiv({ cls: 'nimble-npc-role', text: role });
 
 		if (!def.fields.length) return;
-		const rows = info.createDiv({ cls: 'nimble-npc-fields' });
+		const rows = card.createDiv({ cls: 'nimble-npc-fields' });
 		for (const f of def.fields) {
 			const secret = SECRET_KEYS.includes(f.key);
 			const row = rows.createDiv({ cls: 'nimble-npc-field' });

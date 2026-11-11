@@ -51,14 +51,29 @@ Once it's listed, the landing page's **Install in Obsidian** button (`obsidian:/
 - [x] `isDesktopOnly: false`, and there's no Node or Electron API use (the plugin runs on mobile)
 - [x] README discloses network use (none, except NPC portrait URLs you set) and clipboard writes
 - [x] Third-party content and permissions are listed in `NOTICE.md`
-- [x] `npm run lint` (Obsidian's review rules) has no errors
+- [x] `npm run lint` (Obsidian's review rules, TypeScript and CSS) has no errors or warnings
 
 ## Later releases
+
+Merging a PR into `main` releases it. `.github/workflows/auto-release.yml` bumps the version in `package.json`, `manifest.json` and `versions.json`, commits `🔖 Release x.y.z (#PR)` to `main`, tags it, and runs `release.yml` for the tag.
+
+The PR's labels pick the bump:
+
+| Label | Bump |
+| --- | --- |
+| none | patch: 1.2.3 → 1.2.4 |
+| `release: minor` | minor: 1.2.3 → 1.3.0 |
+| `release: major` | major: 1.2.3 → 2.0.0 |
+| `release: skip` | no release |
+
+Set the label before merging. If a PR already sets a new, untagged version in `manifest.json` (say, to raise `minAppVersion` at the same time), that version ships as is.
+
+If you raise `minAppVersion`, change it in `manifest.json` in the PR; the bump records the new minimum in `versions.json`.
+
+By hand, without a PR:
 
 ```sh
 npm version 1.0.1 --no-git-tag-version   # updates package.json, manifest.json, versions.json
 git commit -am "Release 1.0.1"
 ./tag.sh 1.0.1
 ```
-
-If you raise `minAppVersion`, change it in `manifest.json` before running `npm version` so `versions.json` records the new minimum.

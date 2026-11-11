@@ -97,7 +97,7 @@ function dropTarget(el: HTMLElement, plugin: NimbleStatblocksPlugin, folder: str
 		el.addClass('is-drop-target');
 	});
 	el.addEventListener('dragleave', (e) => {
-		if (!(e.relatedTarget instanceof Node) || !el.contains(e.relatedTarget)) el.removeClass('is-drop-target');
+		if (!el.contains(e.relatedTarget as Node | null)) el.removeClass('is-drop-target');
 	});
 	el.addEventListener('drop', (e) => {
 		el.removeClass('is-drop-target');

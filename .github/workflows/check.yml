@@ -1,0 +1,36 @@
+name: Check
+
+# Runs Obsidian's review checks (ESLint + stylelint), unit tests and the build on every
+# pull request and push to main, so review-bot warnings are caught before a release.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (Obsidian review rules, TypeScript and CSS)
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
