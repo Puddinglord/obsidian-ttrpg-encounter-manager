@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "*"
+  # auto-release.yml runs this with --ref <tag> after a PR merges.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -31,6 +33,7 @@ jobs:
 
       - name: Tag matches manifest version
         run: |
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then echo "Run this on a tag (gh workflow run release.yml --ref <tag>)"; exit 1; fi
           TAG="${GITHUB_REF_NAME}"
           VERSION=$(node -p "require('./manifest.json').version")
           if [ "$TAG" != "$VERSION" ]; then
@@ -70,6 +73,7 @@ jobs:
         # Only the files Obsidian installs. The sample adventure is on the landing page.
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
           generate_release_notes: true
           files: |
             main.js
