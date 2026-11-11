@@ -91,7 +91,7 @@ See [CLAUDE_CODE_GUIDE.md](CLAUDE_CODE_GUIDE.md). Releasing and the landing page
 | Command | Does |
 |---|---|
 | `npm test` | Unit tests |
-| `npm run lint` | Obsidian's review rules |
+| `npm run lint` | Obsidian's review rules: ESLint for the code, stylelint for `styles.css` (also run in CI on every PR) |
 | `npm run test:e2e` | Drives a real Obsidian |
 | `npm run screenshots` | Regenerates `docs/images/` from the sample vault |
 

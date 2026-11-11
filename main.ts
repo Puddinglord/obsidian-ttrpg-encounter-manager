@@ -245,7 +245,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 
 	private registerCommands(): void {
 		// Spotlight: search and actions in one box. Any hotkey can be set for it; Cmd/Ctrl+K is shared with Insert link (see shareInsertLinkKey).
-		this.addCommand({ id: 'spotlight', name: 'Spotlight: search adversaries, roll dice, run commands', icon: 'search', callback: () => this.toggleSpotlight() });
+		this.addCommand({ id: 'spotlight', name: 'Spotlight: search adversaries, roll dice and more', icon: 'search', callback: () => this.toggleSpotlight() });
 		this.app.workspace.onLayoutReady(() => { this.shareInsertLinkKey(); this.offerSpotlightKey(); });
 		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', callback: () => this.activateEncounterView() });
 		this.addCommand({ id: 'open-bestiary', name: 'Open bestiary', callback: () => this.openBestiary() });
@@ -356,7 +356,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			return !this.spotlight && !!editor && editor.hasFocus() && editor.somethingSelected();
 		};
 		const wrapped = (checking: boolean): boolean | void => {
-			if (!this.settings.spotlightKey || wantsLink()) return original.call(cmd, checking) as boolean | void;
+			if (!this.settings.spotlightKey || wantsLink()) return original.call(cmd, checking);
 			if (!checking) this.toggleSpotlight();
 			return true;
 		};
