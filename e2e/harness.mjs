@@ -4,7 +4,7 @@
 //
 // Nothing here touches the user's real Obsidian config or vaults.
 
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -47,6 +47,43 @@ async function waitFor(fn, { timeout = 30000, interval = 250, what = 'condition'
 	throw new Error(`Timed out waiting for ${what}${lastErr ? `: ${lastErr.message}` : ''}`);
 }
 
+/**
+ * The app you were using (macOS bundle id), so focus can go back to it once the
+ * test Obsidian is up. Null elsewhere, or when it can't be read.
+ */
+function frontmostApp() {
+	if (process.platform !== 'darwin') return null;
+	try {
+		return execFileSync('osascript', ['-e', 'id of application (path to frontmost application as text)'], { encoding: 'utf8', timeout: 3000 }).trim() || null;
+	} catch { return null; }
+}
+
+/**
+ * Keep the test Obsidian out of your way: no Dock icon, no focus, invisible and
+ * click-through. It still renders (the backgrounding flags above keep it awake),
+ * and Playwright drives it over CDP, so it never needs the real cursor or keyboard.
+ * Set E2E_FOREGROUND=1 to watch it instead.
+ */
+async function sendToBackground(page, previous) {
+	if (process.env.E2E_FOREGROUND) return;
+	await page.evaluate(() => {
+		const req = window.require;
+		let remote = null;
+		try { remote = req('@electron/remote'); } catch { /* older builds */ }
+		if (!remote) { try { remote = req('electron').remote; } catch { /* not exposed */ } }
+		if (!remote) return;
+		const win = remote.getCurrentWindow();
+		win.setFocusable(false);
+		win.setIgnoreMouseEvents(true);
+		win.setOpacity(0);
+		win.blur();
+		remote.app.dock?.hide();
+	}).catch(() => {});
+	if (previous) {
+		try { execFileSync('osascript', ['-e', `tell application id "${previous}" to activate`], { timeout: 3000 }); } catch { /* best effort */ }
+	}
+}
+
 export async function launchObsidian({ settings, vaultDir } = {}) {
 	if (!existsSync(OBSIDIAN_BIN)) throw new Error(`Obsidian not found at ${OBSIDIAN_BIN}. Set OBSIDIAN_BIN.`);
 	for (const f of ['main.js', 'manifest.json', 'styles.css']) {
@@ -77,6 +114,7 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 	}));
 
 	const port = await freePort();
+	const previousApp = frontmostApp();
 	const proc = spawn(OBSIDIAN_BIN, [
 		`--user-data-dir=${userData}`,
 		`--remote-debugging-port=${port}`,
@@ -109,6 +147,7 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 
 	const browser = await waitFor(() => chromium.connectOverCDP(`http://127.0.0.1:${port}`), { what: 'Obsidian debug port' });
 	const page = await waitFor(() => browser.contexts()[0]?.pages().find(p => p.url().includes('index.html')), { what: 'Obsidian window' });
+	await sendToBackground(page, previousApp);
 	const consoleErrors = [];
 	page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text()); });
 	page.on('pageerror', e => consoleErrors.push(String(e)));
