@@ -1,6 +1,10 @@
 // Index of every monster: those defined in ```nimble blocks across the vault,
 // plus the Nimble bestiary bundled with the plugin. A vault note with the same
 // name as a bundled monster replaces it (that's how GMs customise one).
+//
+// Campaigns don't share monsters: a lookup from a note (or, with no note, the
+// active campaign) only sees vault monsters its campaign may see (see `setScope`).
+// The bundled bestiary is seen everywhere.
 
 import { App, Events, TFile } from 'obsidian';
 import { MonsterIndexEntry, NimbleMonster } from './types';
@@ -16,8 +20,22 @@ export class MonsterIndex extends Events {
 	private bundled = new Map<string, MonsterIndexEntry>();
 	private bundledById = new Map<string, MonsterIndexEntry>();
 
+	/** Can a lookup from `from` (a note path, or none) see the monster defined in `filePath`? */
+	private visible: (filePath: string, from?: string) => boolean = () => true;
+
 	constructor(private app: App) {
 		super();
+	}
+
+	/** Which vault monsters each lookup can see (the plugin keeps campaigns apart with this). */
+	setScope(fn: (filePath: string, from?: string) => boolean): void {
+		this.visible = fn;
+		this.trigger('changed');
+	}
+
+	/** The first definition of a name that `from` can see. */
+	private pick(list: MonsterIndexEntry[] | undefined, from?: string): MonsterIndexEntry | undefined {
+		return list?.find(e => this.visible(e.filePath, from));
 	}
 
 	setBundled(entries: MonsterIndexEntry[]): void {
@@ -49,21 +67,23 @@ export class MonsterIndex extends Events {
 		this.trigger('changed');
 	}
 
-	get(name: string): MonsterIndexEntry | undefined {
+	/** A monster by name, as seen from the note `from` (or the active campaign). */
+	get(name: string, from?: string): MonsterIndexEntry | undefined {
 		const key = name.trim().toLowerCase();
-		return this.byName.get(key)?.[0] ?? this.bundled.get(key);
+		return this.pick(this.byName.get(key), from) ?? this.bundled.get(key);
 	}
 
-	/** Every monster, vault notes first-class; bundled ones unless a note overrides the name. */
-	all(): MonsterIndexEntry[] {
-		const vault = [...this.byName.values()].map(list => list[0]);
-		const bundled = [...this.bundled.entries()].filter(([key]) => !this.byName.has(key)).map(([, e]) => e);
+	/** Every monster `from` can see: vault notes first-class; bundled ones unless a visible note overrides the name. */
+	all(from?: string): MonsterIndexEntry[] {
+		const vault = [...this.byName.values()].map(list => this.pick(list, from)).filter((e): e is MonsterIndexEntry => !!e);
+		const shadowed = new Set(vault.map(e => e.name.toLowerCase()));
+		const bundled = [...this.bundled.entries()].filter(([key]) => !shadowed.has(key)).map(([, e]) => e);
 		return [...vault, ...bundled].sort((a, b) => a.name.localeCompare(b.name));
 	}
 
-	/** Only monsters written in vault notes. */
-	vaultOnly(): MonsterIndexEntry[] {
-		return [...this.byName.values()].map(list => list[0]).sort((a, b) => a.name.localeCompare(b.name));
+	/** Only monsters written in vault notes (that `from` can see). */
+	vaultOnly(from?: string): MonsterIndexEntry[] {
+		return [...this.byName.values()].map(list => this.pick(list, from)).filter((e): e is MonsterIndexEntry => !!e).sort((a, b) => a.name.localeCompare(b.name));
 	}
 
 	get size(): number {

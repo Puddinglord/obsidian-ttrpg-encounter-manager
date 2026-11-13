@@ -4,6 +4,7 @@
 import { ItemView, MarkdownPostProcessorContext, MarkdownRenderChild, Platform, setIcon, WorkspaceLeaf } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { campaignMenu, renderOutline, renderPartyLine } from './campaign-ui';
+import { ROLE_INFO } from './campaign-modals';
 
 export const CAMPAIGN_VIEW_TYPE = 'nimble-campaign';
 
@@ -39,9 +40,11 @@ export class CampaignView extends ItemView {
 		const c = store.active;
 
 		const bar = root.createDiv({ cls: 'campaign-switcher' });
-		const pick = bar.createEl('button', { cls: 'campaign-switch-btn', attr: { 'aria-label': 'Switch campaign' } });
-		setIcon(pick.createSpan({ cls: 'campaign-switch-icon' }), 'castle');
+		const pick = bar.createEl('button', { cls: 'campaign-switch-btn', attr: { 'aria-label': 'Switch campaign or view' } });
+		setIcon(pick.createSpan({ cls: 'campaign-switch-icon' }), c ? ROLE_INFO[c.role].icon : 'castle');
 		pick.createSpan({ cls: 'campaign-switch-name', text: c?.name ?? (store.campaigns.length ? 'Choose a campaign' : 'No campaigns yet') });
+		if (c) pick.createSpan({ cls: `campaign-role-pill role-${c.role}`, text: ROLE_INFO[c.role].short });
+		root.toggleClass('is-player', c?.role === 'player');
 		setIcon(pick.createSpan({ cls: 'campaign-switch-chevron' }), 'chevrons-up-down');
 		pick.addEventListener('click', (e) => campaignMenu(this.plugin, e));
 		if (c) {

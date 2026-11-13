@@ -33,7 +33,7 @@ class InlineRefWidget extends WidgetType {
 	ignoreEvent(): boolean {
 		// Found refs handle their own clicks (open, preview, add). Unresolved ones
 		// let the editor take the click so the cursor lands there to fix a typo.
-		return !!this.plugin.index.get(this.name);
+		return !!this.plugin.index.get(this.name, this.sourcePath || undefined);
 	}
 }
 

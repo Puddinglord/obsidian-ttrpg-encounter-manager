@@ -18,6 +18,24 @@ type ArmorFilter = 'all' | 'none' | 'medium' | 'heavy';
 const keyOf = (e: MonsterIndexEntry) => e.monster.bundledId || `vault:${e.filePath}#${e.name}`;
 
 /** Lowercased text a search runs against. */
+/** "Bandit (GM Guide)" and "Ogre (lvl 5)" are the same creature as "Bandit" and "Ogre" to a player. */
+export function baseCreatureName(name: string): string {
+	return name.replace(/\s+\((?:GM Guide|lvl [^)]*)\)$/i, '').trim();
+}
+
+/** Which book a monster is from (or "Your note"), short and long. */
+export function bookOf(e: MonsterIndexEntry): { short: string; long: string } {
+	if (!e.bundled) return { short: 'Note', long: 'Your note' };
+	const gmg = e.monster.source?.startsWith('GM');
+	return gmg ? { short: 'GMG', long: e.monster.source ?? 'GM Guide' } : { short: 'M&M', long: e.monster.source ?? 'Monsters & More' };
+}
+
+/** What a player's search can see: names and lore, not abilities. */
+function loreHaystack(e: MonsterIndexEntry): string {
+	const m = e.monster;
+	return [e.name, m.type, m.group, m.habitat, m.source, m.size, m.description].filter(Boolean).join(' ').toLowerCase();
+}
+
 function haystack(e: MonsterIndexEntry): string {
 	const m = e.monster;
 	return [
@@ -46,6 +64,12 @@ export class BestiaryView extends ItemView {
 	private renderToken = 0;
 	/** Narrow panes (phones, a slim sidebar) show the list or one monster, not both. */
 	private narrow = false;
+	/** Player view: names and lore only (no levels, stats or stat filters). */
+	private lore = false;
+	/** Player view: every printing of a creature, by the one shown (so a creature in both books is listed once). */
+	private printings = new Map<MonsterIndexEntry, MonsterIndexEntry[]>();
+	/** Player view: creatures you've written notes on (lower-case names). */
+	private noted = new Set<string>();
 
 	constructor(leaf: WorkspaceLeaf, private plugin: NimbleStatblocksPlugin) {
 		super(leaf);
@@ -57,6 +81,16 @@ export class BestiaryView extends ItemView {
 
 	async onOpen(): Promise<void> {
 		this.registerEvent(this.plugin.index.on('changed', () => this.refreshList()));
+		// Your notes on a creature: its row's Notes pill and the notes under its lore follow edits.
+		const notesChanged = debounce(() => {
+			if (!this.lore) return;
+			this.refreshList();
+			const cur = this.results.find(r => keyOf(r) === this.selected);
+			if (cur) this.show(cur, false);
+		}, 400, true);
+		this.registerEvent(this.app.metadataCache.on('changed', (_f, _d, cache) => { if (String(cache.frontmatter?.nimble ?? '').toLowerCase() === 'creature') notesChanged(); }));
+		// Switching between a campaign you run and one you play in changes what's shown.
+		this.registerEvent(this.plugin.campaigns.on('changed', () => { if (this.plugin.hideStats() !== this.lore) this.build(); }));
 		this.build();
 		const ro = new ResizeObserver(() => this.checkWidth());
 		ro.observe(this.containerEl);
@@ -93,6 +127,9 @@ export class BestiaryView extends ItemView {
 		const root = this.containerEl.children[1] as HTMLElement;
 		root.empty();
 		root.addClass('nimble-bestiary');
+		this.lore = this.plugin.hideStats();
+		root.toggleClass('is-lore', this.lore);
+		if (this.lore) { this.role = 'all'; this.armor = 'all'; this.minLevel = this.maxLevel = ''; }
 		const layout = root.createDiv({ cls: 'bestiary-layout' });
 		this.layoutEl = layout;
 		layout.toggleClass('is-narrow', this.narrow);
@@ -106,7 +143,7 @@ export class BestiaryView extends ItemView {
 		const input = search.createEl('input', {
 			type: 'search',
 			cls: 'bestiary-search-input',
-			attr: { placeholder: 'Search monsters, abilities, habitats…', 'aria-label': 'Search the bestiary' },
+			attr: { placeholder: this.lore ? 'Search creatures, groups, habitats…' : 'Search monsters, abilities, habitats…', 'aria-label': 'Search the bestiary' },
 		});
 		input.value = this.query;
 		const run = debounce(() => { this.query = input.value; this.refreshList(); }, 120, true);
@@ -122,20 +159,26 @@ export class BestiaryView extends ItemView {
 
 		// Filters (behind the toggle on narrow screens)
 		const filters = side.createDiv({ cls: 'bestiary-filters' });
-		this.segmented(filters, 'Role', [['all', 'All'], ['regular', 'Regular'], ['minion', 'Minion'], ['legendary', 'Legendary']], () => this.role, v => { this.role = v as RoleFilter; });
-		this.segmented(filters, 'Armor', [['all', 'Any'], ['none', 'None'], ['medium', 'M'], ['heavy', 'H']], () => this.armor, v => { this.armor = v as ArmorFilter; });
+		if (!this.lore) {
+			this.segmented(filters, 'Role', [['all', 'All'], ['regular', 'Regular'], ['minion', 'Minion'], ['legendary', 'Legendary']], () => this.role, v => { this.role = v as RoleFilter; });
+			this.segmented(filters, 'Armor', [['all', 'Any'], ['none', 'None'], ['medium', 'M'], ['heavy', 'H']], () => this.armor, v => { this.armor = v as ArmorFilter; });
+		}
 		this.segmented(filters, 'Source', [['all', 'All'], ['mm', 'M&M'], ['gmg', 'GM Guide'], ['vault', 'My notes']], () => this.source, v => { this.source = v as SourceFilter; });
 
 		const row = filters.createDiv({ cls: 'bestiary-filter-row' });
-		row.createSpan({ cls: 'bestiary-filter-label', text: 'Level' });
-		const lvl = (value: string, label: string, set: (v: string) => void) => {
-			const i = row.createEl('input', { type: 'text', cls: 'bestiary-level-input', attr: { placeholder: label, 'aria-label': `${label} level`, inputmode: 'decimal' } });
-			i.value = value;
-			i.addEventListener('input', debounce(() => { set(i.value.trim()); this.refreshList(); }, 200, true));
-		};
-		lvl(this.minLevel, 'min', v => { this.minLevel = v; });
-		row.createSpan({ text: '–' });
-		lvl(this.maxLevel, 'max', v => { this.maxLevel = v; });
+		if (!this.lore) {
+			row.createSpan({ cls: 'bestiary-filter-label', text: 'Level' });
+			const lvl = (value: string, label: string, set: (v: string) => void) => {
+				const i = row.createEl('input', { type: 'text', cls: 'bestiary-level-input', attr: { placeholder: label, 'aria-label': `${label} level`, inputmode: 'decimal' } });
+				i.value = value;
+				i.addEventListener('input', debounce(() => { set(i.value.trim()); this.refreshList(); }, 200, true));
+			};
+			lvl(this.minLevel, 'min', v => { this.minLevel = v; });
+			row.createSpan({ text: '–' });
+			lvl(this.maxLevel, 'max', v => { this.maxLevel = v; });
+		} else {
+			row.createSpan({ cls: 'bestiary-filter-label', text: 'Habitat' });
+		}
 		const habitats = [...new Set(this.plugin.index.all().map(e => e.monster.habitat).filter((h): h is string => !!h))].sort();
 		if (habitats.length) {
 			const sel = row.createEl('select', { cls: 'dropdown bestiary-habitat', attr: { 'aria-label': 'Habitat' } });
@@ -180,7 +223,8 @@ export class BestiaryView extends ItemView {
 		const m = e.monster;
 		if (this.role !== 'all' && monsterRole(m) !== this.role) return false;
 		if (this.armor !== 'all' && m.armor !== this.armor) return false;
-		if (this.source === 'vault' && e.bundled) return false;
+		// Players: your own monster notes, and creatures you've written notes on.
+		if (this.source === 'vault' && e.bundled && !(this.lore && this.noted.has(baseCreatureName(e.name).toLowerCase()))) return false;
 		if (this.source === 'mm' && !(e.bundled && m.source?.startsWith('Monsters'))) return false;
 		if (this.source === 'gmg' && !(e.bundled && m.source?.startsWith('GM Guide'))) return false;
 		if (this.habitat && m.habitat !== this.habitat) return false;
@@ -190,7 +234,7 @@ export class BestiaryView extends ItemView {
 		if (min !== null && (lv === null || lv < min)) return false;
 		if (max !== null && (lv === null || lv > max)) return false;
 		if (this.query.trim()) {
-			let h = this.haystacks.get(e);
+			let h = this.lore ? loreHaystack(e) : this.haystacks.get(e);
 			if (!h) { h = haystack(e); this.haystacks.set(e, h); }
 			for (const word of this.query.toLowerCase().split(/\s+/).filter(Boolean)) {
 				if (!h.includes(word)) return false;
@@ -201,6 +245,7 @@ export class BestiaryView extends ItemView {
 
 	private refreshList(): void {
 		if (!this.listEl) return;
+		this.noted = this.lore ? new Set(this.plugin.creatureNotes().keys()) : new Set();
 		const q = this.query.trim().toLowerCase();
 		this.results = this.plugin.index.all().filter(e => this.matches(e)).sort((a, b) => {
 			if (q) {
@@ -209,12 +254,15 @@ export class BestiaryView extends ItemView {
 				const bn = b.name.toLowerCase().includes(q) ? 0 : 1;
 				if (an !== bn) return an - bn;
 			}
+			if (this.lore) return a.name.localeCompare(b.name);
 			return (levelValue(a.monster.level) ?? 0) - (levelValue(b.monster.level) ?? 0) || a.name.localeCompare(b.name);
 		});
-		const total = this.plugin.index.all().length;
+		if (this.lore) this.results = this.mergePrintings(this.results);
+		const total = this.lore ? this.mergePrintings(this.plugin.index.all()).length : this.plugin.index.all().length;
 		const active = [this.role !== 'all', this.armor !== 'all', this.source !== 'all', !!this.minLevel, !!this.maxLevel, !!this.habitat].filter(Boolean).length;
 		this.containerEl.querySelector('.bestiary-filter-toggle')?.toggleClass('has-active', active > 0);
-		this.countEl?.setText(this.results.length === total ? `${total} monsters` : `${this.results.length} of ${total} monsters`);
+		const noun = this.lore ? 'creatures' : 'monsters';
+		this.countEl?.setText(this.results.length === total ? `${total} ${noun}` : `${this.results.length} of ${total} ${noun}`);
 		this.listEl.empty();
 		if (!this.results.length) {
 			this.listEl.createDiv({ cls: 'bestiary-empty', text: 'No monsters match. Try fewer filters.' });
@@ -235,6 +283,33 @@ export class BestiaryView extends ItemView {
 		else this.detailEl?.empty();
 	}
 
+	/**
+	 * One entry per creature for players: a creature printed in both books (or
+	 * at two levels) is the same creature to a hero. The printing with the most
+	 * lore is shown; the others are listed as sources.
+	 */
+	private mergePrintings(list: MonsterIndexEntry[]): MonsterIndexEntry[] {
+		const groups = new Map<string, MonsterIndexEntry[]>();
+		for (const e of list) {
+			const k = baseCreatureName(e.name).toLowerCase();
+			groups.set(k, [...(groups.get(k) ?? []), e]);
+		}
+		this.printings.clear();
+		const out: MonsterIndexEntry[] = [];
+		const seen = new Set<string>();
+		for (const e of list) {
+			const k = baseCreatureName(e.name).toLowerCase();
+			if (seen.has(k)) continue;
+			seen.add(k);
+			const all = groups.get(k)!;
+			// Your own note first, then the printing with the most to read, then Monsters & More.
+			const best = [...all].sort((a, b) => Number(a.bundled) - Number(b.bundled) || (b.monster.description?.length ?? 0) - (a.monster.description?.length ?? 0) || Number(!!a.monster.source?.startsWith('GM')) - Number(!!b.monster.source?.startsWith('GM')))[0];
+			this.printings.set(best, all);
+			out.push(best);
+		}
+		return out;
+	}
+
 	private row(list: HTMLElement, e: MonsterIndexEntry): void {
 		{
 			const key = keyOf(e);
@@ -242,14 +317,32 @@ export class BestiaryView extends ItemView {
 			if (key === this.selected) { row.addClass('is-selected'); row.setAttr('aria-selected', 'true'); }
 			const role = monsterRole(e.monster);
 			row.addClass(`role-${role}`);
-			row.createSpan({ cls: 'bestiary-level', text: formatLevel(e.monster.level) || (role === 'minion' ? 'min' : '–') });
-			const text = row.createDiv({ cls: 'bestiary-row-text' });
-			text.createDiv({ cls: 'bestiary-row-name', text: e.name });
-			text.createDiv({ cls: 'bestiary-row-meta', text: [e.monster.group, describeMonster(e).replace(/^Lvl [^·]+· /, '')].filter(Boolean).join(' · ') });
-			if (!e.bundled) row.createSpan({ cls: 'bestiary-tag', text: 'note' });
-			const add = row.createEl('button', { cls: 'clickable-icon bestiary-row-add', attr: { 'aria-label': `Add ${e.name}` } });
-			setIcon(add, 'plus');
-			add.addEventListener('click', (ev) => { ev.stopPropagation(); void this.plugin.addToEncounter(e.monster, e.filePath || undefined, ev.shiftKey ? 2 : 1); });
+			if (!this.lore) row.createSpan({ cls: 'bestiary-level', text: formatLevel(e.monster.level) || (role === 'minion' ? 'min' : '–') });
+			if (this.lore) {
+				row.removeClass(`role-${role}`);
+				setIcon(row.createSpan({ cls: 'bestiary-level bestiary-lore-icon' }), 'paw-print');
+			}
+			const body = row.createDiv({ cls: 'bestiary-row-text' });
+			body.createDiv({ cls: 'bestiary-row-name', text: this.lore ? baseCreatureName(e.name) : e.name });
+			const meta = this.lore
+				? [e.monster.group, [e.monster.size !== 'Medium' ? e.monster.size : '', e.monster.type].filter(Boolean).join(' '), e.monster.habitat]
+				: [e.monster.group, describeMonster(e).replace(/^Lvl [^·]+· /, '')];
+			const line = body.createDiv({ cls: 'bestiary-row-line' });
+			line.createDiv({ cls: 'bestiary-row-meta', text: meta.filter(Boolean).join(' · ') });
+			// Where it's from: a pill per book (players see every printing of a creature on its one row).
+			const tags = line.createDiv({ cls: 'bestiary-tags' });
+			const books = [...new Set((this.lore ? this.printings.get(e) ?? [e] : [e]).map(x => bookOf(x).short))];
+			for (const b of books) tags.createSpan({ cls: `bestiary-tag is-${b === 'Note' ? 'note' : b === 'GMG' ? 'gmg' : 'mm'}`, text: b });
+			if (this.lore && this.noted.has(baseCreatureName(e.name).toLowerCase())) tags.createSpan({ cls: 'bestiary-tag is-noted', text: 'Notes' });
+			if (this.lore) {
+				const ins = row.createEl('button', { cls: 'clickable-icon bestiary-row-add', attr: { 'aria-label': `Insert a reference to ${e.name}` } });
+				setIcon(ins, 'at-sign');
+				ins.addEventListener('click', (ev) => { ev.stopPropagation(); this.insertReference(e.name); });
+			} else {
+				const add = row.createEl('button', { cls: 'clickable-icon bestiary-row-add', attr: { 'aria-label': `Add ${e.name}` } });
+				setIcon(add, 'plus');
+				add.addEventListener('click', (ev) => { ev.stopPropagation(); void this.plugin.addToEncounter(e.monster, e.filePath || undefined, ev.shiftKey ? 2 : 1); });
+			}
 			row.addEventListener('click', () => { this.show(e); this.showPane(true); });
 		}
 	}
@@ -267,18 +360,21 @@ export class BestiaryView extends ItemView {
 		d.empty();
 		const back = d.createEl('button', { cls: 'bestiary-back' });
 		setIcon(back.createSpan(), 'chevron-left');
-		back.appendText(this.results.length ? 'All monsters' : 'Back');
+		back.appendText(this.results.length ? (this.lore ? 'All creatures' : 'All monsters') : 'Back');
 		back.addEventListener('click', () => this.showPane(false));
 		const actions = this.plugin.monsterActions(e, { inBestiary: true });
-		actions.splice(1, 0, {
-			label: '+2',
-			onClick: () => void this.plugin.addToEncounter(e.monster, e.filePath || undefined, 2),
-		});
+		if (!this.lore) {
+			actions.splice(1, 0, {
+				label: '+2',
+				onClick: () => void this.plugin.addToEncounter(e.monster, e.filePath || undefined, 2),
+			});
+		}
 		actions.push({
 			label: 'Insert reference', icon: 'at-sign', title: 'Insert `nimble:Name` into the note you were editing',
 			onClick: () => this.insertReference(e.name),
 		});
-		this.plugin.renderStatblock(d, e.monster, e.filePath, 'inline', undefined, { actions });
+		const sources = this.lore ? [...new Set((this.printings.get(e) ?? [e]).map(x => bookOf(x).long))] : undefined;
+		this.plugin.renderStatblock(d, e.monster, e.filePath, 'inline', undefined, { actions, sources });
 	}
 
 	private insertReference(name: string): void {
@@ -299,6 +395,7 @@ export class BestiaryView extends ItemView {
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
 			const cur = this.results[i];
+			if (this.lore) { this.insertReference(cur.name); return; }
 			void this.plugin.addToEncounter(cur.monster, cur.filePath || undefined, e.shiftKey ? 2 : 1);
 		}
 	}

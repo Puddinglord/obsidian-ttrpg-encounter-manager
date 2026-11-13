@@ -96,10 +96,14 @@ class MapBlock extends MarkdownRenderChild {
 			modeBtn('add', 'map-pin', 'Add pin');
 			modeBtn('move', 'move', 'Move pins');
 		}
-		const tokens = bar.createEl('button', { cls: `nimble-map-btn${this.showTokens ? ' is-active' : ''}`, attr: { 'aria-label': 'Show the current encounter as tokens', 'aria-pressed': String(this.showTokens) } });
-		setIcon(tokens.createSpan(), 'swords');
-		tokens.createSpan({ text: 'Encounter tokens' });
-		tokens.onclick = () => { this.showTokens = !this.showTokens; this.build(); };
+		// Tokens come from the GM's tracker, so a map in a campaign you play in doesn't offer them.
+		if (this.plugin.playerView(this.ctx.sourcePath)) this.showTokens = false;
+		else {
+			const tokens = bar.createEl('button', { cls: `nimble-map-btn${this.showTokens ? ' is-active' : ''}`, attr: { 'aria-label': 'Show the current encounter as tokens', 'aria-pressed': String(this.showTokens) } });
+			setIcon(tokens.createSpan(), 'swords');
+			tokens.createSpan({ text: 'Encounter tokens' });
+			tokens.onclick = () => { this.showTokens = !this.showTokens; this.build(); };
+		}
 		const labels = bar.createEl('button', { cls: `nimble-map-btn${this.showLabels ? ' is-active' : ''}`, attr: { 'aria-label': 'Show pin labels', 'aria-pressed': String(this.showLabels) } });
 		setIcon(labels.createSpan(), 'tag');
 		labels.onclick = () => { this.showLabels = !this.showLabels; this.root?.toggleClass('hide-labels', !this.showLabels); labels.toggleClass('is-active', this.showLabels); };

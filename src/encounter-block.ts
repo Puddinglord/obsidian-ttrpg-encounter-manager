@@ -11,6 +11,7 @@ import { BuilderModal } from './builder-modal';
 import { EncounterTemplate } from './encounters';
 import { renderBalance } from './balance-ui';
 import { closePopover, isPopoverOpenFor, openPopover } from './popover';
+import { renderBattleNotes } from './battle-notes';
 
 export function partyLevels(plugin: NimbleStatblocksPlugin): number[] {
 	const party = plugin.settings.party;
@@ -25,11 +26,11 @@ export function ratingChip(parent: HTMLElement, label: string, pct: number): HTM
 }
 
 /** Resolve a definition against the index: what can be run, and what's unknown. */
-export function resolveDef(plugin: NimbleStatblocksPlugin, def: EncounterDef) {
+export function resolveDef(plugin: NimbleStatblocksPlugin, def: EncounterDef, from?: string) {
 	const found: EncounterTemplate['monsters'] = [];
 	const missing: string[] = [];
 	for (const m of def.monsters) {
-		const e = plugin.index.get(m.name);
+		const e = plugin.index.get(m.name, from);
 		if (e) found.push({ monster: shiftMonster(e.monster, m.shift ?? 0), count: m.count, sourceFile: e.filePath || undefined });
 		else missing.push(m.name);
 	}
@@ -38,7 +39,7 @@ export function resolveDef(plugin: NimbleStatblocksPlugin, def: EncounterDef) {
 
 /** Load an encounter into the tracker. False when nothing was loaded (no monsters found, or the GM kept the fight in progress). */
 export async function runEncounter(plugin: NimbleStatblocksPlugin, def: EncounterDef, sourcePath?: string): Promise<boolean> {
-	const { found, missing } = resolveDef(plugin, def);
+	const { found, missing } = resolveDef(plugin, def, sourcePath);
 	if (!found.length) { new Notice('None of these monsters are in the bestiary or your notes yet.'); return false; }
 	if (!await confirmReplaceFight(plugin, def.name)) return false;
 	plugin.encounters.loadTemplate({ name: def.name, monsters: found, withParty: def.party && plugin.settings.party.length > 0 }, sourcePath);
@@ -110,12 +111,14 @@ function partyText(plugin: NimbleStatblocksPlugin, levels: number[]): string {
 
 function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, source: string): void {
 	const save = (next: EncounterDef) => void writeBack(plugin, el, ctx, source, next);
+	// In a campaign you play in, the same block is your battle notes.
+	if (plugin.playerView(ctx.sourcePath)) { renderBattleNotes(plugin, el, def, ctx, save); return; }
 	const card = el.createDiv({ cls: 'nimble-encounter-block' });
 	const head = card.createDiv({ cls: 'encounter-block-head' });
 	setIcon(head.createSpan({ cls: 'encounter-block-icon' }), 'swords');
 	head.createSpan({ cls: 'encounter-block-name', text: def.name });
 
-	const { found, missing } = resolveDef(plugin, def);
+	const { found, missing } = resolveDef(plugin, def, ctx.sourcePath);
 	const levels = partyLevels(plugin);
 	const rating = rateEncounter(found.map(f => ({ monster: f.monster, count: f.count })), levels);
 	if (found.length) {
@@ -135,7 +138,7 @@ function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, d
 
 	const list = card.createDiv({ cls: 'encounter-block-monsters' });
 	def.monsters.forEach((m, i) => {
-		const entry = plugin.index.get(m.name);
+		const entry = plugin.index.get(m.name, ctx.sourcePath);
 		const chip = list.createDiv({ cls: `encounter-chip role-${entry ? monsterRole(entry.monster) : 'unknown'}` });
 		// The count is a button: click it to change how many, make them tougher or weaker, or remove them.
 		const count = chip.createEl('button', { cls: 'encounter-count', attr: { 'aria-label': `${m.count} ${m.name}${m.shift ? `, ${shiftLabel(m.shift)} level` : ''}` } });

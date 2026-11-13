@@ -9,9 +9,14 @@
 //     even an empty one. Sections list their notes and any other files (images,
 //     PDFs) so an Assets folder shows what's in it.
 //   - `order:` sorts notes; without it, names sort naturally (N2 before N10).
+//   - `role: player` on the home note makes it a campaign you play in rather
+//     than run; the plugin shows player tools for it (see prototypes/PLAYER-MODE.md).
 // Nothing else is required. Drop a note into a chapter folder and it shows up.
 
-export type NoteKind = 'campaign' | 'chapter' | 'scene' | 'map' | 'npc' | 'location' | 'session' | 'monster' | 'handout' | 'combat' | 'note';
+export type NoteKind = 'campaign' | 'chapter' | 'scene' | 'map' | 'npc' | 'location' | 'session' | 'monster' | 'handout' | 'combat' | 'character' | 'creature' | 'note';
+
+/** Which side of the screen you're on: running the game, or playing in it. */
+export type CampaignRole = 'gm' | 'player';
 
 export interface NoteInfo {
 	path: string;
@@ -61,6 +66,8 @@ export interface Campaign {
 	folder: string;
 	home: NoteRef;
 	name: string;
+	/** Running it (`gm`, the default) or playing in it (`player`), from `role:` on the home note. */
+	role: CampaignRole;
 	/** Starting hero level; used to rate encounters until the party is filled in. */
 	level?: number;
 	/** Number of heroes; same use as `level`. */
@@ -75,7 +82,7 @@ export interface Campaign {
 	looseFiles: FileRef[];
 }
 
-const KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'map', 'npc', 'location', 'session', 'monster', 'handout', 'combat', 'note'];
+const KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'map', 'npc', 'location', 'session', 'monster', 'handout', 'combat', 'character', 'creature', 'note'];
 
 const basename = (path: string) => path.replace(/^.*\//, '').replace(/\.md$/i, '');
 export const parentOf = (path: string) => (path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '');
@@ -91,6 +98,32 @@ export function fmText(v: unknown): string {
 	if (Array.isArray(v)) return v.map(fmText).join(',');
 	if (typeof v === 'string') return v;
 	return typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint' ? String(v) : '';
+}
+
+/** `role:` on a campaign home note: player (also "players", "pc", "playing"), otherwise gm. */
+export function campaignRole(fm: Record<string, unknown>): CampaignRole {
+	const r = fmText(fm.role).toLowerCase().trim();
+	return /^(players?|pc|playing|play)$/.test(r) ? 'player' : 'gm';
+}
+
+/** Campaign pages that are mostly read: they open in reading view (see reading-mode.ts). */
+const READ_KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'npc', 'location', 'map', 'handout', 'monster', 'character', 'creature'];
+
+/**
+ * Should a campaign note open in reading view? Characters, chapters, scenes,
+ * NPCs, places, maps, handouts and stat blocks do; session logs (written at
+ * the table) and plain notes don't. A note without properties in a chapter
+ * folder is one of its scenes.
+ */
+export function opensInReading(fm: Record<string, unknown>, inChapter: boolean): boolean {
+	const kind = noteKind(fm);
+	if (kind === 'note') return inChapter;
+	return READ_KINDS.includes(kind);
+}
+
+/** A yes/no property: true, "true", "yes" or 1 (how people write `mine: true`). */
+export function fmTrue(v: unknown): boolean {
+	return v === true || v === 1 || (typeof v === 'string' && /^(true|yes|1)$/i.test(v.trim()));
 }
 
 export function noteKind(fm: Record<string, unknown>): NoteKind {
@@ -234,6 +267,7 @@ export function buildCampaigns(notes: NoteInfo[], folders: string[] = []): Campa
 			folder,
 			home: ref(home),
 			name: str(home.fm.title) ?? basename(home.path),
+			role: campaignRole(home.fm),
 			level: num(home.fm.level),
 			heroes: num(home.fm.heroes),
 			status: str(home.fm.status),
@@ -299,6 +333,7 @@ const FOLDER_KIND: Record<string, NoteKind> = {
 	monster: 'monster', monsters: 'monster', bestiary: 'monster',
 	handout: 'handout', handouts: 'handout',
 	map: 'map', maps: 'map',
+	party: 'character', pcs: 'character', heroes: 'character',
 };
 
 /** The starter a new note in this folder gets by default: scenes in chapters, NPCs in NPCs, plain notes elsewhere. */
@@ -308,7 +343,7 @@ export function defaultKindFor(folderName: string, isChapter = false): NoteKind 
 }
 
 /** The folder a kind of note gets when the campaign doesn't have one for it yet. */
-const HOME_SECTION: Partial<Record<NoteKind, string>> = { npc: 'NPCs', location: 'Locations', session: 'Sessions', monster: 'Monsters', handout: 'Handouts' };
+const HOME_SECTION: Partial<Record<NoteKind, string>> = { npc: 'NPCs', location: 'Locations', session: 'Sessions', monster: 'Monsters', handout: 'Handouts', character: 'Party' };
 
 /**
  * Where a new note of `kind` goes when it's asked for in `from`.

@@ -17,6 +17,7 @@ import { partyLevels } from './encounter-block';
 import { formatLevel, rateEncounter } from './rules';
 import { describeMonster } from './suggest';
 import { BuilderModal } from './builder-modal';
+import { BattleNotesModal } from './battle-notes';
 import { parseDice } from './dice';
 import { BOX_PRESETS, boxColor, newBox } from './box-def';
 import { homeFolderFor, safeName } from './campaign-model';
@@ -24,7 +25,7 @@ import { NPC_CARD_BLOCK } from './npc-card-def';
 import { runEncounter } from './encounter-block';
 import { insideCodeFence, placeBlock, slashQuery } from './markdown';
 
-type ArgKind = 'monster' | 'add' | 'list' | 'condition' | 'image' | 'dice' | 'box' | 'npc';
+type ArgKind = 'monster' | 'add' | 'list' | 'fought' | 'condition' | 'image' | 'dice' | 'box' | 'npc';
 
 interface SlashCommand {
 	name: string;
@@ -37,6 +38,8 @@ interface SlashCommand {
 	/** Commands without an argument: text to insert (block = on its own line) or an action. */
 	insert?: (p: NimbleStatblocksPlugin) => { text: string; block?: boolean; cursorBack?: number; inside?: boolean } | null;
 	action?: (p: NimbleStatblocksPlugin) => void;
+	/** Only offered on one side of the table: GM tools in campaigns you run, player tools in campaigns you play in. */
+	side?: 'gm' | 'player';
 }
 
 interface SlashItem {
@@ -87,13 +90,14 @@ attacks:
 
 const COMMANDS: SlashCommand[] = [
 	{ name: 'monster', aliases: ['m', 'ref'], icon: 'skull', desc: 'Monster reference', hint: '/monster goblin', arg: 'monster' },
-	{ name: 'add', aliases: ['fight'], icon: 'swords', desc: 'Add to the tracker', hint: '/add 3 goblin', arg: 'add' },
-	{ name: 'encounter', aliases: ['enc'], icon: 'shield-alert', desc: 'Encounter block', hint: '/encounter 3 goblin, 2 wolf', arg: 'list' },
-	{ name: 'statblock', aliases: ['sb', 'block'], icon: 'scroll-text', desc: 'Full stat block', hint: '/statblock krogg', arg: 'monster' },
-	{ name: 'builder', icon: 'scale', desc: 'Open the encounter builder', action: (p) => new BuilderModal(p).open() },
-	{ name: 'legendary', aliases: ['boss', 'solo'], icon: 'crown', desc: 'Legendary monster template', insert: () => ({ text: LEGENDARY, block: true }) },
-	{ name: 'minion', icon: 'users', desc: 'Minion template', insert: () => ({ text: MINION, block: true }) },
-	{ name: 'new-monster', aliases: ['template'], icon: 'file-plus', desc: 'Blank monster stat block', insert: () => ({ text: NEW_MONSTER, block: true }) },
+	{ name: 'add', side: 'gm', aliases: ['fight'], icon: 'swords', desc: 'Add to the tracker', hint: '/add 3 goblin', arg: 'add' },
+	{ name: 'encounter', side: 'gm', aliases: ['enc'], icon: 'shield-alert', desc: 'Encounter block', hint: '/encounter 3 goblin, 2 wolf', arg: 'list' },
+	{ name: 'fought', aliases: ['battle', 'fight-notes', 'encounter'], icon: 'swords', desc: 'Battle notes: who we fought', hint: '/fought 4 goblin, goblin shaman', arg: 'fought', side: 'player' },
+	{ name: 'statblock', side: 'gm', aliases: ['sb', 'block'], icon: 'scroll-text', desc: 'Full stat block', hint: '/statblock krogg', arg: 'monster' },
+	{ name: 'builder', side: 'gm', icon: 'scale', desc: 'Open the encounter builder', action: (p) => new BuilderModal(p).open() },
+	{ name: 'legendary', side: 'gm', aliases: ['boss', 'solo'], icon: 'crown', desc: 'Legendary monster template', insert: () => ({ text: LEGENDARY, block: true }) },
+	{ name: 'minion', side: 'gm', icon: 'users', desc: 'Minion template', insert: () => ({ text: MINION, block: true }) },
+	{ name: 'new-monster', side: 'gm', aliases: ['template'], icon: 'file-plus', desc: 'Blank monster stat block', insert: () => ({ text: NEW_MONSTER, block: true }) },
 	{ name: 'condition', aliases: ['cond', 'status'], icon: 'activity', desc: 'Condition rules', hint: '/condition dazed', arg: 'condition' },
 	{ name: 'box', aliases: ['callout'], icon: 'square-dashed', desc: 'Any box type', hint: '/box treasure', arg: 'box' },
 	{ name: 'npc', aliases: ['who'], icon: 'user-round', desc: 'Link an NPC, or create one', hint: '/npc kevori', arg: 'npc' },
@@ -109,16 +113,16 @@ const COMMANDS: SlashCommand[] = [
 	})),
 	{ name: 'map', icon: 'map', desc: 'GM map with pins', hint: '/map hideout', arg: 'image' },
 	{ name: 'roll', aliases: ['r', 'dice'], icon: 'dices', desc: 'Roll and write the result', hint: '/roll 2d6+3', arg: 'dice' },
-	{ name: 'summary', icon: 'clipboard-list', desc: 'Write the current encounter\'s summary', insert: (p) => {
+	{ name: 'summary', side: 'gm', icon: 'clipboard-list', desc: 'Write the current encounter\'s summary', insert: (p) => {
 		const enc = p.encounters.active;
 		if (!enc || !enc.creatures.length) { new Notice('No encounter in the tracker'); return null; }
 		return { text: p.encounters.summary(enc.id) };
 	} },
 	{ name: 'party', aliases: ['heroes', 'pc'], icon: 'user-cog', desc: 'Edit the party', action: (p) => p.openParty() },
 	{ name: 'bestiary', aliases: ['monsters', 'b'], icon: 'book-open', desc: 'Open the bestiary', action: (p) => void p.openBestiary() },
-	{ name: 'tracker', aliases: ['combat', 'initiative'], icon: 'swords', desc: 'Open the encounter tracker', action: (p) => void p.activateEncounterView() },
+	{ name: 'tracker', side: 'gm', aliases: ['combat', 'initiative'], icon: 'swords', desc: 'Open the encounter tracker', action: (p) => void p.activateEncounterView() },
 	{ name: 'settings', aliases: ['options'], icon: 'settings', desc: 'Ember Vault settings', action: (p) => p.openSettings() },
-	{ name: 'party-table', icon: 'users-round', desc: 'Table of your heroes', insert: (p) => {
+	{ name: 'party-table', side: 'gm', icon: 'users-round', desc: 'Table of your heroes', insert: (p) => {
 		if (!p.settings.party.length) { new Notice('Set up your party in the plugin settings first'); return null; }
 		const rows = p.settings.party.map(h => `| ${h.name} | ${h.className ?? ''} | ${h.level} | ${h.maxHp} | ${h.defense ?? ''} |`);
 		return { text: ['| Hero | Class | Level | HP | DEF |', '| --- | --- | --- | --- | --- |', ...rows].join('\n'), block: true };
@@ -126,8 +130,14 @@ const COMMANDS: SlashCommand[] = [
 ];
 
 /** Menu order for a bare "/": what a GM reaches for at the table first. */
-const ORDER = ['monster', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
+const ORDER = ['monster', 'fought', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
 const rank = (c: SlashCommand) => { const i = ORDER.indexOf(c.name); return i === -1 ? ORDER.length : i; };
+
+/** The commands for the side of the table the note is on. */
+function commandsFor(p: NimbleStatblocksPlugin, path: string | undefined): SlashCommand[] {
+	const side = p.playerView(path) ? 'player' : 'gm';
+	return COMMANDS.filter(c => !c.side || c.side === side);
+}
 
 function commandMatches(c: SlashCommand, q: string): number {
 	const names = [c.name, ...(c.aliases || [])];
@@ -154,9 +164,10 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 		const before = editor.getLine(cursor.line).slice(0, cursor.ch);
 		// Only keep the menu open for things that are (or could become) our commands.
 		// Once an argument follows, the command has to be one of ours by name.
+		const commands = commandsFor(this.plugin, this.app.workspace.getActiveFile()?.path);
 		const query = slashQuery(before, (cmd, hasArg) => hasArg
-			? COMMANDS.some(c => c.name === cmd || !!c.aliases?.includes(cmd))
-			: COMMANDS.some(c => commandMatches(c, cmd) >= 0));
+			? commands.some(c => c.name === cmd || !!c.aliases?.includes(cmd))
+			: commands.some(c => commandMatches(c, cmd) >= 0));
 		if (query === null) return null;
 		if (insideCodeFence(i => editor.getLine(i), cursor.line)) return null;
 		return { start: { line: cursor.line, ch: cursor.ch - query.length - 1 }, end: cursor, query };
@@ -168,20 +179,22 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 		const head = (space === -1 ? raw : raw.slice(0, space)).toLowerCase();
 		const arg = space === -1 ? null : raw.slice(space + 1);
 
+		const commands = commandsFor(this.plugin, ctx.file?.path);
 		if (arg === null) {
-			return COMMANDS
+			return commands
 				.map(c => ({ c, score: commandMatches(c, head) }))
 				.filter(x => x.score >= 0)
 				.sort((a, b) => a.score - b.score || rank(a.c) - rank(b.c))
 				.map(({ c }) => this.commandItem(c));
 		}
-		const cmd = COMMANDS.find(c => c.name === head || c.aliases?.includes(head));
+		const cmd = commands.find(c => c.name === head || c.aliases?.includes(head));
 		if (!cmd) return [];
 		if (!cmd.arg) return [this.commandItem(cmd)];
 		switch (cmd.arg) {
 			case 'monster': return this.monsterItems(arg, cmd.name === 'statblock' ? 'statblock' : 'ref');
 			case 'add': return this.addItems(arg);
 			case 'list': return this.encounterItems(arg);
+			case 'fought': return this.foughtItems(arg);
 			case 'condition': return this.conditionItems(arg);
 			case 'image': return this.imageItems(arg);
 			case 'dice': return this.diceItems(arg);
@@ -267,11 +280,12 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 	}
 
 	private monsterItems(q: string, mode: 'ref' | 'statblock'): SlashItem[] {
+		const lore = this.plugin.hideStats('', this.context?.file?.path);
 		return this.searchMonsters(q).map(e => ({
 			icon: mode === 'ref' ? 'skull' : 'scroll-text',
 			title: e.name,
-			detail: describeMonster(e),
-			badge: this.monsterBadge(e),
+			detail: lore ? [e.monster.group, e.monster.type].filter(Boolean).join(' · ') : describeMonster(e),
+			badge: lore ? undefined : this.monsterBadge(e),
 			run: (editor, start, end) => {
 				if (mode === 'ref') this.write(editor, start, end, `\`nimble:${e.name}\` `);
 				else this.write(editor, start, end, `\`\`\`nimble\n${toStatblockSource(e.monster)}\n\`\`\``, true);
@@ -293,6 +307,37 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 				void this.plugin.addToEncounter(e.monster, e.filePath || undefined, count);
 			},
 		}));
+	}
+
+	/** Player battle notes: the foes by name, matched to the bestiary when they're in it, kept as typed when not. */
+	private foughtItems(arg: string): SlashItem[] {
+		const def: EncounterDef = { name: 'Battle', party: false, monsters: [], extra: ['outcome: won'] };
+		for (const part of arg.split(/[,;]+/).map(x => x.trim()).filter(Boolean)) {
+			const parsed = parseMonsterLine(part);
+			if (!parsed) continue;
+			const hit = this.plugin.index.get(parsed.name) ?? this.searchMonsters(parsed.name, 1)[0];
+			const name = hit?.name ?? parsed.name;
+			const ex = def.monsters.find(x => x.name.toLowerCase() === name.toLowerCase());
+			if (ex) ex.count += parsed.count; else def.monsters.push({ name, count: parsed.count });
+		}
+		const insert = (d: EncounterDef): SlashItem['run'] => (editor, start, end) =>
+			this.write(editor, start, end, `\`\`\`nimble-encounter\n${encounterBlockSource(d)}\n\`\`\``, true);
+		const items: SlashItem[] = [];
+		if (def.monsters.length) {
+			items.push({ icon: 'swords', title: def.monsters.map(x => `${x.count} ${x.name}`).join(', '), detail: 'Insert battle notes', run: insert(def) });
+		}
+		items.push({
+			icon: 'pencil', title: def.monsters.length ? 'Fill in the rest…' : 'Battle notes…', detail: 'Pick who you fought, how it went, and what you found',
+			run: (editor, start, end) => {
+				editor.replaceRange('', start, end);
+				// Written where the cursor is when the dialog is saved (the note may have changed meanwhile), on lines of its own.
+				new BattleNotesModal(this.plugin, def, (d) => {
+					const at = editor.getCursor();
+					this.write(editor, at, at, `\`\`\`nimble-encounter\n${encounterBlockSource(d)}\n\`\`\``, true);
+				}).open();
+			},
+		});
+		return items;
 	}
 
 	private encounterItems(arg: string): SlashItem[] {

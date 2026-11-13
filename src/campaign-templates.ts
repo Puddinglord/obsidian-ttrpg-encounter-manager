@@ -5,7 +5,10 @@ import { safeName } from './campaign-model';
 import { NPC_CARD_BLOCK } from './npc-card-def';
 
 /** What "New note" can start from. `note` is a blank page. */
-export type StarterKind = 'note' | 'scene' | 'npc' | 'location' | 'session' | 'map' | 'monster' | 'handout';
+export type StarterKind = 'note' | 'scene' | 'npc' | 'location' | 'session' | 'map' | 'monster' | 'handout' | 'character';
+
+/** Notes are written for whoever keeps them: the GM's prep, or a player's notes from the table. */
+export type NoteSide = 'gm' | 'player';
 
 export interface Starter {
 	kind: StarterKind;
@@ -25,7 +28,11 @@ export const STARTERS: Starter[] = [
 	{ kind: 'map', label: 'Map', icon: 'map', placeholder: 'Map name, e.g. Cragmaw Hideout' },
 	{ kind: 'monster', label: 'Monster', icon: 'skull', placeholder: 'Monster name, e.g. Goblin Boss' },
 	{ kind: 'handout', label: 'Handout', icon: 'scroll-text', placeholder: 'Handout name, e.g. Letter from Iarno' },
+	{ kind: 'character', label: 'Character', icon: 'shield', placeholder: 'Hero name, e.g. Thorga Ironbrow' },
 ];
+
+/** Starters a player is offered: no monsters, and the handout is something you were given. */
+export const PLAYER_STARTERS: StarterKind[] = ['note', 'scene', 'npc', 'location', 'session', 'map', 'character', 'handout'];
 
 /**
  * File names can't hold : ? " / and a few others, so "Vecna: Eve of Ruin" is
@@ -50,6 +57,23 @@ export function campaignHome(name: string, level: number, heroes: number, system
 
 ## Notes
 - Themes, tone, safety tools, house rules.
+`;
+}
+
+/** The home note of a campaign you play in: what it's about, the party, open quests. */
+export function playerCampaignHome(name: string, opts: { gm?: string; level?: number; character?: string } = {}, system = 'Nimble'): string {
+	return fm({ nimble: 'campaign', role: 'player', title: titleOf(name), system, gm: opts.gm ? JSON.stringify(opts.gm) : undefined, level: opts.level, status: 'active' }) + `
+
+*What this campaign is about, as the GM pitched it.*
+
+\`\`\`nimble-campaign
+\`\`\`
+
+## Quests
+- [ ] ${opts.character ? `Get ${opts.character} through the first session alive` : 'The first thing the party agreed to do'}
+
+## Table
+- Schedule, house rules, safety tools.
 `;
 }
 
@@ -81,29 +105,117 @@ export function sceneNote(name: string, order: number): string {
 `;
 }
 
-export function npcNote(name: string): string {
-	return fm({ nimble: 'npc', title: titleOf(name), role: '""', portrait: '""' }) + `
+/**
+ * An NPC. The properties are the quick facts the card and Spotlight show; the
+ * headings below are prompts, all optional. A player's version is written
+ * from the outside: what we've seen and suspect, not their secrets.
+ */
+export function npcNote(name: string, side: NoteSide = 'gm'): string {
+	const props = fm({
+		nimble: 'npc', title: titleOf(name), role: '""', portrait: '""', aliases: '[]',
+		ancestry: '""', pronouns: '""', age: '""', faction: '""', location: '""',
+		status: 'alive', attitude: side === 'player' ? 'unknown' : 'neutral',
+		first_met: side === 'player' ? '""' : undefined,
+	});
+	if (side === 'player') {
+		return props + `
+${NPC_CARD_BLOCK.replace('secret: ', 'suspicions: ')}
+
+## First impressions
+*How we met, what they looked and sounded like.*
+
+## What we learned
+-
+
+## What they want from us
+-
+
+## Promises & debts
+- [ ]
+
+## Quotes
+> 
+
+## Notes
+`;
+	}
+	return props + `
 ${NPC_CARD_BLOCK}
+
+## Personality
+- **Mannerism:** 
+- **Ideal:** 
+- **Flaw:** 
 
 ## What they know
 -
 
+## Relationships
+-
+
+## Quotes
+> 
+
 ## Appears in
 -
+
+## Notes
 `;
 }
 
-export function locationNote(name: string): string {
-	return fm({ nimble: 'location', title: titleOf(name) }) + `
+/** A place. `region:` links to the place it sits in, so locations nest (a tavern in a town in a region). */
+export function locationNote(name: string, side: NoteSide = 'gm'): string {
+	const props = fm({ nimble: 'location', title: titleOf(name), type: '""', region: '""', status: '""', image: '""' });
+	const player = side === 'player';
+	return props + `
+*${player ? 'What it looks, sounds and smells like when we arrive.' : 'Sights, sounds, smells. What the heroes notice first.'}*
 
-*Sights, sounds, who's here.*
+## Overview
+-
+
+## People here
+-
+
+## Points of interest
+-
+
+## Factions
+-
+
+## ${player ? 'Rumors' : 'Rumors & secrets'}
+-
 
 ## Connections
 -
+
+## History
+-
+
+## ${player ? 'Our visits' : 'Visits'}
+-
 `;
 }
 
-export function sessionNote(name: string, date: string, lastScene?: string): string {
+export function sessionNote(name: string, date: string, lastScene?: string, side: NoteSide = 'gm'): string {
+	if (side === 'player') {
+		return fm({ nimble: 'session', title: titleOf(name), date }) + `
+
+## Recap
+*What happened, in a few lines.*
+
+## Battles
+*Type \`/fought\` to note who you fought.*
+
+## People we met
+-
+
+## Loot
+-
+
+## Leads & questions
+- [ ]
+`;
+	}
 	return fm({ nimble: 'session', title: titleOf(name), date }) + `
 
 ## Prep
@@ -115,6 +227,42 @@ export function sessionNote(name: string, date: string, lastScene?: string): str
 *What happened, for next time.*
 
 ## Loose threads
+-
+`;
+}
+
+/**
+ * A character note: the properties are the sheet's data and the
+ * ```nimble-sheet block draws the sheet from them. Everything else is yours.
+ */
+export function characterNote(name: string, opts: { mine?: boolean; player?: string; level?: number } = {}): string {
+	return fm({
+		nimble: 'character', title: titleOf(name), mine: opts.mine ? 'true' : undefined, player: opts.player ? JSON.stringify(opts.player) : undefined,
+		ancestry: '""', class: '""', level: opts.level ?? 1, portrait: '""', cssclasses: '[nimble-sheet-note]',
+	}) + `
+\`\`\`nimble-sheet
+\`\`\`
+
+## Backstory
+
+## Notes
+`;
+}
+
+/**
+ * A player's notes on a creature from the bestiary: what the party has seen
+ * of it. `creature:` names the bestiary entry, which shows these notes under
+ * the book's lore.
+ */
+export function creatureNote(creature: string): string {
+	return fm({ nimble: 'creature', creature: JSON.stringify(creature), first_seen: '""' }) + `
+## What we've seen
+-
+
+## Strengths & weaknesses
+-
+
+## Fights
 -
 `;
 }
@@ -159,7 +307,19 @@ attacks:
 `;
 }
 
-export function handoutNote(name: string): string {
+export function handoutNote(name: string, side: NoteSide = 'gm'): string {
+	if (side === 'player') {
+		return fm({ nimble: 'handout', title: titleOf(name) }) + `
+> [!quote] What it says
+> The text, letter or clue exactly as we got it.
+
+## Where we got it
+-
+
+## What we think it means
+-
+`;
+	}
 	return fm({ nimble: 'handout', title: titleOf(name) }) + `
 > [!quote] For the players
 > The text, letter or clue exactly as the heroes see it.

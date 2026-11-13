@@ -12,16 +12,17 @@ import { portraitOf, renderAvatar } from './npc-card';
 import type NimbleStatblocksPlugin from '../main';
 import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, NoteKind, NoteRef, Section } from './campaign-model';
 import { SECTION_FOR } from './campaigns';
-import { ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles } from './campaign-modals';
+import { CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles, ROLE_INFO } from './campaign-modals';
 import { STARTERS, StarterKind } from './campaign-templates';
 import { draggedPaths, startFileDrag } from './internals';
+import { NewCharacterModal } from './character-modals';
 import { confirmAction, onLongPress } from './touch';
 
 export const KIND_ICON: Record<NoteKind, string> = {
 	campaign: 'castle', chapter: 'book-marked', scene: 'clapperboard', map: 'map', npc: 'user-round', location: 'map-pin',
-	session: 'calendar-days', monster: 'skull', handout: 'scroll-text', combat: 'swords', note: 'file-text',
+	session: 'calendar-days', monster: 'skull', handout: 'scroll-text', combat: 'swords', character: 'shield', creature: 'paw-print', note: 'file-text',
 };
-const SECTION_ICON: Record<string, string> = { NPCs: 'users-round', Locations: 'map-pin', Sessions: 'calendar-days', Monsters: 'skull', Handouts: 'scroll-text', Assets: 'image', Maps: 'map' };
+const SECTION_ICON: Record<string, string> = { Party: 'shield', NPCs: 'users-round', Locations: 'map-pin', Sessions: 'calendar-days', Monsters: 'skull', Handouts: 'scroll-text', Assets: 'image', Maps: 'map' };
 const IMAGE = /^(png|jpe?g|gif|webp|svg|bmp|avif)$/;
 const fileIcon = (ext: string) => (IMAGE.test(ext) ? 'image' : ext === 'pdf' ? 'file-text' : /^(mp3|wav|ogg|m4a|flac|webm)$/.test(ext) ? 'music' : /^(mp4|mov|mkv|ogv)$/.test(ext) ? 'film' : ext === 'canvas' ? 'layout-dashboard' : 'file');
 /** Our own drag data: the path of a row dragged inside the outline. */
@@ -29,6 +30,9 @@ const DRAG_TYPE = 'application/x-nimble-path';
 
 const IN_CHAPTER: StarterKind[] = ['scene', 'map', 'note', 'npc', 'location', 'monster', 'handout'];
 const IN_FOLDER: StarterKind[] = ['note', 'npc', 'location', 'session', 'map', 'monster', 'handout'];
+/** In a campaign you play in: no monster stat blocks, but party members. */
+const PLAYER_IN_CHAPTER: StarterKind[] = ['scene', 'note', 'npc', 'location', 'map', 'handout'];
+const PLAYER_IN_FOLDER: StarterKind[] = ['note', 'npc', 'location', 'session', 'character', 'map', 'handout'];
 
 export interface OutlineOptions {
 	/** Path of the note open in the editor, highlighted in the list. */
@@ -169,8 +173,68 @@ function group(parent: HTMLElement, key: string, opts: OutlineOptions, head: (h:
 	return { g, h };
 }
 
-/** Party line: "4 heroes · level 3", or the starting level until heroes are added. */
+/**
+ * Player campaigns: the party as cards. Your hero first and larger (with HP
+ * when the sheet tracks it), then everyone else, then + to add someone.
+ */
+export function renderRoster(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign): void {
+	const heroes = plugin.campaigns.characters(c);
+	const roster = el.createDiv({ cls: 'campaign-roster' });
+	const head = roster.createDiv({ cls: 'campaign-heading campaign-roster-head' });
+	head.createSpan({ text: 'Party' });
+	iconBtn(head, 'user-plus', 'Add a party member', () => promptCharacter(plugin, c, false));
+	if (!heroes.length) {
+		const add = roster.createEl('button', { cls: 'campaign-party campaign-roster-empty' });
+		setIcon(add.createSpan({ cls: 'campaign-party-icon' }), 'shield');
+		add.createSpan({ text: 'Add your character' });
+		add.addEventListener('click', () => promptCharacter(plugin, c, true));
+		return;
+	}
+	const list = roster.createDiv({ cls: 'campaign-roster-list' });
+	for (const h of heroes) {
+		const card = list.createEl('a', { cls: `campaign-hero${h.mine ? ' is-mine' : ''}`, href: '#', attr: { 'data-path': h.path } });
+		const portrait = portraitOf(plugin.app, h.path);
+		if (portrait) renderAvatar(card, portrait, 'campaign-hero-avatar');
+		else setIcon(card.createSpan({ cls: 'campaign-hero-avatar is-empty' }), h.mine ? 'shield' : 'user-round');
+		const text = card.createDiv({ cls: 'campaign-hero-text' });
+		const name = text.createDiv({ cls: 'campaign-hero-name' });
+		name.createSpan({ text: h.name });
+		if (h.mine) name.createSpan({ cls: 'campaign-hero-you', text: 'You' });
+		const kind = [h.ancestry, h.className].filter(Boolean).join(' ');
+		const what = [kind, h.level !== undefined ? (kind ? `${h.level}` : `Level ${h.level}`) : ''].filter(Boolean).join(' · ');
+		const sub = [what, !h.mine && h.player ? h.player : ''].filter(Boolean).join(' — ');
+		if (sub) text.createDiv({ cls: 'campaign-hero-sub', text: sub });
+		if (h.mine && h.hp !== undefined && h.hpMax) {
+			const bar = text.createDiv({ cls: 'campaign-hero-hp', attr: { 'aria-label': `${h.hp} of ${h.hpMax} HP` } });
+			const pct = Math.max(0, Math.min(100, Math.round((h.hp / h.hpMax) * 100)));
+			bar.createDiv({ cls: `campaign-hero-hp-fill${pct <= 25 ? ' is-low' : ''}` }).setCssProps({ '--hp-pct': `${pct}%` });
+			bar.createSpan({ cls: 'campaign-hero-hp-text', text: `${h.hp}/${h.hpMax}` });
+		}
+		card.addEventListener('click', (e) => { e.preventDefault(); void plugin.campaigns.open(h.path, e.metaKey || e.ctrlKey); });
+		const menu = (e: MouseEvent | PointerEvent) => {
+			const m = new Menu();
+			m.addItem(i => i.setTitle('Open in new tab').setIcon('file-plus').onClick(() => void plugin.campaigns.open(h.path, true)));
+			if (!h.mine) m.addItem(i => i.setTitle('This is my character').setIcon('shield').onClick(() => void plugin.campaigns.setMine(c, h.path)));
+			m.showAtMouseEvent(e);
+		};
+		card.addEventListener('contextmenu', (e) => { e.preventDefault(); menu(e); });
+		onLongPress(card, menu);
+		draggable(card, plugin, h.path);
+	}
+}
+
+/** Make a new hero (ancestry, class, stats, background) in the campaign's Party folder. Yours, or another party member. */
+export function promptCharacter(plugin: NimbleStatblocksPlugin, c: Campaign, mine: boolean, name = '', level = c.level): void {
+	const folder = homeFolderFor(c, 'character', c.folder);
+	new NewCharacterModal(plugin, folder, (f) => void (async () => {
+		if (mine) await plugin.campaigns.setMine(c, f.path);
+		await plugin.campaigns.open(f.path);
+	})(), { mine, name, level }).open();
+}
+
+/** Party line: "4 heroes · level 3", or the starting level until heroes are added. Player campaigns get the roster instead. */
 export function renderPartyLine(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign): void {
+	if (c.role === 'player') { renderRoster(el, plugin, c); return; }
 	const party = plugin.settings.activeCampaign === c.folder ? plugin.settings.party : (plugin.settings.campaigns?.[c.folder]?.party ?? []);
 	const line = el.createEl('button', { cls: 'campaign-party', attr: { 'aria-label': 'Edit this campaign\'s party' } });
 	setIcon(line.createSpan({ cls: 'campaign-party-icon' }), 'users-round');
@@ -242,7 +306,7 @@ export function renderOutline(el: HTMLElement, plugin: NimbleStatblocksPlugin, c
 
 /** Sessions first (newest at the top), then NPCs and Locations, then the rest, with file folders (Assets) last. */
 function orderedSections(c: Campaign): Section[] {
-	const rank = (s: Section) => ({ Sessions: 0, NPCs: 1, Locations: 2 } as Record<string, number>)[s.name] ?? (isFileFolder(s) ? 4 : 3);
+	const rank = (s: Section) => ({ Sessions: 0, NPCs: 1, Locations: 2, Party: 3 } as Record<string, number>)[s.name] ?? (isFileFolder(s) ? 5 : 4);
 	return [...c.sections].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, undefined, { numeric: true }));
 }
 
@@ -309,6 +373,7 @@ function newMenu(plugin: NimbleStatblocksPlugin, c: Campaign, e: MouseEvent | Po
 	m.addItem(i => i.setTitle('New session log').setIcon('calendar-days').onClick(() => promptSectionNote(plugin, c, 'session')));
 	m.addItem(i => i.setTitle('New NPC').setIcon('user-round').onClick(() => promptSectionNote(plugin, c, 'npc')));
 	m.addItem(i => i.setTitle('New location').setIcon('map-pin').onClick(() => promptSectionNote(plugin, c, 'location')));
+	if (c.role === 'player') m.addItem(i => i.setTitle('New party member').setIcon('user-plus').onClick(() => promptCharacter(plugin, c, false)));
 	m.addItem(i => i.setTitle('New note…').setIcon('file-plus').onClick(() => promptNew(plugin, c, c.folder, opts)));
 	m.addSeparator();
 	m.addItem(i => i.setTitle('New chapter').setIcon('book-marked').onClick(() => promptChapter(plugin, c)));
@@ -397,7 +462,7 @@ export function promptNew(plugin: NimbleStatblocksPlugin, c: Campaign, folder: s
 	const images = [...c.sections.flatMap(s => s.files), ...c.chapters.flatMap(x => x.files), ...c.looseFiles].filter(f => IMAGE.test(f.ext));
 	new NewNoteModal(plugin.app, {
 		where: ch ? ch.name : name,
-		kinds: ch ? IN_CHAPTER : IN_FOLDER,
+		kinds: c.role === 'player' ? (ch ? PLAYER_IN_CHAPTER : PLAYER_IN_FOLDER) : (ch ? IN_CHAPTER : IN_FOLDER),
 		kind,
 		images,
 		suggest: (k) => (k === 'session' ? plugin.campaigns.nextSessionName(c) : ''),
@@ -486,16 +551,32 @@ export function promptSectionNote(plugin: NimbleStatblocksPlugin, c: Campaign, k
 		(name) => void openNew(plugin, plugin.campaigns.createInSection(c, kind, name))).open();
 }
 
-/** Campaign switcher menu: every campaign, plus New campaign. */
+/**
+ * Campaign switcher menu. It doubles as the view switcher: campaigns you run
+ * and campaigns you play in are listed apart, and picking one switches the
+ * plugin to that side.
+ */
 export function campaignMenu(plugin: NimbleStatblocksPlugin, e: MouseEvent | PointerEvent): void {
 	const m = new Menu();
-	for (const c of plugin.campaigns.campaigns) {
-		m.addItem(i => i.setTitle(c.name).setIcon(c.folder === plugin.settings.activeCampaign ? 'check' : 'castle').onClick(async () => {
-			await plugin.campaigns.setActive(c.folder);
-		}));
+	const all = plugin.campaigns.campaigns;
+	const groups: [string, Campaign[]][] = [['Running', all.filter(c => c.role === 'gm')], ['Playing', all.filter(c => c.role === 'player')]];
+	const labelled = groups.every(([, list]) => list.length > 0);
+	for (const [label, list] of groups) {
+		if (!list.length) continue;
+		if (labelled) m.addItem(i => i.setTitle(label).setIcon(label === 'Running' ? ROLE_INFO.gm.icon : ROLE_INFO.player.icon).setDisabled(true).setSection(label));
+		for (const c of list) {
+			m.addItem(i => i.setTitle(c.name).setSection(labelled ? label : 'campaigns')
+				.setIcon(c.folder === plugin.settings.activeCampaign ? 'check' : ROLE_INFO[c.role].icon)
+				.onClick(async () => { await plugin.campaigns.setActive(c.folder); }));
+		}
 	}
-	m.addSeparator();
-	m.addItem(i => i.setTitle('New campaign…').setIcon('plus').onClick(() => plugin.newCampaign()));
+	const active = plugin.campaigns.active;
+	if (active) {
+		m.addItem(i => i.setTitle('Campaign settings…').setIcon('settings-2').setSection('manage').onClick(() => new CampaignSettingsModal(plugin, active).open()));
+		const other = active.role === 'gm' ? 'player' : 'gm';
+		m.addItem(i => i.setTitle(other === 'player' ? 'Switch to player view' : 'Switch to GM view').setIcon(ROLE_INFO[other].icon).setSection('manage')
+			.onClick(() => void plugin.campaigns.setRole(active, other)));
+	}
+	m.addItem(i => i.setTitle('New campaign…').setIcon('plus').setSection('new').onClick(() => plugin.newCampaign()));
 	m.showAtMouseEvent(e);
 }
-

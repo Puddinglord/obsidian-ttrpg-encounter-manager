@@ -6,6 +6,7 @@
 // when you do want it.
 
 import { App, Component, EventRef, MarkdownRenderer, Modal, Notice, setIcon, TFile } from 'obsidian';
+import { baseCreatureName } from './bestiary-view';
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterCreature, MonsterIndexEntry } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
@@ -95,11 +96,21 @@ class RecordModal extends Modal {
 		const sub = this.subtitle(c, src);
 		if (sub) titles.createDiv({ cls: 'record-sub', text: sub });
 		const actions = head.createDiv({ cls: 'record-actions' });
-		if (t.kind === 'monster') {
+		const lore = !c && !!src.entry && this.plugin.hideStats(src.entry.filePath, src.sourcePath || undefined);
+		if (t.kind === 'monster' && !lore) {
 			const add = actions.createEl('button', { cls: 'record-btn' });
 			setIcon(add.createSpan(), 'plus');
 			add.createSpan({ text: 'Add to fight' });
 			add.onclick = (e) => { void this.plugin.addToEncounter(t.entry.monster, t.entry.filePath || undefined, e.shiftKey ? 2 : 1); };
+		}
+		// Players keep their own notes on a creature: add them, or open them.
+		if (lore && src.entry) {
+			const name = baseCreatureName(src.entry.name);
+			const noted = !!this.plugin.creatureNote(name);
+			const notes = actions.createEl('button', { cls: 'record-btn' });
+			setIcon(notes.createSpan(), noted ? 'notebook-pen' : 'notebook');
+			notes.createSpan({ text: noted ? 'Open notes' : 'Add notes' });
+			notes.onclick = () => { this.close(); void this.plugin.openCreatureNote(name); };
 		}
 		const page = this.pageAction(src);
 		if (page) {
@@ -114,7 +125,7 @@ class RecordModal extends Modal {
 
 		const body = contentEl.createDiv({ cls: 'record-body' });
 		if (src.entry && (!c || !isHero(c))) {
-			this.plugin.renderStatblock(body, src.entry.monster, src.sourcePath, 'block');
+			this.plugin.renderStatblock(body, src.entry.monster, src.sourcePath, 'block', undefined, { lore });
 		} else if (src.file) {
 			const text = await this.app.vault.cachedRead(src.file);
 			const md = text.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();
@@ -124,7 +135,7 @@ class RecordModal extends Modal {
 		}
 	}
 
-	private subtitle(c: EncounterCreature | undefined, src: { entry?: MonsterIndexEntry; file?: TFile }): string {
+	private subtitle(c: EncounterCreature | undefined, src: { entry?: MonsterIndexEntry; file?: TFile; sourcePath?: string }): string {
 		if (c && isHero(c)) return [c.monster.type, c.defense !== undefined ? `Defense ${c.defense}` : ''].filter(Boolean).join(' · ');
 		if (this.target.kind === 'note') {
 			const fm = this.app.metadataCache.getFileCache(this.target.file)?.frontmatter;
@@ -132,6 +143,7 @@ class RecordModal extends Modal {
 		}
 		const m = c?.monster ?? src.entry?.monster;
 		if (!m) return '';
+		if (!c && src.entry && this.plugin.hideStats(src.entry.filePath, src.sourcePath || undefined)) return [m.group, m.type].filter(Boolean).join(' · ');
 		const role = monsterRole(m);
 		const lvl = formatLevel(m.level);
 		const armor = m.armor === 'medium' ? 'Medium armor' : m.armor === 'heavy' ? 'Heavy armor' : 'No armor';

@@ -69,7 +69,11 @@ export class InlineRefSuggest extends EditorSuggest<MonsterIndexEntry> {
 	renderSuggestion(entry: MonsterIndexEntry, el: HTMLElement): void {
 		el.addClass('nimble-suggestion');
 		el.createDiv({ text: entry.name, cls: 'nimble-suggestion-name' });
-		el.createDiv({ text: `${describe(entry)} · ${entry.bundled ? entry.monster.source || 'Bestiary' : entry.filePath}`, cls: 'nimble-suggestion-note' });
+		const m = entry.monster;
+		const what = this.plugin.hideStats(entry.filePath, this.context?.file?.path)
+			? [m.group, [m.size !== 'Medium' ? m.size : '', m.type].filter(Boolean).join(' ')].filter(Boolean).join(' · ') // players: no level, HP or armor
+			: describe(entry);
+		el.createDiv({ text: [what, entry.bundled ? m.source || 'Bestiary' : entry.filePath].filter(Boolean).join(' · '), cls: 'nimble-suggestion-note' });
 	}
 
 	selectSuggestion(entry: MonsterIndexEntry): void {

@@ -78,3 +78,46 @@ export const isRemote = (link: string) => /^https?:\/\//i.test(link);
 
 /** The new NPC card block, as inserted by the template and /npc-card. */
 export const NPC_CARD_BLOCK = '```nimble-npc\nlook: \nwants: \nvoice: \nsecret: \n```';
+
+// ----------------------------------------------------------------------------
+// Quick facts from an NPC's properties, shown under the name on the card
+
+export const NPC_STATUSES = ['alive', 'dead', 'missing', 'unknown'] as const;
+export const NPC_ATTITUDES = ['friendly', 'neutral', 'hostile', 'unknown'] as const;
+
+export interface NpcFacts {
+	/** Ancestry, pronouns and age, as written, in that order. */
+	details: string[];
+	/** Link text or plain text: "[[Zhentarim]]" or "The Zhentarim". */
+	faction?: string;
+	location?: string;
+	/** Lower-cased; anything other than the known values is kept as written. */
+	status?: string;
+	attitude?: string;
+	/** Where the party first met them (players' notes). */
+	firstMet?: string;
+}
+
+const factText = (v: unknown): string => {
+	if (Array.isArray(v)) return v.map(factText).filter(Boolean).join(', ');
+	if (typeof v === 'number') return String(v);
+	return typeof v === 'string' ? v.trim() : '';
+};
+
+export function npcFacts(fm: Record<string, unknown>): NpcFacts {
+	const out: NpcFacts = { details: [] };
+	for (const k of ['ancestry', 'pronouns', 'age']) {
+		const v = factText(fm[k]);
+		if (v) out.details.push(k === 'age' && /^\d+$/.test(v) ? `${v} years` : v);
+	}
+	const set = (key: keyof Omit<NpcFacts, 'details'>, v: unknown, lower = false) => {
+		const t = factText(v);
+		if (t) out[key] = lower ? t.toLowerCase() : t;
+	};
+	set('faction', fm.faction);
+	set('location', fm.location);
+	set('status', fm.status, true);
+	set('attitude', fm.attitude, true);
+	set('firstMet', fm.first_met ?? fm['first-met']);
+	return out;
+}
