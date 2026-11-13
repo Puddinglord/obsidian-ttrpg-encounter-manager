@@ -446,3 +446,12 @@ export function shiftMonster(m: NimbleMonster, shift: number): NimbleMonster {
 		abilities: [note, ...(m.abilities ?? []).filter(a => !/^(Tougher|Weaker) \(/.test(a.name))],
 	};
 }
+
+/**
+ * Tapping a pip (actions, Wounds, minions, class dice): an empty one adds one,
+ * a filled one takes one away, whichever pip it is. Counts move one step at a
+ * time, never jump to the pip tapped.
+ */
+export function pipStep(count: number, filled: boolean, max = Infinity): number {
+	return filled ? Math.max(0, count - 1) : Math.min(max, count + 1);
+}

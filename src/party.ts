@@ -60,7 +60,7 @@ export function renderPartyEditor(container: HTMLElement, plugin: NimbleStatbloc
 		rerender();
 	});
 	if (party.length) {
-		btn('Level up', 'trending-up', false, async () => {
+		btn('Level up', 'biceps-flexed', false, async () => {
 			for (const h of party) h.level += 1;
 			await save();
 			rerender();

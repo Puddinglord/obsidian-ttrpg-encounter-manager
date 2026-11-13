@@ -5,7 +5,7 @@ import { App, ItemView, Menu, Modal, Notice, Setting, setIcon, WorkspaceLeaf } f
 import type NimbleStatblocksPlugin from '../main';
 import { AppliedCondition, Encounter, EncounterCreature, MonsterIndexEntry } from './types';
 import { awaitingLastStand, EncounterStore, HpResult, isDown, isHero, isMinionGroup } from './encounters';
-import { conditionLabel, formatLevel, groupAttack, lastStandEffect, minionDie, monsterRole, parseHpCommand } from './rules';
+import { conditionLabel, formatLevel, groupAttack, lastStandEffect, minionDie, monsterRole, parseHpCommand, pipStep } from './rules';
 import { appendRichText } from './markdown';
 import { closePopover, isPopoverOpenFor, openPopover } from './popover';
 import { openHpCalculator } from './hp-pad';
@@ -58,8 +58,12 @@ export class EncounterTrackerView extends ItemView {
 	async onOpen(): Promise<void> {
 		this.registerEvent(this.plugin.encounters.on('changed', () => this.render()));
 		this.registerEvent(this.plugin.events.on('roll-log-changed', () => this.renderRollLog()));
+		this.registerEvent(this.plugin.campaigns.on('changed', () => { if (this.plugin.playerView() !== this.playerShown) this.render(); }));
 		this.render();
 	}
+
+	/** Whether the last render was the player-view placeholder. */
+	private playerShown = false;
 
 	async onClose(): Promise<void> {
 		closePopover();
@@ -74,6 +78,20 @@ export class EncounterTrackerView extends ItemView {
 		const focusedHp = (container.doc.activeElement as HTMLElement | null)?.dataset?.hpFor;
 		container.empty();
 		container.addClass('nimble-encounter-tracker');
+
+		// The tracker belongs to campaigns you run. Fights in progress are kept for when you switch back.
+		this.playerShown = this.plugin.playerView();
+		if (this.playerShown) {
+			const c = this.plugin.campaigns.active;
+			const empty = container.createDiv({ cls: 'empty-message tracker-player-note' });
+			empty.createEl('p', { text: `You're playing in ${c?.name ?? 'this campaign'}.` });
+			empty.createEl('p', { cls: 'empty-hint', text: 'The encounter tracker is for campaigns you run. Note who you fought with /fought in your session notes.' });
+			if (c) {
+				const b = empty.createEl('button', { text: 'Switch to GM view' });
+				b.addEventListener('click', () => void this.plugin.campaigns.setRole(c, 'gm'));
+			}
+			return;
+		}
 
 		const multiMode = this.plugin.settings.multipleEncounters;
 		const enc = this.store.ensureActive();
@@ -487,7 +505,7 @@ export class EncounterTrackerView extends ItemView {
 		for (let i = 0; i < (c.count ?? 0); i++) {
 			const up = i < (c.alive ?? 0);
 			const pip = pips.createEl('button', { cls: `pip minion-pip${up ? ' is-on' : ''}`, attr: { 'aria-pressed': String(up) } });
-			pip.onclick = () => this.store.setAlive(enc.id, c.id, up ? (c.alive ?? 0) - 1 : (c.alive ?? 0) + 1);
+			pip.onclick = () => this.store.setAlive(enc.id, c.id, pipStep(c.alive ?? 0, up, c.count ?? 0));
 		}
 		const attack = row.createEl('button', { cls: 'group-attack' });
 		setIcon(attack.createSpan(), 'dices');
@@ -530,7 +548,7 @@ export class EncounterTrackerView extends ItemView {
 			const on = i < (c.actions ?? 3);
 			const pip = actions.createEl('button', { cls: `pip action-pip${on ? ' is-on' : ''}`, attr: { 'aria-pressed': String(on) } });
 			if (dying && i > 0) pip.addClass('is-blocked');
-			pip.onclick = () => this.store.setActions(enc.id, c.id, on ? i : i + 1);
+			pip.onclick = () => this.store.setActions(enc.id, c.id, pipStep(c.actions ?? 3, on, 3));
 		}
 		const max = c.maxWounds ?? 6;
 		const wounds = row.createDiv({ cls: 'pips wound-pips', attr: { role: 'group' } });
@@ -540,7 +558,7 @@ export class EncounterTrackerView extends ItemView {
 		for (let i = 0; i < max; i++) {
 			const on = i < (c.wounds ?? 0);
 			const pip = wounds.createEl('button', { cls: `pip wound-pip${on ? ' is-on' : ''}`, attr: { 'aria-pressed': String(on) } });
-			pip.onclick = () => this.store.setWounds(enc.id, c.id, on ? i : i + 1);
+			pip.onclick = () => this.store.setWounds(enc.id, c.id, pipStep(c.wounds ?? 0, on, max));
 		}
 	}
 

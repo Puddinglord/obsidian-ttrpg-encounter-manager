@@ -1,4 +1,4 @@
-import { Events, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { Component, Events, MarkdownRenderer, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
 import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/internals';
 import {
 	migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings,
@@ -14,9 +14,11 @@ import { inlineRefLivePreview } from './src/live-preview';
 import { AddMonsterModal, InlineRefSuggest } from './src/suggest';
 import { NimbleSlashSuggest } from './src/slash';
 import { NimbleSettingsTab } from './src/settings-tab';
-import { parseDice, rollNimbleAttack, rollPlain } from './src/dice';
+import { parseDice, rollDie, rollNimbleAttack, rollPlain } from './src/dice';
+import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/roll-def';
 import { BestiaryEntry, bestiaryEntries } from './src/bestiary';
-import { BESTIARY_VIEW_TYPE, BestiaryView } from './src/bestiary-view';
+import { baseCreatureName, BESTIARY_VIEW_TYPE, BestiaryView, bookOf } from './src/bestiary-view';
+import { notesBody } from './src/creature-notes';
 import { registerEncounterBlock } from './src/encounter-block';
 import { BuilderModal } from './src/builder-modal';
 import { PartyModal } from './src/party';
@@ -33,15 +35,22 @@ import { SpotlightModal } from './src/spotlight';
 import { registerTables, styleTablesIn } from './src/tables';
 import { registerTooltips, watchTooltips } from './src/tooltips';
 import { monsterRole, shiftMonster } from './src/rules';
-import { canRoll3d, dice3dLastStats, dice3dSupported, diceForRoll, landedWithin, roll3d } from './src/dice3d';
+import { canRoll3d, dice3dLastStats, dice3dSupported, diceForRoll, landedWithin, roll3d, warm3d } from './src/dice3d';
 import { dressDice, rollEvent, rollOptions } from './src/dice3d/looks';
 import type { Die3d } from './src/dice3d';
+import type { DieLook } from './src/dice3d/renderer';
+import { inkOn } from './src/die-shape';
 import type { RollEvent } from './src/dice3d/styles';
 import { DiceWorkshopModal } from './src/dice-workshop';
 import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/campaign-view';
 import { CampaignPicker, NewCampaignModal } from './src/campaign-modals';
-import { newSceneAnywhere, promptChapter, promptSectionNote } from './src/campaign-ui';
+import { newSceneAnywhere, promptCharacter, promptChapter, promptSectionNote } from './src/campaign-ui';
 import BESTIARY from './src/data/bestiary.json';
+import { registerCharacterFeatures } from './src/character-register';
+import { registerReadingMode } from './src/reading-mode';
+import { safeName } from './src/campaign-model';
+import { creatureNote } from './src/campaign-templates';
+import { bundledCompendium, setCompendiumDrafts } from './src/compendium-data';
 
 const ROLL_LOG_LIMIT = 30;
 
@@ -109,6 +118,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	private settingsTab?: NimbleSettingsTab;
 	/** data.json couldn't be read and couldn't be copied aside: nothing is saved, so the file isn't overwritten. */
 	private settingsReadOnly = false;
+	/** The bundled player compendium (classes, items, spells…). */
+	get compendium() { return bundledCompendium(); }
 
 	/** Hold a screen wake lock on mobile while the active encounter is in combat. */
 	syncWakeLock(): void {
@@ -144,7 +155,11 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerView(BESTIARY_VIEW_TYPE, (leaf) => new BestiaryView(leaf, this));
 		this.registerView(CAMPAIGN_VIEW_TYPE, (leaf) => new CampaignView(leaf, this));
 		this.addRibbonIcon('castle', 'Nimble campaign', () => this.openCampaignView());
-		this.addRibbonIcon('swords', 'Nimble encounter tracker', () => this.activateEncounterView());
+		const trackerRibbon = this.addRibbonIcon('swords', 'Nimble encounter tracker', () => this.activateEncounterView());
+		// The tracker is a GM tool: its ribbon button hides while you're in a campaign you play in.
+		const syncRibbon = () => trackerRibbon.toggle(!this.playerView());
+		this.registerEvent(this.campaigns.on('changed', syncRibbon));
+		syncRibbon();
 		this.addRibbonIcon('book-open', 'Nimble bestiary', () => this.openBestiary());
 		this.registerHoverLinkSource('nimble-gm', { display: 'Ember Vault', defaultMod: true });
 
@@ -174,6 +189,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		}));
 		this.registerMarkdownCodeBlockProcessor('nimble-campaign', (_source, el, ctx) => ctx.addChild(new CampaignBlock(this, el, ctx)));
 		registerMapBlock(this);
+		setCompendiumDrafts(this.settings.compendiumDrafts);
+		registerCharacterFeatures(this);
+		registerReadingMode(this);
 
 		// Reading view: `nimble:Name` inline references
 		this.registerMarkdownPostProcessor((el, ctx) => {
@@ -204,6 +222,26 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerDomEvent(activeDocument, 'visibilitychange', () => { this.wakeLock = null; this.syncWakeLock(); });
 		this.register(() => { void this.wakeLock?.release().catch(() => undefined); this.wakeLock = null; });
 		this.app.workspace.onLayoutReady(() => this.syncWakeLock());
+
+		// Campaigns keep their monsters to themselves: a name in Brakka's Journal never opens the GM's
+		// Quicksilver Construct. A monster written in a campaign's notes is seen only from that campaign;
+		// one in a loose note, from campaigns you run (and notes outside any). The bestiary is seen everywhere.
+		this.index.setScope((filePath, from) => {
+			const cs = this.campaigns;
+			if (!filePath || !cs) return true;
+			const here = (from ? cs.of(from) : undefined) ?? cs.active;
+			const home = cs.of(filePath);
+			if (home) return home.folder === here?.folder;
+			return here?.role !== 'player';
+		});
+		// Which monsters a lookup sees follows the active campaign and the campaigns' folders and roles.
+		let scope = '';
+		this.registerEvent(this.campaigns.on('changed', () => {
+			const next = JSON.stringify([this.campaigns.active?.folder ?? null, this.campaigns.campaigns.map(c => [c.folder, c.role])]);
+			if (next === scope) return;
+			scope = next;
+			this.index.trigger('changed');
+		}));
 
 		this.registerEvent(this.index.on('changed', () => {
 			this.indexVersion++;
@@ -247,15 +285,21 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		// Spotlight: search and actions in one box. Any hotkey can be set for it; Cmd/Ctrl+K is shared with Insert link (see shareInsertLinkKey).
 		this.addCommand({ id: 'spotlight', name: 'Spotlight: search adversaries, roll dice and more', icon: 'search', callback: () => this.toggleSpotlight() });
 		this.app.workspace.onLayoutReady(() => { this.shareInsertLinkKey(); this.offerSpotlightKey(); });
-		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', callback: () => this.activateEncounterView() });
+		// GM tools are left out of the palette while you're in a campaign you play in.
+		const gm = (fn: () => void) => (checking: boolean) => {
+			if (this.playerView()) return false;
+			if (!checking) fn();
+			return true;
+		};
+		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', checkCallback: gm(() => void this.activateEncounterView()) });
 		this.addCommand({ id: 'open-bestiary', name: 'Open bestiary', callback: () => this.openBestiary() });
-		this.addCommand({ id: 'add-monster', name: 'Add monster to encounter…', callback: () => this.openAddMonsterModal() });
-		this.addCommand({ id: 'build-encounter', name: 'Build an encounter…', callback: () => new BuilderModal(this).open() });
+		this.addCommand({ id: 'add-monster', name: 'Add monster to encounter…', checkCallback: gm(() => this.openAddMonsterModal()) });
+		this.addCommand({ id: 'build-encounter', name: 'Build an encounter…', checkCallback: gm(() => new BuilderModal(this).open()) });
 		this.addCommand({ id: 'edit-party', name: 'Edit party…', callback: () => this.openParty() });
 		this.addCommand({ id: 'open-settings', name: 'Open Nimble settings', callback: () => this.openSettings() });
 		const withActive = (fn: (encId: string) => void) => (checking: boolean) => {
 			const enc = this.encounters.active;
-			if (!enc) return false;
+			if (!enc || this.playerView()) return false;
 			if (!checking) fn(enc.id);
 			return true;
 		};
@@ -275,10 +319,13 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.addCommand({
 			id: 'add-party',
 			name: 'Add the party to the encounter',
-			callback: () => {
-				if (!this.settings.party.length) { new Notice('Set up your party in the plugin settings first.'); return; }
+			checkCallback: (checking) => {
+				if (this.playerView()) return false;
+				if (checking) return true;
+				if (!this.settings.party.length) { new Notice('Set up your party in the plugin settings first.'); return true; }
 				const n = this.encounters.addParty();
 				new Notice(n ? `Added ${n} hero${n === 1 ? '' : 'es'}` : 'The whole party is already in this encounter');
+				return true;
 			},
 		});
 		this.addCommand({
@@ -457,6 +504,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	async onExternalSettingsChange(): Promise<void> {
 		if (!(await this.loadSettings())) return;
 		this.loadBundledBestiary();
+		setCompendiumDrafts(this.settings.compendiumDrafts);
 		this.encounters.trigger('changed');
 		this.events.trigger('roll-log-changed');
 		this.campaigns.trigger('changed');
@@ -508,18 +556,80 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		onAdd?: (ev: MouseEvent) => void,
 		extra: Partial<RenderOptions> = {},
 	): HTMLElement {
-		return renderStatblock(container, monster, {
+		// A note's own stat block is always shown; looked-up monsters are lore cards for players.
+		const lore = extra.lore ?? (variant !== 'block' && this.hideStats(sourcePath));
+		const block = renderStatblock(container, monster, {
 			app: this.app,
 			sourcePath,
 			variant,
+			lore,
 			compact: this.settings.statblockStyle === 'compact',
 			onAdd,
 			onDice: this.settings.clickableDice ? (el, expr, label, kind) => this.wireDice(el, expr, label, kind) : undefined,
 			keywords: this.conditionKeywords(),
 			onKeyword: (el, word) => this.wireKeyword(el, word),
 			partySize: this.encounters.partySize(this.encounters.active),
+			// Lore cards list every book the creature is in, wherever they show.
+			sources: lore ? extra.sources ?? this.printingsOf(monster) : undefined,
 			...extra,
 		});
+		// …and your own notes on it, under the card (bestiary, hover preview, quick look alike).
+		if (lore) {
+			const note = this.creatureNote(baseCreatureName(monster.name));
+			if (note) void this.renderCreatureNotes(container, block, note);
+		}
+		return block;
+	}
+
+	/** Every book a bundled creature is printed in ("Monsters & More p.6", "GM Guide p.30"). */
+	printingsOf(monster: NimbleMonster): string[] | undefined {
+		if (!monster.bundledId) return undefined;
+		const base = baseCreatureName(monster.name).toLowerCase();
+		const all = this.index.all().filter(e => e.bundled && baseCreatureName(e.name).toLowerCase() === base);
+		return all.length > 1 ? [...new Set(all.map(e => bookOf(e).long))] : undefined;
+	}
+
+	/** "Your notes" under a lore card: the note's text (without its empty template parts) and a button to open it. */
+	private async renderCreatureNotes(container: HTMLElement, after: HTMLElement, file: TFile): Promise<void> {
+		const text = await this.app.vault.cachedRead(file);
+		if (!after.parentElement) return;
+		const body = notesBody(text);
+		const box = createDiv({ cls: 'nimble-creature-notes' });
+		after.after(box);
+		const head = box.createDiv({ cls: 'nimble-creature-notes-head' });
+		setIcon(head.createSpan({ cls: 'nimble-creature-notes-icon' }), 'notebook-pen');
+		head.createSpan({ cls: 'nimble-creature-notes-title', text: 'Your notes' });
+		const open = head.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Open your notes' } });
+		setIcon(open, 'external-link');
+		open.addEventListener('click', (ev) => { this.hover.hide(); void this.app.workspace.getLeaf(ev.metaKey || ev.ctrlKey).openFile(file); });
+		const md = box.createDiv({ cls: 'nimble-creature-notes-body markdown-rendered' });
+		if (!body) { md.createDiv({ cls: 'nimble-creature-notes-empty', text: 'Nothing written yet.' }); return; }
+		// Rendered once into a card that's thrown away; the component goes with it.
+		const owner = new Component();
+		owner.load();
+		await MarkdownRenderer.render(this.app, body, md, file.path, owner);
+		const gone = new MutationObserver(() => { if (!box.isConnected) { owner.unload(); gone.disconnect(); } });
+		gone.observe(box.ownerDocument.body, { childList: true, subtree: true });
+	}
+
+	/**
+	 * Is the active campaign one you play in? Pass a note path to ask about that
+	 * note's campaign instead (notes outside any campaign follow the active one).
+	 */
+	playerView(path?: string): boolean {
+		return this.campaigns?.role(path) === 'player';
+	}
+
+	/**
+	 * Should a monster from `monsterPath` be shown as a lore card? Yes when the
+	 * note it's shown in (`viewPath`; the active campaign for panels and dialogs
+	 * with no note) is in a campaign you play in, unless it's a stat block the
+	 * player keeps in a campaign they play in (their own notes), or they've
+	 * asked to see stats.
+	 */
+	hideStats(monsterPath = '', viewPath?: string): boolean {
+		if (this.settings.playerStatblocks || !this.playerView(viewPath)) return false;
+		return !(monsterPath && this.campaigns.of(monsterPath)?.role === 'player');
 	}
 
 	private wireKeyword(el: HTMLElement, word: string): void {
@@ -534,7 +644,17 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	/** Buttons shown under a hover preview or bestiary stat block. */
-	monsterActions(entry: MonsterIndexEntry, opts: { inBestiary?: boolean } = {}): StatblockAction[] {
+	monsterActions(entry: MonsterIndexEntry, opts: { inBestiary?: boolean; viewPath?: string } = {}): StatblockAction[] {
+		if (this.hideStats(entry.filePath, opts.viewPath)) {
+			// Players can't add monsters to a fight; they can look them up and open their own notes.
+			const out: StatblockAction[] = [];
+			if (entry.bundled && !opts.inBestiary) out.push({ label: 'Bestiary', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
+			if (!entry.bundled && entry.filePath) out.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { this.hover.hide(); void this.app.workspace.openLinkText(entry.filePath, '', ev.metaKey || ev.ctrlKey); } });
+			const name = baseCreatureName(entry.name);
+			const noted = !!this.creatureNote(name);
+			out.push({ label: noted ? 'Open notes' : 'Add notes', icon: noted ? 'notebook-pen' : 'notebook', onClick: () => { this.hover.hide(); void this.openCreatureNote(name); } });
+			return out;
+		}
 		const actions: StatblockAction[] = [
 			{
 				label: 'Add', icon: 'plus', cls: 'mod-cta',
@@ -649,17 +769,68 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	/** Roll 3D dice for a result. Resolves when they've landed (at once when 3D is off). */
-	private show3dDice(sides: number, count: number, rolls: number[], nimble: boolean, outcome?: 'miss' | 'crit'): Promise<void> | undefined {
+	/**
+	 * A roll with stacked advantage/disadvantage, situational bonuses and extra
+	 * dice (Judgment Dice…), from the roll dialog. Every die rolled tumbles in 3D;
+	 * the notice and log show what was kept and dropped.
+	 */
+	rollWithEdge(input: EdgeRollInput, label: string): EdgeRollResult {
+		const r = rollEdge(input);
+		// The opening throw (the dice kept, then any dropped by advantage), then each crit explosion in turn:
+		// the roller chains explosions one at a time after the throw lands.
+		const thrown = [...r.kept, ...r.dropped];
+		const all = [...thrown, ...r.explosions];
+		const nimble = input.attack && this.settings.nimbleAttackRolls;
+		// Class dice put into the roll (Judgment Dice) tumble with it, in their own colour.
+		const extra = r.extras.filter(x => !x.held).flatMap(x => x.rolls.map(value => ({ sides: x.sides, value })));
+		const landed = this.show3dDice(input.dice.sides, thrown.length, all, nimble, r.outcome, extra);
+		this.logRoll({ label, expression: r.expression, total: r.total, detail: r.detail, outcome: r.outcome }, landed);
+		return r;
+	}
+
+	/**
+	 * Roll with advantage: two dice of `sides`, keep the higher (a Hit Die when
+	 * levelling up). Both dice tumble; the notice and log show the one kept.
+	 */
+	rollWithAdvantage(sides: number, label: string): { rolls: number[]; kept: number } {
+		const rolls = [rollDie(sides), rollDie(sides)];
+		const kept = Math.max(...rolls);
+		const landed = this.show3dDice(sides, 2, rolls, false);
+		this.logRoll({ label, expression: `1d${sides} ▲`, total: kept, detail: `2d${sides}: [${rolls.join(', ')}], keep ${kept}` }, landed);
+		return { rolls, kept };
+	}
+
+	/** Get 3D dice ready for a roll that's coming (the level-up Hit Die), when they're on. */
+	warmDice(sides: number[]): void {
+		const s = this.settings;
+		if (!s.dice3d || (Platform.isPhone && !s.dice3dOnPhone) || !sides.length) return;
+		// The same dice, in the same looks, as the roll that's coming.
+		const dice = dressDice(this, diceForRoll(sides[0], sides.length, sides.map(() => 1), false), false);
+		void warm3d(dice, rollOptions(s.dice)).catch(() => undefined);
+	}
+
+	private show3dDice(sides: number, count: number, rolls: number[], nimble: boolean, outcome?: 'miss' | 'crit', extra: { sides: number; value: number }[] = []): Promise<void> | undefined {
 		const s = this.settings;
 		if (!s.dice3d || (Platform.isPhone && !s.dice3dOnPhone) || !dice3dSupported()) return undefined;
 		const thrown = diceForRoll(sides, count, rolls, nimble);
+		const classDice: Die3d[] = extra.map(x => ({ sides: x.sides, value: x.value, role: 'normal' }));
 		// A d100, or more dice than fit on the table, would show faces that contradict the result.
-		if (!canRoll3d(thrown)) return undefined;
-		const dice = dressDice(this, thrown, outcome === 'crit');
+		if (!canRoll3d([...thrown, ...classDice])) return undefined;
+		const dice = [...dressDice(this, thrown, outcome === 'crit'), ...this.classDiceLook(dressDice(this, classDice, false))];
 		const landed = roll3d(dice, rollOptions(s.dice, rollEvent(sides, rolls.slice(0, count), outcome)))
 			.catch((e) => { console.warn('Nimble: 3D dice failed, showing the result only', e); });
 		// Dice that never land (a minimised window draws no frames) mustn't hold the result back for good.
 		return landedWithin(landed, (6000 + 2000 * Math.max(0, rolls.length - count)) / (s.dice.speed || 1));
+	}
+
+	/** Class dice (Judgment Dice…) in their colour and finish from settings, whatever the normal dice look like. */
+	private classDiceLook(dice: Die3d[]): Die3d[] {
+		const { color, finish } = this.settings.classDice;
+		const label = inkOn(color);
+		return dice.map(d => ({
+			...d, modelUrl: undefined,
+			look: d.look ? { ...d.look, body: [color], label, outline: '', edge: '', finish: finish as DieLook['finish'], texture: 'none', textureUrl: undefined } : d.look,
+		}));
 	}
 
 	/** Record a roll (from the dice roller or the tracker) and show it, after `wait` if given. */
@@ -700,6 +871,23 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.pokeEditors();
 	}
 
+	/**
+	 * A campaign changed sides (or the stat block setting did): every view that
+	 * shows monsters or encounter blocks differently for players redraws.
+	 * Live Preview keeps rendered code blocks until their text changes, so its
+	 * views are rebuilt outright; this only happens on a deliberate switch.
+	 */
+	refreshSide(): void {
+		this.indexVersion++;
+		refreshInlineRefs(this);
+		this.rerenderNotes();
+		for (const leaf of this.app.workspace.getLeavesOfType('markdown')) {
+			if (leaf.view instanceof MarkdownView && leaf.view.getMode() === 'source') {
+				void (leaf as unknown as { rebuildView?: () => Promise<void> }).rebuildView?.();
+			}
+		}
+	}
+
 	/** Ask every open editor to rebuild its decorations. */
 	private pokeEditors(): void {
 		this.app.workspace.getLeavesOfType('markdown').forEach((leaf) => {
@@ -709,7 +897,47 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		});
 	}
 
+	/** Your notes on creatures, by lower-case creature name (notes with `nimble: creature`; the active campaign's win). */
+	creatureNotes(): Map<string, TFile> {
+		const active = this.settings.activeCampaign;
+		const out = new Map<string, TFile>();
+		for (const f of this.app.vault.getMarkdownFiles()) {
+			const fm = this.app.metadataCache.getFileCache(f)?.frontmatter;
+			if (!fm || String(fm.nimble ?? '').toLowerCase() !== 'creature') continue;
+			const k = String(fm.creature ?? f.basename).trim().toLowerCase();
+			if (!out.has(k) || (active && f.path.startsWith(`${active}/`))) out.set(k, f);
+		}
+		return out;
+	}
+
+	/** Your notes on one creature, if you've written any. */
+	creatureNote(name: string): TFile | null {
+		return this.creatureNotes().get(name.trim().toLowerCase()) ?? null;
+	}
+
+	/** Open your notes on a creature, making them (in the campaign's Bestiary folder) the first time. */
+	async openCreatureNote(name: string): Promise<void> {
+		let file = this.creatureNote(name);
+		if (!file) {
+			const c = this.campaigns.active;
+			const folder = normalizePath(c ? `${c.folder}/Bestiary` : 'Bestiary');
+			if (!this.app.vault.getFolderByPath(folder)) await this.app.vault.createFolder(folder).catch(() => undefined);
+			let path = normalizePath(`${folder}/${safeName(name)}.md`);
+			for (let i = 2; this.app.vault.getAbstractFileByPath(path); i++) path = normalizePath(`${folder}/${safeName(name)} ${i}.md`);
+			file = await this.app.vault.create(path, creatureNote(name));
+		}
+		await this.app.workspace.getLeaf(false).openFile(file);
+	}
+
+	/** GM: the party editor. Player: your character (or a prompt to add one). */
 	openParty(): void {
+		const c = this.campaigns.active;
+		if (c?.role === 'player') {
+			const mine = this.campaigns.myCharacter(c);
+			if (mine) void this.campaigns.open(mine.path);
+			else promptCharacter(this, c, true);
+			return;
+		}
 		new PartyModal(this.app, this).open();
 	}
 

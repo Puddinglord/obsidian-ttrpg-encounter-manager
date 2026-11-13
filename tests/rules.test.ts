@@ -221,3 +221,15 @@ describe('budgetPhrase', () => {
 		expect(budgetPhrase(n)).toBe(out);
 	});
 });
+
+describe('pipStep', () => {
+	it('an empty pip adds one, a filled pip takes one away, whichever pip it is', async () => {
+		const { pipStep } = await import('../src/rules');
+		expect(pipStep(3, true)).toBe(2); // the first of 3 filled: down to 2, not 0
+		expect(pipStep(1, true)).toBe(0); // the only one left: off
+		expect(pipStep(1, false)).toBe(2); // the last empty one of 3: up to 2, not 3
+		expect(pipStep(0, false, 3)).toBe(1);
+		expect(pipStep(3, false, 3)).toBe(3);
+		expect(pipStep(0, true)).toBe(0);
+	});
+});

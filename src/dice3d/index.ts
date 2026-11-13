@@ -11,6 +11,7 @@ export { DICE3D_MATERIALS } from './materials';
 
 interface RendererLib {
 	roll: (dice: Die3d[], opts: Dice3dOptions) => Promise<void>;
+	warm: (dice: Die3d[], opts: Dice3dOptions) => void;
 	preview: (canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }) => () => void;
 	stats: { last: RollStats | null };
 }
@@ -86,6 +87,12 @@ export function landedWithin(landed: Promise<void>, ms: number): Promise<void> {
 export async function roll3d(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	if (!dice.length || !dice3dSupported()) return;
 	await (await load()).roll(dice, opts);
+}
+
+/** Load the dice engine and warm it up for these dice, ahead of a roll that's coming (see renderer.warm). */
+export async function warm3d(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
+	if (!dice3dSupported()) return;
+	(await load()).warm(dice, opts);
 }
 
 /** A slowly turning die on `canvas`, for settings. Returns a function that stops it (it also stops when the canvas leaves the page). */
