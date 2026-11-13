@@ -1,8 +1,8 @@
 # Ember Vault
 
-A GM companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.2 rules), built into Obsidian. Prep and run your game from your own notes. It includes a campaign manager, a bundled bestiary of 525 monsters, encounter blocks rated against your party, a combat tracker, GM maps with pins, NPC portrait cards, styled read-aloud boxes and 3D dice.
+A companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.2 rules), built into Obsidian, for both sides of the table. GMs prep and run their game from their own notes: a campaign manager, a bundled bestiary of 525 monsters, encounter blocks rated against your party, a combat tracker, GM maps with pins, NPC portrait cards, styled read-aloud boxes and 3D dice. Players get an interactive Nimble character sheet, a party roster, and session notes on the people, places and fights they've met.
 
-It isn't a virtual tabletop. Everything here is for the GM.
+If you run one game and play in another, keep both in one vault: every campaign is either one you run or one you play in, and the plugin switches over when you do. It isn't a virtual tabletop.
 
 **Website:** <https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/>
 
@@ -33,6 +33,10 @@ It isn't a virtual tabletop. Everything here is for the GM.
 **NPCs with faces.** Give an NPC a portrait and they get a character card, with a blurred secret you can reveal when your screen isn't shared. Their name is linked wherever you mention it.
 
 ![An NPC card](docs/images/npc-card.png)
+
+**Play, too.** Make a campaign you play in and your character lives in a note: an interactive version of the official sheet where you tap a stat to roll a save, tap HP to take a hit, and add gear and spells from every Nimble class book. Monsters show what your hero could know instead of their stat blocks, and encounter blocks become battle notes. See [Playing in a campaign](docs/players.md) and [Character sheets](docs/character-sheets.md).
+
+![A character sheet beside the party in a player campaign](docs/images/character-sheet.png)
 
 **And more:**
 - campaigns, chapters and scenes in a sidebar panel

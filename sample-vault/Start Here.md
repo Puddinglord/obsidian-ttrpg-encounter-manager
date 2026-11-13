@@ -17,6 +17,17 @@ This vault holds a short, ready-to-run Nimble adventure, **The Quicksilver Vault
 9. **Fight the boss.** [[Q7 Sacred Circle]] has a legendary monster. After each hero's turn, the tracker shows her choices.
 10. **Type `/`** at the start of any line to see every Nimble command.
 
+## The player's side
+
+The vault holds a second campaign, [[Brakka's Journal]]: the same adventure as one of the players keeps it. Open it from the campaign switcher (it's under **Playing**) and the plugin changes over:
+
+1. **The party** sits at the top of the Campaign panel, with Brakka marked **You**. Open her note to see her [character sheet](https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager/blob/main/docs/character-sheets.md): tap a stat to roll a save, tap HP to take a hit.
+2. **Session notes** have battle notes instead of encounters. Open [[Session 1 - Down the Cellar Stair]]: the constructs show what a hero could know about them, not their stats.
+3. **NPC notes** are written from the party's side: suspicions instead of secrets, and the promises they've made you.
+4. Type `/fought` in a session note to log a fight.
+
+Switch back to **The Old Quarter** and everything is a GM's again.
+
 ## Make it yours
 
 - Replace the party with your own heroes from the Campaign panel.

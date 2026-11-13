@@ -6,13 +6,13 @@ Run several campaigns from one vault. Each has its own chapters, scenes, NPCs, s
 
 ## Start one
 
-Use **New campaign**, from the castle icon in the ribbon or the command palette. You give it a name, a starting level and the number of heroes. It creates a folder with a home note, a first chapter and an opening scene.
+Use **New campaign**, from the castle icon in the ribbon or the command palette. First pick whether you **run it** or **[play in it](players.md)**. For a game you run, give it a name, a starting level and the number of heroes; it creates a folder with a home note, a first chapter and an opening scene. For a game you play in, name it and your character.
 
 ## The Campaign panel
 
 The panel in the left sidebar is home base. From it you can:
 
-- switch campaigns
+- switch campaigns, and with them between GM and [player](players.md) view; **Campaign settings…** in the same menu changes the name, side and level
 - open [Spotlight](spotlight.md) from the search bar under the campaign name, to find adversaries, NPCs and notes or roll dice
 - see and edit the party
 - **Continue** where you left off
@@ -63,6 +63,8 @@ Obsidian's own items (Bookmark, Reveal in navigation, and items from other plugi
 
 **Each campaign has its own party.** Opening a note inside a campaign makes that campaign active, so encounter blocks in it are rated against that table's heroes. Until you add heroes, the campaign's `level:` and `heroes:` properties are used.
 
+**Pages open ready to read.** Characters, chapters, scenes, NPCs, locations, maps and handouts open in reading view, where cards, sheets and blocks look their best. Use Obsidian's edit button (or its hotkey) to change one; it stays in editing until you move to another page. Session logs, which you write in at the table, and notes you've just made open for editing as usual. Turn this off under Settings → Campaigns → **Open campaign pages in reading view**. In reading view, a campaign note's properties show as a row of tags (Ancestry Human, Status alive…) rather than the Properties form; switch to editing to change them, or turn off **Properties as tags**.
+
 **Moving through scenes:** the **Next scene** and **Previous scene** commands step through scenes in order, across chapters. Bind them to hotkeys under Settings → Hotkeys.
 
 ## How it's laid out
@@ -96,6 +98,7 @@ A ```` ```nimble-campaign ```` block on the home note shows the same outline ins
 | Property | On | Meaning |
 |---|---|---|
 | `nimble: campaign` | home note | Marks the folder as a campaign |
+| `role: player` | home note | A campaign you [play in](players.md) rather than run |
 | `level:` / `heroes:` | home note | Party level and size, used until you add real heroes |
 | `nimble: chapter` | chapter note | Marks the folder as a chapter |
 | `label:` | chapter note | Shown above the chapter name, e.g. "Chapter 1" or "Prelude" |

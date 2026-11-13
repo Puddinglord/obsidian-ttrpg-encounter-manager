@@ -2,11 +2,14 @@
 
 Type `/` at the start of a line or after a space:
 
+In a campaign you [play in](players.md), the GM-only commands (`/add`, `/encounter`, `/statblock`, `/builder`, `/tracker`, the stat block templates and `/summary`) are left out, and `/encounter` means `/fought`.
+
 | Command | Does |
 |---|---|
 | `/monster goblin` | Inserts a monster reference |
 | `/add 3 goblin` | Adds 3 goblins to the tracker; nothing is written to the note |
 | `/encounter 3 goblin, 2 wolf` | Encounter block with live difficulty (or "Insert and run it now") |
+| `/fought 4 goblin, goblin shaman` | [Battle notes](players.md#battle-notes) in a campaign you play in (also `/battle`) |
 | `/statblock krogg` | The full stat block, editable in the note |
 | `/builder` | Opens the encounter builder |
 | `/legendary`, `/minion`, `/new-monster` | Stat block templates |

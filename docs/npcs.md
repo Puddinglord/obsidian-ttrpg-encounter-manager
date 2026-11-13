@@ -12,7 +12,17 @@ portrait: "[[Tobren Kask.png]]"
 ---
 ```
 
-**New NPC** (the **+** next to NPCs in the Campaign panel, or the command palette) makes this note for you, character card included.
+**New NPC** (the **+** next to NPCs in the Campaign panel, or the command palette) makes this note for you, character card included, with a set of quick-fact properties to fill in or delete:
+
+| Property | Shown on the card as |
+|---|---|
+| `ancestry:`, `pronouns:`, `age:` | A line under the name: "Dwarf · she/her · 54 years" |
+| `faction:`, `location:` | Links under that (they can be `[[links]]`) |
+| `first_met:` | Where the party first met them (player notes) |
+| `status:` | A pill: alive, dead, missing or unknown. Click it to change |
+| `attitude:` | A pill: friendly, neutral, hostile or unknown. Click it to change |
+
+Below the card, the starter has headings for Personality, What they know, Relationships, Quotes, Appears in and Notes. In a campaign you [play in](players.md), they're written from the party's side instead: First impressions, What we learned, What they want from us, Promises & debts. All of them are optional; delete whatever you don't use.
 
 ## Character cards
 
