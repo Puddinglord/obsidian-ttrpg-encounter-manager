@@ -1,0 +1,3293 @@
+{
+  "classes": [
+    {
+      "name": "Berserker",
+      "source": "Berserker 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "High-damage, high-survivability, melee-focused class.",
+      "flavor": "The Berserker is destruction. He knows not fatigue nor caution—both driven away in a relentless fury. Even death fears to take a Berserker before his battle Rage is satiated. Once a Berserker has begun to fight, he only grows stronger, fueled by battle-lust and unending Rage.\n\nThe deadliest among them is not the well-rested, but those who are pushed to the brink through combat. It matters not what a Berserker wields, be it axe or sword; flesh will be hewn from bone and heads from shoulders. Many have caved under the Berserker’s primal might—sword and spell are but straw in the wake of unbridled RAGE.",
+      "highlights": [
+        "Become a raging, damage-dealing machine. Greet death as an old friend and keep on fighting!",
+        "Deal out incredible amounts of brutality: the longer a fight goes on, the more your Rage intensifies.",
+        "Use your Savage Arsenal. Choose abilities to crush your foes and laugh in the face of death!"
+      ],
+      "complexity": 2,
+      "keyStats": [
+        "STR",
+        "DEX"
+      ],
+      "hitDie": 12,
+      "startingHp": 20,
+      "saves": {
+        "adv": "STR",
+        "dis": "INT"
+      },
+      "armor": "None",
+      "weapons": "all STR weapons",
+      "startingGear": [
+        "Battleaxe",
+        "Rations (meat)",
+        "Rope (50 ft.)"
+      ],
+      "resources": [
+        {
+          "name": "Fury Dice",
+          "max": "KEY",
+          "reset": "Rage ends",
+          "die": "d4"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Rage",
+              "text": "(1/turn) Action: Roll a Fury Die (1d4) and set it aside. Add it to every STR attack you make. You can have a max of KEY Fury Dice; they are lost when your Rage ends."
+            },
+            {
+              "name": "That all you got?!",
+              "text": "When you are attacked, you may expend 1 or more Fury Dice to reduce the damage taken by STR+DEX for each die spent."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Intensifying Fury",
+              "text": "If you are Raging at the start of your turn, roll 1 Fury Die for free."
+            },
+            {
+              "name": "One with the Ancients",
+              "text": "(1/Safe Rest) When faced with a decision about which direction or course of action to take, you can call upon your ancestors to guide you toward the most dangerous or challenging path."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Berserker subclass."
+            },
+            {
+              "name": "Bloodlust",
+              "text": "Expend 1 or more Fury Dice on your turn, move DEX spaces per die spent for free."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Enduring Rage",
+              "text": "While Dying, you Rage automatically for free at the beginning of your turn, have a max of 2 actions instead of 1, and ignore the STR saves to make attacks."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or DEX."
+            },
+            {
+              "name": "Savage Arsenal",
+              "text": "Choose 1 ability from the Savage Arsenal."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Rage (2)",
+              "text": "Whenever you Rage, gain 2 Fury Dice instead."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Savage Arsenal (2)",
+              "text": "Choose a 2nd Savage Arsenal ability."
+            },
+            {
+              "name": "Intensifying Fury (2)",
+              "text": "Your Fury Dice are now d6s."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Berserker subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Savage Arsenal (3)",
+              "text": "Choose a 3rd Savage Arsenal ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Intensifying Fury (3)",
+              "text": "Your Fury Dice are now d8s."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Savage Arsenal (4)",
+              "text": "Choose a 4th Savage Arsenal ability."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Berserker subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Savage Arsenal (5)",
+              "text": "Choose a 5th Savage Arsenal ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Intensifying Fury (4)",
+              "text": "Your Fury Dice are now d10s."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Savage Arsenal (6)",
+              "text": "Choose a 6th Savage Arsenal ability."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Berserker subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Savage Arsenal (7)",
+              "text": "Choose a 7th Savage Arsenal ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Intensifying Fury (5)",
+              "text": "Your Fury Dice are now d12s."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "DEEP RAGE",
+              "text": "Dropping to 0 HP does not cause your Rage to end."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "BOUNDLESS RAGE",
+              "text": "+1 to any 2 of your stats. Anytime you roll less than 5 on a Fury Die, change it to 5 instead."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Your Rage Ends...",
+          "text": "If you leave combat, drop to 0 HP, or go 1 round without attacking or Raging."
+        },
+        {
+          "title": "Yes!",
+          "text": "You can Rage and gain another Fury Die even if you are already Raging. If you are already at your max, roll as normal and decide which ones to keep."
+        },
+        {
+          "title": "Wrath & Ruin",
+          "text": "Whenever you perform a notable act of destruction or feat of strength during a Safe Rest, you may choose different Berserker options available to you."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Savage Arsenal",
+          "intro": "Wrath & Ruin. Whenever you perform a notable act of destruction or feat of strength during a Safe Rest, you may choose different Berserker options available to you.",
+          "options": [
+            {
+              "name": "Death Blow",
+              "cost": "Passive",
+              "text": "Whenever you crit, you may double the damage from your Fury Dice (instead of rolling any additional dice)."
+            },
+            {
+              "name": "Deathless Rage",
+              "cost": "Passive",
+              "text": "(1/turn) While Dying, you may suffer 1 Wound to gain 1 action and 1 Fury Die."
+            },
+            {
+              "name": "Dismantle",
+              "cost": "Passive",
+              "text": "After you roll an attack, expend any number of Fury Dice, increase your Primary Die by 1 for each."
+            },
+            {
+              "name": "Eager for Battle",
+              "cost": "Passive",
+              "text": "Gain advantage on Initiative. Move 2×DEX spaces for free on your first turn each encounter."
+            },
+            {
+              "name": "Into the Fray",
+              "cost": "1 Action",
+              "text": "Leap up to 2×DEX spaces toward an enemy. If you land within your weapon’s Reach of at least 2 enemies, make an attack against 1 of them for free."
+            },
+            {
+              "name": "Mighty Endurance",
+              "cost": "Passive",
+              "text": "You can now survive an additional 4 Wounds before death."
+            },
+            {
+              "name": "MORE BLOOD!",
+              "cost": "Passive",
+              "text": "Whenever an enemy crits you, gain 1 Fury Die. Whenever you drop to 0 HP, Rage for free."
+            },
+            {
+              "name": "Rampage",
+              "cost": "Passive",
+              "text": "(1/turn) After you land a hit, you may treat your next attack this turn as if you rolled that same amount instead of rolling again."
+            },
+            {
+              "name": "Swift Fury",
+              "cost": "Passive",
+              "text": "Whenever you gain a Fury Die, move up to DEX spaces for free, ignoring Difficult Terrain."
+            },
+            {
+              "name": "Thunderous Steps",
+              "cost": "Passive",
+              "text": "After moving at least 4 spaces while Raging, you may deal STR bludgeoning damage to all adjacent creatures where you stop."
+            },
+            {
+              "name": "Unstoppable Force",
+              "cost": "Passive",
+              "text": "While Dying, taking damage causes 1 Wound (instead of 2) and crits inflict 2 Wounds (instead of 3)."
+            },
+            {
+              "name": "Whirlwind",
+              "cost": "2 Actions",
+              "text": "AoE. Attack ALL targets within your melee weapon’s Reach."
+            },
+            {
+              "name": "You’re Next!",
+              "cost": "1 Action",
+              "text": "While Raging, you can make a Might skill check to demoralize an enemy within Reach 12 (DC: their current HP). On a success, they immediately flee the battle."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Path of the Mountainheart",
+          "page": 8,
+          "flavor": "Withstand terrible blows and overwhelming damage. Shrug off death and disease that would crumple the mightiest armies.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Stone’s Resilience",
+                  "text": "Whenever you expend Fury Dice to reduce incoming damage, add the value of the die to the amount reduced."
+                },
+                {
+                  "name": "Mountainous Tenacity",
+                  "text": "Whenever you expend Hit Dice to recover HP, for every 10 HP you would recover, you may heal 1 Wound instead."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Unbreakable",
+                  "text": "(1/encounter) While Raging, if you would suffer your last Wound or other negative condition of your choice, you don’t."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Titan’s Fury",
+                  "text": "After you miss an attack or are crit by an enemy, Rage for free."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Mountain’s Endurance",
+                  "text": "While Dying, if an attack against you would be a crit, the attack is rerolled instead (when-crit abilities, such as Titan’s Fury, still trigger)."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Path of the Red Mist",
+          "page": 9,
+          "flavor": "Lean into your offensive fury and leave nothing remaining of your enemies but a lingering crimson mist.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Blood Frenzy",
+                  "text": "(1/turn) While Raging, whenever you crit or kill an enemy, gain 1 Fury Die or change 1 Fury Die to the max."
+                },
+                {
+                  "name": "Savage Awareness",
+                  "text": "Advantage on Perception checks to notice or track down blood. Blindsight 2 while Raging: you ignore the Blind condition and can see through darkness and Invisibility within that Range."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Unstoppable Brutality",
+                  "text": "While Raging, you may gain 1 Wound to reroll any attack or save, ignoring disadvantage."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Opportunistic Frenzy",
+                  "text": "While Raging, you can make Opportunity Attacks without disadvantage, and you may make them whenever an enemy enters your melee weapon’s Reach."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Onslaught",
+                  "text": "While Raging, gain +2 Speed. (1/round) You may move for free."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Path of the Titan’s Grip",
+          "page": 10,
+          "flavor": "Beat goblin chieftains with their own lackeys, piledrive bandits, and hurl enemies across the battlefield.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Titan’s Grip",
+                  "text": "Gain proficiency with Unarmed Strikes and they gain: On hit: Grappled (vs Medium or smaller creatures)."
+                },
+                {
+                  "name": "Living Weapon",
+                  "text": "While Raging, living Grappled creatures can be used as improvised weapons: **Tiny** 1d4+STR Light, Thrown 6; **Small** 1d6+STR, Thrown 4; **Medium** 1d10+STR (2-handed). Living Weapons suffer as much damage as they deal."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Meat Shield",
+                  "text": "While Grappling a creature, you have Cover from attacks by other creatures. Attacks that miss you strike a creature you have Grappled."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Wrathful Grip",
+                  "text": "Your Unarmed Strikes are now 1d6+STR. You may expend a Fury Die to force a creature to reroll a save to escape your Grapple."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Sickening Blow",
+                  "text": "Whenever you crit an enemy with an improvised weapon, add one maximized Primary Die to the total."
+                },
+                {
+                  "name": "Catch!",
+                  "text": "Your improvised weapons gain +4 Thrown."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Path of the Burning Rage",
+          "page": 11,
+          "flavor": "All will burn as your anger fuels the flames of battle, immolating all in its path in fiery destruction.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Stoke the Flames",
+                  "text": "Whenever your Fury Die size would increase, instead roll 1 additional Fury Die when you Rage."
+                },
+                {
+                  "name": "Overflowing Fury",
+                  "text": "(Reach 2) For each Fury Die you discard over your max, deal 5 fire damage to a creature within Reach, they gain Smoldering."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Hot Headed",
+                  "text": "Rage for free when you roll Initiative. +2 to Overflowing Fury’s Reach."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "EXPLOSION!",
+                  "text": "When you attack a Smoldering creature, you may deal the same amount of damage to ALL other creatures adjacent to your target OR you can ignore armor of Smoldering creatures; ending the condition."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Pyromania",
+                  "text": "Treat each of your Fury Dice as if they were always 5s."
+                }
+              ]
+            },
+            {
+              "level": 20,
+              "features": [
+                {
+                  "name": "BOUNDLESS FLAMES",
+                  "text": "(Replaces BOUNDLESS RAGE) +1 to any 2 of your stats. (1/round) When attacked, deal half your Fury Dice damage to an adjacent creature."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Muscle Mage",
+          "page": 13,
+          "flavor": "“Pointy-hat-man do magic. ME have pointy hat. ME DO MAGIC!” —Fleximus the Wise",
+          "complexity": 3,
+          "story": true,
+          "intro": "Muscle Magic. Your muscles have “unlocked the secrets of the arcane” (and any fool who disputes that is about to have a bad day). You lose access to the Savage Arsenal and all weapon proficiencies but gain access to “Muscle Spells” which require you to have a certain number of Fury Dice to cast.",
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "STRENGTH of Mind",
+                  "text": "Add your STR to INT-based skills."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "I’m Fine! Totally Fine!",
+                  "text": "(1/Safe Rest) When you drop to 0 HP, give a number of actions out to your allies equal to the number of Fury Dice you had."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Flexpertise",
+                  "text": "Reduce the Fury Die Requirement of your Muscle Spells by 2."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "High Flexemplar",
+                  "text": "Gain +4 max Wounds. “I’m Fine! Totally Fine!” is unlimited."
+                }
+              ]
+            }
+          ],
+          "optionGroups": [
+            {
+              "name": "Muscle “Spells”",
+              "options": [
+                {
+                  "name": "Power Word: Clobber",
+                  "cost": "1 Action",
+                  "requirement": "Req. 1 Fury Die",
+                  "text": "1d10+STR+Fury Dice (FD) damage. On Hit: a Medium or smaller creature is Clobbered.\n\nClobbered. Any Medium or smaller creature that is Dazed, Grappled, Prone, or has been forcefully moved this round is also considered Clobbered this round."
+                },
+                {
+                  "name": "Throwmaturgy",
+                  "cost": "2 Actions",
+                  "requirement": "Req. 1 Fury Die",
+                  "text": "Reach: 3/FD. Throw a Clobbered creature at another enemy; both suffer 1d6+STR+FD damage and land Prone (if Medium or smaller). OR: for 1 action throw a rock or similarly throwable object instead.\n\n3/FD? If you have 1 Fury Die, you can throw 3 spaces; 2 Fury Dice, 6 spaces; and so on."
+                },
+                {
+                  "name": "Polymorph: CHICKEN!",
+                  "cost": "1 Action",
+                  "requirement": "Req. 3 Fury Dice",
+                  "text": "Reach: 3/FD. Yell “Chicken” at a creature, Frightening them until the end of their next turn (Large+ creatures: Taunted instead)."
+                },
+                {
+                  "name": "Thunderfist",
+                  "cost": "2 Actions",
+                  "requirement": "Req. 3 Fury Dice",
+                  "text": "Reach: Cone FD, AoE. 1d20+STR+FD."
+                },
+                {
+                  "name": "“Teleport”",
+                  "cost": "1 Action",
+                  "requirement": "Req. 4 Fury Dice",
+                  "text": "Sum your Fury Dice, leap up to that many spaces."
+                },
+                {
+                  "name": "Meat Ward",
+                  "cost": "1 Action",
+                  "requirement": "Req. 5 Fury Dice",
+                  "text": "Reach: 1. Reaction: When attacked, move another Medium or smaller creature into your space and you move to another adjacent space.\n\nRemember! Each reaction is limited to 1/round."
+                },
+                {
+                  "name": "Powershout: WEAKLINGS!",
+                  "cost": "2 Actions",
+                  "requirement": "Req. 6 Fury Dice",
+                  "text": "Reach: 6, AoE. (1/encounter) FD damage to enemies, Frightening them (Large+ enemies are Taunted instead) and attacks deal +10 damage to Armored enemies this round."
+                },
+                {
+                  "name": "Earthquake",
+                  "cost": "2 Actions",
+                  "requirement": "Req. 7 Fury Dice",
+                  "text": "(1/encounter) Leap into the air and land with seismic force up to 2× your Speed away. Creatures within Reach 3 take 3d20+FD damage and become Slowed. Clobbered creatures are knocked Prone."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "Fury Dice",
+          "a": "These are NOT expended when making an attack. You keep accumulating them as your fury grows, they are only lost when your Rage ends (at the end of combat or when you gain the Dying condition) or when you expend them to use an ability like “That all you got?!”"
+        },
+        {
+          "q": "Intensifying Fury",
+          "a": "You can still Rage 1/turn with this feature. That is: you can still spend an action to Rage and roll an additional Fury Die."
+        },
+        {
+          "q": "Enduring Rage",
+          "a": "You cannot Rage again on a turn you’ve triggered this ability since Rage is limited to 1/turn. “Free” means only that you don’t have to use an action or other resources to do it.\n\nThis ability does stack with Intensifying Fury since both happen “at the beginning of your turn” (example: when you first gain the Dying condition your Rage ends and you lose all your Fury Dice; then at the beginning of your turn, you Rage for free from Enduring Rage; then roll an additional Fury Die for free from Intensifying Fury)."
+        },
+        {
+          "q": "Path of the Mountainheart: Unbreakable",
+          "a": "This applies to ANY condition listed in the Core Rules or any other special condition applied by monsters or environmental effects. If you negate the Dying condition you drop to 1 HP instead."
+        }
+      ]
+    },
+    {
+      "name": "Commander",
+      "source": "Commander 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "Highly tactical, teamwork-focused melee class. A party’s force multiplier.",
+      "flavor": "An “empire” isn’t an EMPIRE until they have their own academy of command: Famed schools where these supremely capable soldiers are trained in battlefield tactics and leadership.\n\nAmong the most skilled soldiers in the world, Commanders are masters of every weapon and form of close combat. A small cohort of soldiers led by a trained Commander is more feared than innumerable legions without one.",
+      "highlights": [
+        "Issue powerful tactical orders to your allies, bolster their abilities, and coordinate devastating strikes.",
+        "Exert mastery over all weapon types, wielding them with deadly efficiency—ensuring victory against any foe.",
+        "Lead your party to triumph through cunning strategy, tactical prowess, and decisive action."
+      ],
+      "complexity": 2,
+      "keyStats": [
+        "STR",
+        "INT"
+      ],
+      "hitDie": 10,
+      "startingHp": 17,
+      "saves": {
+        "adv": "STR",
+        "dis": "DEX"
+      },
+      "armor": "Mail Armor, Shields",
+      "weapons": "All Martial Weapons",
+      "startingGear": [
+        "Short Sword",
+        "Javelins (4)",
+        "Rusty Mail"
+      ],
+      "resources": [
+        {
+          "name": "Combat Dice",
+          "max": "STR",
+          "reset": "lost when combat ends if unspent",
+          "die": "d6"
+        },
+        {
+          "name": "Coordinated Strike",
+          "max": "1",
+          "reset": "encounter"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Coordinated Strike!",
+              "text": "(1/encounter) You and an ally within Reach 6 both immediately make a weapon/Unarmed Strike or cast a cantrip for free."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Fit for Any Battlefield",
+              "text": "Choose a Combat Tactic. When you roll Initiative, gain STR Combat Dice (each a d6), they are lost when combat ends if unspent."
+            },
+            {
+              "name": "Field Medic",
+              "text": "Roll 1 additional die for any Healing Potion you administer. Whenever you or an ally spends any number of Hit Dice to recover HP, if you spent at least ten minutes examining their wounds, they can add your Examination bonus to the HP recovered."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Commander subclass."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Commander’s Orders",
+              "text": "Choose 2 Commander’s Orders."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Master Commander",
+              "text": "Your Combat Dice are now d8s. You gain an additional pool of INT uses of Coordinated Strike to use per Safe Rest (you may use Coordinated Strike only 1/round). Attacks made from your Coordinated Strikes also now ignore disadvantage."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Fit for Any Battlefield (2)",
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+            },
+            {
+              "name": "Weapon Mastery",
+              "text": "You may sheathe a weapon and draw a different one 2×/round for free. Choose a Weapon Mastery."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Commander subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Fit for Any Battlefield (3)",
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Master Commander (2)",
+              "text": "Your Combat Dice are now d10s. +1 use of Coordinated Strike."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Fit for Any Battlefield (4)",
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+            },
+            {
+              "name": "Weapon Mastery (2)",
+              "text": "Choose a 2nd Weapon Mastery."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Commander subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Fit for Any Battlefield (5)",
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Master Commander (3)",
+              "text": "Your Combat Dice are now d12s. +1 use of Coordinated Strike."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Weapon Mastery (3)",
+              "text": "You have complete mastery of all weapon types."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Commander subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Fit for Any Battlefield (6)",
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Master Commander (4)",
+              "text": "Your Combat Dice are now d20s. +1 use of Coordinated Strike."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Unparalleled Tactics",
+              "text": "The first time each encounter you use Coordinated Strike, an ally who can hear you also gains 1 action to use on their next turn."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Captain of Legions",
+              "text": "+1 to any 2 of your stats. The 1st time each encounter you use Coordinated Strike, INT allies gain +1 action (replaces Unparalleled Tactics)."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Rigorous Training",
+          "text": "Whenever you train with your party or other soldiers during a Safe Rest, you may choose different Commander options available to you."
+        },
+        {
+          "title": "Commander Names",
+          "text": "Male Names: Florian, Nails, Magnus, Thaddeus, Halvar, Orin, Caspian\nFemale Names: Tessa, Petra, Sera, Ryn, Thalia, Rowan, Gwynn"
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Commander’s Orders",
+          "intro": "Rigorous Training. Whenever you train with your party or other soldiers during a Safe Rest, you may choose different Commander options available to you.",
+          "options": [
+            {
+              "name": "Commanding Presence",
+              "cost": "1 Action",
+              "text": "(1/encounter) Make an Influence check, and Command an enemy to perform a single simple action and they spend their entire next turn obeying it:\n• 1–9: Move! The creature moves to a place you choose.\n• 10–19: Kneel! Move them, then they are considered Prone.\n• 20+: Strike! They move and attack a target of your choice."
+            },
+            {
+              "name": "Face Me!",
+              "cost": "0 Actions",
+              "text": "After an enemy crits or attacks a Dying ally, you may Taunt them. Lasts until you drop to 0 HP."
+            },
+            {
+              "name": "Hold the Line!",
+              "cost": "1 Action",
+              "text": "(1/encounter) Reaction (when an ally drops to 0 HP): Command them to continue the fight! Set their HP to 3× your LVL."
+            },
+            {
+              "name": "I Can Do This ALL DAY!",
+              "cost": "1 Action",
+              "text": "(1/encounter) Reaction (when you would drop to 0 HP): Expend any number of Hit Dice and set your HP to the sum rolled instead (do not add your STR)."
+            },
+            {
+              "name": "Move it! Move it!",
+              "cost": "Passive",
+              "text": "When you roll Initiative, give yourself and an ally advantage on the roll and +3 Speed for 1 round."
+            },
+            {
+              "name": "Reposition!",
+              "cost": "1 Action",
+              "text": "Command 1 ally to move up to their Speed (or 2 allies up to half their Speed) for free. You may use this as a reaction on an ally’s turn."
+            }
+          ]
+        },
+        {
+          "name": "Combat Tactics",
+          "intro": "Whenever you attack, you may roll and expend a Combat Die to use a Combat Tactic (max 1/attack).",
+          "options": [
+            {
+              "name": "Heavy Strike",
+              "cost": "Passive",
+              "text": "Whenever you hit, deal +Combat Die damage and knockback your target STR spaces."
+            },
+            {
+              "name": "Inerrant Strike",
+              "cost": "Passive",
+              "text": "Whenever you miss, add 1 to the Primary Die and deal +Combat Die damage."
+            },
+            {
+              "name": "Lunging Strike",
+              "cost": "Passive",
+              "text": "Whenever you attack, gain +1 Reach and +2× Combat Die damage."
+            },
+            {
+              "name": "Sweeping Strike",
+              "cost": "Passive",
+              "text": "Whenever you attack, spend 1 additional action to select any contiguous area within your weapon’s Reach, deal +Combat Die damage to ALL targets there (AoE attacks do not miss on a 1, nor crit on the max)."
+            }
+          ]
+        },
+        {
+          "name": "Weapon Mastery",
+          "intro": "Choose a weapon mastery at Levels 6, 10, and 14.",
+          "options": [
+            {
+              "name": "Slashing",
+              "text": "(1/turn) Your attacks with slashing weapons can strike 1 additional creature adjacent to you and your target."
+            },
+            {
+              "name": "Bludgeoning",
+              "text": "(1/turn) Your attacks with bludgeoning weapons deal +10 damage vs armored foes."
+            },
+            {
+              "name": "Piercing",
+              "text": "(1/turn) Your attacks with piercing weapons can strike another creature behind your target within Reach."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Champion of the Bulwark",
+          "page": 9,
+          "flavor": "Become an iron-clad juggernaut and boost your party with your defensive prowess.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Armor Master",
+                  "text": "You are proficient with plate armor."
+                },
+                {
+                  "name": "Shield Expert",
+                  "text": "While equipped with a shield you can Defend for free; when you do, you may deal damage to an adjacent enemy equal to your shield’s Defense."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Juggernaut",
+                  "text": "When you use Coordinated Strike, you can spend an additional action to add 1 to your Primary Die and deal extra damage equal to your Defense."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Taunting Strike",
+                  "text": "(1/turn) You may Taunt a creature you attack until the end of their next turn."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Shield Wall",
+                  "text": "(Reach 2) Your shields gain +2 Defense. Your allies can also use your shield’s Defense when they Defend."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Champion of the Phalanx",
+          "page": 10,
+          "flavor": "“Together we stand, divided we fall!”",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Polearm Mastery",
+                  "text": "Weapons with Reach 2 gain +1 Reach; OR can be wielded one-handed with a shield."
+                },
+                {
+                  "name": "Skewer",
+                  "text": "You can perform Opportunity Attacks against enemies that enter the Reach of your weapon. If the movement was forced, attack with advantage instead of disadvantage."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Formation March",
+                  "text": "Whenever you move, allies within Reach of your weapon may move with you for free."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Together We Stand",
+                  "text": "Add 1 to your Combat Die rolls for each ally within your weapon’s Reach."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Shoulder to Shoulder",
+                  "text": "Allies within your weapon’s Reach gain +1 Reach to their weapons and gain the benefits of your Weapon Masteries."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Champion of the Vanguard",
+          "page": 11,
+          "flavor": "A forward-charging general who leads from the front!",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Advance!",
+                  "text": "(Reach 12) Whenever you use your Coordinated Strike, you and all allies can first move up to half their Speed for free. Gain advantage on the first melee attack you make against enemies you moved toward this turn."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Experienced Commander",
+                  "text": "Your Coordinated Strike may target 1 additional ally."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Survey the Battlefield",
+                  "text": "When you roll Initiative, regain 1 use of Coordinated Strike. +1 max Combat Dice."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "As One!",
+                  "text": "All attacks made with your Coordinated Strike are made with advantage."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Champion of the Arena",
+          "page": 13,
+          "flavor": "A simple, single-minded fighter who goes for the glory!",
+          "complexity": 1,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Single-minded Fighter",
+                  "text": "You forgo all Commander’s Orders. Whenever you would choose one, you gain +1 max Combat Die instead."
+                },
+                {
+                  "name": "Showstopping Strike",
+                  "text": "(1/Safe Rest) When you use Coordinated Strike, you and your ally both automatically crit."
+                },
+                {
+                  "name": "Glory Seeker",
+                  "text": "(1/round) Whenever an ally crits, your next attack is made with advantage."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Pushed to the Brink",
+                  "text": "Showstopping Strike refreshes the first time each encounter you gain the Dying condition."
+                },
+                {
+                  "name": "Remarkable Strategy",
+                  "text": "(1/encounter) When Assessing with an INT skill, you may roll a Combat Die and add it to the result (without expending it)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Superior Striker",
+                  "text": "Gain +STR Initiative. Showstopping Strike refreshes when you roll Initiative."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Outlast, Outmatch",
+                  "text": "Your Coordinated Strike also grants you and your ally temp HP equal to the max value of your Combat Die."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Champion of the Siege-Breaker",
+          "page": 14,
+          "flavor": "Unleash aggressive combat tactics to disrupt your enemies. Leave the shield behind, it’ll only weigh you down.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Siege Veteran",
+                  "text": "+STR Defense when wielding a weapon with 2 hands."
+                },
+                {
+                  "name": "Mighty Cleave",
+                  "text": "Whenever your damage dice on a melee attack sum to 8+, you may select 1 additional target within your weapon’s Reach."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Shatter Formation",
+                  "text": "(New Combat Tactic) Action: Roll a Combat Die and deal that much damage to up to STR targets within your weapon’s Reach, and knockback 2. You may use this ability while moving."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Relentless Assault",
+                  "text": "+2 max Combat Dice. You roll Combat Dice with advantage."
+                },
+                {
+                  "name": "Tear Asunder",
+                  "text": "(New Combat Tactic) Strike an armored foe and deal +Combat Die damage. The next non-critical attack against them ignores armor."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Against the Hordes",
+                  "text": "If there are 2+ enemies within your weapon’s Reach, your melee attacks have advantage and always trigger Mighty Cleave."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Spellblade",
+          "page": 17,
+          "flavor": "— Steel Meets Spell —",
+          "story": false,
+          "casting": {
+            "mana": "INT",
+            "manaFormula": "INT",
+            "notes": "You now gain INT mana when you roll Initiative (this mana is lost if unspent when combat ends)."
+          },
+          "intro": "Arcane Command. Your focus on the arcane causes you to lose access to Weapon Mastery and Combat Tactics, but you now gain INT mana when you roll Initiative (this mana is lost if unspent when combat ends). Whenever you could choose a Combat Tactic or Weapon Mastery, instead choose another Commander’s Order or a tier 1 (or lower) spell from any spell school. Your Commander’s Orders are also empowered with magical power:\n• Face Me! (Glimmering Decree). Free Reaction (whenever an enemy crits or attacks a Dying ally): That enemy takes STR d8 radiant damage (ignoring armor), is pulled up to 4 spaces toward you, and is Taunted by you until you drop to 0 HP.\n• Move it! Move it! (Borne upon the Wind). When you roll Initiative, you may give yourself and an ally advantage on the roll, +3 Speed, and the ability to fly for 1 round. Then, you both can also move for free.\n• Hold the Line! (Crystalline Armor). (1/encounter) Reaction (when an ally drops to 0 HP): Command them to continue the fight! Set their HP to 3× your LVL. Additionally, they gain that many temp HP. Enemies who reduce this temp HP in melee have their Speed halved until the end of their next turn.\n• Reposition! (Flashstep). Action: Command 1 ally to move up to their Speed (or 2 allies up to half their Speed) for free; you may exchange places with one of them. You may use this as a reaction on an ally’s turn.\n• I Can Do This ALL DAY! (Rising Phoenix). (1/encounter) Reaction (when you would drop to 0 HP): You may expend any number of Hit Dice, set your HP to the sum rolled instead, and deal that much fire damage to each enemy within Reach 2 of you. They gain the Smoldering condition.\n• Commanding Presence (Withering Presence). Creatures you Command suffer necrotic damage equal to the max value of your Combat Die (ignoring armor) and are considered undead for 1 round.",
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Spellforge",
+                  "text": "When you roll Initiative you may cast Enchant Weapon for free (can be upcast as normal by spending additional mana)."
+                },
+                {
+                  "name": "Deep Knowledge (1)",
+                  "text": "Choose any tier 1 (or lower) spell and any Utility Spell."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Deep Knowledge (2)",
+                  "text": "Choose any tier 2 (or lower) spell and any Utility Spell."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Deep Knowledge (3)",
+                  "text": "Choose any tier 3 (or lower) spell and any Utility Spell."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Deep Knowledge (4)",
+                  "text": "Choose any tier 4 (or lower) spell and any Utility Spell."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "How do AoE melee attacks work?",
+          "a": "The selected area must make sense: if an ally is between two enemies you can’t strike both enemies and avoid the ally!"
+        },
+        {
+          "q": "Can Sweeping Strike and Slashing Mastery stack?",
+          "a": "No."
+        },
+        {
+          "q": "Bulwark: Shield Expert. Can I Defend more than once per round if it’s free?",
+          "a": "No. Free simply means it does not cost an action, reactions are still limited to 1/round."
+        }
+      ]
+    },
+    {
+      "name": "Hunter",
+      "source": "Hunter 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "A master of the wild, adept at ranged attacks and high burst damage up close.",
+      "flavor": "Long before the first stones of the grand kingdoms had been laid, there was The Wild. We Hunters called groves and fields home, just as the elk and boar still do. We have trained our minds and hearts as much as we have trained with bows. For there is great danger in becoming a Hunter: the intoxicating Thrill of the Hunt that washes over your body when stalking prey.\n\nBe warned—do not let it settle into your heart. For no true Hunter takes without recognizing what they have first been given: a soul, a meal, warmth, all at a cost—a life. And that should not be taken lightly. Wherever you roam, be it city or glade, mountain or valley, as long as The Wild is tenderly tucked into the depths of your heart, you will always be a Hunter.\n\nMay your arrows strike true and your bowstrings never break!",
+      "highlights": [
+        "As an expert survivalist, you mark your prey, becoming a relentless tracker in pursuit.",
+        "Whether you’re raining arrows from a distance or closing in for a personal takedown, your prey won’t escape.",
+        "Harness the Thrill of the Hunt to outwit your targets—set decoys, spring traps, and strike with lethal efficiency."
+      ],
+      "complexity": 2,
+      "keyStats": [
+        "DEX",
+        "WIL"
+      ],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": {
+        "adv": "DEX",
+        "dis": "INT"
+      },
+      "armor": "Leather Armor",
+      "weapons": "DEX Weapons",
+      "startingGear": [
+        "Shortbow",
+        "Cheap Hides",
+        "Dagger",
+        "Hunting Trap"
+      ],
+      "resources": [
+        {
+          "name": "Thrill of the Hunt charges",
+          "reset": "lost when combat ends"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Hunter’s Mark",
+              "text": "Action: A creature you can see is marked as your Quarry for 1 day (or until you mark another creature). It can’t be hidden from you, and your attacks against it gain your choice of advantage OR +LVL damage (choose before each attack)."
+            },
+            {
+              "name": "Forager",
+              "text": "Gain advantage on skill checks to find food and water in the wild."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Thrill of the Hunt",
+              "text": "Choose 2 Thrill of the Hunt (TotH) abilities. Gain a charge to use these abilities during that encounter whenever:\n• You HIT your Quarry in melee.\n• You CRIT your Quarry at Range.\n• Your Quarry dies."
+            },
+            {
+              "name": "Roll & Strike",
+              "text": "Action: If you have no Thrill of the Hunt charges, move up to your Speed toward your Quarry. If you end adjacent to them, make a melee attack against them for free."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Hunter subclass."
+            },
+            {
+              "name": "Tracker’s Intuition",
+              "text": "You can discern the events of a past encounter by studying tracks and other subtle environmental clues, accurately determining the kind and amount of creatures, their direction, key actions, and passage of time."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Thrill of the Hunt (2)",
+              "text": "Choose a 3rd Thrill of the Hunt ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or WIL."
+            },
+            {
+              "name": "Explorer of the Wilds",
+              "text": "+2 Speed; gain a climbing Speed."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Hunter’s Resolve",
+              "text": "Whenever you have no Thrill of the Hunt charges, gain Hunter’s Resolve until the end of your turn: treat all creatures as your Quarry for the purposes of movement and melee attacks."
+            },
+            {
+              "name": "Final Takedown",
+              "text": "(1 Action, 1 TotH charge) Crit your Bloodied Quarry in melee and double the damage of your Hunter’s Mark. If they survive, they crit you back."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Versatile Bowmaster",
+              "text": "Whenever you attack with a Longbow, you may roll 2d4 instead of 1d8; or with a Crossbow, 2d8 instead of 4d4."
+            },
+            {
+              "name": "Thrill of the Hunt (3)",
+              "text": "Choose a 4th Thrill of the Hunt ability."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Hunter subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Thrill of the Hunt (4)",
+              "text": "Choose a 5th Thrill of the Hunt ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "No Escape",
+              "text": "Whenever you see one or more allies make an Opportunity Attack, you may also make a Ranged Opportunity Attack against the same target."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Veteran Stalker",
+              "text": "Gain a Thrill of the Hunt charge whenever you are first Bloodied in an encounter and for every Wound you gain."
+            },
+            {
+              "name": "Keen Eye, Steady Hand",
+              "text": "Add WIL to your Ranged weapon damage."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Hunter subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Thrill of the Hunt (5)",
+              "text": "Choose a 6th Thrill of the Hunt ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Keen Sight",
+              "text": "Advantage on Perception checks."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Thrill of the Hunt (6)",
+              "text": "Choose a 7th Thrill of the Hunt ability."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Hunter subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Peerless Hunter",
+              "text": "You can Defend against your Quarry for free."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Wild Endurance",
+              "text": "Gain 1 Thrill of the Hunt charge at the start of your turns."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Nemesis",
+              "text": "+1 to any 2 of your stats. Your Hunter’s Mark can target any number of creatures simultaneously."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Remember the Wild",
+          "text": "Whenever you spend a day in the wilderness during a Safe Rest, you may choose different Hunter options available to you."
+        },
+        {
+          "title": "Hunter Names",
+          "text": "Male Names: Rook, Tavish, Quill, Bear, Trots, Bellow, Rune\nFemale Names: Sable, Lark, Clover, Mira, Vy, Tindra, Cricket"
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Thrill of the Hunt",
+          "intro": "Note: Unless otherwise noted, each Thrill of the Hunt ability costs 1 charge to use and cannot miss. Abilities that spend charges cannot generate new ones. Unused charges are lost when combat ends.\n\nRemember the Wild. Whenever you spend a day in the wilderness during a Safe Rest, you may choose different Hunter options available to you.",
+          "options": [
+            {
+              "name": "Addling Arrow",
+              "cost": "1 Action",
+              "text": "Shoot a target, the next attack they make must be against the closest other creature, chosen at random."
+            },
+            {
+              "name": "Come Get Some!",
+              "cost": "1 Action",
+              "text": "Attack a target. It is Taunted by you until the end of their next turn."
+            },
+            {
+              "name": "Decoy",
+              "cost": "0 Actions",
+              "text": "When you Defend: The attack misses instead, and you can move up to half your Speed away (where you really were all along!)."
+            },
+            {
+              "name": "Fleet Feet",
+              "cost": "0 Actions",
+              "text": "(1/round) Move up to your Speed for free, ignoring Difficult Terrain."
+            },
+            {
+              "name": "Grease Trap",
+              "cost": "1 Action",
+              "text": "(1/encounter) Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Target falls Prone, is vulnerable to the next fire damage it takes, and is treated as if it is Smoldering."
+            },
+            {
+              "name": "Hail of Arrows",
+              "cost": "2 Actions",
+              "text": "(Half Range) Shoot and Slow all creatures within a 3×3 area."
+            },
+            {
+              "name": "Heavy Shot",
+              "cost": "1 Action",
+              "text": "(Half Range) Shoot a creature and knock them back 2 spaces."
+            },
+            {
+              "name": "Incendiary Shot",
+              "cost": "1 Action",
+              "text": "(Half Range) Attack with a Ranged weapon, add WIL d8 fire damage."
+            },
+            {
+              "name": "Multishot",
+              "cost": "1 Action",
+              "text": "(Half Range) Shoot your Quarry and select a 2nd target within 2 spaces of them to take the same amount of damage."
+            },
+            {
+              "name": "Pinning Shot",
+              "cost": "3 Actions",
+              "text": "Shoot your Quarry, rolling 3 times the normal amount of dice. They are Restrained until they can escape (DC 10+WIL)."
+            },
+            {
+              "name": "Snare Trap",
+              "cost": "1 Action",
+              "text": "(1/encounter) Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Move them back 1 space and Restrain them (escape DC 10+WIL)."
+            },
+            {
+              "name": "Sharpshooter",
+              "cost": "1 Action",
+              "text": "If you have not moved this turn and your Quarry is beyond Reach 3, attack them for double damage."
+            },
+            {
+              "name": "Vital Shot",
+              "cost": "1 Action",
+              "text": "(Half Range) Shoot your Hampered Quarry. Ignore their Armor or double your Hunter’s Mark damage bonus if they have none."
+            },
+            {
+              "name": "Wild Instinct",
+              "cost": "0 Actions",
+              "text": "(1/round) (Costs 0 TotH charges if you have none) Assess, with advantage."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Keeper of the Shadowpath",
+          "page": 8,
+          "flavor": "Stalk your prey from the shadows, and take down your foes with precision and speed.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Ambusher",
+                  "text": "Whenever you roll Initiative, use Hunter’s Mark for free. Gain advantage on the first attack you make each encounter."
+                },
+                {
+                  "name": "Skilled Tracker",
+                  "text": "You have advantage on skill checks to track creatures."
+                },
+                {
+                  "name": "Skilled Navigator",
+                  "text": "You cannot become lost by nonmagical means."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Primal Predator",
+                  "text": "(1/encounter) Your weapon attacks ignore Cover and Armor this turn."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Dread Hunter",
+                  "text": "Choose both Hunter’s Mark options when attacking your Quarry."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Apex Predator",
+                  "text": "You may use your Primal Predator ability twice each encounter. Gain 1 Thrill of the Hunt charge when you roll Initiative."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Keeper of the Wild Heart",
+          "page": 9,
+          "flavor": "A resourceful survivalist, you can endure far more adversity than most any other adventurer.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Impressive Form",
+                  "text": "+5 max HP. Upgrade your Hit Dice to d10s."
+                },
+                {
+                  "name": "I Have the High Ground",
+                  "text": "Whenever you roll Initiative or gain a Thrill of the Hunt charge, move up to half your Speed for free, ignoring Difficult Terrain."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Resourceful Herbalist",
+                  "text": "Add your WIL to your Examination skill. Whenever you Safe Rest in a location near where plants or fungi can grow, you may spend a day collecting healing herbs to craft WIL Healing Salves."
+                },
+                {
+                  "name": "Healing Salve",
+                  "text": "(Reach 1) Action: Heal a creature WIL d8 HP (only an experienced Herbalist may administer these, and they expire whenever you Safe Rest)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Ha! I’m Over Here!",
+                  "text": "(1/Safe Rest) If an attack would cause you to drop to 0 HP, you instead move up to your Speed away and take no damage."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Unparalleled Survivalist",
+                  "text": "Gain +WIL Defense. When you attack, you may first move half your Speed for free."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Keeper of the Pack",
+          "page": 10,
+          "flavor": "Even the fiercest of prey is weak in isolation, while the pack has strength in numbers. Lead from the front, finish the hunt.",
+          "complexity": 1,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Marked for Death",
+                  "text": "(1/encounter) When you hit your Quarry in melee, the next WIL attacks against it are made with advantage 2."
+                },
+                {
+                  "name": "Lead the Hunt",
+                  "text": "Nearby allies can add your WIL to their Stealth roll."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "The Lion’s Share",
+                  "text": "Whenever your Quarry dies, gain 3xWIL temp HP."
+                },
+                {
+                  "name": "Fearsome Alpha",
+                  "text": "Your Quarry has disadvantage on melee attacks against you."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Frenzied Pack",
+                  "text": "Allies within Reach 2 gain the benefits of your Hunter’s Mark in melee."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Ferocious Takedown",
+                  "text": "When you kill your Quarry with Final Takedown, regain a use of Marked for Death."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Keeper of Traps",
+          "page": 11,
+          "flavor": "Daring trappers like carrying bits and baubles to attract attention. They often include some sort of charm for protection like the tuft of a fox tail, an old superstition.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Hunter’s Lure",
+                  "text": "Whenever you use Hunter’s Mark, you may gain KEY temp HP and Taunt your Quarry until you lose these temp HP."
+                },
+                {
+                  "name": "Blinding Trap",
+                  "text": "Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Target is Blind until the end of their next turn."
+                },
+                {
+                  "name": "Skilled Trapmaker",
+                  "text": "You have advantage on skill checks relating to traps."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Prolific Trapper",
+                  "text": "Whenever you Safe Rest in a location where feral critters live nearby, you may spend a day capturing critters to make WIL Critter Traps."
+                },
+                {
+                  "name": "Critter Trap",
+                  "text": "Free Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Loose a critter to attack the enemy for WIL d6 damage. You must release all captured critters whenever you Safe Rest."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Bait and Switch",
+                  "text": "You and your allies gain +2 Reach on Interposing vs Taunted attackers. (1/encounter) You can use Decoy for free while Prone."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Trap Master",
+                  "text": "Whenever you use a Trap, add LVL damage to it. One of your Traps can be used an additional time each encounter."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Beastmaster",
+          "page": 13,
+          "flavor": "— Together, Unstoppable —",
+          "story": true,
+          "intro": "Beastmaster. Choose a Small, Medium, or Large animal as your companion. Instead of your first 2 Thrill of the Hunt (TotH) abilities, you can select Go for the Throat! and Protect Me! to use with your companion (your companion’s attacks count as your own for gaining TotH charges).\n\nNo Stats or Actions to Track! Your companion’s HP and movement are abstracted; it knows where it is most needed without being told—whether defending you or attacking your Quarry. It is smart enough, and you are caring enough, to make sure it is never put in mortal danger.\n\nExtra Abilities? At the GM’s discretion, your companion can also do anything the base animal can do: fly, sniff out scents, be used as a mount, etc. Even more complex actions like Grapple or Help may be doable if it makes sense (you’ll need to spend 1 action to command it though—it won’t do it on its own).",
+          "levels": [],
+          "optionGroups": [
+            {
+              "name": "Small Companion",
+              "intro": "(Cat, Bat, Hawk, Raccoon, Rooster, Ferret, etc.)\nKeen Eyes. Mark a target for free. (1/encounter; Lvl 7: 2/encounter; Lvl 11: 3/encounter)",
+              "options": [
+                {
+                  "name": "Protect Me!",
+                  "cost": "1/encounter",
+                  "text": "When you Defend, the attack misses. Move half your Speed. Level 7: 2/encounter."
+                },
+                {
+                  "name": "Go for the Throat!",
+                  "cost": "0 Actions, 1 TotH charge (1/encounter)",
+                  "text": "Attack your Quarry for 1d4+LVL damage (ignoring armor). Lvl 11: 2/encounter. Lvl 15: 3/encounter."
+                }
+              ]
+            },
+            {
+              "name": "Medium Companion",
+              "intro": "(Wolf, Boar, Panther, Vulture, Giant Spider, etc.) Req. Lvl 3.\nFerocious. Whenever you crit your Quarry, deal +LVL damage (ignoring armor) and move up to 2 spaces for free. (Lvl 7: 4 spaces; Lvl 15: 6 spaces)",
+              "options": [
+                {
+                  "name": "Protect Me!",
+                  "cost": "1/encounter",
+                  "requirement": "Req. Lvl 3",
+                  "text": "When you Defend, first attack that creature for 1d8+LVL damage."
+                },
+                {
+                  "name": "Go for the Throat!",
+                  "cost": "1 Action, 1 TotH charge (1/encounter)",
+                  "requirement": "Req. Lvl 3",
+                  "text": "Attack your Quarry for 1d8+(3×LVL) damage (ignoring Armor). Lvl 11: 2/encounter."
+                }
+              ]
+            },
+            {
+              "name": "Large Companion",
+              "intro": "(Lion, Owlbear, Elk, Giant Scorpion, Drake, etc.) Req. Lvl 3.\nAlpha Protector. Damage from the first attack against you each round is halved.",
+              "options": [
+                {
+                  "name": "Protect Me!",
+                  "cost": "1/encounter",
+                  "requirement": "Req. Lvl 3",
+                  "text": "After you gain a Wound, your companion can whisk you away to safety up to 12 spaces. Level 7: You are whisked away before gaining the Wound. Level 15: 2/encounter."
+                },
+                {
+                  "name": "Go for the Throat!",
+                  "cost": "2 Actions, 1 TotH charge (1/encounter)",
+                  "requirement": "Req. Lvl 3",
+                  "text": "Attack your Quarry for 1d12+(4×LVL) damage (ignoring Armor). If that creature dies, you may deal half as much to another creature within Reach 4. Level 11: 2/encounter."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "How many TotH charges can I hold?",
+          "a": "No limit, but they do expire at the end of combat, so use them up!"
+        },
+        {
+          "q": "Does a melee crit give me a charge?",
+          "a": "Yes. A crit is also a hit."
+        },
+        {
+          "q": "Do I get a TotH charge when anyone kills my Quarry?",
+          "a": "Yes. But if you kill it, you may get an additional charge for hitting/critting them."
+        },
+        {
+          "q": "Do abilities such as Hail of Arrows and Pinning Shot also deal damage?",
+          "a": "Yes, they deal damage as normal."
+        },
+        {
+          "q": "What is Half Range?",
+          "a": "Half of your weapon’s Range (e.g., a Longbow’s normal Range is 16, Half Range would be 8)."
+        },
+        {
+          "q": "Final Takedown: they crit you back. Can it be Defended or Interposed against?",
+          "a": "Yes. Treat it as a normal attack but change their Primary Die to its max."
+        },
+        {
+          "q": "Pinning Shot, do I roll three times or get three Primary Dice?",
+          "a": "No. Roll once with 3 times the amount of dice you’d normally roll (e.g., Longbow 1d8 » 3d8)."
+        },
+        {
+          "q": "Nemesis makes everything my Quarry. Does every melee hit now give a charge?",
+          "a": "Yes."
+        }
+      ]
+    },
+    {
+      "name": "Mage",
+      "source": "Mage 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "Brilliant spellcasters with a wide arsenal of spells at their disposal.",
+      "flavor": "Comprehending the Tapestry of Mana is no trivial endeavor—it will yield its arcane secrets only to the earnest seeker of knowledge. A mage refines their natural gifts through scholarly pursuit, with tomes and parchments as their companions, alongside the sage counsel of a seasoned mentor or three!\n\nYet, once the adept learns to discern the subtleties of its intricate patterns as it unfurls and meanders into the ethereal expanse—it is in that moment the apprentice truly ascends to the mantle of mage. This is the chosen path of those who would wield authority over the elements. Elemental power flows through all things… find it, study it, and harness it!",
+      "highlights": [
+        "Customize your spells: stretch time, gain extra-dimensional vision, or echo cast multiple spells!",
+        "Rain fire from the heavens, freeze enemies in their tracks, and strike with thunderous bolts of lightning.",
+        "Demand Control or lean into the Chaos! What awaits you? Diamond Skin? Elemental Entanglement? Liquefied Legs?!"
+      ],
+      "complexity": 4,
+      "keyStats": [
+        "INT",
+        "WIL"
+      ],
+      "hitDie": 6,
+      "startingHp": 10,
+      "saves": {
+        "adv": "INT",
+        "dis": "STR"
+      },
+      "armor": "Cloth Armor",
+      "weapons": "Blades, Staves, Wands",
+      "startingGear": [
+        "Adventurer’s Garb",
+        "Staff",
+        "Soap"
+      ],
+      "casting": {
+        "mana": "(INT×3)+LVL",
+        "manaFormula": "INT*3+LVL",
+        "manaFromLevel": 2,
+        "schools": [
+          "Fire",
+          "Ice",
+          "Lightning"
+        ],
+        "notes": "You know the Fire, Ice, and Lightning spell schools and can cast cantrips from them. Learn the Utility Spells from 1 spell school you know."
+      },
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Elemental Spellcasting",
+              "text": "You know the Fire, Ice, and Lightning spell schools and can cast cantrips from them."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Mana and Unlock Tier 1 Spells",
+              "text": "You may now cast tier 1 spells and gain a mana pool to cast them. This mana pool’s max is always equal to (INT×3)+LVL and recharges on a Safe Rest."
+            },
+            {
+              "name": "Talented Researcher",
+              "text": "Gain advantage on Arcana or Lore checks when you have access to a large amount of books and time to study them."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Mage subclass."
+            },
+            {
+              "name": "Elemental Mastery",
+              "text": "Learn the Utility Spells from 1 spell school you know."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Spellshaper",
+              "text": "You gain the ability to enhance your spells with powerful effects by spending additional mana. Choose 2 Spellshaper abilities."
+            },
+            {
+              "name": "Tier 2 Spells",
+              "text": "You may now cast spells up to tier 2."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Elemental Surge",
+              "text": "A surge of adrenaline and your attunement with the elements grants you additional power as combat begins. When you roll Initiative, regain WIL mana (this expires at the end of combat if unused)."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Tier 3 Spells",
+              "text": "You may now cast spells up to tier 3."
+            },
+            {
+              "name": "Elemental Mastery (2)",
+              "text": "Learn the Utility Spells from a 2nd spell school you know."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Mage subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Tier 4 Spells",
+              "text": "You may now cast spells up to tier 4."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Spellshaper (2)",
+              "text": "Choose 1 additional Spellshaper ability."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Elemental Surge (2)",
+              "text": "Your Elemental Surge ability now regains WIL+1d4 mana."
+            },
+            {
+              "name": "Tier 5 Spells",
+              "text": "You may now cast spells up to tier 5."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Mage subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Tier 6 Spells",
+              "text": "You may now cast spells up to tier 6."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Spellshaper (3)",
+              "text": "Choose 1 additional Spellshaper ability."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Tier 7 Spells",
+              "text": "You may now cast spells up to tier 7."
+            },
+            {
+              "name": "Elemental Mastery (3)",
+              "text": "Learn the Utility Spells from a 3rd spell school you know."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Mage subclass feature."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Tier 8 Spells",
+              "text": "You may now cast spells up to tier 8."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Elemental Surge (3)",
+              "text": "Your Elemental Surge ability now regains WIL+2d4 mana."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Tier 9 Spells",
+              "text": "You may now cast spells up to tier 9."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Archmage",
+              "text": "+1 to any 2 of your stats. The first tiered spell you cast each encounter costs 1 action less and 5 fewer mana."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Study!",
+          "text": "Whenever you study arcane books or are tutored by a higher-level Mage during a Safe Rest, you may choose different Mage options available to you."
+        },
+        {
+          "title": "Where’s the Chaos Table?",
+          "text": "It’s a secret for the GM only! Suffice it to say, rolling a 1 is really bad, but rolling a 20 is AWESOME—but if you’re sure you want to spoil it, you can find it on the back inside cover of the GM’s Guide. Let chaos reign!"
+        },
+        {
+          "title": "Utility Spells",
+          "text": "These spells are not learned like other cantrips; instead some classes can choose from among these additional spells as they level up."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Spellshaper Abilities",
+          "intro": "Gain Spellshaper abilities as you Level up. You may use 1/turn.\n\nStudy! Whenever you study arcane books or are tutored by a higher-level Mage during a Safe Rest, you may choose different Mage options available to you.",
+          "options": [
+            {
+              "name": "Dimensional Compression",
+              "cost": "1+ Mana",
+              "text": "+4 Range to a spell for each additional mana spent."
+            },
+            {
+              "name": "Echo Casting",
+              "cost": "2×Mana (min. 1)",
+              "text": "When you cast a tiered, single-target spell, cast a copy of it on a 2nd target."
+            },
+            {
+              "name": "Elemental Destruction",
+              "cost": "1+ Mana",
+              "text": "After you hit with a spell, reroll 1 die per mana spent (up to WIL mana)."
+            },
+            {
+              "name": "Elemental Transmutation",
+              "cost": "1 Mana",
+              "text": "Change the damage type of a spell to: fire, cold, lightning, necrotic, or radiant."
+            },
+            {
+              "name": "Extra-Dimensional Vision",
+              "cost": "2 Mana",
+              "text": "Ignore the line of sight requirement of a spell. Your spell will phase through barriers and obstacles to reach a target you know of within Range."
+            },
+            {
+              "name": "Methodical Spellweaver",
+              "cost": "–2 Mana",
+              "text": "Spend 1 additional action to reduce the mana cost of a spell by 2 (min. 1)."
+            },
+            {
+              "name": "Precise Casting",
+              "cost": "1+ Mana",
+              "text": "Choose 1 creature per mana spent to be unaffected by a spell you cast."
+            },
+            {
+              "name": "Stretch Time",
+              "cost": "2 Mana",
+              "text": "Reduce the action cost of a spell by 1 (min 1)."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Invoker of Control",
+          "page": 7,
+          "flavor": "The heart of magical achievement is rigorous training and discipline. A powerful mage should accept nothing less than total domination.",
+          "complexity": 4,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Force of Will",
+                  "text": "(1/round) On your turn, you may Demand Control for free: Choose 1 option from the Control Table which you haven’t chosen yet; resets when you roll Initiative, or when you have chosen all options once."
+                },
+                {
+                  "name": "Deny Fate",
+                  "text": "Whenever you miss with a spell (or if one or more creatures save vs a spell you cast), you MUST Demand Control."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "At Any Cost",
+                  "text": "Learn 1 cantrip and 1 tiered spell from the Necrotic school."
+                },
+                {
+                  "name": "Nullify",
+                  "text": "(1/encounter) Ignore all disadvantage and other negative effects on your next action this turn, then Demand Control."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Steel Will",
+                  "text": "Whenever you roll a 1 on an Elemental Surge die, you may reroll it once. (1/Safe Rest) If you would fail a save, you succeed instead."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Supreme Control",
+                  "text": "Whenever you use Force of Will, you may choose to trigger the selected option twice. You may now use Force of Will as a Reaction."
+                }
+              ]
+            }
+          ],
+          "optionGroups": [
+            {
+              "name": "Control Table",
+              "intro": "Magic is Dangerous. You can stitch its fraying edges together to your own benefit… for a time.",
+              "options": [
+                {
+                  "name": "I INSIST",
+                  "text": "Cast a cantrip for free, ignoring all disadvantage; it cannot miss."
+                },
+                {
+                  "name": "ELEMENTAL AFFLICTION",
+                  "text": "A creature of your choice within 12 spaces gains the Charged, Smoldering, or Slowed condition."
+                },
+                {
+                  "name": "NO",
+                  "text": "Choose a creature; it cannot harm a creature of your choice during its next turn."
+                },
+                {
+                  "name": "LOSE CONTROL",
+                  "text": "Do ALL of the above, but the GM chooses each time."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Invoker of Chaos",
+          "page": 8,
+          "flavor": "Embrace power beyond your understanding or control. Let the universe flow through you, give in to the wild forces of magic, let randomness and CHAOS reign!",
+          "complexity": 4,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Force of Chaos",
+                  "text": "Whenever you cast a spell, you can choose to spend 1 less mana by Invoking Chaos: Roll on the Chaos Table. Whenever you crit you may also Invoke Chaos."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Tempest Mage",
+                  "text": "Learn 1 cantrip and 1 tiered spell from the Wind school."
+                },
+                {
+                  "name": "Chaos Lash",
+                  "text": "(1/encounter) Reaction (when an enemy moves adjacent to you): They are pushed back 2 spaces, and on a failed WIL save, knocked Prone as well. Invoke Chaos."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Thrive in Chaos",
+                  "text": "Whenever you Invoke Chaos, you may roll twice and cause both effects. (1/Safe Rest) You may choose which roll to use instead."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Master of Chaos",
+                  "text": "Whenever you Invoke Chaos, roll with advantage."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Invoker of Wards",
+          "page": 9,
+          "flavor": "Cloak yourself in arcane armor, and ward your teammates with elemental safeguards. Become indomitable.",
+          "complexity": 4,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Abjurer",
+                  "text": "Defensive spells you cast on yourself (Flame Barrier, Frost Shield, and Alacrity) are always cast as if you spent +1 mana on them (ignoring your usual upcasting limit)."
+                },
+                {
+                  "name": "Elemental Wards",
+                  "text": "Reaction (when an ally within Reach 6 Defends): You may spend 1 mana to cast an Elemental Ward on them:\n• Flame Ward. First deal KEY damage and Smoldering to all creatures adjacent to your ally.\n• Frost Ward. Grant 2×KEY Temp HP (lasts until the beginning of their next turn).\n• Lightning Ward. Attacks miss them on 2 or less. They can move KEY spaces for free on their next turn."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Elemental Wards (2)",
+                  "text": "Your Elemental Wards gain +WIL effectiveness and +INT Reach."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Abjurer (2)",
+                  "text": "The 1st defensive spell you cast on yourself each encounter while Dying is free and does not require a save. The 1st Ward you cast on a Dying ally each encounter also grants them +1 action."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Elemental Aegis",
+                  "text": "(1/Safe Rest) Reaction (when a friendly creature is attacked): Up to KEY creatures within Reach 8 gain ALL the effects of your Elemental Wards until their next turn."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Invoker of Flame",
+          "page": 10,
+          "flavor": "You dedicate yourself to the art of Pyromancy; choosing to relinquish control over the other elements so that your flames may burn brighter and hotter than any who has come before you.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Fiery Dedication",
+                  "text": "You can only cast fire spells from now on. You unlock fire spells 1 Level earlier."
+                },
+                {
+                  "name": "Embercaster",
+                  "text": "When casting Flame Dart, you can spend 1 mana to roll 3d4 instead and ignore all disadvantage."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Thy Embers’ Keeper",
+                  "text": "When Initiative is rolled, cast Heart’s Fire on an ally for free."
+                },
+                {
+                  "name": "Fireshaper",
+                  "text": "Choose 1 Ice or Lightning spell and treat it as a fire spell."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Flash Fire",
+                  "text": "+WIL Initiative. When Initiative is rolled, cast Enchant Weapon for free."
+                },
+                {
+                  "name": "Fireshaper (2)",
+                  "text": "Choose 1 Ice or Lightning spell and treat it as a fire spell."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Phoenixform",
+                  "text": "(1/Safe Rest) Reaction (when you would drop to 0 HP): Instead, gain the effects of the Dragonform spell (except you are a Medium Phoenix), when it ends gain 1 Wound."
+                },
+                {
+                  "name": "Fireshaper (3)",
+                  "text": "Choose 1 Lightning or Ice spell and treat it as a fire spell."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Invoker of Frost",
+          "page": 12,
+          "flavor": "Ice runs through your veins. A dedicated cryomancer, you relinquish control over the other elements so that your ice can freeze more deeply.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Crown of Ice",
+                  "text": "You can only cast Ice spells from now on. You unlock Ice spells 1 Level earlier."
+                },
+                {
+                  "name": "Aura of Cold",
+                  "text": "Adjacent enemies are Slowed. Your unused Frost Shield Temp HP last until the end of the encounter. Your Shatter spell has Reach instead of Range."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Crystalline Aegis",
+                  "text": "When your Frost Shield Temp HP is lost, cast Shatter for free on an adjacent enemy."
+                },
+                {
+                  "name": "Frostshaper",
+                  "text": "Choose 1 Fire or Lightning spell and treat it as an Ice spell."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Bitter Cold",
+                  "text": "Your spells ignore the Armor of creatures Hampered by you."
+                },
+                {
+                  "name": "Frostshaper (2)",
+                  "text": "Choose 1 Fire or Lightning spell and treat it as an Ice spell."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Deep Freeze",
+                  "text": "Reduce the mana cost of all spells by 2 while you have any Temp HP from Frost Shield."
+                },
+                {
+                  "name": "Frostshaper (3)",
+                  "text": "Choose 1 Fire or Lightning spell and treat it as an ice spell."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Invoker of Surges",
+          "page": 13,
+          "flavor": "Galvanize yourself, and blast through your enemies with powerful but unstable energy.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Electrical Dedication",
+                  "text": "You can only cast lightning spells from now on. Choose 1 Fire spell and treat it as a Lightning spell."
+                },
+                {
+                  "name": "Power Surge",
+                  "text": "You can store up to WIL uses of Charged at a time. After you cast a damaging spell, you may take 4 lightning damage to add 1d8 to the damage."
+                },
+                {
+                  "name": "Blur",
+                  "text": "While Charged, reduce ALL non-lightning damage you take by KEY."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Jumpstart",
+                  "text": "When you roll Initiative, become Charged; and gain 1 additional action on the first round of combat."
+                },
+                {
+                  "name": "Power Surge (2)",
+                  "text": "Your Power Surge die becomes a d10. You may expend Charged to maximize it. Pick 1 Wind spell and treat it as a Lightning spell."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Power Surge (3)",
+                  "text": "Your Power Surge die becomes a d12. (1/encounter) You may spend Charged to change any die on a spell you cast to the max."
+                },
+                {
+                  "name": "Blur (2)",
+                  "text": "While Charged, reduce ALL non-lightning damage you take by 2×KEY."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Power Surge (4)",
+                  "text": "Your Power Surge die becomes a d20."
+                },
+                {
+                  "name": "Haywire",
+                  "text": "Whenever you are Dying, you gain the effects of Electrocharge."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "spells": [
+        {
+          "name": "Flame Dart",
+          "school": "Fire",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 10",
+          "damage": "1d10",
+          "text": "Range: 10. Damage: 1d10. On crit: Smoldering.\n\nSmoldering. This condition does nothing on its own, though some spells and abilities have additional effects against Smoldering creatures, ending the condition.",
+          "cantripScaling": "+5 damage every 5 levels.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Heart’s Fire",
+          "school": "Fire",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 4",
+          "text": "Range: 4. (1/round) Give an ally 1 action. Cast as a Reaction for 1 mana.",
+          "cantripScaling": "+2 Range every 5 levels.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Ignite",
+          "school": "Fire",
+          "tier": 1,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Range 10",
+          "damage": "4d10",
+          "text": "Range: 10. Damage: 4d10 to a Smoldering target.",
+          "higherLevels": "+10 damage.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Enchant Weapon",
+          "school": "Fire",
+          "tier": 2,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 8",
+          "concentration": "1 min.",
+          "text": "Concentration: 1 min. Reach: 8. A weapon you choose inflicts Smoldering on crit and gains (1/turn) +KEY damage.",
+          "higherLevels": "+KEY damage.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Flame Barrier",
+          "school": "Fire",
+          "tier": 3,
+          "utility": false,
+          "actions": "0 Actions",
+          "range": "Reach 1",
+          "aoe": "AoE",
+          "damage": "10+KEY",
+          "text": "Castable only while Defending.\n\nReach: 1, AoE. Damage: 10+KEY and Smoldering. Triggers whenever you are attacked this round.",
+          "higherLevels": "+KEY damage OR +1 Reach.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Pyroclasm",
+          "school": "Fire",
+          "tier": 4,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 3",
+          "aoe": "AoE",
+          "damage": "2d20+10",
+          "text": "Reach: 3, AoE. Damage: 2d20+10 on a failed DEX save (Smoldering creatures fail); half on save.",
+          "higherLevels": "Advantage 1 and +1 Reach.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Fiery Embrace",
+          "school": "Fire",
+          "tier": 5,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 10",
+          "aoe": "AoE",
+          "concentration": "1 min.",
+          "text": "Concentration: 1 min. Reach: 10, AoE. An ally gains the effects of Enchant Weapon. Enemies gain Smoldering, and effects that would end it, don’t.",
+          "higherLevels": "+1 ally and +2 Reach.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Living Inferno",
+          "school": "Fire",
+          "tier": 7,
+          "utility": false,
+          "actions": "3 Actions",
+          "text": "Gain the effects of Flame Barrier until your next turn. At the end of this turn and your next turn, cast Pyroclasm for free.",
+          "higherLevels": "Upcast Flame Barrier and Pyroclasm.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Dragonform",
+          "school": "Fire",
+          "tier": 9,
+          "utility": false,
+          "actions": "5 Actions",
+          "text": "Transform into a Huge dragon. Gain 3 actions, a flying Speed of 12, LVL Defense, 10×LVL temp HP, and:\n• Tooth & Claw. 1 Action: (Reach 2) 1d20+LVL damage (ignoring armor). Inflicts Smoldering.\n• Immolating Breath. 2 Actions: (Cone 10, AoE) KEY d20 damage, half on DEX save (Smoldering targets fail).\n\nNote. You can maintain this form for as long as the temp HP granted by this spell remain (max. 10 min). When it ends, you drop to 0 HP.",
+          "source": "Mage 3.0",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Ice Lance",
+          "school": "Ice",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 12",
+          "damage": "1d6",
+          "text": "Range: 12. Damage: 1d6 cold/piercing, Slowed.",
+          "cantripScaling": "+3 damage every 5 levels.",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Snowblind",
+          "school": "Ice",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 1",
+          "damage": "1d6",
+          "text": "Reach: 1. Damage: 1d6, Blind until the end of their next turn.",
+          "cantripScaling": "+3 damage every 5 levels.",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Frost Shield",
+          "school": "Ice",
+          "tier": 1,
+          "utility": false,
+          "actions": "0 Actions",
+          "text": "Castable only while Defending.\n\nGain 2×KEY temp HP. The temp HP are lost at the start of your next turn.",
+          "higherLevels": "+5 temp HP.",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Shatter",
+          "school": "Ice",
+          "tier": 2,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Range 12",
+          "damage": "3d6",
+          "text": "Range: 12. Damage: 3d6. ANY die can crit vs a Hampered target. On crit: +20 damage (instead of rolling any additional dice).\n\nHampered. A creature with actions or movement reduced (e.g., Dazed, Slowed, Grappled, Restrained, Prone, Difficult Terrain).",
+          "higherLevels": "Increase a die roll by 1 and +5 damage on crit.",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Omenrime",
+          "school": "Ice",
+          "tier": 3,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 6",
+          "text": "Reach: 6. Roll 1d6; you may replace any single die rolled within Reach with that die (it expires at the end of the encounter if unused).\n\nReplacing a die. Exchange the original die with the d6 that you rolled; treat it exactly as if that die were the one originally rolled.",
+          "higherLevels": "+1 Reach and roll +1d6 (keep only 1).",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Rimeblades",
+          "school": "Ice",
+          "tier": 4,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Reach 12",
+          "aoe": "AoE",
+          "concentration": "1 min.",
+          "damage": "2d6",
+          "text": "Concentration: 1 min. Reach: 12, AoE. Conjure icy blades in 5 contiguous spaces; this area is Difficult Terrain. Creatures there (or who enter later) suffer 2d6 damage for each space they touch.",
+          "higherLevels": "+1 space and +1 damage.",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Arctic Blast",
+          "school": "Ice",
+          "tier": 5,
+          "utility": false,
+          "actions": "2 Actions",
+          "aoe": "Cone 4",
+          "damage": "4d6+10",
+          "text": "Reach: Cone 4, AoE. Damage: 4d6+10. This area is Difficult Terrain for 1 round. Any already Hampered creatures there are Restrained (frozen in place).",
+          "higherLevels": "+1 Reach.",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Glacier Strike",
+          "school": "Ice",
+          "tier": 8,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Range 12",
+          "aoe": "3×3",
+          "damage": "d66",
+          "text": "Range: 12, 3×3 AoE. Damage: d66 bludgeoning. Creatures adjacent to that area take half as much. The entire area permanently becomes Difficult Terrain.\n\nD66. Roll 2d6. The leftmost die is the tens place, and the second is the ones (e.g., 4 and 5 deal 45 damage).",
+          "higherLevels": "+1 initial area.",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Arctic Annihilation",
+          "school": "Ice",
+          "tier": 9,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Reach 12",
+          "aoe": "AoE",
+          "damage": "d66",
+          "text": "Reach: 12, AoE. Any targets you choose are encased in ice and immune to damage and negative effects until the start of their next turn. All others take d66 damage, then make a STR save or be Incapacitated until the end of their next turn.\n\nNote. Once you cast this spell, you must Safe Rest for 1 week before using it again.",
+          "source": "Mage 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Zap",
+          "school": "Lightning",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 8",
+          "damage": "1d8+4",
+          "text": "Range: 8. Damage: 1d8+4. On miss: you take half the damage instead.",
+          "cantripScaling": "+6 damage every 5 levels.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Overload",
+          "school": "Lightning",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 2",
+          "aoe": "AoE",
+          "damage": "2d8",
+          "text": "Castable only if Charged, ending the condition.\n\nReach: 2, AoE. Damage: 2d8.\n\nCharged. Whenever you take lightning damage, you are Charged for 1 minute (or until combat ends).",
+          "cantripScaling": "+4 damage every 5 levels.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Arc Lightning",
+          "school": "Lightning",
+          "tier": 1,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Range 12",
+          "damage": "3d8",
+          "text": "Range: 12. Damage: 3d8. Also hits the next closest creature.\n\nNext Closest Creature. If you are the closest, you are hit! If 2 creatures are equally close, the GM can select randomly, the taller one, or whoever has the most metal.",
+          "higherLevels": "+4 damage.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Alacrity",
+          "school": "Lightning",
+          "tier": 2,
+          "utility": false,
+          "actions": "0 Actions",
+          "text": "(1/turn) Teleport up to your Speed, gain Charged (can be cast while Defending, after damage).",
+          "higherLevels": "+4 spaces.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Stormlash",
+          "school": "Lightning",
+          "tier": 3,
+          "utility": false,
+          "actions": "2 Actions",
+          "aoe": "Line 12",
+          "damage": "3d8+4",
+          "text": "Line: 12, AoE. Damage: 3d8+4 and Prone on a failed STR save. Creatures with a large amount of metal (e.g., armor or a longsword) roll with disadvantage and suffer +10 damage.",
+          "higherLevels": "+4 damage.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Electrickery",
+          "school": "Lightning",
+          "tier": 4,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Range 8",
+          "text": "Castable when an ally is attacked.\n\nRange: 8. Teleport an ally away. Teleport another creature there on a failed WIL save (making them the target). Costs 1 action if Charged, ending the condition.",
+          "higherLevels": "+2 Range.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Electrocharge",
+          "school": "Lightning",
+          "tier": 5,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 4",
+          "concentration": "1 min.",
+          "text": "Concentration: 1 min. Reach: 4. Give a creature Charged, +1 max action, +5 Defense, 2× Speed, and advantage on DEX saves.",
+          "higherLevels": "+4 Reach.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Ride the Lightning",
+          "school": "Lightning",
+          "tier": 6,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Reach 12",
+          "aoe": "AoE",
+          "damage": "d88",
+          "text": "Reach: 12, AoE. Teleport to a spot you can see (if a willing creature is there, swap places with them). Adjacent creatures take d88 damage and Knockback 2. Creatures moved 2+ spaces are also knocked Prone, Dazed, and deafened for 1 day.\n\nD88. Roll 2d8. The leftmost die is the tens place, and the second is the ones (e.g., 4 and 5 deal 45 damage).",
+          "higherLevels": "+1 Knockback.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Seething Storm",
+          "school": "Lightning",
+          "tier": 9,
+          "utility": false,
+          "actions": "3 Actions",
+          "aoe": "AoE",
+          "concentration": "1 min.",
+          "damage": "d88",
+          "text": "Concentration: 1 min. Become a cloud of tempestuous storm. You can fly, move for free 1/round, and attacks against you are disadvantaged. At the end of each of your turns, strike up to 4 creatures within Reach 4 with a bolt of lightning for d88 damage (a creature can only be struck 1/round).\n\nCosts 3 actions each round to maintain. +2 Reach and +2 lightning bolts each round.\n\nNote. Once you cast this spell, you must Safe Rest for 1 week before you can use it again.",
+          "source": "Mage 3.0",
+          "page": 16,
+          "draft": false
+        },
+        {
+          "name": "Firebrand",
+          "school": "Fire",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "text": "Touch a surface and secretly mark it with a symbol or brief message. Speaking a chosen command word while nearby reveals it.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Fire Step",
+          "school": "Fire",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Minute",
+          "text": "Teleport to a fire source you can see.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Kindle",
+          "school": "Fire",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "text": "Conjure a minor visual illusion. OR: Ignite a small, unheld item within Reach 6.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Chillcraft",
+          "school": "Ice",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "text": "Chill. Harmlessly freeze, thaw, or move a bath-sized amount of water near you. OR:\n\nCraft. Conjure a sheet of opaque, mirror-like, or transparent ice the size of a window or door.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Ice Disk",
+          "school": "Ice",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Minute",
+          "text": "Conjure a floating disk of ice that follows you. It can carry moderately heavy weight for 1 hour or until you cast this spell again.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Wintry Scrying",
+          "school": "Ice",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Minute",
+          "text": "Turn a small patch of water into a reflective icy mirror. Looking through it grants you vision of any desired location near this body of water for 10 min.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Spark Buddy",
+          "school": "Lightning",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Minute",
+          "text": "Conjure a Tiny (squirrel-sized) helper for up to 1 hour. It can fetch Tiny objects, open unlocked doors, illuminate a small area, or deliver a harmless shock. If it takes damage or moves further than 6 spaces away from you, it dissipates into sparks.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Spark Step",
+          "school": "Lightning",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "range": "Reach 4",
+          "text": "Reach: 4. Teleport to a metal object.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Tempest’s Command",
+          "school": "Lightning",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "text": "Dispel a minor magical effect, or temporarily suppress a stronger one (the more powerful an enchantment, the shorter the duration). OR: Your eyes glow and your voice is amplified to a thunder-like volume for 1 min.",
+          "source": "Mage 3.0",
+          "page": 17,
+          "draft": false
+        }
+      ],
+      "faq": [
+        {
+          "q": "How many spells can I choose?",
+          "a": "You know every spell in the spell schools you know, up to the tier you have unlocked."
+        },
+        {
+          "q": "How does Echo Casting interact with conditional spells (e.g., Ignite, Shatter)?",
+          "a": "You can only target a creature with the duplicate spell if they also meet any required conditions."
+        },
+        {
+          "q": "Can I cast more than 1 defensive spell at a time?",
+          "a": "No."
+        },
+        {
+          "q": "Invoker of Surges: Does taking damage from Power Surge Charge me?",
+          "a": "Yes, any lightning damage gives you the Charged condition."
+        },
+        {
+          "q": "How does Lose Control work?",
+          "a": "You’ll likely never want to pick that option but the 4th time in an encounter you Demand Control, you must pick it. The GM uses I INSIST, ELEMENTAL AFFLICTION, and NO; choosing the targets, spells, and other effects."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Each class object has an extra `highlights` array: the three icon blurbs printed on the class intro page (not boxed sidebars, not the intro paragraphs).",
+    "Subclasses carry an extra `page` key (printed page of the subclass heading).",
+    "The 'Quick Builds' pre-made character pages at the end of each book (Berserker p.16, Commander p.20, ...) were not transcribed: they are sample character sheets, not class rules, and the schema has no slot for them.",
+    "Commander: the Spellblade subclass (p.17) is printed with a 'COMMANDER' banner, not 'STORY-BASED SUBCLASS', and shows no complexity pips, so story=false and complexity is omitted. It gains mana, so it has an extra subclass-level `casting` object.",
+    "Commander: the 'WORK IN PROGRESS' label on the cover art (p.2) was ignored as page furniture.",
+    "Commander resources: Combat Dice (max STR, d6, lost when combat ends). Coordinated Strike is listed as 1/encounter; from level 5 Master Commander adds an extra pool of INT uses per Safe Rest, which is not modelled as a separate resource.",
+    "Hunter: the Beastmaster story-based subclass (p.13) has no level list; its level scaling is written into each companion's options, so `levels` is an empty array (no complexity pips are printed, so `complexity` is omitted) and the companions are three optionGroups (Small/Medium/Large Companion). Its two boxed notes ('No Stats or Actions to Track!', 'Extra Abilities?') are folded into the subclass intro.",
+    "Hunter: 'Keeper of the Pack' Marked for Death reads 'made with advantage 2.' and The Lion's Share reads '3xWIL' (letter x); both transcribed as printed.",
+    "Class 'Names' boxes (Commander Names, Hunter Names, ...) are stored as sidebars.",
+    "Mage: the Fire/Ice/Lightning spell lists and the Utility Spells page printed in the Mage book (pp.14-17) are transcribed in the Mage class `spells` array (36 spells). They likely duplicate the Core spell lists; compare wording against the Core extraction when merging.",
+    "Mage spells: `range` holds a printed 'Range: N' or 'Reach: N' value; `aoe` holds the printed shape when there is one ('Cone 4', 'Line 12', '3×3') and otherwise just 'AoE' when the spell is tagged AoE. The full printed body, including the 'Range:/Damage:' labels and any boxed condition/rules note attached to the spell (Smoldering, Hampered, Charged, D66, D88, Next Closest Creature, Replacing a die, Note.), is kept in `text`.",
+    "Mage: Arc Lightning's tag reads 'TIER 1, 1+ TARGET'; the '1+ Target' tag has no schema field and is not recorded elsewhere.",
+    "Mage: Seething Storm has the line 'Costs 3 actions each round to maintain. +2 Reach and +2 lightning bolts each round.' printed where other spells have their Upcast line, but without an 'Upcast:' label. It is kept in `text` and `higherLevels` is not set.",
+    "Mage: the 'Where’s the Chaos Table?' box (Invoker of Chaos page) and the Utility Spells intro line are stored as class sidebars."
+  ]
+}
