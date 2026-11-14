@@ -2,7 +2,7 @@
   "classes": [
     {
       "name": "Stormshifter",
-      "source": "Stormshifter 3.0",
+      "source": "Stormshifter 3.1",
       "page": 4,
       "draft": false,
       "tagline": "A high utility class that can both harm and heal with equal mastery!",
@@ -22,6 +22,12 @@
       "saves": {
         "adv": "WIL",
         "dis": "STR"
+      },
+      "skillMods": {
+        "Naturecraft": 2,
+        "Finesse": 1,
+        "Lore": -2,
+        "Might": -1
       },
       "armor": "Cloth or Leather Armor",
       "weapons": "Staves, Wands",
@@ -62,6 +68,10 @@
             {
               "name": "Direbeast Form",
               "text": "You can Beastshift into a Direbeast form DEX times/encounter (for up to 1 min). You know the Fearsome Beast form."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+2 to Naturecraft, +1 to Finesse; –2 to Lore, –1 to Might."
             }
           ]
         },
@@ -338,17 +348,17 @@
             {
               "name": "Fearsome Beast",
               "cost": "1 Action",
-              "text": "Transform into a Large beast. Gain WIL Defense, WIL+LVL temp HP, advantage on STR saves, and:\nFearsome. Whenever you Interpose or Defend, you may spend 1 mana to force the attacker to reroll the attack (you must choose either result).\nGore. 1 Action: 1d8+LVL damage, on hit: gain LVL temp HP."
+              "text": "Transform into a Large beast. Gain +WIL Defense, WIL+LVL temp HP, advantage on STR saves, and:\nFearsome. Whenever you Interpose or Defend, you may spend 1 mana to force the attacker to reroll the attack (you must choose either result).\nGore. 1 Action: 1d8+LVL damage, on hit: gain LVL temp HP."
             },
             {
               "name": "Beast of the Pack",
               "cost": "1 Action",
-              "text": "Transform into a Medium beast. Gain +DEX Speed, you can move DEX spaces for free each turn, advantage on DEX saves, and:\nLightning Step. (1/turn) Spend 1 mana to teleport DEX spaces for free.\nFrenzy. 1 Action: 1d6+LVL damage. Your next attack gains increasing advantage instead of disadvantage. This bonus resets whenever you crit, or after you use a different attack."
+              "text": "Transform into a Medium beast. Gain +DEX Speed, you can move DEX spaces for free on your turn, advantage on DEX saves, and:\nLightning Step. (1/turn) Spend 1 mana to teleport DEX spaces for free.\nFrenzy. 1 Action: 1d6+LVL damage. Your next attack gains increasing advantage instead of disadvantage. This bonus resets whenever you crit, or after you use a different attack."
             },
             {
               "name": "Beast of Nightmares",
               "cost": "1 Action",
-              "text": "Transform into any Tiny beast or insect (provided it is horrible). Gain:\nSilent But Deadly. Speed: 2. Attackers cannot target you until you become conspicuous (e.g., attacking or being seen transforming). Attacks against you have disadvantage. You cannot Defend or Interpose and any damage ends this form.\nSting. 1 Action: (1/round, Reach 0) 1d4+3×LVL acid damage (ignoring Armor), on crit: Dazed."
+              "text": "Transform into any Tiny beast or insect (provided it is horrible). Gain:\nSilent But Deadly. Speed: 2. Attackers cannot target you until you become conspicuous (e.g., attacking or being seen transforming). Attacks against you have disadvantage. You cannot Defend or Interpose and any damage ends this form.\nSting. 1 Action: (1/round, Reach 0) 1d4+3×LVL acid damage (ignoring Defense), on crit: Dazed."
             }
           ]
         },
@@ -411,7 +421,7 @@
                 },
                 {
                   "name": "Creature of the Fey",
-                  "text": "You may cast spells while Beastshifted."
+                  "text": "You may cast spells without ending Beastshift."
                 },
                 {
                   "name": "Attuned to Nature",
@@ -442,7 +452,7 @@
               "features": [
                 {
                   "name": "Master of Storm",
-                  "text": "You can concentrate on 1 lightning spell and 1 wind spell at the same time. (1/encounter) When you would cast a tiered spell, it costs 1 fewer action and 3 fewer mana."
+                  "text": "You can concentrate on 2 spells at the same time. (1/encounter) When you would cast a tiered spell, it costs 1 fewer action and 3 fewer mana."
                 }
               ]
             }
@@ -637,7 +647,7 @@
           "damage": "1d8+4",
           "text": "Range: 8. Damage: 1d8+4. On miss: you take half the damage instead.",
           "cantripScaling": "+6 damage every 5 Levels.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -652,7 +662,7 @@
           "damage": "2d8",
           "text": "Castable only if Charged, ending the condition. Reach: 2, AoE. Damage: 2d8.\n\nCharged. Whenever you take lightning damage, you are Charged for 1 minute (or until combat ends).",
           "cantripScaling": "+4 damage every 5 Levels.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -667,7 +677,7 @@
           "damage": "3d8",
           "text": "Range: 12. Damage: 3d8. Also hits the next closest creature.\n\nNext Closest Creature. If you are the closest, you are hit! If 2 creatures are equally close, the GM can select randomly, the taller one, or whoever has the most metal.",
           "higherLevels": "+4 damage.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -679,7 +689,7 @@
           "actions": "0 Actions",
           "text": "(1/turn) Teleport up to your Speed, gain Charged (can be cast while Defending, after damage).",
           "higherLevels": "+4 spaces.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -693,7 +703,7 @@
           "damage": "3d8+4",
           "text": "Line: 12, AoE. Damage: 3d8+4 and Prone on a failed STR save. Creatures with a large amount of metal (e.g., armor or a longsword) roll with disadvantage and suffer +10 damage.",
           "higherLevels": "+4 damage.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -706,7 +716,7 @@
           "range": "Range 8",
           "text": "Castable when an ally is attacked. Range: 8. Teleport an ally away. Teleport another creature there on a failed WIL save (making them the target). Costs 1 action if Charged, ending the condition.",
           "higherLevels": "+2 Range.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -720,7 +730,7 @@
           "concentration": "Up to 1 min",
           "text": "Reach: 4. Concentration: Up to 1 min. Give a creature Charged, +1 max action, +5 Defense, 2× Speed, and advantage on DEX saves.",
           "higherLevels": "+4 Reach.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -735,7 +745,7 @@
           "damage": "d88",
           "text": "Reach: 12, AoE. Teleport to a spot you can see (if a willing creature is there, swap places with them). Adjacent creatures take d88 damage and Knockback 2. Creatures moved 2+ spaces are also knocked Prone, Dazed, and deafened for 1 day.",
           "higherLevels": "+1 Knockback.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -749,7 +759,7 @@
           "concentration": "1 min",
           "damage": "d88",
           "text": "Concentration: 1 min. Become a cloud of tempestuous storm. You can fly, move for free 1/round, and attacks against you are disadvantaged. At the end of each of your turns, strike up to 4 creatures within Reach 4 with a bolt of lightning for d88 damage (a creature can only be struck 1/round). Costs 3 actions each round to maintain. +2 Reach and +2 lightning bolts each round.\n\nNote. Once you cast this spell, you must Safe Rest for 1 week before you can use it again.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -763,7 +773,7 @@
           "damage": "2d4",
           "text": "Range: 12. Range: 12. Damage: 2d4 slashing, with advantage OR include a 2nd creature adjacent to your target.",
           "cantripScaling": "+3 damage every 5 Levels.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -776,7 +786,7 @@
           "range": "Range 6",
           "text": "Range: 6. Restore 1d4 HP to a Dying creature. If healed for 4+: they also regain 1 action.",
           "cantripScaling": "+2 Range and healing every 5 Levels.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -788,9 +798,9 @@
           "actions": "2 Actions",
           "range": "Range 12",
           "damage": "3d4",
-          "text": "Range: 12. Damage: 3d4 bludgeoning, Knockback 2 (advantage vs flying/Small/Tiny). Forced movement deals +5 damage instead of rolling additional dice.",
+          "text": "Range: 12. Damage: 3d4 bludgeoning (advantage vs flying/Small/Tiny). Hit or miss, Knockback 2.",
           "higherLevels": "+1 Knockback.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -803,7 +813,7 @@
           "range": "Reach 1",
           "text": "Castable only while Defending vs Ranged. Reach: 1. Reduce the Primary Die by 3. If it misses, redirect the original attack to another space in Reach.",
           "higherLevels": "+1 Reduction and +1 Reach.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -815,9 +825,9 @@
           "actions": "2 Actions",
           "range": "Reach 1",
           "damage": "d44",
-          "text": "Reach: 1. Damage: d44 bludgeoning (ignoring armor). Any creature in the targeted space at the beginning of your next turn takes this damage again.",
+          "text": "Reach: 1. Damage: d44 bludgeoning (ignoring Defense). Any creature in the targeted space at the beginning of your next turn takes this damage again.",
           "higherLevels": "Roll with advantage OR +1 Reach.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -832,7 +842,7 @@
           "damage": "4d4+10",
           "text": "Reach: 3, AoE. Damage: 4d4+10 bludgeoning to enemies. Place surviving creatures anywhere within 1 space of the storm’s Reach on a failed STR save.",
           "higherLevels": "+1 Reach.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -847,7 +857,7 @@
           "damage": "20",
           "text": "Reach: 12, 5×5 AoE. Damage: 20 bludgeoning minus a DEX save. On 10+ damage, they land Prone and Dazed.",
           "higherLevels": "+2 damage.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -862,7 +872,7 @@
           "damage": "d44",
           "text": "Range: 12. Damage: d44 slashing with advantage. Also damages enemies within Reach 1 of your target.\n\nD44 with advantage. Roll 3d4 and drop the lowest die. The leftmost die is the tens place, and the second is the ones (e.g., 2, 3, and 4 deals 34 damage).",
           "higherLevels": "+1 Reach.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         },
@@ -875,7 +885,7 @@
           "range": "Reach 12",
           "text": "Reach: 12. Gently move all creatures up to 6 spaces, each in a straight line in a direction of your choice. At the beginning of your subsequent turns, do so again but 2 fewer spaces.",
           "higherLevels": "+2 spaces.",
-          "source": "Stormshifter 3.0",
+          "source": "Stormshifter 3.1",
           "page": 15,
           "draft": false
         }
@@ -1583,7 +1593,7 @@
     },
     {
       "name": "Zephyr",
-      "source": "Zephyr 3.1",
+      "source": "Zephyr 3.2",
       "page": 4,
       "draft": false,
       "tagline": "A furiously fast melee class that can deliver and avoid terrible blows.",
@@ -1604,6 +1614,14 @@
         "adv": "DEX",
         "dis": "INT"
       },
+      "skillMods": {
+        "Finesse": 1,
+        "Insight": 1,
+        "Might": 1,
+        "Arcana": -1,
+        "Examination": -1,
+        "Lore": -1
+      },
       "armor": "None",
       "weapons": "Melee, Unarmed Strikes",
       "startingGear": [
@@ -1613,7 +1631,7 @@
       "resources": [
         {
           "name": "Momentum",
-          "reset": "lost if you take damage, or at the end of combat"
+          "reset": "lost at the end of combat, or if you take damage"
         },
         {
           "name": "Burst of Speed",
@@ -1631,7 +1649,11 @@
             },
             {
               "name": "Momentum",
-              "text": "Gain 1 Momentum for every space you move. You may expend 1 Momentum to add 1 damage to any melee attack. All Momentum is lost if you take damage, or at the end of combat."
+              "text": "Gain 1 Momentum for every space you move. You may expend Momentum to add 1 damage to any melee attack for each spent. All Momentum is lost at the end of combat, or if you take damage."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+1 to Finesse, Insight, and Might; –1 to Arcana, Examination, and Lore."
             }
           ]
         },
@@ -1640,7 +1662,7 @@
           "features": [
             {
               "name": "Burst of Speed",
-              "text": "When you roll Initiative, gain DEX Bursts of Speed for this encounter. You may spend 1 Burst of Speed to use one of the following maneuvers:\n• Slipstream. Whenever you Defend: Apply your Defense to every attack against you this round OR you may first move 1 space.\n• Galeforce Strike. Roll 1d12 for an unarmed attack instead of 1d4.\n• Windstep. Move for free, ignoring enemy spaces this turn."
+              "text": "When you roll Initiative, gain DEX Bursts of Speed for this encounter. You may spend 1 Burst of Speed to use one of the following maneuvers:\n• Slipstream. Whenever you Defend: Apply your Defense to every attack against you this round OR you may first move 1 space.\n• Galeforce Strike. Your next Unarmed Strike rolls 1d12 instead of 1d4.\n• Windstep. Move for free, ignoring enemy spaces this turn."
             }
           ]
         },
@@ -2041,7 +2063,7 @@
               "features": [
                 {
                   "name": "Cyclone",
-                  "text": "(Reach 4) You may spend 1 Momentum to move a creature 1 space."
+                  "text": "(Reach 4, 1/round) Spend up to STR Momentum to move another creature that many spaces."
                 },
                 {
                   "name": "Cleaving Gale",
@@ -2130,8 +2152,12 @@
       ],
       "faq": [
         {
-          "q": "Does movement while Riding or forced movement count toward my Momentum?",
-          "a": "Yes."
+          "q": "Does Falling, Forced Movement, or Riding count toward my Momentum?",
+          "a": "Yes, though Teleporting does not."
+        },
+        {
+          "q": "Does uncounted movement (Oathsworn: Aura of Gales; Psion: Levitate) count toward Momentum?",
+          "a": "No."
         },
         {
           "q": "What does Slipstream’s move 1 space do?",
@@ -2148,6 +2174,10 @@
         {
           "q": "Could I take additional Wounds from Exploding Soul triggering while Dying?",
           "a": "Yes, if you fail the STR save on attacks while Dying."
+        },
+        {
+          "q": "Does Cyclone deal Knockback damage?",
+          "a": "No. It’s movement, not Knockback."
         }
       ]
     }

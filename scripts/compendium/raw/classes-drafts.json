@@ -1476,12 +1476,12 @@
     },
     {
       "name": "Psion",
-      "source": "Psion 0.1.1",
-      "page": 3,
+      "source": "Psion 3.0",
+      "page": 4,
       "draft": true,
-      "tagline": "High risk, high reward class that controls the battlefield through positioning and psionic power!",
-      "flavor": "Each creature that lives and breathes is united by one shared experience: THOUGHT. Psions take this fundamental reality and harness it as a tool in the physical world. Bend the flow gravity, twist the reality of minds, or throw things really, really hard. All of this barely scratches the surface of what a Psion can accomplish: altering the physical world through sheer thought alone.\n\nPsionic power, rare and mighty as it is, takes a toll on those who dare to wield it. To exert one's own mind so as to affect the world and other minds around you is to take on all the latent negative thoughts that can be found there. However, those with the will to withstand the strain can achieve heights that few could ever dream of.",
-      "complexity": 2,
+      "tagline": "A dangerous, high-risk, high-reward class that controls the battlefield through positioning and psionic power!",
+      "flavor": "Each creature that lives and breathes is united by one shared experience: THOUGHT. Psions take this fundamental reality and harness it as a tool in the physical world. Bend the flow of gravity, twist the reality of minds, or throw things really, really hard. All of this barely scratches the surface of what a Psion can accomplish: altering the physical world through sheer thought alone.\n\nPsionic power, rare and mighty as it is, takes a toll on those who dare to wield it. To exert one’s own mind so as to affect the world and other minds around you is to take on all the latent negative thoughts that can be found there. However, those with the will to withstand the strain can achieve heights that few could ever dream of.",
+      "complexity": 3,
       "keyStats": [
         "WIL",
         "INT"
@@ -1502,7 +1502,7 @@
       "resources": [
         {
           "name": "Strain Dice",
-          "die": "d6"
+          "die": "d8"
         }
       ],
       "levels": [
@@ -1511,7 +1511,11 @@
           "features": [
             {
               "name": "Psionic Field",
-              "text": "(Concentration, up to 1 min.) Action: Create a field of psionic energy around you with a Reach of 3. You can proficiently attack with unheld light weapons or objects anywhere within your Psionic Field. Attacks made this way deal an additional +WIL damage."
+              "text": "(Concentration: 1 min.) Action: Create a field of psionic energy around you with a Reach of 3. It grants you +INT Defense."
+            },
+            {
+              "name": "Psionic Strike",
+              "text": "Learn Psionic Strike."
             }
           ]
         },
@@ -1520,7 +1524,7 @@
           "features": [
             {
               "name": "Powerful Mind",
-              "text": "Learn Psionic Strike and 1 other Psionic Ability of your choice."
+              "text": "Unlock Lesser Psionic Abilities. Choose 1 new Psionic Ability."
             },
             {
               "name": "Mindsense",
@@ -1541,16 +1545,12 @@
           "level": 4,
           "features": [
             {
-              "name": "Mind Over Matter",
-              "text": "The first time each encounter you would lose Concentration, you may gain 2 Strain instead."
+              "name": "Powerful Mind",
+              "text": "Choose a 2nd Psionic Ability."
             },
             {
               "name": "Key Stat Increase",
               "text": "+1 WIL or INT."
-            },
-            {
-              "name": "Powerful Mind",
-              "text": "Choose a 3rd Psionic Ability."
             }
           ]
         },
@@ -1558,12 +1558,8 @@
           "level": 5,
           "features": [
             {
-              "name": "Expansive Mind",
-              "text": "Your Strain Dice increase to d8s."
-            },
-            {
-              "name": "Steady Breathing",
-              "text": "Action: Lose 1 Strain Die."
+              "name": "Powerful Mind",
+              "text": "Unlock Greater Psionic Abilities. Choose a 3rd Psionic Ability."
             },
             {
               "name": "Secondary Stat Increase",
@@ -1575,8 +1571,12 @@
           "level": 6,
           "features": [
             {
-              "name": "Powerful Mind",
-              "text": "Choose a 4th Psionic Ability."
+              "name": "Compartmentalize",
+              "text": "(1/Safe Rest) When your Concentration breaks, ignore INT of your Strain Dice."
+            },
+            {
+              "name": "Lucid Thought",
+              "text": "Use INT for your Concentration saves."
             }
           ]
         },
@@ -1593,8 +1593,8 @@
           "level": 8,
           "features": [
             {
-              "name": "New Core Ability",
-              "text": "When you concentration is broken, you may ignore 1 Strain Die."
+              "name": "Powerful Mind",
+              "text": "Choose a 4th Psionic Ability."
             },
             {
               "name": "Key Stat Increase",
@@ -1606,8 +1606,12 @@
           "level": 9,
           "features": [
             {
-              "name": "Powerful Mind",
-              "text": "Choose a 5th Psionic Ability."
+              "name": "Reflexive Field",
+              "text": "If your Initiative total is 9 or less, create your Psionic Field for free when combat begins."
+            },
+            {
+              "name": "Steady Breathing",
+              "text": "Action: Lose 2 Strain Dice."
             },
             {
               "name": "Secondary Stat Increase",
@@ -1619,12 +1623,8 @@
           "level": 10,
           "features": [
             {
-              "name": "Expansive Mind (2)",
-              "text": "Your Strain Dice increase to d10s."
-            },
-            {
-              "name": "Steady Breathing (2)",
-              "text": "Action: Lose 2 Strain Dice."
+              "name": "Powerful Mind",
+              "text": "Unlock Supreme Psionic Abilities. Choose a 5th Psionic Ability."
             }
           ]
         },
@@ -1654,8 +1654,8 @@
           "level": 13,
           "features": [
             {
-              "name": "Mind Over Matter (2)",
-              "text": "The first time each encounter you would lose Concentration, you may gain 1 Strain instead. When you concentration is broken, ignore the highest Strain Die rolled."
+              "name": "Expansive Mind",
+              "text": "Your Strain Dice increase to d10s."
             },
             {
               "name": "Secondary Stat Increase",
@@ -1686,7 +1686,7 @@
           "features": [
             {
               "name": "Powerful Mind",
-              "text": "Choose a 8th Psionic Ability."
+              "text": "Choose an 8th Psionic Ability."
             },
             {
               "name": "Key Stat Increase",
@@ -1698,8 +1698,12 @@
           "level": 17,
           "features": [
             {
-              "name": "Expansive Mind (3)",
-              "text": "Your Strain Dice increase to d12s."
+              "name": "I Can Hold!",
+              "text": "Steady Breathing loses 3 Strain Dice instead."
+            },
+            {
+              "name": "Psionic Fortress",
+              "text": "Your Psionic Field grants 2×INT Defense instead."
             },
             {
               "name": "Secondary Stat Increase",
@@ -1711,8 +1715,8 @@
           "level": 18,
           "features": [
             {
-              "name": "I Can Hold!",
-              "text": "Lose 1 Strain Die at the end of each of your turns."
+              "name": "Powerful Mind",
+              "text": "Choose a 9th Psionic Ability."
             }
           ]
         },
@@ -1721,7 +1725,7 @@
           "features": [
             {
               "name": "Epic Boon",
-              "text": "Choose an Epic Boon (see pg. 23 of the GM's Guide)."
+              "text": "Choose an Epic Boon (see pg. 23 of the GM’s Guide)."
             }
           ]
         },
@@ -1730,7 +1734,7 @@
           "features": [
             {
               "name": "Mindmaster",
-              "text": "+1 to any 2 of your stats. Free Action: Gain 1 Strain to double the reach of your Psionic Field this round."
+              "text": "+1 to any 2 of your stats. Free Action: Gain 1 Strain to double the Reach of your Psionic Field this round."
             }
           ]
         }
@@ -1742,77 +1746,96 @@
         },
         {
           "title": "Strain",
-          "text": "Gain a Strain Die (1d6). Roll them when your turn ends, if any rolls a 1, your Concentration breaks.\n\nIf your Concentration breaks before combat ends, all Psionic effects cease, you suffer psychic damage equal to the sum rolled, and you become Incapacitated until the start of your next turn"
+          "text": "Gain a Strain Die (1d8). Roll them at the end of your turn; if any rolls a 1, your Concentration breaks. If your Concentration ends before combat ends, all Psionic effects cease, you suffer WIL psychic damage for each Strain Die you have, your Strain Dice are lost, and you become Incapacitated until the start of your next turn."
         },
         {
-          "title": "Psychic Damage",
-          "text": "Ignores armor and cannot typically be Defended/Interposed against!"
+          "title": "Flavor is Free!",
+          "text": "Instead of weapons, conjure psionic weapons made of pure thought, or rip rocks out of the ground to use! Just use the same stats as the weapon you’re reflavoring."
+        },
+        {
+          "title": "Psion Names",
+          "text": "Male Names: Altair, Jericho, Orion, Seren, Arcturus, Mars, Caelum.\nFemale Names: Cordelia, Galatea, Cassini, Delina, Paralee, Dione, Leda."
         }
       ],
       "optionGroups": [
         {
           "name": "Psionic Abilities",
-          "intro": "Requires your Psionic Field to be active. All ongoing Psionic abilities end if your concentration is broken.",
+          "intro": "All Psionic abilities require your Psionic Field to be active.",
           "options": [
             {
               "name": "Psionic Strike",
               "cost": "1 Action",
-              "text": "+1 damage for each Strain Die you have. When you attack you may gain 1 Strain to ignore all disadvantage and attack with advantage instead."
-            },
+              "text": "Proficiently attack with an unheld light weapon from anywhere within your Psionic Field and deal +5 damage (instead of +STR or DEX). You may gain 1 Strain to roll with advantage for each Strain you have (max WIL).\nHigh Levels: +WIL damage every 5th level."
+            }
+          ]
+        },
+        {
+          "name": "Lesser Psionic Abilities",
+          "options": [
             {
               "name": "Kinetic Launch",
               "cost": "1 Action",
-              "text": "Launch a willing ally within your Psionic Field up to 8 spaces. They can use a reaction to make an Opportunity Attack against a creature within their Reach as they move. Gain 1 Strain to grant them advantage on the attack instead of disadvantage"
+              "text": "Launch a willing ally within your Psionic Field up to 8 spaces. They can use a reaction to make an Opportunity Attack against a creature within their Reach as they move. Gain 1 Strain to grant them advantage on the attack instead of disadvantage."
             },
             {
-              "name": "Telekenitic Bastion",
+              "name": "Telekinetic Bastion",
               "cost": "Passive",
               "text": "You may wield a Shield proficiently within your Psionic Field. Gain 1 Strain to lend it to an ally being attacked within your Psionic Field (a shield protecting one person can’t protect another this round)."
             },
             {
-              "name": "Psionic Blast",
-              "cost": "1 Action",
-              "text": "(Reach 8, 1/Round) Suffer KEY d6 psychic damage, deal twice as much to an enemy (ignoring armor). Gain 2 Strain to take no damage instead."
-            },
-            {
-              "name": "Dominate Mind",
-              "cost": "2 Actions",
-              "text": "(Reach 8) +1 Strain: Incapacitate a creature. +1 Strain each time they take damage and for each of their turns they are Incapacitated."
-            },
-            {
-              "name": "Atomize Weapon",
-              "cost": "2 Actions, AoE",
-              "text": "Gain up to KEY Strain. Explode a weapon within your Psionic field then reform it perfectly as it was. Deal the sum of your Strain Dice to all others within your Psionic Field."
-            },
-            {
               "name": "Psionic Lockdown",
               "cost": "1 Action",
-              "text": "Enemies entering your Psionic field suffer LVL damage, Enemies within your Psionic field cannot leave. Projectiles have their damage reduced by LVL. 1 Strain/round to maintain."
-            },
+              "text": "+1 Strain. Enemies entering your Psionic Field suffer LVL damage. Enemies within your Psionic Field cannot leave until the start of your next turn."
+            }
+          ]
+        },
+        {
+          "name": "Greater Psionic Abilities",
+          "options": [
             {
-              "name": "Levitate",
+              "name": "Control Projectiles",
               "cost": "1 Action",
-              "text": "1 willing medium or smaller creature, treat them as if they are anywhere within your field (e.g. for Interposing, attacking etc.) (they can move freely within your psionic field on their turn). +1 Strain/round."
+              "text": "Reaction (when a creature within your Psionic Field is attacked at Range): If your number of Strain Dice is greater than the Primary Die of the attack, redirect the attack at another creature within your Psionic Field."
             },
             {
               "name": "Dampening Field",
               "cost": "1 Action",
-              "text": "Creatures inside your Psionic Field take 10 less damage from ranged attacks originating outside it this round. +1 Strain."
+              "text": "Gain up to WIL Strain. Until the start of your next turn, creatures inside your Psionic Field take 10 less damage per Strain gained this way from ranged attacks originating outside it."
+            },
+            {
+              "name": "Levitate",
+              "cost": "1 Action",
+              "text": "+1 Strain/round. Allies can act as if they were in any space within your Psionic Field (including attacking, Interposing, moving, etc.)."
+            },
+            {
+              "name": "Psyblast",
+              "cost": "2 Actions",
+              "text": "(Reach 8) Gain up to WIL Strain. Damage: 1d20 for each Strain you’ve gained this turn+(2×WIL)+LVL."
             },
             {
               "name": "Reactive Mind",
-              "cost": "1 Action",
-              "text": "Reaction: when you Defend, you may gain 1 Strain to push the attacker 4 spaces."
+              "cost": "0 Actions",
+              "text": "When you Defend against an attacker within your Psionic Field, gain 1 Strain to Knockback 4 (after damage)."
+            }
+          ]
+        },
+        {
+          "name": "Supreme Psionic Abilities",
+          "options": [
+            {
+              "name": "Atomize Weapon",
+              "cost": "2 Actions, AoE",
+              "text": "Gain up to KEY Strain. When your turn ends, deal the sum of your Strain Dice to ALL others within your Psionic Field."
+            },
+            {
+              "name": "Dominate Mind",
+              "cost": "2 Actions",
+              "text": "(Reach 8, 1/encounter) Gain 1 Strain. Incapacitate a creature. Gain 1 Strain each time it takes damage, and reroll your Strain Dice each time its turn is skipped."
             },
             {
               "name": "Mindrend",
-              "cost": "2 Actions",
-              "text": "Explode a creature’s mind. +1-3 strain dice. The next time you roll your Strain Dice, deal that much damage to an enemy (ignoring armor)."
-            },
-            {
-              "name": "Control Projectiles",
               "cost": "1 Action",
-              "text": "Reaction, if your total number Strain Dice are greater than the Primary Die of a ranged attack, redirect the attack at another creature within Range. +Strain. Extra range/damage."
+              "text": "Gain 1 Strain. The next time you roll your Strain Dice, a creature within your Psionic Field takes damage equal to the sum (ignoring armor). If your Concentration ends this turn, it is also Dazed."
             },
             {
               "name": "Sudden Shift",
@@ -1825,7 +1848,7 @@
       "subclasses": [
         {
           "name": "Adept of Bladestorm",
-          "flavor": "\"Dual wielding, huh? Watch this!\"",
+          "flavor": "“Dual wielding, huh? Watch this!”",
           "complexity": 2,
           "story": false,
           "levels": [
@@ -1833,8 +1856,8 @@
               "level": 3,
               "features": [
                 {
-                  "name": "Bladebearer",
-                  "text": "Your weapons wielded with your Psionic Field are considered dual wielded. When you gain Strain while using Psionic Strike, add the Strain Die as damage."
+                  "name": "Bladestorm",
+                  "text": "(1/round) Gain triwielding with Psionic Strike (roll with advantage 2)."
                 }
               ]
             },
@@ -1842,8 +1865,8 @@
               "level": 7,
               "features": [
                 {
-                  "name": "Bladestorm",
-                  "text": "(1/encounter) Others within your Psionic Field take KEY damage for each space they move (or are moved) this round. +2 Strain."
+                  "name": "Thousand Cuts",
+                  "text": "(1/encounter) 1 Action. Gain 2 Strain. Others within your Psionic Field take KEY damage for each space they move (or are moved) this round."
                 }
               ]
             },
@@ -1852,7 +1875,7 @@
               "features": [
                 {
                   "name": "Shieldstorm",
-                  "text": "You may wield 2 additional shields with your Psionic Field. Gain 1 strain to allow an ally to use one for a round."
+                  "text": "Learn Telekinetic Bastion (or another Psionic Ability if you already know it). You may wield 1 additional Shield within your Psionic Field; each can be used 1/round."
                 }
               ]
             },
@@ -1860,8 +1883,8 @@
               "level": 15,
               "features": [
                 {
-                  "name": "Bladestorm (2)",
-                  "text": "You may wield 2-handed weapons with your Psionic Field, they are considered tri-wielded (1/round you may roll with advantage 2 with them)."
+                  "name": "Master of Blades",
+                  "text": "You can wield 2-handed weapons with your Psionic Strike, ignoring STR requirements. (1/round) Gain quadwielding with Psionic Strike (roll with advantage 3)."
                 }
               ]
             }
@@ -1869,7 +1892,6 @@
         },
         {
           "name": "Adept of Illusions",
-          "flavor": "\"Dual wielding, huh? Watch this!\"",
           "complexity": 3,
           "story": false,
           "levels": [
@@ -1877,8 +1899,8 @@
               "level": 3,
               "features": [
                 {
-                  "name": "Figment",
-                  "text": "Reaction: when you Defend. You may gain 2 Strain to swap places with an enemy or willing ally within your Psionic Field, making them the new target."
+                  "name": "Illusory Disguise",
+                  "text": "When you Defend, gain 2 Strain to swap places with an enemy or willing ally within your Psionic Field, making them the new target."
                 }
               ]
             },
@@ -1886,8 +1908,8 @@
               "level": 7,
               "features": [
                 {
-                  "name": "Mirage",
-                  "text": "1 action. +1 Strain/effect each round.\n• **Danger.** Create an illusory danger in WIL contiguous spaces. Enemies who enter these spaces take 1d20+LVL psychic damage and must move out of the space before they can take any other action."
+                  "name": "Danger",
+                  "text": "(1/encounter) Reach 8, 1 Action. Gain 1 Strain to create an illusory danger in INT contiguous empty spaces until the start of your next turn. Enemies who enter take 1d20+LVL psychic damage and must move out of the space before they can take any other action (creatures can be damaged by this only once before seeing through the illusion)."
                 }
               ]
             },
@@ -1895,8 +1917,12 @@
               "level": 11,
               "features": [
                 {
-                  "name": "Mirage (2)",
-                  "text": "Whenever you use Mirage, you may instead choose one of the following:\n• **Disguise.** Project an illusory image into an enemy's mind (e.g., a wall, pit, or other obstacle or distraction). A lower level enemy gains your choice of Blinded, Taunted, or Prone. A creature your level or higher can make a WIL save to resist.\n• **Distortion.** An ally gains your choice of Full Cover, Invisible, or becomes the source of Fear for their enemies."
+                  "name": "Sudden Danger",
+                  "text": "You can create an illusory Danger in occupied spaces (creatures already there take the damage immediately)."
+                },
+                {
+                  "name": "Distort",
+                  "text": "(1/encounter) Reach 8, 1 Action. Gain 1 Strain to project an illusory image into an enemy’s mind (e.g., a pit, distraction, other obstacle). It is Blinded until the start of your next turn or knocked Prone and cannot stand on its next turn (your choice)."
                 }
               ]
             },
@@ -1904,8 +1930,8 @@
               "level": 15,
               "features": [
                 {
-                  "name": "Petrify!",
-                  "text": "Trick a lower level enemy into thinking they are Petrified. A creature your level must make a WIL save?\n\nSnap out of it! Illusions imposed upon an enemy end when the creature takes any damage."
+                  "name": "Facade",
+                  "text": "(1/encounter) Reach 8, 1 Action. Gain 1 Strain to grant an ally Full Cover, make them Invisible, or the source of Fear for their enemies until the start of your next turn."
                 }
               ]
             }
@@ -1913,7 +1939,6 @@
         },
         {
           "name": "Adept of Collapse",
-          "flavor": "\"Dual wielding, huh? Watch this!\"",
           "complexity": 3,
           "story": false,
           "levels": [
@@ -1922,7 +1947,7 @@
               "features": [
                 {
                   "name": "Mind Collapse",
-                  "text": "Whenever you concentration ends, choose 2 Strain Dice, an enemy within Reach 3 suffers that damage instead of you (if no enemy is available, you take all of the damage as normal).\n\nRemember! You can end concentration at any time on your turn for free."
+                  "text": "Whenever your Concentration breaks, an enemy within Reach 3 takes twice the psychic damage you take (ignoring armor)."
                 }
               ]
             },
@@ -1931,7 +1956,7 @@
               "features": [
                 {
                   "name": "Reverberating Mind",
-                  "text": "Double the Reach of Mind Collapse. Whenever any creature takes 10 or damage from your concentration breaking, the next time you create your Psionic Field this encounter, do so for free."
+                  "text": "Double the Reach of Mind Collapse. Whenever any creature takes 10 or more damage from your Concentration breaking, the next time you create your Psionic Field this encounter, do so for free."
                 }
               ]
             },
@@ -1940,7 +1965,7 @@
               "features": [
                 {
                   "name": "Mind Shield",
-                  "text": "When your concentration breaks, Taunt up to WIL creatures within Reach 6 for 1 round. You may Defend for free while Incapcitated. The first creature to attack you while Incapacitated also takes as much psychic damage."
+                  "text": "When your Concentration breaks, Taunt up to INT creatures within Reach 8 for 1 round. You cannot be crit while Incapacitated and you reduce all incoming damage by half. Damage reduced this way is reflected back to the attacker (ignoring armor)."
                 }
               ]
             },
@@ -1948,8 +1973,98 @@
               "level": 15,
               "features": [
                 {
-                  "name": "Big Mind",
-                  "text": "Your Mind Collapse and Mind Shield have a Reach of 12. Choose up to 3 Strain Dice for Mind Collapse and 1 additional enemy to also suffer that damage."
+                  "name": "Psychic Cascade",
+                  "text": "Target 1 additional enemy from Mind Collapse."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Adept of Thralls",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Enthrall",
+                  "text": "1 Action. (1/encounter) Gain 2 Strain to force a lower level enemy (or up to WIL minions) within your Psionic Field to move and attack a target of your choice. Gain 4 Strain instead if it is your level or higher. They are Taunted by you during their next turn. If there is no other valid target, it attacks itself for half damage."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Sway",
+                  "text": "Reaction. (1/encounter) Gain 2 Strain to force a lower level enemy within your Psionic Field to Interpose for you or an ally. Gain 4 Strain instead if it is your level or higher. They are Taunted by you during their next turn. If there is no valid enemy to Interpose, the attack misses instead."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Sovereign",
+                  "text": "(1/encounter) When your Concentration breaks from Strain, reset your Enthrall and Sway uses."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Pawnmaster",
+                  "text": "Enthrall and Sway cause their targets to be Frightened of you instead of Taunted. You can gain 1 Wound to use Sway while Incapacitated."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Adept of Gravity",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Gravity Well",
+                  "text": "(1/round) 1 Action. Reach 6. Gain 1 Strain to move a Medium or smaller creature up to 1 space per Strain Die you have (2 Strain if it is Large). Opportunity Attacks made against creatures inside your Psionic Field are made with advantage instead of disadvantage."
+                },
+                {
+                  "name": "Catastrophic Release",
+                  "text": "When your Concentration ends, Knockback all adjacent creatures 1 space for each Strain Die you had. If moved 2 or more spaces, they are also knocked Prone."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Crushing Mass",
+                  "text": "(1/round) Free Reaction: Whenever an enemy in your Psionic Field attacks, you may gain 1 Strain to apply Weakened 10 to them this turn."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Nova",
+                  "text": "(1/encounter) Free Reaction (on an ally’s turn). Gain 1 Strain, grant an ally in your Psionic Field Empowered 10 this turn, and they may move up to their Speed for free."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Singularity",
+                  "text": "Double the movement from Gravity Well and Knockback from Catastrophic Release. You may gain 2 Strain to double the effect of Crushing Mass."
                 }
               ]
             }
@@ -1958,27 +2073,39 @@
       ],
       "faq": [
         {
-          "q": "Alpha",
-          "a": "This is an early, alpha build of the class (it is not finished). Enough is here to test the main combat mechanics and get a feel for its style. Abilities will almost certainly be changed, many more will be added, others removed. If you have any feedback as you read it though and playtest it please let me know!"
-        },
-        {
           "q": "Incapacitated?",
-          "a": "When your concentration breaks, you do not lose any actions but you cannot take any reactions that round (or other actions granted by an ally such as Coordinated Strike!), attacks have advantage against you, and any melee attack that hits, is turned into a crit."
+          "a": "When your Concentration ends, you do not lose any actions but you cannot take any reactions that round (or other actions granted by an ally such as Coordinated Strike!), attacks have advantage against you, and any melee attack that hits is turned into a crit."
         },
         {
-          "q": "Psionic Blast",
-          "a": "You can use either KEY attribute. There is no attack roll, so this does not miss or crit, and is great as a 2nd or 3rd attack, vs minions, when Blinded, or otherwise Hampered."
+          "q": "Concentration ending vs breaking?",
+          "a": "You can end your Concentration for free on your turn (and suffer the normal consequences), but abilities that trigger from your Concentration “breaks” (e.g., Mind Collapse) only happen when it ends against your will."
+        },
+        {
+          "q": "Does X ability require my Psionic Field to be active?",
+          "a": "All Psionic Abilities (chosen, or ones granted by your subclass) require your field to be active (including any ability that requires Strain)."
+        },
+        {
+          "q": "Can I use Psionic Strike as an Opportunity Attack?",
+          "a": "Yes."
+        },
+        {
+          "q": "How can I tell what level a monster is?",
+          "a": "Most monsters will typically be below your level; a leader or boss is typically at or above your level. When in doubt, the GM should answer honestly."
+        },
+        {
+          "q": "Gravity Well: are Large creatures moved half as far?",
+          "a": "No, that applies only to Knockback effects. It merely costs more Strain to move them."
         }
       ]
     },
     {
       "name": "Revenant",
-      "source": "Revenant 0.1",
-      "page": 3,
+      "source": "Revenant 3.0",
+      "page": 4,
       "draft": true,
       "tagline": "Neither living nor dead. Shrug off the afflictions of mere mortals as you embrace the line between life and death.",
-      "flavor": "What it must be like, standing at the veil between life and death. Would one remember who they were before? I’ve only ever seen a Revenant once in my life. A noble warrior, his spirit clinging coldly to his body. His eyes, pale motionless pools of determination. His strikes slow, yet brutally powerful. I pity any warrior who crosses his path.\n\n– Excerpt from a tattered journal.\n\nA Revenant is bound to the mortal plane, driven by unfulfilled purpose, revenge, or perhaps even love. They exist on the razor’s edge between life and death, drawing upon the powers of the afterlife to fuel their undying might. Strike the Revenant down, and it rises again stronger and more determined than before.",
-      "complexity": 2,
+      "flavor": "A Revenant is bound to the mortal plane, driven by unfulfilled purpose, revenge, or perhaps even love. They exist on the razor’s edge between life and death, drawing upon the powers of the afterlife to fuel their undying might. Strike the Revenant down, and it rises again stronger and more determined than before.\n\nWhat it must be like, standing at the veil between life and death. Would one remember who they were before? I’ve only ever seen a Revenant once in my life. A noble warrior, his spirit clinging coldly to his body. His eyes, pale motionless pools of determination. His strikes slow, yet brutally powerful. I pity any warrior who crosses his path.\n\n– Excerpt from a tattered journal.",
+      "complexity": 3,
       "keyStats": [
         "WIL",
         "STR"
@@ -1987,26 +2114,44 @@
       "startingHp": 7,
       "saves": {
         "adv": "WIL",
-        "dis": "INT"
+        "dis": "DEX"
       },
       "armor": "All Armor",
       "weapons": "2-Handed Melee",
       "startingGear": [
         "Rusty Mail",
-        "Long Sword",
+        "Longsword",
         "Cherished Memento"
       ],
+      "skillMods": {
+        "Might": 1,
+        "Lore": 1,
+        "Influence": -1,
+        "Insight": -1
+      },
       "levels": [
         {
           "level": 1,
           "features": [
             {
-              "name": "Undying Might",
-              "text": "While above 0 HP, add your max HP to all melee attacks you make. You have a max of 2 actions (while living and Dying)."
+              "name": "Between Two Worlds",
+              "text": "You have a max of 2 actions while living and Dying."
             },
             {
-              "name": "Otherworldly Constitution",
-              "text": "Whenever you roll a Hit Die to recover HP, you may instead recover that many Wounds (don't add your STR if you do this)."
+              "name": "Undying Might",
+              "text": "(1/turn) While living, add your max HP to a melee attack."
+            },
+            {
+              "name": "Incorporeal",
+              "text": "While Dying, your body collapses in its place and your spectral form emerges. When you Defend in this form, you take 1 fewer Wound. Gain Spectral Blast."
+            },
+            {
+              "name": "Spectral Blast",
+              "text": "1 Action while Dying (Range 8) 1d6+LVL damage. No STR save needed."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+1 to Might and Lore; –1 to Influence and Insight."
             }
           ]
         },
@@ -2014,8 +2159,16 @@
           "level": 2,
           "features": [
             {
-              "name": "Spectral Form",
-              "text": "While Dying, you don't make STR saves to attack, and:\n**Hate.** (Range 8) 1d8+WIL+Wounds (ignoring armor). Every 5th level deals +Wounds damage (e.g., at lvl 10 deal 1d8+WIL+(4xWounds)."
+              "name": "Undying Fortitude",
+              "text": "While living you can Defend for free 1/round."
+            },
+            {
+              "name": "Incorporeal (2)",
+              "text": "While Dying, ignore Difficult Terrain and move for free 1/round."
+            },
+            {
+              "name": "Otherworldly Constitution",
+              "text": "Whenever you expend a Hit Die to recover HP, you may also recover 1 Wound."
             }
           ]
         },
@@ -2033,7 +2186,7 @@
           "features": [
             {
               "name": "Master of Undeath",
-              "text": "Choose a Revenant Special Ability."
+              "text": "Choose 1 Undying Gift."
             },
             {
               "name": "Key Stat Increase",
@@ -2045,16 +2198,16 @@
           "level": 5,
           "features": [
             {
-              "name": "Secondary Stat Increase",
-              "text": "+1 DEX or INT."
-            },
-            {
               "name": "Death Grip",
               "text": "You may wield 2-handed weapons in 1 hand."
             },
             {
-              "name": "Incorporeal",
-              "text": "Your Spectral Form gains: you cannot be Grappled/Restrained, and when you Defend, reduce damage to 0 instead."
+              "name": "Unrelenting as the Grave",
+              "text": "Immune to Dazed."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
             }
           ]
         },
@@ -2063,11 +2216,11 @@
           "features": [
             {
               "name": "Master of Undeath (2)",
-              "text": "Choose a 2nd Revenant Special Ability."
+              "text": "Choose a 2nd Undying Gift."
             },
             {
-              "name": "Deadened Nerves",
-              "text": "You cannot be crit while Dying (exploding dice are not rolled against you, ignore any “on crit” effects)."
+              "name": "Strong Ties",
+              "text": "If Dying when combat ends, recover 1 HP."
             }
           ]
         },
@@ -2084,12 +2237,16 @@
           "level": 8,
           "features": [
             {
-              "name": "Key Stat Increase",
-              "text": "+1 WIL or STR."
+              "name": "Incorporeal (3)",
+              "text": "While Dying, you are immune to Grappled, Restrained, and being Ridden; and you can pass through solid obstacles."
             },
             {
-              "name": "Deadened Nerves (2)",
-              "text": "Reduce ALL damage taken by Wounds while living."
+              "name": "Flicker",
+              "text": "(1/encounter) While living, when you Defend, the attack misses."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
             }
           ]
         },
@@ -2098,7 +2255,7 @@
           "features": [
             {
               "name": "Master of Undeath (3)",
-              "text": "Choose a 3rd Revenant Special Ability."
+              "text": "Choose a 3rd Undying Gift."
             },
             {
               "name": "Secondary Stat Increase",
@@ -2110,12 +2267,12 @@
           "level": 10,
           "features": [
             {
-              "name": "Incorporeal (2)",
-              "text": "(1/encounter) Use Incorporeal ability while living."
+              "name": "Power from Beyond",
+              "text": "(1/encounter) When you make a melee attack while living, you may gain 1 Wound to ignore the 1/turn limit on Undying Might."
             },
             {
-              "name": "Unrelenting as the Grave",
-              "text": "Immune to Dazed, Fear, and effects that would move you or knock you Prone against your will."
+              "name": "Empowered Blast",
+              "text": "Spectral Blast now deals +2×Wounds damage."
             }
           ]
         },
@@ -2133,7 +2290,7 @@
           "features": [
             {
               "name": "Master of Undeath (4)",
-              "text": "Choose a 4th Revenant Special Ability."
+              "text": "Choose a 4th Undying Gift."
             },
             {
               "name": "Key Stat Increase",
@@ -2145,6 +2302,10 @@
           "level": 13,
           "features": [
             {
+              "name": "Otherworldly Constitution (2)",
+              "text": "Gain 2 max Wounds. Reduce ALL damage taken by the amount of Wounds you have."
+            },
+            {
               "name": "Secondary Stat Increase",
               "text": "+1 DEX or INT."
             }
@@ -2155,7 +2316,7 @@
           "features": [
             {
               "name": "Master of Undeath (5)",
-              "text": "Choose a 5th Revenant Special Ability."
+              "text": "Choose a 5th Undying Gift."
             }
           ]
         },
@@ -2173,7 +2334,7 @@
           "features": [
             {
               "name": "Master of Undeath (6)",
-              "text": "Choose a 6th Revenant Special Ability."
+              "text": "Choose a 6th Undying Gift."
             },
             {
               "name": "Key Stat Increase",
@@ -2185,12 +2346,12 @@
           "level": 17,
           "features": [
             {
-              "name": "Secondary Stat Increase",
-              "text": "+1 DEX or INT"
+              "name": "Otherworldly Constitution (3)",
+              "text": "Gain 2 max Wounds. Reduce ALL damage taken by 2× Wounds instead."
             },
             {
-              "name": "Deadened Nerves (3)",
-              "text": "Reduce ALL damage taken by 2x Wounds."
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
             }
           ]
         },
@@ -2198,8 +2359,8 @@
           "level": 18,
           "features": [
             {
-              "name": "Spectral Power",
-              "text": "(WIL/Safe Rest) You may use an ability from your living or Spectral Form without needing to be in that form."
+              "name": "Unrelenting as the Grave (2)",
+              "text": "Immune to Frightened and effects that would move you or knock you Prone against your will."
             }
           ]
         },
@@ -2208,7 +2369,7 @@
           "features": [
             {
               "name": "Epic Boon",
-              "text": "Choose an Epic Boon (see pg. 23 of the GM's Guide)."
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
             }
           ]
         },
@@ -2217,7 +2378,7 @@
           "features": [
             {
               "name": "Two, as One",
-              "text": "+1 to any 2 of your stats. You can use all Spectral Form abilities while living."
+              "text": "+1 to any 2 of your stats. Ignore all Dying or living restrictions on your abilities."
             }
           ]
         }
@@ -2225,96 +2386,291 @@
       "sidebars": [
         {
           "title": "At a Glance",
-          "text": "Slow, but strong. Draw upon your undying might , taking fewer, but more powerful actions in battle.\n\nFace your foes as both a powerful fighter and a wrathful spirit. Become a spectral wraith and unleash deathly powers.\n\nCommand fear in the hearts of your foes and bolster the will of your allies."
+          "text": "Slow, but strong. Draw upon your undying might, taking fewer, but more powerful actions in battle.\n\nFace your foes as both a powerful fighter and a wrathful spirit. Become a spectral wraith and unleash deathly powers.\n\nCommand fear in the hearts of your foes and bolster the will of your allies."
         },
         {
           "title": "Flavor is free!",
-          "text": "What is the your spectral form? Your own stubborn will? An evil possessing creature? Something you’ve made a bargain with? An ancestor or other friendly being? It’s up to you!"
+          "text": "What is your spectral form? Your own stubborn will? An evil possessing creature? Something you’ve made a bargain with? An ancestor or other friendly being? It’s up to you! What kind of damage does your Spectral Blast do, Necrotic, Radiant? It’s your choice (as long as it makes sense)."
+        },
+        {
+          "title": "Brood",
+          "text": "After spending an evening brooding over what holds you to this life during a Safe Rest, you may choose different Revenant options available to you."
+        },
+        {
+          "title": "Revenant Names",
+          "text": "Male Names: Graves, Aldric, Tancred, Cassius, Osric, Talon, Hollow.\nFemale Names: Sparrow, Seraphine, Livia, Rowena, Dove, Rue, Solace."
         }
       ],
       "optionGroups": [
         {
-          "name": "Revenant Abilities",
+          "name": "Undying Gifts",
           "options": [
             {
-              "name": "Ghost Step",
+              "name": "Deadened Nerves",
               "cost": "Passive",
-              "text": "While in Spectral Form, allies you move through may move with you (as long as they end their movement in an unoccupied space)."
+              "text": "You cannot be crit while living (exploding dice are not rolled against you, ignore any “on crit” effects)."
             },
             {
-              "name": "Patient as Death",
-              "cost": "2 actions",
-              "text": "Next turn, double your damage and number of targets for your attacks."
+              "name": "Disquieting Presence",
+              "cost": "Passive",
+              "text": "(1/round) While Dying, you may move through an enemy space and Frighten them until the end of their next turn."
             },
             {
-              "name": "Innervating Spirit",
+              "name": "Grave Step",
               "cost": "Passive",
-              "text": "While in Wraith Form, Dying allies also have a max of 2 actions."
-            },
-            {
-              "name": "Deathly Wail",
-              "cost": "Passive",
-              "text": "When you drop to 0 HP, use Hate immediately for free against the attacker or against all others within Reach 2."
-            },
-            {
-              "name": "Possess",
-              "cost": "Passive",
-              "text": "You may move through enemy spaces while Dying, you may force lower level enemies to follow you as you move (as long as they end their movement in an unoccupied space)."
-            },
-            {
-              "name": "Spook",
-              "cost": "Passive",
-              "text": "Frighten lower level enemies within Reach 8 When you move through an enemy space, they are Frightened this round."
+              "text": "While Dying, allies you move through may move with you (as long as they end their movement in an unoccupied space)."
             },
             {
               "name": "Grips of Fear",
               "cost": "Passive",
-              "text": "Deal extra damage/Restrain to frightened enemies."
+              "text": "Advantage on attacks vs Frightened creatures. Your attacks gain: on crit, Restrained until the end of the next hero’s turn."
+            },
+            {
+              "name": "Horrify",
+              "cost": "Passive",
+              "text": "Whenever you gain a Wound, Frighten lower level enemies within Reach 6 for 1 round."
+            },
+            {
+              "name": "Implacable",
+              "cost": "Passive",
+              "text": "Living: If you did not Defend since your last turn, gain advantage on your attacks. Dying: If you have not moved this turn your Spectral Blast has 12 Range and ignores Cover."
             },
             {
               "name": "Iron Will",
               "cost": "Passive",
-              "text": "If you would miss an attack but haven’t dealt damage this round yet, reroll the attack (once)."
+              "text": "If you would miss an attack but haven’t dealt damage this round yet, reroll it once."
+            },
+            {
+              "name": "Relentlessness",
+              "cost": "0 Actions",
+              "text": "(1/encounter) While living, if you would fail a save or miss an attack, choose the result instead."
+            },
+            {
+              "name": "Spectral Procession",
+              "cost": "Passive",
+              "text": "(1/round) While Dying, you may move through enemy spaces and force lower level enemies to follow you as you move (as long as they end their movement in an unoccupied space)."
             },
             {
               "name": "Spiritshift",
+              "cost": "0 Actions",
+              "text": "When you drop to 0 HP you may teleport up to twice your Speed away for free."
+            },
+            {
+              "name": "Unforgiving",
               "cost": "Passive",
-              "text": "Whenever you drop to 0 HP you may teleport up to twice your speed away."
-            },
-            {
-              "name": "Strong Ties",
-              "cost": "Passive",
-              "text": "Whenever you spend Hit Dice to recover HP, you may also heal a number of Wound equal to the number of dice rolled. If Dying when combat ends, recover 1 HP."
-            },
-            {
-              "name": "Deathwalk",
-              "cost": "Passive",
-              "text": "On your turn, you may drop to 0 HP at will without taking a Wound. Any remaining HP are treated as Temp HP."
-            },
-            {
-              "name": "My Body, a Puppet",
-              "cost": "Passive",
-              "text": "Your unliving corpse follows you and Interposes for you for free 1/ Round."
-            },
-            {
-              "name": "Haunt",
-              "cost": "1 Action",
-              "text": "Reaction: When damaged while Dying, spend an action for the attacker."
-            },
-            {
-              "name": "Possess",
-              "cost": "1 Action",
-              "text": "Gain 1 Wound to possess an adjacent ally until the start of your next turn, add your Max HP as damage to their attacks. You also take any damage they take."
-            },
-            {
-              "name": "Usurp",
-              "cost": "1 Action",
-              "text": "Move into the space of an enemy, you may gain 1 Wound to choose its actions during its next turn. Gain 2 Wounds instead if it is your level or higher."
+              "text": "Your Spectral Blast gains advantage vs any creatures who Wound you this encounter."
             }
           ]
         }
       ],
-      "subclasses": []
+      "subclasses": [
+        {
+          "name": "Husk of the Wraith",
+          "flavor": "False life animates your failing flesh. Unfinished business. Driven by HATE.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "HATE",
+                  "text": "Your Spectral Blast gains: On hit, gain 10 Hate this encounter. You may convert Hate into HP to come back to life for free on your turn."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "This Body, a Puppet",
+                  "text": "(1/round) Whenever you would Defend or Interpose while Dying, you may have your unliving husk do so instead (an unliving body cannot be damaged)."
+                },
+                {
+                  "name": "Numb",
+                  "text": "Reduce ALL damage taken by your Wounds while living."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Haunt",
+                  "text": "Reaction (when you suffer one or more Wounds from an attack while Dying): Spend an action and force the attacker to immediately move then attack a target of your choice once (including themselves for half damage)."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Deathly Wail",
+                  "text": "(Passive) Whenever you drop to 0 HP, use Spectral Blast immediately for free against the attacker or as an AoE with Reach 2."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Chosen of the Celestial",
+          "flavor": "You glimpsed the ineffable and it changed you—entrusting you with an otherworldly purpose.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Avatar of Light",
+                  "text": "You can cast Rebuke; it has Reach 8 while Dying and does not require a STR save. Give the ally who rolled the lowest on Initiative +10 on their roll and you may cast Warding Bond on them for free (on a tie: you choose). Dying does not end Warding Bond."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Divine Guidance",
+                  "text": "(1/round) When your Ward would roll a 1, they replace that roll with 1d20."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Radiant Protector",
+                  "text": "Whenever you cast Warding Bond, upcast it once. Your Ward also has +1 action each round while they are Dying."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Voice of Courage",
+                  "text": "Your Ward ALWAYS rolls 1 additional die."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Avatar of the Elemental Lord",
+          "flavor": "Ancestral knowledge lies beyond the veil, forgotten but now in reach. With this body as a conduit, the elemental forces can be made to serve.",
+          "complexity": 4,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Elemental Avatar",
+                  "text": "Learn 3 tiered spells from among the Fire, Ice, Lightning, Wind, or Earth schools. (1/Safe Rest) Cast a spell for 0 mana (ignore the STR save and Concentration requirements for spells while Dying); the number of Wounds you have is the Tier at which you cast the spell; resets whenever you gain a Wound."
+                },
+                {
+                  "name": "Elemental Might",
+                  "text": "Your single-target damaging spells deal +LVL damage."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Mighty Avatar",
+                  "text": "Cast tiered spells as if you had 1 additional Wound. Choose 1 new spell from any of the above spell schools."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Elemental Prowess",
+                  "text": "Cast tiered spells as if you had 1 additional Wound. Choose 1:\n• **Ashbringer.** Learn Flame Barrier; (1/encounter) add your Elemental Might damage.\n• **Rimebinder.** Learn Frost Shield; (1/encounter) it grants +LVL temp HP, and you can cast it on an ally within Reach 6 when they Defend.\n• **Voltarch.** Learn Electrickery; (1/encounter) cast it for 1 action (min 1).\n• **Windherald.** Learn Boisterous Winds; (1/encounter) you can cast it ignoring the Elemental Avatar’s Wound requirement.\n• **Mountainlord.** Learn Crush; (1/encounter) you can cast it for 1 action and ignore its Hampered requirement."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Elemental Mastery",
+                  "text": "Choose a 2nd Elemental Prowess option. Whenever you cast a spell that costs 2 or more actions, cast it for 1 fewer action."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Harbinger of the Fey",
+          "flavor": "Fairydust powders your fingertips. When you sing, it’s their songs. When you laugh, it’s their laughter.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Tricksy Fey",
+                  "text": "1 Action (1/encounter) While Dying, when you move into the space of an enemy you can choose its actions during its next turn. Gain 1 Wound if it is your level or higher."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Illusionist",
+                  "text": "(1/round) Whenever you move on your turn, you may instead swap positions with another creature within Reach 6; if you swap places with an ally, they may teleport anywhere within Reach 6 instead."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Iridescent Glamor",
+                  "text": "(1/encounter) While living, an attack deals a max of 10 damage against you. The attacker takes any remaining damage (ignoring Defense)."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Stop Hitting Yourselves!",
+                  "text": "(1/encounter) Reaction (on an enemy’s turn): Swap the position of two creatures within Reach 6."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does Undying Might work on off turn Attacks?",
+          "a": "Yes: a 1/turn ability can be used again on another creature’s turn (Opportunity Attacks, Coordinated Strike, etc.)."
+        },
+        {
+          "q": "Can I wield two 2-handed weapons or one plus a shield with Death Grip?",
+          "a": "Yes."
+        },
+        {
+          "q": "Can I end my move inside a wall or object?",
+          "a": "You can’t end movement in an occupied space."
+        },
+        {
+          "q": "Grave Step / Spectral Procession?",
+          "a": "Creatures move behind or alongside you, not through obstacles; it’s free for allies and forced movement for enemies, so Huge and Gargantuan creatures ignore it."
+        },
+        {
+          "q": "Tricksy Fey, can it attack itself?",
+          "a": "Yes, for half damage."
+        }
+      ]
     }
   ],
   "notes": [
@@ -2328,13 +2684,28 @@
     "Hexbinder 3.0: spells tagged \"TIER 3, AOE\"/\"TIER 4, AOE\" have no printed area size, so their aoe is just \"AoE\". Spell text keeps the printed \"Reach: 8. Damage: …\" lead-in; range/damage fields repeat it.",
     "Hexbinder 3.0: casting.schools is [\"Hexbinder\"] (the class spell list name). The Quick Builds page (printed p. 16, premade 'Fern') is not transcribed.",
     "Hexbinder 3.0: Afflictions are listed alphabetically (the book prints them in two alphabetical columns). Familiar Boons are kept as bullets inside the Hexbinder's Familiar feature text rather than a separate optionGroup.",
-    "Psion 0.1.1: the PDF has no license page; page 1 is the cover art plus intro. The book's own FAQ calls it an unfinished alpha build.",
-    "Psion 0.1.1: all three subclasses print the same flavor line (\"Dual wielding, huh? Watch this!\"), probably a placeholder carried over from Bladestorm; transcribed as printed. The subclass pages label complexity \"Class Complexity\".",
-    "Psion 0.1.1: typos kept as printed: \"Bend the flow gravity\", \"When you concentration…\", \"Telekenitic Bastion\", \"Incapcitated\", \"10 or damage\", \"Choose a 8th\", and Petrify!'s trailing \"?\". Level 19 points to \"pg. 23 of the GM's Guide\" (other books say pg. 75).",
-    "Psion 0.1.1: Strain Dice have no printed max; the resource has only name and die (d6). Callouts printed inside subclass levels (\"Remember!\", \"Snap out of it!\") are appended to the nearest feature's text.",
-    "Psion 0.1.1: the class has no mana and no spells; Psionic Abilities are an optionGroup. Printed page 10 is blank.",
-    "Revenant 0.1: partial draft. The 3-page PDF has the intro (p. 2), the class table (pp. 3-4) and Revenant Abilities (pp. 5-6). It has no subclasses (Level 3 says \"Choose a Revenant subclass\" but none are printed), so subclasses is an empty array. There is also no FAQ, no names list and no license page.",
-    "Revenant 0.1: the levels say \"Choose a Revenant Special Ability\" while the list is headed \"REVENANT ABILITIES\"; the optionGroup uses the printed heading. Two different abilities are both named \"Possess\" (one Passive, one 1 Action); both are kept. \"Patient as Death\" prints its cost in lowercase (\"2 actions\"), and Haunt is tagged \"1 Action\" though its text starts \"Reaction:\". Both are kept as printed.",
-    "Revenant 0.1: typos kept as printed: \"undying might , taking\", \"What is the your spectral form?\", \"(4xWounds)\" with an unclosed parenthesis, \"a number of Wound\", \"Reach 8 When\", \"+1 DEX or INT\" with no period at level 17. Level 19 points to \"pg. 23 of the GM's Guide\". The class has no mana or tracked resource."
+    "Psion 3.0 prints no ‘Skilled Hero.’ feature (checked every page image, and the level list on pp. 4–5 goes straight from Psionic Field/Psionic Strike at L1). So there is no Skilled Hero feature and no skillMods field. The Quick Build sheet (p. 16) shows every skill equal to its stat, consistent with no skill adjustments.",
+    "Psion 3.0: Class complexity is 3 filled pips in 3.0 (was 2 in 0.1.1). Class page set to 4 (the stat block), matching the other 3.0 drafts.",
+    "Psion 3.0: Subclass flavor lines for Adept of Illusions, Collapse, Thralls and Gravity are printed as the placeholder ‘XX’; flavor omitted for those. Only Bladestorm has a real quote. Subclass complexity: Bladestorm 2, the others 3.",
+    "Psion 3.0: Psionic abilities are split as printed: ‘Psionic Abilities’ (Psionic Strike, with the page intro), then Lesser (unlocked L2), Greater (L5) and Supreme (L10). Lesser/Greater/Supreme have no printed intro text.",
+    "Psion 3.0: Psionic Strike's ‘High Levels: +WIL damage every 5th level.’ line is kept in its option text after a line break.",
+    "Psion 3.0: The ‘Strain’ box and ‘Flavor is Free!’ callout on p. 6 are sidebars. The 0.1.1 ‘Psychic Damage’ sidebar no longer appears in 3.0.",
+    "Psion 3.0: Kept as printed: ‘(ignoring armor)’ in Mindrend, Mind Collapse and Mind Shield (the book says ‘armor’ there but ‘Defense’ for Psionic Field/Psionic Fortress); Reactive Mind's cost is printed ‘0 Actions’; Psionic Field is ‘(Concentration: 1 min.)’ on p. 4 but ‘(Concentration 1 min.)’ on the Quick Build sheet (p. 4 used).",
+    "Psion 3.0: Resources: 1/round features (Bladestorm, Master of Blades, Gravity Well, Crushing Mass) are not tracked as resources, following how the rest of resources.json treats per-round limits. 1/encounter and 1/Safe Rest features are tracked as ‘uses’.",
+    "Psion 3.0: Strain Dice reset: 3.0 now states ‘your Strain Dice are lost’ when Concentration ends before combat ends; it still doesn't say what happens to held dice when combat ends with Concentration intact.",
+    "Psion 3.0: Quick Builds page (p. 16, premade ‘Cassini’ elf at levels 1–2) not transcribed, as in the other books.",
+    "Revenant 3.0: transcribed fresh from the 9-page (16 printed pages + license) 3.0 draft; replaces the Revenant 0.1 entry and its 3 resources (Undying Might, Incorporeal (while living), Spectral Power). PDF page 1 is credits + the Nimble 3rd Party Creator License (skipped).",
+    "Revenant 3.0: flavor follows the printed order on p. 3: the drop-cap intro (“A Revenant is bound…”) first, then the journal quote and its attribution (0.1 printed the quote first). The three icon blurbs are stored as a sidebar titled “At a Glance” (editorial title, as in the other drafts).",
+    "Revenant 3.0: class complexity is 3 pips (♦♦♦◊); 0.1 showed 2. Subclass complexity: Husk of the Wraith 2, Chosen of the Celestial 2, Avatar of the Elemental Lord 4, Harbinger of the Fey 3.",
+    "Revenant 3.0: saves are now WIL+, DEX– (0.1: INT–). Starting gear spells “Longsword” (0.1: “Long Sword”).",
+    "Revenant 3.0: Skilled Hero (+1 to Might and Lore; –1 to Influence and Insight) → skillMods {Might: 1, Lore: 1, Influence: -1, Insight: -1}. The Quick Builds page (printed p. 16, premade level 1 and 2 ‘Livia’, Human) is not transcribed; it has no slot in the schema.",
+    "Revenant 3.0: the “Brood.” callout is printed twice (p. 4 under the level 2 box, and p. 7 under the Undying Gifts); stored once as a sidebar. “Flavor is free!” and “Brood.” share one box on p. 4.",
+    "Revenant 3.0: the Undying Gifts are printed alphabetically in two columns (pp. 6-7) and kept in that order. The text layer misaligns Grave Step / Spiritshift / Disquieting Presence; the page images were used (Grave Step = allies move with you; Spiritshift = teleport on dropping to 0 HP, tagged 0 Actions). No group intro is printed. Both Spectral Procession and Spiritshift use the same icon.",
+    "Revenant 3.0: Elemental Prowess (Avatar of the Elemental Lord L11) choices are kept as **bold** bullets inside the feature text (as with Shepherd’s Seasoned Journeyman / Psion’s Mirage), not a separate optionGroup; each 1/encounter option also has its own resource entry (requires “Elemental Prowess: <name>”).",
+    "Revenant 3.0: the Wraith’s L3 feature is printed in caps as “HATE.” and kept as the name “HATE”. Deathly Wail keeps its printed “(Passive)” prefix in the text; Tricksy Fey keeps its “1 Action (1/encounter)” prefix.",
+    "Revenant 3.0: “Chosen of the Celestial” flavor breaks after an em dash (“changed you—/entrusting”); joined without a space. Level 17 prints “2× Wounds” with a space while level 10 prints “+2×Wounds” without one; both kept as printed.",
+    "Revenant 3.0: the class has no dice pool or class-wide counter, so the class object has no `resources` field (Flicker/Power from Beyond are level-gated 1/encounter features and Hate is Wraith-only; all are in the resources list). 1/round and 1/turn features (Undying Fortitude, Incorporeal (2), Disquieting Presence, Spectral Procession, This Body, a Puppet, Divine Guidance, Illusionist) are not given resource entries, matching the other classes; Undying Might is kept because it is the class’s damage bonus (autoOffer).",
+    "Revenant 3.0: the book now says “Defense” (e.g. Iridescent Glamor “ignoring Defense”); no “armor” wording remains in rules text apart from the “Armor: All Armor” proficiency line.",
+    "Revenant 3.0: Avatar of Light references Rebuke and Warding Bond and Elemental Prowess references Flame Barrier, Frost Shield, Electrickery, Boisterous Winds and Crush; none are printed in this book, so `spells` is omitted. All but Crush are in spells.json (Core); there is no Earth school or Crush spell in the current compendium (Elemental Avatar lists “Earth schools”), so Mountainlord points at a spell we don’t have."
   ]
 }

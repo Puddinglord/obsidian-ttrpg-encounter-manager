@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Compendium } from '../src/compendium';
 import {
 	addCondition, addFeature, addItem, addLanguage, addSpell, adjustResource, applyDamage, assignStats, classOptions, damageRoll, evalFormula,
-	fieldRest, fmtMod, Frontmatter, heal, hitDiceHealing, levelUp, newCharacterFrontmatter, parseArmor, parseDamage, readCharacter,
+	fieldRest, fmtMod, Frontmatter, heal, hitDiceHealing, hpAverage, levelUp, newCharacterFrontmatter, parseArmor, parseDamage, readCharacter,
 	readInventoryEntry, regainMana, removeCondition, removeFeature, removeItem, removeLanguage, removeSpell, safeRest, setCoins,
 	setEquipped, setField, setHp, setMana, setOverride, setQty, setResource, setSave, setSkill, setStat, setTempHp, setWounds,
 	spendMana, traitBonuses,
@@ -462,12 +462,41 @@ describe('review fixes', () => {
 });
 
 describe('starting above level 1', () => {
-	it('levels a new hero up to the campaign level with average HP', () => {
+	it('levels a new hero up to the campaign level with the flat HP bonus', () => {
 		const comp = new Compendium(BUNDLED);
 		const fm = newCharacterFrontmatter({ name: 'Brakka', className: 'Berserker', level: 3 }, comp);
 		expect(fm.level).toBe(3);
-		expect(fm.hp_max).toBe(20 + 8 + 8); // d12: +8 a level
+		expect(fm.hp_max).toBe(20 + 6 + 6); // Core Rules 3.3: d12 +6 a level
 		expect(fm.hp).toBe(fm.hp_max);
 		expect(readCharacter(fm, comp).hitDiceMax).toBe(3);
+	});
+});
+
+describe('Core Rules 3.3 and the 3.x class books', () => {
+	const comp = new Compendium(BUNDLED);
+
+	it('adds the class\'s Skilled Hero adjustments to skills', () => {
+		const s = readCharacter({ nimble: 'character', class: 'Berserker', level: 1, str: 2, dex: 2, int: -1, wil: 0 }, comp);
+		const sk = Object.fromEntries(s.skills.map(k => [k.key, k.total]));
+		// +2 Might, +1 Naturecraft; –2 Finesse, –1 Influence
+		expect(sk).toMatchObject({ might: 4, naturecraft: 1, finesse: 0, influence: -1, arcana: -1 });
+	});
+
+	it('gives every updated core class its Skilled Hero line', () => {
+		for (const name of ['Berserker', 'Commander', 'Mage', 'Shadowmancer', 'Shepherd', 'Songweaver', 'Stormshifter', 'Zephyr']) {
+			const cls = comp.classByName(name);
+			expect(cls?.skillMods, name).toBeTruthy();
+			expect(cls?.levels?.[0].features?.some(f => f.name === 'Skilled Hero'), name).toBe(true);
+		}
+	});
+
+	it('takes Initiative off Human Tenacious', () => {
+		const s = readCharacter({ nimble: 'character', ancestry: 'Human', dex: 1 }, comp);
+		expect(s.initiative).toBe(1);
+		expect(s.skills.find(k => k.key === 'stealth')?.total).toBe(2);
+	});
+
+	it('uses the 3.3 flat HP bonus table', () => {
+		expect([4, 6, 8, 10, 12, 20].map(d => hpAverage(d, comp))).toEqual([2, 3, 4, 5, 6, 10]);
 	});
 });

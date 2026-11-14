@@ -1,6 +1,6 @@
 # Ember Vault
 
-A companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.2 rules), built into Obsidian, for both sides of the table. GMs prep and run their game from their own notes: a campaign manager, a bundled bestiary of 525 monsters, encounter blocks rated against your party, a combat tracker, GM maps with pins, NPC portrait cards, styled read-aloud boxes and 3D dice. Players get an interactive Nimble character sheet, a party roster, and session notes on the people, places and fights they've met.
+A companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.3 rules), built into Obsidian, for both sides of the table. GMs prep and run their game from their own notes: a campaign manager, a bundled bestiary of 525 monsters, encounter blocks rated against your party, a combat tracker, GM maps with pins, NPC portrait cards, styled read-aloud boxes and 3D dice. Players get an interactive Nimble character sheet, a party roster, and session notes on the people, places and fights they've met.
 
 If you run one game and play in another, keep both in one vault: every campaign is either one you run or one you play in, and the plugin switches over when you do. It isn't a virtual tabletop.
 
