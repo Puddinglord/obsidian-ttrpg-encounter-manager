@@ -28,7 +28,7 @@ You also get warnings, for example armor before level 3, or more than 3 monsters
 - Per level: about 25% more (or less) HP, and +2 (or −2) damage on every hit. The stat block shows a Tougher or Weaker line so you can see it at the table.
 - Click the difficulty chip (e.g. *Very Deadly · 144%*) and pick a target (Easy, Medium, Hard or Deadly). You get the two or three smallest edits that reach it, for example "Remove all 3 Goblin Minions → Hard 106%". One click applies it. Legendary monsters are kept, and minions from the same family can be suggested.
 - The same balancer sits under the meter in the encounter builder.
-- The "4 heroes, level 2" line opens the party editor.
+- The "4 heroes, level 2" line opens the party: the Campaign panel's Party section in a campaign you run, or the party editor outside a campaign.
 
 **Run** loads the encounter into the tracker, **Add to current** adds its monsters to the encounter already running, and **Edit** opens the builder and saves back into the block.
 

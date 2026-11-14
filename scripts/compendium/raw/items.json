@@ -1,0 +1,2288 @@
+{
+  "items": [
+    {
+      "name": "Adventurer’s Garb",
+      "category": "armor",
+      "subcategory": "cloth",
+      "cost": "10 gp",
+      "armor": "2+DEX",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Minor Enchantment",
+      "category": "armor",
+      "subcategory": "cloth",
+      "cost": "100 gp",
+      "armor": "3+DEX",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Major Enchantment",
+      "category": "armor",
+      "subcategory": "cloth",
+      "cost": "1,000 gp",
+      "armor": "4+DEX",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Epic Enchantment",
+      "category": "armor",
+      "subcategory": "cloth",
+      "cost": "10,000 gp",
+      "armor": "5+DEX",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Cheap Hides",
+      "category": "armor",
+      "subcategory": "leather",
+      "cost": "5 gp",
+      "armor": "3+DEX",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Ox Hide",
+      "category": "armor",
+      "subcategory": "leather",
+      "cost": "45 gp",
+      "armor": "4+DEX",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Hard Leather",
+      "category": "armor",
+      "subcategory": "leather",
+      "cost": "300 gp",
+      "armor": "5+DEX",
+      "strength": 1,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Wyrmhide",
+      "category": "armor",
+      "subcategory": "leather",
+      "cost": "2,000 gp",
+      "armor": "6+DEX",
+      "strength": 1,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Rusty Mail",
+      "category": "armor",
+      "subcategory": "mail",
+      "cost": "15 gp",
+      "armor": "6+DEX (max 2)",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Chain Shirt",
+      "category": "armor",
+      "subcategory": "mail",
+      "cost": "60 gp",
+      "armor": "9+DEX (max 2)",
+      "strength": 2,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Scale Mail",
+      "category": "armor",
+      "subcategory": "mail",
+      "cost": "700 gp",
+      "armor": "12+DEX (max 2)",
+      "strength": 3,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Dragonscale",
+      "category": "armor",
+      "subcategory": "mail",
+      "cost": "3,000 gp",
+      "armor": "15+DEX (max 2)",
+      "strength": 4,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Rusty Plate",
+      "category": "armor",
+      "subcategory": "plate",
+      "cost": "25 gp",
+      "armor": "10",
+      "strength": 2,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Half Plate",
+      "category": "armor",
+      "subcategory": "plate",
+      "cost": "200 gp",
+      "armor": "14",
+      "strength": 3,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Full Plate",
+      "category": "armor",
+      "subcategory": "plate",
+      "cost": "2,000 gp",
+      "armor": "18",
+      "strength": 4,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Adamantine Plate",
+      "category": "armor",
+      "subcategory": "plate",
+      "cost": "5,000 gp",
+      "armor": "22",
+      "strength": 5,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Wooden Buckler",
+      "category": "shield",
+      "cost": "5 gp",
+      "armor": "+2",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Iron Shield",
+      "category": "shield",
+      "cost": "80 gp",
+      "armor": "+4",
+      "strength": 2,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Tower Shield",
+      "category": "shield",
+      "cost": "1,500 gp",
+      "armor": "+6",
+      "strength": 3,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Dragon Shield",
+      "category": "shield",
+      "cost": "9,000 gp",
+      "armor": "+8",
+      "strength": 3,
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Dagger",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "3 gp",
+      "damage": "1d4",
+      "stat": "DEX",
+      "damageType": "piercing",
+      "properties": [
+        "Light",
+        "Thrown 4"
+      ],
+      "range": "4",
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Sickle",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "10 gp",
+      "damage": "1d4",
+      "stat": "DEX",
+      "damageType": "slashing",
+      "properties": [
+        "Vicious"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Club/Mace",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "2 gp",
+      "damage": "1d6",
+      "stat": "STR",
+      "damageType": "bludgeoning",
+      "properties": [],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Hand Axe",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "8 gp",
+      "damage": "1d6",
+      "stat": "STR",
+      "damageType": "slashing",
+      "properties": [
+        "Thrown 4"
+      ],
+      "range": "4",
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Spear",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "10 gp",
+      "damage": "1d6",
+      "stat": "STR",
+      "damageType": "piercing",
+      "properties": [
+        "2-handed (1-handed: Req. 2 STR)",
+        "Reach 2"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Short Sword",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "15 gp",
+      "damage": "1d6",
+      "stat": "STR/DEX",
+      "damageType": "piercing",
+      "properties": [
+        "Light"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Rapier",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "60 gp",
+      "damage": "2d4",
+      "stat": "DEX",
+      "damageType": "piercing",
+      "properties": [],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Staff",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "8 gp",
+      "damage": "1d8",
+      "stat": "STR",
+      "damageType": "bludgeoning",
+      "properties": [
+        "2-handed"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Longsword",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "60 gp",
+      "damage": "1d8",
+      "stat": "STR",
+      "damageType": "slashing",
+      "properties": [
+        "2-handed (1-handed: Req. 2 STR)"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Battleaxe",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "30 gp",
+      "damage": "1d10",
+      "stat": "STR",
+      "damageType": "slashing",
+      "properties": [
+        "2-handed"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Pole Hammer",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "60 gp",
+      "damage": "1d10",
+      "stat": "STR",
+      "damageType": "bludgeoning",
+      "properties": [
+        "2-handed",
+        "Reach 2"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Glaive",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "60 gp",
+      "damage": "1d10",
+      "stat": "STR",
+      "damageType": "slashing",
+      "properties": [
+        "2-handed",
+        "Reach 2"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Great Spear",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "60 gp",
+      "damage": "1d10",
+      "stat": "STR",
+      "damageType": "piercing",
+      "properties": [
+        "2-handed",
+        "Reach 2"
+      ],
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Greatmaul",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "80 gp",
+      "damage": "3d4",
+      "stat": "STR",
+      "damageType": "bludgeoning",
+      "properties": [
+        "2-handed (Req. 2 STR)"
+      ],
+      "strength": 2,
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Greataxe",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "100 gp",
+      "damage": "2d6",
+      "stat": "STR",
+      "damageType": "slashing",
+      "properties": [
+        "2-handed (Req. 2 STR)"
+      ],
+      "strength": 2,
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Greatsword",
+      "category": "weapon",
+      "subcategory": "melee",
+      "cost": "120 gp",
+      "damage": "1d12",
+      "stat": "STR",
+      "damageType": "slashing/piercing",
+      "properties": [
+        "2-handed (Req. 2 STR)"
+      ],
+      "strength": 2,
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Sling",
+      "category": "weapon",
+      "subcategory": "ranged",
+      "cost": "4 gp",
+      "damage": "1d4",
+      "stat": "DEX",
+      "damageType": "bludgeoning",
+      "properties": [
+        "2-handed",
+        "Range 12",
+        "Vicious"
+      ],
+      "range": "12",
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Javelins",
+      "category": "weapon",
+      "subcategory": "ranged",
+      "cost": "20 gp",
+      "damage": "1d6",
+      "stat": "STR",
+      "damageType": "piercing",
+      "properties": [
+        "Range 8",
+        "Stack of 4"
+      ],
+      "range": "8",
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Throwing Hammers",
+      "category": "weapon",
+      "subcategory": "ranged",
+      "cost": "25 gp",
+      "damage": "1d8",
+      "stat": "STR",
+      "damageType": "bludgeoning",
+      "properties": [
+        "Range 4",
+        "Stack of 3"
+      ],
+      "range": "4",
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Shortbow",
+      "category": "weapon",
+      "subcategory": "ranged",
+      "cost": "25 gp",
+      "damage": "1d6",
+      "stat": "DEX",
+      "damageType": "piercing",
+      "properties": [
+        "2-handed",
+        "Range 12"
+      ],
+      "range": "12",
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Longbow",
+      "category": "weapon",
+      "subcategory": "ranged",
+      "cost": "30 gp",
+      "damage": "1d8",
+      "stat": "DEX",
+      "damageType": "piercing",
+      "properties": [
+        "2-handed",
+        "Range 16 (Req. 1 STR)"
+      ],
+      "range": "16",
+      "strength": 1,
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Crossbow",
+      "category": "weapon",
+      "subcategory": "ranged",
+      "cost": "60 gp",
+      "damage": "4d4",
+      "stat": "DEX",
+      "damageType": "piercing",
+      "properties": [
+        "2-handed",
+        "Load: 1 action",
+        "Range 8"
+      ],
+      "range": "8",
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Handheld Ballista",
+      "category": "weapon",
+      "subcategory": "ranged",
+      "cost": "120 gp",
+      "damage": "1d20",
+      "stat": "DEX",
+      "damageType": "piercing",
+      "properties": [
+        "2-handed",
+        "Load: 2 actions",
+        "Range 8 (Req. 2 STR)"
+      ],
+      "range": "8",
+      "strength": 2,
+      "source": "Core",
+      "page": 35,
+      "draft": false
+    },
+    {
+      "name": "Healing Potions",
+      "category": "gear",
+      "subcategory": "key",
+      "text": "Healing potions are deep, shimmering red elixirs with a refreshing, effervescent taste. These potions are crucial for quick recovery, though their availability is limited. Small towns may have only a few, while cities offer more (but they are not in unlimited supply). The wealthy often use them as a display of affluence, incorporating them into elaborate mixed drinks at social events to showcase their status. Potions require 1 action to drink or to administer to an adjacent willing creature.",
+      "source": "Core",
+      "page": 36,
+      "draft": false
+    },
+    {
+      "name": "Torches & Lanterns",
+      "category": "gear",
+      "subcategory": "key",
+      "text": "Heroes can’t see in the dark, so they are Blind while fighting with no light. Heroes can bring a lantern or torch to light their way as long as they have a hand free (or some other way) to hold it. A torch typically lasts for 1 dungeon (or 1 level of a very large one). An oil lamp can typically last for 1 entire outing, until your next Safe Rest. Both cast light up to **6 spaces** away; beyond this is darkness.",
+      "source": "Core",
+      "page": 36,
+      "draft": false
+    },
+    {
+      "name": "Healing Potion",
+      "category": "consumable",
+      "subcategory": "potion",
+      "cost": "50 gp",
+      "text": "(action) Heal 2d4+4 HP.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Greater Healing Potion",
+      "category": "consumable",
+      "subcategory": "potion",
+      "cost": "150 gp",
+      "text": "(action) Heal 3d6+6 HP.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Supreme Healing Potion",
+      "category": "consumable",
+      "subcategory": "potion",
+      "cost": "450 gp",
+      "text": "(action) Heal 4d8+8 HP.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Torch (stack of 2)",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 sp",
+      "text": "For when it’s dark. 1 use each.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Lantern & Oil",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "10 gp",
+      "text": "Like a torch, but not as cool (refill: 1 gp).",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Medical Kit (1 use)",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "20 gp",
+      "text": "Recover 1 Wound during a Field Rest.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Vial of Pitch",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "2 gp",
+      "text": "Sticky, and VERY flammable.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Rope (50 ft.)",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "10 gp",
+      "text": "You always need rope.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Chain (10 ft.)",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "50 gp",
+      "text": "Like rope, but stronger (and heavy).",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Bucket",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "1 gp",
+      "text": "Also works as a hat in a pinch!",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Padlock & Key",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "Lock it or lose it.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Mirror",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "4 gp",
+      "text": "For medusas AND spinach teeth.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Telescope",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "10 gp",
+      "text": "Arrr.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Magnifying Glass",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 gp",
+      "text": "Make the small, big.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Chalk",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "1 sp",
+      "text": "Not JUST for kids.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Shovel",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "Sometimes you need a hole dug.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Pulley",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "Pull down, go up.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Grappling Hook",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "4 gp",
+      "text": "For climbing or catching BIG fish.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Quiver & Ammo",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "10 gp",
+      "text": "Don’t leave home without it.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Saw",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "4 gp",
+      "text": "For cutting lumber.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Soap",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "1 sp",
+      "text": "Useless.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Strange Plant",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 sp",
+      "text": "Who knows?",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Shiny Object",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "1 sp",
+      "text": "Worthless, but VERY pretty.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Lock Pick",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 gp",
+      "text": "It’s not mine, honest!",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Bell",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "2 gp",
+      "text": "For service.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Dice",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 sp",
+      "text": "Math rocks. LOTS of fun.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Blanket",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "1 gp",
+      "text": "Warm & fuzzy.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Hunting Trap",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "10 gp",
+      "text": "Snap snap, don’t lose a finger!",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Camping Supplies",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 gp",
+      "text": "Bedroll, rations, simple tent.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Crowbar",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "2 gp",
+      "text": "It’s LIKE a key.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Pitons",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 gp",
+      "text": "Metal spikes, for sealing doors.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Manacles",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "For when someone has been bad.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Instrument",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5–50 gp",
+      "text": "Drums, Horn, Lyre, Flute, etc.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Large Sack",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 sp",
+      "text": "Like a BIG pocket.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Weapon of Many Hands",
+      "category": "magic",
+      "subcategory": "weapon",
+      "rarity": "varies",
+      "rarityText": "Rarity varies",
+      "text": "While equipped, this weapon grants the wielder additional arms. The wielder can use the extra arms to perform any task their normal hands can do (wield equipment, Grapple, climb, etc.) but they don’t let the wielder act any faster (and these extra appendages may be horrifying to people in polite society). A weapon that grants 1 extra hand is likely to be uncommon; 4 extra hands, legendary.",
+      "source": "Core",
+      "page": 39,
+      "draft": false
+    },
+    {
+      "name": "Harbinger & Sovereign, Abyssal’s Claim",
+      "category": "magic",
+      "subcategory": "weapon",
+      "rarity": "legendary",
+      "rarityText": "Legendary Glaives",
+      "text": "Set of 2 matching glaives, +4 extra arms while both are equipped.",
+      "source": "Core",
+      "page": 39,
+      "draft": false
+    },
+    {
+      "name": "Weapon of Animosity",
+      "category": "magic",
+      "subcategory": "weapon",
+      "rarity": "varies",
+      "rarityText": "Rarity varies",
+      "text": "Whenever you attack with this weapon, roll an additional animosity die. The weapon deals that much additional damage to your target on a hit. Whenever this weapon misses, you take that damage instead. A weapon that adds 1d4 is likely to be uncommon; 1d10 or greater, legendary.",
+      "source": "Core",
+      "page": 39,
+      "draft": false
+    },
+    {
+      "name": "Weapon of Slaying",
+      "category": "magic",
+      "subcategory": "weapon",
+      "rarity": "varies",
+      "rarityText": "Rarity varies",
+      "text": "Whenever you attack with this weapon, it deals an additional die of damage against a particular creature type. Those creatures may try to kill you first. A 1d4 weapon of slaying is likely to be uncommon; 1d10 or more, legendary.",
+      "source": "Core",
+      "page": 39,
+      "draft": false
+    },
+    {
+      "name": "Gnatbane Weapon",
+      "category": "magic",
+      "subcategory": "weapon",
+      "rarity": "uncommon",
+      "text": "Does not miss Small or Tiny creatures (they may hate you for it and attack you first).",
+      "source": "Core",
+      "page": 39,
+      "draft": false
+    },
+    {
+      "name": "Weapon of Wounding",
+      "category": "magic",
+      "subcategory": "weapon",
+      "rarity": "uncommon",
+      "text": "When you land a hit with this weapon, you may suffer 1d6 damage to deal twice that much additional damage to your target.",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Trinket of Ill Omen",
+      "category": "magic",
+      "rarity": "rare",
+      "text": "While equipped, you have –1 to saves you roll and +1 to your save DC.",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Mindlink Daggers",
+      "category": "magic",
+      "rarity": "rare",
+      "text": "A matched pair of slender, silver daggers with intertwining runes. Enables the sharing of thoughts between any who hold (or are stabbed by) one.",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Bloodstained Quill",
+      "category": "magic",
+      "rarity": "uncommon",
+      "text": "If you dip this quill into the blood of a dead intelligent creature, the quill animates and writes the last words spoken by that creature.",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Eyes of the Street",
+      "category": "magic",
+      "rarity": "uncommon",
+      "text": "A pair of goggles covered in muck that you can’t ever clean off completely. While wearing them, you can look at a rat or a pigeon to gain the ability to see and hear through its senses for 10 minutes. Once you use this ability, you must whisper a secret to the goggles before you can use them again. That secret always seems to become a local rumor before too long…",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Handwraps of Force",
+      "category": "magic",
+      "rarity": "rare",
+      "text": "While wearing these wraps, whenever you make an Unarmed Strike, you may Knockback your target up to 2 spaces and yourself the same distance in the opposite direction. You may instead make an attack with no target, striking the air to propel yourself 4 spaces in any direction.",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Resolute Fangs, Golden Bastion",
+      "category": "magic",
+      "subcategory": "shield",
+      "rarity": "legendary",
+      "rarityText": "Legendary Shield",
+      "text": "+8 Defense. Whenever you reduce damage from a melee attack with this shield, it may Grapple the attacker regardless of its size (escape DC 20 STR, max 1 creature). Action: Speak this shield’s command word to make it immovable, fixed in place, until it is spoken again.",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Key of Doors",
+      "category": "magic",
+      "rarity": "very rare",
+      "text": "Insert this key into any locked door to open it, not to the room beyond, but to any doorway you’ve previously walked through while holding this item.",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Grim Coronet",
+      "category": "magic",
+      "rarity": "rare",
+      "text": "When you would die while wearing this crown, gain 3 actions and take a turn immediately. You die at the end of your turn.",
+      "source": "Core",
+      "page": 40,
+      "draft": false
+    },
+    {
+      "name": "Vindication",
+      "category": "magic",
+      "subcategory": "weapon",
+      "rarity": "legendary",
+      "rarityText": "Legendary Weapon of Animosity",
+      "text": "A jagged blade marred by scorch marks and dark stains, radiating a bitter, vengeful energy that punishes both wielder and foe alike. +1d12 damage. You take this damage on a miss.",
+      "source": "Core",
+      "page": 41,
+      "draft": false
+    },
+    {
+      "name": "Pocket Cauldron",
+      "category": "magic",
+      "rarity": "rare",
+      "text": "While Safe Resting, use this to brew your choice of 1 potion, to be consumed immediately:\n• **Elixir of Futuresight:** This potion grants the drinker a brief, cryptic vision of a future event.\n• **Elixir of Requiem:** This potion allows the drinker to relive a crucial memory from their past.\n• **Elixir of Time:** Once every 100 years, the cauldron can brew a potion that can take the drinker back in time 1 day.",
+      "source": "Core",
+      "page": 41,
+      "draft": false
+    },
+    {
+      "name": "Phoenix Helm",
+      "category": "magic",
+      "rarity": "legendary",
+      "text": "If you die while wearing this golden helm, your body explodes in flames and hot ash. You rise anew from the ashes… (see pg. 71 of the Game Master’s Guide for more).",
+      "source": "Core",
+      "page": 41,
+      "draft": false
+    },
+    {
+      "name": "Ball of Spiders",
+      "category": "magic",
+      "rarity": "uncommon",
+      "text": "A black, palm-sized ball with faintly writhing patterns etched into its surface. **Action:** Throw this ball up to 6 spaces. Upon impact, it shatters, releasing a swarm of harmless but horrifyingly realistic spectral spiders that cover a 2×2 area. Creatures in the area must make a WIL save or be Frightened until the end of their next turn. Once used, the ball reforms at the next Safe Rest.",
+      "source": "Core",
+      "page": 41,
+      "draft": false
+    },
+    {
+      "name": "Skitter Shoes",
+      "category": "magic",
+      "rarity": "rare",
+      "text": "While wearing these shoes, you can walk on vertical surfaces or ceilings as if they were flat ground, but only at half Speed. If you end your turn upside down or on a vertical surface, you must make a DC 10 STR save or fall down, landing Prone.",
+      "source": "Core",
+      "page": 41,
+      "draft": false
+    },
+    {
+      "name": "Button of Protection",
+      "category": "magic",
+      "rarity": "rare",
+      "text": "A small, unassuming button etched with a faintly glowing sigil. When sewn onto an outfit, as a reaction when you are attacked, you may pull the button off and throw it into the air. The button emits a sudden, dazzling flash of light and a high-pitched whistle. The attacker must make a WIL save or be Distracted, causing the attack to miss you.\n\nAfter use, the button becomes inert. It can be sewn back onto a garment during a Safe Rest by an experienced seamstress or tailor with silver thread, which reactivates its power.",
+      "source": "Core",
+      "page": 41,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Cantrip)",
+      "category": "scroll",
+      "cost": "10 gp",
+      "tier": 0,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 1 Spell)",
+      "category": "scroll",
+      "cost": "35 gp",
+      "tier": 1,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 2 Spell)",
+      "category": "scroll",
+      "cost": "100 gp",
+      "tier": 2,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 3 Spell)",
+      "category": "scroll",
+      "cost": "300 gp",
+      "tier": 3,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 4 Spell)",
+      "category": "scroll",
+      "cost": "1,000 gp",
+      "tier": 4,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 5 Spell)",
+      "category": "scroll",
+      "cost": "3,000 gp",
+      "tier": 5,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 6 Spell)",
+      "category": "scroll",
+      "cost": "10,000 gp",
+      "tier": 6,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 7 Spell)",
+      "category": "scroll",
+      "cost": "25,000+ gp",
+      "tier": 7,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 8 Spell)",
+      "category": "scroll",
+      "cost": "75,000+ gp",
+      "tier": 8,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Spell Scroll (Tier 9 Spell)",
+      "category": "scroll",
+      "cost": "200,000+ gp",
+      "tier": 9,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Cantrip)",
+      "category": "wand",
+      "cost": "50 gp",
+      "tier": 0,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 1 Spell)",
+      "category": "wand",
+      "cost": "175 gp",
+      "tier": 1,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 2 Spell)",
+      "category": "wand",
+      "cost": "500 gp",
+      "tier": 2,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 3 Spell)",
+      "category": "wand",
+      "cost": "1,500 gp",
+      "tier": 3,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 4 Spell)",
+      "category": "wand",
+      "cost": "5,000 gp",
+      "tier": 4,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 5 Spell)",
+      "category": "wand",
+      "cost": "15,000 gp",
+      "tier": 5,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 6 Spell)",
+      "category": "wand",
+      "cost": "50,000 gp",
+      "tier": 6,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 7 Spell)",
+      "category": "wand",
+      "cost": "125,000+ gp",
+      "tier": 7,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 8 Spell)",
+      "category": "wand",
+      "cost": "375,000+ gp",
+      "tier": 8,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand (Tier 9 Spell)",
+      "category": "wand",
+      "cost": "1,000,000+ gp",
+      "tier": 9,
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wand of Fire Step",
+      "category": "wand",
+      "rarity": "uncommon",
+      "rarityText": "Uncommon wand, Cantrip (3 charges)",
+      "tier": 0,
+      "charges": 3,
+      "text": "**Recharge:** Heat the wand in a blacksmith’s forge until it glows, then quench it in oil.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Wand of Dread Visage",
+      "category": "wand",
+      "rarity": "uncommon",
+      "rarityText": "Uncommon wand, Tier 2 (2 charges)",
+      "tier": 2,
+      "charges": 2,
+      "text": "**Recharge:** Place the wand in a freshly slain corpse. Leave it until only bones remain.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Wand of Fly",
+      "category": "wand",
+      "rarity": "uncommon",
+      "rarityText": "Uncommon wand, Tier 3 (2 charges)",
+      "tier": 3,
+      "charges": 2,
+      "text": "**Recharge:** Give it to a wild bird and let it fly freely. Retrieve it wherever the bird drops it.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Wand of Glacier Strike",
+      "category": "wand",
+      "rarity": "very rare",
+      "rarityText": "Very Rare wand, Tier 8 (1 charge)",
+      "tier": 8,
+      "charges": 1,
+      "text": "**Recharge:** Leave the wand at the bottom of a lake until it freezes over and thaws naturally.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Wand of Ride the Lightning",
+      "category": "wand",
+      "rarity": "very rare",
+      "rarityText": "Very Rare wand, Tier 6 (2 charges)",
+      "tier": 6,
+      "charges": 2,
+      "text": "**Recharge:** Place at the highest point within 1 mile. Retrieve after 3 thunderstorms.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Wand of Barrier of Wind",
+      "category": "wand",
+      "rarity": "rare",
+      "rarityText": "Rare wand, Tier 2 (3 charges)",
+      "tier": 2,
+      "charges": 3,
+      "text": "**Recharge:** Hang the wand with wind chimes in a breezy area. Let it ring for 3 days.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Wand of Sacrifice",
+      "category": "wand",
+      "rarity": "very rare",
+      "rarityText": "Very Rare wand, Tier 6 (1 charge)",
+      "tier": 6,
+      "charges": 1,
+      "text": "**Recharge:** Plant it in a new garden. Leave it undisturbed until the flowers bloom.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Elderwyrm’s Majesty",
+      "category": "wand",
+      "rarity": "legendary",
+      "rarityText": "Legendary wand, Tier 9 (1 charge)",
+      "tier": 9,
+      "charges": 1,
+      "text": "This wand can cast Dragonform, turning into the type of dragon that last charged it.\n**Recharge:** Give an ancient dragon a gift that it truly desires.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Heartwood, Splinter of the Tree of Life",
+      "category": "wand",
+      "rarity": "legendary",
+      "rarityText": "Legendary wand, Tier 9 (1 charge)",
+      "tier": 9,
+      "charges": 1,
+      "text": "Cast Redeem with no required components.\n**Recharge:** A sacred hymn must be sung over it ceaselessly for 100 years.",
+      "source": "Core",
+      "page": 43,
+      "draft": false
+    },
+    {
+      "name": "Gem of Escape",
+      "category": "magic",
+      "subcategory": "release valve",
+      "text": "These magical gems are always crafted in pairs and can have any number of willing creatures magically bound to them. Crush one (1 Action) in case of emergency to instantly teleport ALL who are bound to it to the location of the other gem.",
+      "source": "GMG",
+      "page": 71,
+      "draft": false
+    },
+    {
+      "name": "Glacier in a Bottle",
+      "category": "magic",
+      "subcategory": "release valve",
+      "text": "When poured out (1 Action), it creates a solid form of ice, filling any number of unoccupied consecutive spaces up to 6 spaces away and 2 spaces high. The ice lasts for 1 hour before melting. Extreme heat or damage may cause it to fail prematurely. 1/Safe Rest.",
+      "source": "GMG",
+      "page": 71,
+      "draft": false
+    },
+    {
+      "name": "Phoenix Helm",
+      "category": "magic",
+      "subcategory": "release valve",
+      "text": "On Death: You are reborn as a golden fiery phoenix. Enemies within 6 spaces take **LVL d10** fire damage on a failed **DC 10+KEY** DEX save (half on save). Gain the following stats and abilities:\n• Gain a fly Speed and Defense of 10 and 10×LVL HP.\n• Creatures that touch you take LVL fire damage.\n• **Fiery Talons.** 1 Action, 1d10+LVL damage.\nAfter 10 minutes, this form ends, the helm is no more and you return with 0 HP and all but 1 Wound.",
+      "source": "GMG",
+      "page": 71,
+      "draft": false
+    },
+    {
+      "name": "The Grimoire of Truths",
+      "category": "story",
+      "text": "This sentient magical book possesses an extensive knowledge of the world, past events, people’s motivations, and even possible future outcomes. It eagerly converses with its owner, presenting itself as a helpful companion. However, its true goal is to gain their trust, offering just enough useful insight to ultimately lead them into great trouble.",
+      "flavor": "“Ah, another mortal thirsting for knowledge.”\n“Power comes at a cost. But then, so does ignorance.”\n“Oh, **that one**? Her smile hides a thousand lies and treacheries.”\n“Would you like the safe, **boring** route, or the one filled with **excitement** and potential doom? I know which one I’d pick.”",
+      "source": "GMG",
+      "page": 72,
+      "draft": false
+    },
+    {
+      "name": "Hear-ring",
+      "category": "story",
+      "text": "A simple piece of jewelry worn on the ear. While worn, wearers can communicate with one another no matter the distance. Frequently crafted as a pair, sometimes as a larger set.",
+      "source": "GMG",
+      "page": 72,
+      "draft": false
+    },
+    {
+      "name": "Pocket Cauldron",
+      "category": "story",
+      "text": "While taking a Safe Rest, use this cauldron to brew a single potion of your choice, which must be consumed immediately:\n• **Elixir of Futuresight:** Grants the drinker a brief, cryptic vision of a future event.\n• **Elixir of Requiem:** Allows the drinker to relive a crucial memory from their past.\n• **Elixir of Time:** Once every 100 years, the cauldron can brew a potion that can take the drinker back in time 1 day.",
+      "source": "GMG",
+      "page": 72,
+      "draft": false
+    },
+    {
+      "name": "Lumina, Living Sunbeam",
+      "category": "combat",
+      "text": "A small, radiant orb of light, about the size of an apple, with a gentle, warm glow that pulses with life and a perpetually cheerful expression. She is a one-time-use item that, when activated as an action, will deal **LVL d6** radiant damage to all enemies within Reach 6 and heal allies in the area for the same amount. Until then, she hovers around her owner, spreading warmth and light, and offering encouragement.",
+      "flavor": "“I’m here to brighten your journey! And, when the time comes, it’s okay… don’t be afraid to let me shine.” —Lumina",
+      "source": "GMG",
+      "page": 72,
+      "draft": false
+    }
+  ],
+  "properties": [
+    {
+      "name": "2-handed",
+      "text": "Can be held in a single hand, but must be wielded in 2 hands to attack with it.",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Load",
+      "text": "Some weapons require extra actions to load before each shot.",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Reach",
+      "text": "How close an enemy must be to be affected by this attack. If unspecified, Reach 1.",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Range",
+      "text": "Attacks can be made from afar. If any enemy is adjacent to you, your Ranged attacks have disadvantage. Add 1 die of disadvantage to gain +2 Range (max +6 additional Range; disadvantage 3).",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Thrown",
+      "text": "Treat a melee weapon as if it had Range. Once thrown, you no longer have it!",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Vicious",
+      "text": "Roll 1 additional die whenever you roll crit damage.",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    }
+  ],
+  "equipmentRules": [
+    {
+      "name": "Equipment Proficiency",
+      "text": "Heroes can use any equipment they like; however, each class has a list of weapons and armor types they are most skilled with. Weapons used without proficiency cannot crit. Defending while wearing armor without proficiency costs 1 additional action.",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Swapping Equipment",
+      "text": "A hero can sheathe weapons or shields they are proficient with and equip a different one for free 1/round.",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Armor & Defense",
+      "text": "Defense represents your hero’s ability to dodge or block damage when you use the Defend reaction. While unarmored or wearing regular clothes, your Defense is equal to your **DEX**. Some items may grant additional Defense while equipped.",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Defend Yourself!",
+      "text": "If you’re standing right next to a baddie with an axe and you’re not doing anything to defend yourself, chances are, you’re going to get axed (see Defend on pg. 15 for more)!",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Deflect!",
+      "text": "An optional rule for additional defensive flexibility: instead of adding your shield’s Defense to your total as normal, you may reduce the damage of an attack by your shield’s Defense value for free (1/round).",
+      "source": "Core",
+      "page": 33,
+      "draft": false
+    },
+    {
+      "name": "Remember!",
+      "text": "Only the Primary Die (the leftmost one) determines whether an attack crits. Every time you roll crit damage, roll the additional Vicious die as well!",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Dual Wielding",
+      "text": "Heroes may wield 2 Light weapons at the same time. While dual wielding, (1/round) you may gain advantage on an attack with those weapons. You may dual wield 1-handed weapons without the Light property if your STR is 3 or greater, or 1 weapon without the Light property if your STR is 2. If completely unarmed, fists/feet can be dual wielded if proficient in Unarmed Strikes.",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Dual wielding different weapons?",
+      "text": "Roll dice for both weapons and choose either result instead (the 1/round limit still applies). Attacking with advantage? Add an extra die for one of the weapons.",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Unarmed Strikes",
+      "text": "To attack with your bare hands or feet, roll 1d4+STR. Heroes not proficient in Unarmed Strikes cannot crit.",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Improvised Weapons",
+      "text": "Using an improvised weapon (e.g., a chair, a frying pan, a big rock), default to 1d4+STR or 1d6+STR. Your GM may allow you to use bigger dice or other properties if it makes sense. An improvised weapon may be likely to break after a few hits, though!",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Customizing Weapons",
+      "text": "Can you reflavor a staff as a greatclub? Sure! A sai instead of a dagger? Of course! Could you pay a blacksmith to make your 3d4 Greatmaul deal 2d6 or 1d12 damage instead? Since the dice all add up to 12, it won’t break the game; ask your GM! Can a blacksmith make your dagger deal that much damage? No, sorry!",
+      "source": "Core",
+      "page": 34,
+      "draft": false
+    },
+    {
+      "name": "Be Warned!",
+      "text": "Denizens of the dark may not appreciate the light and may attack the light bearers first. Certain spells (e.g., Fire, Lightning, and Radiant) may cause flashes of light as well and draw unwanted attention!",
+      "source": "Core",
+      "page": 36,
+      "draft": false
+    },
+    {
+      "name": "Equipment Availability",
+      "text": "Costs for mundane items typically range from a few silver pieces to a few gold pieces. If you can find an artisan, you can commission them to create something for you—basically anything you can think of that their level of technology could support. The more ornate, the higher the price. Commissioning a special item typically starts around 50 gp and only goes up from there. Smaller towns will have fewer items and artisans than larger cities.",
+      "source": "Core",
+      "page": 36,
+      "draft": false
+    },
+    {
+      "name": "What About…?",
+      "text": "These are not ALL of the items available for purchase, merely a sampling. If you can think of it, you can likely buy it!",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Currency",
+      "text": "Currency is made up of silver (sp) and gold pieces (gp). 10 silver = 1 gold. 1 sp is roughly the cost of a humble meal; 1 gp, a sumptuous feast. Most small towns will have equipment and items worth 50 gp or less. You’ll need to adventure to larger towns or cities or find a traveling merchant to purchase more valuable pieces of equipment.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Magical Items",
+      "text": "Though some magical items can be purchased, most cannot. Some special shops may have a very small selection of them to purchase, but more typically these powerful items are acquired through adventuring.",
+      "source": "Core",
+      "page": 39,
+      "draft": false
+    },
+    {
+      "name": "Typical Costs of Magical Items",
+      "text": "Uncommon: Typically found around levels 2–6, 50–500+ gp.\nRare: Typically found around levels 5–12, 500–5,000+ gp.\nVery Rare: Typically found around levels 8–18, 5,000–500,000+ gp.\nLegendary: Typically found around levels 15–20, 1,000,000+ gp or priceless.",
+      "source": "Core",
+      "page": 39,
+      "draft": false
+    },
+    {
+      "name": "Extra Arms?!",
+      "text": "Yes, you can dual wield 2-handed weapons or wear more than 1 shield, or Grapple 2 different creatures while hitting them both at the same time! Or any number of creative things, provided you have the arms to perform the task.",
+      "source": "Core",
+      "page": 39,
+      "draft": false
+    },
+    {
+      "name": "Spell Scrolls",
+      "text": "Spell scrolls are single-use inscribed magical spells (see Magic on pg. 44 for more). Casting a spell with a spell scroll does not cost mana, nor does it require magical ability. Anyone who can read the scroll’s language can use it. Reading one aloud takes the same number of actions the spell normally takes and consumes the scroll.\n\nA character must make a **DC 10 Arcana** check to cast it successfully if they don’t already know a spell from that school; on a failure, it is wasted.",
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Wands",
+      "text": "Like spell scrolls, these can be used to cast spells without consuming mana and do not require magical ability. Unlike spell scrolls, wands can be recharged and used again. Characters proficient with wands can use one from any spell school, spending only the normal amount of actions to cast the spell.\n\nCharacters not proficient with wands must make a **DC 10+spell Tier Arcana** check to successfully cast the spell. Success or failure, the charge is spent.",
+      "source": "Core",
+      "page": 42,
+      "draft": false
+    },
+    {
+      "name": "Combat Items",
+      "text": "Create combat-related items with a drawback so there is a choice to be made. It can be a one-time-use item, something that damages the hero, or something that needs to be recharged to be used again. Alternatively, you can have it become friends with the party, like Lumina!",
+      "source": "GMG",
+      "page": 72,
+      "draft": false
+    },
+    {
+      "name": "Secret Spells",
+      "text": "These spells are either incredibly powerful and banned from common knowledge, or ancient and simply lost to the ravages of time. They may not be appropriate for heroes to wield freely but can make for excellent quest rewards when found on scrolls, imbued in wands, or taught by a rare NPC. The mere existence of these spells can drive entire storylines and enrich your game world.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Lodging Boons",
+      "text": "Spending extra gold on lavish accommodations can provide valuable temporary benefits. These perks might include quicker recovery, valuable contacts, additional resources, or unique opportunities. The specific benefits depend on the quality of the lodging and the amount spent. You can roll from the table, or award a Minor, Major, or even EPIC Boon based on how much the heroes pay and where they rest:\n• **A Minor Boon:** Typically costs around 10 gp.\n• **A Major Boon:** Typically costs around 100 gp.\n• **An EPIC Boon:** Typically costs around 1,000 gp.\nThese Boons are temporary and last only until the heroes take another Safe Rest. Adjust the cost and impact to suit your campaign and the party’s level of wealth.",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "Boons",
+      "text": "Boons can be a great quest reward from a powerful patron (e.g., an elf queen, hearing of a hero’s bravery, could bestow them with the Brave or Lionhearted Boon), a temporary buff (e.g., a tonic that gives Epic Speed for 1 hour), or you can allow players to take a Minor/Major Boon instead of a Secondary/Key stat increase.",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    }
+  ],
+  "spells": [
+    {
+      "name": "Revive",
+      "school": "Radiant",
+      "tier": 3,
+      "utility": false,
+      "actions": "1 hour",
+      "text": "Bring a dead creature back to life, provided they’ve been dead no more than 10 days and have not been revived by this spell before. Attempting to revive a creature already brought back with this spell risks raising a mindless, zombified husk instead.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Sparkfetch",
+      "school": "Lightning",
+      "tier": 0,
+      "utility": false,
+      "text": "Loudly teleport a tiny, unheld metal item you can see to yourself.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Lesser Windform",
+      "school": "Wind",
+      "tier": 0,
+      "utility": false,
+      "concentration": "up to 10 min",
+      "text": "You are Invisible and Blind for the duration of the spell.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Greater Windform",
+      "school": "Wind",
+      "tier": 5,
+      "utility": false,
+      "concentration": "up to 10 min",
+      "text": "Gain Invisibility, a fly speed of 10, and the ability to slip through any space that wind can pass through.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Fly",
+      "school": "Wind",
+      "tier": 3,
+      "utility": false,
+      "range": "Reach 1",
+      "concentration": "up to 10 min",
+      "text": "Reach: 1. Concentration: Up to 10 min. Grant a creature a flying Speed. They can move KEY spaces for free on their turn.",
+      "higherLevels": "+1 target, +4 Reach. Fly.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Radiant Bond",
+      "school": "Radiant",
+      "tier": 3,
+      "utility": false,
+      "concentration": "up to 10 min",
+      "text": "Telepathically communicate across any distance with a creature that holds a gift you have freely given.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Speak With Dead",
+      "school": "Necrotic",
+      "tier": 4,
+      "utility": false,
+      "text": "Temporarily animate a corpse, allowing it to answer up to 3 questions before returning to rest. The corpse must answer, but it isn’t required to be truthful if it dislikes the questioner or the questions.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Hearth & Home",
+      "school": "Fire",
+      "tier": 3,
+      "utility": false,
+      "actions": "10 min",
+      "text": "Conjure a welcoming inn, complete with sturdy wooden tables, plush chairs, and a soft rug underfoot. At its heart burns a cozy fire in a fireplace, filling the space with warmth and light. The inn lasts for 12 hours and vanishes without a trace afterward.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Teleport",
+      "school": "Lightning",
+      "tier": 6,
+      "utility": false,
+      "actions": "10 min",
+      "text": "You and up to 10 willing creatures within 2 spaces are instantly teleported to a place of your choice that you have visited before.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Cryotomb",
+      "school": "Ice",
+      "tier": 8,
+      "utility": false,
+      "actions": "4 Actions",
+      "range": "Range 12",
+      "text": "Range: 12. A target must make a STR save or become Incapacitated in an icy tomb and immune to harm. This lasts as long as you remain alive, or until the ice melts or is otherwise destroyed. The creature may repeat the save once every 10 days. Huge or larger creatures have advantage on the save. Small or Tiny creatures have disadvantage.",
+      "higherLevels": "+5 spell save DC.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    },
+    {
+      "name": "Memory Veil",
+      "school": "Necrotic",
+      "tier": 3,
+      "utility": false,
+      "concentration": "as long as the caster remains conscious.",
+      "text": "Conceal or change all memories of an event for up to 12 creatures within 2 spaces on a failed WIL save for as long as this spell lasts.",
+      "source": "GMG",
+      "page": 73,
+      "draft": false
+    }
+  ],
+  "boons": [
+    {
+      "name": "Recover 2 additional Wounds",
+      "kind": "lodging",
+      "text": "Recover 2 additional Wounds",
+      "category": "Lodging Boons",
+      "roll": "1",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "Gain LVL temp HP",
+      "kind": "lodging",
+      "text": "Gain LVL temp HP",
+      "category": "Lodging Boons",
+      "roll": "2",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "Gain KEY temp Hit Dice",
+      "kind": "lodging",
+      "text": "Gain KEY temp Hit Dice",
+      "category": "Lodging Boons",
+      "roll": "3",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "+1 Speed",
+      "kind": "lodging",
+      "text": "+1 Speed",
+      "category": "Lodging Boons",
+      "roll": "4",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "Inspired (reroll any die, once)",
+      "kind": "lodging",
+      "text": "Inspired (reroll any die, once)",
+      "category": "Lodging Boons",
+      "roll": "5",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "Advantage vs Fear/Charm/Etc.",
+      "kind": "lodging",
+      "text": "Advantage vs Fear/Charm/Etc.",
+      "category": "Lodging Boons",
+      "roll": "6",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "Learn an important rumor",
+      "kind": "lodging",
+      "text": "Learn an important rumor",
+      "category": "Lodging Boons",
+      "roll": "7",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "+KEY mana",
+      "kind": "lodging",
+      "text": "+KEY mana",
+      "category": "Lodging Boons",
+      "roll": "8",
+      "source": "GMG",
+      "page": 74,
+      "draft": false
+    },
+    {
+      "name": "Alert",
+      "kind": "other",
+      "text": "+1 to Initiative.",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Bright",
+      "kind": "other",
+      "text": "+1 max mana.",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Experienced",
+      "kind": "other",
+      "text": "+4 HP.",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Feisty",
+      "kind": "other",
+      "text": "+1 max Hit Die.",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Fiery",
+      "kind": "other",
+      "text": "+1 damage on crits.",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Intrepid",
+      "kind": "other",
+      "text": "+1 Speed.",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Simple",
+      "kind": "other",
+      "text": "+1 vs Charm effects.",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Skilled",
+      "kind": "other",
+      "text": "+1 skill point.",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Stand Tall",
+      "kind": "other",
+      "text": "+Height (slightly).",
+      "category": "Minor Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Aggressive",
+      "kind": "other",
+      "text": "On your first round of combat you can spend 1 Action from your next turn.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Ancestry Trait",
+      "kind": "other",
+      "text": "Select another Ancestry trait (provided it makes sense).",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Battle Hardened",
+      "kind": "other",
+      "text": "+2 Defense.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Brave",
+      "kind": "other",
+      "text": "+2 to damage while you have the most enemies adjacent to you.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Expansive Mind",
+      "kind": "other",
+      "text": "+4 max mana.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Good Patient",
+      "kind": "other",
+      "text": "Whenever you would receive healing, you heal an additional KEY HP.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Hardy",
+      "kind": "other",
+      "text": "Whenever you increase your max HP, roll with advantage 2 instead.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Honorable Protector",
+      "kind": "other",
+      "text": "Gain LVL temp HP whenever you Interpose. Suffer LVL psychic damage whenever an ally within 2 spaces is attacked and you don’t Interpose.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Lionhearted",
+      "kind": "other",
+      "text": "+2 Defense while you have the most enemies adjacent to you.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Natural Talent",
+      "kind": "other",
+      "text": "Learn any cantrip.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Resilient",
+      "kind": "other",
+      "text": "(1/Safe Rest) You are immune to Wounds this turn.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Resolute",
+      "kind": "other",
+      "text": "When pushed, you are pushed 1 space less. Whenever you would be knocked Prone, you can instead be moved back 1 space. 1/turn.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Smart, Not Book Smart",
+      "kind": "other",
+      "text": "–KEY max mana. Gain 1d4 mana whenever you roll Initiative; this expires if unused at the end of combat.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Sniper",
+      "kind": "other",
+      "text": "Advantage on attacks when no enemy is adjacent to you; disadvantage otherwise.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Stalwart",
+      "kind": "other",
+      "text": "+1 max Hit Die, +2 Might.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Tough",
+      "kind": "other",
+      "text": "Whenever you gain temp HP, gain 5 more.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Unflinching",
+      "kind": "other",
+      "text": "Your focus is unbroken even in the face of danger. Advantage on Concentration saves.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Unnatural Talent",
+      "kind": "other",
+      "text": "Learn any 1 Utility Spell.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Unwavering",
+      "kind": "other",
+      "text": "+2 max Hit Dice.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Veteran",
+      "kind": "other",
+      "text": "+10 HP.",
+      "category": "Major Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Agility",
+      "kind": "epic",
+      "text": "(1/encounter) Gain 1 action.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Criticals",
+      "kind": "epic",
+      "text": "Whenever you roll for critical hit damage, you may replace one die with a d20.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Defense",
+      "kind": "epic",
+      "text": "Your shields gain +3 Defense.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Foresight",
+      "kind": "epic",
+      "text": "Gain +5 to Initiative rolls and advantage on your first attack each encounter.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Knowledge",
+      "kind": "epic",
+      "text": "(1/Safe Rest) You can call upon a moment of profound insight to gain hidden knowledge about a legendary being or object.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Mana",
+      "kind": "epic",
+      "text": "Whenever you are healed, you may instead recover 1 mana for every 5 HP of healing.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Mind",
+      "kind": "epic",
+      "text": "+8 max mana.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Resistance",
+      "kind": "epic",
+      "text": "(1/encounter) Whenever you would take damage or fail a save, you don’t.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Senses",
+      "kind": "epic",
+      "text": "Gain Blindsight 6.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Speed",
+      "kind": "epic",
+      "text": "+4 Speed, +4 Initiative.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Stamina",
+      "kind": "epic",
+      "text": "Rolling 4 or higher on a Hit Die during a Field Rest heals 1 Wound.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    },
+    {
+      "name": "Epic Stats",
+      "kind": "epic",
+      "text": "Increase 3 different stats by 1.",
+      "category": "EPIC Boons",
+      "source": "GMG",
+      "page": 75,
+      "draft": false
+    }
+  ],
+  "notes": [
+    "Gold (GMG p.74, How Much Gold?): average gold each hero typically gains per level — LVL 1: 25, 2: 40, 3: 80, 4: 150, 5: 280, 6: 450, 7: 750, 8: 1,200, 9: 2,000, 10: 3,000, 11: 5,000, 12: 7,000, 13: 10,000, 14: 17,000, 15: 25,000, 16: 40,000, 17: 60,000, 18: 90,000, 19: 130,000, 20: 200,000. A quest for a noble cause or from a poor villager might pay one or two levels below average; a wealthy noble with questionable motives one or two levels above. Uncommon/rare magic items can usually be bought in specialty shops in large cities; very rare or legendary items are typically far too expensive to buy and must be earned through adventuring.",
+    "Lodging (GMG p.74): a Minor Boon from lodging typically costs around 10 gp, a Major around 100 gp, an EPIC around 1,000 gp; lodging boons last only until the next Safe Rest. Full text is in equipmentRules \"Lodging Boons\".",
+    "`equipmentRules` is an extra top-level collection (same shape as `properties`) holding the short player-facing rules and sidebars from the Equipment chapter and the GMG Adventuring Rewards chapter (proficiency, Defense, Deflect, dual wielding, unarmed/improvised weapons, currency, magic item cost bands, scroll/wand rules, lodging boon costs, boon intro). Drop it if the merge doesn't want it.",
+    "Weapons: `damage` is the dice only, `stat` the printed stat (Short Sword is \"STR/DEX\"), and the printed damage type is in an extra `damageType` key. `strength` is only set where the whole weapon has a flat STR requirement (Greatmaul, Greataxe, Greatsword, Longbow, Handheld Ballista); Spear and Longsword only need 2 STR to wield 1-handed, which stays in their properties.",
+    "Armor/shield names have the \"(Req. N STR)\" suffix removed and moved to `strength`. Misc equipment names keep their printed parentheticals (\"Rope (50 ft.)\", \"Torch (stack of 2)\").",
+    "Magic items: `rarity` is lowercase (\"uncommon\", \"rare\", \"very rare\", \"legendary\", or \"varies\" for \"Rarity varies\"); `rarityText` keeps the printed tag when it says more than the rarity (e.g. \"Legendary Weapon of Animosity\"). Named wands put their printed type line (\"Uncommon wand, Cantrip (3 charges)\") in `rarityText` plus `tier`/`charges` keys.",
+    "Spell scroll and generic wand price rows are entries named \"Spell Scroll (Tier N Spell)\" / \"Wand (Tier N Spell)\" with a `tier` key and no `text` (the table only prints tier and cost; the how-to is in equipmentRules \"Spell Scrolls\" / \"Wands\").",
+    "GMG release-valve items (Gem of Escape, Glacier in a Bottle, Phoenix Helm) are category \"magic\", subcategory \"release valve\"; they have no printed rarity. The GMG Phoenix Helm is the full rule the Core Phoenix Helm points to.",
+    "Story/combat item quotes (Grimoire of Truths sample lines, Lumina's quote) are in an extra `flavor` key. GM-advice sidebars (\"Why this is great\", \"Why is this secret?\", Release Valves, Story Items intro, Resting & Healing, Too Much Gold?) were skipped.",
+    "Secret spell Fly (GMG p.73) prints \"Upcast: +1 target, +4 Reach. Fly.\" — the trailing \"Fly.\" looks like a stray word in the book; kept as printed in higherLevels. Its text also repeats \"Reach: 1. Concentration: Up to 10 min.\" after the header; kept as printed.",
+    "Secret spells print casting time as \"casting time: 1 hour\" / \"casting time: 10 min\"; `actions` holds just \"1 hour\" / \"10 min\". Spells without a printed casting time have no `actions` key.",
+    "Minor and Major Boons use kind \"other\" with `category` \"Minor Boons\" / \"Major Boons\"; EPIC Boons are kind \"epic\". Lodging boons are the 1d8 table rows (name = text, with `roll`).",
+    "Light and Stack properties appear in weapon tables but have no definition entry in the Weapon Properties list (Light is described under Dual Wielding)."
+  ]
+}

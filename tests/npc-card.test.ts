@@ -58,3 +58,21 @@ describe('portraitLink', () => {
 		expect(portraitLink(null)).toBeNull();
 	});
 });
+
+describe('npcFacts', () => {
+	it('reads the quick facts from properties', async () => {
+		const { npcFacts } = await import('../src/npc-card-def');
+		const f = npcFacts({ ancestry: 'Dwarf', pronouns: 'she/her', age: 54, faction: '[[Zhentarim]]', location: '', status: 'Alive', attitude: 'Hostile', first_met: '[[Session 2]]' });
+		expect(f.details).toEqual(['Dwarf', 'she/her', '54 years']);
+		expect(f.faction).toBe('[[Zhentarim]]');
+		expect(f.location).toBeUndefined();
+		expect(f.status).toBe('alive');
+		expect(f.attitude).toBe('hostile');
+		expect(f.firstMet).toBe('[[Session 2]]');
+	});
+
+	it('is empty for a bare note', async () => {
+		const { npcFacts } = await import('../src/npc-card-def');
+		expect(npcFacts({})).toEqual({ details: [] });
+	});
+});

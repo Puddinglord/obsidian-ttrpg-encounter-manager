@@ -1,0 +1,2168 @@
+{
+  "classes": [
+    {
+      "name": "Stormshifter",
+      "source": "Stormshifter 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "A high utility class that can both harm and heal with equal mastery!",
+      "flavor": "The trees whisper their excitement, the clouds sing with glee. Rejoice! The Master of Storm & Fang arrives. Legend speaks of an ancient union between mortal and dryad—beings capable of wielding lightning and tempests as others wield blade and shield. This is but half the tale.\n\nWanderers recount encounters with beings, some wise and benevolent, others fearsome, with claws that sparked with lightning and pelts sharp as daggers. They are as one with storm and beast, embodying the serene beauty and raw power of nature’s grace.",
+      "highlights": [
+        "Aid your allies in whatever role is most needed. Damage, healing, or control.",
+        "Wade into the fray as a shapeshifted beast ranging from friendly to vicious, indomitable, or HORRIBLE.",
+        "Cast powerful spells from a distance to strike down, control, mend, and more."
+      ],
+      "complexity": 3,
+      "keyStats": [
+        "WIL",
+        "DEX"
+      ],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": {
+        "adv": "WIL",
+        "dis": "STR"
+      },
+      "armor": "Cloth or Leather Armor",
+      "weapons": "Staves, Wands",
+      "startingGear": [
+        "Cheap Hides",
+        "Staff",
+        "Strange Plant"
+      ],
+      "casting": {
+        "mana": "(WIL×3)+LVL",
+        "manaFormula": "WIL*3+LVL",
+        "manaFromLevel": 2,
+        "schools": [
+          "Lightning",
+          "Wind"
+        ],
+        "notes": "You know the Lightning & Wind schools, and can cast those cantrips. Mana recharges on a Safe Rest. Stormcaller: Learn a Utility Spell from each spell school you know."
+      },
+      "resources": [
+        {
+          "name": "Direbeast Form",
+          "max": "DEX",
+          "reset": "encounter"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Master of Storms",
+              "text": "You know the Lightning & Wind schools, and can cast those cantrips."
+            },
+            {
+              "name": "Beastshift",
+              "text": "Action: Transform into a harmless beast (squirrel, pigeon, etc.). While transformed, you can speak with animals. Beastshift lasts until you drop to 0 HP, cast a spell, or if you end it on your turn for free."
+            },
+            {
+              "name": "Direbeast Form",
+              "text": "You can Beastshift into a Direbeast form DEX times/encounter (for up to 1 min). You know the Fearsome Beast form."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Mana and Unlock Tier 1 Spells",
+              "text": "You unlock tier 1 spells and gain a mana pool to cast them. This mana pool’s max is always equal to (WIL×3)+LVL and recharges on a Safe Rest."
+            },
+            {
+              "name": "Direbeast Form (2)",
+              "text": "You can Beastshift into a Beast of the Pack."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Stormshifter subclass."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Tier 2 Spells",
+              "text": "You may now cast spells up to tier 2."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or DEX."
+            },
+            {
+              "name": "Stormcaller",
+              "text": "Learn a Utility Spell from each spell school you know."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Direbeast Form (3)",
+              "text": "You can Beastshift into a Beast of Nightmares."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Chimeric Boon",
+              "text": "Choose 2 Chimeric Boons. Whenever you Beastshift into a Direbeast form, you may modify it with 1 Chimeric Boon you know."
+            },
+            {
+              "name": "Tier 3 Spells",
+              "text": "You may now cast spells up to tier 3."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Stormshifter subclass feature."
+            },
+            {
+              "name": "Stormcaller (2)",
+              "text": "Learn a 2nd Utility Spell from each spell school you know."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Tier 4 Spells",
+              "text": "You may now cast spells up to tier 4."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or DEX."
+            },
+            {
+              "name": "Stormborn",
+              "text": "Gain Charged whenever you roll Initiative. Advantage on Naturecraft checks and Concentration saves."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Chimeric Boon (2)",
+              "text": "Choose a 3rd Chimeric Boon."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Tier 5 Spells",
+              "text": "You may now cast spells up to tier 5."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Stormshifter subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Tier 6 Spells",
+              "text": "You may now cast spells up to tier 6."
+            },
+            {
+              "name": "Chimeric Boon (3)",
+              "text": "Choose a 4th Chimeric Boon."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or DEX."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or INT."
+            },
+            {
+              "name": "Stormborn (2)",
+              "text": "Whenever you end a Direbeast form, you may cast a cantrip for free."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Tier 7 Spells",
+              "text": "You may now cast spells up to tier 7."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Stormshifter subclass feature."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Tier 8 Spells",
+              "text": "You may now cast spells up to tier 8."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or DEX."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Chimeric Boon (4)",
+              "text": "Choose a 5th Chimeric Boon."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or INT."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Tier 9 Spells",
+              "text": "You may now cast spells up to tier 9."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Archdruid",
+              "text": "+1 to any 2 of your stats. After you cast a tiered spell, you may Beastshift for 0 Actions."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Be Wild",
+          "text": "Whenever you spend a day with wild animals during a Safe Rest, you may choose different Stormshifter options available to you."
+        },
+        {
+          "title": "Charged",
+          "text": "Whenever you take lightning damage, you are Charged for 1 minute (or until combat ends)."
+        },
+        {
+          "title": "Next Closest Creature",
+          "text": "If you are the closest, you are hit! If 2 creatures are equally close, the GM can select randomly, the taller one, or whoever has the most metal."
+        },
+        {
+          "title": "D44 with advantage",
+          "text": "Roll 3d4 and drop the lowest die. The leftmost die is the tens place, and the second is the ones (e.g., 2, 3, and 4 deals 34 damage)."
+        },
+        {
+          "title": "Stormshifter Names",
+          "text": "Male Names: Ash, Silas, Merle, Elwood, Mordecai, Wolf, Thorne.\nFemale Names: Willow, Hazel, Juniper, Cordelia, Wren, Pipit, Starling."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Direbeast Forms",
+          "options": [
+            {
+              "name": "Fearsome Beast",
+              "cost": "1 Action",
+              "text": "Transform into a Large beast. Gain WIL Defense, WIL+LVL temp HP, advantage on STR saves, and:\nFearsome. Whenever you Interpose or Defend, you may spend 1 mana to force the attacker to reroll the attack (you must choose either result).\nGore. 1 Action: 1d8+LVL damage, on hit: gain LVL temp HP."
+            },
+            {
+              "name": "Beast of the Pack",
+              "cost": "1 Action",
+              "text": "Transform into a Medium beast. Gain +DEX Speed, you can move DEX spaces for free each turn, advantage on DEX saves, and:\nLightning Step. (1/turn) Spend 1 mana to teleport DEX spaces for free.\nFrenzy. 1 Action: 1d6+LVL damage. Your next attack gains increasing advantage instead of disadvantage. This bonus resets whenever you crit, or after you use a different attack."
+            },
+            {
+              "name": "Beast of Nightmares",
+              "cost": "1 Action",
+              "text": "Transform into any Tiny beast or insect (provided it is horrible). Gain:\nSilent But Deadly. Speed: 2. Attackers cannot target you until you become conspicuous (e.g., attacking or being seen transforming). Attacks against you have disadvantage. You cannot Defend or Interpose and any damage ends this form.\nSting. 1 Action: (1/round, Reach 0) 1d4+3×LVL acid damage (ignoring Armor), on crit: Dazed."
+            }
+          ]
+        },
+        {
+          "name": "Chimeric Boons",
+          "options": [
+            {
+              "name": "Beast of the Sea",
+              "text": "Whenever you Defend vs a melee attack, you can Blind the attacker until the beginning of their next turn. Can move, breathe, and fight underwater without penalty."
+            },
+            {
+              "name": "Climber",
+              "text": "Can walk across walls and ceilings normally; ignores Difficult Terrain."
+            },
+            {
+              "name": "Fleet Footed",
+              "text": "Can move 2 spaces for free each turn. Advantage on Stealth checks and vs Grappled."
+            },
+            {
+              "name": "Earthwalker",
+              "text": "+STR Defense. Can burrow through the ground (as long as you do not end your turn underground). Can stand from Prone for free on your turn."
+            },
+            {
+              "name": "Keen Senses",
+              "text": "Advantage on Perception and Assess checks. Unaffected by Blind."
+            },
+            {
+              "name": "Leader of the Pack",
+              "text": "Advantage against fear and charm effects for yourself and allies within Reach 6. Allies can move 2 spaces toward you for free on each of their turns."
+            },
+            {
+              "name": "Phasebeast",
+              "text": "Whenever you shift between this form and your normal form (and vice versa), you may teleport up to 6 spaces away to a place you can see."
+            },
+            {
+              "name": "Prehensile Tail",
+              "text": "Your melee attacks gain: On hit: Grappled (max 1)."
+            },
+            {
+              "name": "Winged",
+              "text": "Gain a flying Speed. Forced movement moves you twice as far while flying."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Circle of Sky & Storm",
+          "page": 8,
+          "flavor": "Attune to the skies above, vast and endless in their reach. Wield the oncoming storm, endless in its intensity.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Deepening Study",
+                  "text": "Choose the Ice or Radiant school to learn."
+                },
+                {
+                  "name": "Creature of the Fey",
+                  "text": "You may cast spells while Beastshifted."
+                },
+                {
+                  "name": "Attuned to Nature",
+                  "text": "(WIL/Safe Rest) Add LVL to any skill check related to nature or weather."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Raging Tempest",
+                  "text": "Whenever you crit with a spell, you may cast a cantrip for free from a school you haven’t cast any spells from this turn."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Primordial Force",
+                  "text": "(1/round) Your tiered spells grant an additional effect:\n• Ice. Gain WIL temp HP.\n• Lightning. Deal additional WIL damage.\n• Radiant. (Reach 6) Heal a creature WIL HP.\n• Wind. Fly up to 6 spaces for free."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Master of Storm",
+                  "text": "You can concentrate on 1 lightning spell and 1 wind spell at the same time. (1/encounter) When you would cast a tiered spell, it costs 1 fewer action and 3 fewer mana."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Circle of Fang & Claw",
+          "page": 10,
+          "flavor": "Channel primal forces to transform faster and fiercer than before. Embody the ferocity of the wilds, and unleash it on nearby foes.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Swiftshift",
+                  "text": "Whenever you roll Initiative, you may Beastshift for free. (1/turn) You can Beastshift between Direbeast forms for 0 actions (this still costs a Direbeast form charge)."
+                },
+                {
+                  "name": "Unleash the Beast",
+                  "text": "Gore also Taunts until the end of the target’s next turn. Frenzy increases to 1d8+LVL damage."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Windborne Protector",
+                  "text": "Double the WIL Defense and temp HP bonuses from Fearsome Beast form. (1/encounter) You may Interpose from Reach 12."
+                },
+                {
+                  "name": "Stormstrider",
+                  "text": "Double the DEX movement and Speed bonuses from Beast of the Pack. When you move as a Beast of the Pack, you may teleport instead."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Master of Forms",
+                  "text": "(1/encounter) When you would miss or crit while in a Direbeast form, you may increase or decrease the Primary Die by 1 instead."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Chimeric Sovereign",
+                  "text": "You know all Chimeric Boons, your Direbeast forms can have 2 at a time."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Circle of Cinder & Ash",
+          "page": 11,
+          "flavor": "Fire has an important duty in nature, responsible for clearing portions of forests of impurities or old invasive species to clear it out for the new.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Wildfire",
+                  "text": "Replace your lightning or wind spell school with the fire school."
+                },
+                {
+                  "name": "Searing Fang",
+                  "text": "Before you Beastshift you may cast Enchant Weapon on yourself for free."
+                },
+                {
+                  "name": "Firesight",
+                  "text": "You have advantage on skill checks related to fire."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Phoenix Flame",
+                  "text": "(1/encounter) You may cast Pyroclasm for 0 mana; gain temp HP equal to the amount rolled. Dying does not cause your Beastshift forms to end; while Dying you gain flying."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Cinderhide",
+                  "text": "You can cast Flame Barrier while Beastshifted and do so for 2 fewer mana."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Kindled Kin",
+                  "text": "Whenever you gain temp HP, choose an ally within Reach 6 to gain the same amount."
+                }
+              ]
+            }
+          ],
+          "sidebars": [
+            {
+              "title": "Free Spells",
+              "text": "They are cast at their base tier but you may spend additional mana as normal to upcast them."
+            }
+          ]
+        },
+        {
+          "name": "Circle of Venom & Web",
+          "page": 12,
+          "flavor": "Stormshifters who align themselves with the nature of spiders and utilize their power from these tiny but deadly creatures.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Deadly Nature",
+                  "text": "Replace your lightning or wind school with necrotic."
+                },
+                {
+                  "name": "Too Many Legs, Too Many Eyes",
+                  "text": "Your Beastforms gain Climber or Keen Senses for free."
+                },
+                {
+                  "name": "Venom Sacs",
+                  "text": "Your Beastform attacks gain: On hit: you may spend mana to increase your Primary Die by 1 for each mana spent (up to the tier of spells you have unlocked); On crit: Poisoned until the end of their next turn."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Ensnare",
+                  "text": "Whenever you Interpose or Defend vs a melee attack, you may spend 1 mana to Restrain the attacker until the end of their next turn if it is your size or smaller."
+                },
+                {
+                  "name": "Sudden Terror",
+                  "text": "(1/encounter) Reaction (when attacked in melee): shift into a Beast of Nightmares for free, gain Riding (they must reroll with disadvantage)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Dread Voice",
+                  "text": "You may cast necrotic spells while Beastshifted."
+                },
+                {
+                  "name": "Fear Toxin",
+                  "text": "Your Poison also Frightens."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Skitter",
+                  "text": "Your Beast of Nightmares form gets the Fleet Footed Chimeric Boon for free."
+                },
+                {
+                  "name": "Spiderling Swarm",
+                  "text": "Ensnare also Poisons creatures for as long as they are Restrained."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "spells": [
+        {
+          "name": "Zap",
+          "school": "Lightning",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 8",
+          "damage": "1d8+4",
+          "text": "Range: 8. Damage: 1d8+4. On miss: you take half the damage instead.",
+          "cantripScaling": "+6 damage every 5 Levels.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Overload",
+          "school": "Lightning",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 2",
+          "aoe": "AoE",
+          "damage": "2d8",
+          "text": "Castable only if Charged, ending the condition. Reach: 2, AoE. Damage: 2d8.\n\nCharged. Whenever you take lightning damage, you are Charged for 1 minute (or until combat ends).",
+          "cantripScaling": "+4 damage every 5 Levels.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Arc Lightning",
+          "school": "Lightning",
+          "tier": 1,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Range 12",
+          "aoe": "1+ Target",
+          "damage": "3d8",
+          "text": "Range: 12. Damage: 3d8. Also hits the next closest creature.\n\nNext Closest Creature. If you are the closest, you are hit! If 2 creatures are equally close, the GM can select randomly, the taller one, or whoever has the most metal.",
+          "higherLevels": "+4 damage.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Alacrity",
+          "school": "Lightning",
+          "tier": 2,
+          "utility": false,
+          "actions": "0 Actions",
+          "text": "(1/turn) Teleport up to your Speed, gain Charged (can be cast while Defending, after damage).",
+          "higherLevels": "+4 spaces.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Stormlash",
+          "school": "Lightning",
+          "tier": 3,
+          "utility": false,
+          "actions": "2 Actions",
+          "aoe": "Line 12",
+          "damage": "3d8+4",
+          "text": "Line: 12, AoE. Damage: 3d8+4 and Prone on a failed STR save. Creatures with a large amount of metal (e.g., armor or a longsword) roll with disadvantage and suffer +10 damage.",
+          "higherLevels": "+4 damage.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Electrickery",
+          "school": "Lightning",
+          "tier": 4,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Range 8",
+          "text": "Castable when an ally is attacked. Range: 8. Teleport an ally away. Teleport another creature there on a failed WIL save (making them the target). Costs 1 action if Charged, ending the condition.",
+          "higherLevels": "+2 Range.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Electrocharge",
+          "school": "Lightning",
+          "tier": 5,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 4",
+          "concentration": "Up to 1 min",
+          "text": "Reach: 4. Concentration: Up to 1 min. Give a creature Charged, +1 max action, +5 Defense, 2× Speed, and advantage on DEX saves.",
+          "higherLevels": "+4 Reach.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Ride the Lightning",
+          "school": "Lightning",
+          "tier": 6,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Reach 12",
+          "aoe": "AoE",
+          "damage": "d88",
+          "text": "Reach: 12, AoE. Teleport to a spot you can see (if a willing creature is there, swap places with them). Adjacent creatures take d88 damage and Knockback 2. Creatures moved 2+ spaces are also knocked Prone, Dazed, and deafened for 1 day.",
+          "higherLevels": "+1 Knockback.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Seething Storm",
+          "school": "Lightning",
+          "tier": 9,
+          "utility": false,
+          "actions": "3 Actions",
+          "aoe": "AoE",
+          "concentration": "1 min",
+          "damage": "d88",
+          "text": "Concentration: 1 min. Become a cloud of tempestuous storm. You can fly, move for free 1/round, and attacks against you are disadvantaged. At the end of each of your turns, strike up to 4 creatures within Reach 4 with a bolt of lightning for d88 damage (a creature can only be struck 1/round). Costs 3 actions each round to maintain. +2 Reach and +2 lightning bolts each round.\n\nNote. Once you cast this spell, you must Safe Rest for 1 week before you can use it again.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Razor Wind",
+          "school": "Wind",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 12",
+          "damage": "2d4",
+          "text": "Range: 12. Range: 12. Damage: 2d4 slashing, with advantage OR include a 2nd creature adjacent to your target.",
+          "cantripScaling": "+3 damage every 5 Levels.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Breath of Life",
+          "school": "Wind",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 6",
+          "text": "Range: 6. Restore 1d4 HP to a Dying creature. If healed for 4+: they also regain 1 action.",
+          "cantripScaling": "+2 Range and healing every 5 Levels.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Blustery Gale",
+          "school": "Wind",
+          "tier": 1,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Range 12",
+          "damage": "3d4",
+          "text": "Range: 12. Damage: 3d4 bludgeoning, Knockback 2 (advantage vs flying/Small/Tiny). Forced movement deals +5 damage instead of rolling additional dice.",
+          "higherLevels": "+1 Knockback.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Barrier of Wind",
+          "school": "Wind",
+          "tier": 2,
+          "utility": false,
+          "actions": "0 Actions",
+          "range": "Reach 1",
+          "text": "Castable only while Defending vs Ranged. Reach: 1. Reduce the Primary Die by 3. If it misses, redirect the original attack to another space in Reach.",
+          "higherLevels": "+1 Reduction and +1 Reach.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Echoburst",
+          "school": "Wind",
+          "tier": 3,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 1",
+          "damage": "d44",
+          "text": "Reach: 1. Damage: d44 bludgeoning (ignoring armor). Any creature in the targeted space at the beginning of your next turn takes this damage again.",
+          "higherLevels": "Roll with advantage OR +1 Reach.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Eye of the Storm",
+          "school": "Wind",
+          "tier": 4,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 3",
+          "aoe": "AoE",
+          "damage": "4d4+10",
+          "text": "Reach: 3, AoE. Damage: 4d4+10 bludgeoning to enemies. Place surviving creatures anywhere within 1 space of the storm’s Reach on a failed STR save.",
+          "higherLevels": "+1 Reach.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Updraft",
+          "school": "Wind",
+          "tier": 5,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 12",
+          "aoe": "5×5",
+          "damage": "20",
+          "text": "Reach: 12, 5×5 AoE. Damage: 20 bludgeoning minus a DEX save. On 10+ damage, they land Prone and Dazed.",
+          "higherLevels": "+2 damage.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Thousand Cuts",
+          "school": "Wind",
+          "tier": 6,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Range 12",
+          "aoe": "AoE",
+          "damage": "d44",
+          "text": "Range: 12. Damage: d44 slashing with advantage. Also damages enemies within Reach 1 of your target.\n\nD44 with advantage. Roll 3d4 and drop the lowest die. The leftmost die is the tens place, and the second is the ones (e.g., 2, 3, and 4 deals 34 damage).",
+          "higherLevels": "+1 Reach.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Boisterous Winds",
+          "school": "Wind",
+          "tier": 7,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 12",
+          "text": "Reach: 12. Gently move all creatures up to 6 spaces, each in a straight line in a direction of your choice. At the beginning of your subsequent turns, do so again but 2 fewer spaces.",
+          "higherLevels": "+2 spaces.",
+          "source": "Stormshifter 3.0",
+          "page": 15,
+          "draft": false
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does shifting into a harmless beast have a time limit or take a charge?",
+          "a": "No."
+        },
+        {
+          "q": "Can I cast spells while shifted?",
+          "a": "Yes. But it ends the form (unless you have a special ability that allows you to maintain it)."
+        },
+        {
+          "q": "When shifting between one Direbeast Form and another, do I keep the temp HP and Frenzy bonuses?",
+          "a": "Yes, though they end when combat does if unspent. The other passive effects (e.g., extra Defense or movement) are not maintained."
+        },
+        {
+          "q": "Can I build up advantage with Frenzy then cast a spell with it?",
+          "a": "Yes. Have fun!"
+        },
+        {
+          "q": "Does the temp HP from Fearsome Beast and Gore stack?",
+          "a": "No. Temp HP do not stack."
+        },
+        {
+          "q": "Can I Beastshift while Dying?",
+          "a": "Yes. Although dropping to 0 HP ends any currently active forms, you can shift again while Dying."
+        }
+      ]
+    },
+    {
+      "name": "The Cheat",
+      "source": "The Cheat 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "High burst damage class that can get in and get out!",
+      "flavor": "The Cheat doesn’t call herself a Cheat, of course—rather, a streetsmart rogue, a survivalist, or a liberator of unused goods. They are masters of stealth, pickpocketing, and smooth talking. Some of the more vicious ilk are masters of death-dealing as well.\n\nCheats can be found in every city and byway under countless different names, but they all believe something similar: It’s a cruel, merciless world, and those who aim to survive don’t have time for silly things like “morals” or “honor.” Those are luxuries of the rich and powerful. Honor gets you killed—survival is about taking what you want, when you can.",
+      "highlights": [
+        "Break the rules! You can change the dice you roll to whatever numbers suit you best!",
+        "Sneakily backstab enemies with devastating crits. Take down even heavily armored foes with a single blow!",
+        "Fight dirty with pocket sand and low blows. When things turn ugly, disappear and live to cheat another day!"
+      ],
+      "complexity": 1,
+      "keyStats": [
+        "DEX",
+        "INT"
+      ],
+      "hitDie": 6,
+      "startingHp": 10,
+      "saves": {
+        "adv": "DEX",
+        "dis": "WIL"
+      },
+      "armor": "Leather Armor",
+      "weapons": "DEX Weapons",
+      "startingGear": [
+        "2 Daggers",
+        "Sling",
+        "Cheap Hides",
+        "Chalk"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Sneak Attack",
+              "text": "(1/turn) When you crit, deal +1d6 damage."
+            },
+            {
+              "name": "Vicious Opportunist",
+              "text": "(1/turn) When you HIT a Distracted target with a melee attack, you may change the Primary Die roll to whatever you like (changing it to the max value counts as a crit)."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Cheat",
+              "text": "You’re a well-rounded cheater. Gain the following abilities:\n• (1/round) You may either Move or Hide for free.\n• (1/Safe Rest) You may change any of your skill checks to 10+INT.\n• If you roll less than 10 on Initiative, you may change it to 10 instead.\n• You may gain advantage on skill checks while playing any games, competitions, or placing wagers. If you’re caught though…"
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Cheat subclass."
+            },
+            {
+              "name": "Sneak Attack (2)",
+              "text": "Your Sneak Attack becomes 1d8."
+            },
+            {
+              "name": "Thieves’ Cant",
+              "text": "You learn the secret language of rogues and scoundrels."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or INT."
+            },
+            {
+              "name": "Underhanded Ability",
+              "text": "Choose an Underhanded Ability."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Twist the Blade",
+              "text": "Action: Change a Sneak Attack die to whatever you like."
+            },
+            {
+              "name": "Quick Read",
+              "text": "(1/encounter) Gain advantage on an Assess check."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Underhanded Ability (2)",
+              "text": "Choose a 2nd Underhanded Ability."
+            },
+            {
+              "name": "THAT’S Not What Happened!",
+              "text": "(1/Safe Rest) Reaction (when a Distracted enemy attacks you): You may change the Primary Die roll to whatever you like (changing the die to the minimum value counts as a miss)."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Cheat subclass feature."
+            },
+            {
+              "name": "Sneak Attack (3)",
+              "text": "Your Sneak Attack becomes 2d8."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Underhanded Ability (3)",
+              "text": "Choose a 3rd Underhanded Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Sneak Attack (4)",
+              "text": "Your Sneak Attack becomes 2d10."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Underhanded Ability (4)",
+              "text": "Choose a 4th Underhanded Ability."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Cheat subclass feature."
+            },
+            {
+              "name": "Sneak Attack (5)",
+              "text": "Your Sneak Attack becomes 2d12."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Underhanded Ability (5)",
+              "text": "Choose a 5th Underhanded Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Twist the Blade (2)",
+              "text": "(1/turn) You can Twist the Blade for free."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Underhanded Ability (6)",
+              "text": "Choose a 6th Underhanded Ability."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Cheat subclass feature."
+            },
+            {
+              "name": "Sneak Attack (6)",
+              "text": "Your Sneak Attack becomes 2d20."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Underhanded Ability (7)",
+              "text": "Choose a 7th Underhanded Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Sneak Attack (7)",
+              "text": "Your Sneak Attack becomes 3d20."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Underhanded Ability (8)",
+              "text": "Choose an 8th Underhanded Ability."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Supreme Execution",
+              "text": "+1 to any 2 of your stats. When you attack with a blade, you do not require targets to be Distracted to trigger Vicious Opportunist."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Distracted",
+          "text": "A target is Distracted if it is adjacent to (or Taunted by) an ally, or if it cannot see you. Yes! If you can figure out how to attack on someone else’s turn, you can use this again in the same round!"
+        },
+        {
+          "title": "Magic?",
+          "text": "The Cheat has some abilities that look magical—they might be, but don’t have to be. You have your ways, okay? No need to explain how you did that, not even to the GM!"
+        },
+        {
+          "title": "Trade Secrets",
+          "text": "Whenever you spend a night talking shop with other roguish types during a Safe Rest, you may choose different Cheat options available to you."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Underhanded Abilities",
+          "options": [
+            {
+              "name": "“Creative” Accounting",
+              "cost": "Passive",
+              "text": "Steal up to INT actions from your next turn (Gain up to INT actions now. The next time you would gain actions, subtract the number stolen). You cannot use this 2 turns in a row."
+            },
+            {
+              "name": "Exploit Weakness",
+              "cost": "Passive",
+              "text": "Whenever you successfully Assess: Create an Opening against a creature, you can use Vicious Opportunist against them, even if they are not Distracted. This lasts for 1 minute or until you use it against another target."
+            },
+            {
+              "name": "Feinting Attack",
+              "cost": "Passive",
+              "text": "If you miss for the 2nd time in a single round, you may change the Primary Die roll to any result instead."
+            },
+            {
+              "name": "How’d YOU get here?!",
+              "cost": "2 Actions",
+              "text": "(Reach 12) “Teleport” adjacent to a Distracted target, and make a melee attack against them. If you crit, you may “teleport” again."
+            },
+            {
+              "name": "I’m Outta Here!",
+              "cost": "Passive",
+              "text": "When an ally within Reach 4 is crit, you may turn Invisible until the end of your next turn and then move up to half your Speed for free."
+            },
+            {
+              "name": "Misdirection",
+              "cost": "Passive",
+              "text": "Gain INT Defense. Whenever you Defend, you may halve the damage instead."
+            },
+            {
+              "name": "Steal Tempo",
+              "cost": "Passive",
+              "text": "When you crit for the second time in a round, your target is Dazed and you give an ally 1 action."
+            },
+            {
+              "name": "Sunder Armor",
+              "cost": "1 Action",
+              "text": "After you crit an armored creature, sunder their armor: give the next non-crit Primary Die rolled against them +2."
+            },
+            {
+              "name": "Tangling Wire",
+              "cost": "Passive",
+              "text": "Whenever you Grapple, you may Restrain instead."
+            },
+            {
+              "name": "The Setup",
+              "cost": "1 Action",
+              "text": "Reaction (when an ally misses a creature adjacent to you): You can make an Opportunity Attack against them, treating them as Distracted."
+            },
+            {
+              "name": "Trickshot",
+              "cost": "Passive",
+              "text": "You can use Vicious Opportunist on thrown weapon attacks (but you can’t use Twist the Blade on them). Whenever you throw a weapon, you may spend an additional action to have it hit another creature within Reach 2 of it, dealing half as much damage to them."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Tools of the Silent Blade",
+          "page": 9,
+          "flavor": "Kill, kill, kill.",
+          "complexity": 1,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Amidst All This Commotion…",
+                  "text": "If a creature dies while you Sneak Attack them, you may turn Invisible until you attack again or until the beginning of your next turn."
+                },
+                {
+                  "name": "Leave No Trace",
+                  "text": "Advantage on Stealth checks when you are at full health."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Cunning Strike",
+                  "text": "Deal +2×INT damage whenever you crit."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Professional Skulker",
+                  "text": "Gain a climbing Speed and advantage on Stealth checks (replaces Leave No Trace)."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "KILL",
+                  "text": "When you Sneak Attack an enemy with fewer max HP than you, it dies."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Tools of the Scoundrel",
+          "page": 11,
+          "flavor": "Stay alive, fight dirty.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Low Blow",
+                  "text": "When you Sneak Attack a creature not already Taunted by you, you may spend 1 additional action to roll 1d4. They are:\n1. Taunted by you for the rest of this encounter.\n2. Knocked Prone, then Taunted by you for the rest of this encounter.\n3. Dazed, then Taunted by you for the rest of this encounter.\n4. Incapacitated until the end of the next hero’s turn."
+                },
+                {
+                  "name": "Sweet Talk",
+                  "text": "You may gain advantage on all Influence checks with NPCs you’ve just met for the first time. This lasts until you fail an Influence check with them or until you meet a 2nd time. You have disadvantage on Influence checks with them after you use this ability (until you get back on their good side)."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Pocket Sand",
+                  "text": "(2/encounter—you’ve got to collect more sand!) When you Defend against an adjacent creature, Blind the attacker until the start of their next turn and force them to reroll the attack (Blind creatures attack with disadvantage)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Escape Plan",
+                  "text": "(1/Safe Rest) When you would drop to 0 HP or gain a Wound, you don’t. Instead, you turn Invisible for 1 minute or until you attack."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Heads I Win, Tails You Lose",
+                  "text": "(1/encounter) Attacks you make this round don’t miss, you crit on 1 less than normally needed, and you gain LVL temp HP."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Tools of the Serpent",
+          "page": 12,
+          "flavor": "You have harnessed the terrible fangs of nature to her deadly array of poisons. Choose this subclass if you want to debilitate your foes with venom and viciousness.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Viper’s Kiss",
+                  "text": "Creatures you damage become Poisoned until the end of their next turn. Creatures Poisoned this way are also Distracted."
+                },
+                {
+                  "name": "I’ve Tried This One Before",
+                  "text": "You have advantage on saves against poison. Additionally, you can identify any poison you inspect."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Noxious Cloud",
+                  "text": "(1/encounter, Reach 4) Action: Enemies in a 2×2 area take INT d6 damage (ignoring armor) and become Poisoned. Creatures already Poisoned are also Dazed."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Cruel Dose",
+                  "text": "Creatures Poisoned by you are also Slowed and their attack Range is halved."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Volatile Toxins",
+                  "text": "Noxious Cloud can be used twice each encounter. Whenever a creature Poisoned by you dies, their body erupts into a Noxious Cloud."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Tools of the Gambler",
+          "page": 13,
+          "flavor": "Trust me—this time it’s a SURE THING. Choose this subclass if you want to risk it all with dangerous plays and walk the line of ruin.",
+          "complexity": 1,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "All In",
+                  "text": "When you Sneak Attack, you may go All In: Roll a single All In die; if it rolls higher than average, maximize ALL of your Sneak Attack dice; otherwise minimize them."
+                },
+                {
+                  "name": "That Was Just a Practice Roll",
+                  "text": "(1/encounter) You may reroll ANY die."
+                },
+                {
+                  "name": "It’s All Fun and Games",
+                  "text": "If you’re caught cheating at a game, competition, or wager, you gain advantage on skill checks to get out of the consequences."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Pocket Aces!",
+                  "text": "(1/Safe Rest) You can set a friendly creature’s Initiative roll to 20."
+                },
+                {
+                  "name": "Double or Nothing!",
+                  "text": "When you lose your “All In” roll, you may try once more. If you succeed, add 1 additional maximized Sneak Attack die. If you fail, your attack misses entirely and your turn ends."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Play the Odds",
+                  "text": "(1/round) When a creature hits you, you may force them to reroll their Primary Die. If the roll is lower, the attack misses; otherwise, it crits."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Odds Maker",
+                  "text": "You may use That Was Just a Practice Roll 2/encounter and you may instead change the die to any other face."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "The Honorseeker",
+          "page": 14,
+          "flavor": "“No more tricks. Honest.”",
+          "complexity": 2,
+          "story": true,
+          "intro": "Honorseeker. You give up Sneak Attack, Vicious Opportunist, Underhanded Abilities, and Twist the Blade, in exchange gain:\n• Honorable Gambits. For every Underhanded Ability you would have (except for your Old Habits…), choose an Honorable Gambit instead.\n• Worthy Underdog. When enemies have The Upper Hand, attacks miss you on 2 or less.\n• Tenacious Fighter. (1/turn) When you HIT an enemy that has The Upper Hand you may change the Primary Die roll to whatever you like and deal +1d6 damage (this increases as your Sneak Attack dice would).",
+          "sidebars": [
+            {
+              "title": "The Upper Hand",
+              "text": "Whenever there are more of them adjacent to you than allies."
+            }
+          ],
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Prove Your Worth!",
+                  "text": "(Reach 12, 1/turn) Taunt an enemy for free (lasts until they damage you). Gain DEX damage reduction vs enemies Taunted by you."
+                }
+              ]
+            },
+            {
+              "level": 5,
+              "features": [
+                {
+                  "name": "Even the Odds",
+                  "text": "When attacking or being attacked by an enemy with The Upper Hand, you may spend an action to change a die up or down 1 face (replaces Twist the Blade and improves as it would)."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Old Habits…",
+                  "text": "Choose 1 Underhanded Ability."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Right Where I Want You",
+                  "text": "You have advantage on attacks and +10 Defense as long as enemies have The Upper Hand."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Turn the Tables",
+                  "text": "When an enemy with The Upper Hand misses you in melee, you may spend an action attacking them in return."
+                }
+              ]
+            },
+            {
+              "level": 20,
+              "features": [
+                {
+                  "name": "Supreme Underdog",
+                  "text": "(Replaces Supreme Execution…) You take 10 less damage from all attacks by creatures with The Upper Hand."
+                }
+              ]
+            }
+          ],
+          "optionGroups": [
+            {
+              "name": "Honorable Gambits",
+              "intro": "For every Underhanded Ability you would have (except for your Old Habits…), choose an Honorable Gambit instead:",
+              "options": [
+                {
+                  "name": "Deft Parry",
+                  "text": "You take –INT damage from enemies while they have The Upper Hand."
+                },
+                {
+                  "name": "Down, Not Out!",
+                  "text": "While Dying, reduce all Primary Dice rolled against you by 1, and you gain advantage on saves."
+                },
+                {
+                  "name": "Frightful Confidence",
+                  "text": "While Bloodied, when you are attacked with advantage their lowest die is Primary."
+                },
+                {
+                  "name": "Mark of Deflection",
+                  "text": "If you’ve already Defended this round, attacks against you are rolled with disadvantage."
+                },
+                {
+                  "name": "Nowhere to Flee!",
+                  "text": "Gain +INT Speed when moving toward enemies Taunted by you. Your Opportunity Attacks also Slow Medium or smaller targets on hit."
+                },
+                {
+                  "name": "Redemption Arc",
+                  "text": "Reaction (when an enemy with The Upper Hand attacks an ally): You may first Taunt them (the attack is rolled again, choose either result), this lasts until the end of their next turn."
+                },
+                {
+                  "name": "Riposte",
+                  "text": "When you Defend against a melee attacker, you may immediately make an Opportunity Attack against them."
+                },
+                {
+                  "name": "Say That to My Face!",
+                  "text": "Action: (Reach 12) “Teleport” adjacent to a Taunted enemy."
+                },
+                {
+                  "name": "Victor’s Confidence",
+                  "text": "When you kill a Taunted enemy, give an ally advantage on their next attack."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zephyr",
+      "source": "Zephyr 3.1",
+      "page": 4,
+      "draft": false,
+      "tagline": "A furiously fast melee class that can deliver and avoid terrible blows.",
+      "flavor": "A Zephyr dedicates their life to the relentless pursuit of kinetic prowess. They hone their bodies into blurs of motion, training from a young age in remote wilds or mountain monasteries, wielding speed to unleash blows that echo through their foes and slip past attacks like a whispering wind. Speed is both their weapon and shield.\n\nThrough ceaseless training, they harness their inner momentum to achieve feats of supernatural agility, executing every motion with flowing precision.",
+      "highlights": [
+        "You’re a relentless force on the battlefield. Absorb blows and deliver devastating strikes.",
+        "Move with unparalleled speed and determination, outpacing your allies and foes alike.",
+        "Retaliate with precision and turn enemy strikes into opportunities for devastating counterattacks."
+      ],
+      "complexity": 3,
+      "keyStats": [
+        "DEX",
+        "STR"
+      ],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": {
+        "adv": "DEX",
+        "dis": "INT"
+      },
+      "armor": "None",
+      "weapons": "Melee, Unarmed Strikes",
+      "startingGear": [
+        "Staff",
+        "Traveling Robes & Sandals"
+      ],
+      "resources": [
+        {
+          "name": "Momentum",
+          "reset": "lost if you take damage, or at the end of combat"
+        },
+        {
+          "name": "Burst of Speed",
+          "max": "DEX",
+          "reset": "encounter"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Iron Defense",
+              "text": "Your Defense is DEX+STR as long as you are unarmored."
+            },
+            {
+              "name": "Momentum",
+              "text": "Gain 1 Momentum for every space you move. You may expend 1 Momentum to add 1 damage to any melee attack. All Momentum is lost if you take damage, or at the end of combat."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Burst of Speed",
+              "text": "When you roll Initiative, gain DEX Bursts of Speed for this encounter. You may spend 1 Burst of Speed to use one of the following maneuvers:\n• Slipstream. Whenever you Defend: Apply your Defense to every attack against you this round OR you may first move 1 space.\n• Galeforce Strike. Roll 1d12 for an unarmed attack instead of 1d4.\n• Windstep. Move for free, ignoring enemy spaces this turn."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Zephyr subclass."
+            },
+            {
+              "name": "Piercing Blows",
+              "text": "You may spend Momentum before you make an Unarmed Strike to gain advantage for every 2 spent."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Reactive Force",
+              "text": "Whenever you gain a Wound, gain a Burst of Speed."
+            },
+            {
+              "name": "Martial Master",
+              "text": "Choose a Martial Arts Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or STR."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Supernatural Speed",
+              "text": "While unarmored, you may use Momentum to treat a Primary Die rolled against you as if it rolled 1 lower for every 2 Momentum spent."
+            },
+            {
+              "name": "Iron Defense (2)",
+              "text": "Your Defense is (3×STR)+DEX as long as you are unarmored."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Martial Master (2)",
+              "text": "Choose a 2nd Martial Arts Ability."
+            },
+            {
+              "name": "Swift Fists",
+              "text": "If you have no actions and haven’t attacked this turn, your Galeforce Strike costs 0 actions."
+            },
+            {
+              "name": "Infuse Strength",
+              "text": "Whenever you make an Unarmed Strike, you may expend 1 or more Hit Dice and add them to the strike’s total. Instead of dealing damage, heal the target for that amount (you can use Momentum or other abilities as normal)."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Zephyr subclass feature."
+            },
+            {
+              "name": "Galeforce Strike (2)",
+              "text": "Your Galeforce Strike increases to 1d20."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Martial Master (3)",
+              "text": "Choose a 3rd Martial Arts Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or STR."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Swift Feet",
+              "text": "Gain +2 to your Speed and Initiative as long as you are unarmored."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Martial Master (4)",
+              "text": "Choose a 4th Martial Arts Ability."
+            },
+            {
+              "name": "Unyielding Resolve",
+              "text": "Ignore the first Wound you would suffer each encounter (when-Wounded abilities, such as Reactive Force, still trigger)."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Zephyr subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Kinetic Marvel",
+              "text": "Double the damage granted by Momentum."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or STR."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Unyielding Resolve (2)",
+              "text": "Ignore the first 2 Wounds you would suffer each encounter."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Blur",
+              "text": "Gain 10 Momentum when you roll Initiative."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Zephyr subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Swift Feet (2)",
+              "text": "Gain another +2 to your Speed and Initiative as long as you are unarmored."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 DEX or STR."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Unyielding Resolve (3)",
+              "text": "Ignore the first 3 Wounds you would suffer each encounter. You have advantage on STR saves while Dying."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Martial Master (5)",
+              "text": "Choose a 5th Martial Arts Ability."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Windborne",
+              "text": "+1 to any 2 of your stats. +1 additional Burst of Speed when you roll Initiative. Permanently gain 1 action (while Dying, you have a max of 2 actions)."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Focus",
+          "text": "Whenever you spend time meditating alone in a windy place during a Safe Rest, you may choose different Zephyr options available to you."
+        },
+        {
+          "title": "Zephyr Names",
+          "text": "Male Names: Araset, Nicanor, Leif, Sorrel, Bastian, Haze, Dash.\nFemale Names: Whisper, Aria, Syntyche, Trill, Sway, Glenda, Bliss."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Martial Arts Abilities",
+          "options": [
+            {
+              "name": "Airshift",
+              "cost": "Passive",
+              "text": "If you move through the space of a willing creature while using Windstep, they can move with you and choose any space adjacent to or along your path of movement to end in."
+            },
+            {
+              "name": "Bodily Discipline",
+              "cost": "1 Action",
+              "text": "End any single condition on yourself (ending Dying grants 1 HP, ending Dazed grants 1 action, etc.)."
+            },
+            {
+              "name": "Cyclonic Pull",
+              "cost": "Passive",
+              "text": "Whenever you avoid all of the damage of a melee attack (whether it misses or you Defend), you may swap places with the attacker."
+            },
+            {
+              "name": "Enduring Soul",
+              "cost": "Passive",
+              "text": "Whenever you roll Initiative, gain Hit Dice equal to the actions you get on your first turn (they expire at the end of combat if unused)."
+            },
+            {
+              "name": "I Jump on His Back!",
+              "cost": "Passive",
+              "text": "You can Ride creatures your size. While Riding, gain advantage vs your Ride, ANY damage you avoid is dealt to them. If you move into the space of a creature your size or larger with Windstep or Skystrider, gain Riding for free."
+            },
+            {
+              "name": "Kinetic Barrage",
+              "cost": "Passive",
+              "text": "(1/turn) Whenever you make a melee attack and spend no Momentum, gain DEX Momentum."
+            },
+            {
+              "name": "Mighty Soul",
+              "cost": "Passive",
+              "text": "You cannot be moved against your will. Whenever you would fail a roll, you may gain a Wound in order to add STR to the result you rolled. Repeat this any number of times."
+            },
+            {
+              "name": "Quickstrike",
+              "cost": "Passive",
+              "text": "Whenever you Interpose, you may first make an Unarmed Strike against the enemy for free."
+            },
+            {
+              "name": "Twisting Deflection",
+              "cost": "1 Action",
+              "text": "Reaction (when you avoid all of the damage of a melee attack—whether it misses or you Defend): Force another logical target within Reach to be hit instead."
+            },
+            {
+              "name": "Skystrider",
+              "cost": "Passive",
+              "text": "You cannot be Grappled or Restrained while conscious. While moving, you may travel across ANY terrain ignoring all ill effects (e.g., Prone, enemies, ceilings, treetops, lava, spikes, clouds)."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Way of Pain",
+          "page": 8,
+          "flavor": "Welcome the strikes of your enemies, and let them shape you. Your capacity for suffering is bottomless.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Bring the Pain",
+                  "text": "Damage no longer causes you to lose Momentum. (1/round) You may take 1 Wound to gain 10 Momentum for free."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Share My Pain",
+                  "text": "(1/round) Whenever you take damage, you can take half as much, and deal that much to another creature within Reach."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Pain Sharpens the Mind",
+                  "text": "While you are Bloodied, gain advantage."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Echoed Agony",
+                  "text": "Your Share My Pain can also target a 2nd creature within Reach 4."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Way of Iron",
+          "page": 9,
+          "flavor": "Train your body to be hard as iron. Concentrate to strengthen your defenses, then release the energy for devastating blows.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Steel Yourself",
+                  "text": "When you roll Initiative gain Tempered: (1/round) reduce an attack’s damage by 10 for free. When you hit, you may end Tempered to add 1d20 damage."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Iron Fists",
+                  "text": "When you end Tempered, roll its d20 with advantage."
+                },
+                {
+                  "name": "Iron Body",
+                  "text": "You can double the Tempered damage reduction each round or use it 2/round. Gain Tempered the first time you would gain a Wound each encounter."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Infuse with Iron",
+                  "text": "When you use Infuse Strength, your target gains Tempered."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Perfect Alloy",
+                  "text": "Gain Tempered whenever you use a Burst of Speed."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Way of Hurricanes",
+          "page": 11,
+          "flavor": "Your fist is as the howling wind, unceasing and everflowing. Those who face you are battered and bruised by a whirlwind of deadly strikes.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Cyclone",
+                  "text": "(Reach 4) You may spend 1 Momentum to move a creature 1 space."
+                },
+                {
+                  "name": "Cleaving Gale",
+                  "text": "Whenever you crit, you may deal that much damage to a 2nd creature within Reach 1 of your target. (1/turn) When you HIT, you may gain a Wound to change it into a crit."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Hurricane Strike",
+                  "text": "Your Galeforce Strike may gain: AoE, Reach 1."
+                },
+                {
+                  "name": "Sidestep",
+                  "text": "After you are attacked, you may move 2 spaces (after damage resolves)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Forceful Gust",
+                  "text": "Your Unarmed Strikes can Knockback STR spaces; you may suffer 1 Wound to double the distance."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Tempest’s Fury",
+                  "text": "Whenever you would roll any extra dice for a crit, instead roll 1d20."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Way of Flame",
+          "page": 12,
+          "flavor": "Burn fiercely with the heat of battle, fight fast and reckless, and counter enemies with burning strikes.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Exploding Soul",
+                  "text": "Whenever you gain one or more Wounds, make an Unarmed Strike, dealing the damage to ALL others within Reach 1. (1/round) On your turn, you may suffer a Wound."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Burning Palm",
+                  "text": "Your Unarmed Strikes gain: On crit: Smoldering. You may double the effects of Momentum vs Smoldering creatures (ending the condition)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Chain Reaction",
+                  "text": "(1/turn) When you crit with an Unarmed Strike, deal fire damage equal to your STR+Momentum spent to creatures of your choice adjacent to your target. Repeat any number of times, targeting creatures not yet damaged by this effect this turn."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Encompassing Flames",
+                  "text": "You may double the Reach of Chain Reaction and Exploding Soul."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does movement while Riding or forced movement count toward my Momentum?",
+          "a": "Yes."
+        },
+        {
+          "q": "What does Slipstream’s move 1 space do?",
+          "a": "If the movement takes you beyond the Reach/Range of the attack or gives you Full Cover, the attack misses. If it gives you Cover, disadvantage applies as normal, the Primary Die is rolled again and the lower one taken."
+        },
+        {
+          "q": "Can I Infuse Strength as an Opportunity Attack or Coordinated Strike?",
+          "a": "Yes."
+        },
+        {
+          "q": "Can I Defend or otherwise reduce the damage from Share My Pain?",
+          "a": "Yes, but that will likewise reduce the damage you deal in return."
+        },
+        {
+          "q": "Could I take additional Wounds from Exploding Soul triggering while Dying?",
+          "a": "Yes, if you fail the STR save on attacks while Dying."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "classes-c: extra keys beyond the brief schema: class `highlights` (the three icon blurbs under the intro), subclass `page`, and subclass `sidebars` (boxed callouts printed on a subclass page). Drop them if unwanted.",
+    "Stormshifter: the 'Be Wild' callout is printed twice (pp. 4 and 7); recorded once in sidebars.",
+    "Stormshifter: Razor Wind prints 'Range: 12. Range: 12.' (duplicated in the book); kept as printed.",
+    "Stormshifter: Seething Storm has no 'Upcast:' label; its last sentence '+2 Reach and +2 lightning bolts each round.' is kept in text rather than higherLevels.",
+    "Stormshifter: Arc Lightning header tag '1+ Target' stored in the spell's aoe field. Spell header tag 'AoE' with no separate shape is stored as aoe 'AoE'.",
+    "Stormshifter: italic spell footnotes (Charged, Next Closest Creature, D44 with advantage) are appended to the relevant spell text and also listed in class sidebars.",
+    "Stormshifter: Quick Builds page (p. 16, two premade level 1/2 'Willow' sheets) not transcribed; it is a premade character, not class rules.",
+    "The Cheat: no FAQ, names list, or class spells are printed in this book. Quick Builds page (p. 16, premade 'Stabs!' kobold at levels 1-2) not transcribed.",
+    "The Cheat: Underhanded Ability names are printed in small caps; 'How’d YOU get here?!' keeps the book's capitalisation from the text layer.",
+    "Zephyr: the 'Focus' callout is printed twice (pp. 4 and 7); recorded once in sidebars. Quick Builds page (p. 16, premade 'Nicanor' dragonborn at levels 1-2) not transcribed. No class spells in this book.",
+    "Zephyr: Momentum has no printed max; its resource entry records only the loss condition."
+  ]
+}

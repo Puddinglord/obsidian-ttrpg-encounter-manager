@@ -69,11 +69,16 @@ jobs:
             manifest.json
             styles.css
 
+      - name: Release notes from CHANGELOG.md
+        # This version's section of the changelog; GitHub's list of merged PRs goes under it.
+        run: node scripts/changelog.mjs notes "${GITHUB_REF_NAME}" --out release-notes.md && cat release-notes.md
+
       - name: Create Release
         # Only the files Obsidian installs. The sample adventure is on the landing page.
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
+          body_path: release-notes.md
           generate_release_notes: true
           files: |
             main.js

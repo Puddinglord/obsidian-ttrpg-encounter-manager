@@ -188,3 +188,58 @@ export function replaceEncounterBlock(text: string, lineStart: number, lineEnd: 
 	lines.splice(span.open + 1, span.close - span.open - 1, ...next);
 	return lines.join('\n');
 }
+
+// ----------------------------------------------------------------------------
+// Battle notes: the player's side of the same block
+//
+//   name: Ambush at the ford
+//   outcome: won
+//   where: [[Tresendar Manor]]
+//   loot: 40 gp, a silver key
+//   monsters:
+//   - 4 Goblin
+//   - Goblin Shaman
+//   notes: The shaman fled north.
+//
+// `outcome`, `where`, `when` and `loot` are kept among the block's extra lines,
+// so a GM-side edit never drops them and the format stays one format.
+
+export const BATTLE_FIELDS = ['outcome', 'where', 'when', 'loot'] as const;
+export type BattleField = typeof BATTLE_FIELDS[number];
+
+export const OUTCOMES = ['won', 'fled', 'lost', 'parley', 'ongoing'] as const;
+export type Outcome = typeof OUTCOMES[number];
+
+/** A battle field's value ("" when it isn't set). */
+export function battleField(def: EncounterDef, key: BattleField): string {
+	for (const line of def.extra ?? []) {
+		const m = line.match(/^\s*([a-z]+):\s*(.*)$/i);
+		if (m && m[1].toLowerCase() === key) return m[2].trim();
+	}
+	return '';
+}
+
+/** "won" for anything that reads like a win ("victory", "we won"), and so on; undefined when it's something else. */
+export function outcomeOf(value: string): Outcome | undefined {
+	const v = value.trim().toLowerCase();
+	if (!v) return undefined;
+	if (/^(won|win|victory|victorious|we won|defeated them|killed them)/.test(v)) return 'won';
+	if (/^(fled|retreat|ran|escaped|withdrew)/.test(v)) return 'fled';
+	if (/^(lost|defeat|tpk|captured)/.test(v)) return 'lost';
+	if (/^(parley|talked|truce|negotiat|peace)/.test(v)) return 'parley';
+	if (/^(ongoing|unfinished|to be continued|paused)/.test(v)) return 'ongoing';
+	return undefined;
+}
+
+/** A copy of `def` with a battle field set (or removed when `value` is empty). Other extra lines keep their place. */
+export function withBattleField(def: EncounterDef, key: BattleField, value: string): EncounterDef {
+	const v = value.replace(/[\r\n]+/g, ' ').trim();
+	const extra = [...(def.extra ?? [])];
+	const i = extra.findIndex(l => (l.match(/^\s*([a-z]+):/i)?.[1] ?? '').toLowerCase() === key);
+	if (!v) { if (i >= 0) extra.splice(i, 1); }
+	else if (i >= 0) extra[i] = `${key}: ${v}`;
+	else extra.push(`${key}: ${v}`);
+	const next: EncounterDef = { ...def, extra };
+	if (!extra.length) delete next.extra;
+	return next;
+}

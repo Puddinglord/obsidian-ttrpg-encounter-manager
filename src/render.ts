@@ -42,9 +42,17 @@ export interface RenderOptions {
 	partySize?: number;
 	/** Hide flavour text and tactics (tight spaces). */
 	brief?: boolean;
+	/**
+	 * Player view: what the heroes could know about it (name, size, kind,
+	 * where it lives, its lore) and none of the numbers.
+	 */
+	lore?: boolean;
+	/** Lore cards: every book the creature is printed in ("Monsters & More p.149"), as pills. */
+	sources?: string[];
 }
 
 export function renderStatblock(container: HTMLElement, monster: NimbleMonster, opts: RenderOptions): HTMLElement {
+	if (opts.lore) return renderLoreCard(container, monster, opts);
 	const role = monsterRole(monster);
 	const block = container.createDiv({ cls: 'nimble-statblock' });
 	if (opts.variant !== 'block') block.addClass('inline');
@@ -94,21 +102,56 @@ export function renderStatblock(container: HTMLElement, monster: NimbleMonster, 
 		btn.setAttr('aria-label', `Add ${monster.name}`);
 		btn.addEventListener('click', (ev) => opts.onAdd?.(ev));
 	}
-	if (opts.actions?.length) {
-		const bar = block.createDiv({ cls: 'statblock-actions' });
-		for (const a of opts.actions) {
-			const host = a.menu ? bar.createDiv({ cls: `statblock-split ${a.cls || ''}` }) : bar;
-			const b = host.createEl('button', { cls: `statblock-action ${a.cls || ''}`, attr: { 'aria-label': a.title || a.label } });
-			if (a.icon) setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
-			b.createSpan({ text: a.label });
-			b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.onClick(ev); });
-			if (a.menu) {
-				const more = host.createEl('button', { cls: `statblock-action statblock-action-more ${a.cls || ''}`, attr: { 'aria-label': `More ways to ${a.label.toLowerCase()}` } });
-				setIcon(more, 'chevron-down');
-				more.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.menu!(ev); });
-			}
+	renderActionBar(block, opts.actions);
+	return block;
+}
+
+/** The buttons under a stat block or a lore card (Add, Bestiary, Open notes…), with an optional ▾ menu each. */
+function renderActionBar(block: HTMLElement, actions: StatblockAction[] | undefined): void {
+	if (!actions?.length) return;
+	const bar = block.createDiv({ cls: 'statblock-actions' });
+	for (const a of actions) {
+		const host = a.menu ? bar.createDiv({ cls: `statblock-split ${a.cls || ''}` }) : bar;
+		const b = host.createEl('button', { cls: `statblock-action ${a.cls || ''}`, attr: { 'aria-label': a.title || a.label } });
+		if (a.icon) setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
+		b.createSpan({ text: a.label });
+		b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.onClick(ev); });
+		if (a.menu) {
+			const more = host.createEl('button', { cls: `statblock-action statblock-action-more ${a.cls || ''}`, attr: { 'aria-label': `More ways to ${a.label.toLowerCase()}` } });
+			setIcon(more, 'chevron-down');
+			more.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.menu!(ev); });
 		}
 	}
+}
+
+/** The player's view of a monster: a lore card with no stats. */
+export function renderLoreCard(container: HTMLElement, m: NimbleMonster, opts: RenderOptions): HTMLElement {
+	const block = container.createDiv({ cls: 'nimble-statblock nimble-lore-card' });
+	if (opts.variant !== 'block') block.addClass('inline');
+	if (opts.variant === 'hover') block.addClass('hover-preview');
+	block.setAttr('data-monster', m.name);
+	const top = block.createDiv({ cls: 'monster-header' });
+	top.createDiv({ cls: 'monster-name', text: m.name });
+	const what = [m.size && m.size !== 'Medium' ? m.size : '', m.type ?? '', monsterRole(m) === 'legendary' ? (m.roleLabel ?? 'Legendary') : ''].filter(Boolean).join(' · ');
+	if (what) top.createDiv({ cls: 'monster-meta', text: what });
+	const tags = [m.group, m.habitat].filter((t): t is string => !!t);
+	if (tags.length) {
+		const row = block.createDiv({ cls: 'lore-tags' });
+		for (const t of tags) row.createSpan({ cls: 'lore-tag', text: t });
+	}
+	if (m.description) appendRichText(block.createEl('p', { cls: 'monster-description' }), m.description, textOpts({ ...opts, onDice: undefined }, m.name, ''));
+	else block.createEl('p', { cls: 'lore-empty', text: 'Nothing in the books about this one. Whatever you learn goes in your notes.' });
+	const sources = opts.sources?.length ? opts.sources : m.source ? [m.source] : [];
+	if (sources.length || m.bundledId) {
+		const src = block.createDiv({ cls: 'monster-source lore-sources' });
+		for (const x of sources) src.createSpan({ cls: 'lore-tag lore-source', text: x });
+		if (m.bundledId) {
+			const credit = src.createSpan({ cls: 'lore-credit', text: 'Nimble TTRPG © Nimble Co. · ' });
+			credit.createEl('a', { text: 'Get the books', href: NIMBLE_STORE_URL, cls: 'external-link', attr: { target: '_blank', rel: 'noopener' } });
+		}
+	}
+	wireWikiLinks(block, opts.app, opts.sourcePath);
+	renderActionBar(block, opts.actions);
 	return block;
 }
 

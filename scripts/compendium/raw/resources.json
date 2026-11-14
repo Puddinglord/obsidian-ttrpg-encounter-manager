@@ -1,0 +1,5168 @@
+[
+  {
+    "class": "Berserker",
+    "subclass": null,
+    "name": "Fury Dice",
+    "kind": "dice-pool",
+    "level": 1,
+    "die": {
+      "1": "d4",
+      "6": "d6",
+      "9": "d8",
+      "13": "d10",
+      "17": "d12"
+    },
+    "count": "1 per Rage (2 from level 5); +1 free at the start of your turn while Raging (level 2)",
+    "max": "KEY",
+    "gain": "Rage. (1/turn) Action: Roll a Fury Die (1d4) and set it aside. … Intensifying Fury (L2): If you are Raging at the start of your turn, roll 1 Fury Die for free. Rage (2) (L5): Whenever you Rage, gain 2 Fury Dice instead.",
+    "rolledWhen": "gained",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "add",
+        "on": "every STR attack while Raging (sum of all held Fury Dice)",
+        "amount": "all",
+        "text": "Add it to every STR attack you make.",
+        "page": 4
+      },
+      {
+        "how": "reduce-damage",
+        "on": "an attack against you",
+        "amount": "1+",
+        "text": "That all you got?! When you are attacked, you may expend 1 or more Fury Dice to reduce the damage taken by STR+DEX for each die spent.",
+        "page": 4
+      },
+      {
+        "how": "spend",
+        "on": "free movement on your turn",
+        "amount": "1+",
+        "text": "Bloodlust (L3). Expend 1 or more Fury Dice on your turn, move DEX spaces per die spent for free.",
+        "page": 4
+      },
+      {
+        "how": "spend",
+        "on": "raise the Primary Die after rolling an attack",
+        "amount": "any",
+        "requires": "Savage Arsenal: Dismantle",
+        "text": "After you roll an attack, expend any number of Fury Dice, increase your Primary Die by 1 for each.",
+        "page": 6
+      },
+      {
+        "how": "spend",
+        "on": "force a creature to reroll its save to escape your Grapple",
+        "amount": "1",
+        "requires": "Path of the Titan’s Grip L11 (Wrathful Grip)",
+        "text": "You may expend a Fury Die to force a creature to reroll a save to escape your Grapple.",
+        "page": 10
+      },
+      {
+        "how": "track",
+        "on": "Muscle Spell requirements and FD damage (Muscle Mage)",
+        "amount": "count",
+        "requires": "Muscle Mage",
+        "text": "“Muscle Spells” which require you to have a certain number of Fury Dice to cast. … 1d10+STR+Fury Dice (FD) damage.",
+        "page": 13
+      }
+    ],
+    "appliesTo": [
+      "str-attack",
+      "damage-taken"
+    ],
+    "autoOffer": true,
+    "reset": "Lost when your Rage ends: if you leave combat, drop to 0 HP, or go 1 round without attacking or Raging (Deep Rage L18: dropping to 0 HP no longer ends it).",
+    "text": "Rage. (1/turn) Action: Roll a Fury Die (1d4) and set it aside. Add it to every STR attack you make. You can have a max of KEY Fury Dice; they are lost when your Rage ends.",
+    "modifiers": [
+      {
+        "source": "Sidebar ‘Yes!’",
+        "text": "You can Rage and gain another Fury Die even if you are already Raging. If you are already at your max, roll as normal and decide which ones to keep."
+      },
+      {
+        "source": "Savage Arsenal: Death Blow",
+        "text": "Whenever you crit, you may double the damage from your Fury Dice (instead of rolling any additional dice)."
+      },
+      {
+        "source": "Savage Arsenal: Deathless Rage",
+        "text": "(1/turn) While Dying, you may suffer 1 Wound to gain 1 action and 1 Fury Die."
+      },
+      {
+        "source": "Savage Arsenal: MORE BLOOD!",
+        "text": "Whenever an enemy crits you, gain 1 Fury Die."
+      },
+      {
+        "source": "Savage Arsenal: Swift Fury",
+        "text": "Whenever you gain a Fury Die, move up to DEX spaces for free, ignoring Difficult Terrain."
+      },
+      {
+        "source": "Path of the Mountainheart L3 (Stone’s Resilience)",
+        "text": "Whenever you expend Fury Dice to reduce incoming damage, add the value of the die to the amount reduced."
+      },
+      {
+        "source": "Path of the Red Mist L3 (Blood Frenzy)",
+        "text": "(1/turn) While Raging, whenever you crit or kill an enemy, gain 1 Fury Die or change 1 Fury Die to the max."
+      },
+      {
+        "source": "Path of the Burning Rage L3 (Stoke the Flames)",
+        "text": "Whenever your Fury Die size would increase, instead roll 1 additional Fury Die when you Rage."
+      },
+      {
+        "source": "Path of the Burning Rage L3 (Overflowing Fury)",
+        "text": "(Reach 2) For each Fury Die you discard over your max, deal 5 fire damage to a creature within Reach, they gain Smoldering."
+      },
+      {
+        "source": "Path of the Burning Rage L15 (Pyromania)",
+        "text": "Treat each of your Fury Dice as if they were always 5s."
+      },
+      {
+        "source": "Path of the Burning Rage L20 (BOUNDLESS FLAMES)",
+        "text": "(1/round) When attacked, deal half your Fury Dice damage to an adjacent creature."
+      },
+      {
+        "source": "Muscle Mage L7 (I’m Fine! Totally Fine!)",
+        "text": "(1/Safe Rest) When you drop to 0 HP, give a number of actions out to your allies equal to the number of Fury Dice you had."
+      },
+      {
+        "source": "L20 BOUNDLESS RAGE",
+        "text": "Anytime you roll less than 5 on a Fury Die, change it to 5 instead."
+      }
+    ],
+    "source": "Berserker 3.0",
+    "page": 4,
+    "notes": "FAQ p14: “These are NOT expended when making an attack. You keep accumulating them … they are only lost when your Rage ends … or when you expend them to use an ability like ‘That all you got?!’” Each die keeps its rolled face (Red Mist can change one to max, so the faces matter). ‘Every STR attack’ = add the sum of all held dice to the damage of each STR-based attack while Raging (melee STR weapons, STR thrown, Unarmed). Muscle Mage loses weapon proficiencies but Muscle Spells add FD to damage; the book uses ‘FD’ in damage formulas (e.g. 1d10+STR+FD) — read FD as the sum of held Fury Dice, not the count (‘Throwmaturgy’ Reach 3/FD and ‘Teleport’ ‘Sum your Fury Dice’ use count and sum respectively, so FD is used both ways; flagged ambiguous). Burning Rage: the die stays d4 for life and you roll extra dice per Rage instead (L6: +1, L9: +2, L13: +3, L17: +4)."
+  },
+  {
+    "class": "Berserker",
+    "subclass": null,
+    "name": "One with the Ancients",
+    "kind": "uses",
+    "level": 2,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 2",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "One with the Ancients",
+        "amount": "1",
+        "text": "(1/Safe Rest) When faced with a decision about which direction or course of action to take, you can call upon your ancestors to guide you toward the most dangerous or challenging path."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) When faced with a decision about which direction or course of action to take, you can call upon your ancestors to guide you toward the most dangerous or challenging path.",
+    "source": "Berserker 3.0",
+    "page": 4,
+    "notes": null
+  },
+  {
+    "class": "Berserker",
+    "subclass": "Path of the Mountainheart",
+    "name": "Unbreakable",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Unbreakable",
+        "amount": "1",
+        "text": "(1/encounter) While Raging, if you would suffer your last Wound or other negative condition of your choice, you don’t."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken",
+      "save"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) While Raging, if you would suffer your last Wound or other negative condition of your choice, you don’t.",
+    "source": "Berserker 3.0",
+    "page": 8,
+    "notes": null
+  },
+  {
+    "class": "Berserker",
+    "subclass": "Muscle Mage",
+    "name": "I’m Fine! Totally Fine!",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "I’m Fine! Totally Fine!",
+        "amount": "1",
+        "text": "(1/Safe Rest) When you drop to 0 HP, give a number of actions out to your allies equal to the number of Fury Dice you had."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) When you drop to 0 HP, give a number of actions out to your allies equal to the number of Fury Dice you had.",
+    "source": "Berserker 3.0",
+    "page": 13,
+    "notes": "High Flexemplar (L15) makes this unlimited."
+  },
+  {
+    "class": "Berserker",
+    "subclass": "Muscle Mage",
+    "name": "Powershout: WEAKLINGS!",
+    "kind": "uses",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Powershout: WEAKLINGS!",
+        "amount": "1",
+        "text": "Reach: 6, AoE. (1/encounter) FD damage to enemies, Frightening them (Large+ enemies are Taunted instead) and attacks deal +10 damage to Armored enemies this round."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "Reach: 6, AoE. (1/encounter) FD damage to enemies, Frightening them (Large+ enemies are Taunted instead) and attacks deal +10 damage to Armored enemies this round.",
+    "source": "Berserker 3.0",
+    "page": 13,
+    "notes": "Requires 6 Fury Dice (4 with Flexpertise)."
+  },
+  {
+    "class": "Berserker",
+    "subclass": "Muscle Mage",
+    "name": "Earthquake",
+    "kind": "uses",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Earthquake",
+        "amount": "1",
+        "text": "(1/encounter) Leap into the air and land with seismic force up to 2× your Speed away. Creatures within Reach 3 take 3d20+FD damage and become Slowed. Clobbered creatures are knocked Prone."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Leap into the air and land with seismic force up to 2× your Speed away. Creatures within Reach 3 take 3d20+FD damage and become Slowed. Clobbered creatures are knocked Prone.",
+    "source": "Berserker 3.0",
+    "page": 13,
+    "notes": "Requires 7 Fury Dice (5 with Flexpertise)."
+  },
+  {
+    "class": "Commander",
+    "subclass": null,
+    "name": "Combat Dice",
+    "kind": "dice-pool",
+    "level": 2,
+    "die": {
+      "2": "d6",
+      "5": "d8",
+      "9": "d10",
+      "13": "d12",
+      "17": "d20"
+    },
+    "count": "STR (+1 per ‘+1 max Combat Dice’ choice; see modifiers)",
+    "max": "STR",
+    "gain": "Fit for Any Battlefield. Choose a Combat Tactic. When you roll Initiative, gain STR Combat Dice (each a d6), they are lost when combat ends if unspent.",
+    "rolledWhen": "spent",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "one Combat Tactic per attack",
+        "amount": "1",
+        "text": "Whenever you attack, you may roll and expend a Combat Die to use a Combat Tactic (max 1/attack).",
+        "page": 7
+      },
+      {
+        "how": "spend",
+        "on": "Heavy Strike: on hit, +Combat Die damage and knockback STR",
+        "amount": "1",
+        "requires": "Combat Tactic: Heavy Strike",
+        "text": "Whenever you hit, deal +Combat Die damage and knockback your target STR spaces.",
+        "page": 7
+      },
+      {
+        "how": "spend",
+        "on": "Inerrant Strike: on miss, +1 Primary Die and +Combat Die damage",
+        "amount": "1",
+        "requires": "Combat Tactic: Inerrant Strike",
+        "text": "Whenever you miss, add 1 to the Primary Die and deal +Combat Die damage.",
+        "page": 7
+      },
+      {
+        "how": "spend",
+        "on": "Lunging Strike: +1 Reach and +2× Combat Die damage",
+        "amount": "1",
+        "requires": "Combat Tactic: Lunging Strike",
+        "text": "Whenever you attack, gain +1 Reach and +2× Combat Die damage.",
+        "page": 7
+      },
+      {
+        "how": "spend",
+        "on": "Sweeping Strike: +1 action, AoE within weapon Reach, +Combat Die damage to all",
+        "amount": "1",
+        "requires": "Combat Tactic: Sweeping Strike",
+        "text": "Whenever you attack, spend 1 additional action to select any contiguous area within your weapon’s Reach, deal +Combat Die damage to ALL targets there (AoE attacks do not miss on a 1, nor crit on the max).",
+        "page": 7
+      },
+      {
+        "how": "spend",
+        "on": "Shatter Formation (Action): Combat Die damage to up to STR targets, knockback 2",
+        "amount": "1",
+        "requires": "Champion of the Siege-Breaker L7",
+        "text": "(New Combat Tactic) Action: Roll a Combat Die and deal that much damage to up to STR targets within your weapon’s Reach, and knockback 2. You may use this ability while moving.",
+        "page": 14
+      },
+      {
+        "how": "spend",
+        "on": "Tear Asunder: vs armored foe, +Combat Die damage; next non-crit attack ignores armor",
+        "amount": "1",
+        "requires": "Champion of the Siege-Breaker L11",
+        "text": "(New Combat Tactic) Strike an armored foe and deal +Combat Die damage. The next non-critical attack against them ignores armor.",
+        "page": 14
+      },
+      {
+        "how": "add",
+        "on": "an INT Assess check, without expending (1/encounter)",
+        "amount": "1 (not expended)",
+        "requires": "Champion of the Arena L7 (Remarkable Strategy)",
+        "text": "(1/encounter) When Assessing with an INT skill, you may roll a Combat Die and add it to the result (without expending it).",
+        "page": 12
+      }
+    ],
+    "appliesTo": [
+      "weapon-damage",
+      "any-attack",
+      "check"
+    ],
+    "autoOffer": true,
+    "reset": "Gained when you roll Initiative; lost when combat ends if unspent.",
+    "text": "When you roll Initiative, gain STR Combat Dice (each a d6), they are lost when combat ends if unspent. … Whenever you attack, you may roll and expend a Combat Die to use a Combat Tactic (max 1/attack).",
+    "modifiers": [
+      {
+        "source": "Fit for Any Battlefield (2)–(6) at L6, 8, 10, 12, 16",
+        "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+      },
+      {
+        "source": "Champion of the Vanguard L11 (Survey the Battlefield)",
+        "text": "+1 max Combat Dice."
+      },
+      {
+        "source": "Champion of the Arena L3 (Single-minded Fighter)",
+        "text": "You forgo all Commander’s Orders. Whenever you would choose one, you gain +1 max Combat Die instead."
+      },
+      {
+        "source": "Champion of the Siege-Breaker L11 (Relentless Assault)",
+        "text": "+2 max Combat Dice. You roll Combat Dice with advantage."
+      },
+      {
+        "source": "Champion of the Phalanx L11 (Together We Stand)",
+        "text": "Add 1 to your Combat Die rolls for each ally within your weapon’s Reach."
+      },
+      {
+        "source": "Champion of the Arena L15 (Outlast, Outmatch)",
+        "text": "Your Coordinated Strike also grants you and your ally temp HP equal to the max value of your Combat Die."
+      },
+      {
+        "source": "Spellblade (Withering Presence)",
+        "text": "Creatures you Command suffer necrotic damage equal to the max value of your Combat Die (ignoring armor)."
+      }
+    ],
+    "source": "Commander 3.0",
+    "page": 4,
+    "notes": "Dice are kept unrolled; you roll one when you spend it on an attack (‘roll and expend’). Max 1 Combat Die per attack. ‘STR Combat Dice’ is the number gained; the ‘+1 max Combat Dice’ upgrades make the gain = max = STR + bonuses (the book never separates ‘gain’ from ‘max’). ‘+2× Combat Die damage’ (Lunging Strike) is ambiguous: roll one Combat Die and double it, or add two Combat Dice’ worth; read it as double the one rolled die. Spellblade loses Combat Tactics, so it has no normal way to spend Combat Dice (still uses the die size for Withering Presence); flagged ambiguous whether Spellblades gain Combat Dice at all."
+  },
+  {
+    "class": "Commander",
+    "subclass": null,
+    "name": "Coordinated Strike",
+    "kind": "uses",
+    "level": 1,
+    "count": null,
+    "max": "1/encounter + pool of INT/Safe Rest from L5 (+1 at L9, L13, L17)",
+    "gain": "Coordinated Strike! (1/encounter). Master Commander (L5): You gain an additional pool of INT uses of Coordinated Strike to use per Safe Rest (you may use Coordinated Strike only 1/round). Master Commander (2)–(4) at L9, L13, L17: +1 use of Coordinated Strike.",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "you and an ally each make a free weapon/Unarmed Strike or cantrip",
+        "amount": "1",
+        "text": "(1/encounter) You and an ally within Reach 6 both immediately make a weapon/Unarmed Strike or cast a cantrip for free."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "The 1/encounter use refreshes each encounter; the INT (+1/+1/+1) pool recharges on a Safe Rest. Champion of the Vanguard L11: regain 1 use when you roll Initiative.",
+    "text": "Coordinated Strike! (1/encounter) You and an ally within Reach 6 both immediately make a weapon/Unarmed Strike or cast a cantrip for free. … Master Commander. … You gain an additional pool of INT uses of Coordinated Strike to use per Safe Rest (you may use Coordinated Strike only 1/round). Attacks made from your Coordinated Strikes also now ignore disadvantage.",
+    "source": "Commander 3.0",
+    "page": 4,
+    "notes": "Track as two counters: encounter use (max 1) and Safe Rest pool (max INT, +1 at L9/13/17). Limit 1/round regardless. L18/L20 grant extra actions the first time each encounter you use it (no separate counter needed beyond ‘first use this encounter’)."
+  },
+  {
+    "class": "Commander",
+    "subclass": null,
+    "name": "Commanding Presence",
+    "kind": "uses",
+    "level": 4,
+    "requires": "Commander’s Order: Commanding Presence",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 4",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Commanding Presence",
+        "amount": "1",
+        "text": "(1/encounter) Make an Influence check, and Command an enemy to perform a single simple action and they spend their entire next turn obeying it.",
+        "requires": "Commander’s Order: Commanding Presence"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Make an Influence check, and Command an enemy to perform a single simple action and they spend their entire next turn obeying it.",
+    "source": "Commander 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Commander",
+    "subclass": null,
+    "name": "Hold the Line!",
+    "kind": "uses",
+    "level": 4,
+    "requires": "Commander’s Order: Hold the Line!",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 4",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Hold the Line!",
+        "amount": "1",
+        "text": "(1/encounter) Reaction (when an ally drops to 0 HP): Command them to continue the fight! Set their HP to 3× your LVL.",
+        "requires": "Commander’s Order: Hold the Line!"
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Reaction (when an ally drops to 0 HP): Command them to continue the fight! Set their HP to 3× your LVL.",
+    "source": "Commander 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Commander",
+    "subclass": null,
+    "name": "I Can Do This ALL DAY!",
+    "kind": "uses",
+    "level": 4,
+    "requires": "Commander’s Order: I Can Do This ALL DAY!",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 4",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "I Can Do This ALL DAY!",
+        "amount": "1",
+        "text": "(1/encounter) Reaction (when you would drop to 0 HP): Expend any number of Hit Dice and set your HP to the sum rolled instead (do not add your STR).",
+        "requires": "Commander’s Order: I Can Do This ALL DAY!"
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Reaction (when you would drop to 0 HP): Expend any number of Hit Dice and set your HP to the sum rolled instead (do not add your STR).",
+    "source": "Commander 3.0",
+    "page": 6,
+    "notes": "Spends Hit Dice (rolled when spent)."
+  },
+  {
+    "class": "Commander",
+    "subclass": "Champion of the Arena",
+    "name": "Showstopping Strike",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Showstopping Strike",
+        "amount": "1",
+        "text": "(1/Safe Rest) When you use Coordinated Strike, you and your ally both automatically crit."
+      }
+    ],
+    "appliesTo": [
+      "any-attack"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest; also refreshes the first time each encounter you gain the Dying condition (L7 Pushed to the Brink) and when you roll Initiative (L11 Superior Striker).",
+    "text": "(1/Safe Rest) When you use Coordinated Strike, you and your ally both automatically crit.",
+    "source": "Commander 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Commander",
+    "subclass": "Champion of the Arena",
+    "name": "Remarkable Strategy",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Remarkable Strategy",
+        "amount": "1",
+        "text": "(1/encounter) When Assessing with an INT skill, you may roll a Combat Die and add it to the result (without expending it)."
+      }
+    ],
+    "appliesTo": [
+      "check"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When Assessing with an INT skill, you may roll a Combat Die and add it to the result (without expending it).",
+    "source": "Commander 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Commander",
+    "subclass": "Spellblade",
+    "name": "Mana (Arcane Command)",
+    "kind": "points",
+    "level": 3,
+    "count": "INT",
+    "max": "INT",
+    "gain": "You now gain INT mana when you roll Initiative (this mana is lost if unspent when combat ends).",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "Deep Knowledge spells; upcasting Spellforge’s free Enchant Weapon",
+        "amount": "1+",
+        "text": "Spellforge. When you roll Initiative you may cast Enchant Weapon for free (can be upcast as normal by spending additional mana)."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Gained at Initiative; lost if unspent when combat ends.",
+    "text": "Arcane Command. … you now gain INT mana when you roll Initiative (this mana is lost if unspent when combat ends).",
+    "source": "Commander 3.0",
+    "page": 16,
+    "notes": "No Safe Rest mana pool; this is per-combat only."
+  },
+  {
+    "class": "Hunter",
+    "subclass": null,
+    "name": "Thrill of the Hunt charges",
+    "kind": "charges",
+    "level": 2,
+    "count": "1 per trigger",
+    "max": null,
+    "gain": "Gain a charge to use these abilities during that encounter whenever: • You HIT your Quarry in melee. • You CRIT your Quarry at Range. • Your Quarry dies.",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "a Thrill of the Hunt ability",
+        "amount": "1",
+        "text": "Unless otherwise noted, each Thrill of the Hunt ability costs 1 charge to use and cannot miss. Abilities that spend charges cannot generate new ones.",
+        "page": 6
+      },
+      {
+        "how": "spend",
+        "on": "Final Takedown (L5)",
+        "amount": "1",
+        "text": "(1 Action, 1 TotH charge) Crit your Bloodied Quarry in melee and double the damage of your Hunter’s Mark. If they survive, they crit you back.",
+        "page": 5
+      },
+      {
+        "how": "spend",
+        "on": "Go for the Throat! (Beastmaster companion)",
+        "amount": "1",
+        "requires": "Beastmaster",
+        "text": "0/1/2 Actions, 1 TotH charge (1/encounter): companion attacks your Quarry.",
+        "page": 12
+      },
+      {
+        "how": "track",
+        "on": "Wild Instinct costs 0 when you have none; Roll & Strike and Hunter’s Resolve only work with none",
+        "amount": "0",
+        "text": "Roll & Strike. Action: If you have no Thrill of the Hunt charges, move up to your Speed toward your Quarry. … Hunter’s Resolve. Whenever you have no Thrill of the Hunt charges, gain Hunter’s Resolve until the end of your turn.",
+        "page": 4
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Unused charges are lost when combat ends.",
+    "text": "Thrill of the Hunt: Choose 2 Thrill of the Hunt (TotH) abilities. Gain a charge to use these abilities during that encounter whenever: • You HIT your Quarry in melee. • You CRIT your Quarry at Range. • Your Quarry dies. … Unused charges are lost when combat ends.",
+    "modifiers": [
+      {
+        "source": "L10 Veteran Stalker",
+        "text": "Gain a Thrill of the Hunt charge whenever you are first Bloodied in an encounter and for every Wound you gain."
+      },
+      {
+        "source": "L18 Wild Endurance",
+        "text": "Gain 1 Thrill of the Hunt charge at the start of your turns."
+      },
+      {
+        "source": "Keeper of the Shadowpath L15 (Apex Predator)",
+        "text": "Gain 1 Thrill of the Hunt charge when you roll Initiative."
+      },
+      {
+        "source": "Keeper of the Wild Heart L3 (I Have the High Ground)",
+        "text": "Whenever you roll Initiative or gain a Thrill of the Hunt charge, move up to half your Speed for free."
+      },
+      {
+        "source": "Beastmaster",
+        "text": "Your companion’s attacks count as your own for gaining TotH charges."
+      }
+    ],
+    "source": "Hunter 3.0",
+    "page": 4,
+    "notes": "FAQ: no limit on charges held; a melee crit counts as a hit; you get a charge when anyone kills your Quarry (and possibly another for your own hit/crit). Abilities that spend charges cannot generate new ones (a TotH attack that hits your Quarry in melee does not give a charge)."
+  },
+  {
+    "class": "Hunter",
+    "subclass": null,
+    "name": "Hunter’s Mark",
+    "kind": "bonus-dice",
+    "level": 1,
+    "count": null,
+    "max": null,
+    "gain": "Action: A creature you can see is marked as your Quarry for 1 day (or until you mark another creature).",
+    "rolledWhen": "n/a",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "attacks against your Quarry: choose advantage OR +LVL damage before each attack",
+        "amount": "flat +LVL",
+        "text": "Your attacks against it gain your choice of advantage OR +LVL damage (choose before each attack)."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "weapon-damage"
+    ],
+    "autoOffer": true,
+    "reset": "Lasts 1 day or until you mark another creature.",
+    "text": "Hunter’s Mark. Action: A creature you can see is marked as your Quarry for 1 day (or until you mark another creature). It can’t be hidden from you, and your attacks against it gain your choice of advantage OR +LVL damage (choose before each attack).",
+    "modifiers": [
+      {
+        "source": "Keeper of the Shadowpath L11 (Dread Hunter)",
+        "text": "Choose both Hunter’s Mark options when attacking your Quarry."
+      },
+      {
+        "source": "Final Takedown",
+        "text": "double the damage of your Hunter’s Mark."
+      },
+      {
+        "source": "Vital Shot",
+        "text": "Ignore their Armor or double your Hunter’s Mark damage bonus if they have none."
+      },
+      {
+        "source": "Keeper of the Pack L11 (Frenzied Pack)",
+        "text": "Allies within Reach 2 gain the benefits of your Hunter’s Mark in melee."
+      },
+      {
+        "source": "L20 Nemesis",
+        "text": "Your Hunter’s Mark can target any number of creatures simultaneously."
+      }
+    ],
+    "source": "Hunter 3.0",
+    "page": 4,
+    "notes": "Not a resource; a flat on-attack bonus (no dice). Roll dialog should offer the advantage / +LVL choice when the target is the Quarry. Related static bonus: Keen Eye, Steady Hand (L10) adds WIL to Ranged weapon damage."
+  },
+  {
+    "class": "Hunter",
+    "subclass": null,
+    "name": "Grease Trap",
+    "kind": "uses",
+    "requires": "Thrill of the Hunt: Grease Trap",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Grease Trap",
+        "amount": "1",
+        "text": "(1/encounter) Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Target falls Prone, is vulnerable to the next fire damage it takes, and is treated as if it is Smoldering.",
+        "requires": "Thrill of the Hunt: Grease Trap"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Target falls Prone, is vulnerable to the next fire damage it takes, and is treated as if it is Smoldering.",
+    "source": "Hunter 3.0",
+    "page": 6,
+    "notes": "Also costs 1 TotH charge. Keeper of Traps L15 (Trap Master): one of your Traps can be used an additional time each encounter."
+  },
+  {
+    "class": "Hunter",
+    "subclass": null,
+    "name": "Snare Trap",
+    "kind": "uses",
+    "requires": "Thrill of the Hunt: Snare Trap",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Snare Trap",
+        "amount": "1",
+        "text": "(1/encounter) Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Move them back 1 space and Restrain them (escape DC 10+WIL).",
+        "requires": "Thrill of the Hunt: Snare Trap"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Move them back 1 space and Restrain them (escape DC 10+WIL).",
+    "source": "Hunter 3.0",
+    "page": 7,
+    "notes": "Also costs 1 TotH charge. Trap Master (Keeper of Traps L15) adds 1 use to one Trap."
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Keeper of the Shadowpath",
+    "name": "Primal Predator",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1 (2 from L15 Apex Predator)",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Primal Predator",
+        "amount": "1",
+        "text": "(1/encounter) Your weapon attacks ignore Cover and Armor this turn."
+      }
+    ],
+    "appliesTo": [
+      "weapon-damage"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Your weapon attacks ignore Cover and Armor this turn.",
+    "source": "Hunter 3.0",
+    "page": 8,
+    "notes": null
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Keeper of the Pack",
+    "name": "Marked for Death",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Marked for Death",
+        "amount": "1",
+        "text": "(1/encounter) When you hit your Quarry in melee, the next WIL attacks against it are made with advantage 2."
+      }
+    ],
+    "appliesTo": [
+      "melee-attack"
+    ],
+    "autoOffer": false,
+    "reset": "Each encounter; L15 Ferocious Takedown: when you kill your Quarry with Final Takedown, regain a use.",
+    "text": "(1/encounter) When you hit your Quarry in melee, the next WIL attacks against it are made with advantage 2.",
+    "source": "Hunter 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Keeper of the Wild Heart",
+    "name": "Ha! I’m Over Here!",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Ha! I’m Over Here!",
+        "amount": "1",
+        "text": "(1/Safe Rest) If an attack would cause you to drop to 0 HP, you instead move up to your Speed away and take no damage."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) If an attack would cause you to drop to 0 HP, you instead move up to your Speed away and take no damage.",
+    "source": "Hunter 3.0",
+    "page": 9,
+    "notes": null
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Keeper of the Wild Heart",
+    "name": "Healing Salves",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "WIL",
+    "gain": "(WIL/Safe Rest) from level 7",
+    "rolledWhen": "n/a",
+    "use": "heal",
+    "uses": [
+      {
+        "how": "heal",
+        "on": "Healing Salves",
+        "amount": "1",
+        "text": "Resourceful Herbalist. … Whenever you Safe Rest in a location near where plants or fungi can grow, you may spend a day collecting healing herbs to craft WIL Healing Salves. Healing Salve: (Reach 1) Action: Heal a creature WIL d8 HP (only an experienced Herbalist may administer these, and they expire whenever you Safe Rest)."
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "Crafted during a Safe Rest (needs plants nearby); unused salves expire whenever you Safe Rest.",
+    "text": "Resourceful Herbalist. … Whenever you Safe Rest in a location near where plants or fungi can grow, you may spend a day collecting healing herbs to craft WIL Healing Salves. Healing Salve: (Reach 1) Action: Heal a creature WIL d8 HP (only an experienced Herbalist may administer these, and they expire whenever you Safe Rest).",
+    "source": "Hunter 3.0",
+    "page": 9,
+    "notes": "Consumable items, not a fixed per-rest pool: you only get them if you spend a day foraging. Heal is WIL d8, rolled when used."
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Keeper of Traps",
+    "name": "Critter Traps",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "WIL",
+    "gain": "(WIL/Safe Rest) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Critter Traps",
+        "amount": "1",
+        "text": "Prolific Trapper. Whenever you Safe Rest in a location where feral critters live nearby, you may spend a day capturing critters to make WIL Critter Traps. Critter Trap: Free Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Loose a critter to attack the enemy for WIL d6 damage. You must release all captured critters whenever you Safe Rest."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Crafted during a Safe Rest (needs critters nearby); released whenever you Safe Rest.",
+    "text": "Prolific Trapper. Whenever you Safe Rest in a location where feral critters live nearby, you may spend a day capturing critters to make WIL Critter Traps. Critter Trap: Free Reaction (when an enemy moves adjacent to you or an ally within Reach 6): Loose a critter to attack the enemy for WIL d6 damage. You must release all captured critters whenever you Safe Rest.",
+    "source": "Hunter 3.0",
+    "page": 11,
+    "notes": "Consumable. Damage WIL d6 (+LVL with Trap Master L15), rolled when used."
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Keeper of Traps",
+    "name": "Decoy while Prone (Bait and Switch)",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Decoy while Prone (Bait and Switch)",
+        "amount": "1",
+        "text": "(1/encounter) You can use Decoy for free while Prone."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) You can use Decoy for free while Prone.",
+    "source": "Hunter 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Beastmaster",
+    "name": "Keen Eyes (Small Companion)",
+    "kind": "uses",
+    "count": null,
+    "max": "1 (2 at L7, 3 at L11)",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Keen Eyes (Small Companion)",
+        "amount": "1",
+        "text": "Keen Eyes. Mark a target for free. (1/encounter; Lvl 7: 2/encounter; Lvl 11: 3/encounter)"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "Keen Eyes. Mark a target for free. (1/encounter; Lvl 7: 2/encounter; Lvl 11: 3/encounter)",
+    "source": "Hunter 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Beastmaster",
+    "name": "Protect Me! (companion)",
+    "kind": "uses",
+    "count": null,
+    "max": "1 (Small: 2 at L7; Large: 2 at L15)",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Protect Me! (companion)",
+        "amount": "1",
+        "text": "Small: When you Defend, the attack misses. Move half your Speed (Level 7: 2/encounter). Medium: When you Defend, first attack that creature for 1d8+LVL damage. Large: After you gain a Wound, your companion can whisk you away to safety up to 12 spaces (Level 15: 2/encounter)."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "Small: When you Defend, the attack misses. Move half your Speed (Level 7: 2/encounter). Medium: When you Defend, first attack that creature for 1d8+LVL damage. Large: After you gain a Wound, your companion can whisk you away to safety up to 12 spaces (Level 15: 2/encounter).",
+    "source": "Hunter 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Hunter",
+    "subclass": "Beastmaster",
+    "name": "Go for the Throat! (companion)",
+    "kind": "uses",
+    "count": null,
+    "max": "1 (2 at L11; Small 3 at L15)",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "Go for the Throat! (companion)",
+        "amount": "1",
+        "text": "Small: 0 Actions, 1 TotH charge (1/encounter) Attack your Quarry for 1d4+LVL damage (ignoring armor). Lvl 11: 2/encounter. Lvl 15: 3/encounter. Medium: 1 Action … 1d8+(3×LVL) … Lvl 11: 2/encounter. Large: 2 Actions … 1d12+(4×LVL) … Level 11: 2/encounter."
+      }
+    ],
+    "appliesTo": [
+      "any-attack"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "Small: 0 Actions, 1 TotH charge (1/encounter) Attack your Quarry for 1d4+LVL damage (ignoring armor). Lvl 11: 2/encounter. Lvl 15: 3/encounter. Medium: 1 Action … 1d8+(3×LVL) … Lvl 11: 2/encounter. Large: 2 Actions … 1d12+(4×LVL) … Level 11: 2/encounter.",
+    "source": "Hunter 3.0",
+    "page": 12,
+    "notes": "Each use also costs 1 TotH charge."
+  },
+  {
+    "class": "Mage",
+    "subclass": null,
+    "name": "Mana",
+    "kind": "points",
+    "level": 2,
+    "count": null,
+    "max": "INT*3+LVL",
+    "gain": "Level 2: gain a mana pool; max INT*3+LVL; recharges on a Safe Rest.",
+    "rolledWhen": "n/a",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "casting tiered spells (cost = spell tier) and upcasting",
+        "amount": "1+",
+        "text": "Mana and Unlock Tier 1 Spells. You may now cast tier 1 spells and gain a mana pool to cast them. This mana pool’s max is always equal to (INT×3)+LVL and recharges on a Safe Rest."
+      },
+      {
+        "how": "spend",
+        "on": "Spellshaper abilities (1/turn)",
+        "amount": "1+",
+        "text": "You gain the ability to enhance your spells with powerful effects by spending additional mana. Choose 2 Spellshaper abilities. … You may use 1/turn."
+      },
+      {
+        "how": "spend",
+        "on": "Elemental Wards (Invoker of Wards)",
+        "amount": "1",
+        "requires": "Invoker of Wards",
+        "text": "Reaction (when an ally within Reach 6 Defends): You may spend 1 mana to cast an Elemental Ward on them."
+      },
+      {
+        "how": "spend",
+        "on": "Embercaster (Invoker of Flame): Flame Dart rolls 3d4 and ignores disadvantage",
+        "amount": "1",
+        "requires": "Invoker of Flame",
+        "text": "When casting Flame Dart, you can spend 1 mana to roll 3d4 instead and ignore all disadvantage."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Mana and Unlock Tier 1 Spells. You may now cast tier 1 spells and gain a mana pool to cast them. This mana pool’s max is always equal to (INT×3)+LVL and recharges on a Safe Rest.",
+    "source": "Mage 3.0",
+    "page": 4,
+    "notes": "Invoker of Chaos (Force of Chaos) can spend 1 less mana by Invoking Chaos. L20 Archmage: first tiered spell each encounter costs 1 action less and 5 fewer mana."
+  },
+  {
+    "class": "Mage",
+    "subclass": null,
+    "name": "Elemental Surge mana",
+    "kind": "points",
+    "level": 5,
+    "count": "WIL (L10: WIL+1d4; L17: WIL+2d4)",
+    "max": null,
+    "gain": "When you roll Initiative, regain WIL mana (this expires at the end of combat if unused). Elemental Surge (2) (L10): … now regains WIL+1d4 mana. Elemental Surge (3) (L17): … WIL+2d4 mana.",
+    "rolledWhen": "gained",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "spells, like normal mana",
+        "amount": "1+",
+        "text": "When you roll Initiative, regain WIL mana (this expires at the end of combat if unused)."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Expires at the end of combat if unused.",
+    "text": "Elemental Surge. A surge of adrenaline and your attunement with the elements grants you additional power as combat begins. When you roll Initiative, regain WIL mana (this expires at the end of combat if unused).",
+    "source": "Mage 3.0",
+    "page": 5,
+    "notes": "Ambiguous whether this can push you above your mana max; ‘regain’ suggests it is capped by max, but ‘expires at end of combat’ implies it is tracked separately. Read as a separate temporary pool spent first. Invoker of Control L11 (Steel Will): whenever you roll a 1 on an Elemental Surge die, you may reroll it once."
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Control",
+    "name": "Control Table options (Force of Will)",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "4 options, each once",
+    "gain": "(1/round) On your turn, you may Demand Control for free: Choose 1 option from the Control Table which you haven’t chosen yet; resets when you roll Initiative, or when you have chosen all options once.",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "which of I INSIST / ELEMENTAL AFFLICTION / NO / LOSE CONTROL you have used",
+        "amount": "1",
+        "text": "Choose 1 option from the Control Table which you haven’t chosen yet."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "When you roll Initiative, or when you have chosen all options once.",
+    "text": "Force of Will. (1/round) On your turn, you may Demand Control for free: Choose 1 option from the Control Table which you haven’t chosen yet; resets when you roll Initiative, or when you have chosen all options once. Deny Fate. Whenever you miss with a spell (or if one or more creatures save vs a spell you cast), you MUST Demand Control.",
+    "source": "Mage 3.0",
+    "page": 7,
+    "notes": "A checklist, not a counter. FAQ: the 4th Demand in an encounter forces LOSE CONTROL. Supreme Control (L15) can trigger an option twice."
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Control",
+    "name": "Nullify",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Nullify",
+        "amount": "1",
+        "text": "(1/encounter) Ignore all disadvantage and other negative effects on your next action this turn, then Demand Control."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Ignore all disadvantage and other negative effects on your next action this turn, then Demand Control.",
+    "source": "Mage 3.0",
+    "page": 7,
+    "notes": null
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Control",
+    "name": "Steel Will (auto-succeed save)",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Steel Will (auto-succeed save)",
+        "amount": "1",
+        "text": "(1/Safe Rest) If you would fail a save, you succeed instead."
+      }
+    ],
+    "appliesTo": [
+      "save"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) If you would fail a save, you succeed instead.",
+    "source": "Mage 3.0",
+    "page": 7,
+    "notes": null
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Chaos",
+    "name": "Chaos Lash",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Chaos Lash",
+        "amount": "1",
+        "text": "(1/encounter) Reaction (when an enemy moves adjacent to you): They are pushed back 2 spaces, and on a failed WIL save, knocked Prone as well. Invoke Chaos."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Reaction (when an enemy moves adjacent to you): They are pushed back 2 spaces, and on a failed WIL save, knocked Prone as well. Invoke Chaos.",
+    "source": "Mage 3.0",
+    "page": 8,
+    "notes": null
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Chaos",
+    "name": "Thrive in Chaos (choose roll)",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Thrive in Chaos (choose roll)",
+        "amount": "1",
+        "text": "Whenever you Invoke Chaos, you may roll twice and cause both effects. (1/Safe Rest) You may choose which roll to use instead."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Whenever you Invoke Chaos, you may roll twice and cause both effects. (1/Safe Rest) You may choose which roll to use instead.",
+    "source": "Mage 3.0",
+    "page": 8,
+    "notes": null
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Wards",
+    "name": "Elemental Aegis",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Elemental Aegis",
+        "amount": "1",
+        "text": "(1/Safe Rest) Reaction (when a friendly creature is attacked): Up to KEY creatures within Reach 8 gain ALL the effects of your Elemental Wards until their next turn."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) Reaction (when a friendly creature is attacked): Up to KEY creatures within Reach 8 gain ALL the effects of your Elemental Wards until their next turn.",
+    "source": "Mage 3.0",
+    "page": 9,
+    "notes": null
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Flame",
+    "name": "Phoenixform",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Phoenixform",
+        "amount": "1",
+        "text": "(1/Safe Rest) Reaction (when you would drop to 0 HP): Instead, gain the effects of the Dragonform spell (except you are a Medium Phoenix), when it ends gain 1 Wound."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) Reaction (when you would drop to 0 HP): Instead, gain the effects of the Dragonform spell (except you are a Medium Phoenix), when it ends gain 1 Wound.",
+    "source": "Mage 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Surges",
+    "name": "Charged (stored uses)",
+    "kind": "charges",
+    "level": 3,
+    "count": "1 per instance of lightning damage taken",
+    "max": "WIL",
+    "gain": "Power Surge. You can store up to WIL uses of Charged at a time. (Charged: Whenever you take lightning damage, you are Charged for 1 minute (or until combat ends).) Jumpstart (L7): When you roll Initiative, become Charged.",
+    "rolledWhen": "n/a",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Blur: while Charged, reduce ALL non-lightning damage you take by KEY (2×KEY at L11)",
+        "amount": "0",
+        "text": "Blur. While Charged, reduce ALL non-lightning damage you take by KEY.",
+        "page": 13
+      },
+      {
+        "how": "spend",
+        "on": "maximize the Power Surge die",
+        "amount": "1",
+        "requires": "L7 Power Surge (2)",
+        "text": "You may expend Charged to maximize it.",
+        "page": 13
+      },
+      {
+        "how": "spend",
+        "on": "change any die on a spell you cast to the max (1/encounter)",
+        "amount": "1",
+        "requires": "L11 Power Surge (3)",
+        "text": "(1/encounter) You may spend Charged to change any die on a spell you cast to the max.",
+        "page": 13
+      },
+      {
+        "how": "spend",
+        "on": "spells that consume Charged (e.g. ‘Costs 1 action if Charged, ending the condition’)",
+        "amount": "1",
+        "text": "Castable only if Charged, ending the condition.",
+        "page": 9
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "damage-taken"
+    ],
+    "autoOffer": true,
+    "reset": "Charged lasts 1 minute or until combat ends.",
+    "text": "Power Surge. You can store up to WIL uses of Charged at a time. After you cast a damaging spell, you may take 4 lightning damage to add 1d8 to the damage.",
+    "source": "Mage 3.0",
+    "page": 13,
+    "notes": "FAQ: any lightning damage, including Power Surge’s own 4 lightning damage, gives you Charged. Haywire (L15): while Dying you gain Electrocharge’s effects."
+  },
+  {
+    "class": "Mage",
+    "subclass": "Invoker of Surges",
+    "name": "Power Surge die",
+    "kind": "bonus-dice",
+    "level": 3,
+    "die": {
+      "3": "d8",
+      "7": "d10",
+      "11": "d12",
+      "15": "d20"
+    },
+    "count": "1",
+    "max": null,
+    "gain": "After you cast a damaging spell, you may take 4 lightning damage to add 1d8 to the damage.",
+    "rolledWhen": "spent",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "damage of a damaging spell you just cast (costs you 4 lightning damage)",
+        "amount": "1",
+        "text": "After you cast a damaging spell, you may take 4 lightning damage to add 1d8 to the damage."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage"
+    ],
+    "autoOffer": true,
+    "reset": "Unlimited (costs 4 HP each time).",
+    "text": "Power Surge … After you cast a damaging spell, you may take 4 lightning damage to add 1d8 to the damage. Power Surge (2): Your Power Surge die becomes a d10. You may expend Charged to maximize it. … (3): d12 … (4): d20.",
+    "source": "Mage 3.0",
+    "page": 13,
+    "notes": "No per-turn limit is stated. Should be an opt-in toggle in the spell roll dialog (self-damage)."
+  },
+  {
+    "class": "Mage",
+    "subclass": null,
+    "name": "Archmage free-ish spell",
+    "kind": "uses",
+    "level": 20,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 20",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Archmage free-ish spell",
+        "amount": "1",
+        "text": "The first tiered spell you cast each encounter costs 1 action less and 5 fewer mana."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "The first tiered spell you cast each encounter costs 1 action less and 5 fewer mana.",
+    "source": "Mage 3.0",
+    "page": 5,
+    "notes": null
+  },
+  {
+    "class": "Oathsworn",
+    "subclass": null,
+    "name": "Judgment Dice",
+    "kind": "dice-pool",
+    "level": 1,
+    "die": {
+      "1": "d6",
+      "3": "d8",
+      "5": "d10",
+      "8": "d12",
+      "10": "d20"
+    },
+    "count": "2 (+1 Oath of Vengeance L3; +1 at L14)",
+    "max": "count (you only gain them when you have none)",
+    "gain": "Whenever an enemy attacks you, roll and set aside 2d6 Judgment Dice (if you currently have none).",
+    "rolledWhen": "gained",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "next Reach attack this encounter (weapon or Reach spell): all of them, as extra radiant damage",
+        "amount": "all",
+        "damageType": "radiant",
+        "text": "They are expended on your next Reach attack this encounter, dealing their total as extra radiant damage (they are lost on a miss).",
+        "page": 4
+      },
+      {
+        "how": "spend",
+        "on": "Explosive Judgment: radiant damage to all enemies within Reach 2",
+        "amount": "all",
+        "damageType": "radiant",
+        "requires": "Sacred Decree: Explosive Judgment",
+        "text": "2 Actions (1/encounter) Expend your Judgment Dice, deal that much radiant damage to all enemies within Reach 2.",
+        "page": 6
+      },
+      {
+        "how": "spend",
+        "on": "Exploit: force an enemy in your aura to Interpose",
+        "amount": "all",
+        "requires": "Oathbreaker L11",
+        "text": "Reaction (whenever an ally within your aura Defends): You may expend your Judgment Dice to force an enemy within your aura to Interpose.",
+        "page": 12
+      },
+      {
+        "how": "track",
+        "on": "Stormstrike: lightning damage equal to a roll of your Judgment Dice",
+        "amount": "n/a",
+        "requires": "Oath of Roaring Thunder L15",
+        "text": "(1/encounter) Action: Exchange places with a willing creature within Reach 12, then deal lightning damage to enemies within your aura equal to a roll of your Judgment Dice.",
+        "page": 11
+      }
+    ],
+    "appliesTo": [
+      "melee-attack",
+      "weapon-damage",
+      "spell-damage"
+    ],
+    "autoOffer": true,
+    "reset": "Expended on your next Reach attack, hit or miss; expire at the end of combat if unused.",
+    "text": "Radiant Judgment. Whenever an enemy attacks you, roll and set aside 2d6 Judgment Dice (if you currently have none). They are expended on your next Reach attack this encounter, dealing their total as extra radiant damage (they are lost on a miss).",
+    "modifiers": [
+      {
+        "source": "L14 Radiant Judgment (6)",
+        "text": "Whenever you roll Judgment Dice, roll 1 more."
+      },
+      {
+        "source": "Sacred Decree: Reliable Justice",
+        "text": "Whenever you roll Judgment Dice, roll with advantage (roll one extra and drop the lowest)."
+      },
+      {
+        "source": "Sacred Decree: Shining Mandate",
+        "text": "(1/round) When you are attacked while you already have Judgment Dice, an ally within your aura gains a Judgment Die (roll a new one, they add it to their next attack)."
+      },
+      {
+        "source": "Oath of Vengeance L3 (Aura of Zeal)",
+        "text": "Whenever you roll Judgment Dice, roll 1 more. … Your Radiant Judgment also triggers when an ally within your aura is attacked while you have no Judgment Dice."
+      },
+      {
+        "source": "Oath of Vengeance L7 (Avenger)",
+        "text": "Whenever you or an ally within your aura gain any Wounds, change up to that many Judgment Dice to their max."
+      },
+      {
+        "source": "Oath of Vengeance L11 (Unerring Judgment)",
+        "text": "Increase your Primary Die rolls on melee attacks by 1 whenever you have Judgment Dice."
+      },
+      {
+        "source": "Oath of Vengeance L15 (Maximum Judgment)",
+        "text": "Whenever you are attacked, set a Judgment Die to its max."
+      },
+      {
+        "source": "Oathbreaker (Aura of Suffering)",
+        "text": "Your Radiant Judgment ability no longer triggers when attacked. Instead, it triggers whenever you could Interpose but don’t."
+      },
+      {
+        "source": "Oathbreaker L3 (We All Suffer)",
+        "text": "When an ally within your aura would gain any Wounds or fail a save, you may suffer the effect instead and trigger your Radiant Judgment ability."
+      },
+      {
+        "source": "L18 Unending Judgment",
+        "text": "+5 damage to melee attacks while you have no Judgment Dice."
+      }
+    ],
+    "source": "Oathsworn 3.0",
+    "page": 4,
+    "notes": "BOOK CONTRADICTS THE REPORTED ASSUMPTION: the dice are rolled when gained (‘roll and set aside’), not when spent, and the whole set is expended on the next Reach attack; there is no choice of how many to spend. Avenger and Maximum Judgment change held dice to max, which only makes sense if the faces are already rolled. FAQ (p14): expended on your next attack hit or miss; expire at end of combat; usable on Reach spells; gained even if the enemy misses or you Interpose; they cannot crit or explode (the underlying attack can). Ranged weapon attacks do not qualify (‘Reach attack’). Stormstrike says ‘equal to a roll of your Judgment Dice’ without ‘expend’: ambiguous whether it rolls fresh dice of your Judgment size (keeping held ones) or uses/consumes the held ones; read as a fresh roll that does not consume them. Shining Mandate gives an ALLY a separate single Judgment Die (rolled when gained, added to their next attack)."
+  },
+  {
+    "class": "Oathsworn",
+    "subclass": null,
+    "name": "Lay on Hands",
+    "kind": "points",
+    "level": 1,
+    "count": null,
+    "max": "5*LVL",
+    "gain": "Gain a magical pool of healing power. This pool’s maximum is always equal to 5×LVL and recharges on a Safe Rest.",
+    "rolledWhen": "n/a",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "heal",
+        "on": "Action: touch a target and restore HP equal to points spent",
+        "amount": "any",
+        "text": "Action: Touch a target and spend any amount of remaining healing power to restore that many HP.",
+        "page": 4
+      },
+      {
+        "how": "heal",
+        "on": "Balm for the Downcast: a second creature in your aura is healed the same amount (no extra cost)",
+        "amount": "0",
+        "requires": "Oath of Valor L11",
+        "text": "When using Lay on Hands, you may choose another creature within your aura to be healed the same amount.",
+        "page": 9
+      },
+      {
+        "how": "spend",
+        "on": "Torment: extra damage when you deal damage (ignores Armor)",
+        "amount": "any",
+        "requires": "Oathbreaker L7",
+        "text": "Your Lay on Hands heals you for twice as much, and others for half as much. When you deal damage, you can expend healing power from your Lay on Hands pool to increase the damage dealt by an amount equal to the points spent (ignoring Armor).",
+        "page": 12
+      }
+    ],
+    "appliesTo": [
+      "healing",
+      "weapon-damage"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Lay on Hands. Gain a magical pool of healing power. This pool’s maximum is always equal to 5×LVL and recharges on a Safe Rest. Action: Touch a target and spend any amount of remaining healing power to restore that many HP.",
+    "source": "Oathsworn 3.0",
+    "page": 4,
+    "notes": "Oathbreaker’s Torment makes this a damage resource too: offer it in the damage roll dialog only for Oathbreakers L7+ (spend N, +N damage ignoring Armor)."
+  },
+  {
+    "class": "Oathsworn",
+    "subclass": null,
+    "name": "Mana",
+    "kind": "points",
+    "level": 2,
+    "count": null,
+    "max": "WIL+LVL",
+    "gain": "Level 2: gain a mana pool; max WIL+LVL; recharges on a Safe Rest.",
+    "rolledWhen": "n/a",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "casting tiered spells (cost = spell tier) and upcasting",
+        "amount": "1+",
+        "text": "Mana and Radiant Spellcasting. You know Radiant cantrips and tier 1 spells, and gain a mana pool. Your mana pool is equal to WIL+LVL and recharges on a Safe Rest."
+      },
+      {
+        "how": "spend",
+        "on": "Zealot: on a melee weapon hit, +5 damage per mana (max = highest spell tier unlocked)",
+        "amount": "1+ (≤ tier unlocked)",
+        "text": "Zealot. Whenever you hit with a melee weapon, you may spend mana to deal +5 damage for each mana spent (up to the spell tier you’ve unlocked).",
+        "page": 4,
+        "appliesTo": [
+          "melee-attack",
+          "weapon-damage"
+        ],
+        "autoOffer": true
+      },
+      {
+        "how": "spend",
+        "on": "Thunderous Judgment (Oath of Roaring Thunder L11): 1 mana",
+        "amount": "1",
+        "requires": "Oath of Roaring Thunder L11",
+        "text": "(1 Mana, Reach 12) Exchange places with an ally outside your aura that is being attacked (this counts as Interposing).",
+        "page": 11
+      },
+      {
+        "how": "spend",
+        "on": "Thunderous Strike (Roaring Thunder L7): when you use Zealot, teleport WIL spaces per mana spent",
+        "amount": "same mana as Zealot",
+        "requires": "Oath of Roaring Thunder L7",
+        "text": "When you use Zealot, you can first teleport WIL spaces for each mana spent.",
+        "page": 11
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Mana and Radiant Spellcasting. You know Radiant cantrips and tier 1 spells, and gain a mana pool. Your mana pool is equal to WIL+LVL and recharges on a Safe Rest.",
+    "source": "Oathsworn 3.0",
+    "page": 4,
+    "notes": "Zealot turns mana into on-hit weapon damage: the melee attack roll dialog should offer ‘spend mana (0..tier)’ after a hit."
+  },
+  {
+    "class": "Oathsworn",
+    "subclass": null,
+    "name": "Blinding Aura",
+    "kind": "uses",
+    "level": 3,
+    "requires": "Sacred Decree: Blinding Aura",
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Blinding Aura",
+        "amount": "1",
+        "text": "1 Action (1/Safe Rest) Enemies in your aura are Blind until the end of their next turn.",
+        "requires": "Sacred Decree: Blinding Aura"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "1 Action (1/Safe Rest) Enemies in your aura are Blind until the end of their next turn.",
+    "source": "Oathsworn 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Oathsworn",
+    "subclass": null,
+    "name": "Courage!",
+    "kind": "uses",
+    "level": 3,
+    "requires": "Sacred Decree: Courage!",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Courage!",
+        "amount": "1",
+        "text": "0 Actions (1/encounter) When you or an ally in your aura would drop to 0 HP, set their HP to 1 instead.",
+        "requires": "Sacred Decree: Courage!"
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "0 Actions (1/encounter) When you or an ally in your aura would drop to 0 HP, set their HP to 1 instead.",
+    "source": "Oathsworn 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Oathsworn",
+    "subclass": null,
+    "name": "Explosive Judgment",
+    "kind": "uses",
+    "level": 3,
+    "requires": "Sacred Decree: Explosive Judgment",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 3",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "Explosive Judgment",
+        "amount": "1",
+        "text": "2 Actions (1/encounter) Expend your Judgment Dice, deal that much radiant damage to all enemies within Reach 2.",
+        "requires": "Sacred Decree: Explosive Judgment"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "2 Actions (1/encounter) Expend your Judgment Dice, deal that much radiant damage to all enemies within Reach 2.",
+    "source": "Oathsworn 3.0",
+    "page": 6,
+    "notes": "Also consumes all held Judgment Dice."
+  },
+  {
+    "class": "Oathsworn",
+    "subclass": null,
+    "name": "Radiant Aura",
+    "kind": "uses",
+    "level": 3,
+    "requires": "Sacred Decree: Radiant Aura",
+    "count": null,
+    "max": "WIL",
+    "gain": "(WIL/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Radiant Aura",
+        "amount": "1",
+        "text": "1 Action (WIL/Safe Rest) End any single harmful condition or effect on yourself or another willing creature within your aura (ending “Dying” grants 1 HP, ending “Dazed” grants 1 action, etc.).",
+        "requires": "Sacred Decree: Radiant Aura"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "1 Action (WIL/Safe Rest) End any single harmful condition or effect on yourself or another willing creature within your aura (ending “Dying” grants 1 HP, ending “Dazed” grants 1 action, etc.).",
+    "source": "Oathsworn 3.0",
+    "page": 7,
+    "notes": null
+  },
+  {
+    "class": "Oathsworn",
+    "subclass": "Oath of Roaring Thunder",
+    "name": "Stormstrike",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Stormstrike",
+        "amount": "1",
+        "text": "(1/encounter) Action: Exchange places with a willing creature within Reach 12, then deal lightning damage to enemies within your aura equal to a roll of your Judgment Dice."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Action: Exchange places with a willing creature within Reach 12, then deal lightning damage to enemies within your aura equal to a roll of your Judgment Dice.",
+    "source": "Oathsworn 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": null,
+    "name": "Pilfered Power",
+    "kind": "uses",
+    "level": 2,
+    "count": null,
+    "max": "DEX",
+    "gain": "You can steal power from your Patron to cast tiered spells (DEX times before they notice). … This resets as you commune with your Patron during a Safe Rest.",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "casting a tiered spell (at the highest tier you have unlocked)",
+        "amount": "1",
+        "text": "You can steal power from your Patron to cast tiered spells (DEX times before they notice). If you exceed this limit, your Patron damages you for half your max HP as recompense."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Pilfered Power. You can steal power from your Patron to cast tiered spells (DEX times before they notice). If you exceed this limit, your Patron damages you for half your max HP as recompense. This resets as you commune with your Patron during a Safe Rest.",
+    "modifiers": [
+      {
+        "source": "L12 Greedy Pact",
+        "text": "When you would take damage from Pilfered Power, make a STR save: 1–9: Suffer damage as normal. 10–19: Suffer only 10 HP of damage. 20+: Suffer no damage and cast the spell as if it were 1 tier higher."
+      },
+      {
+        "source": "Greater Invocation: Hungering Shadows",
+        "text": "Whenever one of your Shadows rolls the max, the next tiered spell you cast this encounter does not cost a use of Pilfered Power."
+      },
+      {
+        "source": "Pact of the Red Dragon L11 (Heart of Burning Fire)",
+        "text": "Regain 1 use of Pilfered Power each time you roll Initiative. This expires at the end of combat if unused."
+      },
+      {
+        "source": "Pact of the Red Dragon L7 / Abyssal Depths L7",
+        "text": "Some spells can be cast without Pilfering Power (Pyroclasm by including yourself; Omenrime/Rimeblades by expending 10 temp HP)."
+      },
+      {
+        "source": "Reaver (Hollow One)",
+        "text": "Cut off from your Patron, you … cannot cast tiered spells using Pilfered Power."
+      }
+    ],
+    "source": "Shadowmancer 3.0",
+    "page": 4,
+    "notes": "Replaces mana: Shadowmancers have no mana pool. You may go over DEX uses (each extra cast costs half max HP), so the counter should allow overflow and warn. Heart of Burning Fire’s extra use is temporary (end of combat)."
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": null,
+    "name": "Shadows (minions)",
+    "kind": "charges",
+    "level": 1,
+    "die": {
+      "1": "d12"
+    },
+    "count": "1 per Summon Shadow (+1 every 5 levels)",
+    "max": "INT",
+    "gain": "Summon Shadow: Summon 1 adjacent Shadow (a d12 minion). Shadow Limit. You can have up to INT Shadows. (+1 Shadow every 5 Levels.)",
+    "rolledWhen": "spent",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Command Shadows: ALL your Shadows move 6 then attack; each rolls its d12, summed as one attack",
+        "amount": "all",
+        "text": "Command Shadows: ALL your Shadows move 6 then attack (1/round). FAQ: Add up all the minions’/swarms’ dice and treat them as a single attack."
+      },
+      {
+        "how": "track",
+        "on": "Armor of Shadows: reduce all damage you receive by the number of Shadows",
+        "amount": "count",
+        "requires": "Greater Invocation: Armor of Shadows",
+        "text": "Reduce all damage you receive by an amount equal to the number of Shadows you have."
+      },
+      {
+        "how": "spend",
+        "on": "Shadow Rush: any Shadow deals max damage, then dies",
+        "amount": "any",
+        "requires": "Greater Invocation: Shadow Rush",
+        "text": "Whenever your Shadows attack, instead of rolling damage, you may have any of them deal the max amount, then die."
+      },
+      {
+        "how": "spend",
+        "on": "Shadow Exploit (Reaver): sacrifice to take no damage when Defending, or to cast a spell at highest tier; cost +1 Shadow each use per encounter",
+        "amount": "1, then 2, 3…",
+        "requires": "Reaver L3",
+        "text": "Whenever you Defend, you can sacrifice a Shadow to take no damage. Or you may sacrifice a Shadow to cast a spell at the highest tier you have unlocked. Each subsequent time you use this ability in an encounter, increase the cost by 1 Shadow."
+      }
+    ],
+    "appliesTo": [
+      "other",
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Minions abandon you immediately outside of combat.",
+    "text": "Summon Shadow. Summon 1 adjacent Shadow (a d12 minion). Minions. They follow the minion rules and abandon you immediately outside of combat. Shadow Limit. You can have up to INT Shadows.",
+    "modifiers": [
+      {
+        "source": "Greater Invocation: Shadow Magus",
+        "text": "Your Shadows gain +4 Reach and deal d10 damage instead."
+      },
+      {
+        "source": "Greater Invocation: Swarming Shadows",
+        "text": "Whenever a Shadow rolls the max, summon another Shadow adjacent to the target (ignoring your Shadow Limit)."
+      },
+      {
+        "source": "Pact of the High Celestial L3 (Divine Bestowal)",
+        "text": "Your Shadows become radiant Spirits … can move into the space of an ally and bless them … each one grants the ally +2 damage on their attacks and +2 damage reduction from incoming attacks (3 at L11). If an ally takes damage, all minions blessing them die."
+      },
+      {
+        "source": "L20 Greater Shadow",
+        "text": "A 5d12 minion. When it dies, it explodes into 5 Shadows (ignoring your Shadow Limit)."
+      }
+    ],
+    "source": "Shadowmancer 3.0",
+    "page": 5,
+    "notes": "Minion count, not a dice pool: each Shadow’s d12 is rolled when it attacks and it is not consumed. Included because the sheet must track how many you have (Armor of Shadows, Shadow Exploit, High Celestial blessings all read the count). High Celestial blessings are an on-attack bonus for the blessed ally (+2/+3 per Spirit)."
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": "Pact of the Endless Swarm",
+    "name": "Swarm Dice",
+    "kind": "dice-pool",
+    "level": 3,
+    "die": {
+      "3": "d4",
+      "15": "d8"
+    },
+    "count": "1 per Hive at the end of each of your turns (Rampant Brood L7: a dying Hive spawns 2)",
+    "max": null,
+    "gain": "Hive. … At the end of your turns, spawns a swarm: roll and set aside 1d4. (Rampant Brood: When a Hive dies, it spawns 2 swarms.)",
+    "rolledWhen": "gained",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "damage of any attack by you or an ally",
+        "amount": "any",
+        "text": "Whenever you or an ally attacks, you can expend any of these dice to increase the damage done."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "weapon-damage",
+      "spell-damage"
+    ],
+    "autoOffer": true,
+    "reset": "Not stated; Hives are minions, which abandon you outside of combat.",
+    "text": "Summon Hive. Whenever you cast Summon Shadow, also summon a Hive within Reach 2 (max of INT Hives). Hive. Immobile minion, enemies within Reach 2 attack with disadvantage. At the end of your turns, spawns a swarm: roll and set aside 1d4. Whenever you or an ally attacks, you can expend any of these dice to increase the damage done.",
+    "source": "Shadowmancer 3.0",
+    "page": 14,
+    "notes": "Pre-rolled like Fury Dice but spent like a pool, and usable on allies’ attacks too (the ally’s dialog should offer them). No max is given for held swarm dice; no reset stated, presumably lost at end of combat with the Hives. FAQ: minion/swarm dice vs Armor are summed and treated as a single attack. Terrible Plague (L15): swarms increase to d8."
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": null,
+    "name": "Beguiling Influence",
+    "kind": "uses",
+    "level": 3,
+    "requires": "Lesser Invocation: Beguiling Influence",
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Beguiling Influence",
+        "amount": "1",
+        "text": "1 Action (1/Safe Rest) You may reroll an Influence check.",
+        "requires": "Lesser Invocation: Beguiling Influence"
+      }
+    ],
+    "appliesTo": [
+      "check"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "1 Action (1/Safe Rest) You may reroll an Influence check.",
+    "source": "Shadowmancer 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": null,
+    "name": "Blood Sight",
+    "kind": "uses",
+    "level": 3,
+    "requires": "Lesser Invocation: Blood Sight",
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Blood Sight",
+        "amount": "1",
+        "text": "1 Action (1/Safe Rest) You may reroll an Examination check. Additionally, you can detect traces of blood on a surface, even after it has been cleaned.",
+        "requires": "Lesser Invocation: Blood Sight"
+      }
+    ],
+    "appliesTo": [
+      "check"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "1 Action (1/Safe Rest) You may reroll an Examination check. Additionally, you can detect traces of blood on a surface, even after it has been cleaned.",
+    "source": "Shadowmancer 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": null,
+    "name": "Whispers of the Grave",
+    "kind": "uses",
+    "level": 3,
+    "requires": "Lesser Invocation: Whispers of the Grave",
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Whispers of the Grave",
+        "amount": "1",
+        "text": "1 Action (1/Safe Rest) Ask a dead creature 3 yes/no questions. You can never question it this way again.",
+        "requires": "Lesser Invocation: Whispers of the Grave"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "1 Action (1/Safe Rest) Ask a dead creature 3 yes/no questions. You can never question it this way again.",
+    "source": "Shadowmancer 3.0",
+    "page": 7,
+    "notes": null
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": "Pact of the Abyssal Depths",
+    "name": "Glacial Resilience",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Glacial Resilience",
+        "amount": "1",
+        "text": "(1/Safe Rest) Reaction (whenever you are attacked or would gain a condition): Gain 10×LVL temp HP and end ALL negative conditions on yourself. At the end of your next turn, any remaining temp HP are lost."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) Reaction (whenever you are attacked or would gain a condition): Gain 10×LVL temp HP and end ALL negative conditions on yourself. At the end of your next turn, any remaining temp HP are lost.",
+    "source": "Shadowmancer 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": "Pact of the Void",
+    "name": "The Consuming Dark",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "The Consuming Dark",
+        "amount": "1",
+        "text": "(1/encounter) When a Shadow kills an enemy you may have it transform into a Greater Shadow."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When a Shadow kills an enemy you may have it transform into a Greater Shadow.",
+    "source": "Shadowmancer 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": "Pact of the High Celestial",
+    "name": "Apotheosis",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Apotheosis",
+        "amount": "1",
+        "text": "(1/Safe Rest) For 1 round you are immune to all damage and negative effects. Anytime you would roll a d20, roll a d100 instead, and anytime you would roll less than a d20, roll a d20."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "save",
+      "check",
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) For 1 round you are immune to all damage and negative effects. Anytime you would roll a d20, roll a d100 instead, and anytime you would roll less than a d20, roll a d20.",
+    "source": "Shadowmancer 3.0",
+    "page": 15,
+    "notes": "Changes every die you roll for 1 round — a roll-dialog mode toggle."
+  },
+  {
+    "class": "Shadowmancer",
+    "subclass": null,
+    "name": "Eldritch Usurper (Greater Shadow)",
+    "kind": "uses",
+    "level": 20,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 20",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Eldritch Usurper (Greater Shadow)",
+        "amount": "1",
+        "text": "(1/encounter) When you cast Summon Shadow you may summon a Greater Shadow instead."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When you cast Summon Shadow you may summon a Greater Shadow instead.",
+    "source": "Shadowmancer 3.0",
+    "page": 5,
+    "notes": null
+  },
+  {
+    "class": "Shepherd",
+    "subclass": null,
+    "name": "Mana",
+    "kind": "points",
+    "level": 2,
+    "count": null,
+    "max": "WIL*3+LVL",
+    "gain": "Level 2: gain a mana pool; max WIL*3+LVL; recharges on a Safe Rest.",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "casting tiered spells (cost = spell tier) and upcasting",
+        "amount": "1+",
+        "text": "Mana and Unlock Tier 1 Spells. You unlock tier 1 Radiant & Necrotic spells and gain a mana pool to cast them. This mana pool’s max is always equal to (WIL×3)+LVL and recharges on a Safe Rest."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Mana and Unlock Tier 1 Spells. You unlock tier 1 Radiant & Necrotic spells and gain a mana pool to cast them. This mana pool’s max is always equal to (WIL×3)+LVL and recharges on a Safe Rest.",
+    "source": "Shepherd 3.0",
+    "page": 4,
+    "notes": null
+  },
+  {
+    "class": "Shepherd",
+    "subclass": null,
+    "name": "Mend",
+    "kind": "uses",
+    "level": 1,
+    "die": {
+      "1": "d20"
+    },
+    "count": "WIL d20 HP per use",
+    "max": "WIL",
+    "gain": "Lifebinding Spirit … Mend. 1 Action: (WIL/Safe Rest) It restores WIL d20 HP to a Dying creature.",
+    "rolledWhen": "spent",
+    "use": "heal",
+    "uses": [
+      {
+        "how": "heal",
+        "on": "a Dying creature (any creature with Luminary of Mercy): WIL d20 HP",
+        "amount": "1",
+        "text": "Mend. 1 Action: (WIL/Safe Rest) It restores WIL d20 HP to a Dying creature."
+      },
+      {
+        "how": "spend",
+        "on": "Searing Light: when you heal HP, damage another target for the amount healed",
+        "amount": "1",
+        "requires": "Luminary of Mercy L7",
+        "text": "1 Action: (Reach 6) Whenever you heal HP, you may expend 1 use of Mend to damage another target for the amount of HP recovered."
+      },
+      {
+        "how": "spend",
+        "on": "Guardian Spirit: your Lifebinding Spirit Interposes instead of you",
+        "amount": "1",
+        "requires": "Luminary of Protection L3",
+        "text": "Whenever you Interpose, you may have your Lifebinding Spirit do so instead by spending one of its Mend charges."
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Lifebinding Spirit … • Mend. 1 Action: (WIL/Safe Rest) It restores WIL d20 HP to a Dying creature.",
+    "modifiers": [
+      {
+        "source": "Sacred Grace: Light Bearer",
+        "text": "Whenever you roll Initiative, regain 1 use of Mend (it expires when combat ends if unused)."
+      },
+      {
+        "source": "Luminary of Mercy L15 (Lifebinder’s Embrace)",
+        "text": "Your Mend may heal 1 additional creature. Regain 1 charge of Mend when you roll Initiative (this expires if unspent at the end of combat)."
+      },
+      {
+        "source": "Luminary of Protection L11 (Shield of Light)",
+        "text": "(1/encounter) You can use Mend without spending a charge."
+      },
+      {
+        "source": "Luminary of Mercy L3 (Merciful Healing)",
+        "text": "You can use Mend on non-Dying creatures."
+      },
+      {
+        "source": "Luminary of the Forge L7 (Lightforged)",
+        "text": "Mend also grants WIL+STR temp HP and 1 action."
+      },
+      {
+        "source": "Sacred Grace: Illuminate Soul",
+        "text": "Whenever you Mend a creature, make them glow with radiant light for 1 round."
+      },
+      {
+        "source": "L17 Revitalizing Blessing",
+        "text": "(1/round) Whenever you roll a 6+ on one or more healing dice, the target may recover one Wound."
+      }
+    ],
+    "source": "Shepherd 3.0",
+    "page": 7,
+    "notes": "Mend lives in the Lifebinding Spirit cantrip, not the class table. Heal dice are rolled when used. Light Bearer / Lifebinder’s Embrace grant temporary extra uses that expire at end of combat."
+  },
+  {
+    "class": "Shepherd",
+    "subclass": null,
+    "name": "Assist Me, My Friend! (spirit damage on a weapon hit)",
+    "kind": "bonus-dice",
+    "level": 5,
+    "die": {
+      "5": "1d8+STR"
+    },
+    "count": "1",
+    "max": null,
+    "gain": "Instead of your spirit attacking this round, you may add its damage to one of your melee weapon attacks.",
+    "rolledWhen": "spent",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "one melee weapon attack per round (instead of the spirit’s own Harm attack)",
+        "amount": "1",
+        "damageType": "radiant",
+        "text": "Instead of your spirit attacking this round, you may add its damage to one of your melee weapon attacks."
+      }
+    ],
+    "appliesTo": [
+      "melee-attack",
+      "weapon-damage"
+    ],
+    "autoOffer": false,
+    "reset": "1/round (replaces the spirit’s attack that round).",
+    "text": "Assist Me, My Friend! Instead of your spirit attacking this round, you may add its damage to one of your melee weapon attacks.",
+    "source": "Shepherd 3.0",
+    "page": 4,
+    "notes": "Spirit damage is Harm: 1d8+STR radiant (+STR every 5 levels; necrotic with Luminary of Malice; Empowered Companion +STR vs Undead; L20 Twilight Sage rolls twice as many dice). Whether the added damage keeps its radiant type/ignores Armor on a weapon attack is not stated."
+  },
+  {
+    "class": "Shepherd",
+    "subclass": "Luminary of Malice",
+    "name": "Veilwalker’s Blessing",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Veilwalker’s Blessing",
+        "amount": "1",
+        "text": "(1/Safe Rest) Reaction (when you would drop to 0 HP): Drop to 1 HP instead and your Lifebinding Spirit crits the attacker back."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest; L15 Conduit of Death: recharges when you roll Initiative.",
+    "text": "(1/Safe Rest) Reaction (when you would drop to 0 HP): Drop to 1 HP instead and your Lifebinding Spirit crits the attacker back.",
+    "source": "Shepherd 3.0",
+    "page": 8,
+    "notes": null
+  },
+  {
+    "class": "Shepherd",
+    "subclass": "Luminary of Mercy",
+    "name": "Powerful Healer",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "WIL",
+    "gain": "(WIL/Safe Rest) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Powerful Healer",
+        "amount": "1",
+        "text": "(WIL/Safe Rest) Whenever you would heal HP, you may instead give that many temp HP, OR heal the max amount you could roll."
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(WIL/Safe Rest) Whenever you would heal HP, you may instead give that many temp HP, OR heal the max amount you could roll.",
+    "source": "Shepherd 3.0",
+    "page": 10,
+    "notes": "Roll-dialog option on healing rolls: maximize instead of rolling."
+  },
+  {
+    "class": "Shepherd",
+    "subclass": "Luminary of Protection",
+    "name": "Shield of Light (free Mend)",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Shield of Light (free Mend)",
+        "amount": "1",
+        "text": "(1/encounter) You can use Mend without spending a charge."
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) You can use Mend without spending a charge.",
+    "source": "Shepherd 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Shepherd",
+    "subclass": "Luminary of the Forge",
+    "name": "Quench the Blaze",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Quench the Blaze",
+        "amount": "1",
+        "text": "(1/encounter) When a Smoldering enemy loses the condition, you may Restrain them until the end of their next turn."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When a Smoldering enemy loses the condition, you may Restrain them until the end of their next turn.",
+    "source": "Shepherd 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": null,
+    "name": "Mana",
+    "kind": "points",
+    "level": 2,
+    "count": null,
+    "max": "INT*3+LVL",
+    "gain": "Level 2: gain a mana pool; max INT*3+LVL; recharges on a Safe Rest.",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "casting tiered spells (cost = spell tier) and upcasting",
+        "amount": "1+",
+        "text": "Mana and Unlock Tier 1 Spells. You unlock tier 1 spells and gain a mana pool to cast them. The mana pool’s max is always equal to (INT×3)+LVL and recharges on a Safe Rest."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Mana and Unlock Tier 1 Spells. You unlock tier 1 spells and gain a mana pool to cast them. The mana pool’s max is always equal to (INT×3)+LVL and recharges on a Safe Rest.",
+    "source": "Songweaver 3.0",
+    "page": 4,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": null,
+    "name": "Songweaver’s Inspiration",
+    "kind": "uses",
+    "level": 1,
+    "count": null,
+    "max": "2*WIL",
+    "gain": "(2×WIL times/Safe Rest). Quick Wit (L3): When you roll Initiative, regain 2 spent uses of your Songweaver’s Inspiration (these expire when combat ends if unspent).",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "an ally’s roll: reroll any single die, or +1 to the result",
+        "amount": "1",
+        "text": "Free Reaction: Allow an ally to reroll any single die or increase the result rolled by 1."
+      },
+      {
+        "how": "spend",
+        "on": "Rhapsody of the Normal: after rolling 4+ on Vicious Mockery, suppress the target’s abilities",
+        "amount": "1",
+        "requires": "Lyrical Weaponry: Rhapsody of the Normal",
+        "text": "When you roll 4+ on Vicious Mockery, you may spend a Songweaver’s Inspiration charge to temporarily suppress any special abilities they have until the end of their next turn."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "save",
+      "check",
+      "initiative",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest (Quick Wit’s 2 regained uses expire when combat ends).",
+    "text": "Songweaver’s Inspiration. (2×WIL times/Safe Rest) Free Reaction: Allow an ally to reroll any single die or increase the result rolled by 1.",
+    "modifiers": [
+      {
+        "source": "Lyrical Weaponry: Heroic Ballad",
+        "text": "+2 max Songweaver’s Inspiration charges. When used to reroll an ally’s attack, your Songweaver’s Inspiration also grants them +WIL damage."
+      },
+      {
+        "source": "Herald of Courage L7 (Fire in My Bones)",
+        "text": "Your Songweaver’s Inspiration also grants your target 1 additional action."
+      },
+      {
+        "source": "Herald of Courage L11 (Unfailing Resolve)",
+        "text": "Your Songweaver’s Inspiration allows your target to reroll with advantage or increases a die face by +2."
+      },
+      {
+        "source": "L20 I’m So Famous!",
+        "text": "Your Songweaver’s Inspiration also grants that ally advantage on all subsequent rolls this round."
+      }
+    ],
+    "source": "Songweaver 3.0",
+    "page": 4,
+    "notes": "Used on ALLIES’ rolls, never your own (FAQ: ‘Can I Inspire myself? No.’). Decided after the roll, before the effect (FAQ). A rerolled Primary Die stays Primary; +1 can turn a miss into a hit or a hit into a crit. For a shared/party roll dialog this is an ally-side reaction rather than something the Songweaver adds to their own rolls."
+  },
+  {
+    "class": "Songweaver",
+    "subclass": null,
+    "name": "A “People” Person (summon friends)",
+    "kind": "uses",
+    "level": 5,
+    "count": null,
+    "max": "1 per friend (2 friends chosen)",
+    "gain": "Choose 2 friends you know: you can temporarily summon them via song (1/Safe Rest each).",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "summon Stompy / Mal / Gran Gran / Linos",
+        "amount": "1 each",
+        "text": "You can temporarily summon them via song (1/Safe Rest each)."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest (each friend separately)",
+    "text": "A “People” Person: You’ve met many people in your travels; some have even agreed to come to your aid should you need it. Choose 2 friends you know: you can temporarily summon them via song (1/Safe Rest each).",
+    "source": "Songweaver 3.0",
+    "page": 5,
+    "notes": "Track one checkbox per chosen friend. Gran Gran hands out WIL+INT pastries (each recovers 1 mana, Hit Die, or Wound; expire in 10 minutes)."
+  },
+  {
+    "class": "Songweaver",
+    "subclass": null,
+    "name": "Inspiring Anthem",
+    "kind": "uses",
+    "level": 4,
+    "requires": "Lyrical Weaponry: Inspiring Anthem",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 4",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Inspiring Anthem",
+        "amount": "1",
+        "text": "1 Action (1/encounter) Grant all friendly Dying creatures who can hear you 1 HP and 1 action.",
+        "requires": "Lyrical Weaponry: Inspiring Anthem"
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "1 Action (1/encounter) Grant all friendly Dying creatures who can hear you 1 HP and 1 action.",
+    "source": "Songweaver 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": null,
+    "name": "Not My Beautiful Faaace!",
+    "kind": "uses",
+    "level": 4,
+    "requires": "Lyrical Weaponry: Not My Beautiful Faaace!",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 4",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Not My Beautiful Faaace!",
+        "amount": "1",
+        "text": "(1/encounter) When you Defend, force the attacker to choose another target within range on a failed WIL save (if there is none, the attack fails).",
+        "requires": "Lyrical Weaponry: Not My Beautiful Faaace!"
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When you Defend, force the attacker to choose another target within range on a failed WIL save (if there is none, the attack fails).",
+    "source": "Songweaver 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": null,
+    "name": "Song of Domination",
+    "kind": "uses",
+    "level": 4,
+    "requires": "Lyrical Weaponry: Song of Domination",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 4",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Song of Domination",
+        "amount": "1",
+        "text": "2 Actions (Reach 6, 1/encounter) Move all enemies who can hear you 6 spaces on a failed WIL save, half as far on save. They cannot move on their next turn.",
+        "requires": "Lyrical Weaponry: Song of Domination"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "2 Actions (Reach 6, 1/encounter) Move all enemies who can hear you 6 spaces on a failed WIL save, half as far on save. They cannot move on their next turn.",
+    "source": "Songweaver 3.0",
+    "page": 6,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": "Herald of Snark",
+    "name": "Chord of Chaos",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Chord of Chaos",
+        "amount": "1",
+        "text": "(1/encounter) Action: You may move ALL creatures within hearing of your song up to 3 spaces as long as they do not move into an obviously dangerous place."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Action: You may move ALL creatures within hearing of your song up to 3 spaces as long as they do not move into an obviously dangerous place.",
+    "source": "Songweaver 3.0",
+    "page": 8,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": "Herald of Courage",
+    "name": "Chorus of Champions",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Chorus of Champions",
+        "amount": "1",
+        "text": "(1/encounter) Free Reaction: Give all party members 1 action."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Free Reaction: Give all party members 1 action.",
+    "source": "Songweaver 3.0",
+    "page": 9,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": "Herald of Singing Steel",
+    "name": "From the Chandelier!",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "From the Chandelier!",
+        "amount": "1",
+        "text": "(1/encounter) Vault off a nearby obstacle and move for free (ignoring enemy spaces and Difficult Terrain); gaining advantage on your next attack."
+      }
+    ],
+    "appliesTo": [
+      "any-attack"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Vault off a nearby obstacle and move for free (ignoring enemy spaces and Difficult Terrain); gaining advantage on your next attack.",
+    "source": "Songweaver 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": "Herald of Torment",
+    "name": "Tormented Mind",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Tormented Mind",
+        "amount": "1",
+        "text": "(1/encounter) Action: Torment a creature Poisoned by you: move them WIL spaces and attack another creature or themselves."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Each encounter; L15: the first time each encounter a creature you have Tormented dies, recharge Tormented Mind.",
+    "text": "(1/encounter) Action: Torment a creature Poisoned by you: move them WIL spaces and attack another creature or themselves.",
+    "source": "Songweaver 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": "Herald of Legends",
+    "name": "Living Legends (Legend stays)",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Living Legends (Legend stays)",
+        "amount": "1",
+        "text": "Summon a Legend whenever you roll Initiative. (1/encounter) Whenever a Legend would depart the battlefield, you may instead allow it to stay and it does not count against your normal maximum."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "Summon a Legend whenever you roll Initiative. (1/encounter) Whenever a Legend would depart the battlefield, you may instead allow it to stay and it does not count against your normal maximum.",
+    "source": "Songweaver 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Songweaver",
+    "subclass": "Herald of Singing Steel",
+    "name": "Songwoven Blade (Vicious Mockery on a melee attack)",
+    "kind": "bonus-dice",
+    "level": 3,
+    "die": {
+      "3": "1d6+INT"
+    },
+    "count": "1",
+    "max": null,
+    "gain": "Whenever you make a melee attack, you can apply the damage and all other effects of your Vicious Mockery to it.",
+    "rolledWhen": "spent",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "every melee attack (Vicious Mockery damage and Taunt)",
+        "amount": "1",
+        "damageType": "psychic",
+        "text": "Whenever you make a melee attack, you can apply the damage and all other effects of your Vicious Mockery to it."
+      }
+    ],
+    "appliesTo": [
+      "melee-attack",
+      "weapon-damage"
+    ],
+    "autoOffer": true,
+    "reset": "Unlimited",
+    "text": "Songwoven Blade. Whenever you make a melee attack, you can apply the damage and all other effects of your Vicious Mockery to it.",
+    "source": "Songweaver 3.0",
+    "page": 10,
+    "notes": "Vicious Mockery: 1d6+INT psychic (ignoring Armor), +3 damage every 5 levels; On hit: Taunted until the end of their next turn. Unclear whether the psychic portion still ignores Armor when added to a weapon attack."
+  },
+  {
+    "class": "Stormshifter",
+    "subclass": null,
+    "name": "Mana",
+    "kind": "points",
+    "level": 2,
+    "count": null,
+    "max": "WIL*3+LVL",
+    "gain": "Level 2: gain a mana pool; max WIL*3+LVL; recharges on a Safe Rest.",
+    "rolledWhen": "n/a",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "casting tiered spells (cost = spell tier) and upcasting",
+        "amount": "1+",
+        "text": "Mana and Unlock Tier 1 Spells. You unlock tier 1 spells and gain a mana pool to cast them. This mana pool’s max is always equal to (WIL×3)+LVL and recharges on a Safe Rest."
+      },
+      {
+        "how": "spend",
+        "on": "Fearsome (Fearsome Beast): 1 mana when you Interpose or Defend to force a reroll",
+        "amount": "1",
+        "text": "Whenever you Interpose or Defend, you may spend 1 mana to force the attacker to reroll the attack (you must choose either result)."
+      },
+      {
+        "how": "spend",
+        "on": "Lightning Step (Beast of the Pack): 1 mana to teleport DEX spaces (1/turn)",
+        "amount": "1",
+        "text": "(1/turn) Spend 1 mana to teleport DEX spaces for free."
+      },
+      {
+        "how": "spend",
+        "on": "Venom Sacs (Circle of Venom & Web): on a Beastform hit, +1 Primary Die per mana (≤ tier)",
+        "amount": "1+ (≤ tier unlocked)",
+        "requires": "Circle of Venom & Web L3",
+        "text": "Your Beastform attacks gain: On hit: you may spend mana to increase your Primary Die by 1 for each mana spent (up to the tier of spells you have unlocked)."
+      },
+      {
+        "how": "spend",
+        "on": "Ensnare (Circle of Venom & Web L7): 1 mana to Restrain a melee attacker",
+        "amount": "1",
+        "requires": "Circle of Venom & Web L7",
+        "text": "Whenever you Interpose or Defend vs a melee attack, you may spend 1 mana to Restrain the attacker until the end of their next turn if it is your size or smaller."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Mana and Unlock Tier 1 Spells. You unlock tier 1 spells and gain a mana pool to cast them. This mana pool’s max is always equal to (WIL×3)+LVL and recharges on a Safe Rest.",
+    "source": "Stormshifter 3.0",
+    "page": 4,
+    "notes": null
+  },
+  {
+    "class": "Stormshifter",
+    "subclass": null,
+    "name": "Direbeast Form",
+    "kind": "uses",
+    "level": 1,
+    "count": null,
+    "max": "DEX",
+    "gain": "You can Beastshift into a Direbeast form DEX times/encounter (for up to 1 min).",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "Beastshift into a Direbeast form (Fearsome Beast; Beast of the Pack L2; Beast of Nightmares L5)",
+        "amount": "1",
+        "text": "Direbeast Form. You can Beastshift into a Direbeast form DEX times/encounter (for up to 1 min). You know the Fearsome Beast form."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Each encounter",
+    "text": "Direbeast Form. You can Beastshift into a Direbeast form DEX times/encounter (for up to 1 min). You know the Fearsome Beast form.",
+    "modifiers": [
+      {
+        "source": "Circle of Fang & Claw L3 (Swiftshift)",
+        "text": "Whenever you roll Initiative, you may Beastshift for free. (1/turn) You can Beastshift between Direbeast forms for 0 actions (this still costs a Direbeast form charge)."
+      },
+      {
+        "source": "FAQ",
+        "text": "Shifting into a harmless beast has no time limit and takes no charge."
+      }
+    ],
+    "source": "Stormshifter 3.0",
+    "page": 4,
+    "notes": "Form attacks (Gore 1d8+LVL, Frenzy 1d6+LVL with stacking advantage, Sting 1d4+3×LVL acid ignoring Armor) are attacks, not resources. Frenzy’s ‘increasing advantage’ is per-attack state the roll dialog could carry (FAQ: it carries into spells)."
+  },
+  {
+    "class": "Stormshifter",
+    "subclass": "Circle of Sky & Storm",
+    "name": "Attuned to Nature",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "WIL",
+    "gain": "(WIL/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "Attuned to Nature",
+        "amount": "1",
+        "text": "(WIL/Safe Rest) Add LVL to any skill check related to nature or weather."
+      }
+    ],
+    "appliesTo": [
+      "check"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(WIL/Safe Rest) Add LVL to any skill check related to nature or weather.",
+    "source": "Stormshifter 3.0",
+    "page": 8,
+    "notes": "Offer in the skill-check dialog (+LVL) for nature/weather checks."
+  },
+  {
+    "class": "Stormshifter",
+    "subclass": "Circle of Sky & Storm",
+    "name": "Master of Storm (discount spell)",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Master of Storm (discount spell)",
+        "amount": "1",
+        "text": "(1/encounter) When you would cast a tiered spell, it costs 1 fewer action and 3 fewer mana."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When you would cast a tiered spell, it costs 1 fewer action and 3 fewer mana.",
+    "source": "Stormshifter 3.0",
+    "page": 8,
+    "notes": null
+  },
+  {
+    "class": "Stormshifter",
+    "subclass": "Circle of Fang & Claw",
+    "name": "Windborne Protector (long Interpose)",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Windborne Protector (long Interpose)",
+        "amount": "1",
+        "text": "(1/encounter) You may Interpose from Reach 12."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) You may Interpose from Reach 12.",
+    "source": "Stormshifter 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Stormshifter",
+    "subclass": "Circle of Fang & Claw",
+    "name": "Master of Forms",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Master of Forms",
+        "amount": "1",
+        "text": "(1/encounter) When you would miss or crit while in a Direbeast form, you may increase or decrease the Primary Die by 1 instead."
+      }
+    ],
+    "appliesTo": [
+      "any-attack"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When you would miss or crit while in a Direbeast form, you may increase or decrease the Primary Die by 1 instead.",
+    "source": "Stormshifter 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Stormshifter",
+    "subclass": "Circle of Cinder & Ash",
+    "name": "Phoenix Flame",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Phoenix Flame",
+        "amount": "1",
+        "text": "(1/encounter) You may cast Pyroclasm for 0 mana; gain temp HP equal to the amount rolled."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) You may cast Pyroclasm for 0 mana; gain temp HP equal to the amount rolled.",
+    "source": "Stormshifter 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Stormshifter",
+    "subclass": "Circle of Venom & Web",
+    "name": "Sudden Terror",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Sudden Terror",
+        "amount": "1",
+        "text": "(1/encounter) Reaction (when attacked in melee): shift into a Beast of Nightmares for free, gain Riding (they must reroll with disadvantage)."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Reaction (when attacked in melee): shift into a Beast of Nightmares for free, gain Riding (they must reroll with disadvantage).",
+    "source": "Stormshifter 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "The Cheat",
+    "subclass": null,
+    "name": "Sneak Attack",
+    "kind": "bonus-dice",
+    "level": 1,
+    "die": {
+      "1": "1d6",
+      "3": "1d8",
+      "7": "2d8",
+      "9": "2d10",
+      "11": "2d12",
+      "15": "2d20",
+      "17": "3d20"
+    },
+    "count": "see die (values include dice count)",
+    "max": null,
+    "gain": "(1/turn) When you crit, deal +1d6 damage.",
+    "rolledWhen": "spent",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "the first crit each turn",
+        "amount": "all",
+        "text": "Sneak Attack. (1/turn) When you crit, deal +1d6 damage."
+      },
+      {
+        "how": "track",
+        "on": "Twist the Blade: set a Sneak Attack die to any face",
+        "amount": "1 die",
+        "text": "Twist the Blade (L5). Action: Change a Sneak Attack die to whatever you like. Twist the Blade (2) (L13): (1/turn) You can Twist the Blade for free."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "weapon-damage"
+    ],
+    "autoOffer": true,
+    "reset": "1/turn",
+    "text": "Sneak Attack. (1/turn) When you crit, deal +1d6 damage.",
+    "modifiers": [
+      {
+        "source": "Vicious Opportunist (L1)",
+        "text": "(1/turn) When you HIT a Distracted target with a melee attack, you may change the Primary Die roll to whatever you like (changing it to the max value counts as a crit)."
+      },
+      {
+        "source": "Tools of the Gambler L3 (All In)",
+        "text": "When you Sneak Attack, you may go All In: Roll a single All In die; if it rolls higher than average, maximize ALL of your Sneak Attack dice; otherwise minimize them."
+      },
+      {
+        "source": "Tools of the Gambler L7 (Double or Nothing!)",
+        "text": "When you lose your “All In” roll, you may try once more. If you succeed, add 1 additional maximized Sneak Attack die. If you fail, your attack misses entirely and your turn ends."
+      },
+      {
+        "source": "Tools of the Silent Blade L15 (KILL)",
+        "text": "When you Sneak Attack an enemy with fewer max HP than you, it dies."
+      },
+      {
+        "source": "Tools of the Scoundrel L3 (Low Blow)",
+        "text": "When you Sneak Attack a creature not already Taunted by you, you may spend 1 additional action to roll 1d4 (Taunt / Prone / Dazed / Incapacitated)."
+      },
+      {
+        "source": "Trickshot (Underhanded Ability)",
+        "text": "You can use Vicious Opportunist on thrown weapon attacks (but you can’t use Twist the Blade on them)."
+      }
+    ],
+    "source": "The Cheat 3.0",
+    "page": 4,
+    "notes": "Not a tracked resource: an on-crit bonus, once per turn. These are extra damage dice on a crit, separate from the crit’s exploding dice. Vicious Opportunist is the usual way to force the crit, so the dialog should offer ‘set Primary Die to max’ vs Distracted targets then auto-add Sneak Attack. Honorseeker gives up Sneak Attack (see Tenacious Fighter)."
+  },
+  {
+    "class": "The Cheat",
+    "subclass": "The Honorseeker",
+    "name": "Tenacious Fighter",
+    "kind": "bonus-dice",
+    "level": 3,
+    "die": {
+      "3": "1d8",
+      "7": "2d8",
+      "9": "2d10",
+      "11": "2d12",
+      "15": "2d20",
+      "17": "3d20"
+    },
+    "count": "as Sneak Attack",
+    "max": null,
+    "gain": "(1/turn) When you HIT an enemy that has The Upper Hand you may change the Primary Die roll to whatever you like and deal +1d6 damage (this increases as your Sneak Attack dice would).",
+    "rolledWhen": "spent",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "the first hit each turn vs an enemy with The Upper Hand",
+        "amount": "all",
+        "text": "(1/turn) When you HIT an enemy that has The Upper Hand you may change the Primary Die roll to whatever you like and deal +1d6 damage (this increases as your Sneak Attack dice would)."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "weapon-damage"
+    ],
+    "autoOffer": true,
+    "reset": "1/turn",
+    "text": "Tenacious Fighter. (1/turn) When you HIT an enemy that has The Upper Hand you may change the Primary Die roll to whatever you like and deal +1d6 damage (this increases as your Sneak Attack dice would).",
+    "source": "The Cheat 3.0",
+    "page": 14,
+    "notes": "The Upper Hand: whenever there are more of them adjacent to you than allies. Base die is 1d6 at L1-2; Honorseeker is chosen at L3 when Sneak Attack would already be 1d8, so the die table here assumes ‘increases as your Sneak Attack dice would’ means it tracks the Sneak Attack progression."
+  },
+  {
+    "class": "The Cheat",
+    "subclass": "Tools of the Silent Blade",
+    "name": "Cunning Strike",
+    "kind": "bonus-dice",
+    "level": 7,
+    "count": "flat 2×INT",
+    "max": null,
+    "gain": "Deal +2×INT damage whenever you crit.",
+    "rolledWhen": "n/a",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "every crit",
+        "amount": "flat",
+        "text": "Cunning Strike. Deal +2×INT damage whenever you crit."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "weapon-damage"
+    ],
+    "autoOffer": true,
+    "reset": "Unlimited",
+    "text": "Cunning Strike. Deal +2×INT damage whenever you crit.",
+    "source": "The Cheat 3.0",
+    "page": 8,
+    "notes": "Flat bonus on crit, no dice."
+  },
+  {
+    "class": "The Cheat",
+    "subclass": null,
+    "name": "Cheat: skill check to 10+INT",
+    "kind": "uses",
+    "level": 2,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 2",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Cheat: skill check to 10+INT",
+        "amount": "1",
+        "text": "(1/Safe Rest) You may change any of your skill checks to 10+INT."
+      }
+    ],
+    "appliesTo": [
+      "check"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) You may change any of your skill checks to 10+INT.",
+    "source": "The Cheat 3.0",
+    "page": 4,
+    "notes": null
+  },
+  {
+    "class": "The Cheat",
+    "subclass": null,
+    "name": "Quick Read",
+    "kind": "uses",
+    "level": 5,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 5",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Quick Read",
+        "amount": "1",
+        "text": "(1/encounter) Gain advantage on an Assess check."
+      }
+    ],
+    "appliesTo": [
+      "check"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Gain advantage on an Assess check.",
+    "source": "The Cheat 3.0",
+    "page": 5,
+    "notes": null
+  },
+  {
+    "class": "The Cheat",
+    "subclass": null,
+    "name": "THAT’S Not What Happened!",
+    "kind": "uses",
+    "level": 6,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 6",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "THAT’S Not What Happened!",
+        "amount": "1",
+        "text": "(1/Safe Rest) Reaction (when a Distracted enemy attacks you): You may change the Primary Die roll to whatever you like (changing the die to the minimum value counts as a miss)."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) Reaction (when a Distracted enemy attacks you): You may change the Primary Die roll to whatever you like (changing the die to the minimum value counts as a miss).",
+    "source": "The Cheat 3.0",
+    "page": 5,
+    "notes": null
+  },
+  {
+    "class": "The Cheat",
+    "subclass": "Tools of the Scoundrel",
+    "name": "Pocket Sand",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "2",
+    "gain": "(2/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Pocket Sand",
+        "amount": "1",
+        "text": "(2/encounter—you’ve got to collect more sand!) When you Defend against an adjacent creature, Blind the attacker until the start of their next turn and force them to reroll the attack."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(2/encounter—you’ve got to collect more sand!) When you Defend against an adjacent creature, Blind the attacker until the start of their next turn and force them to reroll the attack.",
+    "source": "The Cheat 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "The Cheat",
+    "subclass": "Tools of the Scoundrel",
+    "name": "Escape Plan",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Escape Plan",
+        "amount": "1",
+        "text": "(1/Safe Rest) When you would drop to 0 HP or gain a Wound, you don’t. Instead, you turn Invisible for 1 minute or until you attack."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) When you would drop to 0 HP or gain a Wound, you don’t. Instead, you turn Invisible for 1 minute or until you attack.",
+    "source": "The Cheat 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "The Cheat",
+    "subclass": "Tools of the Scoundrel",
+    "name": "Heads I Win, Tails You Lose",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Heads I Win, Tails You Lose",
+        "amount": "1",
+        "text": "(1/encounter) Attacks you make this round don’t miss, you crit on 1 less than normally needed, and you gain LVL temp HP."
+      }
+    ],
+    "appliesTo": [
+      "any-attack"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Attacks you make this round don’t miss, you crit on 1 less than normally needed, and you gain LVL temp HP.",
+    "source": "The Cheat 3.0",
+    "page": 10,
+    "notes": "A roll-dialog mode for the round: no misses, expanded crit range."
+  },
+  {
+    "class": "The Cheat",
+    "subclass": "Tools of the Serpent",
+    "name": "Noxious Cloud",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1 (2 from L15 Volatile Toxins)",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Noxious Cloud",
+        "amount": "1",
+        "text": "(1/encounter, Reach 4) Action: Enemies in a 2×2 area take INT d6 damage (ignoring armor) and become Poisoned. Creatures already Poisoned are also Dazed."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter, Reach 4) Action: Enemies in a 2×2 area take INT d6 damage (ignoring armor) and become Poisoned. Creatures already Poisoned are also Dazed.",
+    "source": "The Cheat 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "The Cheat",
+    "subclass": "Tools of the Gambler",
+    "name": "That Was Just a Practice Roll",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "1 (2 from L15 Odds Maker)",
+    "gain": "(1/encounter) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "That Was Just a Practice Roll",
+        "amount": "1",
+        "text": "(1/encounter) You may reroll ANY die."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "save",
+      "check",
+      "initiative",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) You may reroll ANY die.",
+    "source": "The Cheat 3.0",
+    "page": 13,
+    "notes": "Odds Maker (L15): 2/encounter and you may instead change the die to any other face. Should appear as a post-roll reroll button."
+  },
+  {
+    "class": "The Cheat",
+    "subclass": "Tools of the Gambler",
+    "name": "Pocket Aces!",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Pocket Aces!",
+        "amount": "1",
+        "text": "(1/Safe Rest) You can set a friendly creature’s Initiative roll to 20."
+      }
+    ],
+    "appliesTo": [
+      "initiative"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) You can set a friendly creature’s Initiative roll to 20.",
+    "source": "The Cheat 3.0",
+    "page": 13,
+    "notes": null
+  },
+  {
+    "class": "Zephyr",
+    "subclass": null,
+    "name": "Momentum",
+    "kind": "points",
+    "level": 1,
+    "count": "1 per space moved",
+    "max": null,
+    "gain": "Gain 1 Momentum for every space you move.",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "+1 damage per Momentum on a melee attack (+2 from L12 Kinetic Marvel)",
+        "amount": "any",
+        "text": "You may expend 1 Momentum to add 1 damage to any melee attack.",
+        "page": 4
+      },
+      {
+        "how": "spend",
+        "on": "Piercing Blows: advantage on an Unarmed Strike for every 2 spent (before rolling)",
+        "amount": "2 per advantage",
+        "text": "Piercing Blows (L3). You may spend Momentum before you make an Unarmed Strike to gain advantage for every 2 spent.",
+        "page": 4
+      },
+      {
+        "how": "spend",
+        "on": "Supernatural Speed: a Primary Die rolled against you counts 1 lower per 2 spent (unarmored)",
+        "amount": "2 per step",
+        "text": "Supernatural Speed (L5). While unarmored, you may use Momentum to treat a Primary Die rolled against you as if it rolled 1 lower for every 2 Momentum spent.",
+        "page": 5
+      },
+      {
+        "how": "spend",
+        "on": "Cyclone: move a creature within Reach 4 one space per Momentum",
+        "amount": "1 per space",
+        "requires": "Way of Hurricanes L3",
+        "text": "(Reach 4) You may spend 1 Momentum to move a creature 1 space.",
+        "page": 10
+      },
+      {
+        "how": "spend",
+        "on": "Chain Reaction: on an Unarmed crit, STR+Momentum spent fire damage to adjacent creatures",
+        "amount": "uses the amount spent on the attack",
+        "requires": "Way of Flame L11",
+        "text": "(1/turn) When you crit with an Unarmed Strike, deal fire damage equal to your STR+Momentum spent to creatures of your choice adjacent to your target.",
+        "page": 12
+      }
+    ],
+    "appliesTo": [
+      "melee-attack",
+      "weapon-damage",
+      "damage-taken"
+    ],
+    "autoOffer": true,
+    "reset": "All Momentum is lost if you take damage, or at the end of combat.",
+    "text": "Momentum. Gain 1 Momentum for every space you move. You may expend 1 Momentum to add 1 damage to any melee attack. All Momentum is lost if you take damage, or at the end of combat.",
+    "modifiers": [
+      {
+        "source": "L12 Kinetic Marvel",
+        "text": "Double the damage granted by Momentum."
+      },
+      {
+        "source": "L14 Blur",
+        "text": "Gain 10 Momentum when you roll Initiative."
+      },
+      {
+        "source": "Martial Arts: Kinetic Barrage",
+        "text": "(1/turn) Whenever you make a melee attack and spend no Momentum, gain DEX Momentum."
+      },
+      {
+        "source": "Way of Pain L3 (Bring the Pain)",
+        "text": "Damage no longer causes you to lose Momentum. (1/round) You may take 1 Wound to gain 10 Momentum for free."
+      },
+      {
+        "source": "Way of Flame L7 (Burning Palm)",
+        "text": "You may double the effects of Momentum vs Smoldering creatures (ending the condition)."
+      }
+    ],
+    "source": "Zephyr 3.1",
+    "page": 4,
+    "notes": "No max stated. FAQ: movement while Riding and forced movement count. Supernatural Speed is a defensive spend (when an enemy attacks you), so it belongs in an incoming-attack/Defend helper rather than your own attack dialog."
+  },
+  {
+    "class": "Zephyr",
+    "subclass": null,
+    "name": "Burst of Speed",
+    "kind": "charges",
+    "level": 2,
+    "count": "DEX at Initiative (+1 at L20); +1 per Wound gained (L4)",
+    "max": null,
+    "gain": "When you roll Initiative, gain DEX Bursts of Speed for this encounter. Reactive Force (L4): Whenever you gain a Wound, gain a Burst of Speed.",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "Slipstream: when you Defend, apply Defense to every attack this round OR first move 1 space",
+        "amount": "1",
+        "text": "Slipstream. Whenever you Defend: Apply your Defense to every attack against you this round OR you may first move 1 space."
+      },
+      {
+        "how": "spend",
+        "on": "Galeforce Strike: Unarmed attack rolls 1d12 instead of 1d4 (1d20 from L7)",
+        "amount": "1",
+        "text": "Galeforce Strike. Roll 1d12 for an unarmed attack instead of 1d4. Galeforce Strike (2) (L7): Your Galeforce Strike increases to 1d20."
+      },
+      {
+        "how": "spend",
+        "on": "Windstep: move for free, ignoring enemy spaces this turn",
+        "amount": "1",
+        "text": "Windstep. Move for free, ignoring enemy spaces this turn."
+      }
+    ],
+    "appliesTo": [
+      "melee-attack",
+      "weapon-damage",
+      "damage-taken"
+    ],
+    "autoOffer": true,
+    "reset": "For this encounter (gained at Initiative).",
+    "text": "Burst of Speed. When you roll Initiative, gain DEX Bursts of Speed for this encounter. You may spend 1 Burst of Speed to use one of the following maneuvers: • Slipstream … • Galeforce Strike. Roll 1d12 for an unarmed attack instead of 1d4. • Windstep …",
+    "modifiers": [
+      {
+        "source": "L6 Swift Fists",
+        "text": "If you have no actions and haven’t attacked this turn, your Galeforce Strike costs 0 actions."
+      },
+      {
+        "source": "Way of Hurricanes L7 (Hurricane Strike)",
+        "text": "Your Galeforce Strike may gain: AoE, Reach 1."
+      },
+      {
+        "source": "Way of Iron L15 (Perfect Alloy)",
+        "text": "Gain Tempered whenever you use a Burst of Speed."
+      }
+    ],
+    "source": "Zephyr 3.1",
+    "page": 4,
+    "notes": "Galeforce Strike swaps the Unarmed Strike’s damage die (1d4 → 1d12/1d20); the unarmed attack dialog should offer it as an option that spends a Burst. ‘For this encounter’ = unused Bursts expire at end of combat (implied, not stated outright)."
+  },
+  {
+    "class": "Zephyr",
+    "subclass": "Way of Iron",
+    "name": "Tempered",
+    "kind": "charges",
+    "level": 3,
+    "die": {
+      "3": "d20"
+    },
+    "count": "1",
+    "max": "1",
+    "gain": "Steel Yourself. When you roll Initiative gain Tempered. Iron Body (L7): Gain Tempered the first time you would gain a Wound each encounter. Perfect Alloy (L15): Gain Tempered whenever you use a Burst of Speed.",
+    "rolledWhen": "spent",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "reduce-damage",
+        "on": "(1/round) reduce an attack’s damage by 10 for free (not consumed)",
+        "amount": "0",
+        "text": "(1/round) reduce an attack’s damage by 10 for free."
+      },
+      {
+        "how": "spend",
+        "on": "when you hit: end Tempered to add 1d20 damage (with advantage from L7 Iron Fists)",
+        "amount": "1",
+        "text": "When you hit, you may end Tempered to add 1d20 damage."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "weapon-damage",
+      "damage-taken"
+    ],
+    "autoOffer": true,
+    "reset": "Ends when you cash it in for damage.",
+    "text": "Steel Yourself. When you roll Initiative gain Tempered: (1/round) reduce an attack’s damage by 10 for free. When you hit, you may end Tempered to add 1d20 damage.",
+    "modifiers": [
+      {
+        "source": "L7 Iron Fists",
+        "text": "When you end Tempered, roll its d20 with advantage."
+      },
+      {
+        "source": "L7 Iron Body",
+        "text": "You can double the Tempered damage reduction each round or use it 2/round."
+      },
+      {
+        "source": "L11 Infuse with Iron",
+        "text": "When you use Infuse Strength, your target gains Tempered."
+      }
+    ],
+    "source": "Zephyr 3.1",
+    "page": 9,
+    "notes": "A state, so effectively max 1 (book doesn’t say whether it stacks; read as on/off). Unclear if it lasts past the end of combat; read as lasting until ended."
+  },
+  {
+    "class": "Zephyr",
+    "subclass": null,
+    "name": "Hit Dice (Infuse Strength / Enduring Soul)",
+    "kind": "dice-pool",
+    "level": 6,
+    "count": null,
+    "max": "core Hit Dice (Enduring Soul adds temporary ones)",
+    "gain": "Core Hit Dice. Enduring Soul (Martial Arts): Whenever you roll Initiative, gain Hit Dice equal to the actions you get on your first turn (they expire at the end of combat if unused).",
+    "rolledWhen": "spent",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "heal",
+        "on": "an Unarmed Strike: add Hit Dice to its total and heal the target instead of damaging",
+        "amount": "1+",
+        "text": "Infuse Strength. Whenever you make an Unarmed Strike, you may expend 1 or more Hit Dice and add them to the strike’s total. Instead of dealing damage, heal the target for that amount (you can use Momentum or other abilities as normal)."
+      }
+    ],
+    "appliesTo": [
+      "healing",
+      "melee-attack"
+    ],
+    "autoOffer": false,
+    "reset": "Core Hit Dice rules; Enduring Soul dice expire at end of combat.",
+    "text": "Infuse Strength. Whenever you make an Unarmed Strike, you may expend 1 or more Hit Dice and add them to the strike’s total. Instead of dealing damage, heal the target for that amount (you can use Momentum or other abilities as normal).",
+    "source": "Zephyr 3.1",
+    "page": 5,
+    "notes": "Uses the core Hit Dice pool; listed because it turns an attack roll into healing. FAQ: usable as an Opportunity Attack or Coordinated Strike."
+  },
+  {
+    "class": "Zephyr",
+    "subclass": null,
+    "name": "Unyielding Resolve",
+    "kind": "uses",
+    "level": 10,
+    "count": null,
+    "max": "1 (2 at L13, 3 at L17)",
+    "gain": "Ignore the first Wound you would suffer each encounter (when-Wounded abilities, such as Reactive Force, still trigger).",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "ignore a Wound",
+        "amount": "1",
+        "text": "Ignore the first Wound you would suffer each encounter."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Each encounter",
+    "text": "Unyielding Resolve. Ignore the first Wound you would suffer each encounter (when-Wounded abilities, such as Reactive Force, still trigger). (2) L13: first 2 Wounds. (3) L17: first 3 Wounds; advantage on STR saves while Dying.",
+    "source": "Zephyr 3.1",
+    "page": 5,
+    "notes": "Automatic, not optional: the sheet just needs to count Wounds ignored this encounter."
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Mana Dice",
+    "kind": "dice-pool",
+    "level": 2,
+    "die": {
+      "2": "d4",
+      "5": "d6",
+      "10": "d8",
+      "14": "d10"
+    },
+    "count": null,
+    "max": "STR (+1 at L13, +1 at L18; +1 Workshop of the Inventor L15)",
+    "gain": "Mana Accumulator. Create a device that absorbs ambient magic to power your inventions. You can carry with it a max of STR Mana Dice (d4s), it fully recharges at the end of your turns.",
+    "rolledWhen": "spent",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "powering an invention (any number); extra effect per die and/or sum of dice",
+        "amount": "any",
+        "text": "When using an invention, you may expend any amount of available Mana Dice. The more you utilize at a time, the greater the effect—but the greater the risk. If any Mana Die rolls a number less than or equal to the total number of them, the invention overloads, triggering a Mishap.",
+        "page": 4
+      },
+      {
+        "how": "spend",
+        "on": "Thunder Gauntlets Pulse Blast: + sum of Mana Dice damage, knockback 1 per die",
+        "amount": "any",
+        "text": "Charge: Pulse Blast. Deal extra damage equal to sum of the Mana Dice rolled and Knockback your target 1 space for each.",
+        "page": 6
+      },
+      {
+        "how": "spend",
+        "on": "Manabolt Cannon Piercing Lancer: + sum of Mana Dice damage, hits all creatures in the line",
+        "amount": "any",
+        "text": "Charge: Piercing Lancer. Deal extra damage equal to sum of the Mana Dice rolled (min 1) and damage ALL creatures between you and your target.",
+        "page": 6
+      },
+      {
+        "how": "spend",
+        "on": "Manablade Mighty Blade: 10 per die + sum of dice (leftmost die is Primary)",
+        "amount": "1+",
+        "text": "Charge: Mighty Blade. Deal 10 for each Mana Die rolled (min 1, treat the leftmost Mana Die as Primary) and sum of the Mana Dice.",
+        "page": 6
+      },
+      {
+        "how": "spend",
+        "on": "Manaforged Plate Fused Plates: +2×STR Defense per die when you Defend",
+        "amount": "any",
+        "text": "Charge: Fused Plates. When you Defend, gain 2×STR Defense per Mana Die spent.",
+        "page": 7
+      },
+      {
+        "how": "spend",
+        "on": "Aethertuned Jerkin Tuned Thrusters: move 1 space per die when you Defend",
+        "amount": "any",
+        "text": "Charge: Tuned Thrusters. When you Defend, first move 1 space per Mana Die spent.",
+        "page": 7
+      },
+      {
+        "how": "spend",
+        "on": "Tethercoil (+4 Range per die; Coil area = dice rolled)",
+        "amount": "any",
+        "requires": "Workshop of the Inventor",
+        "text": "+4 Range/Mana Die (min 1).",
+        "page": 12
+      },
+      {
+        "how": "spend",
+        "on": "Alchemist potions (damage = sum of dice +5 each, etc.)",
+        "amount": "any",
+        "requires": "Workshop of the Alchemist",
+        "text": "Alchemist’s Fire: (3×3 AoE) Sum the Mana Dice and add 5 to each, deal that much damage to creatures in the area.",
+        "page": 15
+      },
+      {
+        "how": "spend",
+        "on": "Chronal Device Timetinker: per die, double/halve movement, advantage on Assess, or ±1 to a Primary Die",
+        "amount": "1+",
+        "requires": "Workshop of the Chronurgist",
+        "text": "Timetinker. 0 Actions. (Reach 4, 1/turn) Spend a Mana Die to: … • Attacks: Add (or subtract) 1 from the Primary Die for each Mana Die spent.",
+        "page": 16
+      }
+    ],
+    "appliesTo": [
+      "weapon-damage",
+      "any-attack",
+      "damage-taken",
+      "check",
+      "other"
+    ],
+    "autoOffer": true,
+    "reset": "Fully recharges at the end of your turns.",
+    "text": "Mana Accumulator. … You can carry with it a max of STR Mana Dice (d4s), it fully recharges at the end of your turns. Powering Inventions. When using an invention, you may expend any amount of available Mana Dice. … If any Mana Die rolls a number less than or equal to the total number of them, the invention overloads, triggering a Mishap. Example. If you spend 3 Mana Dice at a time, if any of them rolls 3 or less you get a Mishap!",
+    "modifiers": [
+      {
+        "source": "L6 Percussive Maintenance",
+        "text": "(1/encounter) When you would experience a Mishap, you may first increase 1 Mana Die by 1."
+      },
+      {
+        "source": "L9 Mana Recovery Valve",
+        "text": "After a Mishap, gain advantage on your next Mana Die roll this encounter."
+      },
+      {
+        "source": "L20 Grand Mechanist",
+        "text": "(1/encounter) Reroll any Mana Dice, replacing them with d20s."
+      },
+      {
+        "source": "Workshop of the Inventor L15 (Big Brained Inventor)",
+        "text": "+1 max Mana Die. Your Mana Dice become d12s."
+      },
+      {
+        "source": "Workshop of the Inventor L7 (Powerful Weaponry)",
+        "text": "Whenever you use 2+ Mana Dice: extra effects per invention."
+      },
+      {
+        "source": "Workshop of the Alchemist: Liquid Lightning",
+        "text": "(0 Actions to consume) … gain extra Mana Dice equal to your max. They’re lost when your Mana Accumulator recharges, and they can trigger mishaps as normal."
+      },
+      {
+        "source": "Workshop of the Chronurgist L15 (Master of Moments)",
+        "text": "Whenever you spend 2 or more Mana Dice on Timetinker, regain 1 Mana Die."
+      },
+      {
+        "source": "Aetheric Infuser upgrade: Innervating Brews",
+        "text": "Whenever you use a potion, gain INT Temp HP for each Mana Die spent."
+      }
+    ],
+    "source": "Artificer 3.0",
+    "page": 4,
+    "notes": "Kept unrolled; choose N and roll them with the attack. Mishap check: any die ≤ N. FAQ: only Mana Dice rolled in the initial attack count for Mishaps (crit/advantage extras ignored); for Thunder Gauntlets/Manabolt Cannon the weapon die is Primary, for the Manablade the leftmost Mana Die is Primary. Recharges every turn, so the counter resets at end of your turn, not per encounter."
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Thunder Gauntlets Prototype extra die",
+    "kind": "bonus-dice",
+    "level": 1,
+    "die": {
+      "1": "d4"
+    },
+    "count": "1",
+    "max": null,
+    "gain": "(Reach 4) 1d4+INT. You may roll 1 additional d4 for damage; if you do, for each 1 rolled, you are Knocked back 1 and fall Prone.",
+    "rolledWhen": "spent",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "Thunder Gauntlets Prototype damage (risk: each 1 knocks you back and Prone)",
+        "amount": "1",
+        "text": "You may roll 1 additional d4 for damage; if you do, for each 1 rolled, you are Knocked back 1 and fall Prone."
+      }
+    ],
+    "appliesTo": [
+      "weapon-damage"
+    ],
+    "autoOffer": false,
+    "reset": "Unlimited",
+    "text": "Thunder Gauntlets Prototype: (Reach 4) 1d4+INT. You may roll 1 additional d4 for damage; if you do, for each 1 rolled, you are Knocked back 1 and fall Prone.",
+    "source": "Artificer 3.0",
+    "page": 4,
+    "notes": "Level 1 only; replaced at L2 by Thunder Gauntlets + Mana Dice."
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "I’ve Got JUST the thing!",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "I’ve Got JUST the thing!",
+        "amount": "1",
+        "text": "(1/Safe Rest) Pull a simple mechanical contraption out of your pack that is JUST the thing needed for the moment (where something like that could help)."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(1/Safe Rest) Pull a simple mechanical contraption out of your pack that is JUST the thing needed for the moment (where something like that could help).",
+    "source": "Artificer 3.0",
+    "page": 5,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Percussive Maintenance",
+    "kind": "uses",
+    "level": 6,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 6",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Percussive Maintenance",
+        "amount": "1",
+        "text": "(1/encounter) When you would experience a Mishap, you may first increase 1 Mana Die by 1."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When you would experience a Mishap, you may first increase 1 Mana Die by 1.",
+    "source": "Artificer 3.0",
+    "page": 5,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Grand Mechanist",
+    "kind": "uses",
+    "level": 20,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 20",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Grand Mechanist",
+        "amount": "1",
+        "text": "(1/encounter) Reroll any Mana Dice, replacing them with d20s."
+      }
+    ],
+    "appliesTo": [
+      "any-attack"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Reroll any Mana Dice, replacing them with d20s.",
+    "source": "Artificer 3.0",
+    "page": 5,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Stim Bot",
+    "kind": "uses",
+    "requires": "Gadget: Stim Bot",
+    "count": null,
+    "max": "2 (+1 Improved Dosing; +1 Tinkermaster)",
+    "gain": "(2/Safe Rest)",
+    "rolledWhen": "n/a",
+    "use": "heal",
+    "uses": [
+      {
+        "how": "heal",
+        "on": "Stim Bot",
+        "amount": "1",
+        "text": "(2/Safe Rest) Reach 4. Heal a target for 1d20+LVL HP, they gain 1 action. At the end of their turn they must make a DC 10 STR save or become Dazed.",
+        "requires": "Gadget: Stim Bot"
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(2/Safe Rest) Reach 4. Heal a target for 1d20+LVL HP, they gain 1 action. At the end of their turn they must make a DC 10 STR save or become Dazed.",
+    "source": "Artificer 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Homing Missile",
+    "kind": "uses",
+    "requires": "Gadget: Homing Missile",
+    "count": null,
+    "max": "2 (+1 Reusable Parts; +1 Tinkermaster)",
+    "gain": "(2/Safe Rest)",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "Homing Missile",
+        "amount": "1",
+        "text": "(2/Safe Rest) Reach 8. Fire an explosive projectile to inerrantly strike a target. It deals 1d20+LVL damage, ignoring any cover, conditions, or penalties you have (e.g., Rushed Attacks), doesn’t miss.",
+        "requires": "Gadget: Homing Missile"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(2/Safe Rest) Reach 8. Fire an explosive projectile to inerrantly strike a target. It deals 1d20+LVL damage, ignoring any cover, conditions, or penalties you have (e.g., Rushed Attacks), doesn’t miss.",
+    "source": "Artificer 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Scrapbot Swarm",
+    "kind": "uses",
+    "requires": "Gadget: Scrapbot Swarm",
+    "count": null,
+    "max": "2 (+1 Hearty Scrap; +1 Tinkermaster)",
+    "gain": "(2/Safe Rest)",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "Scrapbot Swarm",
+        "amount": "1",
+        "text": "(2/Safe Rest) Reach 4. Let loose INT+STR tiny single-use constructs, each deals 1d6 damage to any target within Reach 4.",
+        "requires": "Gadget: Scrapbot Swarm"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(2/Safe Rest) Reach 4. Let loose INT+STR tiny single-use constructs, each deals 1d6 damage to any target within Reach 4.",
+    "source": "Artificer 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Safety Buddy",
+    "kind": "uses",
+    "requires": "Gadget: Safety Buddy",
+    "count": null,
+    "max": "2 (+1 Durable Parts; +1 Tinkermaster)",
+    "gain": "(2/Safe Rest)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Safety Buddy",
+        "amount": "1",
+        "text": "2/Safe Rest. When you use Interpose: Summon a 1 HP construct to Interpose for an ally within Reach 2 instead of you.",
+        "requires": "Gadget: Safety Buddy"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "2/Safe Rest. When you use Interpose: Summon a 1 HP construct to Interpose for an ally within Reach 2 instead of you.",
+    "source": "Artificer 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Propulsive Boots",
+    "kind": "uses",
+    "requires": "Gadget: Propulsive Boots",
+    "count": null,
+    "max": "3 (+2 Enhanced Fuel Reserves; +1 Tinkermaster)",
+    "gain": "(3/Safe Rest)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Propulsive Boots",
+        "amount": "1",
+        "text": "(3/Safe Rest) Move for free, gain flying this turn.",
+        "requires": "Gadget: Propulsive Boots"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(3/Safe Rest) Move for free, gain flying this turn.",
+    "source": "Artificer 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": "Workshop of the Gadgeteer",
+    "name": "Improvised Tinkering",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "INT",
+    "gain": "(INT/Safe Rest) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Improvised Tinkering",
+        "amount": "1",
+        "text": "(INT/Safe Rest) you can use any Gadget without using a charge (even if you have not invented it or have no more charges remaining)."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(INT/Safe Rest) you can use any Gadget without using a charge (even if you have not invented it or have no more charges remaining).",
+    "source": "Artificer 3.0",
+    "page": 11,
+    "notes": "Always be prepared! (L11): (1/encounter) use Improvised Tinkering without spending an action. Tinkermaster (L15): +1 use/Safe Rest to all gadgets you have invented."
+  },
+  {
+    "class": "Manawright",
+    "subclass": "Workshop of the Gadgeteer",
+    "name": "Always be prepared!",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Always be prepared!",
+        "amount": "1",
+        "text": "(1/encounter) You can use Improvised Tinkering without spending an action."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) You can use Improvised Tinkering without spending an action.",
+    "source": "Artificer 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": "Workshop of the Inventor",
+    "name": "Precision Tuned Smack",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "2",
+    "gain": "(2/encounter) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Precision Tuned Smack",
+        "amount": "1",
+        "text": "(2/encounter) A repair roll costs no action."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(2/encounter) A repair roll costs no action.",
+    "source": "Artificer 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": "Workshop of the Alchemist",
+    "name": "Battlebrew",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "2",
+    "gain": "(2/encounter) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Battlebrew",
+        "amount": "1",
+        "text": "Battlebrew. (2/encounter) 1 Action. Choose any potion you know and haven’t yet brewed this encounter to instantly brew up!"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "Battlebrew. (2/encounter) 1 Action. Choose any potion you know and haven’t yet brewed this encounter to instantly brew up!",
+    "source": "Artificer 3.0",
+    "page": 14,
+    "notes": "Stable Admixtures upgrade: 1 potion kept ready that doesn’t count against this limit."
+  },
+  {
+    "class": "Manawright",
+    "subclass": "Workshop of the Chronurgist",
+    "name": "Timethief",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Timethief",
+        "amount": "1",
+        "text": "(1/encounter) Action: A creature within Reach skips their next turn."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Each encounter; Master of Moments (L15): whenever your Chronal Device has a Mishap, regain 1 Timethief or Master of Time charge.",
+    "text": "(1/encounter) Action: A creature within Reach skips their next turn.",
+    "source": "Artificer 3.0",
+    "page": 16,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": "Workshop of the Chronurgist",
+    "name": "Master of Time",
+    "kind": "uses",
+    "level": 11,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 11",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Master of Time",
+        "amount": "1",
+        "text": "(1/encounter) Double Timetinker’s Reach."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Double Timetinker’s Reach.",
+    "source": "Artificer 3.0",
+    "page": 16,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Arc Module (Manablade upgrade)",
+    "kind": "uses",
+    "requires": "Manablade upgrade: Arc Module",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Arc Module (Manablade upgrade)",
+        "amount": "1",
+        "text": "(1/encounter) strike +1 target adjacent to the first; on a Mishap, suffer 10 damage/Mana Die instead of 5.",
+        "requires": "Manablade upgrade: Arc Module"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) strike +1 target adjacent to the first; on a Mishap, suffer 10 damage/Mana Die instead of 5.",
+    "source": "Artificer 3.0",
+    "page": 7,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Ablative Coating (Manaforged Plate upgrade)",
+    "kind": "uses",
+    "requires": "Manaforged Plate upgrade: Ablative Coating",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Ablative Coating (Manaforged Plate upgrade)",
+        "amount": "1",
+        "text": "(1/encounter) When you are crit in melee, deal damage equal to your Defense back for free.",
+        "requires": "Manaforged Plate upgrade: Ablative Coating"
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When you are crit in melee, deal damage equal to your Defense back for free.",
+    "source": "Artificer 3.0",
+    "page": 8,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": null,
+    "name": "Chronoshard Modulator (Aethertuned Jerkin upgrade)",
+    "kind": "uses",
+    "requires": "Aethertuned Jerkin upgrade: Chronoshard Modulator",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Chronoshard Modulator (Aethertuned Jerkin upgrade)",
+        "amount": "1",
+        "text": "(1/encounter) When crit, gain 1 action and halve the damage.",
+        "requires": "Aethertuned Jerkin upgrade: Chronoshard Modulator"
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When crit, gain 1 action and halve the damage.",
+    "source": "Artificer 3.0",
+    "page": 9,
+    "notes": null
+  },
+  {
+    "class": "Manawright",
+    "subclass": "Workshop of the Inventor",
+    "name": "Tethercoil: Coil",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Tethercoil: Coil",
+        "amount": "1",
+        "text": "Charge: Coil. 2 Actions: (1/encounter) Creatures fully in an area equal to the number of Mana Dice Rolled (e.g., 2 dice: 2×2 area) are Restrained until the end of their next turn."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "Charge: Coil. 2 Actions: (1/encounter) Creatures fully in an area equal to the number of Mana Dice Rolled (e.g., 2 dice: 2×2 area) are Restrained until the end of their next turn.",
+    "source": "Artificer 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": null,
+    "name": "Mana",
+    "kind": "points",
+    "level": 2,
+    "count": null,
+    "max": "WIL+LVL",
+    "gain": "Level 2: gain a mana pool; max WIL+LVL; recharges on a Safe Rest.",
+    "rolledWhen": "n/a",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "casting tiered spells (cost = spell tier) and upcasting",
+        "amount": "1+",
+        "text": "Mana and Tier 1 Spells. You unlock tier 1 Hexbinder spells and a mana pool to cast them. Your max mana pool is always equal to WIL+LVL and recharges on a Safe Rest."
+      },
+      {
+        "how": "spend",
+        "on": "Doombringer: 1 mana to ignore Doomed’s encounter limit",
+        "amount": "1",
+        "text": "Doombringer (L18). You may spend 1 mana to ignore the Doomed Affliction’s encounter limit."
+      },
+      {
+        "how": "spend",
+        "on": "Broom Flight: 1 mana for 1 hour of flying",
+        "amount": "1",
+        "requires": "Mystic Mark: Broom Flight",
+        "text": "Spend 1 mana to gain flying for 1 hour (or until you fall)."
+      },
+      {
+        "how": "spend",
+        "on": "A Different Path: 1 mana to gain a Futuresight Die (1/encounter)",
+        "amount": "1",
+        "requires": "Coven of the Sight L7",
+        "text": "(1/encounter) You may expend 1 mana to gain a Futuresight Die."
+      },
+      {
+        "how": "spend",
+        "on": "Soothing Cleanse: extra mana when healing for +10 temp HP and a condition removed per mana",
+        "amount": "1+",
+        "requires": "Coven of Blooms L11",
+        "text": "Whenever you heal HP, you may spend additional mana to grant an additional 10 temp HP for 1 min and remove a harmful condition from your target for each mana spent."
+      }
+    ],
+    "appliesTo": [
+      "spell-damage",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Mana and Tier 1 Spells. You unlock tier 1 Hexbinder spells and a mana pool to cast them. Your max mana pool is always equal to WIL+LVL and recharges on a Safe Rest.",
+    "source": "Hexbinder 3.0",
+    "page": 4,
+    "notes": "Diminution (L2) reduces mana cost by 1 per chosen drawback (Humble/Slow/Weak), each once per spell. Coven of the Hunt ‘Sly’ familiar boon: regain INT mana when you roll Initiative (expires at end of combat)."
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": null,
+    "name": "Futuresight Dice",
+    "kind": "dice-pool",
+    "level": 5,
+    "die": {
+      "5": "d4",
+      "17": "d6"
+    },
+    "count": "1 (2 from L10)",
+    "max": "count",
+    "gain": "Soothsayer. Whenever combat begins, roll a Futuresight Die (1d4). Soothsayer (2) (L10): Roll 2 Futuresight Dice instead, they have Reach 8. Soothsayer (3) (L14): Roll your Futuresight Dice with advantage. Soothsayer (4) (L17): Increment your Futuresight Dice one step (e.g., d4 » d6).",
+    "rolledWhen": "gained",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "increase or decrease ANY die (any creature’s roll) within Reach 4 (Reach 8 from L10) by the die’s value",
+        "amount": "1 (multiple on one roll with Hand of Fate)",
+        "text": "(Reach 4) Expend it to increase or decrease any die by that much."
+      }
+    ],
+    "appliesTo": [
+      "any-attack",
+      "save",
+      "check",
+      "initiative",
+      "damage-taken",
+      "healing",
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Expires at the end of combat if unused.",
+    "text": "Soothsayer. Whenever combat begins, roll a Futuresight Die (1d4). (Reach 4) Expend it to increase or decrease any die by that much. It expires at the end of combat if unused.",
+    "modifiers": [
+      {
+        "source": "Sidebar: Changing Dice",
+        "text": "A die can’t be changed above its max value. As usual, if a Primary Die is reduced to 1, it misses; if increased to its max value, it crits."
+      },
+      {
+        "source": "Mystic Mark: Word of Decay",
+        "text": "Whenever you use a Futuresight Die against an Afflicted target, take the max value. When your Afflicted target dies, regain 1 spent Futuresight Die (roll it)."
+      },
+      {
+        "source": "Coven of the Sight L3 (Soothsayer Savant)",
+        "text": "Whenever combat begins, roll a Futuresight Die (1d4). … (gains the feature at L3 instead of L5)"
+      },
+      {
+        "source": "Coven of the Sight L7 (A Different Path)",
+        "text": "(1/encounter) You may expend 1 mana to gain a Futuresight Die."
+      },
+      {
+        "source": "Coven of the Sight L7 (Cursed Fate)",
+        "text": "Double the value of a Futuresight Die when used with Hex."
+      },
+      {
+        "source": "Coven of the Sight L11 (Hand of Fate)",
+        "text": "Gain 1 additional Futuresight Die each encounter, and increment your Futuresight Dice one step. You may use multiple Futuresight Dice to modify the same roll."
+      },
+      {
+        "source": "Coven of the Sight L15 (Renewed Vision)",
+        "text": "(1/encounter) When you make an attack into a crit or a miss, roll one Futuresight Die."
+      }
+    ],
+    "source": "Hexbinder 3.0",
+    "page": 5,
+    "notes": "Pre-rolled at combat start; the value is a ± modifier to a single die (not added as damage). Works on anyone’s roll (ally or enemy) within Reach, so it is an after-the-roll adjuster, not something to auto-add. FAQ: can change any die including the tens die of a d44/d66/d88. FAQ (Doomed): Doomed maximizes only dice rolled against the target, not Fury/Judgment Dice. Coven of the Sight die progression: d4 (L3), d6 (L11 Hand of Fate), d8 (L17 Soothsayer 4); count: 1 (L3), 2 (L10), 3 (L11). Ambiguous whether Soothsayer Savant + the base Soothsayer at L5 give a Sight Hexbinder 2 dice from L5 (read as the same feature gained early, so 1 die)."
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": null,
+    "name": "Consult the BONES",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Consult the BONES",
+        "amount": "1",
+        "text": "1/Safe Rest. Spend 10 min performing a ceremony to obtain information not otherwise available to you on a successful Insight check; rolled with disadvantage."
+      }
+    ],
+    "appliesTo": [
+      "check"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "1/Safe Rest. Spend 10 min performing a ceremony to obtain information not otherwise available to you on a successful Insight check; rolled with disadvantage.",
+    "source": "Hexbinder 3.0",
+    "page": 4,
+    "notes": "Coven of the Sight L11 (Masterful Seer): roll with advantage instead."
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": null,
+    "name": "Doomed (Affliction)",
+    "kind": "uses",
+    "requires": "Affliction: Doomed",
+    "count": null,
+    "max": "1 (2 with Coven of the Hex L15 Hexcaster; L18 Doombringer: 1 mana ignores the limit)",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Doomed (Affliction)",
+        "amount": "1",
+        "text": "(1/encounter) Maximize the next roll against Afflicted target.",
+        "requires": "Affliction: Doomed"
+      }
+    ],
+    "appliesTo": [
+      "any-attack"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Maximize the next roll against Afflicted target.",
+    "source": "Hexbinder 3.0",
+    "page": 5,
+    "notes": "Roll dialog: when attacking a Doomed target, maximize the roll (FAQ: only dice rolled against the target; can crit but the extra crit die is rolled normally)."
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": null,
+    "name": "Sigil of Root",
+    "kind": "uses",
+    "requires": "Mystic Mark: Sigil of Root",
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter)",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Sigil of Root",
+        "amount": "1",
+        "text": "(1/encounter) Your Enfeebled Affliction also Restrains for 1 round.",
+        "requires": "Mystic Mark: Sigil of Root"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Your Enfeebled Affliction also Restrains for 1 round.",
+    "source": "Hexbinder 3.0",
+    "page": 7,
+    "notes": null
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": null,
+    "name": "Bramble Mark thorns",
+    "kind": "charges",
+    "level": 4,
+    "requires": "Mystic Mark: Bramble Mark",
+    "count": "WIL",
+    "max": "WIL",
+    "gain": "Action: Touch an ally and grant them an aura of mystical thorns (max 1 ally at a time). … The thorns last for WIL attacks or 1 min.",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "each attack against the warded ally",
+        "amount": "1",
+        "text": "Attackers take damage equal to the ally’s Defense whenever they Defend. The thorns last for WIL attacks or 1 min."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "Ends after WIL attacks or 1 minute.",
+    "text": "Bramble Mark. Action: Touch an ally and grant them an aura of mystical thorns (max 1 ally at a time). Attackers take damage equal to the ally’s Defense whenever they Defend. The thorns last for WIL attacks or 1 min.",
+    "source": "Hexbinder 3.0",
+    "page": 7,
+    "notes": "Countdown on the ally, minor."
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": "Coven of the Hex",
+    "name": "Spitecurse",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Spitecurse",
+        "amount": "1",
+        "text": "(1/encounter, Reach 8) Reaction (whenever an enemy crits): They take the damage as well."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter, Reach 8) Reaction (whenever an enemy crits): They take the damage as well.",
+    "source": "Hexbinder 3.0",
+    "page": 10,
+    "notes": null
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": "Coven of the Sight",
+    "name": "A Different Path",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "A Different Path",
+        "amount": "1",
+        "text": "(1/encounter) You may expend 1 mana to gain a Futuresight Die."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) You may expend 1 mana to gain a Futuresight Die.",
+    "source": "Hexbinder 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": "Coven of the Sight",
+    "name": "Renewed Vision",
+    "kind": "uses",
+    "level": 15,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 15",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Renewed Vision",
+        "amount": "1",
+        "text": "(1/encounter) When you make an attack into a crit or a miss, roll one Futuresight Die."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When you make an attack into a crit or a miss, roll one Futuresight Die.",
+    "source": "Hexbinder 3.0",
+    "page": 11,
+    "notes": null
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": "Coven of Blooms",
+    "name": "Siphon Essence (Life Bloom damage)",
+    "kind": "uses",
+    "level": 3,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Siphon Essence (Life Bloom damage)",
+        "amount": "1",
+        "text": "(1/encounter) When you cast Life Bloom, damage an enemy equal to how much your target is healed (ignoring armor)."
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) When you cast Life Bloom, damage an enemy equal to how much your target is healed (ignoring armor).",
+    "source": "Hexbinder 3.0",
+    "page": 12,
+    "notes": null
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": "Coven of Blooms",
+    "name": "Herbal Elixir",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/Safe Rest) from level 7",
+    "rolledWhen": "n/a",
+    "use": "heal",
+    "uses": [
+      {
+        "how": "heal",
+        "on": "Herbal Elixir",
+        "amount": "1",
+        "text": "During a Safe Rest, you may brew a single-use Herbal Elixir. Action: drink to heal 2 Wounds (it expires when you Safe Rest if unused)."
+      }
+    ],
+    "appliesTo": [
+      "healing"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "During a Safe Rest, you may brew a single-use Herbal Elixir. Action: drink to heal 2 Wounds (it expires when you Safe Rest if unused).",
+    "source": "Hexbinder 3.0",
+    "page": 12,
+    "notes": "L15 …Rosemary, and Thyme: heals KEY Wounds instead. Consumable item."
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": "Coven of the Hunt",
+    "name": "Bind Malady",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "INT",
+    "gain": "(INT/Safe Rest) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Bind Malady",
+        "amount": "1",
+        "text": "Free Reaction. (INT/Safe Rest, Reach 8). Command your familiar to remove any single harmful condition from a creature."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "Free Reaction. (INT/Safe Rest, Reach 8). Command your familiar to remove any single harmful condition from a creature.",
+    "source": "Hexbinder 3.0",
+    "page": 13,
+    "notes": null
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": "Coven of the Hunt",
+    "name": "Mystical familiar (cast from ally)",
+    "kind": "uses",
+    "level": 3,
+    "requires": "Familiar Boon: Mystical",
+    "count": null,
+    "max": "INT",
+    "gain": "(INT/encounter) from level 3",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Mystical familiar (cast from ally)",
+        "amount": "1",
+        "text": "Mystical. You can cast spells from an ally’s position INT times/encounter.",
+        "requires": "Familiar Boon: Mystical"
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "Mystical. You can cast spells from an ally’s position INT times/encounter.",
+    "source": "Hexbinder 3.0",
+    "page": 13,
+    "notes": null
+  },
+  {
+    "class": "Hexbinder",
+    "subclass": "Coven of the Hunt",
+    "name": "Sly familiar mana",
+    "kind": "points",
+    "level": 3,
+    "requires": "Familiar Boon: Sly",
+    "count": "INT",
+    "max": null,
+    "gain": "Sly. Advantage on Initiative. When you roll Initiative, regain INT mana (this expires at the end of combat if unused).",
+    "rolledWhen": "n/a",
+    "use": "spend",
+    "uses": [
+      {
+        "how": "spend",
+        "on": "spells",
+        "amount": "1+",
+        "text": "When you roll Initiative, regain INT mana (this expires at the end of combat if unused)."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Expires at the end of combat if unused.",
+    "text": "Sly. Advantage on Initiative. When you roll Initiative, regain INT mana (this expires at the end of combat if unused).",
+    "source": "Hexbinder 3.0",
+    "page": 13,
+    "notes": "Same ambiguity as Mage’s Elemental Surge about exceeding max mana."
+  },
+  {
+    "class": "Psion",
+    "subclass": null,
+    "name": "Strain Dice",
+    "kind": "dice-pool",
+    "level": 1,
+    "die": {
+      "1": "d6",
+      "5": "d8",
+      "10": "d10",
+      "17": "d12"
+    },
+    "count": "per ability (usually 1–2)",
+    "max": null,
+    "gain": "Strain. Gain a Strain Die (1d6). (Gained by Psionic Abilities: e.g. Psionic Strike ‘gain 1 Strain’, Psionic Blast ‘Gain 2 Strain’, Atomize Weapon ‘Gain up to KEY Strain’.)",
+    "rolledWhen": "turn-end",
+    "use": "mixed",
+    "uses": [
+      {
+        "how": "track",
+        "on": "end of each of your turns: roll all; any 1 breaks Concentration (psychic damage = sum rolled, Incapacitated)",
+        "amount": "all",
+        "text": "Roll them when your turn ends, if any rolls a 1, your Concentration breaks. If your Concentration breaks before combat ends, all Psionic effects cease, you suffer psychic damage equal to the sum rolled, and you become Incapacitated until the start of your next turn"
+      },
+      {
+        "how": "add",
+        "on": "Psionic Strike: +1 damage per Strain Die held (count, not value)",
+        "amount": "count",
+        "text": "Psionic Strike. +1 damage for each Strain Die you have. When you attack you may gain 1 Strain to ignore all disadvantage and attack with advantage instead."
+      },
+      {
+        "how": "add",
+        "on": "Bladebearer: when you gain Strain while using Psionic Strike, add that Strain Die as damage",
+        "amount": "1",
+        "requires": "Adept of Bladestorm L3",
+        "text": "When you gain Strain while using Psionic Strike, add the Strain Die as damage."
+      },
+      {
+        "how": "track",
+        "on": "Atomize Weapon: deal the sum of your Strain Dice to all others in your field",
+        "amount": "all (rolled, not expended)",
+        "text": "Gain up to KEY Strain. Explode a weapon within your Psionic field then reform it perfectly as it was. Deal the sum of your Strain Dice to all others within your Psionic Field."
+      },
+      {
+        "how": "track",
+        "on": "Mindrend: next time you roll your Strain Dice, deal that much to an enemy",
+        "amount": "all",
+        "text": "Explode a creature’s mind. +1-3 strain dice. The next time you roll your Strain Dice, deal that much damage to an enemy (ignoring armor)."
+      },
+      {
+        "how": "track",
+        "on": "Mind Collapse: when concentration ends, 2 (3 at L15) chosen Strain Dice hit an enemy instead of you",
+        "amount": "2–3",
+        "requires": "Adept of Collapse L3",
+        "text": "Whenever you concentration ends, choose 2 Strain Dice, an enemy within Reach 3 suffers that damage instead of you."
+      }
+    ],
+    "appliesTo": [
+      "weapon-damage",
+      "any-attack",
+      "damage-taken"
+    ],
+    "autoOffer": true,
+    "reset": "Not stated. Shed by Steady Breathing (Action: lose 1; 2 at L10) and I Can Hold! (L18: lose 1 at the end of each of your turns).",
+    "text": "Strain. Gain a Strain Die (1d6). Roll them when your turn ends, if any rolls a 1, your Concentration breaks. If your Concentration breaks before combat ends, all Psionic effects cease, you suffer psychic damage equal to the sum rolled, and you become Incapacitated until the start of your next turn",
+    "modifiers": [
+      {
+        "source": "L4 Mind Over Matter",
+        "text": "The first time each encounter you would lose Concentration, you may gain 2 Strain instead. (L13: gain 1 Strain instead; when your concentration is broken, ignore the highest Strain Die rolled.)"
+      },
+      {
+        "source": "L8 New Core Ability",
+        "text": "When you concentration is broken, you may ignore 1 Strain Die."
+      },
+      {
+        "source": "L20 Mindmaster",
+        "text": "Free Action: Gain 1 Strain to double the reach of your Psionic Field this round."
+      }
+    ],
+    "source": "Psion 0.1.1",
+    "page": 5,
+    "notes": "Neither ‘rolled when gained’ nor ‘rolled when spent’: unrolled dice that are re-rolled together at the end of every one of your turns (rolledWhen ‘turn-end’). They are a liability (risk of breaking Concentration) more than a currency; Psionic Strike reads only the count. The book never says Strain Dice are cleared when Concentration breaks or combat ends; ‘all Psionic effects cease’ implies a reset but it is unstated (alpha class). Size raises with L5/L10/L17 Expansive Mind."
+  },
+  {
+    "class": "Psion",
+    "subclass": null,
+    "name": "Mind Over Matter",
+    "kind": "uses",
+    "level": 4,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 4",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Mind Over Matter",
+        "amount": "1",
+        "text": "The first time each encounter you would lose Concentration, you may gain 2 Strain instead."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "The first time each encounter you would lose Concentration, you may gain 2 Strain instead.",
+    "source": "Psion 0.1.1",
+    "page": 3,
+    "notes": "L13: gain 1 Strain instead."
+  },
+  {
+    "class": "Psion",
+    "subclass": "Adept of Bladestorm",
+    "name": "Bladestorm",
+    "kind": "uses",
+    "level": 7,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 7",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Bladestorm",
+        "amount": "1",
+        "text": "(1/encounter) Others within your Psionic Field take KEY damage for each space they move (or are moved) this round. +2 Strain."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Others within your Psionic Field take KEY damage for each space they move (or are moved) this round. +2 Strain.",
+    "source": "Psion 0.1.1",
+    "page": 7,
+    "notes": null
+  },
+  {
+    "class": "Revenant",
+    "subclass": null,
+    "name": "Undying Might",
+    "kind": "bonus-dice",
+    "level": 1,
+    "count": "flat max HP",
+    "max": null,
+    "gain": "While above 0 HP, add your max HP to all melee attacks you make.",
+    "rolledWhen": "n/a",
+    "use": "add",
+    "uses": [
+      {
+        "how": "add",
+        "on": "every melee attack while above 0 HP",
+        "amount": "flat max HP",
+        "text": "While above 0 HP, add your max HP to all melee attacks you make."
+      }
+    ],
+    "appliesTo": [
+      "melee-attack",
+      "weapon-damage"
+    ],
+    "autoOffer": true,
+    "reset": "Unlimited",
+    "text": "Undying Might. While above 0 HP, add your max HP to all melee attacks you make. You have a max of 2 actions (while living and Dying).",
+    "source": "Revenant 0.1",
+    "page": 3,
+    "notes": "Flat bonus, no dice. Possess (Revenant Ability): add your Max HP as damage to a possessed ally’s attacks. Hate (Spectral Form, while Dying): 1d8+WIL+Wounds, +Wounds every 5th level. No Revenant subclasses exist in the 0.1 PDF (only ‘Subclass’ placeholders at L3/7/11/15)."
+  },
+  {
+    "class": "Revenant",
+    "subclass": null,
+    "name": "Incorporeal (while living)",
+    "kind": "uses",
+    "level": 10,
+    "count": null,
+    "max": "1",
+    "gain": "(1/encounter) from level 10",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Incorporeal (while living)",
+        "amount": "1",
+        "text": "(1/encounter) Use Incorporeal ability while living."
+      }
+    ],
+    "appliesTo": [
+      "damage-taken"
+    ],
+    "autoOffer": false,
+    "reset": "start of each encounter",
+    "text": "(1/encounter) Use Incorporeal ability while living.",
+    "source": "Revenant 0.1",
+    "page": 4,
+    "notes": "Incorporeal: can’t be Grappled/Restrained; when you Defend, reduce damage to 0."
+  },
+  {
+    "class": "Revenant",
+    "subclass": null,
+    "name": "Spectral Power",
+    "kind": "uses",
+    "level": 18,
+    "count": null,
+    "max": "WIL",
+    "gain": "(WIL/Safe Rest) from level 18",
+    "rolledWhen": "n/a",
+    "use": "track",
+    "uses": [
+      {
+        "how": "track",
+        "on": "Spectral Power",
+        "amount": "1",
+        "text": "(WIL/Safe Rest) You may use an ability from your living or Spectral Form without needing to be in that form."
+      }
+    ],
+    "appliesTo": [
+      "other"
+    ],
+    "autoOffer": false,
+    "reset": "Safe Rest",
+    "text": "(WIL/Safe Rest) You may use an ability from your living or Spectral Form without needing to be in that form.",
+    "source": "Revenant 0.1",
+    "page": 4,
+    "notes": null
+  }
+]

@@ -1,0 +1,2703 @@
+{
+  "classes": [
+    {
+      "name": "Oathsworn",
+      "source": "Oathsworn 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "A righteous defender of the weak, and obliterator of evil. High Defense and high burst damage class.",
+      "flavor": "I will protect my companions and vanquish evil at all costs. Various orders of these zealous, holy warriors have attained great physical and radiant strength through absolute devotion to a higher power in the form of oaths.\n\nThrough their strength, both physical and radiant, nothing can sway them from their hunger for justice and their fervent pursuit and hatred of evil. The mark of a true Oathsworn, however, is their willingness to lay down their life for their friends.\n\nSmite with righteous judgment. The more you face evil, the more potent your strikes become.\n\nStand as a bastion of defense, safeguarding allies even from afar. Bringing justice to every corner of the realm.\n\nMend wounds, and inspire others to embrace your noble cause with unwavering conviction.",
+      "complexity": 2,
+      "keyStats": [
+        "STR",
+        "WIL"
+      ],
+      "hitDie": 10,
+      "startingHp": 17,
+      "saves": {
+        "adv": "STR",
+        "dis": "DEX"
+      },
+      "armor": "All Armor",
+      "weapons": "Melee STR Weapons",
+      "startingGear": [
+        "Mace",
+        "Rusty Mail",
+        "Wooden Buckler",
+        "Manacles"
+      ],
+      "casting": {
+        "mana": "WIL+LVL",
+        "manaFormula": "WIL+LVL",
+        "manaFromLevel": 2,
+        "schools": [
+          "Radiant"
+        ],
+        "notes": "You know Radiant cantrips and tier 1 spells. Your mana pool recharges on a Safe Rest."
+      },
+      "resources": [
+        {
+          "name": "Judgment Dice",
+          "max": "2",
+          "die": "d6"
+        },
+        {
+          "name": "Lay on Hands",
+          "max": "5×LVL",
+          "reset": "Safe Rest"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Radiant Judgment",
+              "text": "Whenever an enemy attacks you, roll and set aside 2d6 Judgment Dice (if you currently have none). They are expended on your next Reach attack this encounter, dealing their total as extra radiant damage (they are lost on a miss)."
+            },
+            {
+              "name": "Lay on Hands",
+              "text": "Gain a magical pool of healing power. This pool’s maximum is always equal to 5×LVL and recharges on a Safe Rest. Action: Touch a target and spend any amount of remaining healing power to restore that many HP."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Mana and Radiant Spellcasting",
+              "text": "You know Radiant cantrips and tier 1 spells, and gain a mana pool. Your mana pool is equal to WIL+LVL and recharges on a Safe Rest."
+            },
+            {
+              "name": "Zealot",
+              "text": "Whenever you hit with a melee weapon, you may spend mana to deal +5 damage for each mana spent (up to the spell tier you’ve unlocked)."
+            },
+            {
+              "name": "Paragon of Virtue",
+              "text": "Advantage on Influence checks to convince someone when you are forthrightly telling the truth, disadvantage when misleading."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Commit yourself to an Oath and gain its benefits."
+            },
+            {
+              "name": "Radiant Judgment (2)",
+              "text": "Your Judgment Dice are d8s."
+            },
+            {
+              "name": "Sacred Decree",
+              "text": "Learn 1 Sacred Decree."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "My Life, for My Friends",
+              "text": "You can Interpose for free."
+            },
+            {
+              "name": "Tier 2 Spells",
+              "text": "You may now cast spells up to tier 2."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or WIL."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Radiant Judgment (3)",
+              "text": "Your Judgment Dice are d10s."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Tier 3 Spells",
+              "text": "You may now cast spells up to tier 3."
+            },
+            {
+              "name": "Sacred Decree (2)",
+              "text": "Learn a 2nd Sacred Decree."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Oathsworn subclass feature."
+            },
+            {
+              "name": "Master of Radiance",
+              "text": "Choose 1 Radiant Utility Spell."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Tier 4 Spells",
+              "text": "You may now cast spells up to tier 4."
+            },
+            {
+              "name": "Radiant Judgment (4)",
+              "text": "Your Judgment Dice are d12s."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or WIL."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Sacred Decree (3)",
+              "text": "Learn a 3rd Sacred Decree."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Tier 5 Spells",
+              "text": "You may now cast spells up to tier 5."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            },
+            {
+              "name": "Radiant Judgment (5)",
+              "text": "Your Judgment Dice are d20s."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Oathsworn subclass feature."
+            },
+            {
+              "name": "Master of Radiance (2)",
+              "text": "Choose a 2nd Radiant Utility Spell."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Sacred Decree (4)",
+              "text": "Learn a 4th Sacred Decree."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or WIL."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Tier 6 Spells",
+              "text": "You may now cast spells up to tier 6."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Sacred Decree (5)",
+              "text": "Learn a 5th Sacred Decree."
+            },
+            {
+              "name": "Radiant Judgment (6)",
+              "text": "Whenever you roll Judgment Dice, roll 1 more."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Oathsworn subclass feature."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Sacred Decree (6)",
+              "text": "Learn a 6th Sacred Decree."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 STR or WIL."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Tier 7 Spells",
+              "text": "You may now cast spells up to tier 7."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Unending Judgment",
+              "text": "+5 damage to melee attacks while you have no Judgment Dice."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Glorious Paragon",
+              "text": "+1 to any 2 of your stats. Defend for free whenever you Interpose."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Oathsworn Names",
+          "text": "Male Names: Justice, Cassian, Sledge, Warren, Sir Allard, Baral, Turrek.\nFemale Names: Lady Aris, Constance, Esmee, Maeve, Liris, Tess, Yuni."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Sacred Decrees",
+          "intro": "Serve Selflessly. Whenever you perform a notable selfless act during a Safe Rest, you may choose different Oathsworn options available to you.",
+          "options": [
+            {
+              "name": "Blinding Aura",
+              "cost": "1 Action",
+              "text": "(1/Safe Rest) Enemies in your aura are Blind until the end of their next turn."
+            },
+            {
+              "name": "Courage!",
+              "cost": "0 Actions",
+              "text": "(1/encounter) When you or an ally in your aura would drop to 0 HP, set their HP to 1 instead."
+            },
+            {
+              "name": "Explosive Judgment",
+              "cost": "2 Actions",
+              "text": "(1/encounter) Expend your Judgment Dice, deal that much radiant damage to all enemies within Reach 2."
+            },
+            {
+              "name": "Improved Aura",
+              "cost": "Passive",
+              "text": "+2 aura Reach."
+            },
+            {
+              "name": "Radiant Aura",
+              "cost": "1 Action",
+              "text": "(WIL/Safe Rest) End any single harmful condition or effect on yourself or another willing creature within your aura (ending “Dying” grants 1 HP, ending “Dazed” grants 1 action, etc.)."
+            },
+            {
+              "name": "Reliable Justice",
+              "cost": "Passive",
+              "text": "Whenever you roll Judgment Dice, roll with advantage (roll one extra and drop the lowest)."
+            },
+            {
+              "name": "Shining Mandate",
+              "cost": "Passive",
+              "text": "(1/round) When you are attacked while you already have Judgment Dice, an ally within your aura gains a Judgment Die (roll a new one, they add it to their next attack). Gain advantage on checks to see through illusions."
+            },
+            {
+              "name": "Stand Fast, Friends!",
+              "cost": "Passive",
+              "text": "Whenever you roll Initiative, grant allies temp HP equal to your STR+WIL. You and allies within your aura have advantage against fear and effects that would move or knock Prone."
+            },
+            {
+              "name": "Unstoppable Protector",
+              "cost": "Passive",
+              "text": "Gain +2 Speed. Nothing can stop you from Interposing for an ally within your aura. If you Interpose for a noncombatant NPC, you may Interpose again this round."
+            },
+            {
+              "name": "Well Armored",
+              "cost": "Passive",
+              "text": "Whenever you Interpose, gain STR temp HP."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Oath of Vengeance",
+          "flavor": "Empower your Judgement Dice and strike down your enemies with explosive retribution.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Aura of Zeal",
+                  "text": "Whenever you roll Judgment Dice, roll 1 more. Gain an aura with a Reach of 4. Your Radiant Judgment also triggers when an ally within your aura is attacked while you have no Judgment Dice."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Avenger",
+                  "text": "Whenever you or an ally within your aura gain any Wounds, change up to that many Judgment Dice to their max. Then, move up to half your Speed for free."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Unerring Judgment",
+                  "text": "Increase your Primary Die rolls on melee attacks by 1 whenever you have Judgment Dice."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Maximum Judgment",
+                  "text": "Whenever you are attacked, set a Judgment Die to its max."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Oath of Refuge",
+          "flavor": "Raise your shield to protect your allies, and interpose with greater strength and purpose.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Aura of Refuge",
+                  "text": "Your shields gain +WIL Defense and count as your spellcasting focus. Gain an aura with a Reach of 4; you can Interpose for an ally anywhere within your aura."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Face Me, Foul Creature!",
+                  "text": "When you Interpose, the attacking enemy is also Taunted by you until the end of their next turn."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Glorious Reprieve",
+                  "text": "You and allies in your aura do not lose actions from Dying. (1/round) You or an ally in your aura can ignore 1 Wound gained while Dying."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Divine Grace",
+                  "text": "You are resistant to all damage while Interposing."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Oath of Valor",
+          "flavor": "The Valorsworn is a knight with a selfless heart, courageous hand, and an unyielding will in the face of danger.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Aura of Valor",
+                  "text": "You are immune to Frightened; gain an aura with a Reach of 4, allies in this area are as well. When you Interpose, the protected creature gains advantage on their next roll this encounter."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Exemplar of Courage",
+                  "text": "Whenever you survive an attack, grant an ally in your aura advantage on their next roll. When you Interpose for a Dying creature, grant them 1 additional action."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Balm for the Downcast",
+                  "text": "When using Lay on Hands, you may choose another creature within your aura to be healed the same amount."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "No Greater Love…",
+                  "text": "When you Interpose while Dying, you suffer 1 fewer Wound and all allies in your Aura gain 1 action."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Oath of Roaring Thunder",
+          "flavor": "With the power of thunder smash your foes across the battlefield, and with the swiftness of lightning you dash after them to strike them dead.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Aura of Gales",
+                  "text": "Gain an aura with a Reach of 4. Allies can move freely within your aura."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Thunderous Strike",
+                  "text": "When you use Zealot, you can first teleport WIL spaces for each mana spent. If your target is a Medium or smaller creature, knock them Prone as well."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Thunderous Judgment",
+                  "text": "(1 Mana, Reach 12) Exchange places with an ally outside your aura that is being attacked (this counts as Interposing)."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Stormstrike",
+                  "text": "(1/encounter) Action: Exchange places with a willing creature within Reach 12, then deal lightning damage to enemies within your aura equal to a roll of your Judgment Dice."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Oathbreaker",
+          "flavor": "Fallen, seeking redemption.",
+          "complexity": 3,
+          "story": true,
+          "intro": "Dark Benediction. You lose access to the following Radiant spells: True Strike, Heal, and Warding Bond; and gain access to the following Necrotic spells: Entice, Shadow Trap, and Dread Visage. Whenever you can choose a Utility Spell, you may choose a Radiant or Necrotic one.\n\nParagon of Power. (Replaces Paragon of Virtue) Advantage on Might checks when intimidating others.\n\nAura of Suffering. You gain an aura with a Reach of 4 and can Interpose for an ally anywhere within your aura; however, your Radiant Judgment ability no longer triggers when attacked. Instead, it triggers whenever you could Interpose but don’t.",
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "We All Suffer",
+                  "text": "Gain +2 max Wounds. When an ally within your aura would gain any Wounds or fail a save, you may suffer the effect instead and trigger your Radiant Judgment ability."
+                },
+                {
+                  "name": "Bring Me Your Pain",
+                  "text": "Reaction (when a willing ally within your aura would drop to 0 HP): Switch HP with them (if your current HP is higher than their max HP, they gain temp HP equal to the difference), dropping to 0 HP and gaining the Wound instead."
+                },
+                {
+                  "name": "Blood Magic",
+                  "text": "You can use Entice on yourself."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Torment",
+                  "text": "Your Lay on Hands heals you for twice as much, and others for half as much. When you deal damage, you can expend healing power from your Lay on Hands pool to increase the damage dealt by an amount equal to the points spent (ignoring Armor)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Exploit",
+                  "text": "Reaction (whenever an ally within your aura Defends): You may expend your Judgment Dice to force an enemy within your aura to Interpose (a creature cannot Interpose against its own attack)."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Bloody Terror",
+                  "text": "Attacks against you gain disadvantage for each Wound you have (max 3)."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "Are Judgment Dice used up on a miss?",
+          "a": "Yes, they are expended on your next attack, hit or miss (they also expire at the end of combat if unused)."
+        },
+        {
+          "q": "Can I used Judgment Dice on spells?",
+          "a": "On Reach spells, yes."
+        },
+        {
+          "q": "Do I gain Judgment Dice when I Interpose?",
+          "a": "Yes, Interposing makes you the new target of the attack. You gain Judgment Dice even if a monster’s attack misses or all the damage is mitigated."
+        },
+        {
+          "q": "Can Judgment Dice crit or explode?",
+          "a": "No. They are additional damage on an attack you make (but the underlying attack can crit as normal)."
+        },
+        {
+          "q": "Can I Interpose more than once if it’s free?",
+          "a": "No. Each reaction is still limited to 1/round even if free."
+        }
+      ]
+    },
+    {
+      "name": "Shadowmancer",
+      "source": "Shadowmancer 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "A shadowy master of expendable hordes. Flexible minion-based class with powerful spellcasting options.",
+      "flavor": "Great power sometimes comes from… horrible places. But what’s the alternative, spend our entire lives… STUDYING?! Now that’s horrible. Who’d want to waste their lives reading books—learning magic the hard way? Work SMART, not hard. Just scheme up a way to take what you need from someone who won’t miss it—Ancient Horrors don’t guard their power nearly as well as you’d think! And if there’s power just lying around, it’d be dumb of me to not use it, really.\n\nSo what if I wear black and have to occasionally sacrifice an animal here and there while chanting? Does that automatically mean I’m evil? *Pfft,* hardly! Not every ANCIENT HORROR is the same; that’s like saying crow black and spider black are the same. Okay, bad examples, but the point stands. If you’re tired of swinging swords around and getting sweaty like a peasant, just summon a horde of Shadow minions to do your bidding. They’re always eager to serve!\n\nUse your cunning to forge pacts with ancient, unfathomable entities, and draw upon their incomprehensible power.\n\nBend living Shadows to your will, summon them to swarm your foes, serving as both sword and fodder.\n\nEmpower your shadowy abilities with lesser and greater invocations from your master.",
+      "complexity": 3,
+      "keyStats": [
+        "INT",
+        "DEX"
+      ],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": {
+        "adv": "INT",
+        "dis": "WIL"
+      },
+      "armor": "Cloth Armor",
+      "weapons": "Blades, Wands",
+      "startingGear": [
+        "Adventurer’s Garb",
+        "Sickle",
+        "Shovel"
+      ],
+      "casting": {
+        "schools": [
+          "Necrotic"
+        ],
+        "notes": "No mana pool. Learn the Shadowmancer cantrips (level 1); learn all Necrotic cantrips and tier 1 Necrotic spells (level 2). Pilfered Power: You can steal power from your Patron to cast tiered spells (DEX times before they notice). All of your spells are cast at the highest tier you have unlocked."
+      },
+      "resources": [
+        {
+          "name": "Pilfered Power",
+          "max": "DEX",
+          "reset": "Safe Rest"
+        },
+        {
+          "name": "Shadows",
+          "max": "INT",
+          "die": "d12"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Conduit of Shadow",
+              "text": "Learn the Shadowmancer cantrips."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Master of Darkness",
+              "text": "Learn all Necrotic cantrips and tier 1 Necrotic spells."
+            },
+            {
+              "name": "Pilfered Power",
+              "text": "You can steal power from your Patron to cast tiered spells (DEX times before they notice). If you exceed this limit, your Patron damages you for half your max HP as recompense. This resets as you commune with your Patron during a Safe Rest."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "THE PACT IS SEALED",
+              "text": "Choose a Shadowmancer subclass and 1 Lesser Shadow Invocation."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or DEX."
+            },
+            {
+              "name": "A Gift from the Master",
+              "text": "Choose 1 Greater Shadow Invocation."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Tier 2 Spells",
+              "text": "You may now cast tier 2 spells; all of your spells are cast at this tier."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or WIL."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "A Gift from the Master (2)",
+              "text": "Choose a 2nd Greater Shadow Invocation."
+            },
+            {
+              "name": "Shadowmastery",
+              "text": "Choose 1 Necrotic Utility Spell."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Shadowmancer subclass feature."
+            },
+            {
+              "name": "Tier 3 Spells",
+              "text": "You may now cast tier 3 spells; all of your spells are cast at this tier."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or DEX."
+            },
+            {
+              "name": "Lesser Invocation",
+              "text": "Choose a 2nd Lesser Shadow Invocation."
+            },
+            {
+              "name": "Shadowmastery (2)",
+              "text": "Choose a 2nd Necrotic Utility Spell."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "A Gift from the Master (3)",
+              "text": "Choose a 3rd Greater Shadow Invocation."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or WIL."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Tier 4 Spells",
+              "text": "You may now cast tier 4 spells; all of your spells are cast at this tier."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Shadowmancer subclass feature."
+            },
+            {
+              "name": "Lesser Invocation (2)",
+              "text": "Choose a 3rd Lesser Shadow Invocation."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Greedy Pact",
+              "text": "When you would take damage from Pilfered Power, make a STR save:\n• **1–9:** Suffer damage as normal.\n• **10–19:** Suffer only 10 HP of damage.\n• **20+:** Suffer no damage and cast the spell as if it were 1 tier higher."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or DEX."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Tier 5 Spells",
+              "text": "You may now cast tier 5 spells; all of your spells are cast at this tier."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or WIL."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "A Gift from the Master (4)",
+              "text": "Choose a 4th Greater Shadow Invocation."
+            },
+            {
+              "name": "Shadowmastery (3)",
+              "text": "You know all Necrotic Utility Spells."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Shadowmancer subclass feature."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Tier 6 Spells",
+              "text": "You may now cast tier 6 spells; all of your spells are cast at this tier."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or DEX."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Dire Shadows",
+              "text": "Attacks against your Shadows are made with disadvantage. They take no damage from successful saves."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or WIL."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "A Gift from the Master (5)",
+              "text": "Choose a 5th Greater Shadow Invocation."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            },
+            {
+              "name": "Tier 7 Spells",
+              "text": "You may now cast tier 7 spells; all of your spells are cast at this tier."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Eldritch Usurper",
+              "text": "+1 to any 2 of your stats. (1/encounter) When you cast Summon Shadow you may summon a Greater Shadow instead."
+            },
+            {
+              "name": "Greater Shadow",
+              "text": "A 5d12 minion. When it dies, it explodes into 5 Shadows (ignoring your Shadow Limit). Place them anywhere within Reach 6."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Supplicate",
+          "text": "Whenever you commune with your Patron on a Safe Rest, you may beg them to allow you to choose different Shadowmancer options (they may ask for something in return)."
+        },
+        {
+          "title": "Shadowmancer Names",
+          "text": "Male Names: Callow, Edris, Vex, Allard, Dusk, Crick, Morrow.\nFemale Names: Sway, Nettle, Tish, Quinn, Mara, Sable, Tinsel."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Lesser Invocations",
+          "intro": "Supplicate. Whenever you commune with your Patron on a Safe Rest, you may beg them to allow you to choose different Shadowmancer options (they may ask for something in return).",
+          "options": [
+            {
+              "name": "Abhorrent Speech",
+              "cost": "Passive",
+              "text": "You can communicate with horrible creatures (aberrations, undead, etc.)."
+            },
+            {
+              "name": "Beguiling Influence",
+              "cost": "1 Action",
+              "text": "(1/Safe Rest) You may reroll an Influence check."
+            },
+            {
+              "name": "Blood Sight",
+              "cost": "1 Action",
+              "text": "(1/Safe Rest) You may reroll an Examination check. Additionally, you can detect traces of blood on a surface, even after it has been cleaned."
+            },
+            {
+              "name": "Devoted Acolyte",
+              "cost": "Passive",
+              "text": "Learn 2 of the following languages: Celestial, Draconic, Deep Speak, Infernal, or Primordial. Advantage on Lore checks related to those 2 languages."
+            },
+            {
+              "name": "Eldritch Sense",
+              "cost": "Passive",
+              "text": "You can sense any shapechanger or creature concealed by magic within Reach 6."
+            },
+            {
+              "name": "Gaze of Two Minds",
+              "cost": "1 Action",
+              "text": "Touch a willing creature and perceive through its senses instead of your own for as long as you hold concentration."
+            },
+            {
+              "name": "Knowledge from Beyond",
+              "cost": "0 Actions",
+              "text": "If you fail an Insight or Arcana check, you may suffer 1 Wound to succeed instead."
+            },
+            {
+              "name": "My Favored Pet",
+              "cost": "Passive",
+              "text": "One Shadow can begrudgingly tolerate you outside of combat. It can (very creepily) do any menial task a below-average commoner could."
+            },
+            {
+              "name": "Voice of the Dark",
+              "cost": "Passive",
+              "text": "You can communicate telepathically with a humanoid within 6 spaces."
+            },
+            {
+              "name": "Whispers of the Grave",
+              "cost": "1 Action",
+              "text": "(1/Safe Rest) Ask a dead creature 3 yes/no questions. You can never question it this way again."
+            }
+          ]
+        },
+        {
+          "name": "Greater Invocations",
+          "intro": "Supplicate. Whenever you commune with your Patron on a Safe Rest, you may beg them to allow you to choose different Shadowmancer options (they may ask for something in return).",
+          "options": [
+            {
+              "name": "Armor of Shadows",
+              "cost": "Passive",
+              "text": "Reduce all damage you receive by an amount equal to the number of Shadows you have."
+            },
+            {
+              "name": "Fiendish Boon",
+              "cost": "Passive",
+              "text": "Increase your DEX or INT by 1. You have 1 fewer max Hit Dice."
+            },
+            {
+              "name": "Hungering Shadows",
+              "cost": "Passive",
+              "text": "Whenever one of your Shadows rolls the max, the next tiered spell you cast this encounter does not cost a use of Pilfered Power."
+            },
+            {
+              "name": "One with Shadows",
+              "cost": "1 Action",
+              "text": "While adjacent to a Shadow or in an area of dim light or darkness, you may become Invisible until you move or attack (summoning and commanding minions does not count as an attack)."
+            },
+            {
+              "name": "Repelling Blast",
+              "cost": "Passive",
+              "text": "Your Shadow Blast gains: On hit: Knockback 2."
+            },
+            {
+              "name": "Shadow Magus",
+              "cost": "Passive",
+              "text": "Your Shadows gain +4 Reach and deal d10 damage instead."
+            },
+            {
+              "name": "Shadow Spear",
+              "cost": "Passive",
+              "text": "Your Shadow Blast gains +8 Range, ignores cover, advantage vs Prone targets (instead of disadvantage), and crits on a 1."
+            },
+            {
+              "name": "Shadow Rush",
+              "cost": "Passive",
+              "text": "Whenever your Shadows attack, instead of rolling damage, you may have any of them deal the max amount, then die."
+            },
+            {
+              "name": "Shadow Warp",
+              "cost": "1 Action",
+              "text": "(Reach 12) Switch places with a creature that has been dealt necrotic damage this turn."
+            },
+            {
+              "name": "Swarming Shadows",
+              "cost": "Passive",
+              "text": "Whenever a Shadow rolls the max, summon another Shadow adjacent to the target (ignoring your Shadow Limit)."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Pact of the Red Dragon",
+          "flavor": "The Great Dragon’s flames are yours. Its wrath is yours. Soon, even its flesh will be too.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Draconic Crimson Rite",
+                  "text": "Your Patron grants you knowledge of Fire spells. Your Shadows become flaming dragon wyrmling Shadows. Your Shadow Blast and Shadows can deal fire or necrotic damage and inflict Smoldering whenever they roll the max."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "We’ll ALL Burn!",
+                  "text": "You may cast Pyroclasm without Pilfering Power by including yourself in the damage. You have advantage on the save. Choose 1 Fire Utility Spell."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Heart of Burning Fire",
+                  "text": "Regain 1 use of Pilfered Power each time you roll Initiative. This expires at the end of combat if unused."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Enveloped by the Master",
+                  "text": "Gain 1d4 Wounds to cast Dragonform."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Pact of the Abyssal Depths",
+          "flavor": "Icy tendrils reach out from the abyss, and drag your foes into absolute cold and darkness.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Master of Nightfrost",
+                  "text": "Your Patron grants you knowledge of Ice spells. Gain the ability to breathe underwater. Your Shadows become beings of nightfrost. Your Shadow Blast and Shadows can deal cold or necrotic damage, and whenever they roll the max, you gain INT+LVL temp HP."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Shadowrime",
+                  "text": "Your Shadow Blast also Slows. You can cast Omenrime or Rimeblades without Pilfering Power by expending 10 temp HP. Choose 1 Ice Utility Spell."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Glacial Resilience",
+                  "text": "(1/Safe Rest) Reaction (whenever you are attacked or would gain a condition): Gain 10×LVL temp HP and end ALL negative conditions on yourself. At the end of your next turn, any remaining temp HP are lost."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Cryomancer’s Reprisal",
+                  "text": "Pay half your max HP to cast ANY Ice spell. After casting an Ice spell in this way, you gain an invisible aura: the next creature that hits you with a melee attack this encounter takes cold damage equal to half the HP you spent on this casting."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Pact of the Void",
+          "flavor": "Your cosmic master gazes from beyond the stars. Time and space are mere playthings to you.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Void Spawn",
+                  "text": "You can summon Shadows within Reach 6."
+                },
+                {
+                  "name": "Void Step",
+                  "text": "You and your allies can move between spaces your Shadows occupy as if they were the same space (but cannot end movement in an occupied space)."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Voidstrike",
+                  "text": "You and your allies can attack between spaces your Shadows occupy as if they were the same space. Gain advantage when attacking this way (e.g., an ally next to a Shadow can make a melee attack against any enemy also adjacent to a Shadow)."
+                },
+                {
+                  "name": "The Vast Cold",
+                  "text": "Your Shadows inflict the Slowed condition when attacked in melee."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Void Singularity",
+                  "text": "(Reach 1/Shadow) Whenever 1 or more Shadows move into the space of another Shadow, all of them implode and die, dealing their combined damage to all creatures in the area, moving them toward the center as you choose."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "The Consuming Dark",
+                  "text": "(1/encounter) When a Shadow kills an enemy you may have it transform into a Greater Shadow."
+                },
+                {
+                  "name": "Urgent Command",
+                  "text": "Gain a Wound to move your Shadows as a Reaction."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Pact of the Endless Swarm",
+          "flavor": "Pests and vermin… Even the weakest grow strong in numbers. The denizens of your swarm are infinite and unyielding.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Summon Hive",
+                  "text": "Whenever you cast Summon Shadow, also summon a Hive within Reach 2 (max of INT Hives). **Hive.** Immobile minion, enemies within Reach 2 attack with disadvantage. At the end of your turns, spawns a swarm: roll and set aside 1d4. Whenever you or an ally attacks, you can expend any of these dice to increase the damage done."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Rampant Brood",
+                  "text": "When a Hive dies, it spawns 2 swarms. Whenever you cast Command Shadows, your Hives can also move."
+                },
+                {
+                  "name": "Broodlord",
+                  "text": "You may spend your Interpose reaction to make a Hive Interpose for yourself or an ally instead."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Impending Infestation",
+                  "text": "Summon 1 additional Hive for each time you’ve previously cast Summon Shadow this encounter."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Terrible Plague",
+                  "text": "Your swarms increase to d8 damage and your Hives’ Reach increases to 3."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Pact of the High Celestial",
+          "flavor": "Be not afraid! Your radiant spirits empower, bless, and protect those that you deem worthy.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Divine Bestowal",
+                  "text": "Your Shadows become radiant Spirits, lose their ability to attack directly, but can move into the space of an ally and bless them. They move wherever the ally does, and each one grants the ally +2 damage on their attacks and +2 damage reduction from incoming attacks. If an ally takes damage, all minions blessing them die."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Radiant Boon",
+                  "text": "You may target allies with Shadow Blast and give them temp HP instead of damaging them."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Divine Bestowal (2)",
+                  "text": "Your minions’ blessing increases to 3."
+                },
+                {
+                  "name": "Celestial Armor",
+                  "text": "When a blessed ally Defends or Interposes, 1 minion blessing them can sacrifice itself to take the damage instead."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Apotheosis",
+                  "text": "(1/Safe Rest) For 1 round you are immune to all damage and negative effects. Anytime you would roll a d20, roll a d100 instead, and anytime you would roll less than a d20, roll a d20."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Reaver",
+          "flavor": "Cast aside, born anew.",
+          "story": true,
+          "intro": "Hollow One. Cut off from your Patron, you can no longer cast Shadow Blast, nor can you cast tiered spells using Pilfered Power. However, as a parting token, you have stolen a secret from your Patron: the magical Bonescythe, a weapon of sinew and bone, infused with shadowy magic.",
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Shadow Exploit",
+                  "text": "Whenever you Defend, you can sacrifice a Shadow to take no damage. Or you may sacrifice a Shadow to cast a spell at the highest tier you have unlocked. Each subsequent time you use this ability in an encounter, increase the cost by 1 Shadow."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Grim Harrow",
+                  "text": "When you strike with your Bonescythe, treat each die as Primary. You may divide the dice as you choose amongst any number of adjacent targets within Reach."
+                },
+                {
+                  "name": "Reap",
+                  "text": "When your Bonescythe crits or kills a creature, summon a Shadow for free (ignoring your Shadow Limit)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "My Blood, My Power",
+                  "text": "You may take 1 Wound to cast a tiered spell you know at the highest tier you have unlocked."
+                },
+                {
+                  "name": "Otherworldly Might",
+                  "text": "Advantage on Concentration saves if you have any Shadows."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Sovereign One",
+                  "text": "Summon 2 Shadows and your Bonescythe for free when you roll Initiative."
+                }
+              ]
+            }
+          ],
+          "optionGroups": [
+            {
+              "name": "Summon Bonescythe",
+              "options": [
+                {
+                  "name": "Summon Bonescythe",
+                  "cost": "1 Action",
+                  "text": "Summon a magical Bonescythe, a melee weapon. (Reach 2) 2d12 slashing+DEX necrotic damage to EACH die (add 1 extra damage die every 5 Levels). On hit (or when combat ends): it shatters and must be resummoned to use again. Invocations affecting Shadow Blast affect your Bonescythe instead."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "spells": [
+        {
+          "name": "Summon Shadow",
+          "school": "Shadowmancer",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "text": "Summon 1 adjacent Shadow (a d12 minion).\n\nMinions. They follow the minion rules and abandon you immediately outside of combat.\nShadow Limit. You can have up to INT Shadows.",
+          "cantripScaling": "+1 Shadow every 5 Levels.",
+          "source": "Shadowmancer 3.0",
+          "page": 6,
+          "draft": false
+        },
+        {
+          "name": "Command Shadows",
+          "school": "Shadowmancer",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "text": "ALL your Shadows move 6 then attack (1/round).",
+          "source": "Shadowmancer 3.0",
+          "page": 6,
+          "draft": false
+        },
+        {
+          "name": "Shadow Blast",
+          "school": "Shadowmancer",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 8",
+          "damage": "1d12+DEX",
+          "text": "Range: 8. Damage: 1d12+DEX (1/round).",
+          "cantripScaling": "+1d12 every 5 Levels.",
+          "source": "Shadowmancer 3.0",
+          "page": 6,
+          "draft": false
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does Hungering Shadows or Swarming Shadows combo with Shadow Rush?",
+          "a": "No. Hungering Shadows and Swarming Shadows require you to roll the max amount; Shadow Rush forgoes rolling dice."
+        },
+        {
+          "q": "Can I go over my Shadow Limit?",
+          "a": "Some spells and abilities may permit this, but while at or above your Shadow Limit, casting Summon Shadow has no effect."
+        },
+        {
+          "q": "How do minions and swarms interact with Armor?",
+          "a": "Add up all the minions’/swarms’ dice and treat them as a single attack."
+        }
+      ]
+    },
+    {
+      "name": "Shepherd",
+      "source": "Shepherd 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "A flexible pet-based support class that can dole out healing and harm with equal mastery.",
+      "flavor": "Thou shalt revere the gifts of life and death, neither of which is ever given or taken. Rather, we are all merely journeying from this realm and that of the beyond. But alas, often do these wandering souls find themselves bereft of guidance.\n\nThus falls upon the Shepherd the solemn duty—to be a beacon of light to those ensnared in darkness, and darkness to those who, in hubris, deem themselves to be the light. For many, the journey of service is a difficult path—yet, in this task we are not solitary. Our Lifebinding Spirits, the steadfast companions of our faith, are bound beside us, comforting and aiding us in the stewardship we’ve been given.\n\nSummon a faithful companion to your side to provide invaluable support in battle.\n\nEmbrace the balance of life and death, bolster allies with healing spells and boons.\n\nSmite foes with radiant fury or wither enemies with dark necrotic power.",
+      "complexity": 2,
+      "keyStats": [
+        "WIL",
+        "STR"
+      ],
+      "hitDie": 10,
+      "startingHp": 17,
+      "saves": {
+        "adv": "WIL",
+        "dis": "DEX"
+      },
+      "armor": "Mail Armor, Shields",
+      "weapons": "STR Weapons, Wands",
+      "startingGear": [
+        "Rusty Mail",
+        "Mace",
+        "Wooden Buckler",
+        "Bell"
+      ],
+      "casting": {
+        "mana": "(WIL×3)+LVL",
+        "manaFormula": "WIL*3+LVL",
+        "manaFromLevel": 2,
+        "schools": [
+          "Radiant",
+          "Necrotic"
+        ],
+        "notes": "You know the Radiant & Necrotic cantrips and the Lifebinding Spirit cantrip. At level 2 you unlock tier 1 Radiant & Necrotic spells; the mana pool recharges on a Safe Rest."
+      },
+      "resources": [
+        {
+          "name": "Mend",
+          "max": "WIL",
+          "reset": "Safe Rest"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Keeper of Life & Death",
+              "text": "You know the Radiant & Necrotic cantrips."
+            },
+            {
+              "name": "My Buddy!",
+              "text": "Learn the Lifebinding Spirit cantrip."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Mana and Unlock Tier 1 Spells",
+              "text": "You unlock tier 1 Radiant & Necrotic spells and gain a mana pool to cast them. This mana pool’s max is always equal to (WIL×3)+LVL and recharges on a Safe Rest."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Shepherd subclass."
+            },
+            {
+              "name": "Master of Twilight",
+              "text": "Choose 1 Necrotic and 1 Radiant Utility Spell."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Sacred Grace",
+              "text": "Choose 1 Sacred Grace."
+            },
+            {
+              "name": "Tier 2 Spells",
+              "text": "You may now cast spells up to tier 2."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Assist Me, My Friend!",
+              "text": "Instead of your spirit attacking this round, you may add its damage to one of your melee weapon attacks."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or DEX."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Tier 3 Spells",
+              "text": "You may now cast spells up to tier 3."
+            },
+            {
+              "name": "Master of Twilight (2)",
+              "text": "Choose a 2nd Necrotic and a 2nd Radiant Utility Spell."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Shepherd subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Tier 4 Spells",
+              "text": "You may now cast spells up to tier 4."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Sacred Grace (2)",
+              "text": "Choose a 2nd Sacred Grace."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or DEX."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Tier 5 Spells",
+              "text": "You may now cast spells up to tier 5."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Shepherd subclass feature."
+            },
+            {
+              "name": "Master of Twilight (3)",
+              "text": "You know all Necrotic and Radiant Utility Spells."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Tier 6 Spells",
+              "text": "You may now cast spells up to tier 6."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Sacred Grace (3)",
+              "text": "Choose a 3rd Sacred Grace."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or DEX."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Tier 7 Spells",
+              "text": "You may now cast spells up to tier 7."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Shepherd subclass feature."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Tier 8 Spells",
+              "text": "You may now cast spells up to tier 8."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Revitalizing Blessing",
+              "text": "(1/round) Whenever you roll a 6+ on one or more healing dice, the target may recover one Wound."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 INT or DEX."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Tier 9 Spells",
+              "text": "You may now cast spells up to tier 9."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Twilight Sage",
+              "text": "+1 to any 2 of your stats. Your Lifebinding Spirit rolls twice as many dice."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Serve",
+          "text": "After spending a day tending to a sacred place or serving others during a Safe Rest, you may choose different Shepherd options available to you."
+        },
+        {
+          "title": "Flavor is Free",
+          "text": "Your Lifebinding Spirit can take the form of any Small/Tiny friendly creature (dog, lamb, rabbit, sparrow, etc.). Give your little buddy a name, too! Outside of combat, your companion is a spirit, so it can pass through walls and dangers harmlessly and briefly move away from you (but always prefers to be faithfully at your side). It cannot speak."
+        },
+        {
+          "title": "Rushed Attacks and My Companion?",
+          "text": "You and your companion use the same action pool, but count as different creatures. So you can each attack once without the Rushed Attack penalty every round. Teamwork!"
+        },
+        {
+          "title": "Shepherd Names",
+          "text": "Male Names: Gideon, Edmund, Rupert, Ambrose, Orin, Bastian, Alden.\nFemale Names: Hazel, Grace, Faith, Charity, Hope, Glimmer, Twine."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Sacred Graces",
+          "options": [
+            {
+              "name": "Dark Benediction",
+              "cost": "Passive",
+              "text": "Your Lifebinding Spirit can now cast Entice and Withering Touch."
+            },
+            {
+              "name": "Empowered Companion",
+              "cost": "Passive",
+              "text": "Your Lifebinding Spirit gains +STR damage vs Undead and +WIL healing."
+            },
+            {
+              "name": "Guiding Spirit",
+              "cost": "Passive",
+              "text": "Whenever your Lifebinding Spirit rolls a 6+ on its damage die, the next attack against that target has advantage."
+            },
+            {
+              "name": "Hasty Companion",
+              "cost": "Passive",
+              "text": "+4 Reach for your Lifebinding Spirit. It can also act for free when summoned."
+            },
+            {
+              "name": "Illuminate Soul",
+              "cost": "Passive",
+              "text": "Whenever you Mend a creature, make them glow with radiant light for 1 round. Attacks against them are disadvantaged and attacks they make are advantaged."
+            },
+            {
+              "name": "Light Bearer",
+              "cost": "Passive",
+              "text": "Your Lifebinding Spirit can cast Heal. Whenever you roll Initiative, regain 1 use of Mend (it expires when combat ends if unused)."
+            },
+            {
+              "name": "Not Beyond MY Reach",
+              "cost": "Passive",
+              "text": "You may heal creatures that have been dead for less than 1 round. For every 10 HP a dead creature is healed this way, you may have them recover 1 Wound instead (you must heal at least 1 Wound to revive them)."
+            },
+            {
+              "name": "Vengeful Spirit",
+              "cost": "1 Action",
+              "text": "(AoE Reach 2) Your Lifebinding Spirit sacrifices itself to deal its Harm damage to all enemies within Reach."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Luminary of Malice",
+          "flavor": "With death as your companion, you can unleash dark powers on your foes.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Soul Reaper",
+                  "text": "(1/round) Your companion’s attacks can target a 2nd adjacent enemy."
+                },
+                {
+                  "name": "Harbinger of Decay",
+                  "text": "Vibrant colors and lovely smells are suppressed near you. Foods spoil more rapidly in your presence, and you frequently awaken to flies wherever you lodge. You may have your Lifebinding Spirit shift into a deathly version of itself (a zombie dog, a devious imp, etc.) and have its damage type become necrotic."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Veilwalker’s Blessing",
+                  "text": "(1/Safe Rest) Reaction (when you would drop to 0 HP): Drop to 1 HP instead and your Lifebinding Spirit crits the attacker back."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Deathbringer’s Touch",
+                  "text": "Your Lifebinding Spirit and Withering Touch crit on 1 as well."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Conduit of Death",
+                  "text": "Your Veilwalker’s Blessing ability recharges when you roll Initiative."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Luminary of Mercy",
+          "flavor": "Save the dying, wield the light, embody your virtue. Your compassion makes you a worthy vessel for radiant energy.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Merciful Healing",
+                  "text": "You can use Mend on non-Dying creatures. While you are Dying, your Lifebinding Spirit can act 1/round without spending an action."
+                },
+                {
+                  "name": "Life is Beautiful",
+                  "text": "Harmless and lovely creatures such as butterflies and hummingbirds are attracted to your presence and often follow you. Flowers bloom more vibrantly in your presence."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Searing Light",
+                  "text": "1 Action: (Reach 6) Whenever you heal HP, you may expend 1 use of Mend to damage another target for the amount of HP recovered."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Powerful Healer",
+                  "text": "(WIL/Safe Rest) Whenever you would heal HP, you may instead give that many temp HP, OR heal the max amount you could roll."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Lifebinder’s Embrace",
+                  "text": "Your Mend may heal 1 additional creature. Regain 1 charge of Mend when you roll Initiative (this expires if unspent at the end of combat)."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Luminary of Protection",
+          "flavor": "“An ounce of prevention is worth a pound of cure. Why wait for your friends to get hurt to heal them when you could prevent them from being hurt in the first place?”",
+          "complexity": 1,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Guardian Spirit",
+                  "text": "Whenever you Interpose, you may have your Lifebinding Spirit do so instead by spending one of its Mend charges."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Ready for Danger",
+                  "text": "+WIL Initiative, you may give this bonus to 1 ally as well (after they roll)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Shield of Light",
+                  "text": "You may have your healing spells grant temp HP instead. (1/encounter) You can use Mend without spending a charge."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Ever Vigilant",
+                  "text": "Gain advantage on Initiative. You and 1 ally gain +1 action at the start of each encounter."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Luminary of the Forge",
+          "flavor": "“Your Lifebinding Spirit is the furnace’s flame incarnate.”",
+          "complexity": 2,
+          "story": true,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Flameworker",
+                  "text": "Exchange knowledge of the Necrotic spell school for Fire. Your Lifebinding Spirit inflicts Smoldering on crit."
+                },
+                {
+                  "name": "Seasoned Journeyman",
+                  "text": "Whenever you Safe Rest, choose one:\n• **Weaponsmith.** Your weapons gain +STR damage until your next Safe Rest.\n• **Armorsmith.** Your armor gains +STR Defense until your next Safe Rest."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Lightforged",
+                  "text": "Mend also grants WIL+STR temp HP and 1 action."
+                },
+                {
+                  "name": "Living Ember",
+                  "text": "Your Lifebinding Spirit deals 2× damage to Smoldering targets, ending the condition."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Masterwork",
+                  "text": "+WIL to Weaponsmith and Armorsmith; you may choose twice."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Quench the Blaze",
+                  "text": "(1/encounter) When a Smoldering enemy loses the condition, you may Restrain them until the end of their next turn."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "spells": [
+        {
+          "name": "Lifebinding Spirit",
+          "school": "Shepherd",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 4",
+          "damage": "1d8+STR",
+          "text": "Summon a spirit companion (max 1) that follows you and is immune to harm. It can act upon a target within Reach 4 of you before returning to your side. It can:\n• **Harm.** 1 Action: It attacks for 1d8+STR radiant damage (ignoring Armor).\n• **Mend.** 1 Action: (WIL/Safe Rest) It restores WIL d20 HP to a Dying creature.",
+          "cantripScaling": "+STR damage every 5 levels.",
+          "source": "Shepherd 3.0",
+          "page": 7,
+          "draft": false
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does my companion have its own HP and actions?",
+          "a": "No. It has no HP of its own HP and acts only when directed by you."
+        },
+        {
+          "q": "Do I have to summon my companion every encounter?",
+          "a": "No. Once summoned, it remains faithfully by your side untill dismissed."
+        },
+        {
+          "q": "Can enemies attack my companion? Does it take up space?",
+          "a": "No."
+        },
+        {
+          "q": "Rushed Attacks and My Companion?",
+          "a": "You and your companion use the same action pool, but count as different creatures. So you can each attack once without Rushed Attacks every round. Teamwork!"
+        },
+        {
+          "q": "Can my hero miss on purpose to trigger Deathbringer’s Touch?",
+          "a": "No. A hero does not try to miss on purpose."
+        }
+      ]
+    },
+    {
+      "name": "Songweaver",
+      "source": "Songweaver 3.0",
+      "page": 4,
+      "draft": false,
+      "tagline": "A high utility class that can harm, harass, and heal with equal mastery!",
+      "flavor": "Each Songweaver holds a spark granted to them by a muse at birth; a spark which fuels their creative energy and flows forth in the form of a sharp wit, relentless humor, or moving art.\n\nThe power of a Songweaver’s spark is also evident in their powerful sway over others. Songweavers can bolster and infuse courage in their allies, or… make their enemies’ brains leak out through their ears. The Songweaver can bring a whole new meaning to verbal abuse! They can even redirect the (often justified) attacks of others, in order to protect their own moneymakers. As a Songweaver, you can:\n\nCharm the hapless people you meet and inspire your allies to reach fantastic new heights of heroism!\n\nUse your Lyrical Weaponry and powerful charisma to dominate enemies—even redirecting attacks, making enemies attack their own allies!\n\nControl the Battlefield with a chord of chaos, a rad heroic ballad, or a debilitating rhapsody.",
+      "complexity": 3,
+      "keyStats": [
+        "WIL",
+        "INT"
+      ],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": {
+        "adv": "WIL",
+        "dis": "STR"
+      },
+      "armor": "Cloth, Leather",
+      "weapons": "DEX, Wands",
+      "startingGear": [
+        "Adventurer’s Garb",
+        "Instrument",
+        "Dagger",
+        "Mirror"
+      ],
+      "casting": {
+        "mana": "(INT×3)+LVL",
+        "manaFormula": "INT*3+LVL",
+        "manaFromLevel": 2,
+        "schools": [
+          "Wind"
+        ],
+        "notes": "You know Wind cantrips and the Vicious Mockery spell. At level 2, choose 1 additional spell school to learn and unlock tier 1 spells; the mana pool recharges on a Safe Rest."
+      },
+      "resources": [
+        {
+          "name": "Songweaver’s Inspiration",
+          "max": "2×WIL",
+          "reset": "Safe Rest"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Windbag",
+              "text": "You know Wind cantrips and the Vicious Mockery spell."
+            },
+            {
+              "name": "Songweaver’s Inspiration",
+              "text": "(2×WIL times/Safe Rest) Free Reaction: Allow an ally to reroll any single die or increase the result rolled by 1."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Wind Spellcasting and…",
+              "text": "Choose 1 additional spell school to learn."
+            },
+            {
+              "name": "Mana and Unlock Tier 1 Spells",
+              "text": "You unlock tier 1 spells and gain a mana pool to cast them. The mana pool’s max is always equal to (INT×3)+LVL and recharges on a Safe Rest."
+            },
+            {
+              "name": "Jack of All Trades",
+              "text": "Whenever you Safe Rest, you may move a skill point as if you just Leveled up."
+            },
+            {
+              "name": "Song of Rest",
+              "text": "Whenever you Field Rest, friendly creatures gain +1 healing for each Hit Die spent."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Songweaver subclass."
+            },
+            {
+              "name": "Quick Wit",
+              "text": "When you roll Initiative, regain 2 spent uses of your Songweaver’s Inspiration (these expire when combat ends if unspent)."
+            },
+            {
+              "name": "I Know Just the Song",
+              "text": "Choose 1 Utility Spell from each spell school you know."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Tier 2 Spells",
+              "text": "You may now cast spells up to tier 2."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or INT."
+            },
+            {
+              "name": "Lyrical Weaponry",
+              "text": "Choose 1 ability from the Lyrical Weaponry list."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "A “People” Person",
+              "text": "You’ve met many people in your travels; some have even agreed to come to your aid should you need it. Choose 2 friends you know: you can temporarily summon them via song (1/Safe Rest each)."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Tier 3 Spells",
+              "text": "You may now cast spells up to tier 3."
+            },
+            {
+              "name": "I Know Just the Song (2)",
+              "text": "Choose a 2nd Utility Spell from each spell school you know."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Songweaver subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Tier 4 Spells",
+              "text": "You may now cast spells up to tier 4."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or INT."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Lyrical Weaponry (2)",
+              "text": "Choose a 2nd ability from the Lyrical Weaponry list."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Tier 5 Spells",
+              "text": "You may now cast spells up to tier 5."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Songweaver subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Tier 6 Spells",
+              "text": "You may now cast spells up to tier 6."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or INT."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Lyrical Weaponry (3)",
+              "text": "Choose a 3rd ability from the Lyrical Weaponry list."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Tier 7 Spells",
+              "text": "You may now cast spells up to tier 7."
+            },
+            {
+              "name": "I Know Just the Song (3)",
+              "text": "You know all Utility Spells from the spell schools you know."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Songweaver subclass feature."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Tier 8 Spells",
+              "text": "You may now cast spells up to tier 8."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or INT."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Lyrical Weaponry (4)",
+              "text": "Choose a 4th ability from the Lyrical Weaponry list."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Tier 9 Spells",
+              "text": "You may now cast spells up to tier 9."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the GM’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "I’m So Famous!",
+              "text": "+1 to any 2 of your stats. Your Songweaver’s Inspiration also grants that ally advantage on all subsequent rolls this round."
+            },
+            {
+              "name": "Upgraded Cantrips",
+              "text": "Your cantrips grow stronger."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "Perform!",
+          "text": "Whenever you perform in a place that inspires you, or exchange barbs with another competent wordsmith during a Safe Rest, you may choose different Songweaver options available to you."
+        },
+        {
+          "title": "Flavor is Free",
+          "text": "If you’d rather have a more traditional bard type—a keeper of ancient legends—instead of people you know, the characters above can be reflavored as famous legends from history that you can magically summon via song. Feel free to work with your GM to make it happen. As long as the mechanics stay roughly the same, have fun!"
+        },
+        {
+          "title": "Making Your Own People",
+          "text": "You can work with your GM to swap out Stompy, Gran Gran, Mal, and Linos for your own creations if you like. 1 in-combat person whose damage scales with your Level (see other spells and abilities for appropriate amounts of damage or other effects), 1 out-of-combat support person, 1 who can help in narrative situations, and 1 who can give sporadic utility. Follow that broad pattern and you’ll be fine!"
+        },
+        {
+          "title": "Balance Note",
+          "text": "If you find yourself never wanting to use one, make it slightly stronger; if you’re using it too frequently, consider bringing the power Level down slightly or adding some other drawback."
+        },
+        {
+          "title": "Songweaver Proverb",
+          "text": "“Every city, a stage! Every stranger, a fan in the waiting!” —Songweaver Proverb"
+        },
+        {
+          "title": "Songweaver Names",
+          "text": "Male Names: Maximilian, Auracio, Dorian, Valentino, Strings, Orin, Caspian.\nFemale Names: Seraphina, Nyx, Arabella, Saffron, Marveletta, Isadora, Fantasia."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Lyrical Weaponry",
+          "intro": "Perform! Whenever you perform in a place that inspires you, or exchange barbs with another competent wordsmith during a Safe Rest, you may choose different Songweaver options available to you.",
+          "options": [
+            {
+              "name": "Heroic Ballad",
+              "cost": "1 Action",
+              "text": "+2 max Songweaver’s Inspiration charges. When used to reroll an ally’s attack, your Songweaver’s Inspiration also grants them +WIL damage."
+            },
+            {
+              "name": "Inspiring Anthem",
+              "cost": "1 Action",
+              "text": "(1/encounter) Grant all friendly Dying creatures who can hear you 1 HP and 1 action."
+            },
+            {
+              "name": "Not My Beautiful Faaace!",
+              "cost": "Passive",
+              "text": "(1/encounter) When you Defend, force the attacker to choose another target within range on a failed WIL save (if there is none, the attack fails). If they fail by 5 or more, they attack themselves! On save, reroll the attack and choose either result."
+            },
+            {
+              "name": "Rhapsody of the Normal",
+              "cost": "1 Action",
+              "text": "When you roll 4+ on Vicious Mockery, you may spend a Songweaver’s Inspiration charge to temporarily suppress any special abilities they have until the end of their next turn. They can do only what an untrained average villager can do, attack once for 1d4 damage and move up to 6 spaces (no Armor, spellcasting, flying, regeneration, other inherent or trained features)."
+            },
+            {
+              "name": "Song of Domination",
+              "cost": "2 Actions",
+              "text": "(Reach 6, 1/encounter) Move all enemies who can hear you 6 spaces on a failed WIL save, half as far on save. They cannot move on their next turn."
+            }
+          ]
+        },
+        {
+          "name": "A “People” Person",
+          "options": [
+            {
+              "name": "Stompy",
+              "cost": "2 Actions",
+              "text": "Summon a huge hill giant for 1 round. As he enters the battlefield adjacent to you, use Stompy’s Stomp: Make a DC 10 Influence check. On a success, he moves 6 spaces in a direction you choose; on a failure, he moves toward YOU instead (“YOU NOT FRIEND!”). He deals LVL+Influence check damage to everything in his path. ANY other creature within Reach 6 of Stompy can use this ability once instead of an attack."
+            },
+            {
+              "name": "Mal, the Malevolent Imp",
+              "text": "Summon a tiny fiend for 1 night. He can find out dangerous information you have no right to know! Or “take care” of a problem with only the slightest chance of things going wrong. Make an Influence check to convince him to help you (advantage if you ask him to do something he would find mischievous or fun; with disadvantage if it is something he would find good or menial)."
+            },
+            {
+              "name": "Gran Gran (NOT a hag)",
+              "text": "When resting, you may summon her for 1 hour to soothe your wounds (and hassle you for not eating enough). She bakes and hands out WIL+INT pastries. Eating one recovers one mana, Hit Die, or Wound. Eat them while they’re warm! They expire in 10 minutes."
+            },
+            {
+              "name": "Linos, the Everfriendly",
+              "text": "Summon a legendary flying (but friendly) creature to take you and your party wherever you need to go. He may request a very large amount of food as payment."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Herald of Snark",
+          "flavor": "Nothing wrong with a little lighthearted jest now and again! Distract and discourage your enemies with tricks of the mind.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Opportunistic Snark",
+                  "text": "Reaction (Range 12, when an enemy misses an attack): You may cast Vicious Mockery at them; it deals double damage when cast this way and can’t miss."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Fight Picker",
+                  "text": "(1/turn) When an enemy is damaged by your Vicious Mockery, you may have one of your allies Taunt them until the end of the enemy’s turn instead."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Chord of Chaos",
+                  "text": "(1/encounter) Action: You may move ALL creatures within hearing of your song up to 3 spaces as long as they do not move into an obviously dangerous place."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Words Like Swords",
+                  "text": "Your Vicious Mockery damage die becomes 1d12."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Herald of Courage",
+          "flavor": "“Brave heroes! Lend your ears to my epic tale…” Be heartened, and your friends will never falter.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Inspiring Presence",
+                  "text": "Whichever ally is nearest to you has advantage (if multiple are equally close, choose your favorite)."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Fire in My Bones",
+                  "text": "Your Songweaver’s Inspiration also grants your target 1 additional action."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Unfailing Resolve",
+                  "text": "Your Songweaver’s Inspiration allows your target to reroll with advantage or increases a die face by +2."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Chorus of Champions",
+                  "text": "(1/encounter) Free Reaction: Give all party members 1 action."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Herald of Singing Steel",
+          "flavor": "Your blade cuts as deeply as your wit. Choose this subclass if you want to blend musical mastery with deadly bladework.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Songwoven Blade",
+                  "text": "Whenever you make a melee attack, you can apply the damage and all other effects of your Vicious Mockery to it."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Ha-HA!",
+                  "text": "Creatures Taunted by you are also Weakened 10 on their first attack each round."
+                },
+                {
+                  "name": "From the Chandelier!",
+                  "text": "(1/encounter) Vault off a nearby obstacle and move for free (ignoring enemy spaces and Difficult Terrain); gaining advantage on your next attack."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Riposte",
+                  "text": "Reaction (when a creature attacks you in melee but deals you no damage): You may attack them with Songwoven Blade, rolling a d20 as your Primary Die instead."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Ballad Blade",
+                  "text": "Creatures Taunted by you are Weakened 20 on their first attack each round instead."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Herald of Torment",
+          "flavor": "Songweavers are often thought of as musicians that play uplifting songs and tell hopeful stories, but a Herald of Torment uses that same ability to poison the minds of their foes.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Poison Mind",
+                  "text": "Instead of Taunting, your Vicious Mockery Poisons the target’s mind (until you Poison another creature this way)."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Tormented Mind",
+                  "text": "(1/encounter) Action: Torment a creature Poisoned by you: move them WIL spaces and attack another creature or themselves."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Mind Worm",
+                  "text": "On each of your turns, you can move creatures Poisoned by you WIL spaces for free."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Weak Mind, Easy Prey",
+                  "text": "Your spells have advantage against Poisoned creatures, and they have disadvantage on saves against them. The first time each encounter a creature you have Tormented dies, recharge Tormented Mind."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Herald of Legends",
+          "flavor": "Gained the ability to channel a legendary creature’s power to supplement your own.",
+          "complexity": 4,
+          "story": true,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Legendkeeper",
+                  "text": "Lose access to your Lyrical Weaponry abilities, you instead gain:"
+                },
+                {
+                  "name": "Legend’s Tale",
+                  "text": "Cantrip, 1 Action (Reach 8). Summon a hero of legend to aid you for the duration of this encounter (max 1). Each Legend can also be Exerted as a Reaction to provide an additional powerful effect—but afterward it leaves the battlefield. **Legends you know:**\n**The Aegis.** Friendly creatures in a 3×3 area gain +WIL damage reduction. Exert: Whenever an ally in the area Interposes they may take no damage instead.\n**The Stiletto.** Friendly creatures in a 3×3 area can move or hide for free (1/turn). Exert (Reach 12): Whenever an ally would crit, add INT d12 damage to the attack."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "You may have up to 2 Legends active at a time",
+                  "text": "You also learn the following Legends:\n**The Mender.** Friendly creatures in a 3×3 area can end 1 negative condition on themselves at the end of their turns. Exert: When a creature in the area drops to 0 HP you may revive them to LVL HP, they regain 1 action.\n**The Tactician.** Friendly creatures in a 3×3 area have +2 to Reach, Range, and Assess rolls. Exert: (Reach 12) When an ally Assesses, they succeed and can choose twice."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Banner Bearer",
+                  "text": "Whenever you would move you may move a summoned Legend instead. Learn the following Legends:\n**The Warlord.** ALL creatures in a 3×3 area are Empowered 10. Exert: (Reach 12) ALL creatures are Empowered 10 until the end of their next turn.\n**Old Oakum.** Creatures in a 3×3 area are Slowed and cannot fly. Exert: When a creature would exit the area pull them back into it and Restrain them."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Living Legends",
+                  "text": "Summon a Legend whenever you roll Initiative. (1/encounter) Whenever a Legend would depart the battlefield, you may instead allow it to stay and it does not count against your normal maximum."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "spells": [
+        {
+          "name": "Vicious Mockery",
+          "school": "Songweaver",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 12",
+          "damage": "1d6+INT",
+          "text": "Range: 12. Damage: 1d6+INT psychic (ignoring Armor). On hit: target is Taunted until the end of their next turn.",
+          "cantripScaling": "+3 damage every 5 Levels.",
+          "source": "Songweaver 3.0",
+          "page": 6,
+          "draft": false
+        }
+      ],
+      "faq": [
+        {
+          "q": "Can I Inspire myself?",
+          "a": "No. You are your own biggest fan, but you are not your own ally."
+        },
+        {
+          "q": "When do I decide to use Songweaver’s Inspiration?",
+          "a": "After a roll, before the effect takes place."
+        },
+        {
+          "q": "Does a rerolled Primary Die remain the Primary Die?",
+          "a": "Yes."
+        },
+        {
+          "q": "Can increasing a die by 1 change a miss into a hit, or a hit into a crit?",
+          "a": "Yes."
+        },
+        {
+          "q": "How do Legends work?",
+          "a": "They are incorporeal beings, immune to harm, and take up no space."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Class `page` is the printed page of the class stat block / level table (4 in all four books); the intro spread is printed page 3.",
+    "Class `flavor` includes the intro paragraphs (drop cap restored) followed by the three icon blurbs from the intro page as separate paragraphs. Drop the last three paragraphs if only the prose intro is wanted.",
+    "Quick Builds pages (example level 1 and 2 heroes) were not transcribed; they're pre-filled character sheets, not rules. The Names lists are kept as a 'Names' sidebar.",
+    "Shadowmancer has no mana pool: tiered spells go through Pilfered Power (DEX uses per Safe Rest), so `casting` has no `mana`/`manaFormula`.",
+    "Shadowmancer 'Reaver' is laid out like a story-based subclass (full-page art, '— Cast aside, born anew —' tagline, pre-level abilities, no complexity pips), but its label reads 'SHADOWMANCER', not 'STORY-BASED SUBCLASS'. Set story: true; please confirm.",
+    "Shadowmancer Reaver's boxed 'Summon Bonescythe' (1 Action) ability is in the subclass optionGroups as a one-option group named 'Summon Bonescythe' so the action cost is kept.",
+    "Shadowmancer 'THE PACT IS SEALED' (level 3) is printed in all caps; kept as printed.",
+    "Shadowmancer subclass complexity: Red Dragon 2 and Abyssal Depths 3 per the page images (the text layer puts the pips in the opposite order).",
+    "The 'Supplicate' (Shadowmancer), 'Serve' (Shepherd) and 'Perform!' (Songweaver) boxes are in `sidebars`. Where the box is printed under an option-group heading, it is also that group's `intro`. Oathsworn's 'Serve Selflessly' is printed only under Sacred Decrees, so it's only that group's intro.",
+    "Class-only cantrips go in `spells` with school set to the class name (tag 'SHADOWMANCER ONLY, CANTRIP' etc.): Shadowmancer (Summon Shadow, Command Shadows, Shadow Blast), Shepherd (Lifebinding Spirit), Songweaver (Vicious Mockery). Summon Shadow's boxed Minions / Shadow Limit note is appended to its text.",
+    "Bold lead-ins inside bullet lists (Greedy Pact save bands, Lifebinding Spirit Harm/Mend, Seasoned Journeyman options, Herald of Legends' Legends, Summon Hive's 'Hive.') are kept as **bold** in the text.",
+    "Herald of Legends: the level 7 feature has no short name; its bold lead-in 'You may have up to 2 Legends active at a time' is used as the name. The Legends stay inside their level's feature text, not in an option group.",
+    "Songweaver level 5 'A “People” Person': the text layer has mismatched quotes (“People“); normalized to “People” to match the section heading.",
+    "Typos kept as printed: Oathsworn FAQ 'Can I used Judgment Dice on spells?'; Oath of Vengeance 'Judgement Dice'; Shepherd FAQ 'It has no HP of its own HP' and 'untill dismissed'.",
+    "Herald of Singing Steel and Herald of Torment label their pips 'Class Complexity' rather than 'Subclass Complexity'; recorded as the subclass complexity.",
+    "Resource `max` values are as printed in the features: Judgment Dice '2' (2d6, die size rises with level), Lay on Hands '5×LVL', Pilfered Power 'DEX', Shadows 'INT' (Shadow Limit), Mend 'WIL', Songweaver’s Inspiration '2×WIL'."
+  ]
+}

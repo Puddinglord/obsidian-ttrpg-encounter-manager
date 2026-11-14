@@ -1101,6 +1101,31 @@ export async function roll(dice: Die3d[], opts: Dice3dOptions): Promise<void> {
 	}, stay);
 }
 
+/**
+ * Get ready for a roll that's about to happen (the level-up wizard's Hit Die):
+ * build the stage, compile its shaders, and run one throw of these dice
+ * off-screen, so the real roll animates from the first frame. The stage stays
+ * warm for two minutes.
+ */
+export function warm(dice: Die3d[], opts: Dice3dOptions): void {
+	if (current || !dice.length) return;
+	const s = getStage();
+	resize(s, dice.length);
+	// Build these dice in their real looks for a moment, so their shaders compile now rather than mid-throw.
+	const time = { value: 0 };
+	const built = dice.slice(0, MAX_DICE).map((d, i) => {
+		const shape = dieShape(d.sides);
+		const look = d.look ?? legacyLook((d.role === 'primary' ? opts.primaryColor : opts.diceColor) ?? '#ece6d8', d.material ?? opts.material ?? 'classic');
+		const m = makeDieMeshes(shape, defaultLabels(shape), look, look.body[0] ?? '#ece6d8', time, i + 1, null);
+		s.scene.add(m.group);
+		return m;
+	});
+	s.renderer.compile(s.scene, s.camera);
+	for (const m of built) s.scene.remove(m.group);
+	simulateThrow(dice.map(d => dieShape(d.sides)), floorExtent(s), 1);
+	idleTimer = window.setTimeout(teardown, 120000);
+}
+
 // ---------------------------------------------------------------------------
 // Settings preview: one die turning slowly on its own small canvas.
 

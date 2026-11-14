@@ -7,8 +7,11 @@ name: Auto release
 #   release: skip    no release
 # If the PR already set a new version in manifest.json that has no tag yet, that version ships as is.
 #
-# This bumps package.json, manifest.json and versions.json, commits to main, tags, and then runs
-# release.yml for the tag. (A tag pushed with the workflow token doesn't trigger workflows by itself.)
+# This bumps package.json, manifest.json and versions.json, moves CHANGELOG.md's "## [Unreleased]"
+# under the new version (scripts/changelog.mjs; the PR title stands in when Unreleased is empty),
+# commits to main, makes an annotated tag whose message is that changelog, and then runs release.yml
+# for the tag, which uses the same changelog as the release notes. (A tag pushed with the workflow
+# token doesn't trigger workflows by itself.)
 
 on:
   pull_request:
@@ -66,11 +69,13 @@ jobs:
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
           echo "bumped=true" >> "$GITHUB_OUTPUT"
 
-      - name: Bump, commit and tag
+      - name: Bump, changelog, commit and tag
         env:
           VERSION: ${{ steps.version.outputs.version }}
           BUMPED: ${{ steps.version.outputs.bumped }}
           PR: ${{ github.event.pull_request.number }}
+          # Through env, never interpolated into the script: a PR title is user text.
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -78,10 +83,16 @@ jobs:
             # Runs version-bump.mjs too: manifest.json and versions.json follow package.json.
             npm version "$VERSION" --no-git-tag-version
             git add package.json package-lock.json manifest.json versions.json
-            git commit -m "🔖 Release $VERSION (#$PR)"
-            git push origin main
           fi
-          git tag "$VERSION"
+          # CHANGELOG.md: Unreleased becomes this version (or the PR title, when nothing was written).
+          node scripts/changelog.mjs release "$VERSION" --date "$(date -u +%F)" --fallback "$PR_TITLE (#$PR)" --out "$RUNNER_TEMP/notes.md"
+          git add CHANGELOG.md
+          git commit -m "🔖 Release $VERSION (#$PR)"
+          git push origin main
+          # An annotated tag carrying the changelog for this release. --cleanup=whitespace keeps the
+          # "### Added" headings, which git would otherwise strip from the message as comments.
+          { echo "$VERSION"; echo; cat "$RUNNER_TEMP/notes.md"; } > "$RUNNER_TEMP/tag.txt"
+          git tag -a "$VERSION" --cleanup=whitespace -F "$RUNNER_TEMP/tag.txt"
           git push origin "$VERSION"
 
       - name: Run the release workflow

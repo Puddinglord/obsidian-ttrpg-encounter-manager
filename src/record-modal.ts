@@ -6,10 +6,12 @@
 // when you do want it.
 
 import { App, Component, EventRef, MarkdownRenderer, Modal, Notice, setIcon, TFile } from 'obsidian';
+import { baseCreatureName } from './bestiary-view';
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterCreature, MonsterIndexEntry } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
-import { conditionLabel, formatLevel, monsterRole } from './rules';
+import { conditionLabel, formatLevel, HpCommand, monsterRole } from './rules';
+import { iconStep, renderActionDots, renderMeter, renderWoundPips, VitalsMemory } from './vitals-ui';
 import { openHpCalculator } from './hp-pad';
 import { closePopover } from './popover';
 import { portraitOf, renderAvatar } from './npc-card';
@@ -29,6 +31,8 @@ class RecordModal extends Modal {
 	private component = new Component();
 	private ref: EventRef | null = null;
 	private strip: HTMLElement | null = null;
+	/** Bars and pips as last drawn, so changes animate (shared with the character sheet). */
+	private vitals = new VitalsMemory();
 
 	constructor(app: App, private plugin: NimbleStatblocksPlugin, private target: RecordTarget) {
 		super(app);
@@ -95,11 +99,21 @@ class RecordModal extends Modal {
 		const sub = this.subtitle(c, src);
 		if (sub) titles.createDiv({ cls: 'record-sub', text: sub });
 		const actions = head.createDiv({ cls: 'record-actions' });
-		if (t.kind === 'monster') {
+		const lore = !c && !!src.entry && this.plugin.hideStats(src.entry.filePath, src.sourcePath || undefined);
+		if (t.kind === 'monster' && !lore) {
 			const add = actions.createEl('button', { cls: 'record-btn' });
 			setIcon(add.createSpan(), 'plus');
 			add.createSpan({ text: 'Add to fight' });
 			add.onclick = (e) => { void this.plugin.addToEncounter(t.entry.monster, t.entry.filePath || undefined, e.shiftKey ? 2 : 1); };
+		}
+		// Players keep their own notes on a creature: add them, or open them.
+		if (lore && src.entry) {
+			const name = baseCreatureName(src.entry.name);
+			const noted = !!this.plugin.creatureNote(name);
+			const notes = actions.createEl('button', { cls: 'record-btn' });
+			setIcon(notes.createSpan(), noted ? 'notebook-pen' : 'notebook');
+			notes.createSpan({ text: noted ? 'Open notes' : 'Add notes' });
+			notes.onclick = () => { this.close(); void this.plugin.openCreatureNote(name); };
 		}
 		const page = this.pageAction(src);
 		if (page) {
@@ -114,7 +128,7 @@ class RecordModal extends Modal {
 
 		const body = contentEl.createDiv({ cls: 'record-body' });
 		if (src.entry && (!c || !isHero(c))) {
-			this.plugin.renderStatblock(body, src.entry.monster, src.sourcePath, 'block');
+			this.plugin.renderStatblock(body, src.entry.monster, src.sourcePath, 'block', undefined, { lore });
 		} else if (src.file) {
 			const text = await this.app.vault.cachedRead(src.file);
 			const md = text.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();
@@ -124,7 +138,7 @@ class RecordModal extends Modal {
 		}
 	}
 
-	private subtitle(c: EncounterCreature | undefined, src: { entry?: MonsterIndexEntry; file?: TFile }): string {
+	private subtitle(c: EncounterCreature | undefined, src: { entry?: MonsterIndexEntry; file?: TFile; sourcePath?: string }): string {
 		if (c && isHero(c)) return [c.monster.type, c.defense !== undefined ? `Defense ${c.defense}` : ''].filter(Boolean).join(' · ');
 		if (this.target.kind === 'note') {
 			const fm = this.app.metadataCache.getFileCache(this.target.file)?.frontmatter;
@@ -132,6 +146,7 @@ class RecordModal extends Modal {
 		}
 		const m = c?.monster ?? src.entry?.monster;
 		if (!m) return '';
+		if (!c && src.entry && this.plugin.hideStats(src.entry.filePath, src.sourcePath || undefined)) return [m.group, m.type].filter(Boolean).join(' · ');
 		const role = monsterRole(m);
 		const lvl = formatLevel(m.level);
 		const armor = m.armor === 'medium' ? 'Medium armor' : m.armor === 'heavy' ? 'Heavy armor' : 'No armor';
@@ -157,48 +172,65 @@ class RecordModal extends Modal {
 		const store = this.plugin.encounters;
 		strip.toggleClass('is-down', isDown(c));
 
-		const top = strip.createDiv({ cls: 'record-strip-row' });
-		const turn = top.createEl('button', { cls: `record-turn${c.done ? ' is-done' : ''}` });
-		setIcon(turn.createSpan(), c.done ? 'check-circle-2' : 'circle');
-		turn.createSpan({ text: c.done ? 'Has gone' : 'Mark turn done' });
-		turn.onclick = () => {
+		// The character sheet's own pieces (HP bar, Wounds, action dots, the End-style pill, conditions),
+		// driving the fight instead of the note.
+		const sheet = strip.createDiv({ cls: 'nimble-sheet ns-embed' });
+		const hpCmd = (cmd: HpCommand) => { store.applyHp(enc, c.id, cmd); };
+		const meters = sheet.createDiv({ cls: 'ns-meters' });
+		if (isMinionGroup(c)) {
+			const alive = c.alive ?? 0;
+			const count = c.count ?? 0;
+			renderMeter(meters, {
+				key: 'alive', cls: 'is-hp', icon: 'users', label: 'Standing', cur: alive, max: count,
+				bar: 'ns-hp', minus: 'Drop one', plus: 'Bring one back', calc: `${alive} of ${count} standing. Hit, bring back or set`,
+				minusOff: alive <= 0, plusOff: alive >= count,
+				onCalc: (a) => openHpCalculator(a, c, this.plugin.settings.autoArmor, hpCmd),
+				taps: { floor: -alive, commit: (d) => { if (d) store.setAlive(enc, c.id, alive + d); else this.renderStrip(c); } },
+			}, this.vitals);
+		} else if (c.maxHp > 0) {
+			const temp = c.tempHp ?? 0;
+			const hp = renderMeter(meters, {
+				key: 'hp', cls: 'is-hp', icon: 'heart', label: 'Hit points', cur: c.currentHp, max: c.maxHp, extra: temp, extraLabel: `${temp} temp`,
+				state: isDown(c) ? (isHero(c) ? 'Dead' : 'Down') : undefined,
+				bar: 'ns-hp', minus: 'Take 1 damage', plus: 'Heal 1', calc: `Hit points ${c.currentHp} of ${c.maxHp}${temp ? `, ${temp} temp` : ''}. Damage, heal, set or temp HP`,
+				minusOff: false, plusOff: c.currentHp >= c.maxHp,
+				onCalc: (a) => openHpCalculator(a, c, this.plugin.settings.autoArmor, hpCmd),
+				taps: {
+					floor: -(c.currentHp + temp), soak: temp,
+					commit: (d) => {
+						if (!d) { this.renderStrip(c); return; }
+						hpCmd(d < 0 ? { kind: 'damage', amount: -d, crit: false } : { kind: 'heal', amount: d });
+					},
+				},
+			}, this.vitals);
+			if (isHero(c)) renderWoundPips(hp, { wounds: c.wounds ?? 0, max: c.maxWounds ?? 6, set: (n) => store.setWounds(enc, c.id, n) }, this.vitals);
+		}
+
+		// This turn: action dots (heroes) and the turn pill.
+		const turn = sheet.createDiv({ cls: 'ns-turn' });
+		const card = turn.createDiv({ cls: 'ns-actions-card' });
+		if (isHero(c)) {
+			card.createSpan({ cls: 'ns-chip-label ns-actions-label', text: 'Actions' });
+			renderActionDots(card, { count: c.actions ?? 3, perTurn: 3, set: (n) => store.setActions(enc, c.id, n) }, this.vitals);
+		}
+		const done = card.createEl('button', { cls: `ns-actions-end${c.done ? ' is-done' : ''}`, attr: { 'aria-pressed': String(!!c.done) } });
+		setIcon(done.createSpan({ cls: 'ns-actions-end-icon' }), c.done ? 'check-circle-2' : 'circle');
+		done.createSpan({ text: c.done ? 'Has gone' : 'Mark turn done' });
+		done.onclick = () => {
 			const expired = store.setDone(enc, c.id, !c.done);
 			if (expired.length) new Notice(`${c.label}: ${expired.join(', ')} wore off`);
 		};
 
-		const hpBox = top.createDiv({ cls: 'record-hp' });
-		if (!isMinionGroup(c) && c.maxHp > 0) {
-			const bar = hpBox.createDiv({ cls: 'record-hp-bar' });
-			bar.createDiv({ cls: 'record-hp-fill' }).setCssProps({ '--fill': `${Math.max(0, Math.min(1, c.currentHp / c.maxHp)) * 100}%` });
-		}
-		const hp = hpBox.createEl('button', {
-			cls: 'record-hp-btn',
-			text: isMinionGroup(c) ? `${c.alive}/${c.count}` : c.maxHp > 0 ? `${c.currentHp}/${c.maxHp}${c.tempHp ? ` +${c.tempHp}` : ''}` : '—',
-		});
-		hp.onclick = () => openHpCalculator(hp, c, this.plugin.settings.autoArmor, (cmd) => { store.applyHp(enc, c.id, cmd); });
-
-		if (isHero(c)) {
-			const pips = strip.createDiv({ cls: 'record-pips' });
-			const group = (label: string, n: number, max: number, cls: string, set: (v: number) => void) => {
-				const g = pips.createDiv({ cls: `record-pip-group ${cls}` });
-				g.createSpan({ cls: 'record-pip-label', text: label });
-				for (let i = 0; i < max; i++) {
-					const on = i < n;
-					const p = g.createEl('button', { cls: `record-pip${on ? ' is-on' : ''}`, attr: { 'aria-pressed': String(on) } });
-					p.onclick = () => set(on ? i : i + 1);
-				}
-			};
-			group('Actions', c.actions ?? 3, 3, 'is-actions', (v) => store.setActions(enc, c.id, v));
-			group('Wounds', c.wounds ?? 0, c.maxWounds ?? 6, 'is-wounds', (v) => store.setWounds(enc, c.id, v));
-		}
-
+		// Conditions, as on the sheet.
 		if (c.conditions.length) {
-			const conds = strip.createDiv({ cls: 'record-conds' });
+			const row = sheet.createDiv({ cls: 'ns-conds-row' });
+			row.createSpan({ cls: 'ns-chip-label ns-conds-label', text: 'Conditions' });
+			const conds = row.createDiv({ cls: 'ns-conds' });
 			for (const a of c.conditions) {
-				const tag = conds.createSpan({ cls: 'record-cond' });
-				tag.createSpan({ text: conditionLabel(a) });
-				if (a.rounds) tag.createSpan({ cls: 'record-cond-rounds', text: `${a.rounds}r` });
-				const x = tag.createEl('button', { cls: 'record-cond-x', text: '×', attr: { 'aria-label': `Remove ${a.name}` } });
+				const tag = conds.createSpan({ cls: 'ns-cond' });
+				tag.createEl('button', { cls: 'ns-cond-name', text: a.rounds ? `${conditionLabel(a)} · ${a.rounds}r` : conditionLabel(a) })
+					.addEventListener('click', (e) => this.plugin.showConditionInfo(e.currentTarget as HTMLElement, a.name));
+				const x = iconStep(tag, 'x', { 'aria-label': `Remove ${a.name}` }, 'ns-cond-x');
 				x.onclick = () => store.removeCondition(enc, c.id, a.name);
 			}
 		}

@@ -45,6 +45,15 @@ src/
   suggest.ts            `nimble:` autocomplete and the "Add monster…" picker
   settings-tab.ts       Settings UI (party, bestiary, rules, custom conditions)
   dice.ts               Dice expression parsing and rolling
+  compendium.ts         Player compendium types, lookups, featuresFor, search (pure, tested); data/compendium.json, compendium-data.ts loads it
+  compendium-card.ts    How a compendium entry looks (sheet rows, Spotlight card)
+  character-def.ts      Character note frontmatter → sheet values, and every sheet change as a frontmatter edit (pure, tested)
+  character-sheet.ts    The ```nimble-sheet renderer (writes through processFrontMatter, rolls through plugin.rollDice)
+  character-view.ts     Character side panel; character-modals.ts: new character, level up, custom ability
+  character-register.ts registerCharacterFeatures(): block, panel, commands, ribbon
+  roll-def.ts           Rolls with stacked advantage/disadvantage, modifiers and extra dice (pure, tested); roll-dialog.ts is the dialog
+  resource-def.ts       How class dice behave (rolled when gained or spent, all/any/one per roll, kept or spent), from scripts/compendium/raw/resources.json (pure, tested)
+  creature-notes.ts     A player's `nimble: creature` notes, as the bestiary shows them (pure, tested)
 scripts/bestiary/       Raw per-page extractions from the Nimble PDFs, the brief, and merge.py
 tests/                  Unit tests (vitest + happy-dom); obsidian-stub.ts stands in for the API
 e2e/                    End-to-end tests that drive a real Obsidian
@@ -70,7 +79,7 @@ e2e/                    End-to-end tests that drive a real Obsidian
 
 Rules that keep this healthy:
 
-- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts` must not import `obsidian`, so unit tests run in plain Node.
+- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
 - Views don't mutate encounter data directly. Call `plugin.encounters.*`; it saves and fires `changed`, and every open tracker re-renders.
@@ -94,7 +103,7 @@ node e2e/layout-sweep.mjs       # every sample-vault note in the hover preview a
 `e2e/harness.mjs` starts Obsidian with its own `--user-data-dir` and a throwaway copy of `e2e/fixtures/vault`, installs the freshly built plugin, and connects with `playwright-core` over the Chrome DevTools Protocol on a free port. Your real Obsidian settings and vaults are never touched, and it works whether or not your own Obsidian is open.
 
 - Needs Obsidian installed at `/Applications/Obsidian.app` (or set `OBSIDIAN_BIN`).
-- A window appears while tests run; that's the test copy.
+- The test copy runs out of sight: no Dock icon, invisible, click-through, and focus goes straight back to the app you were in, so you can keep working. `E2E_FOREGROUND=1` shows it if you want to watch.
 - Failure screenshots and a few showcase shots land in `e2e/artifacts/` (git-ignored).
 - `KEEP_E2E=1` keeps the temp vault around for poking at.
 - Inside a test, `o.eval((app, plugin, arg) => ..., arg)` runs code inside Obsidian. Only plain JSON comes back.
@@ -121,12 +130,27 @@ The community directory's review bot flags things the `eslint-plugin-obsidianmd`
 - No `!important`; raise specificity instead (see the print rules in styles.css).
 - When the bot flags something new, add a rule for it here rather than only fixing the line.
 
+## Shared components, GM and player alike
+
+Running a campaign and playing in one show the same things; build each once and pass the difference as a flag (usually `c.role`), rather than a second component for the other side.
+
+- Party: `renderRoster` and `heroCard` (campaign-ui.ts) for both roles; the GM side also feeds the encounter party from the same sheets (`syncPartyFromSheets` in main.ts).
+- Monsters: `renderStatblock` and `renderLoreCard` (render.ts) share `renderActionBar`; `plugin.renderStatblock` adds the player's creature notes and every printing to any lore card.
+- Vitals: `renderMeter`, `renderActionDots` and `renderWoundPips` (vitals-ui.ts) draw the HP and mana bars (with their damage and heal animations and batched − / + taps), action dots and Wound pips, for the character sheet (writing to the note) and the tracker's quick look (writing to the fight). Wrap them in `.nimble-sheet` (the quick look uses `.nimble-sheet.ns-embed`) for their styles.
+- Dice and marks: `dieShape` and `triangleMark` (die-shape.ts), styled globally (`.ns-die`, `.ns-tri-mark`), used by the sheet and the Camp dialog.
+- Rolls: `rollWith` and `RollDialog` for every sheet roll; `pipStep` (rules.ts) for every row of pips, on the sheet and in the tracker.
+
+## Pills and compact buttons
+
+Every pill, chip and small icon+label button is centred by one shared rule at the end of the character sheet section of `styles.css` (flex row, icons as blocks, labels at `line-height: normal`). Don't use `line-height: 1` on labels: at small sizes Chromium rounds the font's ascent and descent and the label lands ~1px high. A new pill class goes in that rule's list **and** in `PILL_SELECTORS` in `e2e/align.mjs`; the `pills:` e2e test measures the real glyphs (capital height, real baseline) and fails if an icon or label drifts more than 1px.
+
 ## Releasing
 
 Every PR merged into `main` is released by `.github/workflows/auto-release.yml` (details in RELEASING.md). Don't bump versions in a PR yourself.
 
 - Default is a patch release. When the user says a change is a minor or major release, add the `release: minor` or `release: major` label to the PR (`gh pr edit <n> --add-label "release: minor"`). For `release: skip`, only when they say not to release.
 - Run `npm test && npm run test:e2e` before merging; `release.yml` lints, tests, builds and attaches `main.js`, `manifest.json`, `styles.css`.
+- Every PR adds its changes to `CHANGELOG.md` under `## [Unreleased]` (Added / Changed / Fixed), written plainly in the user's voice; the release workflow turns that section into the tag message and the release notes (`scripts/changelog.mjs`).
 
 ## Mobile
 
@@ -141,6 +165,7 @@ Every PR merged into `main` is released by `.github/workflows/auto-release.yml` 
 - With no heroes entered, `partyLevels()` and `EncounterStore.partySize()` fall back to the campaign's `level:` and `heroes:`.
 - The active campaign follows `file-open`. Notes outside any campaign leave it unchanged.
 - e2e can load any vault: `launchObsidian({ vaultDir })`.
+- Campaigns don't share monsters or NPCs. Pass the note path to `index.get(name, from)` / `index.all(from)` wherever you have one; with none, the active campaign decides (the scope is set in `main.ts`). A campaign sees its own notes, GM campaigns also see notes outside any campaign, and everyone sees the bundled bestiary.
 
 ## Boxes and NPCs
 

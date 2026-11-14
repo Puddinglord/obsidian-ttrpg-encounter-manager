@@ -1,0 +1,2340 @@
+{
+  "classes": [
+    {
+      "name": "Manawright",
+      "source": "Artificer 3.0",
+      "page": 4,
+      "draft": true,
+      "tagline": "An inventive, toolbox class equally capable wherever needed.",
+      "flavor": "They call me when the airship stalls mid-descent, when the arcane relay spirals out of phase, or when the golem starts speaking in languages it wasn’t programmed to know. Don’t mind the dents—took a few kicks to get her started, is all. Still works lovely. Just… don’t stand too close when she hums like that, and if she starts whistling in B flat—RUN!”\n\nYour workshop might be a cluttered shrine to chaos or an immaculate studio thrumming with pristine energy—whatever the setting, the Manawright gets to work. Some call you a mad tinkerer—a hazard to public safety. Others speak in hushed awe of your sleek designs, machines tuned with impossible precision. Your genius is fueled by raw instinct and sharpened calculation. You don’t build for show. You don’t build for fame. You build because it’s who you are—and the world needs what you can make.",
+      "complexity": 3,
+      "keyStats": [
+        "INT",
+        "STR"
+      ],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": {
+        "adv": "INT",
+        "dis": "WIL"
+      },
+      "armor": "Inventions",
+      "weapons": "Inventions",
+      "startingGear": [
+        "Weapon Prototype",
+        "Armor Prototype",
+        "Wrench",
+        "Notebook"
+      ],
+      "resources": [
+        {
+          "name": "Mana Dice",
+          "max": "STR",
+          "reset": "Fully recharges at the end of your turns",
+          "die": "d4"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Thunder Gauntlets Prototype",
+              "text": "(Reach 4) 1d4+INT. You may roll 1 additional d4 for damage; if you do, for each 1 rolled, you are Knocked back 1 and fall Prone."
+            },
+            {
+              "name": "Armor Prototype",
+              "text": "INT+DEX Defense."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Thunder Gauntlets",
+              "text": "Your Thunder Gauntlet Prototype becomes Thunder Gauntlets."
+            },
+            {
+              "name": "Eureka!",
+              "text": "Choose 1 new Invention AND 1 new Gadget."
+            },
+            {
+              "name": "Mana Accumulator",
+              "text": "Create a device that absorbs ambient magic to power your inventions. You can carry with it a max of STR Mana Dice (d4s), it fully recharges at the end of your turns."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Manawright subclass."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "I’ve Got JUST the thing!",
+              "text": "(1/Safe Rest) Pull a simple mechanical contraption out of your pack that is JUST the thing needed for the moment (where something like that could help)."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Eureka!",
+              "text": "Choose 1 new Invention OR 1 new Gadget."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "+Key Stat",
+              "text": "+1 INT or STR."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Tuned Mana Condenser",
+              "text": "Your Mana Dice are d6s."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "+Secondary Stat",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Eureka!",
+              "text": "Choose 1 new Invention OR 1 new Gadget."
+            },
+            {
+              "name": "Percussive Maintenance",
+              "text": "(1/encounter) When you would experience a Mishap, you may first increase 1 Mana Die by 1."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Manawright subclass feature."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Eureka!",
+              "text": "Choose 1 new Invention OR 1 new Gadget."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "+Key Stat",
+              "text": "+1 INT or STR."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Mana Recovery Valve",
+              "text": "After a Mishap, gain advantage on your next Mana Die roll this encounter."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "+Secondary Stat",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Tuned Mana Condenser",
+              "text": "Your Mana Dice are d8s."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Manawright subclass feature."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Eureka!",
+              "text": "Choose 1 new Invention OR 1 new Gadget."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "+Key Stat",
+              "text": "+1 INT or STR."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Optimized Mana Compression",
+              "text": "+1 max Mana Die."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "+Secondary Stat",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Tuned Mana Condenser",
+              "text": "Your Mana Dice are d10s."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Manawright subclass feature."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Eureka!",
+              "text": "Choose 1 new Invention OR 1 new Gadget."
+            },
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "+Key Stat",
+              "text": "+1 INT or STR."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "+Secondary Stat",
+              "text": "+1 DEX or WIL."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Constant Tinkering",
+              "text": "Upgrade 1 Invention OR Gadget."
+            },
+            {
+              "name": "Prime Configuration",
+              "text": "+1 max Mana Die."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the Game Master’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Grand Mechanist",
+              "text": "Increase any 2 stats by 1. (1/encounter) Reroll any Mana Dice, replacing them with d20s."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "At a Glance",
+          "text": "Wield inventions that defy reality—from mana-forged blades, to gravity-snaring tethercoils, and boots that laugh at gravity.\n\nThe more you push your inventions, the more they deliver—but push too far and your gear might malfunction!\n\nRetool gadgets mid-battle or improvise fixes under fire; you can adapt your arsenal as needed."
+        },
+        {
+          "title": "Powering Inventions",
+          "text": "When using an invention, you may expend any amount of available Mana Dice. The more you utilize at a time, the greater the effect—but the greater the risk. If any Mana Die rolls a number less than or equal to the total number of them, the invention overloads, triggering a Mishap.\n\nExample. If you spend 3 Mana Dice at a time, if any of them rolls 3 or less you get a Mishap!"
+        },
+        {
+          "title": "Reconfigure!",
+          "text": "You may choose different Manawright options whenever you tinker at your workshop during a Safe Rest."
+        },
+        {
+          "title": "Damage type?",
+          "text": "Whenever you create or upgrade an invention you can choose a reasonable damage type. Lightning, Fire, or Piercing damage for the Manabolt Cannon? Makes sense! Necrotic or Ice? Maybe, check with your GM!"
+        },
+        {
+          "title": "Make it your own!",
+          "text": "If you’d rather have a chainsaw sword rather than a mana blade, go for it! The Mana Dice can be “Rev Dice” as you rev up the engine before slicing. Or if you prefer more of a steampunk aesthetic, or magitech, or anything else—feel free to flavor the inventions in a way that suits you best."
+        },
+        {
+          "title": "Manawright Names",
+          "text": "Male Names: Grit, Orin, Thrum, Knot, Toads, Sledge, Rowan.\nFemale Names: Fizz, Tinsel, Emira, Bindle, Maris, Nell, Tula."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Major Inventions",
+          "options": [
+            {
+              "name": "Thunder Gauntlets",
+              "cost": "1 Action",
+              "text": "Reach: 4. Damage: 1d6+INT.\n**Charge: Pulse Blast.** Deal extra damage equal to sum of the Mana Dice rolled and Knockback your target 1 space for each.\n**Mishap: Recoil.** You are also Knocked back, landing Prone.\n**Upgrades:**\n• **Kinetic Redirect.** (1/round) Knockback in any direction.\n• **Paired Resonators.** Gain Dual Wielding.\n• **Extended Arc Coils.** +4 Reach."
+            },
+            {
+              "name": "Manabolt Cannon",
+              "cost": "2 Actions",
+              "text": "Range: 8. Damage: 1d12+INT\n**Charge: Piercing Lancer.** Deal extra damage equal to sum of the Mana Dice rolled (min 1) and damage ALL creatures between you and your target.\n**Mishap: Arcane Overload.** After the attack, suffer 2 damage per Mana Die rolled, the weapon becomes inoperable (req. Action: DC 10 Finesse check to repair).\n**Upgrades:**\n• **Amplified Conduit.** +4 Range and +2 damage/Mana Die (on Mishaps as well).\n• **Overload Dampener.** +3 on repair checks; on a 20+, gain 1 action back.\n• **Selective Arc Filter.** Damage can bypass 1 creature."
+            },
+            {
+              "name": "Manablade",
+              "cost": "1 Action",
+              "text": "Reach: 1. Damage: LVL.\n**Charge: Mighty Blade.** Deal 10 for each Mana Die rolled (min 1, treat the leftmost Mana Die as Primary) and sum of the Mana Dice.\n**Mishap: Arcane Rebound.** Afterwards, suffer 5 damage/Mana Die spent; the blade becomes inoperable (req. Action: DC 10 Arcana check to repair).\n**Upgrades:**\n• **Arc Module.** (1/encounter) strike +1 target adjacent to the first; on a Mishap, suffer 10 damage/Mana Die instead of 5.\n• **Streamlined Ignition.** +3 on repair checks; on a 20+, gain 1 action back.\n• **Twin Mana Core.** Gain Dual Wielding, when you spend 2+ Mana Dice."
+            },
+            {
+              "name": "Manaforged Plate",
+              "text": "8+STR Defense. **Autoshields.** (1/round) Reduce damage by INT for free.\n**Charge: Fused Plates.** When you Defend, gain 2×STR Defense per Mana Die spent.\n**Mishap: Armor Lockup!** Restrained (escape DC:10).\n**Upgrades:**\n• **Reactive Armor.** You may also Knockback an adjacent Medium or smaller creature 1 space for each Mana Die rolled; 2+ spaces, you may knock them Prone also.\n• **Ablative Coating.** (1/encounter) When you are crit in melee, deal damage equal to your Defense back for free.\n• **Angled Deflectors.** (Passive) +INT Defense.\nNote. Only 1 kind of armor can be worn at a time!"
+            },
+            {
+              "name": "Aethertuned Jerkin",
+              "text": "1+INT+DEX Defense. **Aetheric Thrusters.** +1 Speed and +1 Initiative.\n**Charge: Tuned Thrusters.** When you Defend, first move 1 space per Mana Die spent (if now out of line of sight/Reach/Range, the attack misses).\n**Mishap. Tumble!** Land Prone within 2 spaces of where you intended (chosen by the GM) instead.\n**Upgrades:**\n• **Autothrusters.** Regain 1 action when the Mana Dice you rolled for this armor total 4+.\n• **Chronoshard Modulator.** (1/encounter) When crit, gain 1 action and halve the damage.\n• **Passive Sensors.** +INT to your Initiative and 1 ally’s (after they roll).\nNote. Only 1 kind of armor can be worn at a time!"
+            }
+          ]
+        },
+        {
+          "name": "Gadgets",
+          "intro": "Gadgets are consumable items that you can remake on a Safe Rest. Each upgrade can be chosen a max of 1 time.",
+          "options": [
+            {
+              "name": "Stim Bot",
+              "cost": "1 Action",
+              "text": "(2/Safe Rest) Reach 4. Heal a target for 1d20+LVL HP, they gain 1 action. At the end of their turn they must make a DC 10 STR save or become Dazed. **Upgrades:**\n• **Calibrated Reagents.** +4 Reach. No STR save required.\n• **Enhanced Stimulants.** 2× heal, gain 1 Wound.\n• **Improved Dosing.** +1 use/Safe Rest."
+            },
+            {
+              "name": "Homing Missile",
+              "cost": "1 Action",
+              "text": "(2/Safe Rest) Reach 8. Fire an explosive projectile to inerrantly strike a target. It deals 1d20+LVL damage, ignoring any cover, conditions, or penalties you have (e.g., Rushed Attacks), doesn’t miss. **Upgrades:**\n• **Long-Range Thrusters.** +4 Reach.\n• **Reliable Explosives.** Roll with advantage.\n• **Reusable Parts.** +1 use/Safe Rest."
+            },
+            {
+              "name": "Scrapbot Swarm",
+              "cost": "2 Actions",
+              "text": "(2/Safe Rest) Reach 4. Let loose INT+STR tiny single-use constructs, each deals 1d6 damage to any target within Reach 4. **Upgrades:**\n• **Dense Swarm.** +2 constructs.\n• **Aerodynamic Scrap.** +4 Reach.\n• **Hearty Scrap.** +1 use/Safe Rest."
+            },
+            {
+              "name": "Safety Buddy",
+              "cost": "0 Actions",
+              "text": "2/Safe Rest. When you use Interpose: Summon a 1 HP construct to Interpose for an ally within Reach 2 instead of you. **Upgrades:**\n• **Advanced Propulsion System.** +2 Reach.\n• **Explosive Framework.** INTd6 damage and Smoldering to attacker.\n• **Durable Parts.** +1 Safety Buddy."
+            },
+            {
+              "name": "Propulsive Boots",
+              "cost": "0 Actions",
+              "text": "(3/Safe Rest) Move for free, gain flying this turn. **Upgrades:**\n• **Enhanced Fuel Reserves.** +2 uses/Safe Rest.\n• **Micropropulsion.** +INT Speed moving this way.\n• **Powerful Boosters.** You move at normal Speed while Grappling."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Workshop of the Gadgeteer",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Gadgeteer",
+                  "text": "Invent the Cheer Bot gadget."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Improvised Tinkering",
+                  "text": "(INT/Safe Rest) you can use any Gadget without using a charge (even if you have not invented it or have no more charges remaining)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Always be prepared!",
+                  "text": "(1/encounter) You can use Improvised Tinkering without spending an action."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Tinkermaster",
+                  "text": "+1 use/Safe Rest to all gadgets you have invented."
+                }
+              ]
+            }
+          ],
+          "optionGroups": [
+            {
+              "name": "Gadgets",
+              "options": [
+                {
+                  "name": "Cheer Bot",
+                  "text": "A happy little pal that follows you, to offer encouragement! 1/round it gives an ally 1 action. It has 10 Defense: any damage puts it out of commission until repaired (DC 10 Examination check).\n**Upgrades:**\n• **Invigorating Beacon.** An ally granted its action has advantage on their next roll.\n• **Self-Preservation Logic.** 20 Defense, and attacks against it have disadvantage.\n• **Annoy-o-bot.** Taunt enemies within Reach 4."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Workshop of the Inventor",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Invent the Tethercoil",
+                  "text": "It tethers, it coils!"
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Powerful Weaponry",
+                  "text": "Whenever you use 2+ Mana Dice: your Thunder Gauntlets Knockback +2 spaces; your Manabolt Cannon can deal its damage half as far in a Cone instead; or your Manablade can strike a creature in an adjacent space to you and your target (a mishap deals its damage twice and requires 2 repairs)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Precision Tuned Smack",
+                  "text": "(2/encounter) A repair roll costs no action."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Big Brained Inventor",
+                  "text": "+1 max Mana Die. Your Mana Dice become d12s."
+                }
+              ]
+            }
+          ],
+          "optionGroups": [
+            {
+              "name": "Inventions",
+              "options": [
+                {
+                  "name": "Tethercoil",
+                  "text": "+4 Range/Mana Die (min 1). Choose 1 mode:\n**Charge: Tether.** 1 Action: pull a creature your size or smaller any number of spaces toward you; OR you move to a larger creature, gain Riding.\n**Mishap: Mistether!** The GM may choose a different creature in Range.\n**Charge: Coil.** 2 Actions: (1/encounter) Creatures fully in an area equal to the number of Mana Dice Rolled (e.g., 2 dice: 2×2 area) are Restrained until the end of their next turn.\n**Mishap. Tangled!** You are Restrained as well.\n**Upgrades:**\n• **Gilded Conductors.** +4 Range.\n• **Auto-coiler.** Tethercoil doesn’t trigger Rushed attacks.\n• **Twin Grapplers.** Tether pulls up to 2 creatures."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Workshop of the Alchemist",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Aetheric Infusions",
+                  "text": "Invent the Aetheric Infuser, and the Alchemist’s Fire and Propulsion Potion recipes."
+                },
+                {
+                  "name": "Potion-sense",
+                  "text": "You gain advantage on any attempt to identify the effects of a liquid concoction you can examine."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Aetheric Infusions (2)",
+                  "text": "Invent the Cryowall and Liquid Lightning recipes and upgrade your Aetheric Infuser."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Refined Formulas",
+                  "text": "You can launch a Battlebrewed potion immediately for free."
+                },
+                {
+                  "name": "Aetheric Infusions (3)",
+                  "text": "Invent the Bottled Luck recipe."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Potion Master",
+                  "text": "Unlock all potions (the Petrification Potion and Aberrant Brew)."
+                }
+              ]
+            }
+          ],
+          "optionGroups": [
+            {
+              "name": "Inventions",
+              "options": [
+                {
+                  "name": "Aetheric Infuser",
+                  "text": "**Battlebrew.** (2/encounter) 1 Action. Choose any potion you know and haven’t yet brewed this encounter to instantly brew up!\n**Mishap: Oops!** Each potion has its own mishap function.\n**Upgrades:**\n• **Potion Launcher.** +4 Potion Reach.\n• **Stable Admixtures.** Choose 1 potion to keep at the ready.\n• **Innervating Brews.** Whenever you use a potion, gain INT Temp HP for each Mana Die spent."
+                }
+              ]
+            },
+            {
+              "name": "Potions",
+              "intro": "Alchemist Only. Potions cost 1 action to throw. Reach: 2×STR spaces.",
+              "options": [
+                {
+                  "name": "Alchemist’s Fire",
+                  "requirement": "Req. LVL 3",
+                  "text": "(3×3 AoE) Sum the Mana Dice and add 5 to each, deal that much damage to creatures in the area.\n**Mishap: Overcombustion.** 1×1 or 5×5 area (GM’s choice)."
+                },
+                {
+                  "name": "Propulsion Potion",
+                  "requirement": "Req. LVL 3",
+                  "text": "(3×3, AoE) Move creatures in the area 4 spaces per MD spent in the direction of your choice, then you may have them fall Prone, ending the effect.\n**Mishap: Dispropulsion.** Direction of the GM’s choice."
+                },
+                {
+                  "name": "Cryowall",
+                  "requirement": "Req. LVL 7",
+                  "text": "Fill 2 empty spaces per mana die spent with a wall of ice (20 Defense, any damage destroys 1 space of the wall, lasts 1 round). It blocks line of sight (Full Cover). **Mishap: Frostburn.** Suffer 2 damage per MD spent, you are Slowed."
+                },
+                {
+                  "name": "Liquid Lightning",
+                  "requirement": "Req. LVL 7",
+                  "text": "(0 Actions to consume) Drink at any time, even on another creature’s turn (e.g., to Defend): gain extra Mana Dice equal to your max. They’re lost when your Mana Accumulator recharges, and they can trigger mishaps as normal."
+                },
+                {
+                  "name": "Bottled Luck",
+                  "requirement": "Req. LVL 11",
+                  "text": "(3×3 AoE, +1 area per MD spent) Creatures in the area gain your choice of advantage or disadvantage on rolls this round for each Mana Die spent. **Mishap: Bad luck.** 1×1 or 5×5 area (GM’s choice)."
+                },
+                {
+                  "name": "Petrification Potion",
+                  "requirement": "Req. LVL 15",
+                  "text": "Give a creature 20 temp HP/Mana Die, they are Incapacitated for as long as these HP last (friendly creatures can end this early). 30 temp HP are lost at the beginning of that creature’s turn. **Mishap: Petrified Mana Channels.** –1 max Mana Die until cleared (DC: 10 Might check)."
+                },
+                {
+                  "name": "Aberrant Brew",
+                  "requirement": "Req. LVL 15",
+                  "text": "Grow or shrink a creature 1 size larger or smaller for 1 round (until the start of your next turn). **Bigger:** Empowered 5 per Mana Die; their attacks and attacks against them have advantage. **Smaller:** Weakened 5 per Mana Die; their attacks and attacks against them have disadvantage. **Mishap: Unexpected Side Effects.** A 2nd nearby creature gains the same effect (GM’s choice)."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Workshop of the Chronurgist",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Chronal Tinkerer",
+                  "text": "Invent the Chronal Device."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Temporal Reach",
+                  "text": "+2 Reach on Timetinker."
+                },
+                {
+                  "name": "Timethief",
+                  "text": "(1/encounter) Action: A creature within Reach skips their next turn (effects that end at the end of their next turn don’t end yet)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Timesmuggler",
+                  "text": "Whenever you use Timethief, give an ally within Reach an action."
+                },
+                {
+                  "name": "Master of Time",
+                  "text": "(1/encounter) Double Timetinker’s Reach."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Master of Moments",
+                  "text": "Whenever you spend 2 or more Mana Dice on Timetinker, regain 1 Mana Die. Whenever your Chronal Device has a Mishap, regain 1 Timethief or Master of Time charge."
+                }
+              ]
+            }
+          ],
+          "optionGroups": [
+            {
+              "name": "Inventions",
+              "options": [
+                {
+                  "name": "Chronal Device",
+                  "text": "Timetinker. 0 Actions. (Reach 4, 1/turn) Spend a Mana Die to:\n• **Movement:** A creature can move twice or half as far (including Interpose) for each Mana Die spent.\n• **Assess:** Roll with advantage or choose another option for each Mana Die spent.\n• **Attacks:** Add (or subtract) 1 from the Primary Die for each Mana Die spent.\n• **Mishap:** Timefracture. GM chooses an enemy to immediately take an action."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "Mishaps",
+          "a": "Only Mana Dice rolled in an initial attack are taken into account for Mishaps. Any additional dice are ignored (e.g., additional dice from crits or advantage)."
+        },
+        {
+          "q": "Primary Die",
+          "a": "The d6 for the Thunder Gauntlets is always used as the Primary Die (while your Mana Dice are d6s, whichever d6 lands leftmost is the Primary Die), likewise for the Manabolt Cannon’s d12. For the Manablade since there is no base weapon die, whichever Mana Die lands leftmost is the Primary Die."
+        },
+        {
+          "q": "How does Advantage/Disadvantage work with inventions?",
+          "a": "As normal, roll 1 additional Primary Die and the lowest/highest is removed."
+        },
+        {
+          "q": "I’ve Got JUST the thing!",
+          "a": "“Simple” as in: an iron wedge, a wrench, a lockpick, block & tackle, tripwire, etc. NOT “an anti-gravity device.”"
+        },
+        {
+          "q": "Kinetic Redirect",
+          "a": "You can’t knock a target upward (unless you are below them somehow)."
+        },
+        {
+          "q": "Stable Admixtures",
+          "a": "This does not count toward your 2/encounter Battlebrew limit, nor does it take an action to brew since it’s ready by the time you enter combat."
+        }
+      ]
+    },
+    {
+      "name": "Hexbinder",
+      "source": "Hexbinder 3.0",
+      "page": 4,
+      "draft": true,
+      "tagline": "Debilitating hexers, soothing menders.",
+      "flavor": "They come to her with trembling pleas: a child’s fever, a lover’s betrayal, a shadow too heavy to lift. She listens, sharp-eyed, and offers what fits—balm or bane, as the need demands. But cross her, and you’ll learn: the tongue that soothes can whisper your doom, and the hands that mend can twist your fate to ruin.\n\nA hexbinder’s magic is neither flashy nor kind. It’s practical, rooted in the muck and murmur of the old world—salves whispered over flame, curses knotted into thread, remedies older than the hills. She mends the broken and breaks the foolish, her hands stained with both mercy and malice.\n\n“Plagued by a cough, my lovely? A festering wound? A stain on your spirit? Sip this down, you’ll feel right as rain by morning—don’t mind the taste, it’s meant to be bitter!”",
+      "complexity": 3,
+      "keyStats": [
+        "INT",
+        "WIL"
+      ],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": {
+        "adv": "WIL",
+        "dis": "DEX"
+      },
+      "armor": "Cloth",
+      "weapons": "Blades, Wands",
+      "startingGear": [
+        "Adventurer’s Garb",
+        "Dagger",
+        "Portable Cauldron (bucket)"
+      ],
+      "casting": {
+        "mana": "WIL+LVL",
+        "manaFormula": "WIL+LVL",
+        "manaFromLevel": 2,
+        "schools": [
+          "Hexbinder"
+        ],
+        "notes": "You unlock tier 1 Hexbinder spells and a mana pool to cast them. Your max mana pool is always equal to WIL+LVL and recharges on a Safe Rest."
+      },
+      "resources": [
+        {
+          "name": "Futuresight Dice",
+          "max": "1",
+          "reset": "Expires at the end of combat if unused",
+          "die": "d4"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Hex",
+              "text": "Reach 4, Action: 1d4 damage. On hit: +LVL damage, OR apply an Affliction. On crit: do both."
+            },
+            {
+              "name": "Afflictions",
+              "text": "You know the Withered and Frenzied Afflictions."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Mana and Tier 1 Spells",
+              "text": "You unlock tier 1 Hexbinder spells and a mana pool to cast them. Your max mana pool is always equal to WIL+LVL and recharges on a Safe Rest."
+            },
+            {
+              "name": "Diminution",
+              "text": "Reduce the mana cost of spells by 1 for each condition chosen.\n• **Humble.** The Range/Reach of the spell is halved.\n• **Slow.** Spend 1 additional action.\n• **Weak.** Roll with disadvantage.\nChoose each condition only once per spell. You can’t choose an effect that a spell does not have (e.g., Humble on a spell with no Range/Reach, Weak on a spell with no roll)."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Hexbinder Subclass",
+              "text": "Choose a Hexbinder subclass."
+            },
+            {
+              "name": "Rite of Mending",
+              "text": "During a Field Rest, you can cast Life Bloom for 0 mana. You and your target can each spend any equal number of Hit Dice, and each creature it heals regains 10 HP per pair."
+            },
+            {
+              "name": "Consult the BONES",
+              "text": "1/Safe Rest. Spend 10 min performing a ceremony to obtain information not otherwise available to you on a successful Insight check; rolled with disadvantage."
+            },
+            {
+              "name": "Afflictions (3)",
+              "text": "Choose a 3rd Affliction."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Mystic Mark",
+              "text": "Choose 1 Mystic Mark."
+            },
+            {
+              "name": "Tier 2 Spells",
+              "text": "You may now cast tier 2 Hexbinder spells."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Soothsayer",
+              "text": "Whenever combat begins, roll a Futuresight Die (1d4). (Reach 4) Expend it to increase or decrease any die by that much. It expires at the end of combat if unused."
+            },
+            {
+              "name": "Blightwielder’s Touch",
+              "text": "Gain advantage with Hex at Reach 1."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Mystic Mark (2)",
+              "text": "Choose a 2nd Mystic Mark."
+            },
+            {
+              "name": "Tier 3 Spells",
+              "text": "You may now cast tier 3 Hexbinder spells."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Hexbinder subclass feature."
+            },
+            {
+              "name": "Afflictions (4)",
+              "text": "Choose a 4th Affliction."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Tier 4 Spells",
+              "text": "You may now cast tier 4 Hexbinder spells."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Mystic Mark (3)",
+              "text": "Choose a 3rd Mystic Mark."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Soothsayer (2)",
+              "text": "Roll 2 Futuresight Dice instead, they have Reach 8."
+            },
+            {
+              "name": "Tier 5 Spells",
+              "text": "You may now cast tier 5 Hexbinder spells."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Hexbinder subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Mystic Mark (4)",
+              "text": "Choose a 4th Mystic Mark."
+            },
+            {
+              "name": "Afflictions (5)",
+              "text": "Choose a 5th Affliction."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Misery Maker",
+              "text": "Increase the max number of Afflictions you can apply by 1."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Soothsayer (3)",
+              "text": "Roll your Futuresight Dice with advantage."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Hexbinder subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Mystic Mark (5)",
+              "text": "Choose a 5th Mystic Mark."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Soothsayer (4)",
+              "text": "Increment your Futuresight Dice one step (e.g., d4 » d6)."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Doombringer",
+              "text": "You may spend 1 mana to ignore the Doomed Affliction’s encounter limit."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 75 of the Game Master’s Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Sage of Banes",
+              "text": "Increase any 2 stats by 1. Hex and Misery apply 1 additional Affliction."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "At a Glance",
+          "text": "Command the powers of affliction and remedy. Mastering both healing and hexing to mend allies or curse foes.\n\nWeave mystical sigils. To control, transform, and bind others to her will.\n\nPeer beyond the veil with ancient rites. Gain forbidden knowledge and twist fate with uncanny foresight."
+        },
+        {
+          "title": "Bubble, Bubble!",
+          "text": "You may choose different Hexbinder options whenever you brew at your cauldron during a Safe Rest."
+        },
+        {
+          "title": "Changing Dice",
+          "text": "A die can’t be changed above its max value. As usual, if a Primary Die is reduced to 1, it misses; if increased to its max value, it crits."
+        },
+        {
+          "title": "Hexbinder Names",
+          "text": "Male Names: Sorrel, Toads, Warren, Quill, Gramps, Bastian, Orin.\nFemale Names: Fern, Isolde, Thryn, Cricket, Clover, Sable, Plum."
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Afflictions",
+          "intro": "You can Afflict a max of 1 creature at a time with a max of INT different Afflictions. Afflictions last for as long as you maintain Concentration (DC 10 STR save when crit).",
+          "options": [
+            {
+              "name": "Brittle",
+              "text": "Target suffers 1 damage for each space it moves (or is moved). Level 10: 2 damage/space."
+            },
+            {
+              "name": "Dimmed",
+              "text": "Target has disadvantage 2 when attacking beyond Range/Reach 1."
+            },
+            {
+              "name": "Doomed",
+              "text": "(1/encounter) Maximize the next roll against Afflicted target."
+            },
+            {
+              "name": "Enfeebled",
+              "text": "Target falls Prone at the end of each of your turns."
+            },
+            {
+              "name": "Frenzied",
+              "text": "Target’s first attack each round MUST be against the nearest random creature (acts first amongst monsters)."
+            },
+            {
+              "name": "Pestilent",
+              "text": "On death of target: creatures within Reach 2 of it suffer LVL damage (ignoring armor)."
+            },
+            {
+              "name": "Sundered",
+              "text": "Attacks crit the target on 1 less than the max roll."
+            },
+            {
+              "name": "Withered",
+              "text": "Target’s first attack each round against a friendly creature is disadvantaged."
+            }
+          ]
+        },
+        {
+          "name": "Mystic Marks",
+          "options": [
+            {
+              "name": "Bramble Mark",
+              "text": "Action: Touch an ally and grant them an aura of mystical thorns (max 1 ally at a time). Attackers take damage equal to the ally’s Defense whenever they Defend. The thorns last for WIL attacks or 1 min."
+            },
+            {
+              "name": "Broom Flight",
+              "text": "Spend 1 mana to gain flying for 1 hour (or until you fall). When crit while flying, you fall, landing Prone."
+            },
+            {
+              "name": "Coven",
+              "text": "Choose 1 spell school a close ally knows, you can cast tiered spells from that school (Healer of the Old Ways: non-Hexbinder healing spells cannot be Diminished)."
+            },
+            {
+              "name": "Mark of Protection",
+              "text": "Creatures you heal can ignore 1 negative condition they would receive within the next minute."
+            },
+            {
+              "name": "Pact of Enmity",
+              "text": "Whenever you would apply an Affliction, you may instead bind yourself to the creature with a pact of mutual destruction. Both of you deal MAX damage to each other (instead of rolling dice)."
+            },
+            {
+              "name": "Sigil of Journey",
+              "text": "Action: You (or another willing creature you touch) exchange places with a Medium or smaller Afflicted creature within Reach 8."
+            },
+            {
+              "name": "Sigil of Root",
+              "text": "(1/encounter) Your Enfeebled Affliction also Restrains for 1 round."
+            },
+            {
+              "name": "Word of Decay",
+              "text": "Whenever you use a Futuresight Die against an Afflicted target, take the max value. When your Afflicted target dies, regain 1 spent Futuresight Die (roll it)."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Coven of the Hex",
+          "flavor": "Bristle with power, torns of the rose.\nBane of the aggressor, thy curse impose.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Haunted",
+                  "text": "When an Afflicted creature dies, apply all of their Afflictions to another enemy within Reach 8 of them."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Spitecurse",
+                  "text": "(1/encounter, Reach 8) Reaction (whenever an enemy crits): They take the damage as well."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Pestilential Reign",
+                  "text": "Learn the Pestilent Affliction. Whenever it triggers you may double or halve its Reach."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Hexcaster",
+                  "text": "Your Enfeebled Affliction also Dazes the target when applied. You can inflict Doomed 2/encounter."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Coven of the Sight",
+          "flavor": "Weave thy way through temporal roads.\nThreads of fate, the pattern exposed.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Soothsayer Savant",
+                  "text": "Whenever combat begins, roll a Futuresight Die (1d4). (Reach 4) Expend it to increase or decrease any die by that much. It expires at the end of combat if unused."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "A Different Path",
+                  "text": "(1/encounter) You may expend 1 mana to gain a Futuresight Die."
+                },
+                {
+                  "name": "Cursed Fate",
+                  "text": "Double the value of a Futuresight Die when used with Hex."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Hand of Fate",
+                  "text": "Gain 1 additional Futuresight Die each encounter, and increment your Futuresight Dice one step. You may use multiple Futuresight Dice to modify the same roll."
+                },
+                {
+                  "name": "Masterful Seer",
+                  "text": "When you Consult the BONES, roll with advantage."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Renewed Vision",
+                  "text": "(1/encounter) When you make an attack into a crit or a miss, roll one Futuresight Die."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Coven of Blooms",
+          "flavor": "Give thy care to all that grows.\nSeek new life in deathly throes.",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Siphon Essence",
+                  "text": "Whenever you apply an Affliction, gain 10 temp HP for 1 min. (1/encounter) When you cast Life Bloom, damage an enemy equal to how much your target is healed (ignoring armor)."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Potent Bloom",
+                  "text": "Gain +KEY Hit Dice."
+                },
+                {
+                  "name": "Parsley, Sage…",
+                  "text": "During a Safe Rest, you may brew a single-use Herbal Elixir. Action: drink to heal 2 Wounds (it expires when you Safe Rest if unused)."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Soothing Cleanse",
+                  "text": "You may grant the temp HP from Siphon Essence to an ally within Reach 8 instead. Whenever you heal HP, you may spend additional mana to grant an additional 10 temp HP for 1 min and remove a harmful condition from your target for each mana spent."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Rampant Blooms",
+                  "text": "Double the healing of Life Bloom."
+                },
+                {
+                  "name": "…Rosemary, and Thyme",
+                  "text": "Your Herbal Elixir heals KEY Wounds instead."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Coven of the Hunt",
+          "flavor": "Bound together, the family you chose. Wanderers of realms, the chorus goes.",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Hexbinder’s Familiar",
+                  "text": "Choose any small animal to become your familiar (owl, cat, rooster, fox, etc.). Your familiar retains any abilities the animal has, can speak to you, and will generally obey your commands (though it may refuse instructions that would put it in danger). Choose 1 Familiar Boon that it grants to you:\n• **Protective.** Acts as a shield that grants +LVL Defense.\n• **Resourceful.** Gain WIL+INT max Hit Dice, these can be given to any ally.\n• **Sly.** Advantage on Initiative. When you roll Initiative, regain INT mana (this expires at the end of combat if unused).\n• **Scavenger.** When you roll Initiative, give an ally 2×LVL temp HP.\n• **Mystical.** You can cast spells from an ally’s position INT times/encounter.\n• **Swift.** You may move WIL spaces for free on each of your turns."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Bind Malady",
+                  "text": "Free Reaction. (INT/Safe Rest, Reach 8). Command your familiar to remove any single harmful condition from a creature.\n\nHarmful Conditions. Ending “Dying” grants 1 HP, ending “Dazed” grants 1 action, etc."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Empowered Familiar",
+                  "text": "Choose a 2nd Familiar Boon."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Mighty Familiar",
+                  "text": "Choose a 3rd Familiar Boon."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "spells": [
+        {
+          "name": "Misery",
+          "school": "Hexbinder",
+          "tier": 1,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 8",
+          "damage": "1d8+LVL",
+          "text": "Reach: 8. Damage: 1d8+LVL. On hit: apply an Affliction. On crit: apply 2 instead.",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        },
+        {
+          "name": "Life Bloom",
+          "school": "Hexbinder",
+          "tier": 1,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 8",
+          "text": "Reach: 8. You and a willing target each spend 1 Hit Die. Your target and another creature within Reach each heal 10 HP.",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        },
+        {
+          "name": "Twitch Curse",
+          "school": "Hexbinder",
+          "tier": 2,
+          "utility": false,
+          "actions": "0 Actions",
+          "range": "Reach 8",
+          "text": "Castable only while Defending.\nReach: 8. First, move the attacker 1 space (+1 for each Affliction on it). Opportunity Attacks this triggers have advantage instead of disadvantage.\nNote. If you are no longer a valid target (e.g., the attacker is dead, you are out of line of sight/Reach/Range), the triggering attack misses.",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        },
+        {
+          "name": "Bloodcurse",
+          "school": "Hexbinder",
+          "tier": 2,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 8",
+          "damage": "1d4+LVL",
+          "text": "Reach: 8. Damage: 1d4+LVL (increment the die size for each Affliction it has). On hit: the target becomes secretly Bloodcursed, suffering the same damage it deals next (ignoring armor).",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        },
+        {
+          "name": "Wyrding Strands",
+          "school": "Hexbinder",
+          "tier": 3,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 8",
+          "aoe": "AoE",
+          "text": "Reach: 8. Move creatures within Reach a total of 2d6 spaces, divided among them as you choose.",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        },
+        {
+          "name": "Frogify",
+          "school": "Hexbinder",
+          "tier": 3,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 8",
+          "text": "Reach: 8. (1/encounter) Turn a Medium or smaller creature into a harmless frog until the end of its next turn. Make it hop immediately up to KEY spaces, and again on its turn instead of acting. The first attack against it crits and ends the effect.",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        },
+        {
+          "name": "Malediction",
+          "school": "Hexbinder",
+          "tier": 4,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 4",
+          "aoe": "AoE",
+          "damage": "1d8+LVL",
+          "text": "Reach: 4. Up to KEY creatures of your choice take 1d8+LVL damage (ignoring armor).",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        },
+        {
+          "name": "Circle of Thorns",
+          "school": "Hexbinder",
+          "tier": 4,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 8",
+          "damage": "LVL",
+          "text": "Reach: 8. Ward every space adjacent to a creature with magical thorns. Enemies that enter a warded space take LVL damage and are Weakened 10 until the end of their next turn. Lasts 1 min or until it has triggered KEY times.",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        },
+        {
+          "name": "Terror",
+          "school": "Hexbinder",
+          "tier": 5,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 8",
+          "damage": "1d6",
+          "text": "Reach: 8. Damage: 1d6 (ignoring armor); roll with advantage for each Affliction on the target; multiply the result by LVL.\nExample. If a target has 1 Affliction, roll 2d6 and keep the highest, then if you are level 10 multiply the highest die by 10.",
+          "source": "Hexbinder 3.0",
+          "page": 8,
+          "draft": true
+        }
+      ],
+      "faq": [
+        {
+          "q": "Bloodcurse",
+          "a": "Its damage is calculated vs a single target, before any reductions from Defense or other sources. This spell is secret to the target, not the GM."
+        },
+        {
+          "q": "Brittle",
+          "a": "Teleporting and swapping places don’t trigger it; moving, being moved, and falling do."
+        },
+        {
+          "q": "Circle of Thorns",
+          "a": "An enemy already adjacent when it’s cast hasn’t entered; being pushed in counts."
+        },
+        {
+          "q": "Coven",
+          "a": "Spells from your Coven school can be upcast (up to your highest tier) and Diminished."
+        },
+        {
+          "q": "Doomed",
+          "a": "Maximizes only dice rolled against the target (e.g., not Fury or Judgment Dice). It can crit, but the extra crit die is rolled normally. In an AoE, only the Doomed creature takes max damage."
+        },
+        {
+          "q": "Familiar",
+          "a": "It’s smart enough to take care of itself in combat—no need to track its HP, location, or commands; its boons cover what it does for you. Outside combat, you might bribe or cajole it into something moderately risky, but scouting a whole dungeon alone almost certainly won’t work (and won’t be fun for others!). You can’t take the same boon twice."
+        },
+        {
+          "q": "Futuresight Dice",
+          "a": "They can change any die, including the tens die of a d44, d66, or d88."
+        },
+        {
+          "q": "Mark of Protection",
+          "a": "A protected creature dropped to 0 HP can stay at 1 HP instead of Dying."
+        },
+        {
+          "q": "Multiple Hexbinders",
+          "a": "Each counts only their own Afflictions, and the same Affliction from two Hexbinders doesn’t stack."
+        },
+        {
+          "q": "Pact of Enmity",
+          "a": "No dice are rolled, so it never crits."
+        },
+        {
+          "q": "Pestilential Reign",
+          "a": "If you already know Pestilent, choose a different Affliction."
+        },
+        {
+          "q": "Wyrding Strands",
+          "a": "You choose the direction, and can move allies or yourself."
+        }
+      ]
+    },
+    {
+      "name": "Psion",
+      "source": "Psion 0.1.1",
+      "page": 3,
+      "draft": true,
+      "tagline": "High risk, high reward class that controls the battlefield through positioning and psionic power!",
+      "flavor": "Each creature that lives and breathes is united by one shared experience: THOUGHT. Psions take this fundamental reality and harness it as a tool in the physical world. Bend the flow gravity, twist the reality of minds, or throw things really, really hard. All of this barely scratches the surface of what a Psion can accomplish: altering the physical world through sheer thought alone.\n\nPsionic power, rare and mighty as it is, takes a toll on those who dare to wield it. To exert one's own mind so as to affect the world and other minds around you is to take on all the latent negative thoughts that can be found there. However, those with the will to withstand the strain can achieve heights that few could ever dream of.",
+      "complexity": 2,
+      "keyStats": [
+        "WIL",
+        "INT"
+      ],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": {
+        "adv": "WIL",
+        "dis": "DEX"
+      },
+      "armor": "Cloth",
+      "weapons": "None",
+      "startingGear": [
+        "Adventurer’s Garb",
+        "Dagger",
+        "Vial of Pitch"
+      ],
+      "resources": [
+        {
+          "name": "Strain Dice",
+          "die": "d6"
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Psionic Field",
+              "text": "(Concentration, up to 1 min.) Action: Create a field of psionic energy around you with a Reach of 3. You can proficiently attack with unheld light weapons or objects anywhere within your Psionic Field. Attacks made this way deal an additional +WIL damage."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Powerful Mind",
+              "text": "Learn Psionic Strike and 1 other Psionic Ability of your choice."
+            },
+            {
+              "name": "Mindsense",
+              "text": "While conscious, you can sense and communicate with other minds within your Psionic Field, ignoring barriers, invisibility, or other effects that would conceal them."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Psion subclass."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Mind Over Matter",
+              "text": "The first time each encounter you would lose Concentration, you may gain 2 Strain instead."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or INT."
+            },
+            {
+              "name": "Powerful Mind",
+              "text": "Choose a 3rd Psionic Ability."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Expansive Mind",
+              "text": "Your Strain Dice increase to d8s."
+            },
+            {
+              "name": "Steady Breathing",
+              "text": "Action: Lose 1 Strain Die."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Powerful Mind",
+              "text": "Choose a 4th Psionic Ability."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Psion subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "New Core Ability",
+              "text": "When you concentration is broken, you may ignore 1 Strain Die."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Powerful Mind",
+              "text": "Choose a 5th Psionic Ability."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Expansive Mind (2)",
+              "text": "Your Strain Dice increase to d10s."
+            },
+            {
+              "name": "Steady Breathing (2)",
+              "text": "Action: Lose 2 Strain Dice."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Psion subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Powerful Mind",
+              "text": "Choose a 6th Psionic Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Mind Over Matter (2)",
+              "text": "The first time each encounter you would lose Concentration, you may gain 1 Strain instead. When you concentration is broken, ignore the highest Strain Die rolled."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Powerful Mind",
+              "text": "Choose a 7th Psionic Ability."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Psion subclass feature."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Powerful Mind",
+              "text": "Choose a 8th Psionic Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 INT or WIL."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Expansive Mind (3)",
+              "text": "Your Strain Dice increase to d12s."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 STR or DEX."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "I Can Hold!",
+              "text": "Lose 1 Strain Die at the end of each of your turns."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 23 of the GM's Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Mindmaster",
+              "text": "+1 to any 2 of your stats. Free Action: Gain 1 Strain to double the reach of your Psionic Field this round."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "At a Glance",
+          "text": "Control your psionic field, taking command of errant objects, friends, and foes in your surroundings.\n\nWithstand the strain! Push yourself to greater heights with your Psionic abilities at the cost of your fortitude.\n\nDominate minds. Take control over the thoughts and perceptions of your enemies through illusions and misdirections."
+        },
+        {
+          "title": "Strain",
+          "text": "Gain a Strain Die (1d6). Roll them when your turn ends, if any rolls a 1, your Concentration breaks.\n\nIf your Concentration breaks before combat ends, all Psionic effects cease, you suffer psychic damage equal to the sum rolled, and you become Incapacitated until the start of your next turn"
+        },
+        {
+          "title": "Psychic Damage",
+          "text": "Ignores armor and cannot typically be Defended/Interposed against!"
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Psionic Abilities",
+          "intro": "Requires your Psionic Field to be active. All ongoing Psionic abilities end if your concentration is broken.",
+          "options": [
+            {
+              "name": "Psionic Strike",
+              "cost": "1 Action",
+              "text": "+1 damage for each Strain Die you have. When you attack you may gain 1 Strain to ignore all disadvantage and attack with advantage instead."
+            },
+            {
+              "name": "Kinetic Launch",
+              "cost": "1 Action",
+              "text": "Launch a willing ally within your Psionic Field up to 8 spaces. They can use a reaction to make an Opportunity Attack against a creature within their Reach as they move. Gain 1 Strain to grant them advantage on the attack instead of disadvantage"
+            },
+            {
+              "name": "Telekenitic Bastion",
+              "cost": "Passive",
+              "text": "You may wield a Shield proficiently within your Psionic Field. Gain 1 Strain to lend it to an ally being attacked within your Psionic Field (a shield protecting one person can’t protect another this round)."
+            },
+            {
+              "name": "Psionic Blast",
+              "cost": "1 Action",
+              "text": "(Reach 8, 1/Round) Suffer KEY d6 psychic damage, deal twice as much to an enemy (ignoring armor). Gain 2 Strain to take no damage instead."
+            },
+            {
+              "name": "Dominate Mind",
+              "cost": "2 Actions",
+              "text": "(Reach 8) +1 Strain: Incapacitate a creature. +1 Strain each time they take damage and for each of their turns they are Incapacitated."
+            },
+            {
+              "name": "Atomize Weapon",
+              "cost": "2 Actions, AoE",
+              "text": "Gain up to KEY Strain. Explode a weapon within your Psionic field then reform it perfectly as it was. Deal the sum of your Strain Dice to all others within your Psionic Field."
+            },
+            {
+              "name": "Psionic Lockdown",
+              "cost": "1 Action",
+              "text": "Enemies entering your Psionic field suffer LVL damage, Enemies within your Psionic field cannot leave. Projectiles have their damage reduced by LVL. 1 Strain/round to maintain."
+            },
+            {
+              "name": "Levitate",
+              "cost": "1 Action",
+              "text": "1 willing medium or smaller creature, treat them as if they are anywhere within your field (e.g. for Interposing, attacking etc.) (they can move freely within your psionic field on their turn). +1 Strain/round."
+            },
+            {
+              "name": "Dampening Field",
+              "cost": "1 Action",
+              "text": "Creatures inside your Psionic Field take 10 less damage from ranged attacks originating outside it this round. +1 Strain."
+            },
+            {
+              "name": "Reactive Mind",
+              "cost": "1 Action",
+              "text": "Reaction: when you Defend, you may gain 1 Strain to push the attacker 4 spaces."
+            },
+            {
+              "name": "Mindrend",
+              "cost": "2 Actions",
+              "text": "Explode a creature’s mind. +1-3 strain dice. The next time you roll your Strain Dice, deal that much damage to an enemy (ignoring armor)."
+            },
+            {
+              "name": "Control Projectiles",
+              "cost": "1 Action",
+              "text": "Reaction, if your total number Strain Dice are greater than the Primary Die of a ranged attack, redirect the attack at another creature within Range. +Strain. Extra range/damage."
+            },
+            {
+              "name": "Sudden Shift",
+              "cost": "1 Action",
+              "text": "Reaction. When an ally within your Psionic Field Defends, push them 1 space, the attack misses. Gain 2 Strain."
+            }
+          ]
+        }
+      ],
+      "subclasses": [
+        {
+          "name": "Adept of Bladestorm",
+          "flavor": "\"Dual wielding, huh? Watch this!\"",
+          "complexity": 2,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Bladebearer",
+                  "text": "Your weapons wielded with your Psionic Field are considered dual wielded. When you gain Strain while using Psionic Strike, add the Strain Die as damage."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Bladestorm",
+                  "text": "(1/encounter) Others within your Psionic Field take KEY damage for each space they move (or are moved) this round. +2 Strain."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Shieldstorm",
+                  "text": "You may wield 2 additional shields with your Psionic Field. Gain 1 strain to allow an ally to use one for a round."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Bladestorm (2)",
+                  "text": "You may wield 2-handed weapons with your Psionic Field, they are considered tri-wielded (1/round you may roll with advantage 2 with them)."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Adept of Illusions",
+          "flavor": "\"Dual wielding, huh? Watch this!\"",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Figment",
+                  "text": "Reaction: when you Defend. You may gain 2 Strain to swap places with an enemy or willing ally within your Psionic Field, making them the new target."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Mirage",
+                  "text": "1 action. +1 Strain/effect each round.\n• **Danger.** Create an illusory danger in WIL contiguous spaces. Enemies who enter these spaces take 1d20+LVL psychic damage and must move out of the space before they can take any other action."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Mirage (2)",
+                  "text": "Whenever you use Mirage, you may instead choose one of the following:\n• **Disguise.** Project an illusory image into an enemy's mind (e.g., a wall, pit, or other obstacle or distraction). A lower level enemy gains your choice of Blinded, Taunted, or Prone. A creature your level or higher can make a WIL save to resist.\n• **Distortion.** An ally gains your choice of Full Cover, Invisible, or becomes the source of Fear for their enemies."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Petrify!",
+                  "text": "Trick a lower level enemy into thinking they are Petrified. A creature your level must make a WIL save?\n\nSnap out of it! Illusions imposed upon an enemy end when the creature takes any damage."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Adept of Collapse",
+          "flavor": "\"Dual wielding, huh? Watch this!\"",
+          "complexity": 3,
+          "story": false,
+          "levels": [
+            {
+              "level": 3,
+              "features": [
+                {
+                  "name": "Mind Collapse",
+                  "text": "Whenever you concentration ends, choose 2 Strain Dice, an enemy within Reach 3 suffers that damage instead of you (if no enemy is available, you take all of the damage as normal).\n\nRemember! You can end concentration at any time on your turn for free."
+                }
+              ]
+            },
+            {
+              "level": 7,
+              "features": [
+                {
+                  "name": "Reverberating Mind",
+                  "text": "Double the Reach of Mind Collapse. Whenever any creature takes 10 or damage from your concentration breaking, the next time you create your Psionic Field this encounter, do so for free."
+                }
+              ]
+            },
+            {
+              "level": 11,
+              "features": [
+                {
+                  "name": "Mind Shield",
+                  "text": "When your concentration breaks, Taunt up to WIL creatures within Reach 6 for 1 round. You may Defend for free while Incapcitated. The first creature to attack you while Incapacitated also takes as much psychic damage."
+                }
+              ]
+            },
+            {
+              "level": 15,
+              "features": [
+                {
+                  "name": "Big Mind",
+                  "text": "Your Mind Collapse and Mind Shield have a Reach of 12. Choose up to 3 Strain Dice for Mind Collapse and 1 additional enemy to also suffer that damage."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "Alpha",
+          "a": "This is an early, alpha build of the class (it is not finished). Enough is here to test the main combat mechanics and get a feel for its style. Abilities will almost certainly be changed, many more will be added, others removed. If you have any feedback as you read it though and playtest it please let me know!"
+        },
+        {
+          "q": "Incapacitated?",
+          "a": "When your concentration breaks, you do not lose any actions but you cannot take any reactions that round (or other actions granted by an ally such as Coordinated Strike!), attacks have advantage against you, and any melee attack that hits, is turned into a crit."
+        },
+        {
+          "q": "Psionic Blast",
+          "a": "You can use either KEY attribute. There is no attack roll, so this does not miss or crit, and is great as a 2nd or 3rd attack, vs minions, when Blinded, or otherwise Hampered."
+        }
+      ]
+    },
+    {
+      "name": "Revenant",
+      "source": "Revenant 0.1",
+      "page": 3,
+      "draft": true,
+      "tagline": "Neither living nor dead. Shrug off the afflictions of mere mortals as you embrace the line between life and death.",
+      "flavor": "What it must be like, standing at the veil between life and death. Would one remember who they were before? I’ve only ever seen a Revenant once in my life. A noble warrior, his spirit clinging coldly to his body. His eyes, pale motionless pools of determination. His strikes slow, yet brutally powerful. I pity any warrior who crosses his path.\n\n– Excerpt from a tattered journal.\n\nA Revenant is bound to the mortal plane, driven by unfulfilled purpose, revenge, or perhaps even love. They exist on the razor’s edge between life and death, drawing upon the powers of the afterlife to fuel their undying might. Strike the Revenant down, and it rises again stronger and more determined than before.",
+      "complexity": 2,
+      "keyStats": [
+        "WIL",
+        "STR"
+      ],
+      "hitDie": 4,
+      "startingHp": 7,
+      "saves": {
+        "adv": "WIL",
+        "dis": "INT"
+      },
+      "armor": "All Armor",
+      "weapons": "2-Handed Melee",
+      "startingGear": [
+        "Rusty Mail",
+        "Long Sword",
+        "Cherished Memento"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            {
+              "name": "Undying Might",
+              "text": "While above 0 HP, add your max HP to all melee attacks you make. You have a max of 2 actions (while living and Dying)."
+            },
+            {
+              "name": "Otherworldly Constitution",
+              "text": "Whenever you roll a Hit Die to recover HP, you may instead recover that many Wounds (don't add your STR if you do this)."
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            {
+              "name": "Spectral Form",
+              "text": "While Dying, you don't make STR saves to attack, and:\n**Hate.** (Range 8) 1d8+WIL+Wounds (ignoring armor). Every 5th level deals +Wounds damage (e.g., at lvl 10 deal 1d8+WIL+(4xWounds)."
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Choose a Revenant subclass."
+            }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            {
+              "name": "Master of Undeath",
+              "text": "Choose a Revenant Special Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
+            },
+            {
+              "name": "Death Grip",
+              "text": "You may wield 2-handed weapons in 1 hand."
+            },
+            {
+              "name": "Incorporeal",
+              "text": "Your Spectral Form gains: you cannot be Grappled/Restrained, and when you Defend, reduce damage to 0 instead."
+            }
+          ]
+        },
+        {
+          "level": 6,
+          "features": [
+            {
+              "name": "Master of Undeath (2)",
+              "text": "Choose a 2nd Revenant Special Ability."
+            },
+            {
+              "name": "Deadened Nerves",
+              "text": "You cannot be crit while Dying (exploding dice are not rolled against you, ignore any “on crit” effects)."
+            }
+          ]
+        },
+        {
+          "level": 7,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Revenant subclass ability."
+            }
+          ]
+        },
+        {
+          "level": 8,
+          "features": [
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
+            },
+            {
+              "name": "Deadened Nerves (2)",
+              "text": "Reduce ALL damage taken by Wounds while living."
+            }
+          ]
+        },
+        {
+          "level": 9,
+          "features": [
+            {
+              "name": "Master of Undeath (3)",
+              "text": "Choose a 3rd Revenant Special Ability."
+            },
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 10,
+          "features": [
+            {
+              "name": "Incorporeal (2)",
+              "text": "(1/encounter) Use Incorporeal ability while living."
+            },
+            {
+              "name": "Unrelenting as the Grave",
+              "text": "Immune to Dazed, Fear, and effects that would move you or knock you Prone against your will."
+            }
+          ]
+        },
+        {
+          "level": 11,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Revenant subclass ability."
+            }
+          ]
+        },
+        {
+          "level": 12,
+          "features": [
+            {
+              "name": "Master of Undeath (4)",
+              "text": "Choose a 4th Revenant Special Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 13,
+          "features": [
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT."
+            }
+          ]
+        },
+        {
+          "level": 14,
+          "features": [
+            {
+              "name": "Master of Undeath (5)",
+              "text": "Choose a 5th Revenant Special Ability."
+            }
+          ]
+        },
+        {
+          "level": 15,
+          "features": [
+            {
+              "name": "Subclass",
+              "text": "Gain your Revenant subclass ability."
+            }
+          ]
+        },
+        {
+          "level": 16,
+          "features": [
+            {
+              "name": "Master of Undeath (6)",
+              "text": "Choose a 6th Revenant Special Ability."
+            },
+            {
+              "name": "Key Stat Increase",
+              "text": "+1 WIL or STR."
+            }
+          ]
+        },
+        {
+          "level": 17,
+          "features": [
+            {
+              "name": "Secondary Stat Increase",
+              "text": "+1 DEX or INT"
+            },
+            {
+              "name": "Deadened Nerves (3)",
+              "text": "Reduce ALL damage taken by 2x Wounds."
+            }
+          ]
+        },
+        {
+          "level": 18,
+          "features": [
+            {
+              "name": "Spectral Power",
+              "text": "(WIL/Safe Rest) You may use an ability from your living or Spectral Form without needing to be in that form."
+            }
+          ]
+        },
+        {
+          "level": 19,
+          "features": [
+            {
+              "name": "Epic Boon",
+              "text": "Choose an Epic Boon (see pg. 23 of the GM's Guide)."
+            }
+          ]
+        },
+        {
+          "level": 20,
+          "features": [
+            {
+              "name": "Two, as One",
+              "text": "+1 to any 2 of your stats. You can use all Spectral Form abilities while living."
+            }
+          ]
+        }
+      ],
+      "sidebars": [
+        {
+          "title": "At a Glance",
+          "text": "Slow, but strong. Draw upon your undying might , taking fewer, but more powerful actions in battle.\n\nFace your foes as both a powerful fighter and a wrathful spirit. Become a spectral wraith and unleash deathly powers.\n\nCommand fear in the hearts of your foes and bolster the will of your allies."
+        },
+        {
+          "title": "Flavor is free!",
+          "text": "What is the your spectral form? Your own stubborn will? An evil possessing creature? Something you’ve made a bargain with? An ancestor or other friendly being? It’s up to you!"
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Revenant Abilities",
+          "options": [
+            {
+              "name": "Ghost Step",
+              "cost": "Passive",
+              "text": "While in Spectral Form, allies you move through may move with you (as long as they end their movement in an unoccupied space)."
+            },
+            {
+              "name": "Patient as Death",
+              "cost": "2 actions",
+              "text": "Next turn, double your damage and number of targets for your attacks."
+            },
+            {
+              "name": "Innervating Spirit",
+              "cost": "Passive",
+              "text": "While in Wraith Form, Dying allies also have a max of 2 actions."
+            },
+            {
+              "name": "Deathly Wail",
+              "cost": "Passive",
+              "text": "When you drop to 0 HP, use Hate immediately for free against the attacker or against all others within Reach 2."
+            },
+            {
+              "name": "Possess",
+              "cost": "Passive",
+              "text": "You may move through enemy spaces while Dying, you may force lower level enemies to follow you as you move (as long as they end their movement in an unoccupied space)."
+            },
+            {
+              "name": "Spook",
+              "cost": "Passive",
+              "text": "Frighten lower level enemies within Reach 8 When you move through an enemy space, they are Frightened this round."
+            },
+            {
+              "name": "Grips of Fear",
+              "cost": "Passive",
+              "text": "Deal extra damage/Restrain to frightened enemies."
+            },
+            {
+              "name": "Iron Will",
+              "cost": "Passive",
+              "text": "If you would miss an attack but haven’t dealt damage this round yet, reroll the attack (once)."
+            },
+            {
+              "name": "Spiritshift",
+              "cost": "Passive",
+              "text": "Whenever you drop to 0 HP you may teleport up to twice your speed away."
+            },
+            {
+              "name": "Strong Ties",
+              "cost": "Passive",
+              "text": "Whenever you spend Hit Dice to recover HP, you may also heal a number of Wound equal to the number of dice rolled. If Dying when combat ends, recover 1 HP."
+            },
+            {
+              "name": "Deathwalk",
+              "cost": "Passive",
+              "text": "On your turn, you may drop to 0 HP at will without taking a Wound. Any remaining HP are treated as Temp HP."
+            },
+            {
+              "name": "My Body, a Puppet",
+              "cost": "Passive",
+              "text": "Your unliving corpse follows you and Interposes for you for free 1/ Round."
+            },
+            {
+              "name": "Haunt",
+              "cost": "1 Action",
+              "text": "Reaction: When damaged while Dying, spend an action for the attacker."
+            },
+            {
+              "name": "Possess",
+              "cost": "1 Action",
+              "text": "Gain 1 Wound to possess an adjacent ally until the start of your next turn, add your Max HP as damage to their attacks. You also take any damage they take."
+            },
+            {
+              "name": "Usurp",
+              "cost": "1 Action",
+              "text": "Move into the space of an enemy, you may gain 1 Wound to choose its actions during its next turn. Gain 2 Wounds instead if it is your level or higher."
+            }
+          ]
+        }
+      ],
+      "subclasses": []
+    }
+  ],
+  "notes": [
+    "Artificer 3.0: the class inside Artificer-3.0.pdf is named \"Manawright\"; transcribed under that name with source \"Artificer 3.0\".",
+    "Artificer 3.0: the intro quote begins with a decorative drop-cap \"T\" and no visible opening quotation mark; transcribed as printed (closing ” only).",
+    "Artificer 3.0: the three icon blurbs on the intro page are stored as a sidebar titled \"At a Glance\" (title is editorial, not printed).",
+    "Artificer 3.0: Major Inventions, Gadgets, subclass inventions (Cheer Bot, Tethercoil, Aetheric Infuser, Chronal Device) and Alchemist Potions are stored as optionGroups. Their Charge/Mishap/Upgrades sub-blocks are kept inline with **bold** labels and newline-separated bullets. Armor inventions have no action tag, so no cost.",
+    "Artificer 3.0: the Quick Builds page (printed p. 20, premade level 1 and 2 'Timbrel' character sheets) is not transcribed; it has no slot in the schema. The 'Manawright Names' list is stored as a sidebar.",
+    "Hexbinder 3.0: Coven of the Hex flavor reads \"torns of the rose\" in the book (likely a typo for \"thorns\"); transcribed as printed.",
+    "Hexbinder 3.0: the \"Harmful Conditions\" callout box printed under Coven of the Hunt's Bind Malady is appended to that feature's text (subclasses have no sidebars field).",
+    "Hexbinder 3.0: spells tagged \"TIER 3, AOE\"/\"TIER 4, AOE\" have no printed area size, so their aoe is just \"AoE\". Spell text keeps the printed \"Reach: 8. Damage: …\" lead-in; range/damage fields repeat it.",
+    "Hexbinder 3.0: casting.schools is [\"Hexbinder\"] (the class spell list name). The Quick Builds page (printed p. 16, premade 'Fern') is not transcribed.",
+    "Hexbinder 3.0: Afflictions are listed alphabetically (the book prints them in two alphabetical columns). Familiar Boons are kept as bullets inside the Hexbinder's Familiar feature text rather than a separate optionGroup.",
+    "Psion 0.1.1: the PDF has no license page; page 1 is the cover art plus intro. The book's own FAQ calls it an unfinished alpha build.",
+    "Psion 0.1.1: all three subclasses print the same flavor line (\"Dual wielding, huh? Watch this!\"), probably a placeholder carried over from Bladestorm; transcribed as printed. The subclass pages label complexity \"Class Complexity\".",
+    "Psion 0.1.1: typos kept as printed: \"Bend the flow gravity\", \"When you concentration…\", \"Telekenitic Bastion\", \"Incapcitated\", \"10 or damage\", \"Choose a 8th\", and Petrify!'s trailing \"?\". Level 19 points to \"pg. 23 of the GM's Guide\" (other books say pg. 75).",
+    "Psion 0.1.1: Strain Dice have no printed max; the resource has only name and die (d6). Callouts printed inside subclass levels (\"Remember!\", \"Snap out of it!\") are appended to the nearest feature's text.",
+    "Psion 0.1.1: the class has no mana and no spells; Psionic Abilities are an optionGroup. Printed page 10 is blank.",
+    "Revenant 0.1: partial draft. The 3-page PDF has the intro (p. 2), the class table (pp. 3-4) and Revenant Abilities (pp. 5-6). It has no subclasses (Level 3 says \"Choose a Revenant subclass\" but none are printed), so subclasses is an empty array. There is also no FAQ, no names list and no license page.",
+    "Revenant 0.1: the levels say \"Choose a Revenant Special Ability\" while the list is headed \"REVENANT ABILITIES\"; the optionGroup uses the printed heading. Two different abilities are both named \"Possess\" (one Passive, one 1 Action); both are kept. \"Patient as Death\" prints its cost in lowercase (\"2 actions\"), and Haunt is tagged \"1 Action\" though its text starts \"Reaction:\". Both are kept as printed.",
+    "Revenant 0.1: typos kept as printed: \"undying might , taking\", \"What is the your spectral form?\", \"(4xWounds)\" with an unclosed parenthesis, \"a number of Wound\", \"Reach 8 When\", \"+1 DEX or INT\" with no period at level 17. Level 19 points to \"pg. 23 of the GM's Guide\". The class has no mana or tracked resource."
+  ]
+}

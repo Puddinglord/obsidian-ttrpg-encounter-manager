@@ -1,11 +1,17 @@
 // Spotlight: one box for everything at the table. Search adversaries, NPCs,
-// the campaign's notes and conditions; type dice to roll them; run the
-// plugin's commands. Opened with Cmd/Ctrl+K (rebindable under Hotkeys).
+// the campaign's notes and conditions, and the player compendium (items,
+// spells, classes, features…); type dice to roll them; run the plugin's
+// commands. Opened with Cmd/Ctrl+K (rebindable under Hotkeys).
 //
 //   goblin        Enter: quick look · Cmd/Ctrl+Enter: add to the encounter
 //   3 goblin      Enter: add three to the encounter
 //   2d6+3         Enter: roll (Cmd/Ctrl+Enter rolls and keeps the box open)
 //   > next        commands only
+//   battleaxe     Enter: the compendium card
+//
+// openSpotlight(plugin, { kinds, title, onPick }) is the filtered mode the
+// character sheet's Add buttons use: only those compendium kinds, filter chips,
+// and Enter picks (Cmd/Ctrl+Enter picks and keeps the box open).
 
 import { Notice, Platform, prepareFuzzySearch, setIcon, SuggestModal, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
@@ -16,7 +22,10 @@ import { chooseSelected, pluginCommands, runCommand } from './internals';
 import { portraitOf, renderAvatar } from './npc-card';
 import { openRecord } from './record-modal';
 import { formatLevel, monsterRole } from './rules';
-import { parseSpotlight, rankByName, SpotlightQuery } from './spotlight-def';
+import { orderPicks, parseSpotlight, rankByName, SpotlightQuery } from './spotlight-def';
+import { CompendiumHit, CompendiumKind, Item as CompendiumItem, KIND_LABEL } from './compendium';
+import { bundledCompendium } from './compendium-data';
+import { CompendiumCardModal } from './compendium-card';
 import { describeMonster, searchMonsters } from './suggest';
 import type { MonsterIndexEntry, NimbleCondition } from './types';
 
@@ -27,22 +36,85 @@ type Item =
 	| { kind: 'note'; note: NoteRef; where: string }
 	| { kind: 'condition'; condition: NimbleCondition }
 	| { kind: 'command'; id: string; name: string; icon?: string }
+	| { kind: 'compendium'; hit: CompendiumHit }
+	| { kind: 'custom'; name: string }
 	| { kind: 'hint'; icon: string; title: string; detail: string; fill: string };
 
 const MOD = Platform.isMacOS ? '⌘' : 'Ctrl';
+
+/** The filtered mode: a picker over some compendium kinds. */
+export interface SpotlightPick {
+	kinds: CompendiumKind[];
+	/** Placeholder and heading: "Add to Thorga's inventory". */
+	title: string;
+	onPick: (hit: CompendiumHit) => void;
+	/** Entries to list first (the class's own options, the caster's schools); also a filter chip. */
+	prefer?: (hit: CompendiumHit) => boolean;
+	preferLabel?: string;
+	/** Already on the sheet: tagged "Added" and listed after the rest. */
+	isTaken?: (hit: CompendiumHit) => boolean;
+	/** Offer "Add “what you typed”" when it isn't in the compendium. */
+	allowCustom?: boolean;
+}
+
+interface Chip { label: string; test: (h: CompendiumHit) => boolean }
+
+const KIND_ICON_CMP: Record<CompendiumKind, string> = {
+	item: 'backpack', spell: 'wand-2', feature: 'sparkles', class: 'graduation-cap', subclass: 'git-branch',
+	ancestry: 'users', background: 'scroll-text', boon: 'gem',
+};
+
+/** Icon for a compendium entry (items by category). */
+export function compendiumIcon(h: CompendiumHit): string {
+	if (h.kind === 'item') {
+		const c = (h.entry as CompendiumItem).category;
+		return c === 'weapon' ? 'sword' : c === 'armor' ? 'shirt' : c === 'shield' ? 'shield' : c === 'consumable' ? 'flask-conical' : c === 'magic' ? 'sparkle' : c === 'scroll' ? 'scroll' : c === 'wand' ? 'wand' : 'backpack';
+	}
+	return KIND_ICON_CMP[h.kind];
+}
+
+/** Open Spotlight, optionally as a filtered compendium picker. */
+export function openSpotlight(plugin: NimbleStatblocksPlugin, pick?: SpotlightPick): SpotlightModal {
+	const m = new SpotlightModal(plugin, undefined, pick);
+	m.open();
+	return m;
+}
 const QUICK_DICE = ['1d20', '1d4', '1d6', '1d8', '1d10', '1d12', '2d6'];
 
 export class SpotlightModal extends SuggestModal<Item> {
 	private q: SpotlightQuery = parseSpotlight('');
 	private diceRow: HTMLElement | null = null;
+	private chips: Chip[] = [];
+	private chip = 0;
 
-	constructor(private plugin: NimbleStatblocksPlugin, private onClosed?: () => void) {
+	constructor(private plugin: NimbleStatblocksPlugin, private onClosed?: () => void, private pick?: SpotlightPick) {
 		super(plugin.app);
 		this.modalEl.addClass('nimble-spotlight');
-		this.setPlaceholder('Search adversaries, NPCs and notes, type 2d6+3 to roll, or > for commands');
+		if (pick) {
+			this.modalEl.addClass('is-picker');
+			this.setPlaceholder(`${pick.title}: type to search`);
+			this.limit = 60;
+			this.emptyStateText = pick.allowCustom ? 'Nothing in the compendium matches.' : 'Nothing matches.';
+			this.setInstructions([
+				{ command: '↵', purpose: 'add' },
+				{ command: `${MOD} ↵`, purpose: 'add and keep open' },
+				{ command: 'esc', purpose: 'close' },
+			]);
+			this.chips = this.makeChips(pick);
+			this.scope.register(['Mod'], 'Enter', (e) => { chooseSelected(this, e); return false; });
+			return;
+		}
+		const player = plugin.playerView();
+		this.setPlaceholder(player
+			? 'Search creatures, people, places, spells and items, type 2d6+3 to roll, or > for commands'
+			: 'Search adversaries, NPCs and notes, type 2d6+3 to roll, or > for commands');
 		this.limit = 40;
 		this.emptyStateText = 'Nothing matches. Try a monster name, an NPC, 2d6+3, or > and a command.';
-		this.setInstructions([
+		this.setInstructions(player ? [
+			{ command: '↵', purpose: 'open or roll' },
+			{ command: `${MOD} ↵`, purpose: 'roll and keep open' },
+			{ command: '>', purpose: 'commands' },
+		] : [
 			{ command: '↵', purpose: 'open or roll' },
 			{ command: `${MOD} ↵`, purpose: 'add or roll, and keep open' },
 			{ command: '3 goblin', purpose: 'add several' },
@@ -58,6 +130,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 
 	onOpen(): void {
 		void super.onOpen();
+		if (this.pick) { this.renderChips(); return; }
 		// Dice one tap away, without typing.
 		const row = createDiv({ cls: 'nimble-spotlight-dice' });
 		for (const d of QUICK_DICE) {
@@ -78,6 +151,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 	// Results
 
 	getSuggestions(input: string): Item[] {
+		if (this.pick) return this.picks(input);
 		const q = this.q = parseSpotlight(input);
 		if (q.roll) return [{ kind: 'roll', expression: q.roll }];
 		if (q.commandsOnly) return this.commands(q.text, 40);
@@ -87,15 +161,18 @@ export class SpotlightModal extends SuggestModal<Item> {
 		// matches, which are noise beside a real hit; they're only a fallback for when nothing matches outright.
 		const found = searchMonsters(this.plugin.index.all(), q.text, q.counted ? 20 : 8);
 		const named = found.filter(e => e.name.toLowerCase().includes(q.text));
-		const asItems = (list: MonsterIndexEntry[]): Item[] => list.map(entry => ({ kind: 'monster', entry, count: q.count, add: q.counted }));
-		if (q.counted) return asItems(named.length ? named : found.slice(0, 5)); // "3 goblin" is about adding monsters
+		// Players look monsters up; they don't add them to fights.
+		const player = this.plugin.playerView();
+		const asItems = (list: MonsterIndexEntry[]): Item[] => list.map(entry => ({ kind: 'monster', entry, count: q.count, add: q.counted && !player }));
+		if (q.counted && !player) return asItems(named.length ? named : found.slice(0, 5)); // "3 goblin" is about adding monsters
 
 		const npcs: Item[] = rankByName(this.npcs(), q.text, n => [n.name, ...n.aliases], 5).map(npc => ({ kind: 'npc', npc }));
 		const notes: Item[] = rankByName(this.notes(), q.text, n => [n.note.title, n.note.area ? `${n.note.area} ${n.note.title}` : ''], 6);
 		const conditions: Item[] = rankByName(this.plugin.getAllConditions().filter(c => !c.auto), q.text, c => [c.name], 3)
 			.map(condition => ({ kind: 'condition', condition }));
 		const commands = this.commands(q.text, 5, false);
-		const all = [...asItems(named), ...npcs, ...notes, ...conditions, ...commands];
+		const compendium: Item[] = bundledCompendium().search(q.text, undefined, 6).map(hit => ({ kind: 'compendium', hit }));
+		const all = [...asItems(named), ...npcs, ...notes, ...conditions, ...compendium, ...commands];
 		if (!all.length) return [...asItems(found.slice(0, 5)), ...this.commands(q.text, 3)]; // a typo still finds something
 		// An exact name wins the top spot whatever it is; otherwise adversaries lead.
 		const exact = (i: Item) => this.title(i).toLowerCase() === q.text;
@@ -104,10 +181,15 @@ export class SpotlightModal extends SuggestModal<Item> {
 
 	/** With nothing typed: what's most useful right now. */
 	private home(): Item[] {
-		const ids = ['next-round', 'start-combat', 'resume-combat', 'end-combat', 'add-monster', 'build-encounter', 'open-tracker', 'open-bestiary', 'new-scene', 'new-npc', 'edit-party', 'dice-workshop'];
+		const player = this.plugin.playerView();
+		const ids = player
+			? ['open-my-character', 'add-item-to-character', 'new-session', 'new-npc', 'new-location', 'open-bestiary', 'continue-campaign', 'dice-workshop']
+			: ['next-round', 'start-combat', 'resume-combat', 'end-combat', 'add-monster', 'build-encounter', 'open-tracker', 'open-bestiary', 'new-scene', 'new-npc', 'edit-party', 'dice-workshop'];
 		const byId = new Map(this.commands('', 200).map(c => [c.kind === 'command' ? c.id.replace(/^.*:/, '') : '', c]));
 		const hints: Item[] = [
-			{ kind: 'hint', icon: 'skull', title: 'Search adversaries', detail: 'Type a name. Enter for a quick look, or "3 goblin" to add three to the encounter.', fill: '' },
+			player
+				? { kind: 'hint', icon: 'book-open', title: 'Look something up', detail: 'Type a name: creatures, people and places from your notes, spells, items, classes and rules.', fill: '' }
+				: { kind: 'hint', icon: 'skull', title: 'Search adversaries', detail: 'Type a name. Enter for a quick look, or "3 goblin" to add three to the encounter.', fill: '' },
 			{ kind: 'hint', icon: 'dices', title: 'Roll dice', detail: 'Type 2d6+3 or d20 and press Enter.', fill: '2d6+3' },
 		];
 		return [...hints, ...ids.map(id => byId.get(id)).filter((c): c is Item => !!c)];
@@ -158,6 +240,8 @@ export class SpotlightModal extends SuggestModal<Item> {
 			case 'note': return i.note.title;
 			case 'condition': return i.condition.name;
 			case 'command': return i.name;
+			case 'compendium': return i.hit.name;
+			case 'custom': return i.name;
 			default: return i.title;
 		}
 	}
@@ -181,6 +265,14 @@ export class SpotlightModal extends SuggestModal<Item> {
 				break;
 			case 'monster': {
 				const m = i.entry.monster;
+				if (this.plugin.hideStats(i.entry.filePath)) {
+					// Player view: what a hero could know, no level.
+					setIcon(icon, 'paw-print');
+					name.setText(i.entry.name);
+					meta([m.group, [m.size !== 'Medium' ? m.size : '', m.type].filter(Boolean).join(' '), m.habitat].filter(Boolean).join(' · '));
+					tag('Creature');
+					break;
+				}
 				icon.addClass('nimble-spot-level', `role-${monsterRole(m)}`);
 				icon.setText(formatLevel(m.level) || '–');
 				name.setText(i.add ? `Add ${i.count} × ${i.entry.name}` : i.entry.name);
@@ -214,6 +306,23 @@ export class SpotlightModal extends SuggestModal<Item> {
 				name.setText(i.name);
 				tag('Command');
 				break;
+			case 'compendium': {
+				const h = i.hit;
+				icon.addClass(`cmp-${h.kind}`);
+				setIcon(icon, compendiumIcon(h));
+				name.setText(h.name);
+				if (h.draft) name.createSpan({ cls: 'nimble-cmp-draft', text: 'Draft' });
+				meta(h.detail);
+				if (this.pick && h.text) text.createDiv({ cls: 'nimble-spot-meta is-long is-text', text: h.text.replace(/\s+/g, ' ') });
+				if (this.pick?.isTaken?.(h)) { el.addClass('is-taken'); tag('Added'); } else tag(KIND_LABEL[h.kind]);
+				break;
+			}
+			case 'custom':
+				setIcon(icon, 'pen-line');
+				name.setText(`Add “${i.name}”`);
+				meta('Not in the compendium: added by name. You can write its details in the note.');
+				tag('Custom');
+				break;
 			default:
 				setIcon(icon, i.icon);
 				name.setText(i.title);
@@ -229,7 +338,13 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const mod = evt.metaKey || evt.ctrlKey;
 		if (i.kind === 'hint') { this.fill(i.fill); return; }
 		if (i.kind === 'roll' && mod) { this.roll(i.expression, true); return; }
-		if (i.kind === 'monster' && mod) { this.add(i); return; } // add and keep searching, to build a fight in one go
+		if (i.kind === 'monster' && mod && !this.plugin.playerView()) { this.add(i); return; } // add and keep searching, to build a fight in one go
+		if (this.pick && mod && (i.kind === 'compendium' || i.kind === 'custom')) {
+			// Pick and keep going (several items at once).
+			this.pick.onPick(i.kind === 'compendium' ? i.hit : this.customHit(i.name));
+			window.setTimeout(() => this.inputEl.dispatchEvent(new Event('input')), 400);
+			return;
+		}
 		super.selectSuggestion(i, evt);
 	}
 
@@ -250,11 +365,66 @@ export class SpotlightModal extends SuggestModal<Item> {
 			}
 			case 'note': void this.plugin.campaigns.open(i.note.path, mod); break;
 			case 'condition': new Notice(`${i.condition.name}: ${i.condition.description}`, 12000); break;
+			case 'compendium':
+				if (this.pick) this.pick.onPick(i.hit);
+				else new CompendiumCardModal(this.app, this.plugin, i.hit).open();
+				break;
+			case 'custom': this.pick?.onPick(this.customHit(i.name)); break;
 			case 'command':
 				if (!runCommand(this.app, i.id)) new Notice(`Couldn't run "${i.name}"`);
 				break;
 			default: break;
 		}
+	}
+
+	// ------------------------------------------------------------------------
+	// Filtered mode
+
+	private makeChips(pick: SpotlightPick): Chip[] {
+		const chips: Chip[] = [{ label: 'All', test: () => true }];
+		if (pick.prefer) chips.push({ label: pick.preferLabel ?? 'Suggested', test: pick.prefer });
+		if (pick.kinds.length > 1) for (const k of pick.kinds) chips.push({ label: `${KIND_LABEL[k]}s`, test: h => h.kind === k });
+		if (pick.kinds.length === 1 && pick.kinds[0] === 'item') {
+			const cats = [...new Set(bundledCompendium().items.map(it => it.category).filter((c): c is string => !!c))];
+			const label: Record<string, string> = { weapon: 'Weapons', armor: 'Armor', shield: 'Shields', gear: 'Gear', consumable: 'Consumables', magic: 'Magic', scroll: 'Scrolls', wand: 'Wands', story: 'Story', combat: 'Combat' };
+			for (const c of cats) chips.push({ label: label[c] ?? c[0].toUpperCase() + c.slice(1), test: h => (h.entry as CompendiumItem).category === c });
+		}
+		if (pick.kinds.length === 1 && pick.kinds[0] === 'spell') {
+			const schools = [...new Set(bundledCompendium().spells.map(sp => sp.school).filter((c): c is string => !!c))];
+			for (const sc of schools) chips.push({ label: sc, test: h => (h.entry as { school?: string }).school === sc });
+		}
+		return chips;
+	}
+
+	private renderChips(): void {
+		const row = createDiv({ cls: 'nimble-spotlight-chips', attr: { role: 'radiogroup', 'aria-label': 'Filter' } });
+		const draw = () => {
+			row.empty();
+			if (this.pick) row.createDiv({ cls: 'nimble-spotlight-title', text: this.pick.title });
+			if (this.chips.length < 2) return;
+			this.chips.forEach((c, i) => {
+				const b = row.createEl('button', { cls: `nimble-spotlight-chip${i === this.chip ? ' is-active' : ''}`, text: c.label, attr: { role: 'radio', 'aria-checked': String(i === this.chip), tabindex: '-1' } });
+				b.addEventListener('mousedown', (e) => e.preventDefault()); // keep typing in the box
+				b.addEventListener('click', () => { this.chip = i; draw(); this.inputEl.dispatchEvent(new Event('input')); this.inputEl.focus(); });
+			});
+		};
+		draw();
+		this.inputEl.parentElement?.after(row);
+	}
+
+	private picks(input: string): Item[] {
+		const pick = this.pick!;
+		const q = input.trim();
+		const chip = this.chips[this.chip] ?? this.chips[0];
+		const hits = bundledCompendium().search(q, pick.kinds, q ? 80 : 400).filter(h => !chip || chip.test(h));
+		const ordered = orderPicks(hits, q, pick.prefer, pick.isTaken).slice(0, 60);
+		const out: Item[] = ordered.map(hit => ({ kind: 'compendium', hit }));
+		if (pick.allowCustom && q && !ordered.some(h => h.name.toLowerCase() === q.toLowerCase())) out.push({ kind: 'custom', name: q });
+		return out;
+	}
+
+	private customHit(name: string): CompendiumHit {
+		return { kind: this.pick?.kinds[0] ?? 'item', name, detail: '', entry: {} };
 	}
 
 	private fill(text: string): void {

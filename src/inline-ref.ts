@@ -20,7 +20,7 @@ export function createInlineRef(plugin: NimbleStatblocksPlugin, monsterName: str
 	const container = createSpan({ cls: 'nimble-inline-ref' });
 	container.dataset.nimbleRef = monsterName;
 	container.dataset.sourcePath = sourcePath;
-	const entry = plugin.index.get(monsterName);
+	const entry = plugin.index.get(monsterName, sourcePath || undefined);
 
 	if (!entry) {
 		container.addClass('nimble-inline-unresolved');
@@ -33,10 +33,13 @@ export function createInlineRef(plugin: NimbleStatblocksPlugin, monsterName: str
 
 	container.addClass('nimble-inline-found');
 	if (entry.bundled) container.addClass('is-bundled');
+	// Player view: a name and a lore card, no level, no "add to encounter".
+	const lore = plugin.hideStats(entry.filePath, sourcePath || undefined);
+	if (lore) container.addClass('is-lore');
 	const role = monsterRole(entry.monster);
-	container.addClass(`role-${role}`);
+	if (!lore) container.addClass(`role-${role}`);
 	const lvl = formatLevel(entry.monster.level);
-	if (lvl || role === 'minion') {
+	if (!lore && (lvl || role === 'minion')) {
 		container.createSpan({
 			cls: 'nimble-inline-level',
 			text: lvl || 'min',
@@ -54,6 +57,7 @@ export function createInlineRef(plugin: NimbleStatblocksPlugin, monsterName: str
 		openRecord(plugin, { kind: 'monster', entry, sourcePath });
 	});
 	plugin.hover.attach(name, entry);
+	if (lore) return container;
 
 	const add = container.createEl('button', {
 		cls: 'nimble-inline-add-btn',
@@ -156,10 +160,12 @@ export class HoverPreview {
 	}
 
 	show(anchor: HTMLElement, entry: MonsterIndexEntry, pinned = false): void {
+		const viewPath = anchor.closest<HTMLElement>('[data-source-path]')?.dataset.sourcePath || undefined;
 		const body = this.frame(anchor, entry.name, `${entry.name} stat block`, pinned,
-			() => this.plugin.openMonster(entry, anchor.closest<HTMLElement>('[data-source-path]')?.dataset.sourcePath ?? ''));
+			() => this.plugin.openMonster(entry, viewPath ?? ''));
 		this.plugin.renderStatblock(body, entry.monster, entry.filePath, 'hover', undefined, {
-			actions: this.plugin.monsterActions(entry),
+			actions: this.plugin.monsterActions(entry, { viewPath }),
+			lore: this.plugin.hideStats(entry.filePath, viewPath),
 		});
 		this.finish(anchor);
 	}

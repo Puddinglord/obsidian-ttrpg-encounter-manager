@@ -17,6 +17,13 @@ New here? Start with **[Getting started](getting-started.md)**, or download the 
 | [Encounters](encounters.md) | Encounter blocks, difficulty, scaling monsters, the builder |
 | [GM maps](maps.md) | Maps with pins linked to your notes, tokens |
 
+## Playing
+
+| Page | What it covers |
+|---|---|
+| [Playing in a campaign](players.md) | Player campaigns, your party, battle notes, lore cards, switching between GM and player |
+| [Character sheets](character-sheets.md) | Your Nimble character as a note: the interactive sheet, rolling, resting, levelling up, adding gear and spells |
+
 ## At the table
 
 | Page | What it covers |

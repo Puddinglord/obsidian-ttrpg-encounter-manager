@@ -20,18 +20,20 @@ export class NpcLinker {
 		let key = '';
 		plugin.registerEvent(plugin.campaigns.on('changed', () => {
 			this.cache.clear();
-			const next = plugin.campaigns.npcs.map(n => `${n.path}|${n.aliases.join(',')}|${n.campaign ?? ''}`).sort().join('\n');
+			const next = plugin.campaigns.npcs.map(n => `${n.path}|${n.aliases.join(',')}|${n.campaign ?? ''}`).sort().join('\n') + plugin.campaigns.campaigns.map(c => `|${c.folder}:${c.role}`).join('');
 			if (next !== key) { const first = key === '' && !next; key = next; if (!first) plugin.rerenderNotes(); }
 		}));
 		plugin.registerMarkdownPostProcessor((el, ctx) => this.process(el, ctx));
 	}
 
-	/** NPCs a note can mention: its own campaign's, plus any outside a campaign. */
+	/** NPCs a note can mention: its own campaign's, plus any outside a campaign (not in a campaign you play in). */
 	private matcher(sourcePath: string) {
-		const camp = this.plugin.campaigns.of(sourcePath)?.folder ?? '';
+		const here = this.plugin.campaigns.of(sourcePath);
+		const camp = here?.folder ?? '';
+		const player = here?.role === 'player';
 		const hit = this.cache.get(camp);
 		if (hit) return hit;
-		const npcs = this.plugin.campaigns.npcs.filter(n => !camp || !n.campaign || n.campaign === camp);
+		const npcs = this.plugin.campaigns.npcs.filter(n => !camp || (n.campaign ? n.campaign === camp : !player));
 		const byName = new Map<string, NpcInfo>();
 		for (const n of npcs) {
 			for (const name of [n.name, ...n.aliases]) {

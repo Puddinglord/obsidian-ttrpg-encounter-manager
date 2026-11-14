@@ -4,10 +4,10 @@
 import { debounce, Events, normalizePath, Notice, TAbstractFile, TFile, TFolder } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import {
-	adjacentScene, buildCampaigns, Campaign, campaignOf, canMoveInto, Chapter, chapterOf, fmText, homeFolderFor, isPlayable, joinPath, nextOrder, NoteInfo, noteKind, parentOf, safeName,
+	adjacentScene, buildCampaigns, Campaign, campaignOf, CampaignRole, fmTrue, canMoveInto, Chapter, chapterOf, fmText, homeFolderFor, isPlayable, joinPath, nextOrder, NoteInfo, noteKind, parentOf, safeName,
 } from './campaign-model';
 import {
-	blankNote, campaignHome, chapterHome, handoutNote, locationNote, mapNote, monsterNote, npcNote, sceneNote, sessionNote, StarterKind,
+	blankNote, campaignHome, chapterHome, characterNote, handoutNote, locationNote, mapNote, monsterNote, npcNote, playerCampaignHome, sceneNote, sessionNote, StarterKind,
 } from './campaign-templates';
 
 export type NewNoteKind = 'scene' | 'npc' | 'location' | 'session';
@@ -31,9 +31,31 @@ export function isNpc(fm: Record<string, unknown>, tags: string[]): boolean {
 
 const list = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : typeof v === 'string' && v.trim() ? v.split(',') : []).map(s => s.trim()).filter(Boolean);
 
+/** A hero in a campaign you play in: a note with `nimble: character`. */
+export interface CharacterInfo {
+	path: string;
+	name: string;
+	/** `mine: true`: the hero you play. */
+	mine: boolean;
+	player?: string;
+	ancestry?: string;
+	className?: string;
+	level?: number;
+	hp?: number;
+	hpMax?: number;
+}
+
+const numOf = (v: unknown): number | undefined => {
+	const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() ? Number(v) : NaN;
+	return Number.isFinite(n) ? n : undefined;
+};
+const textOf = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
+
 export class CampaignStore extends Events {
 	campaigns: Campaign[] = [];
 	npcs: NpcInfo[] = [];
+	/** Each campaign's side at the last rebuild, to notice a hand-edited `role:`. */
+	private lastRoles = new Map<string, CampaignRole>();
 	private ready = false;
 
 	constructor(private plugin: NimbleStatblocksPlugin) {
@@ -65,6 +87,11 @@ export class CampaignStore extends Events {
 		}));
 		const folders = this.app.vault.getAllFolders(false).map(f => f.path);
 		this.campaigns = buildCampaigns(notes, folders);
+		// A campaign's side changed (say role: was edited by hand in Properties): redraw what depends on it.
+		const roles = new Map(this.campaigns.map(c => [c.folder, c.role]));
+		const flipped = this.ready && [...roles].some(([f, r]) => this.lastRoles.has(f) && this.lastRoles.get(f) !== r);
+		this.lastRoles = roles;
+		if (flipped) window.setTimeout(() => this.plugin.refreshSide(), 0);
 		this.npcs = [];
 		for (const f of this.app.vault.getMarkdownFiles()) {
 			const cache = this.app.metadataCache.getFileCache(f);
@@ -97,7 +124,81 @@ export class CampaignStore extends Events {
 	}
 
 	of(path: string): Campaign | undefined { return campaignOf(this.campaigns, path); }
+
+	/**
+	 * Which side the plugin should show for a note: its campaign's, or for a note
+	 * outside any campaign (and for views with no note) the active campaign's.
+	 */
+	role(path?: string): CampaignRole {
+		return (path ? this.of(path) : undefined)?.role ?? this.active?.role ?? 'gm';
+	}
+
+	/** Switch a campaign between running it and playing in it. Only `role:` on its home note changes. */
+	async setRole(c: Campaign, role: CampaignRole): Promise<void> {
+		const f = this.app.vault.getAbstractFileByPath(c.home.path);
+		if (!(f instanceof TFile)) return;
+		await this.app.fileManager.processFrontMatter(f, (fm: Record<string, unknown>) => {
+			if (role === 'player') fm.role = 'player';
+			else delete fm.role;
+		});
+		c.role = role; // the metadata cache catches up a moment later
+		this.lastRoles.set(c.folder, role);
+		this.plugin.refreshSide();
+		this.trigger('changed');
+	}
+
+	/** Update a campaign home note's properties (title, level, gm…). Empty values are removed. */
+	async setDetails(c: Campaign, values: Record<string, string | number | undefined>): Promise<void> {
+		const f = this.app.vault.getAbstractFileByPath(c.home.path);
+		if (!(f instanceof TFile)) return;
+		await this.app.fileManager.processFrontMatter(f, (fm: Record<string, unknown>) => {
+			for (const [k, v] of Object.entries(values)) {
+				if (v === undefined || v === '') delete fm[k];
+				else fm[k] = v;
+			}
+		});
+		this.rebuildSoon();
+	}
 	chapterOf(path: string): Chapter | undefined { const c = this.of(path); return c && chapterOf(c, path); }
+
+	/** The heroes in a campaign: every character note in its folder, yours first. */
+	characters(c: Campaign): CharacterInfo[] {
+		const out: CharacterInfo[] = [];
+		for (const f of this.app.vault.getMarkdownFiles()) {
+			if (!f.path.startsWith(c.folder + '/') || this.of(f.path) !== c) continue;
+			const fm = (this.app.metadataCache.getFileCache(f)?.frontmatter ?? {}) as Record<string, unknown>;
+			if (noteKind(fm) !== 'character') continue;
+			out.push({
+				path: f.path,
+				name: textOf(fm.title) ?? f.basename,
+				mine: fmTrue(fm.mine),
+				player: textOf(fm.player),
+				ancestry: textOf(fm.ancestry),
+				className: textOf(fm.class),
+				level: numOf(fm.level),
+				hp: numOf(fm.hp),
+				hpMax: numOf(fm.hp_max),
+			});
+		}
+		return out.sort((a, b) => Number(b.mine) - Number(a.mine) || a.name.localeCompare(b.name, undefined, { numeric: true }));
+	}
+
+	/** The hero you play in `c` (the active campaign by default). */
+	myCharacter(c = this.active): CharacterInfo | undefined {
+		return c ? this.characters(c).find(h => h.mine) : undefined;
+	}
+
+	/** Flag `path` as your hero in its campaign; any other hero there loses the flag. */
+	async setMine(c: Campaign, path: string): Promise<void> {
+		const write = async (p: string, mine: boolean) => {
+			const f = this.app.vault.getFileByPath(p);
+			if (f) await this.app.fileManager.processFrontMatter(f, (fm: Record<string, unknown>) => { if (mine) fm.mine = true; else delete fm.mine; });
+		};
+		// The new hero may be too new for the metadata cache, so it's written directly.
+		await write(path, true);
+		for (const h of this.characters(c)) if (h.mine && h.path !== path) await write(h.path, false);
+		this.rebuildSoon();
+	}
 
 	/** Hero level and count to assume when the party hasn't been entered yet. */
 	defaults(): { level: number; heroes: number } {
@@ -194,8 +295,12 @@ export class CampaignStore extends Events {
 		await this.app.vault.createFolder(p).catch(() => undefined);
 	}
 
-	/** `path`, or `path` with " 2", " 3"… before the extension if it's taken. */
-	private available(path: string, folder = false): string {
+	/**
+	 * `path`, or `path` with " 2", " 3"… before the extension if it's taken
+	 * (ignoring case, as most file systems Obsidian runs on do). For every new
+	 * note or folder the plugin names: campaign notes, character sheets, creature notes.
+	 */
+	available(path: string, folder = false): string {
 		const p = normalizePath(path);
 		const slash = p.lastIndexOf('/');
 		const dot = p.lastIndexOf('.');
@@ -221,19 +326,26 @@ export class CampaignStore extends Events {
 	/** metadataCache fills in a moment after create; rebuild once it has. */
 	private rebuildSoon(): void { window.setTimeout(() => this.rebuild(), 300); }
 
-	async createCampaign(opts: { name: string; level: number; heroes: number; starter: boolean; firstChapter?: string }): Promise<TFile> {
+	async createCampaign(opts: { name: string; level: number; heroes: number; starter: boolean; firstChapter?: string; role?: CampaignRole; gm?: string; character?: string }): Promise<TFile> {
 		const name = safeName(opts.name);
 		const root = normalizePath(this.s.campaignsFolder || 'Campaigns');
 		let folder = `${root}/${name}`;
 		for (let i = 2; this.app.vault.getAbstractFileByPath(folder); i++) folder = `${root}/${name} ${i}`;
 		await this.ensureFolder(folder);
-		const home = await this.createNote(`${folder}/${name}.md`, campaignHome(opts.name.trim() || name, opts.level, opts.heroes));
+		const player = opts.role === 'player';
+		const title = opts.name.trim() || name;
+		const hero = opts.character?.trim();
+		const home = await this.createNote(`${folder}/${name}.md`, player
+			? playerCampaignHome(title, { gm: opts.gm?.trim() || undefined, level: opts.level, character: hero })
+			: campaignHome(title, opts.level, opts.heroes));
 		if (opts.starter) {
-			for (const sub of ['NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets']) await this.ensureFolder(`${folder}/${sub}`);
+			const subs = player ? ['Party', 'Sessions', 'NPCs', 'Locations', 'Assets'] : ['Party', 'NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets'];
+			for (const sub of subs) await this.ensureFolder(`${folder}/${sub}`);
 			const ch = safeName(opts.firstChapter || 'Chapter 1');
-			await this.createNote(`${folder}/${ch}/${ch}.md`, chapterHome(opts.firstChapter || 'Chapter 1', 1, undefined, opts.level));
-			await this.createNote(`${folder}/${ch}/Opening Scene.md`, sceneNote('Opening Scene', 1));
+			await this.createNote(`${folder}/${ch}/${ch}.md`, chapterHome(opts.firstChapter || 'Chapter 1', 1, undefined, player ? undefined : opts.level));
+			if (!player) await this.createNote(`${folder}/${ch}/Opening Scene.md`, sceneNote('Opening Scene', 1));
 		}
+		if (player && hero) await this.createNote(`${folder}/Party/${safeName(hero)}.md`, characterNote(hero, { mine: true, level: opts.level }));
 		// Make it active straight away, with an empty party of its own.
 		this.rebuild();
 		await this.setActive(folder);
@@ -262,20 +374,22 @@ export class CampaignStore extends Events {
 	 * A new note from a starter, in any folder. Scenes in a chapter go to the end
 	 * of it; a map can start with its image already set.
 	 */
-	async createStarter(folder: string, kind: StarterKind, name: string, opts: { image?: string } = {}): Promise<TFile> {
+	async createStarter(folder: string, kind: StarterKind, name: string, opts: { image?: string; mine?: boolean } = {}): Promise<TFile> {
 		const path = this.available(`${joinPath(folder, safeName(name))}.md`);
 		const c = this.of(path);
 		const ch = c && chapterOf(c, path);
+		const side = c?.role ?? this.role();
 		let body: string;
 		switch (kind) {
 			case 'scene': body = sceneNote(name, nextOrder(ch?.scenes ?? [])); break;
-			case 'npc': body = npcNote(name); break;
-			case 'location': body = locationNote(name); break;
+			case 'npc': body = npcNote(name, side); break;
+			case 'location': body = locationNote(name, side); break;
 			case 'monster': body = monsterNote(name); break;
-			case 'handout': body = handoutNote(name); break;
+			case 'handout': body = handoutNote(name, side); break;
+			case 'character': body = characterNote(name, { level: c?.level, mine: opts.mine }); break;
 			case 'session': {
 				const last = c && this.lastScene(c);
-				body = sessionNote(name, new Date().toISOString().slice(0, 10), last?.replace(/^.*\//, '').replace(/\.md$/, ''));
+				body = sessionNote(name, new Date().toISOString().slice(0, 10), last?.replace(/^.*\//, '').replace(/\.md$/, ''), side);
 				break;
 			}
 			case 'map': {

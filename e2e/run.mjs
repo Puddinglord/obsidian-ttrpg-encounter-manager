@@ -11,6 +11,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { launchObsidian } from './harness.mjs';
+import { pillOffenders, PILL_SELECTORS } from './align.mjs';
 import { createServer } from 'node:http';
 import { strToU8, zipSync } from 'fflate';
 
@@ -638,22 +639,35 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Krogg, Goblin King');
 	assert.match(await o.page.locator(`${Q} .record-sub`).textContent(), /Legendary|Solo/);
 	assert.equal(await o.page.locator(`${Q} .record-btn`, { hasText: 'Open in bestiary' }).count(), 1);
-	await o.page.locator(`${Q} .record-hp-btn`).click();
+	// The strip is the sheet's own HP bar (tap it for the calculator), action dots, Wounds and turn pill.
+	await o.page.locator(`${Q} .record-strip .ns-meter.is-hp .ns-meter-bar`).click();
 	await o.page.keyboard.type('10');
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	assert.equal((await creatures(o)).find(c => c.label === krogg.label).hp, krogg.hp - 10, 'HP from the modal');
-	assert.match(await o.page.locator(`${Q} .record-hp-btn`).textContent(), new RegExp(`^${krogg.hp - 10}/`), 'the strip stays live');
-	await o.page.locator(`${Q} .record-turn`).click();
+	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-meter-cur`).textContent()) === String(krogg.hp - 10), { what: 'the strip stays live' });
+	assert.equal(await o.page.locator(`${Q} .record-strip .ns-action-dot`).count(), 0, 'no action dots for a monster');
+	await o.page.locator(`${Q} .record-strip .ns-actions-end`).click();
 	assert.equal((await creatures(o)).find(c => c.label === krogg.label).done, true);
 	await o.page.keyboard.press('Escape');
 	assert.equal(await o.page.locator(Q).count(), 0);
 
-	// A hero's quick look shows actions and Wounds.
+	// A hero's quick look: the sheet's round Wound pips (last a skull) and action dots, one step a tap.
 	await card(o, 'Bram').locator('.creature-label').click();
-	await o.waitFor(async () => (await o.page.locator(`${Q} .record-pip-group.is-wounds`).count()) === 1, { what: 'hero pips' });
-	await o.page.locator(`${Q} .is-wounds .record-pip`).first().click();
-	assert.equal((await creatures(o)).find(c => c.label === 'Bram').wounds, 1);
+	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).count()) > 0, { what: 'hero pips' });
+	assert.equal(await o.page.locator(`${Q} .record-strip .ns-pip.is-skull`).count(), 1);
+	await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).first().click();
+	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').wounds === 1, { what: 'a Wound' });
+	await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).last().click();
+	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').wounds === 2, { what: 'one more Wound, not the skull' });
+	const bramActions = () => o.eval((app, plugin) => plugin.encounters.active.creatures.find(c => c.label === 'Bram').actions ?? 3);
+	const before = await bramActions();
+	await o.page.locator(`${Q} .record-strip .ns-action-dot`).first().click();
+	await o.waitFor(async () => (await bramActions()) === before - 1, { what: 'one action spent' });
+	await o.page.waitForTimeout(600); // the dot shrinks out
+	await o.page.locator(`${Q} .record-strip`).screenshot({ path: join(ARTIFACTS, 'quick-look-hero-strip.png') });
+	const bad = await o.page.evaluate(pillOffenders, { root: `${Q} .record-strip`, tolerance: 1, selectors: PILL_SELECTORS });
+	assert.deepEqual(bad, [], 'misaligned pills in the strip');
 	await o.page.keyboard.press('Escape');
 
 	// End combat: no callout, just Resume / New fight. HP is kept.
@@ -1776,8 +1790,8 @@ async function createFromPicker(o, name, kind) {
 
 test('campaign panel: a new campaign shows its empty starter folders, each with a +', async (o) => {
 	await freshCampaign(o, 'Fresh');
-	assert.deepEqual(await panelSections(o), ['Sessions', 'NPCs', 'Locations', 'Monsters', 'Assets']);
-	for (const name of ['Sessions', 'NPCs', 'Locations', 'Monsters', 'Assets']) {
+	assert.deepEqual(await panelSections(o), ['Sessions', 'NPCs', 'Locations', 'Party', 'Monsters', 'Assets']);
+	for (const name of ['Sessions', 'NPCs', 'Locations', 'Party', 'Monsters', 'Assets']) {
 		const g = cgroup(o, `Campaigns/Fresh/${name}`);
 		assert.equal(await g.locator('.campaign-group-head button.campaign-add-scene').count(), 1, `${name} has a +`);
 		assert.match(await g.locator('.campaign-empty').innerText(), /Nothing here yet/);
@@ -1794,7 +1808,7 @@ test('campaign panel: a new campaign shows its empty starter folders, each with 
 
 	// The dashboard block on the home note lists the same folders.
 	await o.openFile('Campaigns/Fresh/Fresh.md', 'preview');
-	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-campaign-block .campaign-section-name`).count()) === 5, { what: 'folders in the dashboard block' });
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-campaign-block .campaign-section-name`).count()) === 6, { what: 'folders in the dashboard block (Party, NPCs, Locations, Sessions, Monsters, Assets)' });
 	await endCampaign(o, 'Fresh');
 });
 
@@ -2478,6 +2492,27 @@ test('3D dice: crit, miss, max and min play their effects', async (o) => {
 	await o.eval(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
 });
 
+test('3D dice: a crit with Judgment Dice in it still explodes one die at a time', async (o) => {
+	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
+	await diceReset(o, { effects: { crit: 'ring' } });
+	// Faces in order: primary 6 (crit), explosions 6 then 2, then Judgment Dice 4 and 3.
+	const st = await throwAndLand(o, (app, plugin) => {
+		const faces = [6, 6, 2, 4, 3];
+		let i = 0;
+		const real = Math.random;
+		Math.random = () => (faces[i++ % faces.length] - 0.5) / 6;
+		try {
+			plugin.rollWithEdge({ dice: { count: 1, sides: 6, modifier: 2 }, edge: 0, attack: true, extras: [{ label: 'Judgment Dice', count: 2, sides: 6, damageType: 'radiant' }] }, 'Crit with Judgment Dice');
+		} finally { Math.random = real; }
+	});
+	assert.equal(st.segmentsMs.length - 1, 2, 'two explosions, each after the one before');
+	assert.equal(st.effects, 2, 'a ring per explosion');
+	assert.deepEqual([...st.shown].sort(), [2, 3, 4, 6, 6], 'the Judgment Dice are on the table too');
+	const log = (await o.eval((app, plugin) => plugin.settings.rollLog))[0];
+	assert.equal(log.total, 6 + 6 + 2 + 4 + 3 + 2);
+	await diceReset(o);
+});
+
 test('3D dice: every effect plays (no shader errors), on light and dark themes', async (o) => {
 	if (!(await webgl(o))) { console.log('      (skipped: no WebGL in this run)'); return; }
 	const ids = await o.eval(() => null) ?? ['ring', 'sparks', 'embers', 'stars', 'twinkle', 'shooting', 'nebula', 'supernova', 'arcane', 'confetti', 'smoke', 'shatter', 'gloom'];
@@ -2757,6 +2792,1077 @@ test('settings: a change synced from another device is picked up, and a damaged 
 	o.consoleErrors.length = errorsBefore; // the damaged file is reported to the console on purpose
 });
 
+test('player campaign: roster, lore cards, battle notes, GM tools hidden, switch sides', async (o) => {
+	try {
+		await resetEncounter(o);
+		await o.eval(async (app, plugin) => {
+			document.querySelectorAll('.menu').forEach(n => n.remove());
+			app.vault.setConfig('trashOption', 'local');
+			const old = app.vault.getAbstractFileByPath('Campaigns/Ironbrow Saga');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Ironbrow Saga', level: 2, heroes: 4, starter: true, role: 'player', gm: 'Sam', character: 'Thorga' });
+			await plugin.openCampaignView();
+		});
+		await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-hero.is-mine`).count()) >= 1, { what: 'my character in the roster' });
+		assert.match(await o.page.locator(`${CP} .campaign-role-pill`).first().innerText(), /^player$/i);
+		assert.match(await o.page.locator(`${CP} .campaign-hero.is-mine`).first().innerText(), /Thorga[\s\S]*you/i);
+		assert.deepEqual(await o.page.evaluate((cp) => [...(document.querySelector(cp)?.querySelectorAll('.campaign-section-name') ?? [])].map(e => e.textContent), CP), ['Sessions', 'NPCs', 'Locations', 'Party', 'Assets']);
+		const home = await read(o, 'Campaigns/Ironbrow Saga/Ironbrow Saga.md');
+		assert.match(home, /role: player/);
+		assert.match(home, /gm: "Sam"/);
+		assert.match(await read(o, 'Campaigns/Ironbrow Saga/Party/Thorga.md'), /nimble: character[\s\S]*mine: true[\s\S]*```nimble-sheet/);
+
+		// GM tools are out of the palette, and the tracker says why.
+		assert.equal(await o.eval((app, plugin) => plugin.playerView()), true);
+		assert.equal(await o.eval((app) => app.commands.findCommand('nimble-gm:open-tracker').checkCallback(true)), false);
+		assert.equal(await o.eval((app) => app.commands.findCommand('nimble-gm:build-encounter').checkCallback(true)), false);
+
+		// Session notes with battle notes: names, counts, outcome; no difficulty, no Run.
+		await o.eval(async (app) => {
+			await app.vault.create('Campaigns/Ironbrow Saga/Sessions/Session 1.md',
+				'---\nnimble: session\n---\n# Session 1\n\nWe met `nimble:Goblin Taskmaster` at the ford.\n\n```nimble-encounter\nname: Ambush at the ford\noutcome: won\nloot: 40 gp\nmonsters:\n- 4 Goblin\n- Goblin Taskmaster\n- Mystery Hag\nnotes: The taskmaster fled north.\n```\n');
+		});
+		await o.openFile('Campaigns/Ironbrow Saga/Sessions/Session 1.md', 'preview');
+		const block = o.page.locator(`${R} .nimble-battle-notes`);
+		await o.waitFor(async () => (await block.count()) === 1, { what: 'battle notes' });
+		assert.match(await block.locator('.battle-outcome').innerText(), /won/i);
+		assert.equal(await block.locator('.nimble-difficulty').count(), 0);
+		assert.equal(await block.locator('button', { hasText: 'Run' }).count(), 0);
+		assert.match(await block.innerText(), /4×[\s\S]*Goblin[\s\S]*Mystery Hag[\s\S]*40 gp[\s\S]*fled north/);
+		// References are names and lore: no level, no + to add.
+		const ref = o.page.locator(`${R} p .nimble-inline-ref`).first();
+		assert.equal(await ref.locator('.nimble-inline-level').count(), 0);
+		assert.equal(await ref.locator('.nimble-inline-add-btn').count(), 0);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'player-session.png') });
+
+		// A quick look is a lore card.
+		await ref.locator('.nimble-inline-name').click();
+		await o.waitFor(async () => (await o.page.locator('.modal .nimble-lore-card').count()) === 1, { what: 'lore card' });
+		assert.equal(await o.page.locator('.modal .nimble-lore-card .stat-badge').count(), 0);
+		assert.equal(await o.page.locator('.modal .nimble-lore-card .monster-attacks, .modal .nimble-lore-card .ability').count(), 0);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'player-lore.png') });
+		await o.page.keyboard.press('Escape');
+
+		// The outcome chip changes the outcome in the note.
+		await block.locator('.battle-outcome').click();
+		await clickMenu(o, 'Fled');
+		await o.waitFor(async () => /outcome: fled/.test(await read(o, 'Campaigns/Ironbrow Saga/Sessions/Session 1.md')), { what: 'outcome written' });
+
+		// The bestiary is names and lore.
+		await o.eval((app, plugin) => plugin.openBestiary());
+		await o.waitFor(async () => (await o.page.locator('.nimble-bestiary.is-lore').count()) === 1, { what: 'lore bestiary' });
+		assert.equal(await o.page.locator('.nimble-bestiary .bestiary-level-input').count(), 0);
+		assert.equal(await o.page.locator('.nimble-bestiary .bestiary-detail .stat-badge').count(), 0);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'player-bestiary.png') });
+
+		// Switch sides from Campaign settings: the same block is a GM encounter again.
+		await o.page.locator(`${CP} .campaign-switch-btn`).first().click();
+		assert.ok((await menuTitles(o)).includes('Campaign settings…'));
+		await clickMenu(o, 'Switch to GM view');
+		await o.waitFor(async () => /role/.test(await read(o, 'Campaigns/Ironbrow Saga/Ironbrow Saga.md')) === false, { what: 'role removed' });
+		await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-role-pill`).first().innerText()) === 'GM', { what: 'GM pill' });
+		await o.openFile('Campaigns/Ironbrow Saga/Sessions/Session 1.md', 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .nimble-encounter-block .nimble-difficulty`).count()) === 1, { what: 'GM encounter block' });
+		assert.equal(await o.page.locator(`${R} .nimble-battle-notes`).count(), 0);
+	} finally {
+		await o.eval(async (app, plugin) => {
+			const f = app.vault.getAbstractFileByPath('Campaigns/Ironbrow Saga');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+			app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach());
+		});
+		await o.page.waitForTimeout(400);
+	}
+});
+
+// ---------------------------------------------------------------------------
+// Character sheet
+
+const SHEET_NOTE = 'Characters/Thorga Ironbrow.md';
+const sheetFm = (o) => o.eval((app, _p, path) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter ?? null, SHEET_NOTE);
+const setTheme = (o, theme) => o.eval((app, plugin, theme) => { document.body.classList.remove('theme-light', 'theme-dark'); document.body.classList.add(theme); }, theme);
+
+/** Camp on a sheet, then pick Field rest, Safe rest or Level up. */
+async function camp(o, sheet, which) {
+	await sheet.locator('.ns-camp').first().click();
+	const d = o.page.locator('.modal.ns-camp-dialog');
+	await d.waitFor({ timeout: 3000 });
+	await o.page.waitForTimeout(200);
+	await d.screenshot({ path: join(ARTIFACTS, `camp-${which.toLowerCase().replace(/\s+/g, '-')}.png`) });
+	await d.locator('.ns-camp-card', { hasText: which }).click();
+	await d.waitFor({ state: 'detached', timeout: 3000 });
+}
+
+/** Roll from the roll dialog a sheet roll opens. */
+async function rollThrough(o) {
+	const d = o.page.locator('.modal.nimble-roll-dialog');
+	await d.waitFor({ timeout: 3000 });
+	await d.locator('.rd-roll').click();
+	await d.waitFor({ state: 'detached', timeout: 3000 });
+}
+
+/** Keep the fixture note as it was, whatever a test did to it. */
+async function withSheetNote(o, fn) {
+	const original = await o.eval((app, _p, path) => app.vault.cachedRead(app.vault.getAbstractFileByPath(path)), SHEET_NOTE);
+	try {
+		await fn();
+	} finally {
+		await o.eval(async (app, _p, [path, text]) => { await app.vault.modify(app.vault.getAbstractFileByPath(path), text); }, [SHEET_NOTE, original]);
+		await setTheme(o, 'theme-light');
+		await o.page.waitForTimeout(300);
+	}
+}
+
+/** A note's frontmatter now. */
+const sheetFmOf = (o, path) => o.eval((app, _p, path) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter ?? null, path);
+
+/** waitFm for any note. */
+async function waitFmAt(o, path, check, what) {
+	let fm = null;
+	await o.waitFor(async () => { fm = await o.eval((app, _p, path) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter ?? null, path); return fm && check(fm); }, { what });
+	return fm;
+}
+
+/** Wait for the note's frontmatter to satisfy `check` (writes land through processFrontMatter, then the cache). */
+async function waitFm(o, check, what) {
+	await o.waitFor(async () => { const fm = await sheetFm(o); return fm && check(fm) ? fm : null; }, { what });
+	return sheetFm(o);
+}
+
+test('character sheet: renders from frontmatter, rolls a save, takes damage, adds an item through the picker', async (o) => {
+	await resetEncounter(o);
+	await withSheetNote(o, async () => {
+		await o.openFile(SHEET_NOTE);
+		const p = o.page;
+		const sheet = p.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		const info = await p.evaluate((R) => {
+			const s = document.querySelector(`${R} .nimble-sheet`);
+			const txt = (sel) => [...s.querySelectorAll(sel)].map(e => e.textContent.trim());
+			return {
+				name: s.querySelector('.ns-name')?.textContent,
+				line: s.querySelector('.ns-line')?.textContent,
+				stats: txt('.ns-stat-value'),
+				// The stat's name (its ▲ / ▼ badge is a child of the label).
+				adv: [...s.querySelectorAll('.ns-stat.is-adv .ns-stat-label')].map(e => e.firstChild.textContent.trim()),
+				dis: [...s.querySelectorAll('.ns-stat.is-dis .ns-stat-label')].map(e => e.firstChild.textContent.trim()),
+				saveMarks: [...s.querySelectorAll('.ns-stat-save polygon')].map(pg => {
+					// Which way it points, and how far its centroid is from the badge's centre (should be ~0).
+					const b = pg.closest('.ns-stat-save').getBoundingClientRect();
+					const r = pg.getBoundingClientRect();
+					const up = pg.getAttribute('points').split(' ')[0].split(',')[1] < 5;
+					const cy = up ? r.top + (2 * r.height) / 3 : r.top + r.height / 3;
+					return { dir: up ? '▲' : '▼', dx: Math.abs((r.left + r.right) / 2 - (b.left + b.right) / 2), dy: Math.abs(cy - (b.top + b.bottom) / 2) };
+				}),
+				hp: s.querySelector('.ns-hp-cur')?.textContent + '/' + s.querySelector('.ns-hp-max')?.textContent,
+				armor: s.querySelector('.ns-box-armor .ns-box-value')?.textContent,
+				wounds: s.querySelectorAll('.ns-pip').length,
+				woundsOn: s.querySelectorAll('.ns-pip.is-on').length,
+				skills: txt('.ns-skill-total'),
+				tabs: txt('.ns-tab-label'),
+				conds: txt('.ns-cond-name'),
+				attacks: txt('.ns-row.is-weapon .ns-roll'),
+				propsHidden: [...document.querySelectorAll(`${R} .metadata-container`)].every(m => getComputedStyle(m).display === 'none'),
+				inner: s.innerHTML.includes('<script'),
+			};
+		}, R);
+		assert.equal(info.name, 'Thorga Ironbrow');
+		assert.equal(info.line, 'Dwarf · Berserker · Level 3');
+		assert.deepEqual(info.stats, ['+2', '+2', '−1', '0']);
+		assert.deepEqual(info.adv, ['STR']);
+		assert.deepEqual(info.dis, ['INT']);
+		assert.deepEqual(info.saveMarks.map(m => m.dir), ['▲', '▼'], 'a ▲ / ▼ badge only on the advantaged and disadvantaged saves');
+		for (const m of info.saveMarks) assert.ok(m.dx < 0.6 && m.dy < 0.6, `${m.dir} sits on its badge's centre by its centroid: ${JSON.stringify(m)}`);
+		assert.equal(info.hp, '20/32');
+		assert.equal(info.armor, '8', 'Rusty Mail 6+DEX (max 2)');
+		assert.equal(info.wounds, 7, 'Dwarf: +1 max Wounds');
+		assert.equal(info.woundsOn, 1);
+		assert.equal(info.skills[6], '+4', 'Might: STR 2 + 2 points');
+		assert.deepEqual(info.tabs, ['Actions', 'Features', 'Inventory', 'Notes']);
+		assert.deepEqual(info.conds, ['Dazed']);
+		assert.deepEqual(info.attacks, ['1d10+2', '1d6+2']);
+		assert.ok(info.propsHidden, 'the Properties box is hidden on character notes');
+		await p.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-light.png') });
+		await sheet.locator('.ns-stats').screenshot({ path: join(ARTIFACTS, 'sheet-stats.png') });
+
+		// Show properties, then hide them again.
+		await sheet.locator('.ns-head-actions [aria-label="Show properties"]').click();
+		await p.waitForTimeout(150);
+		assert.ok(await p.evaluate((R) => [...document.querySelectorAll(`${R} .metadata-container`)].some(m => getComputedStyle(m).display !== 'none'), R), 'properties shown');
+		await sheet.locator('.ns-head-actions [aria-label="Hide properties"]').click();
+
+		// A STR save: the roll dialog starts at advantage (Berserker ▲); roll it, labelled with the hero.
+		await sheet.locator('.ns-stat.is-adv .ns-stat-box').click();
+		const dlg = p.locator('.modal.nimble-roll-dialog');
+		await dlg.waitFor();
+		// It opens on a STR check: no advantage (that's for saves).
+		assert.equal(await dlg.locator('.rd-mode-btn.is-on').innerText(), 'Check');
+		assert.equal(await dlg.locator('.modal-title').textContent(), 'Thorga Ironbrow · STR check');
+		assert.equal(await dlg.locator('.rd-edge-value').textContent(), 'Normal');
+		// Save: STR is Thorga's ▲ save, so it goes to advantage. Nothing moves when you switch.
+		const h0 = await dlg.evaluate(el => el.getBoundingClientRect().height);
+		await dlg.locator('.rd-mode-btn', { hasText: 'Save' }).click();
+		assert.equal(await dlg.evaluate(el => el.getBoundingClientRect().height), h0, 'the dialog keeps its height switching Check → Save');
+		assert.equal(await dlg.locator('.modal-title').textContent(), 'Thorga Ironbrow · STR save');
+		assert.equal(await dlg.locator('.rd-edge-value').textContent(), 'Advantage');
+		assert.equal(await dlg.locator('.rd-seg-btn.is-on').textContent(), '+1');
+		await dlg.screenshot({ path: join(ARTIFACTS, 'roll-dialog-advantage.png') });
+		const segBad = await p.evaluate(pillOffenders, { root: '.modal.nimble-roll-dialog', tolerance: 1, selectors: PILL_SELECTORS });
+		assert.deepEqual(segBad, [], 'misaligned pills in the roll dialog');
+		await dlg.locator('.rd-roll').click();
+		await o.waitFor(() => o.eval((app, plugin) => plugin.settings.rollLog[0]?.label ?? null), { what: 'a save in the roll log' });
+		const save = (await o.eval((app, plugin) => plugin.settings.rollLog))[0];
+		assert.match(save.label, /^Thorga Ironbrow · STR save/);
+		assert.equal(save.expression, '1d20+2 adv 1');
+		const [kept, dropped] = save.detail.match(/^\[(\d+)\] \(dropped (\d+)\)/).slice(1).map(Number);
+		assert.ok(kept >= dropped, 'keeps the higher d20');
+		assert.equal(save.total, kept + 2);
+
+		// A skill check and an attack roll.
+		await sheet.locator('.ns-skill', { hasText: 'Might' }).click();
+		await rollThrough(o);
+		assert.match((await o.eval((app, plugin) => plugin.settings.rollLog))[0].label, /Thorga Ironbrow · Might check/);
+		await sheet.locator('.ns-row.is-weapon', { hasText: 'Battleaxe' }).locator('.ns-roll').click();
+		await rollThrough(o);
+		assert.equal((await o.eval((app, plugin) => plugin.settings.rollLog))[0].label, 'Thorga Ironbrow · Battleaxe');
+
+		// Damage through the HP pad: 5 off 20.
+		await sheet.locator('.ns-hp').click();
+		await p.locator('.nimble-hp-pad').waitFor();
+		await p.keyboard.type('5');
+		await p.keyboard.press('Enter');
+		let fm = await waitFm(o, f => f.hp === 15, 'hp 15 in the frontmatter');
+		assert.equal(fm.hp, 15);
+		await p.waitForFunction((R) => document.querySelector(`${R} .ns-hp-cur`)?.textContent === '15', R);
+
+		// Temp HP soaks first.
+		await sheet.locator('.ns-hp').click();
+		await p.locator('.nimble-hp-pad .hp-pad-mode', { hasText: 'Temp' }).click();
+		await p.keyboard.type('4');
+		await p.keyboard.press('Enter');
+		await waitFm(o, f => f.temp_hp === 4, 'temp hp');
+		await sheet.locator('.ns-hp').click();
+		await p.keyboard.type('6');
+		await p.keyboard.press('Enter');
+		fm = await waitFm(o, f => f.temp_hp === 0 && f.hp === 13, 'temp first, then hp');
+
+		// A wound pip.
+		await sheet.locator('.ns-pip').nth(1).click();
+		await waitFm(o, f => f.wounds === 2, 'two wounds');
+
+		// Inventory: add an item through Spotlight's filtered picker.
+		await sheet.locator('.ns-tab[data-tab="inventory"]').click();
+		await sheet.locator('.ns-tabpanel-inventory .ns-add.is-big').click();
+		const S = '.modal-container .prompt.nimble-spotlight.is-picker';
+		await p.locator(`${S} .prompt-input`).waitFor();
+		const chips = await p.locator(`${S} .nimble-spotlight-chip`).allInnerTexts();
+		assert.ok(chips.includes('All') && chips.includes('Weapons'), `item filter chips: ${chips}`);
+		await p.locator(`${S} .nimble-spotlight-chip`, { hasText: 'Weapons' }).click();
+		const weaponsOnly = await p.locator(`${S} .nimble-spot-tag`).allInnerTexts();
+		assert.ok(weaponsOnly.length && weaponsOnly.every(t => /item/i.test(t)), 'only items');
+		await p.locator(`${S} .nimble-spotlight-chip`, { hasText: 'All' }).click();
+		await p.locator(`${S} .prompt-input`).fill('healing potion');
+		await p.waitForTimeout(200);
+		assert.equal((await p.locator(`${S} .nimble-spot-name`).first().innerText()).trim(), 'Healing Potion');
+		await p.keyboard.press('Enter');
+		fm = await waitFm(o, f => f.inventory?.includes('Healing Potion'), 'the potion in the inventory');
+		assert.equal(await p.locator(S).count(), 0, 'picker closes');
+		await p.waitForFunction((R) => [...document.querySelectorAll(`${R} .ns-row.is-item .ns-row-name`)].some(e => e.textContent === 'Healing Potion'), R);
+
+		// Quantity stepper and equip toggle.
+		const potion = sheet.locator('.ns-row.is-item', { hasText: 'Healing Potion' });
+		await potion.locator('.ns-step[aria-label^="One more"]').click();
+		fm = await waitFm(o, f => f.inventory?.some(e => e?.name === 'Healing Potion' && e.qty === 2), 'two potions');
+		await sheet.locator('.ns-row.is-item', { hasText: 'Rusty Mail' }).locator('.ns-equip').click();
+		await waitFm(o, f => f.inventory?.includes('Rusty Mail'), 'mail unequipped');
+		await p.waitForFunction((R) => document.querySelector(`${R} .ns-box-armor .ns-box-value`)?.textContent === '2', R);
+
+		// Expand a compendium entry inline: text, source, page.
+		await sheet.locator('.ns-tab[data-tab="features"]').click();
+		await sheet.locator('.ns-row', { hasText: 'Death Blow' }).locator('.ns-row-toggle').click();
+		const body = await sheet.locator('.ns-row.is-open .ns-row-body').innerText();
+		assert.match(body, /Whenever you crit/);
+		assert.match(body, /Berserker 3\.0/);
+		await sheet.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-features.png') });
+
+		// Spotlight's normal search finds compendium entries and opens their card.
+		await p.keyboard.press('Escape');
+		await o.eval((app, plugin) => plugin.toggleSpotlight());
+		await p.locator('.modal-container .prompt.nimble-spotlight .prompt-input').fill('battleaxe');
+		await p.waitForTimeout(200);
+		const row = p.locator('.modal-container .prompt.nimble-spotlight .suggestion-item.spot-compendium', { hasText: 'Battleaxe' });
+		await row.first().click();
+		await p.locator('.modal.nimble-cmp-modal').waitFor();
+		assert.match(await p.locator('.modal.nimble-cmp-modal').innerText(), /1d10\+STR slashing/);
+		await p.keyboard.press('Escape');
+
+		// Edit mode: change a stat.
+		await sheet.locator('.ns-head-actions [aria-label="Edit details and stats"]').click();
+		await p.waitForTimeout(150);
+		await sheet.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-editing.png'), clip: undefined });
+		// Moving between fields keeps going while the sheet redraws: type a height, Tab, and keep typing the weight.
+		const height = sheet.locator('input[data-key="height"]');
+		await height.click();
+		await p.keyboard.press('ControlOrMeta+a');
+		await p.keyboard.type('4\'6"');
+		await p.keyboard.press('Tab');
+		await p.keyboard.type('185 lb');
+		await waitFm(o, f => f.height === '4\'6"', 'height saved on Tab');
+		await p.waitForTimeout(400); // the redraw from saving the height has happened
+		const focused = await p.evaluate(() => ({ key: document.activeElement?.getAttribute('data-key'), value: document.activeElement?.value }));
+		assert.deepEqual(focused, { key: 'weight', value: '185 lb' }, 'still in Weight, with what was typed');
+		await p.keyboard.press('Tab');
+		await waitFm(o, f => f.weight === '185 lb', 'weight saved');
+		const dex = sheet.locator('.ns-stat-input').nth(1);
+		await dex.fill('3');
+		await dex.press('Enter');
+		await dex.evaluate(el => el.blur());
+		await waitFm(o, f => f.dex === 3, 'dex 3');
+		await sheet.locator('.ns-head-actions [aria-label="Done editing"]').click();
+
+		// Safe rest restores HP and heals a Wound.
+		await camp(o, sheet, 'Safe rest');
+		await p.locator('.modal-container button.mod-cta', { hasText: 'Rest' }).click();
+		fm = await waitFm(o, f => f.hp === 32, 'rested');
+		assert.equal(fm.wounds, 1);
+		assert.equal(fm.resources['Fury Dice'], 0, 'rage dice empty after a rest');
+
+		// Field rest: make camp with 2 Hit Dice (each d12 max + STR 2) after taking 30.
+		await o.eval(async (app, _p, path) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), fm => { fm.hp = 2; }); }, SHEET_NOTE);
+		await waitFm(o, f => f.hp === 2, 'hurt');
+		await camp(o, sheet, 'Field rest');
+		await p.locator('.nimble-sheet-dialog .ns-rest-pop .ns-step[aria-label="One more die"]').click();
+		await p.locator('.nimble-sheet-dialog .ns-rest-pop button', { hasText: 'Make camp' }).click();
+		fm = await waitFm(o, f => f.hp === 30, 'healed 28 by making camp');
+		assert.equal(fm.hit_dice, 3);
+
+		// Level up: a carousel wizard. Try a manual roll, then take the average (d12: 8), pick a Savage Arsenal option,
+		// raise a key stat and a skill, and check the review before anything is written.
+		await camp(o, sheet, 'Level up');
+		const lv = p.locator('.modal.nimble-levelup');
+		await lv.waitFor();
+		assert.match(await lv.locator('.lu-panel.is-active').innerText(), /Enduring Rage/, 'level 4 features listed');
+		const steps = await lv.locator('.lu-dot').allInnerTexts();
+		assert.deepEqual(steps.map(t => t.trim()), ['Overview', 'Hit points', 'Savage Arsenal', 'Stats', 'Skills', 'Review']);
+		const next = () => lv.locator('.lu-next').click();
+		await next();
+		// Hit points have to be decided before moving on.
+		assert.equal(await lv.locator('.lu-next').isDisabled(), true);
+		await lv.locator('.lu-hp-input').fill('20');
+		assert.equal(await lv.locator('.lu-next').isDisabled(), true, 'a roll above the die is refused');
+		await lv.locator('.lu-hp-input').fill('9');
+		assert.match(await lv.locator('.lu-hp-new').innerText(), /^41$/);
+		await lv.locator('.lu-hp-option', { hasText: 'Take the average' }).click();
+		assert.match(await lv.locator('.lu-hp-new').innerText(), /^40$/);
+		await next();
+		await lv.locator('.lu-panel.is-active .lu-option', { hasText: 'Whirlwind' }).click();
+		await next();
+		await lv.locator('.lu-panel.is-active .lu-stat', { hasText: 'DEX' }).click();
+		await next();
+		// The new point goes to Stealth, and a point moves from Insight to Stealth too.
+		const skill = (name) => lv.locator('.lu-panel.is-active .lu-skill-row', { hasText: name });
+		await skill('Stealth').locator('.lu-step-btn.is-plus').click();
+		assert.equal(await skill('Arcana').locator('.lu-step-btn.is-plus').isDisabled(), true, 'nothing left to place');
+		assert.equal(await skill('Arcana').locator('.lu-step-btn').first().isDisabled(), true, 'no points of yours on Arcana to move');
+		await skill('Insight').locator('.lu-step-btn').first().click();
+		await skill('Stealth').locator('.lu-step-btn.is-plus').click();
+		assert.match(await skill('Stealth').innerText(), /\+2/);
+		// Going back keeps what was chosen.
+		await lv.locator('.lu-dot', { hasText: 'Savage Arsenal' }).click();
+		assert.equal(await lv.locator('.lu-panel.is-active .lu-option.is-chosen').count(), 1);
+		await lv.locator('.lu-dot', { hasText: 'Review' }).click();
+		const review = await lv.locator('.lu-panel.is-active .lu-review').innerText();
+		assert.match(review, /32 → 40/);
+		assert.match(review, /Whirlwind/);
+		assert.match(review, /DEX/);
+		assert.match(review, /Stealth/);
+		assert.equal((await sheetFm(o)).level, 3, 'nothing written before the button');
+		await lv.screenshot({ path: join(ARTIFACTS, 'sheet-level-up.png') });
+		await next();
+		fm = await waitFm(o, f => f.level === 4, 'level 4');
+		assert.equal(fm.hp_max, 40);
+		assert.equal(fm.hp, 38);
+		assert.ok(fm.features.includes('Whirlwind'));
+		assert.equal(fm.skills.stealth, 2);
+		assert.equal(fm.skills.insight, 1);
+		assert.equal(fm.dex, 4, 'DEX 3 (set earlier in this test) +1');
+		await lv.locator('.lu-celebrate button').click();
+
+		// Screens: desktop dark, and the Character panel.
+		await sheet.locator('.ns-tab[data-tab="actions"]').click();
+		await setTheme(o, 'theme-dark');
+		await p.waitForTimeout(250);
+		await p.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-dark.png') });
+		await sheet.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-dark-crop.png') });
+		await setTheme(o, 'theme-light');
+		await sheet.locator('.ns-tab[data-tab="inventory"]').click();
+		await sheet.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-inventory.png') });
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:open-my-character'));
+		await p.locator('.nimble-character-view .nimble-sheet').waitFor();
+		assert.equal(await p.locator('.nimble-character-view .ns-name').innerText(), 'Thorga Ironbrow');
+		await p.waitForTimeout(700); // the sidebar slides open
+		const panel = await p.evaluate(() => { const v = document.querySelector('.nimble-character-view'); const sh = v.querySelector('.nimble-sheet'); return { view: v.clientWidth, sheet: sh.scrollWidth }; });
+		assert.ok(panel.sheet <= panel.view, `the sheet fits the panel: ${JSON.stringify(panel)}`);
+		await p.screenshot({ path: join(ARTIFACTS, 'sheet-panel.png') });
+		const clippedInPanel = await p.evaluate(() => [...document.querySelectorAll('.nimble-character-view :is(.ns-box-label, .ns-skill-name, .ns-chip-label, .ns-stat-label, .ns-reaction-name)')]
+			.filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent));
+		assert.deepEqual(clippedInPanel, [], 'labels cut off in the Character panel');
+		// Tapping the sheet never scrolls the panel: an action dot and a wound pip, scrolled down.
+		const scroller = await p.evaluateHandle(() => {
+			const sheet = document.querySelector('.nimble-character-view .nimble-sheet');
+			for (let el = sheet.parentElement; el; el = el.parentElement) if (el.scrollHeight > el.clientHeight + 10 && /auto|scroll/.test(getComputedStyle(el).overflowY)) return el;
+			return null;
+		});
+		for (const [what, sel] of [['an action dot', '.ns-action-dot'], ['a wound pip', '.ns-pip:not(.is-skull)']]) {
+			// The target in plain view (so the click needn't scroll to it), with the panel scrolled well down.
+			await p.evaluate(([sc, sel]) => { const t = document.querySelector(`.nimble-character-view ${sel}`); sc.scrollTop += t.getBoundingClientRect().top - sc.getBoundingClientRect().top - 220; }, [scroller, sel]);
+			await p.waitForTimeout(150);
+			const before = await p.evaluate((sc) => sc.scrollTop, scroller);
+			assert.ok(before > 100, `scrolled down first (${before})`);
+			const fmBefore = JSON.stringify(await sheetFm(o));
+			await p.locator(`.nimble-character-view ${sel}`).last().click();
+			await o.waitFor(async () => JSON.stringify(await sheetFm(o)) !== fmBefore, { what: `${what} changes the note` });
+			await p.waitForTimeout(400);
+			assert.equal(await p.evaluate((sc) => sc.scrollTop, scroller), before, `tapping ${what} leaves the panel where it was`);
+		}
+		// Thin: End turn is an "End" pill on the dots' row, at its right edge.
+		const end = await p.evaluate(() => {
+			const card = document.querySelector('.nimble-character-view .ns-actions-card');
+			const b = card.querySelector('.ns-actions-end');
+			const dot = card.querySelector('.ns-action-dot');
+			const r = b.getBoundingClientRect(), c = card.getBoundingClientRect(), d = dot.getBoundingClientRect();
+			return { text: b.innerText.trim(), sameRow: Math.abs((r.top + r.bottom) / 2 - (d.top + d.bottom) / 2) < 4, right: Math.round(c.right - r.right) };
+		});
+		assert.deepEqual({ text: end.text, sameRow: end.sameRow }, { text: 'End', sameRow: true }, JSON.stringify(end));
+		assert.ok(end.right <= 2, `End sits at the card's right edge (${end.right}px)`);
+		// The rest of the panel, a screen at a time.
+		for (const [i, sel] of [['2', '.ns-turn'], ['3', '.ns-reactions']].entries()) {
+			if (sel[1] === '.ns-reactions') await p.locator('.nimble-character-view .ns-tab[data-tab="actions"]').click();
+			await p.evaluate((sel) => document.querySelector(`.nimble-character-view ${sel}`)?.scrollIntoView({ block: 'start' }), sel[1]);
+			await p.waitForTimeout(150);
+			const box = await p.locator('.nimble-character-view').boundingBox();
+			await p.screenshot({ path: join(ARTIFACTS, `sheet-panel-${sel[0]}.png`), clip: box });
+			void i;
+		}
+		await o.eval((app) => app.workspace.getLeavesOfType('nimble-character').forEach(l => l.detach()));
+	});
+});
+
+test('character sheet: Live Preview renders it too, and New character writes a note', async (o) => {
+	await withSheetNote(o, async () => {
+		await o.openFile(SHEET_NOTE, 'source');
+		await o.page.locator(`${S} .nimble-sheet`).waitFor();
+		assert.equal(await o.page.locator(`${S} .nimble-sheet .ns-name`).innerText(), 'Thorga Ironbrow');
+		assert.ok(await o.page.evaluate((S) => [...document.querySelectorAll(`${S} .metadata-container`)].every(m => getComputedStyle(m).display === 'none'), S), 'properties hidden in Live Preview');
+		await o.page.locator(`${S} .nimble-sheet`).screenshot({ path: join(ARTIFACTS, 'sheet-live-preview.png') });
+	});
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+	const m = o.page.locator('.modal.nimble-newchar-modal');
+	await m.waitFor();
+	await m.locator('input[type="text"]').first().fill('Wren Ashdown');
+	const selects = m.locator('select');
+	await selects.nth(0).selectOption('Human');
+	await selects.nth(1).selectOption('Mage');
+	await selects.nth(2).selectOption('Min-Max');
+	assert.match(await m.locator('.nimble-newchar-preview').innerText(), /10 HP/);
+	await m.screenshot({ path: join(ARTIFACTS, 'sheet-new-character.png') });
+	await m.locator('button.mod-cta', { hasText: 'Create' }).click();
+	// It goes to the active campaign's Party folder, or the vault root when there's none (earlier tests may leave one active).
+	const WREN = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Wren Ashdown')?.path ?? null), { what: 'the new note' });
+	const made = await o.waitFor(() => o.eval((app, _p, p) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter ?? null, WREN), { what: 'its frontmatter' });
+	assert.equal(made.nimble, 'character');
+	assert.equal(made.class, 'Mage');
+	assert.equal(made.int, 3);
+	assert.equal(made.hp, 10);
+	assert.ok(made.inventory.some(i => (i.name ?? i) === 'Adventurer’s Garb'));
+	await o.openFile(WREN);
+	const wren = o.page.locator(`${R} .nimble-sheet`);
+	await wren.waitFor();
+	await wren.locator('.ns-tab[data-tab="spells"]').click();
+	const spells = await wren.locator('.ns-row.is-spell .ns-row-name').allInnerTexts();
+	assert.ok(spells.includes('Flame Dart'), `a level 1 Mage knows the Fire cantrips: ${spells}`);
+	await wren.locator('.ns-row.is-spell', { hasText: 'Flame Dart' }).locator('.ns-roll').click();
+	await rollThrough(o);
+	assert.equal((await o.eval((app, plugin) => plugin.settings.rollLog))[0].label, 'Wren Ashdown · Flame Dart');
+	await wren.screenshot({ path: join(ARTIFACTS, 'sheet-mage-spells.png') });
+	const text = await o.eval((app, _p, p) => app.vault.cachedRead(app.vault.getAbstractFileByPath(p)), WREN);
+	assert.match(text, /```nimble-sheet\n```/);
+	assert.match(text, /## Backstory/);
+	await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f); }, WREN);
+});
+
+test('character sheet: Judgment Dice are rolled when gained and all go on the next attack; Fury Dice stay while Raging', async (o) => {
+	const p = o.page;
+	await resetEncounter(o);
+	const ODO = 'Characters/Odo Brightshield.md';
+	const R = '.markdown-reading-view';
+	const bad = [];
+	const measure = async (root) => bad.push(...await p.evaluate(pillOffenders, { root, tolerance: 1, selectors: PILL_SELECTORS }));
+	try {
+		await o.eval(async (app, _p, path) => {
+			const old = app.vault.getAbstractFileByPath(path);
+			if (old) await app.vault.delete(old);
+			await app.vault.create(path, '---\nnimble: character\nclass: Oathsworn\nlevel: 1\nstr: 2\ndex: 0\nint: 0\nwil: 2\nhp: 17\nhp_max: 17\ninventory:\n  - Mace\n  - Shortbow\n---\n\n```nimble-sheet\n```\n');
+		}, ODO);
+		await o.openFile(ODO, 'preview');
+		const sheet = p.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		const held = sheet.locator('.ns-held', { hasText: 'Judgment Dice' });
+		// The most a level 1 Oathsworn can hold, as outlines: 2 (Oath of Vengeance and level 14 add more).
+		assert.equal(await held.locator('.ns-die.is-empty').count(), 2, 'two outlines to start');
+		assert.equal(await held.locator('.ns-die:not(.is-empty)').count(), 0);
+		const width = await held.evaluate(el => el.getBoundingClientRect().width);
+		// + fills an outline (not rolled): two d6 shapes.
+		await held.locator('[aria-label="Judgment Dice +1"]').click();
+		await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 1, 'one Judgment Die');
+		await held.locator('[aria-label="Judgment Dice +1"]').click();
+		await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 2, 'two Judgment Dice');
+		await p.waitForFunction((R) => document.querySelectorAll(`${R} .ns-held .ns-die.is-d6:not(.is-empty)`).length === 2, R);
+		assert.equal(await held.locator('.ns-die-num').count(), 0, 'not rolled yet');
+		assert.ok(await held.locator('[aria-label="Judgment Dice +1"]').isDisabled(), 'no more than the rules allow');
+		assert.equal(Math.round(await held.evaluate(el => el.getBoundingClientRect().width)), Math.round(width), 'the pill keeps its size');
+		await sheet.locator('.ns-strip').screenshot({ path: join(ARTIFACTS, 'sheet-judgment-dice.png') });
+		await measure(`${R} .nimble-sheet`);
+		// A bow is not a Reach attack: no Judgment Dice on it.
+		await sheet.locator('.ns-row.is-weapon', { hasText: 'Shortbow' }).locator('.ns-roll').click();
+		const dlg = p.locator('.modal.nimble-roll-dialog');
+		await dlg.waitFor();
+		assert.equal(await dlg.locator('.rd-spend').count(), 0, 'no Judgment Dice on a ranged attack');
+		await p.keyboard.press('Escape');
+		await dlg.waitFor({ state: 'detached' });
+		// The Mace: Judgment Dice on, all of them, rolled with the attack as radiant damage.
+		await sheet.locator('.ns-row.is-weapon', { hasText: 'Mace' }).locator('.ns-roll').click();
+		await dlg.waitFor();
+		const row = dlg.locator('.rd-spend', { hasText: 'Judgment Dice' });
+		assert.ok(await row.evaluate(el => el.classList.contains('is-on')), 'on by default');
+		assert.match(await row.locator('.rd-spend-have').textContent(), /^2d6 · radiant$/);
+		assert.equal(await row.locator('.rd-step-value').textContent(), '2d6');
+		assert.match(await dlg.locator('.rd-expr').textContent(), /\+ 2d6 radiant$/);
+		await p.screenshot({ path: join(ARTIFACTS, 'roll-dialog-judgment.png') });
+		await measure('.modal.nimble-roll-dialog');
+		await dlg.locator('.rd-roll').click();
+		const fm = await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 0, 'Judgment Dice spent');
+		assert.equal(fm.actions, 2, 'the attack took an action');
+		// Pips move one step: the first (filled) dot takes one away, not down to it; an empty one adds one back.
+		await sheet.locator('.ns-action-dot').first().click();
+		await waitFmAt(o, ODO, f => f.actions === 1, 'first dot: 2 → 1');
+		await sheet.locator('.ns-action-dot').last().click();
+		await waitFmAt(o, ODO, f => f.actions === 2, 'last (empty) dot: 1 → 2');
+		// A reaction clicked twice before the sheet catches up is taken once: one roll, one action.
+		await sheet.locator('.ns-tab[data-tab="actions"]').click();
+		await p.evaluate((R) => { const card = [...document.querySelectorAll(`${R} .ns-reaction`)].find(c => c.textContent.includes('Opportunity Attack')); card.click(); card.click(); }, R);
+		await p.locator('.modal.nimble-roll-dialog').first().waitFor();
+		await p.waitForTimeout(600);
+		assert.equal(await p.locator('.modal.nimble-roll-dialog').count(), 1, 'one Opportunity Attack, not two');
+		await p.keyboard.press('Escape');
+		const afterReaction = await waitFmAt(o, ODO, f => Array.isArray(f.reactions_used), 'the reaction is recorded');
+		assert.deepEqual(afterReaction.reactions_used, ['Opportunity Attack']);
+		assert.equal(afterReaction.actions, 1, 'one action for it');
+		const log = (await o.eval((app, plugin) => plugin.settings.rollLog))[0];
+		assert.match(log.detail, log.outcome === 'miss' ? /Judgment Dice lost/ : /Judgment Dice \[[1-6], [1-6]\] radiant/);
+
+		// Fury Dice: added to an attack while Raging, and still held after it.
+		await withSheetNote(o, async () => {
+			await o.eval(async (app, _p, path) => {
+				await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), fm => { fm.conditions = ['Raging']; fm.resources = { 'Fury Dice': { current: 1, rolled: [3] } }; });
+			}, SHEET_NOTE);
+			await o.openFile(SHEET_NOTE, 'preview');
+			const thorga = p.locator(`${R} .nimble-sheet`);
+			await p.waitForFunction((R) => document.querySelector(`${R} .ns-held .ns-die-num`)?.textContent === '3', R);
+			await thorga.locator('.ns-tab[data-tab="actions"]').click();
+			await thorga.locator('.ns-row.is-weapon', { hasText: 'Battleaxe' }).locator('.ns-roll').click();
+			await dlg.waitFor();
+			const fury = dlg.locator('.rd-spend', { hasText: 'Fury Dice' });
+			assert.ok(await fury.evaluate(el => el.classList.contains('is-on')), 'on while Raging');
+			assert.match(await fury.locator('.rd-spend-have').textContent(), /^3 · kept · while Raging$/);
+			await dlg.locator('.rd-roll').click();
+			await dlg.waitFor({ state: 'detached' });
+			await p.waitForTimeout(400);
+			const after = await sheetFm(o);
+			assert.deepEqual(after.resources['Fury Dice'], { current: 1, rolled: [3] }, 'Fury Dice stay');
+		});
+		assert.deepEqual(bad, [], 'misaligned pills');
+	} finally {
+		await o.eval(async (app, _p, path) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.vault.delete(f); }, ODO);
+	}
+});
+
+test('character sheet: HP and mana bars, with − and +, and a calculator for each', async (o) => {
+	const p = o.page;
+	await resetEncounter(o);
+	const ILSE = 'Characters/Ilse Varn.md';
+	const R = '.markdown-reading-view';
+	try {
+		await o.eval(async (app, _p, path) => {
+			const old = app.vault.getAbstractFileByPath(path);
+			if (old) await app.vault.delete(old);
+			await app.vault.create(path, '---\nnimble: character\nclass: Mage\nlevel: 3\nstr: 0\ndex: 1\nint: 3\nwil: 1\nhp: 14\nhp_max: 20\ntemp_hp: 3\nmana: 6\nmana_max: 10\n---\n\n```nimble-sheet\n```\n');
+		}, ILSE);
+		await o.openFile(ILSE, 'preview');
+		const sheet = p.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		const hp = sheet.locator('.ns-meter.is-hp');
+		const mana = sheet.locator('.ns-meter.is-mana');
+		assert.equal(await hp.locator('.ns-meter-nums').textContent(), '14/20+3');
+		assert.equal(await hp.locator('.ns-meter-extra').textContent(), '3 temp');
+		assert.equal(await mana.locator('.ns-meter-nums').textContent(), '6/10');
+		await sheet.locator('.ns-meters').screenshot({ path: join(ARTIFACTS, 'sheet-meters.png') });
+		// White numbers read on every part of both bars, light and dark (WCAG 4.5:1).
+		const contrast = () => p.evaluate((R) => {
+			const rgb = (c) => {
+				const n = c.match(/[\d.]+/g).map(Number);
+				return c.startsWith('color(') ? n.slice(0, 3).map(v => v * 255) : n.slice(0, 3);
+			};
+			const lum = ([r, g, b]) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+			const ratio = (c) => 1.05 / (lum(rgb(c)) + 0.05);
+			const out = {};
+			for (const m of document.querySelectorAll(`${R} .ns-meter`)) {
+				const kind = m.classList.contains('is-hp') ? 'hp' : 'mana';
+				out[`${kind} fill`] = ratio(getComputedStyle(m.querySelector('.ns-meter-fill')).backgroundColor);
+				out[`${kind} track`] = ratio(getComputedStyle(m.querySelector('.ns-meter-bar')).backgroundColor);
+				out[`${kind} text`] = getComputedStyle(m.querySelector('.ns-meter-cur')).color;
+			}
+			return out;
+		}, R);
+		for (const theme of ['theme-light', 'theme-dark']) {
+			await setTheme(o, theme);
+			await p.waitForTimeout(150);
+			const c = await contrast();
+			for (const [k, v] of Object.entries(c)) {
+				if (k.endsWith('text')) assert.equal(v, 'rgb(255, 255, 255)', `${theme} ${k}`);
+				else assert.ok(v >= 4.5, `${theme} ${k}: white is ${v.toFixed(2)}:1`);
+			}
+			await sheet.locator('.ns-meters').screenshot({ path: join(ARTIFACTS, `sheet-meters-${theme.slice(6)}.png`) });
+		}
+		await setTheme(o, 'theme-light');
+		// − and +: damage takes temp HP first; mana spends and regains one.
+		await hp.locator('[aria-label="Take 1 damage"]').click();
+		await waitFmAt(o, ILSE, f => f.temp_hp === 2 && f.hp === 14, 'temp HP soaks 1');
+		await hp.locator('[aria-label="Heal 1"]').click();
+		// A heal lights up green under the fill, and the fill grows across it.
+		await p.waitForSelector(`${R} .ns-meter.is-hp .ns-meter-ghost.is-gain + .ns-meter-fill`, { timeout: 2000 });
+		const fillW = () => p.evaluate((R) => document.querySelector(`${R} .ns-meter.is-hp .ns-meter-fill`).getBoundingClientRect().width, R);
+		const w0 = await fillW();
+		await p.waitForTimeout(1000);
+		const w1 = await fillW();
+		assert.ok(w1 > w0 + 2, `the fill grows into the heal (${w0} → ${w1})`);
+		await waitFmAt(o, ILSE, f => f.hp === 15, 'healed 1');
+		// Quick taps add up: three − taps show −3 and land as one change of 3 (temp HP first).
+		await p.waitForTimeout(1300);
+		for (let i = 0; i < 3; i++) await hp.locator('[aria-label="Take 1 damage"]').click();
+		assert.equal(await hp.locator('.ns-meter-delta').textContent(), '−3');
+		assert.equal(await hp.locator('.ns-meter-cur').textContent(), '14', 'the running number: 15 + 2 temp − 3');
+		assert.equal((await sheetFmOf(o, ILSE)).hp, 15, 'nothing written while tapping');
+		await waitFmAt(o, ILSE, f => f.hp === 14 && f.temp_hp === 0, 'one change of 3');
+		await mana.locator('[aria-label="Spend 1 mana"]').click();
+		await waitFmAt(o, ILSE, f => f.mana === 5, 'spent 1 mana');
+		await mana.locator('[aria-label="Regain 1 mana"]').click();
+		await p.waitForSelector(`${R} .ns-meter.is-mana .ns-meter-ghost.is-gain`, { timeout: 2000 });
+		await waitFmAt(o, ILSE, f => f.mana === 6, 'regained 1 mana');
+		// The HP calculator from the bar: 7 damage (2 temp, then 5).
+		await hp.locator('.ns-meter-bar').click();
+		const pad = p.locator('.nimble-hp-pad');
+		await pad.waitFor();
+		await p.keyboard.type('7');
+		await pad.locator('.hp-pad-apply').click();
+		// The lost HP lingers on the bar in the highlight colour, then drains away.
+		await p.waitForSelector(`${R} .ns-meter.is-hp .ns-meter-ghost.is-loss`, { timeout: 2000 });
+		await p.waitForTimeout(150);
+		await hp.screenshot({ path: join(ARTIFACTS, 'sheet-hp-damage-ghost.png') });
+		await p.waitForSelector(`${R} .ns-meter.is-hp .ns-meter-ghost`, { state: 'detached', timeout: 3000 });
+		await waitFmAt(o, ILSE, f => f.hp === 7 && f.temp_hp === 0, '7 damage through the calculator');
+		// The mana calculator from its button: spend 4, then set 9.
+		await mana.locator('.ns-meter-calc').click();
+		const mp = p.locator('.nimble-mana-pad');
+		await mp.waitFor();
+		assert.equal(await mp.locator('.hp-pad-mode.is-active').textContent(), 'Spend');
+		await p.keyboard.type('4');
+		assert.equal(await mp.locator('.hp-pad-preview').textContent(), '6 → 2 of 10 mana');
+		await p.screenshot({ path: join(ARTIFACTS, 'sheet-mana-calculator.png') });
+		await mp.locator('.hp-pad-apply').click();
+		await waitFmAt(o, ILSE, f => f.mana === 2, 'spent 4 through the calculator');
+		await mana.locator('.ns-meter-bar').click();
+		await mp.waitFor();
+		await mp.locator('.hp-pad-mode', { hasText: 'Set' }).click();
+		await p.keyboard.type('9');
+		await mp.locator('.hp-pad-apply').click();
+		await waitFmAt(o, ILSE, f => f.mana === 9, 'set mana to 9');
+		const bad = await p.evaluate(pillOffenders, { root: `${R} .ns-meters`, tolerance: 1, selectors: ['.ns-meter-extra', '.ns-meter-bar', '.ns-meter-label'] });
+		assert.deepEqual(bad, [], 'misaligned meters');
+	} finally {
+		await o.eval(async (app, _p, path) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.vault.delete(f); }, ILSE);
+	}
+});
+
+test('phone: character sheet at phone width, HP pad as a sheet, sticky tabs', async (o) => {
+	const p = o.page;
+	await resetEncounter(o);
+	const cdp = await p.context().newCDPSession(p);
+	const tap = async (loc) => {
+		await loc.scrollIntoViewIfNeeded().catch(() => {});
+		const b = await loc.boundingBox();
+		assert.ok(b, 'tap target is visible');
+		const x = b.x + b.width / 2, y = b.y + b.height / 2;
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await p.waitForTimeout(250);
+	};
+	// Playwright's own viewport wins over a CDP metrics override in this harness, so size the page through it.
+	await p.setViewportSize({ width: 360, height: 780 });
+	await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+	await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400); // switching to and from phone mode reloads settings; don't let it read a half-written file
+	await o.eval((app) => app.emulateMobile(true));
+	await p.waitForTimeout(1200);
+	try {
+		await withSheetNote(o, async () => {
+			await o.openFile(SHEET_NOTE);
+			const sheet = p.locator(`${R} .nimble-sheet`);
+			await sheet.waitFor();
+			// Nothing spills past the screen.
+			const spill = await p.evaluate((R) => {
+				const s = document.querySelector(`${R} .nimble-sheet`);
+				const r = s.getBoundingClientRect();
+				return [...s.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > r.right + 1 || b.left < r.left - 1); }).map(e => e.className).slice(0, 5);
+			}, R);
+			assert.deepEqual(spill, [], 'nothing wider than the sheet');
+			assert.equal(await p.evaluate((R) => getComputedStyle(document.querySelector(`${R} .ns-skills`)).gridTemplateColumns.split(' ').length, R), 2, 'skills as a two-column list on a phone');
+			// Nothing in the top cards is cut off: every label shows in full.
+			const clipped = await p.evaluate((R) => [...document.querySelectorAll(`${R} :is(.ns-box-label, .ns-skill-name, .ns-chip-label, .ns-stat-label)`)]
+				.filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent), R);
+			assert.deepEqual(clipped, [], 'labels cut off on a phone');
+			await p.screenshot({ path: join(ARTIFACTS, 'sheet-phone-light.png') });
+
+			await tap(sheet.locator('.ns-hp'));
+			assert.equal(await p.locator('.nimble-hp-pad.is-sheet').count(), 1, 'HP pad is a bottom sheet');
+			for (const k of ['3']) await tap(p.locator('.hp-pad-keys button', { hasText: exact(k) }));
+			await tap(p.locator('.hp-pad-apply'));
+			await waitFm(o, f => f.hp === 17, 'hp 17');
+
+			await tap(sheet.locator('.ns-tab[data-tab="inventory"]'));
+			await p.waitForTimeout(200);
+			await p.screenshot({ path: join(ARTIFACTS, 'sheet-phone-inventory.png') });
+			// Scroll down: the tabs stick to the top.
+			const scroller = `${R} .markdown-preview-view`;
+			// Scroll just past where the tabs start (the sheet ends soon after on a short tab), whatever the top.
+			await p.evaluate(([R, sel]) => {
+				const view = document.querySelector(sel);
+				const tabs = document.querySelector(`${R} .ns-tabs`);
+				view.scrollTop += tabs.getBoundingClientRect().top - view.getBoundingClientRect().top + 80;
+			}, [R, scroller]);
+			await p.waitForTimeout(200);
+			const stuck = await p.evaluate(([R, sel]) => {
+				// The scroller's top padding leaves room for the phone's floating header; sticky stops there.
+				const view = document.querySelector(sel);
+				const t = document.querySelector(`${R} .ns-tabs`).getBoundingClientRect();
+				const top = view.getBoundingClientRect().top + parseFloat(getComputedStyle(view).paddingTop);
+				return { ok: Math.abs(t.top - top) < 4, tabs: t.top, top };
+			}, [R, scroller]);
+			assert.ok(stuck.ok, `tabs stick at the top while scrolling: ${JSON.stringify(stuck)}`);
+			await p.evaluate((sel) => { document.querySelector(sel).scrollTop = 0; }, scroller);
+			await tap(sheet.locator('.ns-tab[data-tab="actions"]'));
+			await setTheme(o, 'theme-dark');
+			await p.waitForTimeout(250);
+			await p.screenshot({ path: join(ARTIFACTS, 'sheet-phone-dark.png') });
+		});
+	} finally {
+		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
+		await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400); // switching to and from phone mode reloads settings; don't let it read a half-written file
+		await o.eval((app) => app.emulateMobile(false));
+		await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+		await p.setViewportSize({ width: 1400, height: 900 });
+		await p.waitForTimeout(800);
+	}
+});
+
+test('campaign pages open in reading view; sessions and new notes open for editing', async (o) => {
+	const mode = () => o.eval((app) => app.workspace.getActiveFileView()?.getMode?.() ?? null);
+	const open = (path) => o.eval(async (app, _p, path) => { await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath(path), { state: { mode: 'source' } }); }, path);
+	try {
+		await o.eval(async (app, plugin) => {
+			plugin.settings.readingView = true;
+			const old = app.vault.getAbstractFileByPath('Campaigns/Reading Room');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Reading Room', level: 1, heroes: 4, starter: true, role: 'player', character: 'Pip' });
+		});
+		await o.page.waitForTimeout(16000); // past the "just made" grace period for the starter notes
+		await open('Campaigns/Reading Room/Party/Pip.md');
+		await o.waitFor(async () => (await mode()) === 'preview', { what: 'character in reading view' });
+		// The user switches to editing: it stays that way while they're on the page.
+		await o.eval(async (app) => { const leaf = app.workspace.getMostRecentLeaf(); const st = leaf.getViewState(); await leaf.setViewState({ ...st, state: { ...st.state, mode: 'source' } }); });
+		await o.page.waitForTimeout(300);
+		assert.equal(await mode(), 'source');
+		// Opened from the party roster (the Campaign panel keeps focus): still reading view.
+		await o.eval(async (app) => { await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath('Campaigns/Reading Room/Reading Room.md'), { state: { mode: 'source' } }); });
+		await o.eval(async (app, plugin) => { await plugin.openCampaignView(); });
+		await o.page.waitForTimeout(400);
+		await o.page.locator('.nimble-campaign-view .campaign-hero.is-mine').first().click();
+		await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.basename)) === 'Pip' && (await mode()) === 'preview', { what: 'roster click opens in reading view' });
+		// A chapter page reads too; a session log and a loose note open as Obsidian would (Source here).
+		await open('Campaigns/Reading Room/Chapter 1/Chapter 1.md');
+		await o.waitFor(async () => (await mode()) === 'preview', { what: 'chapter in reading view' });
+		await o.eval(async (app) => { await app.vault.create('Campaigns/Reading Room/Sessions/Session 1.md', '---\nnimble: session\n---\n'); });
+		await o.page.waitForTimeout(16000);
+		await open('Campaigns/Reading Room/Sessions/Session 1.md');
+		await o.page.waitForTimeout(400);
+		assert.equal(await mode(), 'source');
+		// A page made just now is for writing.
+		await o.eval(async (app) => { await app.vault.create('Campaigns/Reading Room/NPCs/Fresh.md', '---\nnimble: npc\n---\n'); });
+		await open('Campaigns/Reading Room/NPCs/Fresh.md');
+		await o.page.waitForTimeout(400);
+		assert.equal(await mode(), 'source');
+	} finally {
+		await o.eval(async (app, plugin) => {
+			plugin.settings.readingView = false;
+			const f = app.vault.getAbstractFileByPath('Campaigns/Reading Room');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('player bestiary: one row per creature with book pills, and your own notes on it', async (o) => {
+	await resetEncounter(o);
+	const B = '.nimble-bestiary';
+	try {
+		await o.eval(async (app, plugin) => {
+			const old = app.vault.getAbstractFileByPath('Campaigns/Beast Lore');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Beast Lore', level: 1, heroes: 4, starter: false, role: 'player', character: 'Pip' });
+			await app.commands.executeCommandById('nimble-gm:open-bestiary');
+		});
+		await o.page.waitForSelector(`${B}.is-lore .bestiary-row`, { timeout: 5000 });
+		// Krogg is in Monsters & More and the GM Guide: one row, two book pills.
+		await o.page.locator(`${B} .bestiary-search-input`).fill('krogg');
+		await o.waitFor(() => o.page.evaluate((B) => document.querySelectorAll(`${B} .bestiary-row`).length === 1, B), { timeout: 3000, what: 'one Krogg row' });
+		assert.equal(await o.page.locator(`${B} .bestiary-row-name`).textContent(), 'Krogg, Goblin King');
+		assert.deepEqual(await o.page.locator(`${B} .bestiary-row .bestiary-tag`).allTextContents(), ['M&M', 'GMG']);
+		await o.page.locator(`${B} .bestiary-row`).click();
+		const card = o.page.locator(`${B} .bestiary-detail .nimble-lore-card`);
+		assert.equal(await card.locator('.lore-source').count(), 2, 'both printings as source pills');
+		// Add notes: makes Campaigns/Beast Lore/Bestiary/Krogg, Goblin King.md and opens it.
+		await card.locator('.statblock-action', { hasText: 'Add notes' }).click();
+		const path = 'Campaigns/Beast Lore/Bestiary/Krogg, Goblin King.md';
+		await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === path, { what: 'notes note opened' });
+		await o.eval(async (app, _p, path) => {
+			const f = app.vault.getAbstractFileByPath(path);
+			await app.vault.process(f, (t) => t.replace("## What we've seen\n-", "## What we've seen\n- Hates the smell of **garlic**."));
+		}, path);
+		await o.eval(async (app) => { await app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.waitFor(() => o.page.evaluate((B) => document.querySelector(`${B} .nimble-creature-notes-body`)?.textContent.includes('garlic'), B), { timeout: 5000, what: 'your notes under the lore' });
+		assert.deepEqual(await o.page.locator(`${B} .bestiary-row .bestiary-tag`).allTextContents(), ['M&M', 'GMG', 'Notes']);
+		assert.equal(await card.locator('.statblock-action', { hasText: 'Open notes' }).count(), 1);
+		// My notes: the creatures you've written about.
+		await o.page.locator(`${B} .bestiary-search-input`).fill('');
+		await o.page.locator(`${B} .nimble-segmented[aria-label="Source"] button`, { hasText: 'My notes' }).click().catch(async () => {
+			await o.page.locator(`${B} .bestiary-filter-toggle`).click();
+			await o.page.locator(`${B} .nimble-segmented[aria-label="Source"] button`, { hasText: 'My notes' }).click();
+		});
+		await o.waitFor(() => o.page.evaluate((B) => [...document.querySelectorAll(`${B} .bestiary-row-name`)].some(n => n.textContent === 'Krogg, Goblin King'), B), { timeout: 3000, what: 'Krogg under My notes' });
+		await o.page.locator(`${B} .nimble-segmented[aria-label="Source"] button`, { hasText: 'All' }).click();
+		await o.page.locator(`${B} .bestiary-search-input`).fill('krogg');
+		await o.page.waitForTimeout(300);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'player-bestiary-notes.png') });
+		const bad = await o.page.evaluate(pillOffenders, { root: B, tolerance: 1, selectors: PILL_SELECTORS });
+		assert.deepEqual(bad, [], 'misaligned pills in the bestiary');
+
+		// The same notes, and both books, in a hover preview and a quick look from a note in the campaign.
+		await o.eval(async (app) => { await app.vault.create('Campaigns/Beast Lore/Rumours.md', 'They say `nimble:Krogg, Goblin King` is back.\n'); });
+		await o.openFile('Campaigns/Beast Lore/Rumours.md', 'preview');
+		const ref = o.page.locator('.markdown-reading-view .nimble-inline-name', { hasText: 'Krogg' });
+		await ref.waitFor();
+		await ref.hover();
+		await o.page.waitForSelector(`${PREVIEW} .nimble-creature-notes`, { timeout: 4000 });
+		assert.match(await o.page.locator(`${PREVIEW} .nimble-creature-notes-body`).textContent(), /garlic/);
+		assert.equal(await o.page.locator(`${PREVIEW} .lore-source`).count(), 2, 'both books in the hover');
+		assert.equal(await o.page.locator(`${PREVIEW} .statblock-action`, { hasText: 'Open notes' }).count(), 1);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'player-hover-notes.png') });
+		await o.page.mouse.move(2, 450);
+		await o.page.keyboard.press('Escape');
+		await o.page.waitForTimeout(400);
+		await ref.click();
+		const Q = '.modal.nimble-record-modal';
+		await o.page.waitForSelector(`${Q} .nimble-creature-notes`, { timeout: 4000 });
+		assert.match(await o.page.locator(`${Q} .nimble-creature-notes-body`).textContent(), /garlic/);
+		assert.equal(await o.page.locator(`${Q} .lore-source`).count(), 2, 'both books in the quick look');
+		assert.equal(await o.page.locator(`${Q} .record-btn`, { hasText: 'Open notes' }).count(), 1);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'player-quicklook-notes.png') });
+		await o.page.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin) => {
+			const f = app.vault.getAbstractFileByPath('Campaigns/Beast Lore');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('campaigns keep their monsters apart: a player campaign never opens the GM\'s monster notes', async (o) => {
+	await resetEncounter(o);
+	const p = o.page;
+	try {
+		await o.eval(async (app, plugin) => {
+			for (const f of ['Campaigns/Iso Run', 'Campaigns/Iso Play']) { const old = app.vault.getAbstractFileByPath(f); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Iso Run', level: 2, heroes: 4, starter: false });
+			await app.vault.createFolder('Campaigns/Iso Run/Monsters').catch(() => undefined);
+			await app.vault.create('Campaigns/Iso Run/Monsters/Quicksilver Hound.md', '```nimble\nname: Quicksilver Hound\nlevel: 3\nhp: 30\nattacks:\n- Bite 1d8+2\n```\n');
+			await app.vault.create('Campaigns/Iso Run/Monsters/Ogre.md', '```nimble\nname: Ogre\nlevel: 9\nhp: 999\nattacks:\n- Club 9d9\n```\n');
+			await app.vault.create('Campaigns/Iso Run/Prep.md', 'Hounds: `nimble:Quicksilver Hound`, and `nimble:Ogre`.\n');
+			await plugin.campaigns.createCampaign({ name: 'Iso Play', level: 2, heroes: 4, starter: false, role: 'player', character: 'Pip' });
+			await app.vault.create('Campaigns/Iso Play/Session.md', '---\nnimble: session\n---\nWe met `nimble:Quicksilver Hound` and `nimble:Ogre`.\n\n```nimble-encounter\nname: Cellar\noutcome: won\nmonsters:\n- 2 Quicksilver Hound\n- 1 Ogre\n```\n');
+		});
+		await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Quicksilver Hound', 'Campaigns/Iso Run/Prep.md')?.filePath === 'Campaigns/Iso Run/Monsters/Quicksilver Hound.md'), { what: 'the GM monster indexed' });
+		const seen = await o.eval((app, plugin) => {
+			const at = (name, from) => { const e = plugin.index.get(name, from); return e ? (e.bundled ? 'bundled' : e.filePath) : null; };
+			return {
+				gmHound: at('Quicksilver Hound', 'Campaigns/Iso Run/Prep.md'),
+				gmOgre: at('Ogre', 'Campaigns/Iso Run/Prep.md'),
+				playerHound: at('Quicksilver Hound', 'Campaigns/Iso Play/Session.md'),
+				playerOgre: at('Ogre', 'Campaigns/Iso Play/Session.md'),
+				playerAll: plugin.index.all('Campaigns/Iso Play/Session.md').some(e => e.filePath.startsWith('Campaigns/Iso Run/')),
+			};
+		});
+		assert.deepEqual(seen, {
+			gmHound: 'Campaigns/Iso Run/Monsters/Quicksilver Hound.md',
+			gmOgre: 'Campaigns/Iso Run/Monsters/Ogre.md',
+			playerHound: null,
+			playerOgre: 'bundled',
+			playerAll: false,
+		});
+		// In the player's session: the hound is just a name, the ogre is the book's lore card.
+		await o.openFile('Campaigns/Iso Play/Session.md', 'preview');
+		const R = '.markdown-reading-view';
+		await p.waitForSelector(`${R} .nimble-battle-notes .battle-foe`, { timeout: 5000 });
+		const refs = await p.evaluate((R) => [...document.querySelectorAll(`${R} p .nimble-inline-ref`)].map(r => ({ name: r.dataset.nimbleRef, found: r.classList.contains('nimble-inline-found'), bundled: r.classList.contains('is-bundled') })), R);
+		assert.deepEqual(refs, [{ name: 'Quicksilver Hound', found: false, bundled: false }, { name: 'Ogre', found: true, bundled: true }]);
+		const foes = await p.evaluate((R) => [...document.querySelectorAll(`${R} .battle-foe`)].map(f => ({ text: f.textContent.replace(/\s+/g, ' ').trim(), bundled: !!f.querySelector('.nimble-inline-ref.is-bundled') })), R);
+		assert.deepEqual(foes, [{ text: '2×Quicksilver Hound', bundled: false }, { text: '1×Ogre', bundled: true }]);
+		// The count has room on its left: it starts inside the chip's rounded end.
+		const pad = await p.evaluate((R) => {
+			const f = document.querySelector(`${R} .battle-foe`);
+			const r = document.createRange();
+			r.selectNodeContents(f.querySelector('.battle-foe-count'));
+			return Math.round(r.getBoundingClientRect().left - f.getBoundingClientRect().left);
+		}, R);
+		assert.ok(pad >= 8, `count padding ${pad}px`);
+		// The block can redraw as the index settles; a second try takes the fresh one.
+		const notesShot = () => p.locator(`${R} .nimble-battle-notes`).screenshot({ path: join(ARTIFACTS, 'battle-notes-player.png') });
+		await notesShot().catch(async () => { await p.waitForTimeout(300); await notesShot(); });
+	} finally {
+		await o.eval(async (app, plugin) => {
+			for (const f of ['Campaigns/Iso Run', 'Campaigns/Iso Play']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x, true); }
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('GM party: character sheets in a Party section, and the encounter party read from them', async (o) => {
+	await resetEncounter(o);
+	const p = o.page;
+	const V = '.nimble-campaign-view';
+	try {
+		// A campaign run with a party entered by hand: shown, with a button to make sheets for it.
+		await o.eval(async (app, plugin) => {
+			const old = app.vault.getAbstractFileByPath('Campaigns/Iron Road');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Iron Road', level: 2, heroes: 4, starter: false });
+			plugin.settings.party = [
+				{ id: 'h1', name: 'Kestrel', level: 2, maxHp: 21, defense: 3, maxWounds: 6, className: 'Hunter' },
+				{ id: 'h2', name: 'Bram', level: 2, maxHp: 26, maxWounds: 6, className: 'Berserker' },
+			];
+			await plugin.saveSettings();
+			await plugin.openCampaignView();
+			plugin.campaigns.trigger('changed');
+		});
+		await p.waitForSelector(`${V} .campaign-roster.is-gm .campaign-hero.is-plain`, { timeout: 5000 });
+		assert.equal(await p.locator(`${V} .campaign-party`, { hasText: 'heroes ·' }).count(), 0, 'no heroes pill any more');
+		assert.deepEqual(await p.locator(`${V} .campaign-hero.is-plain .campaign-hero-name`).allTextContents(), ['Kestrel', 'Bram']);
+		// The first sheet arrives (a new hero, Wren): the heroes typed in before stay, in the party and on the panel.
+		await o.eval(async (app) => {
+			await app.vault.createFolder('Campaigns/Iron Road/Party').catch(() => undefined);
+			await app.vault.create('Campaigns/Iron Road/Party/Wren.md', '---\nnimble: character\nclass: Hunter\nlevel: 2\nhp: 19\nhp_max: 19\n---\n\n```nimble-sheet\n```\n');
+		});
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.party.map(h => h.name).join())) === 'Wren,Kestrel,Bram', { what: 'Wren joins Kestrel and Bram' });
+		await p.waitForSelector(`${V} a.campaign-hero[data-path="Campaigns/Iron Road/Party/Wren.md"]`, { timeout: 5000 });
+		assert.deepEqual(await p.locator(`${V} .campaign-hero.is-plain .campaign-hero-name`).allTextContents(), ['Kestrel', 'Bram'], 'the typed-in heroes still show');
+		await p.locator(`${V} .campaign-roster-empty`, { hasText: 'Make character sheets for these 2' }).click();
+		// Two more sheets in Party, keeping HP, Defense and Wounds; the cards are now all sheets, with HP.
+		await o.waitFor(() => o.eval((app) => ['Kestrel', 'Bram'].every(n => app.vault.getAbstractFileByPath(`Campaigns/Iron Road/Party/${n}.md`))), { what: 'sheets made' });
+		await o.waitFor(async () => (await p.locator(`${V} .campaign-hero.is-plain`).count()) === 0, { what: 'no typed-in heroes left' });
+		const kestrel = await sheetFmOf(o, 'Campaigns/Iron Road/Party/Kestrel.md');
+		assert.equal(kestrel.class, 'Hunter');
+		assert.equal(kestrel.level, 2);
+		assert.equal(kestrel.hp_max, 21);
+		assert.equal(kestrel.armor, 3);
+		assert.equal(await p.locator(`${V} a.campaign-hero .campaign-hero-hp`).count(), 3, 'every hero shows HP on the GM side');
+		assert.equal(await p.locator(`${V} .campaign-hero-you`).count(), 0);
+		// The encounter party is read from the sheets: levelling a sheet up changes it.
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.party.map(h => h.id).sort().join())) === 'sheet:Campaigns/Iron Road/Party/Bram.md,sheet:Campaigns/Iron Road/Party/Kestrel.md,sheet:Campaigns/Iron Road/Party/Wren.md', { what: 'party from sheets' });
+		await o.eval(async (app) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Iron Road/Party/Bram.md'), fm => { fm.level = 3; fm.hp_max = 33; }); });
+		await o.waitFor(async () => {
+			const bram = await o.eval((app, plugin) => plugin.settings.party.find(h => h.name === 'Bram'));
+			return bram?.level === 3 && bram.maxHp === 33;
+		}, { what: 'Bram at level 3 in the encounter party' });
+		// A hero at a quarter HP or less: the bar gets darker red (more urgent), not amber.
+		await o.eval(async (app) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Iron Road/Party/Bram.md'), fm => { fm.hp = 5; }); });
+		await p.waitForSelector(`${V} .campaign-hero-hp-fill.is-low`, { timeout: 5000 });
+		const fills = await p.evaluate((V) => {
+			const rgb = (el) => getComputedStyle(el).backgroundColor.match(/[\d.]+/g).slice(0, 3).map(Number);
+			const low = rgb(document.querySelector(`${V} .campaign-hero-hp-fill.is-low`));
+			const ok = rgb(document.querySelector(`${V} .campaign-hero-hp-fill:not(.is-low)`));
+			return { low, ok };
+		}, V);
+		const lum = ([r, g, b]) => 0.299 * r + 0.587 * g + 0.114 * b;
+		assert.ok(lum(fills.low) < lum(fills.ok), `low HP is darker than healthy: ${JSON.stringify(fills)}`);
+		assert.ok(fills.low[0] > fills.low[1] * 1.5, `and still red, not amber: ${JSON.stringify(fills.low)}`);
+		await p.locator(`${V} .campaign-roster`).screenshot({ path: join(ARTIFACTS, 'gm-party.png') });
+		// Settings › Party: heroes with sheets are read-only rows (their sheet keeps them current), with no Level up.
+		await o.eval((app) => { app.setting.open(); app.setting.openTabById('nimble-gm'); });
+		await p.waitForSelector('.vertical-tab-content .nimble-party-row.is-sheet', { timeout: 5000 });
+		assert.equal(await p.locator('.vertical-tab-content .nimble-party-row.is-sheet').count(), 3);
+		assert.equal(await p.locator('.vertical-tab-content .nimble-party-row:not(.is-sheet) input').count(), 0);
+		assert.equal(await p.locator('.vertical-tab-content .nimble-party-actions button', { hasText: 'Level up' }).count(), 0);
+		await o.eval((app) => app.setting.close());
+		// A new note's name never clashes with one already there, even by case ("wren" next to "Wren.md").
+		assert.equal(await o.eval((app, plugin) => plugin.campaigns.available('Campaigns/Iron Road/Party/wren.md')), 'Campaigns/Iron Road/Party/wren 2.md');
+		// + adds a hero (not yours): the new-character dialog, into Party.
+		await p.locator(`${V} .campaign-roster-head [aria-label="Add a hero"]`).click();
+		await p.locator('.modal.nimble-newchar-modal').waitFor({ timeout: 3000 });
+		assert.equal(await p.locator('.modal.nimble-newchar-modal .modal-title').textContent(), 'New party member');
+		await p.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin) => {
+			const f = app.vault.getAbstractFileByPath('Campaigns/Iron Road');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+			plugin.settings.party = [];
+		});
+	}
+});
+
+test('pills: every icon and label sits on its pill centre line (within 1px)', async (o) => {
+	await resetEncounter(o);
+	const measure = async (root) => o.page.evaluate(pillOffenders, { root, tolerance: 1, selectors: PILL_SELECTORS });
+	const bad = [];
+	await withSheetNote(o, async () => {
+		await o.openFile(SHEET_NOTE, 'preview');
+		await o.page.waitForTimeout(600);
+		bad.push(...await measure('.markdown-reading-view .nimble-sheet'));
+		// The level-up wizard, every step.
+		await camp(o, o.page.locator('.markdown-reading-view .nimble-sheet'), 'Level up');
+		const lv = o.page.locator('.modal.nimble-levelup');
+		await lv.waitFor();
+		const steps = await lv.locator('.lu-dot').count();
+		for (let k = 0; k < steps; k++) {
+			await lv.locator('.lu-dot').nth(k).click();
+			if (k === 1) await lv.locator('.lu-hp-option', { hasText: 'Take the average' }).click();
+			await o.page.waitForTimeout(450);
+			bad.push(...await measure('.modal.nimble-levelup'));
+		}
+		await o.page.keyboard.press('Escape');
+	});
+	assert.deepEqual(bad, [], 'misaligned pills');
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);
@@ -2770,7 +3876,8 @@ const range = process.env.E2E_RANGE?.split('-').map(Number);
 process.on('unhandledRejection', (e) => console.log(`      (ignored a late rejection: ${String(e?.message ?? e).split('\n')[0]})`));
 const selected = range ? tests.filter((t, i) => (i >= range[0] && i <= range[1]) || (filter && t.name.includes(filter))) : tests.filter(t => !filter || t.name.includes(filter));
 // 3D dice are off for the general run (notices would wait for them to land); one test turns them on.
-const o = await launchObsidian({ settings: { dice3d: false } });
+// Reading view for campaign pages is off for the general run (tests open campaign notes in Source mode on purpose); one test turns it on.
+const o = await launchObsidian({ settings: { dice3d: false, readingView: false } });
 await o.page.setViewportSize?.({ width: 1400, height: 900 }).catch(() => {});
 let failed = 0;
 const started = Date.now();

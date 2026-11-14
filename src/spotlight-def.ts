@@ -49,3 +49,16 @@ export function rankByName<T>(items: T[], query: string, text: (item: T) => stri
 	};
 	return items.map(item => ({ item, s: score(item) })).filter(x => x.s < Infinity).sort((a, b) => a.s - b.s).slice(0, limit).map(x => x.item);
 }
+
+/**
+ * Picker order (Spotlight's filtered mode): with nothing typed, the preferred
+ * entries (the class's own options, the caster's schools) come first, the rest
+ * after; once something is typed, an exact name leads, then preferred matches,
+ * then the rest, each keeping the search's ranking. Taken entries sink below
+ * untaken ones of the same standing.
+ */
+export function orderPicks<T extends { name: string }>(hits: T[], query: string, prefer?: (h: T) => boolean, taken?: (h: T) => boolean): T[] {
+	const q = query.trim().toLowerCase();
+	const rank = (h: T): number => (q && h.name.toLowerCase() === q ? 0 : 2) + (prefer?.(h) ? 0 : 1) * (q ? 1 : 2) + (taken?.(h) ? 0.5 : 0);
+	return hits.map((h, i) => ({ h, i, r: rank(h) })).sort((a, b) => a.r - b.r || a.i - b.i).map(x => x.h);
+}

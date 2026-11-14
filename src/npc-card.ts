@@ -12,7 +12,9 @@ import {
 import type NimbleStatblocksPlugin from '../main';
 import { fmText, safeName } from './campaign-model';
 import { onLongPress } from './touch';
-import { IMAGE_EXTENSIONS, isRemote, parseNpcCard, portraitLink, SECRET_KEYS } from './npc-card-def';
+import { IMAGE_EXTENSIONS, isRemote, NPC_ATTITUDES, NPC_STATUSES, npcFacts, parseNpcCard, portraitLink, SECRET_KEYS } from './npc-card-def';
+import { appendRichText } from './markdown';
+import { wireWikiLinks } from './render';
 
 export function registerNpcCard(plugin: NimbleStatblocksPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-npc', (source, el, ctx) => {
@@ -89,7 +91,8 @@ class NpcCard extends MarkdownRenderChild {
 
 	private portraitKey(): string {
 		const fm = this.frontmatter();
-		return `${fmText(fm.portrait ?? fm.image)}|${fmText(fm['portrait-position'])}|${fmText(fm.role)}|${fmText(fm.title)}`;
+		const facts = ['ancestry', 'pronouns', 'age', 'faction', 'location', 'status', 'attitude', 'first_met'].map(k => fmText(fm[k])).join('|');
+		return `${fmText(fm.portrait ?? fm.image)}|${fmText(fm['portrait-position'])}|${fmText(fm.role)}|${fmText(fm.title)}|${facts}`;
 	}
 
 	private render(): void {
@@ -109,6 +112,7 @@ class NpcCard extends MarkdownRenderChild {
 		const head = card.createDiv({ cls: 'nimble-npc-head' });
 		head.createDiv({ cls: 'nimble-npc-name', text: name });
 		if (role) head.createDiv({ cls: 'nimble-npc-role', text: role });
+		this.renderFacts(head, fm);
 
 		if (!def.fields.length) return;
 		const rows = card.createDiv({ cls: 'nimble-npc-fields' });
@@ -124,6 +128,50 @@ class NpcCard extends MarkdownRenderChild {
 			if (secret) this.hideSecret(row, value);
 			void MarkdownRenderer.render(this.app, f.value, value, this.path, this);
 		}
+	}
+
+	/**
+	 * Quick facts under the name: ancestry, pronouns, age, then faction and
+	 * where they're found (links work), then status and attitude as pills you
+	 * can tap to change.
+	 */
+	private renderFacts(head: HTMLElement, fm: Record<string, unknown>): void {
+		const f = npcFacts(fm);
+		if (f.details.length) head.createDiv({ cls: 'nimble-npc-details', text: f.details.join(' · ') });
+		const links: [string, string, string | undefined][] = [['flag', 'Faction', f.faction], ['map-pin', 'Found at', f.location], ['handshake', 'First met', f.firstMet]];
+		const shown = links.filter(([, , v]) => v);
+		if (shown.length) {
+			const row = head.createDiv({ cls: 'nimble-npc-links' });
+			for (const [icon, label, v] of shown) {
+				const item = row.createSpan({ cls: 'nimble-npc-link', attr: { 'aria-label': label } });
+				setIcon(item.createSpan({ cls: 'nimble-npc-link-icon' }), icon);
+				appendRichText(item.createSpan(), v ?? '');
+			}
+			wireWikiLinks(row, this.app, this.path);
+		}
+		const pills = head.createDiv({ cls: 'nimble-npc-pills' });
+		this.pill(pills, 'status', f.status, NPC_STATUSES, { alive: 'heart-pulse', dead: 'skull', missing: 'search', unknown: 'circle-help' });
+		this.pill(pills, 'attitude', f.attitude, NPC_ATTITUDES, { friendly: 'smile', neutral: 'meh', hostile: 'angry', unknown: 'circle-help' });
+		if (!pills.childElementCount) pills.remove();
+	}
+
+	private pill(parent: HTMLElement, key: 'status' | 'attitude', value: string | undefined, options: readonly string[], icons: Record<string, string>): void {
+		if (!value) return;
+		const b = parent.createEl('button', { cls: `nimble-npc-pill npc-${key} is-${value.replace(/[^a-z]+/g, '-')}`, attr: { 'aria-label': `${key === 'status' ? 'Status' : 'Attitude'}: ${value}. Click to change.` } });
+		if (icons[value]) setIcon(b.createSpan({ cls: 'nimble-npc-pill-icon' }), icons[value]);
+		b.createSpan({ text: value });
+		b.addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			const m = new Menu();
+			for (const o of options) {
+				m.addItem(i => i.setTitle(o[0].toUpperCase() + o.slice(1)).setIcon(o === value ? 'check' : icons[o]).onClick(async () => {
+					const file = this.note();
+					if (file) await this.app.fileManager.processFrontMatter(file, (data: Record<string, unknown>) => { data[key] = o; });
+				}));
+			}
+			m.showAtMouseEvent(e);
+		});
 	}
 
 	/** Secrets stay blurred (handy when the screen is shared) until clicked. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSpotlight, rankByName } from '../src/spotlight-def';
+import { orderPicks, parseSpotlight, rankByName } from '../src/spotlight-def';
 
 describe('parseSpotlight', () => {
 	it('reads dice, with or without "roll"', () => {
@@ -39,5 +39,22 @@ describe('rankByName', () => {
 	});
 	it('matches on any of the texts given (aliases)', () => {
 		expect(rankByName([{ n: 'Tobren Kask', a: ['Master Kask'] }], 'master', x => [x.n, ...x.a], 5)).toHaveLength(1);
+	});
+});
+
+describe('orderPicks (the filtered picker)', () => {
+	const hits = [{ name: 'Death Blow', mine: true }, { name: 'Dash', mine: false }, { name: 'Deathless Rage', mine: true }, { name: 'Death', mine: false }];
+	const prefer = (h: typeof hits[number]) => h.mine;
+	it('lists the preferred entries first when nothing is typed, keeping their order', () => {
+		expect(orderPicks(hits, '', prefer).map(h => h.name)).toEqual(['Death Blow', 'Deathless Rage', 'Dash', 'Death']);
+	});
+	it('puts an exact name first once something is typed, then preferred matches', () => {
+		expect(orderPicks(hits, 'death', prefer).map(h => h.name)).toEqual(['Death', 'Death Blow', 'Deathless Rage', 'Dash']);
+	});
+	it('sinks entries already taken below the rest of their standing', () => {
+		expect(orderPicks(hits, '', prefer, h => h.name === 'Death Blow').map(h => h.name)).toEqual(['Deathless Rage', 'Death Blow', 'Dash', 'Death']);
+	});
+	it('keeps the search order without a preference', () => {
+		expect(orderPicks(hits, '').map(h => h.name)).toEqual(['Death Blow', 'Dash', 'Deathless Rage', 'Death']);
 	});
 });

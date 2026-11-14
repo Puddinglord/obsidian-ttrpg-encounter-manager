@@ -6,6 +6,8 @@ import { NIMBLE_CONDITIONS, NimbleCondition } from './types';
 import { renderPartyEditor } from './party';
 import { diceAssignmentRows, diceMotionRows, renderDiceStudio } from './dice-settings';
 import { confirmAction } from './touch';
+import { setCompendiumDrafts } from './compendium-data';
+import { FINISHES } from './dice3d/styles';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
 
 /** One settings row. `block` rows draw their own content instead of a name and controls. */
@@ -138,6 +140,44 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					name: 'Link NPC names as you read',
 					desc: 'Notes with "nimble: npc" (or #npc) are linked wherever they\'re mentioned. Files aren\'t changed.',
 					render: toggle(() => s.autoLinkNpcs, v => { s.autoLinkNpcs = v; }, () => this.plugin.rerenderNotes()),
+				},
+				{
+					name: 'Open campaign pages in reading view',
+					desc: 'Characters, chapters, scenes, NPCs, locations, maps and handouts open ready to read; use Obsidian\'s edit button to change them. Session logs and notes you\'ve just made open for editing as usual.',
+					render: toggle(() => s.readingView, v => { s.readingView = v; }),
+				},
+				{
+					name: 'Properties as tags',
+					desc: 'In reading view, a campaign note\'s properties show as a tidy row of tags instead of the Properties form. Switch to editing to change them.',
+					render: toggle(() => s.tagProperties, v => { s.tagProperties = v; }, () => this.plugin.campaigns.trigger('changed')),
+				},
+				{
+					name: 'Stat blocks in campaigns you play in',
+					desc: 'In a player campaign, monsters show as lore cards (what your hero could know) instead of stat blocks. Turn this on if you don\'t mind spoilers.',
+					render: toggle(() => s.playerStatblocks, v => { s.playerStatblocks = v; }, () => { this.plugin.refreshSide(); this.plugin.campaigns.trigger('changed'); }),
+				},
+			] },
+			{ heading: 'Character sheets', rows: [
+				{
+					name: 'Ask before rolling',
+					desc: 'Attacks, spells, saves and checks open a dialog first: advantage or disadvantage, a situational modifier, and class dice to add (like Judgment Dice). Off rolls straight away.',
+					render: toggle(() => s.rollDialog, v => { s.rollDialog = v; }),
+				},
+				{
+					name: 'Class dice',
+					desc: 'Judgment Dice, Fury Dice and the like: their colour on the sheet and when they roll with an attack, and how they look in 3D.',
+					render: (setting: Setting) => {
+						setting.addColorPicker(c => c.setValue(s.classDice.color).onChange(async (v) => { s.classDice.color = v; await save(); this.plugin.rerenderNotes(); }));
+						setting.addDropdown(d => {
+							for (const f of FINISHES) d.addOption(f.id, f.label);
+							d.setValue(s.classDice.finish).onChange(async (v) => { s.classDice.finish = v; await save(); });
+						});
+					},
+				},
+				{
+					name: 'Include expansion drafts',
+					desc: 'The draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells in New character, sheet pickers and Spotlight. Drafts are marked as such wherever they show. A hero who already plays a draft class keeps their whole sheet either way.',
+					render: toggle(() => s.compendiumDrafts, v => { s.compendiumDrafts = v; }, () => { setCompendiumDrafts(s.compendiumDrafts); this.plugin.rerenderNotes(); }),
 				},
 			] },
 			{ heading: 'Party', rows: this.partyRows() },

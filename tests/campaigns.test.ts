@@ -310,3 +310,60 @@ describe('names a file name cannot hold', () => {
 		expect(c.name).toBe('Vecna: Eve of Ruin');
 	});
 });
+
+describe('player campaigns', () => {
+	it('reads the side from role: on the home note, gm by default', async () => {
+		const { campaignRole } = await import('../src/campaign-model');
+		const all = buildCampaigns([
+			n('Campaigns/Run/Run.md', { nimble: 'campaign' }),
+			n('Campaigns/Play/Play.md', { nimble: 'campaign', role: 'player' }),
+			n('Campaigns/Play/Party/Thorga.md', { nimble: 'character', mine: true }),
+		]);
+		expect(all.find(c => c.name === 'Run')!.role).toBe('gm');
+		const play = all.find(c => c.name === 'Play')!;
+		expect(play.role).toBe('player');
+		expect(play.sections.find(s => s.name === 'Party')!.notes[0].kind).toBe('character');
+		expect(campaignRole({ role: 'Players' })).toBe('player');
+		expect(campaignRole({ role: 'pc' })).toBe('player');
+		expect(campaignRole({ role: 'GM' })).toBe('gm');
+		expect(campaignRole({ role: 'Fighter' })).toBe('gm'); // an old note that used role: for something else
+	});
+
+	it('files new characters in Party and suggests the character starter there', () => {
+		const play = buildCampaigns([n('Campaigns/Play/Play.md', { nimble: 'campaign', role: 'player' }), n('Campaigns/Play/Ch/Ch.md', { nimble: 'chapter' })])[0];
+		expect(homeFolderFor(play, 'character', play.folder)).toBe('Campaigns/Play/Party');
+		expect(homeFolderFor(play, 'character', 'Campaigns/Play/Ch')).toBe('Campaigns/Play/Party');
+		expect(defaultKindFor('Party')).toBe('character');
+	});
+
+	it('writes player starters from the party\'s side', async () => {
+		const t = await import('../src/campaign-templates');
+		const home = t.playerCampaignHome('Ironbrow Saga', { gm: 'Sam', character: 'Thorga' });
+		expect(home).toMatch(/role: player/);
+		expect(home).toMatch(/gm: "Sam"/);
+		expect(home).toContain('```nimble-campaign');
+		const hero = t.characterNote('Thorga', { mine: true, level: 2 });
+		expect(hero).toMatch(/nimble: character\n/);
+		expect(hero).toMatch(/mine: true/);
+		expect(hero).toMatch(/level: 2/);
+		expect(hero).toContain('```nimble-sheet\n```');
+		expect(t.npcNote('Marta', 'player')).toContain('suspicions:');
+		expect(t.npcNote('Marta', 'player')).toContain('## What we learned');
+		expect(t.npcNote('Marta')).toContain('secret:');
+		expect(t.npcNote('Marta')).toMatch(/attitude: neutral/);
+		expect(t.locationNote('Phandalin', 'player')).toContain('## Rumors\n');
+		expect(t.locationNote('Phandalin')).toContain('## Rumors & secrets');
+		expect(t.sessionNote('Session 1', '2026-11-12', undefined, 'player')).toContain('/fought');
+	});
+});
+
+describe('opensInReading', () => {
+	it('reads pages, writes sessions and plain notes', async () => {
+		const { opensInReading } = await import('../src/campaign-model');
+		for (const nimble of ['character', 'chapter', 'scene', 'npc', 'location', 'map', 'handout', 'monster', 'campaign']) expect(opensInReading({ nimble }, false)).toBe(true);
+		expect(opensInReading({ nimble: 'session' }, false)).toBe(false);
+		expect(opensInReading({}, false)).toBe(false); // a loose note
+		expect(opensInReading({}, true)).toBe(true); // a scene without properties
+		expect(opensInReading({ nimble: 'session' }, true)).toBe(false);
+	});
+});

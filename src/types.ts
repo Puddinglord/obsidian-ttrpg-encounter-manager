@@ -143,6 +143,26 @@ export interface PartyMember {
 	className?: string;
 }
 
+/** A party member read from a character sheet: its id is `sheet:<path>`. The rest were entered by hand. */
+export function isSheetMember(m: PartyMember): boolean {
+	return m.id.startsWith('sheet:');
+}
+
+/** Heroes entered by hand that no character sheet has replaced yet (matched by name, ignoring case). */
+export function handEnteredLeft(party: PartyMember[], sheetNames: string[]): PartyMember[] {
+	const taken = new Set(sheetNames.map(n => n.trim().toLowerCase()));
+	return party.filter(m => !isSheetMember(m) && !taken.has(m.name.trim().toLowerCase()));
+}
+
+/**
+ * The encounter party of a campaign you run: a hero for each character sheet,
+ * then the heroes entered by hand that no sheet has replaced yet, so adding the
+ * first sheet never loses the rest of a party typed in before.
+ */
+export function mergeParty(fromSheets: PartyMember[], current: PartyMember[]): PartyMember[] {
+	return [...fromSheets, ...handEnteredLeft(current, fromSheets.map(m => m.name))];
+}
+
 export interface MonsterIndexEntry {
 	name: string;
 	/** Vault path, or '' for monsters bundled with the plugin. */
@@ -219,6 +239,18 @@ export interface NimbleStatblocksSettings {
 	autoLinkNpcs: boolean;
 	/** Folder new campaigns are created in. */
 	campaignsFolder: string;
+	/** Campaign pages (characters, chapters, scenes, NPCs…) open in reading view; editing is Obsidian's edit toggle. */
+	readingView: boolean;
+	/** Campaign notes show their properties as tags in reading view. */
+	tagProperties: boolean;
+	/** In player campaigns, show full stat blocks instead of lore cards (for GMs who don't mind spoilers). */
+	playerStatblocks: boolean;
+	/** Character sheets: ask for advantage, modifiers and dice to spend before every roll. */
+	rollDialog: boolean;
+	/** Class dice (Judgment Dice…): their colour on the sheet and in 3D, and their 3D finish. */
+	classDice: { color: string; finish: string };
+	/** Offer the expansion-draft classes (and their spells) on character sheets and in Spotlight. */
+	compendiumDrafts: boolean;
 	/** Folder of the active campaign (see campaigns.ts). `party` above is always its party. */
 	activeCampaign: string | null;
 	/** Per-campaign data, keyed by campaign folder: its party and the last scene opened. */
@@ -255,6 +287,12 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	spotlightKey: false,
 	spotlightOffered: false,
 	campaignsFolder: 'Campaigns',
+	playerStatblocks: false,
+	readingView: true,
+	tagProperties: true,
+	compendiumDrafts: true,
+	rollDialog: true,
+	classDice: { color: '#d4a72c', finish: 'metal' },
 	autoLinkNpcs: true,
 	styleTables: true,
 	activeCampaign: null,
@@ -318,6 +356,11 @@ export function migrateSettings(saved: unknown): NimbleStatblocksSettings {
 	s.party = items(s.party);
 	s.campaigns = record(s.campaigns);
 	s.activeCampaign = typeof s.activeCampaign === 'string' ? s.activeCampaign : null;
+	const cd = record(data.classDice);
+	s.classDice = {
+		color: typeof cd.color === 'string' && /^#[0-9a-f]{6}$/i.test(cd.color) ? cd.color : DEFAULT_SETTINGS.classDice.color,
+		finish: typeof cd.finish === 'string' && cd.finish ? cd.finish : DEFAULT_SETTINGS.classDice.finish,
+	};
 	// 1.0.4 dice styles; older saves only have per-role colours, which carry over.
 	s.dice = migrateDice(data.dice, data);
 	for (const k of ['dicePrimaryColor', 'diceColor', 'diceExplosionColor', 'diceMaterialPrimary', 'diceMaterialNormal', 'diceMaterialCrit'] as const) delete s[k];

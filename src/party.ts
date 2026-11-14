@@ -3,7 +3,7 @@
 
 import { App, Modal, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { uid } from './types';
+import { isSheetMember, uid } from './types';
 
 export function renderPartyEditor(container: HTMLElement, plugin: NimbleStatblocksPlugin, rerender: () => void): void {
 	const party = plugin.settings.party;
@@ -18,6 +18,26 @@ export function renderPartyEditor(container: HTMLElement, plugin: NimbleStatbloc
 		head.createDiv({ text, attr: { role: 'columnheader', title } });
 	}
 	party.forEach((hero, i) => {
+		// A hero with a character sheet (a campaign you run): the sheet is where they change, so the row just shows them.
+		if (isSheetMember(hero)) {
+			const row = table.createDiv({ cls: 'nimble-party-row is-sheet', attr: { role: 'row' } });
+			const cell = (short: string, key: string, value: string) => {
+				const f = row.createDiv({ cls: `nimble-party-field field-${key}` });
+				f.createSpan({ cls: 'nimble-party-field-label', text: short });
+				f.createSpan({ cls: 'nimble-party-value', text: value });
+			};
+			cell('Name', 'name', hero.name);
+			cell('Class', 'class', hero.className ?? '');
+			cell('Lvl', 'level', String(hero.level));
+			cell('HP', 'max-hp', String(hero.maxHp));
+			cell('DEF', 'defense', hero.defense !== undefined ? String(hero.defense) : '–');
+			cell('Wounds', 'max-wounds', String(hero.maxWounds ?? 6));
+			const path = hero.id.slice('sheet:'.length);
+			const open = row.createEl('button', { cls: 'clickable-icon nimble-party-del', attr: { 'aria-label': `Open ${hero.name}'s sheet (it keeps this row up to date)` } });
+			setIcon(open, 'file-symlink');
+			open.addEventListener('click', () => void plugin.app.workspace.openLinkText(path, '', false));
+			return;
+		}
 		const row = table.createDiv({ cls: 'nimble-party-row', attr: { role: 'row' } });
 		// Each input sits in a label so narrow screens can show it as a card with field names.
 		const field = (short: string, key: string) => {
@@ -59,13 +79,15 @@ export function renderPartyEditor(container: HTMLElement, plugin: NimbleStatbloc
 		await save();
 		rerender();
 	});
-	if (party.length) {
-		btn('Level up', 'trending-up', false, async () => {
-			for (const h of party) h.level += 1;
+	// Level up raises the heroes entered here; heroes with sheets level up on their sheets.
+	const typed = party.filter(h => !isSheetMember(h));
+	if (typed.length) {
+		btn('Level up', 'biceps-flexed', false, async () => {
+			for (const h of typed) h.level += 1;
 			await save();
 			rerender();
 			new Notice(`Party is now level ${party.map(h => h.level).join('/')}. Remember to add their new max HP.`);
-		}, 'Raise every hero one level');
+		}, typed.length === party.length ? 'Raise every hero one level' : 'Raise the heroes entered here one level (heroes with sheets level up on their sheets)');
 	}
 }
 

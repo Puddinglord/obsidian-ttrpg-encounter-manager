@@ -12,10 +12,17 @@ Open **Settings → Ember Vault**, or type `/settings` in a note.
 
 - **Campaigns folder:** where **New campaign** creates its folders.
 - **Link NPC names as you read:** underline NPC names and aliases in a campaign's notes, with a hover preview. Your files aren't changed.
+- **Stat blocks in campaigns you play in:** off by default, so a [player campaign](players.md) shows lore cards instead of stat blocks. Turn it on if you don't mind spoilers.
+
+## Character sheets
+
+- **Ask before rolling:** attacks, spells, saves and checks open the [roll dialog](character-sheets.md#rolling) for advantage, a modifier and class dice. Off rolls straight away, with class dice that are on by default (like Judgment Dice) added.
+- **Class dice:** the colour of Judgment Dice, Fury Dice and the like, on the sheet and when they roll with an attack, and their 3D finish.
+- **Include expansion drafts:** the draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells, marked as drafts wherever they show. A hero who already plays a draft class keeps their whole sheet when this is off.
 
 ## Party
 
-Your heroes: name, class, level, max HP, Defense and max Wounds. This is the party used outside a campaign. Inside one, the campaign's own party is used (edit it from the Campaign panel).
+Your heroes: name, class, level, max HP, Defense and max Wounds. This is the party used outside a campaign. Inside one, the campaign's own party is used (edit it from the Campaign panel). In a campaign you run, heroes with character sheets show here read-only, with a button to open their sheet; their sheet keeps them current.
 
 ## Notes
 

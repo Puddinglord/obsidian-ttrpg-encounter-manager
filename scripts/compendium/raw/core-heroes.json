@@ -1,0 +1,825 @@
+{
+  "ancestries": [
+    {
+      "name": "Human",
+      "rarity": "common",
+      "size": "Medium",
+      "flavor": "Found in every terrain and environment, their curiosity and ambition drive them to explore every corner of the world, making them a ubiquitous and versatile race.",
+      "traits": [
+        {
+          "name": "Tenacious",
+          "text": "+1 to all skills and Initiative."
+        }
+      ],
+      "source": "Core",
+      "page": 23,
+      "draft": false
+    },
+    {
+      "name": "Dwarf",
+      "rarity": "common",
+      "size": "Medium",
+      "flavor": "Dwarf, in the old language, means “stone.” You are resilient, solid, stout. Even when driven to exhaustion, you will not falter. Forgoing speed, you are gifted with physical vitality and a belly that can handle the finest (and worst) consumables this world has to offer.",
+      "traits": [
+        {
+          "name": "Stout",
+          "text": "+2 max Hit Dice, +1 max Wounds, –1 Speed. You know Dwarvish if your INT isn’t negative."
+        }
+      ],
+      "source": "Core",
+      "page": 23,
+      "draft": false
+    },
+    {
+      "name": "Elf",
+      "rarity": "common",
+      "size": "Medium",
+      "flavor": "Elves epitomize swiftness and grace. Their tall, slender forms belie their innate speed, grace, and wit. Formidable in both diplomacy and combat, elves strike swiftly, often preventing the worst by acting first.",
+      "traits": [
+        {
+          "name": "Lithe",
+          "text": "Advantage on Initiative, +1 Speed. You know Elvish if your INT isn’t negative."
+        }
+      ],
+      "source": "Core",
+      "page": 23,
+      "draft": false
+    },
+    {
+      "name": "Halfling",
+      "rarity": "common",
+      "size": "Small",
+      "flavor": "Kind of like a human, but smaller (except for the feet). Where does our luck come from? Well… you know what they say about rabbit feet? Well, we’ve got feet for days compared to them. Imagine the amount of luck you could fit into these bad boys!",
+      "traits": [
+        {
+          "name": "Elusive",
+          "text": "+1 to Stealth. (1/Safe Rest) If you fail a save, you can succeed instead."
+        }
+      ],
+      "source": "Core",
+      "page": 23,
+      "draft": false
+    },
+    {
+      "name": "Gnome",
+      "rarity": "common",
+      "size": "Small",
+      "flavor": "Eccentric, curious, and perpetually optimistic, gnomes are cheerful—especially when compared to their typically grumpier and larger kin, the dwarves. Known for their tinkering, spreading cheer, and playful antics, gnomes pursue their passions with a scatterbrained enthusiasm.",
+      "traits": [
+        {
+          "name": "Optimistic",
+          "text": "(Free Reaction, Reach 6) Allow an ally to reroll any 1 die; resets when healed to max HP. –1 Speed. You know Dwarvish if your INT isn’t negative (but you call it Gnomish, of course)."
+        }
+      ],
+      "source": "Core",
+      "page": 23,
+      "draft": false
+    },
+    {
+      "name": "Dragonborn",
+      "rarity": "uncommon",
+      "size": "Medium",
+      "flavor": "The soul of a dragon burns within you, the scales of your body are like forged steel. You are a kiln and your heritage the coals that stoke your flames. Call upon your wrath to speak in the tongue of your ancestors and imbue unbridled fury into your attacks.",
+      "traits": [
+        {
+          "name": "Draconic Heritage",
+          "text": "+1 Defense. (1/Safe Rest) Deal an additional LVL+KEY damage on an attack divided as you choose among any of the attack’s targets (recharges whenever you gain a Wound). You know Draconic if your INT isn’t negative."
+        }
+      ],
+      "source": "Core",
+      "page": 24,
+      "draft": false
+    },
+    {
+      "name": "Goblin",
+      "rarity": "uncommon",
+      "size": "Small",
+      "flavor": "Green, cunning, and perpetually vilified, Goblins thrive on the edge of chaos. For a Goblin, vanishing into the shadows is not just a skill—it’s an identity. After all, what kind of Goblin would you be if you couldn’t slip away unnoticed?",
+      "traits": [
+        {
+          "name": "Skedaddle",
+          "text": "Can move 2 spaces for free after you become the target of an attack or negative effect (after damage, ignoring Difficult Terrain). You know Goblin if your INT isn’t negative."
+        }
+      ],
+      "source": "Core",
+      "page": 24,
+      "draft": false
+    },
+    {
+      "name": "Orc",
+      "rarity": "uncommon",
+      "size": "Medium",
+      "flavor": "Just when you think you’ve bested a mighty Orc, you’ve merely succeeded in rousing their anger. Engaging in combat with an Orc is no endeavor for the weak-willed. While others may cower before death’s approach, Orcs boldly defy its grasp.",
+      "traits": [
+        {
+          "name": "Relentless",
+          "text": "(1/Safe Rest) When you would drop to 0 HP, you may set your HP to LVL instead. +1 Might. You know Goblin if your INT isn’t negative (but you call it Orcish, of course)."
+        }
+      ],
+      "source": "Core",
+      "page": 24,
+      "draft": false
+    },
+    {
+      "name": "Kobold",
+      "rarity": "uncommon",
+      "size": "Small",
+      "flavor": "Small, often maniacal, and dragon-obsessed. Kobolds thrive in familial groups, working together and finding ingenious ways to survive despite their diminutive size. Underestimated by many, Kobolds prove time and again that even the smallest among us can wield great power.",
+      "traits": [
+        {
+          "name": "Wily",
+          "text": "Advantage on skill checks related to dragons and to Influence friendly creatures. (1/encounter) Force an enemy to reroll a non-critical attack against you. You know Draconic if your INT isn’t negative."
+        }
+      ],
+      "source": "Core",
+      "page": 24,
+      "draft": false
+    },
+    {
+      "name": "Fiendkin",
+      "rarity": "uncommon",
+      "size": "Medium",
+      "flavor": "Said to have been born from a cursed bloodline or from the union of man and fiend, Fiendkin often find themselves outcasts in society. Yet, they embody determination in the face of adversity. Their ancestors didn’t emerge from the depths of the Everflame to succumb to minor setbacks!",
+      "traits": [
+        {
+          "name": "Flameborn",
+          "text": "1 neutral save is advantaged instead. You know Infernal if your INT isn’t negative."
+        }
+      ],
+      "source": "Core",
+      "page": 24,
+      "draft": false
+    },
+    {
+      "name": "Bunbun",
+      "rarity": "uncommon",
+      "size": "Small",
+      "flavor": "Bunbun are agile and unpredictable, using their powerful legs to leap great distances and catch foes off guard. Facing a Bunbun means contending with an opponent who can strike from unexpected angles and swiftly reposition themselves in the heat of battle.",
+      "traits": [
+        {
+          "name": "Bunny Legs",
+          "text": "(1/encounter) Before Interposing or after Defending (after damage), hop up to your Speed in any direction for free."
+        }
+      ],
+      "source": "Core",
+      "page": 24,
+      "draft": false
+    },
+    {
+      "name": "Birdfolk",
+      "rarity": "exotic",
+      "size": "Small or Medium",
+      "flavor": "Birdfolk find sanctuary not in stone or chains, but within the boundless expanse of the sky. However, the gift of flight comes at a cost—hollow bones, and commensurate frailty.",
+      "traits": [
+        {
+          "name": "Hollow Bones",
+          "text": "You can fly as long as you are wearing armor no heavier than Leather. Crits against you are Vicious (the attacker rolls 1 additional die)."
+        }
+      ],
+      "source": "Core",
+      "page": 26,
+      "draft": false
+    },
+    {
+      "name": "Celestial",
+      "rarity": "exotic",
+      "size": "Medium",
+      "flavor": "Descendants of divine beings, Celestials carry an aura of nobility and grace. Their innate connection to the higher planes allows them to resist the effects of misfortune, standing strong where others may falter.",
+      "traits": [
+        {
+          "name": "Highborn",
+          "text": "Your disadvantaged save is neutral instead. You know Celestial if your INT isn’t negative."
+        }
+      ],
+      "source": "Core",
+      "page": 26,
+      "draft": false
+    },
+    {
+      "name": "Changeling",
+      "rarity": "exotic",
+      "size": "Medium",
+      "flavor": "Often hunted for their silver blood, Changelings are natural survivors, slipping into new identities with ease. Changelings that shift too often typically aren’t long for the world—they can struggle to remember who they once were, becoming little more than reflections of the faces they wear.",
+      "traits": [
+        {
+          "name": "New Place, New Face",
+          "text": "+2 Shifting Skill Points. You take on the appearance of any ancestry (transformation time 10 min). When you do, you may move your 2 Shifting Skill Points into any 1 skill."
+        }
+      ],
+      "source": "Core",
+      "page": 26,
+      "draft": false
+    },
+    {
+      "name": "Crystalborn",
+      "rarity": "exotic",
+      "size": "Medium",
+      "flavor": "Formed from living crystal, the Crystalborn are beings of dazzling beauty and otherworldly toughness. Their translucent bodies refract light and sound, granting them unique abilities in combat.",
+      "traits": [
+        {
+          "name": "Reflective Aura",
+          "text": "(1/encounter) When you Defend, gain KEY Defense and deal KEY damage back to the attacker (ignoring their armor)."
+        }
+      ],
+      "source": "Core",
+      "page": 26,
+      "draft": false
+    },
+    {
+      "name": "Dryad/Shroomling",
+      "rarity": "exotic",
+      "size": "Small or Medium",
+      "flavor": "Tied to the natural world, Dryads and Shroomlings embody the balance between flora and fauna. Their unique physiology releases toxic spores when harmed, providing a natural defense against those who dare to harm them.",
+      "traits": [
+        {
+          "name": "Danger Pollen/Spores",
+          "text": "Whenever you gain one or more Wounds, you excrete soporific spores: all adjacent enemies are Dazed. You know Elvish if your INT isn’t negative."
+        }
+      ],
+      "source": "Core",
+      "page": 26,
+      "draft": false
+    },
+    {
+      "name": "Half-Giant",
+      "rarity": "exotic",
+      "size": "Large",
+      "flavor": "Towering beings whose strength is as immovable as the mountains they call home. Their sheer size and resilience make them fearsome opponents, capable of surviving even devastating blows.",
+      "traits": [
+        {
+          "name": "Strength of Stone",
+          "text": "(1/encounter) Force an enemy to reroll a crit against you. +2 Might. You know Dwarvish if your INT isn’t negative (but you call it Giant, of course)."
+        }
+      ],
+      "source": "Core",
+      "page": 26,
+      "draft": false
+    },
+    {
+      "name": "Minotaur/Beastfolk",
+      "rarity": "exotic",
+      "size": "Medium",
+      "flavor": "Minotaur and other Beastfolk embody a primal connection to The Wild, combining strength with natural agility. Their powerful build allows them to move swiftly, whether repositioning to outflank foes or charging in with unstoppable force.",
+      "traits": [
+        {
+          "name": "Charge",
+          "text": "When you move at least 4 spaces, you can Knockback a creature in your path 1 space."
+        }
+      ],
+      "source": "Core",
+      "page": 26,
+      "draft": false
+    },
+    {
+      "name": "Oozeling/Construct",
+      "rarity": "exotic",
+      "size": "Small or Medium",
+      "flavor": "What even is a “PeOpLe” anyway? So what if your heart pumps oil instead of blood, so what if you don’t even have a heart!? If you can squish yourself into a pair of pants, or swing a sword like everyone else, who’s to say you can’t be a pEOpLe, too?!",
+      "traits": [
+        {
+          "name": "Odd Constitution",
+          "text": "Increment your Hit Dice one step (d6 » d8 » d10 » d12 » d20); they always heal you for the maximum amount. Magical healing always heals you for the minimum amount."
+        }
+      ],
+      "source": "Core",
+      "page": 26,
+      "draft": false
+    },
+    {
+      "name": "Planarbeing",
+      "rarity": "exotic",
+      "size": "Medium",
+      "flavor": "You are not from this plane of existence—your soul is not as strongly tethered to it as others. But with this vulnerability comes power, the ability to temporarily shift from one plane to another in times of dire need.",
+      "traits": [
+        {
+          "name": "Planeshift",
+          "text": "–2 max Wounds. Whenever you Defend, you can gain 1 Wound to temporarily phase out of the material plane and ignore all effects of the attack."
+        }
+      ],
+      "source": "Core",
+      "page": 27,
+      "draft": false
+    },
+    {
+      "name": "Ratfolk",
+      "rarity": "exotic",
+      "size": "Small",
+      "flavor": "Ratfolk are survivors, thriving in the shadows of society where others fear to tread. Agile, resourceful, and fiercely loyal to their own, they have a knack for turning scraps into solutions.",
+      "traits": [
+        {
+          "name": "Scurry",
+          "text": "Gain +2 Defense if you moved on your last turn. +1 Speed."
+        }
+      ],
+      "source": "Core",
+      "page": 27,
+      "draft": false
+    },
+    {
+      "name": "Stoatling",
+      "rarity": "exotic",
+      "size": "Small",
+      "flavor": "Stoatlings may be small, but they’re far from weak. With fierce determination and warrior hearts, they can capably take down foes many times their size. Their agility and tenacity let them exploit larger enemies’ weaknesses, turning their size into a lethal advantage.",
+      "traits": [
+        {
+          "name": "Small But Ferocious",
+          "text": "Whenever you make a single-target attack against a creature larger than you, roll 1 additional d6 for each size category it is larger. They do the same."
+        }
+      ],
+      "source": "Core",
+      "page": 27,
+      "draft": false
+    },
+    {
+      "name": "Turtle/Stonefolk",
+      "rarity": "exotic",
+      "size": "Small or Medium",
+      "flavor": "Turtlefolk and Stonefolk take their time in everything they do; they are patient, sturdy, and slow to anger. They rely on their thick shells for protection, making them difficult to harm, but their cautious movements come at the cost of Speed.",
+      "traits": [
+        {
+          "name": "Slow & Steady",
+          "text": "+4 Defense, –2 Speed."
+        }
+      ],
+      "source": "Core",
+      "page": 27,
+      "draft": false
+    },
+    {
+      "name": "Wyrdling",
+      "rarity": "exotic",
+      "size": "Small",
+      "flavor": "Unpredictable and chaotic, Wyrdlings are the result of magic gone awry. Their bodies pulse with raw arcane energy, and their mere presence often disturbs the balance of magic around them.",
+      "traits": [
+        {
+          "name": "Chaotic Surge",
+          "text": "(1/encounter) Whenever you or a willing ally within Reach 6 casts a Tiered spell, you may allow them to roll on the Chaos Table."
+        }
+      ],
+      "source": "Core",
+      "page": 27,
+      "draft": false
+    }
+  ],
+  "backgrounds": [
+    {
+      "name": "Back Out of Retirement",
+      "text": "You’ve forgotten more than most adventurers these days know! Talk with your GM: what made you come out of retirement?\n• Let’s see if I remember how to do this… Gain 1 Wound to use an ability or cast a spell as if you were 1 level higher.\n• These old bones… Your age has long since started to show. –1 max Wounds.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Devoted Protector",
+      "text": "Choose 1 ally in your party. You can survive +3 max Wounds as long as they are nearby. Whenever they take a Wound, you do too.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Academy Dropout",
+      "text": "School just isn’t for everyone! You learn by experience in the real world (or at least that’s what you tell yourself). Learn any 1 Utility Spell.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Made a BAD Choice",
+      "text": "Start with 500 or 1,000 extra gold, or an uncommon/rare magical item (that your GM allows). Gain an equally powerful curse or enemy who wants it back. If you choose this background, your GM may allow you to choose another.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Haunted Past",
+      "text": "You are haunted by voices that occasionally give you cryptic advice. The voices are sometimes VERY helpful. Other times they only want to see you suffer. Advantage against fear.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Ear to the Ground",
+      "text": "Advantage on checks to know or obtain gossip for events that will soon happen or have happened less than 1 year ago.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "What? I’ve Been Around",
+      "text": "(1/location; or at the GM’s discretion). You happen to know JUST the person who has the information you’re looking for, or could get you out of a jam, and… Roll 1d20:\n• 1–5. They want you DEAD.\n• 6–12. You owe them money.\n• 13–19. They can be convinced to help you.\n• 20. They are your biggest fan, or are madly in love with you.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Acrobat",
+      "text": "Can be thrown by a larger ally, REALLY far. Resistant to falling and forced movement damage.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Wild One",
+      "text": "Whether it is the sticks or flowers in your hair, your smell, or the way you carry yourself, wild creatures are less frightened of you and more willing to aid you. +1 Naturecraft. While Field Resting in the wild, your Hit Dice recover +KEY HP.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Fey Touched",
+      "text": "You take half damage from all magical effects, double from weapons made of metal (before Defense is applied).",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Survivalist",
+      "text": "You never run out of your own personal rations. Anything can be food if you try hard enough! (1/Safe Rest) End poison on yourself. Advantage against poison saves. +1 max Hit Die.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Home at Sea",
+      "text": "Recover twice as many Wounds and HP while Resting on a ship or near water. You can fill in for a first mate or captain in a pinch. Advantage on water-related skill checks.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "At Home Underground",
+      "text": "You can dig twice as fast as others. Safe Resting locations underground always count as Lavish lodging for you. You struggle to rest (INT save) while it’s raining. “Water… from the SKY?!”",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "Raised by Goblins",
+      "text": "You speak Goblin natively (much better than one who has learned it later in life). You automatically notice and can avoid crudely made traps and have advantage to notice and disarm more sophisticated traps.",
+      "source": "Core",
+      "page": 28,
+      "draft": false
+    },
+    {
+      "name": "(Former) Con Artist",
+      "text": "You can forge most documents or mimic voices flawlessly. You have a criminal contact in most major cities. However, your reputation often precedes you—until you prove yourself to be trustworthy.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "History Buff",
+      "text": "Advantage on all Lore checks about items, facts, or events that happened more than 100 years ago.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "(Secretly) Undead",
+      "text": "Unnatural Resilience: You are immune to disease and do not need to eat, drink, or breathe. Children, animals, and Celestials are uneasy in your presence; many will be horrified to discover your true nature.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "Taste for the Finer Things",
+      "text": "You always have up-to-date knowledge of the customs and dress of the upper classes and may even know many of their secrets. Advantage on Influence checks with the upper class.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "Fearless",
+      "text": "You are immune to being Frightened. +1 Initiative. –1 Defense.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "So Dumb I’m Smart Sometimes",
+      "text": "(2/Safe Rest) Reroll a failed INT-related skill or save with advantage.",
+      "requirement": "Req. 0 or negative INT at character creation.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "Wily Underdog",
+      "text": "(2/Safe Rest) Reroll a failed STR attack, STR save, or Might check and use another stat instead.",
+      "requirement": "Req. 0 or negative STR at character creation.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "Bumblewise",
+      "text": "A total of 1 or less on any WIL-related roll counts as a natural 20 (WIL save, Naturecraft, Perception, Influence, or Insight check).",
+      "requirement": "Req. 0 or negative WIL at character creation.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "Accidental Acrobat",
+      "text": "Whenever you fail a DEX-related roll (e.g., DEX attack, DEX save, Stealth check, Finesse check), you may roll again. If you still fail, the consequences are BAD.",
+      "requirement": "Req. 0 or negative DEX at character creation.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    },
+    {
+      "name": "Tradesman/Artisan",
+      "text": "Choose a profession (Baker/Cook, Smith, Stonemason, Weaver, Leatherworker, etc.). Checks you make related to that profession have advantage. You also retain special knowledge related to your profession.",
+      "source": "Core",
+      "page": 29,
+      "draft": false
+    }
+  ],
+  "motivations": [
+    {
+      "name": "I owe a life debt to someone in my party",
+      "text": "Chat with your party: Who else needs help with their backstory? What did they do to help you?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I owe a LOT of money to some very dangerous people",
+      "text": "What did you do with the money? Your GM probably has some GREAT ideas of bad guys you’re in deep with.",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I need to grow in power to defeat someone who has wronged me",
+      "text": "Do you know who wronged you, or are they unknown? Is it an individual or a larger group? Chat with your GM; they’ll love to help fill in the blanks.",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I am searching for a way to bring a loved one (or someone I hate) back from the dead",
+      "text": "Who even told you this was possible? What if they don’t remember you?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I am trying to get back home",
+      "text": "Where is home for you? Do you even remember? What caused you to leave? Chat with your GM; they can give you some options of homelands.",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I am searching for the one who stole something valuable from me",
+      "text": "Is it an object? A person? A memory? Was it really stolen or did you make a bad bargain?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I was polymorphed into another kind of creature by a wizard",
+      "text": "Hah! How would it feel for a cute halfling to become an ugly goblin? What did you do to anger the wizard?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "Duty calls. I am honor-bound to serve",
+      "text": "Who calls you? Your king? Your family? An ancient alliance or grudge? Talk with your GM and other players for ideas and mutual connections.",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I was best friends with (and betrayed by) _______",
+      "text": "Do you want to win them back? Get even? Warn others of their backstabbing? Talk with your GM about who this might be.",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I’m lost",
+      "text": "Physically? Emotionally? Spiritually? Are you in the wrong country or even plane of existence?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "Wanderlust/Pilgrimage",
+      "text": "What amazing thing do you want to see or experience? Have you spent too much time away from the road? Your GM probably has some fantastic locations in mind for you.",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "My hometown is in danger",
+      "text": "Are you looking for a cure? Mercenaries? Personal strength?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "Curiosity! I want to learn the DEEP secrets",
+      "text": "Which secrets? Magical, lore, politics, what really happened in history?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "To prove my worth",
+      "text": "You were always underestimated—by your family, your village, your peers, or yourself. What will it take to show them you’re more than they thought? What kind of recognition do you seek?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    },
+    {
+      "name": "I’m following a prophecy",
+      "text": "A mysterious figure or ancient text foretold that you would play a crucial role in the fate of the world. What do you know of the prophecy? Do you believe it?",
+      "source": "Core",
+      "page": 31,
+      "draft": false
+    }
+  ],
+  "rules": {
+    "statArrays": [
+      {
+        "name": "Standard",
+        "values": [
+          2,
+          2,
+          0,
+          -1
+        ]
+      },
+      {
+        "name": "Balanced",
+        "values": [
+          2,
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "name": "Min-Max",
+        "values": [
+          3,
+          1,
+          -1,
+          -1
+        ]
+      }
+    ],
+    "stats": [
+      {
+        "name": "Strength",
+        "abbr": "STR",
+        "text": "Your raw physical power and resilience, endurance, and resistance to harm. Affects STR weapon damage, resistance to Wounds, HP recovery, Concentration, STR saves, carrying capacity, Grappling, and the Might skill."
+      },
+      {
+        "name": "Dexterity",
+        "abbr": "DEX",
+        "text": "Your agility, reflexes, and precision with blades or bows. Affects DEX weapon damage, Initiative, DEX saves, Grappling, and can contribute to Defense, as well as the Stealth and Finesse skills."
+      },
+      {
+        "name": "Intelligence",
+        "abbr": "INT",
+        "text": "Your Intelligence reflects knowledge and reasoning across fields like the arcane, tactics, or street smarts. Affects languages, spellcasting, use of wands, spell scrolls, INT saves, as well as the Arcana, Examination, and Lore skills."
+      },
+      {
+        "name": "Will",
+        "abbr": "WIL",
+        "text": "Your force of personality, courage, and wisdom. Will shapes your interactions with both nature and society. Affects spellcasting and WIL saves, as well as the Insight, Influence, Naturecraft, and Perception skills."
+      }
+    ],
+    "skills": [
+      {
+        "name": "Arcana",
+        "stat": "INT",
+        "text": "Understanding of magical phenomena, spells, and enchantments. With Arcana, you can identify magical effects, decipher arcane symbols, and discern the properties of magical items. It also grants insights into the abilities and weaknesses of magical beings like Aberrations, Elementals, and Oozes."
+      },
+      {
+        "name": "Examination",
+        "stat": "INT",
+        "text": "Aptitude for thorough analysis and deduction. Use Examination to diagnose injuries, determine causes of death, uncover clues, and unravel the workings of traps or mechanical devices. It also grants insights into the abilities and weaknesses of Constructs."
+      },
+      {
+        "name": "Finesse",
+        "stat": "DEX",
+        "text": "The ability to use your hands and feet in careful ways. Use Finesse for activities such as picking locks, disarming traps, piloting vehicles, tinkering, card tricks, stealing or planting items, climbing a mossy wall, or any other task that requires precise, careful movement."
+      },
+      {
+        "name": "Influence",
+        "stat": "WIL",
+        "text": "Your persuasiveness, charm, and ability to influence others through charisma or cunning. Use Influence to convince or deceive people, negotiate deals, build trust, win allies to your cause, or put on a captivating performance."
+      },
+      {
+        "name": "Insight",
+        "stat": "WIL",
+        "text": "Your ability to understand people and situations beyond the obvious. Use Insight to sense motives, detect lies, read hidden emotions, make sense of clues, and when faced with uncertainty—you can think ahead or just “get” what is happening. Insight can be used to retroactively change situations:\nPlayer: “Oh no! I forgot to buy rope back in town!”\nGM: “Give me an Insight check; maybe your hero would have thought about it…”"
+      },
+      {
+        "name": "Lore",
+        "stat": "INT",
+        "text": "Understanding of the history of civilization, kingdoms, and religions. Use Lore to recall historical events and grasp the significance of cultural practices. It extends to knowledge of the abilities and behavior of Celestials, Dragons, Fey, Fiends, Giants, Humanoids, and Undead."
+      },
+      {
+        "name": "Might",
+        "stat": "STR",
+        "text": "Your ability to apply strength effectively. Use Might for lifting heavy objects, breaking through obstacles, climbing, swimming, jumping, or performing feats of strength."
+      },
+      {
+        "name": "Naturecraft",
+        "stat": "WIL",
+        "text": "Your expertise in wilderness survival, navigation, tracking, and the handling of animals. Use Naturecraft to thrive in the wild, identify flora, fauna, and track creatures with precision. It encompasses knowledge of Beasts, Monstrosities, and Plants, providing insights into their behavior, habitats, and characteristics."
+      },
+      {
+        "name": "Perception",
+        "stat": "WIL",
+        "text": "Your overall ability to notice subtle details in your surroundings. Use Perception to spot hidden objects, detect secret passages, sense subtle environmental changes, and sense when you’re being followed or observed. It encompasses your ability to pick up on non-obvious cues and hidden threats."
+      },
+      {
+        "name": "Stealth",
+        "stat": "DEX",
+        "text": "Your proficiency in staying unseen and moving quietly. Use Stealth to hide, slip past guards, evade detection, and move without drawing attention."
+      }
+    ],
+    "languages": [
+      {
+        "name": "Common",
+        "speakers": "Most intelligent creatures."
+      },
+      {
+        "name": "Dwarvish",
+        "speakers": "Dwarves, Gnomes, and Giants."
+      },
+      {
+        "name": "Elvish",
+        "speakers": "Elves, Fey, and Sylvan."
+      },
+      {
+        "name": "Goblin",
+        "speakers": "Goblins and Orcs."
+      },
+      {
+        "name": "Infernal",
+        "speakers": "Various Fiends and cultists."
+      },
+      {
+        "name": "Thieves’ Cant",
+        "speakers": "Scoundrels and rogues."
+      },
+      {
+        "name": "Celestial",
+        "speakers": "Celestials and priests."
+      },
+      {
+        "name": "Draconic",
+        "speakers": "Dragons, Dragonborn, and Kobolds."
+      },
+      {
+        "name": "Primordial",
+        "speakers": "Elementals and Ancient Beings."
+      },
+      {
+        "name": "Deep Speak",
+        "speakers": "Underworld dwellers."
+      }
+    ],
+    "languagesText": "All heroes speak Common by default. Each point of INT grants you an additional language known.",
+    "levelUpText": "The GM may allow you to gain a level (LVL) while Safe Resting after you complete an appropriately challenging quest or adventure. At level 1, this may be as simple as clearing some angry rats out of a basement or rescuing someone from the woods. Each subsequent level will generally take more effort (and therefore more time). When you gain a level:",
+    "levelUp": [
+      "HP Increase. Roll your Hit Die with advantage and increase your max HP by that much (or you may take the average instead: Hit Die size: d4: +3 HP; d6: +4 HP; d8: +5 HP; d10: +7 HP; d12: +8 HP).",
+      "More Endurance. Your Hit Die max increases by 1 (it is typically equal to your level).",
+      "More Skilled. Gain 1 skill point. Additionally, to reflect your hero’s evolving expertise and priorities you may move 1 point from one skill to another (as long as the skill isn’t already negative).",
+      "Class Features. Gain new class features for your level. This may mean increasing your mana pool, new spells, or even selecting a subclass!",
+      "Other Adjustments. If any of your base stats increase, remember to adjust other elements of your character sheet as needed: skills change with their respective stats, as do damage, Initiative, Defense, mana, languages, etc."
+    ],
+    "hpAverage": {
+      "4": 3,
+      "6": 4,
+      "8": 5,
+      "10": 7,
+      "12": 8
+    },
+    "inventory": "Each hero has 10+STR inventory slots for carrying equipment and loot (held, worn, or in a pack).\n• 1 slot can hold a 1-handed weapon, shield, worn armor, stack of javelins, 500 gp, or 2 potions.\n• 2 slots can hold a 2-handed weapon, unworn armor, or similarly bulky items.\n• Small, related items can be grouped into one slot for simplicity (e.g., Camping Supplies: soap, blanket, brush, rations).\n\nOn Ammunition. In most games, there’s no need to track ammo. If you have a quiver, you have enough arrows. Assume the hero collects fired arrows, crafts more, or buys them in town.\n\nAlternatively, your GM may allow you to carry whatever you want without the bookkeeping, so long as you’re reasonable!",
+    "defaults": "Mark your HP, Hit Dice size (see your class), Hit Die amount (default: LVL), Defense (DEX+armor), Initiative (default: DEX), Size, Speed (default: 6), max Wounds (default: 6), and inventory slots (10+STR).",
+    "startingGold": "Heroes start at level 1 with the equipment listed for their class and background OR 50 gp to buy their starting equipment. If starting at a higher level, multiply that by your starting level.",
+    "source": "Core",
+    "page": 20,
+    "draft": false
+  },
+  "notes": [
+    "Pages: stats p.6, skills p.7, character sheet (stat arrays, inventory, defaults, starting gold) p.20, languages and Leveling Up p.21. rules.page is set to 20 for the object as a whole.",
+    "rules has extra keys beyond the brief: stats (the 4 stat descriptions), languagesText, levelUpText, defaults (section '3. Other Info'), startingGold (section '4. Equipment & Money'). Drop them if the importer doesn't want them.",
+    "Insight's description ends with 'situations:' and is followed by a boxed Player/GM example; that example is appended to the Insight text on new lines.",
+    "rules.inventory includes the boxed 'On Ammunition.' note that sits inside section 5 (Inventory Slots).",
+    "Motivations are an unnumbered 'Choose 1' list in the book, not a roll table, so roll is omitted. Names are the full bold lead-in without its final period (e.g. 'Duty calls. I am honor-bound to serve', 'Curiosity! I want to learn the DEEP secrets'). The blank in 'I was best friends with (and betrayed by) _______' is printed as an underline.",
+    "Background requirements are printed as a 'Req. …' lead-in to the text; they are moved to requirement (kept with the 'Req.' prefix) and removed from text. The book uses no category headings for backgrounds.",
+    "Book italics (e.g. 'days', 'these' in Halfling flavor; 'real world' in Academy Dropout; 'If you choose this background, your GM may allow you to choose another.' in Made a BAD Choice; 'have'/'you' in Oozeling flavor) are rendered as plain text.",
+    "Omitted boxed sidebars not covered by the schema: 'What About Half-Elves?' and 'Flavor Is Free.' (p.23), 'Flavor Is Free.' (p.24), 'Change It Up!' (raised-by alternative ancestry, p.28), 'Make It Your Own!' (p.29), 'Or Make Your Own!' (p.31), and the stat-array Example / Heroic Skills optional rule (p.20).",
+    "Oozeling/Construct's Hit Dice chain is printed with '»' separators (d6 » d8 » d10 » d12 » d20); kept as printed."
+  ]
+}

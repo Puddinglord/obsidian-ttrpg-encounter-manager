@@ -108,3 +108,32 @@ describe('finding a block in its note', () => {
 		expect(replaceEncounterBlock(text, 0, 4, body, next)).toBe(['````nimble-encounter', ...next.split('\n'), '````', 'x'].join('\r\n'));
 	});
 });
+
+describe('battle notes fields', () => {
+	it('reads outcome, where, loot from the extra lines and keeps them on rewrite', async () => {
+		const { battleField, outcomeOf, withBattleField } = await import('../src/encounter-def');
+		const def = parseEncounterBlock('name: Ford ambush\noutcome: Victory!\nloot: 40 gp\nmonsters:\n- 4 Goblin\n- Goblin Shaman\nnotes: The shaman fled.');
+		expect(battleField(def, 'outcome')).toBe('Victory!');
+		expect(outcomeOf(battleField(def, 'outcome'))).toBe('won');
+		expect(battleField(def, 'loot')).toBe('40 gp');
+		expect(battleField(def, 'where')).toBe('');
+		const next = withBattleField(withBattleField(def, 'outcome', 'fled'), 'where', '[[The Ford]]');
+		const src = encounterBlockSource(next);
+		expect(src).toContain('outcome: fled');
+		expect(src).toContain('where: [[The Ford]]');
+		expect(src).toContain('loot: 40 gp');
+		const back = parseEncounterBlock(src);
+		expect(back.monsters).toEqual([{ name: 'Goblin', count: 4 }, { name: 'Goblin Shaman', count: 1 }]);
+		expect(back.notes).toBe('The shaman fled.');
+		expect(battleField(withBattleField(back, 'loot', ''), 'loot')).toBe('');
+	});
+
+	it('knows outcomes by their usual words', async () => {
+		const { outcomeOf } = await import('../src/encounter-def');
+		expect(outcomeOf('we won')).toBe('won');
+		expect(outcomeOf('retreated')).toBe('fled');
+		expect(outcomeOf('TPK')).toBe('lost');
+		expect(outcomeOf('talked them down')).toBe('parley');
+		expect(outcomeOf('something odd')).toBeUndefined();
+	});
+});
