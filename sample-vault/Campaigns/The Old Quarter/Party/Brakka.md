@@ -1,6 +1,6 @@
 ---
 nimble: character
-player: You
+player: Rowan
 ancestry: Orc
 class: Berserker
 level: 2

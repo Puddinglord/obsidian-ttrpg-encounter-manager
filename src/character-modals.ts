@@ -4,6 +4,7 @@
 import { App, Modal, normalizePath, Notice, Setting, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { bundledCompendium } from './compendium-data';
+import { joinPath, safeName } from './campaign-model';
 import { assignStats, fmtMod, Frontmatter, newCharacterFrontmatter, NewCharacterOptions, STAT_ARRAYS } from './character-def';
 
 const SHEET_BODY = '```nimble-sheet\n```\n\n## Backstory\n\n\n## Notes\n\n';
@@ -20,9 +21,8 @@ export async function createCharacterNote(plugin: NimbleStatblocksPlugin, o: New
 	const comp = bundledCompendium();
 	const dir = folder ? normalizePath(folder) : '';
 	if (dir && !app.vault.getFolderByPath(dir)) await app.vault.createFolder(dir);
-	const safe = (o.name.trim() || 'New hero').replace(/[\\/:*?"<>|#^[\]]/g, '').trim() || 'New hero';
-	let path = normalizePath(dir ? `${dir}/${safe}.md` : `${safe}.md`);
-	for (let i = 2; app.vault.getAbstractFileByPath(path); i++) path = normalizePath(dir ? `${dir}/${safe} ${i}.md` : `${safe} ${i}.md`);
+	// Named the way every campaign note is (safeName), and never clashing with a note there, even by case.
+	const path = plugin.campaigns.available(`${joinPath(dir, safeName(o.name.trim() || 'New hero'))}.md`);
 	const file = await app.vault.create(path, SHEET_BODY);
 	const data = newCharacterFrontmatter(o, comp);
 	// The file name is the name; only write a title when they differ.

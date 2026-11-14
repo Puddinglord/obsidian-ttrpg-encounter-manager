@@ -3100,6 +3100,19 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		await sheet.locator('.ns-head-actions [aria-label="Edit details and stats"]').click();
 		await p.waitForTimeout(150);
 		await sheet.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-editing.png'), clip: undefined });
+		// Moving between fields keeps going while the sheet redraws: type a height, Tab, and keep typing the weight.
+		const height = sheet.locator('input[data-key="height"]');
+		await height.click();
+		await p.keyboard.press('ControlOrMeta+a');
+		await p.keyboard.type('4\'6"');
+		await p.keyboard.press('Tab');
+		await p.keyboard.type('185 lb');
+		await waitFm(o, f => f.height === '4\'6"', 'height saved on Tab');
+		await p.waitForTimeout(400); // the redraw from saving the height has happened
+		const focused = await p.evaluate(() => ({ key: document.activeElement?.getAttribute('data-key'), value: document.activeElement?.value }));
+		assert.deepEqual(focused, { key: 'weight', value: '185 lb' }, 'still in Weight, with what was typed');
+		await p.keyboard.press('Tab');
+		await waitFm(o, f => f.weight === '185 lb', 'weight saved');
 		const dex = sheet.locator('.ns-stat-input').nth(1);
 		await dex.fill('3');
 		await dex.press('Enter');
@@ -3335,6 +3348,16 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		await waitFmAt(o, ODO, f => f.actions === 1, 'first dot: 2 → 1');
 		await sheet.locator('.ns-action-dot').last().click();
 		await waitFmAt(o, ODO, f => f.actions === 2, 'last (empty) dot: 1 → 2');
+		// A reaction clicked twice before the sheet catches up is taken once: one roll, one action.
+		await sheet.locator('.ns-tab[data-tab="actions"]').click();
+		await p.evaluate((R) => { const card = [...document.querySelectorAll(`${R} .ns-reaction`)].find(c => c.textContent.includes('Opportunity Attack')); card.click(); card.click(); }, R);
+		await p.locator('.modal.nimble-roll-dialog').first().waitFor();
+		await p.waitForTimeout(600);
+		assert.equal(await p.locator('.modal.nimble-roll-dialog').count(), 1, 'one Opportunity Attack, not two');
+		await p.keyboard.press('Escape');
+		const afterReaction = await waitFmAt(o, ODO, f => Array.isArray(f.reactions_used), 'the reaction is recorded');
+		assert.deepEqual(afterReaction.reactions_used, ['Opportunity Attack']);
+		assert.equal(afterReaction.actions, 1, 'one action for it');
 		const log = (await o.eval((app, plugin) => plugin.settings.rollLog))[0];
 		assert.match(log.detail, log.outcome === 'miss' ? /Judgment Dice lost/ : /Judgment Dice \[[1-6], [1-6]\] radiant/);
 
@@ -3721,7 +3744,9 @@ test('campaigns keep their monsters apart: a player campaign never opens the GM\
 			return Math.round(r.getBoundingClientRect().left - f.getBoundingClientRect().left);
 		}, R);
 		assert.ok(pad >= 8, `count padding ${pad}px`);
-		await p.locator(`${R} .nimble-battle-notes`).screenshot({ path: join(ARTIFACTS, 'battle-notes-player.png') });
+		// The block can redraw as the index settles; a second try takes the fresh one.
+		const notesShot = () => p.locator(`${R} .nimble-battle-notes`).screenshot({ path: join(ARTIFACTS, 'battle-notes-player.png') });
+		await notesShot().catch(async () => { await p.waitForTimeout(300); await notesShot(); });
 	} finally {
 		await o.eval(async (app, plugin) => {
 			for (const f of ['Campaigns/Iso Run', 'Campaigns/Iso Play']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x, true); }
@@ -3751,25 +3776,54 @@ test('GM party: character sheets in a Party section, and the encounter party rea
 		await p.waitForSelector(`${V} .campaign-roster.is-gm .campaign-hero.is-plain`, { timeout: 5000 });
 		assert.equal(await p.locator(`${V} .campaign-party`, { hasText: 'heroes ·' }).count(), 0, 'no heroes pill any more');
 		assert.deepEqual(await p.locator(`${V} .campaign-hero.is-plain .campaign-hero-name`).allTextContents(), ['Kestrel', 'Bram']);
-		await p.locator(`${V} .campaign-roster-empty`, { hasText: 'Make character sheets' }).click();
-		// Two sheets in Party, keeping HP, Defense and Wounds; the cards are now the sheets, with HP.
+		// The first sheet arrives (a new hero, Wren): the heroes typed in before stay, in the party and on the panel.
+		await o.eval(async (app) => {
+			await app.vault.createFolder('Campaigns/Iron Road/Party').catch(() => undefined);
+			await app.vault.create('Campaigns/Iron Road/Party/Wren.md', '---\nnimble: character\nclass: Hunter\nlevel: 2\nhp: 19\nhp_max: 19\n---\n\n```nimble-sheet\n```\n');
+		});
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.party.map(h => h.name).join())) === 'Wren,Kestrel,Bram', { what: 'Wren joins Kestrel and Bram' });
+		await p.waitForSelector(`${V} a.campaign-hero[data-path="Campaigns/Iron Road/Party/Wren.md"]`, { timeout: 5000 });
+		assert.deepEqual(await p.locator(`${V} .campaign-hero.is-plain .campaign-hero-name`).allTextContents(), ['Kestrel', 'Bram'], 'the typed-in heroes still show');
+		await p.locator(`${V} .campaign-roster-empty`, { hasText: 'Make character sheets for these 2' }).click();
+		// Two more sheets in Party, keeping HP, Defense and Wounds; the cards are now all sheets, with HP.
 		await o.waitFor(() => o.eval((app) => ['Kestrel', 'Bram'].every(n => app.vault.getAbstractFileByPath(`Campaigns/Iron Road/Party/${n}.md`))), { what: 'sheets made' });
-		await p.waitForSelector(`${V} .campaign-roster.is-gm a.campaign-hero`, { timeout: 5000 });
+		await o.waitFor(async () => (await p.locator(`${V} .campaign-hero.is-plain`).count()) === 0, { what: 'no typed-in heroes left' });
 		const kestrel = await sheetFmOf(o, 'Campaigns/Iron Road/Party/Kestrel.md');
 		assert.equal(kestrel.class, 'Hunter');
 		assert.equal(kestrel.level, 2);
 		assert.equal(kestrel.hp_max, 21);
 		assert.equal(kestrel.armor, 3);
-		assert.equal(await p.locator(`${V} a.campaign-hero .campaign-hero-hp`).count(), 2, 'every hero shows HP on the GM side');
+		assert.equal(await p.locator(`${V} a.campaign-hero .campaign-hero-hp`).count(), 3, 'every hero shows HP on the GM side');
 		assert.equal(await p.locator(`${V} .campaign-hero-you`).count(), 0);
 		// The encounter party is read from the sheets: levelling a sheet up changes it.
-		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.party.map(h => h.id).sort().join())) === 'sheet:Campaigns/Iron Road/Party/Bram.md,sheet:Campaigns/Iron Road/Party/Kestrel.md', { what: 'party from sheets' });
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.party.map(h => h.id).sort().join())) === 'sheet:Campaigns/Iron Road/Party/Bram.md,sheet:Campaigns/Iron Road/Party/Kestrel.md,sheet:Campaigns/Iron Road/Party/Wren.md', { what: 'party from sheets' });
 		await o.eval(async (app) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Iron Road/Party/Bram.md'), fm => { fm.level = 3; fm.hp_max = 33; }); });
 		await o.waitFor(async () => {
 			const bram = await o.eval((app, plugin) => plugin.settings.party.find(h => h.name === 'Bram'));
 			return bram?.level === 3 && bram.maxHp === 33;
 		}, { what: 'Bram at level 3 in the encounter party' });
+		// A hero at a quarter HP or less: the bar gets darker red (more urgent), not amber.
+		await o.eval(async (app) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Iron Road/Party/Bram.md'), fm => { fm.hp = 5; }); });
+		await p.waitForSelector(`${V} .campaign-hero-hp-fill.is-low`, { timeout: 5000 });
+		const fills = await p.evaluate((V) => {
+			const rgb = (el) => getComputedStyle(el).backgroundColor.match(/[\d.]+/g).slice(0, 3).map(Number);
+			const low = rgb(document.querySelector(`${V} .campaign-hero-hp-fill.is-low`));
+			const ok = rgb(document.querySelector(`${V} .campaign-hero-hp-fill:not(.is-low)`));
+			return { low, ok };
+		}, V);
+		const lum = ([r, g, b]) => 0.299 * r + 0.587 * g + 0.114 * b;
+		assert.ok(lum(fills.low) < lum(fills.ok), `low HP is darker than healthy: ${JSON.stringify(fills)}`);
+		assert.ok(fills.low[0] > fills.low[1] * 1.5, `and still red, not amber: ${JSON.stringify(fills.low)}`);
 		await p.locator(`${V} .campaign-roster`).screenshot({ path: join(ARTIFACTS, 'gm-party.png') });
+		// Settings › Party: heroes with sheets are read-only rows (their sheet keeps them current), with no Level up.
+		await o.eval((app) => { app.setting.open(); app.setting.openTabById('nimble-gm'); });
+		await p.waitForSelector('.vertical-tab-content .nimble-party-row.is-sheet', { timeout: 5000 });
+		assert.equal(await p.locator('.vertical-tab-content .nimble-party-row.is-sheet').count(), 3);
+		assert.equal(await p.locator('.vertical-tab-content .nimble-party-row:not(.is-sheet) input').count(), 0);
+		assert.equal(await p.locator('.vertical-tab-content .nimble-party-actions button', { hasText: 'Level up' }).count(), 0);
+		await o.eval((app) => app.setting.close());
+		// A new note's name never clashes with one already there, even by case ("wren" next to "Wren.md").
+		assert.equal(await o.eval((app, plugin) => plugin.campaigns.available('Campaigns/Iron Road/Party/wren.md')), 'Campaigns/Iron Road/Party/wren 2.md');
 		// + adds a hero (not yours): the new-character dialog, into Party.
 		await p.locator(`${V} .campaign-roster-head [aria-label="Add a hero"]`).click();
 		await p.locator('.modal.nimble-newchar-modal').waitFor({ timeout: 3000 });

@@ -2,7 +2,7 @@ import { Component, debounce, Events, MarkdownRenderer, MarkdownView, Menu, norm
 import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/internals';
 import {
 	migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings,
-	PartyMember, RollLogEntry, uid,
+	mergeParty, PartyMember, RollLogEntry, uid,
 } from './src/types';
 import { parseStatblock, toStatblockSource } from './src/parser';
 import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './src/render';
@@ -51,7 +51,7 @@ import { registerReadingMode } from './src/reading-mode';
 import { noteKind, safeName } from './src/campaign-model';
 import { readCharacter } from './src/character-def';
 import { creatureNote } from './src/campaign-templates';
-import { bundledCompendium, setCompendiumDrafts } from './src/compendium-data';
+import { bundledCompendium, setCompendiumDrafts, sheetCompendium } from './src/compendium-data';
 
 const ROLL_LOG_LIMIT = 30;
 
@@ -927,9 +927,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			const c = this.campaigns.active;
 			const folder = normalizePath(c ? `${c.folder}/Bestiary` : 'Bestiary');
 			if (!this.app.vault.getFolderByPath(folder)) await this.app.vault.createFolder(folder).catch(() => undefined);
-			let path = normalizePath(`${folder}/${safeName(name)}.md`);
-			for (let i = 2; this.app.vault.getAbstractFileByPath(path); i++) path = normalizePath(`${folder}/${safeName(name)} ${i}.md`);
-			file = await this.app.vault.create(path, creatureNote(name));
+			file = await this.app.vault.create(this.campaigns.available(`${folder}/${safeName(name)}.md`), creatureNote(name));
 		}
 		await this.app.workspace.getLeaf(false).openFile(file);
 	}
@@ -943,9 +941,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			else promptCharacter(this, c, true);
 			return;
 		}
-		// A campaign you run: its party is its character sheets, in the Campaign panel.
+		// A campaign you run: its party is its character sheets (and any heroes entered by hand), in the Campaign panel.
 		if (c) {
-			if (this.campaigns.characters(c).length) void this.openCampaignView();
+			if (this.campaigns.characters(c).length || this.settings.party.length) void this.openCampaignView();
 			else promptCharacter(this, c, false);
 			return;
 		}
@@ -954,13 +952,15 @@ export default class NimbleStatblocksPlugin extends Plugin {
 
 	/**
 	 * The active campaign you run, as an encounter party: a hero for each of its
-	 * character sheets, with the sheet's level, max HP, armor and max Wounds.
-	 * Campaigns without sheets keep the party entered by hand.
+	 * character sheets, with the sheet's level, max HP, armor and max Wounds, then
+	 * any heroes entered by hand that no sheet has replaced yet (mergeParty).
+	 * This owns `settings.party` for a campaign you run: the Settings party editor
+	 * leaves the sheet heroes read-only, and edits to the others are kept.
 	 */
 	syncPartyFromSheets(): void {
 		const c = this.campaigns?.active;
 		if (!c || c.role === 'player') return;
-		const comp = bundledCompendium();
+		const comp = sheetCompendium();
 		const party: PartyMember[] = [];
 		for (const h of this.campaigns.characters(c)) {
 			const f = this.app.vault.getFileByPath(h.path);
@@ -968,8 +968,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			const s = readCharacter(this.app.metadataCache.getFileCache(f)?.frontmatter ?? {}, comp, f.basename);
 			party.push({ id: `sheet:${h.path}`, name: s.name, level: s.level, maxHp: s.hpMax, defense: s.armor, maxWounds: s.woundsMax, ...(s.className ? { className: s.className } : {}) });
 		}
-		if (!party.length || JSON.stringify(party) === JSON.stringify(this.settings.party)) return;
-		this.settings.party = party;
+		const next = mergeParty(party, this.settings.party);
+		if (JSON.stringify(next) === JSON.stringify(this.settings.party)) return;
+		this.settings.party = next;
 		void this.saveSettings();
 		this.encounters.trigger('changed');
 		this.campaigns.trigger('changed');

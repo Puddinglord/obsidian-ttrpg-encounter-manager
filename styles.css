@@ -998,6 +998,9 @@ body {
 .nimble-party-head { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); padding: 0 0.15rem; }
 .nimble-party-row input { width: 100%; min-width: 0; }
 .nimble-party-row input.nimble-party-num { text-align: center; }
+.nimble-party-row.is-sheet .nimble-party-value { display: block; padding: 0 0.3rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); }
+.nimble-party-row.is-sheet .field-name .nimble-party-value { color: var(--text-normal); font-weight: 600; }
+.nimble-party-row.is-sheet :is(.field-level, .field-max-hp, .field-defense, .field-max-wounds) .nimble-party-value { text-align: center; }
 .nimble-party-empty { color: var(--text-muted); font-size: 0.85rem; padding: 0.3rem 0; }
 .nimble-party-actions { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
 .nimble-party-actions button { display: inline-flex; align-items: center; gap: 0.35rem; }
@@ -1614,7 +1617,8 @@ body.is-tablet :is(.campaign-party, .campaign-continue, .campaign-switch-btn, .c
 .campaign-hero-sub { font-size: 0.76rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .campaign-hero-hp { position: relative; height: 14px; margin-top: 0.25rem; border-radius: 7px; background: var(--background-modifier-border); overflow: hidden; }
 .campaign-hero-hp-fill { position: absolute; inset: 0 auto 0 0; width: var(--hp-pct, 100%); background: var(--nimble-hp, #c0392b); border-radius: 7px; }
-.campaign-hero-hp-fill.is-low { background: var(--nimble-warn, #d24c4c); }
+/* Low HP looks more urgent than healthy: the same red, darker. */
+.campaign-hero-hp-fill.is-low { background: color-mix(in srgb, var(--nimble-hp, #c0392b) 72%, #000); }
 .campaign-hero-hp-text { position: relative; display: block; text-align: center; font-size: 0.66rem; font-weight: 700; line-height: 14px; color: var(--text-normal); font-variant-numeric: tabular-nums; }
 .campaign-roster-empty { width: 100%; }
 .campaign-roster-note { margin-top: 0.35rem; font-size: 0.76rem; color: var(--text-muted); }

@@ -295,8 +295,12 @@ export class CampaignStore extends Events {
 		await this.app.vault.createFolder(p).catch(() => undefined);
 	}
 
-	/** `path`, or `path` with " 2", " 3"… before the extension if it's taken. */
-	private available(path: string, folder = false): string {
+	/**
+	 * `path`, or `path` with " 2", " 3"… before the extension if it's taken
+	 * (ignoring case, as most file systems Obsidian runs on do). For every new
+	 * note or folder the plugin names: campaign notes, character sheets, creature notes.
+	 */
+	available(path: string, folder = false): string {
 		const p = normalizePath(path);
 		const slash = p.lastIndexOf('/');
 		const dot = p.lastIndexOf('.');

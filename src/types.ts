@@ -143,6 +143,26 @@ export interface PartyMember {
 	className?: string;
 }
 
+/** A party member read from a character sheet: its id is `sheet:<path>`. The rest were entered by hand. */
+export function isSheetMember(m: PartyMember): boolean {
+	return m.id.startsWith('sheet:');
+}
+
+/** Heroes entered by hand that no character sheet has replaced yet (matched by name, ignoring case). */
+export function handEnteredLeft(party: PartyMember[], sheetNames: string[]): PartyMember[] {
+	const taken = new Set(sheetNames.map(n => n.trim().toLowerCase()));
+	return party.filter(m => !isSheetMember(m) && !taken.has(m.name.trim().toLowerCase()));
+}
+
+/**
+ * The encounter party of a campaign you run: a hero for each character sheet,
+ * then the heroes entered by hand that no sheet has replaced yet, so adding the
+ * first sheet never loses the rest of a party typed in before.
+ */
+export function mergeParty(fromSheets: PartyMember[], current: PartyMember[]): PartyMember[] {
+	return [...fromSheets, ...handEnteredLeft(current, fromSheets.map(m => m.name))];
+}
+
 export interface MonsterIndexEntry {
 	name: string;
 	/** Vault path, or '' for monsters bundled with the plugin. */

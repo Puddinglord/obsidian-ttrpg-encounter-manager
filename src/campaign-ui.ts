@@ -16,7 +16,7 @@ import { CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePromp
 import { STARTERS, StarterKind } from './campaign-templates';
 import { draggedPaths, startFileDrag } from './internals';
 import { createCharacterNote, NewCharacterModal } from './character-modals';
-import type { PartyMember } from './types';
+import { handEnteredLeft, PartyMember } from './types';
 import { confirmAction, onLongPress } from './touch';
 
 export const KIND_ICON: Record<NoteKind, string> = {
@@ -186,18 +186,11 @@ export function renderRoster(el: HTMLElement, plugin: NimbleStatblocksPlugin, c:
 	const head = roster.createDiv({ cls: 'campaign-heading campaign-roster-head' });
 	head.createSpan({ text: 'Party' });
 	iconBtn(head, 'user-plus', gm ? 'Add a hero' : 'Add a party member', () => promptCharacter(plugin, c, false));
-	if (!heroes.length) {
-		// A party entered by hand before heroes had sheets: show it, and offer to make sheets for it.
-		const old = gm ? (plugin.settings.activeCampaign === c.folder ? plugin.settings.party : (plugin.settings.campaigns?.[c.folder]?.party ?? [])) : [];
-		if (old.length) {
-			const list = roster.createDiv({ cls: 'campaign-roster-list' });
-			for (const h of old) heroCard(list, plugin, { name: h.name, className: h.className, level: h.level, hpMax: h.maxHp });
-			const make = roster.createEl('button', { cls: 'campaign-party campaign-roster-empty' });
-			setIcon(make.createSpan({ cls: 'campaign-party-icon' }), 'scroll-text');
-			make.createSpan({ text: `Make character sheets for ${old.length === 1 ? 'this hero' : `these ${old.length}`}` });
-			make.addEventListener('click', () => void sheetsForParty(plugin, c, old));
-			return;
-		}
+	// Heroes entered by hand (before heroes had sheets) that no sheet has replaced yet: shown after the
+	// sheets, with a button to make sheets for them. They count in encounters meanwhile (mergeParty).
+	const stored = gm ? (plugin.settings.activeCampaign === c.folder ? plugin.settings.party : (plugin.settings.campaigns?.[c.folder]?.party ?? [])) : [];
+	const left = handEnteredLeft(stored, heroes.map(h => h.name));
+	if (!heroes.length && !left.length) {
 		const add = roster.createEl('button', { cls: 'campaign-party campaign-roster-empty' });
 		setIcon(add.createSpan({ cls: 'campaign-party-icon' }), gm ? 'user-plus' : 'shield');
 		add.createSpan({ text: gm ? 'Add a hero' : 'Add your character' });
@@ -213,6 +206,13 @@ export function renderRoster(el: HTMLElement, plugin: NimbleStatblocksPlugin, c:
 			if (!h.mine && !gm) m.addItem(i => i.setTitle('This is my character').setIcon('shield').onClick(() => void plugin.campaigns.setMine(c, h.path)));
 			m.showAtMouseEvent(e);
 		});
+	}
+	for (const h of left) heroCard(list, plugin, { name: h.name, className: h.className, level: h.level, hpMax: h.maxHp });
+	if (left.length) {
+		const make = roster.createEl('button', { cls: 'campaign-party campaign-roster-empty' });
+		setIcon(make.createSpan({ cls: 'campaign-party-icon' }), 'scroll-text');
+		make.createSpan({ text: `Make character sheets for ${left.length === 1 ? (heroes.length ? left[0].name : 'this hero') : `these ${left.length}`}` });
+		make.addEventListener('click', () => void sheetsForParty(plugin, c, left));
 	}
 }
 
@@ -239,11 +239,13 @@ function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<
 	const what = [kind, h.level !== undefined ? (kind ? `${h.level}` : `Level ${h.level}`) : ''].filter(Boolean).join(' · ');
 	const sub = [what, !h.mine && h.player ? h.player : '', !path && h.hpMax ? `${h.hpMax} HP` : ''].filter(Boolean).join(' — ');
 	if (sub) text.createDiv({ cls: 'campaign-hero-sub', text: sub });
-	if (h.showHp && h.hp !== undefined && h.hpMax) {
-		const bar = text.createDiv({ cls: 'campaign-hero-hp', attr: { 'aria-label': `${h.hp} of ${h.hpMax} HP` } });
-		const pct = Math.max(0, Math.min(100, Math.round((h.hp / h.hpMax) * 100)));
+	if (h.showHp && h.hpMax) {
+		// A sheet with no `hp` yet is at full HP, as the sheet itself shows it.
+		const hp = h.hp ?? h.hpMax;
+		const bar = text.createDiv({ cls: 'campaign-hero-hp', attr: { 'aria-label': `${hp} of ${h.hpMax} HP` } });
+		const pct = Math.max(0, Math.min(100, Math.round((hp / h.hpMax) * 100)));
 		bar.createDiv({ cls: `campaign-hero-hp-fill${pct <= 25 ? ' is-low' : ''}` }).setCssProps({ '--hp-pct': `${pct}%` });
-		bar.createSpan({ cls: 'campaign-hero-hp-text', text: `${h.hp}/${h.hpMax}` });
+		bar.createSpan({ cls: 'campaign-hero-hp-text', text: `${hp}/${h.hpMax}` });
 	}
 	if (path) {
 		card.addEventListener('click', (e) => { e.preventDefault(); void plugin.campaigns.open(path, e.metaKey || e.ctrlKey); });
@@ -273,16 +275,25 @@ export function renderPartyLine(el: HTMLElement, plugin: NimbleStatblocksPlugin,
 /** A party entered by hand (name, class, level, HP): a character note for each, keeping their HP, Defense and Wounds. */
 async function sheetsForParty(plugin: NimbleStatblocksPlugin, c: Campaign, party: PartyMember[]): Promise<void> {
 	const folder = homeFolderFor(c, 'character', c.folder);
+	let made = 0;
+	const failed: string[] = [];
 	for (const h of party) {
-		const f = await createCharacterNote(plugin, { name: h.name, className: h.className ?? '', level: h.level, mine: false }, folder);
-		await plugin.app.fileManager.processFrontMatter(f, (fm: Record<string, unknown>) => {
-			fm.hp_max = h.maxHp;
-			fm.hp = h.maxHp;
-			if (h.defense !== undefined) fm.armor = h.defense;
-			if (h.maxWounds !== undefined) fm.wounds_max = h.maxWounds;
-		});
+		try {
+			const f = await createCharacterNote(plugin, { name: h.name, className: h.className ?? '', level: h.level, mine: false }, folder);
+			await plugin.app.fileManager.processFrontMatter(f, (fm: Record<string, unknown>) => {
+				fm.hp_max = h.maxHp;
+				fm.hp = h.maxHp;
+				if (h.defense !== undefined) fm.armor = h.defense;
+				if (h.maxWounds !== undefined) fm.wounds_max = h.maxWounds;
+			});
+			made++;
+		} catch (e) {
+			// One hero that can't be written doesn't stop the rest; they stay in the party until it's sorted.
+			console.error(`Nimble: could not make a character sheet for ${h.name}`, e);
+			failed.push(h.name);
+		}
 	}
-	new Notice(`Made ${party.length} character sheet${party.length === 1 ? '' : 's'} in ${folder}.`);
+	new Notice(`Made ${made} character sheet${made === 1 ? '' : 's'} in ${folder}.${failed.length ? ` Couldn't make ${failed.join(', ')}.` : ''}`);
 }
 
 export function renderOutline(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, opts: OutlineOptions): void {

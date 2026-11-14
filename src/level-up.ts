@@ -6,8 +6,8 @@
 
 import { Menu, Modal, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { nameKey, ResolvedFeature, StatKey, Subclass } from './compendium';
-import { bundledCompendium } from './compendium-data';
+import { Compendium, nameKey, ResolvedFeature, StatKey, Subclass } from './compendium';
+import { compendiumFor } from './compendium-data';
 import { renderRulesText, renderSource } from './compendium-card';
 import { addFeature, CharacterSheet, fmtMod, Frontmatter, hpAverage, levelUp, setSkill, setStat } from './character-def';
 import { LevelPlan, levelPlan, OptionPick, subclassTimeline } from './level-plan';
@@ -52,7 +52,7 @@ export class LevelUpWizard extends Modal {
 	private counter!: HTMLElement;
 	private panels: HTMLElement[] = [];
 	private subclassView: 'cards' | 'compare' = 'cards';
-	private comp = bundledCompendium();
+	private comp: Compendium;
 
 	constructor(
 		private plugin: NimbleStatblocksPlugin,
@@ -60,6 +60,7 @@ export class LevelUpWizard extends Modal {
 		private mutate: (fn: (fm: Frontmatter, s: CharacterSheet) => void) => Promise<void>,
 	) {
 		super(plugin.app);
+		this.comp = compendiumFor(s.className);
 		const next = s.level + 1;
 		this.plan = levelPlan(this.comp, { className: s.className, subclass: s.subclass, level: next, hitDie: s.hitDie, average: hpAverage(s.hitDie, this.comp) });
 		this.draft = { gain: null, how: null, rolled: [], manual: '', subclass: '', picks: this.plan.picks.map(() => []), stats: this.plan.stats.map(() => []), boon: '', skills: {} };

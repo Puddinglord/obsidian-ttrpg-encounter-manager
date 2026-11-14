@@ -12,7 +12,7 @@
 import { App, Component, MarkdownPostProcessorContext, MarkdownRenderChild, Modal, Notice, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { Compendium, CompendiumHit, CompendiumKind, nameKey, STATS, StatKey, tierLabel, weaponDamage } from './compendium';
-import { bundledCompendium } from './compendium-data';
+import { compendiumFor } from './compendium-data';
 import { renderHitBody, renderRulesText, renderSource } from './compendium-card';
 import {
 	addCondition, addFeature, addItem, addLanguage, addSpell, adjustResource, applyDamage, CharacterSheet, damageRoll, fieldRest, fmtMod, Frontmatter,
@@ -104,7 +104,8 @@ export class CharacterSheetRenderer extends Component {
 	}
 
 	private get app() { return this.plugin.app; }
-	private get comp(): Compendium { return bundledCompendium(); }
+	/** The hero's compendium: drafts stay in for a hero who plays a draft class (compendiumFor). */
+	private get comp(): Compendium { return compendiumFor(this.fm.class); }
 
 	onload(): void {
 		this.render();
@@ -236,13 +237,45 @@ export class CharacterSheetRenderer extends Component {
 	// Layout
 
 	render(): void {
-		// Redrawing empties the sheet for a moment; the panel or note around it mustn't scroll because of that.
+		// Redrawing empties the sheet for a moment; the panel or note around it mustn't scroll because of that,
+		// and the field you're typing in (edit mode saves each field as you leave it) mustn't lose focus or text.
 		const keep = this.holdScroll();
+		const focus = this.holdFocus();
 		try {
 			this.draw();
+			// What each field was drawn with, so a redraw can tell text you've typed from what the note says.
+			this.root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea').forEach(f => { f.dataset.drawn = f.value; });
 		} finally {
 			keep();
+			focus();
 		}
+	}
+
+	/**
+	 * Keep the field you're in across a redraw: its focus, the caret, and anything
+	 * typed that isn't saved yet. Fields are found again by their place among the
+	 * sheet's fields (the layout doesn't change between redraws of the same mode).
+	 */
+	private holdFocus(): () => void {
+		const root = this.root;
+		type Field = HTMLInputElement | HTMLTextAreaElement;
+		const isField = (el: Element | null): el is Field => !!el && (el.instanceOf(HTMLInputElement) || el.instanceOf(HTMLTextAreaElement));
+		const active = root.ownerDocument.activeElement;
+		if (!isField(active) || !root.contains(active)) return () => undefined;
+		const fields = (): Field[] => [...root.querySelectorAll<Field>('input, textarea')];
+		const index = fields().indexOf(active);
+		const kind = active.getAttribute('type') ?? active.tagName;
+		const typed = active.value !== (active.dataset.drawn ?? active.value) ? active.value : null;
+		const caret = safeSelection(active);
+		return () => {
+			const next = fields()[index];
+			if (!next || (next.getAttribute('type') ?? next.tagName) !== kind) return;
+			if (typed !== null) next.value = typed;
+			next.focus({ preventScroll: true });
+			if (caret) {
+				try { next.setSelectionRange(caret[0], caret[1]); } catch { /* number inputs have no caret */ }
+			}
+		};
 	}
 
 	/**
@@ -591,9 +624,10 @@ export class CharacterSheetRenderer extends Component {
 			card.createSpan({ cls: 'ns-reaction-cost', text: used ? 'Used' : '1 action' });
 			card.disabled = used || s.actions < 1;
 			card.addEventListener('click', () => {
-				void this.mutate((fm, cur) => {
-					if (!useReaction(fm, cur, r.name)) return;
-				}).then(() => {
+				// Only once the reaction is actually taken (not used yet this round, an action to spend, the note saved).
+				let used = false;
+				void this.mutate((fm, cur) => { used = useReaction(fm, cur, r.name); }).then(() => {
+					if (!used) return;
 					new Notice(`${s.name} uses ${r.name}.`);
 					r.run?.();
 				});
@@ -1434,3 +1468,13 @@ export function registerSheetBlock(plugin: NimbleStatblocksPlugin): void {
 		ctx.addChild(new SheetBlock(plugin, el, source, ctx));
 	});
 }
+
+/** Where the caret is in a field, or null for fields without one (number inputs). */
+function safeSelection(el: HTMLInputElement | HTMLTextAreaElement): [number, number] | null {
+	try {
+		return el.selectionStart !== null && el.selectionEnd !== null ? [el.selectionStart, el.selectionEnd] : null;
+	} catch {
+		return null;
+	}
+}
+
