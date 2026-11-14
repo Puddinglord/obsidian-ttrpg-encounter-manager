@@ -335,7 +335,7 @@ export class CampaignStore extends Events {
 			? playerCampaignHome(title, { gm: opts.gm?.trim() || undefined, level: opts.level, character: hero })
 			: campaignHome(title, opts.level, opts.heroes));
 		if (opts.starter) {
-			const subs = player ? ['Party', 'Sessions', 'NPCs', 'Locations', 'Assets'] : ['NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets'];
+			const subs = player ? ['Party', 'Sessions', 'NPCs', 'Locations', 'Assets'] : ['Party', 'NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets'];
 			for (const sub of subs) await this.ensureFolder(`${folder}/${sub}`);
 			const ch = safeName(opts.firstChapter || 'Chapter 1');
 			await this.createNote(`${folder}/${ch}/${ch}.md`, chapterHome(opts.firstChapter || 'Chapter 1', 1, undefined, player ? undefined : opts.level));

@@ -102,22 +102,26 @@ export function renderStatblock(container: HTMLElement, monster: NimbleMonster, 
 		btn.setAttr('aria-label', `Add ${monster.name}`);
 		btn.addEventListener('click', (ev) => opts.onAdd?.(ev));
 	}
-	if (opts.actions?.length) {
-		const bar = block.createDiv({ cls: 'statblock-actions' });
-		for (const a of opts.actions) {
-			const host = a.menu ? bar.createDiv({ cls: `statblock-split ${a.cls || ''}` }) : bar;
-			const b = host.createEl('button', { cls: `statblock-action ${a.cls || ''}`, attr: { 'aria-label': a.title || a.label } });
-			if (a.icon) setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
-			b.createSpan({ text: a.label });
-			b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.onClick(ev); });
-			if (a.menu) {
-				const more = host.createEl('button', { cls: `statblock-action statblock-action-more ${a.cls || ''}`, attr: { 'aria-label': `More ways to ${a.label.toLowerCase()}` } });
-				setIcon(more, 'chevron-down');
-				more.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.menu!(ev); });
-			}
+	renderActionBar(block, opts.actions);
+	return block;
+}
+
+/** The buttons under a stat block or a lore card (Add, Bestiary, Open notes…), with an optional ▾ menu each. */
+function renderActionBar(block: HTMLElement, actions: StatblockAction[] | undefined): void {
+	if (!actions?.length) return;
+	const bar = block.createDiv({ cls: 'statblock-actions' });
+	for (const a of actions) {
+		const host = a.menu ? bar.createDiv({ cls: `statblock-split ${a.cls || ''}` }) : bar;
+		const b = host.createEl('button', { cls: `statblock-action ${a.cls || ''}`, attr: { 'aria-label': a.title || a.label } });
+		if (a.icon) setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
+		b.createSpan({ text: a.label });
+		b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.onClick(ev); });
+		if (a.menu) {
+			const more = host.createEl('button', { cls: `statblock-action statblock-action-more ${a.cls || ''}`, attr: { 'aria-label': `More ways to ${a.label.toLowerCase()}` } });
+			setIcon(more, 'chevron-down');
+			more.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.menu!(ev); });
 		}
 	}
-	return block;
 }
 
 /** The player's view of a monster: a lore card with no stats. */
@@ -147,15 +151,7 @@ export function renderLoreCard(container: HTMLElement, m: NimbleMonster, opts: R
 		}
 	}
 	wireWikiLinks(block, opts.app, opts.sourcePath);
-	if (opts.actions?.length) {
-		const bar = block.createDiv({ cls: 'statblock-actions' });
-		for (const a of opts.actions) {
-			const b = bar.createEl('button', { cls: `statblock-action ${a.cls || ''}`, attr: { 'aria-label': a.title || a.label } });
-			if (a.icon) setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
-			b.createSpan({ text: a.label });
-			b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.onClick(ev); });
-		}
-	}
+	renderActionBar(block, opts.actions);
 	return block;
 }
 

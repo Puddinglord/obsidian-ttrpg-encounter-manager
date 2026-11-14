@@ -1,8 +1,8 @@
-import { Component, Events, MarkdownRenderer, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
+import { Component, debounce, Events, MarkdownRenderer, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
 import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/internals';
 import {
 	migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings,
-	RollLogEntry, uid,
+	PartyMember, RollLogEntry, uid,
 } from './src/types';
 import { parseStatblock, toStatblockSource } from './src/parser';
 import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './src/render';
@@ -48,7 +48,8 @@ import { newSceneAnywhere, promptCharacter, promptChapter, promptSectionNote } f
 import BESTIARY from './src/data/bestiary.json';
 import { registerCharacterFeatures } from './src/character-register';
 import { registerReadingMode } from './src/reading-mode';
-import { safeName } from './src/campaign-model';
+import { noteKind, safeName } from './src/campaign-model';
+import { readCharacter } from './src/character-def';
 import { creatureNote } from './src/campaign-templates';
 import { bundledCompendium, setCompendiumDrafts } from './src/compendium-data';
 
@@ -159,6 +160,10 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		// The tracker is a GM tool: its ribbon button hides while you're in a campaign you play in.
 		const syncRibbon = () => trackerRibbon.toggle(!this.playerView());
 		this.registerEvent(this.campaigns.on('changed', syncRibbon));
+		// Campaigns you run: the encounter party is read from the campaign's character sheets (when it has any).
+		const syncParty = debounce(() => this.syncPartyFromSheets(), 300, true);
+		this.registerEvent(this.campaigns.on('changed', syncParty));
+		this.registerEvent(this.app.metadataCache.on('changed', (_f, _d, cache) => { if (noteKind(cache.frontmatter ?? {}) === 'character') syncParty(); }));
 		syncRibbon();
 		this.addRibbonIcon('book-open', 'Nimble bestiary', () => this.openBestiary());
 		this.registerHoverLinkSource('nimble-gm', { display: 'Ember Vault', defaultMod: true });
@@ -938,7 +943,36 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			else promptCharacter(this, c, true);
 			return;
 		}
+		// A campaign you run: its party is its character sheets, in the Campaign panel.
+		if (c) {
+			if (this.campaigns.characters(c).length) void this.openCampaignView();
+			else promptCharacter(this, c, false);
+			return;
+		}
 		new PartyModal(this.app, this).open();
+	}
+
+	/**
+	 * The active campaign you run, as an encounter party: a hero for each of its
+	 * character sheets, with the sheet's level, max HP, armor and max Wounds.
+	 * Campaigns without sheets keep the party entered by hand.
+	 */
+	syncPartyFromSheets(): void {
+		const c = this.campaigns?.active;
+		if (!c || c.role === 'player') return;
+		const comp = bundledCompendium();
+		const party: PartyMember[] = [];
+		for (const h of this.campaigns.characters(c)) {
+			const f = this.app.vault.getFileByPath(h.path);
+			if (!f) continue;
+			const s = readCharacter(this.app.metadataCache.getFileCache(f)?.frontmatter ?? {}, comp, f.basename);
+			party.push({ id: `sheet:${h.path}`, name: s.name, level: s.level, maxHp: s.hpMax, defense: s.armor, maxWounds: s.woundsMax, ...(s.className ? { className: s.className } : {}) });
+		}
+		if (!party.length || JSON.stringify(party) === JSON.stringify(this.settings.party)) return;
+		this.settings.party = party;
+		void this.saveSettings();
+		this.encounters.trigger('changed');
+		this.campaigns.trigger('changed');
 	}
 
 	openSettings(): void {

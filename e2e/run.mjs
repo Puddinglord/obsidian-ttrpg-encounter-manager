@@ -639,22 +639,35 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Krogg, Goblin King');
 	assert.match(await o.page.locator(`${Q} .record-sub`).textContent(), /Legendary|Solo/);
 	assert.equal(await o.page.locator(`${Q} .record-btn`, { hasText: 'Open in bestiary' }).count(), 1);
-	await o.page.locator(`${Q} .record-hp-btn`).click();
+	// The strip is the sheet's own HP bar (tap it for the calculator), action dots, Wounds and turn pill.
+	await o.page.locator(`${Q} .record-strip .ns-meter.is-hp .ns-meter-bar`).click();
 	await o.page.keyboard.type('10');
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	assert.equal((await creatures(o)).find(c => c.label === krogg.label).hp, krogg.hp - 10, 'HP from the modal');
-	assert.match(await o.page.locator(`${Q} .record-hp-btn`).textContent(), new RegExp(`^${krogg.hp - 10}/`), 'the strip stays live');
-	await o.page.locator(`${Q} .record-turn`).click();
+	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-meter-cur`).textContent()) === String(krogg.hp - 10), { what: 'the strip stays live' });
+	assert.equal(await o.page.locator(`${Q} .record-strip .ns-action-dot`).count(), 0, 'no action dots for a monster');
+	await o.page.locator(`${Q} .record-strip .ns-actions-end`).click();
 	assert.equal((await creatures(o)).find(c => c.label === krogg.label).done, true);
 	await o.page.keyboard.press('Escape');
 	assert.equal(await o.page.locator(Q).count(), 0);
 
-	// A hero's quick look shows actions and Wounds.
+	// A hero's quick look: the sheet's round Wound pips (last a skull) and action dots, one step a tap.
 	await card(o, 'Bram').locator('.creature-label').click();
-	await o.waitFor(async () => (await o.page.locator(`${Q} .record-pip-group.is-wounds`).count()) === 1, { what: 'hero pips' });
-	await o.page.locator(`${Q} .is-wounds .record-pip`).first().click();
-	assert.equal((await creatures(o)).find(c => c.label === 'Bram').wounds, 1);
+	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).count()) > 0, { what: 'hero pips' });
+	assert.equal(await o.page.locator(`${Q} .record-strip .ns-pip.is-skull`).count(), 1);
+	await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).first().click();
+	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').wounds === 1, { what: 'a Wound' });
+	await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).last().click();
+	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').wounds === 2, { what: 'one more Wound, not the skull' });
+	const bramActions = () => o.eval((app, plugin) => plugin.encounters.active.creatures.find(c => c.label === 'Bram').actions ?? 3);
+	const before = await bramActions();
+	await o.page.locator(`${Q} .record-strip .ns-action-dot`).first().click();
+	await o.waitFor(async () => (await bramActions()) === before - 1, { what: 'one action spent' });
+	await o.page.waitForTimeout(600); // the dot shrinks out
+	await o.page.locator(`${Q} .record-strip`).screenshot({ path: join(ARTIFACTS, 'quick-look-hero-strip.png') });
+	const bad = await o.page.evaluate(pillOffenders, { root: `${Q} .record-strip`, tolerance: 1, selectors: PILL_SELECTORS });
+	assert.deepEqual(bad, [], 'misaligned pills in the strip');
 	await o.page.keyboard.press('Escape');
 
 	// End combat: no callout, just Resume / New fight. HP is kept.
@@ -1777,8 +1790,8 @@ async function createFromPicker(o, name, kind) {
 
 test('campaign panel: a new campaign shows its empty starter folders, each with a +', async (o) => {
 	await freshCampaign(o, 'Fresh');
-	assert.deepEqual(await panelSections(o), ['Sessions', 'NPCs', 'Locations', 'Monsters', 'Assets']);
-	for (const name of ['Sessions', 'NPCs', 'Locations', 'Monsters', 'Assets']) {
+	assert.deepEqual(await panelSections(o), ['Sessions', 'NPCs', 'Locations', 'Party', 'Monsters', 'Assets']);
+	for (const name of ['Sessions', 'NPCs', 'Locations', 'Party', 'Monsters', 'Assets']) {
 		const g = cgroup(o, `Campaigns/Fresh/${name}`);
 		assert.equal(await g.locator('.campaign-group-head button.campaign-add-scene').count(), 1, `${name} has a +`);
 		assert.match(await g.locator('.campaign-empty').innerText(), /Nothing here yet/);
@@ -1795,7 +1808,7 @@ test('campaign panel: a new campaign shows its empty starter folders, each with 
 
 	// The dashboard block on the home note lists the same folders.
 	await o.openFile('Campaigns/Fresh/Fresh.md', 'preview');
-	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-campaign-block .campaign-section-name`).count()) === 5, { what: 'folders in the dashboard block' });
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-campaign-block .campaign-section-name`).count()) === 6, { what: 'folders in the dashboard block (Party, NPCs, Locations, Sessions, Monsters, Assets)' });
 	await endCampaign(o, 'Fresh');
 });
 
@@ -3713,6 +3726,61 @@ test('campaigns keep their monsters apart: a player campaign never opens the GM\
 		await o.eval(async (app, plugin) => {
 			for (const f of ['Campaigns/Iso Run', 'Campaigns/Iso Play']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x, true); }
 			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('GM party: character sheets in a Party section, and the encounter party read from them', async (o) => {
+	await resetEncounter(o);
+	const p = o.page;
+	const V = '.nimble-campaign-view';
+	try {
+		// A campaign run with a party entered by hand: shown, with a button to make sheets for it.
+		await o.eval(async (app, plugin) => {
+			const old = app.vault.getAbstractFileByPath('Campaigns/Iron Road');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Iron Road', level: 2, heroes: 4, starter: false });
+			plugin.settings.party = [
+				{ id: 'h1', name: 'Kestrel', level: 2, maxHp: 21, defense: 3, maxWounds: 6, className: 'Hunter' },
+				{ id: 'h2', name: 'Bram', level: 2, maxHp: 26, maxWounds: 6, className: 'Berserker' },
+			];
+			await plugin.saveSettings();
+			await plugin.openCampaignView();
+			plugin.campaigns.trigger('changed');
+		});
+		await p.waitForSelector(`${V} .campaign-roster.is-gm .campaign-hero.is-plain`, { timeout: 5000 });
+		assert.equal(await p.locator(`${V} .campaign-party`, { hasText: 'heroes ·' }).count(), 0, 'no heroes pill any more');
+		assert.deepEqual(await p.locator(`${V} .campaign-hero.is-plain .campaign-hero-name`).allTextContents(), ['Kestrel', 'Bram']);
+		await p.locator(`${V} .campaign-roster-empty`, { hasText: 'Make character sheets' }).click();
+		// Two sheets in Party, keeping HP, Defense and Wounds; the cards are now the sheets, with HP.
+		await o.waitFor(() => o.eval((app) => ['Kestrel', 'Bram'].every(n => app.vault.getAbstractFileByPath(`Campaigns/Iron Road/Party/${n}.md`))), { what: 'sheets made' });
+		await p.waitForSelector(`${V} .campaign-roster.is-gm a.campaign-hero`, { timeout: 5000 });
+		const kestrel = await sheetFmOf(o, 'Campaigns/Iron Road/Party/Kestrel.md');
+		assert.equal(kestrel.class, 'Hunter');
+		assert.equal(kestrel.level, 2);
+		assert.equal(kestrel.hp_max, 21);
+		assert.equal(kestrel.armor, 3);
+		assert.equal(await p.locator(`${V} a.campaign-hero .campaign-hero-hp`).count(), 2, 'every hero shows HP on the GM side');
+		assert.equal(await p.locator(`${V} .campaign-hero-you`).count(), 0);
+		// The encounter party is read from the sheets: levelling a sheet up changes it.
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.party.map(h => h.id).sort().join())) === 'sheet:Campaigns/Iron Road/Party/Bram.md,sheet:Campaigns/Iron Road/Party/Kestrel.md', { what: 'party from sheets' });
+		await o.eval(async (app) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Iron Road/Party/Bram.md'), fm => { fm.level = 3; fm.hp_max = 33; }); });
+		await o.waitFor(async () => {
+			const bram = await o.eval((app, plugin) => plugin.settings.party.find(h => h.name === 'Bram'));
+			return bram?.level === 3 && bram.maxHp === 33;
+		}, { what: 'Bram at level 3 in the encounter party' });
+		await p.locator(`${V} .campaign-roster`).screenshot({ path: join(ARTIFACTS, 'gm-party.png') });
+		// + adds a hero (not yours): the new-character dialog, into Party.
+		await p.locator(`${V} .campaign-roster-head [aria-label="Add a hero"]`).click();
+		await p.locator('.modal.nimble-newchar-modal').waitFor({ timeout: 3000 });
+		assert.equal(await p.locator('.modal.nimble-newchar-modal .modal-title').textContent(), 'New party member');
+		await p.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin) => {
+			const f = app.vault.getAbstractFileByPath('Campaigns/Iron Road');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+			plugin.settings.party = [];
 		});
 	}
 });

@@ -10,8 +10,8 @@ Every campaign is one or the other. **New campaign** asks first:
 
 | | I run it (GM) | I play in it (Player) |
 |---|---|---|
-| Starter folders | NPCs, Locations, Sessions, Monsters, Assets | Party, Sessions, NPCs, Locations, Assets |
-| Party | Heroes for encounter difficulty | Character notes, yours marked **You** |
+| Starter folders | Party, NPCs, Locations, Sessions, Monsters, Assets | Party, Sessions, NPCs, Locations, Assets |
+| Party | Character sheets, with HP; encounter difficulty and the tracker read from them | Character sheets, yours marked **You** |
 | Encounter blocks | Difficulty, Run, the tracker | [Battle notes](#battle-notes) |
 | Bestiary and `nimble:` references | Full stat blocks | [Lore cards](#lore-cards): names and what your hero could know |
 | Encounter tracker, builder, "Add to encounter" | Yes | Hidden |

@@ -32,8 +32,7 @@ import { actionCost, EdgeRollResult, ExtraDice } from './roll-def';
 import { parseDice } from './dice';
 import { heldFaces, resourceRule, spendsOn, startsOn } from './resource-def';
 import { dieShape, inkOn, triangleMark } from './die-shape';
-import { reducedMotion } from './celebrate';
-import { pipStep } from './rules';
+import { iconStep, renderActionDots, renderMeter, renderWoundPips, VitalsMemory } from './vitals-ui';
 import { LevelUpWizard } from './level-up';
 
 export type SheetTab = 'actions' | 'features' | 'spells' | 'inventory' | 'notes';
@@ -56,16 +55,6 @@ class SheetDialog extends Modal {
 	}
 
 	onClose(): void { this.contentEl.empty(); }
-}
-
-/**
- * A round − / + / × button. Icons, not text glyphs: a "−" or "+" in most fonts
- * sits below the middle of its line, so the button never looks centred.
- */
-function iconStep(parent: HTMLElement, icon: 'minus' | 'plus' | 'x' | 'calculator', attr: Record<string, string>, cls = 'ns-step'): HTMLButtonElement {
-	const b = parent.createEl('button', { cls, attr });
-	setIcon(b, icon);
-	return b;
 }
 
 const dialog = (app: App, heading: string, build: (el: HTMLElement, close: () => void) => void, cls = '') => new SheetDialog(app, heading, build, cls).open();
@@ -103,13 +92,8 @@ export interface SheetOptions {
  * Component (the code block's render child, or the panel), which unloads it.
  */
 export class CharacterSheetRenderer extends Component {
-	/** The HP and mana each bar showed last, so a change can animate. */
-	private lastBars = new Map<string, number>();
-	/** − / + taps on HP and mana not applied yet (see nudge). */
-	private pending = new Map<'hp' | 'mana', { delta: number; timer: number }>();
-	/** Actions and Wounds as last drawn, so the dots that change can animate. */
-	private lastActions?: number;
-	private lastWounds?: number;
+	/** Bars and pips as last drawn (so changes animate), and − / + taps not applied yet. */
+	private vitals = new VitalsMemory();
 	private sheet!: CharacterSheet;
 	private fm: Frontmatter = {};
 	private state: SheetState;
@@ -455,140 +439,47 @@ export class CharacterSheetRenderer extends Component {
 	 */
 	private renderMeters(wrap: HTMLElement): void {
 		const s = this.sheet;
-		const meter = (o: {
-			cls: string; icon: string; label: string; cur: number; max: number; extra?: number; extraLabel?: string; state?: string;
-			bar: string; minus: string; plus: string; calc: string;
-			onMinus: (bar: HTMLElement) => void; onPlus: (bar: HTMLElement) => void; onCalc: (anchor: HTMLElement) => void; minusOff: boolean; plusOff: boolean;
-		}) => {
-			const m = wrap.createDiv({ cls: `ns-meter ${o.cls}` });
-			const head = m.createDiv({ cls: 'ns-meter-head' });
-			const lab = head.createSpan({ cls: 'ns-meter-label' });
-			setIcon(lab.createSpan({ cls: 'ns-meter-icon' }), o.icon);
-			lab.createSpan({ text: o.label });
-			if (o.extra) head.createSpan({ cls: 'ns-meter-extra', text: o.extraLabel ?? '' });
-			if (o.state) head.createSpan({ cls: 'ns-meter-state', text: o.state });
-			const row = m.createDiv({ cls: 'ns-meter-row' });
-			const minus = iconStep(row, 'minus', { 'aria-label': o.minus }, 'ns-step ns-meter-step');
-			const bar = row.createEl('button', { cls: `ns-meter-bar ${o.bar}`, attr: { 'aria-label': o.calc } });
-			const pct = (v: number) => `${o.max ? Math.round(Math.max(0, Math.min(1, v / o.max)) * 1000) / 10 : 0}%`;
-			const fill = bar.createDiv({ cls: 'ns-meter-fill' });
-			fill.setCssProps({ '--ns-fill': pct(o.cur) });
-			this.animateBar(o.cls, o.cur, bar, fill, pct);
-			if (o.extra) bar.createDiv({ cls: 'ns-meter-extra-fill' }).setCssProps({ '--ns-from': pct(o.cur), '--ns-fill': pct(o.extra) });
-			const nums = bar.createSpan({ cls: 'ns-meter-nums' });
-			nums.createSpan({ cls: `${o.bar}-cur ns-meter-cur`, text: String(o.cur) });
-			nums.createSpan({ cls: 'ns-meter-slash', text: '/' });
-			nums.createSpan({ cls: `${o.bar}-max ns-meter-max`, text: String(o.max) });
-			if (o.extra) nums.createSpan({ cls: 'ns-meter-plus', text: `+${o.extra}` });
-			const plus = iconStep(row, 'plus', { 'aria-label': o.plus }, 'ns-step ns-meter-step');
-			const calc = iconStep(row, 'calculator', { 'aria-label': o.calc }, 'ns-step ns-meter-calc');
-			minus.disabled = o.minusOff;
-			plus.disabled = o.plusOff;
-			minus.addEventListener('click', () => o.onMinus(bar));
-			plus.addEventListener('click', () => o.onPlus(bar));
-			bar.addEventListener('click', () => o.onCalc(bar));
-			calc.addEventListener('click', () => o.onCalc(bar));
-			return m;
-		};
 		const hpPct = s.hpMax ? s.hp / s.hpMax : 0;
-		const hp = meter({
-			cls: 'is-hp', icon: 'heart', label: 'Hit points', cur: s.hp, max: s.hpMax, extra: s.tempHp, extraLabel: `${s.tempHp} temp`,
+		const hp = renderMeter(wrap, {
+			key: 'hp', cls: 'is-hp', icon: 'heart', label: 'Hit points', cur: s.hp, max: s.hpMax, extra: s.tempHp, extraLabel: `${s.tempHp} temp`,
 			state: s.dying ? (s.dead ? 'Dead' : 'Dying') : undefined,
 			bar: 'ns-hp', minus: 'Take 1 damage', plus: 'Heal 1', calc: `Hit points ${s.hp} of ${s.hpMax}${s.tempHp ? `, ${s.tempHp} temp` : ''}. Damage, heal or temp HP`,
 			minusOff: s.dead, plusOff: s.hp >= s.hpMax,
-			onMinus: (bar) => this.nudge('hp', -1, bar),
-			onPlus: (bar) => this.nudge('hp', 1, bar),
 			onCalc: (a) => this.openHpPad(a),
-		});
+			// Damage from − works like the calculator: temp HP first, Wounds at 0.
+			taps: {
+				floor: -(s.hp + s.tempHp), soak: s.tempHp,
+				commit: (delta) => {
+					if (!delta) { this.render(); return; }
+					void this.mutate((fm, now) => {
+						if (delta > 0) { heal(fm, now, delta); return; }
+						const said = applyDamage(fm, now, -delta, false).filter(e => !/absorbed/.test(e));
+						if (said.length) new Notice(`${now.name} ${said.join('; ')}`);
+					});
+				},
+			},
+		}, this.vitals);
 		hp.toggleClass('is-low', hpPct > 0 && hpPct <= 0.25);
 		// Wounds: top right of the Hit points card, or under the bar when it's narrow.
 		this.renderWounds(hp);
 		if (s.manaMax > 0) {
-			meter({
-				cls: 'is-mana', icon: 'sparkles', label: 'Mana', cur: s.mana, max: s.manaMax,
+			renderMeter(wrap, {
+				key: 'mana', cls: 'is-mana', icon: 'sparkles', label: 'Mana', cur: s.mana, max: s.manaMax,
 				bar: 'ns-mana', minus: 'Spend 1 mana', plus: 'Regain 1 mana', calc: `Mana ${s.mana} of ${s.manaMax}. Spend, regain or set`,
 				minusOff: s.mana <= 0, plusOff: s.mana >= s.manaMax,
-				onMinus: (bar) => this.nudge('mana', -1, bar),
-				onPlus: (bar) => this.nudge('mana', 1, bar),
 				onCalc: (a) => openManaCalculator(a, { name: s.name, mana: s.mana, max: s.manaMax }, (cmd) => void this.mutate((fm, cur) => {
 					if (cmd.kind === 'spend') spendMana(fm, cur, cmd.amount);
 					else if (cmd.kind === 'regain') regainMana(fm, cur, cmd.amount);
 					else setMana(fm, cur, cmd.amount);
 				})),
-			});
-		}
-	}
-
-	/**
-	 * − and + on HP and mana add up while you tap (the bar shows the running
-	 * number and a −3 / +3), then apply as one change, with one animation, once
-	 * you stop. Damage that way works like the calculator: temp HP first.
-	 */
-	private nudge(key: 'hp' | 'mana', d: number, bar: HTMLElement): void {
-		const s = this.sheet;
-		const p = this.pending.get(key) ?? { delta: 0, timer: 0 };
-		const cur = key === 'hp' ? s.hp : s.mana;
-		const max = key === 'hp' ? s.hpMax : s.manaMax;
-		const floor = key === 'hp' ? -(s.hp + s.tempHp) : -s.mana;
-		p.delta = Math.max(floor, Math.min(max - cur, p.delta + d));
-		const win = bar.win;
-		win.clearTimeout(p.timer);
-		this.pending.set(key, p);
-		// The running number: temp HP soaks damage first.
-		const soaked = key === 'hp' && p.delta < 0 ? Math.min(s.tempHp, -p.delta) : 0;
-		const shown = Math.max(0, Math.min(max, cur + p.delta + soaked));
-		bar.querySelector('.ns-meter-cur')?.setText(String(shown));
-		let tag = bar.querySelector<HTMLElement>('.ns-meter-delta');
-		if (!tag) tag = bar.querySelector('.ns-meter-nums')?.createSpan({ cls: 'ns-meter-delta' }) ?? null;
-		tag?.setText(p.delta > 0 ? `+${p.delta}` : p.delta < 0 ? `−${-p.delta}` : '±0');
-		tag?.toggleClass('is-gain', p.delta > 0);
-		tag?.toggleClass('is-loss', p.delta < 0);
-		p.timer = win.setTimeout(() => {
-			const delta = p.delta;
-			this.pending.delete(key);
-			if (!delta) { this.render(); return; }
-			void this.mutate((fm, now) => {
-				if (key === 'mana') {
-					if (delta < 0) spendMana(fm, now, -delta);
-					else regainMana(fm, now, delta);
-				} else if (delta < 0) {
-					const said = applyDamage(fm, now, -delta, false).filter(e => !/absorbed/.test(e));
-					if (said.length) new Notice(`${now.name} ${said.join('; ')}`);
-				} else heal(fm, now, delta);
-			});
-		}, 550);
-	}
-
-	/**
-	 * A change shows the way games do it: lost HP or mana stays on the bar in a
-	 * highlight colour for a moment, then drains away to the new value; gains
-	 * light up first, then the bar fills to them. Only when the value changed
-	 * since the last draw (and not for reduced motion).
-	 */
-	private animateBar(key: string, now: number, bar: HTMLElement, fill: HTMLElement, pct: (v: number) => string): void {
-		const was = this.lastBars.get(key);
-		this.lastBars.set(key, now);
-		if (was === undefined || was === now || reducedMotion()) return;
-		const lo = Math.min(was, now);
-		const ghost = createDiv({ cls: `ns-meter-ghost ${now < was ? 'is-loss' : 'is-gain'}` });
-		// A loss sits on top of the fill and drains; a gain sits under it, and the fill grows across it.
-		if (now < was) fill.after(ghost);
-		else fill.before(ghost);
-		ghost.setCssProps({ '--ns-from': pct(lo), '--ns-w': `calc(${pct(Math.max(was, now))} - ${pct(lo)})` });
-		const win = bar.win;
-		if (now < was) {
-			// The lost part lingers, then drains.
-			win.setTimeout(() => ghost.addClass('is-draining'), 420);
-			win.setTimeout(() => ghost.remove(), 1300);
-		} else {
-			// The gained part lights up; the fill catches up to it.
-			fill.addClass('is-instant');
-			fill.setCssProps({ '--ns-fill': pct(was) });
-			win.requestAnimationFrame(() => win.requestAnimationFrame(() => {
-				fill.removeClass('is-instant');
-				win.setTimeout(() => fill.setCssProps({ '--ns-fill': pct(now) }), 300);
-			}));
-			win.setTimeout(() => ghost.remove(), 1200);
+				taps: {
+					floor: -s.mana,
+					commit: (delta) => {
+						if (!delta) { this.render(); return; }
+						void this.mutate((fm, now) => { if (delta < 0) spendMana(fm, now, -delta); else regainMana(fm, now, delta); });
+					},
+				},
+			}, this.vitals);
 		}
 	}
 
@@ -645,26 +536,13 @@ export class CharacterSheetRenderer extends Component {
 	/** Wounds as a row of pips (the last is a skull) in the Hit points header. Tap one to set them. */
 	private renderWounds(parent: HTMLElement): void {
 		const s = this.sheet;
-		const w = parent.createDiv({ cls: 'ns-wounds' });
-		const tab = w.createSpan({ cls: 'ns-wounds-tab' });
-		setIcon(tab.createSpan({ cls: 'ns-wounds-drop' }), 'droplet');
-		tab.createSpan({ text: 'Wounds' });
-		const track = w.createDiv({ cls: 'ns-wounds-track', attr: { role: 'group', 'aria-label': `Wounds ${s.wounds} of ${s.woundsMax}` } });
-		const was = this.lastWounds;
-		this.lastWounds = s.wounds;
-		for (let i = 0; i < s.woundsMax; i++) {
-			const last = i === s.woundsMax - 1;
-			const on = i < s.wounds;
-			const moved = was !== undefined && (i < was) !== on && !reducedMotion() ? (on ? ' just-on' : ' just-off') : '';
-			const pip = track.createEl('button', { cls: `ns-pip${on ? ' is-on' : ''}${last ? ' is-skull' : ''}${moved}`, attr: { 'aria-pressed': String(on), 'aria-label': `${on ? 'Heal a Wound' : 'Add a Wound'} (${s.wounds} of ${s.woundsMax}${last ? '; the last is death' : ''})` } });
-			if (last) setIcon(pip, 'skull');
-			pip.addEventListener('click', () => void this.mutate((fm, cur) => setWounds(fm, cur, pipStep(cur.wounds, on, cur.woundsMax))));
-		}
+		const w = renderWoundPips(parent, {
+			wounds: s.wounds, max: s.woundsMax, count: !this.state.editing,
+			set: (n) => void this.mutate((fm, cur) => setWounds(fm, cur, Math.min(cur.woundsMax, n))),
+		}, this.vitals);
 		if (this.state.editing) {
 			const input = w.createEl('input', { cls: 'ns-wounds-max', type: 'number', value: s.set.has('wounds_max') ? String(this.fm.wounds_max) : '', attr: { placeholder: `Max ${s.woundsMax}`, 'aria-label': 'Max Wounds (blank: worked out)' } });
 			input.addEventListener('change', () => void this.mutate(fm => setOverride(fm, 'wounds_max', input.value.trim() === '' ? undefined : Number(input.value))));
-		} else {
-			w.createSpan({ cls: 'ns-wounds-count', text: `${s.wounds}/${s.woundsMax}` });
 		}
 	}
 
@@ -678,17 +556,7 @@ export class CharacterSheetRenderer extends Component {
 	private renderActionsCard(card: HTMLElement): void {
 		const s = this.sheet;
 		card.createSpan({ cls: 'ns-chip-label ns-actions-label', text: 'Actions' });
-		const dots = card.createDiv({ cls: 'ns-action-dots', attr: { role: 'group', 'aria-label': `${s.actions} of ${ACTIONS_PER_TURN} actions left` } });
-		const shown = Math.max(ACTIONS_PER_TURN, s.actions);
-		const was = this.lastActions;
-		this.lastActions = s.actions;
-		for (let i = 0; i < shown; i++) {
-			const on = i < s.actions;
-			// Dots that just filled or emptied animate.
-			const moved = was !== undefined && (i < was) !== on && !reducedMotion() ? (on ? ' just-on' : ' just-off') : '';
-			const dot = dots.createEl('button', { cls: `ns-action-dot${on ? ' is-on' : ''}${moved}`, attr: { 'aria-label': `${on ? 'Spend an action' : 'Get an action back'} (${s.actions} left)`, 'aria-pressed': String(on) } });
-			dot.addEventListener('click', () => void this.mutate((fm, cur) => setActions(fm, pipStep(cur.actions, on))));
-		}
+		renderActionDots(card, { count: s.actions, perTurn: ACTIONS_PER_TURN, set: (n) => void this.mutate(fm => setActions(fm, n)) }, this.vitals);
 		if (s.reactionsUsed.length) {
 			const used = card.createDiv({ cls: 'ns-reactions-used' });
 			for (const r of s.reactionsUsed) used.createSpan({ cls: 'ns-reaction-used', text: r });

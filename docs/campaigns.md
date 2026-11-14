@@ -14,7 +14,7 @@ The panel in the left sidebar is home base. From it you can:
 
 - switch campaigns, and with them between GM and [player](players.md) view; **Campaign settings…** in the same menu changes the name, side and level
 - open [Spotlight](spotlight.md) from the search bar under the campaign name, to find adversaries, NPCs and notes or roll dice
-- see and edit the party
+- see the party: a card for each hero's character sheet, with their HP
 - **Continue** where you left off
 - browse chapters and their scenes (map buttons sit on each chapter)
 - browse every folder in the campaign: Sessions, NPCs, Locations, Monsters, Assets, and any you make yourself, like Factions. Empty folders show too. NPCs with a [portrait](npcs.md#portraits) show it as their icon.
@@ -61,7 +61,7 @@ On a folder of files like **Assets**, **+** adds files from your computer or pho
 
 Obsidian's own items (Bookmark, Reveal in navigation, and items from other plugins) are in the same menus. Deleted notes go wherever Obsidian's **Deleted files** setting sends them.
 
-**Each campaign has its own party.** Opening a note inside a campaign makes that campaign active, so encounter blocks in it are rated against that table's heroes. Until you add heroes, the campaign's `level:` and `heroes:` properties are used.
+**Each campaign has its own party.** In a campaign you run, the party is the [character sheets](character-sheets.md) in its Party folder: **+** next to Party makes a new one, and each card opens the hero's sheet. Encounter blocks and the tracker read the party from those sheets (name, level, max HP, armor and max Wounds), so levelling a hero up changes the encounter maths too. Opening a note inside a campaign makes that campaign active, so encounter blocks in it are rated against that table's heroes. Until you add heroes, the campaign's `level:` and `heroes:` properties are used. A party you entered by hand before shows in the Party section with a button to make character sheets for it.
 
 **Pages open ready to read.** Characters, chapters, scenes, NPCs, locations, maps and handouts open in reading view, where cards, sheets and blocks look their best. Use Obsidian's edit button (or its hotkey) to change one; it stays in editing until you move to another page. Session logs, which you write in at the table, and notes you've just made open for editing as usual. Turn this off under Settings → Campaigns → **Open campaign pages in reading view**. In reading view, a campaign note's properties show as a row of tags (Ancestry Human, Status alive…) rather than the Properties form; switch to editing to change them, or turn off **Properties as tags**.
 

@@ -8,7 +8,7 @@ status: active
 
 The city's oldest quarter: crooked streets, guild halls, and cellars that go down further than anyone admits. On moonless nights, silver light seeps up between the cobblestones.
 
-A sample campaign for **four level 2 heroes**, built around **The Quicksilver Vaults**. The party in the Campaign panel (Brakka, Wren, Ilse and Tomas) is set up already, so every encounter block is rated for them. Swap in your own heroes from the panel whenever you like.
+A sample campaign for **four level 2 heroes**, built around **The Quicksilver Vaults**. The party (Brakka, Wren, Ilse and Tomas) has character sheets in the Party folder, so every encounter block is rated for them. Add your own heroes with **+** next to Party in the Campaign panel.
 
 ```nimble-campaign
 ```

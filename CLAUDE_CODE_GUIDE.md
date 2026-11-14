@@ -130,6 +130,16 @@ The community directory's review bot flags things the `eslint-plugin-obsidianmd`
 - No `!important`; raise specificity instead (see the print rules in styles.css).
 - When the bot flags something new, add a rule for it here rather than only fixing the line.
 
+## Shared components, GM and player alike
+
+Running a campaign and playing in one show the same things; build each once and pass the difference as a flag (usually `c.role`), rather than a second component for the other side.
+
+- Party: `renderRoster` and `heroCard` (campaign-ui.ts) for both roles; the GM side also feeds the encounter party from the same sheets (`syncPartyFromSheets` in main.ts).
+- Monsters: `renderStatblock` and `renderLoreCard` (render.ts) share `renderActionBar`; `plugin.renderStatblock` adds the player's creature notes and every printing to any lore card.
+- Vitals: `renderMeter`, `renderActionDots` and `renderWoundPips` (vitals-ui.ts) draw the HP and mana bars (with their damage and heal animations and batched − / + taps), action dots and Wound pips, for the character sheet (writing to the note) and the tracker's quick look (writing to the fight). Wrap them in `.nimble-sheet` (the quick look uses `.nimble-sheet.ns-embed`) for their styles.
+- Dice and marks: `dieShape` and `triangleMark` (die-shape.ts), styled globally (`.ns-die`, `.ns-tri-mark`), used by the sheet and the Camp dialog.
+- Rolls: `rollWith` and `RollDialog` for every sheet roll; `pipStep` (rules.ts) for every row of pips, on the sheet and in the tracker.
+
 ## Pills and compact buttons
 
 Every pill, chip and small icon+label button is centred by one shared rule at the end of the character sheet section of `styles.css` (flex row, icons as blocks, labels at `line-height: normal`). Don't use `line-height: 1` on labels: at small sizes Chromium rounds the font's ascent and descent and the label lands ~1px high. A new pill class goes in that rule's list **and** in `PILL_SELECTORS` in `e2e/align.mjs`; the `pills:` e2e test measures the real glyphs (capital height, real baseline) and fails if an icon or label drifts more than 1px.

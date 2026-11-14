@@ -1617,6 +1617,9 @@ body.is-tablet :is(.campaign-party, .campaign-continue, .campaign-switch-btn, .c
 .campaign-hero-hp-fill.is-low { background: var(--nimble-warn, #d24c4c); }
 .campaign-hero-hp-text { position: relative; display: block; text-align: center; font-size: 0.66rem; font-weight: 700; line-height: 14px; color: var(--text-normal); font-variant-numeric: tabular-nums; }
 .campaign-roster-empty { width: 100%; }
+.campaign-roster-note { margin-top: 0.35rem; font-size: 0.76rem; color: var(--text-muted); }
+.campaign-roster-list + .campaign-roster-empty { margin-top: 0.45rem; }
+.campaign-hero.is-plain { cursor: default; }
 @media (pointer: coarse) { .campaign-hero { min-height: 2.8rem; } }
 
 /* Lore card: what a hero could know about a creature */
@@ -2289,39 +2292,21 @@ body.is-tablet button.nimble-npc-pill { padding: 0 0.6rem; }
 .nimble-record-modal .record-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
 .nimble-record-modal .record-btn { display: inline-flex; align-items: center; gap: 0.3rem; height: 2rem; }
 .nimble-record-modal .record-btn svg { width: 14px; height: 14px; }
-.nimble-record-modal .record-strip { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.6rem 0.7rem; border-radius: 10px; background: var(--background-secondary); border: 1px solid var(--background-modifier-border); }
+.nimble-record-modal .record-strip { margin-bottom: 0.25rem; }
 .nimble-record-modal .record-strip.is-down { opacity: 0.6; }
-.nimble-record-modal .record-strip-row { display: flex; align-items: center; gap: 0.6rem; }
-.nimble-record-modal .record-turn { display: inline-flex; align-items: center; gap: 0.35rem; height: 2.1rem; flex-shrink: 0; }
-.nimble-record-modal .record-turn svg { width: 16px; height: 16px; }
-.nimble-record-modal .record-turn.is-done { color: var(--nimble-ok); }
-.nimble-record-modal .record-hp { flex: 1; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
-.nimble-record-modal .record-hp-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--background-modifier-border); overflow: hidden; }
-.nimble-record-modal .record-hp-fill { height: 100%; width: var(--fill, 100%); background: var(--nimble-ok); transition: width 0.25s; }
-.nimble-record-modal .record-hp-btn { flex-shrink: 0; min-width: 5.6rem; height: 2.1rem; font-weight: 700; font-size: 1rem; font-variant-numeric: tabular-nums; }
-.nimble-record-modal .record-pips { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
-.nimble-record-modal .record-pip-group { display: inline-flex; align-items: center; gap: 4px; }
-.nimble-record-modal .record-pip-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-right: 0.3rem; }
-.nimble-record-modal .record-pip { width: 16px; height: 16px; padding: 0; min-height: 0; box-shadow: none; background: transparent; border: 1.5px solid var(--nimble-hero); border-radius: 50%; }
-.nimble-record-modal .record-pip.is-on { background: var(--nimble-hero); }
-.nimble-record-modal .is-wounds .record-pip { border-radius: 3px; border-color: var(--nimble-hp); }
-.nimble-record-modal .is-wounds .record-pip.is-on { background: var(--nimble-hp); }
-.nimble-record-modal .record-conds { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-.nimble-record-modal .record-cond { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.05rem 0.2rem 0.05rem 0.55rem; border-radius: 999px; font-size: 0.8rem; background: color-mix(in srgb, var(--interactive-accent) 18%, transparent); }
-.nimble-record-modal .record-cond-rounds { font-size: 0.7rem; color: var(--text-muted); }
-.nimble-record-modal .record-cond-x { height: 1.3rem; width: 1.3rem; padding: 0; box-shadow: none; background: transparent; color: var(--text-muted); }
+/* The strip is the character sheet's own HP bar, Wounds, action dots and conditions (vitals-ui.ts). */
+.nimble-sheet.ns-embed { margin: 0; }
+.nimble-sheet.ns-embed > :last-child { margin-bottom: 0; }
+.nimble-sheet button.ns-actions-end.is-done { color: var(--nimble-ok); border-color: color-mix(in srgb, var(--nimble-ok) 45%, transparent); }
 .nimble-record-modal .record-body { overflow-y: auto; min-height: 0; }
 .nimble-record-modal .record-body .nimble-statblock { margin: 0; }
 .nimble-record-modal .record-empty { color: var(--text-muted); font-style: italic; padding: 0.5rem 0; }
 @media (pointer: coarse) {
-	.nimble-record-modal .record-btn, .nimble-record-modal .record-turn, .nimble-record-modal .record-hp-btn { height: 2.6rem; }
-	.nimble-record-modal .record-pip { width: 22px; height: 22px; }
+	.nimble-record-modal .record-btn { height: 2.6rem; }
 }
 body.is-phone .nimble-record-modal .record-head { flex-wrap: wrap; }
 body.is-phone .nimble-record-modal .record-actions { width: 100%; }
 body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justify-content: center; }
-body.is-phone .nimble-record-modal .record-strip-row { flex-wrap: wrap; }
-body.is-phone .nimble-record-modal .record-turn { flex: 1; justify-content: center; }
 
 /* ==========================================================================
    3D DICE SETTINGS: gallery of looks, editor with live preview, import
@@ -2674,22 +2659,22 @@ body.is-phone .nimble-record-modal .record-turn { flex: 1; justify-content: cent
 .nimble-sheet .ns-res-pip { width: 0.62rem; height: 0.62rem; border-radius: 50%; border: 2px solid var(--ns-line); }
 .nimble-sheet .ns-res-pip.is-on { background: var(--ns-gold); border-color: var(--ns-gold); }
 .nimble-sheet .ns-res-value { font-weight: 800; font-variant-numeric: tabular-nums; }
-/* Class dice (Judgment Dice…): a pool drawn as dice of their size, in the class dice colour (Settings). */
+/* Die shapes (die-shape.ts), wherever they show: the sheet's class dice in the class dice colour (Settings), Camp's Hit Dice. */
 .nimble-sheet .ns-held { padding-right: 0.3rem; }
 .nimble-sheet .ns-held-dice { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0.2rem; }
-.nimble-sheet .ns-die { display: inline-grid; place-items: center; width: 1.65rem; height: 1.65rem; color: var(--ns-class-dice, #d4a72c); }
-.nimble-sheet .ns-die > * { grid-area: 1 / 1; }
-.nimble-sheet .ns-die-svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.nimble-sheet .ns-die-body { fill: currentColor; stroke: color-mix(in srgb, currentColor 65%, #000); stroke-width: 1.3; stroke-linejoin: round; }
-.nimble-sheet .ns-die-face { fill: none; stroke: color-mix(in srgb, currentColor 55%, #000); stroke-width: 1; stroke-linejoin: round; opacity: 0.55; }
-.nimble-sheet .ns-die-num { font-size: 0.72rem; font-weight: 800; line-height: normal; font-variant-numeric: tabular-nums; color: var(--ns-class-dice-ink, #24180a); }
-.nimble-sheet .ns-die.is-d4 .ns-die-num { padding-top: 0.3rem; font-size: 0.66rem; }
-.nimble-sheet .ns-die.is-d20 .ns-die-num, .nimble-sheet .ns-die.is-d12 .ns-die-num { font-size: 0.64rem; }
-.nimble-sheet .ns-die.is-empty .ns-die-body { fill: transparent; stroke: color-mix(in srgb, currentColor 60%, transparent); stroke-dasharray: 2.2 2; }
-.nimble-sheet .ns-die.is-empty .ns-die-face, .nimble-sheet .ns-die.has-value .ns-die-face { display: none; }
-.nimble-sheet .ns-die.is-clickable { cursor: pointer; border-radius: 4px; }
-.nimble-sheet .ns-die.is-clickable:hover { filter: brightness(1.1); }
-.nimble-sheet .ns-die.is-clickable:focus-visible { outline: 2px solid var(--background-modifier-border-focus); }
+.ns-die { display: inline-grid; place-items: center; width: 1.65rem; height: 1.65rem; color: var(--ns-class-dice, #d4a72c); }
+.ns-die > * { grid-area: 1 / 1; }
+.ns-die-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.ns-die-body { fill: currentColor; stroke: color-mix(in srgb, currentColor 65%, #000); stroke-width: 1.3; stroke-linejoin: round; }
+.ns-die-face { fill: none; stroke: color-mix(in srgb, currentColor 55%, #000); stroke-width: 1; stroke-linejoin: round; opacity: 0.55; }
+.ns-die-num { font-size: 0.72rem; font-weight: 800; line-height: normal; font-variant-numeric: tabular-nums; color: var(--ns-class-dice-ink, #24180a); }
+.ns-die.is-d4 .ns-die-num { padding-top: 0.3rem; font-size: 0.66rem; }
+.ns-die.is-d20 .ns-die-num, .ns-die.is-d12 .ns-die-num { font-size: 0.64rem; }
+.ns-die.is-empty .ns-die-body { fill: transparent; stroke: color-mix(in srgb, currentColor 60%, transparent); stroke-dasharray: 2.2 2; }
+.ns-die.is-empty .ns-die-face, .ns-die.has-value .ns-die-face { display: none; }
+.ns-die.is-clickable { cursor: pointer; border-radius: 4px; }
+.ns-die.is-clickable:hover { filter: brightness(1.1); }
+.ns-die.is-clickable:focus-visible { outline: 2px solid var(--background-modifier-border-focus); }
 .nimble-sheet .ns-held-none { font-size: 0.8rem; color: var(--text-faint); }
 .nimble-sheet .ns-conds, .nimble-sheet .ns-langs { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
 .nimble-sheet .ns-cond, .nimble-sheet .ns-lang {
@@ -2873,14 +2858,8 @@ body.is-phone .nimble-record-modal .record-turn { flex: 1; justify-content: cent
 .ns-camp-dialog .ns-camp-line { font-size: 0.8rem; color: var(--text-muted); }
 .ns-camp-dialog .is-level .ns-camp-line { color: rgba(255, 255, 255, 0.85); }
 .ns-camp-dialog .ns-camp-dice { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; color: #e8743b; }
+.ns-camp-dialog .ns-die { color: #e8743b; }
 .ns-camp-dialog .ns-camp-more { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
-.ns-camp-dialog .ns-die { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; color: #e8743b; }
-.ns-camp-dialog .ns-die > * { grid-area: 1 / 1; }
-.ns-camp-dialog .ns-die-svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.ns-camp-dialog .ns-die-body { fill: currentColor; stroke: color-mix(in srgb, currentColor 65%, #000); stroke-width: 1.3; stroke-linejoin: round; }
-.ns-camp-dialog .ns-die-face { fill: none; stroke: color-mix(in srgb, currentColor 55%, #000); stroke-width: 1; stroke-linejoin: round; opacity: 0.55; }
-.ns-camp-dialog .ns-die.is-empty .ns-die-body { fill: transparent; stroke: color-mix(in srgb, currentColor 60%, transparent); stroke-dasharray: 2.2 2; }
-.ns-camp-dialog .ns-die.is-empty .ns-die-face { display: none; }
 .ns-camp-dialog .ns-camp-changes { display: flex; flex-direction: column; gap: 0.3rem; }
 .ns-camp-dialog .ns-camp-change { display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; }
 .ns-camp-dialog .ns-camp-change-icon { display: inline-flex; color: var(--camp-c); }

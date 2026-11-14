@@ -11,11 +11,12 @@ import { Menu, Notice, setIcon, TFile, TFolder } from 'obsidian';
 import { portraitOf, renderAvatar } from './npc-card';
 import type NimbleStatblocksPlugin from '../main';
 import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, NoteKind, NoteRef, Section } from './campaign-model';
-import { SECTION_FOR } from './campaigns';
+import { CharacterInfo, SECTION_FOR } from './campaigns';
 import { CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles, ROLE_INFO } from './campaign-modals';
 import { STARTERS, StarterKind } from './campaign-templates';
 import { draggedPaths, startFileDrag } from './internals';
-import { NewCharacterModal } from './character-modals';
+import { createCharacterNote, NewCharacterModal } from './character-modals';
+import type { PartyMember } from './types';
 import { confirmAction, onLongPress } from './touch';
 
 export const KIND_ICON: Record<NoteKind, string> = {
@@ -174,53 +175,85 @@ function group(parent: HTMLElement, key: string, opts: OutlineOptions, head: (h:
 }
 
 /**
- * Player campaigns: the party as cards. Your hero first and larger (with HP
- * when the sheet tracks it), then everyone else, then + to add someone.
+ * The party as cards: a character note for each hero. In a campaign you play
+ * in, your hero comes first and larger, marked You; in one you run, every hero
+ * shows their HP, and the encounter party is read from these sheets.
  */
 export function renderRoster(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign): void {
+	const gm = c.role !== 'player';
 	const heroes = plugin.campaigns.characters(c);
-	const roster = el.createDiv({ cls: 'campaign-roster' });
+	const roster = el.createDiv({ cls: `campaign-roster${gm ? ' is-gm' : ''}` });
 	const head = roster.createDiv({ cls: 'campaign-heading campaign-roster-head' });
 	head.createSpan({ text: 'Party' });
-	iconBtn(head, 'user-plus', 'Add a party member', () => promptCharacter(plugin, c, false));
+	iconBtn(head, 'user-plus', gm ? 'Add a hero' : 'Add a party member', () => promptCharacter(plugin, c, false));
 	if (!heroes.length) {
+		// A party entered by hand before heroes had sheets: show it, and offer to make sheets for it.
+		const old = gm ? (plugin.settings.activeCampaign === c.folder ? plugin.settings.party : (plugin.settings.campaigns?.[c.folder]?.party ?? [])) : [];
+		if (old.length) {
+			const list = roster.createDiv({ cls: 'campaign-roster-list' });
+			for (const h of old) heroCard(list, plugin, { name: h.name, className: h.className, level: h.level, hpMax: h.maxHp });
+			const make = roster.createEl('button', { cls: 'campaign-party campaign-roster-empty' });
+			setIcon(make.createSpan({ cls: 'campaign-party-icon' }), 'scroll-text');
+			make.createSpan({ text: `Make character sheets for ${old.length === 1 ? 'this hero' : `these ${old.length}`}` });
+			make.addEventListener('click', () => void sheetsForParty(plugin, c, old));
+			return;
+		}
 		const add = roster.createEl('button', { cls: 'campaign-party campaign-roster-empty' });
-		setIcon(add.createSpan({ cls: 'campaign-party-icon' }), 'shield');
-		add.createSpan({ text: 'Add your character' });
-		add.addEventListener('click', () => promptCharacter(plugin, c, true));
+		setIcon(add.createSpan({ cls: 'campaign-party-icon' }), gm ? 'user-plus' : 'shield');
+		add.createSpan({ text: gm ? 'Add a hero' : 'Add your character' });
+		add.addEventListener('click', () => promptCharacter(plugin, c, !gm));
+		if (gm) roster.createDiv({ cls: 'campaign-roster-note', text: `Encounters are rated for ${c.heroes ?? plugin.settings.defaultPartySize ?? 4} level ${c.level ?? 1} heroes until then.` });
 		return;
 	}
 	const list = roster.createDiv({ cls: 'campaign-roster-list' });
 	for (const h of heroes) {
-		const card = list.createEl('a', { cls: `campaign-hero${h.mine ? ' is-mine' : ''}`, href: '#', attr: { 'data-path': h.path } });
-		const portrait = portraitOf(plugin.app, h.path);
-		if (portrait) renderAvatar(card, portrait, 'campaign-hero-avatar');
-		else setIcon(card.createSpan({ cls: 'campaign-hero-avatar is-empty' }), h.mine ? 'shield' : 'user-round');
-		const text = card.createDiv({ cls: 'campaign-hero-text' });
-		const name = text.createDiv({ cls: 'campaign-hero-name' });
-		name.createSpan({ text: h.name });
-		if (h.mine) name.createSpan({ cls: 'campaign-hero-you', text: 'You' });
-		const kind = [h.ancestry, h.className].filter(Boolean).join(' ');
-		const what = [kind, h.level !== undefined ? (kind ? `${h.level}` : `Level ${h.level}`) : ''].filter(Boolean).join(' · ');
-		const sub = [what, !h.mine && h.player ? h.player : ''].filter(Boolean).join(' — ');
-		if (sub) text.createDiv({ cls: 'campaign-hero-sub', text: sub });
-		if (h.mine && h.hp !== undefined && h.hpMax) {
-			const bar = text.createDiv({ cls: 'campaign-hero-hp', attr: { 'aria-label': `${h.hp} of ${h.hpMax} HP` } });
-			const pct = Math.max(0, Math.min(100, Math.round((h.hp / h.hpMax) * 100)));
-			bar.createDiv({ cls: `campaign-hero-hp-fill${pct <= 25 ? ' is-low' : ''}` }).setCssProps({ '--hp-pct': `${pct}%` });
-			bar.createSpan({ cls: 'campaign-hero-hp-text', text: `${h.hp}/${h.hpMax}` });
-		}
-		card.addEventListener('click', (e) => { e.preventDefault(); void plugin.campaigns.open(h.path, e.metaKey || e.ctrlKey); });
-		const menu = (e: MouseEvent | PointerEvent) => {
+		heroCard(list, plugin, { ...h, showHp: h.mine || gm }, (e) => {
 			const m = new Menu();
 			m.addItem(i => i.setTitle('Open in new tab').setIcon('file-plus').onClick(() => void plugin.campaigns.open(h.path, true)));
-			if (!h.mine) m.addItem(i => i.setTitle('This is my character').setIcon('shield').onClick(() => void plugin.campaigns.setMine(c, h.path)));
+			if (!h.mine && !gm) m.addItem(i => i.setTitle('This is my character').setIcon('shield').onClick(() => void plugin.campaigns.setMine(c, h.path)));
 			m.showAtMouseEvent(e);
-		};
-		card.addEventListener('contextmenu', (e) => { e.preventDefault(); menu(e); });
-		onLongPress(card, menu);
-		draggable(card, plugin, h.path);
+		});
 	}
+}
+
+/**
+ * One hero's card in the Party section, the same for campaigns you run and
+ * ones you play in: portrait, name (with You for yours), "Ancestry Class
+ * level — player", and an HP bar. With a note behind it, it opens the sheet
+ * (a menu on right-click or long-press, and it drags into notes); without one
+ * (a party entered by hand), it's just the card.
+ */
+function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<CharacterInfo> & { name: string; showHp?: boolean }, menu?: (e: MouseEvent | PointerEvent) => void): HTMLElement {
+	const path = h.path;
+	const card: HTMLElement = path
+		? list.createEl('a', { cls: `campaign-hero${h.mine ? ' is-mine' : ''}`, href: '#', attr: { 'data-path': path } })
+		: list.createDiv({ cls: 'campaign-hero is-plain' });
+	const portrait = path ? portraitOf(plugin.app, path) : null;
+	if (portrait) renderAvatar(card, portrait, 'campaign-hero-avatar');
+	else setIcon(card.createSpan({ cls: 'campaign-hero-avatar is-empty' }), h.mine ? 'shield' : 'user-round');
+	const text = card.createDiv({ cls: 'campaign-hero-text' });
+	const name = text.createDiv({ cls: 'campaign-hero-name' });
+	name.createSpan({ text: h.name });
+	if (h.mine) name.createSpan({ cls: 'campaign-hero-you', text: 'You' });
+	const kind = [h.ancestry, h.className].filter(Boolean).join(' ');
+	const what = [kind, h.level !== undefined ? (kind ? `${h.level}` : `Level ${h.level}`) : ''].filter(Boolean).join(' · ');
+	const sub = [what, !h.mine && h.player ? h.player : '', !path && h.hpMax ? `${h.hpMax} HP` : ''].filter(Boolean).join(' — ');
+	if (sub) text.createDiv({ cls: 'campaign-hero-sub', text: sub });
+	if (h.showHp && h.hp !== undefined && h.hpMax) {
+		const bar = text.createDiv({ cls: 'campaign-hero-hp', attr: { 'aria-label': `${h.hp} of ${h.hpMax} HP` } });
+		const pct = Math.max(0, Math.min(100, Math.round((h.hp / h.hpMax) * 100)));
+		bar.createDiv({ cls: `campaign-hero-hp-fill${pct <= 25 ? ' is-low' : ''}` }).setCssProps({ '--hp-pct': `${pct}%` });
+		bar.createSpan({ cls: 'campaign-hero-hp-text', text: `${h.hp}/${h.hpMax}` });
+	}
+	if (path) {
+		card.addEventListener('click', (e) => { e.preventDefault(); void plugin.campaigns.open(path, e.metaKey || e.ctrlKey); });
+		if (menu) {
+			card.addEventListener('contextmenu', (e) => { e.preventDefault(); menu(e); });
+			onLongPress(card, menu);
+		}
+		draggable(card, plugin, path);
+	}
+	return card;
 }
 
 /** Make a new hero (ancestry, class, stats, background) in the campaign's Party folder. Yours, or another party member. */
@@ -232,24 +265,24 @@ export function promptCharacter(plugin: NimbleStatblocksPlugin, c: Campaign, min
 	})(), { mine, name, level }).open();
 }
 
-/** Party line: "4 heroes · level 3", or the starting level until heroes are added. Player campaigns get the roster instead. */
+/** The party, as character sheets: the same section for campaigns you run and ones you play in. */
 export function renderPartyLine(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign): void {
-	if (c.role === 'player') { renderRoster(el, plugin, c); return; }
-	const party = plugin.settings.activeCampaign === c.folder ? plugin.settings.party : (plugin.settings.campaigns?.[c.folder]?.party ?? []);
-	const line = el.createEl('button', { cls: 'campaign-party', attr: { 'aria-label': 'Edit this campaign\'s party' } });
-	setIcon(line.createSpan({ cls: 'campaign-party-icon' }), 'users-round');
-	if (party.length) {
-		const lv = [...new Set(party.map(h => h.level))].sort((a, b) => a - b);
-		line.createSpan({ text: `${party.length} hero${party.length === 1 ? '' : 'es'} · level ${lv.length > 1 ? `${lv[0]}–${lv[lv.length - 1]}` : lv[0]}` });
-		line.setAttr('title', party.map(h => `${h.name} (${h.className ?? 'hero'} ${h.level})`).join(', '));
-	} else {
-		line.createSpan({ text: `${c.heroes ?? plugin.settings.defaultPartySize ?? 4} heroes · level ${c.level ?? 1}` });
-		line.createSpan({ cls: 'campaign-party-hint', text: 'Add heroes' });
+	renderRoster(el, plugin, c);
+}
+
+/** A party entered by hand (name, class, level, HP): a character note for each, keeping their HP, Defense and Wounds. */
+async function sheetsForParty(plugin: NimbleStatblocksPlugin, c: Campaign, party: PartyMember[]): Promise<void> {
+	const folder = homeFolderFor(c, 'character', c.folder);
+	for (const h of party) {
+		const f = await createCharacterNote(plugin, { name: h.name, className: h.className ?? '', level: h.level, mine: false }, folder);
+		await plugin.app.fileManager.processFrontMatter(f, (fm: Record<string, unknown>) => {
+			fm.hp_max = h.maxHp;
+			fm.hp = h.maxHp;
+			if (h.defense !== undefined) fm.armor = h.defense;
+			if (h.maxWounds !== undefined) fm.wounds_max = h.maxWounds;
+		});
 	}
-	line.addEventListener('click', () => void (async () => {
-		if (plugin.settings.activeCampaign !== c.folder) await plugin.campaigns.setActive(c.folder);
-		plugin.openParty();
-	})());
+	new Notice(`Made ${party.length} character sheet${party.length === 1 ? '' : 's'} in ${folder}.`);
 }
 
 export function renderOutline(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, opts: OutlineOptions): void {

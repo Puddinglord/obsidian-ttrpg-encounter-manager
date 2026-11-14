@@ -19,5 +19,5 @@ In a campaign you [play in](players.md), the GM-only commands (`/add`, `/encount
 | `/npc-card` | An NPC card with a portrait slot |
 | `/map hideout` | A GM map block for an image in your vault |
 | `/roll 2d6+3` | Rolls now and writes the result (plain or as a Nimble attack) |
-| `/party`, `/bestiary`, `/tracker`, `/settings` | Jump straight to the party editor, bestiary, tracker or settings |
+| `/party`, `/bestiary`, `/tracker`, `/settings` | Jump straight to the party (the Campaign panel in a campaign you run, your sheet in one you play in), bestiary, tracker or settings |
 | `/summary`, `/party-table` | The current encounter's summary; a table of your heroes |
