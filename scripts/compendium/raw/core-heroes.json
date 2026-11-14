@@ -8,7 +8,7 @@
       "traits": [
         {
           "name": "Tenacious",
-          "text": "+1 to all skills and Initiative."
+          "text": "+1 to all skills."
         }
       ],
       "source": "Core",
@@ -218,7 +218,7 @@
       "traits": [
         {
           "name": "Reflective Aura",
-          "text": "(1/encounter) When you Defend, gain KEY Defense and deal KEY damage back to the attacker (ignoring their armor)."
+          "text": "(1/encounter) When you Defend, gain KEY Defense and deal KEY damage back to the attacker (ignoring their Defense)."
         }
       ],
       "source": "Core",
@@ -278,7 +278,7 @@
       "traits": [
         {
           "name": "Odd Constitution",
-          "text": "Increment your Hit Dice one step (d6 » d8 » d10 » d12 » d20); they always heal you for the maximum amount. Magical healing always heals you for the minimum amount."
+          "text": "Increment your Hit Dice one step (d4 » d6 » d8 » d10 » d12 » d20); they always heal you for the maximum amount. Magical healing always heals you for the minimum amount."
         }
       ],
       "source": "Core",
@@ -427,7 +427,7 @@
     },
     {
       "name": "Fey Touched",
-      "text": "You take half damage from all magical effects, double from weapons made of metal (before Defense is applied).",
+      "text": "You are Resistant to magical damage (–10 damage) and Vulnerable to metal weapons (+10 damage).",
       "source": "Core",
       "page": 28,
       "draft": false
@@ -791,22 +791,23 @@
     "languagesText": "All heroes speak Common by default. Each point of INT grants you an additional language known.",
     "levelUpText": "The GM may allow you to gain a level (LVL) while Safe Resting after you complete an appropriately challenging quest or adventure. At level 1, this may be as simple as clearing some angry rats out of a basement or rescuing someone from the woods. Each subsequent level will generally take more effort (and therefore more time). When you gain a level:",
     "levelUp": [
-      "HP Increase. Roll your Hit Die with advantage and increase your max HP by that much (or you may take the average instead: Hit Die size: d4: +3 HP; d6: +4 HP; d8: +5 HP; d10: +7 HP; d12: +8 HP).",
+      "HP Increase. Roll your Hit Die with advantage and increase your max HP by that much. You may instead take a flat HP bonus: Hit Die Size. d4: +2 HP; d6: +3 HP; d8: +4 HP; d10: +5 HP; d12: +6 HP; d20: +10 HP.",
       "More Endurance. Your Hit Die max increases by 1 (it is typically equal to your level).",
       "More Skilled. Gain 1 skill point. Additionally, to reflect your hero’s evolving expertise and priorities you may move 1 point from one skill to another (as long as the skill isn’t already negative).",
       "Class Features. Gain new class features for your level. This may mean increasing your mana pool, new spells, or even selecting a subclass!",
       "Other Adjustments. If any of your base stats increase, remember to adjust other elements of your character sheet as needed: skills change with their respective stats, as do damage, Initiative, Defense, mana, languages, etc."
     ],
     "hpAverage": {
-      "4": 3,
-      "6": 4,
-      "8": 5,
-      "10": 7,
-      "12": 8
+      "4": 2,
+      "6": 3,
+      "8": 4,
+      "10": 5,
+      "12": 6,
+      "20": 10
     },
     "inventory": "Each hero has 10+STR inventory slots for carrying equipment and loot (held, worn, or in a pack).\n• 1 slot can hold a 1-handed weapon, shield, worn armor, stack of javelins, 500 gp, or 2 potions.\n• 2 slots can hold a 2-handed weapon, unworn armor, or similarly bulky items.\n• Small, related items can be grouped into one slot for simplicity (e.g., Camping Supplies: soap, blanket, brush, rations).\n\nOn Ammunition. In most games, there’s no need to track ammo. If you have a quiver, you have enough arrows. Assume the hero collects fired arrows, crafts more, or buys them in town.\n\nAlternatively, your GM may allow you to carry whatever you want without the bookkeeping, so long as you’re reasonable!",
-    "defaults": "Mark your HP, Hit Dice size (see your class), Hit Die amount (default: LVL), Defense (DEX+armor), Initiative (default: DEX), Size, Speed (default: 6), max Wounds (default: 6), and inventory slots (10+STR).",
-    "startingGold": "Heroes start at level 1 with the equipment listed for their class and background OR 50 gp to buy their starting equipment. If starting at a higher level, multiply that by your starting level.",
+    "defaults": "Mark your HP, Hit Dice size (see your class), Hit Die amount (default: LVL), Defense (as listed for your armor; DEX if unarmored), Initiative (default: DEX), Size, Speed (default: 6), max Wounds (default: 6), and inventory slots (10+STR).",
+    "startingGold": "Heroes start at level 1 with the equipment listed for their class and background OR 25 gp to buy their starting equipment. If starting at a higher level, multiply that by your starting level.",
     "source": "Core",
     "page": 20,
     "draft": false

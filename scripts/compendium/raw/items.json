@@ -591,7 +591,7 @@
       "name": "Torches & Lanterns",
       "category": "gear",
       "subcategory": "key",
-      "text": "Heroes can’t see in the dark, so they are Blind while fighting with no light. Heroes can bring a lantern or torch to light their way as long as they have a hand free (or some other way) to hold it. A torch typically lasts for 1 dungeon (or 1 level of a very large one). An oil lamp can typically last for 1 entire outing, until your next Safe Rest. Both cast light up to **6 spaces** away; beyond this is darkness.",
+      "text": "Heroes can’t see in the dark, so they are Blind while fighting with no light. Heroes can bring a lantern or torch to light their way as long as they have a hand free (or some other way) to hold it. A torch typically lasts for 1 dungeon (or 1 level of a very large one). A lantern & oil can typically last for 1 entire outing, until your next Safe Rest. Both cast light up to **6 spaces** away; beyond this is darkness.",
       "source": "Core",
       "page": 36,
       "draft": false
@@ -603,7 +603,7 @@
       "cost": "50 gp",
       "text": "(action) Heal 2d4+4 HP.",
       "source": "Core",
-      "page": 37,
+      "page": 36,
       "draft": false
     },
     {
@@ -613,7 +613,7 @@
       "cost": "150 gp",
       "text": "(action) Heal 3d6+6 HP.",
       "source": "Core",
-      "page": 37,
+      "page": 36,
       "draft": false
     },
     {
@@ -623,17 +623,17 @@
       "cost": "450 gp",
       "text": "(action) Heal 4d8+8 HP.",
       "source": "Core",
-      "page": 37,
+      "page": 36,
       "draft": false
     },
     {
-      "name": "Torch (stack of 2)",
+      "name": "Torch",
       "category": "gear",
       "subcategory": "misc",
       "cost": "5 sp",
-      "text": "For when it’s dark. 1 use each.",
+      "text": "For when it’s dark (1 use).",
       "source": "Core",
-      "page": 37,
+      "page": 36,
       "draft": false
     },
     {
@@ -641,47 +641,37 @@
       "category": "gear",
       "subcategory": "misc",
       "cost": "10 gp",
-      "text": "Like a torch, but not as cool (refill: 1 gp).",
+      "text": "To light your way (refill: 1 gp).",
       "source": "Core",
-      "page": 37,
+      "page": 36,
       "draft": false
     },
     {
-      "name": "Medical Kit (1 use)",
+      "name": "Medical Kit",
       "category": "gear",
       "subcategory": "misc",
       "cost": "20 gp",
-      "text": "Recover 1 Wound during a Field Rest.",
+      "text": "Field Rest: Heal 1 Wound (1 use).",
       "source": "Core",
-      "page": 37,
+      "page": 36,
       "draft": false
     },
     {
-      "name": "Vial of Pitch",
+      "name": "Bell",
       "category": "gear",
       "subcategory": "misc",
       "cost": "2 gp",
-      "text": "Sticky, and VERY flammable.",
+      "text": "For service.",
       "source": "Core",
       "page": 37,
       "draft": false
     },
     {
-      "name": "Rope (50 ft.)",
+      "name": "Blanket",
       "category": "gear",
       "subcategory": "misc",
-      "cost": "10 gp",
-      "text": "You always need rope.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Chain (10 ft.)",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "50 gp",
-      "text": "Like rope, but stronger (and heavy).",
+      "cost": "1 gp",
+      "text": "Warm & fuzzy.",
       "source": "Core",
       "page": 37,
       "draft": false
@@ -697,41 +687,31 @@
       "draft": false
     },
     {
-      "name": "Padlock & Key",
+      "name": "Caltrops",
       "category": "gear",
       "subcategory": "misc",
-      "cost": "3 gp",
-      "text": "Lock it or lose it.",
+      "cost": "2 gp",
+      "text": "Watch your step!",
       "source": "Core",
       "page": 37,
       "draft": false
     },
     {
-      "name": "Mirror",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "4 gp",
-      "text": "For medusas AND spinach teeth.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Telescope",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "10 gp",
-      "text": "Arrr.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Magnifying Glass",
+      "name": "Camping Supplies",
       "category": "gear",
       "subcategory": "misc",
       "cost": "5 gp",
-      "text": "Make the small, big.",
+      "text": "Bedroll, rations, simple tent.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Chain (10 ft.)",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "50 gp",
+      "text": "Like rope, but stronger (and heavy).",
       "source": "Core",
       "page": 37,
       "draft": false
@@ -747,21 +727,21 @@
       "draft": false
     },
     {
-      "name": "Shovel",
+      "name": "Crowbar",
       "category": "gear",
       "subcategory": "misc",
-      "cost": "3 gp",
-      "text": "Sometimes you need a hole dug.",
+      "cost": "2 gp",
+      "text": "It’s LIKE a key.",
       "source": "Core",
       "page": 37,
       "draft": false
     },
     {
-      "name": "Pulley",
+      "name": "Dice",
       "category": "gear",
       "subcategory": "misc",
-      "cost": "3 gp",
-      "text": "Pull down, go up.",
+      "cost": "5 sp",
+      "text": "Math rocks. LOTS of fun.",
       "source": "Core",
       "page": 37,
       "draft": false
@@ -777,6 +757,146 @@
       "draft": false
     },
     {
+      "name": "Hand Drill",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 gp",
+      "text": "Turn, turn, turn—a new hole!",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Hunting Trap",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "10 gp",
+      "text": "Snap snap, don’t lose a finger!",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Instrument",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5–50 gp",
+      "text": "Drums, Horn, Lyre, Flute, etc.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Iron Tongs",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "Hot? No problem!",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Large Sack",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 sp",
+      "text": "Like a BIG pocket.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Lock Pick",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 gp",
+      "text": "It’s not mine, honest!",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Magnifying Glass",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 gp",
+      "text": "Make the small, big.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Manacles",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "For when someone has been bad.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Mirror",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "4 gp",
+      "text": "For medusas AND spinach teeth.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Monster Part",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "1 gp",
+      "text": "What is it?",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Net",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "1 gp",
+      "text": "For fish (or small people).",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Padlock & Key",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "Lock it or lose it.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Pitons",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "5 gp",
+      "text": "Metal spikes, for sealing doors.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Pulley",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "Pull down, go up.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
       "name": "Quiver & Ammo",
       "category": "gear",
       "subcategory": "misc",
@@ -787,11 +907,41 @@
       "draft": false
     },
     {
+      "name": "Rope (50 ft.)",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "10 gp",
+      "text": "You always need rope.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
       "name": "Saw",
       "category": "gear",
       "subcategory": "misc",
       "cost": "4 gp",
       "text": "For cutting lumber.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Shiny Object",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "1 sp",
+      "text": "Worthless, but VERY pretty.",
+      "source": "Core",
+      "page": 37,
+      "draft": false
+    },
+    {
+      "name": "Shovel",
+      "category": "gear",
+      "subcategory": "misc",
+      "cost": "3 gp",
+      "text": "Sometimes you need a hole dug.",
       "source": "Core",
       "page": 37,
       "draft": false
@@ -817,121 +967,31 @@
       "draft": false
     },
     {
-      "name": "Shiny Object",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "1 sp",
-      "text": "Worthless, but VERY pretty.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Lock Pick",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "5 gp",
-      "text": "It’s not mine, honest!",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Bell",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "2 gp",
-      "text": "For service.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Dice",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "5 sp",
-      "text": "Math rocks. LOTS of fun.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Blanket",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "1 gp",
-      "text": "Warm & fuzzy.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Hunting Trap",
+      "name": "Telescope",
       "category": "gear",
       "subcategory": "misc",
       "cost": "10 gp",
-      "text": "Snap snap, don’t lose a finger!",
+      "text": "Arrr.",
       "source": "Core",
       "page": 37,
       "draft": false
     },
     {
-      "name": "Camping Supplies",
+      "name": "Useful Book",
       "category": "gear",
       "subcategory": "misc",
       "cost": "5 gp",
-      "text": "Bedroll, rations, simple tent.",
+      "text": "For research.",
       "source": "Core",
       "page": 37,
       "draft": false
     },
     {
-      "name": "Crowbar",
+      "name": "Vial of Pitch",
       "category": "gear",
       "subcategory": "misc",
       "cost": "2 gp",
-      "text": "It’s LIKE a key.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Pitons",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "5 gp",
-      "text": "Metal spikes, for sealing doors.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Manacles",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "3 gp",
-      "text": "For when someone has been bad.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Instrument",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "5–50 gp",
-      "text": "Drums, Horn, Lyre, Flute, etc.",
-      "source": "Core",
-      "page": 37,
-      "draft": false
-    },
-    {
-      "name": "Large Sack",
-      "category": "gear",
-      "subcategory": "misc",
-      "cost": "5 sp",
-      "text": "Like a BIG pocket.",
+      "text": "Sticky, and VERY flammable.",
       "source": "Core",
       "page": 37,
       "draft": false
@@ -1527,7 +1587,7 @@
   "equipmentRules": [
     {
       "name": "Equipment Proficiency",
-      "text": "Heroes can use any equipment they like; however, each class has a list of weapons and armor types they are most skilled with. Weapons used without proficiency cannot crit. Defending while wearing armor without proficiency costs 1 additional action.",
+      "text": "Heroes can use any equipment they like; however, each class has a list of weapons and armor types they are most skilled with. Weapons used without proficiency cannot crit. Defending while wearing armor or wielding a shield without proficiency costs 1 additional action.",
       "source": "Core",
       "page": 33,
       "draft": false
@@ -1555,7 +1615,7 @@
     },
     {
       "name": "Deflect!",
-      "text": "An optional rule for additional defensive flexibility: instead of adding your shield’s Defense to your total as normal, you may reduce the damage of an attack by your shield’s Defense value for free (1/round).",
+      "text": "Heroes proficient with shields may reduce the damage of an attack (even crits) by their shield’s Defense value for free (1/round) instead of adding their shield‘s Defense to their total.",
       "source": "Core",
       "page": 33,
       "draft": false
@@ -1583,7 +1643,7 @@
     },
     {
       "name": "Unarmed Strikes",
-      "text": "To attack with your bare hands or feet, roll 1d4+STR. Heroes not proficient in Unarmed Strikes cannot crit.",
+      "text": "To attack with your bare hands or feet, roll 1d4+STR. Heroes not proficient in Unarmed Strikes can’t crit.",
       "source": "Core",
       "page": 34,
       "draft": false
@@ -1632,7 +1692,7 @@
     },
     {
       "name": "Magical Items",
-      "text": "Though some magical items can be purchased, most cannot. Some special shops may have a very small selection of them to purchase, but more typically these powerful items are acquired through adventuring.",
+      "text": "Though some magical items can be purchased, most can’t. Some special shops may have a very small selection of them to purchase, but more typically these powerful items are acquired through adventuring.",
       "source": "Core",
       "page": 39,
       "draft": false

@@ -645,7 +645,7 @@
     },
     {
       "name": "Shadowmancer",
-      "source": "Shadowmancer 3.0",
+      "source": "Shadowmancer 3.1",
       "page": 4,
       "draft": false,
       "tagline": "A shadowy master of expendable hordes. Flexible minion-based class with powerful spellcasting options.",
@@ -660,6 +660,14 @@
       "saves": {
         "adv": "INT",
         "dis": "WIL"
+      },
+      "skillMods": {
+        "Arcana": 1,
+        "Lore": 1,
+        "Stealth": 1,
+        "Influence": -1,
+        "Insight": -1,
+        "Naturecraft": -1
       },
       "armor": "Cloth Armor",
       "weapons": "Blades, Wands",
@@ -693,6 +701,10 @@
             {
               "name": "Conduit of Shadow",
               "text": "Learn the Shadowmancer cantrips."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+1 to Arcana, Lore, and Stealth; –1 to Influence, Insight, and Naturecraft."
             }
           ]
         },
@@ -1387,7 +1399,7 @@
           "actions": "1 Action",
           "text": "Summon 1 adjacent Shadow (a d12 minion).\n\nMinions. They follow the minion rules and abandon you immediately outside of combat.\nShadow Limit. You can have up to INT Shadows.",
           "cantripScaling": "+1 Shadow every 5 Levels.",
-          "source": "Shadowmancer 3.0",
+          "source": "Shadowmancer 3.1",
           "page": 6,
           "draft": false
         },
@@ -1398,7 +1410,7 @@
           "utility": false,
           "actions": "1 Action",
           "text": "ALL your Shadows move 6 then attack (1/round).",
-          "source": "Shadowmancer 3.0",
+          "source": "Shadowmancer 3.1",
           "page": 6,
           "draft": false
         },
@@ -1412,7 +1424,7 @@
           "damage": "1d12+DEX",
           "text": "Range: 8. Damage: 1d12+DEX (1/round).",
           "cantripScaling": "+1d12 every 5 Levels.",
-          "source": "Shadowmancer 3.0",
+          "source": "Shadowmancer 3.1",
           "page": 6,
           "draft": false
         }
@@ -1429,12 +1441,16 @@
         {
           "q": "How do minions and swarms interact with Armor?",
           "a": "Add up all the minions’/swarms’ dice and treat them as a single attack."
+        },
+        {
+          "q": "Can my Minions make opportunity attacks?",
+          "a": "No, only Heroes can."
         }
       ]
     },
     {
       "name": "Shepherd",
-      "source": "Shepherd 3.0",
+      "source": "Shepherd 3.1",
       "page": 4,
       "draft": false,
       "tagline": "A flexible pet-based support class that can dole out healing and harm with equal mastery.",
@@ -1449,6 +1465,13 @@
       "saves": {
         "adv": "WIL",
         "dis": "DEX"
+      },
+      "skillMods": {
+        "Lore": 1,
+        "Might": 1,
+        "Perception": 1,
+        "Stealth": -2,
+        "Finesse": -1
       },
       "armor": "Mail Armor, Shields",
       "weapons": "STR Weapons, Wands",
@@ -1486,6 +1509,10 @@
             {
               "name": "My Buddy!",
               "text": "Learn the Lifebinding Spirit cantrip."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+1 to Lore, Might, and Perception; –2 to Stealth, –1 to Finesse."
             }
           ]
         },
@@ -1740,7 +1767,7 @@
         },
         {
           "title": "Shepherd Names",
-          "text": "Male Names: Gideon, Edmund, Rupert, Ambrose, Orin, Bastian, Alden.\nFemale Names: Hazel, Grace, Faith, Charity, Hope, Glimmer, Twine."
+          "text": "Male Names: Gideon, Edmund, Rupert, Ambrose, Orin, Bastian, Alden.\nFemale Names: Grace, Hazel, Faith, Charity, Hope, Glimmer, Twine."
         }
       ],
       "optionGroups": [
@@ -1993,21 +2020,347 @@
           "actions": "1 Action",
           "range": "Reach 4",
           "damage": "1d8+STR",
-          "text": "Summon a spirit companion (max 1) that follows you and is immune to harm. It can act upon a target within Reach 4 of you before returning to your side. It can:\n• **Harm.** 1 Action: It attacks for 1d8+STR radiant damage (ignoring Armor).\n• **Mend.** 1 Action: (WIL/Safe Rest) It restores WIL d20 HP to a Dying creature.",
+          "text": "Summon a spirit companion (max 1) that follows you and is immune to harm. It can act upon a target within Reach 4 of you before returning to your side. It can:\n• **Harm.** 1 Action: It attacks for 1d8+STR radiant damage (ignoring Defense).\n• **Mend.** 1 Action: (WIL/Safe Rest) It restores WIL d20 HP to a Dying creature.",
           "cantripScaling": "+STR damage every 5 levels.",
-          "source": "Shepherd 3.0",
+          "source": "Shepherd 3.1",
           "page": 7,
+          "draft": false
+        },
+        {
+          "name": "Rebuke",
+          "school": "Radiant",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 4",
+          "damage": "1d8",
+          "text": "Reach: 4. Damage: 1d8 (ignoring Defense). 2× damage against undead or cowardly (those Frightened or behind Cover).",
+          "cantripScaling": "+3 damage every 5th level.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "True Strike",
+          "school": "Radiant",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 4",
+          "text": "Reaction: When a creature attacks (before they roll).\nReach: 4. Grant a target advantage (ignoring all sources of disadvantage) on their next non-AoE attack this encounter.",
+          "cantripScaling": "+1 Reach every 5th level.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Heal",
+          "school": "Radiant",
+          "tier": 1,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 1",
+          "text": "Reach: 1. Heal a target 1d8+KEY HP.\nPowerful Healing. If 5+ mana is spent, heal a negative condition as well (e.g., Blind, 1 Wound).",
+          "higherLevels": "(Choose 1) +1d8, +1 target, OR +4 Reach.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Warding Bond",
+          "school": "Radiant",
+          "tier": 2,
+          "utility": false,
+          "actions": "0 Actions",
+          "range": "Reach 4",
+          "concentration": "1 min.",
+          "text": "Concentration: 1 min. Reach: 4. Make an ally your ward: they take 2 less damage from all sources. (1/round) When they are attacked, you may choose to be attacked for some or all of the damage instead.",
+          "higherLevels": "+2 Reach and +2 damage reduction.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Condemn",
+          "school": "Radiant",
+          "tier": 3,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 4",
+          "damage": "30",
+          "text": "Reach: 4. Damage: 30 to a Guilty target, can’t be reduced by any means. The next attack against that enemy gains advantage.\nGuilty. A creature who crits is Guilty until Condemned.",
+          "higherLevels": "+2 Reach and +1 advantage.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Shield of Justice",
+          "school": "Radiant",
+          "tier": 4,
+          "utility": false,
+          "actions": "0 Actions",
+          "text": "Castable only while Defending.\nCreatures who attack you are Blinded until the end of their next turn. Deal damage back to each (ignoring Defense) equal to damage they deal to you this round.",
+          "higherLevels": "+5 damage OR +5 Defense.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Vengeance",
+          "school": "Radiant",
+          "tier": 5,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 1",
+          "damage": "1d100",
+          "text": "Reach: 1. Damage: 1d100 to a target that has caused any Wounds since your last turn.",
+          "higherLevels": "+1 Reach and +1 advantage.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Sacrifice",
+          "school": "Radiant",
+          "tier": 6,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 4",
+          "text": "Reach: 4. Reduce yourself to 0 HP and you can’t have more than 0 HP until you Safe Rest. Heal HP equal to your max HP, divided as you choose among any other creatures.\nDead? You may revive a creature that has died in the past minute if you give them at least 20 HP (also healing 2 Wounds from them), provided they have not been revived with this spell before.",
+          "higherLevels": "+4 Reach.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Celestial Legion",
+          "school": "Radiant",
+          "tier": 7,
+          "utility": false,
+          "actions": "1 Action",
+          "text": "(1/turn) Any friendly creature may use 1 of 3 charges to call upon higher powers for aid this encounter:\n• Reckoning. When you attack, gain advantage (ignoring all disadvantage) and add 1d20 damage to the attack; with advantage too, if Bloodied.\n• Trembling. When attacked, the enemy becomes Frightened of you until the end of their next turn. Reduce the incoming damage by 1d20 if Bloodied.",
+          "higherLevels": "+1 charge.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Redeem",
+          "school": "Radiant",
+          "tier": 9,
+          "utility": false,
+          "actions": "1 Day",
+          "range": "Reach 1 mile",
+          "aoe": "AoE",
+          "text": "Requires (and consumes) a diamond worth 10,000 gp.\nReach: 1 mile. Revive any number of creatures that have died in the past year, provided they have not died of old age or been revived with this spell before.",
+          "source": "Shepherd 3.1",
+          "page": 14,
+          "draft": false
+        },
+        {
+          "name": "Entice",
+          "school": "Necrotic",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Range 12",
+          "damage": "1d12",
+          "text": "(1/round) Range: 12. Damage: 1d12 (ignoring Defense). Target moves Primary Die spaces closer to you and gains 1d12 on their next attack.",
+          "cantripScaling": "You may add 1d12 to both every 5th level.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Withering Touch",
+          "school": "Necrotic",
+          "tier": 0,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 1",
+          "damage": "1d12",
+          "text": "Reach: 1. Damage: 1d12. On damage, target is considered undead for 1 round.",
+          "cantripScaling": "+6 damage every 5th level.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Shadow Trap",
+          "school": "Necrotic",
+          "tier": 1,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 8",
+          "damage": "2d12",
+          "text": "Reaction: When an enemy moves next to an ally within Reach 8.\nDamage: 2d12. If Small/Tiny, the enemy is also Restrained until they escape.",
+          "higherLevels": "+1 size category and +1d12 damage on escape.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Dread Visage",
+          "school": "Necrotic",
+          "tier": 2,
+          "utility": false,
+          "actions": "0 Actions",
+          "damage": "1d12",
+          "text": "Castable only while Defending.\nDamage: 1d12 and Frighten all creatures attacking you in melee this round. Costs 2 mana less while Dying.",
+          "higherLevels": "+2 damage and +2 Defense.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Vampiric Greed",
+          "school": "Necrotic",
+          "tier": 3,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 1",
+          "aoe": "AoE",
+          "damage": "4d12",
+          "text": "Reach: 1, AoE. Damage: 4d12. Heal HP equal to the damage dealt then gain 1 Wound. Gain 1 additional Wound for each creature that survived this damage.",
+          "higherLevels": "+1 Reach OR +10 damage.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Vigor Mortis",
+          "school": "Necrotic",
+          "tier": 4,
+          "utility": false,
+          "actions": "1 Action",
+          "range": "Reach 8",
+          "concentration": "1 min.",
+          "text": "Castable only when an ally drops to 0 HP.\nConcentration: 1 min. Reach: 8. Their max actions do not change, they skip STR saves to act, and taking damage while Dying causes 1 fewer Wound (min 1).",
+          "higherLevels": "+10 temp HP.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Gangrenous Burst",
+          "school": "Necrotic",
+          "tier": 5,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach up to 8",
+          "aoe": "AoE",
+          "damage": "3d20",
+          "text": "Reach: Up to 8, AoE. Damage: 3d20 (ignoring Defense) to damaged creatures, half on STR save (targets have disadvantage if Bloodied).",
+          "higherLevels": "+10 damage.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Unspeakable Word",
+          "school": "Necrotic",
+          "tier": 6,
+          "utility": false,
+          "actions": "2 Actions",
+          "range": "Reach 8",
+          "damage": "d66",
+          "text": "Reach: 8. Damage: d66 with advantage (ignoring Defense). On a failed INT save (disadvantage if Bloodied or Frightened) the target is Weakened 10, and you are Empowered 10 on your next attack. On save, the opposite happens instead.",
+          "higherLevels": "+1 DC and +10 damage.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Creeping Death",
+          "school": "Necrotic",
+          "tier": 7,
+          "utility": false,
+          "actions": "3 Actions",
+          "range": "Reach 8",
+          "aoe": "AoE",
+          "damage": "4d20",
+          "text": "Reach: 8, AoE. Damage: 4d20. If this kills the creature, repeat the damage to another creature within Reach 8 of it not yet damaged by this effect. Repeat until a target survives or no others are within Reach.",
+          "higherLevels": "+10 damage.",
+          "source": "Shepherd 3.1",
+          "page": 15,
+          "draft": false
+        },
+        {
+          "name": "Light",
+          "school": "Radiant",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "text": "Cause an item to brightly glow as a torch with radiant light for as long as you hold it.",
+          "source": "Shepherd 3.1",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Beautify",
+          "school": "Radiant",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "text": "Clean stains or repair a small tear/break in a non-magical item, or conjure tiny beautiful things: flowers, butterflies, etc.",
+          "source": "Shepherd 3.1",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Bond of Peace",
+          "school": "Radiant",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "text": "Bond. Telepathically communicate simple thoughts or feelings with a friendly creature you can see. OR:\nPeace. Imbue your spoken words with calming magic, granting advantage on any check made to soothe anger or fear in creatures who can hear you.",
+          "source": "Shepherd 3.1",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Gravecraft",
+          "school": "Necrotic",
+          "tier": 0,
+          "utility": true,
+          "text": "Gravemark. Magically soil a surface with blood, filth, or other disgusting things (1 Action).\nGravework. Shape/move a body-sized plot of earth (1 Minute).",
+          "source": "Shepherd 3.1",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "False Face",
+          "school": "Necrotic",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Minute",
+          "text": "Change your appearance to look like someone else for 10 min. Requires a piece of them.",
+          "source": "Shepherd 3.1",
+          "page": 17,
+          "draft": false
+        },
+        {
+          "name": "Thought Leech",
+          "school": "Necrotic",
+          "tier": 0,
+          "utility": true,
+          "actions": "1 Action",
+          "range": "Reach 6",
+          "text": "Reach: 6. Read the surface thoughts of a creature. They can sense you doing this and may not like it.",
+          "source": "Shepherd 3.1",
+          "page": 17,
           "draft": false
         }
       ],
       "faq": [
         {
           "q": "Does my companion have its own HP and actions?",
-          "a": "No. It has no HP of its own HP and acts only when directed by you."
+          "a": "No. It has no HP of its own and acts only when directed by you."
         },
         {
           "q": "Do I have to summon my companion every encounter?",
-          "a": "No. Once summoned, it remains faithfully by your side untill dismissed."
+          "a": "No. Once summoned, it remains faithfully by your side until dismissed."
         },
         {
           "q": "Can enemies attack my companion? Does it take up space?",
@@ -2018,14 +2371,22 @@
           "a": "You and your companion use the same action pool, but count as different creatures. So you can each attack once without Rushed Attacks every round. Teamwork!"
         },
         {
+          "q": "Lightbringer.",
+          "a": "Your companion casting Heal uses its Reach (+4) and your mana. It can cast without spending an action with Merciful Healing."
+        },
+        {
           "q": "Can my hero miss on purpose to trigger Deathbringer’s Touch?",
           "a": "No. A hero does not try to miss on purpose."
+        },
+        {
+          "q": "Can my companion make Opportunity Attacks?",
+          "a": "No, only heroes can. But you can, and even use Assist Me, My Friend! on the attack."
         }
       ]
     },
     {
       "name": "Songweaver",
-      "source": "Songweaver 3.0",
+      "source": "Songweaver 3.1",
       "page": 4,
       "draft": false,
       "tagline": "A high utility class that can harm, harass, and heal with equal mastery!",
@@ -2041,8 +2402,14 @@
         "adv": "WIL",
         "dis": "STR"
       },
+      "skillMods": {
+        "Influence": 2,
+        "Insight": 1,
+        "Naturecraft": -2,
+        "Might": -1
+      },
       "armor": "Cloth, Leather",
-      "weapons": "DEX, Wands",
+      "weapons": "DEX Weapons, Wands",
       "startingGear": [
         "Adventurer’s Garb",
         "Instrument",
@@ -2076,6 +2443,10 @@
             {
               "name": "Songweaver’s Inspiration",
               "text": "(2×WIL times/Safe Rest) Free Reaction: Allow an ally to reroll any single die or increase the result rolled by 1."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+2 to Influence, +1 to Insight; –2 to Naturecraft, –1 to Might."
             }
           ]
         },
@@ -2364,7 +2735,7 @@
           "options": [
             {
               "name": "Heroic Ballad",
-              "cost": "1 Action",
+              "cost": "Passive",
               "text": "+2 max Songweaver’s Inspiration charges. When used to reroll an ally’s attack, your Songweaver’s Inspiration also grants them +WIL damage."
             },
             {
@@ -2379,8 +2750,8 @@
             },
             {
               "name": "Rhapsody of the Normal",
-              "cost": "1 Action",
-              "text": "When you roll 4+ on Vicious Mockery, you may spend a Songweaver’s Inspiration charge to temporarily suppress any special abilities they have until the end of their next turn. They can do only what an untrained average villager can do, attack once for 1d4 damage and move up to 6 spaces (no Armor, spellcasting, flying, regeneration, other inherent or trained features)."
+              "cost": "0 Actions",
+              "text": "When you roll 4+ on Vicious Mockery, you may spend a Songweaver’s Inspiration charge to temporarily suppress any special abilities they have until the end of their next turn. They can do only what an untrained average villager can do, attack once for 1d4 damage and move up to 6 spaces (no Defense, spellcasting, flying, regeneration, other inherent or trained features)."
             },
             {
               "name": "Song of Domination",
@@ -2424,7 +2795,7 @@
               "features": [
                 {
                   "name": "Opportunistic Snark",
-                  "text": "Reaction (Range 12, when an enemy misses an attack): You may cast Vicious Mockery at them; it deals double damage when cast this way and can’t miss."
+                  "text": "Reaction (Range 12, when an enemy’s attack deals 0 damage): You may cast Vicious Mockery at them; it deals double damage when cast this way and can’t miss."
                 }
               ]
             },
@@ -2468,7 +2839,7 @@
               "features": [
                 {
                   "name": "Inspiring Presence",
-                  "text": "Whichever ally is nearest to you has advantage (if multiple are equally close, choose your favorite)."
+                  "text": "Whichever ally is nearest to you has advantage in combat (if multiple are equally close, choose your favorite)."
                 }
               ]
             },
@@ -2495,7 +2866,7 @@
               "features": [
                 {
                   "name": "Chorus of Champions",
-                  "text": "(1/encounter) Free Reaction: Give all party members 1 action."
+                  "text": "(1/encounter) Free Reaction: Give all allies 1 action."
                 }
               ]
             }
@@ -2651,9 +3022,9 @@
           "actions": "1 Action",
           "range": "Range 12",
           "damage": "1d6+INT",
-          "text": "Range: 12. Damage: 1d6+INT psychic (ignoring Armor). On hit: target is Taunted until the end of their next turn.",
+          "text": "Range: 12. Damage: 1d6+INT psychic (ignoring Defense). On hit: target is Taunted until the end of their next turn.",
           "cantripScaling": "+3 damage every 5 Levels.",
-          "source": "Songweaver 3.0",
+          "source": "Songweaver 3.1",
           "page": 6,
           "draft": false
         }

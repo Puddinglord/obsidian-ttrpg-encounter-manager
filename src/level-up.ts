@@ -324,8 +324,8 @@ export class LevelUpWizard extends Modal {
 			this.refresh(i);
 		};
 
-		// Average
-		const avg = card('average', 'scale', 'Take the average');
+		// Flat bonus (Core Rules 3.3 "Hit Die Size" table)
+		const avg = card('average', 'scale', 'Take the flat bonus');
 		avg.createDiv({ cls: 'lu-hp-value', text: `+${p.average}` });
 		const doAvg = () => { d.how = 'average'; d.gain = p.average; this.refresh(i); };
 
@@ -640,7 +640,7 @@ export class LevelUpWizard extends Modal {
 			setIcon(r.createSpan({ cls: 'lu-review-go' }), 'chevron-right');
 			r.addEventListener('click', () => this.go(this.steps.findIndex(st => st.kind === kind && (pickIndex === undefined || st.pick === pickIndex))));
 		};
-		line('heart', 'Max HP', d.gain === null ? 'Not set' : `${s.hpMax} → ${s.hpMax + d.gain} (+${d.gain}, ${d.how === 'roll' ? 'rolled' : d.how === 'average' ? 'average' : 'your roll'})`, 'hp', undefined, d.gain === null);
+		line('heart', 'Max HP', d.gain === null ? 'Not set' : `${s.hpMax} → ${s.hpMax + d.gain} (+${d.gain}, ${d.how === 'roll' ? 'rolled' : d.how === 'average' ? 'flat bonus' : 'your roll'})`, 'hp', undefined, d.gain === null);
 		line('dice-5', 'Hit Dice', `${s.hitDiceMax} → ${s.hitDiceMax + 1} d${s.hitDie}`, 'overview');
 		if (this.plan.subclasses.length) line('git-fork', 'Subclass', d.subclass || 'Choose later', 'subclass', undefined, !d.subclass);
 		this.plan.picks.forEach((p, k) => line('list-checks', p.group.name, d.picks[k].length ? d.picks[k].join(', ') : 'Choose later', 'pick', k, d.picks[k].length < p.count));

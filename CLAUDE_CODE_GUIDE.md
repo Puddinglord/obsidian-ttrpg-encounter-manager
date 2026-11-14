@@ -7,8 +7,8 @@ An Obsidian plugin (TypeScript, bundled with esbuild) that renders Nimble TTRPG 
 ```
 main.ts                 Plugin entry: wiring, commands, dice rolls, settings load/migration, bestiary, copy-to-vault
 src/
-  types.ts              Data types, default settings, Nimble 3.2 conditions, uid()
-  rules.ts              Nimble 3.2 rules: armor, hero Wounds, minions, Last Stand, conditions, difficulty budget
+  types.ts              Data types, default settings, Nimble 3.3 conditions, uid()
+  rules.ts              Nimble 3.3 / GMG 3.0 rules: armor, hero Wounds, minions, Last Stand, conditions, difficulty budget
   parser.ts             Stat block parsing (+ legacy fields), toStatblockSource(), finding ```nimble blocks
   bestiary.ts           Bundled bestiary conversion, attribution text
   data/bestiary.json    525 Nimble monsters (built by scripts/bestiary/merge.py)

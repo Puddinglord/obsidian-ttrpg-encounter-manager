@@ -3,8 +3,8 @@
 Goal: transcribe every monster stat block in an assigned page range of a Nimble TTRPG book into JSON, accurately. The JSON ships inside an Obsidian plugin as its bestiary (Nimble's creator has given permission to include the text, with attribution), so faithful transcription matters more than anything else. Don't invent, summarise or "improve" rules text.
 
 ## Sources (read only)
-- Monsters & More (M&M): `/Users/dakotah/Downloads/Nimble/NimbleExpansionDraftFiles/MonstersAndMoreDraft/MonstersAndMore-v0.1.pdf` (124 PDF pages; PDF page N ≠ printed page number)
-- GM Guide (GMG): `/Users/dakotah/Downloads/Nimble/NimbleCoreDraftFiles/CoreBooks3.0/NimbleGMG3.0.pdf` (57 PDF pages)
+- Monsters & More (M&M): `/Users/dakotah/Downloads/NimbleExpansionDraftFiles/MonstersAndMoreDraft/MonstersAndMore-v0.1.pdf` (124 PDF pages; PDF page N ≠ printed page number)
+- GM Guide (GMG): `/Users/dakotah/Downloads/NimbleExpansionDraftFiles/CoreBooks3.0/NimbleGMG3.0.pdf` (57 PDF pages)
 
 The books are two-column layouts, so plain text extraction interleaves columns and separates names from their stats. Use both:
 - text: `pdftotext -f N -l N -layout <pdf> -` (and without `-layout`)

@@ -300,7 +300,7 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	settingsVersion: 2,
 };
 
-/** Nimble 3.2 core rules conditions, plus the tracker's automatic ones. */
+/** Nimble 3.3 core rules conditions, plus the tracker's automatic ones. */
 export const NIMBLE_CONDITIONS: NimbleCondition[] = [
 	{ name: 'Bloodied', description: 'At half HP or less.', auto: true },
 	{ name: 'Dying', description: 'At 0 HP. Max 1 action. Taking damage while Dying causes 2 Wounds; a crit causes 3 instead.', auto: true },
@@ -310,12 +310,12 @@ export const NIMBLE_CONDITIONS: NimbleCondition[] = [
 	{ name: 'Frightened', description: 'Disadvantage on rolls when the source of fear is near; Speed halved when moving closer to it.' },
 	{ name: 'Grappled', description: 'Attacks against either creature in a grapple have advantage. A smaller grappled creature can\'t move; the same size moves at half Speed together. Escaping takes an action and a STR or DEX save.' },
 	{ name: 'Incapacitated', description: "Can't do anything. Attacks against you have advantage, and melee attacks that hit, crit." },
-	{ name: 'Invisible', description: 'Cannot be seen. Your attacks have advantage, and attacks against you have disadvantage.' },
-	{ name: 'Poisoned', description: 'Disadvantage (typically, healing ends).' },
+	{ name: 'Invisible', description: 'Can\'t be seen. Your attacks have advantage, and attacks against you have disadvantage.' },
+	{ name: 'Poisoned', description: 'Disadvantage on all rolls (typically, healing ends).' },
 	{ name: 'Prone', description: 'Movement costs twice as much, and disadvantage on attacks. Melee attacks against you have advantage; Ranged have disadvantage. Spend 3 spaces of your Speed to stand up.' },
 	{ name: 'Restrained', description: "Can't move. Attacks against you have advantage." },
 	{ name: 'Riding', description: 'You move with the creature you ride, it attacks you with disadvantage, and attacks that miss you strike it.' },
-	{ name: 'Silenced', description: "Cannot cast spells or use other abilities that require speaking (e.g., Commander's Orders)." },
+	{ name: 'Silenced', description: "Can't cast spells or use other abilities that require speaking (e.g., Commander's Orders)." },
 	{ name: 'Slowed', description: 'Speed halved during your next turn.' },
 	{ name: 'Taunted', description: 'Disadvantage on attacks except against the most recent taunter.' },
 	{ name: 'Weakened', description: 'Attack damage reduced by X.', hasValue: true },
@@ -324,6 +324,7 @@ export const NIMBLE_CONDITIONS: NimbleCondition[] = [
 	{ name: 'Smoldering', description: 'Minor status. Does nothing on its own; some spells and abilities have additional effects against such targets.', minor: true },
 	{ name: 'Distracted', description: 'Minor status. Does nothing on its own; some spells and abilities have additional effects against such targets.', minor: true },
 	{ name: 'Charged', description: 'Minor status. Does nothing on its own; some spells and abilities have additional effects against such targets.', minor: true },
+	{ name: 'Guilty', description: 'A creature who crits is Guilty until Condemned (the Condemn spell deals its damage to a Guilty target).', minor: true },
 ];
 
 /** Older saves kept conditions as plain names. */

@@ -2977,7 +2977,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(info.armor, '8', 'Rusty Mail 6+DEX (max 2)');
 		assert.equal(info.wounds, 7, 'Dwarf: +1 max Wounds');
 		assert.equal(info.woundsOn, 1);
-		assert.equal(info.skills[6], '+4', 'Might: STR 2 + 2 points');
+		assert.equal(info.skills[6], '+6', 'Might: STR 2 + 2 points + 2 Berserker Skilled Hero');
 		assert.deepEqual(info.tabs, ['Actions', 'Features', 'Inventory', 'Notes']);
 		assert.deepEqual(info.conds, ['Dazed']);
 		assert.deepEqual(info.attacks, ['1d10+2', '1d6+2']);
@@ -3082,7 +3082,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		await sheet.locator('.ns-row', { hasText: 'Death Blow' }).locator('.ns-row-toggle').click();
 		const body = await sheet.locator('.ns-row.is-open .ns-row-body').innerText();
 		assert.match(body, /Whenever you crit/);
-		assert.match(body, /Berserker 3\.0/);
+		assert.match(body, /Berserker 3\.1/);
 		await sheet.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-features.png') });
 
 		// Spotlight's normal search finds compendium entries and opens their card.
@@ -3136,7 +3136,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		fm = await waitFm(o, f => f.hp === 30, 'healed 28 by making camp');
 		assert.equal(fm.hit_dice, 3);
 
-		// Level up: a carousel wizard. Try a manual roll, then take the average (d12: 8), pick a Savage Arsenal option,
+		// Level up: a carousel wizard. Try a manual roll, then take the flat bonus (d12: 6), pick a Savage Arsenal option,
 		// raise a key stat and a skill, and check the review before anything is written.
 		await camp(o, sheet, 'Level up');
 		const lv = p.locator('.modal.nimble-levelup');
@@ -3152,8 +3152,8 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(await lv.locator('.lu-next').isDisabled(), true, 'a roll above the die is refused');
 		await lv.locator('.lu-hp-input').fill('9');
 		assert.match(await lv.locator('.lu-hp-new').innerText(), /^41$/);
-		await lv.locator('.lu-hp-option', { hasText: 'Take the average' }).click();
-		assert.match(await lv.locator('.lu-hp-new').innerText(), /^40$/);
+		await lv.locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
+		assert.match(await lv.locator('.lu-hp-new').innerText(), /^38$/);
 		await next();
 		await lv.locator('.lu-panel.is-active .lu-option', { hasText: 'Whirlwind' }).click();
 		await next();
@@ -3172,7 +3172,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(await lv.locator('.lu-panel.is-active .lu-option.is-chosen').count(), 1);
 		await lv.locator('.lu-dot', { hasText: 'Review' }).click();
 		const review = await lv.locator('.lu-panel.is-active .lu-review').innerText();
-		assert.match(review, /32 → 40/);
+		assert.match(review, /32 → 38/);
 		assert.match(review, /Whirlwind/);
 		assert.match(review, /DEX/);
 		assert.match(review, /Stealth/);
@@ -3180,8 +3180,8 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		await lv.screenshot({ path: join(ARTIFACTS, 'sheet-level-up.png') });
 		await next();
 		fm = await waitFm(o, f => f.level === 4, 'level 4');
-		assert.equal(fm.hp_max, 40);
-		assert.equal(fm.hp, 38);
+		assert.equal(fm.hp_max, 38);
+		assert.equal(fm.hp, 36);
 		assert.ok(fm.features.includes('Whirlwind'));
 		assert.equal(fm.skills.stealth, 2);
 		assert.equal(fm.skills.insight, 1);
@@ -3854,7 +3854,7 @@ test('pills: every icon and label sits on its pill centre line (within 1px)', as
 		const steps = await lv.locator('.lu-dot').count();
 		for (let k = 0; k < steps; k++) {
 			await lv.locator('.lu-dot').nth(k).click();
-			if (k === 1) await lv.locator('.lu-hp-option', { hasText: 'Take the average' }).click();
+			if (k === 1) await lv.locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
 			await o.page.waitForTimeout(450);
 			bad.push(...await measure('.modal.nimble-levelup'));
 		}

@@ -61,6 +61,8 @@ export interface ClassEntry extends Sourced {
 	spells?: Spell[];
 	/** Names of the spells the class can use (Core reprints included). */
 	spellList?: string[];
+	/** The level 1 "Skilled Hero" adjustments (3.x class books): skill name → bonus, e.g. { Might: 2, Finesse: -2 }. */
+	skillMods?: Record<string, number>;
 	faq?: { q: string; a: string }[];
 }
 

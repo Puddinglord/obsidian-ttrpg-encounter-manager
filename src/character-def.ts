@@ -7,10 +7,11 @@
 // Writes keep the YAML tidy: numbers stay numbers, and a key that would only
 // repeat its default isn't added (a key the player already wrote is kept).
 //
-// Rules (Core Rules 3.2, "The Character Sheet"): Defense = DEX + armor;
-// Initiative = DEX; Speed 6; 6 Wounds; Hit Dice max = level; 10 + STR inventory
-// slots; skills are their stat + points; one ▲ and one ▼ save from the class;
-// Common + 1 language per point of INT.
+// Rules (Core Rules 3.3, "The Character Sheet"): Defense = armor (DEX if
+// unarmored); Initiative = DEX; Speed 6; 6 Wounds; Hit Dice max = level; 10 + STR
+// inventory slots; skills are their stat + points + the class's Skilled Hero
+// adjustments; one ▲ and one ▼ save from the class; Common + 1 language per
+// point of INT.
 
 import {
 	Ancestry, Background, ClassEntry, ClassOption, Compendium, Item, nameKey, ResolvedFeature, Spell, STATS, StatKey,
@@ -34,10 +35,10 @@ export const SKILLS: { name: string; key: string; stat: StatKey }[] = [
 	{ name: 'Stealth', key: 'stealth', stat: 'DEX' },
 ];
 
-/** Average Hit Die roll for a level-up (Core Rules: d4 3, d6 4, d8 5, d10 7, d12 8). */
-export const HP_AVERAGE: Record<number, number> = { 4: 3, 6: 4, 8: 5, 10: 7, 12: 8 };
+/** Flat HP bonus instead of rolling at level-up (Core Rules 3.3: d4 2, d6 3, d8 4, d10 5, d12 6, d20 10). */
+export const HP_AVERAGE: Record<number, number> = { 4: 2, 6: 3, 8: 4, 10: 5, 12: 6, 20: 10 };
 export const hpAverage = (die: number, comp?: Compendium): number =>
-	Number(comp?.rules.hpAverage?.[String(die)]) || HP_AVERAGE[die] || Math.floor(die / 2) + 1;
+	Number(comp?.rules.hpAverage?.[String(die)]) || HP_AVERAGE[die] || Math.floor(die / 2);
 
 export const DEFAULT_SPEED = 6;
 export const DEFAULT_WOUNDS = 6;
@@ -478,15 +479,17 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 	// A spell named in the note but already granted counts as granted; one only in the note keeps its place.
 	const caster = !!casting || spells.length > 0 || manaMax > 0;
 
-	// Skills: stat + points (+ ancestry/background bonuses).
+	// Skills: stat + points (+ ancestry/background bonuses and the class's Skilled Hero adjustments).
 	const pts = isObj(fm.skills) ? fm.skills : {};
+	const classSkills: Record<string, number> = {};
+	for (const [name, v] of Object.entries(cls?.skillMods ?? {})) if (typeof v === 'number') classSkills[name.toLowerCase()] = v;
 	const skillPoints = (k: string): number => {
 		for (const [name, v] of Object.entries(pts)) if (name.toLowerCase() === k) return num(v) ?? 0;
 		return 0;
 	};
 	const skills = SKILLS.map(s => {
 		const points = skillPoints(s.key);
-		return { ...s, points, total: stats[s.stat] + points + bonus.allSkills + (bonus.skills[s.key] ?? 0) };
+		return { ...s, points, total: stats[s.stat] + points + bonus.allSkills + (bonus.skills[s.key] ?? 0) + (classSkills[s.key] ?? 0) };
 	});
 
 	// Languages: Common, plus the ancestry's own when INT isn't negative ("You know Dwarvish if your INT isn't negative").

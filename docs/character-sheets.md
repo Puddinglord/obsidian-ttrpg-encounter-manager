@@ -6,7 +6,7 @@ A Nimble character is an ordinary note. Its properties hold the numbers, a ```` 
 
 ## Making a character
 
-- **New character** (command palette, or **Add your character** in a [player campaign](players.md)'s party) asks for a name, ancestry, class, stat array, background and level. It assigns the array to the class's key stats, and fills in HP, Hit Dice, saves and starting gear from the class. Above level 1, HP goes up by the Hit Die's average for each level; pick your class options on the sheet afterwards.
+- **New character** (command palette, or **Add your character** in a [player campaign](players.md)'s party) asks for a name, ancestry, class, stat array, background and level. It assigns the array to the class's key stats, and fills in HP, Hit Dice, saves and starting gear from the class. Above level 1, HP goes up by the Hit Die's flat bonus (d12: +6) for each level; pick your class options on the sheet afterwards.
 - In a player campaign, the hero you make is marked as yours (`mine: true`) and goes in the Party folder. **+** next to Party makes a party member instead.
 - A **Character** starter in the New note dialog, or any note with `nimble: character` and an empty ```` ```nimble-sheet ```` block, works too. Fill it in from the sheet's pencil.
 
@@ -20,7 +20,7 @@ The top of the sheet is four cards, made to tap:
 | **Hit points** and **Mana** | Two full-width bars, mana under hit points. − and + take or give one (tap a few times and they add up, then land as one change); tap the bar (or the calculator button) for the keypad: damage, heal, set or temp HP, and spend, regain or set mana. Damage uses temp HP first (the striped part of the bar), and dropping to 0 adds Wounds, as in the tracker. What you lose stays on the bar in amber for a moment, then drains away; what you gain lights up, then the bar fills to it |
 | **Wounds** | The pips beside Hit points (under the bar on narrow sheets). Tap an empty pip to add a Wound and a filled one to heal one. Ancestry and background bonuses that always apply (a Dwarf's extra Wounds, say) are counted; situational ones, like "+2 Defense if you moved", are left to you |
 | **Stats** (STR, DEX, INT, WIL) | Tap to roll a check or a save: the roll dialog opens on **Check**, with **Save** next to it. A ▲ in a stat's corner marks your advantaged save and ▼ the disadvantaged one; picking Save starts the roll there (checks have no advantage of their own) |
-| **Skills** | All ten, with their stat. Tap to roll a check |
+| **Skills** | All ten: stat, plus your points and your class's Skilled Hero bonuses. Tap to roll a check |
 | **This turn** | The actions you have left, **End turn**, your **Hit Dice** (tap for a Field rest) and class counters. Counters like Lay on Hands have − and +. Class dice (Judgment Dice, Fury Dice) show as dice of their size; see [Class dice](#class-dice) |
 | **Conditions** | A card of their own (tinted while you have any). Add from the list; tap one for its rules |
 
@@ -65,7 +65,7 @@ Judgment Dice and Fury Dice are gone after a Safe Rest; they don't outlast a fig
 **Level up** (under **Camp**) opens a wizard: one decision per screen, with chips along the top to jump between them. Everything you choose is kept as you move back and forth, and nothing is written to the note until you press **Reach level N** on the last screen.
 
 1. **Overview**: what the level brings, with the new features to read.
-2. **Hit points**: roll your Hit Die with advantage (both dice roll, the higher is kept), take the average, or type in what you rolled at the table. The new max HP shows as you choose.
+2. **Hit points**: roll your Hit Die with advantage (both dice roll, the higher is kept), take the flat bonus, or type in what you rolled at the table. The new max HP shows as you choose.
 3. **Subclass**, at the level you pick one: swipe through a card for each, with its flavour, complexity, and what it gives at every level (this level's features open), or switch to **Compare** for a table with every subclass side by side, level by level.
 4. **Picks** the level grants, one screen each: Savage Arsenal abilities, Spellshaper abilities, Sacred Decrees and the like, with the ones you already know marked.
 5. **Stat increases** ("+1 STR or DEX"), and an **Epic Boon** at level 19.
@@ -132,7 +132,7 @@ cssclasses: [nimble-sheet-note]
 | `save_adv`, `save_dis` | From the class (`none` for no save) |
 | `hit_die`, `hit_dice_max` | The class's Hit Die; max is your level (plus ancestry bonuses) |
 | `armor`, `initiative`, `speed`, `wounds_max`, `mana_max` | Worked out from your stats, gear, class and ancestry. Set one to override it |
-| `skills` | 0 points: each skill equals its stat |
+| `skills` | 0 points: each skill equals its stat, plus your class's Skilled Hero bonuses |
 | `languages` | Common, your ancestry's language, and one more per point of INT |
 
 Because they're properties, Obsidian's Bases and Dataview can query them: a table of the party's HP, say.

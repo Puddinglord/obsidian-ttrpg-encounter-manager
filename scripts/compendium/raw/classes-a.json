@@ -2,7 +2,7 @@
   "classes": [
     {
       "name": "Berserker",
-      "source": "Berserker 3.0",
+      "source": "Berserker 3.1",
       "page": 4,
       "draft": false,
       "tagline": "High-damage, high-survivability, melee-focused class.",
@@ -22,6 +22,12 @@
       "saves": {
         "adv": "STR",
         "dis": "INT"
+      },
+      "skillMods": {
+        "Might": 2,
+        "Naturecraft": 1,
+        "Finesse": -2,
+        "Influence": -1
       },
       "armor": "None",
       "weapons": "all STR weapons",
@@ -44,11 +50,15 @@
           "features": [
             {
               "name": "Rage",
-              "text": "(1/turn) Action: Roll a Fury Die (1d4) and set it aside. Add it to every STR attack you make. You can have a max of KEY Fury Dice; they are lost when your Rage ends."
+              "text": "(1/turn) Action: Roll a Fury Die (1d4) and set it aside (max of KEY Fury Dice); they are lost when your Rage ends. Add your Fury Dice to every STR attack you make."
             },
             {
               "name": "That all you got?!",
               "text": "When you are attacked, you may expend 1 or more Fury Dice to reduce the damage taken by STR+DEX for each die spent."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+2 to Might, +1 to Naturecraft; –2 to Finesse, –1 to Influence."
             }
           ]
         },
@@ -304,7 +314,7 @@
             {
               "name": "Dismantle",
               "cost": "Passive",
-              "text": "After you roll an attack, expend any number of Fury Dice, increase your Primary Die by 1 for each."
+              "text": "After you roll an attack, expend any number of Fury Dice, increase your Primary Die by 1 for each (add their damage as normal)."
             },
             {
               "name": "Eager for Battle",
@@ -334,7 +344,7 @@
             {
               "name": "Swift Fury",
               "cost": "Passive",
-              "text": "Whenever you gain a Fury Die, move up to DEX spaces for free, ignoring Difficult Terrain."
+              "text": "Whenever you gain a Fury Die, move for free up to DEX spaces for each, ignoring Difficult Terrain."
             },
             {
               "name": "Thunderous Steps",
@@ -545,7 +555,7 @@
               "features": [
                 {
                   "name": "EXPLOSION!",
-                  "text": "When you attack a Smoldering creature, you may deal the same amount of damage to ALL other creatures adjacent to your target OR you can ignore armor of Smoldering creatures; ending the condition."
+                  "text": "When you attack a Smoldering creature, you may deal the same amount of damage to ALL other creatures adjacent to your target OR you can ignore the Defense of Smoldering creatures; ending the condition."
                 }
               ]
             },
@@ -658,7 +668,7 @@
                   "name": "Powershout: WEAKLINGS!",
                   "cost": "2 Actions",
                   "requirement": "Req. 6 Fury Dice",
-                  "text": "Reach: 6, AoE. (1/encounter) FD damage to enemies, Frightening them (Large+ enemies are Taunted instead) and attacks deal +10 damage to Armored enemies this round."
+                  "text": "Reach: 6, AoE. (1/encounter) FD damage to enemies, Frightening them (Large+ enemies are Taunted instead) and attacks deal +10 damage to enemies with Defense this round."
                 },
                 {
                   "name": "Earthquake",
@@ -692,7 +702,7 @@
     },
     {
       "name": "Commander",
-      "source": "Commander 3.0",
+      "source": "Commander 3.1",
       "page": 4,
       "draft": false,
       "tagline": "Highly tactical, teamwork-focused melee class. A party’s force multiplier.",
@@ -713,8 +723,16 @@
         "adv": "STR",
         "dis": "DEX"
       },
+      "skillMods": {
+        "Examination": 1,
+        "Influence": 1,
+        "Insight": 1,
+        "Arcana": -1,
+        "Lore": -1,
+        "Stealth": -1
+      },
       "armor": "Mail Armor, Shields",
-      "weapons": "All Martial Weapons",
+      "weapons": "All",
       "startingGear": [
         "Short Sword",
         "Javelins (4)",
@@ -740,6 +758,10 @@
             {
               "name": "Coordinated Strike!",
               "text": "(1/encounter) You and an ally within Reach 6 both immediately make a weapon/Unarmed Strike or cast a cantrip for free."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+1 to Examination, Influence, and Insight; –1 to Arcana, Lore, and Stealth."
             }
           ]
         },
@@ -982,7 +1004,7 @@
             {
               "name": "Face Me!",
               "cost": "0 Actions",
-              "text": "After an enemy crits or attacks a Dying ally, you may Taunt them. Lasts until you drop to 0 HP."
+              "text": "After an enemy crits an ally or attacks a Dying ally, you may Taunt them. Lasts until you drop to 0 HP."
             },
             {
               "name": "Hold the Line!",
@@ -1042,7 +1064,7 @@
             },
             {
               "name": "Bludgeoning",
-              "text": "(1/turn) Your attacks with bludgeoning weapons deal +10 damage vs armored foes."
+              "text": "(1/turn) Your attacks with bludgeoning weapons deal +10 damage vs creatures with Defense."
             },
             {
               "name": "Piercing",
@@ -1290,7 +1312,7 @@
                 },
                 {
                   "name": "Tear Asunder",
-                  "text": "(New Combat Tactic) Strike an armored foe and deal +Combat Die damage. The next non-critical attack against them ignores armor."
+                  "text": "(New Combat Tactic) Strike a creature with Defense and deal +Combat Die damage. The next non-critical attack against them ignores their Defense."
                 }
               ]
             },
@@ -1315,7 +1337,7 @@
             "manaFormula": "INT",
             "notes": "You now gain INT mana when you roll Initiative (this mana is lost if unspent when combat ends)."
           },
-          "intro": "Arcane Command. Your focus on the arcane causes you to lose access to Weapon Mastery and Combat Tactics, but you now gain INT mana when you roll Initiative (this mana is lost if unspent when combat ends). Whenever you could choose a Combat Tactic or Weapon Mastery, instead choose another Commander’s Order or a tier 1 (or lower) spell from any spell school. Your Commander’s Orders are also empowered with magical power:\n• Face Me! (Glimmering Decree). Free Reaction (whenever an enemy crits or attacks a Dying ally): That enemy takes STR d8 radiant damage (ignoring armor), is pulled up to 4 spaces toward you, and is Taunted by you until you drop to 0 HP.\n• Move it! Move it! (Borne upon the Wind). When you roll Initiative, you may give yourself and an ally advantage on the roll, +3 Speed, and the ability to fly for 1 round. Then, you both can also move for free.\n• Hold the Line! (Crystalline Armor). (1/encounter) Reaction (when an ally drops to 0 HP): Command them to continue the fight! Set their HP to 3× your LVL. Additionally, they gain that many temp HP. Enemies who reduce this temp HP in melee have their Speed halved until the end of their next turn.\n• Reposition! (Flashstep). Action: Command 1 ally to move up to their Speed (or 2 allies up to half their Speed) for free; you may exchange places with one of them. You may use this as a reaction on an ally’s turn.\n• I Can Do This ALL DAY! (Rising Phoenix). (1/encounter) Reaction (when you would drop to 0 HP): You may expend any number of Hit Dice, set your HP to the sum rolled instead, and deal that much fire damage to each enemy within Reach 2 of you. They gain the Smoldering condition.\n• Commanding Presence (Withering Presence). Creatures you Command suffer necrotic damage equal to the max value of your Combat Die (ignoring armor) and are considered undead for 1 round.",
+          "intro": "Arcane Command. Your focus on the arcane causes you to lose access to Weapon Mastery and Combat Tactics, but you now gain INT mana when you roll Initiative (this mana is lost if unspent when combat ends). Whenever you could choose a Combat Tactic or Weapon Mastery, instead choose another Commander’s Order or a tier 1 (or lower) spell from any spell school. Your Commander’s Orders are also empowered with magical power:\n• Face Me! (Glimmering Decree). Free Reaction (whenever an enemy crits or attacks a Dying ally): That enemy takes STR d8 radiant damage (ignoring Defense), is pulled up to 4 spaces toward you, and is Taunted by you until you drop to 0 HP.\n• Move it! Move it! (Borne upon the Wind). When you roll Initiative, you may give yourself and an ally advantage on the roll, +3 Speed, and the ability to fly for 1 round. Then, you both can also move for free.\n• Hold the Line! (Crystalline Armor). (1/encounter) Reaction (when an ally drops to 0 HP): Command them to continue the fight! Set their HP to 3× your LVL. Additionally, they gain that many temp HP. Enemies who reduce this temp HP in melee have their Speed halved until the end of their next turn.\n• Reposition! (Flashstep). Action: Command 1 ally to move up to their Speed (or 2 allies up to half their Speed) for free; you may exchange places with one of them. You may use this as a reaction on an ally’s turn.\n• I Can Do This ALL DAY! (Rising Phoenix). (1/encounter) Reaction (when you would drop to 0 HP): You may expend any number of Hit Dice, set your HP to the sum rolled instead, and deal that much fire damage to each enemy within Reach 2 of you. They gain the Smoldering condition.\n• Commanding Presence (Withering Presence). Creatures you Command suffer necrotic damage equal to the max value of your Combat Die (ignoring Defense) and are considered undead for 1 round.",
           "levels": [
             {
               "level": 3,
@@ -2055,7 +2077,7 @@
     },
     {
       "name": "Mage",
-      "source": "Mage 3.0",
+      "source": "Mage 3.1",
       "page": 4,
       "draft": false,
       "tagline": "Brilliant spellcasters with a wide arsenal of spells at their disposal.",
@@ -2075,6 +2097,13 @@
       "saves": {
         "adv": "INT",
         "dis": "STR"
+      },
+      "skillMods": {
+        "Arcana": 2,
+        "Lore": 1,
+        "Naturecraft": -1,
+        "Might": -1,
+        "Perception": -1
       },
       "armor": "Cloth Armor",
       "weapons": "Blades, Staves, Wands",
@@ -2101,6 +2130,10 @@
             {
               "name": "Elemental Spellcasting",
               "text": "You know the Fire, Ice, and Lightning spell schools and can cast cantrips from them."
+            },
+            {
+              "name": "Skilled Hero",
+              "text": "+2 to Arcana, +1 to Lore; –1 to Naturecraft, Might, and Perception."
             }
           ]
         },
@@ -2571,7 +2604,7 @@
               "features": [
                 {
                   "name": "Abjurer (2)",
-                  "text": "The 1st defensive spell you cast on yourself each encounter while Dying is free and does not require a save. The 1st Ward you cast on a Dying ally each encounter also grants them +1 action."
+                  "text": "The 1st defensive spell you cast on yourself each encounter while Dying is free. The 1st Ward you cast on a Dying ally each encounter also grants them +1 action."
                 }
               ]
             },
@@ -2685,7 +2718,7 @@
               "features": [
                 {
                   "name": "Bitter Cold",
-                  "text": "Your spells ignore the Armor of creatures Hampered by you."
+                  "text": "Your spells ignore the Defense of creatures Hampered by you."
                 },
                 {
                   "name": "Frostshaper (2)",
@@ -2785,7 +2818,7 @@
           "damage": "1d10",
           "text": "Range: 10. Damage: 1d10. On crit: Smoldering.\n\nSmoldering. This condition does nothing on its own, though some spells and abilities have additional effects against Smoldering creatures, ending the condition.",
           "cantripScaling": "+5 damage every 5 levels.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2798,7 +2831,7 @@
           "range": "Range 4",
           "text": "Range: 4. (1/round) Give an ally 1 action. Cast as a Reaction for 1 mana.",
           "cantripScaling": "+2 Range every 5 levels.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2812,7 +2845,7 @@
           "damage": "4d10",
           "text": "Range: 10. Damage: 4d10 to a Smoldering target.",
           "higherLevels": "+10 damage.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2826,7 +2859,7 @@
           "concentration": "1 min.",
           "text": "Concentration: 1 min. Reach: 8. A weapon you choose inflicts Smoldering on crit and gains (1/turn) +KEY damage.",
           "higherLevels": "+KEY damage.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2841,7 +2874,7 @@
           "damage": "10+KEY",
           "text": "Castable only while Defending.\n\nReach: 1, AoE. Damage: 10+KEY and Smoldering. Triggers whenever you are attacked this round.",
           "higherLevels": "+KEY damage OR +1 Reach.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2856,7 +2889,7 @@
           "damage": "2d20+10",
           "text": "Reach: 3, AoE. Damage: 2d20+10 on a failed DEX save (Smoldering creatures fail); half on save.",
           "higherLevels": "Advantage 1 and +1 Reach.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2871,7 +2904,7 @@
           "concentration": "1 min.",
           "text": "Concentration: 1 min. Reach: 10, AoE. An ally gains the effects of Enchant Weapon. Enemies gain Smoldering, and effects that would end it, don’t.",
           "higherLevels": "+1 ally and +2 Reach.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2883,7 +2916,7 @@
           "actions": "3 Actions",
           "text": "Gain the effects of Flame Barrier until your next turn. At the end of this turn and your next turn, cast Pyroclasm for free.",
           "higherLevels": "Upcast Flame Barrier and Pyroclasm.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2893,8 +2926,8 @@
           "tier": 9,
           "utility": false,
           "actions": "5 Actions",
-          "text": "Transform into a Huge dragon. Gain 3 actions, a flying Speed of 12, LVL Defense, 10×LVL temp HP, and:\n• Tooth & Claw. 1 Action: (Reach 2) 1d20+LVL damage (ignoring armor). Inflicts Smoldering.\n• Immolating Breath. 2 Actions: (Cone 10, AoE) KEY d20 damage, half on DEX save (Smoldering targets fail).\n\nNote. You can maintain this form for as long as the temp HP granted by this spell remain (max. 10 min). When it ends, you drop to 0 HP.",
-          "source": "Mage 3.0",
+          "text": "Transform into a Huge dragon. Gain 3 actions, a flying Speed of 12, LVL Defense, 10×LVL temp HP, and:\n• Tooth & Claw. 1 Action: (Reach 2) 1d20+LVL damage (ignoring Defense). Inflicts Smoldering.\n• Immolating Breath. 2 Actions: (Cone 10, AoE) KEY d20 damage, half on DEX save (Smoldering targets fail).\n\nNote. You can maintain this form for as long as the temp HP granted by this spell remain (max. 10 min). When it ends, you drop to 0 HP.",
+          "source": "Mage 3.1",
           "page": 14,
           "draft": false
         },
@@ -2908,7 +2941,7 @@
           "damage": "1d6",
           "text": "Range: 12. Damage: 1d6 cold/piercing, Slowed.",
           "cantripScaling": "+3 damage every 5 levels.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -2922,7 +2955,7 @@
           "damage": "1d6",
           "text": "Reach: 1. Damage: 1d6, Blind until the end of their next turn.",
           "cantripScaling": "+3 damage every 5 levels.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -2934,7 +2967,7 @@
           "actions": "0 Actions",
           "text": "Castable only while Defending.\n\nGain 2×KEY temp HP. The temp HP are lost at the start of your next turn.",
           "higherLevels": "+5 temp HP.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -2948,7 +2981,7 @@
           "damage": "3d6",
           "text": "Range: 12. Damage: 3d6. ANY die can crit vs a Hampered target. On crit: +20 damage (instead of rolling any additional dice).\n\nHampered. A creature with actions or movement reduced (e.g., Dazed, Slowed, Grappled, Restrained, Prone, Difficult Terrain).",
           "higherLevels": "Increase a die roll by 1 and +5 damage on crit.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -2961,7 +2994,7 @@
           "range": "Reach 6",
           "text": "Reach: 6. Roll 1d6; you may replace any single die rolled within Reach with that die (it expires at the end of the encounter if unused).\n\nReplacing a die. Exchange the original die with the d6 that you rolled; treat it exactly as if that die were the one originally rolled.",
           "higherLevels": "+1 Reach and roll +1d6 (keep only 1).",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -2977,7 +3010,7 @@
           "damage": "2d6",
           "text": "Concentration: 1 min. Reach: 12, AoE. Conjure icy blades in 5 contiguous spaces; this area is Difficult Terrain. Creatures there (or who enter later) suffer 2d6 damage for each space they touch.",
           "higherLevels": "+1 space and +1 damage.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -2991,7 +3024,7 @@
           "damage": "4d6+10",
           "text": "Reach: Cone 4, AoE. Damage: 4d6+10. This area is Difficult Terrain for 1 round. Any already Hampered creatures there are Restrained (frozen in place).",
           "higherLevels": "+1 Reach.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -3006,7 +3039,7 @@
           "damage": "d66",
           "text": "Range: 12, 3×3 AoE. Damage: d66 bludgeoning. Creatures adjacent to that area take half as much. The entire area permanently becomes Difficult Terrain.\n\nD66. Roll 2d6. The leftmost die is the tens place, and the second is the ones (e.g., 4 and 5 deal 45 damage).",
           "higherLevels": "+1 initial area.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -3020,7 +3053,7 @@
           "aoe": "AoE",
           "damage": "d66",
           "text": "Reach: 12, AoE. Any targets you choose are encased in ice and immune to damage and negative effects until the start of their next turn. All others take d66 damage, then make a STR save or be Incapacitated until the end of their next turn.\n\nNote. Once you cast this spell, you must Safe Rest for 1 week before using it again.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 15,
           "draft": false
         },
@@ -3034,7 +3067,7 @@
           "damage": "1d8+4",
           "text": "Range: 8. Damage: 1d8+4. On miss: you take half the damage instead.",
           "cantripScaling": "+6 damage every 5 levels.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3049,7 +3082,7 @@
           "damage": "2d8",
           "text": "Castable only if Charged, ending the condition.\n\nReach: 2, AoE. Damage: 2d8.\n\nCharged. Whenever you take lightning damage, you are Charged for 1 minute (or until combat ends).",
           "cantripScaling": "+4 damage every 5 levels.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3063,7 +3096,7 @@
           "damage": "3d8",
           "text": "Range: 12. Damage: 3d8. Also hits the next closest creature.\n\nNext Closest Creature. If you are the closest, you are hit! If 2 creatures are equally close, the GM can select randomly, the taller one, or whoever has the most metal.",
           "higherLevels": "+4 damage.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3075,7 +3108,7 @@
           "actions": "0 Actions",
           "text": "(1/turn) Teleport up to your Speed, gain Charged (can be cast while Defending, after damage).",
           "higherLevels": "+4 spaces.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3089,7 +3122,7 @@
           "damage": "3d8+4",
           "text": "Line: 12, AoE. Damage: 3d8+4 and Prone on a failed STR save. Creatures with a large amount of metal (e.g., armor or a longsword) roll with disadvantage and suffer +10 damage.",
           "higherLevels": "+4 damage.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3102,7 +3135,7 @@
           "range": "Range 8",
           "text": "Castable when an ally is attacked.\n\nRange: 8. Teleport an ally away. Teleport another creature there on a failed WIL save (making them the target). Costs 1 action if Charged, ending the condition.",
           "higherLevels": "+2 Range.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3116,7 +3149,7 @@
           "concentration": "1 min.",
           "text": "Concentration: 1 min. Reach: 4. Give a creature Charged, +1 max action, +5 Defense, 2× Speed, and advantage on DEX saves.",
           "higherLevels": "+4 Reach.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3131,7 +3164,7 @@
           "damage": "d88",
           "text": "Reach: 12, AoE. Teleport to a spot you can see (if a willing creature is there, swap places with them). Adjacent creatures take d88 damage and Knockback 2. Creatures moved 2+ spaces are also knocked Prone, Dazed, and deafened for 1 day.\n\nD88. Roll 2d8. The leftmost die is the tens place, and the second is the ones (e.g., 4 and 5 deal 45 damage).",
           "higherLevels": "+1 Knockback.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3145,7 +3178,7 @@
           "concentration": "1 min.",
           "damage": "d88",
           "text": "Concentration: 1 min. Become a cloud of tempestuous storm. You can fly, move for free 1/round, and attacks against you are disadvantaged. At the end of each of your turns, strike up to 4 creatures within Reach 4 with a bolt of lightning for d88 damage (a creature can only be struck 1/round).\n\nCosts 3 actions each round to maintain. +2 Reach and +2 lightning bolts each round.\n\nNote. Once you cast this spell, you must Safe Rest for 1 week before you can use it again.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 16,
           "draft": false
         },
@@ -3156,7 +3189,7 @@
           "utility": true,
           "actions": "1 Action",
           "text": "Touch a surface and secretly mark it with a symbol or brief message. Speaking a chosen command word while nearby reveals it.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         },
@@ -3167,7 +3200,7 @@
           "utility": true,
           "actions": "1 Minute",
           "text": "Teleport to a fire source you can see.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         },
@@ -3178,7 +3211,7 @@
           "utility": true,
           "actions": "1 Action",
           "text": "Conjure a minor visual illusion. OR: Ignite a small, unheld item within Reach 6.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         },
@@ -3189,7 +3222,7 @@
           "utility": true,
           "actions": "1 Action",
           "text": "Chill. Harmlessly freeze, thaw, or move a bath-sized amount of water near you. OR:\n\nCraft. Conjure a sheet of opaque, mirror-like, or transparent ice the size of a window or door.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         },
@@ -3200,7 +3233,7 @@
           "utility": true,
           "actions": "1 Minute",
           "text": "Conjure a floating disk of ice that follows you. It can carry moderately heavy weight for 1 hour or until you cast this spell again.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         },
@@ -3211,7 +3244,7 @@
           "utility": true,
           "actions": "1 Minute",
           "text": "Turn a small patch of water into a reflective icy mirror. Looking through it grants you vision of any desired location near this body of water for 10 min.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         },
@@ -3222,7 +3255,7 @@
           "utility": true,
           "actions": "1 Minute",
           "text": "Conjure a Tiny (squirrel-sized) helper for up to 1 hour. It can fetch Tiny objects, open unlocked doors, illuminate a small area, or deliver a harmless shock. If it takes damage or moves further than 6 spaces away from you, it dissipates into sparks.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         },
@@ -3234,7 +3267,7 @@
           "actions": "1 Action",
           "range": "Reach 4",
           "text": "Reach: 4. Teleport to a metal object.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         },
@@ -3245,7 +3278,7 @@
           "utility": true,
           "actions": "1 Action",
           "text": "Dispel a minor magical effect, or temporarily suppress a stronger one (the more powerful an enchantment, the shorter the duration). OR: Your eyes glow and your voice is amplified to a thunder-like volume for 1 min.",
-          "source": "Mage 3.0",
+          "source": "Mage 3.1",
           "page": 17,
           "draft": false
         }

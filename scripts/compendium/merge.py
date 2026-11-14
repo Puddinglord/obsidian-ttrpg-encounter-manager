@@ -38,6 +38,8 @@ def main():
     rules = {}
     for path in sorted(glob.glob(os.path.join(ROOT, 'raw', '*.json'))):
         data = json.load(open(path))
+        if not isinstance(data, dict):  # resources.json is the class-resource audit, not bundled
+            continue
         for k in LISTS:
             out[k].extend(data.get(k, []))
         if isinstance(data.get('rules'), dict):

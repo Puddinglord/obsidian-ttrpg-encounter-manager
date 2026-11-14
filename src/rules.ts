@@ -1,4 +1,4 @@
-// Nimble 3.2 rules used by the tracker and builder. Pure functions only (no
+// Nimble 3.3 rules (and GM Guide 3.0) used by the tracker and builder. Pure functions only (no
 // Obsidian imports), so every rule here is unit-tested.
 
 import { AppliedCondition, ArmorType, MonsterRole, NimbleMonster } from './types';
@@ -110,7 +110,7 @@ export interface DamageResult {
 	breakdown: string;
 }
 
-/** Damage a monster takes from one attack (Nimble 3.2: armor −10/−20, crits ignore it; vulnerable +10, resistant −10). */
+/** Damage a monster takes from one attack (GM Guide 3.0: Medium armor −10, Heavy −20, crits ignore it; vulnerable +10, resistant −10). */
 export function monsterDamage(armor: ArmorType | undefined, amount: number, crit: boolean, opts: { autoArmor: boolean; mod?: DamageMod }): DamageResult {
 	const parts: string[] = [String(amount)];
 	let dmg = amount;

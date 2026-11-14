@@ -99,6 +99,8 @@ export class NewCharacterModal extends Modal {
 		if (cls) {
 			el.createDiv({ cls: 'nimble-newchar-line', text: [`${cls.startingHp ?? 10} HP`, cls.hitDie ? `d${cls.hitDie} Hit Die` : '', cls.keyStats?.length ? `Key: ${cls.keyStats.join(', ')}` : ''].filter(Boolean).join(' · ') });
 			if (cls.startingGear?.length) el.createDiv({ cls: 'nimble-newchar-line', text: `Gear: ${cls.startingGear.join(', ')}` });
+			const mods = Object.entries(cls.skillMods ?? {}).filter(([, v]) => typeof v === 'number' && v !== 0);
+			if (mods.length) el.createDiv({ cls: 'nimble-newchar-line', text: `Skills: ${mods.map(([k, v]) => `${fmtMod(v)} ${k}`).join(', ')}` });
 		}
 	}
 
