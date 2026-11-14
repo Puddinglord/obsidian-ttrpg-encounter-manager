@@ -55,7 +55,9 @@ Once it's listed, the landing page's **Install in Obsidian** button (`obsidian:/
 
 ## Later releases
 
-Merging a PR into `main` releases it. `.github/workflows/auto-release.yml` bumps the version in `package.json`, `manifest.json` and `versions.json`, commits `🔖 Release x.y.z (#PR)` to `main`, tags it, and runs `release.yml` for the tag.
+Merging a PR into `main` releases it. `.github/workflows/auto-release.yml` bumps the version in `package.json`, `manifest.json` and `versions.json`, moves `CHANGELOG.md`'s `## [Unreleased]` section under the new version and date, commits `🔖 Release x.y.z (#PR)` to `main`, makes an annotated tag whose message is that changelog, and runs `release.yml` for the tag. The release notes on GitHub are the same changelog section, with GitHub's list of merged PRs under it.
+
+Write the changelog as part of the PR: add bullets under `## [Unreleased]`, in `### Added`, `### Changed` or `### Fixed` ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/)). Empty subsections are dropped. If a PR leaves Unreleased empty, its title becomes the entry, so a release always says something. `node scripts/changelog.mjs notes <version>` prints a released version's notes.
 
 The PR's labels pick the bump:
 

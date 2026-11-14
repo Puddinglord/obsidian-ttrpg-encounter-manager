@@ -150,6 +150,7 @@ Every PR merged into `main` is released by `.github/workflows/auto-release.yml` 
 
 - Default is a patch release. When the user says a change is a minor or major release, add the `release: minor` or `release: major` label to the PR (`gh pr edit <n> --add-label "release: minor"`). For `release: skip`, only when they say not to release.
 - Run `npm test && npm run test:e2e` before merging; `release.yml` lints, tests, builds and attaches `main.js`, `manifest.json`, `styles.css`.
+- Every PR adds its changes to `CHANGELOG.md` under `## [Unreleased]` (Added / Changed / Fixed), written plainly in the user's voice; the release workflow turns that section into the tag message and the release notes (`scripts/changelog.mjs`).
 
 ## Mobile
 
