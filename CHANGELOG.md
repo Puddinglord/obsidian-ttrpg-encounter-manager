@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-14
+
 ### Added
 
 - Player campaigns: set a campaign to "I play in it" and the plugin switches to the player side, with lore cards instead of stat blocks, battle notes instead of encounter blocks, and your party front and center. The campaign switcher doubles as the view switcher.
