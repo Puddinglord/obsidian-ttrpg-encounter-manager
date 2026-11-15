@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { campaignHome, npcNote, sceneNote } from '../src/campaign-templates';
-import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, homeFolderFor, isFileFolder, nextOrder, safeName } from '../src/campaign-model';
+import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, homeFolderFor, isFileFolder, nextOrder, questOrder, questState, safeName } from '../src/campaign-model';
 
 const n = (path: string, fm: Record<string, unknown> = {}) => ({ path, fm });
 
@@ -132,6 +132,9 @@ describe('folders and files', () => {
 	it('suggests a starter from the folder name', () => {
 		expect(defaultKindFor('NPCs')).toBe('npc');
 		expect(defaultKindFor('locations')).toBe('location');
+		expect(defaultKindFor('Quests')).toBe('quest');
+		expect(defaultKindFor('Quest log')).toBe('quest');
+		expect(defaultKindFor('Bounties')).toBe('quest');
 		expect(defaultKindFor('Sessions')).toBe('session');
 		expect(defaultKindFor('Monsters')).toBe('monster');
 		expect(defaultKindFor('Handouts')).toBe('handout');
@@ -198,6 +201,7 @@ describe('where a new note is filed', () => {
 		expect(homeFolderFor(vecna, 'location', prelude)).toBe('Campaigns/Vecna/Locations');
 		expect(homeFolderFor(vecna, 'monster', prelude)).toBe('Campaigns/Vecna/Monsters');
 		expect(homeFolderFor(vecna, 'handout', prelude)).toBe('Campaigns/Vecna/Handouts');
+		expect(homeFolderFor(vecna, 'quest', prelude)).toBe('Campaigns/Vecna/Quests');
 	});
 
 	it('does the same from the top of the campaign', () => {
@@ -357,10 +361,63 @@ describe('player campaigns', () => {
 	});
 });
 
+describe('quests', () => {
+	it('writes a GM quest with the hook, the truth behind it and its rewards', async () => {
+		const t = await import('../src/campaign-templates');
+		const q = t.questNote('The Missing Caravan');
+		expect(q).toMatch(/^---\nnimble: quest\nstatus: available\ntype: side\ngiver: ""\nlocation: ""\nreward: ""\nlevel: ""\n---\n/);
+		expect(q).toContain('```box quest title="The hook"\n');
+		for (const h of ['## Objectives\n- [ ] ', '## Stakes', '## The truth', '## Clues & leads', '## Complications', '## Rewards', '## Progress']) expect(q).toContain(h);
+	});
+
+	it('writes a player quest from the party\'s side, without the GM\'s secrets', async () => {
+		const t = await import('../src/campaign-templates');
+		const q = t.questNote('Tobren\'s Job', 'player');
+		expect(q).toMatch(/nimble: quest\nstatus: active\n/);
+		expect(q).not.toMatch(/^level:/m);
+		expect(q).toContain('```box quest title="The job"\n');
+		for (const h of ['## Objectives', '## What we know', '## Leads\n- [ ] ', '## Questions', '## Progress']) expect(q).toContain(h);
+		expect(q).not.toContain('## The truth');
+	});
+
+	it('keeps a name that isn\'t a safe file name as its title', async () => {
+		const t = await import('../src/campaign-templates');
+		expect(t.questNote('Vecna: The Hand')).toMatch(/title: "Vecna: The Hand"/);
+	});
+
+	it('is offered to GMs and players alike', async () => {
+		const t = await import('../src/campaign-templates');
+		expect(t.STARTERS.find(s => s.kind === 'quest')).toMatchObject({ label: 'Quest', icon: 'flag' });
+		expect(t.PLAYER_STARTERS).toContain('quest');
+	});
+
+	it('reads where a quest stands from its status', () => {
+		for (const s of ['active', 'available', 'on hold', '', undefined, 'Whatever']) expect(questState(s)).toBe('open');
+		for (const s of ['completed', 'Complete', 'done', 'resolved']) expect(questState(s)).toBe('done');
+		for (const s of ['failed', 'Abandoned', 'cancelled']) expect(questState(s)).toBe('failed');
+	});
+
+	it('lists open quests above finished ones, keeping their order otherwise', () => {
+		const c = buildCampaigns([
+			n('C/C.md', { nimble: 'campaign' }),
+			n('C/Quests/A.md', { nimble: 'quest', status: 'completed' }),
+			n('C/Quests/B.md', { nimble: 'quest', status: 'active' }),
+			n('C/Quests/C.md', { nimble: 'quest', status: 'failed' }),
+			n('C/Quests/D.md', { nimble: 'quest' }),
+			n('C/Quests/E.md', {}),
+		])[0];
+		const quests = c.sections.find(s => s.name === 'Quests')!;
+		expect(quests.notes.map(q => [q.title, q.kind, q.status])).toEqual([
+			['A', 'quest', 'completed'], ['B', 'quest', 'active'], ['C', 'quest', 'failed'], ['D', 'quest', undefined], ['E', 'note', undefined],
+		]);
+		expect(questOrder(quests.notes).map(q => q.title)).toEqual(['B', 'D', 'E', 'A', 'C']);
+	});
+});
+
 describe('opensInReading', () => {
 	it('reads pages, writes sessions and plain notes', async () => {
 		const { opensInReading } = await import('../src/campaign-model');
-		for (const nimble of ['character', 'chapter', 'scene', 'npc', 'location', 'map', 'handout', 'monster', 'campaign']) expect(opensInReading({ nimble }, false)).toBe(true);
+		for (const nimble of ['character', 'chapter', 'scene', 'npc', 'location', 'quest', 'map', 'handout', 'monster', 'campaign']) expect(opensInReading({ nimble }, false)).toBe(true);
 		expect(opensInReading({ nimble: 'session' }, false)).toBe(false);
 		expect(opensInReading({}, false)).toBe(false); // a loose note
 		expect(opensInReading({}, true)).toBe(true); // a scene without properties

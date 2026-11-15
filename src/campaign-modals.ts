@@ -104,7 +104,7 @@ export class NewCampaignModal extends Modal {
 			gm.settingEl.toggle(player);
 			heroes.settingEl.toggle(!player);
 			level.setDesc(player ? 'Your character\'s level.' : 'Encounters are rated against this until you add the heroes.');
-			starter.setDesc(player ? 'Party, Sessions, NPCs, Locations and Assets, plus a first chapter for your notes.' : 'NPCs, Locations, Sessions, Monsters and Assets, plus a first chapter with an opening scene.');
+			starter.setDesc(player ? 'Party, Sessions, Quests, NPCs, Locations and Assets, plus a first chapter for your notes.' : 'Quests, NPCs, Locations, Sessions, Monsters and Assets, plus a first chapter with an opening scene.');
 		};
 		sync();
 		new Setting(c)

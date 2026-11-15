@@ -10,7 +10,7 @@
 import { Menu, Notice, setIcon, TFile, TFolder } from 'obsidian';
 import { portraitOf, renderAvatar } from './npc-card';
 import type NimbleStatblocksPlugin from '../main';
-import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, NoteKind, NoteRef, Section } from './campaign-model';
+import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, NoteKind, NoteRef, questOrder, questState, Section } from './campaign-model';
 import { CharacterInfo, SECTION_FOR } from './campaigns';
 import { CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles, ROLE_INFO } from './campaign-modals';
 import { STARTERS, StarterKind } from './campaign-templates';
@@ -20,20 +20,20 @@ import { handEnteredLeft, PartyMember } from './types';
 import { confirmAction, onLongPress } from './touch';
 
 export const KIND_ICON: Record<NoteKind, string> = {
-	campaign: 'castle', chapter: 'book-marked', scene: 'clapperboard', map: 'map', npc: 'user-round', location: 'map-pin',
+	campaign: 'castle', chapter: 'book-marked', scene: 'clapperboard', map: 'map', npc: 'user-round', location: 'map-pin', quest: 'flag',
 	session: 'calendar-days', monster: 'skull', handout: 'scroll-text', combat: 'swords', character: 'shield', creature: 'paw-print', note: 'file-text',
 };
-const SECTION_ICON: Record<string, string> = { Party: 'shield', NPCs: 'users-round', Locations: 'map-pin', Sessions: 'calendar-days', Monsters: 'skull', Handouts: 'scroll-text', Assets: 'image', Maps: 'map' };
+const SECTION_ICON: Record<string, string> = { Party: 'shield', NPCs: 'users-round', Locations: 'map-pin', Quests: 'flag', Sessions: 'calendar-days', Monsters: 'skull', Handouts: 'scroll-text', Assets: 'image', Maps: 'map' };
 const IMAGE = /^(png|jpe?g|gif|webp|svg|bmp|avif)$/;
 const fileIcon = (ext: string) => (IMAGE.test(ext) ? 'image' : ext === 'pdf' ? 'file-text' : /^(mp3|wav|ogg|m4a|flac|webm)$/.test(ext) ? 'music' : /^(mp4|mov|mkv|ogv)$/.test(ext) ? 'film' : ext === 'canvas' ? 'layout-dashboard' : 'file');
 /** Our own drag data: the path of a row dragged inside the outline. */
 const DRAG_TYPE = 'application/x-nimble-path';
 
-const IN_CHAPTER: StarterKind[] = ['scene', 'map', 'note', 'npc', 'location', 'monster', 'handout'];
-const IN_FOLDER: StarterKind[] = ['note', 'npc', 'location', 'session', 'map', 'monster', 'handout'];
+const IN_CHAPTER: StarterKind[] = ['scene', 'map', 'note', 'npc', 'location', 'quest', 'monster', 'handout'];
+const IN_FOLDER: StarterKind[] = ['note', 'npc', 'location', 'quest', 'session', 'map', 'monster', 'handout'];
 /** In a campaign you play in: no monster stat blocks, but party members. */
-const PLAYER_IN_CHAPTER: StarterKind[] = ['scene', 'note', 'npc', 'location', 'map', 'handout'];
-const PLAYER_IN_FOLDER: StarterKind[] = ['note', 'npc', 'location', 'session', 'character', 'map', 'handout'];
+const PLAYER_IN_CHAPTER: StarterKind[] = ['scene', 'note', 'npc', 'location', 'quest', 'map', 'handout'];
+const PLAYER_IN_FOLDER: StarterKind[] = ['note', 'npc', 'location', 'quest', 'session', 'character', 'map', 'handout'];
 
 export interface OutlineOptions {
 	/** Path of the note open in the editor, highlighted in the list. */
@@ -117,9 +117,12 @@ function dropTarget(el: HTMLElement, plugin: NimbleStatblocksPlugin, folder: str
 function noteRow(parent: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, n: NoteRef, opts: OutlineOptions, sourcePath?: string): HTMLElement {
 	const row = parent.createEl('a', { cls: `campaign-note kind-${n.kind}`, href: '#', attr: { 'data-path': n.path } });
 	if (n.path === opts.current) row.addClass('is-current');
+	// A finished quest is ticked off (or crossed out) and fades back.
+	const quest = n.kind === 'quest' ? questState(n.status) : undefined;
+	if (quest && quest !== 'open') row.addClass(`is-quest-${quest}`);
 	const portrait = n.kind === 'npc' ? portraitOf(plugin.app, n.path) : null;
 	if (portrait) renderAvatar(row, portrait, 'campaign-note-avatar');
-	else setIcon(row.createSpan({ cls: 'campaign-note-icon' }), KIND_ICON[n.kind]);
+	else setIcon(row.createSpan({ cls: 'campaign-note-icon' }), quest === 'done' ? 'circle-check' : quest === 'failed' ? 'circle-x' : KIND_ICON[n.kind]);
 	const title = n.area && n.title.startsWith(n.area) ? n.title.slice(n.area.length).replace(/^[\s:.\-–—]+/, '') : n.title;
 	if (n.area) row.createSpan({ cls: 'campaign-note-area', text: n.area });
 	row.createSpan({ cls: 'campaign-note-title', text: title });
@@ -348,9 +351,9 @@ export function renderOutline(el: HTMLElement, plugin: NimbleStatblocksPlugin, c
 	for (const s of sections) renderSection(el, plugin, c, s, opts);
 }
 
-/** Sessions first (newest at the top), then NPCs and Locations, then the rest, with file folders (Assets) last. */
+/** Sessions first (newest at the top), then Quests, NPCs and Locations, then the rest, with file folders (Assets) last. */
 function orderedSections(c: Campaign): Section[] {
-	const rank = (s: Section) => ({ Sessions: 0, NPCs: 1, Locations: 2, Party: 3 } as Record<string, number>)[s.name] ?? (isFileFolder(s) ? 5 : 4);
+	const rank = (s: Section) => ({ Sessions: 0, Quests: 1, NPCs: 2, Locations: 3, Party: 4 } as Record<string, number>)[s.name] ?? (isFileFolder(s) ? 6 : 5);
 	return [...c.sections].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, undefined, { numeric: true }));
 }
 
@@ -389,7 +392,8 @@ function renderSection(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campa
 		if (files) iconBtn(h, 'plus', `Add files to ${s.name}`, () => addFiles(plugin, s.folder, opts), 'campaign-add-scene');
 		else iconBtn(h, 'plus', `New in ${s.name}`, () => promptNew(plugin, c, s.folder, opts), 'campaign-add-scene');
 	}, (b) => {
-		const notes = s.name === 'Sessions' ? [...s.notes].reverse() : s.notes;
+		// Newest session first; quests still to do above the finished ones.
+		const notes = s.name === 'Sessions' ? [...s.notes].reverse() : questOrder(s.notes);
 		for (const n of notes) noteRow(b, plugin, c, n, opts);
 		for (const f of s.files) fileRow(b, plugin, c, f, opts);
 		if (!s.notes.length && !s.files.length) {
@@ -417,6 +421,7 @@ function newMenu(plugin: NimbleStatblocksPlugin, c: Campaign, e: MouseEvent | Po
 	m.addItem(i => i.setTitle('New session log').setIcon('calendar-days').onClick(() => promptSectionNote(plugin, c, 'session')));
 	m.addItem(i => i.setTitle('New NPC').setIcon('user-round').onClick(() => promptSectionNote(plugin, c, 'npc')));
 	m.addItem(i => i.setTitle('New location').setIcon('map-pin').onClick(() => promptSectionNote(plugin, c, 'location')));
+	m.addItem(i => i.setTitle('New quest').setIcon('flag').onClick(() => promptSectionNote(plugin, c, 'quest')));
 	if (c.role === 'player') m.addItem(i => i.setTitle('New party member').setIcon('user-plus').onClick(() => promptCharacter(plugin, c, false)));
 	m.addItem(i => i.setTitle('New note…').setIcon('file-plus').onClick(() => promptNew(plugin, c, c.folder, opts)));
 	m.addSeparator();
@@ -591,7 +596,8 @@ export function newSceneAnywhere(plugin: NimbleStatblocksPlugin): void {
 export function promptSectionNote(plugin: NimbleStatblocksPlugin, c: Campaign, kind: keyof typeof SECTION_FOR): void {
 	const label = kind === 'npc' ? 'NPC' : kind;
 	const initial = kind === 'session' ? plugin.campaigns.nextSessionName(c) : '';
-	new NamePrompt(plugin.app, `New ${label}`, kind === 'npc' ? 'Name, e.g. Sister Garaele' : kind === 'location' ? 'Place, e.g. Phandalin' : 'Session name', initial, 'Create',
+	const placeholder = STARTERS.find(s => s.kind === kind)?.placeholder ?? 'Name';
+	new NamePrompt(plugin.app, `New ${label}`, kind === 'session' ? 'Session name' : placeholder, initial, 'Create',
 		(name) => void openNew(plugin, plugin.campaigns.createInSection(c, kind, name))).open();
 }
 

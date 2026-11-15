@@ -5,7 +5,7 @@ import { safeName } from './campaign-model';
 import { NPC_CARD_BLOCK } from './npc-card-def';
 
 /** What "New note" can start from. `note` is a blank page. */
-export type StarterKind = 'note' | 'scene' | 'npc' | 'location' | 'session' | 'map' | 'monster' | 'handout' | 'character';
+export type StarterKind = 'note' | 'scene' | 'npc' | 'location' | 'quest' | 'session' | 'map' | 'monster' | 'handout' | 'character';
 
 /** Notes are written for whoever keeps them: the GM's prep, or a player's notes from the table. */
 export type NoteSide = 'gm' | 'player';
@@ -24,6 +24,7 @@ export const STARTERS: Starter[] = [
 	{ kind: 'scene', label: 'Scene', icon: 'clapperboard', placeholder: 'Scene name, e.g. The Collapsed Bridge' },
 	{ kind: 'npc', label: 'NPC', icon: 'user-round', placeholder: 'Name, e.g. Sister Garaele' },
 	{ kind: 'location', label: 'Location', icon: 'map-pin', placeholder: 'Place, e.g. Phandalin' },
+	{ kind: 'quest', label: 'Quest', icon: 'flag', placeholder: 'Quest, e.g. The Missing Caravan' },
 	{ kind: 'session', label: 'Session log', icon: 'calendar-days', placeholder: 'Session name' },
 	{ kind: 'map', label: 'Map', icon: 'map', placeholder: 'Map name, e.g. Cragmaw Hideout' },
 	{ kind: 'monster', label: 'Monster', icon: 'skull', placeholder: 'Monster name, e.g. Goblin Boss' },
@@ -32,7 +33,7 @@ export const STARTERS: Starter[] = [
 ];
 
 /** Starters a player is offered: no monsters, and the handout is something you were given. */
-export const PLAYER_STARTERS: StarterKind[] = ['note', 'scene', 'npc', 'location', 'session', 'map', 'character', 'handout'];
+export const PLAYER_STARTERS: StarterKind[] = ['note', 'scene', 'npc', 'location', 'quest', 'session', 'map', 'character', 'handout'];
 
 /**
  * File names can't hold : ? " / and a few others, so "Vecna: Eve of Ruin" is
@@ -60,7 +61,7 @@ export function campaignHome(name: string, level: number, heroes: number, system
 `;
 }
 
-/** The home note of a campaign you play in: what it's about, the party, open quests. */
+/** The home note of a campaign you play in: what it's about, the party's goals, the table. */
 export function playerCampaignHome(name: string, opts: { gm?: string; level?: number; character?: string } = {}, system = 'Nimble'): string {
 	return fm({ nimble: 'campaign', role: 'player', title: titleOf(name), system, gm: opts.gm ? JSON.stringify(opts.gm) : undefined, level: opts.level, status: 'active' }) + `
 
@@ -69,7 +70,8 @@ export function playerCampaignHome(name: string, opts: { gm?: string; level?: nu
 \`\`\`nimble-campaign
 \`\`\`
 
-## Quests
+## Goals
+*Quests get their own notes in the Quests folder. Bigger hopes and plans go here.*
 - [ ] ${opts.character ? `Get ${opts.character} through the first session alive` : 'The first thing the party agreed to do'}
 
 ## Table
@@ -192,6 +194,75 @@ export function locationNote(name: string, side: NoteSide = 'gm'): string {
 -
 
 ## ${player ? 'Our visits' : 'Visits'}
+-
+`;
+}
+
+/**
+ * A quest. The properties are the quick facts: where it stands, who gave it,
+ * where it leads and what it pays. `status:` moves it down the Quests folder
+ * once it's completed or failed. The GM's version holds the truth behind it;
+ * a player's is what the party was told and has pieced together since.
+ */
+export function questNote(name: string, side: NoteSide = 'gm'): string {
+	const player = side === 'player';
+	const props = fm({
+		nimble: 'quest', title: titleOf(name), status: player ? 'active' : 'available', type: 'side',
+		giver: '""', location: '""', reward: '""', level: player ? undefined : '""',
+	});
+	if (player) {
+		return props + `
+\`\`\`box quest title="The job"
+Who asked, what they want done, and what they offered.
+\`\`\`
+
+## Objectives
+- [ ] 
+
+## What we know
+-
+
+## Leads
+- [ ] 
+
+## People & places
+-
+
+## Questions
+-
+
+## Progress
+-
+`;
+	}
+	return props + `
+\`\`\`box quest title="The hook"
+How the heroes hear about it, who asks, and what they're offered.
+\`\`\`
+
+## Objectives
+- [ ] 
+
+## Stakes
+- **If they succeed:** 
+- **If they fail or walk away:** 
+
+## The truth
+*What's really going on, that the heroes don't know yet.*
+
+## Clues & leads
+-
+
+## People & places
+-
+
+## Complications
+-
+
+## Rewards
+-
+
+## Progress
 -
 `;
 }

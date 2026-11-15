@@ -377,6 +377,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.addCommand({ id: 'new-scene', name: 'New scene…', callback: () => newSceneAnywhere(this) });
 		this.addCommand({ id: 'new-npc', name: 'New NPC…', checkCallback: inCampaign(c => promptSectionNote(this, c, 'npc')) });
 		this.addCommand({ id: 'new-location', name: 'New location…', checkCallback: inCampaign(c => promptSectionNote(this, c, 'location')) });
+		this.addCommand({ id: 'new-quest', name: 'New quest…', checkCallback: inCampaign(c => promptSectionNote(this, c, 'quest')) });
 		this.addCommand({ id: 'new-session', name: 'New session log…', checkCallback: inCampaign(c => promptSectionNote(this, c, 'session')) });
 		this.addCommand({
 			id: 'continue-campaign', name: 'Continue where you left off',

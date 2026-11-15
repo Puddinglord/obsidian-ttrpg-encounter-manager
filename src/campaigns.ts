@@ -7,12 +7,12 @@ import {
 	adjacentScene, buildCampaigns, Campaign, campaignOf, CampaignRole, fmTrue, canMoveInto, Chapter, chapterOf, fmText, homeFolderFor, isPlayable, joinPath, nextOrder, NoteInfo, noteKind, parentOf, safeName,
 } from './campaign-model';
 import {
-	blankNote, campaignHome, chapterHome, characterNote, handoutNote, locationNote, mapNote, monsterNote, npcNote, playerCampaignHome, sceneNote, sessionNote, StarterKind,
+	blankNote, campaignHome, chapterHome, characterNote, handoutNote, locationNote, mapNote, monsterNote, npcNote, playerCampaignHome, questNote, sceneNote, sessionNote, StarterKind,
 } from './campaign-templates';
 
-export type NewNoteKind = 'scene' | 'npc' | 'location' | 'session';
+export type NewNoteKind = 'scene' | 'npc' | 'location' | 'quest' | 'session';
 
-export const SECTION_FOR: Record<Exclude<NewNoteKind, 'scene'>, string> = { npc: 'NPCs', location: 'Locations', session: 'Sessions' };
+export const SECTION_FOR: Record<Exclude<NewNoteKind, 'scene'>, string> = { npc: 'NPCs', location: 'Locations', quest: 'Quests', session: 'Sessions' };
 
 export interface NpcInfo {
 	path: string;
@@ -339,7 +339,7 @@ export class CampaignStore extends Events {
 			? playerCampaignHome(title, { gm: opts.gm?.trim() || undefined, level: opts.level, character: hero })
 			: campaignHome(title, opts.level, opts.heroes));
 		if (opts.starter) {
-			const subs = player ? ['Party', 'Sessions', 'NPCs', 'Locations', 'Assets'] : ['Party', 'NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets'];
+			const subs = player ? ['Party', 'Sessions', 'Quests', 'NPCs', 'Locations', 'Assets'] : ['Party', 'Quests', 'NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets'];
 			for (const sub of subs) await this.ensureFolder(`${folder}/${sub}`);
 			const ch = safeName(opts.firstChapter || 'Chapter 1');
 			await this.createNote(`${folder}/${ch}/${ch}.md`, chapterHome(opts.firstChapter || 'Chapter 1', 1, undefined, player ? undefined : opts.level));
@@ -384,6 +384,7 @@ export class CampaignStore extends Events {
 			case 'scene': body = sceneNote(name, nextOrder(ch?.scenes ?? [])); break;
 			case 'npc': body = npcNote(name, side); break;
 			case 'location': body = locationNote(name, side); break;
+			case 'quest': body = questNote(name, side); break;
 			case 'monster': body = monsterNote(name); break;
 			case 'handout': body = handoutNote(name, side); break;
 			case 'character': body = characterNote(name, { level: c?.level, mine: opts.mine }); break;

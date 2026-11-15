@@ -5,7 +5,7 @@
 //   - A campaign is any folder holding a note with `nimble: campaign` (its home).
 //   - A chapter is a folder inside it holding a note with `nimble: chapter`.
 //     Every other note in that folder (at any depth) belongs to the chapter.
-//   - Any other folder in the campaign (NPCs, Sessions, Locations…) is a section,
+//   - Any other folder in the campaign (NPCs, Quests, Sessions, Locations…) is a section,
 //     even an empty one. Sections list their notes and any other files (images,
 //     PDFs) so an Assets folder shows what's in it.
 //   - `order:` sorts notes; without it, names sort naturally (N2 before N10).
@@ -13,7 +13,7 @@
 //     than run; the plugin shows player tools for it (see prototypes/PLAYER-MODE.md).
 // Nothing else is required. Drop a note into a chapter folder and it shows up.
 
-export type NoteKind = 'campaign' | 'chapter' | 'scene' | 'map' | 'npc' | 'location' | 'session' | 'monster' | 'handout' | 'combat' | 'character' | 'creature' | 'note';
+export type NoteKind = 'campaign' | 'chapter' | 'scene' | 'map' | 'npc' | 'location' | 'quest' | 'session' | 'monster' | 'handout' | 'combat' | 'character' | 'creature' | 'note';
 
 /** Which side of the screen you're on: running the game, or playing in it. */
 export type CampaignRole = 'gm' | 'player';
@@ -31,6 +31,8 @@ export interface NoteRef {
 	order?: number;
 	/** Short tag shown before the title, e.g. an area key ("N4"). */
 	area?: string;
+	/** `status:` from the properties (a quest's active, completed, failed…). */
+	status?: string;
 }
 
 export interface Chapter {
@@ -82,7 +84,7 @@ export interface Campaign {
 	looseFiles: FileRef[];
 }
 
-const KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'map', 'npc', 'location', 'session', 'monster', 'handout', 'combat', 'character', 'creature', 'note'];
+const KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'map', 'npc', 'location', 'quest', 'session', 'monster', 'handout', 'combat', 'character', 'creature', 'note'];
 
 const basename = (path: string) => path.replace(/^.*\//, '').replace(/\.md$/i, '');
 export const parentOf = (path: string) => (path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '');
@@ -107,11 +109,12 @@ export function campaignRole(fm: Record<string, unknown>): CampaignRole {
 }
 
 /** Campaign pages that are mostly read: they open in reading view (see reading-mode.ts). */
-const READ_KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'npc', 'location', 'map', 'handout', 'monster', 'character', 'creature'];
+const READ_KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'npc', 'location', 'quest', 'map', 'handout', 'monster', 'character', 'creature'];
 
 /**
  * Should a campaign note open in reading view? Characters, chapters, scenes,
- * NPCs, places, maps, handouts and stat blocks do; session logs (written at
+ * NPCs, places, quests, maps, handouts and stat blocks do (a quest's
+ * objectives still tick off in reading view); session logs (written at
  * the table) and plain notes don't. A note without properties in a chapter
  * folder is one of its scenes.
  */
@@ -138,7 +141,25 @@ function ref(n: NoteInfo): NoteRef {
 		kind: noteKind(n.fm),
 		order: num(n.fm.order),
 		area: str(n.fm.area),
+		status: str(n.fm.status),
 	};
+}
+
+/**
+ * Where a quest stands, from its `status:`. Anything that isn't finished
+ * (active, available, on hold, or a status of your own) is `open`.
+ */
+export function questState(status: string | undefined): 'open' | 'done' | 'failed' {
+	const s = (status ?? '').toLowerCase().trim();
+	if (/^(completed?|done|finished|succeeded|success|resolved)$/.test(s)) return 'done';
+	if (/^(failed|abandoned|lost|dropped|cancell?ed)$/.test(s)) return 'failed';
+	return 'open';
+}
+
+/** Quests still to do first (in their usual order), then the finished ones. */
+export function questOrder(notes: NoteRef[]): NoteRef[] {
+	const closed = (n: NoteRef) => n.kind === 'quest' && questState(n.status) !== 'open';
+	return [...notes.filter(n => !closed(n)), ...notes.filter(closed)];
 }
 
 /** Natural sort: `order` first (notes without one go last), then the title (N2 before N10). */
@@ -329,6 +350,7 @@ export function adjacentScene(campaign: Campaign, path: string, step: 1 | -1): N
 const FOLDER_KIND: Record<string, NoteKind> = {
 	npc: 'npc', npcs: 'npc', characters: 'npc', people: 'npc',
 	location: 'location', locations: 'location', places: 'location',
+	quest: 'quest', quests: 'quest', 'quest log': 'quest', missions: 'quest', jobs: 'quest', bounties: 'quest',
 	session: 'session', sessions: 'session', 'session logs': 'session',
 	monster: 'monster', monsters: 'monster', bestiary: 'monster',
 	handout: 'handout', handouts: 'handout',
@@ -343,13 +365,13 @@ export function defaultKindFor(folderName: string, isChapter = false): NoteKind 
 }
 
 /** The folder a kind of note gets when the campaign doesn't have one for it yet. */
-const HOME_SECTION: Partial<Record<NoteKind, string>> = { npc: 'NPCs', location: 'Locations', session: 'Sessions', monster: 'Monsters', handout: 'Handouts', character: 'Party' };
+const HOME_SECTION: Partial<Record<NoteKind, string>> = { npc: 'NPCs', location: 'Locations', quest: 'Quests', session: 'Sessions', monster: 'Monsters', handout: 'Handouts', character: 'Party' };
 
 /**
  * Where a new note of `kind` goes when it's asked for in `from`.
  *
  * A chapter's notes are its scenes, and the top of the campaign is for loose
- * notes, so an NPC, location, monster, handout or session log made from either
+ * notes, so an NPC, location, quest, monster, handout or session log made from either
  * is filed in the campaign's folder for that kind instead (the one named for it,
  * or a renamed one such as "Characters"; made if it's missing). That way it's
  * listed with the rest and doesn't get lost among a chapter's scenes. A folder
