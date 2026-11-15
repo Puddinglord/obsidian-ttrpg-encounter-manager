@@ -11,13 +11,19 @@ import { EncounterStore } from './src/encounters';
 import { ENCOUNTER_VIEW_TYPE, EncounterTrackerView } from './src/tracker-view';
 import { createInlineRef, HoverPreview, parseInlineRef, refreshInlineRefs } from './src/inline-ref';
 import { inlineRefLivePreview } from './src/live-preview';
-import { AddMonsterModal, InlineRefSuggest } from './src/suggest';
+import { InlineRefSuggest } from './src/suggest';
 import { NimbleSlashSuggest } from './src/slash';
 import { NimbleSettingsTab } from './src/settings-tab';
 import { parseDice, rollDie, rollNimbleAttack, rollPlain } from './src/dice';
 import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/roll-def';
 import { BestiaryEntry, bestiaryEntries } from './src/bestiary';
-import { baseCreatureName, BESTIARY_VIEW_TYPE, BestiaryView, bookOf } from './src/bestiary-view';
+import { baseCreatureName, bookOf } from './src/compendium-entries';
+import { COMPENDIUM_VIEW_TYPE, CompendiumView } from './src/compendium-view';
+import { invalidateCompendium } from './src/compendium-browser';
+import { openCompendiumSearch } from './src/compendium-modal';
+import { openAddMonsterPicker } from './src/compendium-pickers';
+import { watchArt } from './src/compendium-art';
+import type { Segment } from './src/compendium-entries';
 import { notesBody } from './src/creature-notes';
 import { registerEncounterBlock } from './src/encounter-block';
 import { BuilderModal } from './src/builder-modal';
@@ -35,6 +41,7 @@ import { SpotlightModal } from './src/spotlight';
 import { registerTables, styleTablesIn } from './src/tables';
 import { registerTooltips, watchTooltips } from './src/tooltips';
 import { monsterRole, shiftMonster } from './src/rules';
+import { AddSeveralModal } from './src/count-modal';
 import { canRoll3d, dice3dLastStats, dice3dSupported, diceForRoll, landedWithin, roll3d, warm3d } from './src/dice3d';
 import { dressDice, rollEvent, rollOptions } from './src/dice3d/looks';
 import type { Die3d } from './src/dice3d';
@@ -153,7 +160,11 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.loadBundledBestiary();
 
 		this.registerView(ENCOUNTER_VIEW_TYPE, (leaf) => new EncounterTrackerView(leaf, this));
-		this.registerView(BESTIARY_VIEW_TYPE, (leaf) => new BestiaryView(leaf, this));
+		this.registerView(COMPENDIUM_VIEW_TYPE, (leaf) => new CompendiumView(leaf, this));
+		watchArt(this);
+		// The compendium's entries are built once; anything that changes them throws them away.
+		this.registerEvent(this.index.on('changed', () => invalidateCompendium()));
+		this.registerEvent(this.campaigns.on('changed', () => invalidateCompendium()));
 		this.registerView(CAMPAIGN_VIEW_TYPE, (leaf) => new CampaignView(leaf, this));
 		this.addRibbonIcon('castle', 'Nimble campaign', () => this.openCampaignView());
 		const trackerRibbon = this.addRibbonIcon('swords', 'Nimble encounter tracker', () => this.activateEncounterView());
@@ -165,7 +176,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerEvent(this.campaigns.on('changed', syncParty));
 		this.registerEvent(this.app.metadataCache.on('changed', (_f, _d, cache) => { if (noteKind(cache.frontmatter ?? {}) === 'character') syncParty(); }));
 		syncRibbon();
-		this.addRibbonIcon('book-open', 'Nimble bestiary', () => this.openBestiary());
+		this.addRibbonIcon('book-open', 'Nimble compendium', () => this.openBestiary());
 		this.registerHoverLinkSource('nimble-gm', { display: 'Ember Vault', defaultMod: true });
 
 		this.registerMarkdownCodeBlockProcessor('nimble', (source, el, ctx) => {
@@ -297,7 +308,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			return true;
 		};
 		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', checkCallback: gm(() => void this.activateEncounterView()) });
-		this.addCommand({ id: 'open-bestiary', name: 'Open bestiary', callback: () => this.openBestiary() });
+		this.addCommand({ id: 'open-bestiary', name: 'Open compendium', icon: 'book-open', callback: () => this.openBestiary() });
+		this.addCommand({ id: 'search-compendium', name: 'Search the compendium…', icon: 'library', callback: () => openCompendiumSearch(this) });
 		this.addCommand({ id: 'add-monster', name: 'Add monster to encounter…', checkCallback: gm(() => this.openAddMonsterModal()) });
 		this.addCommand({ id: 'build-encounter', name: 'Build an encounter…', checkCallback: gm(() => new BuilderModal(this).open()) });
 		this.addCommand({ id: 'edit-party', name: 'Edit party…', callback: () => this.openParty() });
@@ -382,6 +394,14 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	private spotlight: SpotlightModal | null = null;
+
+	/** Open Spotlight with `query` already typed (coming back to it from something it opened). */
+	openSpotlight(query = ''): void {
+		if (this.spotlight) return;
+		const modal = this.spotlight = new SpotlightModal(this, () => { if (this.spotlight === modal) this.spotlight = null; });
+		modal.open();
+		if (query) modal.setQuery(query);
+	}
 
 	/** Open Spotlight, or close it if it's already up. */
 	toggleSpotlight(): void {
@@ -519,6 +539,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	async saveSettings() {
+		invalidateCompendium(); // custom conditions, drafts…
 		if (this.settingsReadOnly) return;
 		await this.saveData(this.settings);
 	}
@@ -653,7 +674,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		if (this.hideStats(entry.filePath, opts.viewPath)) {
 			// Players can't add monsters to a fight; they can look them up and open their own notes.
 			const out: StatblockAction[] = [];
-			if (entry.bundled && !opts.inBestiary) out.push({ label: 'Bestiary', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
+			if (entry.bundled && !opts.inBestiary) out.push({ label: 'Compendium', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
 			if (!entry.bundled && entry.filePath) out.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { this.hover.hide(); void this.app.workspace.openLinkText(entry.filePath, '', ev.metaKey || ev.ctrlKey); } });
 			const name = baseCreatureName(entry.name);
 			const noted = !!this.creatureNote(name);
@@ -668,7 +689,10 @@ export default class NimbleStatblocksPlugin extends Plugin {
 					const m = new Menu();
 					const add = (title: string, icon: string, n: number, shift = 0) => m.addItem(i => i.setTitle(title).setIcon(icon)
 						.onClick(() => void this.addToEncounter(shiftMonster(entry.monster, shift), entry.filePath || undefined, n)));
-					add('Add 2', 'copy-plus', 2);
+					m.addItem(i => i.setTitle('Add several…').setIcon('copy-plus').onClick(() => {
+						this.hover.hide();
+						new AddSeveralModal(this.app, this, entry.monster, entry.filePath || undefined).open();
+					}));
 					if (monsterRole(entry.monster) !== 'minion') {
 						m.addSeparator();
 						add('Add tougher (+1 level)', 'trending-up', 1, 1);
@@ -679,7 +703,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			},
 		];
 		if (entry.bundled) {
-			if (!opts.inBestiary) actions.push({ label: 'Bestiary', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
+			if (!opts.inBestiary) actions.push({ label: 'Compendium', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
 			actions.push({ label: 'Copy to vault', icon: 'file-plus', onClick: () => { this.hover.hide(); void this.copyMonsterToVault(entry.monster); } });
 		} else if (entry.filePath) {
 			actions.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { this.hover.hide(); void this.app.workspace.openLinkText(entry.filePath, '', ev.metaKey || ev.ctrlKey); } });
@@ -1008,14 +1032,23 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	// ------------------------------------------------------------------------
 	// Bestiary
 
+	/** Open the Compendium tab, showing a bundled monster when given one. */
 	async openBestiary(monsterId?: string): Promise<void> {
-		let leaf: WorkspaceLeaf | null = this.app.workspace.getLeavesOfType(BESTIARY_VIEW_TYPE)[0] ?? null;
+		const view = await this.openCompendium();
+		if (monsterId) view?.select(`monster:${monsterId}`);
+	}
+
+	/** Open (or reveal) the Compendium tab, optionally on a tab and search. */
+	async openCompendium(segment?: Segment, query?: string): Promise<CompendiumView | null> {
+		let leaf: WorkspaceLeaf | null = this.app.workspace.getLeavesOfType(COMPENDIUM_VIEW_TYPE)[0] ?? null;
 		if (!leaf) {
 			leaf = this.app.workspace.getLeaf('tab');
-			await leaf.setViewState({ type: BESTIARY_VIEW_TYPE, active: true });
+			await leaf.setViewState({ type: COMPENDIUM_VIEW_TYPE, active: true });
 		}
 		await this.app.workspace.revealLeaf(leaf);
-		if (monsterId && leaf.view instanceof BestiaryView) leaf.view.select(monsterId);
+		const view = leaf.view instanceof CompendiumView ? leaf.view : null;
+		if (view && (segment || query !== undefined)) view.search(segment, query);
+		return view;
 	}
 
 	/** Open a monster wherever it lives: its note, or the bestiary for bundled ones. */
@@ -1081,7 +1114,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	openAddMonsterModal(): void {
-		new AddMonsterModal(this.app, this).open();
+		openAddMonsterPicker(this);
 	}
 
 	/** Keep "open source note" links in the tracker working after a file move. */

@@ -8,25 +8,29 @@
 //   2d6+3         Enter: roll (Cmd/Ctrl+Enter rolls and keeps the box open)
 //   > next        commands only
 //   battleaxe     Enter: the compendium card
+//   school:fire   typed filters: "Search the compendium" opens it with them
 //
-// openSpotlight(plugin, { kinds, title, onPick }) is the filtered mode the
-// character sheet's Add buttons use: only those compendium kinds, filter chips,
-// and Enter picks (Cmd/Ctrl+Enter picks and keeps the box open).
+// The compendium's own dialog (compendium-modal.ts) does the pickers; this box
+// is for getting anywhere fast.
 
-import { Notice, Platform, prepareFuzzySearch, setIcon, SuggestModal, TFile } from 'obsidian';
+import { Modal, Notice, Platform, prepareFuzzySearch, setIcon, SuggestModal, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { KIND_ICON } from './campaign-ui';
 import type { NoteRef } from './campaign-model';
 import type { NpcInfo } from './campaigns';
-import { chooseSelected, pluginCommands, runCommand } from './internals';
+import { chooseSelected, pluginCommands, runCommand, setSuggestSelection } from './internals';
 import { portraitOf, renderAvatar } from './npc-card';
 import { openRecord } from './record-modal';
 import { formatLevel, monsterRole } from './rules';
-import { orderPicks, parseSpotlight, rankByName, SpotlightQuery } from './spotlight-def';
-import { CompendiumHit, CompendiumKind, Item as CompendiumItem, KIND_LABEL } from './compendium';
-import { bundledCompendium } from './compendium-data';
-import { CompendiumCardModal } from './compendium-card';
-import { describeMonster, searchMonsters } from './suggest';
+import { parseSpotlight, rankByName, SpotlightQuery } from './spotlight-def';
+import { CompendiumHit, KIND_LABEL } from './compendium';
+import { compendiumEntries } from './compendium-browser';
+import { fuzzyRank, isCompleteValue, nameMatch, search as searchCompendium, suggest, Suggestion } from './compendium-query';
+import { openCompendiumSearch, openEntry } from './compendium-modal';
+import { Entry, ENTRY_KIND_LABEL } from './compendium-entries';
+import { FilterField } from './filter-field';
+import { CompendiumCardModal, compendiumIcon } from './compendium-card';
+import { describeMonster } from './suggest';
 import type { MonsterIndexEntry, NimbleCondition } from './types';
 
 type Item =
@@ -37,73 +41,32 @@ type Item =
 	| { kind: 'condition'; condition: NimbleCondition }
 	| { kind: 'command'; id: string; name: string; icon?: string }
 	| { kind: 'compendium'; hit: CompendiumHit }
-	| { kind: 'custom'; name: string }
+	| { kind: 'lookup'; query: string }
+	| { kind: 'filter'; s: Suggestion }
+	| { kind: 'entry'; entry: Entry }
 	| { kind: 'hint'; icon: string; title: string; detail: string; fill: string };
 
 const MOD = Platform.isMacOS ? '⌘' : 'Ctrl';
 
-/** The filtered mode: a picker over some compendium kinds. */
-export interface SpotlightPick {
-	kinds: CompendiumKind[];
-	/** Placeholder and heading: "Add to Thorga's inventory". */
-	title: string;
-	onPick: (hit: CompendiumHit) => void;
-	/** Entries to list first (the class's own options, the caster's schools); also a filter chip. */
-	prefer?: (hit: CompendiumHit) => boolean;
-	preferLabel?: string;
-	/** Already on the sheet: tagged "Added" and listed after the rest. */
-	isTaken?: (hit: CompendiumHit) => boolean;
-	/** Offer "Add “what you typed”" when it isn't in the compendium. */
-	allowCustom?: boolean;
-}
-
-interface Chip { label: string; test: (h: CompendiumHit) => boolean }
-
-const KIND_ICON_CMP: Record<CompendiumKind, string> = {
-	item: 'backpack', spell: 'wand-2', feature: 'sparkles', class: 'graduation-cap', subclass: 'git-branch',
-	ancestry: 'users', background: 'scroll-text', boon: 'gem',
-};
-
-/** Icon for a compendium entry (items by category). */
-export function compendiumIcon(h: CompendiumHit): string {
-	if (h.kind === 'item') {
-		const c = (h.entry as CompendiumItem).category;
-		return c === 'weapon' ? 'sword' : c === 'armor' ? 'shirt' : c === 'shield' ? 'shield' : c === 'consumable' ? 'flask-conical' : c === 'magic' ? 'sparkle' : c === 'scroll' ? 'scroll' : c === 'wand' ? 'wand' : 'backpack';
-	}
-	return KIND_ICON_CMP[h.kind];
-}
-
-/** Open Spotlight, optionally as a filtered compendium picker. */
-export function openSpotlight(plugin: NimbleStatblocksPlugin, pick?: SpotlightPick): SpotlightModal {
-	const m = new SpotlightModal(plugin, undefined, pick);
-	m.open();
-	return m;
-}
 const QUICK_DICE = ['1d20', '1d4', '1d6', '1d8', '1d10', '1d12', '2d6'];
 
 export class SpotlightModal extends SuggestModal<Item> {
 	private q: SpotlightQuery = parseSpotlight('');
 	private diceRow: HTMLElement | null = null;
-	private chips: Chip[] = [];
-	private chip = 0;
+	/** The compendium's search field (chips for filters) on Spotlight's own box. */
+	private field: FilterField | null = null;
+	/** Re-running the search ourselves (after the field turned text into a chip). */
+	private rerunning = false;
+	/** Arrow keys used since the last keystroke: the first ↓ after typing goes to the top filter suggestion. */
+	private navigated = false;
+	/** Filter suggestion rows at the top of the list right now. */
+	private filterRows = 0;
+	/** Where the selection started after the last keystroke. */
+	private startSel = 0;
 
-	constructor(private plugin: NimbleStatblocksPlugin, private onClosed?: () => void, private pick?: SpotlightPick) {
+	constructor(private plugin: NimbleStatblocksPlugin, private onClosed?: () => void) {
 		super(plugin.app);
 		this.modalEl.addClass('nimble-spotlight');
-		if (pick) {
-			this.modalEl.addClass('is-picker');
-			this.setPlaceholder(`${pick.title}: type to search`);
-			this.limit = 60;
-			this.emptyStateText = pick.allowCustom ? 'Nothing in the compendium matches.' : 'Nothing matches.';
-			this.setInstructions([
-				{ command: '↵', purpose: 'add' },
-				{ command: `${MOD} ↵`, purpose: 'add and keep open' },
-				{ command: 'esc', purpose: 'close' },
-			]);
-			this.chips = this.makeChips(pick);
-			this.scope.register(['Mod'], 'Enter', (e) => { chooseSelected(this, e); return false; });
-			return;
-		}
 		const player = plugin.playerView();
 		this.setPlaceholder(player
 			? 'Search creatures, people, places, spells and items, type 2d6+3 to roll, or > for commands'
@@ -130,7 +93,33 @@ export class SpotlightModal extends SuggestModal<Item> {
 
 	onOpen(): void {
 		void super.onOpen();
-		if (this.pick) { this.renderChips(); return; }
+		// Filters as chips, exactly as in the compendium: the chips sit in the box, before the text.
+		const chipsEl = createDiv({ cls: 'nimble-cmpx-chips nimble-spot-chips' });
+		this.inputEl.before(chipsEl);
+		chipsEl.appendChild(this.inputEl);
+		this.inputEl.addClass('nimble-cmpx-input');
+		this.field = new FilterField({
+			input: this.inputEl,
+			chipsEl,
+			isValue: (key, value) => isCompleteValue(compendiumEntries(this.plugin), key, value),
+			onChange: () => {
+				this.navigated = false;
+				if (this.rerunning) return;
+				this.rerunning = true;
+				this.inputEl.dispatchEvent(new Event('input'));
+				this.rerunning = false;
+			},
+		});
+		this.inputEl.addEventListener('keydown', (e) => {
+			if (e.key === 'Backspace' && this.field?.key(e)) e.preventDefault();
+		});
+		// Obsidian moves the selection on keydown, before any listener of ours; so on keyup, the first ↓
+		// after typing is moved on to the top filter suggestion when it started from a result.
+		this.inputEl.addEventListener('keyup', (e) => {
+			if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+			if (e.key === 'ArrowDown' && !this.navigated && this.filterRows && this.startSel >= this.filterRows) setSuggestSelection(this, 0);
+			this.navigated = true;
+		});
 		// Dice one tap away, without typing.
 		const row = createDiv({ cls: 'nimble-spotlight-dice' });
 		for (const d of QUICK_DICE) {
@@ -138,7 +127,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 			b.addEventListener('mousedown', (e) => e.preventDefault()); // keep the cursor in the search box
 			b.addEventListener('click', () => this.roll(d, true));
 		}
-		this.inputEl.parentElement?.after(row);
+		(this.inputEl.closest('.prompt-input-container') ?? this.inputEl.parentElement)?.after(row);
 		this.diceRow = row;
 	}
 
@@ -151,32 +140,80 @@ export class SpotlightModal extends SuggestModal<Item> {
 	// Results
 
 	getSuggestions(input: string): Item[] {
-		if (this.pick) return this.picks(input);
+		const items = this.suggestionsFor(input);
+		// Filter suggestions sit at the top. A filter being typed starts on them; a plain word starts on its best result.
+		const filters = this.filterRows = items.findIndex(i => i.kind !== 'filter') < 0 ? items.length : items.findIndex(i => i.kind !== 'filter');
+		const tok = this.field?.token();
+		const startOnFilter = !!this.field?.pending || /:/.test(tok?.text ?? '') || items.slice(0, filters).some(i => i.kind === 'filter' && i.s.kind === 'key');
+		this.startSel = filters && !startOnFilter && items.length > filters ? filters : 0;
+		if (this.startSel) queueMicrotask(() => setSuggestSelection(this, this.startSel));
+		return items;
+	}
+
+	/** Filter suggestions for what's being typed, counted against the rest of the query. */
+	private filterSuggestions(): Item[] {
+		const f = this.field;
+		const tok = f?.token();
+		if (!f || !tok?.text || (!f.pending && !/:/.test(tok.text) && tok.text.length < 2)) return [];
+		if (!f.pending && (/^\d/.test(tok.text) || tok.text.startsWith('>'))) return [];
+		const pool = searchCompendium(compendiumEntries(this.plugin), f.rest(), { segment: 'all' }).entries;
+		return suggest(tok.text, pool, 'all', { applied: f.chips, segments: true, limit: /:/.test(tok.text) ? 8 : 3 }).map(s => ({ kind: 'filter', s }));
+	}
+
+	private suggestionsFor(input: string): Item[] {
+		const f = this.field;
+		// With filters (chips, or one being typed), Spotlight searches the compendium with them: monsters, NPCs, spells, rules…
+		if (f && (f.chips.length || f.pending)) {
+			const res = searchCompendium(compendiumEntries(this.plugin), f.query(), { segment: 'all', limit: 30 });
+			// The lookup carries the chips as chips (and a filter still being typed as unfinished).
+			return [...this.filterSuggestions(), ...res.entries.map(entry => ({ kind: 'entry' as const, entry })), { kind: 'lookup', query: f.serialize() }];
+		}
+		const filters = this.filterSuggestions();
+		return [...filters, ...this.plainSuggestions(input)];
+	}
+
+	private plainSuggestions(input: string): Item[] {
 		const q = this.q = parseSpotlight(input);
 		if (q.roll) return [{ kind: 'roll', expression: q.roll }];
 		if (q.commandsOnly) return this.commands(q.text, 40);
 		if (!q.text) return this.home();
 
-		// Monsters whose name holds what was typed. The bestiary search also returns loose (scattered-letter)
-		// matches, which are noise beside a real hit; they're only a fallback for when nothing matches outright.
-		const found = searchMonsters(this.plugin.index.all(), q.text, q.counted ? 20 : 8);
-		const named = found.filter(e => e.name.toLowerCase().includes(q.text));
+		// Everything is ranked the same forgiving way: names first, and typo matches ("zombieq") only when
+		// nothing matches outright, so they never crowd a real hit.
+		const mons = fuzzyRank(this.plugin.index.all(), q.text, e => [e.name, e.monster.group ?? ''], q.counted ? 20 : 8, true);
+		const found = mons.map(x => x.item);
+		const named = mons.filter(x => !x.fuzzy).map(x => x.item);
 		// Players look monsters up; they don't add them to fights.
 		const player = this.plugin.playerView();
 		const asItems = (list: MonsterIndexEntry[]): Item[] => list.map(entry => ({ kind: 'monster', entry, count: q.count, add: q.counted && !player }));
 		if (q.counted && !player) return asItems(named.length ? named : found.slice(0, 5)); // "3 goblin" is about adding monsters
 
-		const npcs: Item[] = rankByName(this.npcs(), q.text, n => [n.name, ...n.aliases], 5).map(npc => ({ kind: 'npc', npc }));
-		const notes: Item[] = rankByName(this.notes(), q.text, n => [n.note.title, n.note.area ? `${n.note.area} ${n.note.title}` : ''], 6);
-		const conditions: Item[] = rankByName(this.plugin.getAllConditions().filter(c => !c.auto), q.text, c => [c.name], 3)
-			.map(condition => ({ kind: 'condition', condition }));
-		const commands = this.commands(q.text, 5, false);
-		const compendium: Item[] = bundledCompendium().search(q.text, undefined, 6).map(hit => ({ kind: 'compendium', hit }));
-		const all = [...asItems(named), ...npcs, ...notes, ...conditions, ...compendium, ...commands];
-		if (!all.length) return [...asItems(found.slice(0, 5)), ...this.commands(q.text, 3)]; // a typo still finds something
-		// An exact name wins the top spot whatever it is; otherwise adversaries lead.
-		const exact = (i: Item) => this.title(i).toLowerCase() === q.text;
-		return [...all.filter(exact), ...all.filter(i => !exact(i))];
+		// One list, ranked by how well each name matches (an exact name, then the start of a name, then the
+		// start of a word…), whatever kind of thing it is. A match only in secondary text (a monster's group)
+		// ranks below name matches, and typo matches ("compen" for Companions) only show when nothing anywhere
+		// matches for real. Ties go to adversaries, then people, places, rules, the compendium, commands.
+		type Ranked = { item: Item; score: number; fuzzy: boolean; order: number };
+		const ranked: Ranked[] = [];
+		const rank = (item: Item, order: number, names: string[], others: string[] = []) => {
+			const own = nameMatch(names, q.text);
+			const other = own ? null : nameMatch(others, q.text);
+			const m = own ?? (other ? { score: other.score + 8, fuzzy: other.fuzzy } : null);
+			if (m) ranked.push({ item, score: m.score + (m.fuzzy ? 100 : 0), fuzzy: m.fuzzy, order });
+		};
+		for (const it of asItems(found)) if (it.kind === 'monster') rank(it, 0, [it.entry.name], [it.entry.monster.group ?? '']);
+		for (const npc of this.npcs()) rank({ kind: 'npc', npc }, 1, [npc.name, ...npc.aliases]);
+		for (const n of this.notes()) rank(n, 2, [n.note.title], [n.note.area ? `${n.note.area} ${n.note.title}` : '']);
+		for (const condition of this.plugin.getAllConditions().filter(c => !c.auto)) rank({ kind: 'condition', condition }, 3, [condition.name]);
+		// Spells, items, class features…: the compendium's own search (typo-tolerant, typed filters).
+		const cmp = searchCompendium(compendiumEntries(this.plugin), input.trim(), { segment: 'all', only: e => !!e.hit, limit: 8 });
+		for (const e of cmp.entries) rank({ kind: 'compendium', hit: e.hit! }, 4, [e.name], [e.detail]);
+		for (const c of this.commands(q.text, 8)) if (c.kind === 'command') rank(c, 5, [c.name]);
+		// Typed filters ("school:fire") are the compendium's language: hand them over.
+		const lookup: Item[] = [{ kind: 'lookup', query: input.trim() }];
+		if (cmp.parsed.filters.length || cmp.parsed.segment) return [...cmp.entries.map(e => ({ kind: 'compendium' as const, hit: e.hit! })), ...lookup];
+		const anyReal = ranked.some(r => !r.fuzzy);
+		const list = ranked.filter(r => !anyReal || !r.fuzzy).sort((a, b) => a.score - b.score || a.order - b.order).slice(0, 14).map(r => r.item);
+		return [...list, ...lookup];
 	}
 
 	/** With nothing typed: what's most useful right now. */
@@ -241,7 +278,9 @@ export class SpotlightModal extends SuggestModal<Item> {
 			case 'condition': return i.condition.name;
 			case 'command': return i.name;
 			case 'compendium': return i.hit.name;
-			case 'custom': return i.name;
+			case 'lookup': return i.query;
+			case 'filter': return i.s.label;
+			case 'entry': return i.entry.name;
 			default: return i.title;
 		}
 	}
@@ -313,15 +352,35 @@ export class SpotlightModal extends SuggestModal<Item> {
 				name.setText(h.name);
 				if (h.draft) name.createSpan({ cls: 'nimble-cmp-draft', text: 'Draft' });
 				meta(h.detail);
-				if (this.pick && h.text) text.createDiv({ cls: 'nimble-spot-meta is-long is-text', text: h.text.replace(/\s+/g, ' ') });
-				if (this.pick?.isTaken?.(h)) { el.addClass('is-taken'); tag('Added'); } else tag(KIND_LABEL[h.kind]);
+				tag(KIND_LABEL[h.kind]);
 				break;
 			}
-			case 'custom':
-				setIcon(icon, 'pen-line');
-				name.setText(`Add “${i.name}”`);
-				meta('Not in the compendium: added by name. You can write its details in the note.');
-				tag('Custom');
+			case 'filter': {
+				el.addClass('is-filter');
+				setIcon(icon, i.s.kind === 'sort' ? 'arrow-up-down' : i.s.kind === 'segment' ? 'panel-top' : i.s.kind === 'key' ? 'filter' : 'list-filter');
+				const m = i.s.label.match(/^([-!]?[a-z]+:)(.*)$/i);
+				if (m) { name.createSpan({ cls: 'nimble-cmpx-token-key', text: m[1] }); name.createSpan({ text: m[2] }); } else name.setText(i.s.label);
+				meta(i.s.detail);
+				tag(i.s.kind === 'key' ? 'Filter by' : 'Filter');
+				break;
+			}
+			case 'entry': {
+				const e = i.entry;
+				if (e.monster && !this.plugin.hideStats(e.monster.filePath)) {
+					icon.addClass('nimble-spot-level', `role-${monsterRole(e.monster.monster)}`);
+					icon.setText(e.badge ?? '–');
+				} else if (e.hit) { icon.addClass(`cmp-${e.hit.kind}`); setIcon(icon, compendiumIcon(e.hit)); }
+				else setIcon(icon, e.monster ? 'paw-print' : e.npc ? 'user-round' : e.condition ? 'activity' : 'scale');
+				name.setText(e.name);
+				meta(e.detail);
+				tag(ENTRY_KIND_LABEL[e.kind]);
+				break;
+			}
+			case 'lookup':
+				setIcon(icon, 'library');
+				name.setText(`Search the compendium for “${i.query.trim()}”`);
+				meta('Every monster, spell, item, feature and rule, with filters and sorting');
+				tag('Compendium');
 				break;
 			default:
 				setIcon(icon, i.icon);
@@ -336,15 +395,12 @@ export class SpotlightModal extends SuggestModal<Item> {
 	/** Choosing a hint or a kept-open roll shouldn't close the box. */
 	selectSuggestion(i: Item, evt: MouseEvent | KeyboardEvent): void {
 		const mod = evt.metaKey || evt.ctrlKey;
+		// A filter becomes a chip (Spotlight stays open); Enter on a value typed for a waiting chip finishes it as typed.
+		if (i.kind === 'filter') { this.field?.apply(i.s); return; }
+		if (this.field?.pending && i.kind !== 'lookup') { this.field.commit(); return; }
 		if (i.kind === 'hint') { this.fill(i.fill); return; }
 		if (i.kind === 'roll' && mod) { this.roll(i.expression, true); return; }
 		if (i.kind === 'monster' && mod && !this.plugin.playerView()) { this.add(i); return; } // add and keep searching, to build a fight in one go
-		if (this.pick && mod && (i.kind === 'compendium' || i.kind === 'custom')) {
-			// Pick and keep going (several items at once).
-			this.pick.onPick(i.kind === 'compendium' ? i.hit : this.customHit(i.name));
-			window.setTimeout(() => this.inputEl.dispatchEvent(new Event('input')), 400);
-			return;
-		}
 		super.selectSuggestion(i, evt);
 	}
 
@@ -354,22 +410,25 @@ export class SpotlightModal extends SuggestModal<Item> {
 			case 'roll': this.roll(i.expression, false); break;
 			case 'monster':
 				if (i.add) void this.plugin.addToEncounter(i.entry.monster, i.entry.filePath || undefined, i.count);
-				else openRecord(this.plugin, { kind: 'monster', entry: i.entry });
+				else this.escapeBack(openRecord(this.plugin, { kind: 'monster', entry: i.entry }));
 				break;
 			case 'npc': {
 				const f = this.app.vault.getAbstractFileByPath(i.npc.path);
 				if (!(f instanceof TFile)) break;
 				if (mod) void this.plugin.campaigns.open(f.path, true);
-				else openRecord(this.plugin, { kind: 'note', file: f, subtitle: i.npc.role });
+				else this.escapeBack(openRecord(this.plugin, { kind: 'note', file: f, subtitle: i.npc.role }));
 				break;
 			}
 			case 'note': void this.plugin.campaigns.open(i.note.path, mod); break;
 			case 'condition': new Notice(`${i.condition.name}: ${i.condition.description}`, 12000); break;
-			case 'compendium':
-				if (this.pick) this.pick.onPick(i.hit);
-				else new CompendiumCardModal(this.app, this.plugin, i.hit).open();
+			case 'compendium': {
+				const m = new CompendiumCardModal(this.app, this.plugin, i.hit);
+				m.open();
+				this.escapeBack(m);
 				break;
-			case 'custom': this.pick?.onPick(this.customHit(i.name)); break;
+			}
+			case 'lookup': this.escapeBack(openCompendiumSearch(this.plugin, i.query)); break;
+			case 'entry': { const m = openEntry(this.plugin, i.entry); if (m) this.escapeBack(m); break; }
 			case 'command':
 				if (!runCommand(this.app, i.id)) new Notice(`Couldn't run "${i.name}"`);
 				break;
@@ -377,54 +436,41 @@ export class SpotlightModal extends SuggestModal<Item> {
 		}
 	}
 
-	// ------------------------------------------------------------------------
-	// Filtered mode
-
-	private makeChips(pick: SpotlightPick): Chip[] {
-		const chips: Chip[] = [{ label: 'All', test: () => true }];
-		if (pick.prefer) chips.push({ label: pick.preferLabel ?? 'Suggested', test: pick.prefer });
-		if (pick.kinds.length > 1) for (const k of pick.kinds) chips.push({ label: `${KIND_LABEL[k]}s`, test: h => h.kind === k });
-		if (pick.kinds.length === 1 && pick.kinds[0] === 'item') {
-			const cats = [...new Set(bundledCompendium().items.map(it => it.category).filter((c): c is string => !!c))];
-			const label: Record<string, string> = { weapon: 'Weapons', armor: 'Armor', shield: 'Shields', gear: 'Gear', consumable: 'Consumables', magic: 'Magic', scroll: 'Scrolls', wand: 'Wands', story: 'Story', combat: 'Combat' };
-			for (const c of cats) chips.push({ label: label[c] ?? c[0].toUpperCase() + c.slice(1), test: h => (h.entry as CompendiumItem).category === c });
-		}
-		if (pick.kinds.length === 1 && pick.kinds[0] === 'spell') {
-			const schools = [...new Set(bundledCompendium().spells.map(sp => sp.school).filter((c): c is string => !!c))];
-			for (const sc of schools) chips.push({ label: sc, test: h => (h.entry as { school?: string }).school === sc });
-		}
-		return chips;
+	/** Type `text` into the box as if typed (coming back to Spotlight). */
+	setQuery(text: string): void {
+		if (this.field) this.field.set(text);
+		else this.inputEl.value = text;
+		this.inputEl.dispatchEvent(new Event('input'));
+		this.inputEl.select();
 	}
 
-	private renderChips(): void {
-		const row = createDiv({ cls: 'nimble-spotlight-chips', attr: { role: 'radiogroup', 'aria-label': 'Filter' } });
-		const draw = () => {
-			row.empty();
-			if (this.pick) row.createDiv({ cls: 'nimble-spotlight-title', text: this.pick.title });
-			if (this.chips.length < 2) return;
-			this.chips.forEach((c, i) => {
-				const b = row.createEl('button', { cls: `nimble-spotlight-chip${i === this.chip ? ' is-active' : ''}`, text: c.label, attr: { role: 'radio', 'aria-checked': String(i === this.chip), tabindex: '-1' } });
-				b.addEventListener('mousedown', (e) => e.preventDefault()); // keep typing in the box
-				b.addEventListener('click', () => { this.chip = i; draw(); this.inputEl.dispatchEvent(new Event('input')); this.inputEl.focus(); });
-			});
+	/**
+	 * Something opened from here (a card, a quick look, the compendium):
+	 * closing it with Escape comes back to Spotlight with the same search, so
+	 * you can look at the next result. Closing it any other way doesn't.
+	 */
+	private escapeBack(modal: Modal): void {
+		// Chips and all: finished filters come back as chips (a trailing space finishes the last one).
+		const query = this.field ? this.field.serialize() : this.inputEl.value;
+		const win = activeWindow;
+		// Obsidian closes a modal on Escape in its own key handler, which runs before any listener of ours.
+		// So note the Escape when it reaches us (just after), and decide once the close has finished.
+		let escaped = false;
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key !== 'Escape') return;
+			escaped = true;
+			// An Escape that only closed a popover inside the modal doesn't count for long.
+			window.setTimeout(() => { if (modal.containerEl.isConnected) escaped = false; }, 0);
 		};
-		draw();
-		this.inputEl.parentElement?.after(row);
-	}
-
-	private picks(input: string): Item[] {
-		const pick = this.pick!;
-		const q = input.trim();
-		const chip = this.chips[this.chip] ?? this.chips[0];
-		const hits = bundledCompendium().search(q, pick.kinds, q ? 80 : 400).filter(h => !chip || chip.test(h));
-		const ordered = orderPicks(hits, q, pick.prefer, pick.isTaken).slice(0, 60);
-		const out: Item[] = ordered.map(hit => ({ kind: 'compendium', hit }));
-		if (pick.allowCustom && q && !ordered.some(h => h.name.toLowerCase() === q.toLowerCase())) out.push({ kind: 'custom', name: q });
-		return out;
-	}
-
-	private customHit(name: string): CompendiumHit {
-		return { kind: this.pick?.kinds[0] ?? 'item', name, detail: '', entry: {} };
+		win.addEventListener('keydown', onKey, true);
+		const close = modal.onClose.bind(modal);
+		modal.onClose = () => {
+			close();
+			window.setTimeout(() => {
+				win.removeEventListener('keydown', onKey, true);
+				if (escaped) this.plugin.openSpotlight(query);
+			}, 0);
+		};
 	}
 
 	private fill(text: string): void {

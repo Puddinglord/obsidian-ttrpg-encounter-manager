@@ -96,6 +96,18 @@ export function chooseSelected(modal: SuggestModal<unknown>, evt: KeyboardEvent)
 	return true;
 }
 
+interface ChooserInternals { chooser?: { selectedItem?: number; setSelectedItem?: (i: number, e?: Event) => void } }
+
+/** Which row of a suggest modal is selected (-1 if unknown). */
+export function suggestSelection(modal: SuggestModal<unknown>): number {
+	return (modal as unknown as ChooserInternals).chooser?.selectedItem ?? -1;
+}
+
+/** Select a row of a suggest modal. */
+export function setSuggestSelection(modal: SuggestModal<unknown>, index: number): void {
+	(modal as unknown as ChooserInternals).chooser?.setSelectedItem?.(index);
+}
+
 /** A command by its full id, from Obsidian's registry (core commands included). */
 export function findCommand(app: App, id: string): Command | undefined {
 	return (app as unknown as AppInternals).commands?.commands?.[id];

@@ -25,7 +25,7 @@ import { closePopover } from './popover';
 import { confirmAction, isTouch, onLongPress } from './touch';
 import { resolvePortrait } from './npc-card';
 import type { EncounterCreature } from './types';
-import { openSpotlight } from './spotlight';
+import { pickFromCompendium } from './compendium-pickers';
 import { CustomFeatureModal } from './character-modals';
 import { RollDialog, RollRequest, Spendable, spendCount } from './roll-dialog';
 import { actionCost, EdgeRollResult, ExtraDice } from './roll-def';
@@ -1028,7 +1028,7 @@ export class CharacterSheetRenderer extends Component {
 		const s = this.sheet;
 		const groups = new Set(this.comp.optionGroups(s.className, s.subclass).map(g => nameKey(g.name)));
 		const taken = new Set(s.features.map(f => nameKey(f.name)));
-		openSpotlight(this.plugin, {
+		pickFromCompendium(this.plugin, {
 			kinds: ['feature', 'boon'],
 			title: `Add a feature to ${s.name}`,
 			prefer: (h) => !!h.group && groups.has(nameKey(h.group)) && nameKey(h.className ?? '') === nameKey(s.className),
@@ -1401,7 +1401,7 @@ export class CharacterSheetRenderer extends Component {
 		const spell = kinds.includes('spell');
 		const known = new Set(s.spells.map(x => nameKey(x.name)));
 		const schools = new Set((s.cls?.casting?.schools ?? []).map(nameKey));
-		openSpotlight(this.plugin, {
+		pickFromCompendium(this.plugin, {
 			kinds,
 			title: spell ? `Add a spell to ${s.name}` : `Add to ${s.name}'s inventory`,
 			prefer: spell ? (h) => schools.has(nameKey((h.entry as { school?: string }).school ?? '')) : undefined,

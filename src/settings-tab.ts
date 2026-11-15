@@ -179,6 +179,11 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					desc: 'The draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells in New character, sheet pickers and Spotlight. Drafts are marked as such wherever they show. A hero who already plays a draft class keeps their whole sheet either way.',
 					render: toggle(() => s.compendiumDrafts, v => { s.compendiumDrafts = v; }, () => { setCompendiumDrafts(s.compendiumDrafts); this.plugin.rerenderNotes(); }),
 				},
+				{
+					name: 'Compendium art folder',
+					desc: 'Where images you upload for compendium entries are saved (click the portrait on any entry\'s page to add one). Moving or renaming an image keeps it linked.',
+					render: (setting) => setting.addText(t => t.setPlaceholder('Ember Vault/Compendium Art').setValue(s.compendiumArtFolder).onChange(async (v) => { s.compendiumArtFolder = v.trim() || 'Ember Vault/Compendium Art'; await save(); })),
+				},
 			] },
 			{ heading: 'Party', rows: this.partyRows() },
 			{ heading: 'Notes', rows: [
