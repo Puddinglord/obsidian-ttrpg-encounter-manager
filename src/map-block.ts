@@ -2,7 +2,7 @@
 // style) and, optionally, the current encounter's combatants as tokens.
 // It's a GM companion, not a virtual tabletop: nothing here is shown to players.
 
-import { App, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
+import { App, DropdownComponent, FuzzyMatch, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { MapDef, mapBlockSource, MapPin, parseMapBlock, PIN_KINDS, PinKind, replaceMapBlock } from './map-def';
 import { EncounterCreature } from './types';
@@ -13,10 +13,22 @@ import { setWarningButton } from './compat';
 import { closePopover, isPopoverOpenFor, openPopover } from './popover';
 
 const PIN_ICON: Record<PinKind, string> = {
-	place: 'map-pin', area: 'flag', encounter: 'swords', npc: 'user', treasure: 'gem', danger: 'skull', note: 'sticky-note', secret: 'eye-off',
+	place: 'map-pin', area: 'flag', encounter: 'swords', npc: 'user', treasure: 'gem', danger: 'skull', note: 'sticky-note', secret: 'eye-off', map: 'map',
 };
 
 type Mode = 'view' | 'add' | 'move';
+
+/**
+ * Where each map was looked at, by note and image. Saving rewrites the note and
+ * Obsidian draws the block again from scratch; this puts the new one back where
+ * the old one was, and a note you come back to (say with Back, after following a
+ * map pin) opens on the same spot. The mode only carries over a quick re-render.
+ */
+interface ViewMemory { scale: number; tx: number; ty: number; height?: number; iw: number; showLabels: boolean }
+const VIEWS = new Map<string, ViewMemory>();
+/** The mode a map was in when it saved, for the copy Obsidian draws next. Taken once, and only soon after. */
+const SAVED_MODE = new Map<string, { mode: Mode; at: number }>();
+const MODE_KEEP_MS = 3000;
 
 export function registerMapBlock(plugin: NimbleStatblocksPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-map', (source, el, ctx) => {
@@ -39,6 +51,8 @@ class MapBlock extends MarkdownRenderChild {
 	private tray!: HTMLElement;
 	private fitted = false;
 	private sized = false;
+	/** The viewport height picked for a tall map, kept when the block redraws. */
+	private height: number | null = null;
 	/** After a double-tap zoom, the synthesized click can land on a pin that moved under the finger. */
 	private quietUntil = 0;
 
@@ -50,6 +64,19 @@ class MapBlock extends MarkdownRenderChild {
 	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 		this.def = parseMapBlock(source);
+		const saved = VIEWS.get(this.mapKey);
+		if (saved) this.showLabels = saved.showLabels;
+		const mode = SAVED_MODE.get(this.mapKey);
+		SAVED_MODE.delete(this.mapKey);
+		if (mode && Date.now() - mode.at < MODE_KEEP_MS) this.mode = mode.mode;
+	}
+
+	/** Hover previews and embeds are small copies: they neither restore nor overwrite the remembered view. */
+	private get remembers(): boolean { return !this.containerEl.closest('.hover-popover, .popover, .markdown-embed'); }
+
+	private remember(): void {
+		if (!this.remembers || !this.fitted || !this.img?.naturalWidth) return;
+		VIEWS.set(this.mapKey, { scale: this.scale, tx: this.tx, ty: this.ty, height: this.height ?? undefined, iw: this.img.naturalWidth, showLabels: this.showLabels });
 	}
 
 	/** Embeds and hover previews don't get section info, so pins can't be saved from there. */
@@ -106,7 +133,7 @@ class MapBlock extends MarkdownRenderChild {
 		}
 		const labels = bar.createEl('button', { cls: `nimble-map-btn${this.showLabels ? ' is-active' : ''}`, attr: { 'aria-label': 'Show pin labels', 'aria-pressed': String(this.showLabels) } });
 		setIcon(labels.createSpan(), 'tag');
-		labels.onclick = () => { this.showLabels = !this.showLabels; this.root?.toggleClass('hide-labels', !this.showLabels); labels.toggleClass('is-active', this.showLabels); };
+		labels.onclick = () => { this.showLabels = !this.showLabels; this.root?.toggleClass('hide-labels', !this.showLabels); labels.toggleClass('is-active', this.showLabels); this.remember(); };
 		bar.createDiv({ cls: 'nimble-map-spacer' });
 		const zoom = (icon: string, label: string, fn: () => void) => {
 			const b = bar.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': label } });
@@ -124,9 +151,10 @@ class MapBlock extends MarkdownRenderChild {
 		const body = root.createDiv({ cls: 'nimble-map-body' });
 		this.viewport = body.createDiv({ cls: `nimble-map-viewport mode-${this.mode}` });
 		this.viewport.tabIndex = 0;
+		if (this.height) this.viewport.style.height = `${this.height}px`;
 		this.stage = this.viewport.createDiv({ cls: 'nimble-map-stage' });
 		this.img = this.stage.createEl('img', { attr: { src, alt: this.def.image, draggable: 'false' } });
-		if (this.def.grid) {
+		if (this.def.grid?.cols && this.def.grid.rows) {
 			const grid = this.stage.createDiv({ cls: 'nimble-map-grid' });
 			grid.style.backgroundSize = `${100 / this.def.grid.cols}% ${100 / this.def.grid.rows}%`;
 		}
@@ -135,10 +163,10 @@ class MapBlock extends MarkdownRenderChild {
 		this.tray = body.createDiv({ cls: 'nimble-map-tray' });
 		this.root?.toggleClass('hide-labels', !this.showLabels);
 
-		this.img.onload = () => { if (!this.fitted) this.fit(); else this.apply(); };
-		if (this.img.complete && this.img.naturalWidth) this.fit();
+		this.img.onload = () => this.place();
+		if (this.img.complete && this.img.naturalWidth) this.place();
 		// Maps in collapsed callouts, hidden tabs or a rotating phone get their size late.
-		const ro = new ResizeObserver(() => { if (!this.fitted) this.fit(); });
+		const ro = new ResizeObserver(() => { if (!this.fitted) this.place(); });
 		ro.observe(this.viewport);
 		this.register(() => ro.disconnect());
 		this.wirePanZoom();
@@ -164,6 +192,30 @@ class MapBlock extends MarkdownRenderChild {
 		this.root?.toggleClass('is-zoomed-out', this.scale * (this.img?.naturalWidth || 0) < 1600);
 		// Pins and tokens keep a constant on-screen size.
 		this.stage.style.setProperty('--nimble-map-inv', String(1 / this.scale));
+		this.remember();
+	}
+
+	/** Size the stage to the image, then keep the current view, restore a remembered one, or fit. */
+	private place(): void {
+		const iw = this.img.naturalWidth;
+		const ih = this.img.naturalHeight;
+		// Not on the page yet (or hidden): the resize observer calls again once it has a size.
+		if (!iw || !this.viewport.isConnected || !this.viewport.clientWidth) return;
+		if (!this.fitted && this.remembers) {
+			const saved = VIEWS.get(this.mapKey);
+			if (saved && saved.iw === iw) {
+				this.scale = saved.scale;
+				this.tx = saved.tx;
+				this.ty = saved.ty;
+				this.sized = true;
+				if (saved.height && !this.viewport.doc.body.hasClass('is-phone')) { this.height = saved.height; this.viewport.style.height = `${saved.height}px`; }
+				this.fitted = true;
+			}
+		}
+		if (!this.fitted) { this.fit(); return; }
+		this.stage.style.width = `${iw}px`;
+		this.stage.style.height = `${ih}px`;
+		this.apply();
 	}
 
 	private fit(): void {
@@ -176,7 +228,7 @@ class MapBlock extends MarkdownRenderChild {
 		if (!this.sized && !this.viewport.doc.body.hasClass('is-phone') && ih > 0) {
 			this.sized = true;
 			const want = Math.round(Math.max(360, Math.min(window.innerHeight * 0.8, vw * (ih / iw))));
-			if (Math.abs(want - vh) > 40) { this.viewport.style.height = `${want}px`; this.fit(); return; }
+			if (Math.abs(want - vh) > 40) { this.height = want; this.viewport.style.height = `${want}px`; this.fit(); return; }
 		}
 		this.stage.style.width = `${iw}px`;
 		this.stage.style.height = `${ih}px`;
@@ -359,7 +411,7 @@ class MapBlock extends MarkdownRenderChild {
 			if (pin.link) pop.createDiv({ cls: 'popover-body', text: pin.link.replace('#', ' › ') });
 			const row = pop.createDiv({ cls: 'pin-card-actions' });
 			if (pin.link) {
-				const open = row.createEl('button', { cls: 'mod-cta', text: 'Open note' });
+				const open = row.createEl('button', { cls: 'mod-cta', text: pin.kind === 'map' ? 'Open map' : 'Open note' });
 				open.onclick = () => { close(); void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false); };
 			}
 			if (!this.canSave()) return;
@@ -413,6 +465,8 @@ class MapBlock extends MarkdownRenderChild {
 
 	/** Write the pins back into the note's code block. */
 	private async save(): Promise<void> {
+		this.remember();
+		if (this.remembers) SAVED_MODE.set(this.mapKey, { mode: this.mode, at: Date.now() });
 		this.renderPins();
 		const info = this.ctx.getSectionInfo(this.containerEl);
 		const file = this.app.vault.getAbstractFileByPath(this.ctx.sourcePath);
@@ -571,19 +625,24 @@ class PinModal extends Modal {
 			t.inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') this.submit(); });
 		});
 		let linkInput: HTMLInputElement | null = null;
-		new Setting(c).setName('Links to').setDesc('A note, or a heading in one: Part 1#3. Kennel')
+		let kindDropdown: DropdownComponent | null = null;
+		new Setting(c).setName('Links to').setDesc('A note, a heading in one (Part 1#3. Kennel), or another map')
 			.addText(t => {
 				linkInput = t.inputEl;
 				t.setValue(this.pin.link ?? '').setPlaceholder('Note name#Heading').onChange(v => { this.pin.link = v.replace(/^\[\[|\]\]$/g, '').trim() || undefined; });
 			})
-			.addButton(b => b.setButtonText('Pick…').onClick(() => {
-				new NoteSuggest(this.app, (path) => {
-					this.pin.link = path;
-					if (linkInput) linkInput.value = path;
-					if (!this.pin.label && labelInput) { this.pin.label = path.split('#').pop()!.split('/').pop()!; labelInput.value = this.pin.label; }
+			.addButton(b => b.setButtonText('Pick…').onClick(async () => {
+				const maps = await mapNotePaths(this.app);
+				new NoteSuggest(this.app, maps, (item) => {
+					this.pin.link = item.text;
+					if (linkInput) linkInput.value = item.text;
+					if (!this.pin.label && labelInput) { this.pin.label = item.text.split('#').pop()!.split('/').pop()!; labelInput.value = this.pin.label; }
+					// A pin to a map note is a map pin: it drills down into that map.
+					if (item.isMap) { this.pin.kind = 'map'; kindDropdown?.setValue('map'); }
 				}).open();
 			}));
 		new Setting(c).setName('Kind').addDropdown(d => {
+			kindDropdown = d;
 			for (const k of PIN_KINDS) d.addOption(k, k[0].toUpperCase() + k.slice(1));
 			d.setValue(this.pin.kind).onChange(v => { this.pin.kind = v as PinKind; });
 		});
@@ -603,22 +662,56 @@ class PinModal extends Modal {
 	onClose(): void { this.contentEl.empty(); }
 }
 
-/** Notes and their headings, to link a pin to. */
-class NoteSuggest extends FuzzySuggestModal<string> {
-	constructor(app: App, private choose: (link: string) => void) {
+/** Is this note a map: `nimble: map` in its frontmatter? (Notes that only hold a block are found by `mapNotePaths`.) */
+export function isMapNoteByFrontmatter(app: App, file: TFile): boolean {
+	const kind: unknown = app.metadataCache.getFileCache(file)?.frontmatter?.nimble;
+	return typeof kind === 'string' && kind.trim().toLowerCase() === 'map';
+}
+
+/** Paths of every map note: `nimble: map` in the frontmatter, or a ```nimble-map block in the text. */
+export async function mapNotePaths(app: App): Promise<Set<string>> {
+	const out = new Set<string>();
+	await Promise.all(app.vault.getMarkdownFiles().map(async (f) => {
+		if (isMapNoteByFrontmatter(app, f)) { out.add(f.path); return; }
+		// Only notes with a code block can hold a map; read just those (cachedRead is cheap after the first time).
+		if (!app.metadataCache.getFileCache(f)?.sections?.some(s => s.type === 'code')) return;
+		if (/^[ \t>]*(?:[-*+][ \t]+)?(?:`{3,}|~{3,})[ \t]*nimble-map\b/m.test(await app.vault.cachedRead(f))) out.add(f.path);
+	}));
+	return out;
+}
+
+interface NoteItem { text: string; isMap: boolean }
+
+/** Notes and their headings, to link a pin to. Map notes come first, with a map icon. */
+class NoteSuggest extends FuzzySuggestModal<NoteItem> {
+	constructor(app: App, private maps: Set<string>, private choose: (item: NoteItem) => void) {
 		super(app);
-		this.setPlaceholder('Link the pin to a note or heading…');
+		this.setPlaceholder('Link the pin to a note, a heading or a map…');
 	}
 
-	getItems(): string[] {
-		const items: string[] = [];
+	getItems(): NoteItem[] {
+		const maps: NoteItem[] = [];
+		const rest: NoteItem[] = [];
 		for (const f of this.app.vault.getMarkdownFiles()) {
-			items.push(f.basename);
-			for (const h of this.app.metadataCache.getFileCache(f)?.headings ?? []) items.push(`${f.basename}#${h.heading}`);
+			const isMap = this.maps.has(f.path);
+			(isMap ? maps : rest).push({ text: f.basename, isMap });
+			for (const h of this.app.metadataCache.getFileCache(f)?.headings ?? []) rest.push({ text: `${f.basename}#${h.heading}`, isMap: false });
 		}
-		return items;
+		return [...maps, ...rest];
 	}
 
-	getItemText(item: string): string { return item; }
-	onChooseItem(item: string): void { this.choose(item); }
+	getSuggestions(query: string): FuzzyMatch<NoteItem>[] {
+		// Matching map notes before everything else, best match first within each group.
+		const all = super.getSuggestions(query);
+		return [...all.filter(m => m.item.isMap), ...all.filter(m => !m.item.isMap)];
+	}
+
+	renderSuggestion(match: FuzzyMatch<NoteItem>, el: HTMLElement): void {
+		el.addClass('nimble-note-suggest');
+		if (match.item.isMap) setIcon(el.createSpan({ cls: 'nimble-note-suggest-icon' }), 'map');
+		super.renderSuggestion(match, el.createSpan({ cls: 'nimble-note-suggest-text' }));
+	}
+
+	getItemText(item: NoteItem): string { return item.text; }
+	onChooseItem(item: NoteItem): void { this.choose(item); }
 }

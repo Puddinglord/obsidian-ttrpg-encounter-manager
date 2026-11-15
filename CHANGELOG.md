@@ -6,6 +6,16 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ## [Unreleased]
 
+### Added
+
+- Map pins can link to other maps. Pick a map note in the pin's **Links to** picker (map notes are listed first, with a map icon) and the pin becomes a **map** pin; clicking it opens that map in the same tab, so Back takes you up again.
+- Map blocks understand new optional keys (`grid: hex`, `cell`, `offset`, `show-grid`, `scale`, `travel`, `party` and `drawings`), ready for grids, the party marker and drawing.
+
+### Fixed
+
+- Saving a map (adding, moving or editing a pin) no longer deletes lines from the block that Ember Vault doesn't know about, and lines you didn't change are written back exactly as you typed them.
+- A map keeps its zoom and position after you add or move a pin, and when you switch between Add pin and Move pins, instead of jumping back to the whole map. Coming back to a map's note puts you where you were.
+
 ## [1.3.0] - 2026-11-15
 
 ### Added

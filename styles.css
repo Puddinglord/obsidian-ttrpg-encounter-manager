@@ -826,6 +826,10 @@ body {
 .nimble-map-pin.kind-danger .nimble-map-pin-icon { background: #7a1f1f; }
 .nimble-map-pin.kind-note .nimble-map-pin-icon { background: #5a6270; }
 .nimble-map-pin.kind-secret .nimble-map-pin-icon { background: #333; }
+.nimble-map-pin.kind-map .nimble-map-pin-icon { background: #2b7a8c; }
+.nimble-note-suggest { display: flex; align-items: center; gap: 0.4rem; }
+.nimble-note-suggest-icon { display: flex; color: var(--text-accent); }
+.nimble-note-suggest-icon svg { width: 14px; height: 14px; }
 .nimble-map-token { width: 0; height: 0; z-index: 3; cursor: grab; }
 .nimble-map-token .nimble-map-token-text, .nimble-map-token.in-tray .nimble-map-token-text { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; font-size: 11px; font-weight: 800; color: #111; background: var(--nimble-hp); border: 2px solid #111; box-shadow: 0 2px 5px rgba(0,0,0,.5); }
 .nimble-map-tokens .nimble-map-token .nimble-map-token-text { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%) scale(var(--nimble-map-inv)); }

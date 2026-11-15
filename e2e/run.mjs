@@ -4334,6 +4334,98 @@ test('pills: every icon and label sits on its pill centre line (within 1px)', as
 	assert.deepEqual(bad, [], 'misaligned pills');
 });
 
+// ---------------------------------------------------------------------------
+// Travel maps
+
+/** Draw a plain textured image in Obsidian and save it to the vault (fresh each time). */
+async function makeMapImage(o, path, w = 1200, h = 900) {
+	await o.eval(async (app, _p, [path, w, h]) => {
+		const old = app.vault.getAbstractFileByPath(path);
+		if (old) await app.vault.delete(old);
+		const c = document.createElement('canvas');
+		c.width = w; c.height = h;
+		const g = c.getContext('2d');
+		g.fillStyle = '#6b8f5a'; g.fillRect(0, 0, w, h);
+		for (let i = 0; i < 400; i++) { g.fillStyle = `hsl(${90 + (i % 40)}, 30%, ${30 + (i % 25)}%)`; g.fillRect((i * 97) % w, (i * 53) % h, 18, 18); }
+		const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+		await app.vault.createBinary(path, await blob.arrayBuffer());
+	}, [path, w, h]);
+}
+
+const stageScale = (map) => map.locator('.nimble-map-stage').evaluate(el => Number(/scale\(([\d.]+)\)/.exec(el.style.transform)?.[1] ?? 0));
+
+test('map v2: new keys and unknown lines survive a pin edit, the view stays put, and a map pin drills into its map', async (o) => {
+	await resetEncounter(o);
+	await makeMapImage(o, 'travel-map.png');
+	const BODY = [
+		'```nimble-map',
+		'image: [[travel-map.png]]',
+		'grid: hex',
+		'cell: 4',
+		'offset: 2, 3',
+		'show-grid: no',
+		'scale: 6 miles',
+		'travel: 1 quarter',
+		'tint: sepia',
+		'party: 41.2, 37.9',
+		'pins:',
+		'- 20, 20 | Balbom | [[Balbom]]',
+		'drawings:',
+		'- route | #ffffff | 3 | 61.2,38.1 62,40.3 63.4,44',
+		'```',
+		'',
+	].join('\n');
+	await o.eval(async (app, _p, body) => {
+		for (const f of ['Map v2.md', 'Low Road.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+		await app.vault.create('Map v2.md', body);
+		await app.vault.create('Low Road.md', '---\nnimble: map\n---\n\n```nimble-map\nimage: [[travel-map.png]]\npins:\n```\n');
+	}, BODY);
+	await o.openFile('Map v2.md', 'preview');
+	const map = o.page.locator(`${R} .nimble-map`).first();
+	await o.waitFor(async () => (await map.locator('button[aria-label="Add pin"]').count()) === 1, { what: 'the map toolbar' });
+	await o.waitFor(async () => (await stageScale(map)) > 0, { what: 'the map to fit' });
+
+	// Zoom in, then add a pin: the redraw after saving keeps the zoom and the mode.
+	await map.locator('button[aria-label="Zoom in"]').click();
+	await map.locator('button[aria-label="Zoom in"]').click();
+	const zoomed = await stageScale(map);
+	await map.locator('button[aria-label="Add pin"]').click();
+	const view = map.locator('.nimble-map-viewport');
+	await view.evaluate(el => el.scrollIntoView({ block: 'center' }));
+	await o.page.waitForTimeout(200);
+	const box = await view.boundingBox();
+	await o.page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5);
+	const modal = o.page.locator('.modal', { hasText: 'New pin' });
+	await modal.locator('button', { hasText: 'Pick…' }).click();
+	await o.page.keyboard.type('Low Road');
+	const first = o.page.locator('.prompt .suggestion-item').first();
+	await o.waitFor(async () => (await first.innerText()).includes('Low Road'), { what: 'the note picker' });
+	assert.equal(await first.locator('.nimble-note-suggest-icon svg').count(), 1, 'map notes show a map icon');
+	await o.page.keyboard.press('Enter');
+	assert.equal(await modal.locator('select').inputValue(), 'map', 'picking a map note makes it a map pin');
+	await modal.locator('button', { hasText: 'Save' }).click();
+	await o.waitFor(async () => (await read(o, 'Map v2.md')).includes('| Low Road | [[Low Road]] | map'), { what: 'the map pin to save' });
+	const text = await read(o, 'Map v2.md');
+	for (const line of BODY.split('\n').filter(l => l && !l.startsWith('```'))) assert.ok(text.includes(line), `"${line}" is still in the block:\n${text}`);
+
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map .nimble-map-pin`).count()) === 2, { what: 'the map to redraw' });
+	const after = o.page.locator(`${R} .nimble-map`).first();
+	assert.ok(Math.abs((await stageScale(after)) - zoomed) < 0.001, 'the zoom survived the save');
+	assert.equal(await after.locator('button[aria-label="Add pin"]').getAttribute('aria-pressed'), 'true', 'still adding pins');
+
+	// A map pin opens its map in the same tab; Back returns to this map at the same zoom.
+	await after.locator('button[aria-label="Add pin"]').click();
+	const tabs = await o.eval((app) => app.workspace.getLeavesOfType('markdown').length);
+	await o.page.locator(`${R} .nimble-map-pin.kind-map .nimble-map-pin-icon`).first().click();
+	await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === 'Low Road.md', { what: 'the map note to open' });
+	assert.equal(await o.eval((app) => app.workspace.getLeavesOfType('markdown').length), tabs, 'opened in the same tab');
+	await o.eval((app) => app.commands.executeCommandById('app:go-back'));
+	await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === 'Map v2.md', { what: 'Back to the first map' });
+	const back = o.page.locator(`${R} .nimble-map`).first();
+	await o.waitFor(async () => Math.abs((await stageScale(back)) - zoomed) < 0.001, { what: 'the remembered zoom' });
+	await o.eval(async (app) => { for (const f of ['Map v2.md', 'Low Road.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); } });
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);
