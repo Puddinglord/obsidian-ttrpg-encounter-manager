@@ -1,7 +1,8 @@
 // The Campaign panel (left sidebar): switch campaigns, see the party, pick up
 // where you left off, and move through chapters and scenes.
 
-import { ItemView, MarkdownPostProcessorContext, MarkdownRenderChild, Platform, setIcon, WorkspaceLeaf } from 'obsidian';
+import { Component, ItemView, MarkdownPostProcessorContext, MarkdownRenderChild, Platform, setIcon, WorkspaceLeaf } from 'obsidian';
+import { renderClock } from './clock-ui';
 import type NimbleStatblocksPlugin from '../main';
 import { campaignMenu, renderOutline, renderPartyLine } from './campaign-ui';
 import { ROLE_INFO } from './campaign-modals';
@@ -10,6 +11,8 @@ export const CAMPAIGN_VIEW_TYPE = 'nimble-campaign';
 
 export class CampaignView extends ItemView {
 	private collapsed = new Set<string>();
+	/** What the last render registered (the clock's listener): unloaded on the next render. */
+	private drawn: Component | null = null;
 
 	constructor(leaf: WorkspaceLeaf, private plugin: NimbleStatblocksPlugin) {
 		super(leaf);
@@ -64,6 +67,9 @@ export class CampaignView extends ItemView {
 		}
 
 		renderPartyLine(root, this.plugin, c);
+		if (this.drawn) this.removeChild(this.drawn);
+		this.drawn = this.addChild(new Component());
+		renderClock(root, this.plugin, c, this.drawn, 'panel');
 		renderOutline(root.createDiv({ cls: 'campaign-outline' }), this.plugin, c, {
 			current: this.app.workspace.getActiveFile()?.path,
 			collapsed: this.collapsed,

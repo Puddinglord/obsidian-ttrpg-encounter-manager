@@ -4697,6 +4697,110 @@ test('drawing: a route survives a reload; pen strokes are simplified; eraser, un
 	await o.eval(async (app, _p, note) => { const x = app.vault.getAbstractFileByPath(note); if (x) await app.vault.delete(x); }, NOTE);
 });
 
+const CLOCK_FOLDER = 'Campaigns/Clockwork';
+const QUARTERS = '---\nnimble: calendar\n---\n\n```nimble-calendar\nname: Quarters\nsegments: Morning 6, Day 12, Evening 18, Night 0\nstep: segment\nquick:\n- Camp | until Morning\n```\n';
+
+async function clockCampaign(o, worldDate = 'day 14 06:00') {
+	await o.eval(async (app, plugin, [folder, quarters, wd]) => {
+		const old = app.vault.getAbstractFileByPath(folder);
+		if (old) await app.vault.delete(old, true);
+		await app.vault.createFolder(folder);
+		await app.vault.create(`${folder}/Clockwork.md`, `---\nnimble: campaign\ncalendar: "[[Quarters]]"\nworld-date: ${wd}\n---\n\n# Clockwork\n`);
+		await app.vault.create(`${folder}/Quarters.md`, quarters);
+		await app.vault.createFolder(`${folder}/Sessions`);
+		await app.vault.create(`${folder}/Sessions/Session 1.md`, '---\nnimble: session\nworld-date: day 10 06:00\n---\n');
+		await app.vault.create(`${folder}/Road.md`, '---\nnimble: map\n---\n\n```nimble-map\nimage: [[hex-world.png]]\ngrid: hex\ncell: 4\noffset: 2.3125, 3.41667\nscale: 6 miles\ntravel: 1 quarter\nparty: 46.31, 40.37\npins:\n```\n\n```nimble-clock\n```\n');
+	}, [CLOCK_FOLDER, QUARTERS, worldDate]);
+	await o.waitFor(async () => o.eval((app, plugin, folder) => !!plugin.campaigns.campaigns.find(c => c.folder === folder), CLOCK_FOLDER), { what: 'the campaign to be indexed' });
+	await o.eval(async (app, plugin, folder) => { await plugin.campaigns.setActive(folder); }, CLOCK_FOLDER);
+}
+const homeDate = (o) => o.eval((app) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath('Campaigns/Clockwork/Clockwork.md'))?.frontmatter?.['world-date']);
+async function dropClockCampaign(o) {
+	await o.eval(async (app, plugin, folder) => {
+		await plugin.campaigns.setActive(null);
+		const x = app.vault.getAbstractFileByPath(folder);
+		if (x) await app.vault.delete(x, true);
+		delete plugin.settings.clockHistory?.[folder];
+	}, CLOCK_FOLDER);
+}
+
+test('campaign clock: advance from the Campaign panel and every clock follows (map chip, nimble-clock block); undo, typed lengths, the month view, sessions', async (o) => {
+	await resetEncounter(o);
+	await clockCampaign(o);
+	try {
+		await o.openFile(`${CLOCK_FOLDER}/Road.md`, 'preview');
+		await o.eval((app, plugin) => plugin.openCampaignView());
+		const panel = o.page.locator('.nimble-campaign-view .nimble-clock.is-panel');
+		const chip = o.page.locator(`${R} .nimble-map-clock .nimble-clock-date`);
+		const block = o.page.locator(`${R} .nimble-clock.is-block .nimble-clock-date`);
+		await o.waitFor(async () => (await panel.count()) === 1 && (await chip.count()) === 1 && (await block.count()) === 1, { what: 'all three clocks' });
+		const all = async () => [await panel.locator('.nimble-clock-date').innerText(), await chip.innerText(), await block.innerText()];
+		await o.waitFor(async () => (await all()).every(t => t === 'Day 14 · Morning'), { what: 'the clocks to read Day 14, Morning' });
+
+		// +1 quarter from the panel.
+		await panel.locator('.nimble-clock-plus').click();
+		const pop = o.page.locator('.nimble-popover.nimble-clock-pop');
+		await pop.waitFor();
+		const bad = await o.page.evaluate(pillOffenders, { root: '.nimble-popover.nimble-clock-pop', tolerance: 1, selectors: PILL_SELECTORS });
+		assert.deepEqual(bad, [], 'clock buttons are centred');
+		await pop.locator('button.nimble-clock-step', { hasText: '+1 quarter' }).click();
+		await o.waitFor(async () => (await homeDate(o)) === 'day 14 12:00', { what: 'the home note to move to midday' });
+		await o.waitFor(async () => (await all()).every(t => t === 'Day 14 · Day'), { what: 'every clock to follow' });
+
+		// Undo, then a typed length and a quick jump.
+		await pop.locator('button', { hasText: 'Undo +1 quarter' }).click();
+		await o.waitFor(async () => (await homeDate(o)) === 'day 14 06:00', { what: 'Undo' });
+		await pop.locator('.nimble-clock-field input').fill('+1 day 6 hours');
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await homeDate(o)) === 'day 15 12:00', { what: 'the typed length' });
+		await pop.locator('button.nimble-clock-step', { hasText: 'Camp' }).click();
+		await o.waitFor(async () => (await homeDate(o)) === 'day 16 06:00', { what: 'Camp until Morning' });
+		await o.waitFor(async () => (await all()).every(t => t === 'Day 16 · Morning'), { what: 'the clocks after camping' });
+		await o.page.keyboard.press('Escape');
+
+		// The Sessions list shows each session's span; a new session starts today.
+		await o.waitFor(async () => (await o.page.locator('.nimble-campaign-view .campaign-session-date').first().innerText().catch(() => '')) === 'Day 10 → 16', { what: 'the session span' });
+		const made = await o.eval(async (app, plugin, folder) => {
+			const c = plugin.campaigns.campaigns.find(x => x.folder === folder);
+			const f = await plugin.campaigns.createInSection(c, 'session', 'Session 2');
+			return app.vault.read(f);
+		}, CLOCK_FOLDER);
+		assert.match(made, /^world-date: day 16 06:00$/m, 'the new session starts at the campaign date');
+		assert.match(made, /^date: \d{4}-\d\d-\d\d$/m, 'and keeps the real-world date');
+
+		// The calendar note: a page of days with today marked and the dated notes on their days.
+		await o.openFile(`${CLOCK_FOLDER}/Quarters.md`, 'preview');
+		const cal = o.page.locator(`${R} .nimble-calendar`);
+		await o.waitFor(async () => (await cal.locator('.nimble-calendar-day.is-today').count()) === 1, { what: 'the calendar page' });
+		assert.equal(await cal.locator('.nimble-calendar-day.is-today .nimble-calendar-num').innerText(), '16');
+		assert.ok((await cal.locator('.nimble-calendar-day', { hasText: 'Session 1' }).locator('.nimble-calendar-num').innerText()) === '10', 'Session 1 is on day 10');
+
+		// At phone width the clock's popover is a bottom sheet with thumb-sized buttons.
+		const p = o.page;
+		const cdp = await p.context().newCDPSession(p);
+		await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+		await o.eval((app) => app.emulateMobile(true));
+		await p.waitForTimeout(1000);
+		try {
+			await o.openFile(`${CLOCK_FOLDER}/Road.md`, 'preview');
+			await p.locator(`${R} .nimble-clock.is-block .nimble-clock-plus`).click();
+			const sheet = p.locator('.nimble-popover.nimble-clock-pop.is-sheet');
+			await sheet.waitFor();
+			const small = await sheet.evaluate(el => [...el.querySelectorAll('button')].filter(b => b.getBoundingClientRect().height < 36).map(b => b.textContent));
+			assert.deepEqual(small, [], 'clock buttons are big enough to tap');
+			const spill = await sheet.evaluate(el => el.scrollWidth > el.clientWidth + 1);
+			assert.equal(spill, false, 'nothing spills sideways');
+			await p.keyboard.press('Escape');
+		} finally {
+			await o.eval((app) => app.emulateMobile(false));
+			await cdp.send('Emulation.clearDeviceMetricsOverride');
+			await p.waitForTimeout(800);
+		}
+	} finally {
+		await dropClockCampaign(o);
+	}
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);

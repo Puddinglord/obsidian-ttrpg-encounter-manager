@@ -3651,16 +3651,68 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip, .nimble-clock-step):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip, .nimble-clock-step):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip, .nimble-clock-step):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* ===== end Character sheet & compendium ===== */
+
+/* ===== Campaign clock and calendars ===== */
+.nimble-clock { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+.nimble-clock-icon { display: flex; color: var(--text-accent); flex: none; }
+.nimble-clock-icon svg { width: 16px; height: 16px; }
+.nimble-clock-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.nimble-clock-date { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.nimble-clock-cal { font-size: 0.75rem; color: var(--text-muted); }
+.nimble-clock .nimble-clock-plus { flex: none; width: 1.7rem; height: 1.7rem; padding: 0; border-radius: 999px; }
+.nimble-clock.is-panel { margin: 0 0 0.6rem; padding: 0.4rem 0.4rem 0.4rem 0.6rem; border-radius: var(--radius-m); background: var(--background-secondary-alt); font-size: 0.85rem; }
+.nimble-clock.is-block { margin: 0.75rem 0; padding: 0.6rem 0.6rem 0.6rem 0.8rem; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); background: var(--background-secondary); }
+.nimble-clock.is-block .nimble-clock-date { font-size: 1.05rem; }
+.nimble-clock.is-block .nimble-clock-icon svg { width: 20px; height: 20px; }
+.nimble-map-clock { position: absolute; top: 0.5rem; right: 0.5rem; z-index: 8; max-width: calc(100% - 1rem); }
+.nimble-clock.is-chip { gap: 0.2rem; padding: 0.15rem 0.2rem 0.15rem 0.7rem; border-radius: 999px; background: rgba(0, 0, 0, 0.72); color: #fff; font-size: 0.8rem; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); }
+.nimble-clock.is-chip .nimble-clock-plus { width: 1.5rem; height: 1.5rem; color: #fff; }
+.nimble-clock.is-chip .nimble-clock-plus:hover { background: rgba(255, 255, 255, 0.18); }
+.nimble-clock-pop .nimble-clock-now { margin-bottom: 0.5rem; }
+.nimble-clock-steps, .nimble-clock-quick { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.5rem; }
+.nimble-clock-quick { padding-top: 0.45rem; border-top: 1px solid var(--background-modifier-border); }
+.nimble-clock-pop button.nimble-clock-step { height: 1.9rem; padding: 0 0.7rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+.nimble-clock-field { display: flex; gap: 0.35rem; margin-bottom: 0.35rem; }
+.nimble-clock-field input { flex: 1; min-width: 0; }
+.nimble-clock-error, .nimble-clock-hint { font-size: 0.75rem; color: var(--text-muted); }
+.nimble-clock-error:empty { display: none; }
+.nimble-clock-error, .nimble-clock-hint.is-error { color: var(--text-error); }
+.nimble-clock-foot { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.4rem 0; }
+.nimble-clock-calendar { font-size: 0.75rem; color: var(--text-muted); }
+.campaign-session-date { flex: none; margin-left: 0.4rem; font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+body.is-phone .nimble-clock-pop button.nimble-clock-step { height: 2.4rem; padding: 0 0.9rem; }
+body.is-phone .nimble-clock .nimble-clock-plus { width: 2.2rem; height: 2.2rem; }
+body.is-phone .nimble-clock-foot button, body.is-phone .nimble-clock-field button { height: 2.4rem; }
+body.is-phone .nimble-clock-field input { height: 2.4rem; }
+/* A calendar note: one month at a time. */
+.nimble-calendar { margin: 0.75rem 0; }
+.nimble-calendar-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.nimble-calendar-name { font-size: 1.15rem; font-weight: 700; }
+.nimble-calendar-now { font-size: 0.85rem; color: var(--text-muted); }
+.nimble-calendar-nav { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.4rem; }
+.nimble-calendar-title { flex: 1; text-align: center; font-weight: 600; }
+.nimble-calendar-grid { display: grid; grid-template-columns: repeat(var(--cal-cols, 7), minmax(0, 1fr)); gap: 2px; }
+.nimble-calendar-wd { padding: 0.15rem 0; text-align: center; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-calendar-day { min-height: 3.6rem; padding: 0.2rem 0.3rem; border-radius: 6px; background: var(--background-secondary); overflow: hidden; }
+.nimble-calendar-day.is-blank { background: transparent; }
+.nimble-calendar-day.is-today { box-shadow: inset 0 0 0 2px var(--interactive-accent); background: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-secondary)); }
+.nimble-calendar-num { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+.nimble-calendar-day.is-today .nimble-calendar-num { color: var(--text-accent); }
+.nimble-calendar-note { display: block; font-size: 0.72rem; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-calendar-hint { margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); }
+body.is-phone .nimble-calendar-day { min-height: 2.8rem; padding: 0.15rem; }
+body.is-phone .nimble-calendar-note { font-size: 0.65rem; }
+
 
 /* ============================================
    PRINT / PDF EXPORT: no controls on paper

@@ -267,6 +267,10 @@ export interface NimbleStatblocksSettings {
 	mapTokens?: Record<string, Record<string, { x: number; y: number }>>;
 	/** How strongly map grid lines are drawn, 0–1. */
 	mapGridOpacity: number;
+	/** Show the campaign clock as a chip on maps. */
+	mapClock: boolean;
+	/** The campaign clock's last changes per campaign folder (newest last), for Undo. */
+	clockHistory?: Record<string, { from: number; to: number; at: number; label?: string }[]>;
 	settingsVersion: number;
 }
 
@@ -302,6 +306,7 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	compendiumArt: {},
 	compendiumArtFolder: 'Ember Vault/Compendium Art',
 	mapGridOpacity: DEFAULT_GRID_OPACITY,
+	mapClock: true,
 	rollDialog: true,
 	classDice: { color: '#d4a72c', finish: 'metal' },
 	autoLinkNpcs: true,

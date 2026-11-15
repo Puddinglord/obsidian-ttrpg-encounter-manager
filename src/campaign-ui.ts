@@ -18,6 +18,7 @@ import { draggedPaths, startFileDrag } from './internals';
 import { createCharacterNote, NewCharacterModal } from './character-modals';
 import { handEnteredLeft, PartyMember } from './types';
 import { confirmAction, onLongPress } from './touch';
+import { formatSpan } from './calendar-def';
 
 export const KIND_ICON: Record<NoteKind, string> = {
 	campaign: 'castle', chapter: 'book-marked', scene: 'clapperboard', map: 'map', npc: 'user-round', location: 'map-pin',
@@ -390,7 +391,8 @@ function renderSection(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campa
 		else iconBtn(h, 'plus', `New in ${s.name}`, () => promptNew(plugin, c, s.folder, opts), 'campaign-add-scene');
 	}, (b) => {
 		const notes = s.name === 'Sessions' ? [...s.notes].reverse() : s.notes;
-		for (const n of notes) noteRow(b, plugin, c, n, opts);
+		const rows = notes.map(n => noteRow(b, plugin, c, n, opts));
+		if (s.name === 'Sessions') void sessionDates(plugin, c, s.notes, rows.reverse());
 		for (const f of s.files) fileRow(b, plugin, c, f, opts);
 		if (!s.notes.length && !s.files.length) {
 			const empty = b.createDiv({ cls: 'campaign-empty' });
@@ -407,6 +409,20 @@ function renderSection(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campa
 	});
 	onLongPress(h, (e) => sectionMenu(plugin, c, s, e, opts));
 	dropTarget(g, plugin, s.folder);
+}
+
+/**
+ * "Day 14 → 17" beside each session: its `world-date`, to the next session's
+ * (or, for the latest, to now). Sessions without a world-date show nothing.
+ */
+async function sessionDates(plugin: NimbleStatblocksPlugin, c: Campaign, notes: NoteRef[], rows: HTMLElement[]): Promise<void> {
+	const st = await plugin.clock.state(c);
+	const dates = await Promise.all(notes.map(n => plugin.clock.noteDate(c, n.path)));
+	dates.forEach((d, i) => {
+		if (d === null || !rows[i]?.isConnected) return;
+		const next = dates.slice(i + 1).find((x): x is number => x !== null) ?? (st.now > d ? st.now : null);
+		rows[i].createSpan({ cls: 'campaign-session-date', text: formatSpan(st.calendar, d, next) });
+	});
 }
 
 // ---------------------------------------------------------------------------

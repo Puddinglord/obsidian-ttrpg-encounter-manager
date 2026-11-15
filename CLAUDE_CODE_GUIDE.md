@@ -43,6 +43,10 @@ src/
   campaign-ui.ts        The outline (party line, Continue, chapters, sections) shared by panel and block
   campaign-view.ts      Campaign panel (left sidebar) and the ```nimble-campaign dashboard block
   campaign-modals.ts    New campaign, name prompt, campaign/chapter pickers
+  calendar-def.ts       Calendars and the time model: minutes since year 1 ↔ dates, world-date, formats, jumps, the nimble-calendar block (pure, tested)
+  calendar-presets.ts   The starter calendars New calendar writes (pure, tested)
+  clock.ts              ClockStore: each campaign's world-date (in its home note), Undo history, one `changed` event for every clock
+  clock-ui.ts           The clock widget (panel, map chip, nimble-clock block) and its + popover; New calendar; calendar-block.ts draws a calendar note's month
   campaign-templates.ts Starter notes (campaign home, chapter, scene, NPC, location, session)
   box-def.ts            ```box fence format: presets, colours, styles, icon library (pure, tested)
   box-block.ts          Box renderer and the icon/colour/style editor (writes the fence line back)
@@ -91,7 +95,7 @@ e2e/                    End-to-end tests that drive a real Obsidian
 
 Rules that keep this healthy:
 
-- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `grid-def.ts`, `grid-detect.ts`, `markdown.ts`, `dice.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts` must not import `obsidian`, so unit tests run in plain Node.
+- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `grid-def.ts`, `grid-detect.ts`, `calendar-def.ts`, `calendar-presets.ts`, `markdown.ts`, `dice.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
 - Views don't mutate encounter data directly. Call `plugin.encounters.*`; it saves and fires `changed`, and every open tracker re-renders.
@@ -188,6 +192,11 @@ Every PR merged into `main` is released by `.github/workflows/auto-release.yml` 
 - Everything a map stores is in % of the image; cells are sized in % of the image *width* both ways (grid-def.ts explains the "width units"). Keep it that way so a swapped-in bigger image keeps every pin, grid and drawing.
 - `parseMapBlock`/`mapBlockSource` are lossless: unknown lines stay where they were and unchanged lines are written back as typed. A new key goes in `SCALARS`/`LISTS` in map-def.ts with a read, write and snapshot case, plus a round-trip test.
 - Saving rewrites the note and Obsidian draws the block again; `VIEWS` and `SAVED_MODE` in map-block.ts carry the zoom and mode across. Never read pixels by drawing the `app://` image into a canvas (it taints it): `readGray` in map-grid.ts reads the bytes.
+
+## The campaign clock
+
+- "Now" is the campaign home's `world-date:` (text, month as a number); views never write it themselves. Call `plugin.clock.set/advance/undo`; it writes through processFrontMatter, records Undo, and fires `changed` so every clock redraws.
+- Anything that shows a clock registers on a Component that is unloaded when it redraws (see `drawn` in campaign-view.ts and `built` in map-block.ts), or listeners pile up.
 
 ## Boxes and NPCs
 

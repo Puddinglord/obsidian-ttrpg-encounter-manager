@@ -2,13 +2,14 @@
 // style) and, optionally, the current encounter's combatants as tokens.
 // It's a GM companion, not a virtual tabletop: nothing here is shown to players.
 
-import { App, DropdownComponent, FuzzyMatch, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
+import { App, Component, DropdownComponent, FuzzyMatch, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { distanceLabel, MapDef, mapBlockSource, MapDrawing, MapPin, parseMapBlock, PIN_KINDS, PinKind, Point, replaceMapBlock, simplifyStroke } from './map-def';
 import { cellAt, cellsAlong, distance, snapToCell } from './grid-def';
 import { DrawTool, drawDrawingsLayer, drawLiveLine, renderDrawBar } from './map-draw';
 import { renderPartyFace, renderPartyRoster } from './map-party';
 import { NamePrompt } from './campaign-modals';
+import { renderClock } from './clock-ui';
 import { DEFAULT_GRID_OPACITY, EncounterCreature } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
 import { monsterRole } from './rules';
@@ -63,6 +64,8 @@ class MapBlock extends MarkdownRenderChild {
 	private path: Point[] = [];
 	private stroke: Point[] | null = null;
 	private drawBarEl: HTMLElement | null = null;
+	/** What the last build registered (the clock chip's listener): unloaded on the next build. */
+	private built: Component | null = null;
 	private stage!: HTMLElement;
 	private viewport!: HTMLElement;
 	private img!: HTMLImageElement;
@@ -167,6 +170,13 @@ class MapBlock extends MarkdownRenderChild {
 		const labels = bar.createEl('button', { cls: `nimble-map-btn${this.showLabels ? ' is-active' : ''}`, attr: { 'aria-label': 'Show pin labels', 'aria-pressed': String(this.showLabels) } });
 		setIcon(labels.createSpan(), 'tag');
 		labels.onclick = () => { this.showLabels = !this.showLabels; this.root?.toggleClass('hide-labels', !this.showLabels); labels.toggleClass('is-active', this.showLabels); this.remember(); };
+		const campaign = this.plugin.campaigns.of(this.ctx.sourcePath);
+		if (campaign) {
+			const on = this.plugin.settings.mapClock;
+			const clock = bar.createEl('button', { cls: `nimble-map-btn nimble-map-icon-btn${on ? ' is-active' : ''}`, attr: { 'aria-label': 'Show the campaign clock', 'aria-pressed': String(on) } });
+			setIcon(clock, 'calendar-clock');
+			clock.onclick = () => { this.plugin.settings.mapClock = !on; void this.plugin.saveSettings(); this.build(); };
+		}
 		if (this.def.drawings.length || this.mode === 'draw') {
 			const drawings = bar.createEl('button', { cls: `nimble-map-btn nimble-map-icon-btn${this.showDrawings ? ' is-active' : ''}`, attr: { 'aria-label': 'Show drawings', 'aria-pressed': String(this.showDrawings) } });
 			setIcon(drawings, 'pen-line');
@@ -195,6 +205,14 @@ class MapBlock extends MarkdownRenderChild {
 		this.viewport = body.createDiv({ cls: `nimble-map-viewport mode-${this.mode}` });
 		this.viewport.tabIndex = 0;
 		if (this.height) this.viewport.style.height = `${this.height}px`;
+		if (this.built) this.removeChild(this.built);
+		this.built = this.addChild(new Component());
+		if (campaign && this.plugin.settings.mapClock) {
+			// The day tracker in the corner: the same clock as the Campaign panel's.
+			const corner = this.viewport.createDiv({ cls: 'nimble-map-clock' });
+			corner.addEventListener('pointerdown', (e) => e.stopPropagation());
+			renderClock(corner, this.plugin, campaign, this.built, 'chip');
+		}
 		this.stage = this.viewport.createDiv({ cls: 'nimble-map-stage' });
 		this.img = this.stage.createEl('img', { attr: { src, alt: this.def.image, draggable: 'false' } });
 		this.live = this.stage.createSvg('svg', { cls: 'nimble-map-livelayer' });
