@@ -17,7 +17,7 @@ The panel in the left sidebar is home base. From it you can:
 - see the party: a card for each hero's character sheet, with their HP
 - **Continue** where you left off
 - browse chapters and their scenes (map buttons sit on each chapter)
-- browse every folder in the campaign: Sessions, NPCs, Locations, Monsters, Assets, and any you make yourself, like Factions. Empty folders show too. NPCs with a [portrait](npcs.md#portraits) show it as their icon.
+- browse every folder in the campaign: Sessions, Quests, NPCs, Locations, Monsters, Assets, and any you make yourself, like Factions. Empty folders show too. NPCs with a [portrait](npcs.md#portraits) show it as their icon.
 - see the files in a folder, not just notes: Assets lists its images and PDFs, and clicking one opens it
 - add to any chapter or folder with its **+** button
 - reorganize by dragging, or from the right-click menu
@@ -32,18 +32,56 @@ The panel in the left sidebar is home base. From it you can:
 | Scene | Read-aloud box, what's here, encounter and exits (chapters only) |
 | NPC | An NPC with a [character card](npcs.md) |
 | Location | Description and connections |
+| Quest | The hook, objectives, stakes, the truth behind it, clues, complications and rewards ([more](#quests)) |
 | Session log | Prep checklist, recap and loose threads, dated today |
 | Map | A map block; pick its image from the campaign's files, or set it later |
 | Monster | A stat block the bestiary picks up |
 | Handout | Player-facing text and GM notes |
 
-The folder decides what's picked first: NPC in NPCs, Scene in a chapter, Session log in Sessions, a blank Note in a folder of your own. In a folder of your own, any starter is saved right there.
+The folder decides what's picked first: NPC in NPCs, Quest in Quests, Scene in a chapter, Session log in Sessions, a blank Note in a folder of your own. In a folder of your own, any starter is saved right there.
 
-A chapter holds its scenes, maps and notes. An NPC, location, monster or handout you make from a chapter's **+** is saved in the campaign's folder for it (**NPCs**, **Locations**, **Monsters**, **Handouts**), so it's listed with the rest and not among the chapter's scenes. The dialog says where it's going before you create it. If you've renamed one of those folders, say NPCs to Characters, that folder is used.
+A chapter holds its scenes, maps and notes. An NPC, location, quest, monster or handout you make from a chapter's **+** is saved in the campaign's folder for it (**NPCs**, **Locations**, **Quests**, **Monsters**, **Handouts**), so it's listed with the rest and not among the chapter's scenes. The dialog says where it's going before you create it. If you've renamed one of those folders, say NPCs to Characters, that folder is used.
 
 On a folder of files like **Assets**, **+** adds files from your computer or phone instead. Every New dialog also has an **Add files from this device instead** link.
 
-**+** on the **Campaign** heading makes a session log, NPC, location, chapter or **New folder**. The folder icon next to it makes a folder straight away.
+**+** on the **Campaign** heading makes a session log, NPC, location, quest, chapter or **New folder**. The folder icon next to it makes a folder straight away.
+
+### Quests
+
+New campaigns come with a **Quests** folder. Make a quest with its **+**, **New quest** on the **Campaign** heading's **+**, or the **New quest…** command (also in [Spotlight](spotlight.md)). A folder called Quest log, Missions, Jobs or Bounties works the same way.
+
+A quest note starts with a quest box for the hook, then a checklist of objectives and headings to fill or delete: Stakes, The truth (what the heroes don't know yet), Clues & leads, People & places, Complications, Rewards and Progress. Its properties hold the quick facts:
+
+| Property | Meaning |
+|---|---|
+| `status:` | `available` (not offered yet), `active`, `completed` or `failed`. Anything else counts as still open |
+| `type:` | `main`, `side`, `personal`, or your own word |
+| `giver:` | Who asked; link the NPC, like `"[[Tobren Kask]]"` |
+| `location:` | Where it leads |
+| `reward:` | What it pays |
+| `level:` | The hero level it's meant for |
+
+**Linking a quest:** type `/quest` in any note to link one of the campaign's quests, like `/npc` does for NPCs. `/quest` on its own lists them all, open ones first, with their status and who gave them; type a few letters to narrow it down. Quests are made here in the panel, not from the slash menu.
+
+The Quests folder lists open quests first. Set `status: completed` and the quest gets a green tick and moves below the open ones; `failed` (or `abandoned`) crosses it out. Objectives can be ticked off in reading view.
+
+In a campaign you [play in](players.md), the quest starts out `active` and is written from your side of the table, with no GM secrets.
+
+### Links to campaign notes
+
+A link to a campaign note shows what it links to. `[[Bring Wick Home]]` is an orange pill with a flag, in reading view and Live Preview:
+
+| Linked note | Icon | Colour |
+|---|---|---|
+| Quest | Flag (a tick once `completed`, a cross once `failed`) | Orange |
+| Location, map | Map pin, map | Blue |
+| Party member (character sheet) | Shield | Purple |
+| Monster, creature, saved fight | Skull, paw, swords | Red |
+| Handout | Scroll | Yellow |
+| Session, scene, chapter, campaign | Calendar, clapperboard, book, castle | Grey |
+| NPC | Person | Green ([NPC chips](npcs.md)) |
+
+It's the `nimble:` property on the linked note that counts, so a link to a plain note stays a plain link. Clicking a pill opens the note as usual.
 
 ### Moving things around
 
@@ -63,7 +101,7 @@ Obsidian's own items (Bookmark, Reveal in navigation, and items from other plugi
 
 **Each campaign has its own party.** In a campaign you run, the party is the [character sheets](character-sheets.md) in its Party folder: **+** next to Party makes a new one, and each card opens the hero's sheet. Encounter blocks and the tracker read the party from those sheets (name, level, max HP, armor and max Wounds), so levelling a hero up changes the encounter maths too. Opening a note inside a campaign makes that campaign active, so encounter blocks in it are rated against that table's heroes. Until you add heroes, the campaign's `level:` and `heroes:` properties are used. A party you entered by hand before keeps counting: those heroes show in the Party section after the sheets, with a button to make character sheets for them, until a sheet with the same name replaces each one.
 
-**Pages open ready to read.** Characters, chapters, scenes, NPCs, locations, maps and handouts open in reading view, where cards, sheets and blocks look their best. Use Obsidian's edit button (or its hotkey) to change one; it stays in editing until you move to another page. Session logs, which you write in at the table, and notes you've just made open for editing as usual. Turn this off under Settings → Campaigns → **Open campaign pages in reading view**. In reading view, a campaign note's properties show as a row of tags (Ancestry Human, Status alive…) rather than the Properties form; switch to editing to change them, or turn off **Properties as tags**.
+**Pages open ready to read.** Characters, chapters, scenes, NPCs, locations, quests, maps and handouts open in reading view, where cards, sheets and blocks look their best. Use Obsidian's edit button (or its hotkey) to change one; it stays in editing until you move to another page. Session logs, which you write in at the table, and notes you've just made open for editing as usual. Turn this off under Settings → Campaigns → **Open campaign pages in reading view**. In reading view, a campaign note's properties show as a row of tags (Ancestry Human, Status alive…) rather than the Properties form; switch to editing to change them, or turn off **Properties as tags**.
 
 **Moving through scenes:** the **Next scene** and **Previous scene** commands step through scenes in order, across chapters. Bind them to hotkeys under Settings → Hotkeys.
 
@@ -80,7 +118,7 @@ Campaigns/
       Q1 Entry Chamber.md              nimble: scene      (order: 1, area: Q1)   ← any note here is a scene
       Q2 Mercury Pool.md
       Map - The Quicksilver Vaults.md  nimble: map
-    NPCs/  Sessions/  Locations/  Monsters/  Assets/   ← any other folder is a section
+    NPCs/  Quests/  Sessions/  Locations/  Monsters/  Assets/   ← any other folder is a section
 ```
 
 - A **campaign** is any folder holding a note with `nimble: campaign`.
@@ -89,7 +127,7 @@ Campaigns/
 - `order:` sorts notes. Without it, names sort naturally (Q2 before Q10).
 - `area:` is the short tag shown before a scene's title in the panel (Q1, Q2…). It's handy for matching map keys.
 - `title:` is the name shown in the panel when it differs from the file name. File names can't hold characters like `:` `?` and `"`, so a campaign you call "Vecna: Eve of Ruin" is saved as `Vecna- Eve of Ruin` with `title: "Vecna: Eve of Ruin"`, and the panel and NPC cards show the name you typed.
-- Any other folder in the campaign is a **section** (NPCs, Locations, Sessions, Monsters, Handouts or anything you like). Sections list their notes and any other files in them, and show up even while empty.
+- Any other folder in the campaign is a **section** (NPCs, Locations, Quests, Sessions, Monsters, Handouts or anything you like). Sections list their notes and any other files in them, and show up even while empty.
 
 A ```` ```nimble-campaign ```` block on the home note shows the same outline inside the note.
 
@@ -105,4 +143,5 @@ A ```` ```nimble-campaign ```` block on the home note shows the same outline ins
 | `nimble: scene` | scene | Optional; any note in a chapter is a scene |
 | `order:` | any | Sort order |
 | `area:` | scene | Area key shown in the panel |
-| `nimble: npc` / `location` / `session` / `map` / `monster` / `handout` | any note | What kind of note it is (sets its icon) |
+| `nimble: npc` / `location` / `quest` / `session` / `map` / `monster` / `handout` | any note | What kind of note it is (sets its icon) |
+| `status:` | quest | Where it stands; `completed` and `failed` quests move to the bottom of the folder ([quests](#quests)) |

@@ -16,8 +16,9 @@ In a campaign you [play in](players.md), the GM-only commands (`/add`, `/encount
 | `/builder` | Opens the encounter builder |
 | `/legendary`, `/minion`, `/new-monster` | Stat block templates |
 | `/condition dazed` | The condition's rules as a callout |
-| `/read-aloud`, `/look`, `/treasure`, `/trap`, `/clue`… | Styled boxes (see [Boxes](boxes.md)) |
+| `/read-aloud`, `/look`, `/treasure`, `/trap`, `/clue`, `/hook`… | Styled boxes (see [Boxes](boxes.md)); `/hook` is the quest box |
 | `/npc tobren` | Link an NPC, or create a new one |
+| `/quest caravan` | Link a quest from this campaign. `/quest` on its own lists them all, open ones first. Quests are made in the [Campaign panel](campaigns.md#quests) |
 | `/npc-card` | An NPC card with a portrait slot |
 | `/map hideout` | A GM map block for an image in your vault |
 | `/roll 2d6+3` | Rolls now and writes the result (plain or as a Nimble attack) |
