@@ -285,6 +285,8 @@ export class FilterField {
 			else chip(token, ' is-words', null, `“${token}”`, () => this.remove(token));
 		}
 		if (this.pending) chip(`\u0001${this.pending}`, ' is-pending', `${keyLabel(this.pending)}:`, '', () => { this.pending = null; });
-		this.o.input.toggleClass('has-chips', this.chips.length + extra.length > 0 || !!this.pending);
+		const hasChips = this.chips.length + extra.length > 0 || !!this.pending;
+		this.o.input.toggleClass('has-chips', hasChips);
+		host.toggleClass('has-chips', hasChips);
 	}
 }

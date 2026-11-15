@@ -289,9 +289,9 @@ export class CharacterSheetRenderer extends Component {
 			if (el.scrollTop > 0) scrollers.push({ el, top: el.scrollTop });
 		}
 		const height = root.offsetHeight;
-		if (height) root.setCssProps({ 'min-height': `${height}px` });
+		if (height) root.setCssProps({ '--ns-held-height': `${height}px` });
 		return () => {
-			root.setCssProps({ 'min-height': '' });
+			root.setCssProps({ '--ns-held-height': '' });
 			for (const x of scrollers) if (x.el.scrollTop !== x.top) x.el.scrollTop = x.top;
 		};
 	}
@@ -669,6 +669,7 @@ export class CharacterSheetRenderer extends Component {
 		const host = strip.closest<HTMLElement>('.ns-turn') ?? strip;
 		host.parentElement?.querySelector(':scope > .ns-conds-row')?.remove();
 		const row = createDiv({ cls: 'ns-conds-row' });
+		row.toggleClass('has-conds', s.conditions.length > 0);
 		host.after(row);
 		row.createSpan({ cls: 'ns-chip-label ns-conds-label', text: 'Conditions' });
 		const conds = row.createDiv({ cls: 'ns-conds' });

@@ -10,5 +10,7 @@ export default {
 		}],
 		// "Avoid !important: override styles by increasing selector specificity or using CSS variables instead."
 		"declaration-no-important": true,
+		// "Avoid :has — it can cause significant performance issues due to broad selector invalidation."
+		"selector-pseudo-class-disallowed-list": ["has"],
 	},
 };
