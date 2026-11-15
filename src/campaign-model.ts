@@ -156,6 +156,12 @@ export function questState(status: string | undefined): 'open' | 'done' | 'faile
 	return 'open';
 }
 
+/** Every quest note in a campaign, wherever it's kept (the Quests folder, a chapter, the top), open ones first, then by name. */
+export function questsIn(c: Campaign): NoteRef[] {
+	const all = [...c.sections.flatMap(s => s.notes), ...c.chapters.flatMap(ch => ch.scenes), ...c.loose].filter(n => n.kind === 'quest');
+	return questOrder(all.sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' })));
+}
+
 /** Quests still to do first (in their usual order), then the finished ones. */
 export function questOrder(notes: NoteRef[]): NoteRef[] {
 	const closed = (n: NoteRef) => n.kind === 'quest' && questState(n.status) !== 'open';

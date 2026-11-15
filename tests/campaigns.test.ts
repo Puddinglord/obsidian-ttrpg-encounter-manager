@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { campaignHome, npcNote, sceneNote } from '../src/campaign-templates';
-import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, homeFolderFor, isFileFolder, nextOrder, questOrder, questState, safeName } from '../src/campaign-model';
+import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, homeFolderFor, isFileFolder, nextOrder, questOrder, questsIn, questState, safeName } from '../src/campaign-model';
 
 const n = (path: string, fm: Record<string, unknown> = {}) => ({ path, fm });
 
@@ -395,6 +395,21 @@ describe('quests', () => {
 		for (const s of ['active', 'available', 'on hold', '', undefined, 'Whatever']) expect(questState(s)).toBe('open');
 		for (const s of ['completed', 'Complete', 'done', 'resolved']) expect(questState(s)).toBe('done');
 		for (const s of ['failed', 'Abandoned', 'cancelled']) expect(questState(s)).toBe('failed');
+	});
+
+	it('finds every quest in a campaign, wherever it is kept, open ones first', () => {
+		const c = buildCampaigns([
+			n('C/C.md', { nimble: 'campaign' }),
+			n('C/Quests/Zed.md', { nimble: 'quest', status: 'active' }),
+			n('C/Quests/Old Job.md', { nimble: 'quest', status: 'completed' }),
+			n('C/Quests/Rumour.md', {}),
+			n('C/Act 1/Act 1.md', { nimble: 'chapter' }),
+			n('C/Act 1/Bridge Toll.md', { nimble: 'quest' }),
+			n('C/Act 1/The Bridge.md', { nimble: 'scene' }),
+			n('C/Side Job.md', { nimble: 'quest', status: 'failed' }),
+			n('C/NPCs/Bo.md', { nimble: 'npc' }),
+		])[0];
+		expect(questsIn(c).map(q => q.title)).toEqual(['Bridge Toll', 'Zed', 'Old Job', 'Side Job']);
 	});
 
 	it('lists open quests above finished ones, keeping their order otherwise', () => {
