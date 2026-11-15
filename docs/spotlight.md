@@ -9,6 +9,8 @@ One box for whatever you need mid-session. Press **Cmd+K** (Mac) or **Ctrl+K** (
 | `goblin` | Adversaries first, then matching NPCs, your campaign's scenes and notes, conditions and commands |
 | `3 goblin` | **Add 3 × Goblin** to the encounter |
 | `2d6+3`, `d20`, `roll 4d8` | A roll. It goes to the notice, the roll log and the 3D dice like any other roll |
+| `lay on hands`, `battleaxe` | Spells, items, class features and the rest of the [compendium](compendium.md); Enter opens the card |
+| `school:fire`, `type:undead level:3` | The compendium's filters, as chips in Spotlight's own box, with the same suggestions and keys. With any filter, Spotlight lists the matching compendium entries (monsters, NPCs, spells, rules…); the last row, **Search the compendium**, opens the compendium with the same chips |
 | `> next` | Commands only: Next round, Start combat, New scene… |
 | nothing | A short list of what's useful right now, such as **Next round** during a fight |
 
@@ -25,6 +27,8 @@ The row of dice under the search box rolls with one click and keeps Spotlight op
 | Scene, map, location, other notes | Open it | Open it in a new tab |
 | Condition | Show its rules text (it's on the row too) | |
 | Command | Run it | |
+
+Press Escape in a card or quick look you opened from Spotlight to come back to Spotlight with the same search, ready for the next result. Closing it with × doesn't.
 
 NPCs match on their name and their aliases. Notes come from the active campaign.
 

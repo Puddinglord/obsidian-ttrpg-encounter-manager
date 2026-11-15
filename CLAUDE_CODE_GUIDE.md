@@ -18,7 +18,16 @@ src/
   monster-index.ts      Vault monsters + bundled bestiary, by name
   encounters.ts         Encounter state + every mutation (EncounterStore)
   tracker-view.ts       The encounter tracker sidebar
-  bestiary-view.ts      The bestiary tab
+  compendium-entries.ts Every searchable thing (monsters, NPCs, companions, compendium hits, conditions, rules) as one Entry list with facets (pure, tested)
+  compendium-query.ts   The search language: typed filters, fuzzy names, sorts, autocomplete suggestions (pure, tested)
+  filter-field.ts       The search field shared by the compendium and Spotlight: filters as chips, a chip waiting for its value, Backspace/Escape (tested)
+  compendium-browser.ts The one compendium UI (tabs, chip search bar, suggestions, list, sort/filter, entry page, keys); entry cache
+  compendium-view.ts    The Compendium tab (view type is still `nimble-bestiary`)
+  compendium-modal.ts   The compendium as a pre-filtered dialog; openEntry() quick looks
+  compendium-pickers.ts Add monster, the sheet's Add item/spell/feature, and slash-command inserts, all through the dialog
+  compendium-art.ts     Your art for compendium entries: the portrait slot, list icons, upload/pick, rename tracking (settings.compendiumArt)
+  count-modal.ts        "Add several…": how many of a monster (and tougher/weaker) to add
+  compendium-ref.ts     `nimble:spell:Name` / `nimble:feature:Name@Class` references (pure, tested)
   encounter-def.ts      ```nimble-encounter format (pure)   encounter-block.ts  its renderer
   builder-modal.ts      Encounter builder
   map-def.ts            ```nimble-map format (pure)         map-block.ts        its renderer (pins, tokens)
@@ -46,7 +55,7 @@ src/
   settings-tab.ts       Settings UI (party, bestiary, rules, custom conditions)
   dice.ts               Dice expression parsing and rolling
   compendium.ts         Player compendium types, lookups, featuresFor, search (pure, tested); data/compendium.json, compendium-data.ts loads it
-  compendium-card.ts    How a compendium entry looks (sheet rows, Spotlight card)
+  compendium-card.ts    How a compendium entry looks: cards, full class pages, condition cards, the card modal
   character-def.ts      Character note frontmatter → sheet values, and every sheet change as a frontmatter edit (pure, tested)
   character-sheet.ts    The ```nimble-sheet renderer (writes through processFrontMatter, rolls through plugin.rollDice)
   character-view.ts     Character side panel; character-modals.ts: new character, level up, custom ability
@@ -129,6 +138,10 @@ The community directory's review bot flags things the `eslint-plugin-obsidianmd`
 - CSS must be fully supported by Chromium 124 (Obsidian 1.6.5): no `display: contents`, no `clip-path` (draw shapes with SVG), no `column-gap` (use `gap`). Stylelint names the feature.
 - No `!important`; raise specificity instead (see the print rules in styles.css).
 - When the bot flags something new, add a rule for it here rather than only fixing the line.
+
+## The compendium is the picker
+
+Anything that asks the user to pick a monster, spell, item, feature or class opens the compendium dialog (`openCompendiumModal`, or the helpers in compendium-pickers.ts) with `segment` / `only` set, rather than a new SuggestModal. New searchable data goes in `buildEntries` (compendium-entries.ts) with its facets, and a new filter key in `FACETS` (compendium-query.ts), so the tab, every dialog, the slash commands, `nimble:` autocomplete and Spotlight all get it.
 
 ## Shared components, GM and player alike
 

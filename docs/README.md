@@ -13,6 +13,7 @@ New here? Start with **[Getting started](getting-started.md)**, or download the 
 | [Campaigns](campaigns.md) | Campaigns, chapters and scenes, the Campaign panel, moving through scenes |
 | [NPCs](npcs.md) | NPC notes, portraits and character cards, automatic name linking |
 | [Boxes](boxes.md) | Read-aloud text, treasure, traps, clues, handouts, and restyling them |
+| [The compendium](compendium.md) | Every monster, NPC, companion, spell, item, class feature, class and rule in one search, with typed filters and sorting |
 | [Bestiary and stat blocks](bestiary.md) | The 525 bundled monsters, references, writing your own stat blocks |
 | [Encounters](encounters.md) | Encounter blocks, difficulty, scaling monsters, the builder |
 | [GM maps](maps.md) | Maps with pins linked to your notes, tokens |
