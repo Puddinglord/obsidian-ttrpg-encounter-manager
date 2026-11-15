@@ -6,7 +6,7 @@ import type NimbleStatblocksPlugin from '../main';
 import { registerSheetBlock } from './character-sheet';
 import { CHARACTER_VIEW_TYPE, CharacterView, myCharacter } from './character-view';
 import { NewCharacterModal } from './character-modals';
-import { openSpotlight } from './spotlight';
+import { pickFromCompendium } from './compendium-pickers';
 import { addItem, Frontmatter } from './character-def';
 import { bundledCompendium } from './compendium-data';
 
@@ -35,7 +35,7 @@ export function registerCharacterFeatures(plugin: NimbleStatblocksPlugin): void 
 		callback: () => {
 			const file = myCharacter(plugin);
 			if (!file) { new Notice('No character of yours yet: make one with "New character", or set mine: true on a character note.'); return; }
-			openSpotlight(plugin, {
+			pickFromCompendium(plugin, {
 				kinds: ['item'], title: `Add to ${file.basename}'s inventory`, allowCustom: true,
 				onPick: (hit) => {
 					const it = bundledCompendium().item(hit.name);

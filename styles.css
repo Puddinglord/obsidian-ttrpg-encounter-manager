@@ -575,10 +575,10 @@ body {
 .nimble-bestiary .bestiary-row.role-minion .bestiary-level { background: color-mix(in srgb, var(--nimble-minion) 22%, transparent); }
 /* Where a creature is from (M&M, GMG, your own note), and a Notes pill when you've written some. */
 .nimble-bestiary .bestiary-tags { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
-.nimble-bestiary .bestiary-tag { font-size: 0.66rem; font-weight: 600; padding: 0.05rem 0.4rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); white-space: nowrap; }
-.nimble-bestiary .bestiary-tag.is-gmg { background: color-mix(in srgb, var(--color-purple) 16%, transparent); color: var(--color-purple); }
-.nimble-bestiary .bestiary-tag.is-note { background: color-mix(in srgb, var(--color-green) 16%, transparent); color: var(--color-green); }
-.nimble-bestiary .bestiary-tag.is-noted { background: color-mix(in srgb, var(--interactive-accent) 18%, transparent); color: var(--text-accent); }
+.nimble-cmpx .bestiary-tag, .nimble-bestiary .bestiary-tag { font-size: 0.66rem; font-weight: 600; padding: 0.05rem 0.4rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); white-space: nowrap; }
+.nimble-cmpx .bestiary-tag.is-gmg, .nimble-bestiary .bestiary-tag.is-gmg { background: color-mix(in srgb, var(--color-purple) 16%, transparent); color: var(--color-purple); }
+.nimble-cmpx .bestiary-tag.is-note, .nimble-bestiary .bestiary-tag.is-note { background: color-mix(in srgb, var(--color-green) 16%, transparent); color: var(--color-green); }
+.nimble-cmpx .bestiary-tag.is-noted, .nimble-bestiary .bestiary-tag.is-noted { background: color-mix(in srgb, var(--interactive-accent) 18%, transparent); color: var(--text-accent); }
 .nimble-bestiary .bestiary-row-add { opacity: 0; }
 .nimble-bestiary .bestiary-row:hover .bestiary-row-add, .nimble-bestiary .bestiary-row.is-selected .bestiary-row-add { opacity: 1; }
 .nimble-bestiary .bestiary-empty { padding: 1rem; color: var(--text-muted); text-align: center; }
@@ -939,6 +939,23 @@ body {
 	border-left: 1px dashed var(--background-modifier-border);
 }
 
+/* Compendium references (`nimble:spell:Name`, `nimble:condition:Dazed`…): [icon | name], tinted by kind. */
+.nimble-inline-ref.is-compendium.kind-item { --ref-tint: #b8703a; }
+.nimble-inline-ref.is-compendium.kind-spell { --ref-tint: #3d7fe0; }
+.nimble-inline-ref.is-compendium:is(.kind-feature, .kind-boon) { --ref-tint: #a35fd6; }
+.nimble-inline-ref.is-compendium:is(.kind-class, .kind-subclass, .kind-ancestry, .kind-background) { --ref-tint: #24a06b; }
+.nimble-inline-ref.is-compendium.kind-condition { --ref-tint: #d0613c; }
+.nimble-inline-kind {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 0.3em 0 0.5em;
+	color: color-mix(in srgb, var(--ref-tint) 85%, var(--text-normal));
+	background: color-mix(in srgb, var(--ref-tint) 14%, transparent);
+	border-right: 1px solid color-mix(in srgb, var(--ref-tint) 22%, transparent);
+	cursor: default;
+}
+.nimble-inline-kind svg { display: block; width: 0.95em; height: 0.95em; stroke-width: 2.2; }
+
 
 .nimble-encounter-block .encounter-block-meta, .nimble-encounter-block .encounter-block-notes { font-size: 0.8rem; color: var(--text-muted); }
 .nimble-encounter-block .encounter-block-notes { font-style: italic; margin-top: 0.25rem; }
@@ -1241,6 +1258,40 @@ body {
 .nimble-add-monster-modal .nimble-add-n { min-width: 1.4rem; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .nimble-add-monster-modal .nimble-add-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.25rem; height: 1.9rem; padding: 0 0.7rem; min-width: 4.6rem; justify-content: center; }
 .nimble-add-monster-modal .nimble-add-btn svg { width: 13px; height: 13px; }
+
+/* Add several (count-modal.ts): labelled rows (what / control), then a summary beside the actions. */
+.modal.nimble-count-modal { width: min(440px, 94vw); padding: 1.25rem 1.4rem 1.1rem; }
+.nimble-count-modal .modal-title { margin-bottom: 0.15rem; font-size: 1.2rem; }
+.nimble-count-modal .modal-content { display: flex; flex-direction: column; gap: 1rem; }
+.nimble-count-to { font-size: 0.82rem; color: var(--text-muted); }
+.nimble-count-rows { display: flex; flex-direction: column; border-top: 1px solid var(--background-modifier-border); }
+.nimble-count-row { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-count-info { flex: 1; min-width: 0; }
+.nimble-count-name { font-weight: 600; color: var(--text-normal); }
+.nimble-count-desc { margin-top: 0.15rem; font-size: 0.78rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.nimble-count-control { flex-shrink: 0; }
+.nimble-count-stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--background-modifier-border); border-radius: 8px; overflow: hidden; background: var(--background-primary); }
+.nimble-count-modal button.nimble-count-step { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--text-muted); }
+.nimble-count-modal button.nimble-count-step:hover:not(:disabled) { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-count-modal button.nimble-count-step svg { width: 15px; height: 15px; }
+.nimble-count-modal button.nimble-count-step:disabled { opacity: 0.35; cursor: default; }
+.nimble-count-modal input.nimble-count-input { width: 3rem; height: 2.1rem; padding: 0; border: none; border-left: 1px solid var(--background-modifier-border); border-right: 1px solid var(--background-modifier-border); border-radius: 0; background: transparent; box-shadow: none; text-align: center; font-size: 1rem; font-weight: 700; font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
+.nimble-count-modal input.nimble-count-input:focus { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 45%, transparent); }
+.nimble-count-input::-webkit-inner-spin-button, .nimble-count-input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; appearance: none; }
+.nimble-count-shift { display: flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--background-modifier-hover); }
+.nimble-count-modal button.nimble-count-seg { height: 1.85rem; padding: 0 0.65rem; border-radius: 6px; background: transparent; box-shadow: none; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
+.nimble-count-modal button.nimble-count-seg:hover { color: var(--text-normal); }
+.nimble-count-modal button.nimble-count-seg.is-active { background: var(--background-primary); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--background-modifier-border); color: var(--text-normal); }
+.nimble-count-actions { display: flex; align-items: center; gap: 0.5rem; }
+.nimble-count-summary { flex: 1; min-width: 0; font-size: 0.8rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-count-actions button { min-height: 2.1rem; }
+.nimble-count-add { min-width: 6rem; }
+body.is-phone .nimble-count-row { flex-wrap: wrap; }
+body.is-phone .nimble-count-control { flex-basis: 100%; }
+body.is-phone .nimble-count-stepper, body.is-phone .nimble-count-shift { width: 100%; }
+body.is-phone .nimble-count-modal button.nimble-count-seg { flex: 1; height: 2.4rem; }
+body.is-phone .nimble-count-modal input.nimble-count-input { flex: 1; height: 2.6rem; }
+body.is-phone .nimble-count-modal button.nimble-count-step { width: 3rem; height: 2.6rem; }
 /* Desktop: row controls show on hover or when the row is selected, so the list stays calm */
 @media (hover: hover) and (pointer: fine) {
 	.nimble-add-monster-modal .nimble-add-row :is(.nimble-add-qty, .nimble-add-btn) { opacity: 0; transition: opacity 0.12s; }
@@ -2950,23 +3001,112 @@ body .workspace-leaf-content .nimble-sheet-note:not(.nimble-show-props) .metadat
 .nimble-character-empty-title { font-weight: 700; font-size: 1.05rem; color: var(--text-normal); }
 .nimble-character-empty-body { font-size: 0.86rem; max-width: 18rem; }
 
-/* Compendium card (sheet rows, Spotlight card) */
-.nimble-cmp-card { display: flex; flex-direction: column; gap: 0.4rem; }
-.nimble-cmp-head { border-bottom: 2px solid var(--background-modifier-border); padding-bottom: 0.5rem; }
-.nimble-cmp-kind { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent); }
-.nimble-cmp-name { font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
-.nimble-cmp-detail { font-size: 0.84rem; color: var(--text-muted); }
-.nimble-cmp-tagline { font-weight: 600; }
-.nimble-cmp-facts { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.2rem 0 0.15rem; }
-.nimble-cmp-fact { display: inline-flex; align-items: baseline; gap: 0.3rem; padding: 0.15rem 0.5rem; border-radius: 6px; background: var(--background-secondary); font-size: 0.8rem; }
-.nimble-cmp-fact-label { font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
-.nimble-cmp-fact-value { font-weight: 600; }
-.nimble-cmp-text { margin: 0.35rem 0; line-height: 1.5; }
-.nimble-cmp-list { margin: 0.2rem 0 0.4rem; padding-left: 1.2rem; line-height: 1.45; }
-.nimble-cmp-source { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.35rem; font-size: 0.74rem; color: var(--text-faint); }
+/* Compendium card: the card modal, the hover preview, the Compendium tab's page and the dialog's preview.
+   The sheet's rows and the level-up dialog show the same body (renderHitBody) without the head.
+   Inside a card, spacing comes from the flex gaps; paragraphs drop their own margins there. */
+.nimble-cmp-card { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.nimble-cmp-head { display: flex; flex-direction: column; gap: 0.3rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-cmp-kind { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.1rem; font-size: 0.7rem; font-weight: 800; line-height: normal; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-accent); }
+.nimble-cmp-kind-icon { display: flex; flex: 0 0 auto; }
+.nimble-cmp-kind-icon svg { width: 0.9rem; height: 0.9rem; }
+.nimble-cmp-card.kind-condition .nimble-cmp-kind { color: #d0613c; }
+.theme-dark .nimble-cmp-card.kind-condition .nimble-cmp-kind { color: #ec8a68; }
+.nimble-cmp-name { font-size: 1.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; color: var(--text-normal); overflow-wrap: anywhere; }
+.nimble-cmp-detail { font-size: 0.88rem; line-height: 1.45; color: var(--text-muted); }
+.nimble-cmp-body, .nimble-cmp-page { display: flex; flex-direction: column; gap: 0.8rem; min-width: 0; }
+.nimble-cmp-tagline { font-size: 1.02em; font-weight: 600; line-height: 1.5; }
+
+/* Facts: label/value chips that wrap with room between the rows. */
+.nimble-cmp-facts { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.3rem 0 0.5rem; }
+.nimble-cmp-fact { display: inline-flex; align-items: baseline; gap: 0.4rem; max-width: 100%; padding: 0.25rem 0.6rem; border-radius: 6px; background: var(--background-modifier-hover); font-size: 0.82rem; line-height: 1.35; }
+.nimble-cmp-fact-label { flex: 0 0 auto; font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.nimble-cmp-fact-value { min-width: 0; font-weight: 600; }
+
+/* Rules text */
+.nimble-cmp-text { margin: 0.5rem 0; line-height: 1.6; }
+.nimble-cmp-list { margin: 0.35rem 0 0.5rem; padding-left: 1.3rem; line-height: 1.55; }
+.nimble-cmp-list > li + li { margin-top: 0.3rem; }
+:is(.nimble-cmp-body, .nimble-cmp-page, .nimble-cmp-details-body) > :is(.nimble-cmp-text, .nimble-cmp-list, .nimble-cmp-facts, .nimble-cmp-details) { margin: 0; }
+
+/* Where it's from: a footnote under the text. */
+.nimble-cmp-source { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.35rem; font-size: 0.75rem; line-height: normal; color: var(--text-faint); }
+.nimble-cmp-body > .nimble-cmp-source { margin-top: 0.1rem; }
 .nimble-cmp-draft { display: inline-flex; align-items: center; height: 1.1rem; padding: 0 0.4rem; border-radius: 999px; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 0.35rem; }
-.nimble-cmp-modal .nimble-cmp-actions { display: flex; justify-content: flex-end; margin-top: 0.8rem; }
-.modal.nimble-cmp-modal { width: min(560px, 94vw); }
+.nimble-cmp-source .nimble-cmp-draft { margin-left: 0; }
+
+.nimble-cmp-link { color: var(--text-accent); text-decoration: none; cursor: pointer; }
+.nimble-cmp-link:hover { text-decoration: underline; }
+.nimble-cmp-fact .nimble-cmp-link.nimble-cmp-fact-value { color: var(--text-accent); }
+
+/* The card modal: room around the card, a Back bar when you've followed a link, the action under a rule. */
+.modal.nimble-cmp-modal { width: min(600px, 94vw); }
+/* Class and subclass pages are long: wider, and the content scrolls under a fixed modal frame (phones keep Obsidian's full-screen sheet). */
+body:not(.is-phone) .modal.nimble-cmp-modal { max-height: 88vh; padding: 0; }
+body:not(.is-phone) .modal.nimble-cmp-modal.is-page { width: min(760px, 94vw); }
+.nimble-cmp-modal .modal-content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+body:not(.is-phone) .nimble-cmp-modal .modal-header { display: none; }
+body:not(.is-phone) .nimble-cmp-modal .modal-content { margin: 0; padding: 1.5rem 1.75rem 1.75rem; }
+body:not(.is-phone) .nimble-cmp-modal .nimble-cmp-head { padding-right: 1.5rem; }
+.nimble-cmp-modal .modal-close-button { z-index: 2; }
+.nimble-cmp-nav { display: flex; align-items: center; min-width: 0; margin-bottom: 1rem; }
+/* Desktop: a full-width bar across the top of the modal, level with the close button, that stays while the page scrolls.
+   (A sticky box stops at the scroller's padding, so `top` cancels the content's top padding.) */
+body:not(.is-phone) .nimble-cmp-nav { position: sticky; top: -1.5rem; z-index: 1; margin: -1.5rem -1.75rem 1.1rem; padding: 0.35rem 3rem 0.5rem 1.25rem; background: var(--modal-background, var(--background-primary)); border-bottom: 1px solid var(--background-modifier-border); }
+button.nimble-cmp-back { display: inline-flex; align-items: center; gap: 0.35rem; max-width: 100%; height: 1.75rem; padding: 0 0.75rem 0 0.55rem; border-radius: 999px; background: var(--background-modifier-hover); box-shadow: none; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; line-height: normal; cursor: pointer; }
+button.nimble-cmp-back:hover { background: var(--background-modifier-active-hover, var(--background-modifier-hover)); color: var(--text-normal); }
+.nimble-cmp-back-icon { display: flex; flex: 0 0 auto; }
+.nimble-cmp-back-icon svg { width: 14px; height: 14px; }
+.nimble-cmp-back-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-cmp-modal .nimble-cmp-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
+
+/* Class pages */
+.nimble-cmp-highlights { margin-top: 0.1rem; }
+.nimble-cmp-section-title { margin: 0.7rem 0 -0.25rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--background-modifier-border); font-size: 0.72rem; font-weight: 800; line-height: normal; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.nimble-cmp-levels { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.nimble-cmp-level { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--background-modifier-border-hover, var(--background-modifier-border)); }
+.nimble-cmp-level:first-child { padding-top: 0.2rem; }
+.nimble-cmp-level:last-child { border-bottom: none; padding-bottom: 0; }
+.nimble-cmp-level-badge { display: flex; align-items: center; justify-content: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: color-mix(in srgb, var(--interactive-accent) 16%, transparent); color: var(--text-accent); font-size: 0.82rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nimble-cmp-level-features { display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; padding-top: 0.15rem; }
+.nimble-cmp-feature .nimble-cmp-text { margin: 0.2rem 0 0.4rem; }
+.nimble-cmp-feature .nimble-cmp-text:last-child { margin-bottom: 0; }
+.nimble-cmp-feature-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; line-height: 1.4; }
+.nimble-cmp-feature-name { font-weight: 700; }
+.nimble-cmp-feature.is-placeholder .nimble-cmp-feature-name { font-weight: 600; color: var(--text-muted); }
+.nimble-cmp-feature.is-placeholder .nimble-cmp-text { color: var(--text-muted); font-size: 0.9em; }
+.nimble-cmp-tag { display: inline-flex; align-items: center; padding: 0.05rem 0.45rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); font-size: 0.7rem; font-weight: 700; line-height: 1.5; white-space: nowrap; }
+.nimble-cmp-tag.is-req { background: color-mix(in srgb, #e08a1e 14%, transparent); }
+
+/* Collapsible sections (About …, option groups, subclasses, spell list, FAQ): a framed row that opens downward. */
+.nimble-cmp-details { overflow: hidden; border: 1px solid var(--background-modifier-border); border-radius: 8px; }
+.nimble-cmp-details + .nimble-cmp-details { margin-top: 0.5rem; }
+.nimble-cmp-summary { display: flex; align-items: center; gap: 0.5rem; min-height: 2.6rem; padding: 0.5rem 0.9rem 0.5rem 0.65rem; cursor: pointer; font-weight: 700; line-height: 1.35; list-style: none; }
+.nimble-cmp-summary::-webkit-details-marker { display: none; }
+.nimble-cmp-summary:hover { background: var(--background-modifier-hover); }
+.nimble-cmp-summary:focus-visible { outline: 2px solid var(--interactive-accent); outline-offset: -2px; }
+.nimble-cmp-details[open] > .nimble-cmp-summary { border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-cmp-summary-chev { display: flex; flex: 0 0 auto; color: var(--text-faint); transition: transform 0.15s ease; }
+.nimble-cmp-summary-chev svg { width: 16px; height: 16px; }
+.nimble-cmp-details[open] > .nimble-cmp-summary .nimble-cmp-summary-chev { transform: rotate(90deg); }
+.nimble-cmp-summary-title { min-width: 0; }
+.nimble-cmp-count { margin-left: auto; padding: 0.05rem 0.45rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); font-size: 0.7rem; font-weight: 700; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.nimble-cmp-details-body { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.85rem 1rem 1rem; }
+.nimble-cmp-group .nimble-cmp-feature { padding-top: 0.7rem; border-top: 1px dashed var(--background-modifier-border); }
+.nimble-cmp-group .nimble-cmp-details-body > .nimble-cmp-feature:first-child { padding-top: 0; border-top: none; }
+.nimble-cmp-subclass-flavor { font-style: italic; line-height: 1.55; color: var(--text-muted); }
+.nimble-cmp-group-about { margin-top: 0.5rem; font-size: 0.92em; }
+.nimble-cmp-spell-list { margin: 0; line-height: 1.7; }
+.nimble-cmp-faq-item + .nimble-cmp-faq-item { padding-top: 0.7rem; border-top: 1px dashed var(--background-modifier-border); }
+.nimble-cmp-faq-q { font-weight: 700; line-height: 1.45; }
+.nimble-cmp-faq-item .nimble-cmp-text { margin: 0.25rem 0 0; }
+
+/* In the hover preview: a little wider for cards, a little tighter, and the card scrolls within the preview's max height. */
+.nimble-hover-preview.is-compendium { width: min(460px, calc(100vw - 24px)); overscroll-behavior: contain; }
+.nimble-hover-preview.is-compendium .hover-preview-body { padding: 0.9rem 1rem 1rem; }
+.nimble-hover-preview.is-compendium .nimble-cmp-card { gap: 0.8rem; }
+.nimble-hover-preview.is-compendium .nimble-cmp-head { padding-bottom: 0.75rem; }
+.nimble-hover-preview.is-compendium .nimble-cmp-name { font-size: 1.25rem; }
+.nimble-hover-preview.is-compendium :is(.nimble-cmp-body, .nimble-cmp-page) { gap: 0.7rem; }
 
 /* Spotlight: compendium rows and the picker's filter chips */
 .nimble-spotlight .nimble-spot-icon.cmp-item { color: #b8703a; background: color-mix(in srgb, #b8703a 14%, transparent); }
@@ -3327,6 +3467,9 @@ body.is-tablet .nimble-levelup .lu-review-row { padding: 0.5rem 0.9rem; }
 body.is-tablet .nimble-sheet :is(.ns-meter-bar, .ns-pip, .ns-tri, .ns-step, .ns-tab, .ns-row-toggle, .ns-equip, .ns-cond-x, .ns-cond-name, .ns-chip-label, .ns-icon-btn) { padding: 0; }
 body.is-tablet .nimble-sheet :is(.ns-chip, .ns-roll, .ns-add, .ns-coin, .ns-cond-add, .ns-rest-btn, .ns-remove, .ns-jump) { padding-left: 0.6rem; padding-right: 0.6rem; }
 body.is-tablet .nimble-spotlight .nimble-spotlight-chip { padding: 0 0.7rem; }
+body.is-tablet button.nimble-cmp-back { padding: 0 0.75rem 0 0.55rem; }
+body.is-tablet .nimble-count-modal button.nimble-count-step { padding: 0; }
+body.is-tablet .nimble-count-modal button.nimble-count-seg { padding: 0 0.5rem; }
 
 /* Actions: three dots a turn, End turn (character-sheet.ts renderActionsCard) */
 .nimble-sheet .ns-turn { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.75rem 0.9rem; }
@@ -3432,13 +3575,13 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* ===== end Character sheet & compendium ===== */
@@ -3500,3 +3643,461 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
 	.nimble-sheet .ns-skills { grid-template-columns: minmax(0, 1fr); }
 	.nimble-sheet .ns-skill, .nimble-sheet button.ns-skill { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "name stat total"; padding: 0.3rem 0.6rem; }
 }
+
+/* ============================================
+   COMPENDIUM (compendium-browser.ts): the tab and every pre-filtered dialog
+   ============================================ */
+
+.workspace-leaf-content .view-content.nimble-compendium { padding: 0; }
+.nimble-cmpx-layout { height: 100%; }
+.nimble-cmpx {
+	--cmpx-accent: var(--interactive-accent);
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr);
+	height: 100%;
+	min-height: 0;
+}
+.nimble-cmpx.has-segments { grid-template-rows: auto minmax(0, 1fr); }
+.nimble-cmpx.has-detail { grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); }
+.nimble-cmpx-segments { grid-column: 1 / -1; }
+.nimble-cmpx-side { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; min-height: 0; padding: 0.75rem; }
+.nimble-cmpx.has-detail .nimble-cmpx-side { border-right: 1px solid var(--background-modifier-border); }
+.nimble-cmpx-detail { min-width: 0; overflow: auto; padding: 1rem 1.5rem 2rem; }
+.nimble-cmpx-detail .nimble-statblock, .nimble-cmpx-detail .nimble-cmpx-page { max-width: 760px; }
+
+/* Tabs: a segmented control with a sliding thumb; icons only when narrow. */
+.nimble-cmpx-segments {
+	--seg-pad: 3px;
+	--seg-gap: 2px;
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(0, 1fr);
+	gap: var(--seg-gap);
+	margin: 0.75rem 0.75rem 0;
+	padding: var(--seg-pad);
+	border-radius: 9px;
+	background: var(--background-modifier-hover);
+}
+.nimble-cmpx-segments > .seg-thumb { background: var(--background-primary); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--background-modifier-border); }
+.nimble-cmpx-segments > button.nimble-cmpx-seg {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem;
+	min-width: 0;
+	height: 2rem;
+	padding: 0 0.4rem;
+	border: none;
+	border-radius: 6px;
+	box-shadow: none;
+	color: var(--text-muted);
+	font-size: 0.8rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: color 0.2s;
+}
+.nimble-cmpx-segments > button.nimble-cmpx-seg:hover { color: var(--text-normal); }
+.nimble-cmpx-segments > button.nimble-cmpx-seg.is-active { color: var(--text-normal); }
+.nimble-cmpx-seg-icon { display: flex; flex-shrink: 0; }
+.nimble-cmpx-seg-icon svg { width: 15px; height: 15px; }
+.nimble-cmpx-seg.is-active .nimble-cmpx-seg-icon { color: var(--cmpx-accent); }
+.nimble-cmpx-seg-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: normal; }
+/* Room for labels but not icons too: labels; tighter still: icons. */
+@container nimble-cmpx (max-width: 1180px) {
+	.nimble-cmpx-segments > button.nimble-cmpx-seg { font-size: 0.76rem; padding: 0 0.2rem; }
+	.nimble-cmpx-segments.is-crowded .nimble-cmpx-seg-icon { display: none; }
+}
+@container nimble-cmpx (max-width: 760px) {
+	.nimble-cmpx-segments.is-crowded .nimble-cmpx-seg-icon { display: flex; }
+	.nimble-cmpx-segments.is-crowded .nimble-cmpx-seg-label { display: none; }
+}
+.nimble-cmpx { container: nimble-cmpx / inline-size; }
+
+/* The search field: chips for filters, then the text. */
+.nimble-cmpx-searchbar { display: flex; align-items: center; gap: 0.25rem; }
+.nimble-cmpx-field {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-height: 2.3rem;
+	padding: 0.2rem 0.5rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	background: var(--background-primary);
+	cursor: text;
+	transition: border-color 0.15s, box-shadow 0.15s;
+}
+.nimble-cmpx-field:focus-within { border-color: var(--cmpx-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--cmpx-accent) 25%, transparent); }
+.nimble-cmpx-search-icon { display: flex; color: var(--text-faint); flex-shrink: 0; }
+.nimble-cmpx-search-icon svg { width: 15px; height: 15px; }
+.nimble-cmpx-chips { flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem; }
+.nimble-cmpx-field input.nimble-cmpx-input {
+	flex: 1;
+	min-width: 6rem;
+	height: 1.8rem;
+	padding: 0;
+	border: none;
+	background: transparent;
+	box-shadow: none;
+	font-size: var(--font-ui-medium);
+}
+.nimble-cmpx-field input.nimble-cmpx-input:focus { box-shadow: none; }
+.nimble-cmpx-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	height: 1.5rem;
+	padding: 0 0.15rem 0 0.5rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--cmpx-accent) 16%, transparent);
+	color: var(--text-normal);
+	font-size: 0.76rem;
+	white-space: nowrap;
+}
+.nimble-cmpx-chip.is-new { animation: nimble-cmpx-pop 0.16s ease-out; }
+/* A filter named but not yet given a value: the value is what's typed right after it. */
+.nimble-cmpx-chip.is-pending { background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cmpx-accent) 60%, transparent); padding-right: 0.15rem; }
+.nimble-cmpx-chip.is-pending .nimble-cmpx-chip-key { color: var(--text-accent); font-weight: 600; }
+.nimble-cmpx-chip.is-pending + .nimble-cmpx-input { min-width: 4rem; }
+/* Plain words kept aside when a filter was started after them. */
+.nimble-cmpx-chip.is-words { background: color-mix(in srgb, var(--text-normal) 8%, transparent); }
+.nimble-cmpx-chip.is-words .nimble-cmpx-chip-value { font-weight: 500; font-style: italic; }
+.nimble-cmpx-chip.is-negated { background: color-mix(in srgb, var(--color-red) 14%, transparent); }
+.nimble-cmpx-chip.is-negated .nimble-cmpx-chip-key { color: var(--color-red); }
+.nimble-cmpx-chip-key { color: var(--text-muted); font-weight: 500; }
+.nimble-cmpx-chip-value { font-weight: 700; }
+.nimble-cmpx-chip button.nimble-cmpx-chip-x {
+	width: 1.15rem;
+	height: 1.15rem;
+	padding: 0;
+	border-radius: 50%;
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+.nimble-cmpx-chip button.nimble-cmpx-chip-x:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-cmpx-chip button.nimble-cmpx-chip-x svg { width: 11px; height: 11px; }
+@keyframes nimble-cmpx-pop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.nimble-cmpx-searchbar .clickable-icon { position: relative; flex-shrink: 0; }
+.nimble-cmpx-searchbar .clickable-icon.has-active { color: var(--cmpx-accent); }
+.nimble-cmpx-filter.has-active::after { content: ""; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--cmpx-accent); }
+
+/* Filter panel: the tab's common values as pills. */
+.nimble-cmpx-panel { display: none; }
+.nimble-cmpx.panel-open .nimble-cmpx-panel {
+	display: grid;
+	gap: 0.45rem;
+	max-height: 40%;
+	overflow: auto;
+	padding: 0.6rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	background: var(--background-secondary);
+}
+.nimble-cmpx-panel-row { display: grid; grid-template-columns: 5rem minmax(0, 1fr); align-items: start; gap: 0.4rem; }
+.nimble-cmpx-panel-label { padding-top: 0.2rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.nimble-cmpx-pills { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+button.nimble-cmpx-pill {
+	height: 1.55rem;
+	padding: 0 0.55rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 999px;
+	background: var(--background-primary);
+	box-shadow: none;
+	color: var(--text-muted);
+	font-size: 0.74rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+button.nimble-cmpx-pill:hover { color: var(--text-normal); border-color: var(--cmpx-accent); }
+button.nimble-cmpx-pill.is-active { background: var(--cmpx-accent); border-color: var(--cmpx-accent); color: var(--text-on-accent); }
+button.nimble-cmpx-pill.is-empty { opacity: 0.45; }
+.nimble-cmpx-panel-tip { font-size: 0.72rem; color: var(--text-faint); }
+
+/* Sort panel: a chain of keys, each with a direction. */
+.nimble-cmpx-sortpanel { display: none; }
+.nimble-cmpx.sort-open .nimble-cmpx-sortpanel {
+	display: grid;
+	gap: 0.4rem;
+	padding: 0.6rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	background: var(--background-secondary);
+}
+.nimble-cmpx-sort-row { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr) auto auto; align-items: center; gap: 0.4rem; }
+.nimble-cmpx-sort-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.nimble-cmpx-sort-row select.nimble-cmpx-sort-key { min-width: 0; height: 1.9rem; font-size: 0.8rem; }
+.nimble-cmpx-sort-row button.nimble-cmpx-sort-dir { display: inline-flex; align-items: center; gap: 0.3rem; height: 1.9rem; padding: 0 0.55rem; font-size: 0.75rem; white-space: nowrap; box-shadow: none; }
+.nimble-cmpx-sort-dir svg, .nimble-cmpx-sort-add svg { width: 14px; height: 14px; }
+.nimble-cmpx-sort-foot { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.6rem; }
+.nimble-cmpx-sort-foot button { display: inline-flex; align-items: center; gap: 0.25rem; height: 1.75rem; padding: 0 0.6rem; font-size: 0.76rem; box-shadow: none; }
+.nimble-cmpx-sort-foot .nimble-cmpx-panel-tip { flex: 1 1 100%; }
+
+.nimble-cmpx-count { font-size: 0.76rem; color: var(--text-muted); }
+.nimble-cmpx-count-sort { color: var(--text-faint); }
+
+/* Results: hover is a faint wash; the selected row is a tinted card with an accent edge set inside its padding. */
+.nimble-cmpx-list { flex: 1; min-height: 120px; overflow: auto; margin: 0 -0.35rem; padding: 0.1rem 0.35rem; scroll-padding: 2rem 0; }
+.nimble-cmpx-row {
+	--row-badge-h: 1.85rem;
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	margin: 1px 0;
+	padding: 0.4rem 0.55rem 0.4rem 0.7rem;
+	border: 1px solid transparent;
+	border-radius: 9px;
+	cursor: pointer;
+	transition: background-color 0.1s, border-color 0.1s;
+}
+.nimble-cmpx-row::before {
+	content: "";
+	position: absolute;
+	left: 0.22rem;
+	/* As tall as the icon and centred like it, so the two always line up. */
+	top: calc(50% - var(--row-badge-h) / 2);
+	height: var(--row-badge-h);
+	width: 3px;
+	border-radius: 3px;
+	background: var(--cmpx-accent);
+	opacity: 0;
+	transform: scaleY(0.4);
+	transition: opacity 0.12s, transform 0.12s;
+}
+.nimble-cmpx-row:hover { background: color-mix(in srgb, var(--text-normal) 4%, transparent); }
+.nimble-cmpx-row.is-selected {
+	background: color-mix(in srgb, var(--cmpx-accent) 13%, var(--background-primary));
+	border-color: color-mix(in srgb, var(--cmpx-accent) 38%, transparent);
+	box-shadow: 0 1px 4px color-mix(in srgb, var(--cmpx-accent) 14%, transparent);
+}
+.nimble-cmpx-row.is-selected::before { opacity: 1; transform: scaleY(1); }
+.nimble-cmpx-row.is-selected .nimble-cmpx-row-name { color: var(--text-normal); }
+.nimble-cmpx-row.is-taken .nimble-cmpx-row-name { color: var(--text-muted); }
+.nimble-cmpx-row.is-added { background: color-mix(in srgb, var(--nimble-ok) 18%, transparent); }
+.nimble-cmpx-row-badge {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.2rem;
+	height: var(--row-badge-h, 1.85rem);
+	border-radius: 7px;
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-size: 0.74rem;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+}
+.nimble-cmpx-row-badge svg { width: 15px; height: 15px; }
+.nimble-cmpx-row-badge.is-level { color: var(--text-normal); }
+.nimble-cmpx-row-badge.role-legendary { background: color-mix(in srgb, var(--nimble-legendary) 28%, transparent); }
+.nimble-cmpx-row-badge.role-minion { background: color-mix(in srgb, var(--nimble-minion) 24%, transparent); }
+.nimble-cmpx-row-badge.is-tier { color: var(--text-normal); }
+.nimble-cmpx-row-badge.school-fire { background: color-mix(in srgb, #e0603a 24%, transparent); }
+.nimble-cmpx-row-badge.school-ice { background: color-mix(in srgb, #4fa6d8 24%, transparent); }
+.nimble-cmpx-row-badge.school-lightning { background: color-mix(in srgb, #d8b43a 26%, transparent); }
+.nimble-cmpx-row-badge.school-radiant { background: color-mix(in srgb, #e8c86a 30%, transparent); }
+.nimble-cmpx-row-badge.school-necrotic { background: color-mix(in srgb, #7a5aa8 26%, transparent); }
+.nimble-cmpx-row-badge.school-wind { background: color-mix(in srgb, #5bb39a 24%, transparent); }
+.nimble-cmpx-row-text { flex: 1; min-width: 0; }
+.nimble-cmpx-row-name { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-cmpx-row-name > span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.nimble-cmpx-row-line { display: flex; align-items: center; gap: 0.4rem; min-width: 0; }
+.nimble-cmpx-row-meta { flex: 1; min-width: 0; margin-top: 1px; font-size: 0.74rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-cmpx-tags { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
+/* Result cards: name (and book tags), a few soft pills, a line of the entry's own words. */
+.nimble-cmpx-row.is-card { --row-badge-h: 2.4rem; padding-top: 0.55rem; padding-bottom: 0.55rem; }
+.nimble-cmpx-row.is-card .nimble-cmpx-row-badge { width: 2.4rem; height: var(--row-badge-h); }
+.nimble-cmpx-row-head { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.nimble-cmpx-row-head .nimble-cmpx-row-name { flex: 1; min-width: 0; }
+.nimble-cmpx-row-pills { display: flex; align-items: center; gap: 0.25rem; margin-top: 0.3rem; min-width: 0; }
+.nimble-cmpx-row-facts { flex: 0 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 0.25rem; max-height: 1.25rem; overflow: hidden; }
+.nimble-cmpx-row-src { flex: 0 0 auto; display: flex; gap: 0.25rem; }
+.nimble-cmpx-row-facts:empty, .nimble-cmpx-row-src:empty { display: none; }
+.nimble-cmpx-row-pills:not(:has(> :not(:empty))) { display: none; }
+.nimble-cmpx-pill-tag {
+	display: inline-flex;
+	align-items: center;
+	height: 1.25rem;
+	/* 1px more below than above: the text sits ~0.6px low in its line box; this centres it in the pill. */
+	padding: 0 0.45rem 1px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--text-normal) 7%, transparent);
+	color: var(--text-muted);
+	font-size: 0.7rem;
+	font-weight: 600;
+	line-height: normal;
+	white-space: nowrap;
+}
+.nimble-cmpx-pill-tag.is-kind { background: transparent; box-shadow: inset 0 0 0 1px var(--background-modifier-border); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.62rem; }
+.nimble-cmpx .nimble-cmpx-pill-tag.bestiary-tag { padding: 0 0.45rem 1px; font-size: 0.66rem; font-weight: 700; }
+.nimble-cmpx-pill-tag.tone-legendary { background: color-mix(in srgb, var(--nimble-legendary) 20%, transparent); color: color-mix(in srgb, var(--nimble-legendary) 75%, var(--text-normal)); }
+.nimble-cmpx-pill-tag.tone-minion { background: color-mix(in srgb, var(--nimble-minion) 20%, transparent); color: color-mix(in srgb, var(--nimble-minion) 75%, var(--text-normal)); }
+.nimble-cmpx-pill-tag.tone-draft { background: color-mix(in srgb, #e08a1e 18%, transparent); color: #c06f0a; }
+.theme-dark .nimble-cmpx-pill-tag.tone-draft { color: #f0a640; }
+.nimble-cmpx-pill-tag.tone-school-fire { background: color-mix(in srgb, #e0603a 20%, transparent); color: color-mix(in srgb, #e0603a 70%, var(--text-normal)); }
+.nimble-cmpx-pill-tag.tone-school-ice { background: color-mix(in srgb, #4fa6d8 20%, transparent); color: color-mix(in srgb, #4fa6d8 70%, var(--text-normal)); }
+.nimble-cmpx-pill-tag.tone-school-lightning { background: color-mix(in srgb, #d8b43a 22%, transparent); color: color-mix(in srgb, #c09a20 75%, var(--text-normal)); }
+.nimble-cmpx-pill-tag.tone-school-radiant { background: color-mix(in srgb, #e8c86a 26%, transparent); color: color-mix(in srgb, #b8942a 75%, var(--text-normal)); }
+.nimble-cmpx-pill-tag.tone-school-necrotic { background: color-mix(in srgb, #7a5aa8 22%, transparent); color: color-mix(in srgb, #8a6ac0 75%, var(--text-normal)); }
+.nimble-cmpx-pill-tag.tone-school-wind { background: color-mix(in srgb, #5bb39a 20%, transparent); color: color-mix(in srgb, #3f9a80 75%, var(--text-normal)); }
+.nimble-cmpx-row-snippet { margin-top: 0.3rem; font-size: 0.76rem; line-height: 1.35; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-cmpx-row.is-selected .nimble-cmpx-row-snippet { color: var(--text-muted); }
+.nimble-cmpx-tag { font-size: 0.64rem; font-weight: 700; padding: 0.05rem 0.4rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); white-space: nowrap; }
+.nimble-cmpx-tag.is-taken { background: color-mix(in srgb, var(--nimble-ok) 18%, transparent); color: var(--nimble-ok); }
+.nimble-cmpx-infight { font-size: 0.7rem; font-weight: 600; color: var(--text-accent); }
+.nimble-cmpx-infight:empty { display: none; }
+.nimble-cmpx-row-btn { flex-shrink: 0; opacity: 0; }
+.nimble-cmpx-row:is(:hover, .is-selected) .nimble-cmpx-row-btn { opacity: 1; }
+body.is-mobile .nimble-cmpx-row-btn { opacity: 1; }
+.nimble-cmpx-row.is-suggestion .nimble-cmpx-row-badge { background: color-mix(in srgb, var(--cmpx-accent) 12%, transparent); color: var(--cmpx-accent); }
+.nimble-cmpx-row.is-suggestion { padding-top: 0.28rem; padding-bottom: 0.28rem; }
+.nimble-cmpx-row.is-suggestion .nimble-cmpx-row-name { font-family: var(--font-monospace); font-weight: 500; font-size: 0.86rem; }
+.nimble-cmpx-token-key { color: var(--cmpx-accent); }
+.nimble-cmpx-kbd {
+	flex-shrink: 0;
+	padding: 0 0.35rem;
+	border: 1px solid var(--background-modifier-border);
+	border-bottom-width: 2px;
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-muted);
+	font-size: 0.66rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+.nimble-cmpx-divider { height: 1px; margin: 0.4rem 0.5rem; background: var(--background-modifier-border); }
+.nimble-cmpx-group {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	margin: 0 -0.35rem;
+	padding: 0.6rem 0.9rem 0.25rem;
+	background: var(--background-primary);
+	color: var(--text-muted);
+	font-size: 0.7rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+.nimble-cmpx-empty { padding: 1.25rem; color: var(--text-muted); text-align: center; }
+.nimble-cmpx-hints { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; font-size: 0.72rem; color: var(--text-faint); }
+.nimble-cmpx-hint { display: inline-flex; align-items: center; gap: 0.3rem; }
+body.is-mobile .nimble-cmpx-hints { display: none; }
+
+/* A page that isn't a stat block: NPC notes and rules. */
+.nimble-cmpx-note { margin-top: 0.75rem; }
+.nimble-cmpx-page .statblock-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 1rem; padding-top: 0.6rem; border-top: 1px solid var(--background-modifier-border); }
+.nimble-cmpx-page .statblock-action { display: inline-flex; align-items: center; gap: 0.35rem; height: 2rem; padding: 0 0.8rem; font-size: 0.84rem; border-radius: 7px; }
+.nimble-cmpx-page .statblock-action-icon { display: inline-flex; }
+.nimble-cmpx-page .statblock-action-icon svg { width: 15px; height: 15px; }
+
+/* The tab: list beside the page; narrow, one or the other. */
+.nimble-compendium .nimble-cmpx .bestiary-back { display: none; }
+.nimble-cmpx-layout.is-narrow .nimble-cmpx.has-detail { grid-template-columns: minmax(0, 1fr); }
+.nimble-cmpx-layout.is-narrow .nimble-cmpx-detail { display: none; padding: 0.75rem; }
+.nimble-cmpx-layout.is-narrow.show-detail .nimble-cmpx-detail { display: block; grid-row: 2; }
+.nimble-cmpx-layout.is-narrow.show-detail .nimble-cmpx-side { display: none; }
+.nimble-cmpx-layout.is-narrow .nimble-cmpx-side { border-right: none; }
+.nimble-cmpx-layout.is-narrow .nimble-compendium .bestiary-back, .nimble-cmpx-layout.is-narrow .nimble-cmpx-detail .bestiary-back { display: inline-flex; align-items: center; gap: 0.2rem; margin-bottom: 0.5rem; }
+body.is-phone .nimble-cmpx-side, body.is-phone .nimble-cmpx-detail { padding-bottom: 5.5rem; }
+
+/* The dialog: wide, the list and a preview of the selected entry. */
+.modal.nimble-cmpx-modal { width: min(1080px, 94vw); height: min(760px, 86vh); max-height: 86vh; display: flex; flex-direction: column; padding-bottom: 0.75rem; }
+.modal.nimble-cmpx-modal .modal-title { font-size: var(--font-ui-medium); color: var(--text-muted); }
+.modal.nimble-cmpx-modal .modal-content { flex: 1; min-height: 0; }
+.nimble-cmpx-modal .nimble-cmpx-side { padding: 0.5rem 0.25rem 0; }
+.nimble-cmpx-modal .nimble-cmpx-segments { margin: 0.25rem 0.25rem 0; }
+.nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(300px, 420px) minmax(0, 1fr); }
+.nimble-cmpx-modal .nimble-cmpx-detail { padding: 0.5rem 0.25rem 1rem 1rem; }
+.nimble-cmpx-modal .nimble-cmpx-detail .bestiary-back { display: none; }
+@media (max-width: 780px) {
+	.nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(0, 1fr); }
+	.nimble-cmpx-modal .nimble-cmpx-detail { display: none; }
+}
+body.is-phone .modal.nimble-cmpx-modal { width: 100vw; height: 100%; max-height: none; }
+body.is-phone .nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(0, 1fr); }
+body.is-phone .nimble-cmpx-modal .nimble-cmpx-detail { display: none; }
+
+/* ---------- Compendium art (compendium-art.ts): a portrait beside a page's title, and the list icon ---------- */
+/* Title lines in one column, centred beside the square. */
+.has-art-slot { display: flex; flex-direction: row; align-items: center; gap: 1rem; }
+.nimble-art-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: inherit; }
+.nimble-cmp-head.has-art-slot .nimble-art-titles { gap: 0.3rem; }
+.nimble-art-slot {
+	flex-shrink: 0;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 76px;
+	height: 76px;
+	border-radius: 16px;
+	overflow: hidden;
+	cursor: pointer;
+	background: var(--background-modifier-hover);
+	transition: box-shadow 0.15s, opacity 0.15s;
+}
+.nimble-art-slot.has-art { box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--background-modifier-border); }
+.nimble-art-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.nimble-art-slot:not(.has-art) { background: transparent; border: 1.5px dashed var(--background-modifier-border); color: var(--text-faint); opacity: 0.7; }
+.nimble-art-slot:not(.has-art):hover, .nimble-art-slot:focus-visible { opacity: 1; border-color: var(--interactive-accent); color: var(--text-accent); }
+.nimble-art-add { display: flex; align-items: center; justify-content: center; }
+.nimble-art-add svg { display: block; width: 22px; height: 22px; }
+.nimble-art-edit {
+	position: absolute;
+	right: 5px;
+	bottom: 5px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+.nimble-art-edit svg { width: 12px; height: 12px; }
+.nimble-art-slot.has-art:is(:hover, :focus-visible) .nimble-art-edit { opacity: 1; }
+.nimble-art-slot:not(.has-art) .nimble-art-edit { display: none; }
+.nimble-art-slot.is-drop { box-shadow: 0 0 0 2px var(--interactive-accent); opacity: 1; }
+body.is-mobile .nimble-art-slot.has-art .nimble-art-edit { opacity: 1; }
+.nimble-hover-preview .nimble-art-slot { width: 60px; height: 60px; border-radius: 13px; }
+
+/* Art as the list icon: cropped to the badge's rounded square; a monster's level rides on a chip. */
+.nimble-cmpx-row-badge.has-art { position: relative; padding: 0; overflow: visible; background: none; }
+.nimble-cmpx-row-badge.has-art .nimble-art-img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; box-shadow: 0 0 0 1px var(--background-modifier-border); }
+.nimble-art-level {
+	position: absolute;
+	right: -5px;
+	bottom: -4px;
+	min-width: 1.2rem;
+	padding: 0 0.25rem;
+	border-radius: 5px;
+	background: var(--background-primary);
+	box-shadow: 0 0 0 1px var(--background-modifier-border);
+	color: var(--text-normal);
+	font-size: 0.6rem;
+	font-weight: 800;
+	line-height: 1.5;
+	text-align: center;
+}
+.nimble-art-level.role-legendary { background: color-mix(in srgb, var(--nimble-legendary) 35%, var(--background-primary)); }
+.nimble-art-level.role-minion { background: color-mix(in srgb, var(--nimble-minion) 35%, var(--background-primary)); }
+
+/* Spotlight: the compendium's chips in its box (filter-field.ts). */
+.nimble-spotlight .prompt-input-container { display: flex; align-items: center; }
+.nimble-spotlight .nimble-spot-chips { flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; }
+.nimble-spotlight .nimble-spot-chips .nimble-cmpx-chip { --cmpx-accent: var(--interactive-accent); height: 1.6rem; font-size: 0.8rem; }
+.nimble-spotlight .nimble-spot-chips > input.prompt-input { flex: 1; min-width: 8rem; }
+.nimble-spotlight .nimble-spot-chips:has(> .nimble-cmpx-chip) { padding-left: 0.75rem; }
+.nimble-spotlight .nimble-spot-chips:has(> .nimble-cmpx-chip) > input.prompt-input { padding-left: 0.25rem; }
+.nimble-spotlight .suggestion-item.is-filter .nimble-spot-name { font-family: var(--font-monospace); font-weight: 500; font-size: 0.88rem; }
+.nimble-spotlight .suggestion-item.is-filter .nimble-spot-icon { color: var(--text-accent); }

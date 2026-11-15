@@ -6,7 +6,7 @@
 // when you do want it.
 
 import { App, Component, EventRef, MarkdownRenderer, Modal, Notice, setIcon, TFile } from 'obsidian';
-import { baseCreatureName } from './bestiary-view';
+import { baseCreatureName } from './compendium-entries';
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterCreature, MonsterIndexEntry } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
@@ -21,10 +21,12 @@ export type RecordTarget =
 	| { kind: 'note'; file: TFile; sourcePath?: string; subtitle?: string }
 	| { kind: 'combatant'; encId: string; creatureId: string };
 
-export function openRecord(plugin: NimbleStatblocksPlugin, target: RecordTarget): void {
+export function openRecord(plugin: NimbleStatblocksPlugin, target: RecordTarget): Modal {
 	closePopover();
 	plugin.hover.hide();
-	new RecordModal(plugin.app, plugin, target).open();
+	const m = new RecordModal(plugin.app, plugin, target);
+	m.open();
+	return m;
 }
 
 class RecordModal extends Modal {
@@ -158,7 +160,7 @@ class RecordModal extends Modal {
 		const e = src.entry;
 		if (!e) return null;
 		if (e.filePath) return { label: 'Open page', icon: 'file-symlink', run: (tab) => void this.app.workspace.openLinkText(e.filePath, src.sourcePath, tab) };
-		if (e.bundled) return { label: 'Open in bestiary', icon: 'book-open', run: () => void this.plugin.openBestiary(e.monster.bundledId) };
+		if (e.bundled) return { label: 'Open in compendium', icon: 'book-open', run: () => void this.plugin.openBestiary(e.monster.bundledId) };
 		return null;
 	}
 
