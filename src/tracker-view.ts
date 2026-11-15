@@ -172,7 +172,7 @@ export class EncounterTrackerView extends ItemView {
 			}
 			menu.addItem(i => i.setTitle(this.plugin.settings.party.length ? 'Edit party…' : 'Set up your party…').setIcon('user-cog').onClick(() => this.plugin.openParty()));
 			menu.addItem(i => i.setTitle('Add monster…').setIcon('plus').onClick(() => this.plugin.openAddMonsterModal()));
-			menu.addItem(i => i.setTitle('Open bestiary').setIcon('book-open').onClick(() => void this.plugin.openBestiary()));
+			menu.addItem(i => i.setTitle('Open compendium').setIcon('book-open').onClick(() => void this.plugin.openBestiary()));
 			menu.addSeparator();
 			menu.addItem(i => i.setTitle('Copy summary').setIcon('copy').onClick(() => {
 				void navigator.clipboard.writeText(this.store.summary(enc.id));

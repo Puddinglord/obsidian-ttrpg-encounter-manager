@@ -1,6 +1,8 @@
 // Nimble "/" commands in the editor. Type "/" at the start of a line or after a
 // space: commands take arguments and search as you type, e.g.
-//   /monster gob        → `nimble:Goblin`
+//   /monster            → the compendium, set to adversaries; Enter writes `nimble:Goblin`
+//   /spell, /item, /feature, /class, /compendium   → the same for the rest of the compendium
+//   /monster gob        → `nimble:Goblin`, picked from the menu
 //   /add 3 goblin       → three goblins straight into the tracker
 //   /encounter 3 goblin, 2 wolf  → an encounter block, rated against the party
 //   /statblock krogg    → the full stat block, editable in the note
@@ -24,8 +26,15 @@ import { homeFolderFor, safeName } from './campaign-model';
 import { NPC_CARD_BLOCK } from './npc-card-def';
 import { runEncounter } from './encounter-block';
 import { insideCodeFence, placeBlock, slashQuery } from './markdown';
+import type { Segment } from './compendium-entries';
+import { compendiumEntries, entryReference } from './compendium-browser';
+import { search as searchCompendium } from './compendium-query';
+import { insertFromCompendium, InsertMode, openAddMonsterPicker } from './compendium-pickers';
 
-type ArgKind = 'monster' | 'add' | 'list' | 'fought' | 'condition' | 'image' | 'dice' | 'box' | 'npc';
+type ArgKind = 'monster' | 'add' | 'list' | 'fought' | 'condition' | 'image' | 'dice' | 'box' | 'npc' | 'compendium';
+
+/** Commands that open the compendium dialog when chosen without an argument. */
+interface Picker { segment: Segment; segments?: Segment[]; mode?: InsertMode; title: string }
 
 interface SlashCommand {
 	name: string;
@@ -40,6 +49,8 @@ interface SlashCommand {
 	action?: (p: NimbleStatblocksPlugin) => void;
 	/** Only offered on one side of the table: GM tools in campaigns you run, player tools in campaigns you play in. */
 	side?: 'gm' | 'player';
+	/** Enter on the bare command opens the compendium dialog, set to this. */
+	picker?: Picker;
 }
 
 interface SlashItem {
@@ -89,11 +100,17 @@ attacks:
 \`\`\``;
 
 const COMMANDS: SlashCommand[] = [
-	{ name: 'monster', aliases: ['m', 'ref'], icon: 'skull', desc: 'Monster reference', hint: '/monster goblin', arg: 'monster' },
+	{ name: 'monster', aliases: ['m', 'adversary'], icon: 'skull', desc: 'Monster reference', hint: '/monster goblin', arg: 'monster', picker: { segment: 'adversaries', segments: ['adversaries', 'companions'], title: 'Insert a monster' } },
+	{ name: 'spell', aliases: ['sp'], icon: 'wand-2', desc: 'Spell reference', hint: '/spell school:fire', arg: 'compendium', picker: { segment: 'spells', title: 'Insert a spell' } },
+	{ name: 'item', aliases: ['gear', 'weapon'], icon: 'backpack', desc: 'Item reference', hint: '/item stat:str', arg: 'compendium', picker: { segment: 'items', title: 'Insert an item' } },
+	{ name: 'feature', aliases: ['ability', 'abilities', 'feat'], icon: 'sparkles', desc: 'Class feature or ability', hint: '/feature lay on hands', arg: 'compendium', picker: { segment: 'features', title: 'Insert a feature' } },
+	{ name: 'class', aliases: ['subclass'], icon: 'graduation-cap', desc: 'Class or subclass reference', hint: '/class oathsworn', arg: 'compendium', picker: { segment: 'classes', title: 'Insert a class' } },
+	{ name: 'companion', aliases: ['pet'], icon: 'paw-print', desc: 'Companion reference', arg: 'compendium', picker: { segment: 'companions', title: 'Insert a companion' } },
+	{ name: 'compendium', aliases: ['ref', 'lookup', 'cmp'], icon: 'library', desc: 'Reference anything in the compendium', hint: '/compendium lay on hands', arg: 'compendium', picker: { segment: 'all', segments: ['all', 'adversaries', 'npcs', 'companions', 'spells', 'items', 'features', 'classes', 'origins', 'rules'], title: 'Insert a reference' } },
 	{ name: 'add', side: 'gm', aliases: ['fight'], icon: 'swords', desc: 'Add to the tracker', hint: '/add 3 goblin', arg: 'add' },
 	{ name: 'encounter', side: 'gm', aliases: ['enc'], icon: 'shield-alert', desc: 'Encounter block', hint: '/encounter 3 goblin, 2 wolf', arg: 'list' },
 	{ name: 'fought', aliases: ['battle', 'fight-notes', 'encounter'], icon: 'swords', desc: 'Battle notes: who we fought', hint: '/fought 4 goblin, goblin shaman', arg: 'fought', side: 'player' },
-	{ name: 'statblock', side: 'gm', aliases: ['sb', 'block'], icon: 'scroll-text', desc: 'Full stat block', hint: '/statblock krogg', arg: 'monster' },
+	{ name: 'statblock', side: 'gm', aliases: ['sb', 'block'], icon: 'scroll-text', desc: 'Full stat block', hint: '/statblock krogg', arg: 'monster', picker: { segment: 'adversaries', segments: ['adversaries', 'companions'], mode: 'statblock', title: 'Insert a stat block' } },
 	{ name: 'builder', side: 'gm', icon: 'scale', desc: 'Open the encounter builder', action: (p) => new BuilderModal(p).open() },
 	{ name: 'legendary', side: 'gm', aliases: ['boss', 'solo'], icon: 'crown', desc: 'Legendary monster template', insert: () => ({ text: LEGENDARY, block: true }) },
 	{ name: 'minion', side: 'gm', icon: 'users', desc: 'Minion template', insert: () => ({ text: MINION, block: true }) },
@@ -119,7 +136,7 @@ const COMMANDS: SlashCommand[] = [
 		return { text: p.encounters.summary(enc.id) };
 	} },
 	{ name: 'party', aliases: ['heroes', 'pc'], icon: 'user-cog', desc: 'Edit the party', action: (p) => p.openParty() },
-	{ name: 'bestiary', aliases: ['monsters', 'b'], icon: 'book-open', desc: 'Open the bestiary', action: (p) => void p.openBestiary() },
+	{ name: 'bestiary', aliases: ['monsters', 'b', 'open-compendium'], icon: 'book-open', desc: 'Open the compendium tab', action: (p) => void p.openBestiary() },
 	{ name: 'tracker', side: 'gm', aliases: ['combat', 'initiative'], icon: 'swords', desc: 'Open the encounter tracker', action: (p) => void p.activateEncounterView() },
 	{ name: 'settings', aliases: ['options'], icon: 'settings', desc: 'Ember Vault settings', action: (p) => p.openSettings() },
 	{ name: 'party-table', side: 'gm', icon: 'users-round', desc: 'Table of your heroes', insert: (p) => {
@@ -130,7 +147,7 @@ const COMMANDS: SlashCommand[] = [
 ];
 
 /** Menu order for a bare "/": what a GM reaches for at the table first. */
-const ORDER = ['monster', 'fought', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
+const ORDER = ['monster', 'spell', 'item', 'feature', 'class', 'compendium', 'fought', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
 const rank = (c: SlashCommand) => { const i = ORDER.indexOf(c.name); return i === -1 ? ORDER.length : i; };
 
 /** The commands for the side of the table the note is on. */
@@ -200,6 +217,7 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 			case 'dice': return this.diceItems(arg);
 			case 'box': return this.boxItems(arg);
 			case 'npc': return this.npcItems(arg);
+			case 'compendium': return this.compendiumItems(arg, cmd.picker!);
 		}
 		return [];
 	}
@@ -217,7 +235,12 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 	selectSuggestion(item: SlashItem): void {
 		const ctx = this.context;
 		if (!ctx) return;
-		const { editor, start, end } = ctx;
+		const { editor } = ctx;
+		// Obsidian updates the context a moment after each keystroke, so a quick "/spell⏎" would still
+		// hold the range of "/spel" and leave the last letter behind. Measure the range again.
+		const fresh = this.onTrigger(editor.getCursor(), editor);
+		const same = fresh && fresh.start.line === ctx.start.line && fresh.start.ch === ctx.start.ch;
+		const { start, end } = same ? fresh : ctx;
 		if (item.complete !== undefined) {
 			editor.replaceRange(item.complete, start, end);
 			editor.setCursor({ line: start.line, ch: start.ch + item.complete.length });
@@ -230,7 +253,13 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 
 	private commandItem(c: SlashCommand): SlashItem {
 		const item: SlashItem = { icon: c.icon, title: `/${c.name}`, detail: c.hint ? `${c.desc} · ${c.hint}` : c.desc };
-		if (c.arg) item.complete = `/${c.name} `;
+		if (c.name === 'add') item.run = (editor, start, end) => { editor.replaceRange('', start, end); openAddMonsterPicker(this.plugin); };
+		else if (c.picker) item.run = (editor, start, end) => {
+			// The dialog, ready to type in; the pick lands where the slash was and the cursor comes back to the note.
+			editor.replaceRange('', start, end);
+			insertFromCompendium(this.plugin, editor, start, c.picker!);
+		};
+		else if (c.arg) item.complete = `/${c.name} `;
 		else if (c.action) item.run = (editor, start, end) => { editor.replaceRange('', start, end); c.action!(this.plugin); };
 		else if (c.insert) item.run = (editor, start, end) => {
 			const r = c.insert!(this.plugin);
@@ -279,9 +308,44 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 		return { text: e.bundled ? (e.monster.source?.startsWith('GM') ? 'GMG' : 'M&M') : 'note', cls: lvl ? '' : 'is-muted' };
 	}
 
+	/** /spell fire, /feature lay on hands: the compendium's search, inline; the last row opens the full dialog. */
+	private compendiumItems(arg: string, picker: Picker): SlashItem[] {
+		const lore = this.plugin.hideStats('', this.context?.file?.path);
+		const res = searchCompendium(compendiumEntries(this.plugin, lore), arg, { segment: picker.segment, only: e => !!entryReference(e), lore, limit: 30 });
+		const items: SlashItem[] = res.entries.map(e => ({
+			icon: e.monster ? 'skull' : e.npc ? 'user-round' : picker.segment === 'all' ? 'library' : (COMMANDS.find(c => c.picker === picker)?.icon ?? 'library'),
+			title: e.name,
+			detail: e.detail,
+			badge: e.badge ? { text: e.badge, cls: 'is-muted' } : undefined,
+			run: (editor, start, end) => this.write(editor, start, end, `${entryReference(e)} `),
+		}));
+		items.push(this.moreItem(arg, picker));
+		return items;
+	}
+
+	private moreItem(arg: string, picker: Picker): SlashItem {
+		return {
+			icon: 'library', title: 'Search the compendium…', detail: 'Filters, sorting and the full page of each entry',
+			run: (editor, start, end) => {
+				editor.replaceRange('', start, end);
+				insertFromCompendium(this.plugin, editor, start, { ...picker, query: arg });
+			},
+		};
+	}
+
 	private monsterItems(q: string, mode: 'ref' | 'statblock'): SlashItem[] {
 		const lore = this.plugin.hideStats('', this.context?.file?.path);
-		return this.searchMonsters(q).map(e => ({
+		const picker = COMMANDS.find(c => c.name === (mode === 'ref' ? 'monster' : 'statblock'))!.picker!;
+		// Typed filters ("type:goblin level:3") go through the compendium's search.
+		if (/\b[a-z]+:\S/i.test(q)) {
+			const res = searchCompendium(compendiumEntries(this.plugin, lore), q, { segment: 'adversaries', only: e => !!e.monster, lore, limit: 30 });
+			return [...res.entries.map(x => this.monsterItem(x.monster!, mode, lore)), this.moreItem(q, picker)];
+		}
+		return [...this.searchMonsters(q).map(e => this.monsterItem(e, mode, lore)), this.moreItem(q, picker)];
+	}
+
+	private monsterItem(e: MonsterIndexEntry, mode: 'ref' | 'statblock', lore: boolean): SlashItem {
+		return {
 			icon: mode === 'ref' ? 'skull' : 'scroll-text',
 			title: e.name,
 			detail: lore ? [e.monster.group, e.monster.type].filter(Boolean).join(' · ') : describeMonster(e),
@@ -290,7 +354,7 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 				if (mode === 'ref') this.write(editor, start, end, `\`nimble:${e.name}\` `);
 				else this.write(editor, start, end, `\`\`\`nimble\n${toStatblockSource(e.monster)}\n\`\`\``, true);
 			},
-		}));
+		};
 	}
 
 	private addItems(arg: string): SlashItem[] {
