@@ -10,7 +10,7 @@ Every campaign is one or the other. **New campaign** asks first:
 
 | | I run it (GM) | I play in it (Player) |
 |---|---|---|
-| Starter folders | Party, NPCs, Locations, Sessions, Monsters, Assets | Party, Sessions, NPCs, Locations, Assets |
+| Starter folders | Party, Quests, NPCs, Locations, Sessions, Monsters, Assets | Party, Sessions, Quests, NPCs, Locations, Assets |
 | Party | Character sheets, with HP; encounter difficulty and the tracker read from them | Character sheets, yours marked **You** |
 | Encounter blocks | Difficulty, Run, the tracker | [Battle notes](#battle-notes) |
 | Bestiary and `nimble:` references | Full stat blocks | [Lore cards](#lore-cards): names and what your hero could know |
@@ -85,13 +85,14 @@ creature: "Krogg, Goblin King"
 
 A stat block you wrote yourself, in a ```` ```nimble ```` block in your own campaign, always shows in full. To see full stat blocks everywhere, turn on **Stat blocks in campaigns you play in** under Settings → Campaigns.
 
-## Session notes, NPCs and places
+## Session notes, quests, NPCs and places
 
 The starters are written for whoever keeps the note:
 
 - **Session log**: recap, battles, people we met, loot, and leads (as a checklist).
 - **NPC**: [card](npcs.md) with **Suspicions** instead of **Secret**, then First impressions, What we learned, What they want from us, Promises & debts, and Quotes.
 - **Location**: Overview, People here, Points of interest, Factions, Rumors, Connections, History, Our visits.
+- **Quest**: the job as it was put to you, then Objectives and Leads (as checklists), What we know, People & places, Questions and Progress. It starts as `status: active`; set it to `completed` or `failed` when it's over and it moves to the bottom of the Quests folder.
 - **Handout**: what it says, where we got it, and what we think it means.
 
 Every heading is a prompt you can delete.

@@ -40,7 +40,7 @@ src/
   campaign-ui.ts        The outline (party line, Continue, chapters, sections) shared by panel and block
   campaign-view.ts      Campaign panel (left sidebar) and the ```nimble-campaign dashboard block
   campaign-modals.ts    New campaign, name prompt, campaign/chapter pickers
-  campaign-templates.ts Starter notes (campaign home, chapter, scene, NPC, location, session)
+  campaign-templates.ts Starter notes (campaign home, chapter, scene, NPC, location, quest, session)
   box-def.ts            ```box fence format: presets, colours, styles, icon library (pure, tested)
   box-block.ts          Box renderer and the icon/colour/style editor (writes the fence line back)
   npc-links.ts          Reading view: NPC link chips and auto-linked mentions
