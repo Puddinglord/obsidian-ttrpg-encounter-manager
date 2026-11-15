@@ -1,4 +1,4 @@
-// Renders `nimble:Name` inline references inside the editor in Live Preview,
+// Renders `nimble:Name` (and `nimble:spell:Name`…) inline references inside the editor in Live Preview,
 // the same way Reading view does. The raw text comes back while the cursor is
 // inside the reference, so it stays editable.
 
@@ -7,7 +7,7 @@ import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { editorInfoField, editorLivePreviewField } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { createInlineRef, parseInlineRef } from './inline-ref';
+import { createInlineRef, parseInlineRef, resolveInlineRef } from './inline-ref';
 
 class InlineRefWidget extends WidgetType {
 	constructor(private plugin: NimbleStatblocksPlugin, readonly name: string, readonly sourcePath: string, readonly version: number) {
@@ -31,9 +31,10 @@ class InlineRefWidget extends WidgetType {
 	}
 
 	ignoreEvent(): boolean {
-		// Found refs handle their own clicks (open, preview, add). Unresolved ones
-		// let the editor take the click so the cursor lands there to fix a typo.
-		return !!this.plugin.index.get(this.name, this.sourcePath || undefined);
+		// Found refs (monsters, compendium entries, conditions) handle their own clicks
+		// (open, preview, add). Unresolved ones let the editor take the click so the
+		// cursor lands there to fix a typo.
+		return !!resolveInlineRef(this.plugin, this.name, this.sourcePath);
 	}
 }
 

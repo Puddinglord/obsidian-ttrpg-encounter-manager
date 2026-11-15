@@ -251,6 +251,10 @@ export interface NimbleStatblocksSettings {
 	classDice: { color: string; finish: string };
 	/** Offer the expansion-draft classes (and their spells) on character sheets and in Spotlight. */
 	compendiumDrafts: boolean;
+	/** Your own art for compendium entries: entry key (see artKey) → image path in the vault. */
+	compendiumArt: Record<string, string>;
+	/** Where uploaded compendium art is saved. */
+	compendiumArtFolder: string;
 	/** Folder of the active campaign (see campaigns.ts). `party` above is always its party. */
 	activeCampaign: string | null;
 	/** Per-campaign data, keyed by campaign folder: its party and the last scene opened. */
@@ -291,6 +295,8 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	readingView: true,
 	tagProperties: true,
 	compendiumDrafts: true,
+	compendiumArt: {},
+	compendiumArtFolder: 'Ember Vault/Compendium Art',
 	rollDialog: true,
 	classDice: { color: '#d4a72c', finish: 'metal' },
 	autoLinkNpcs: true,
@@ -349,6 +355,10 @@ export function migrateSettings(saved: unknown): NimbleStatblocksSettings {
 	if (saved != null && (typeof saved !== 'object' || Array.isArray(saved))) throw new Error('Saved settings are not an object');
 	const data = (saved ?? {}) as Partial<NimbleStatblocksSettings>;
 	const s: NimbleStatblocksSettings = Object.assign({}, DEFAULT_SETTINGS, data);
+	// Compendium art: only text paths, a fresh object (never the defaults' own).
+	const art = s.compendiumArt && typeof s.compendiumArt === 'object' && !Array.isArray(s.compendiumArt) ? s.compendiumArt : {};
+	s.compendiumArt = Object.fromEntries(Object.entries(art).filter((kv): kv is [string, string] => typeof kv[1] === 'string' && !!kv[1]));
+	if (typeof s.compendiumArtFolder !== 'string' || !s.compendiumArtFolder.trim()) s.compendiumArtFolder = DEFAULT_SETTINGS.compendiumArtFolder;
 	const items = <T>(v: T[] | undefined): T[] => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object') : []);
 	const record = <T extends object>(v: T | undefined): T => (v && typeof v === 'object' && !Array.isArray(v) ? v : {} as T);
 	s.customConditions = items(s.customConditions).filter(c => typeof c.name === 'string');

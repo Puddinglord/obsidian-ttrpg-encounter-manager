@@ -5,6 +5,10 @@ import { Component, MarkdownRenderer, Platform, setIcon, TFile } from 'obsidian'
 import { openRecord } from './record-modal';
 import type NimbleStatblocksPlugin from '../main';
 import { MonsterIndexEntry } from './types';
+import { CompendiumHit, KIND_LABEL } from './compendium';
+import { CardTarget, CompendiumCardModal, compendiumIcon, CONDITION_ICON, isHit, pluginCardOptions, renderCard } from './compendium-card';
+import { bundledCompendium } from './compendium-data';
+import { parseCompendiumRef, resolveCompendiumRef } from './compendium-ref';
 import { formatLevel, monsterRole } from './rules';
 import { isPhone, isTouch } from './touch';
 
@@ -16,7 +20,93 @@ export function parseInlineRef(text: string): string | null {
 	return name || null;
 }
 
+/** What the text after `nimble:` points at. */
+export type InlineTarget =
+	| { kind: 'monster'; entry: MonsterIndexEntry }
+	| { kind: 'compendium'; target: CardTarget };
+
+/**
+ * `spell:Name`, `feature:Name@Class`, `condition:Name`… name a compendium entry
+ * of that kind. A bare name is a monster first (vault or bestiary), then any
+ * compendium entry, then a condition.
+ */
+export function resolveInlineRef(plugin: NimbleStatblocksPlugin, text: string, sourcePath: string): InlineTarget | undefined {
+	const ref = parseCompendiumRef(text);
+	if (!ref) return undefined;
+	const condition = (name: string) => {
+		const c = plugin.condition(name);
+		return c ? { kind: 'compendium' as const, target: { name: c.name, description: c.description } } : undefined;
+	};
+	if (ref.kind === 'condition') return condition(ref.name);
+	if (ref.kind) {
+		const hit = resolveCompendiumRef(bundledCompendium(), ref);
+		return hit ? { kind: 'compendium', target: hit } : undefined;
+	}
+	const entry = plugin.index.get(text, sourcePath || undefined);
+	if (entry) return { kind: 'monster', entry };
+	// Until the vault's monsters are indexed a bare name might still be one; it stays "Indexing…".
+	if (!plugin.index.ready) return undefined;
+	const hit = resolveCompendiumRef(bundledCompendium(), ref);
+	return hit ? { kind: 'compendium', target: hit } : condition(ref.name);
+}
+
+/** Open a compendium entry or condition in its card modal. */
+export function openCompendiumCard(plugin: NimbleStatblocksPlugin, target: CardTarget): void {
+	plugin.hover.hide();
+	new CompendiumCardModal(plugin.app, plugin, target).open();
+}
+
 export function createInlineRef(plugin: NimbleStatblocksPlugin, monsterName: string, sourcePath: string): HTMLElement {
+	const ref = parseCompendiumRef(monsterName);
+	// A bare name that's a monster (or might be, while indexing) takes the monster path, unchanged.
+	if (ref?.kind) {
+		const found = resolveInlineRef(plugin, monsterName, sourcePath);
+		if (found?.kind === 'compendium') return createCompendiumRef(plugin, monsterName, sourcePath, found.target);
+		return unresolvedRef(monsterName, sourcePath, ref.name, ref.kind === 'condition' ? 'condition' : KIND_LABEL[ref.kind].toLowerCase());
+	}
+	const bare = plugin.index.ready && !plugin.index.get(monsterName, sourcePath || undefined) ? resolveInlineRef(plugin, monsterName, sourcePath) : undefined;
+	if (bare?.kind === 'compendium') return createCompendiumRef(plugin, monsterName, sourcePath, bare.target);
+	return createMonsterRef(plugin, monsterName, sourcePath);
+}
+
+/** A reference that names nothing: the name, dashed, with a "?". */
+function unresolvedRef(text: string, sourcePath: string, shown: string, what: string): HTMLElement {
+	const container = createSpan({ cls: 'nimble-inline-ref nimble-inline-unresolved' });
+	container.dataset.nimbleRef = text;
+	container.dataset.sourcePath = sourcePath;
+	container.createSpan({ text: shown, cls: 'nimble-inline-name unresolved' });
+	const unknown = container.createSpan({ text: '?', cls: 'nimble-inline-unknown' });
+	unknown.setAttr('aria-label', `Unknown ${what}`);
+	unknown.setAttr('title', 'Not found');
+	return container;
+}
+
+/** A spell, item, feature, class… or condition: [icon | name], a card on hover, the card modal on click. */
+function createCompendiumRef(plugin: NimbleStatblocksPlugin, text: string, sourcePath: string, target: CardTarget): HTMLElement {
+	const hit: CompendiumHit | undefined = isHit(target) ? target : undefined;
+	const kind = hit ? hit.kind : 'condition';
+	const label = hit ? KIND_LABEL[hit.kind] : 'Condition';
+	const container = createSpan({ cls: `nimble-inline-ref nimble-inline-found is-compendium kind-${kind}` });
+	container.dataset.nimbleRef = text;
+	container.dataset.sourcePath = sourcePath;
+	const icon = container.createSpan({ cls: 'nimble-inline-kind', attr: { title: label, 'aria-hidden': 'true' } });
+	setIcon(icon, hit ? compendiumIcon(hit) : CONDITION_ICON);
+	const owner = hit?.kind === 'feature' ? hit.subclass ?? hit.className : hit?.kind === 'subclass' ? hit.className : undefined;
+	const name = container.createEl('a', {
+		text: target.name,
+		cls: 'nimble-inline-name',
+		attr: { href: '#', role: 'link', 'aria-label': `${label}: ${target.name}`, title: owner ? `${label} · ${owner}` : label },
+	});
+	name.addEventListener('click', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		openCompendiumCard(plugin, target);
+	});
+	plugin.hover.attachHit(name, target);
+	return container;
+}
+
+function createMonsterRef(plugin: NimbleStatblocksPlugin, monsterName: string, sourcePath: string): HTMLElement {
 	const container = createSpan({ cls: 'nimble-inline-ref' });
 	container.dataset.nimbleRef = monsterName;
 	container.dataset.sourcePath = sourcePath;
@@ -141,15 +231,28 @@ export class HoverPreview {
 
 	/** Show the preview after a short hover. `entry` may be a function so callers can resolve late. */
 	attach(anchor: HTMLElement, entry: MonsterIndexEntry | (() => MonsterIndexEntry | undefined)): void {
+		this.onHover(anchor, () => {
+			const e = typeof entry === 'function' ? entry() : entry;
+			if (e && anchor.isConnected) this.show(anchor, e);
+		});
+	}
+
+	/** The same for a compendium entry or a condition: its card after a short hover. */
+	attachHit(anchor: HTMLElement, target: CardTarget | (() => CardTarget | undefined)): void {
+		this.onHover(anchor, () => {
+			const t = typeof target === 'function' ? target() : target;
+			if (t && anchor.isConnected) this.showHit(anchor, t);
+		});
+	}
+
+	/** Run `open` after a short hover over `anchor`; hide when the pointer leaves for anywhere but the preview. */
+	private onHover(anchor: HTMLElement, open: () => void): void {
 		if (Platform.isMobile) return;
 		anchor.addEventListener('mouseenter', () => {
 			this.cancelHide();
 			if (this.el && this.anchor === anchor) return;
 			if (this.showTimer) window.clearTimeout(this.showTimer);
-			this.showTimer = window.setTimeout(() => {
-				const e = typeof entry === 'function' ? entry() : entry;
-				if (e && anchor.isConnected) this.show(anchor, e);
-			}, 350);
+			this.showTimer = window.setTimeout(open, 350);
 		});
 		anchor.addEventListener('mouseleave', (e) => {
 			if (this.showTimer) { window.clearTimeout(this.showTimer); this.showTimer = null; }
@@ -167,6 +270,16 @@ export class HoverPreview {
 			actions: this.plugin.monsterActions(entry, { viewPath }),
 			lore: this.plugin.hideStats(entry.filePath, viewPath),
 		});
+		this.finish(anchor);
+	}
+
+	/** A compendium entry (spell, item, feature, class page…) or a condition, as its card. Dice roll, conditions open, links go to the card modal. */
+	showHit(anchor: HTMLElement, target: CardTarget, pinned = false): void {
+		const label = isHit(target) ? KIND_LABEL[target.kind] : 'Condition';
+		const body = this.frame(anchor, target.name, `${target.name} (${label.toLowerCase()})`, pinned,
+			() => new CompendiumCardModal(this.plugin.app, this.plugin, target).open());
+		this.el?.addClass('is-compendium');
+		renderCard(body, target, pluginCardOptions(this.plugin, target.name, (hit) => openCompendiumCard(this.plugin, hit)));
 		this.finish(anchor);
 	}
 
@@ -208,7 +321,8 @@ export class HoverPreview {
 		const el = anchor.doc.body.createDiv({ cls: 'nimble-hover-preview' });
 		el.id = 'nimble-hover-preview-active';
 		el.setAttr('role', 'dialog');
-		el.setAttr('aria-label', label);
+		// No aria-label: Obsidian would show it as a tooltip ("Goblin stat block") that says nothing new.
+		el.dataset.label = label;
 		const bar = el.createDiv({ cls: 'hover-preview-bar' });
 		bar.createSpan({ cls: 'hover-preview-hint', text: isPhone() ? name : pinned ? 'Pinned' : '' });
 		if (isTouch()) {
