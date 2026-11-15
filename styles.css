@@ -1520,12 +1520,17 @@ body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: non
 .campaign-note.is-current { background: color-mix(in srgb, var(--interactive-accent) 16%, transparent); font-weight: 600; }
 .campaign-note-icon { display: inline-flex; color: var(--text-faint); flex-shrink: 0; }
 .campaign-note-icon svg { width: 14px; height: 14px; }
+.campaign-note.kind-quest .campaign-note-icon { color: var(--color-orange); }
 .campaign-note.kind-map .campaign-note-icon, .campaign-note.is-current .campaign-note-icon { color: var(--text-accent); }
 .campaign-note-area {
 	flex-shrink: 0; min-width: 2rem; text-align: center; font-size: 0.68rem; font-weight: 700; font-variant-numeric: tabular-nums;
 	padding: 0 0.25rem; border-radius: 4px; background: var(--background-modifier-hover); color: var(--text-muted);
 }
 .campaign-note-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.campaign-note.is-quest-done, .campaign-note.is-quest-failed { color: var(--text-faint); }
+.campaign-note.is-quest-done .campaign-note-icon { color: var(--color-green); }
+.campaign-note.is-quest-failed .campaign-note-title { text-decoration: line-through; }
+.campaign-note.is-quest-failed .campaign-note-icon { color: var(--text-faint); }
 .campaign-loose .campaign-note { padding-left: 0.3rem; }
 .campaign-empty { font-size: 0.8rem; color: var(--text-muted); padding: 0.3rem 0.4rem; }
 .campaign-add-inline { display: inline-block; font-size: 0.8rem; padding: 0.25rem 0.4rem; }

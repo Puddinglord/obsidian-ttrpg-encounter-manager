@@ -220,7 +220,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 	private home(): Item[] {
 		const player = this.plugin.playerView();
 		const ids = player
-			? ['open-my-character', 'add-item-to-character', 'new-session', 'new-npc', 'new-location', 'open-bestiary', 'continue-campaign', 'dice-workshop']
+			? ['open-my-character', 'add-item-to-character', 'new-session', 'new-quest', 'new-npc', 'new-location', 'open-bestiary', 'continue-campaign', 'dice-workshop']
 			: ['next-round', 'start-combat', 'resume-combat', 'end-combat', 'add-monster', 'build-encounter', 'open-tracker', 'open-bestiary', 'new-scene', 'new-npc', 'edit-party', 'dice-workshop'];
 		const byId = new Map(this.commands('', 200).map(c => [c.kind === 'command' ? c.id.replace(/^.*:/, '') : '', c]));
 		const hints: Item[] = [
@@ -238,7 +238,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		return [...this.plugin.campaigns.npcs].sort((a, b) => Number(b.campaign === active) - Number(a.campaign === active) || a.name.localeCompare(b.name));
 	}
 
-	/** Scenes, maps, locations and other notes of the active campaign (NPCs have their own rows). */
+	/** Scenes, maps, locations, quests and other notes of the active campaign (NPCs have their own rows). */
 	private notes(): Extract<Item, { kind: 'note' }>[] {
 		const c = this.plugin.campaigns.active;
 		if (!c) return [];

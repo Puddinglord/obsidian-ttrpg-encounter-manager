@@ -1,5 +1,5 @@
 // Campaign pages open in reading view. Characters, chapters, scenes, NPCs,
-// places, maps and handouts are read far more than they're edited, and the
+// places, quests, maps and handouts are read far more than they're edited, and the
 // sheet, cards and blocks look their best there. Editing is one click on
 // Obsidian's own edit toggle. Session logs are written at the table, so they
 // open however Obsidian would open them, and so does a note you just made.
