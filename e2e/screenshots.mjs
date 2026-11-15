@@ -150,10 +150,10 @@ const shots = {
 	async bestiary() {
 		await layout();
 		await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
-		await page.waitForSelector('.nimble-bestiary .bestiary-row', { timeout: 5000 });
-		await page.locator('.nimble-bestiary .bestiary-search-input').fill('quicksilver');
+		await page.waitForSelector('.nimble-compendium .nimble-cmpx-row[data-id]', { timeout: 5000 });
+		await page.locator('.nimble-compendium .nimble-cmpx-input').fill('quicksilver');
 		await page.waitForTimeout(500);
-		await page.locator('.nimble-bestiary .bestiary-row').first().click();
+		await page.locator('.nimble-compendium .nimble-cmpx-row[data-id]').first().click();
 		await page.waitForTimeout(400);
 	},
 	async boxes() {

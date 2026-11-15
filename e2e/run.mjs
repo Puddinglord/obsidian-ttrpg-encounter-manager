@@ -240,8 +240,8 @@ test('bundled reference: Krogg resolves, previews with an action bar, and goes a
 	}, PREVIEW);
 	assert.equal(p.name, 'Krogg, Goblin King');
 	assert.match(p.kicker, /Lvl 2 · Solo/);
-	assert.deepEqual(p.actions, ['Add', 'Bestiary', 'Copy to vault']);
-	assert.equal(p.more, 1, 'Add has a menu (Add 2, tougher, weaker)');
+	assert.deepEqual(p.actions, ['Add', 'Compendium', 'Copy to vault']);
+	assert.equal(p.more, 1, 'Add has a menu (Add several…, tougher, weaker)');
 	assert.match(p.source, /Monsters & More p\.7/);
 	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-hover-bundled.png') });
 
@@ -261,6 +261,63 @@ test('bundled reference: Krogg resolves, previews with an action bar, and goes a
 		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = true; plugin.loadBundledBestiary(); });
 	}
 	await o.waitFor(() => o.page.evaluate((R) => !document.querySelector(`${R} .nimble-inline-unresolved`), R), { timeout: 3000, what: 'Krogg to resolve again' });
+});
+
+test('add several: the Add menu asks how many, the field takes keys, Enter adds them', async (o) => {
+	await resetEncounter(o);
+	await o.openFile('Adventure.md');
+	await parkMouse(o);
+	const M = '.modal.nimble-count-modal';
+	const openDialog = async () => {
+		await o.page.locator(`${R} .nimble-inline-name`, { hasText: /^Goblin$/ }).first().hover();
+		await o.page.waitForSelector(PREVIEW, { timeout: 2000 });
+		await o.page.locator(`${PREVIEW} .statblock-action-more`).click();
+		const titles = await menuTitles(o);
+		assert.ok(titles.includes('Add several…'), `menu: ${titles.join(', ')}`);
+		assert.ok(!titles.includes('Add 2'));
+		assert.ok(titles.includes('Add tougher (+1 level)') && titles.includes('Add weaker (−1 level)'));
+		await clickMenu(o, 'Add several…');
+		await o.page.waitForSelector(M, { timeout: 2000 });
+		// The preview steps aside so it doesn't float over the dialog.
+		assert.equal(await o.page.locator(PREVIEW).count(), 0);
+	};
+
+	await openDialog();
+	assert.equal((await o.page.locator(`${M} .modal-title`).textContent()), 'Add Goblin');
+	const field = await o.page.evaluate(() => ({ focused: document.activeElement?.classList.contains('nimble-count-input'), value: document.activeElement?.value }));
+	assert.deepEqual(field, { focused: true, value: '2' });
+	assert.equal(await o.page.locator(`${M} .nimble-count-add`).textContent(), 'Add 2');
+	// Escape cancels: nothing added.
+	await o.page.keyboard.press('Escape');
+	await o.page.waitForSelector(M, { state: 'detached', timeout: 2000 });
+	assert.deepEqual(await creatures(o), []);
+
+	await parkMouse(o);
+	await openDialog();
+	// The 2 is selected, so typing replaces it; arrows step it; − stops at 1.
+	await o.page.keyboard.type('4');
+	await o.page.keyboard.press('ArrowUp');
+	assert.equal(await o.page.inputValue(`${M} .nimble-count-input`), '5');
+	await o.page.keyboard.press('ArrowDown');
+	assert.equal(await o.page.inputValue(`${M} .nimble-count-input`), '4');
+	assert.equal(await o.page.locator(`${M} .nimble-count-add`).textContent(), 'Add 4');
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForSelector(M, { state: 'detached', timeout: 2000 });
+	await o.page.waitForTimeout(200);
+	assert.deepEqual((await creatures(o)).map(c => c.label), ['Goblin-1', 'Goblin-2', 'Goblin-3', 'Goblin-4']);
+
+	// Tougher: two more, a level up (more HP than the 12 as written).
+	await parkMouse(o);
+	await openDialog();
+	await o.page.locator(`${M} .nimble-count-seg`, { hasText: 'Tougher' }).click();
+	assert.equal(await o.page.locator(`${M} .nimble-count-add`).textContent(), 'Add 2 tougher');
+	await o.page.locator(`${M} .nimble-count-add`).click();
+	await o.page.waitForSelector(M, { state: 'detached', timeout: 2000 });
+	await o.page.waitForTimeout(200);
+	const all = await creatures(o);
+	assert.equal(all.length, 6);
+	assert.ok(all.slice(4).every(c => c.max > 12), `tougher HP: ${all.slice(4).map(c => c.max)}`);
+	await o.page.keyboard.press('Escape');
 });
 
 test('live preview: inline references render, raw text returns under the cursor', async (o) => {
@@ -405,53 +462,257 @@ test('autocomplete inserts a monster reference', async (o) => {
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), 'Bow before `nimble:Krogg, Goblin King`');
+
+	// Compendium entries too: `nimble:spell:` limits the list to spells.
+	await o.eval((app) => {
+		const editor = app.workspace.activeEditor.editor;
+		editor.setValue('Cast \n');
+		editor.setCursor({ line: 0, ch: 5 });
+		editor.focus();
+	});
+	await o.page.keyboard.type('`nimble:spell:flame d', { delay: 30 });
+	await o.waitFor(() => o.page.evaluate(() => document.querySelector('.suggestion-container .nimble-suggestion-name')?.textContent === 'Flame Dart'),
+		{ timeout: 3000, what: 'Flame Dart suggested' });
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForTimeout(200);
+	assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), 'Cast `nimble:spell:Flame Dart`');
+});
+
+test('inline compendium refs: spells, features, classes and conditions resolve; click opens the card, hover previews it', async (o) => {
+	await resetEncounter(o);
+	await o.openFile('Compendium refs.md', 'preview');
+	const found = `${R} .nimble-inline-ref.nimble-inline-found.is-compendium`;
+	await o.waitFor(async () => (await o.page.locator(found).count()) === 10, { timeout: 5000, what: 'ten compendium refs' });
+	const info = await o.page.evaluate((R) => ({
+		kinds: [...document.querySelectorAll(`${R} .nimble-inline-ref.is-compendium`)].map(e => [...e.classList].find(c => c.startsWith('kind-'))),
+		names: [...document.querySelectorAll(`${R} .nimble-inline-ref.is-compendium .nimble-inline-name`)].map(e => e.textContent),
+		monsters: [...document.querySelectorAll(`${R} .nimble-inline-found:not(.is-compendium) .nimble-inline-name`)].map(e => e.textContent),
+		unresolved: [...document.querySelectorAll(`${R} .nimble-inline-unresolved`)].map(e => e.querySelector('.nimble-inline-name')?.textContent),
+	}), R);
+	assert.deepEqual(info.kinds, ['kind-feature', 'kind-spell', 'kind-spell', 'kind-class', 'kind-subclass', 'kind-feature', 'kind-feature', 'kind-item', 'kind-ancestry', 'kind-condition']);
+	assert.deepEqual(info.names, ['Lay on Hands', 'Flame Dart', 'Flame Dart', 'Oathsworn', 'Oath of Vengeance', 'Blur', 'Blinding Aura', 'Short Sword', 'Dwarf', 'Dazed']);
+	assert.deepEqual(info.monsters, ['Goblin'], 'a bare monster name is still a monster');
+	assert.deepEqual(info.unresolved, ['Not A Real Spell']);
+
+	// Click: the card in a dialog.
+	await o.page.locator(found, { hasText: 'Flame Dart' }).first().locator('.nimble-inline-name').click();
+	await o.page.locator('.modal.nimble-cmp-modal').waitFor({ timeout: 3000 });
+	assert.match(await o.page.locator('.modal.nimble-cmp-modal').innerText(), /Flame Dart/);
+	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await o.page.locator('.modal.nimble-cmp-modal').count()) === 0, { what: 'the card to close' });
+	// The class page lists the class level by level.
+	await o.page.locator(found, { hasText: 'Oathsworn' }).locator('.nimble-inline-name').click();
+	await o.page.locator('.modal.nimble-cmp-modal .nimble-cmp-levels').first().waitFor({ timeout: 3000 });
+	assert.ok(await o.page.locator('.modal.nimble-cmp-modal .nimble-cmp-level').count() >= 10, 'class levels');
+	await o.page.keyboard.press('Escape');
+
+	// Hover: the same card as a preview.
+	await parkMouse(o);
+	await o.page.locator(found, { hasText: 'Dazed' }).locator('.nimble-inline-name').hover();
+	await o.page.waitForSelector(`${PREVIEW}.is-compendium`, { timeout: 3000 });
+	assert.match(await o.page.locator(PREVIEW).innerText(), /Dazed/);
+	await parkMouse(o);
+
+	// Live Preview renders the same pills.
+	await o.openFile('Compendium refs.md', 'source');
+	await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 0, ch: 0 }); });
+	await o.waitFor(async () => (await o.page.locator(`${S} .nimble-inline-ref.is-compendium`).count()) === 10, { timeout: 5000, what: 'compendium refs in Live Preview' });
+	assert.equal(await o.page.locator(`${S} .nimble-inline-unresolved`).count(), 1);
 });
 
 // ---------------------------------------------------------------------------
-// Bestiary
+// Compendium (the old Bestiary tab)
 
-test('bestiary: search, role filter, add to the tracker', async (o) => {
+const CMP = '.nimble-compendium';
+/** Entry rows (not suggestions) in a compendium list. */
+const cmpRows = (o, root = CMP) => o.page.locator(`${root} .nimble-cmpx-row[data-id]`);
+const cmpNames = (o, root = CMP) => o.page.locator(`${root} .nimble-cmpx-row[data-id] .nimble-cmpx-row-name > span:first-child`).allTextContents();
+const cmpRow = (o, name, root = CMP) => cmpRows(o, root).filter({ has: o.page.locator('.nimble-cmpx-row-name > span:first-child', { hasText: exact(name) }) });
+/** Finished chips as [key, value] (a chip still waiting for its value isn't one). */
+const cmpChips = (o, root = CMP) => o.page.evaluate((root) => [...document.querySelectorAll(`${root} .nimble-cmpx-chip:not(.is-pending)`)]
+	.map(c => [c.querySelector('.nimble-cmpx-chip-key')?.textContent ?? '', c.querySelector('.nimble-cmpx-chip-value')?.textContent ?? '']), root);
+/** A fresh Compendium tab (a tab left open keeps its tab, chips and search). */
+async function openCompendiumTab(o) {
+	await o.eval(async (app) => {
+		app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach());
+		await app.commands.executeCommandById('nimble-gm:open-bestiary');
+	});
+	await o.page.waitForSelector(`${CMP} .nimble-cmpx-row[data-id]`, { timeout: 5000 });
+}
+async function closeCompendiumTab(o) {
+	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
+}
+
+test('compendium: search, role filter, add to the tracker', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app) => app.commands.executeCommandById('nimble-gm:open-bestiary'));
-	const B = '.nimble-bestiary';
-	await o.page.waitForSelector(`${B} .bestiary-row`, { timeout: 5000 });
-	const total = Number((await o.page.locator(`${B} .bestiary-count`).textContent()).match(/^(\d+) monsters$/)?.[1]);
+	await openCompendiumTab(o);
+	const input = o.page.locator(`${CMP} .nimble-cmpx-input`);
+	assert.equal(await o.page.locator(`${CMP} .nimble-cmpx-seg.is-active`).getAttribute('data-segment'), 'adversaries', 'opens on Adversaries');
+	const total = Number((await o.page.locator(`${CMP} .nimble-cmpx-count`).textContent()).match(/^(\d+) entries/)?.[1]);
 	assert.ok(total >= 525, `count shows every monster (${total})`);
 	// The detail pane shows a stat block with an action bar.
-	assert.ok(await o.page.locator(`${B} .bestiary-detail .nimble-statblock .statblock-actions`).count());
+	assert.ok(await o.page.locator(`${CMP} .nimble-cmpx-detail .nimble-statblock .statblock-actions`).count());
 
-	await o.page.locator(`${B} .bestiary-search-input`).fill('krogg');
-	await o.waitFor(() => o.page.evaluate((B) => document.querySelectorAll(`${B} .bestiary-row`).length === 2, B), { timeout: 3000, what: 'search to narrow to the two Kroggs' });
-	assert.deepEqual(await o.page.locator(`${B} .bestiary-row-name`).allTextContents(), ['Krogg, Goblin King', 'Krogg, Goblin King (GM Guide)']);
-	assert.match(await o.page.locator(`${B} .bestiary-count`).textContent(), /^2 of \d+ monsters$/);
-	assert.equal(await o.page.locator(`${B} .bestiary-detail .monster-name`).textContent(), 'Krogg, Goblin King');
+	await input.fill('krogg');
+	await o.waitFor(async () => (await cmpRows(o).count()) === 2, { timeout: 3000, what: 'search to narrow to the two Kroggs' });
+	assert.deepEqual(await cmpNames(o), ['Krogg, Goblin King', 'Krogg, Goblin King (GM Guide)']);
+	assert.match(await o.page.locator(`${CMP} .nimble-cmpx-count`).textContent(), new RegExp(`^2 of ${total} · best match$`));
+	assert.equal(await o.page.locator(`${CMP} .nimble-cmpx-detail .monster-name`).textContent(), 'Krogg, Goblin King');
 
-	await o.page.locator(`${B} .bestiary-search-input`).fill('');
-	await o.page.locator(`${B} .nimble-segmented[aria-label="Role"] button`, { hasText: 'Legendary' }).click();
-	await o.page.waitForTimeout(200);
-	const legendary = await o.page.evaluate((B) => {
-		const rows = [...document.querySelectorAll(`${B} .bestiary-row`)];
-		return { n: rows.length, allLegendary: rows.every(r => r.classList.contains('role-legendary')), count: document.querySelector(`${B} .bestiary-count`).textContent };
-	}, B);
+	// Role filter, typed: it becomes a chip once a space follows it.
+	await input.fill('role:legendary ');
+	await o.waitFor(async () => (await cmpChips(o)).length === 1, { timeout: 3000, what: 'the role chip' });
+	assert.deepEqual(await cmpChips(o), [['Role', 'legendary']]);
+	assert.equal(await input.inputValue(), '', 'the filter left the text box');
+	await o.page.waitForTimeout(300); // the rest of the rows render in the background
+	const legendary = await o.page.evaluate((CMP) => {
+		const rows = [...document.querySelectorAll(`${CMP} .nimble-cmpx-row[data-id]`)];
+		return {
+			n: rows.length,
+			allLegendary: rows.every(r => r.querySelector('.nimble-cmpx-row-badge.is-level')?.classList.contains('role-legendary')),
+			count: document.querySelector(`${CMP} .nimble-cmpx-count`).textContent,
+			groups: [...document.querySelectorAll(`${CMP} .nimble-cmpx-group`)].map(g => g.textContent),
+		};
+	}, CMP);
 	assert.ok(legendary.n > 10 && legendary.n < total, `legendary filter shows ${legendary.n}`);
-	assert.ok(legendary.allLegendary);
-	assert.equal(legendary.count, `${legendary.n} of ${total} monsters`);
-	assert.equal(await o.page.locator(`${B} .nimble-segmented[aria-label="Role"] button.is-active`).textContent(), 'Legendary');
+	assert.ok(legendary.allLegendary, 'every row is legendary');
+	assert.equal(legendary.count, `${legendary.n} of ${total} · by level`);
+	assert.ok(legendary.groups.length > 1 && legendary.groups.every(g => /^Level \d|^No level$/.test(g)), `grouped by level: ${legendary.groups}`);
 	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-bestiary.png') });
 
-	// Add straight from a row, and two from the detail pane.
-	await o.page.locator(`${B} .bestiary-row`).filter({ has: o.page.locator('.bestiary-row-name', { hasText: exact('Krogg, Goblin King') }) }).locator('.bestiary-row-add').click();
-	await o.page.locator(`${B} .nimble-segmented[aria-label="Role"] button`, { hasText: 'Minion' }).click();
-	await o.page.locator(`${B} .bestiary-search-input`).fill('goblin minion');
-	await o.waitFor(() => o.page.evaluate((B) => document.querySelector(`${B} .bestiary-detail .monster-name`)?.textContent === 'Goblin Minion', B), { timeout: 3000, what: 'Goblin Minion in the detail pane' });
-	await o.page.locator(`${B} .bestiary-detail .statblock-action`, { hasText: '+2' }).click();
+	// Add straight from a row, and two from the page.
+	await cmpRow(o, 'Krogg, Goblin King').locator('.nimble-cmpx-row-btn').click();
+	await o.page.locator(`${CMP} .nimble-cmpx-chip-x`).click();
+	await input.fill('role:minion goblin minion');
+	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-detail .monster-name`).textContent().catch(() => '')) === 'Goblin Minion', { timeout: 3000, what: 'Goblin Minion in the detail pane' });
+	assert.deepEqual(await cmpChips(o), [['Role', 'minion']]);
+	// Shift-click on the page's Add adds two (the menu's Add several… asks for any number).
+	await o.page.locator(`${CMP} .nimble-cmpx-detail .statblock-action`, { hasText: exact('Add') }).click({ modifiers: ['Shift'] });
 	await o.page.waitForTimeout(200);
 	const list = await creatures(o);
 	assert.deepEqual(list.map(c => [c.label, c.count]), [['Krogg, Goblin King-1', undefined], ['Goblin Minion', 2]]);
 	assert.equal(list[0].max, 90);
 	assert.equal(await card(o, 'Krogg, Goblin King-1').count(), 1);
 
+	// Enter adds the selected monster, Shift+Enter two.
+	await o.page.locator(`${CMP} .nimble-cmpx-chip-x`).click();
+	await input.fill('goblin boss');
+	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`).textContent().catch(() => '')) === 'Goblin Boss', { timeout: 3000, what: 'Goblin Boss selected' });
+	await o.page.keyboard.press('Shift+Enter');
+	await o.waitFor(async () => (await creatures(o)).filter(c => c.label.startsWith('Goblin Boss')).length === 2, { what: 'two bosses from Shift+Enter' });
+
+	await closeCompendiumTab(o);
+});
+
+test('compendium: typed filters become chips, Tab completes, Backspace edits, Alt+arrows switch tabs', async (o) => {
+	await resetEncounter(o);
+	await openCompendiumTab(o);
+	const input = o.page.locator(`${CMP} .nimble-cmpx-input`);
+	await input.click();
+	await input.fill('');
+	await o.page.keyboard.type('type:gob', { delay: 20 });
+	const sug = o.page.locator(`${CMP} .nimble-cmpx-row.is-suggestion`);
+	await o.waitFor(async () => /type:Goblins/.test(await sug.first().textContent().catch(() => '')), { timeout: 3000, what: 'type:Goblins suggested first' });
+	assert.equal(await sug.first().locator('.nimble-cmpx-kbd').textContent(), 'Tab', 'the top suggestion shows its key');
+	assert.ok(await sug.first().evaluate(el => el.classList.contains('is-selected')), 'a filter being typed selects its completion');
+	await o.page.keyboard.press('Tab');
+	await o.waitFor(async () => (await cmpChips(o)).length === 1, { timeout: 3000, what: 'the type chip' });
+	assert.deepEqual(await cmpChips(o), [['Type', 'Goblins']]);
+	assert.equal(await input.inputValue(), '');
+	assert.equal(await o.page.evaluate(() => document.activeElement?.classList.contains('nimble-cmpx-input')), true, 'focus stays in the search box');
+
+	// A finished filter (a space after it) turns into a chip too.
+	await o.page.keyboard.type('level:1-3 ', { delay: 20 });
+	await o.waitFor(async () => (await cmpChips(o)).length === 2, { timeout: 3000, what: 'the level chip' });
+	assert.deepEqual(await cmpChips(o), [['Type', 'Goblins'], ['Level', '1-3']]);
+	await o.page.waitForTimeout(300);
+	const ids = await o.page.evaluate((CMP) => [...document.querySelectorAll(`${CMP} .nimble-cmpx-row[data-id]`)].map(r => r.dataset.id), CMP);
+	assert.ok(ids.length >= 3, `some goblins of level 1-3: ${ids.length}`);
+	const bad = await o.eval((app, plugin, ids) => {
+		const lvl = (v) => { const s = String(v ?? ''); const f = s.match(/^(\d+)\/(\d+)$/); return f ? Number(f[1]) / Number(f[2]) : Number(s); };
+		return ids.filter(id => {
+			const e = plugin.index.all().find(x => `monster:${x.monster.bundledId || `vault:${x.filePath}#${x.name}`}` === id);
+			if (!e) return true;
+			const types = [e.monster.group, e.monster.type].filter(Boolean).join(' ');
+			const l = lvl(e.monster.level);
+			return !/goblin/i.test(types) || !(l >= 1 && l <= 3);
+		});
+	}, ids);
+	assert.deepEqual(bad, [], 'every result is a Goblin of level 1-3');
+	assert.match(await o.page.locator(`${CMP} .nimble-cmpx-count`).textContent(), new RegExp(`^${ids.length} of \\d+ · by level$`));
+
+	// Backspace in the empty box reopens the last chip: it waits for its value again, with the value in the box to edit.
+	await o.page.keyboard.press('Backspace');
+	await o.waitFor(async () => (await cmpChips(o)).length === 1, { timeout: 3000, what: 'the level chip to reopen' });
+	assert.equal(await o.page.locator(`${CMP} .nimble-cmpx-chip.is-pending`).count(), 1, 'the level chip waits for its value');
+	assert.equal(await input.inputValue(), '1-3');
+	// Clear the value; Backspace again cancels the waiting chip.
+	await o.page.keyboard.press('ControlOrMeta+a');
+	await o.page.keyboard.press('Delete');
+	await o.page.keyboard.press('Backspace');
+	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-chip.is-pending`).count()) === 0, { timeout: 3000, what: 'the waiting chip cancelled' });
+	await o.page.waitForTimeout(150);
+
+	// Alt+→ moves to the next tab (NPCs); Goblins mean nothing there, so the chip goes.
+	await o.page.keyboard.press('Alt+ArrowRight');
+	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-seg.is-active`).getAttribute('data-segment')) === 'npcs', { timeout: 3000, what: 'the NPCs tab' });
+	assert.deepEqual(await cmpChips(o), [], 'type:Goblins dropped on NPCs');
+	await o.page.keyboard.press('Alt+ArrowLeft');
+	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-seg.is-active`).getAttribute('data-segment')) === 'adversaries', { timeout: 3000, what: 'back on Adversaries' });
+	// Alt+digit jumps straight to a tab (5 is Spells).
+	await o.page.keyboard.press('Alt+5');
+	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-seg.is-active`).getAttribute('data-segment')) === 'spells', { timeout: 3000, what: 'the Spells tab' });
+	await closeCompendiumTab(o);
+});
+
+test('compendium art: pick an image for an entry; it shows on the page and as the list icon, and follows a rename', async (o) => {
+	await o.eval(async (app) => {
+		const c = document.createElement('canvas'); c.width = 64; c.height = 48;
+		const g = c.getContext('2d'); g.fillStyle = '#c0392b'; g.fillRect(0, 0, 64, 48);
+		const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+		if (!app.vault.getAbstractFileByPath('flame-art.png')) await app.vault.createBinary('flame-art.png', await blob.arrayBuffer());
+	});
+	await o.eval((app, plugin) => plugin.openCompendium('spells', 'flame dart'));
+	const D = '.nimble-compendium .nimble-cmpx-detail';
+	await o.waitFor(async () => (await o.page.locator(`${D} .nimble-cmp-name`).first().textContent().catch(() => '')) === 'Flame Dart', { timeout: 4000, what: 'Flame Dart on the page' });
+	assert.equal(await o.page.locator(`${D} .nimble-art-slot:not(.has-art)`).count(), 1, 'an empty art slot');
+	await o.page.locator(`${D} .nimble-art-slot`).click();
+	await o.page.locator('.menu-item', { hasText: 'Choose from vault' }).click();
+	await o.page.keyboard.type('flame-art');
+	await o.page.waitForTimeout(250);
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => (await o.page.locator(`${D} .nimble-art-slot.has-art img`).count()) === 1, { timeout: 3000, what: 'the art on the page' });
+	assert.equal(await o.page.locator('.nimble-compendium .nimble-cmpx-row[data-id="spell:flamedart"] .nimble-cmpx-row-badge.has-art img').count(), 1, 'the art as the list icon');
+	assert.equal(await o.eval((app, plugin) => plugin.settings.compendiumArt['spell:flamedart']), 'flame-art.png');
+	await o.eval(async (app) => { await app.fileManager.renameFile(app.vault.getAbstractFileByPath('flame-art.png'), 'flame-art-moved.png'); });
+	await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.compendiumArt['spell:flamedart'])) === 'flame-art-moved.png', { timeout: 3000, what: 'the link to follow the rename' });
+	// Remove it again so other tests see the plain icons.
+	await o.page.locator(`${D} .nimble-art-slot`).click();
+	await o.page.locator('.menu-item', { hasText: 'Remove art' }).click();
+	await o.waitFor(async () => (await o.page.locator(`${D} .nimble-art-slot.has-art`).count()) === 0, { timeout: 3000, what: 'the art removed' });
 	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
+});
+
+test('compendium: "lay on hands" finds the Oathsworn feature; the Classes tab shows a class by level', async (o) => {
+	await resetEncounter(o);
+	await openCompendiumTab(o);
+	const input = o.page.locator(`${CMP} .nimble-cmpx-input`);
+	await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="features"]`).click();
+	await input.fill('lay on hands');
+	await o.waitFor(async () => (await cmpNames(o))[0] === 'Lay on Hands', { timeout: 3000, what: 'Lay on Hands first' });
+	assert.match(await cmpRows(o).first().getAttribute('data-id'), /^feature:oathsworn:/);
+	const detail = o.page.locator(`${CMP} .nimble-cmpx-detail`);
+	await o.waitFor(async () => (await detail.locator('.nimble-cmp-name').first().textContent().catch(() => '')) === 'Lay on Hands', { timeout: 3000, what: 'the feature card' });
+	assert.match(await detail.innerText(), /Oathsworn/);
+
+	await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="classes"]`).click();
+	await input.fill('oathsworn');
+	await o.waitFor(async () => (await cmpNames(o))[0] === 'Oathsworn', { timeout: 3000, what: 'Oathsworn first' });
+	await o.waitFor(async () => (await detail.locator('.nimble-cmp-name').first().textContent().catch(() => '')) === 'Oathsworn', { timeout: 3000, what: 'the class page' });
+	const levels = await detail.locator('.nimble-cmp-levels .nimble-cmp-level-badge').allTextContents();
+	assert.ok(levels.length >= 10 && levels[0] === '1', `levels listed in order: ${levels}`);
+	assert.match(await detail.innerText(), /Lay on Hands/);
+	await closeCompendiumTab(o);
 });
 
 // ---------------------------------------------------------------------------
@@ -484,25 +745,31 @@ test('add to encounter: button, shift-click, inline +, unique labels', async (o)
 test('add-monster search adds from anywhere', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:add-monster'));
-	await o.page.waitForSelector('.prompt-input');
+	const M = '.modal.nimble-cmpx-modal';
+	await o.page.waitForSelector(`${M} .nimble-cmpx-input`);
+	assert.equal(await o.page.locator(`${M} .modal-title`).textContent(), 'Add to the encounter');
+	await o.waitFor(() => o.page.evaluate((M) => document.activeElement === document.querySelector(`${M} .nimble-cmpx-input`), M), { timeout: 3000, what: 'the search box focused' });
 	await o.page.keyboard.type('young dragon');
-	await o.waitFor(() => o.page.evaluate(() => document.querySelector('.prompt .suggestion-item.is-selected .nimble-add-name')?.textContent === 'Young Dragon'),
-		{ timeout: 3000, what: 'Young Dragon to be the selected suggestion' });
+	await o.waitFor(() => o.page.evaluate((M) => document.querySelector(`${M} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`)?.textContent === 'Young Dragon', M),
+		{ timeout: 3000, what: 'Young Dragon to be the selected result' });
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	assert.deepEqual((await creatures(o)).map(c => c.label), ['Young Dragon-1']);
+	assert.equal(await o.page.locator(M).count(), 0, 'Enter adds and closes');
 });
 
 test('add monster dialog: "3 goblin minion" makes one minion group', async (o) => {
 	await resetEncounter(o);
-	const M = '.nimble-add-monster-modal';
+	const M = '.modal.nimble-cmpx-modal';
+	const selected = `${M} .nimble-cmpx-row.is-selected`;
 	await o.page.locator(`${T} .tracker-add-monster`).click();
-	await o.page.waitForSelector(`${M} input`, { timeout: 3000 });
+	await o.page.waitForSelector(`${M} .nimble-cmpx-input`, { timeout: 3000 });
+	await o.waitFor(() => o.page.evaluate((M) => document.activeElement === document.querySelector(`${M} .nimble-cmpx-input`), M), { timeout: 3000, what: 'the search box focused' });
 	await o.page.keyboard.type('3 goblin minion');
-	await o.waitFor(() => o.page.evaluate((M) => document.querySelector(`${M} .suggestion-item.is-selected .nimble-add-name`)?.textContent === 'Goblin Minion', M),
+	await o.waitFor(() => o.page.evaluate((s) => document.querySelector(`${s} .nimble-cmpx-row-name > span:first-child`)?.textContent === 'Goblin Minion', selected),
 		{ timeout: 3000, what: 'Goblin Minion as the first result' });
-	assert.match(await o.page.locator(`${M} .suggestion-item.is-selected .nimble-add-meta`).textContent(), /Minion/);
-	assert.equal(await o.page.locator(`${M} .suggestion-item.is-selected .nimble-add-n`).textContent(), '3', 'the row quantity starts at the typed count');
+	assert.match(await o.page.locator(`${selected} .nimble-cmpx-row-pills`).textContent(), /Minion/);
+	assert.ok(await o.page.locator(`${selected} .nimble-cmpx-row-badge.role-minion`).count(), 'minion badge');
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	const [group] = await creatures(o);
@@ -518,21 +785,31 @@ test('add monster dialog: "3 goblin minion" makes one minion group', async (o) =
 
 	// Unknown names say so.
 	await o.page.locator(`${T} .tracker-add-monster`).click();
-	await o.page.waitForSelector(`${M} input`, { timeout: 3000 });
+	await o.page.waitForSelector(`${M} .nimble-cmpx-input`, { timeout: 3000 });
+	await o.waitFor(() => o.page.evaluate((M) => document.activeElement === document.querySelector(`${M} .nimble-cmpx-input`), M), { timeout: 3000, what: 'the search box focused' });
 	await o.page.keyboard.type('zzz nobody');
-	await o.waitFor(async () => /No matching monsters/.test(await o.page.locator(`${M} .suggestion-empty`).textContent().catch(() => '')), { what: 'the empty state' });
+	await o.waitFor(async () => /Nothing matches/.test(await o.page.locator(`${M} .nimble-cmpx-empty`).textContent().catch(() => '')), { what: 'the empty state' });
 
-	// Row buttons: pick a quantity, Add, and the dialog stays open for the next monster.
-	await o.page.keyboard.press('Meta+A');
+	// Cmd/Ctrl+Enter adds ("2 goblin": two) and keeps the dialog open for the next monster.
+	await o.page.keyboard.press('ControlOrMeta+a');
+	await o.page.keyboard.type('2 goblin');
+	await o.waitFor(() => o.page.evaluate((s) => document.querySelector(`${s} .nimble-cmpx-row-name > span:first-child`)?.textContent === 'Goblin', selected), { timeout: 3000, what: 'Goblin selected' });
+	await o.page.keyboard.press('ControlOrMeta+Enter');
+	await o.waitFor(async () => (await creatures(o)).filter(c => /^Goblin-\d+$/.test(c.label)).length === 2, { what: 'two goblins' });
+	assert.equal(await o.page.locator(M).count(), 1, 'still open after Cmd/Ctrl+Enter');
+
+	// Row buttons: + adds one (Shift: two), and the dialog stays open; the row says how many are in the fight.
+	await o.page.keyboard.press('ControlOrMeta+a');
 	await o.page.keyboard.type('goblin boss');
-	const rowEl = o.page.locator(`${M} .suggestion-item`).filter({ has: o.page.locator('.nimble-add-name > span:first-child', { hasText: exact('Goblin Boss') }) }).first();
-	await rowEl.hover();
-	await rowEl.locator('.nimble-add-step[aria-label="One more"]').click();
-	await rowEl.locator('.nimble-add-btn').click();
-	await o.waitFor(async () => /2 in fight/.test(await rowEl.locator('.nimble-add-here').textContent()), { what: 'the in-fight badge' });
+	const rowEl = cmpRow(o, 'Goblin Boss', M);
+	await rowEl.first().waitFor({ timeout: 3000 });
+	await rowEl.first().hover();
+	await rowEl.first().locator('.nimble-cmpx-row-btn').click({ modifiers: ['Shift'] });
+	await o.waitFor(async () => /2 in fight/.test(await rowEl.first().locator('.nimble-cmpx-infight').textContent()), { what: 'the in-fight badge' });
 	assert.equal(await o.page.locator(M).count(), 1, 'still open after adding from a row');
 	assert.equal((await creatures(o)).filter(c => c.label.startsWith('Goblin Boss')).length, 2);
 	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await o.page.locator(M).count()) === 0, { what: 'Escape closes the dialog' });
 
 	// The group attack rolls one die per minion into the roll log.
 	await row.locator('.group-attack').click();
@@ -547,9 +824,10 @@ test('turn flow: party, Start combat, heroes then monsters, Next round', async (
 	await o.page.locator(`${T} .quick-add-party`).click();
 	await o.page.waitForTimeout(100);
 	await o.page.locator(`${T} .tracker-add-monster`).click();
-	await o.page.waitForSelector('.nimble-add-monster-modal input', { timeout: 3000 });
+	await o.page.waitForSelector('.nimble-cmpx-modal .nimble-cmpx-input', { timeout: 3000 });
+	await o.waitFor(() => o.page.evaluate(() => document.activeElement?.classList.contains('nimble-cmpx-input')), { timeout: 3000, what: 'the search box focused' });
 	await o.page.keyboard.type('3 goblin minion');
-	await o.waitFor(() => o.page.evaluate(() => !!document.querySelector('.nimble-add-monster-modal .suggestion-item.is-selected')), { timeout: 3000, what: 'add monster results' });
+	await o.waitFor(() => o.page.evaluate(() => document.querySelector('.nimble-cmpx-modal .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child')?.textContent === 'Goblin Minion'), { timeout: 3000, what: 'add monster results' });
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(150);
 	assert.deepEqual((await creatures(o)).map(c => [c.label, c.side]), [['Aria', 'hero'], ['Bram', 'hero'], ['Goblin Minion', 'monster']]);
@@ -638,7 +916,7 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the quick look' });
 	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Krogg, Goblin King');
 	assert.match(await o.page.locator(`${Q} .record-sub`).textContent(), /Legendary|Solo/);
-	assert.equal(await o.page.locator(`${Q} .record-btn`, { hasText: 'Open in bestiary' }).count(), 1);
+	assert.equal(await o.page.locator(`${Q} .record-btn`, { hasText: 'Open in compendium' }).count(), 1);
 	// The strip is the sheet's own HP bar (tap it for the calculator), action dots, Wounds and turn pill.
 	await o.page.locator(`${Q} .record-strip .ns-meter.is-hp .ns-meter-bar`).click();
 	await o.page.keyboard.type('10');
@@ -1011,6 +1289,56 @@ test('slash commands: /encounter, /monster, /add, /roll', async (o) => {
 	assert.match(text, /🎲 2d6\+3 → \*\*\d+\*\*/);
 	assert.doesNotMatch(text, /\/add/);
 	assert.deepEqual((await creatures(o)).map(c => c.label), ['Bandit-1', 'Bandit-2']);
+});
+
+test('slash: /spell opens the compendium dialog; Enter writes the reference and typing carries on', async (o) => {
+	await resetEncounter(o);
+	await o.eval(async (app) => {
+		const old = app.vault.getAbstractFileByPath('Slash spell.md');
+		if (old) await app.vault.delete(old);
+		await app.vault.create('Slash spell.md', '# Spells\n\n');
+	});
+	await o.openFile('Slash spell.md', 'source');
+	await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 2, ch: 0 }); ed.focus(); });
+	const menu = o.page.locator('.suggestion-container .nimble-slash-item');
+	await o.page.keyboard.type('She casts /spell', { delay: 15 });
+	await o.waitFor(async () => /\/spell/.test((await menu.first().textContent().catch(() => '')) || ''), { what: 'the /spell command' });
+	await o.page.keyboard.press('Enter');
+	const M = '.modal.nimble-cmpx-modal';
+	await o.page.waitForSelector(`${M} .nimble-cmpx-input`, { timeout: 3000 });
+	assert.equal(await o.page.locator(`${M} .modal-title`).textContent(), 'Insert a spell');
+	await o.waitFor(() => o.page.evaluate((M) => document.activeElement === document.querySelector(`${M} .nimble-cmpx-input`), M), { timeout: 3000, what: 'the dialog search box focused' });
+	assert.ok((await o.page.locator(`${M} .nimble-cmpx-row[data-id]`).first().getAttribute('data-id')).startsWith('spell:'), 'set to spells');
+	await o.page.keyboard.type('flame dart', { delay: 15 });
+	await o.waitFor(async () => (await o.page.locator(`${M} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`).textContent().catch(() => '')) === 'Flame Dart', { timeout: 3000, what: 'Flame Dart selected' });
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => (await o.page.locator(M).count()) === 0, { what: 'the dialog to close' });
+	await o.waitFor(() => o.page.evaluate(() => !!document.activeElement?.closest('.cm-editor')), { timeout: 3000, what: 'focus back in the editor' });
+	await o.page.keyboard.type('at the troll.', { delay: 15 });
+	await o.page.waitForTimeout(200);
+	assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(2)), 'She casts `nimble:spell:Flame Dart` at the troll.');
+
+	// Escape hands the cursor back too, with nothing written.
+	await o.page.keyboard.press('Enter');
+	await o.page.keyboard.type('/monster', { delay: 15 });
+	await o.waitFor(async () => /\/monster/.test((await menu.first().textContent().catch(() => '')) || ''), { what: 'the /monster command' });
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForSelector(`${M} .nimble-cmpx-input`, { timeout: 3000 });
+	assert.equal(await o.page.locator(`${M} .modal-title`).textContent(), 'Insert a monster');
+	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await o.page.locator(M).count()) === 0, { what: 'Escape to close the dialog' });
+	await o.waitFor(() => o.page.evaluate(() => !!document.activeElement?.closest('.cm-editor')), { timeout: 3000, what: 'focus back in the editor after Escape' });
+	await o.page.keyboard.type('Ogres.', { delay: 15 });
+	await o.page.waitForTimeout(200);
+	assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(3)), 'Ogres.');
+
+	// With an argument the menu lists results inline, and its last row opens the dialog.
+	await o.page.keyboard.press('Enter');
+	await o.page.keyboard.type('/spell flame', { delay: 15 });
+	await o.waitFor(async () => (await menu.allTextContents()).some(t => /Flame Dart/.test(t)), { what: 'Flame Dart in the slash menu' });
+	assert.match(await menu.last().textContent(), /Search the compendium…/);
+	await o.page.keyboard.press('Escape');
+	await o.eval(async (app) => { const x = app.vault.getAbstractFileByPath('Slash spell.md'); if (x) await app.vault.delete(x); });
 });
 
 test('boxes: /treasure inserts one, the icon editor restyles and saves; NPCs link', async (o) => {
@@ -1410,8 +1738,8 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await o.waitFor(() => o.eval((app, plugin) => plugin.campaigns.npcs.some(n => n.name === 'Spot NPC')), { what: 'the NPC to be indexed' });
 	const S = '.modal-container .prompt.nimble-spotlight';
 	const input = o.page.locator(`${S} .prompt-input`);
-	const rows = o.page.locator(`${S} .suggestion-item`);
-	const names = () => o.page.locator(`${S} .nimble-spot-name`).allInnerTexts();
+	const rows = o.page.locator(`${S} .suggestion-item:not(.is-filter)`);
+	const names = () => o.page.locator(`${S} .suggestion-item:not(.is-filter) .nimble-spot-name`).allInnerTexts();
 	// Cmd/Ctrl+K is Obsidian's hotkey for "Insert Markdown link"; its hotkey manager runs that command, which the
 	// plugin shares. Most steps run the command directly; a real key press is checked below, in three places.
 	const pressK = () => o.eval((app) => { app.commands.executeCommandById('editor:insert-link'); });
@@ -1443,10 +1771,11 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await o.page.screenshot({ path: join(ARTIFACTS, 'spotlight-search.png') });
 	await o.page.keyboard.press('Enter');
 	await o.page.locator('.modal.nimble-record-modal').waitFor();
+	// Escape out of the quick look comes back to Spotlight, still searching.
 	await o.page.keyboard.press('Escape');
+	await input.waitFor();
 
 	// "3 goblin" adds three; Cmd+Enter on a plain search adds one and keeps the box open.
-	await openIt();
 	await input.fill('3 goblin');
 	await o.waitFor(async () => (await names())[0] === 'Add 3 × Goblin', { what: 'the add row' });
 	await o.page.keyboard.press('Enter');
@@ -1480,12 +1809,14 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await o.waitFor(async () => (await names())[0] === 'Spot NPC', { what: 'the NPC by alias' });
 	await o.page.keyboard.press('Enter');
 	await o.page.locator('.modal.nimble-record-modal').waitFor();
+	// Escape out of the quick look comes back to Spotlight.
 	await o.page.keyboard.press('Escape');
-	await openIt();
-	await input.fill('> bestiary');
-	await o.waitFor(async () => (await names())[0] === 'Open bestiary', { what: 'the command' });
+	await input.waitFor();
+	await input.fill('> open compendium');
+	await o.waitFor(async () => (await names())[0] === 'Open compendium', { what: 'the command' });
 	await o.page.keyboard.press('Enter');
-	await o.waitFor(() => o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').length > 0 || [...document.querySelectorAll('.workspace-leaf-content')].some(e => /bestiary/i.test(e.dataset.type || ''))), { what: 'the bestiary to open' });
+	await o.waitFor(() => o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').length > 0), { what: 'the compendium to open' });
+	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
 
 	// With text selected, the key still makes a link.
 	await o.openFile('Adventure.md', 'source');
@@ -1518,6 +1849,122 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await input.waitFor();
 	await o.page.keyboard.press('Escape');
 	await o.eval(async (app) => { const x = app.vault.getAbstractFileByPath('Spot NPC.md'); if (x) await app.vault.delete(x); });
+});
+
+test('Spotlight: Escape in a card or quick look opened from it comes back to Spotlight with the same search', async (o) => {
+	const open = async (q) => {
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
+		await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+		await o.page.keyboard.type(q);
+		await o.page.waitForTimeout(300);
+	};
+	const spotlight = () => o.page.evaluate(() => document.querySelector('.nimble-spotlight .prompt-input')?.value ?? null);
+	// A spell's card: Escape → back to Spotlight, still searching "flame dart".
+	await open('flame dart');
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForSelector('.modal.nimble-cmp-modal');
+	assert.equal(await spotlight(), null, 'Spotlight closed while the card is up');
+	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await spotlight()) === 'flame dart', { timeout: 3000, what: 'Spotlight back with the search' });
+	assert.equal(await o.page.locator('.modal.nimble-cmp-modal').count(), 0);
+	// Closing the card with its × doesn't bring Spotlight back.
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForSelector('.modal.nimble-cmp-modal');
+	await o.page.locator('.modal.nimble-cmp-modal .modal-close-button').click();
+	await o.page.waitForTimeout(300);
+	assert.equal(await spotlight(), null, 'no Spotlight after closing with ×');
+	// A monster's quick look works the same way.
+	await open('krogg');
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForSelector('.modal.nimble-record-modal');
+	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await spotlight()) === 'krogg', { timeout: 3000, what: 'Spotlight back after the quick look' });
+	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await spotlight()) === null, { timeout: 2000, what: 'Spotlight closed' });
+});
+
+test('Spotlight and the compendium forgive typos: "zombieq" still finds Zombie', async (o) => {
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
+	await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+	await o.page.keyboard.type('zombieq');
+	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-spotlight .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in Spotlight' });
+	await o.page.keyboard.press('Escape');
+	// A real name match beats typo matches of anything else: "compen" is Open compendium, not monsters in a Companions group.
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
+	await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+	await o.page.keyboard.type('compen');
+	await o.waitFor(async () => (await o.page.locator('.nimble-spotlight .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) === 'Open compendium', { timeout: 3000, what: 'Open compendium first for "compen"' });
+	assert.equal(await o.page.locator('.nimble-spotlight .suggestion-item.spot-monster').count(), 0, 'no typo-matched monsters beside a real match');
+	await o.page.keyboard.press('Escape');
+	await o.eval((app, plugin) => plugin.openCompendium('adversaries', 'zombieq'));
+	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-compendium .nimble-cmpx-row[data-id] .nimble-cmpx-row-name > span:first-child').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in the compendium' });
+	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
+});
+
+test('compendium: after picking a row, typing a filter key starts on its suggestions, and Enter makes a chip and clears the text', async (o) => {
+	const C = '.nimble-compendium';
+	await o.eval((app, plugin) => plugin.openCompendium('adversaries', 'type:undead '));
+	const input = o.page.locator(`${C} .nimble-cmpx-input`);
+	await o.waitFor(async () => (await o.page.locator(`${C} .nimble-cmpx-chip`).count()) === 1, { timeout: 3000, what: 'the Undead chip' });
+	assert.match(await o.page.locator(`${C} .nimble-cmpx-chip`).first().textContent(), /undead/i);
+	// Pick a row, then come back to the box and start a second type: filter.
+	await o.page.locator(`${C} .nimble-cmpx-row[data-id]`).nth(2).click();
+	await input.click();
+	await o.page.keyboard.type('type:');
+	await o.waitFor(async () => (await o.page.locator(`${C} .nimble-cmpx-row.is-suggestion`).count()) > 1, { timeout: 3000, what: 'other types offered' });
+	const sel = () => o.page.locator(`${C} .nimble-cmpx-row.is-selected`).first();
+	assert.equal(await sel().evaluate(el => el.classList.contains('is-suggestion')), true, 'the selection starts on the first suggestion');
+	assert.ok(!(await o.page.locator(`${C} .nimble-cmpx-row.is-suggestion .nimble-cmpx-row-name`).allTextContents()).some(t => t.toLowerCase() === 'type:undead'), 'the applied type is not offered again');
+	await o.page.keyboard.press('ArrowDown');
+	const picked = (await sel().locator('.nimble-cmpx-row-name').textContent()).replace(/^type:/, '');
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => (await o.page.locator(`${C} .nimble-cmpx-chip`).count()) === 2, { timeout: 3000, what: 'a second chip' });
+	assert.equal(await input.inputValue(), '', 'the typed "type:" is consumed');
+	assert.match((await o.page.locator(`${C} .nimble-cmpx-chip`).nth(1).textContent()), new RegExp(picked.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
+});
+
+test('Spotlight: filters work right in Spotlight (chips, suggestions, filtered results), and the lookup row takes them to the compendium', async (o) => {
+	await resetEncounter(o);
+	const S = '.modal-container .prompt.nimble-spotlight';
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
+	const input = o.page.locator(`${S} .prompt-input`);
+	await input.waitFor();
+	// A finished filter becomes a chip in Spotlight's own box; the results are compendium entries that match.
+	await input.fill('school:fire ');
+	await o.waitFor(async () => (await cmpChips(o, S)).length === 1, { timeout: 3000, what: 'the School chip in Spotlight' });
+	assert.deepEqual(await cmpChips(o, S), [['School', 'fire']]);
+	assert.equal(await input.inputValue(), '');
+	const rows = o.page.locator(`${S} .suggestion-item`);
+	await o.waitFor(async () => (await o.page.locator(`${S} .suggestion-item.spot-lookup`).count()) === 1, { timeout: 3000, what: 'the lookup row' });
+	const kinds = await rows.evaluateAll(els => els.map(e => ['entry', 'lookup', 'filter'].find(k => e.classList.contains(`spot-${k}`)) ?? e.className));
+	assert.ok(kinds.slice(0, -1).every(k => k === 'entry'), `compendium entries: ${kinds}`);
+	assert.ok((await o.page.locator(`${S} .spot-entry .nimble-spot-name`).allInnerTexts()).includes('Flame Dart'));
+	// Naming a filter makes a chip that waits for its value; its values are suggested at the top, already selected.
+	await o.page.keyboard.type('tier', { delay: 20 });
+	await o.waitFor(async () => (await o.page.locator(`${S} .suggestion-item.is-filter.is-selected`).count()) === 1, { timeout: 3000, what: 'the tier: key suggested and selected' });
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => (await o.page.locator(`${S} .nimble-cmpx-chip.is-pending`).count()) === 1, { timeout: 3000, what: 'a Tier chip waiting for its value' });
+	assert.equal(await input.inputValue(), '');
+	await o.page.keyboard.type('cantrip', { delay: 20 });
+	await o.waitFor(async () => /tier:cantrip/i.test(await o.page.locator(`${S} .suggestion-item.is-filter.is-selected`).innerText().catch(() => '')), { timeout: 3000, what: 'tier:cantrip selected' });
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => (await cmpChips(o, S)).length === 2, { timeout: 3000, what: 'the Tier chip' });
+	assert.equal(await input.inputValue(), '', 'nothing typed is left behind');
+	// The lookup row (last; ↑ from the top wraps to it) opens the compendium with the same chips.
+	await o.page.keyboard.press('ArrowUp');
+	await o.waitFor(async () => rows.last().evaluate(el => el.classList.contains('is-selected')), { timeout: 2000, what: 'the lookup row selected' });
+	await o.page.keyboard.press('Enter');
+	const M = '.modal.nimble-cmpx-modal';
+	await o.page.waitForSelector(`${M} .nimble-cmpx-input`, { timeout: 3000 });
+	await o.waitFor(async () => (await cmpChips(o, M)).length === 2, { timeout: 3000, what: 'both chips in the compendium' });
+	const names = await cmpNames(o, M);
+	assert.ok(names.includes('Flame Dart'), `fire cantrips listed: ${names.slice(0, 5)}`);
+	await o.page.keyboard.press('Escape');
+	await o.waitFor(async () => (await o.page.locator(M).count()) === 0, { what: 'the dialog to close' });
+	// Escape from the compendium opened from Spotlight comes back to Spotlight; close that too.
+	await input.waitFor();
+	await o.page.keyboard.press('Escape');
 });
 
 test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', async (o) => {
@@ -1561,19 +2008,24 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 		assert.equal(await p.locator('.nimble-popover.is-sheet').count(), 1, 'popover is a sheet on phones');
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover').forEach(n => n.remove()));
 
-		// Narrow bestiary: list → monster → back; filters behind a toggle.
+		// Narrow compendium: list → monster → back; filters behind a toggle.
 		await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
 		await p.waitForTimeout(500);
-		const layout = p.locator('.bestiary-layout');
+		const layout = p.locator('.nimble-compendium .nimble-cmpx-layout');
 		assert.match(await layout.getAttribute('class'), /is-narrow/);
-		assert.equal(await p.locator('.bestiary-filters').isVisible(), false, 'filters start collapsed');
-		await tap(p.locator('.bestiary-row').nth(2));
+		assert.equal(await p.locator('.nimble-compendium .nimble-cmpx-panel').isVisible(), false, 'filters start collapsed');
+		assert.notEqual(await p.evaluate(() => document.activeElement?.className ?? ''), 'nimble-cmpx-input', 'no keyboard popping up on open');
+		const third = p.locator('.nimble-compendium .nimble-cmpx-row[data-id]').nth(2);
+		const thirdName = await third.locator('.nimble-cmpx-row-name > span:first-child').textContent();
+		await tap(third);
 		assert.match(await layout.getAttribute('class'), /show-detail/);
-		assert.equal(await p.locator('.bestiary-list').isVisible(), false);
-		await tap(p.locator('.bestiary-back'));
+		assert.equal(await p.locator('.nimble-compendium .nimble-cmpx-list').isVisible(), false);
+		assert.equal(await p.locator('.nimble-compendium .nimble-cmpx-detail .monster-name').textContent(), thirdName);
+		await tap(p.locator('.nimble-compendium .nimble-cmpx-detail .bestiary-back'));
 		assert.doesNotMatch(await layout.getAttribute('class'), /show-detail/);
-		await tap(p.locator('.bestiary-filter-toggle'));
-		assert.equal(await p.locator('.bestiary-filters').isVisible(), true);
+		await tap(p.locator('.nimble-compendium .nimble-cmpx-filter'));
+		assert.equal(await p.locator('.nimble-compendium .nimble-cmpx-panel').isVisible(), true);
+		await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
 
 		// Map: two-finger pinch zooms in; a tap on a pin opens its card.
 		await o.eval(async (app) => {
@@ -2848,11 +3300,13 @@ test('player campaign: roster, lore cards, battle notes, GM tools hidden, switch
 		await clickMenu(o, 'Fled');
 		await o.waitFor(async () => /outcome: fled/.test(await read(o, 'Campaigns/Ironbrow Saga/Sessions/Session 1.md')), { what: 'outcome written' });
 
-		// The bestiary is names and lore.
+		// The compendium's creatures are names and lore: no levels, no stats.
 		await o.eval((app, plugin) => plugin.openBestiary());
-		await o.waitFor(async () => (await o.page.locator('.nimble-bestiary.is-lore').count()) === 1, { what: 'lore bestiary' });
-		assert.equal(await o.page.locator('.nimble-bestiary .bestiary-level-input').count(), 0);
-		assert.equal(await o.page.locator('.nimble-bestiary .bestiary-detail .stat-badge').count(), 0);
+		await o.waitFor(async () => (await o.page.locator('.nimble-compendium.is-lore .nimble-cmpx-row[data-id]').count()) > 0, { what: 'lore compendium' });
+		assert.equal(await o.page.locator('.nimble-compendium .nimble-cmpx-seg[data-segment="adversaries"] .nimble-cmpx-seg-label').textContent(), 'Creatures');
+		assert.equal(await o.page.locator('.nimble-compendium .nimble-cmpx-row-badge.is-level').count(), 0);
+		await o.page.waitForSelector('.nimble-compendium .nimble-cmpx-detail .nimble-lore-card', { timeout: 3000 });
+		assert.equal(await o.page.locator('.nimble-compendium .nimble-cmpx-detail .stat-badge').count(), 0);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'player-bestiary.png') });
 
 		// Switch sides from Campaign settings: the same block is a GM encounter again.
@@ -3050,20 +3504,31 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		await sheet.locator('.ns-pip').nth(1).click();
 		await waitFm(o, f => f.wounds === 2, 'two wounds');
 
-		// Inventory: add an item through Spotlight's filtered picker.
+		// Inventory: add an item through the compendium dialog, set to items.
 		await sheet.locator('.ns-tab[data-tab="inventory"]').click();
 		await sheet.locator('.ns-tabpanel-inventory .ns-add.is-big').click();
-		const S = '.modal-container .prompt.nimble-spotlight.is-picker';
-		await p.locator(`${S} .prompt-input`).waitFor();
-		const chips = await p.locator(`${S} .nimble-spotlight-chip`).allInnerTexts();
-		assert.ok(chips.includes('All') && chips.includes('Weapons'), `item filter chips: ${chips}`);
-		await p.locator(`${S} .nimble-spotlight-chip`, { hasText: 'Weapons' }).click();
-		const weaponsOnly = await p.locator(`${S} .nimble-spot-tag`).allInnerTexts();
-		assert.ok(weaponsOnly.length && weaponsOnly.every(t => /item/i.test(t)), 'only items');
-		await p.locator(`${S} .nimble-spotlight-chip`, { hasText: 'All' }).click();
-		await p.locator(`${S} .prompt-input`).fill('healing potion');
-		await p.waitForTimeout(200);
-		assert.equal((await p.locator(`${S} .nimble-spot-name`).first().innerText()).trim(), 'Healing Potion');
+		const S = '.modal.nimble-cmpx-modal';
+		const sInput = p.locator(`${S} .nimble-cmpx-input`);
+		await sInput.waitFor();
+		assert.match(await p.locator(`${S} .modal-title`).textContent(), /inventory/);
+		await o.waitFor(() => p.evaluate((S) => document.activeElement === document.querySelector(`${S} .nimble-cmpx-input`), S), { timeout: 3000, what: 'the search box focused' });
+		assert.equal(await p.locator(`${S} .nimble-cmpx-seg`).count(), 0, 'one tab: no segmented control');
+		const ids = () => p.evaluate((S) => [...document.querySelectorAll(`${S} .nimble-cmpx-row[data-id]`)].map(r => r.dataset.id), S);
+		assert.ok((await ids()).length > 20 && (await ids()).every(id => id.startsWith('item:')), 'only items');
+		// Weapons only, by a typed filter.
+		await p.keyboard.type('category:weapon ', { delay: 10 });
+		await o.waitFor(async () => (await p.locator(`${S} .nimble-cmpx-chip`).count()) === 1, { timeout: 3000, what: 'the category chip' });
+		assert.equal(await p.locator(`${S} .nimble-cmpx-chip-key`).textContent(), 'Category');
+		await o.waitFor(async () => (await ids()).some(id => id === 'item:battleaxe'), { timeout: 3000, what: 'weapons listed' });
+		assert.ok(!(await ids()).includes('item:healingpotion'), 'no potions among the weapons');
+		// Backspace reopens the chip (its value back in the box); clear it, and Backspace again drops the chip.
+		await p.keyboard.press('Backspace');
+		await p.keyboard.press('ControlOrMeta+a');
+		await p.keyboard.press('Delete');
+		await p.keyboard.press('Backspace');
+		await sInput.fill('healing potion');
+		await o.waitFor(async () => (await p.locator(`${S} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`).textContent().catch(() => '')) === 'Healing Potion', { timeout: 3000, what: 'Healing Potion selected' });
+		assert.equal(await p.locator(`${S} .nimble-cmpx-chip`).count(), 0, 'Backspace took the chip back');
 		await p.keyboard.press('Enter');
 		fm = await waitFm(o, f => f.inventory?.includes('Healing Potion'), 'the potion in the inventory');
 		assert.equal(await p.locator(S).count(), 0, 'picker closes');
@@ -3094,7 +3559,11 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		await row.first().click();
 		await p.locator('.modal.nimble-cmp-modal').waitFor();
 		assert.match(await p.locator('.modal.nimble-cmp-modal').innerText(), /1d10\+STR slashing/);
+		// Escape goes back to Spotlight (still on "battleaxe"); a second Escape closes it.
 		await p.keyboard.press('Escape');
+		await p.locator('.modal-container .prompt.nimble-spotlight .prompt-input').waitFor();
+		await p.keyboard.press('Escape');
+		await o.waitFor(async () => (await p.locator('.modal-container .prompt.nimble-spotlight').count()) === 0, { what: 'Spotlight closed' });
 
 		// Edit mode: change a stat.
 		await sheet.locator('.ns-head-actions [aria-label="Edit details and stats"]').click();
@@ -3622,7 +4091,7 @@ test('campaign pages open in reading view; sessions and new notes open for editi
 
 test('player bestiary: one row per creature with book pills, and your own notes on it', async (o) => {
 	await resetEncounter(o);
-	const B = '.nimble-bestiary';
+	const B = '.nimble-compendium';
 	try {
 		await o.eval(async (app, plugin) => {
 			const old = app.vault.getAbstractFileByPath('Campaigns/Beast Lore');
@@ -3630,14 +4099,18 @@ test('player bestiary: one row per creature with book pills, and your own notes 
 			await plugin.campaigns.createCampaign({ name: 'Beast Lore', level: 1, heroes: 4, starter: false, role: 'player', character: 'Pip' });
 			await app.commands.executeCommandById('nimble-gm:open-bestiary');
 		});
-		await o.page.waitForSelector(`${B}.is-lore .bestiary-row`, { timeout: 5000 });
+		await o.page.waitForSelector(`${B}.is-lore .nimble-cmpx-row[data-id]`, { timeout: 5000 });
+		const input = o.page.locator(`${B} .nimble-cmpx-input`);
 		// Krogg is in Monsters & More and the GM Guide: one row, two book pills.
-		await o.page.locator(`${B} .bestiary-search-input`).fill('krogg');
-		await o.waitFor(() => o.page.evaluate((B) => document.querySelectorAll(`${B} .bestiary-row`).length === 1, B), { timeout: 3000, what: 'one Krogg row' });
-		assert.equal(await o.page.locator(`${B} .bestiary-row-name`).textContent(), 'Krogg, Goblin King');
-		assert.deepEqual(await o.page.locator(`${B} .bestiary-row .bestiary-tag`).allTextContents(), ['M&M', 'GMG']);
-		await o.page.locator(`${B} .bestiary-row`).click();
-		const card = o.page.locator(`${B} .bestiary-detail .nimble-lore-card`);
+		await input.fill('krogg');
+		await o.waitFor(async () => (await cmpRows(o, B).count()) === 1, { timeout: 3000, what: 'one Krogg row' });
+		assert.deepEqual(await cmpNames(o, B), ['Krogg, Goblin King']);
+		assert.deepEqual(await o.page.locator(`${B} .nimble-cmpx-row[data-id] .bestiary-tag`).allTextContents(), ['M&M', 'GMG']);
+		assert.equal(await o.page.locator(`${B} .nimble-cmpx-row-badge.is-level`).count(), 0, 'no level badges for players');
+		// The row button copies a reference (players don't add monsters to fights).
+		assert.match(await cmpRows(o, B).first().locator('.nimble-cmpx-row-btn').getAttribute('aria-label'), /^Copy a reference/);
+		await cmpRows(o, B).first().click();
+		const card = o.page.locator(`${B} .nimble-cmpx-detail .nimble-lore-card`);
 		assert.equal(await card.locator('.lore-source').count(), 2, 'both printings as source pills');
 		// Add notes: makes Campaigns/Beast Lore/Bestiary/Krogg, Goblin King.md and opens it.
 		await card.locator('.statblock-action', { hasText: 'Add notes' }).click();
@@ -3649,17 +4122,15 @@ test('player bestiary: one row per creature with book pills, and your own notes 
 		}, path);
 		await o.eval(async (app) => { await app.commands.executeCommandById('nimble-gm:open-bestiary'); });
 		await o.waitFor(() => o.page.evaluate((B) => document.querySelector(`${B} .nimble-creature-notes-body`)?.textContent.includes('garlic'), B), { timeout: 5000, what: 'your notes under the lore' });
-		assert.deepEqual(await o.page.locator(`${B} .bestiary-row .bestiary-tag`).allTextContents(), ['M&M', 'GMG', 'Notes']);
+		await o.waitFor(async () => (await o.page.locator(`${B} .nimble-cmpx-row[data-id] .bestiary-tag`).allTextContents()).join() === 'M&M,GMG,Notes', { timeout: 3000, what: 'the Notes pill' });
 		assert.equal(await card.locator('.statblock-action', { hasText: 'Open notes' }).count(), 1);
-		// My notes: the creatures you've written about.
-		await o.page.locator(`${B} .bestiary-search-input`).fill('');
-		await o.page.locator(`${B} .nimble-segmented[aria-label="Source"] button`, { hasText: 'My notes' }).click().catch(async () => {
-			await o.page.locator(`${B} .bestiary-filter-toggle`).click();
-			await o.page.locator(`${B} .nimble-segmented[aria-label="Source"] button`, { hasText: 'My notes' }).click();
-		});
-		await o.waitFor(() => o.page.evaluate((B) => [...document.querySelectorAll(`${B} .bestiary-row-name`)].some(n => n.textContent === 'Krogg, Goblin King'), B), { timeout: 3000, what: 'Krogg under My notes' });
-		await o.page.locator(`${B} .nimble-segmented[aria-label="Source"] button`, { hasText: 'All' }).click();
-		await o.page.locator(`${B} .bestiary-search-input`).fill('krogg');
+		// is:noted: the creatures you've written about.
+		await input.fill('is:noted ');
+		await o.waitFor(async () => (await cmpChips(o, B)).length === 1, { timeout: 3000, what: 'the is:noted chip' });
+		await o.waitFor(async () => (await cmpNames(o, B)).join('|') === 'Krogg, Goblin King', { timeout: 3000, what: 'only Krogg under is:noted' });
+		await o.page.locator(`${B} .nimble-cmpx-chip-x`).click();
+		await input.fill('krogg');
+		await o.waitFor(async () => (await cmpRows(o, B).count()) === 1, { timeout: 3000, what: 'one Krogg row again' });
 		await o.page.waitForTimeout(300);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'player-bestiary-notes.png') });
 		const bad = await o.page.evaluate(pillOffenders, { root: B, tolerance: 1, selectors: PILL_SELECTORS });
@@ -3890,6 +4361,7 @@ for (const t of selected) {
 		failed++;
 		const file = join(ARTIFACTS, `FAIL-${t.name.replace(/[^a-z0-9]+/gi, '-')}.png`);
 		await o.page.screenshot({ path: file }).catch(() => {});
+		if (process.env.E2E_STACK) console.log(e.stack);
 		console.log(`  ✗ ${t.name}\n      ${String(e.message).split('\n').join('\n      ')}\n      screenshot: ${file}`);
 	}
 }
