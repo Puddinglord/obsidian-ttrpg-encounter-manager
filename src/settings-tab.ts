@@ -182,7 +182,9 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				{
 					name: 'Compendium art folder',
 					desc: 'Where images you upload for compendium entries are saved (click the portrait on any entry\'s page to add one). Moving or renaming an image keeps it linked.',
-					render: (setting) => setting.addText(t => t.setPlaceholder('Ember Vault/Compendium Art').setValue(s.compendiumArtFolder).onChange(async (v) => { s.compendiumArtFolder = v.trim() || 'Ember Vault/Compendium Art'; await save(); })),
+					render: (setting) => {
+						setting.addText(t => t.setPlaceholder('Ember Vault/Compendium Art').setValue(s.compendiumArtFolder).onChange(async (v) => { s.compendiumArtFolder = v.trim() || 'Ember Vault/Compendium Art'; await save(); }));
+					},
 				},
 			] },
 			{ heading: 'Party', rows: this.partyRows() },

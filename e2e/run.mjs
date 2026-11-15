@@ -4089,6 +4089,39 @@ test('campaign pages open in reading view; sessions and new notes open for editi
 	}
 });
 
+test('campaign properties as tags: empty ones stay hidden, and show once filled in', async (o) => {
+	const R = '.workspace-leaf.mod-active .nimble-props-tags .markdown-reading-view';
+	// 'shown', 'hidden', or 'missing' when Obsidian hasn't drawn it.
+	const tag = (key) => o.page.evaluate(([R, key]) => {
+		const el = document.querySelector(`${R} .metadata-property[data-property-key="${key}"]`);
+		return !el ? 'missing' : getComputedStyle(el).display === 'none' ? 'hidden' : 'shown';
+	}, [R, key]);
+	const shown = async (key) => (await tag(key)) === 'shown';
+	try {
+		await o.eval(async (app, plugin) => {
+			plugin.settings.tagProperties = true;
+			const old = app.vault.getAbstractFileByPath('Campaigns/Tag Room');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Tag Room', level: 1, heroes: 4, starter: false });
+			const f = await app.vault.create('Campaigns/Tag Room/Mira.md', '---\nnimble: npc\nstatus: alive\nrole: \n---\nA tinker.\n');
+			await app.workspace.getLeaf(false).openFile(f, { state: { mode: 'preview' } });
+		});
+		await o.waitFor(() => shown('status'), { what: 'status shows as a tag' });
+		await o.waitFor(async () => (await tag('role')) === 'hidden', { what: 'empty role drawn but hidden' });
+		// Filled in, Obsidian draws the properties again and the tag shows.
+		await o.eval(async (app) => {
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Tag Room/Mira.md'), (fm) => { fm.role = 'Smith'; });
+		});
+		await o.waitFor(() => shown('role'), { what: 'filled role shows' });
+	} finally {
+		await o.eval(async (app, plugin) => {
+			const f = app.vault.getAbstractFileByPath('Campaigns/Tag Room');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
 test('player bestiary: one row per creature with book pills, and your own notes on it', async (o) => {
 	await resetEncounter(o);
 	const B = '.nimble-compendium';
