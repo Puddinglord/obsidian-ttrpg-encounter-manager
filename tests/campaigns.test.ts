@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { campaignHome, npcNote, sceneNote } from '../src/campaign-templates';
-import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, homeFolderFor, isFileFolder, nextOrder, questOrder, questsIn, questState, safeName } from '../src/campaign-model';
+import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, homeFolderFor, isFileFolder, linkPill, nextOrder, questOrder, questsIn, questState, safeName } from '../src/campaign-model';
 
 const n = (path: string, fm: Record<string, unknown> = {}) => ({ path, fm });
 
@@ -426,6 +426,27 @@ describe('quests', () => {
 			['A', 'quest', 'completed'], ['B', 'quest', 'active'], ['C', 'quest', 'failed'], ['D', 'quest', undefined], ['E', 'note', undefined],
 		]);
 		expect(questOrder(quests.notes).map(q => q.title)).toEqual(['B', 'D', 'E', 'A', 'C']);
+	});
+});
+
+describe('linkPill', () => {
+	it('gives links to campaign notes their kind\'s icon', () => {
+		expect(linkPill({ nimble: 'location' })).toEqual({ kind: 'location', icon: 'map-pin', cls: 'kind-location' });
+		expect(linkPill({ nimble: 'character' })).toEqual({ kind: 'character', icon: 'shield', cls: 'kind-character' });
+		expect(linkPill({ nimble: 'quest', status: 'active' })).toEqual({ kind: 'quest', icon: 'flag', cls: 'kind-quest' });
+		expect(linkPill({ nimble: 'session' })?.icon).toBe('calendar-days');
+	});
+
+	it('ticks off finished quests and crosses out failed ones', () => {
+		expect(linkPill({ nimble: 'quest', status: 'Completed' })).toEqual({ kind: 'quest', icon: 'circle-check', cls: 'kind-quest is-quest-done' });
+		expect(linkPill({ nimble: 'quest', status: 'failed' })).toEqual({ kind: 'quest', icon: 'circle-x', cls: 'kind-quest is-quest-failed' });
+	});
+
+	it('leaves plain notes and NPCs (which have chips of their own) alone', () => {
+		expect(linkPill({})).toBeNull();
+		expect(linkPill(undefined)).toBeNull();
+		expect(linkPill({ nimble: 'whatever' })).toBeNull();
+		expect(linkPill({ nimble: 'npc' })).toBeNull();
 	});
 });
 

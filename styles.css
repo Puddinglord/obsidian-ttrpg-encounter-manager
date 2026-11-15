@@ -1858,8 +1858,9 @@ body.is-tablet :is(.battle-outcome, .nimble-role-card) { padding-left: 0.7rem; p
 
 /* NPCs: chips for links to NPC notes, a light underline for plain mentions */
 a.internal-link.nimble-npc-link {
-	display: inline-flex; align-items: baseline; gap: 0.25em; text-decoration: none;
-	padding: 0 0.4em 0 0.35em; margin-right: 0.08em; border-radius: 999px; position: relative; top: -0.05em;
+	display: inline-flex; align-items: baseline; gap: 0.25em; text-decoration: none; line-height: 1.3;
+	/* A little shorter than the text line, with room above and below, so pills on wrapped lines don't touch. */
+	padding: 0 0.4em 0 0.35em; margin: 0.15em 0.08em 0.15em 0; border-radius: 999px; position: relative; top: -0.05em;
 	background: color-mix(in srgb, #22a35a 14%, transparent); color: color-mix(in srgb, #22a35a 70%, var(--text-normal));
 	border: 1px solid color-mix(in srgb, #22a35a 30%, transparent); font-weight: 600; font-size: 0.95em;
 }
@@ -1889,6 +1890,36 @@ a.internal-link.nimble-npc-mention:hover { color: color-mix(in srgb, #22a35a 75%
 .markdown-source-view.mod-cm6 .cm-line :is(.cm-hmd-internal-link, .cm-underline):is(.nimble-npc-lp-link, .nimble-npc-lp-mention),
 .markdown-source-view.mod-cm6 .cm-line :is(.cm-hmd-internal-link, .cm-underline):is(.nimble-npc-lp-link, .nimble-npc-lp-mention):hover,
 .markdown-source-view.mod-cm6 .cm-line .nimble-npc-lp-mention { text-decoration: none; }
+
+/* Links to other campaign notes: a pill with the kind's icon (npc-links.ts, npc-live-preview.ts), coloured by kind.
+   Green is for NPCs and purple for the party, so a finished quest stays orange (its tick says it's done) and chapters stay grey. */
+:is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon) { --pill: var(--text-muted); }
+:is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon).kind-quest { --pill: var(--color-orange); }
+:is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon):is(.kind-location, .kind-map) { --pill: var(--color-blue); }
+:is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon).kind-character { --pill: var(--color-purple); }
+:is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon):is(.kind-monster, .kind-creature, .kind-combat) { --pill: var(--color-red); }
+:is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon).kind-handout { --pill: var(--color-yellow); }
+:is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon).is-quest-failed { --pill: var(--text-faint); }
+a.internal-link.nimble-note-link {
+	display: inline-flex; align-items: baseline; gap: 0.25em; text-decoration: none; line-height: 1.3;
+	/* A little shorter than the text line, with room above and below, so pills on wrapped lines don't touch. */
+	padding: 0 0.4em 0 0.35em; margin: 0.15em 0.08em 0.15em 0; border-radius: 999px; position: relative; top: -0.05em;
+	background: color-mix(in srgb, var(--pill) 14%, transparent); color: color-mix(in srgb, var(--pill) 70%, var(--text-normal));
+	border: 1px solid color-mix(in srgb, var(--pill) 30%, transparent); font-weight: 600; font-size: 0.95em;
+}
+a.internal-link.nimble-note-link:hover { background: color-mix(in srgb, var(--pill) 24%, transparent); text-decoration: none; }
+.nimble-note-icon { display: inline-flex; align-self: center; }
+.nimble-note-icon svg { width: 0.85em; height: 0.85em; stroke-width: 2.5; }
+.nimble-note-lp-link .cm-hmd-internal-link, .nimble-note-lp-link .cm-underline, .cm-hmd-internal-link.nimble-note-lp-link {
+	color: color-mix(in srgb, var(--pill) 70%, var(--text-normal)); font-weight: 600; text-decoration: none;
+	background: color-mix(in srgb, var(--pill) 14%, transparent); border-radius: 4px; padding: 0 0.15em;
+}
+.nimble-note-lp-icon { display: inline-flex; vertical-align: -0.1em; margin-right: 0.15em; color: var(--pill); }
+.nimble-note-lp-icon svg { width: 0.85em; height: 0.85em; stroke-width: 2.5; }
+.markdown-source-view.mod-cm6 .cm-line .nimble-note-lp-link :is(.cm-underline, .cm-hmd-internal-link),
+.markdown-source-view.mod-cm6 .cm-line .nimble-note-lp-link :is(.cm-underline, .cm-hmd-internal-link):hover,
+.markdown-source-view.mod-cm6 .cm-line :is(.cm-hmd-internal-link, .cm-underline).nimble-note-lp-link,
+.markdown-source-view.mod-cm6 .cm-line :is(.cm-hmd-internal-link, .cm-underline).nimble-note-lp-link:hover { text-decoration: none; }
 
 /* ---------- Box editor: a small tabbed panel ---------- */
 .nimble-popover.nimble-box-editor { padding: 0; width: 304px; overflow: hidden; border-radius: 12px; font-size: 0.86rem; }
