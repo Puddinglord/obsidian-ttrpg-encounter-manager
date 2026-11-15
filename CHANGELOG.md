@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-15
+
 ### Added
 
 - The compendium: one searchable place for everything in Nimble and everything you've written. Adversaries, NPCs, companions, spells, items, class features, classes and subclasses, ancestries and backgrounds, conditions and rules, each on its own tab of a segmented control.
