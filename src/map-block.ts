@@ -4,12 +4,15 @@
 
 import { App, Component, DropdownComponent, FuzzyMatch, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { distanceLabel, MapDef, mapBlockSource, MapDrawing, MapPin, parseMapBlock, PIN_KINDS, PinKind, Point, replaceMapBlock, simplifyStroke } from './map-def';
+import { distanceLabel, MapDef, mapBlockSource, MapDrawing, mapFencesIn, MapPin, parseAmount, parseMapBlock, PIN_KINDS, PinKind, Point, replaceMapBlock, simplifyStroke } from './map-def';
 import { cellAt, cellsAlong, distance, snapToCell } from './grid-def';
 import { DrawTool, drawDrawingsLayer, drawLiveLine, renderDrawBar } from './map-draw';
 import { renderPartyFace, renderPartyRoster } from './map-party';
 import { NamePrompt } from './campaign-modals';
 import { renderClock } from './clock-ui';
+
+/** The map tab's view type (map-view.ts registers it). */
+export const MAP_VIEW_TYPE = 'nimble-map';
 import { DEFAULT_GRID_OPACITY, EncounterCreature } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
 import { monsterRole } from './rules';
@@ -42,13 +45,27 @@ const VIEWS = new Map<string, ViewMemory>();
 const SAVED_MODE = new Map<string, { mode: Mode; at: number }>();
 const MODE_KEEP_MS = 3000;
 
+/** A party move that crossed cells on a map with `travel:`, waiting for Advance or Not now (kept across the redraw a save causes). */
+const PENDING_TRAVEL = new Map<string, { jump: string; text: string; label: string; at: number }>();
+const TRAVEL_OFFER_MS = 120000;
+
+/** What a map tab adds to a map: it fills the pane, has a Notes button, and keeps map pins in the tab. */
+export interface MapHost {
+	/** Fill the container instead of sizing the viewport to the map. */
+	fill?: boolean;
+	/** The Notes button: open or close a note beside the map. */
+	notes?: { toggle: () => void; isOpen: () => boolean; pick: () => void };
+	/** A pin to another map was clicked: true when the host opened it. */
+	openMap?: (link: string, newLeaf: boolean) => boolean;
+}
+
 export function registerMapBlock(plugin: NimbleStatblocksPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-map', (source, el, ctx) => {
 		ctx.addChild(new MapBlock(plugin, el, source, ctx));
 	});
 }
 
-class MapBlock extends MarkdownRenderChild {
+export class MapBlock extends MarkdownRenderChild {
 	private scale = 1;
 	private tx = 0;
 	private ty = 0;
@@ -90,7 +107,7 @@ class MapBlock extends MarkdownRenderChild {
 	private editable = false;
 
 	/** `source` is the block as it is in the note: what a save looks for, and what a failed save goes back to. */
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext, private host: MapHost = {}) {
 		super(el);
 		this.def = parseMapBlock(source);
 		const saved = VIEWS.get(this.mapKey);
@@ -188,6 +205,19 @@ class MapBlock extends MarkdownRenderChild {
 			setIcon(b, icon);
 			b.onclick = fn;
 		};
+		if (this.host.notes) {
+			const notes = bar.createEl('button', { cls: `nimble-map-btn${this.host.notes.isOpen() ? ' is-active' : ''}`, attr: { 'aria-label': 'Notes beside the map', 'aria-pressed': String(this.host.notes.isOpen()) } });
+			setIcon(notes.createSpan(), 'panel-right');
+			notes.createSpan({ text: 'Notes' });
+			notes.onclick = () => { this.host.notes!.toggle(); };
+			const pick = bar.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Choose the note shown beside the map' } });
+			setIcon(pick, 'chevron-down');
+			pick.onclick = () => this.host.notes!.pick();
+		} else if (!this.host.fill) {
+			const tab = bar.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Open in tab' } });
+			setIcon(tab, 'square-arrow-out-up-right');
+			tab.onclick = (e) => void this.openInTab(e.metaKey || e.ctrlKey);
+		}
 		zoom('zoom-out', 'Zoom out', () => this.zoomAt(1 / 1.3));
 		zoom('zoom-in', 'Zoom in', () => this.zoomAt(1.3));
 		zoom('maximize', 'Fit map', () => this.fit());
@@ -204,7 +234,8 @@ class MapBlock extends MarkdownRenderChild {
 		const body = root.createDiv({ cls: 'nimble-map-body' });
 		this.viewport = body.createDiv({ cls: `nimble-map-viewport mode-${this.mode}` });
 		this.viewport.tabIndex = 0;
-		if (this.height) this.viewport.style.height = `${this.height}px`;
+		if (this.height && !this.host.fill) this.viewport.style.height = `${this.height}px`;
+		root.toggleClass('is-filling', !!this.host.fill);
 		if (this.built) this.removeChild(this.built);
 		this.built = this.addChild(new Component());
 		if (campaign && this.plugin.settings.mapClock) {
@@ -230,6 +261,7 @@ class MapBlock extends MarkdownRenderChild {
 		ro.observe(this.viewport);
 		this.register(() => ro.disconnect());
 		this.wirePanZoom();
+		this.renderTravelBar();
 		this.renderPins();
 		this.renderTokens();
 	}
@@ -268,7 +300,7 @@ class MapBlock extends MarkdownRenderChild {
 				this.tx = saved.tx;
 				this.ty = saved.ty;
 				this.sized = true;
-				if (saved.height && !this.viewport.doc.body.hasClass('is-phone')) { this.height = saved.height; this.viewport.style.height = `${saved.height}px`; }
+				if (saved.height && !this.host.fill && !this.viewport.doc.body.hasClass('is-phone')) { this.height = saved.height; this.viewport.style.height = `${saved.height}px`; }
 				this.fitted = true;
 			}
 		}
@@ -337,7 +369,7 @@ class MapBlock extends MarkdownRenderChild {
 		const ih = this.img.naturalHeight;
 		if (!vw || !vh || !iw) return;
 		// Tall maps get a taller viewport (once, on desktop) instead of a thumbnail in a letterbox.
-		if (!this.sized && !this.viewport.doc.body.hasClass('is-phone') && ih > 0) {
+		if (!this.sized && !this.host.fill && !this.viewport.doc.body.hasClass('is-phone') && ih > 0) {
 			this.sized = true;
 			const want = Math.round(Math.max(360, Math.min(window.innerHeight * 0.8, vw * (ih / iw))));
 			if (Math.abs(want - vh) > 40) { this.height = want; this.viewport.style.height = `${want}px`; this.fit(); return; }
@@ -721,7 +753,67 @@ class MapBlock extends MarkdownRenderChild {
 	}
 
 	/** After the party has been dragged across `cells` cells (travel and the clock hook in here). */
-	private partyMoved(_from: Point, _to: Point, _cells: number): void { /* travel: see the clock */ }
+	/**
+	 * The party was dragged across `cells` cells. With `travel:` on the map and a
+	 * campaign to keep time for, offer to move the clock on (or do it, with the
+	 * setting on). Never silently: an automatic move still says so.
+	 */
+	private partyMoved(_from: Point, _to: Point, cells: number): void {
+		const per = parseAmount(this.def.travel);
+		const grid = gridOf(this.def);
+		const c = this.campaign;
+		if (!per || !grid || !cells || !c) return;
+		const n = Math.round(per.n * cells * 100) / 100;
+		const unit = per.unit || 'day';
+		const words = `${n} ${n === 1 ? unit.replace(/s$/i, '') : /s$/i.test(unit) ? unit : `${unit}s`}`;
+		const dist = distanceLabel(grid.kind, cells, this.def.scale);
+		const offer = { jump: `${n} ${unit}`, text: `Advance the clock ${words}?`, label: `travelled ${dist}`, at: Date.now() };
+		if (this.plugin.settings.travelAdvancesClock) { void this.advanceForTravel(offer, true); return; }
+		PENDING_TRAVEL.set(this.mapKey, offer);
+		this.renderTravelBar();
+	}
+
+	private async advanceForTravel(offer: { jump: string; text: string; label: string }, auto: boolean): Promise<void> {
+		const c = this.campaign;
+		PENDING_TRAVEL.delete(this.mapKey);
+		this.renderTravelBar();
+		if (!c) return;
+		const ok = await this.plugin.clock.advance(c, offer.jump, `+${offer.jump}, ${offer.label}`);
+		if (!ok) new Notice(`The campaign's calendar doesn't understand "${offer.jump}". Check the map's travel: line.`);
+		else if (auto) new Notice(`The clock moved on ${offer.jump} (${offer.label}). Undo it from the clock's +.`);
+	}
+
+	/** The bar under the map offering to advance the clock after travel. */
+	private renderTravelBar(): void {
+		const root = this.containerEl;
+		root.querySelector(':scope > .nimble-map-travelbar')?.remove();
+		const offer = PENDING_TRAVEL.get(this.mapKey);
+		if (!offer || Date.now() - offer.at > TRAVEL_OFFER_MS) { PENDING_TRAVEL.delete(this.mapKey); return; }
+		const bar = root.createDiv({ cls: 'nimble-map-travelbar', attr: { role: 'status' } });
+		setIcon(bar.createSpan({ cls: 'nimble-map-travelbar-icon' }), 'calendar-clock');
+		const text = bar.createSpan({ cls: 'nimble-map-travelbar-text' });
+		text.createEl('strong', { text: offer.text });
+		text.appendText(` (${offer.label.replace(/^travelled /, '')})`);
+		const go = bar.createEl('button', { cls: 'nimble-map-btn mod-cta', text: 'Advance' });
+		go.onclick = () => void this.advanceForTravel(offer, false);
+		const no = bar.createEl('button', { cls: 'nimble-map-btn', text: 'Not now' });
+		no.onclick = () => { PENDING_TRAVEL.delete(this.mapKey); this.renderTravelBar(); };
+	}
+
+	/** Open a pin's link: a map pin in a map tab stays in the tab; anything else opens like a link. */
+	private openPin(pin: MapPin, newLeaf: boolean): void {
+		if (!pin.link) return;
+		if (pin.kind === 'map' && this.host.openMap?.(pin.link, newLeaf)) return;
+		void this.app.workspace.openLinkText(pin.link, this.ctx.sourcePath, newLeaf);
+	}
+
+	/** Open this block in a map tab (the same map, filling a pane, saving into this note). */
+	private async openInTab(split: boolean): Promise<void> {
+		const text = await this.app.vault.cachedRead(this.app.vault.getFileByPath(this.ctx.sourcePath)!);
+		const want = mapFencesIn(text.split('\n')).findIndex(f => f.body === this.source.split(/\r?\n/).map(l => l.trim()).join('\n').replace(/\n+$/, ''));
+		const leaf = this.app.workspace.getLeaf(split ? 'split' : 'tab');
+		await leaf.setViewState({ type: MAP_VIEW_TYPE, state: { file: this.ctx.sourcePath, index: Math.max(0, want), image: this.def.image }, active: true });
+	}
 
 	/** Fit to 3 × 3: draw a box from where the pointer went down to where it comes up. */
 	private dragBox(e: PointerEvent): void {
@@ -781,11 +873,11 @@ class MapBlock extends MarkdownRenderChild {
 				e.stopPropagation();
 				// Touch has no hover preview, so a tap shows the pin's card first.
 				if (isTouch()) this.pinCard(el, i);
-				else if (pin.link) void this.app.workspace.openLinkText(pin.link, this.ctx.sourcePath, e.metaKey || e.ctrlKey);
+				else if (pin.link) this.openPin(pin, e.metaKey || e.ctrlKey);
 				else this.editPin(i);
 			});
 			el.addEventListener('keydown', (e) => {
-				if (e.key === 'Enter' && pin.link) void this.app.workspace.openLinkText(pin.link, this.ctx.sourcePath, e.metaKey || e.ctrlKey);
+				if (e.key === 'Enter' && pin.link) this.openPin(pin, e.metaKey || e.ctrlKey);
 				else if (e.key === 'Enter' || e.key === 'F2') this.editPin(i);
 			});
 			onLongPress(el, (e) => {
@@ -813,7 +905,7 @@ class MapBlock extends MarkdownRenderChild {
 			const row = pop.createDiv({ cls: 'pin-card-actions' });
 			if (pin.link) {
 				const open = row.createEl('button', { cls: 'mod-cta', text: pin.kind === 'map' ? 'Open map' : 'Open note' });
-				open.onclick = () => { close(); void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false); };
+				open.onclick = () => { close(); this.openPin(pin, false); };
 			}
 			if (!this.canSave()) return;
 			const edit = row.createEl('button', { text: 'Edit' });

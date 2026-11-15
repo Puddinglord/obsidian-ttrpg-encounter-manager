@@ -3,10 +3,16 @@ nimble: map
 order: 0
 ---
 
-GM map of the vaults beneath the old quarter. Click a pin to open its area. Use **Encounter tokens** to drag the tracker's combatants onto the map.
+GM map of the vaults beneath the old quarter. Click a pin to open its area. Use **Encounter tokens** to drag the tracker's combatants onto the map, drag the party marker to move the heroes, and **Measure** to count squares.
 
 ```nimble-map
 image: [[quicksilver-vaults-map.png]]
+grid: square
+cell: 3.6082
+offset: 0.773, 1.515
+show-grid: no
+scale: 5 ft
+party: 40.46, 16.67
 pins:
 - 31.1, 9.4 | Q1. Entry Chamber | [[Q1 Entry Chamber]] | encounter
 - 43.9, 27.4 | Q2. Mercury Pool | [[Q2 Mercury Pool]] | danger

@@ -4801,6 +4801,103 @@ test('campaign clock: advance from the Campaign panel and every clock follows (m
 	}
 });
 
+test('travel: dragging the party 2 hexes on a map with travel: 1 quarter offers to move the clock half a day; Advance does', async (o) => {
+	await resetEncounter(o);
+	await clockCampaign(o);
+	try {
+		await o.openFile(`${CLOCK_FOLDER}/Road.md`, 'preview');
+		const map = o.page.locator(`${R} .nimble-map`).first();
+		await o.waitFor(async () => (await map.locator('.nimble-map-party').count()) === 1 && (await stageScale(map)) > 0, { what: 'the road map with the party' });
+		await o.page.waitForTimeout(500);
+		const a = await mapToScreen(map, hexCentre(7, 8).x, hexCentre(7, 8).y);
+		const b = await mapToScreen(map, hexCentre(9, 8).x + 3, hexCentre(9, 8).y + 2);
+		await afterRedraw(o, async () => {
+			await o.page.mouse.move(a.x, a.y);
+			await o.page.mouse.down();
+			await o.page.mouse.move((a.x + b.x) / 2, a.y, { steps: 5 });
+			await o.page.mouse.move(b.x, b.y, { steps: 5 });
+			await o.page.mouse.up();
+			await o.waitFor(async () => /^party: 54\.31, 40\.37$/m.test(await read(o, `${CLOCK_FOLDER}/Road.md`)), { what: 'the party to move' });
+		});
+		const bar = o.page.locator(`${R} .nimble-map-travelbar`);
+		await o.waitFor(async () => (await bar.count()) === 1, { what: 'the travel bar' });
+		assert.equal(await bar.locator('.nimble-map-travelbar-text').innerText(), 'Advance the clock 2 quarters? (2 hexes · 12 miles)');
+		assert.equal(await homeDate(o), 'day 14 06:00', 'nothing moved before Advance');
+		await bar.locator('button', { hasText: 'Advance' }).click();
+		await o.waitFor(async () => (await homeDate(o)) === 'day 14 18:00', { what: 'the clock to move half a day' });
+		assert.equal(await bar.count(), 0, 'the bar goes away');
+		await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map-clock .nimble-clock-date`).innerText()) === 'Day 14 · Evening', { what: 'the map chip to follow' });
+	} finally {
+		await dropClockCampaign(o);
+	}
+});
+
+test('map tab: Open in tab fills the pane and saves into the note; Notes opens the latest session beside it and closes it', async (o) => {
+	await resetEncounter(o);
+	await clockCampaign(o);
+	try {
+		await o.openFile(`${CLOCK_FOLDER}/Road.md`, 'preview');
+		const map = o.page.locator(`${R} .nimble-map`).first();
+		await o.waitFor(async () => (await map.locator('button[aria-label="Open in tab"]').count()) === 1, { what: 'the Open in tab button' });
+		await map.locator('button[aria-label="Open in tab"]').click();
+		const tab = o.page.locator('.workspace-leaf.mod-active .nimble-map-view .nimble-map.is-filling');
+		await o.waitFor(async () => (await tab.count()) === 1 && (await stageScale(tab)) > 0, { what: 'the map tab' });
+		const state = await o.eval((app) => { const l = app.workspace.getMostRecentLeaf(); return { type: l.view.getViewType(), state: l.getViewState().state }; });
+		assert.equal(state.type, 'nimble-map');
+		assert.equal(state.state.file, `${CLOCK_FOLDER}/Road.md`);
+		assert.equal(state.state.index, 0);
+		const vp = await tab.locator('.nimble-map-viewport').boundingBox();
+		assert.ok(vp.height > 600, `the map fills the pane (${vp.height}px)`);
+		// Still filling it when the pane is narrow (both sidebars open on a small window).
+		const narrow = await tab.evaluate((el) => { const host = el.closest('.nimble-map-view'); const was = host.style.width; host.style.width = '420px'; const h = el.querySelector('.nimble-map-viewport').getBoundingClientRect().height; host.style.width = was; return h; });
+		assert.ok(narrow > 600, `a narrow map tab still fills the pane (${narrow}px)`);
+
+		// Saving from the tab writes the note.
+		await tab.locator('button[aria-label="Place party"]').click();
+		const p = await mapToScreen(tab, hexCentre(12, 10).x, hexCentre(12, 10).y);
+		await o.page.mouse.click(p.x, p.y);
+		await o.waitFor(async () => near(partyAt(await read(o, `${CLOCK_FOLDER}/Road.md`)), pct(hexCentre(12, 10))), { what: 'the party to save from the tab' });
+		await o.waitFor(async () => (await o.page.locator('.workspace-leaf.mod-active .nimble-map-view .nimble-map-party').count()) === 1, { what: 'the tab to redraw' });
+
+		// Notes: the latest session opens in a split beside the map, and closes again.
+		const leaves = () => o.eval((app) => app.workspace.getLeavesOfType('markdown').map(l => l.view.file?.path));
+		const before = (await leaves()).length;
+		await o.page.locator('.nimble-map-view button[aria-label="Notes beside the map"]').click();
+		await o.waitFor(async () => (await leaves()).includes(`${CLOCK_FOLDER}/Sessions/Session 1.md`), { what: 'the session note beside the map' });
+		assert.equal((await leaves()).length, before + 1, 'a new split');
+		const side = await o.eval((app) => {
+			const map = app.workspace.getLeavesOfType('nimble-map')[0];
+			const note = app.workspace.getLeavesOfType('markdown').find(l => l.view.file?.path.endsWith('Session 1.md'));
+			const a = map.view.containerEl.getBoundingClientRect();
+			const b = note.view.containerEl.getBoundingClientRect();
+			return { beside: b.left >= a.right - 2 && Math.abs(a.top - b.top) < 60 };
+		});
+		assert.ok(side.beside, 'the note is beside the map');
+		await o.eval((app) => { app.workspace.setActiveLeaf(app.workspace.getLeavesOfType('nimble-map')[0], { focus: true }); });
+		assert.ok(await o.eval((app) => app.commands.executeCommandById('nimble-gm:toggle-map-note-panel')), 'the hotkey action runs in a map tab');
+		await o.waitFor(async () => (await leaves()).length === before, { what: 'the split to close' });
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:toggle-map-note-panel'));
+		await o.waitFor(async () => (await leaves()).length === before + 1, { what: 'the hotkey to open it again' });
+		await o.page.locator('.nimble-map-view button[aria-label="Notes beside the map"]').click();
+		await o.waitFor(async () => (await leaves()).length === before, { what: 'Notes to close it' });
+
+		// A restart brings the same map back from the saved state.
+		const reopened = await o.eval(async (app) => {
+			const old = app.workspace.getLeavesOfType('nimble-map')[0];
+			const st = old.getViewState();
+			old.detach();
+			const leaf = app.workspace.getLeaf('tab');
+			await leaf.setViewState(st);
+			await new Promise(r => setTimeout(r, 600));
+			return { file: leaf.getViewState().state.file, maps: leaf.view.containerEl.querySelectorAll('.nimble-map').length };
+		});
+		assert.deepEqual(reopened, { file: `${CLOCK_FOLDER}/Road.md`, maps: 1 });
+		await o.eval((app) => app.workspace.getLeavesOfType('nimble-map').forEach(l => l.detach()));
+	} finally {
+		await dropClockCampaign(o);
+	}
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);

@@ -842,6 +842,18 @@ body {
 .nimble-map .nimble-map-width.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
 .nimble-map-width-line { display: block; width: 1rem; height: var(--w); border-radius: 999px; background: currentColor; }
 .nimble-map-viewport.mode-party, .nimble-map-viewport.mode-measure, .nimble-map-viewport.mode-draw { cursor: crosshair; }
+/* After travel: offer to move the campaign clock on. */
+.nimble-map-travelbar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; padding: 0.45rem 0.6rem; border-top: 1px solid var(--background-modifier-border); background: color-mix(in srgb, var(--interactive-accent) 10%, var(--background-primary-alt)); font-size: 0.85rem; }
+.nimble-map-travelbar-icon { display: flex; color: var(--text-accent); }
+.nimble-map-travelbar-icon svg { width: 16px; height: 16px; }
+.nimble-map-travelbar-text { flex: 1 1 12rem; min-width: 0; }
+/* A map in its own tab fills the pane. */
+.nimble-map-view.view-content { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.nimble-map-view-host { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.nimble-map.is-filling { flex: 1; min-height: 0; margin: 0; border: none; border-radius: 0; display: flex; flex-direction: column; }
+.nimble-map.is-filling .nimble-map-body { flex: 1; min-height: 0; }
+.nimble-map.is-filling .nimble-map-viewport { flex: 1 1 auto; min-height: 0; height: auto; resize: none; }
+body.is-phone .nimble-map.is-filling .nimble-map-viewport { flex: 1; height: auto; }
 /* The Grid panel under the toolbar. */
 .nimble-map-gridpanel { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--background-modifier-border); background: var(--background-primary-alt); font-size: 0.8rem; }
 .nimble-map-gridpanel-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; min-width: 0; }

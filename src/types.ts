@@ -269,6 +269,10 @@ export interface NimbleStatblocksSettings {
 	mapGridOpacity: number;
 	/** Show the campaign clock as a chip on maps. */
 	mapClock: boolean;
+	/** Dragging the party on a map with `travel:` moves the clock on without asking (it still says so). */
+	travelAdvancesClock: boolean;
+	/** The note a map tab opens beside it, per map (note path and block index). */
+	mapNotes?: Record<string, string>;
 	/** The campaign clock's last changes per campaign folder (newest last), for Undo. */
 	clockHistory?: Record<string, { from: number; to: number; at: number; label?: string }[]>;
 	settingsVersion: number;
@@ -307,6 +311,7 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	compendiumArtFolder: 'Ember Vault/Compendium Art',
 	mapGridOpacity: DEFAULT_GRID_OPACITY,
 	mapClock: true,
+	travelAdvancesClock: false,
 	rollDialog: true,
 	classDice: { color: '#d4a72c', finish: 'metal' },
 	autoLinkNpcs: true,

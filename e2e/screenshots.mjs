@@ -142,6 +142,19 @@ const shots = {
 		await open(`${CH}/Map - The Quicksilver Vaults.md`);
 		await scrollTo(`${R} .nimble-map`, 0.08);
 	},
+	async 'map-tab'() {
+		await layout();
+		await o.eval(async (app, plugin, path) => {
+			const leaf = app.workspace.getLeaf(false);
+			await leaf.setViewState({ type: 'nimble-map', state: { file: path, index: 0 }, active: true });
+		}, `${CH}/Map - The Quicksilver Vaults.md`);
+		await page.waitForTimeout(900);
+		await page.locator('.nimble-map-view button[aria-label="Notes beside the map"]').click();
+		await page.waitForTimeout(900);
+		// Back on the map, so its toolbar is the active one.
+		await o.eval((app) => app.workspace.setActiveLeaf(app.workspace.getLeavesOfType('nimble-map')[0], { focus: false }));
+		await page.waitForTimeout(300);
+	},
 	async 'npc-card'() {
 		await layout({ left: true });
 		await open(`${C}/NPCs/Tobren Kask.md`);

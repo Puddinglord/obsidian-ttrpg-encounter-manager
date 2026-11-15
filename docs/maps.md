@@ -1,4 +1,4 @@
-# GM maps
+# Maps
 
 ![The Quicksilver Vaults map with a pin on every area](images/map.png)
 
@@ -12,7 +12,7 @@ pins:
 ```
 ````
 
-Pins link to notes or headings, with Obsidian's hover preview, and clicking a pin opens its note. **Add pin**, **Move pins** and right-click (long-press on touch) → **Edit** all save back into the block. A map shown inside another note (an embed or a hover preview) is view-only: open its own note to change pins. Scroll or pinch to zoom, drag to pan, double-tap to zoom in, and press `0` to fit. **Encounter tokens** shows the tracker's combatants as tokens you can drag onto the map, kept in plugin data rather than the note. Pin kinds are place, area, encounter, npc, treasure, danger, note, secret and map.
+Pins link to notes, headings or other maps, with Obsidian's hover preview, and clicking a pin opens its note. **Add pin**, **Move pins** and right-click (long-press on touch) → **Edit** all save back into the block. A map shown inside another note (an embed or a hover preview) is view-only: open its own note to change pins. Scroll or pinch to zoom, drag to pan, double-tap to zoom in, and press `0` to fit. **Encounter tokens** shows the tracker's combatants as tokens you can drag onto the map, kept in plugin data rather than the note. Pin kinds are place, area, encounter, npc, treasure, danger, note, secret and map.
 
 ## Adding a map
 
@@ -55,6 +55,26 @@ Select **Draw** for a small set of tools:
 - **Eraser**: tap a drawing to delete it.
 
 Pick one of six colours or your theme's accent colour, and one of three widths. Cmd/Ctrl+Z undoes your last drawings while you're on the map, and the **Show drawings** button hides them all. Drawings are saved in the block under `drawings:`, one line each. Freehand strokes are smoothed when you lift the pen, so a long line is a few dozen points rather than thousands.
+
+## Travel and the clock
+
+Give a map a `travel:` line saying how long crossing one cell takes, in your [campaign clock](calendar.md)'s units: `1 quarter`, `4 hours`, `1 day`. Then, when you drag the party across cells, a bar under the map asks **Advance the clock 3 quarters? (3 hexes · 18 miles)**. **Advance** moves the clock on; **Not now** leaves it alone. The clock never moves by itself, unless you turn on **Travel moves the clock without asking** in settings, and even then a notice tells you it did (Undo is on the clock's **+**).
+
+Every map in a campaign shows the clock in its top-right corner. The clock button on the toolbar hides it.
+
+## A map in its own tab
+
+**Open in tab** (the arrow at the right of a map's toolbar) opens the map in a tab of its own, filling the pane. It's the same map, and everything you do there saves into the note the block is in. The tab remembers which map it shows, so it comes back after a restart. A map pin to another map opens that map in the same tab.
+
+**Notes** opens a note in a split beside the map: your campaign's latest session note, so you can write as you go. The arrow next to it picks a different note, and the map remembers your choice. Select **Notes** again to close the split. The note is an ordinary Obsidian note, so editing, links and other plugins all work there.
+
+To toggle the note from the keyboard, give **Toggle map note panel** a key under **Settings → Hotkeys**. It has no key to start with. Tab is a tempting choice, but Tab also moves keyboard focus, so pick a key you don't use for that.
+
+![A map in its own tab, with the session note beside it](images/map-tab.png)
+
+## What Ember Vault isn't
+
+Maps here are for prep, travel and bookkeeping. There's no fog of war, walls, lighting or vision, no spell templates, and no screen for players. For tactical battle maps, use a virtual tabletop such as Atlas VTT alongside your notes.
 
 ## Maps inside maps
 

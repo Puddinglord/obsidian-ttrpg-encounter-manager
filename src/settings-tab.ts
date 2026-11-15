@@ -137,6 +137,11 @@ export class NimbleSettingsTab extends PluginSettingTab {
 						}));
 					},
 				},
+				{
+					name: 'Travel moves the clock without asking',
+					desc: 'When you drag the party across a map that has a travel: line, the campaign clock moves on by itself (with a notice saying so) instead of asking first.',
+					render: toggle(() => s.travelAdvancesClock, v => { s.travelAdvancesClock = v; }),
+				},
 			] },
 			{ heading: 'Campaigns', rows: [
 				{

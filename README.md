@@ -1,6 +1,6 @@
 # Ember Vault
 
-A companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.3 rules), built into Obsidian, for both sides of the table. GMs prep and run their game from their own notes: a campaign manager, a searchable compendium of everything in Nimble (525 monsters, every spell, item, class feature and class), encounter blocks rated against your party, a combat tracker, GM maps with pins, NPC portrait cards, styled read-aloud boxes and 3D dice. Players get an interactive Nimble character sheet, a party roster, and session notes on the people, places and fights they've met.
+A companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.3 rules), built into Obsidian, for both sides of the table. GMs prep and run their game from their own notes: a campaign manager, a searchable compendium of everything in Nimble (525 monsters, every spell, item, class feature and class), encounter blocks rated against your party, a combat tracker, travel maps with grids and a campaign clock, NPC portrait cards, styled read-aloud boxes and 3D dice. Players get an interactive Nimble character sheet, a party roster, and session notes on the people, places and fights they've met.
 
 If you run one game and play in another, keep both in one vault: every campaign is either one you run or one you play in, and the plugin switches over when you do. It isn't a virtual tabletop.
 
@@ -26,9 +26,11 @@ If you run one game and play in another, keep both in one vault: every campaign 
 
 ![A monster reference's hover preview](docs/images/hover.png)
 
-**Maps with pins.** Put a pin on every room, linked to its note. Drag the tracker's combatants onto the map as tokens.
+**Maps for travel and prep.** Put a pin on every room or town, linked to its note or to another map. Lay a hex or square grid over the map (Detect finds the one printed on it), drag the party marker to see how far they've gone, draw routes, and open the map in its own tab with your session notes beside it. Drag the tracker's combatants onto a dungeon map as tokens.
 
-![A GM map with a pin on every area](docs/images/map.png)
+![A map in its own tab, with the session note beside it](docs/images/map-tab.png)
+
+**A campaign clock.** Keep track of the days in a corner of every map and in the Campaign panel, with a calendar of your own: named months and weekdays, quarter days or watches. Dragging the party across a map offers to move the clock on.
 
 **NPCs with faces.** Give an NPC a portrait and they get a character card, with a blurred secret you can reveal when your screen isn't shared. Their name is linked wherever you mention it.
 
@@ -70,7 +72,8 @@ The full guide is in **[docs/](docs/README.md)**:
 - [The compendium](docs/compendium.md)
 - [Bestiary and stat blocks](docs/bestiary.md)
 - [Encounters](docs/encounters.md)
-- [GM maps](docs/maps.md)
+- [Maps](docs/maps.md)
+- [The campaign clock](docs/calendar.md)
 - [Combat tracker](docs/tracker.md)
 - [Dice](docs/dice.md)
 - [Spotlight](docs/spotlight.md)

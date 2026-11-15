@@ -16,7 +16,8 @@ New here? Start with **[Getting started](getting-started.md)**, or download the 
 | [The compendium](compendium.md) | Every monster, NPC, companion, spell, item, class feature, class and rule in one search, with typed filters and sorting |
 | [Bestiary and stat blocks](bestiary.md) | The 525 bundled monsters, references, writing your own stat blocks |
 | [Encounters](encounters.md) | Encounter blocks, difficulty, scaling monsters, the builder |
-| [GM maps](maps.md) | Maps with pins linked to your notes, tokens |
+| [Maps](maps.md) | Maps with pins linked to your notes and other maps, hex and square grids, the party marker, travel distance, drawing, a map tab with notes beside it |
+| [The campaign clock](calendar.md) | The world's date and time, calendars of your own, session dates |
 
 ## Playing
 

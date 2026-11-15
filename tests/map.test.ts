@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findMapFence, mapBlockSource, parseAmount, parseDrawingLine, parseMapBlock, parsePinLine, replaceMapBlock, simplifyStroke, distanceLabel } from '../src/map-def';
+import { findMapFence, mapBlockSource, parseAmount, parseDrawingLine, parseMapBlock, parsePinLine, replaceMapBlock, simplifyStroke, distanceLabel, mapFencesIn, pickMapFence } from '../src/map-def';
 import { cellsAlong, centreOf } from '../src/grid-def';
 
 describe('nimble-map blocks', () => {
@@ -353,5 +353,20 @@ describe('distance labels', () => {
 		expect(distanceLabel('square', 3)).toBe('3 squares');
 		expect(distanceLabel('square', 3, 'far')).toBe('3 squares');
 		expect(distanceLabel('hex', 2, '0.5 mile')).toBe('2 hexes · 1 mile');
+	});
+});
+
+describe('finding a map block for a map tab', () => {
+	const note = ['# Maps', '```nimble-map', 'image: [[a.png]]', 'pins:', '```', '', '> ```nimble-map', '> image: [[b.png]]', '> pins:', '> ```'].join('\n');
+	it('lists every map fence with its body', () => {
+		const all = mapFencesIn(note.split('\n'));
+		expect(all.map(f => [f.open, f.close, f.prefix])).toEqual([[1, 4, ''], [6, 9, '> ']]);
+		expect(all[1].body).toBe('image: [[b.png]]\npins:');
+	});
+	it('picks by position, and follows the image when blocks move', () => {
+		expect(pickMapFence(note, 1)?.open).toBe(6);
+		expect(pickMapFence(note, 0, 'b.png')?.index).toBe(1);
+		expect(pickMapFence(note, 5)?.index).toBe(1);
+		expect(pickMapFence('no maps here', 0)).toBeNull();
 	});
 });

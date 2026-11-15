@@ -400,6 +400,14 @@ const tidy = (s: string) => s.split(/\r?\n/).map(l => l.trim()).join('\n').repla
  * looked for. With several maps in the range, the one whose body is `source` wins.
  */
 export function findMapFence(lines: string[], from: number, to: number, source: string): MapFence | null {
+	const found = mapFencesIn(lines, from, to);
+	const want = tidy(source);
+	const hit = found.find(f => f.body === want) ?? (found.length === 1 ? found[0] : null);
+	return hit ? { open: hit.open, close: hit.close, prefix: hit.prefix } : null;
+}
+
+/** Every closed ```nimble-map fence in lines `from..to` (inclusive), with its body (prefixes stripped, trimmed). */
+export function mapFencesIn(lines: string[], from = 0, to = lines.length - 1): (MapFence & { body: string })[] {
 	const found: (MapFence & { body: string })[] = [];
 	const last = Math.min(to, lines.length - 1);
 	for (let i = Math.max(0, from); i <= last; i++) {
@@ -418,9 +426,19 @@ export function findMapFence(lines: string[], from: number, to: number, source: 
 		found.push({ open: i, close, prefix, body: tidy(lines.slice(i + 1, close).map(strip).join('\n')) });
 		i = close;
 	}
-	const want = tidy(source);
-	const hit = found.find(f => f.body === want) ?? (found.length === 1 ? found[0] : null);
-	return hit ? { open: hit.open, close: hit.close, prefix: hit.prefix } : null;
+	return found;
+}
+
+/**
+ * Which map block of a note a map tab shows: the `index`-th, unless that one
+ * no longer shows `image` and another does (blocks were added or moved above it).
+ */
+export function pickMapFence(text: string, index: number, image?: string): (MapFence & { body: string; index: number }) | null {
+	const all = mapFencesIn(text.split('\n')).map((f, i) => ({ ...f, index: i }));
+	if (!all.length) return null;
+	const at = all[Math.max(0, Math.min(all.length - 1, index))];
+	if (!image || parseMapBlock(at.body).image === image) return at;
+	return all.find(f => parseMapBlock(f.body).image === image) ?? at;
 }
 
 /**

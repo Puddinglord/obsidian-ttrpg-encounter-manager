@@ -4,6 +4,7 @@ system: Nimble
 level: 2
 heroes: 4
 status: active
+world-date: day 3 08:00
 ---
 
 The city's oldest quarter: crooked streets, guild halls, and cellars that go down further than anyone admits. On moonless nights, silver light seeps up between the cobblestones.

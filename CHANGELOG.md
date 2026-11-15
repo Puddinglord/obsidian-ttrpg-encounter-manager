@@ -16,6 +16,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 - A campaign clock. It's under the party in the Campaign panel, in the corner of every map in the campaign, and anywhere you put a `nimble-clock` block, and they all move together. **+** gives you steps like **+1 quarter**, your calendar's quick jumps (**Camp** until Morning), a field for "+3 days 4 hours", **Set date…** and **Undo**. It counts days with nothing set up.
 - Calendars of your own: **New calendar…** writes one into your campaign from a starter (Day count, Day and night, Quarter days, Watches, 12 months, 13 × 28) for you to edit, with your own months, weekdays, parts of the day, era and date format. A calendar note shows a month at a time, with today marked and dated notes on their days.
 - The date is kept in the campaign home's properties as `world-date: 1247-03-12 14:30`. New session notes get the world date when you make them, and the Sessions list shows the time each one covered ("Day 14 → 17").
+- Travel moves the clock: give a map a `travel:` line (`travel: 1 quarter`), and dragging the party across cells offers **Advance the clock 3 quarters? (3 hexes · 18 miles)**. It never moves the clock silently; **Travel moves the clock without asking** in settings makes it automatic, with a notice.
+- **Open in tab** puts a map in its own tab, filling the pane and saving into its note, and it comes back after a restart. **Notes** opens your latest session note (or one you pick) in a split beside it; **Toggle map note panel** does the same from a hotkey you choose.
 - Map blocks understand new optional keys (`grid: hex`, `cell`, `offset`, `show-grid`, `scale`, `travel`, `party` and `drawings`), ready for grids, the party marker and drawing.
 
 ### Fixed

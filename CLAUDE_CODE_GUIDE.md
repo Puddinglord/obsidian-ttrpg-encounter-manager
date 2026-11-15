@@ -32,6 +32,7 @@ src/
   builder-modal.ts      Encounter builder
   map-def.ts            ```nimble-map format (pure)         map-block.ts        its renderer (pins, tokens)
   grid-def.ts           Grid maths: cellAt, centreOf, distance (axial hexes, Chebyshev squares), SVG pattern tiles (pure, tested)
+  map-view.ts           A map in its own tab (getState/setState), the Notes split beside it
   map-draw.ts           Drawings, the live line and the Draw bar; map-party.ts is the party marker's face and roster
   grid-detect.ts        Finds the grid printed on a map image, in idle chunks (pure, tested); map-grid.ts is the Grid panel, the grid layer and pixel reading
   slash.ts              "/" commands
@@ -191,6 +192,7 @@ Every PR merged into `main` is released by `.github/workflows/auto-release.yml` 
 
 - Everything a map stores is in % of the image; cells are sized in % of the image *width* both ways (grid-def.ts explains the "width units"). Keep it that way so a swapped-in bigger image keeps every pin, grid and drawing.
 - `parseMapBlock`/`mapBlockSource` are lossless: unknown lines stay where they were and unchanged lines are written back as typed. A new key goes in `SCALARS`/`LISTS` in map-def.ts with a read, write and snapshot case, plus a round-trip test.
+- A map tab builds the same `MapBlock` with a `MapHost` (fill, Notes, map pins stay in the tab) and a context whose section is the fence's lines, so it saves through the same `replaceMapBlock` path.
 - Saving rewrites the note and Obsidian draws the block again; `VIEWS` and `SAVED_MODE` in map-block.ts carry the zoom and mode across. Never read pixels by drawing the `app://` image into a canvas (it taints it): `readGray` in map-grid.ts reads the bytes.
 
 ## The campaign clock
