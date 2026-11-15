@@ -125,6 +125,19 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					render: toggle(() => s.spotlightKey, v => { s.spotlightKey = v; }, () => this.plugin.campaigns.trigger('changed')), // the Campaign panel's search bar shows the key
 				},
 			] },
+			{ heading: 'Maps', rows: [
+				{
+					name: 'Grid line strength',
+					desc: 'How strongly grids are drawn over maps. Themes and CSS snippets can change the colour with --nimble-map-grid-color.',
+					render: (setting) => {
+						setting.addSlider(sl => showSliderValue(sl.setLimits(10, 100, 5).setValue(Math.round(s.mapGridOpacity * 100))).onChange(async v => {
+							s.mapGridOpacity = v / 100;
+							await save();
+							activeDocument.querySelectorAll<HTMLElement>('.nimble-map').forEach(el => el.style.setProperty('--nimble-map-grid-opacity', String(s.mapGridOpacity)));
+						}));
+					},
+				},
+			] },
 			{ heading: 'Campaigns', rows: [
 				{
 					name: 'Campaigns folder',

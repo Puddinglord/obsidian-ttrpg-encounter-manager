@@ -5,18 +5,19 @@
 import { App, DropdownComponent, FuzzyMatch, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { MapDef, mapBlockSource, MapPin, parseMapBlock, PIN_KINDS, PinKind, replaceMapBlock } from './map-def';
-import { EncounterCreature } from './types';
+import { DEFAULT_GRID_OPACITY, EncounterCreature } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
 import { monsterRole } from './rules';
 import { confirmAction, isTouch, onLongPress } from './touch';
 import { setWarningButton } from './compat';
 import { closePopover, isPopoverOpenFor, openPopover } from './popover';
+import { applyDraft, detectOnImage, draftFrom, drawGridLayer, GridDraft, gridOf, GridPanel, specOf } from './map-grid';
 
 const PIN_ICON: Record<PinKind, string> = {
 	place: 'map-pin', area: 'flag', encounter: 'swords', npc: 'user', treasure: 'gem', danger: 'skull', note: 'sticky-note', secret: 'eye-off', map: 'map',
 };
 
-type Mode = 'view' | 'add' | 'move';
+type Mode = 'view' | 'add' | 'move' | 'grid';
 
 /**
  * Where each map was looked at, by note and image. Saving rewrites the note and
@@ -53,6 +54,12 @@ class MapBlock extends MarkdownRenderChild {
 	private sized = false;
 	/** The viewport height picked for a tall map, kept when the block redraws. */
 	private height: number | null = null;
+	/** The Grid panel, while it's open, and the draft it edits (kept when the block redraws). */
+	private gridPanel: GridPanel | null = null;
+	private gridPanelEl: HTMLElement | null = null;
+	private gridDraft: GridDraft | null = null;
+	/** "Fit to 3 × 3": dragging on the map draws a box instead of panning. */
+	private onBox: ((box: { x: number; y: number; w: number; h: number }) => void) | null = null;
 	/** After a double-tap zoom, the synthesized click can land on a pin that moved under the finger. */
 	private quietUntil = 0;
 
@@ -122,7 +129,9 @@ class MapBlock extends MarkdownRenderChild {
 		if (this.editable) {
 			modeBtn('add', 'map-pin', 'Add pin');
 			modeBtn('move', 'move', 'Move pins');
+			modeBtn('grid', 'grid', 'Grid');
 		}
+		if (this.mode !== 'grid') { this.gridDraft = null; this.onBox = null; }
 		// Tokens come from the GM's tracker, so a map in a campaign you play in doesn't offer them.
 		if (this.plugin.playerView(this.ctx.sourcePath)) this.showTokens = false;
 		else {
@@ -144,9 +153,13 @@ class MapBlock extends MarkdownRenderChild {
 		zoom('zoom-in', 'Zoom in', () => this.zoomAt(1.3));
 		zoom('maximize', 'Fit map', () => this.fit());
 
-		if (this.mode !== 'view') {
+		if (this.mode === 'add' || this.mode === 'move') {
 			root.createDiv({ cls: 'nimble-map-hint', text: this.mode === 'add' ? 'Click to drop a pin' : 'Drag pins to move them' });
 		}
+		this.gridPanel = null;
+		this.gridPanelEl = this.mode === 'grid' ? root.createDiv() : null;
+		if (this.gridPanelEl) this.registerDomEvent(this.gridPanelEl, 'keydown', (e: KeyboardEvent) => { this.gridPanel?.key(e); });
+		root.style.setProperty('--nimble-map-grid-opacity', String(this.plugin.settings.mapGridOpacity ?? DEFAULT_GRID_OPACITY));
 
 		const body = root.createDiv({ cls: 'nimble-map-body' });
 		this.viewport = body.createDiv({ cls: `nimble-map-viewport mode-${this.mode}` });
@@ -154,10 +167,6 @@ class MapBlock extends MarkdownRenderChild {
 		if (this.height) this.viewport.style.height = `${this.height}px`;
 		this.stage = this.viewport.createDiv({ cls: 'nimble-map-stage' });
 		this.img = this.stage.createEl('img', { attr: { src, alt: this.def.image, draggable: 'false' } });
-		if (this.def.grid?.cols && this.def.grid.rows) {
-			const grid = this.stage.createDiv({ cls: 'nimble-map-grid' });
-			grid.style.backgroundSize = `${100 / this.def.grid.cols}% ${100 / this.def.grid.rows}%`;
-		}
 		this.pinLayer = this.stage.createDiv({ cls: 'nimble-map-layer' });
 		this.tokenLayer = this.stage.createDiv({ cls: 'nimble-map-layer nimble-map-tokens' });
 		this.tray = body.createDiv({ cls: 'nimble-map-tray' });
@@ -212,10 +221,56 @@ class MapBlock extends MarkdownRenderChild {
 				this.fitted = true;
 			}
 		}
-		if (!this.fitted) { this.fit(); return; }
-		this.stage.style.width = `${iw}px`;
-		this.stage.style.height = `${ih}px`;
-		this.apply();
+		if (!this.fitted) this.fit();
+		else {
+			this.stage.style.width = `${iw}px`;
+			this.stage.style.height = `${ih}px`;
+			this.apply();
+		}
+		this.renderGrid();
+		if (this.gridPanelEl && !this.gridPanel) this.openGridPanel();
+	}
+
+	// ------------------------------------------------------------------------
+	// Grid
+
+	private get aspect(): number { return this.img.naturalWidth / this.img.naturalHeight; }
+
+	/** The grid lines: the draft while the Grid panel is open, else the block's grid unless it's hidden. */
+	private renderGrid(): void {
+		if (!this.stage || !this.img?.naturalWidth) return;
+		const draft = this.gridDraft;
+		const spec = draft ? specOf(draft) : this.def.showGrid === false ? null : gridOf(this.def);
+		drawGridLayer(this.stage, this.pinLayer, spec, this.img.naturalWidth, this.img.naturalHeight, !!draft);
+	}
+
+	private openGridPanel(): void {
+		if (!this.gridPanelEl) return;
+		this.gridDraft ??= draftFrom(this.def, this.aspect);
+		const image = this.def.image;
+		this.gridPanel = new GridPanel(this.gridPanelEl, this.gridDraft, {
+			size: () => ({ w: this.img.naturalWidth, h: this.img.naturalHeight }),
+			viewCentre: () => {
+				const r = this.viewport.getBoundingClientRect();
+				return this.toPercent(r.left + r.width / 2, r.top + r.height / 2);
+			},
+			preview: (d) => { this.gridDraft = d; this.renderGrid(); },
+			boxMode: (fn) => {
+				this.onBox = fn;
+				this.viewport.toggleClass('is-boxing', !!fn);
+				this.stage.querySelector('.nimble-map-fitbox')?.remove();
+			},
+			detect: (kind, hint) => detectOnImage(this.app, image, this.ctx.sourcePath, kind, hint),
+			canDetect: true,
+			save: (d) => {
+				applyDraft(this.def, d, this.aspect);
+				this.gridDraft = null;
+				this.mode = 'view';
+				this.build();
+				void this.save();
+			},
+			cancel: () => { this.gridDraft = null; this.mode = 'view'; this.build(); },
+		});
 	}
 
 	private fit(): void {
@@ -276,6 +331,7 @@ class MapBlock extends MarkdownRenderChild {
 			// Pins in view mode don't stop this, so a pan or pinch can start on a pin (they're
 			// dense on a phone). Capture waits for real movement so a still tap still clicks the pin.
 			if (e.button !== 0) return;
+			if (this.onBox && pts.size === 0 && e.isPrimary) { this.dragBox(e); return; }
 			pts.set(e.pointerId, local(e));
 			if (pts.size === 1) {
 				pan = { ...local(e), tx: this.tx, ty: this.ty, moved: false };
@@ -340,7 +396,8 @@ class MapBlock extends MarkdownRenderChild {
 		this.registerDomEvent(vp, 'pointerup', end);
 		this.registerDomEvent(vp, 'pointercancel', end);
 		this.registerDomEvent(vp, 'keydown', (e: KeyboardEvent) => {
-			if (e.key === 'Escape' && this.mode !== 'view') { this.mode = 'view'; this.build(); }
+			if (this.mode === 'grid' && this.gridPanel?.key(e)) return;
+			if (e.key === 'Escape' && this.mode !== 'view') { this.gridDraft = null; this.mode = 'view'; this.build(); }
 			else if (e.key === '+' || e.key === '=') this.zoomAt(1.3);
 			else if (e.key === '-') this.zoomAt(1 / 1.3);
 			else if (e.key === '0') this.fit();
@@ -350,6 +407,36 @@ class MapBlock extends MarkdownRenderChild {
 			const p = local(e);
 			this.zoomAt(1.6, p.x, p.y);
 		});
+	}
+
+	/** Fit to 3 × 3: draw a box from where the pointer went down to where it comes up. */
+	private dragBox(e: PointerEvent): void {
+		const vp = this.viewport;
+		const start = this.toPercent(e.clientX, e.clientY);
+		const box = this.stage.querySelector<HTMLElement>('.nimble-map-fitbox') ?? this.stage.createDiv({ cls: 'nimble-map-fitbox' });
+		const rect = (p: { x: number; y: number }) => ({ x: Math.min(start.x, p.x), y: Math.min(start.y, p.y), w: Math.abs(p.x - start.x), h: Math.abs(p.y - start.y) });
+		const draw = (r: { x: number; y: number; w: number; h: number }) => {
+			box.style.left = `${r.x}%`;
+			box.style.top = `${r.y}%`;
+			box.style.width = `${r.w}%`;
+			box.style.height = `${r.h}%`;
+		};
+		draw(rect(start));
+		try { vp.setPointerCapture(e.pointerId); } catch { /* already lifted */ }
+		const move = (ev: PointerEvent) => { if (ev.pointerId === e.pointerId) draw(rect(this.toPercent(ev.clientX, ev.clientY))); };
+		const up = (ev: PointerEvent) => {
+			if (ev.pointerId !== e.pointerId) return;
+			vp.removeEventListener('pointermove', move);
+			vp.removeEventListener('pointerup', up);
+			vp.removeEventListener('pointercancel', up);
+			const r = rect(this.toPercent(ev.clientX, ev.clientY));
+			const big = (r.w / 100) * this.img.naturalWidth > 12 && (r.h / 100) * this.img.naturalHeight > 6;
+			if (ev.type === 'pointerup' && big && this.onBox) this.onBox(r);
+			else box.remove();
+		};
+		vp.addEventListener('pointermove', move);
+		vp.addEventListener('pointerup', up);
+		vp.addEventListener('pointercancel', up);
 	}
 
 	// ------------------------------------------------------------------------

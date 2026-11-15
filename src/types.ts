@@ -265,8 +265,12 @@ export interface NimbleStatblocksSettings {
 	looseParty?: PartyMember[];
 	/** Token positions on GM maps: map key → combatant id → percent position. */
 	mapTokens?: Record<string, Record<string, { x: number; y: number }>>;
+	/** How strongly map grid lines are drawn, 0–1. */
+	mapGridOpacity: number;
 	settingsVersion: number;
 }
+
+export const DEFAULT_GRID_OPACITY = 0.45;
 
 export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	statblockStyle: 'book',
@@ -297,6 +301,7 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	compendiumDrafts: true,
 	compendiumArt: {},
 	compendiumArtFolder: 'Ember Vault/Compendium Art',
+	mapGridOpacity: DEFAULT_GRID_OPACITY,
 	rollDialog: true,
 	classDice: { color: '#d4a72c', finish: 'metal' },
 	autoLinkNpcs: true,
@@ -367,6 +372,7 @@ export function migrateSettings(saved: unknown): NimbleStatblocksSettings {
 	s.party = items(s.party);
 	s.campaigns = record(s.campaigns);
 	s.activeCampaign = typeof s.activeCampaign === 'string' ? s.activeCampaign : null;
+	s.mapGridOpacity = typeof s.mapGridOpacity === 'number' && s.mapGridOpacity >= 0 && s.mapGridOpacity <= 1 ? s.mapGridOpacity : DEFAULT_GRID_OPACITY;
 	const cd = record(data.classDice);
 	s.classDice = {
 		color: typeof cd.color === 'string' && /^#[0-9a-f]{6}$/i.test(cd.color) ? cd.color : DEFAULT_SETTINGS.classDice.color,

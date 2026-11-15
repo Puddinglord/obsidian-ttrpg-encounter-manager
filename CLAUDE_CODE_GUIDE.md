@@ -31,6 +31,8 @@ src/
   encounter-def.ts      ```nimble-encounter format (pure)   encounter-block.ts  its renderer
   builder-modal.ts      Encounter builder
   map-def.ts            ```nimble-map format (pure)         map-block.ts        its renderer (pins, tokens)
+  grid-def.ts           Grid maths: cellAt, centreOf, distance (axial hexes, Chebyshev squares), SVG pattern tiles (pure, tested)
+  grid-detect.ts        Finds the grid printed on a map image, in idle chunks (pure, tested); map-grid.ts is the Grid panel, the grid layer and pixel reading
   slash.ts              "/" commands
   spotlight.ts          Cmd/Ctrl+K box: search adversaries/NPCs/notes, roll dice, run commands (spotlight-def.ts is the pure query parser)
   inline-ref.ts         `nimble:Name` references and the interactive hover preview
@@ -88,7 +90,7 @@ e2e/                    End-to-end tests that drive a real Obsidian
 
 Rules that keep this healthy:
 
-- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts` must not import `obsidian`, so unit tests run in plain Node.
+- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `grid-def.ts`, `grid-detect.ts`, `markdown.ts`, `dice.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
 - Views don't mutate encounter data directly. Call `plugin.encounters.*`; it saves and fires `changed`, and every open tracker re-renders.
@@ -179,6 +181,12 @@ Every PR merged into `main` is released by `.github/workflows/auto-release.yml` 
 - The active campaign follows `file-open`. Notes outside any campaign leave it unchanged.
 - e2e can load any vault: `launchObsidian({ vaultDir })`.
 - Campaigns don't share monsters or NPCs. Pass the note path to `index.get(name, from)` / `index.all(from)` wherever you have one; with none, the active campaign decides (the scope is set in `main.ts`). A campaign sees its own notes, GM campaigns also see notes outside any campaign, and everyone sees the bundled bestiary.
+
+## Maps
+
+- Everything a map stores is in % of the image; cells are sized in % of the image *width* both ways (grid-def.ts explains the "width units"). Keep it that way so a swapped-in bigger image keeps every pin, grid and drawing.
+- `parseMapBlock`/`mapBlockSource` are lossless: unknown lines stay where they were and unchanged lines are written back as typed. A new key goes in `SCALARS`/`LISTS` in map-def.ts with a read, write and snapshot case, plus a round-trip test.
+- Saving rewrites the note and Obsidian draws the block again; `VIEWS` and `SAVED_MODE` in map-block.ts carry the zoom and mode across. Never read pixels by drawing the `app://` image into a canvas (it taints it): `readGray` in map-grid.ts reads the bytes.
 
 ## Boxes and NPCs
 

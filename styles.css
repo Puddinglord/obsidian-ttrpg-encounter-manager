@@ -799,7 +799,32 @@ body {
 .nimble-map-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--interactive-accent); }
 .nimble-map-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; --nimble-map-inv: 1; }
 .nimble-map .nimble-map-viewport .nimble-map-stage img { display: block; max-width: none; width: 100%; height: 100%; user-select: none; pointer-events: none; margin: 0; }
-.nimble-map-grid { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(to right, rgba(0,0,0,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.35) 1px, transparent 1px); }
+/* Grid lines: one SVG the size of the image, filled with a pattern of one tile. Colour and strength are variables a theme can set. */
+.nimble-map { --nimble-map-grid-color: #000; --nimble-map-grid-opacity: 0.45; }
+.theme-dark .nimble-map { --nimble-map-grid-color: #000; }
+.nimble-map-gridlines { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; color: var(--nimble-map-grid-color); opacity: var(--nimble-map-grid-opacity); }
+.nimble-map-gridline { fill: none; stroke: currentColor; stroke-width: calc(1.25px * var(--nimble-map-inv)); stroke-linecap: square; }
+.nimble-map-gridlines.is-draft { color: var(--interactive-accent); opacity: 0.9; }
+.nimble-map-gridlines.is-draft .nimble-map-gridline { stroke-width: calc(1.5px * var(--nimble-map-inv)); }
+.nimble-map-viewport.is-boxing { cursor: crosshair; }
+.nimble-map-fitbox { position: absolute; pointer-events: none; z-index: 4; border: calc(2px * var(--nimble-map-inv)) dashed var(--interactive-accent); background: color-mix(in srgb, var(--interactive-accent) 14%, transparent); }
+/* The Grid panel under the toolbar. */
+.nimble-map-gridpanel { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--background-modifier-border); background: var(--background-primary-alt); font-size: 0.8rem; }
+.nimble-map-gridpanel-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; min-width: 0; }
+.nimble-map-gridpanel-label { color: var(--text-muted); font-size: 0.75rem; min-width: 2.6rem; }
+.nimble-map-gridpanel-value { min-width: 4.2rem; text-align: center; font-variant-numeric: tabular-nums; }
+.nimble-map-gridpanel-status { color: var(--text-muted); font-size: 0.78rem; }
+.nimble-map-gridpanel-status.is-good { color: var(--color-green); font-weight: 600; }
+.nimble-map-gridpanel-status.is-rough { color: var(--color-orange); font-weight: 600; }
+.nimble-map-gridpanel-check { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+.nimble-map-gridpanel-scale { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-muted); }
+.nimble-map-gridpanel-scale input { width: 7.5rem; height: 1.7rem; font-size: 0.8rem; }
+.nimble-map-gridpanel-actions { justify-content: flex-end; }
+.nimble-map-stepper { display: inline-flex; align-items: center; gap: 2px; }
+.nimble-map .nimble-map-icon-btn { width: 1.7rem; padding: 0; justify-content: center; }
+.nimble-map-segs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 2px; border-radius: 8px; background: var(--background-modifier-border); --seg-pad: 2px; --seg-gap: 2px; }
+.nimble-map .nimble-map-seg { height: 1.6rem; padding: 0 0.6rem; border-radius: 6px; box-shadow: none; background: transparent; color: var(--text-muted); font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+.nimble-map .nimble-map-seg.is-active { color: var(--text-normal); }
 .nimble-map-layer { position: absolute; inset: 0; pointer-events: none; }
 .nimble-map-pin, .nimble-map-token { position: absolute; pointer-events: auto; }
 .nimble-map-pin { width: 0; height: 0; cursor: pointer; z-index: 2; }
@@ -1368,6 +1393,11 @@ body.is-phone .nimble-bestiary .bestiary-side, body.is-phone .nimble-bestiary .b
 
 /* Maps on phones: a shorter viewport and the token tray underneath */
 body.is-phone .nimble-map-viewport { flex: none; height: 60vh; resize: none; }
+body.is-phone .nimble-map-segs { flex: 1 1 100%; }
+body.is-phone .nimble-map .nimble-map-seg { height: 2.2rem; padding: 0 0.3rem; }
+body.is-phone .nimble-map .nimble-map-btn { height: 2.2rem; }
+body.is-phone .nimble-map .nimble-map-icon-btn { width: 2.2rem; }
+body.is-phone .nimble-map-gridpanel-scale input { height: 2.2rem; }
 body.is-phone .nimble-map-body, body.is-phone .nimble-map-main { flex-direction: column; }
 body.is-phone .nimble-map-tray { width: auto; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
 /* The same stacking in a narrow pane on any device (sidebar, split, hover preview, Canvas card).
@@ -3474,6 +3504,9 @@ body.is-tablet .nimble-spotlight .nimble-spotlight-chip { padding: 0 0.7rem; }
 body.is-tablet button.nimble-cmp-back { padding: 0 0.75rem 0 0.55rem; }
 body.is-tablet .nimble-count-modal button.nimble-count-step { padding: 0; }
 body.is-tablet .nimble-count-modal button.nimble-count-seg { padding: 0 0.5rem; }
+body.is-tablet .nimble-map button.nimble-map-btn { padding: 0 0.55rem; }
+body.is-tablet .nimble-map button.nimble-map-icon-btn { padding: 0; }
+body.is-tablet .nimble-map button.nimble-map-seg { padding: 0 0.3rem; }
 
 /* Actions: three dots a turn, End turn (character-sheet.ts renderActionsCard) */
 .nimble-sheet .ns-turn { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.75rem 0.9rem; }
@@ -3579,13 +3612,13 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* ===== end Character sheet & compendium ===== */

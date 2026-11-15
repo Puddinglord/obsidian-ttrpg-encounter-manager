@@ -22,6 +22,19 @@ Pins link to notes or headings, with Obsidian's hover preview, and clicking a pi
 
 Pin positions are stored as percentages of the image, so you can swap in a bigger or smaller version of the same map later and the pins stay put.
 
+## Grids
+
+A grid is for counting and snapping: how far the party travels, where the party marker lands. Select **Grid** on the map's toolbar to set one up:
+
+1. **Type**: None, Square, Hex (pointy-top, in rows) or Hex (flat, in columns).
+2. **Detect** looks for the grid printed on the map and draws what it found over it, with a note on how sure it is: "Good match", or "Rough guess — adjust below".
+3. **Fit to 3 × 3**: drag a box around 3 × 3 squares of the map's own grid (for hexes, 3 hexes in a row, point to point; for flat hexes, 3 in a column). That sets the size and position straight away, and Detect then fine-tunes it. Use it when Detect isn't sure, or when the map's grid is faint.
+4. **Size − / +** and the arrows (or the arrow keys) nudge it. Hold Shift for fine steps.
+5. **Show grid**: turn it off when the map has a grid printed on it. The grid still snaps and counts, but nothing is drawn over the map. **One cell is** sets the scale, like `6 miles` or `5 ft`.
+6. **Save** writes it to the block. **Cancel** leaves the block as it was.
+
+Grid lines stay thin at any zoom. **Grid line strength** in settings makes them stronger or fainter, and a theme or CSS snippet can change their colour with `--nimble-map-grid-color`.
+
 ## Maps inside maps
 
 A **map** pin links to another map: a region on a world map, a building in a town. Pick a map note in the pin's **Links to** picker (map notes are listed first, with a map icon) and the pin becomes a map pin. Clicking it opens that map in the same tab, so you can drill down and use **Back** to return. Cmd/Ctrl-click opens it in a new tab. Each map remembers where you'd panned and zoomed, so Back puts you where you were.

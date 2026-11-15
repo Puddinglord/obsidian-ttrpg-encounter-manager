@@ -2054,6 +2054,20 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 		await tap(p.locator(`${R} .nimble-map-pin`).first());
 		assert.equal(await p.locator('.nimble-popover.nimble-pin-card').count(), 1, 'tapping a pin opens its card');
 		assert.equal(await p.locator('.menu').count(), 0, 'no stray long-press menu');
+		await p.evaluate(() => document.querySelectorAll('.nimble-popover').forEach(n => n.remove()));
+
+		// The Grid panel fits a phone: nothing spills sideways and every control is a real tap target.
+		await tap(p.locator(`${R} .nimble-map button[aria-label="Grid"]`));
+		await tap(p.locator(`${R} .nimble-map .nimble-map-seg[data-kind="hex"]`));
+		const gridPanel = await p.evaluate((r) => {
+			const el = document.querySelector(`${r} .nimble-map-gridpanel`);
+			const map = el.closest('.nimble-map').getBoundingClientRect();
+			const spill = [...el.querySelectorAll('button, input, label')].filter(b => { const x = b.getBoundingClientRect(); return x.width && (x.right > map.right + 1 || x.left < map.left - 1); }).map(b => b.textContent || b.getAttribute('aria-label'));
+			const small = [...el.querySelectorAll('button')].filter(b => b.getBoundingClientRect().height < 32).map(b => b.textContent || b.getAttribute('aria-label'));
+			return { spill, small };
+		}, R);
+		assert.deepEqual(gridPanel, { spill: [], small: [] }, 'the grid panel fits the phone');
+		await tap(p.locator(`${R} .nimble-map .nimble-map-gridpanel button`, { hasText: 'Cancel' }));
 	} finally {
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
 		await o.eval((app) => app.emulateMobile(false));
@@ -4424,6 +4438,86 @@ test('map v2: new keys and unknown lines survive a pin edit, the view stays put,
 	const back = o.page.locator(`${R} .nimble-map`).first();
 	await o.waitFor(async () => Math.abs((await stageScale(back)) - zoomed) < 0.001, { what: 'the remembered zoom' });
 	await o.eval(async (app) => { for (const f of ['Map v2.md', 'Low Road.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); } });
+});
+
+/** Screen position of an image pixel on a map. */
+async function mapToScreen(map, px, py) {
+	return map.locator('.nimble-map-viewport').evaluate((vp, [px, py]) => {
+		const st = vp.querySelector('.nimble-map-stage');
+		const m = /translate\(([-\d.]+)px, ([-\d.]+)px\) scale\(([\d.]+)\)/.exec(st.style.transform);
+		const r = vp.getBoundingClientRect();
+		return { x: r.left + Number(m[1]) + px * Number(m[3]), y: r.top + Number(m[2]) + py * Number(m[3]) };
+	}, [px, py]);
+}
+
+// The generated hex fixture (scripts/make-hex-map.mjs): 1600×1200, pointy hexes 64 px wide, a centre at (37, 41).
+const HEX_TRUTH = { w: 64, x: 37, y: 41, iw: 1600, ih: 1200 };
+
+test('map grids: Detect finds the hex grid, Fit to 3 × 3 sets one from a box, Cancel changes nothing, Save writes once', async (o) => {
+	await resetEncounter(o);
+	const NOTE = 'Hex World.md';
+	const BODY = '```nimble-map\nimage: [[hex-world.png]]\ngrid: hex\npins:\n- 50, 50 | Camp\n```\n';
+	await o.eval(async (app, _p, [note, body]) => {
+		const x = app.vault.getAbstractFileByPath(note);
+		if (x) await app.vault.delete(x);
+		await app.vault.create(note, body);
+	}, [NOTE, BODY]);
+	await o.openFile(NOTE, 'preview');
+	const map = o.page.locator(`${R} .nimble-map`).first();
+	await o.waitFor(async () => (await map.locator('button[aria-label="Grid"]').count()) === 1, { what: 'the Grid button' });
+	await o.waitFor(async () => (await stageScale(map)) > 0, { what: 'the map to fit' });
+	const cellOf = (text) => Number(/^cell: ([\d.]+)/m.exec(text)?.[1]);
+	const truth = HEX_TRUTH.w / HEX_TRUTH.iw * 100;
+
+	// Detect.
+	await map.locator('button[aria-label="Grid"]').click();
+	const panel = map.locator('.nimble-map-gridpanel');
+	await panel.waitFor();
+	assert.equal(await panel.locator('.nimble-map-seg.is-active').innerText(), 'Hex');
+	assert.equal(await map.locator('.nimble-map-gridlines.is-draft').count(), 1, 'the draft grid is drawn while sizing');
+	const bad = await o.page.evaluate(pillOffenders, { root: `${R} .nimble-map-gridpanel`, tolerance: 1, selectors: PILL_SELECTORS });
+	assert.deepEqual(bad, [], 'grid panel pills are centred');
+	const t0 = Date.now();
+	await panel.locator('button[aria-label="Detect the grid on the map"]').click();
+	await o.waitFor(async () => (await panel.locator('.nimble-map-gridpanel-status.is-good, .nimble-map-gridpanel-status.is-rough').count()) === 1, { what: 'detection to finish', timeout: 20000 });
+	const took = Date.now() - t0;
+	assert.equal(await panel.locator('.nimble-map-gridpanel-status').innerText(), 'Good match');
+	await panel.locator('button', { hasText: 'Save' }).click();
+	await o.waitFor(async () => /^cell: /m.test(await read(o, NOTE)), { what: 'the grid to save' });
+	let text = await read(o, NOTE);
+	assert.ok(Math.abs(cellOf(text) / truth - 1) < 0.03, `detected cell ${cellOf(text)} is within 3% of ${truth} (${took} ms)`);
+	assert.ok(text.includes('- 50, 50 | Camp'), 'pins are untouched');
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map .nimble-map-gridlines:not(.is-draft) path`).count()) === 1, { what: 'the saved grid to draw' });
+
+	// Cancel leaves the block alone.
+	const saved = await read(o, NOTE);
+	const map2 = o.page.locator(`${R} .nimble-map`).first();
+	await map2.locator('button[aria-label="Grid"]').click();
+	await map2.locator('.nimble-map-seg', { hasText: 'Square' }).click();
+	await map2.locator('.nimble-map-gridpanel button', { hasText: 'Cancel' }).click();
+	await o.page.waitForTimeout(400);
+	assert.equal(await read(o, NOTE), saved, 'Cancel wrote nothing');
+
+	// Fit to 3 × 3: a box around the first three hexes of the top row.
+	await o.eval(async (app, _p, [note, body]) => { await app.vault.modify(app.vault.getAbstractFileByPath(note), body); }, [NOTE, BODY.replace('grid: hex', 'grid: hex\ncell: 5.5')]);
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map button[aria-label="Grid"]`).count()) === 1, { what: 'the map to redraw' });
+	const map3 = o.page.locator(`${R} .nimble-map`).first();
+	await map3.locator('button[aria-label="Grid"]').click();
+	await map3.locator('button[aria-label="Fit to 3 × 3 cells"]').click();
+	const h = 2 * HEX_TRUTH.w / Math.sqrt(3);
+	const a = await mapToScreen(map3, HEX_TRUTH.x - HEX_TRUTH.w / 2, HEX_TRUTH.y - h / 2);
+	const b = await mapToScreen(map3, HEX_TRUTH.x + 2.5 * HEX_TRUTH.w, HEX_TRUTH.y + h / 2);
+	await o.page.mouse.move(a.x, a.y);
+	await o.page.mouse.down();
+	await o.page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
+	await o.page.mouse.move(b.x, b.y, { steps: 4 });
+	await o.page.mouse.up();
+	await o.waitFor(async () => (await map3.locator('.nimble-map-gridpanel-status').innerText()) !== '' && !(await map3.locator('.nimble-map-gridpanel-status').innerText()).startsWith('Looking'), { what: 'the box to set the grid', timeout: 20000 });
+	await map3.locator('.nimble-map-gridpanel button', { hasText: 'Save' }).click();
+	await o.waitFor(async () => !/^cell: 5\.5$/m.test(await read(o, NOTE)), { what: 'the boxed grid to save' });
+	text = await read(o, NOTE);
+	assert.ok(Math.abs(cellOf(text) / truth - 1) < 0.03, `boxed cell ${cellOf(text)} is within 3% of ${truth}`);
+	await o.eval(async (app, _p, note) => { const x = app.vault.getAbstractFileByPath(note); if (x) await app.vault.delete(x); }, NOTE);
 });
 
 test('no console errors during the run', async (o) => {

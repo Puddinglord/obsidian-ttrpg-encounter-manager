@@ -9,10 +9,12 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 ### Added
 
 - Map pins can link to other maps. Pick a map note in the pin's **Links to** picker (map notes are listed first, with a map icon) and the pin becomes a **map** pin; clicking it opens that map in the same tab, so Back takes you up again.
+- Hex and square grids on maps, set up with the new **Grid** button: pick a type, then **Detect** finds the grid printed on the map, or **Fit to 3 × 3** sets it from a box you drag over three cells. Nudge the size and position with the buttons or arrow keys, turn the drawn lines off for maps with their own grid, and say what one cell is (`6 miles`). Grid lines stay thin at any zoom; **Grid line strength** in settings sets how strong they are.
 - Map blocks understand new optional keys (`grid: hex`, `cell`, `offset`, `show-grid`, `scale`, `travel`, `party` and `drawings`), ready for grids, the party marker and drawing.
 
 ### Fixed
 
+- The old `grid: 30x20` is drawn the same way as the new grids, sharp at any zoom.
 - Saving a map (adding, moving or editing a pin) no longer deletes lines from the block that Ember Vault doesn't know about, and lines you didn't change are written back exactly as you typed them.
 - A map keeps its zoom and position after you add or move a pin, and when you switch between Add pin and Move pins, instead of jumping back to the whole map. Coming back to a map's note puts you where you were.
 
