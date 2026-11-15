@@ -1,6 +1,7 @@
-// NPCs in Live Preview: links to NPC notes look like person chips, and plain
-// mentions of an NPC's name get a dotted underline with a hover preview
-// (Cmd/Ctrl-click opens the note; a plain click still places the cursor).
+// Campaign links in Live Preview: links to NPC notes look like person chips,
+// links to other campaign notes like pills with their kind's icon, and plain mentions of an NPC's name get
+// a dotted underline with a hover preview (Cmd/Ctrl-click opens the note; a
+// plain click still places the cursor).
 
 import { syntaxTree } from '@codemirror/language';
 import { Range } from '@codemirror/state';
@@ -8,17 +9,27 @@ import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetTy
 import { editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import type { NpcInfo } from './campaigns';
+import { notePill } from './npc-links';
 
-class NpcIcon extends WidgetType {
-	eq(): boolean { return true; }
+/** The icon in front of a link: a person for NPCs, the kind's icon for other campaign notes. */
+class LinkIcon extends WidgetType {
+	constructor(private cls: string, private icon: string) { super(); }
+	eq(o: LinkIcon): boolean { return o.cls === this.cls && o.icon === this.icon; }
 	toDOM(): HTMLElement {
-		const s = createSpan({ cls: 'nimble-npc-lp-icon' });
-		setIcon(s, 'user-round');
+		const s = createSpan({ cls: this.cls });
+		setIcon(s, this.icon);
 		return s;
 	}
 	ignoreEvent(): boolean { return false; }
 }
-const ICON = new NpcIcon();
+const ICON = new LinkIcon('nimble-npc-lp-icon', 'user-round');
+const NOTE_ICONS = new Map<string, LinkIcon>();
+const noteIcon = (icon: string, cls: string) => {
+	const key = `${icon} ${cls}`;
+	let w = NOTE_ICONS.get(key);
+	if (!w) NOTE_ICONS.set(key, w = new LinkIcon(`nimble-note-lp-icon ${cls}`, icon));
+	return w;
+};
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const LINK = /\[\[([^\]|#^\n]+)(?:[#^][^\]|\n]*)?(?:\|([^\]\n]*))?\]\]/g;
@@ -51,7 +62,7 @@ export function npcLivePreview(plugin: NimbleStatblocksPlugin) {
 		build(view: EditorView): DecorationSet {
 			this.version = plugin.npcVersion;
 			const store = plugin.campaigns;
-			if (!store?.npcs.length || !view.state.field(editorLivePreviewField, false)) return Decoration.none;
+			if (!store || !view.state.field(editorLivePreviewField, false)) return Decoration.none;
 			const sourcePath = view.state.field(editorInfoField, false)?.file?.path ?? '';
 			const camp = store.of(sourcePath)?.folder;
 			const npcs = store.npcs.filter(n => !camp || !n.campaign || n.campaign === camp);
@@ -74,7 +85,13 @@ export function npcLivePreview(plugin: NimbleStatblocksPlugin) {
 					if (touches(a, b) || skippable(view, a + 2)) continue;
 					const dest = plugin.app.metadataCache.getFirstLinkpathDest(m[1].trim(), sourcePath);
 					const npc = dest && byPath.get(dest.path);
-					if (!npc) continue;
+					if (!npc) {
+						const pill = notePill(plugin.app, dest);
+						if (!pill) continue;
+						decos.push(Decoration.widget({ widget: noteIcon(pill.icon, pill.cls), side: 1 }).range(a));
+						decos.push(Decoration.mark({ class: `nimble-note-lp-link ${pill.cls}` }).range(a, b));
+						continue;
+					}
 					decos.push(Decoration.widget({ widget: ICON, side: 1 }).range(a));
 					decos.push(Decoration.mark({ class: 'nimble-npc-lp-link' }).range(a, b));
 				}

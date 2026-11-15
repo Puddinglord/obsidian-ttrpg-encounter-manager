@@ -1,16 +1,29 @@
-// NPCs in reading view. Links to NPC notes become person chips, and plain
-// mentions of an NPC's name (or aliases) in the same campaign are linked as you
-// read, without changing the file. Hover shows Obsidian's page preview.
+// Campaign links in reading view. Links to NPC notes become person chips,
+// links to other campaign notes become pills with their kind's icon (a flag
+// for a quest, a pin for a location, a shield for a party member…), and plain
+// mentions of an NPC's name
+// (or aliases) in the same campaign are linked as you read, without changing
+// the file. Hover shows Obsidian's page preview.
 
-import { MarkdownPostProcessorContext, setIcon, TFile } from 'obsidian';
+import { App, MarkdownPostProcessorContext, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import type { NpcInfo } from './campaigns';
+import { Campaign, linkPill, NoteRef } from './campaign-model';
 import { openRecord } from './record-modal';
 
 /** Where mentions must never be linked. */
 const SKIP = 'a, code, pre, h1, h2, h3, h4, h5, h6, .frontmatter, .metadata-container, .nimble-inline-ref, .nimble-statblock, .nimble-map, .nimble-box-head, .encounter-chip, .nimble-npc-mention, .internal-embed';
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** The pill for a link to `dest`, from its properties (see linkPill). */
+export function notePill(app: App, dest: TFile | null): ReturnType<typeof linkPill> {
+	return dest ? linkPill(app.metadataCache.getFileCache(dest)?.frontmatter) : null;
+}
+
+/** Every note in a campaign the panel knows the kind of. */
+const typedNotes = (c: Campaign): NoteRef[] =>
+	[c.home, ...c.chapters.flatMap(ch => [ch.home, ...ch.scenes, ...ch.maps]), ...c.sections.flatMap(s => s.notes), ...c.loose].filter(n => n.kind !== 'note');
 
 export class NpcLinker {
 	private cache = new Map<string, { re: RegExp | null; byName: Map<string, NpcInfo> }>();
@@ -20,7 +33,9 @@ export class NpcLinker {
 		let key = '';
 		plugin.registerEvent(plugin.campaigns.on('changed', () => {
 			this.cache.clear();
-			const next = plugin.campaigns.npcs.map(n => `${n.path}|${n.aliases.join(',')}|${n.campaign ?? ''}`).sort().join('\n') + plugin.campaigns.campaigns.map(c => `|${c.folder}:${c.role}`).join('');
+			// Other campaign notes too: a new location, or a quest marked completed, changes how links to it look.
+			const quests = plugin.campaigns.campaigns.flatMap(c => typedNotes(c).map(q => `${q.path}:${q.kind}:${q.kind === 'quest' ? q.status ?? '' : ''}`)).sort().join('|');
+			const next = plugin.campaigns.npcs.map(n => `${n.path}|${n.aliases.join(',')}|${n.campaign ?? ''}`).sort().join('\n') + plugin.campaigns.campaigns.map(c => `|${c.folder}:${c.role}`).join('') + (quests ? `\n${quests}` : '');
 			if (next !== key) { const first = key === '' && !next; key = next; if (!first) plugin.rerenderNotes(); }
 		}));
 		plugin.registerMarkdownPostProcessor((el, ctx) => this.process(el, ctx));
@@ -50,7 +65,9 @@ export class NpcLinker {
 
 	private process(el: HTMLElement, ctx: MarkdownPostProcessorContext): void {
 		const store = this.plugin.campaigns;
-		if (!store?.npcs.length) return;
+		if (!store) return;
+		this.notePills(el, ctx.sourcePath);
+		if (!store.npcs.length) return;
 		const npcPaths = new Set(store.npcs.map(n => n.path));
 
 		// 1. Explicit links to NPC notes → chips.
@@ -95,6 +112,18 @@ export class NpcLinker {
 			frag.append(text.slice(last));
 			node.replaceWith(frag);
 		}
+	}
+
+	/** Links to campaign notes other than NPCs → pills with their kind's icon. Clicking opens the note as usual. */
+	private notePills(el: HTMLElement, sourcePath: string): void {
+		el.querySelectorAll<HTMLAnchorElement>('a.internal-link').forEach(a => {
+			if (a.hasClass('nimble-note-link') || a.hasClass('nimble-npc-link') || a.hasClass('nimble-npc-mention')) return;
+			const target = (a.dataset.href ?? a.getAttr('href') ?? '').split('#')[0];
+			const pill = notePill(this.plugin.app, this.plugin.app.metadataCache.getFirstLinkpathDest(target, sourcePath));
+			if (!pill) return;
+			a.addClasses(['nimble-note-link', ...pill.cls.split(' ')]);
+			setIcon(a.createSpan({ cls: 'nimble-note-icon', prepend: true }), pill.icon);
+		});
 	}
 
 	/**

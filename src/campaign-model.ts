@@ -84,6 +84,26 @@ export interface Campaign {
 	looseFiles: FileRef[];
 }
 
+/** Each kind's icon: the Campaign panel, Spotlight and links to the note all use it. */
+export const KIND_ICON: Record<NoteKind, string> = {
+	campaign: 'castle', chapter: 'book-marked', scene: 'clapperboard', map: 'map', npc: 'user-round', location: 'map-pin', quest: 'flag',
+	session: 'calendar-days', monster: 'skull', handout: 'scroll-text', combat: 'swords', character: 'shield', creature: 'paw-print', note: 'file-text',
+};
+
+/**
+ * How a link to a note with these properties is drawn: as a pill with the
+ * kind's icon, or (for plain notes) not at all. NPCs have chips of their own.
+ * A finished quest shows a tick or a cross instead of its flag.
+ */
+export function linkPill(fm: Record<string, unknown> | undefined): { kind: NoteKind; icon: string; cls: string } | null {
+	if (!fm) return null;
+	const kind = noteKind(fm);
+	if (kind === 'note' || kind === 'npc') return null;
+	const state = kind === 'quest' ? questState(str(fm.status)) : 'open';
+	const icon = state === 'done' ? 'circle-check' : state === 'failed' ? 'circle-x' : KIND_ICON[kind];
+	return { kind, icon, cls: `kind-${kind}${state === 'open' ? '' : ` is-quest-${state}`}` };
+}
+
 const KINDS: NoteKind[] = ['campaign', 'chapter', 'scene', 'map', 'npc', 'location', 'quest', 'session', 'monster', 'handout', 'combat', 'character', 'creature', 'note'];
 
 const basename = (path: string) => path.replace(/^.*\//, '').replace(/\.md$/i, '');

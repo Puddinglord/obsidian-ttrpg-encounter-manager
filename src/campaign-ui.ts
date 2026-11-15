@@ -10,7 +10,7 @@
 import { Menu, Notice, setIcon, TFile, TFolder } from 'obsidian';
 import { portraitOf, renderAvatar } from './npc-card';
 import type NimbleStatblocksPlugin from '../main';
-import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, NoteKind, NoteRef, questOrder, questState, Section } from './campaign-model';
+import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, KIND_ICON, NoteRef, questOrder, questState, Section } from './campaign-model';
 import { CharacterInfo, SECTION_FOR } from './campaigns';
 import { CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles, ROLE_INFO } from './campaign-modals';
 import { STARTERS, StarterKind } from './campaign-templates';
@@ -19,10 +19,7 @@ import { createCharacterNote, NewCharacterModal } from './character-modals';
 import { handEnteredLeft, PartyMember } from './types';
 import { confirmAction, onLongPress } from './touch';
 
-export const KIND_ICON: Record<NoteKind, string> = {
-	campaign: 'castle', chapter: 'book-marked', scene: 'clapperboard', map: 'map', npc: 'user-round', location: 'map-pin', quest: 'flag',
-	session: 'calendar-days', monster: 'skull', handout: 'scroll-text', combat: 'swords', character: 'shield', creature: 'paw-print', note: 'file-text',
-};
+export { KIND_ICON };
 const SECTION_ICON: Record<string, string> = { Party: 'shield', NPCs: 'users-round', Locations: 'map-pin', Quests: 'flag', Sessions: 'calendar-days', Monsters: 'skull', Handouts: 'scroll-text', Assets: 'image', Maps: 'map' };
 const IMAGE = /^(png|jpe?g|gif|webp|svg|bmp|avif)$/;
 const fileIcon = (ext: string) => (IMAGE.test(ext) ? 'image' : ext === 'pdf' ? 'file-text' : /^(mp3|wav|ogg|m4a|flac|webm)$/.test(ext) ? 'music' : /^(mp4|mov|mkv|ogv)$/.test(ext) ? 'film' : ext === 'canvas' ? 'layout-dashboard' : 'file');
