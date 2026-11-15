@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { findMapFence, mapBlockSource, parseAmount, parseDrawingLine, parseMapBlock, parsePinLine, replaceMapBlock } from '../src/map-def';
+import { findMapFence, mapBlockSource, parseAmount, parseDrawingLine, parseMapBlock, parsePinLine, replaceMapBlock, simplifyStroke, distanceLabel } from '../src/map-def';
+import { cellsAlong, centreOf } from '../src/grid-def';
 
 describe('nimble-map blocks', () => {
 	it('parses pins in any order of extras', () => {
@@ -288,5 +289,69 @@ describe('writing a map block back into the note', () => {
 	it('does not mistake a longer fence\'s inner line for the end', () => {
 		const note = `\`\`\`\`nimble-map\n${OLD}\n\`\`\`\n\`\`\`\``;
 		expect(findMapFence(note.split('\n'), 0, 5, `${OLD}\n\`\`\``)).toEqual({ open: 0, close: 5, prefix: '' });
+	});
+});
+
+describe('simplifying strokes', () => {
+	it('drops points on a straight line and keeps the corners', () => {
+		const pts = [];
+		for (let i = 0; i <= 100; i++) pts.push({ x: i * 0.3, y: 10 });
+		for (let i = 1; i <= 100; i++) pts.push({ x: 30, y: 10 + i * 0.3 });
+		expect(simplifyStroke(pts)).toEqual([{ x: 0, y: 10 }, { x: 30, y: 10 }, { x: 30, y: 40 }]);
+	});
+
+	it('keeps a wiggle bigger than the tolerance and smooths one smaller', () => {
+		const zig = (amp: number) => Array.from({ length: 200 }, (_, i) => ({ x: i * 0.25, y: 50 + (i % 2 ? amp : -amp) }));
+		expect(simplifyStroke(zig(0.05)).length).toBe(2);
+		expect(simplifyStroke(zig(1)).length).toBeGreaterThan(100);
+	});
+
+	it('turns a long freehand curve into tens of points, rounded to one decimal', () => {
+		const pts = Array.from({ length: 3000 }, (_, i) => ({ x: 50 + 30 * Math.cos(i / 3000 * Math.PI * 2) + Math.sin(i) * 0.01, y: 50 + 30 * Math.sin(i / 3000 * Math.PI * 2) }));
+		const out = simplifyStroke(pts);
+		expect(out.length).toBeGreaterThan(10);
+		expect(out.length).toBeLessThan(80);
+		for (const p of out) {
+			expect(p.x).toBe(Math.round(p.x * 10) / 10);
+			// Never further from the circle than the tolerance (plus rounding).
+			expect(Math.abs(Math.hypot(p.x - 50, p.y - 50) - 30)).toBeLessThan(0.15 + 0.1);
+		}
+	});
+
+	it('the tolerance is a real distance on a wide image', () => {
+		// On a 2:1 image a step of 0.2% of the height is only 0.1% of the width: within tolerance.
+		const pts = [{ x: 0, y: 0 }, { x: 10, y: 0.2 }, { x: 20, y: 0 }];
+		expect(simplifyStroke(pts, 0.15, 2)).toHaveLength(2);
+		expect(simplifyStroke(pts, 0.15, 1)).toHaveLength(3);
+	});
+
+	it('short strokes are only rounded, and repeats go', () => {
+		expect(simplifyStroke([{ x: 1.04, y: 2.06 }])).toEqual([{ x: 1, y: 2.1 }]);
+		expect(simplifyStroke([{ x: 1, y: 1 }, { x: 1.01, y: 1.01 }, { x: 1.02, y: 1 }])).toEqual([{ x: 1, y: 1 }]);
+	});
+});
+
+describe('distance along a route', () => {
+	it('counts cells leg by leg on hexes and squares', () => {
+		const hex = { kind: 'hex' as const, cell: { w: 10 }, offset: { x: 5, y: 5 } };
+		const row = [0, 1, 2, 3].map(q => centreOf(hex, 1, { q, r: 0 }));
+		expect(cellsAlong(hex, 1, row)).toBe(3);
+		expect(cellsAlong(hex, 1, [row[0], row[3]])).toBe(3);
+		const sq = { kind: 'square' as const, cell: { w: 10 }, offset: { x: 5, y: 5 } };
+		const route = parseDrawingLine('- route | #fff | 2 | 5,5 45,5 45,45')!;
+		expect(cellsAlong(sq, 1, route.points)).toBe(8);
+	});
+});
+
+describe('distance labels', () => {
+	it('counts cells and multiplies the scale', () => {
+		expect(distanceLabel('hex', 3, '6 miles')).toBe('3 hexes · 18 miles');
+		expect(distanceLabel('hex-flat', 1, '6 miles')).toBe('1 hex · 6 miles');
+		expect(distanceLabel('square', 2, '5 ft')).toBe('2 squares · 10 ft');
+		expect(distanceLabel('square', 4, '1 day')).toBe('4 squares · 4 days');
+		expect(distanceLabel('hex', 2, '1 km')).toBe('2 hexes · 2 km');
+		expect(distanceLabel('square', 3)).toBe('3 squares');
+		expect(distanceLabel('square', 3, 'far')).toBe('3 squares');
+		expect(distanceLabel('hex', 2, '0.5 mile')).toBe('2 hexes · 1 mile');
 	});
 });

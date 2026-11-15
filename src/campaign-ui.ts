@@ -223,7 +223,7 @@ export function renderRoster(el: HTMLElement, plugin: NimbleStatblocksPlugin, c:
  * (a menu on right-click or long-press, and it drags into notes); without one
  * (a party entered by hand), it's just the card.
  */
-function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<CharacterInfo> & { name: string; showHp?: boolean }, menu?: (e: MouseEvent | PointerEvent) => void): HTMLElement {
+export function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<CharacterInfo> & { name: string; showHp?: boolean }, menu?: (e: MouseEvent | PointerEvent) => void): HTMLElement {
 	const path = h.path;
 	const card: HTMLElement = path
 		? list.createEl('a', { cls: `campaign-hero${h.mine ? ' is-mine' : ''}`, href: '#', attr: { 'data-path': path } })

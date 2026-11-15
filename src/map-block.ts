@@ -4,7 +4,11 @@
 
 import { App, DropdownComponent, FuzzyMatch, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { MapDef, mapBlockSource, MapPin, parseMapBlock, PIN_KINDS, PinKind, replaceMapBlock } from './map-def';
+import { distanceLabel, MapDef, mapBlockSource, MapDrawing, MapPin, parseMapBlock, PIN_KINDS, PinKind, Point, replaceMapBlock, simplifyStroke } from './map-def';
+import { cellAt, cellsAlong, distance, snapToCell } from './grid-def';
+import { DrawTool, drawDrawingsLayer, drawLiveLine, renderDrawBar } from './map-draw';
+import { renderPartyFace, renderPartyRoster } from './map-party';
+import { NamePrompt } from './campaign-modals';
 import { DEFAULT_GRID_OPACITY, EncounterCreature } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
 import { monsterRole } from './rules';
@@ -17,7 +21,13 @@ const PIN_ICON: Record<PinKind, string> = {
 	place: 'map-pin', area: 'flag', encounter: 'swords', npc: 'user', treasure: 'gem', danger: 'skull', note: 'sticky-note', secret: 'eye-off', map: 'map',
 };
 
-type Mode = 'view' | 'add' | 'move' | 'grid';
+type Mode = 'view' | 'add' | 'move' | 'grid' | 'party' | 'measure' | 'draw';
+
+/** The drawing tool, colour and width: one choice for every map. */
+const DRAW = { tool: 'pen' as DrawTool, colour: 'accent', width: 2 };
+/** This visit's drawing history per map, for Undo (each entry is the drawings before a change). */
+const DRAW_UNDO = new Map<string, MapDrawing[][]>();
+const UNDO_DEPTH = 30;
 
 /**
  * Where each map was looked at, by note and image. Saving rewrites the note and
@@ -25,7 +35,7 @@ type Mode = 'view' | 'add' | 'move' | 'grid';
  * the old one was, and a note you come back to (say with Back, after following a
  * map pin) opens on the same spot. The mode only carries over a quick re-render.
  */
-interface ViewMemory { scale: number; tx: number; ty: number; height?: number; iw: number; showLabels: boolean }
+interface ViewMemory { scale: number; tx: number; ty: number; height?: number; iw: number; showLabels: boolean; showDrawings: boolean }
 const VIEWS = new Map<string, ViewMemory>();
 /** The mode a map was in when it saved, for the copy Obsidian draws next. Taken once, and only soon after. */
 const SAVED_MODE = new Map<string, { mode: Mode; at: number }>();
@@ -44,6 +54,15 @@ class MapBlock extends MarkdownRenderChild {
 	private mode: Mode = 'view';
 	private showTokens = false;
 	private showLabels = true;
+	private showDrawings = true;
+	/** The SVG for lines being drawn right now (pen, route, measure, the party's path), and the chip that labels them. */
+	private live!: SVGSVGElement;
+	private partyLayer!: HTMLElement;
+	private chip!: HTMLElement;
+	/** Points of the route or measurement being made, and of the pen stroke being drawn. */
+	private path: Point[] = [];
+	private stroke: Point[] | null = null;
+	private drawBarEl: HTMLElement | null = null;
 	private stage!: HTMLElement;
 	private viewport!: HTMLElement;
 	private img!: HTMLImageElement;
@@ -72,7 +91,7 @@ class MapBlock extends MarkdownRenderChild {
 		super(el);
 		this.def = parseMapBlock(source);
 		const saved = VIEWS.get(this.mapKey);
-		if (saved) this.showLabels = saved.showLabels;
+		if (saved) { this.showLabels = saved.showLabels; this.showDrawings = saved.showDrawings; }
 		const mode = SAVED_MODE.get(this.mapKey);
 		SAVED_MODE.delete(this.mapKey);
 		if (mode && Date.now() - mode.at < MODE_KEEP_MS) this.mode = mode.mode;
@@ -83,7 +102,7 @@ class MapBlock extends MarkdownRenderChild {
 
 	private remember(): void {
 		if (!this.remembers || !this.fitted || !this.img?.naturalWidth) return;
-		VIEWS.set(this.mapKey, { scale: this.scale, tx: this.tx, ty: this.ty, height: this.height ?? undefined, iw: this.img.naturalWidth, showLabels: this.showLabels });
+		VIEWS.set(this.mapKey, { scale: this.scale, tx: this.tx, ty: this.ty, height: this.height ?? undefined, iw: this.img.naturalWidth, showLabels: this.showLabels, showDrawings: this.showDrawings });
 	}
 
 	/** Embeds and hover previews don't get section info, so pins can't be saved from there. */
@@ -125,13 +144,18 @@ class MapBlock extends MarkdownRenderChild {
 			b.onclick = () => { this.mode = this.mode === mode ? 'view' : mode; this.build(); };
 		};
 		this.editable = this.canSave();
-		if (!this.editable) this.mode = 'view';
 		if (this.editable) {
 			modeBtn('add', 'map-pin', 'Add pin');
 			modeBtn('move', 'move', 'Move pins');
 			modeBtn('grid', 'grid', 'Grid');
-		}
+			modeBtn('party', 'shield', 'Place party');
+			modeBtn('draw', 'pencil', 'Draw');
+		} else if (this.mode !== 'measure') this.mode = 'view';
+		// Measuring needs a grid to count on, and nothing is saved, so it works in embeds too.
+		if (gridOf(this.def)) modeBtn('measure', 'ruler', 'Measure');
+		else if (this.mode === 'measure') this.mode = 'view';
 		if (this.mode !== 'grid') { this.gridDraft = null; this.onBox = null; }
+		if (this.mode !== 'measure' && !(this.mode === 'draw' && DRAW.tool === 'route')) this.path = [];
 		// Tokens come from the GM's tracker, so a map in a campaign you play in doesn't offer them.
 		if (this.plugin.playerView(this.ctx.sourcePath)) this.showTokens = false;
 		else {
@@ -143,6 +167,11 @@ class MapBlock extends MarkdownRenderChild {
 		const labels = bar.createEl('button', { cls: `nimble-map-btn${this.showLabels ? ' is-active' : ''}`, attr: { 'aria-label': 'Show pin labels', 'aria-pressed': String(this.showLabels) } });
 		setIcon(labels.createSpan(), 'tag');
 		labels.onclick = () => { this.showLabels = !this.showLabels; this.root?.toggleClass('hide-labels', !this.showLabels); labels.toggleClass('is-active', this.showLabels); this.remember(); };
+		if (this.def.drawings.length || this.mode === 'draw') {
+			const drawings = bar.createEl('button', { cls: `nimble-map-btn nimble-map-icon-btn${this.showDrawings ? ' is-active' : ''}`, attr: { 'aria-label': 'Show drawings', 'aria-pressed': String(this.showDrawings) } });
+			setIcon(drawings, 'pen-line');
+			drawings.onclick = () => { this.showDrawings = !this.showDrawings; drawings.toggleClass('is-active', this.showDrawings); drawings.setAttr('aria-pressed', String(this.showDrawings)); this.renderDrawings(); this.remember(); };
+		}
 		bar.createDiv({ cls: 'nimble-map-spacer' });
 		const zoom = (icon: string, label: string, fn: () => void) => {
 			const b = bar.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': label } });
@@ -153,9 +182,10 @@ class MapBlock extends MarkdownRenderChild {
 		zoom('zoom-in', 'Zoom in', () => this.zoomAt(1.3));
 		zoom('maximize', 'Fit map', () => this.fit());
 
-		if (this.mode === 'add' || this.mode === 'move') {
-			root.createDiv({ cls: 'nimble-map-hint', text: this.mode === 'add' ? 'Click to drop a pin' : 'Drag pins to move them' });
-		}
+		const hint = this.modeHint();
+		if (hint) root.createDiv({ cls: 'nimble-map-hint', text: hint });
+		this.drawBarEl = this.mode === 'draw' ? root.createDiv() : null;
+		this.renderDrawBar();
 		this.gridPanel = null;
 		this.gridPanelEl = this.mode === 'grid' ? root.createDiv() : null;
 		if (this.gridPanelEl) this.registerDomEvent(this.gridPanelEl, 'keydown', (e: KeyboardEvent) => { this.gridPanel?.key(e); });
@@ -167,7 +197,10 @@ class MapBlock extends MarkdownRenderChild {
 		if (this.height) this.viewport.style.height = `${this.height}px`;
 		this.stage = this.viewport.createDiv({ cls: 'nimble-map-stage' });
 		this.img = this.stage.createEl('img', { attr: { src, alt: this.def.image, draggable: 'false' } });
+		this.live = this.stage.createSvg('svg', { cls: 'nimble-map-livelayer' });
 		this.pinLayer = this.stage.createDiv({ cls: 'nimble-map-layer' });
+		this.partyLayer = this.stage.createDiv({ cls: 'nimble-map-layer nimble-map-partylayer' });
+		this.chip = this.partyLayer.createDiv({ cls: 'nimble-map-chip is-hidden', attr: { 'aria-live': 'polite' } });
 		this.tokenLayer = this.stage.createDiv({ cls: 'nimble-map-layer nimble-map-tokens' });
 		this.tray = body.createDiv({ cls: 'nimble-map-tray' });
 		this.root?.toggleClass('hide-labels', !this.showLabels);
@@ -228,6 +261,12 @@ class MapBlock extends MarkdownRenderChild {
 			this.apply();
 		}
 		this.renderGrid();
+		this.live.setAttr('viewBox', `0 0 ${iw} ${ih}`);
+		this.live.setAttr('width', iw);
+		this.live.setAttr('height', ih);
+		this.renderDrawings();
+		this.renderParty();
+		this.drawPath();
 		if (this.gridPanelEl && !this.gridPanel) this.openGridPanel();
 	}
 
@@ -241,7 +280,7 @@ class MapBlock extends MarkdownRenderChild {
 		if (!this.stage || !this.img?.naturalWidth) return;
 		const draft = this.gridDraft;
 		const spec = draft ? specOf(draft) : this.def.showGrid === false ? null : gridOf(this.def);
-		drawGridLayer(this.stage, this.pinLayer, spec, this.img.naturalWidth, this.img.naturalHeight, !!draft);
+		drawGridLayer(this.stage, this.img.nextElementSibling, spec, this.img.naturalWidth, this.img.naturalHeight, !!draft);
 	}
 
 	private openGridPanel(): void {
@@ -333,9 +372,15 @@ class MapBlock extends MarkdownRenderChild {
 			if (e.button !== 0) return;
 			if (this.onBox && pts.size === 0 && e.isPrimary) { this.dragBox(e); return; }
 			pts.set(e.pointerId, local(e));
-			if (pts.size === 1) {
+			if (pts.size === 1 && this.penActive()) {
+				// One finger (or the mouse) draws; a second finger turns it into a pinch.
+				this.stroke = [this.toPercent(e.clientX, e.clientY)];
+				try { vp.setPointerCapture(e.pointerId); } catch { /* already lifted */ }
+				pan = null;
+			} else if (pts.size === 1) {
 				pan = { ...local(e), tx: this.tx, ty: this.ty, moved: false };
 			} else if (pts.size === 2) {
+				if (this.stroke) { this.stroke = null; this.drawPath(); }
 				const [a, b] = two();
 				const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 				pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, ix: (mid.x - this.tx) / this.scale, iy: (mid.y - this.ty) / this.scale, scale: this.scale };
@@ -344,8 +389,17 @@ class MapBlock extends MarkdownRenderChild {
 			}
 		});
 		this.registerDomEvent(vp, 'pointermove', (e: PointerEvent) => {
-			if (!pts.has(e.pointerId)) return;
+			if (!pts.has(e.pointerId)) {
+				// Hovering: the rubber band from the last point of a route or measurement.
+				if (this.path.length && e.pointerType === 'mouse') this.drawPath(this.toolPoint(e));
+				return;
+			}
 			pts.set(e.pointerId, local(e));
+			if (this.stroke && pts.size === 1) {
+				this.stroke.push(this.toPercent(e.clientX, e.clientY));
+				this.drawPath();
+				return;
+			}
 			if (pinch && pts.size >= 2) {
 				const [a, b] = two();
 				const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
@@ -367,6 +421,13 @@ class MapBlock extends MarkdownRenderChild {
 		const end = (e: PointerEvent) => {
 			if (!pts.has(e.pointerId)) return;
 			pts.delete(e.pointerId);
+			if (this.stroke) {
+				const stroke = this.stroke;
+				this.stroke = null;
+				if (e.type === 'pointerup' && stroke.length > 1) this.addDrawing({ kind: 'pen', colour: DRAW.colour, width: DRAW.width, points: simplifyStroke(stroke, 0.15, this.aspect) });
+				else this.drawPath();
+				return;
+			}
 			if (pinch) {
 				if (pts.size < 2) pinch = null;
 				pan = null; // don't jump when one finger lifts
@@ -382,6 +443,7 @@ class MapBlock extends MarkdownRenderChild {
 				new PinModal(this.app, { ...pos, label: '', kind: 'place' }, (pin) => { this.def.pins.push(pin); void this.save(); }).open();
 				return;
 			}
+			if (this.tap(e)) return;
 			// Double-tap to zoom in (touch doesn't always fire dblclick).
 			if (e.pointerType !== 'mouse') {
 				const now = Date.now();
@@ -397,17 +459,251 @@ class MapBlock extends MarkdownRenderChild {
 		this.registerDomEvent(vp, 'pointercancel', end);
 		this.registerDomEvent(vp, 'keydown', (e: KeyboardEvent) => {
 			if (this.mode === 'grid' && this.gridPanel?.key(e)) return;
+			if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && this.undoDrawing()) { e.preventDefault(); return; }
+			if (e.key === 'Enter' && this.path.length) { e.preventDefault(); this.finishPath(); return; }
+			if (e.key === 'Escape' && this.path.length) { this.path = []; this.drawPath(); return; }
 			if (e.key === 'Escape' && this.mode !== 'view') { this.gridDraft = null; this.mode = 'view'; this.build(); }
 			else if (e.key === '+' || e.key === '=') this.zoomAt(1.3);
 			else if (e.key === '-') this.zoomAt(1 / 1.3);
 			else if (e.key === '0') this.fit();
 		});
 		this.registerDomEvent(vp, 'dblclick', (e: MouseEvent) => {
-			if ((e.target as HTMLElement).closest('.nimble-map-pin, .nimble-map-token')) return;
+			if (this.path.length) { this.finishPath(); return; }
+			if (this.mode === 'draw' || (e.target as HTMLElement).closest('.nimble-map-pin, .nimble-map-token, .nimble-map-party')) return;
 			const p = local(e);
 			this.zoomAt(1.6, p.x, p.y);
 		});
 	}
+
+	// ------------------------------------------------------------------------
+	// Party, measuring and drawing
+
+	private modeHint(): string {
+		switch (this.mode) {
+			case 'add': return 'Click to drop a pin';
+			case 'move': return 'Drag pins to move them';
+			case 'party': return gridOf(this.def) ? 'Click to place the party. It snaps to a cell; hold Alt to place it anywhere.' : 'Click to place the party';
+			case 'measure': return 'Click to add points along the way; double-click or Enter to finish, Escape to clear';
+			case 'draw':
+				return DRAW.tool === 'pen' ? 'Drag to draw. Two fingers still pan and zoom.'
+					: DRAW.tool === 'route' ? 'Click to add points; double-click or Enter to finish'
+					: DRAW.tool === 'text' ? 'Click where the label goes'
+					: 'Tap a drawing to delete it';
+			default: return '';
+		}
+	}
+
+	private renderDrawBar(): void {
+		if (!this.drawBarEl) return;
+		renderDrawBar(this.drawBarEl, { ...DRAW, canUndo: !!DRAW_UNDO.get(this.mapKey)?.length }, {
+			tool: (t) => { DRAW.tool = t; this.path = []; this.build(); },
+			colour: (c) => { DRAW.colour = c; this.renderDrawBar(); },
+			width: (w) => { DRAW.width = w; this.renderDrawBar(); },
+			undo: () => { this.undoDrawing(); },
+		});
+	}
+
+	private penActive(): boolean { return this.mode === 'draw' && DRAW.tool === 'pen' && this.editable; }
+
+	/** Where a click lands for the party and measuring: a cell centre on a grid (Alt for anywhere). */
+	private toolPoint(e: { clientX: number; clientY: number; altKey?: boolean }): Point {
+		const p = this.toPercent(e.clientX, e.clientY);
+		const grid = gridOf(this.def);
+		return grid && !e.altKey ? snapToCell(grid, this.aspect, p) : p;
+	}
+
+	private lastPathTap = { t: 0, x: 0, y: 0 };
+
+	/** A tap on the map in a tool mode. True when it was handled. */
+	private tap(e: PointerEvent): boolean {
+		if (this.mode === 'party' && this.editable) {
+			this.def.party = this.toolPoint(e);
+			this.mode = 'view';
+			this.build();
+			void this.save();
+			return true;
+		}
+		const routing = this.mode === 'draw' && DRAW.tool === 'route' && this.editable;
+		if (this.mode === 'measure' || routing) {
+			// A second tap in the same spot finishes, like a double-click (touch has no dblclick to rely on).
+			const now = Date.now();
+			const again = now - this.lastPathTap.t < 350 && Math.hypot(e.clientX - this.lastPathTap.x, e.clientY - this.lastPathTap.y) < 24;
+			this.lastPathTap = { t: now, x: e.clientX, y: e.clientY };
+			if (again && this.path.length > 1) { this.finishPath(); return true; }
+			// A measurement that was finished starts again with the next click.
+			if (this.mode === 'measure' && this.measured) { this.path = []; this.measured = false; }
+			const p = this.mode === 'measure' ? this.toolPoint(e) : this.toPercent(e.clientX, e.clientY);
+			this.path.push(p);
+			this.drawPath();
+			return true;
+		}
+		if (this.mode === 'draw' && DRAW.tool === 'text' && this.editable) {
+			const at = this.toPercent(e.clientX, e.clientY);
+			new NamePrompt(this.app, 'Label on the map', 'e.g. Here be wolves', '', 'Add', (text) => {
+				const t = text.trim();
+				if (t) this.addDrawing({ kind: 'text', colour: DRAW.colour, width: DRAW.width, points: [at], text: t });
+			}).open();
+			return true;
+		}
+		return false;
+	}
+
+	/** The measurement on screen is finished (kept until the next click starts a new one). */
+	private measured = false;
+
+	private finishPath(): void {
+		// The clicks of a double-click add the same point twice.
+		const pts = this.path.filter((p, i, a) => i === 0 || Math.hypot(p.x - a[i - 1].x, p.y - a[i - 1].y) > 0.05);
+		if (this.mode === 'measure') {
+			this.path = pts;
+			this.measured = true;
+			this.drawPath();
+			return;
+		}
+		this.path = [];
+		if (pts.length > 1) this.addDrawing({ kind: 'route', colour: DRAW.colour, width: DRAW.width, points: simplifyStroke(pts, 0.01, this.aspect) });
+		else this.drawPath();
+	}
+
+	/** Draw the live line (pen stroke, route or measurement, plus the rubber band to `hover`) and its distance chip. */
+	private drawPath(hover?: Point): void {
+		if (!this.live || !this.img?.naturalWidth) return;
+		const iw = this.img.naturalWidth;
+		const ih = this.img.naturalHeight;
+		if (this.stroke) { drawLiveLine(this.live, this.stroke, iw, ih, DRAW.colour, DRAW.width); this.showChip(null); return; }
+		const pts = hover && !this.measured ? [...this.path, hover] : this.path;
+		const measuring = this.mode === 'measure';
+		drawLiveLine(this.live, pts, iw, ih, measuring ? 'accent' : DRAW.colour, measuring ? 2 : DRAW.width, measuring ? 'is-measure' : '');
+		const grid = gridOf(this.def);
+		if (grid && pts.length > 1) this.showChip(pts[pts.length - 1], distanceLabel(grid.kind, cellsAlong(grid, this.aspect, pts), this.def.scale));
+		else this.showChip(null);
+	}
+
+	/** The small label for a distance, beside a point on the map (null hides it). */
+	private showChip(at: Point | null, text = ''): void {
+		if (!this.chip) return;
+		this.chip.toggleClass('is-hidden', !at);
+		if (!at) return;
+		this.chip.style.left = `${at.x}%`;
+		this.chip.style.top = `${at.y}%`;
+		this.chip.setText(text);
+	}
+
+	private addDrawing(d: MapDrawing): void {
+		this.pushUndo();
+		this.def.drawings.push(d);
+		this.showDrawings = true;
+		this.drawPath();
+		void this.save();
+	}
+
+	private pushUndo(): void {
+		const stack = DRAW_UNDO.get(this.mapKey) ?? [];
+		stack.push(this.def.drawings.map(d => ({ ...d, points: [...d.points] })));
+		if (stack.length > UNDO_DEPTH) stack.shift();
+		DRAW_UNDO.set(this.mapKey, stack);
+	}
+
+	/** Undo the last drawing change of this visit. False when there's nothing to undo. */
+	private undoDrawing(): boolean {
+		const stack = DRAW_UNDO.get(this.mapKey);
+		const prev = stack?.pop();
+		if (!prev || !this.editable) return false;
+		this.def.drawings = prev;
+		void this.save();
+		return true;
+	}
+
+	private renderDrawings(): void {
+		if (!this.stage || !this.img?.naturalWidth) return;
+		const erasing = this.mode === 'draw' && DRAW.tool === 'eraser' && this.editable;
+		drawDrawingsLayer(this.stage, this.live, this.showDrawings ? this.def.drawings : [], this.img.naturalWidth, this.img.naturalHeight, {
+			grid: gridOf(this.def),
+			scale: this.def.scale,
+			onErase: erasing ? (i) => { this.pushUndo(); this.def.drawings.splice(i, 1); void this.save(); } : undefined,
+		});
+		this.renderDrawBar();
+	}
+
+	private get campaign() { return this.plugin.campaigns.of(this.ctx.sourcePath) ?? this.plugin.campaigns.active; }
+
+	/** The party marker: drag it to travel (snapping to cells, Alt for anywhere); hover or tap for the roster. */
+	private renderParty(): void {
+		if (!this.partyLayer) return;
+		this.partyLayer.querySelector('.nimble-map-party')?.remove();
+		const at = this.def.party;
+		if (!at) return;
+		const el = this.partyLayer.createDiv({ cls: 'nimble-map-party', attr: { role: 'button', tabindex: '0' } });
+		el.style.left = `${at.x}%`;
+		el.style.top = `${at.y}%`;
+		const inner = el.createDiv({ cls: 'nimble-map-party-inner' });
+		renderPartyFace(inner, this.plugin, this.campaign);
+		el.setAttr('aria-label', inner.getAttr('aria-label') ?? 'The party');
+
+		const roster = () => {
+			if (isPopoverOpenFor(el, 'nimble-map-party-pop')) return;
+			openPopover(el, (pop) => renderPartyRoster(pop, this.plugin, this.campaign), { width: 280, cls: 'nimble-map-party-pop' });
+		};
+		let hoverTimer = 0;
+		el.addEventListener('mouseenter', () => { hoverTimer = window.setTimeout(roster, 350); });
+		el.addEventListener('mouseleave', () => window.clearTimeout(hoverTimer));
+		el.addEventListener('keydown', (e) => { if (e.key === 'Enter') roster(); });
+		if (this.editable) {
+			onLongPress(el, (e) => {
+				const menu = new Menu();
+				menu.addItem(it => it.setTitle('Remove the party marker').setIcon('trash-2').onClick(() => { delete this.def.party; void this.save(); }));
+				menu.showAtMouseEvent(e);
+			});
+		}
+
+		// Dragging: the path from where the party was, and how far that is.
+		let start: { x: number; y: number; at: Point } | null = null;
+		let moved = false;
+		let to: Point = at;
+		el.addEventListener('pointerdown', (e) => {
+			if (e.button !== 0) return;
+			e.stopPropagation();
+			if (!this.editable || this.mode === 'draw' || this.mode === 'grid') return;
+			start = { x: e.clientX, y: e.clientY, at };
+			moved = false;
+			try { el.setPointerCapture(e.pointerId); } catch { /* already lifted */ }
+		});
+		el.addEventListener('pointermove', (e) => {
+			if (!start) return;
+			if (!moved && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 4) { moved = true; window.clearTimeout(hoverTimer); closePopover(); el.addClass('is-dragging'); }
+			if (!moved) return;
+			to = this.toolPoint(e);
+			el.style.left = `${to.x}%`;
+			el.style.top = `${to.y}%`;
+			drawLiveLine(this.live, [start.at, to], this.img.naturalWidth, this.img.naturalHeight, 'accent', 2, 'is-measure');
+			const grid = gridOf(this.def);
+			if (grid) this.showChip(to, distanceLabel(grid.kind, distance(grid, cellAt(grid, this.aspect, start.at), cellAt(grid, this.aspect, to)), this.def.scale));
+		});
+		const end = (e: PointerEvent) => {
+			if (!start) return;
+			const from = start.at;
+			start = null;
+			el.removeClass('is-dragging');
+			if (!moved) {
+				// A tap or click shows who's in the party.
+				if (e.type === 'pointerup') roster();
+				return;
+			}
+			drawLiveLine(this.live, [], 1, 1, 'accent', 2);
+			this.showChip(null);
+			if (e.type !== 'pointerup') { el.style.left = `${from.x}%`; el.style.top = `${from.y}%`; return; }
+			this.def.party = to;
+			const grid = gridOf(this.def);
+			const cells = grid ? distance(grid, cellAt(grid, this.aspect, from), cellAt(grid, this.aspect, to)) : 0;
+			void this.save();
+			this.partyMoved(from, to, cells);
+		};
+		el.addEventListener('pointerup', end);
+		el.addEventListener('pointercancel', end);
+	}
+
+	/** After the party has been dragged across `cells` cells (travel and the clock hook in here). */
+	private partyMoved(_from: Point, _to: Point, _cells: number): void { /* travel: see the clock */ }
 
 	/** Fit to 3 × 3: draw a box from where the pointer went down to where it comes up. */
 	private dragBox(e: PointerEvent): void {
@@ -555,6 +851,8 @@ class MapBlock extends MarkdownRenderChild {
 		this.remember();
 		if (this.remembers) SAVED_MODE.set(this.mapKey, { mode: this.mode, at: Date.now() });
 		this.renderPins();
+		this.renderDrawings();
+		this.renderParty();
 		const info = this.ctx.getSectionInfo(this.containerEl);
 		const file = this.app.vault.getAbstractFileByPath(this.ctx.sourcePath);
 		const next = mapBlockSource(this.def);
@@ -579,6 +877,8 @@ class MapBlock extends MarkdownRenderChild {
 		// Back to what the note says, so no pin is left on screen that was never saved.
 		this.def = parseMapBlock(this.source);
 		this.renderPins();
+		this.renderDrawings();
+		this.renderParty();
 	}
 
 	// ------------------------------------------------------------------------

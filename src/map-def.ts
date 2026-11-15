@@ -435,3 +435,61 @@ export function replaceMapBlock(text: string, from: number, to: number, oldSourc
 	lines.splice(fence.open + 1, fence.close - fence.open - 1, ...newSource.split('\n').map(l => fence.prefix + l + cr));
 	return lines.join('\n');
 }
+
+// ----------------------------------------------------------------------------
+// Strokes
+
+/**
+ * Ramer–Douglas–Peucker: drop the points of a freehand stroke that lie within
+ * `tolerance` of the line through their neighbours, then round to one decimal,
+ * so a route is tens of points, not thousands. Points are in % of the image;
+ * `aspect` (width / height) makes the tolerance the same distance both ways.
+ */
+export function simplifyStroke(points: Point[], tolerance = 0.15, aspect = 1): Point[] {
+	if (points.length <= 2) return points.map(p => ({ x: round(p.x), y: round(p.y) }));
+	const pts = points.map(p => ({ u: p.x, v: p.y / aspect }));
+	const keep = new Uint8Array(pts.length);
+	keep[0] = 1;
+	keep[pts.length - 1] = 1;
+	const stack: [number, number][] = [[0, pts.length - 1]];
+	while (stack.length) {
+		const [a, b] = stack.pop()!;
+		const A = pts[a];
+		const B = pts[b];
+		const dx = B.u - A.u;
+		const dy = B.v - A.v;
+		const len = Math.hypot(dx, dy);
+		let far = -1;
+		let best = tolerance;
+		for (let i = a + 1; i < b; i++) {
+			const P = pts[i];
+			const d = len ? Math.abs(dy * P.u - dx * P.v + B.u * A.v - B.v * A.u) / len : Math.hypot(P.u - A.u, P.v - A.v);
+			if (d > best) { best = d; far = i; }
+		}
+		if (far >= 0) {
+			keep[far] = 1;
+			stack.push([a, far], [far, b]);
+		}
+	}
+	const out: Point[] = [];
+	points.forEach((p, i) => {
+		if (!keep[i]) return;
+		const q = { x: round(clamp(p.x)), y: round(clamp(p.y)) };
+		const last = out[out.length - 1];
+		if (!last || last.x !== q.x || last.y !== q.y) out.push(q);
+	});
+	return out;
+}
+
+/** "3 hexes · 18 miles" for a number of cells on a grid kind, with the map's `scale` ("6 miles"). */
+export function distanceLabel(kind: GridKind, cells: number, scale?: string): string {
+	const one = kind === 'hex' || kind === 'hex-flat' ? 'hex' : 'square';
+	const n = round(cells);
+	const count = `${n} ${n === 1 ? one : one === 'hex' ? 'hexes' : 'squares'}`;
+	const per = parseAmount(scale);
+	if (!per) return count;
+	const total = round(per.n * cells, 2);
+	// "1 mile" but "18 miles": a unit written in the singular gets an s for more than one.
+	const unit = per.unit && total !== 1 && !/s$/i.test(per.unit) && /^[a-z]{3,}$/i.test(per.unit) ? `${per.unit}s` : per.unit;
+	return `${count} · ${total}${unit ? ` ${unit}` : ''}`;
+}

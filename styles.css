@@ -808,6 +808,40 @@ body {
 .nimble-map-gridlines.is-draft .nimble-map-gridline { stroke-width: calc(1.5px * var(--nimble-map-inv)); }
 .nimble-map-viewport.is-boxing { cursor: crosshair; }
 .nimble-map-fitbox { position: absolute; pointer-events: none; z-index: 4; border: calc(2px * var(--nimble-map-inv)) dashed var(--interactive-accent); background: color-mix(in srgb, var(--interactive-accent) 14%, transparent); }
+/* Drawings, the line being drawn, the party marker and the distance chip. Strokes keep their on-screen width at any zoom. */
+.nimble-map-drawings, .nimble-map-livelayer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.nimble-map-drawing-line { fill: none; stroke: var(--draw-colour); stroke-width: calc(var(--draw-width) * var(--nimble-map-inv)); stroke-linecap: round; stroke-linejoin: round; }
+.nimble-map-drawing.kind-route .nimble-map-drawing-line { stroke-dasharray: calc(3 * var(--draw-width) * var(--nimble-map-inv)) calc(2 * var(--draw-width) * var(--nimble-map-inv)); }
+.nimble-map-drawing-hit { fill: none; stroke: transparent; stroke-width: calc(18px * var(--nimble-map-inv)); stroke-linecap: round; }
+.nimble-map-drawings.is-erasing .nimble-map-drawing { pointer-events: visiblePainted; cursor: pointer; }
+.nimble-map-drawings.is-erasing .nimble-map-drawing-hit { pointer-events: stroke; }
+.nimble-map-drawings.is-erasing .nimble-map-drawing:hover { opacity: 0.55; }
+.nimble-map-drawing-text { fill: var(--draw-colour); font-size: calc(var(--draw-size) * var(--nimble-map-inv)); font-weight: 700; text-anchor: middle; dominant-baseline: middle; paint-order: stroke; stroke: rgba(0, 0, 0, 0.7); stroke-width: calc(3px * var(--nimble-map-inv)); stroke-linejoin: round; }
+.nimble-map-route-length { fill: #fff; font-size: calc(12px * var(--nimble-map-inv)); font-weight: 600; paint-order: stroke; stroke: rgba(0, 0, 0, 0.75); stroke-width: calc(3px * var(--nimble-map-inv)); stroke-linejoin: round; transform: translate(calc(8px * var(--nimble-map-inv)), calc(-8px * var(--nimble-map-inv))); transform-box: fill-box; }
+.nimble-map-live .nimble-map-drawing-line { opacity: 0.9; }
+.nimble-map-live.is-measure .nimble-map-drawing-line { stroke-dasharray: calc(6px * var(--nimble-map-inv)) calc(4px * var(--nimble-map-inv)); }
+.nimble-map-live-dot { fill: var(--draw-colour); r: calc(4px * var(--nimble-map-inv)); stroke: #fff; stroke-width: calc(1.5px * var(--nimble-map-inv)); }
+.nimble-map-partylayer { z-index: 3; }
+.nimble-map-party { position: absolute; width: 0; height: 0; pointer-events: auto; cursor: grab; outline: none; }
+.nimble-map-party.is-dragging { cursor: grabbing; z-index: 6; }
+.nimble-map-party-inner { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%) scale(var(--nimble-map-inv)); }
+.nimble-map-party-face { display: flex; align-items: center; justify-content: center; min-width: 38px; height: 38px; padding: 0 3px; border-radius: 999px; background: var(--interactive-accent); border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); color: #fff; }
+.nimble-map-party-face.has-portraits { padding: 0 2px 0 10px; }
+.nimble-map-party-face .nimble-map-party-avatar { width: 30px; height: 30px; margin-left: -8px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; overflow: hidden; flex: none; }
+.nimble-map-party-shield svg { width: 20px; height: 20px; }
+.nimble-map-party:focus-visible .nimble-map-party-face, .nimble-map-party:hover .nimble-map-party-face { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55), 0 2px 8px rgba(0, 0, 0, 0.5); }
+.nimble-map-party-roster .campaign-roster-list { margin-top: 0.4rem; }
+.nimble-map-chip { position: absolute; z-index: 7; transform-origin: 0 0; transform: scale(var(--nimble-map-inv)) translate(-50%, calc(-100% - 26px)); padding: 0.15rem 0.55rem; border-radius: 999px; background: rgba(0, 0, 0, 0.8); color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; pointer-events: none; }
+.nimble-map .nimble-map-chip.is-hidden:not(#nimble-pill) { display: none; }
+/* The bar under the toolbar in Draw mode. */
+.nimble-map-drawbar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--background-modifier-border); background: var(--background-primary-alt); }
+.nimble-map-drawbar-group { display: inline-flex; align-items: center; gap: 3px; }
+.nimble-map .nimble-map-swatch { width: 1.4rem; height: 1.4rem; padding: 0; border-radius: 50%; background: var(--swatch); border: 2px solid var(--background-modifier-border); box-shadow: none; }
+.nimble-map .nimble-map-swatch.is-active { border-color: var(--text-normal); box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 4px var(--interactive-accent); }
+.nimble-map .nimble-map-width { width: 1.9rem; height: 1.7rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.nimble-map .nimble-map-width.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
+.nimble-map-width-line { display: block; width: 1rem; height: var(--w); border-radius: 999px; background: currentColor; }
+.nimble-map-viewport.mode-party, .nimble-map-viewport.mode-measure, .nimble-map-viewport.mode-draw { cursor: crosshair; }
 /* The Grid panel under the toolbar. */
 .nimble-map-gridpanel { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--background-modifier-border); background: var(--background-primary-alt); font-size: 0.8rem; }
 .nimble-map-gridpanel-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; min-width: 0; }
@@ -1397,6 +1431,10 @@ body.is-phone .nimble-map-segs { flex: 1 1 100%; }
 body.is-phone .nimble-map .nimble-map-seg { height: 2.2rem; padding: 0 0.3rem; }
 body.is-phone .nimble-map .nimble-map-btn { height: 2.2rem; }
 body.is-phone .nimble-map .nimble-map-icon-btn { width: 2.2rem; }
+body.is-phone .nimble-map-drawbar .nimble-map-btn-label { display: none; }
+body.is-phone .nimble-map-drawbar .nimble-map-btn { width: 2.4rem; justify-content: center; padding: 0; }
+body.is-phone .nimble-map .nimble-map-swatch { width: 2rem; height: 2rem; }
+body.is-phone .nimble-map .nimble-map-width { width: 2.4rem; height: 2.2rem; }
 body.is-phone .nimble-map-gridpanel-scale input { height: 2.2rem; }
 body.is-phone .nimble-map-body, body.is-phone .nimble-map-main { flex-direction: column; }
 body.is-phone .nimble-map-tray { width: auto; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
@@ -3507,6 +3545,7 @@ body.is-tablet .nimble-count-modal button.nimble-count-seg { padding: 0 0.5rem; 
 body.is-tablet .nimble-map button.nimble-map-btn { padding: 0 0.55rem; }
 body.is-tablet .nimble-map button.nimble-map-icon-btn { padding: 0; }
 body.is-tablet .nimble-map button.nimble-map-seg { padding: 0 0.3rem; }
+body.is-tablet .nimble-map button.nimble-map-swatch, body.is-tablet .nimble-map button.nimble-map-width { padding: 0; }
 
 /* Actions: three dots a turn, End turn (character-sheet.ts renderActionsCard) */
 .nimble-sheet .ns-turn { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.75rem 0.9rem; }
@@ -3612,13 +3651,13 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .nimble-map-btn, .nimble-map-seg, .nimble-map-chip):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* ===== end Character sheet & compendium ===== */

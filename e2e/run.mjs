@@ -2068,6 +2068,23 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 		}, R);
 		assert.deepEqual(gridPanel, { spill: [], small: [] }, 'the grid panel fits the phone');
 		await tap(p.locator(`${R} .nimble-map .nimble-map-gridpanel button`, { hasText: 'Cancel' }));
+
+		// The draw bar fits too, and one finger draws a stroke.
+		await tap(p.locator(`${R} .nimble-map button[aria-label="Draw"]`));
+		const drawBar = await p.evaluate((r) => {
+			const el = document.querySelector(`${r} .nimble-map-drawbar`);
+			const map = el.closest('.nimble-map').getBoundingClientRect();
+			const spill = [...el.querySelectorAll('button')].filter(b => { const x = b.getBoundingClientRect(); return x.width && (x.right > map.right + 1 || x.left < map.left - 1); }).map(b => b.getAttribute('aria-label'));
+			const small = [...el.querySelectorAll('button')].filter(b => b.getBoundingClientRect().height < 30).map(b => b.getAttribute('aria-label'));
+			return { spill, small };
+		}, R);
+		assert.deepEqual(drawBar, { spill: [], small: [] }, 'the draw bar fits the phone');
+		const dv = await p.locator(`${R} .nimble-map-viewport`).boundingBox();
+		const dx = dv.x + dv.width * 0.3, dy = dv.y + 70; // high on the map: its bottom is under the phone's toolbar
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: dx, y: dy, id: 1 }] });
+		for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: dx + i * 12, y: dy + (i % 2) * 6, id: 1 }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await o.waitFor(async () => /^- pen \| /m.test(await o.eval((app) => app.vault.adapter.read('Touch Map.md'))), { what: 'one finger to draw' });
 	} finally {
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
 		await o.eval((app) => app.emulateMobile(false));
@@ -4517,6 +4534,166 @@ test('map grids: Detect finds the hex grid, Fit to 3 × 3 sets one from a box, C
 	await o.waitFor(async () => !/^cell: 5\.5$/m.test(await read(o, NOTE)), { what: 'the boxed grid to save' });
 	text = await read(o, NOTE);
 	assert.ok(Math.abs(cellOf(text) / truth - 1) < 0.03, `boxed cell ${cellOf(text)} is within 3% of ${truth}`);
+	await o.eval(async (app, _p, note) => { const x = app.vault.getAbstractFileByPath(note); if (x) await app.vault.delete(x); }, NOTE);
+});
+
+/** Pixel centre of hex (q, r) on the hex fixture. */
+const hexCentre = (q, r) => {
+	const h = 2 * HEX_TRUTH.w / Math.sqrt(3);
+	return { x: HEX_TRUTH.x + HEX_TRUTH.w * (q + r / 2), y: HEX_TRUTH.y + 0.75 * h * r };
+};
+const TRAVEL_BLOCK = (extra = '') => `\`\`\`nimble-map\nimage: [[hex-world.png]]\ngrid: hex\ncell: 4\noffset: 2.3125, 3.41667\nscale: 6 miles\n${extra}pins:\n- 90, 90 | Far away\n\`\`\`\n`;
+
+async function openTravelMap(o, note, body) {
+	await o.eval(async (app, _p, [note, body]) => {
+		const x = app.vault.getAbstractFileByPath(note);
+		if (x) await app.vault.delete(x);
+		await app.vault.create(note, body);
+	}, [note, body]);
+	await o.openFile(note, 'preview');
+	const map = o.page.locator(`${R} .nimble-map`).first();
+	await o.waitFor(async () => (await map.locator('button[aria-label="Place party"]').count()) === 1 && (await stageScale(map)) > 0, { what: 'the travel map' });
+	// Zoom in so cells are big enough to hit.
+	for (let i = 0; i < 2; i++) await map.locator('button[aria-label="Zoom in"]').click();
+	return map;
+}
+
+/** Do something that saves the map, and wait until Obsidian has drawn the block again. */
+async function afterRedraw(o, action) {
+	await o.page.evaluate((r) => document.querySelectorAll(`${r} .nimble-map`).forEach(el => { el.dataset.old = '1'; }), R);
+	await action();
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map:not([data-old])`).count()) >= 1 && (await o.page.locator(`${R} .nimble-map[data-old]`).count()) === 0, { what: 'the map to redraw' });
+	await o.page.waitForTimeout(150);
+}
+
+const partyAt = (text) => { const m = /^party: ([\d.]+), ([\d.]+)$/m.exec(text); return m && { x: Number(m[1]), y: Number(m[2]) }; };
+const near = (a, b, eps = 0.05) => a && b && Math.abs(a.x - b.x) < eps && Math.abs(a.y - b.y) < eps;
+const pct = (p) => ({ x: p.x / HEX_TRUTH.iw * 100, y: p.y / HEX_TRUTH.ih * 100 });
+
+test('party marker: place it (snapped to a hex), drag it 2 hexes with a distance chip, hover for the roster; Measure counts a route', async (o) => {
+	await resetEncounter(o);
+	const NOTE = 'Travel.md';
+	const map = await openTravelMap(o, NOTE, TRAVEL_BLOCK());
+	await map.locator('button[aria-label="Place party"]').click();
+	const p = await mapToScreen(map, hexCentre(8, 5).x + 9, hexCentre(8, 5).y - 7);
+	await afterRedraw(o, async () => {
+		await o.page.mouse.click(p.x, p.y);
+		await o.waitFor(async () => /^party: /m.test(await read(o, NOTE)), { what: 'the party to save' });
+	});
+	assert.ok(near(partyAt(await read(o, NOTE)), pct(hexCentre(8, 5))), `the party snapped to the hex centre: ${partyAt(await read(o, NOTE))?.x}`);
+
+	// Drag two hexes east.
+	const m2 = o.page.locator(`${R} .nimble-map`).first();
+	await o.waitFor(async () => (await m2.locator('.nimble-map-party').count()) === 1, { what: 'the party marker' });
+	const a = await mapToScreen(m2, hexCentre(8, 5).x, hexCentre(8, 5).y);
+	const b = await mapToScreen(m2, hexCentre(10, 5).x + 6, hexCentre(10, 5).y + 4);
+	await o.page.mouse.move(a.x, a.y);
+	await o.page.mouse.down();
+	await o.page.mouse.move((a.x + b.x) / 2, a.y, { steps: 5 });
+	await o.page.mouse.move(b.x, b.y, { steps: 5 });
+	assert.equal(await m2.locator('.nimble-map-chip').innerText(), '2 hexes · 12 miles', 'the chip shows how far');
+	await afterRedraw(o, async () => {
+		await o.page.mouse.up();
+		await o.waitFor(async () => near(partyAt(await read(o, NOTE)), pct(hexCentre(10, 5))), { what: 'the party to move two hexes' });
+	});
+
+	// Hover shows the roster (this map isn't in a campaign, so it says so).
+	await parkMouse(o);
+	const m3 = o.page.locator(`${R} .nimble-map`).first();
+	await o.waitFor(async () => (await m3.locator('.nimble-map-party').count()) === 1, { what: 'the redrawn marker' });
+	const c = await mapToScreen(m3, hexCentre(10, 5).x, hexCentre(10, 5).y);
+	await o.page.mouse.move(c.x, c.y);
+	await o.waitFor(async () => (await o.page.locator('.nimble-popover.nimble-map-party-pop').count()) === 1, { what: 'the roster on hover' });
+	await o.page.keyboard.press('Escape');
+
+	// Measure: three hexes along a row, without saving anything.
+	const before = await read(o, NOTE);
+	await m3.locator('button[aria-label="Measure"]').click();
+	const m4 = o.page.locator(`${R} .nimble-map`).first();
+	for (const q of [8, 10, 11]) { const s = await mapToScreen(m4, hexCentre(q, 6).x + 5, hexCentre(q, 6).y); await o.page.mouse.click(s.x, s.y); await o.page.waitForTimeout(400); }
+	await o.page.keyboard.press('Enter');
+	assert.equal(await m4.locator('.nimble-map-chip').innerText(), '3 hexes · 18 miles');
+	assert.equal(await read(o, NOTE), before, 'measuring saves nothing');
+	await o.eval(async (app, _p, note) => { const x = app.vault.getAbstractFileByPath(note); if (x) await app.vault.delete(x); }, NOTE);
+});
+
+test('drawing: a route survives a reload; pen strokes are simplified; eraser, undo and text', async (o) => {
+	await resetEncounter(o);
+	const NOTE = 'Drawn.md';
+	const map = await openTravelMap(o, NOTE, TRAVEL_BLOCK());
+	await map.locator('button[aria-label="Draw"]').click();
+	const bar = o.page.locator(`${R} .nimble-map .nimble-map-drawbar`);
+	await bar.waitFor();
+	const bad = await o.page.evaluate(pillOffenders, { root: `${R} .nimble-map-drawbar`, tolerance: 1, selectors: PILL_SELECTORS });
+	assert.deepEqual(bad, [], 'draw bar pills are centred');
+
+	// Route: three clicks, double-click to finish.
+	await bar.locator('button[data-tool="route"]').click();
+	const m = () => o.page.locator(`${R} .nimble-map`).first();
+	const pts = [hexCentre(9, 6), hexCentre(11, 6), hexCentre(12, 8)];
+	for (const [i, pt] of pts.entries()) {
+		const s = await mapToScreen(m(), pt.x, pt.y);
+		if (i < pts.length - 1) { await o.page.mouse.click(s.x, s.y); await o.page.waitForTimeout(400); } else await o.page.mouse.dblclick(s.x, s.y);
+	}
+	await o.waitFor(async () => /^- route \| /m.test(await read(o, NOTE)), { what: 'the route to save' });
+	const route = /^- route \| .*$/m.exec(await read(o, NOTE))[0];
+	assert.equal(route.split('|')[3].trim().split(' ').length, 3, `three points: ${route}`);
+
+	// Reload the note: the route is still drawn, with its length.
+	await o.openFile('Adventure.md', 'preview');
+	await o.openFile(NOTE, 'preview');
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map .nimble-map-drawing.kind-route`).count()) === 1, { what: 'the route after reloading' });
+	assert.equal(await o.page.locator(`${R} .nimble-map .nimble-map-route-length`).textContent(), '5 hexes · 30 miles');
+
+	// Pen: a wobbly freehand line becomes a few points.
+	await m().locator('button[aria-label="Draw"]').click();
+	await o.page.locator(`${R} .nimble-map .nimble-map-drawbar button[data-tool="pen"]`).click();
+	const s0 = await mapToScreen(m(), hexCentre(2, 8).x, hexCentre(2, 8).y);
+	await o.page.mouse.move(s0.x, s0.y);
+	await o.page.mouse.down();
+	for (let i = 1; i <= 60; i++) await o.page.mouse.move(s0.x + i * 4, s0.y + Math.sin(i / 6) * 25);
+	await afterRedraw(o, async () => {
+		await o.page.mouse.up();
+		await o.waitFor(async () => /^- pen \| /m.test(await read(o, NOTE)), { what: 'the pen stroke to save' });
+	});
+	const pen = /^- pen \| .*$/m.exec(await read(o, NOTE))[0];
+	const n = pen.split('|')[3].trim().split(' ').length;
+	assert.ok(n >= 3 && n < 30, `simplified to ${n} points`);
+
+	// Eraser removes it; Cmd/Ctrl+Z brings it back.
+	await o.page.locator(`${R} .nimble-map .nimble-map-drawbar button[data-tool="eraser"]`).click();
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map .nimble-map-drawings.is-erasing .kind-pen`).count()) === 1, { what: 'eraser mode' });
+	// Tap a point that's really on the stroke (its bounding box's middle may not be).
+	let onStroke = null;
+	await o.waitFor(async () => {
+		onStroke = await o.page.locator(`${R} .nimble-map .nimble-map-drawings .kind-pen .nimble-map-drawing-line`).evaluate((line) => {
+			const pt = line.getPointAtLength(line.getTotalLength() * 0.4);
+			const m = line.getScreenCTM();
+			return { x: pt.x * m.a + pt.y * m.c + m.e, y: pt.x * m.b + pt.y * m.d + m.f };
+		}).catch(() => null);
+		return !!onStroke;
+	}, { what: 'the stroke on screen' });
+	await afterRedraw(o, async () => {
+		await o.page.mouse.click(onStroke.x, onStroke.y);
+		await o.waitFor(async () => !/^- pen \| /m.test(await read(o, NOTE)), { what: 'the eraser to delete the stroke' });
+	});
+	await o.page.locator(`${R} .nimble-map .nimble-map-viewport`).focus();
+	await o.page.keyboard.press(process.platform === 'darwin' ? 'Meta+z' : 'Control+z');
+	await o.waitFor(async () => /^- pen \| /m.test(await read(o, NOTE)), { what: 'Undo to bring the stroke back' });
+
+	// Text: a label at a point.
+	await o.page.locator(`${R} .nimble-map .nimble-map-drawbar button[data-tool="text"]`).click();
+	const t = await mapToScreen(m(), hexCentre(9, 9).x, hexCentre(9, 9).y);
+	await o.page.mouse.click(t.x, t.y);
+	await o.page.locator('.modal .nimble-name-input').fill('Here be wolves');
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(async () => /^- text \| .* \| Here be wolves$/m.test(await read(o, NOTE)), { what: 'the label to save' });
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map .nimble-map-drawing-text`).textContent().catch(() => '')) === 'Here be wolves', { what: 'the label to draw' });
+
+	// Show drawings off hides them all.
+	await m().locator('button[aria-label="Show drawings"]').click();
+	assert.equal(await m().locator('.nimble-map-drawing').count(), 0, 'drawings hidden');
+	await m().locator('button[aria-label="Show drawings"]').click();
 	await o.eval(async (app, _p, note) => { const x = app.vault.getAbstractFileByPath(note); if (x) await app.vault.delete(x); }, NOTE);
 });
 

@@ -10,6 +10,9 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 - Map pins can link to other maps. Pick a map note in the pin's **Links to** picker (map notes are listed first, with a map icon) and the pin becomes a **map** pin; clicking it opens that map in the same tab, so Back takes you up again.
 - Hex and square grids on maps, set up with the new **Grid** button: pick a type, then **Detect** finds the grid printed on the map, or **Fit to 3 × 3** sets it from a box you drag over three cells. Nudge the size and position with the buttons or arrow keys, turn the drawn lines off for maps with their own grid, and say what one cell is (`6 miles`). Grid lines stay thin at any zoom; **Grid line strength** in settings sets how strong they are.
+- A party marker on maps. **Place party**, then drag it to travel: it snaps to cells (Alt to place it anywhere), and a chip shows how far you've gone, like "3 hexes · 18 miles". It shows your heroes' portraits, and hovering (or tapping) shows the party's cards. It's saved in the map block.
+- **Measure**: a travel ruler. Click along the way to see the distance in cells and miles, without moving anyone.
+- Drawing on maps: freehand pen, routes that show their length, text labels and an eraser, in six colours plus your accent colour and three widths. Cmd/Ctrl+Z undoes, **Show drawings** hides them, and they're saved in the block with long strokes smoothed to a few points.
 - Map blocks understand new optional keys (`grid: hex`, `cell`, `offset`, `show-grid`, `scale`, `travel`, `party` and `drawings`), ready for grids, the party marker and drawing.
 
 ### Fixed

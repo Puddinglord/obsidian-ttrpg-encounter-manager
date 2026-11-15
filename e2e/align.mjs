@@ -16,7 +16,7 @@ export const PILL_SELECTORS = [
 	'.lu-step-btn', '.lu-celebrate-chip', '.lu-view-toggle button', '.lu-badge',
 	'.nimble-spotlight-chip', '.nimble-difficulty', '.encounter-count', '.bestiary-tag', '.statblock-action', '.rd-seg-btn', '.rd-mode-btn',
 	'.nimble-cmpx-chip', '.nimble-cmpx-pill', '.nimble-cmpx-tag', '.nimble-cmpx-pill-tag', '.nimble-cmp-back', '.nimble-count-seg',
-	'.nimble-map-btn', '.nimble-map-seg',
+	'.nimble-map-btn', '.nimble-map-seg', '.nimble-map-chip',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, selectors }) {

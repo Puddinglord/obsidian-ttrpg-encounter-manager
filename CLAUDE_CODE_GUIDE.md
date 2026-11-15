@@ -32,6 +32,7 @@ src/
   builder-modal.ts      Encounter builder
   map-def.ts            ```nimble-map format (pure)         map-block.ts        its renderer (pins, tokens)
   grid-def.ts           Grid maths: cellAt, centreOf, distance (axial hexes, Chebyshev squares), SVG pattern tiles (pure, tested)
+  map-draw.ts           Drawings, the live line and the Draw bar; map-party.ts is the party marker's face and roster
   grid-detect.ts        Finds the grid printed on a map image, in idle chunks (pure, tested); map-grid.ts is the Grid panel, the grid layer and pixel reading
   slash.ts              "/" commands
   spotlight.ts          Cmd/Ctrl+K box: search adversaries/NPCs/notes, roll dice, run commands (spotlight-def.ts is the pure query parser)
