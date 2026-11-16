@@ -9,6 +9,9 @@
 import { App, Events, TFile } from 'obsidian';
 import { MonsterIndexEntry, NimbleMonster } from './types';
 import { extractNimbleBlocks, parseStatblock } from './parser';
+import { HomebrewItem, HomebrewSpell, ITEM_LANG, parseItemBlock, parseSpellBlock, SPELL_LANG } from './homebrew-def';
+
+interface Parsed { monsters: NimbleMonster[]; spells: HomebrewSpell[]; items: HomebrewItem[] }
 
 export class MonsterIndex extends Events {
 	/** name (lowercase) -> every definition, in discovery order. */
@@ -19,6 +22,8 @@ export class MonsterIndex extends Events {
 	/** Bundled monsters, by lowercase name. */
 	private bundled = new Map<string, MonsterIndexEntry>();
 	private bundledById = new Map<string, MonsterIndexEntry>();
+	/** file path -> the homebrew spells and items written there (```nimble-spell, ```nimble-item). */
+	private brew = new Map<string, { spells: HomebrewSpell[]; items: HomebrewItem[] }>();
 
 	/** Can a lookup from `from` (a note path, or none) see the monster defined in `filePath`? */
 	private visible: (filePath: string, from?: string) => boolean = () => true;
@@ -58,9 +63,16 @@ export class MonsterIndex extends Events {
 		return this.bundled.size;
 	}
 
+	/** Every homebrew spell and item in the vault, by note path (so the first note wins a name clash). */
+	homebrew(): { spells: HomebrewSpell[]; items: HomebrewItem[] } {
+		const paths = [...this.brew.keys()].sort((a, b) => a.localeCompare(b));
+		return { spells: paths.flatMap(p => this.brew.get(p)!.spells), items: paths.flatMap(p => this.brew.get(p)!.items) };
+	}
+
 	async build(): Promise<void> {
 		this.byName.clear();
 		this.byFile.clear();
+		this.brew.clear();
 		const files = this.app.vault.getMarkdownFiles().sort((a, b) => a.path.localeCompare(b.path));
 		await Promise.all(files.map(f => this.indexFile(f, false)));
 		this.ready = true;
@@ -104,8 +116,9 @@ export class MonsterIndex extends Events {
 
 	remove(path: string, notify = true): void {
 		if (notify) this.bump(path); // cancels any in-flight update of this path
+		const hadBrew = this.brew.delete(path);
 		const names = this.byFile.get(path);
-		if (!names) return;
+		if (!names) { if (hadBrew && notify) this.trigger('changed'); return; }
 		for (const key of names) {
 			const remaining = (this.byName.get(key) || []).filter(e => e.filePath !== path);
 			if (remaining.length) this.byName.set(key, remaining);
@@ -125,7 +138,7 @@ export class MonsterIndex extends Events {
 
 	private snapshot(path: string): string {
 		const names = this.byFile.get(path) ?? [];
-		return JSON.stringify(names.map(n => this.byName.get(n)?.find(e => e.filePath === path)?.monster ?? null));
+		return JSON.stringify([names.map(n => this.byName.get(n)?.find(e => e.filePath === path)?.monster ?? null), this.brew.get(path) ?? null]);
 	}
 
 	private async indexFile(file: TFile, notify: boolean): Promise<void> {
@@ -133,27 +146,32 @@ export class MonsterIndex extends Events {
 		const parsed = await this.parseFile(file);
 		if (gen !== this.generation.get(file.path)) return;
 		this.store(file.path, parsed);
-		if (notify && parsed.length) this.trigger('changed');
+		if (notify && (parsed.monsters.length || parsed.spells.length || parsed.items.length)) this.trigger('changed');
 	}
 
-	private async parseFile(file: TFile): Promise<NimbleMonster[]> {
-		if (file.extension !== 'md') return [];
+	private async parseFile(file: TFile): Promise<Parsed> {
+		const none: Parsed = { monsters: [], spells: [], items: [] };
+		if (file.extension !== 'md') return none;
 		try {
 			const content = await this.app.vault.cachedRead(file);
-			if (!/nimble/i.test(content)) return [];
+			if (!/nimble/i.test(content)) return none;
 			const monsters: NimbleMonster[] = [];
 			for (const body of extractNimbleBlocks(content)) {
 				const monster = parseStatblock(body);
 				if (monster?.name) monsters.push(monster);
 			}
-			return monsters;
+			const spells = extractNimbleBlocks(content, SPELL_LANG).map(parseSpellBlock).filter((s): s is HomebrewSpell => !!s).map(s => ({ ...s, filePath: file.path }));
+			const items = extractNimbleBlocks(content, ITEM_LANG).map(parseItemBlock).filter((i): i is HomebrewItem => !!i).map(i => ({ ...i, filePath: file.path }));
+			return { monsters, spells, items };
 		} catch (e) {
 			console.error(`Ember Vault: error indexing ${file.path}`, e);
-			return [];
+			return none;
 		}
 	}
 
-	private store(path: string, monsters: NimbleMonster[]): void {
+	private store(path: string, parsed: Parsed): void {
+		const { monsters } = parsed;
+		if (parsed.spells.length || parsed.items.length) this.brew.set(path, { spells: parsed.spells, items: parsed.items });
 		const names: string[] = [];
 		for (const monster of monsters) {
 			const key = monster.name.toLowerCase();

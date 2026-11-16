@@ -8,6 +8,7 @@
 import { Modal, normalizePath, Notice, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { isPhone, isTouch } from './touch';
+import type { Dice } from './builder-math';
 
 export type EntityKind = 'monster' | 'spell' | 'item';
 
@@ -558,4 +559,41 @@ export function textButton(parent: HTMLElement, icon: string, text: string, onCl
 	b.createSpan({ text });
 	b.addEventListener('click', onClick);
 	return b;
+}
+
+/**
+ * Dice without typing: − count +, the die, − bonus +, the average against what
+ * the book expects, and a reset to the book's dice. `read` and `write` work on
+ * whatever holds the dice (an attack's text, a spell's damage).
+ */
+export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write: (d: Dice) => void; sides: () => number; avg: () => number | null; want?: () => number; reset?: { shown: () => boolean; run: () => void }; ui: BuilderUI }): HTMLElement {
+	const pad = parent.createDiv({ cls: 'eb-dice eb-noswipe' });
+	const parts = () => o.read() ?? { count: 1, sides: o.sides(), bonus: 0 };
+	const set = (d: Dice) => { o.write(d); o.ui.changed(); };
+	iconButton(pad, 'minus', 'One die fewer', () => { const p = parts(); if (p.count > 1) set({ ...p, count: p.count - 1 }); }, 'eb-dice-btn');
+	const diceText = pad.createSpan({ cls: 'eb-dice-text' });
+	iconButton(pad, 'plus', 'One die more', () => { const p = parts(); set({ ...p, count: Math.min(20, p.count + 1) }); }, 'eb-dice-btn');
+	pad.createSpan({ cls: 'eb-dice-sep', text: 'bonus' });
+	iconButton(pad, 'minus', 'Less bonus', () => { const p = parts(); set({ ...p, bonus: Math.max(0, p.bonus - (p.bonus > 20 ? 5 : 1)) }); }, 'eb-dice-btn');
+	const bonusText = pad.createSpan({ cls: 'eb-dice-text' });
+	iconButton(pad, 'plus', 'More bonus', () => { const p = parts(); set({ ...p, bonus: p.bonus + (p.bonus >= 20 ? 5 : 1) }); }, 'eb-dice-btn');
+	const avg = pad.createSpan({ cls: 'eb-dice-avg' });
+	const reset = o.reset ? textButton(pad, 'rotate-ccw', 'Book dice', () => { o.reset!.run(); o.ui.changed(); }, 'eb-dice-reset') : null;
+	o.ui.live(() => {
+		const p = o.read();
+		diceText.setText(p ? `${p.count}d${p.sides}` : '—');
+		bonusText.setText(p ? `+${Math.max(0, p.bonus)}` : '—');
+		avg.empty();
+		const have = o.avg();
+		const want = o.want?.();
+		if (have !== null) {
+			avg.createSpan({ cls: 'eb-dice-avg-have', text: `avg ${Math.round(have * 10) / 10}` });
+			if (want !== undefined) {
+				const off = want ? have / want : 1;
+				avg.createSpan({ cls: `eb-dice-avg-want ${off > 1.25 ? 'is-high' : off < 0.75 ? 'is-low' : 'is-ok'}`, text: `book ${Math.round(want)}` });
+			}
+		}
+		reset?.toggleClass('is-hidden', !o.reset!.shown());
+	});
+	return pad;
 }

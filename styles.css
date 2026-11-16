@@ -4393,5 +4393,19 @@ body.is-tablet .modal.nimble-entity-builder, body.is-mobile .modal.nimble-entity
 body.is-tablet .nimble-entity-builder :is(button.eb-seg-btn, button.eb-kind, button.eb-dot, button.eb-auto, button.eb-text-btn, button.eb-back, button.eb-next, button.eb-create) { padding-left: 0.85rem; padding-right: 0.85rem; }
 body.is-tablet .nimble-entity-builder :is(button.eb-num-btn, button.eb-dice-btn, button.eb-icon-btn, button.eb-preview-btn) { padding: 0; }
 
+/* Spells and items */
+.nimble-entity-builder .eb-row-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; width: 100%; }
+.nimble-entity-builder input.eb-input.eb-input-short { width: 9rem; flex: 0 0 auto; }
+.nimble-entity-builder .eb-tier-value { min-width: 6.5rem; font-size: 1.15rem; }
+.nimble-entity-builder .eb-seg.eb-seg-3 { max-width: 34rem; }
+.nimble-entity-builder button.eb-chip-toggle { height: 2rem; padding: 0 0.75rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-muted); font-size: var(--eb-text); font-weight: 600; line-height: 1; }
+.nimble-entity-builder button.eb-chip-toggle.is-active { border-color: color-mix(in srgb, var(--eb-accent) 55%, transparent); background: color-mix(in srgb, var(--eb-accent) 12%, var(--background-primary)); color: var(--text-normal); }
+.nimble-entity-builder .eb-inline-field { display: inline-flex; align-items: center; gap: 0.45rem; }
+.nimble-entity-builder .eb-inline-label { font-size: var(--eb-text); color: var(--text-muted); }
+.nimble-entity-builder .eb-peer { display: flex; flex-direction: column; gap: 0.05rem; padding: 0.35rem 0.55rem; border-radius: var(--radius-s); background: var(--background-primary); }
+.nimble-entity-builder .eb-peer-name { font-size: var(--eb-text); font-weight: 650; }
+.nimble-entity-builder .eb-peer-detail { font-size: 0.75rem; color: var(--text-muted); }
+.nimble-entity-builder .eb-preview .nimble-cmp-card { margin: 0; }
+
 /* Last, so it beats every button's display. */
 .nimble-entity-builder .is-hidden, .nimble-entity-builder button.is-hidden { display: none; }

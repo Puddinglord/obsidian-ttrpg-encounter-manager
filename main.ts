@@ -60,7 +60,8 @@ import { noteKind, safeName } from './src/campaign-model';
 import { readCharacter } from './src/character-def';
 import { creatureNote } from './src/campaign-templates';
 import { registerBuilders } from './src/builder-register';
-import { bundledCompendium, setCompendiumDrafts, sheetCompendium } from './src/compendium-data';
+import { registerHomebrewBlocks } from './src/homebrew-block';
+import { bundledCompendium, setCompendiumDrafts, setHomebrew, sheetCompendium } from './src/compendium-data';
 
 const ROLL_LOG_LIMIT = 30;
 
@@ -165,7 +166,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerView(COMPENDIUM_VIEW_TYPE, (leaf) => new CompendiumView(leaf, this));
 		watchArt(this);
 		// The compendium's entries are built once; anything that changes them throws them away.
-		this.registerEvent(this.index.on('changed', () => invalidateCompendium()));
+		this.registerEvent(this.index.on('changed', () => { setHomebrew(this.index.homebrew()); invalidateCompendium(); }));
 		this.registerEvent(this.campaigns.on('changed', () => invalidateCompendium()));
 		this.registerView(CAMPAIGN_VIEW_TYPE, (leaf) => new CampaignView(leaf, this));
 		this.addRibbonIcon('castle', 'Nimble campaign', () => this.openCampaignView());
@@ -212,6 +213,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		setCompendiumDrafts(this.settings.compendiumDrafts);
 		registerCharacterFeatures(this);
 		registerBuilders(this);
+		registerHomebrewBlocks(this);
 		registerReadingMode(this);
 
 		// Reading view: `nimble:Name` inline references

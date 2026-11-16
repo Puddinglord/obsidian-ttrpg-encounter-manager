@@ -70,6 +70,18 @@ export function suggestDice(target: number, sides = 8): Dice {
 	return { count, sides, bonus: Math.round(t - count * dieAverage(sides)) };
 }
 
+/**
+ * Spell dice, the way Core 3.3 writes them: a pool of up to four dice (Ignite
+ * 4d10, Arc Lightning 3d8), a flat bonus only for what the pool can't carry
+ * (the Creator's Kit: 3-4 small dice or 2-3 large, then flat).
+ */
+export function suggestSpellDice(target: number, sides = 8): Dice {
+	const avg = dieAverage(sides);
+	const count = Math.max(1, Math.min(4, Math.round(target / avg)));
+	const rest = target - count * avg;
+	return { count, sides, bonus: Math.abs(rest) >= 2 ? Math.round(rest) : 0 };
+}
+
 // ----------------------------------------------------------------------------
 // Levels
 
@@ -441,7 +453,7 @@ export function expectedSpell(tier: number, o: { aoe?: boolean; ranged?: boolean
 	const step = t === 0 ? Math.floor(SPELL_DAMAGE[0] * 0.8) : Math.round(((SPELL_DAMAGE[Math.min(9, t + 1)] - SPELL_DAMAGE[t]) || 16) * 0.6 * (o.aoe ? AOE_FACTOR : 1));
 	return {
 		damage: Math.round(damage * 2) / 2,
-		dice: suggestDice(damage, o.sides ?? (t === 0 ? 10 : 8)),
+		dice: suggestSpellDice(damage, o.sides ?? (t === 0 ? 10 : t >= 5 ? 20 : 8)),
 		actions: t === 0 ? 1 : o.aoe && o.ranged ? 3 : 2,
 		upcast: Math.max(1, step),
 		range: 8,

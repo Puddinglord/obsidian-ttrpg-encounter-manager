@@ -276,6 +276,33 @@ test('monster builder: a solo from a template, re-levelled, with stats typed fir
 	assert.equal(await o.page.locator('.workspace-leaf.mod-active .nimble-issues').count(), 0);
 });
 
+test('spell and item builders: homebrew lands in a note, renders as a card and joins the compendium', async (o) => {
+	const B = '.modal.nimble-entity-builder';
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-spell'));
+	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Ember Lash');
+	await o.page.locator(`${B} button[aria-label="Higher tier"]`).click();
+	assert.equal(await o.page.locator(`${B} .eb-tier-value`).textContent(), 'Tier 2');
+	await o.page.locator(`${B} .eb-create`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	const spell = await o.eval((app) => app.vault.adapter.read('Homebrew/Ember Lash.md'));
+	assert.match(spell, /```nimble-spell\nname: Ember Lash\nschool: Fire\ntier: 2\nactions: 2 Actions\nrange: Range 8\ndamage: \S+\nupcast: \+\d+ damage\.\n```/);
+	await o.page.locator('.workspace-leaf.mod-active .nimble-homebrew .nimble-cmp-card').waitFor();
+	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.spell('Ember Lash')?.tier === 2), { what: 'the spell in the compendium' });
+
+	// An item from the switch at the top of the same dialog.
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-spell'));
+	await o.page.locator(`${B} .eb-kind`, { hasText: 'Item' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Lantern of Echoes');
+	await o.page.locator(`${B} .eb-seg-btn`, { hasText: /^Rare$/ }).click();
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Details' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active textarea`).fill('Replays the last minute of sound.');
+	await o.page.locator(`${B} .eb-create`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	const item = await o.eval((app) => app.vault.adapter.read('Homebrew/Lantern of Echoes.md'));
+	assert.match(item, /category: magic\nrarity: rare\ncost: 500 gp\ntext: Replays the last minute of sound\./);
+	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.item('Lantern of Echoes')?.rarity === 'rare'), { what: 'the item in the compendium' });
+});
+
 // ---------------------------------------------------------------------------
 // Inline references
 

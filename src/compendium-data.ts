@@ -2,13 +2,31 @@
 
 import { Compendium } from './compendium';
 import COMPENDIUM_JSON from './data/compendium.json';
+import { HomebrewItem, HomebrewSpell, itemForCompendium } from './homebrew-def';
 
 let bundled: Compendium | null = null;
 let withDrafts = true;
+let homebrew: { spells: HomebrewSpell[]; items: HomebrewItem[] } = { spells: [], items: [] };
+let full: Compendium | null = null;
+
+/** The book's data with the vault's homebrew in front, so a note named like a book entry replaces it. */
+function data(): unknown {
+	if (!homebrew.spells.length && !homebrew.items.length) return COMPENDIUM_JSON;
+	const book = COMPENDIUM_JSON as unknown as { spells?: unknown[]; items?: unknown[] };
+	return { ...COMPENDIUM_JSON, spells: [...homebrew.spells, ...(book.spells ?? [])], items: [...homebrew.items.map(itemForCompendium), ...(book.items ?? [])] };
+}
 
 export function bundledCompendium(): Compendium {
-	bundled ??= new Compendium(COMPENDIUM_JSON, { drafts: withDrafts });
+	bundled ??= new Compendium(data(), { drafts: withDrafts });
 	return bundled;
+}
+
+/** The vault's homebrew spells and items (```nimble-spell, ```nimble-item). Re-indexes on the next lookup when they change. */
+export function setHomebrew(next: { spells: HomebrewSpell[]; items: HomebrewItem[] }): void {
+	if (JSON.stringify(next) === JSON.stringify(homebrew)) return;
+	homebrew = next;
+	bundled = null;
+	full = null;
 }
 
 /** Include the expansion drafts (Manawright, Hexbinder, Psion, Revenant)? Re-indexes on the next lookup when it changes. */
@@ -18,12 +36,11 @@ export function setCompendiumDrafts(on: boolean): void {
 	bundled = null;
 }
 
-let full: Compendium | null = null;
 
 /** Every class, drafts included, whatever the setting says. */
 export function fullCompendium(): Compendium {
 	if (withDrafts) return bundledCompendium();
-	full ??= new Compendium(COMPENDIUM_JSON, { drafts: true });
+	full ??= new Compendium(data(), { drafts: true });
 	return full;
 }
 
