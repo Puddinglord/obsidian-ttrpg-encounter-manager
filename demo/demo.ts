@@ -8,7 +8,7 @@ import { createInlineRef, HoverPreview } from '../src/inline-ref';
 import { renderStatblock, DiceKind, RenderOptions } from '../src/render';
 import { appendRichText } from '../src/markdown';
 import { extractNimbleBlocks, parseStatblock } from '../src/parser';
-import { monsterRole, rateEncounter, shiftMonster, shiftLabel, SHIFT_DAMAGE, SHIFT_HP } from '../src/rules';
+import { monsterRole, rateEncounter, shiftMonster, shiftLabel } from '../src/rules';
 import { parseDice, rollNimbleAttack, rollPlain } from '../src/dice';
 import { dice3dSupported, roll3d, diceForRoll } from '../src/dice3d';
 import { closePopover, isPopoverOpenFor, openPopover } from '../src/popover';
@@ -275,8 +275,8 @@ function renderEncounter(): void {
 				const refresh = () => {
 					buttons.forEach(b => b.toggleClass('is-active', Number(b.dataset.shift) === draft.shift));
 					hint.setText(minion ? 'Minions don\'t scale by level.'
-						: draft.shift > 0 ? `+1 level: ${Math.round((SHIFT_HP - 1) * 100)}% more HP and +${SHIFT_DAMAGE} damage on every hit.`
-							: draft.shift < 0 ? `−1 level: ${Math.round((1 - 1 / SHIFT_HP) * 100)}% less HP and −${SHIFT_DAMAGE} damage on every hit.`
+						: draft.shift > 0 ? '+1 level: its HP and attack damage move up to the next level\'s in the GM Guide\'s monster tables.'
+							: draft.shift < 0 ? '−1 level: its HP and attack damage move down to the level below\'s in the GM Guide\'s monster tables.'
 								: 'Its stat block as written.');
 				};
 				const remove = pop.createEl('button', { cls: 'ece-remove', text: `Remove ${m.name}` });

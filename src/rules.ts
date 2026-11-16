@@ -2,6 +2,7 @@
 // Obsidian imports), so every rule here is unit-tested.
 
 import { AppliedCondition, ArmorType, MonsterRole, NimbleMonster } from './types';
+import { relevelRegular, relevelSolo, scaleAttack } from './builder-math';
 
 // ----------------------------------------------------------------------------
 // Monster facts
@@ -416,32 +417,62 @@ export function shiftLevel(level: number, shift: number): number {
 	return LEVEL_LADDER[Math.max(0, Math.min(LEVEL_LADDER.length - 1, i + shift))];
 }
 
-/** Rule of thumb per level: HP ×1.25 (or ÷1.25), and +2 (or −2) damage on every hit. */
+/** When a monster has no level to read from: HP ×1.25 (or ÷1.25) a step, as before the GM Guide tables were built in. */
 export const SHIFT_HP = 1.25;
-export const SHIFT_DAMAGE = 2;
 
 export function shiftLabel(shift: number): string {
 	return shift > 0 ? `+${shift}` : shift < 0 ? `−${Math.abs(shift)}` : '';
 }
 
 /**
- * A copy of `m` made `shift` levels tougher (positive) or weaker (negative).
- * Minions are unchanged (they're valued by the party's level, and die to any hit).
+ * A copy of `m` made `shift` levels tougher (positive) or weaker (negative),
+ * the GM Guide's way: HP and attack damage move along the Monster Builder table
+ * (the Legendary table for solos) from its level to the new one, so a glass
+ * cannon stays one. Armor drops a step below the book's floor for it. Minions
+ * are unchanged (they're valued by the party's level, and die to any hit).
  */
 export function shiftMonster(m: NimbleMonster, shift: number): NimbleMonster {
 	if (!shift || monsterRole(m) === 'minion') return m;
 	const lvl = levelValue(m.level);
-	const k = Math.pow(SHIFT_HP, shift);
-	const dmg = SHIFT_DAMAGE * shift;
+	const to = lvl === null ? null : shiftLevel(lvl, shift);
+	const legendary = monsterRole(m) === 'legendary';
+	let hp: number;
+	let hpPerHero = m.hpPerHero;
+	let armor = m.armor;
+	let ratio = 1;
+	if (lvl === null || to === null) {
+		hp = Math.max(1, Math.round((m.hp || 0) * Math.pow(SHIFT_HP, shift)));
+		if (hpPerHero) hpPerHero = Math.max(1, Math.round(hpPerHero * Math.pow(SHIFT_HP, shift)));
+	} else if (legendary) {
+		const perHero = m.hpPerHero ?? Math.max(1, Math.round((m.hp || 0) / 4));
+		const r = relevelSolo({ level: lvl, hpPerHero: perHero, armor: m.armor ?? 'none' }, to);
+		ratio = r.damageRatio;
+		hpPerHero = m.hpPerHero ? r.hpPerHero : undefined;
+		hp = m.hpPerHero ? m.hp * (r.hpPerHero / m.hpPerHero) : Math.max(1, Math.round((m.hp || 0) * (r.hpPerHero / perHero)));
+		hp = Math.max(1, Math.round(hp));
+	} else {
+		const attacks = Math.max(1, Math.min(3, m.attacks?.length ?? 1));
+		const r = relevelRegular({ level: lvl, hp: m.hp || 0, armor: m.armor ?? 'none', attacks }, to);
+		hp = r.hp;
+		armor = r.armor;
+		ratio = r.damageRatio;
+	}
+	const steps = Math.abs(shift);
+	const pct = m.hp ? Math.round(Math.abs(hp / m.hp - 1) * 100) : 0;
+	const what = [`${shift > 0 ? '+' : '−'}${pct}% HP`];
+	if (ratio !== 1) what.push(`attacks ${ratio > 1 ? 'up' : 'down'} to level ${formatLevel(to ?? 0)} damage`);
+	if (armor !== m.armor) what.push(`${armor === 'none' ? 'no armor' : `${armor} armor`} (too early for ${m.armor})`);
 	const note = {
-		name: shift > 0 ? `Tougher (${shiftLabel(shift)} level${Math.abs(shift) > 1 ? 's' : ''})` : `Weaker (${shiftLabel(shift)} level${Math.abs(shift) > 1 ? 's' : ''})`,
-		description: `${shift > 0 ? '+' : '−'}${Math.round(Math.abs(k - 1) * 100)}% HP and ${dmg > 0 ? '+' : '−'}${Math.abs(dmg)} damage on every hit (minimum 1).`,
+		name: shift > 0 ? `Tougher (${shiftLabel(shift)} level${steps > 1 ? 's' : ''})` : `Weaker (${shiftLabel(shift)} level${steps > 1 ? 's' : ''})`,
+		description: `${what.join(', ')}, from the GM Guide's monster tables.`,
 	};
 	return {
 		...m,
-		level: lvl === null ? m.level : formatLevel(shiftLevel(lvl, shift)),
-		hp: Math.max(1, Math.round((m.hp || 0) * k)),
-		hpPerHero: m.hpPerHero ? Math.max(1, Math.round(m.hpPerHero * k)) : m.hpPerHero,
+		level: to === null ? m.level : formatLevel(to),
+		hp,
+		hpPerHero,
+		armor,
+		attacks: ratio === 1 ? m.attacks : m.attacks?.map(a => ({ ...a, raw: scaleAttack(a.raw, ratio) })),
 		levelShift: (m.levelShift ?? 0) + shift,
 		abilities: [note, ...(m.abilities ?? []).filter(a => !/^(Tougher|Weaker) \(/.test(a.name))],
 	};
