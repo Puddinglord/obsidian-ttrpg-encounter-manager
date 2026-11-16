@@ -25,7 +25,7 @@ The block shows its difficulty using the GM Guide budget:
 You also get warnings, for example armor before level 3, or more than 3 monsters per hero. **Scaling and balancing:**
 - Click a monster's count (`2×`) to change how many, make them **tougher or weaker** (one level each way), or remove them. The note updates when the editor closes.
 - A shift is written into the block, e.g. `- 2 Cultist +1`. It counts toward difficulty and carries into the tracker.
-- Per level: about 25% more (or less) HP, and +2 (or −2) damage on every hit. The stat block shows a Tougher or Weaker line so you can see it at the table.
+- A shift moves the monster's HP and attack dice to the new level's numbers in the GM Guide's monster tables (the legendary table for solos), so a fragile hard-hitter stays one. Armor the book holds back at low levels drops a step. The stat block shows a Tougher or Weaker line so you can see what changed at the table.
 - Click the difficulty chip (e.g. *Very Deadly · 144%*) and pick a target (Easy, Medium, Hard or Deadly). You get the two or three smallest edits that reach it, for example "Remove all 3 Goblin Minions → Hard 106%". One click applies it. Legendary monsters are kept, and minions from the same family can be suggested.
 - The same balancer sits under the meter in the encounter builder.
 - The "4 heroes, level 2" line opens the party: the Campaign panel's Party section in a campaign you run, or the party editor outside a campaign.

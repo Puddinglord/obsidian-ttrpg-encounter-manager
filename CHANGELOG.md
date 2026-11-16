@@ -13,6 +13,7 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ### Changed
 
+- Tougher and Weaker follow the GM Guide's monster tables. A shift moves HP and the attack dice to the new level's numbers (the Legendary table for solos), where before it added 25% HP a level and noted "+2 damage". A level 4 monster made six levels tougher now lands near the book's level 10 (126 HP) instead of 153. Armor the book holds back at low levels drops a step on the way down.
 - Stat blocks forgive more. Field names don't mind capitals, spaces or bold (`Last Stand:`, `**Bloodied:**`, `HP per hero:`), lists can be headed `Legendary actions:` or `Traits:`, a bare `actionText:` over the attacks shows them as attacks, a sentence that wraps onto the next line is joined back up, and a second `attacks:` heading adds to the list instead of replacing it.
 
 ## [1.4.0] - 2026-11-16

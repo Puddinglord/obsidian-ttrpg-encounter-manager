@@ -5,7 +5,7 @@ import { confirmReplaceFight, resumeSavedFight, savedFightsFor } from './saved-f
 import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { EncounterDef, encounterBlockSource, parseEncounterBlock, replaceEncounterBlock } from './encounter-def';
-import { budgetPhrase, monsterRole, rateEncounter, shiftLabel, shiftMonster, SHIFT_DAMAGE, SHIFT_HP } from './rules';
+import { budgetPhrase, monsterRole, rateEncounter, shiftLabel, shiftMonster } from './rules';
 import { createInlineRef } from './inline-ref';
 import { BuilderModal } from './builder-modal';
 import { EncounterTemplate } from './encounters';
@@ -181,8 +181,8 @@ function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, d
 					minus.disabled = draft.count <= 1;
 					buttons.forEach(b => b.toggleClass('is-active', Number(b.dataset.shift) === draft.shift));
 					hint.setText(minion ? 'Minions don\'t scale by level.'
-						: draft.shift > 0 ? `+1 level: ${Math.round((SHIFT_HP - 1) * 100)}% more HP and +${SHIFT_DAMAGE} damage on every hit.`
-							: draft.shift < 0 ? `−1 level: ${Math.round((1 - 1 / SHIFT_HP) * 100)}% less HP and −${SHIFT_DAMAGE} damage on every hit.`
+						: draft.shift > 0 ? '+1 level: its HP and attack damage move up to the next level\'s in the GM Guide\'s monster tables.'
+							: draft.shift < 0 ? '−1 level: its HP and attack damage move down to the level below\'s in the GM Guide\'s monster tables.'
 								: 'Its stat block as written.');
 					count.querySelector('.encounter-count-n')?.setText(`${draft.count}×`);
 				};

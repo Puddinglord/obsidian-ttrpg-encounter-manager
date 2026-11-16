@@ -34,15 +34,32 @@ describe('shiftMonster', () => {
 	it('scales HP, records the shift and explains it on the stat block', () => {
 		const up = shiftMonster(base, 1);
 		expect(up.level).toBe('2');
-		expect(up.hp).toBe(25);
+		expect(up.hp).toBe(30); // 20 × (31 / 21), the GM Guide's level 1 → 2 HP
 		expect(up.levelShift).toBe(1);
 		expect(up.abilities?.[0].name).toBe('Tougher (+1 level)');
 		const down = shiftMonster(base, -1);
 		expect(down.level).toBe('1/2');
-		expect(down.hp).toBe(16);
+		expect(down.hp).toBe(14); // 20 × (15 / 21)
 		expect(down.abilities?.[0].name).toMatch(/^Weaker/);
 		// Shifting again replaces the note instead of stacking two.
 		expect(shiftMonster(up, 1).abilities?.filter(a => /Tougher|Weaker/.test(a.name)).length).toBe(1);
+	});
+
+	it('moves attack dice and armor with the table, and solos along the legendary table', () => {
+		const ogre = { ...base, level: 4, hp: 52, armor: 'heavy', attacks: [{ raw: '**Club.** 2d6+10.' }] } as unknown as NimbleMonster;
+		const down = shiftMonster(ogre, -1);
+		expect(down.level).toBe('3');
+		expect(down.armor).toBe('medium');
+		expect(down.attacks?.[0].raw).toBe('**Club.** 2d6+7.'); // 17 → 14 average, the table's level 3
+		expect(down.abilities?.[0].description).toMatch(/medium armor \(too early for heavy\)/);
+		const solo = { ...base, level: 2, role: 'legendary', hpPerHero: 28, hp: 112, attacks: [{ raw: 'Smash 2d6.' }] } as unknown as NimbleMonster;
+		const up = shiftMonster(solo, 1);
+		expect(up.hpPerHero).toBe(40);
+		expect(up.hp).toBe(160);
+	});
+
+	it('falls back to ×1.25 HP when there is no level to read', () => {
+		expect(shiftMonster({ ...base, level: undefined } as unknown as NimbleMonster, 1).hp).toBe(25);
 	});
 
 	it('leaves minions and zero shifts alone', () => {
