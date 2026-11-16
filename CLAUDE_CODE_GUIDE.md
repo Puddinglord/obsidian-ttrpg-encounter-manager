@@ -129,7 +129,9 @@ To cover a new scenario, add notes to `e2e/fixtures/vault/` and a `test('...', a
 
 ## Installing in a vault by hand
 
-Copy `main.js`, `manifest.json` and `styles.css` to `<vault>/.obsidian/plugins/nimble-gm/`, then reload Obsidian or toggle the plugin. `./deploy.sh` does this for `~/Documents/DevVault`.
+Use `npm run dev:vault -- "<vault folder>"` (default `~/Documents/DevVault`). It installs pjeby's **Hot Reload** plugin into the vault, enables it and Ember Vault, marks Ember Vault with a `.hotreload` file, then runs the watch build and copies every rebuild (and every `styles.css` save) into the vault, so Obsidian reloads the plugin by itself a moment after you save. Add `--once` to install the current build and exit. `./deploy.sh` builds and does the same for `~/Documents/DevVault`.
+
+Every test vault made for the user to try things in gets Hot Reload this way. (The e2e suite doesn't need it: it installs a fresh build into a throwaway vault each run.) To show the user a test vault without touching their own Obsidian, start a second copy with its own settings: `/Applications/Obsidian.app/Contents/MacOS/Obsidian --user-data-dir=<dir>`, where `<dir>/obsidian.json` lists the vault as `open: true`, and write the vault's `.obsidian/workspace.json` so it opens on the page to test. `obsidian://open?path=` only works for vaults the running Obsidian already knows.
 
 ## Common tasks
 
