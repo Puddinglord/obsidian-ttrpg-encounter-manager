@@ -42,7 +42,15 @@ const UNDO_DEPTH = 30;
 interface ViewMemory { scale: number; tx: number; ty: number; height?: number; iw: number; showLabels: boolean; showDrawings: boolean }
 const VIEWS = new Map<string, ViewMemory>();
 /** The mode a map was in when it saved, for the copy Obsidian draws next. Taken once, and only soon after. */
-const SAVED_MODE = new Map<string, { mode: Mode; at: number; expanded: boolean; before: { scale: number; tx: number; ty: number } | null }>();
+/**
+ * What a map was doing when Obsidian last drew it again (after a save, or when the
+ * whole note re-renders, as it does when campaign links change): its mode, full
+ * screen, and a grid being sized. Taken once by the next copy, and only soon after.
+ */
+interface CarriedState { mode: Mode; at: number; expanded: boolean; before: { scale: number; tx: number; ty: number } | null; draft: GridDraft | null; leaf: HTMLElement | null }
+const SAVED_MODE = new Map<string, CarriedState>();
+/** Every map on screen, so a new copy can take over from the one it replaces in the same view. */
+const LIVE = new Set<MapBlock>();
 const MODE_KEEP_MS = 3000;
 
 /** A party move that crossed cells on a map with `travel:`, waiting for Advance or Not now (kept across the redraw a save causes). */
@@ -59,7 +67,17 @@ export interface MapHost {
 	openMap?: (link: string, newLeaf: boolean) => boolean;
 }
 
+/**
+ * Where a map is drawn: a tab's reading view and its Live Preview each draw their
+ * own copy (one hidden), so a copy takes over only from the one in the same view.
+ */
+function hostOf(el: HTMLElement): HTMLElement | null {
+	return el.closest<HTMLElement>('.markdown-reading-view, .markdown-source-view, .nimble-map-view');
+}
+
 export function registerMapBlock(plugin: NimbleStatblocksPlugin): void {
+	// Opening a note (or switching tabs) is a fresh start: what a map was doing only carries over a redraw.
+	plugin.registerEvent(plugin.app.workspace.on('file-open', () => SAVED_MODE.clear()));
 	plugin.registerMarkdownCodeBlockProcessor('nimble-map', (source, el, ctx) => {
 		ctx.addChild(new MapBlock(plugin, el, source, ctx));
 	});
@@ -116,17 +134,61 @@ export class MapBlock extends MarkdownRenderChild {
 		this.def = parseMapBlock(source);
 		const saved = VIEWS.get(this.mapKey);
 		if (saved) { this.showLabels = saved.showLabels; this.showDrawings = saved.showDrawings; }
-		const mode = SAVED_MODE.get(this.mapKey);
-		SAVED_MODE.delete(this.mapKey);
-		if (mode && Date.now() - mode.at < MODE_KEEP_MS) {
-			this.mode = mode.mode;
-			this.expanded = mode.expanded;
-			this.beforeExpand = mode.before;
-		}
 	}
 
+	/**
+	 * Obsidian draws a note again after a save, and whenever the whole note re-renders.
+	 * The new copy of this map takes over from the old one in the same tab (still on
+	 * screen, or just unloaded): mode, full screen and a grid being sized. True when
+	 * it took anything, so the toolbar is drawn again.
+	 */
+	private takeOver(): boolean {
+		const leaf = hostOf(this.containerEl);
+		let st: Omit<CarriedState, 'at' | 'leaf'> | null = null;
+		const old = [...LIVE].find(m => m !== this && m.mapKey === this.mapKey && m.leafEl === leaf && m.wasMain);
+		if (old) st = old.state();
+		else {
+			const saved = SAVED_MODE.get(this.mapKey);
+			if (saved && saved.leaf === leaf && Date.now() - saved.at < MODE_KEEP_MS) st = saved;
+		}
+		SAVED_MODE.delete(this.mapKey);
+		if (!st || (st.mode === 'view' && !st.expanded)) return false;
+		this.mode = this.editable || st.mode === 'measure' ? st.mode : 'view';
+		this.expanded = st.expanded && !this.host.fill;
+		this.beforeExpand = st.before;
+		this.gridDraft = st.draft;
+		return true;
+	}
+
+	private state(): Omit<CarriedState, 'at' | 'leaf'> {
+		return { mode: this.mode, expanded: this.expanded, before: this.beforeExpand, draft: this.mode === 'grid' ? this.gridPanel?.current ?? this.gridDraft : null };
+	}
+
+	/** The view this map is drawn in (a tab's reading view, its Live Preview, or a map tab), as last seen on the page. */
+	private leafEl: HTMLElement | null = null;
+	private tookOver = false;
+
 	/** Hover previews and embeds are small copies: they neither restore nor overwrite the remembered view. */
-	private get remembers(): boolean { return !this.containerEl.closest('.hover-popover, .popover, .markdown-embed'); }
+	private get remembers(): boolean {
+		// Once off the page there's nothing to look up: use what was seen while it was on it.
+		if (!this.containerEl.isConnected) return this.wasMain;
+		this.wasMain = !this.containerEl.closest('.hover-popover, .popover, .markdown-embed');
+		this.leafEl = hostOf(this.containerEl);
+		return this.wasMain;
+	}
+	/** This copy is the note's own map (not an embed or a preview), as last seen on the page. */
+	private wasMain = false;
+
+	/** Hand this map's mode, full screen and grid draft to the copy Obsidian draws next. */
+	private carry(): void {
+		if (this.remembers) SAVED_MODE.set(this.mapKey, { ...this.state(), at: Date.now(), leaf: this.leafEl });
+	}
+
+	onunload(): void {
+		LIVE.delete(this);
+		// Unloaded because the note is being drawn again (not closed): the next copy carries on.
+		this.carry();
+	}
 
 	private remember(): void {
 		if (!this.remembers || !this.fitted || !this.img?.naturalWidth) return;
@@ -140,6 +202,13 @@ export class MapBlock extends MarkdownRenderChild {
 	private get mapKey(): string { return `${this.ctx.sourcePath}::${this.def.image}`; }
 
 	onload(): void {
+		LIVE.add(this);
+		// Obsidian's mobile layout turns two quick taps anywhere in reading view into "edit this note",
+		// so tapping Zoom in twice, or double-tapping to zoom, flipped the note into editing. Taps on
+		// the map are the map's: they don't reach the note.
+		for (const type of ['pointerdown', 'pointerup'] as const) {
+			this.registerDomEvent(this.containerEl, type, (e: PointerEvent) => { if (e.pointerType !== 'mouse') e.stopPropagation(); });
+		}
 		this.registerDomEvent(this.containerEl, 'keydown', (e: KeyboardEvent) => {
 			if (e.key === 'Escape' && this.expanded && !e.defaultPrevented && !(e.target as HTMLElement | null)?.closest?.('.nimble-map-viewport, input')) this.setExpanded(false);
 		});
@@ -306,6 +375,11 @@ export class MapBlock extends MarkdownRenderChild {
 		const ih = this.img.naturalHeight;
 		// Not on the page yet (or hidden): the resize observer calls again once it has a size.
 		if (!iw || !this.viewport.isConnected || !this.viewport.clientWidth) return;
+		if (!this.tookOver) {
+			this.tookOver = true;
+			void this.remembers; // note which tab this is in
+			if (this.takeOver()) { this.build(); return; }
+		}
 		if (!this.fitted && this.remembers) {
 			const saved = VIEWS.get(this.mapKey);
 			if (saved && saved.iw === iw) {
@@ -1027,7 +1101,7 @@ export class MapBlock extends MarkdownRenderChild {
 	/** Write the pins back into the note's code block. */
 	private async save(): Promise<void> {
 		this.remember();
-		if (this.remembers) SAVED_MODE.set(this.mapKey, { mode: this.mode, at: Date.now(), expanded: this.expanded, before: this.beforeExpand });
+		this.carry();
 		this.renderPins();
 		this.renderDrawings();
 		this.renderParty();
@@ -1141,9 +1215,9 @@ export class MapBlock extends MarkdownRenderChild {
 			try { el.setPointerCapture(e.pointerId); } catch { /* already lifted */ }
 			const move = (ev: PointerEvent) => { if (ev.pointerId === e.pointerId) { ghost.style.left = `${ev.clientX}px`; ghost.style.top = `${ev.clientY}px`; } };
 			const stop = () => {
-				doc.removeEventListener('pointermove', move);
-				doc.removeEventListener('pointerup', up);
-				doc.removeEventListener('pointercancel', cancel);
+				el.removeEventListener('pointermove', move);
+				el.removeEventListener('pointerup', up);
+				el.removeEventListener('pointercancel', cancel);
 				win.removeEventListener('blur', stop);
 				ghost.remove();
 			};
@@ -1157,9 +1231,11 @@ export class MapBlock extends MarkdownRenderChild {
 				}
 			};
 			move(e);
-			doc.addEventListener('pointermove', move);
-			doc.addEventListener('pointerup', up);
-			doc.addEventListener('pointercancel', cancel);
+			// The token has the pointer captured, so every move and the drop come to it (and the map
+			// keeps touch pointer events to itself: see onload).
+			el.addEventListener('pointermove', move);
+			el.addEventListener('pointerup', up);
+			el.addEventListener('pointercancel', cancel);
 			win.addEventListener('blur', stop);
 		});
 	}

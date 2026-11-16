@@ -25,6 +25,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 - The old `grid: 30x20` is drawn the same way as the new grids, sharp at any zoom.
 - Saving a map (adding, moving or editing a pin) no longer deletes lines from the block that Ember Vault doesn't know about, and lines you didn't change are written back exactly as you typed them.
+- On a phone, tapping a map's buttons quickly (Zoom in twice) or double-tapping the map to zoom no longer switches the note into editing.
+- A map keeps what you were doing (the Grid panel, Draw, full screen) when the note redraws itself, as it does when campaign links change.
 - A map keeps its zoom and position after you add or move a pin, and when you switch between Add pin and Move pins, instead of jumping back to the whole map. Coming back to a map's note puts you where you were.
 
 ## [1.4.0] - 2026-11-16

@@ -2082,13 +2082,32 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 	await resetEncounter(o, { party: PARTY });
 	const cdp = await p.context().newCDPSession(p);
 	const tap = async (loc) => {
-		await loc.scrollIntoViewIfNeeded().catch(() => {});
-		const b = await loc.boundingBox();
+		// The note can be drawn again under us (campaign links refresh): give the new copy a moment to appear.
+		let b = null;
+		for (let i = 0; i < 30 && !b; i++) {
+			await loc.scrollIntoViewIfNeeded({ timeout: 1000 }).catch(() => {});
+			b = await loc.boundingBox({ timeout: 1000 }).catch(() => null);
+			if (!b) await p.waitForTimeout(100);
+		}
 		assert.ok(b, 'tap target is visible');
 		const x = b.x + b.width / 2, y = b.y + b.height / 2;
 		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
 		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 		await p.waitForTimeout(250);
+	};
+	// The note can be drawn again at any moment (campaign links refresh): tap again until the tap took.
+	const tapUntil = async (sel, done, what) => {
+		for (let i = 0; i < 5; i++) {
+			try {
+				// A copy being replaced has no box any more: wait for the new one and go again.
+				await tap(p.locator(`${sel} >> visible=true`).first());
+				await o.waitFor(done, { what, timeout: 2500 });
+				return;
+			} catch (e) {
+				if (i === 4) throw e;
+				await p.waitForTimeout(300);
+			}
+		}
 	};
 	await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 	await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
@@ -2166,9 +2185,29 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 		assert.equal(await p.locator('.menu').count(), 0, 'no stray long-press menu');
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover').forEach(n => n.remove()));
 
+		// Quick double taps on the map are the map's: Obsidian's mobile layout would otherwise take two quick
+		// taps anywhere in reading view as "edit this note".
+		const quickTwice = async (loc) => {
+			const b = await loc.boundingBox();
+			for (let i = 0; i < 2; i++) {
+				await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: b.x + b.width / 2, y: b.y + b.height / 2 }] });
+				await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+				await p.waitForTimeout(150);
+			}
+			await p.waitForTimeout(600);
+		};
+		const readMode = () => o.eval((app) => app.workspace.getMostRecentLeaf().view.getMode());
+		await quickTwice(p.locator(`${R} .nimble-map button[aria-label="Zoom in"]`).first());
+		assert.equal(await readMode(), 'preview', 'tapping Zoom in twice quickly keeps the note in reading view');
+		const z0 = await scale();
+		await quickTwice(p.locator(`${R} .nimble-map-viewport`).first());
+		assert.equal(await readMode(), 'preview', 'double-tapping the map keeps the note in reading view');
+		assert.ok((await scale()) > z0, 'and zooms the map in');
+		await p.keyboard.press('0');
+
 		// The Grid panel fits a phone: nothing spills sideways and every control is a real tap target.
-		await tap(p.locator(`${R} .nimble-map button[aria-label="Grid"]`));
-		await tap(p.locator(`${R} .nimble-map .nimble-map-seg[data-kind="hex"]`));
+		await tapUntil(`${R} .nimble-map button[aria-label="Grid"]`, async () => (await p.locator(`${R} .nimble-map .nimble-map-gridpanel`).count()) === 1, 'the grid panel');
+		await tapUntil(`${R} .nimble-map .nimble-map-seg[data-kind="hex"]`, async () => (await p.locator(`${R} .nimble-map .nimble-map-seg.is-active[data-kind="hex"]`).count()) === 1, 'Hex');
 		const gridPanel = await p.evaluate((r) => {
 			const el = document.querySelector(`${r} .nimble-map-gridpanel`);
 			const map = el.closest('.nimble-map').getBoundingClientRect();
@@ -2177,10 +2216,11 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 			return { spill, small };
 		}, R);
 		assert.deepEqual(gridPanel, { spill: [], small: [] }, 'the grid panel fits the phone');
-		await tap(p.locator(`${R} .nimble-map .nimble-map-gridpanel button`, { hasText: 'Cancel' }));
+		await tapUntil(`${R} .nimble-map .nimble-map-gridpanel button:text("Cancel")`, async () => (await p.locator(`${R} .nimble-map .nimble-map-gridpanel`).count()) === 0, 'Cancel');
 
 		// Full screen fills the phone's pane, and comes back.
-		await tap(p.locator(`${R} .nimble-map button[aria-label="Full screen"]`));
+		await tapUntil(`${R} .nimble-map button[aria-label="Full screen"]`, async () => (await p.locator(`${R} .nimble-map.is-expanded`).count()) === 1, 'full screen');
+		await p.waitForTimeout(200);
 		const full = await p.evaluate((r) => {
 			const map = document.querySelector(`${r} .nimble-map`);
 			const a = map.getBoundingClientRect();
@@ -2188,11 +2228,10 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 			return map.classList.contains('is-expanded') && Math.abs(a.width - b.width) <= 1 && Math.abs(a.height - b.height) <= 1;
 		}, R);
 		assert.ok(full, 'full screen fills the pane on a phone');
-		await tap(p.locator(`${R} .nimble-map button[aria-label="Exit full screen"]`));
-		assert.equal(await p.locator(`${R} .nimble-map.is-expanded`).count(), 0, 'and comes back');
+		await tapUntil(`${R} .nimble-map button[aria-label="Exit full screen"]`, async () => (await p.locator(`${R} .nimble-map.is-expanded`).count()) === 0, 'leaving full screen');
 
 		// The draw bar fits too, and one finger draws a stroke.
-		await tap(p.locator(`${R} .nimble-map button[aria-label="Draw"]`));
+		await tapUntil(`${R} .nimble-map button[aria-label="Draw"]`, async () => (await p.locator(`${R} .nimble-map .nimble-map-drawbar`).count()) === 1, 'the draw bar');
 		const drawBar = await p.evaluate((r) => {
 			const el = document.querySelector(`${r} .nimble-map-drawbar`);
 			const map = el.closest('.nimble-map').getBoundingClientRect();
@@ -4139,8 +4178,13 @@ test('phone: character sheet at phone width, HP pad as a sheet, sticky tabs', as
 	await resetEncounter(o);
 	const cdp = await p.context().newCDPSession(p);
 	const tap = async (loc) => {
-		await loc.scrollIntoViewIfNeeded().catch(() => {});
-		const b = await loc.boundingBox();
+		// The note can be drawn again under us (campaign links refresh): give the new copy a moment to appear.
+		let b = null;
+		for (let i = 0; i < 30 && !b; i++) {
+			await loc.scrollIntoViewIfNeeded({ timeout: 1000 }).catch(() => {});
+			b = await loc.boundingBox({ timeout: 1000 }).catch(() => null);
+			if (!b) await p.waitForTimeout(100);
+		}
 		assert.ok(b, 'tap target is visible');
 		const x = b.x + b.width / 2, y = b.y + b.height / 2;
 		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
@@ -5135,6 +5179,12 @@ test('full screen: a map fills its tab and comes back; it follows the pane, hide
 		await o.waitFor(async () => /^party: /m.test(await read(o, NOTE)), { what: 'the party to save' });
 	});
 	await o.waitFor(async () => { const r = await rects(R); return r?.expanded && same(r.map, r.pane); }, { what: 'still full screen after the save' });
+	// The whole note drawing itself again (as it does when campaign links change) keeps full screen and the mode.
+	await map().locator('button[aria-label="Draw"]').click();
+	await afterRedraw(o, () => o.eval((app, plugin) => plugin.rerenderNotes()));
+	await o.waitFor(async () => { const r = await rects(R); return r?.expanded && same(r.map, r.pane); }, { what: 'full screen after the note re-renders' });
+	assert.equal(await map().locator('button[aria-label="Draw"]').getAttribute('aria-pressed'), 'true', 'still drawing');
+	await map().locator('button[aria-label="Draw"]').click();
 	const other = await o.eval(async (app) => {
 		const leaf = app.workspace.getLeaf('tab');
 		await leaf.openFile(app.vault.getAbstractFileByPath('Adventure.md'));
