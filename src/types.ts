@@ -202,6 +202,8 @@ export interface NimbleStatblocksSettings {
 	/** Phones and tablets: keep the screen on while combat is running. */
 	keepScreenOn: boolean;
 	clickableDice: boolean;
+	/** Under a stat block you wrote, a quiet note about lines it couldn't use (with fixes). */
+	statblockHints: boolean;
 	/** Nimble attack rules for dice in attack lines: 1 on the primary die misses, max explodes. */
 	nimbleAttackRolls: boolean;
 	rollLog: RollLogEntry[];
@@ -277,6 +279,7 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	mobileTapToPreview: true,
 	keepScreenOn: true,
 	clickableDice: true,
+	statblockHints: true,
 	nimbleAttackRolls: true,
 	rollLog: [],
 	dice3d: true,

@@ -45,6 +45,33 @@ harder: Move often; end turns out of melee reach.
 ```
 ````
 
-- Other fields: `abilities:`, `resistances:`, `vulnerabilities:` and `immunities:` lists, plus `minion die: d8`, `description:`, `source:`, `group:`. The three defence lists can also go on one line: `resistances: fire, cold`.
+Each line is a field, a colon, then its value. Lists (attacks, abilities) are a heading on its own line with one item per line under it, each starting with a dash.
+
+| Field | What goes in it | Example |
+|---|---|---|
+| `name:` | The only field you need. | `name: Cave Bear` |
+| `level:` | A number, or a fraction for weaklings. | `level: 1/2` |
+| `role:` | `regular` (the default), `minion`, `solo` or `legendary`. | `role: solo` |
+| `size:`, `type:` | Shown above the name. | `size: Large` |
+| `hp:` | A number, or HP per hero for a solo. | `hp: 28/hero` |
+| `armor:` | `none`, `medium` (M) or `heavy` (H). | `armor: M` |
+| `movement:` | Speed 6 is the default and isn't shown. | `movement: 8, climb 6` |
+| `saves:` | Advantaged and disadvantaged saves. | `saves: STR+ WIL-` |
+| `attacks:` | A heading, then one attack per line. | `- **Bite.** 2d6+2.` |
+| `abilities:` | A heading, then one ability per line, name then colon. | `- Keen Nose: Can't be surprised.` |
+| `actionText:` | A solo's line above its attacks. | `actionText: After each hero's turn, choose one:` |
+| `bloodied:`, `lastStand:` | What a solo does at half HP and at 0 HP. | `bloodied: Its bite deals 2d8.` |
+| `easier:`, `harder:` | Tactics to tune the fight. | `harder: Focus the weakest hero.` |
+| `description:` | A line of flavour. | `description: It smells honey for miles.` |
+| `resistances:`, `immunities:`, `vulnerabilities:` | A list, or on one line. | `resistances: fire, cold` |
+| `minion die:` | A minion's damage die. | `minion die: d6` |
+| `source:`, `group:`, `habitat:` | Where it's from, its family, where it lives. | `group: Bears` |
+
+- Each attack or ability is one line in your note. Long ones can wrap on screen; just don't press Enter in the middle.
+- Field names don't mind capitals, spaces or bold: `Last Stand:`, `**Bloodied:**` and `lastStand:` all work.
 - A ` # comment` after a short value, as in the example above, is ignored. Sentences (`description:`, `bloodied:`, `lastStand:` and the like) and the name are kept whole.
 - Notes in the older format (`monsterType: solo`, `str: +`, `dex: ++`, `will: -`) still work.
+
+### When a line isn't shown
+
+If something in a stat block you wrote can't be shown as written, a quiet line appears under it: **2 lines here aren't shown as written**. Click it to see which lines, what's wrong in plain words, and what to change. When the fix is obvious, such as a misspelled field name or a missing colon, a button makes the change for you. Turn this off in **Settings → Bestiary → Help with stat blocks you write**.

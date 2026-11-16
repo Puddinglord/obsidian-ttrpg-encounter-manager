@@ -134,7 +134,8 @@ export interface FenceSpan {
 	prefix: string;
 }
 
-const OPEN_FENCE = /^([ \t>]*)(`{3,}|~{3,})[ \t]*nimble-encounter\b/i;
+/** A fence opening a `lang` block ("nimble" doesn't match "nimble-encounter"). */
+const openFence = (lang: string) => new RegExp(`^([ \\t>]*)(\`{3,}|~{3,})[ \\t]*${lang}(?![\\w-])`, 'i');
 
 function sameBody(a: string, b: string): boolean {
 	const norm = (t: string) => t.split(/\r?\n/).map(l => l.trim()).filter(Boolean).join('\n');
@@ -154,11 +155,12 @@ function unprefix(line: string, prefix: string): string {
  * block's source as rendered) picks the right one; without a match there's no
  * answer, and the caller must leave the note alone.
  */
-export function findEncounterFence(lines: string[], lineStart: number, lineEnd: number, body?: string): FenceSpan | null {
+export function findEncounterFence(lines: string[], lineStart: number, lineEnd: number, body?: string, lang = 'nimble-encounter'): FenceSpan | null {
+	const open = openFence(lang);
 	const last = Math.min(lineEnd, lines.length - 1);
 	const found: FenceSpan[] = [];
 	for (let i = Math.max(0, lineStart); i <= last; i++) {
-		const m = OPEN_FENCE.exec(lines[i]);
+		const m = open.exec(lines[i]);
 		if (!m) continue;
 		const fence = m[2];
 		let close = -1;
@@ -179,9 +181,9 @@ export function findEncounterFence(lines: string[], lineStart: number, lineEnd: 
  * block can't be found (the note changed since it was rendered). Every written
  * line keeps the block's prefix, and the fences themselves aren't touched.
  */
-export function replaceEncounterBlock(text: string, lineStart: number, lineEnd: number, oldBody: string, newBody: string): string | null {
+export function replaceEncounterBlock(text: string, lineStart: number, lineEnd: number, oldBody: string, newBody: string, lang = 'nimble-encounter'): string | null {
 	const lines = text.split('\n');
-	const span = findEncounterFence(lines, lineStart, lineEnd, oldBody);
+	const span = findEncounterFence(lines, lineStart, lineEnd, oldBody, lang);
 	if (!span) return null;
 	const cr = lines[span.open].endsWith('\r') ? '\r' : '';
 	const next = newBody.split(/\r?\n/).map(l => (l ? span.prefix + l : span.prefix.trimEnd()) + cr);

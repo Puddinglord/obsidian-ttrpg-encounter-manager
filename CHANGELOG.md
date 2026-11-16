@@ -6,6 +6,15 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ## [Unreleased]
 
+### Added
+
+- Help with stat blocks you write. When a line in a ```` ```nimble ```` block can't be shown as written, a quiet line under the stat block says so; click it to see each line, what's wrong in plain words (a misspelled field, a missing colon, list items with no heading, bold that never closes, a value Nimble doesn't know), and a **Fix** button when the fix is obvious. Turn it off in **Settings → Bestiary**.
+- A field reference for stat blocks in the guide, with an example of each field.
+
+### Changed
+
+- Stat blocks forgive more. Field names don't mind capitals, spaces or bold (`Last Stand:`, `**Bloodied:**`, `HP per hero:`), lists can be headed `Legendary actions:` or `Traits:`, a bare `actionText:` over the attacks shows them as attacks, a sentence that wraps onto the next line is joined back up, and a second `attacks:` heading adds to the list instead of replacing it.
+
 ## [1.4.0] - 2026-11-16
 
 ### Added

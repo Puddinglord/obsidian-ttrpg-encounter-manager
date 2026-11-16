@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractNimbleBlocks, normalizeArmor, parseAbility, parseMovement, parseStatblock, toStatblockSource } from '../src/parser';
+import { extractNimbleBlocks, normalizeArmor, parseAbility, parseMovement, parseStatblock, readStatblock, toStatblockSource, applyStatblockFix } from '../src/parser';
 
 describe('parseStatblock', () => {
 	it('parses the README goblin', () => {
@@ -215,5 +215,124 @@ abilities:
 	it('still reads defence lists as bullets', () => {
 		const m = parseStatblock('name: Elemental\nresistances:\n- fire\n* cold')!;
 		expect(m.resistances).toEqual(['fire', 'cold']);
+	});
+});
+
+describe('readStatblock: forgiving, then friendly about what is left', () => {
+	// Issue #17: the stat block a GM wrote from the guide's example.
+	const BEAR = `name: Misha's Bear
+level: 2
+role: solo              # regular, minion, legendary or solo
+size: Large
+type: Angry Brown Bear
+hp: 25             # or a flat number
+armor: none             # none, medium (M) or heavy (H)
+movement: 6/10 charge             # e.g. 8, fly 10
+saves: STR+
+actionText:
+- **Charge:** When first encountered, it can charge up to 10 in a
+direct line and hit with its paw. If hit, knocked prone unless you
+make a STR or Dex save vs DC 12
+Attack either
+- **Paw** 3d6+2 (12).
+- **Bite** 1d6+2 (5).
+
+**BLOODIED:** (12) If bloodied, it can bite as a free
+action.
+easier: Have the Manglemaul jam after using Crack Skulls.
+harder: Move often; end turns out of melee reach.`;
+
+	it('shows the bear from issue #17: attacks under a bare actionText, wrapped lines, bold Bloodied', () => {
+		const { monster: m, issues } = readStatblock(BEAR);
+		expect(m!.movement).toBe('6/10 charge');
+		expect(m!.attacks?.map(a => a.raw)).toEqual([
+			'**Charge:** When first encountered, it can charge up to 10 in a direct line and hit with its paw. If hit, knocked prone unless you make a STR or Dex save vs DC 12',
+			'**Paw** 3d6+2 (12).',
+			'**Bite** 1d6+2 (5).',
+		]);
+		expect(m!.bloodied).toBe('(12) If bloodied, it can bite as a free action.');
+		// Only "Attack either" is left over, with a way to join it to the line above.
+		expect(issues).toHaveLength(1);
+		expect(issues[0]).toMatchObject({ line: 13, text: 'Attack either' });
+		expect(issues[0].fix?.label).toBe('Join to the line above');
+	});
+
+	it('reads field names written with spaces, bold or different case', () => {
+		const { monster: m, issues } = readStatblock('**Name:** Ogre\nLast Stand: Keeps swinging.\nMinion Die: d8\nHP per hero: 20\nArmour: H\n**Legendary Actions:**\n- Smash 2d10');
+		expect(issues).toEqual([]);
+		expect(m).toMatchObject({ name: 'Ogre', lastStand: 'Keeps swinging.', minionDie: 8, hpPerHero: 20, armor: 'heavy' });
+		expect(m!.attacks?.[0].raw).toBe('Smash 2d10');
+	});
+
+	it('adds a second attacks: list to the first', () => {
+		expect(readStatblock('name: A\nattacks:\n- One\nabilities:\n- X: y\nattacks:\n- Two').monster!.attacks?.map(a => a.raw)).toEqual(['One', 'Two']);
+	});
+
+	it('takes a sentence field written as a heading, and its wrapped lines', () => {
+		const m = readStatblock('name: A\ndescription:\nA big bear that\nlikes honey.\nbloodied:\n- Roars.\n- Bites twice.').monster!;
+		expect(m.description).toBe('A big bear that likes honey.');
+		expect(m.bloodied).toBe('Roars. Bites twice.');
+	});
+
+	it('suggests the field a misspelling meant, with a fix', () => {
+		const { issues } = readStatblock('name: A\nmovment: 8');
+		expect(issues[0]).toMatchObject({ line: 1, mark: 'movment', hint: 'Did you mean movement?' });
+		expect(issues[0].fix).toEqual({ label: 'Change to movement:', start: 1, end: 1, lines: ['movement: 8'] });
+	});
+
+	it('spots a missing colon', () => {
+		const { issues } = readStatblock('name: A\nlevel 2');
+		expect(issues[0].message).toBe('“level” needs a colon after it, so this line isn\'t shown.');
+		expect(issues[0].fix?.lines).toEqual(['level: 2']);
+	});
+
+	it('says when list items have no heading, and offers one', () => {
+		const { monster: m, issues } = readStatblock('name: A\nsaves: STR+\n- Bite 1d6\n- Claw 1d4');
+		expect(m!.attacks).toBeUndefined();
+		expect(issues[0].message).toBe('These 2 list items aren\'t under a heading, so they aren\'t shown.');
+		expect(issues[0].fix?.lines).toEqual(['attacks:', '- Bite 1d6']);
+	});
+
+	it('says when a list is under a heading stat blocks do not show', () => {
+		const { issues } = readStatblock('name: A\nabilitys:\n- Keen: Smells.');
+		expect(issues[0]).toMatchObject({ line: 1, hint: 'Did you mean abilities:?' });
+	});
+
+	it('points at bold that never closes', () => {
+		const { issues } = readStatblock('name: A\nattacks:\n- **Paw 3d6+2.\n- ***Bite.*** 1d6');
+		expect(issues).toHaveLength(1);
+		expect(issues[0]).toMatchObject({ line: 2, mark: '**Paw', message: 'The bold here isn\'t closed: “**Paw” has ** in front but not after.' });
+	});
+
+	it('explains values Nimble does not know, and duplicates', () => {
+		const { issues } = readStatblock('name: A\nhp: lots\narmor: leather\nrole: elite\nlevel: high\nsize: Small\nsize: Large');
+		expect(issues.map(i => i.line)).toEqual([1, 2, 3, 4, 6]);
+		expect(issues[0].message).toBe('“lots” isn\'t a number, so it has 10 HP for now.');
+		expect(issues[4].message).toBe('There are two “size” lines. Only this one, the last, is used.');
+	});
+
+	it('finds nothing to say about good blocks', async () => {
+		const { readFileSync } = await import('node:fs');
+		const doc = readFileSync('docs/bestiary.md', 'utf8');
+		expect(readStatblock(/```nimble\n([\s\S]*?)\n```/.exec(doc)![1]).issues).toEqual([]);
+		expect(readStatblock('name: Goblin\nlevel: 1/2\nhp: 12\nattacks:\n- Shortsword 1d6\nresistances: fire, cold').issues).toEqual([]);
+	});
+
+	it('finds nothing to say about any bundled monster written back out', async () => {
+		const { bestiaryEntries } = await import('../src/bestiary');
+		const raw = (await import('../src/data/bestiary.json')).default as unknown as Parameters<typeof bestiaryEntries>[0];
+		const noisy = bestiaryEntries(raw).map(e => ({ name: e.name, issues: readStatblock(toStatblockSource(e.monster)).issues })).filter(r => r.issues.length);
+		expect(noisy.slice(0, 5)).toEqual([]);
+	});
+});
+
+describe('applyStatblockFix in a note', () => {
+	it('rewrites only the ```nimble block it came from, inside a callout too', async () => {
+		const { replaceEncounterBlock } = await import('../src/encounter-def');
+		const source = 'name: A\nmovment: 8';
+		const issue = readStatblock(source).issues[0];
+		const note = '```nimble-encounter\nname: Fight\n```\n> ```nimble\n> name: A\n> movment: 8\n> ```\n';
+		expect(replaceEncounterBlock(note, 3, 6, source, applyStatblockFix(source, issue.fix!), 'nimble'))
+			.toBe('```nimble-encounter\nname: Fight\n```\n> ```nimble\n> name: A\n> movement: 8\n> ```\n');
 	});
 });
