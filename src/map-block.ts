@@ -42,7 +42,7 @@ const UNDO_DEPTH = 30;
 interface ViewMemory { scale: number; tx: number; ty: number; height?: number; iw: number; showLabels: boolean; showDrawings: boolean }
 const VIEWS = new Map<string, ViewMemory>();
 /** The mode a map was in when it saved, for the copy Obsidian draws next. Taken once, and only soon after. */
-const SAVED_MODE = new Map<string, { mode: Mode; at: number }>();
+const SAVED_MODE = new Map<string, { mode: Mode; at: number; expanded: boolean; before: { scale: number; tx: number; ty: number } | null }>();
 const MODE_KEEP_MS = 3000;
 
 /** A party move that crossed cells on a map with `travel:`, waiting for Advance or Not now (kept across the redraw a save causes). */
@@ -81,6 +81,10 @@ export class MapBlock extends MarkdownRenderChild {
 	private path: Point[] = [];
 	private stroke: Point[] | null = null;
 	private drawBarEl: HTMLElement | null = null;
+	/** Full screen: the map fills its tab (everything under the tab's header) until toggled off. */
+	private expanded = false;
+	/** The view before going full screen, to go back to. */
+	private beforeExpand: { scale: number; tx: number; ty: number } | null = null;
 	/** What the last build registered (the clock chip's listener): unloaded on the next build. */
 	private built: Component | null = null;
 	private stage!: HTMLElement;
@@ -114,7 +118,11 @@ export class MapBlock extends MarkdownRenderChild {
 		if (saved) { this.showLabels = saved.showLabels; this.showDrawings = saved.showDrawings; }
 		const mode = SAVED_MODE.get(this.mapKey);
 		SAVED_MODE.delete(this.mapKey);
-		if (mode && Date.now() - mode.at < MODE_KEEP_MS) this.mode = mode.mode;
+		if (mode && Date.now() - mode.at < MODE_KEEP_MS) {
+			this.mode = mode.mode;
+			this.expanded = mode.expanded;
+			this.beforeExpand = mode.before;
+		}
 	}
 
 	/** Hover previews and embeds are small copies: they neither restore nor overwrite the remembered view. */
@@ -132,6 +140,9 @@ export class MapBlock extends MarkdownRenderChild {
 	private get mapKey(): string { return `${this.ctx.sourcePath}::${this.def.image}`; }
 
 	onload(): void {
+		this.registerDomEvent(this.containerEl, 'keydown', (e: KeyboardEvent) => {
+			if (e.key === 'Escape' && this.expanded && !e.defaultPrevented && !(e.target as HTMLElement | null)?.closest?.('.nimble-map-viewport, input')) this.setExpanded(false);
+		});
 		this.build();
 		// Section info can arrive just after the first render.
 		if (!this.editable) {
@@ -221,6 +232,7 @@ export class MapBlock extends MarkdownRenderChild {
 		zoom('zoom-out', 'Zoom out', () => this.zoomAt(1 / 1.3));
 		zoom('zoom-in', 'Zoom in', () => this.zoomAt(1.3));
 		zoom('maximize', 'Fit map', () => this.fit());
+		if (!this.host.fill) zoom(this.expanded ? 'shrink' : 'expand', this.expanded ? 'Exit full screen' : 'Full screen', () => this.setExpanded(!this.expanded));
 
 		const hint = this.modeHint();
 		if (hint) root.createDiv({ cls: 'nimble-map-hint', text: hint });
@@ -234,10 +246,11 @@ export class MapBlock extends MarkdownRenderChild {
 		const body = root.createDiv({ cls: 'nimble-map-body' });
 		this.viewport = body.createDiv({ cls: `nimble-map-viewport mode-${this.mode}` });
 		this.viewport.tabIndex = 0;
-		if (this.height && !this.host.fill) this.viewport.style.height = `${this.height}px`;
+		if (this.height && !this.host.fill && !this.expanded) this.viewport.style.height = `${this.height}px`;
 		root.toggleClass('is-filling', !!this.host.fill);
 		if (this.built) this.removeChild(this.built);
 		this.built = this.addChild(new Component());
+		this.trackExpanded(this.built);
 		if (campaign && this.plugin.settings.mapClock) {
 			// The day tracker in the corner: the same clock as the Campaign panel's.
 			const corner = this.viewport.createDiv({ cls: 'nimble-map-clock' });
@@ -300,7 +313,7 @@ export class MapBlock extends MarkdownRenderChild {
 				this.tx = saved.tx;
 				this.ty = saved.ty;
 				this.sized = true;
-				if (saved.height && !this.host.fill && !this.viewport.doc.body.hasClass('is-phone')) { this.height = saved.height; this.viewport.style.height = `${saved.height}px`; }
+				if (saved.height && !this.host.fill && !this.expanded && !this.viewport.doc.body.hasClass('is-phone')) { this.height = saved.height; this.viewport.style.height = `${saved.height}px`; }
 				this.fitted = true;
 			}
 		}
@@ -369,7 +382,7 @@ export class MapBlock extends MarkdownRenderChild {
 		const ih = this.img.naturalHeight;
 		if (!vw || !vh || !iw) return;
 		// Tall maps get a taller viewport (once, on desktop) instead of a thumbnail in a letterbox.
-		if (!this.sized && !this.host.fill && !this.viewport.doc.body.hasClass('is-phone') && ih > 0) {
+		if (!this.sized && !this.host.fill && !this.expanded && !this.viewport.doc.body.hasClass('is-phone') && ih > 0) {
 			this.sized = true;
 			const want = Math.round(Math.max(360, Math.min(window.innerHeight * 0.8, vw * (ih / iw))));
 			if (Math.abs(want - vh) > 40) { this.height = want; this.viewport.style.height = `${want}px`; this.fit(); return; }
@@ -381,6 +394,59 @@ export class MapBlock extends MarkdownRenderChild {
 		this.ty = (vh - ih * this.scale) / 2;
 		this.fitted = true;
 		this.apply();
+	}
+
+	/** Go full screen in the tab, or back into the note. Going in fits the map to the space; coming back restores the view. */
+	private setExpanded(on: boolean): void {
+		if (on === this.expanded || this.host.fill) return;
+		if (on) this.beforeExpand = { scale: this.scale, tx: this.tx, ty: this.ty };
+		this.expanded = on;
+		const before = this.beforeExpand;
+		this.build();
+		// Once the new size has been laid out: fill it, or put the old view back.
+		window.requestAnimationFrame(() => {
+			if (!this.img?.naturalWidth) return;
+			if (on) this.fit();
+			else if (before) { this.scale = before.scale; this.tx = before.tx; this.ty = before.ty; this.apply(); }
+			if (!on) this.beforeExpand = null;
+			this.viewport.focus({ preventScroll: true });
+		});
+	}
+
+	/**
+	 * While full screen, the map is fixed over its tab's content area: follow that
+	 * area as the window, sidebars or splits change it, and hide with the tab.
+	 */
+	private trackExpanded(owner: Component, tries = 0): void {
+		const root = this.containerEl;
+		root.toggleClass('is-expanded', this.expanded);
+		if (!this.expanded) { root.removeClass('is-tab-hidden'); return; }
+		// A block drawn again after a save isn't on the page yet: wait for it (while this build is still the current one).
+		const pane = root.isConnected ? root.closest<HTMLElement>('.view-content') : null;
+		if (!pane) {
+			root.addClass('is-tab-hidden');
+			if (tries < 100 && this.built === owner) window.setTimeout(() => { if (this.built === owner) this.trackExpanded(owner, tries + 1); }, 30);
+			return;
+		}
+		const follow = () => {
+			const r = pane.getBoundingClientRect();
+			const hidden = !pane.isConnected || r.width < 2 || r.height < 2;
+			root.toggleClass('is-tab-hidden', hidden);
+			if (hidden) return;
+			// An ancestor (a transform, contain: paint) can make "fixed" measure from somewhere other than the window:
+			// put the map at 0,0, see where that lands, and offset from there.
+			root.setCssProps({ '--map-full-x': '0px', '--map-full-y': '0px', '--map-full-w': `${r.width}px`, '--map-full-h': `${r.height}px` });
+			const origin = root.getBoundingClientRect();
+			root.setCssProps({ '--map-full-x': `${r.left - origin.left}px`, '--map-full-y': `${r.top - origin.top}px` });
+		};
+		follow();
+		const ro = new ResizeObserver(() => { follow(); if (this.fitted) this.apply(); });
+		ro.observe(pane);
+		owner.register(() => ro.disconnect());
+		owner.registerDomEvent(root.win, 'resize', follow);
+		// A sidebar opening moves the pane without always resizing it in the same frame.
+		owner.registerEvent(this.app.workspace.on('layout-change', () => window.requestAnimationFrame(follow)));
+		owner.registerEvent(this.app.workspace.on('resize', follow));
 	}
 
 	private zoomAt(f: number, cx = this.viewport.clientWidth / 2, cy = this.viewport.clientHeight / 2): void {
@@ -513,6 +579,8 @@ export class MapBlock extends MarkdownRenderChild {
 			if (e.key === 'Enter' && this.path.length) { e.preventDefault(); this.finishPath(); return; }
 			if (e.key === 'Escape' && this.path.length) { this.path = []; this.drawPath(); return; }
 			if (e.key === 'Escape' && this.mode !== 'view') { this.gridDraft = null; this.mode = 'view'; this.build(); }
+			else if (e.key === 'Escape' && this.expanded) this.setExpanded(false);
+			else if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey && !this.host.fill) this.setExpanded(!this.expanded);
 			else if (e.key === '+' || e.key === '=') this.zoomAt(1.3);
 			else if (e.key === '-') this.zoomAt(1 / 1.3);
 			else if (e.key === '0') this.fit();
@@ -959,7 +1027,7 @@ export class MapBlock extends MarkdownRenderChild {
 	/** Write the pins back into the note's code block. */
 	private async save(): Promise<void> {
 		this.remember();
-		if (this.remembers) SAVED_MODE.set(this.mapKey, { mode: this.mode, at: Date.now() });
+		if (this.remembers) SAVED_MODE.set(this.mapKey, { mode: this.mode, at: Date.now(), expanded: this.expanded, before: this.beforeExpand });
 		this.renderPins();
 		this.renderDrawings();
 		this.renderParty();

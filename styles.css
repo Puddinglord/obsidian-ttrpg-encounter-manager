@@ -847,6 +847,13 @@ body {
 .nimble-map-travelbar-icon { display: flex; color: var(--text-accent); }
 .nimble-map-travelbar-icon svg { width: 16px; height: 16px; }
 .nimble-map-travelbar-text { flex: 1 1 12rem; min-width: 0; }
+/* Full screen: the map covers its tab's content area (kept in place by map-block.ts as the pane moves). */
+.nimble-map.is-expanded { position: fixed; left: var(--map-full-x); top: var(--map-full-y); width: var(--map-full-w); height: var(--map-full-h); z-index: var(--layer-cover); margin: 0; border: none; border-radius: 0; display: flex; flex-direction: column; box-shadow: none; }
+.nimble-map.is-expanded.is-tab-hidden { visibility: hidden; }
+.nimble-map.is-expanded .nimble-map-body { flex: 1; min-height: 0; }
+.nimble-map.is-expanded .nimble-map-viewport { flex: 1 1 auto; min-height: 0; height: auto; resize: none; }
+body.is-phone .nimble-map.is-expanded .nimble-map-viewport { flex: 1; height: auto; }
+.nimble-map.is-expanded .nimble-map-tray { max-height: none; }
 /* A map in its own tab fills the pane. */
 .nimble-map-view.view-content { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 .nimble-map-view-host { flex: 1; min-height: 0; display: flex; flex-direction: column; }

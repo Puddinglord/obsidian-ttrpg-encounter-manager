@@ -2069,6 +2069,18 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 		assert.deepEqual(gridPanel, { spill: [], small: [] }, 'the grid panel fits the phone');
 		await tap(p.locator(`${R} .nimble-map .nimble-map-gridpanel button`, { hasText: 'Cancel' }));
 
+		// Full screen fills the phone's pane, and comes back.
+		await tap(p.locator(`${R} .nimble-map button[aria-label="Full screen"]`));
+		const full = await p.evaluate((r) => {
+			const map = document.querySelector(`${r} .nimble-map`);
+			const a = map.getBoundingClientRect();
+			const b = map.closest('.view-content').getBoundingClientRect();
+			return map.classList.contains('is-expanded') && Math.abs(a.width - b.width) <= 1 && Math.abs(a.height - b.height) <= 1;
+		}, R);
+		assert.ok(full, 'full screen fills the pane on a phone');
+		await tap(p.locator(`${R} .nimble-map button[aria-label="Exit full screen"]`));
+		assert.equal(await p.locator(`${R} .nimble-map.is-expanded`).count(), 0, 'and comes back');
+
 		// The draw bar fits too, and one finger draws a stroke.
 		await tap(p.locator(`${R} .nimble-map button[aria-label="Draw"]`));
 		const drawBar = await p.evaluate((r) => {
@@ -4461,7 +4473,7 @@ test('map v2: new keys and unknown lines survive a pin edit, the view stays put,
 async function mapToScreen(map, px, py) {
 	return map.locator('.nimble-map-viewport').evaluate((vp, [px, py]) => {
 		const st = vp.querySelector('.nimble-map-stage');
-		const m = /translate\(([-\d.]+)px, ([-\d.]+)px\) scale\(([\d.]+)\)/.exec(st.style.transform);
+		const m = /translate\(([-\d.e+]+)px, ([-\d.e+]+)px\) scale\(([\d.e+-]+)\)/.exec(st.style.transform);
 		const r = vp.getBoundingClientRect();
 		return { x: r.left + Number(m[1]) + px * Number(m[3]), y: r.top + Number(m[2]) + py * Number(m[3]) };
 	}, [px, py]);
@@ -4896,6 +4908,78 @@ test('map tab: Open in tab fills the pane and saves into the note; Notes opens t
 	} finally {
 		await dropClockCampaign(o);
 	}
+});
+
+test('full screen: a map fills its tab and comes back; it follows the pane, hides with its tab, survives a save; F and Escape', async (o) => {
+	await resetEncounter(o);
+	const NOTE = 'Full screen.md';
+	await o.eval(async (app, _p, [note, body]) => {
+		const x = app.vault.getAbstractFileByPath(note);
+		if (x) await app.vault.delete(x);
+		await app.vault.create(note, `Some text above.\n\n${body}\nSome text below.\n`);
+	}, [NOTE, TRAVEL_BLOCK()]);
+	const rects = (r) => o.page.evaluate((r) => {
+		const map = document.querySelector(`.workspace-leaf.mod-active ${r} .nimble-map`);
+		const pane = map?.closest('.view-content');
+		const box = (el) => { const b = el.getBoundingClientRect(); return { x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height) }; };
+		return map && { map: box(map), pane: box(pane), expanded: map.classList.contains('is-expanded'), visible: getComputedStyle(map).visibility !== 'hidden' };
+	}, r);
+	const same = (a, b) => Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1 && Math.abs(a.w - b.w) <= 1 && Math.abs(a.h - b.h) <= 1;
+	for (const [mode, view] of [['preview', R], ['source', S]]) {
+		await o.openFile(NOTE, mode);
+		const map = () => o.page.locator(`.workspace-leaf.mod-active ${view} .nimble-map`).first();
+		await o.waitFor(async () => (await map().locator('button[aria-label="Full screen"]').count()) === 1 && (await stageScale(map())) > 0, { what: `the map (${mode})` });
+		const small = await rects(view);
+		const before = await stageScale(map());
+		await map().locator('button[aria-label="Full screen"]').click();
+		await o.waitFor(async () => { const r = await rects(view); return r?.expanded && same(r.map, r.pane); }, { what: `the map to fill the tab (${mode})` });
+		assert.ok((await stageScale(map())) > before, 'going full screen fits the map to the bigger space');
+		assert.equal(await map().locator('button[aria-label="Exit full screen"]').count(), 1);
+
+		// The pane changes size (the left sidebar opens): the map follows.
+		await o.eval((app) => app.workspace.leftSplit.collapsed ? app.workspace.leftSplit.expand() : app.workspace.leftSplit.collapse());
+		await o.waitFor(async () => { const r = await rects(view); return same(r.map, r.pane); }, { what: `the map to follow the pane (${mode})` });
+		await o.eval((app) => app.workspace.leftSplit.collapsed ? app.workspace.leftSplit.expand() : app.workspace.leftSplit.collapse());
+
+		// Escape comes back, with the view from before.
+		await map().locator('.nimble-map-viewport').focus();
+		await o.page.keyboard.press('Escape');
+		await o.waitFor(async () => { const r = await rects(view); return r && !r.expanded; }, { what: `Escape to leave full screen (${mode})` });
+		assert.ok(Math.abs((await stageScale(map())) - before) < 0.001, 'the old zoom is back');
+		const back = await rects(view);
+		assert.ok(Math.abs(back.map.w - small.map.w) <= 2 && Math.abs(back.map.h - small.map.h) <= 2, 'the same size in the note');
+	}
+
+	// F toggles; a save while full screen keeps it full screen; another tab hides it.
+	await o.openFile(NOTE, 'preview');
+	const map = () => o.page.locator(`.workspace-leaf.mod-active ${R} .nimble-map`).first();
+	await o.waitFor(async () => (await stageScale(map())) > 0, { what: 'the map again' });
+	await map().locator('.nimble-map-viewport').focus();
+	await o.page.keyboard.press('f');
+	await o.waitFor(async () => (await rects(R))?.expanded, { what: 'F to go full screen' });
+	await map().locator('button[aria-label="Place party"]').click();
+	await o.waitFor(async () => (await stageScale(map())) > 0 && (await map().locator('button[aria-label="Place party"]').getAttribute('aria-pressed')) === 'true', { what: 'Place party mode' });
+	await o.page.waitForTimeout(200);
+	const p = await mapToScreen(map(), hexCentre(12, 9).x, hexCentre(12, 9).y);
+	await afterRedraw(o, async () => {
+		await o.page.mouse.click(p.x, p.y);
+		await o.waitFor(async () => /^party: /m.test(await read(o, NOTE)), { what: 'the party to save' });
+	});
+	await o.waitFor(async () => { const r = await rects(R); return r?.expanded && same(r.map, r.pane); }, { what: 'still full screen after the save' });
+	const other = await o.eval(async (app) => {
+		const leaf = app.workspace.getLeaf('tab');
+		await leaf.openFile(app.vault.getAbstractFileByPath('Adventure.md'));
+		await new Promise(r => setTimeout(r, 400));
+		const map = document.querySelector('.nimble-map.is-expanded');
+		const hidden = !map || getComputedStyle(map).visibility === 'hidden' || map.getBoundingClientRect().width === 0;
+		leaf.detach();
+		return hidden;
+	});
+	assert.ok(other, 'a full-screen map in a background tab doesn\'t show over the open one');
+	await o.waitFor(async () => (await rects(R))?.visible, { what: 'the map to show again on its tab' });
+	await map().locator('button[aria-label="Exit full screen"]').click();
+	await o.waitFor(async () => !(await rects(R))?.expanded, { what: 'Exit full screen' });
+	await o.eval(async (app, _p, note) => { const x = app.vault.getAbstractFileByPath(note); if (x) await app.vault.delete(x); }, NOTE);
 });
 
 test('no console errors during the run', async (o) => {

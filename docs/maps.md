@@ -62,6 +62,10 @@ Give a map a `travel:` line saying how long crossing one cell takes, in your [ca
 
 Every map in a campaign shows the clock in its top-right corner. The clock button on the toolbar hides it.
 
+## Full screen
+
+The **Full screen** button (next to zoom in, zoom out and fit, or press F with the map selected) makes the map fill the whole tab, with its toolbar on top: the note disappears behind it so the map has all the room. It follows the tab as you open sidebars or resize the window, and stays full screen while you place the party, draw or add pins. **Exit full screen** (or Escape) puts it back in the note, at the zoom you had before.
+
 ## A map in its own tab
 
 **Open in tab** (the arrow at the right of a map's toolbar) opens the map in a tab of its own, filling the pane. It's the same map, and everything you do there saves into the note the block is in. The tab remembers which map it shows, so it comes back after a restart. A map pin to another map opens that map in the same tab.
