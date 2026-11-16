@@ -27,6 +27,30 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 - Saving a map (adding, moving or editing a pin) no longer deletes lines from the block that Ember Vault doesn't know about, and lines you didn't change are written back exactly as you typed them.
 - A map keeps its zoom and position after you add or move a pin, and when you switch between Add pin and Move pins, instead of jumping back to the whole map. Coming back to a map's note puts you where you were.
 
+## [1.4.0] - 2026-11-16
+
+### Added
+
+- Quests. New campaigns get a Quests folder, next to NPCs and Locations, and you can add a quest from the folder's **+**, **New quest** on the Campaign heading, the **New quest…** command or Spotlight. A GM's quest note opens with the hook in a quest box, a checklist of objectives, then stakes, the truth behind it, clues, the people and places involved, complications, rewards and progress. A player's is written from the party's side: the job as it was put to you, what you know, leads, questions and progress. Properties hold the status, type, who gave it, where it leads, the reward and (for GMs) the level.
+- `/quest` links a quest in any note, the way `/npc` links an NPC. On its own it lists the campaign's quests, open ones first, with their status and who gave them; type to narrow it down.
+- Links to campaign notes show what they link to, in reading view and Live Preview: a quest is an orange pill with a flag (a tick once it's completed), a location a blue pill with a map pin, a party member a purple pill with a shield, and sessions, maps, handouts, monsters, scenes and chapters get their own icons too. NPCs keep their green chips. Pills on wrapped lines keep a little space between them, and so do NPC chips.
+- Finished quests sort themselves out: set `status: completed` and the quest gets a green tick and drops below the open ones; `failed` crosses it out.
+
+### Changed
+
+- A new player campaign's home note has **Goals** where it had **Quests**, since quests now get notes of their own.
+- The quest box is `/hook` now (`/objective` still works, and so does `/box quest`), since `/quest` links quest notes.
+
+### Fixed
+
+- A number property shown as a tag (`level: 2`) no longer makes a wide, mostly empty pill; it fits its number, in the same weight as the other values.
+
+## [1.3.1] - 2026-11-15
+
+### Fixed
+
+- Cleared what Obsidian's plugin review flagged: the character sheet holds its height through a redraw with a CSS variable instead of an inline style, a settings field no longer hands Obsidian a promise, and the stylesheet no longer uses `:has` (empty campaign properties, the conditions row, list dividers, compendium pills and Spotlight's chips now get a class instead).
+
 ## [1.3.0] - 2026-11-15
 
 ### Added

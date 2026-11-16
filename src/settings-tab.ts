@@ -161,7 +161,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				},
 				{
 					name: 'Open campaign pages in reading view',
-					desc: 'Characters, chapters, scenes, NPCs, locations, maps and handouts open ready to read; use Obsidian\'s edit button to change them. Session logs and notes you\'ve just made open for editing as usual.',
+					desc: 'Characters, chapters, scenes, NPCs, locations, quests, maps and handouts open ready to read; use Obsidian\'s edit button to change them. Session logs and notes you\'ve just made open for editing as usual.',
 					render: toggle(() => s.readingView, v => { s.readingView = v; }),
 				},
 				{
@@ -200,7 +200,9 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				{
 					name: 'Compendium art folder',
 					desc: 'Where images you upload for compendium entries are saved (click the portrait on any entry\'s page to add one). Moving or renaming an image keeps it linked.',
-					render: (setting) => setting.addText(t => t.setPlaceholder('Ember Vault/Compendium Art').setValue(s.compendiumArtFolder).onChange(async (v) => { s.compendiumArtFolder = v.trim() || 'Ember Vault/Compendium Art'; await save(); })),
+					render: (setting) => {
+						setting.addText(t => t.setPlaceholder('Ember Vault/Compendium Art').setValue(s.compendiumArtFolder).onChange(async (v) => { s.compendiumArtFolder = v.trim() || 'Ember Vault/Compendium Art'; await save(); }));
+					},
 				},
 			] },
 			{ heading: 'Party', rows: this.partyRows() },

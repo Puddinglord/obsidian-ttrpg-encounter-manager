@@ -22,7 +22,7 @@ import { BuilderModal } from './builder-modal';
 import { BattleNotesModal } from './battle-notes';
 import { parseDice } from './dice';
 import { BOX_PRESETS, boxColor, newBox } from './box-def';
-import { homeFolderFor, safeName } from './campaign-model';
+import { Campaign, fmText, homeFolderFor, NoteRef, questsIn, questState, safeName } from './campaign-model';
 import { NPC_CARD_BLOCK } from './npc-card-def';
 import { runEncounter } from './encounter-block';
 import { insideCodeFence, placeBlock, slashQuery } from './markdown';
@@ -31,7 +31,7 @@ import { compendiumEntries, entryReference } from './compendium-browser';
 import { search as searchCompendium } from './compendium-query';
 import { insertFromCompendium, InsertMode, openAddMonsterPicker } from './compendium-pickers';
 
-type ArgKind = 'monster' | 'add' | 'list' | 'fought' | 'condition' | 'image' | 'dice' | 'box' | 'npc' | 'compendium';
+type ArgKind = 'monster' | 'add' | 'list' | 'fought' | 'condition' | 'image' | 'dice' | 'box' | 'npc' | 'quest' | 'compendium';
 
 /** Commands that open the compendium dialog when chosen without an argument. */
 interface Picker { segment: Segment; segments?: Segment[]; mode?: InsertMode; title: string }
@@ -118,14 +118,17 @@ const COMMANDS: SlashCommand[] = [
 	{ name: 'condition', aliases: ['cond', 'status'], icon: 'activity', desc: 'Condition rules', hint: '/condition dazed', arg: 'condition' },
 	{ name: 'box', aliases: ['callout'], icon: 'square-dashed', desc: 'Any box type', hint: '/box treasure', arg: 'box' },
 	{ name: 'npc', aliases: ['who'], icon: 'user-round', desc: 'Link an NPC, or create one', hint: '/npc kevori', arg: 'npc' },
+	{ name: 'quest', aliases: ['quests'], icon: 'flag', desc: 'Link a quest', hint: '/quest caravan', arg: 'quest' },
 	{ name: 'npc-card', aliases: ['portrait', 'character'], icon: 'contact-round', desc: 'NPC card with portrait', insert: (p) => {
 		// In the NPC's own note the card takes the note's name. Anywhere else (a minor character in a scene) it needs its own.
 		const f = p.app.workspace.getActiveFile();
 		const own = !!f && p.campaigns.npcs.some(n => n.path === f.path);
 		return { text: own ? NPC_CARD_BLOCK : NPC_CARD_BLOCK.replace('\n', '\nname: \n'), block: true };
 	} },
+	// /quest links a quest note, so the quest box goes by /hook (and /objective). /box quest still finds it.
 	...Object.entries(BOX_PRESETS).filter(([id]) => id !== 'npc' && id !== 'note').map(([id, p]): SlashCommand => ({
-		name: id, aliases: p.aliases, icon: p.icon, desc: p.desc,
+		...(id === 'quest' ? { name: 'hook', aliases: (p.aliases ?? []).filter(a => a !== 'hook'), desc: 'A quest hook or objective box' } : { name: id, aliases: p.aliases, desc: p.desc }),
+		icon: p.icon,
 		insert: () => ({ text: newBox(id), block: true, inside: true }),
 	})),
 	{ name: 'map', icon: 'map', desc: 'GM map with pins', hint: '/map hideout', arg: 'image' },
@@ -147,7 +150,7 @@ const COMMANDS: SlashCommand[] = [
 ];
 
 /** Menu order for a bare "/": what a GM reaches for at the table first. */
-const ORDER = ['monster', 'spell', 'item', 'feature', 'class', 'compendium', 'fought', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
+const ORDER = ['monster', 'spell', 'item', 'feature', 'class', 'compendium', 'fought', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'quest', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
 const rank = (c: SlashCommand) => { const i = ORDER.indexOf(c.name); return i === -1 ? ORDER.length : i; };
 
 /** The commands for the side of the table the note is on. */
@@ -217,6 +220,7 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 			case 'dice': return this.diceItems(arg);
 			case 'box': return this.boxItems(arg);
 			case 'npc': return this.npcItems(arg);
+			case 'quest': return this.questItems(arg);
 			case 'compendium': return this.compendiumItems(arg, cmd.picker!);
 		}
 		return [];
@@ -505,6 +509,43 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 			run: (editor: Editor, start: EditorPosition, end: EditorPosition) => this.write(editor, start, end, newBox('npc'), true, true),
 		});
 		return items;
+	}
+
+	/**
+	 * Quests in this note's campaign (or the active one), open ones first, as
+	 * links. Quests are made from the Campaign panel, so there's no "create" row.
+	 */
+	private questItems(q: string): SlashItem[] {
+		const query = q.trim().toLowerCase();
+		const store = this.plugin.campaigns;
+		const here = this.app.workspace.getActiveFile()?.path ?? '';
+		const camp = (here && store.of(here)) || store.active;
+		const pool: { n: NoteRef; c: Campaign }[] = camp ? questsIn(camp).map(n => ({ n, c: camp })) : store.campaigns.flatMap(c => questsIn(c).map(n => ({ n, c })));
+		const name = (p: string) => p.replace(/^.*\//, '').replace(/\.md$/i, '');
+		// "[[Tobren Kask]]" or "[[Tobren Kask|Kask]]" as just the name.
+		const plain = (v: unknown) => fmText(v).replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1').trim();
+		const hits = pool.filter(({ n }) => !query || n.title.toLowerCase().includes(query) || name(n.path).toLowerCase().includes(query)).slice(0, 30);
+		if (!hits.length) {
+			return [{
+				icon: 'flag',
+				title: query ? `No quest matches "${q.trim()}"` : 'No quests yet',
+				detail: 'Make one with the + on the Quests folder in the Campaign panel',
+			}];
+		}
+		return hits.map(({ n, c }) => {
+			const file = this.app.vault.getFileByPath(n.path);
+			const fm = (file && this.app.metadataCache.getFileCache(file)?.frontmatter) ?? {};
+			const state = questState(n.status);
+			const giver = plain(fm.giver);
+			const link = file ? this.app.metadataCache.fileToLinktext(file, here) : name(n.path);
+			return {
+				icon: state === 'done' ? 'circle-check' : state === 'failed' ? 'circle-x' : 'flag',
+				title: n.title,
+				detail: [n.status, plain(fm.type), giver && `from ${giver}`, camp ? '' : c.name].filter(Boolean).join(' · ') || 'Quest',
+				run: (editor: Editor, start: EditorPosition, end: EditorPosition) =>
+					this.write(editor, start, end, n.title !== name(n.path) ? `[[${link}|${n.title}]]` : `[[${link}]]`),
+			};
+		});
 	}
 
 	private imageItems(q: string): SlashItem[] {

@@ -1291,6 +1291,116 @@ test('slash commands: /encounter, /monster, /add, /roll', async (o) => {
 	assert.deepEqual((await creatures(o)).map(c => c.label), ['Bandit-1', 'Bandit-2']);
 });
 
+test('slash: /quest links a quest from this campaign, finished ones last; /hook is the quest box', async (o) => {
+	try {
+		await o.eval(async (app, plugin) => {
+			const old = app.vault.getAbstractFileByPath('Campaigns/Questing');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Questing', level: 1, heroes: 4, starter: true });
+			await app.vault.create('Campaigns/Questing/Quests/Clear the Mine.md', '---\nnimble: quest\nstatus: completed\n---\n');
+			await app.vault.create('Campaigns/Questing/Quests/The Missing Caravan.md', '---\nnimble: quest\nstatus: active\ntype: side\ngiver: "[[Tobren Kask]]"\n---\n');
+			await app.vault.create('Campaigns/Questing/Quests/Vecna- The Hand.md', '---\nnimble: quest\ntitle: "Vecna: The Hand"\n---\n');
+		});
+		await o.waitFor(() => o.eval((app, plugin) => plugin.campaigns.campaigns.find(c => c.folder === 'Campaigns/Questing')?.sections.find(s => s.name === 'Quests')?.notes.length === 3), { what: 'the quests in the index' });
+		await o.openFile('Campaigns/Questing/Chapter 1/Opening Scene.md', 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: ed.lineCount(), ch: 0 }); ed.replaceSelection('\n'); ed.focus(); });
+		const type = async (t) => { await o.page.keyboard.type(t, { delay: 15 }); await o.page.waitForTimeout(250); };
+		const menu = o.page.locator('.suggestion-container .nimble-slash-item');
+		const titles = () => menu.locator('.nimble-slash-title').allInnerTexts();
+
+		// Bare /quest lists them all, open quests first; the finished one is last.
+		await type('/quest');
+		await o.waitFor(async () => (await titles())[0] === '/quest', { what: '/quest first in the menu' });
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await titles()).length === 3, { what: 'the quest list' });
+		assert.deepEqual(await titles(), ['The Missing Caravan', 'Vecna: The Hand', 'Clear the Mine']);
+		assert.match(await menu.first().locator('.nimble-slash-detail').innerText(), /active · side · from Tobren Kask/);
+		// Typing narrows it; Enter writes the link.
+		await type('carav');
+		await o.waitFor(async () => (await titles()).join() === 'The Missing Caravan', { what: 'the search to narrow' });
+		await o.page.keyboard.press('Enter');
+		await type(' then ');
+		// A quest whose name isn't a safe file name links under its real title.
+		await type('/quest vecna');
+		await o.waitFor(async () => (await titles()).join() === 'Vecna: The Hand', { what: 'the titled quest' });
+		await o.page.keyboard.press('Enter');
+		await type(' ');
+		// No match: says where quests are made, and writes nothing.
+		await type('/quest dragon');
+		await o.waitFor(async () => /No quest matches "dragon"/.test((await titles()).join()), { what: 'the no-match row' });
+		assert.match(await menu.first().locator('.nimble-slash-detail').innerText(), /Campaign panel/);
+		await o.page.keyboard.press('Escape');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; const l = ed.lastLine(); ed.replaceRange('', { line: l, ch: ed.getLine(l).lastIndexOf('/quest dragon') }, { line: l, ch: ed.getLine(l).length }); ed.replaceSelection('\n'); });
+		// /hook is the quest box now.
+		await type('/hook');
+		await o.waitFor(async () => (await titles())[0] === '/hook', { what: '/hook first in the menu' });
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(300);
+
+		const text = await o.eval((app) => app.workspace.activeEditor.editor.getValue());
+		assert.match(text, /\[\[The Missing Caravan\]\] then \[\[Vecna- The Hand\|Vecna: The Hand\]\] /);
+		assert.match(text, /```box quest/);
+	} finally {
+		await o.eval(async (app, plugin) => {
+			const f = app.vault.getAbstractFileByPath('Campaigns/Questing');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('link pills: links to quests, places and party members show their icon, in reading view and Live Preview', async (o) => {
+	const P = 'Campaigns/Pills/Notes.md';
+	try {
+		await o.eval(async (app, plugin, P) => {
+			const old = app.vault.getAbstractFileByPath('Campaigns/Pills');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Pills', level: 1, heroes: 4, starter: true });
+			await app.vault.create('Campaigns/Pills/Quests/Find the Bell.md', '---\nnimble: quest\nstatus: active\n---\n');
+			await app.vault.create('Campaigns/Pills/Locations/Belltower.md', '---\nnimble: location\n---\n');
+			await app.vault.create('Campaigns/Pills/Party/Ada.md', '---\nnimble: character\n---\n');
+			await app.vault.create('Campaigns/Pills/Loose.md', 'Just a note.\n');
+			await app.vault.create(P, 'Do [[Find the Bell]] at [[Belltower]] with [[Ada]]. See [[Loose]].\n');
+		}, P);
+		await o.waitFor(() => o.eval((app, plugin) => !!plugin.campaigns.campaigns.find(c => c.folder === 'Campaigns/Pills')?.sections.find(s => s.name === 'Party')?.notes.length), { what: 'the campaign index' });
+		const pills = (root) => o.page.evaluate((root) => [...document.querySelectorAll(`.workspace-leaf.mod-active ${root}`)].map(a => `${a.textContent.trim()}:${a.className.match(/kind-\w+/)?.[0] ?? ''}:${a.querySelector('svg')?.classList[1] ?? ''}`), root);
+
+		await o.openFile(P, 'preview');
+		await o.waitFor(async () => (await pills('.markdown-reading-view a.nimble-note-link')).length === 3, { what: 'three pills in reading view' });
+		assert.deepEqual(await pills('.markdown-reading-view a.nimble-note-link'), ['Find the Bell:kind-quest:lucide-flag', 'Belltower:kind-location:lucide-map-pin', 'Ada:kind-character:lucide-shield']);
+		assert.equal(await o.page.locator('.workspace-leaf.mod-active .markdown-reading-view a.internal-link:not(.nimble-note-link)').innerText(), 'Loose', 'a plain note stays a plain link');
+
+		// Pills on lines that wrap under each other keep some space between them.
+		await o.eval(async (app, _p, P) => { await app.vault.modify(app.vault.getAbstractFileByPath(P), 'Do [[Find the Bell]] at [[Belltower]] with [[Ada]]. See [[Loose]].\n\n' + 'Then [[Belltower]] and [[Find the Bell]] with [[Ada]], '.repeat(12) + '\n'); }, P);
+		const rowGap = () => o.page.evaluate(() => {
+			const rs = [...document.querySelectorAll('.workspace-leaf.mod-active .markdown-reading-view a.nimble-note-link')].map(a => a.getBoundingClientRect());
+			const gaps = rs.flatMap(r => rs.filter(q => q.top > r.bottom - 2 && q.top - r.bottom < 20).map(q => q.top - r.bottom));
+			return gaps.length ? Math.min(...gaps) : null;
+		});
+		await o.waitFor(async () => (await rowGap()) !== null, { what: 'pills on wrapped lines' });
+		assert.ok((await rowGap()) >= 2, `pills on wrapped lines have space between them (${await rowGap()}px)`);
+		await o.eval(async (app, _p, P) => { await app.vault.modify(app.vault.getAbstractFileByPath(P), 'Do [[Find the Bell]] at [[Belltower]] with [[Ada]]. See [[Loose]].\n'); }, P);
+		await o.waitFor(async () => (await pills('.markdown-reading-view a.nimble-note-link')).length === 3, { what: 'back to three pills' });
+
+		// A finished quest's pill shows a tick.
+		await o.eval(async (app) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Pills/Quests/Find the Bell.md'), (fm) => { fm.status = 'completed'; }); });
+		await o.waitFor(async () => (await pills('.markdown-reading-view a.nimble-note-link.is-quest-done')).join() === 'Find the Bell:kind-quest:lucide-circle-check', { what: 'the quest pill to tick' });
+
+		// Live Preview: the same kinds, as an icon before a tinted link.
+		await o.openFile(P, 'source');
+		await o.eval((app) => { app.workspace.activeEditor.editor.setCursor({ line: 1, ch: 0 }); });
+		await o.waitFor(async () => (await o.page.locator('.workspace-leaf.mod-active .markdown-source-view .nimble-note-lp-icon').count()) === 3, { what: 'three pill icons in Live Preview' });
+		const lp = await o.page.evaluate(() => [...document.querySelectorAll('.workspace-leaf.mod-active .markdown-source-view .nimble-note-lp-icon')].map(s => s.className.match(/kind-\w+/)?.[0]));
+		assert.deepEqual(lp, ['kind-quest', 'kind-location', 'kind-character']);
+	} finally {
+		await o.eval(async (app, plugin) => {
+			const f = app.vault.getAbstractFileByPath('Campaigns/Pills');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
 test('slash: /spell opens the compendium dialog; Enter writes the reference and typing carries on', async (o) => {
 	await resetEncounter(o);
 	await o.eval(async (app) => {
@@ -2285,25 +2395,26 @@ async function createFromPicker(o, name, kind) {
 
 test('campaign panel: a new campaign shows its empty starter folders, each with a +', async (o) => {
 	await freshCampaign(o, 'Fresh');
-	assert.deepEqual(await panelSections(o), ['Sessions', 'NPCs', 'Locations', 'Party', 'Monsters', 'Assets']);
-	for (const name of ['Sessions', 'NPCs', 'Locations', 'Party', 'Monsters', 'Assets']) {
+	assert.deepEqual(await panelSections(o), ['Sessions', 'Quests', 'NPCs', 'Locations', 'Party', 'Monsters', 'Assets']);
+	for (const name of ['Sessions', 'Quests', 'NPCs', 'Locations', 'Party', 'Monsters', 'Assets']) {
 		const g = cgroup(o, `Campaigns/Fresh/${name}`);
 		assert.equal(await g.locator('.campaign-group-head button.campaign-add-scene').count(), 1, `${name} has a +`);
 		assert.match(await g.locator('.campaign-empty').innerText(), /Nothing here yet/);
 	}
 	assert.match(await cgroup(o, 'Campaigns/Fresh/NPCs').locator('.campaign-empty').innerText(), /\+ New NPC/);
+	assert.match(await cgroup(o, 'Campaigns/Fresh/Quests').locator('.campaign-empty').innerText(), /\+ New quest/);
 	assert.match(await cgroup(o, 'Campaigns/Fresh/Assets').locator('.campaign-empty').innerText(), /\+ Add files/);
 	// The Campaign heading is there from the start, with its New folder and + buttons.
 	const heading = o.page.locator(`${CP} .campaign-heading-folders`);
 	assert.equal(await heading.locator('button[aria-label="New folder"]').count(), 1);
 	await heading.locator('button[aria-label="New note or folder"]').click();
-	assert.deepEqual(await menuTitles(o), ['New session log', 'New NPC', 'New location', 'New note…', 'New chapter', 'New folder']);
+	assert.deepEqual(await menuTitles(o), ['New session log', 'New NPC', 'New location', 'New quest', 'New note…', 'New chapter', 'New folder']);
 	await o.page.keyboard.press('Escape');
 	await o.page.screenshot({ path: join(ARTIFACTS, 'campaign-fresh.png') });
 
 	// The dashboard block on the home note lists the same folders.
 	await o.openFile('Campaigns/Fresh/Fresh.md', 'preview');
-	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-campaign-block .campaign-section-name`).count()) === 6, { what: 'folders in the dashboard block (Party, NPCs, Locations, Sessions, Monsters, Assets)' });
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-campaign-block .campaign-section-name`).count()) === 7, { what: 'folders in the dashboard block (Party, Quests, NPCs, Locations, Sessions, Monsters, Assets)' });
 	await endCampaign(o, 'Fresh');
 });
 
@@ -2382,6 +2493,23 @@ test('New note picker: each starter writes its template where it was opened', as
 	await o.page.locator('.nimble-new-note .nimble-name-input').press('Enter');
 	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Sessions/Session 1.md'), { what: 'the session log' });
 	assert.match(await read(o, 'Campaigns/Fresh/Sessions/Session 1.md'), /nimble: session\ndate: \d{4}-\d\d-\d\d/);
+
+	// Quests: Quest is picked for you, and the note opens on its hook.
+	await openPicker(o, 'Campaigns/Fresh/Quests');
+	assert.equal(await activeStarter(o), 'quest');
+	await createFromPicker(o, 'The Missing Caravan');
+	await o.waitFor(() => exists(o, 'Campaigns/Fresh/Quests/The Missing Caravan.md'), { what: 'the quest' });
+	assert.match(await read(o, 'Campaigns/Fresh/Quests/The Missing Caravan.md'), /nimble: quest\nstatus: available[\s\S]*```box quest title="The hook"[\s\S]*## Objectives[\s\S]*## The truth/);
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-box.box-quest, ${S} .nimble-box.box-quest`).count()) >= 1, { what: 'the hook box to render' });
+	// A finished quest is ticked off and drops below the ones still open.
+	await o.eval(async (app) => {
+		await app.vault.create('Campaigns/Fresh/Quests/Clear the Mine.md', '---\nnimble: quest\nstatus: active\n---\n');
+		await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Fresh/Quests/The Missing Caravan.md'), (fm) => { fm.status = 'completed'; });
+	});
+	const questTitles = () => cgroup(o, 'Campaigns/Fresh/Quests').locator('.campaign-note-title').allInnerTexts();
+	await o.waitFor(async () => (await questTitles()).join() === 'Clear the Mine,The Missing Caravan', { what: 'the finished quest to sink' });
+	assert.equal(await crow(o, 'Campaigns/Fresh/Quests/The Missing Caravan.md').evaluate(el => el.classList.contains('is-quest-done')), true);
+	assert.equal(await crow(o, 'Campaigns/Fresh/Quests/Clear the Mine.md').evaluate(el => el.classList.contains('is-quest-done')), false);
 
 	// Monsters: a stat block the bestiary picks up under its name.
 	await openPicker(o, 'Campaigns/Fresh/Monsters');
@@ -3301,7 +3429,7 @@ test('player campaign: roster, lore cards, battle notes, GM tools hidden, switch
 		await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-hero.is-mine`).count()) >= 1, { what: 'my character in the roster' });
 		assert.match(await o.page.locator(`${CP} .campaign-role-pill`).first().innerText(), /^player$/i);
 		assert.match(await o.page.locator(`${CP} .campaign-hero.is-mine`).first().innerText(), /Thorga[\s\S]*you/i);
-		assert.deepEqual(await o.page.evaluate((cp) => [...(document.querySelector(cp)?.querySelectorAll('.campaign-section-name') ?? [])].map(e => e.textContent), CP), ['Sessions', 'NPCs', 'Locations', 'Party', 'Assets']);
+		assert.deepEqual(await o.page.evaluate((cp) => [...(document.querySelector(cp)?.querySelectorAll('.campaign-section-name') ?? [])].map(e => e.textContent), CP), ['Sessions', 'Quests', 'NPCs', 'Locations', 'Party', 'Assets']);
 		const home = await read(o, 'Campaigns/Ironbrow Saga/Ironbrow Saga.md');
 		assert.match(home, /role: player/);
 		assert.match(home, /gm: "Sam"/);
@@ -4126,6 +4254,47 @@ test('campaign pages open in reading view; sessions and new notes open for editi
 		await o.eval(async (app, plugin) => {
 			plugin.settings.readingView = false;
 			const f = app.vault.getAbstractFileByPath('Campaigns/Reading Room');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('campaign properties as tags: empty ones stay hidden, and show once filled in', async (o) => {
+	const R = '.workspace-leaf.mod-active .nimble-props-tags .markdown-reading-view';
+	// 'shown', 'hidden', or 'missing' when Obsidian hasn't drawn it.
+	const tag = (key) => o.page.evaluate(([R, key]) => {
+		const el = document.querySelector(`${R} .metadata-property[data-property-key="${key}"]`);
+		return !el ? 'missing' : getComputedStyle(el).display === 'none' ? 'hidden' : 'shown';
+	}, [R, key]);
+	const shown = async (key) => (await tag(key)) === 'shown';
+	try {
+		await o.eval(async (app, plugin) => {
+			plugin.settings.tagProperties = true;
+			const old = app.vault.getAbstractFileByPath('Campaigns/Tag Room');
+			if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Tag Room', level: 1, heroes: 4, starter: false });
+			const f = await app.vault.create('Campaigns/Tag Room/Mira.md', '---\nnimble: npc\nstatus: alive\nrole: \n---\nA tinker.\n');
+			await app.workspace.getLeaf(false).openFile(f, { state: { mode: 'preview' } });
+		});
+		await o.waitFor(() => shown('status'), { what: 'status shows as a tag' });
+		await o.waitFor(async () => (await tag('role')) === 'hidden', { what: 'empty role drawn but hidden' });
+		// Filled in, Obsidian draws the properties again and the tag shows.
+		await o.eval(async (app) => {
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Tag Room/Mira.md'), (fm) => { fm.role = 'Smith'; });
+		});
+		await o.waitFor(() => shown('role'), { what: 'filled role shows' });
+		// A number (level: 2) is an input in Obsidian; its pill fits the number rather than the input's fixed width.
+		await o.eval(async (app) => {
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Tag Room/Mira.md'), (fm) => { fm.level = 2; });
+		});
+		await o.waitFor(() => shown('level'), { what: 'level shows as a tag' });
+		const levelWidth = () => o.page.evaluate((R) => document.querySelector(`${R} .metadata-property[data-property-key="level"] .metadata-property-value input`)?.getBoundingClientRect().width ?? 0, R);
+		await o.waitFor(async () => (await levelWidth()) > 0, { what: 'the level input to be drawn' });
+		assert.ok((await levelWidth()) < 30, `the level input fits its number (${await levelWidth()}px, Obsidian's own is 170px)`);
+	} finally {
+		await o.eval(async (app, plugin) => {
+			const f = app.vault.getAbstractFileByPath('Campaigns/Tag Room');
 			if (f) await app.vault.delete(f, true);
 			await plugin.campaigns.setActive(null);
 		});

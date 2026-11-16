@@ -12,11 +12,9 @@ status: active
 ```nimble-campaign
 ```
 
-## Quests
-- [x] Take Tobren Kask's job: find Magistrix Vess's notes under the Old Quarter
-- [ ] Find out what Vess was making down there
+## Goals
+*Quests have their own notes in the Quests folder, like [[Tobren Kask's Job]].*
 - [ ] Get Sister Odile an answer about the silver light
-- [ ] Collect the second 60 gp from Kask
 
 ## Table
 - Thursdays, every other week. Morgan runs it.

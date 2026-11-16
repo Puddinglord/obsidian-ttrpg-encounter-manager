@@ -1,5 +1,5 @@
 // Campaign pages open in reading view. Characters, chapters, scenes, NPCs,
-// places, maps and handouts are read far more than they're edited, and the
+// places, quests, maps and handouts are read far more than they're edited, and the
 // sheet, cards and blocks look their best there. Editing is one click on
 // Obsidian's own edit toggle. Session logs are written at the table, so they
 // open however Obsidian would open them, and so does a note you just made.
@@ -21,8 +21,41 @@ function tagProperties(plugin: NimbleStatblocksPlugin): void {
 		const view = leaf.view;
 		if (!(view instanceof MarkdownView)) continue;
 		const inCampaign = !!view.file && !!plugin.campaigns.of(view.file.path);
-		view.containerEl.toggleClass('nimble-props-tags', inCampaign && plugin.settings.tagProperties);
+		const on = inCampaign && plugin.settings.tagProperties;
+		view.containerEl.toggleClass('nimble-props-tags', on);
+		watchEmptyProperties(view, on);
 	}
+}
+
+/** The reading views whose empty properties are being kept hidden. */
+const watching = new WeakMap<MarkdownView, MutationObserver>();
+
+/**
+ * A property left empty stays out of the row of tags. Obsidian draws the properties whenever
+ * the page renders, so the reading view is watched and each empty one is marked for styles.css.
+ */
+function watchEmptyProperties(view: MarkdownView, on: boolean): void {
+	const current = watching.get(view);
+	if (!on) {
+		current?.disconnect();
+		watching.delete(view);
+		return;
+	}
+	if (current) return;
+	const reading = view.containerEl.querySelector<HTMLElement>('.markdown-reading-view');
+	if (!reading) return;
+	const mark = () => {
+		reading.querySelectorAll<HTMLElement>('.metadata-property').forEach((el) => {
+			const value = el.querySelector('.metadata-property-value');
+			const text = value?.querySelector('.metadata-input-longtext');
+			el.toggleClass('nimble-prop-empty', !!value && (!value.hasChildNodes() || (!!text && !text.hasChildNodes())));
+		});
+	};
+	// Only nodes coming and going are watched, so marking (a class change) doesn't wake it again.
+	const observer = new MutationObserver(mark);
+	observer.observe(reading, { childList: true, subtree: true });
+	watching.set(view, observer);
+	mark();
 }
 
 export function registerReadingMode(plugin: NimbleStatblocksPlugin): void {

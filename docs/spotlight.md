@@ -24,7 +24,7 @@ The row of dice under the search box rolls with one click and keeps Spotlight op
 | "Add 3 × …" | Add them to the encounter | Add them and keep Spotlight open |
 | Dice | Roll and close | Roll and keep Spotlight open |
 | NPC | Quick look at the NPC's note | Open the note in a new tab |
-| Scene, map, location, other notes | Open it | Open it in a new tab |
+| Scene, map, location, quest, other notes | Open it | Open it in a new tab |
 | Condition | Show its rules text (it's on the row too) | |
 | Command | Run it | |
 

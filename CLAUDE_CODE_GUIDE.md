@@ -48,7 +48,7 @@ src/
   calendar-presets.ts   The starter calendars New calendar writes (pure, tested)
   clock.ts              ClockStore: each campaign's world-date (in its home note), Undo history, one `changed` event for every clock
   clock-ui.ts           The clock widget (panel, map chip, nimble-clock block) and its + popover; New calendar; calendar-block.ts draws a calendar note's month
-  campaign-templates.ts Starter notes (campaign home, chapter, scene, NPC, location, session)
+  campaign-templates.ts Starter notes (campaign home, chapter, scene, NPC, location, quest, session)
   box-def.ts            ```box fence format: presets, colours, styles, icon library (pure, tested)
   box-block.ts          Box renderer and the icon/colour/style editor (writes the fence line back)
   npc-links.ts          Reading view: NPC link chips and auto-linked mentions

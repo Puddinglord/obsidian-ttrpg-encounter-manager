@@ -790,6 +790,7 @@ export class CompendiumBrowser extends Component {
 		}
 		if (this.o.isTaken?.(e)) { el.addClass('is-taken'); tags.createSpan({ cls: 'nimble-cmpx-pill-tag nimble-cmpx-tag is-taken', text: 'Added' }); }
 		this.o.decorate?.(e, el);
+		pillLine.toggleClass('is-empty', ![pillRow, tags].some(x => x.hasChildNodes()));
 		const btn = this.o.rowButton?.(e);
 		if (btn) {
 			const b = el.createEl('button', { cls: 'clickable-icon nimble-cmpx-row-btn', attr: { 'aria-label': btn.label, tabindex: '-1' } });

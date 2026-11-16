@@ -225,7 +225,7 @@ class RecordModal extends Modal {
 
 		// Conditions, as on the sheet.
 		if (c.conditions.length) {
-			const row = sheet.createDiv({ cls: 'ns-conds-row' });
+			const row = sheet.createDiv({ cls: 'ns-conds-row has-conds' });
 			row.createSpan({ cls: 'ns-chip-label ns-conds-label', text: 'Conditions' });
 			const conds = row.createDiv({ cls: 'ns-conds' });
 			for (const a of c.conditions) {
