@@ -4162,3 +4162,236 @@ body.is-mobile .nimble-art-slot.has-art .nimble-art-edit { opacity: 1; }
 .nimble-spotlight .nimble-spot-chips.has-chips > input.prompt-input { padding-left: 0.25rem; }
 .nimble-spotlight .suggestion-item.is-filter .nimble-spot-name { font-family: var(--font-monospace); font-weight: 500; font-size: 0.88rem; }
 .nimble-spotlight .suggestion-item.is-filter .nimble-spot-icon { color: var(--text-accent); }
+
+/* ============================================
+   BUILDER (entity-builder.ts): monsters, spells, items
+   One size for every step and kind, wide rather than tall: the form on the
+   left, the live preview on the right. Controls share one height and one
+   text size, so pills and segments line up.
+   ============================================ */
+
+.modal.nimble-entity-builder {
+	--eb-h: 2.25rem;
+	--eb-gap: 0.7rem;
+	--eb-text: var(--font-ui-small);
+	--eb-accent: var(--interactive-accent);
+	width: min(1080px, 96vw); height: min(680px, 90vh); max-height: 90vh; max-width: 96vw;
+	display: flex; flex-direction: column; padding: 0; overflow: hidden;
+}
+body.is-tablet .modal.nimble-entity-builder, body.is-mobile .modal.nimble-entity-builder { --eb-h: 2.75rem; }
+.nimble-entity-builder .modal-header { display: none; }
+.nimble-entity-builder .modal-close-button { z-index: 3; }
+.nimble-entity-builder .modal-content { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; overflow: hidden; margin: 0; padding: 0; }
+.nimble-entity-builder button { box-shadow: none; }
+
+/* Head: what you're making, and the level check at a glance (phones) */
+.nimble-entity-builder .eb-head { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 3.25rem 0.6rem 1.25rem; flex: 0 0 auto; }
+.nimble-entity-builder .eb-kinds { display: flex; align-items: center; gap: 0.35rem; min-width: 0; flex: 1 1 auto; }
+.nimble-entity-builder button.eb-kind { display: inline-flex; align-items: center; gap: 0.4rem; height: var(--eb-h); padding: 0 0.85rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-muted); font-size: var(--eb-text); font-weight: 600; line-height: 1; }
+.nimble-entity-builder button.eb-kind.is-active { background: color-mix(in srgb, var(--eb-accent) 14%, var(--background-primary)); border-color: color-mix(in srgb, var(--eb-accent) 55%, transparent); color: var(--text-normal); }
+.nimble-entity-builder .eb-kind-icon { display: inline-flex; }
+.nimble-entity-builder .eb-kind-icon svg { width: 15px; height: 15px; }
+.nimble-entity-builder .eb-title { margin-left: 0.5rem; font-size: 1.15rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-entity-builder .eb-chip { display: none; }
+
+/* Step chips */
+.nimble-entity-builder .eb-dots { display: flex; gap: 0.35rem; padding: 0.15rem 1.25rem 0.7rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--background-modifier-border); flex: 0 0 auto; }
+.nimble-entity-builder .eb-dots::-webkit-scrollbar { display: none; }
+.nimble-entity-builder button.eb-dot { display: inline-flex; align-items: center; gap: 0.35rem; flex: 0 0 auto; height: 1.9rem; padding: 0 0.75rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-muted); font-size: 0.78rem; font-weight: 700; line-height: 1; white-space: nowrap; }
+.nimble-entity-builder .eb-dot-icon { display: inline-flex; }
+.nimble-entity-builder .eb-dot-icon svg { width: 13px; height: 13px; }
+.nimble-entity-builder button.eb-dot.is-done { color: var(--text-normal); }
+.nimble-entity-builder button.eb-dot.is-active { background: var(--eb-accent); border-color: var(--eb-accent); color: var(--text-on-accent); }
+
+/* Body: the steps and the side panel */
+.nimble-entity-builder .eb-body { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr); flex: 1 1 auto; min-height: 0; }
+.nimble-entity-builder .eb-viewport { position: relative; overflow: hidden; min-width: 0; min-height: 0; }
+.nimble-entity-builder .eb-track { display: flex; align-items: stretch; height: 100%; transform: translateX(calc(var(--eb-at, 0) * -100%)); transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.nimble-entity-builder .eb-track.no-anim { transition: none; }
+.nimble-entity-builder .eb-panel { flex: 0 0 100%; min-width: 0; height: 100%; box-sizing: border-box; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 1rem 1.25rem 1.25rem; opacity: 0.15; transition: opacity 0.25s ease; }
+.nimble-entity-builder .eb-panel.is-active { opacity: 1; }
+.nimble-entity-builder .eb-panel.is-shake { animation: lu-shake 0.4s ease; }
+@media (prefers-reduced-motion: reduce) {
+	.nimble-entity-builder .eb-track, .nimble-entity-builder .eb-panel { transition: none; }
+	.nimble-entity-builder .eb-panel.is-shake { animation: none; }
+}
+.nimble-entity-builder .eb-side { display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--background-modifier-border); background: var(--background-secondary); }
+.nimble-entity-builder .eb-sheet-head { display: none; }
+.nimble-entity-builder .eb-check { flex: 0 0 auto; padding: 0.9rem 1rem 0.8rem; border-bottom: 1px solid var(--background-modifier-border); display: flex; flex-direction: column; gap: 0.55rem; }
+.nimble-entity-builder .eb-check.is-empty { display: none; }
+.nimble-entity-builder .eb-preview { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.9rem 1rem 1rem; }
+.nimble-entity-builder .eb-preview .nimble-statblock { margin: 0; }
+
+/* Level check */
+.nimble-entity-builder .eb-check-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+.nimble-entity-builder .eb-check-level { display: flex; flex-direction: column; line-height: 1.15; }
+.nimble-entity-builder .eb-check-kicker { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+.nimble-entity-builder .eb-check-value { font-size: 1.35rem; font-weight: 800; }
+.nimble-entity-builder .eb-check-title { font-weight: 700; }
+.nimble-entity-builder .eb-check-text { font-size: 0.8rem; color: var(--text-muted); }
+.nimble-entity-builder .eb-verdict { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 0.7rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; line-height: 1; }
+.nimble-entity-builder .tone-ok { background: color-mix(in srgb, var(--color-green) 16%, transparent); color: var(--color-green); }
+.nimble-entity-builder .tone-high { background: color-mix(in srgb, var(--color-red) 14%, transparent); color: var(--color-red); }
+.nimble-entity-builder .tone-low { background: color-mix(in srgb, var(--color-blue) 14%, transparent); color: var(--color-blue); }
+.nimble-entity-builder .eb-meter { display: flex; flex-direction: column; gap: 0.25rem; }
+.nimble-entity-builder .eb-meter-top { display: flex; justify-content: space-between; font-size: 0.78rem; }
+.nimble-entity-builder .eb-meter-label { color: var(--text-muted); }
+.nimble-entity-builder .eb-meter-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+.nimble-entity-builder .eb-meter-bar { position: relative; height: 0.45rem; border-radius: 999px; background: var(--background-modifier-border); overflow: hidden; }
+.nimble-entity-builder .eb-meter-fill { height: 100%; width: var(--eb-fill, 50%); border-radius: 999px; background: var(--color-green); transition: width 0.2s ease; }
+.nimble-entity-builder .eb-meter-fill.is-high { background: var(--color-red); }
+.nimble-entity-builder .eb-meter-fill.is-low { background: var(--color-blue); }
+.nimble-entity-builder .eb-meter-mark { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 2px; background: var(--text-normal); opacity: 0.55; }
+.nimble-entity-builder button.eb-check-fix { align-self: flex-start; height: 2rem; padding: 0 0.8rem; font-size: var(--eb-text); font-weight: 600; }
+
+/* Steps */
+.nimble-entity-builder .eb-step-head { margin-bottom: 0.75rem; }
+.nimble-entity-builder .eb-step-title { font-size: 1.1rem; font-weight: 800; line-height: 1.25; }
+.nimble-entity-builder .eb-step-sub { margin-top: 0.2rem; font-size: 0.85rem; color: var(--text-muted); max-width: 60ch; }
+.nimble-entity-builder .eb-grid { display: grid; gap: var(--eb-gap) 1rem; margin-bottom: var(--eb-gap); }
+.nimble-entity-builder .eb-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.nimble-entity-builder .eb-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.nimble-entity-builder .eb-field { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.nimble-entity-builder .eb-field.is-wide { margin-bottom: var(--eb-gap); }
+.nimble-entity-builder .eb-label-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 1.3rem; }
+.nimble-entity-builder .eb-label { font-size: var(--eb-text); font-weight: 650; color: var(--text-normal); }
+.nimble-entity-builder .eb-aside { display: flex; align-items: center; gap: 0.35rem; }
+.nimble-entity-builder .eb-control { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.nimble-entity-builder .eb-help { font-size: 0.78rem; line-height: 1.35; color: var(--text-muted); }
+.nimble-entity-builder .eb-help.is-empty { display: none; }
+.nimble-entity-builder .eb-help.is-warn { color: var(--text-warning); }
+
+.nimble-entity-builder input.eb-input, .nimble-entity-builder textarea.eb-textarea { width: 100%; min-width: 0; font-size: var(--font-ui-medium); }
+.nimble-entity-builder input.eb-input { height: var(--eb-h); }
+.nimble-entity-builder textarea.eb-textarea { resize: none; min-height: calc(var(--eb-h) * 1.6); line-height: 1.4; }
+
+/* Numbers: − field + */
+.nimble-entity-builder .eb-num { display: inline-flex; align-items: stretch; height: var(--eb-h); border: 1px solid var(--background-modifier-border); border-radius: var(--input-radius, 6px); overflow: hidden; background: var(--background-modifier-form-field); }
+.nimble-entity-builder button.eb-num-btn { display: inline-flex; align-items: center; justify-content: center; width: var(--eb-h); height: var(--eb-h); padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--text-muted); }
+.nimble-entity-builder button.eb-num-btn:hover:not(:disabled) { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-entity-builder button.eb-num-btn svg { width: 15px; height: 15px; }
+.nimble-entity-builder input.eb-num-input { width: 4.5rem; height: 100%; border: 0; border-radius: 0; text-align: center; font-size: var(--font-ui-medium); font-weight: 650; font-variant-numeric: tabular-nums; background: transparent; box-shadow: none; }
+.nimble-entity-builder input.eb-num-input::placeholder { color: var(--text-faint); font-weight: 500; }
+
+/* Level: − 4 + Auto */
+.nimble-entity-builder .eb-level { display: inline-flex; align-items: center; gap: 0.35rem; }
+.nimble-entity-builder .eb-level .eb-num-btn { border: 1px solid var(--background-modifier-border); border-radius: 999px; }
+.nimble-entity-builder .eb-level-value { min-width: 3rem; text-align: center; font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nimble-entity-builder button.eb-auto { height: var(--eb-h); padding: 0 0.8rem; margin-left: 0.25rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); font-size: var(--eb-text); font-weight: 600; color: var(--text-muted); }
+.nimble-entity-builder button.eb-auto.is-active { background: var(--eb-accent); border-color: var(--eb-accent); color: var(--text-on-accent); }
+
+/* Segmented: a row of buttons, one picked */
+.nimble-entity-builder .eb-seg { display: inline-flex; flex-wrap: nowrap; gap: 2px; padding: 2px; border-radius: 999px; background: var(--background-modifier-border); max-width: 100%; }
+.nimble-entity-builder .eb-seg.is-wrap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; border-radius: calc(var(--eb-h) / 2 + 2px); }
+.nimble-entity-builder button.eb-seg-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; height: calc(var(--eb-h) - 4px); padding: 0 0.85rem; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); font-size: var(--eb-text); font-weight: 600; line-height: 1; white-space: nowrap; }
+.nimble-entity-builder .eb-seg.is-compact button.eb-seg-btn { padding: 0 0.6rem; }
+.nimble-entity-builder .eb-seg.is-tight button.eb-seg-btn { min-width: 2.1rem; padding: 0 0.45rem; }
+.nimble-entity-builder button.eb-seg-btn:hover:not(.is-active) { color: var(--text-normal); background: var(--background-modifier-hover); }
+.nimble-entity-builder button.eb-seg-btn.is-active { background: var(--background-primary); color: var(--text-normal); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); }
+.nimble-entity-builder .eb-seg-icon { display: inline-flex; }
+.nimble-entity-builder .eb-seg-icon svg { width: 14px; height: 14px; }
+
+/* "Book: 52 · Use" beside a field you've changed */
+.nimble-entity-builder .eb-book { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: var(--text-muted); }
+.nimble-entity-builder .eb-book.is-hidden { display: none; }
+.nimble-entity-builder button.eb-book-use { height: 1.4rem; padding: 0 0.5rem; font-size: 0.72rem; font-weight: 600; border-radius: 999px; }
+
+/* Start from: a search, or the monster it was copied from */
+.nimble-entity-builder .eb-search { position: relative; width: 100%; }
+.nimble-entity-builder .eb-search-list { display: none; position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px); padding: 4px; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); background: var(--background-primary); box-shadow: var(--shadow-s); }
+.nimble-entity-builder .eb-search-list.is-open { display: block; }
+.nimble-entity-builder .eb-search-row { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.4rem 0.6rem; border-radius: var(--radius-s); cursor: pointer; }
+.nimble-entity-builder .eb-search-row.is-selected, .nimble-entity-builder .eb-search-row:hover { background: var(--background-modifier-hover); }
+.nimble-entity-builder .eb-search-name { font-weight: 600; }
+.nimble-entity-builder .eb-search-meta { font-size: 0.75rem; color: var(--text-muted); }
+.nimble-entity-builder .eb-template { display: flex; align-items: center; gap: 0.5rem; width: 100%; height: var(--eb-h); padding: 0 0.25rem 0 0.75rem; border-radius: var(--input-radius, 6px); border: 1px solid color-mix(in srgb, var(--eb-accent) 45%, var(--background-modifier-border)); background: color-mix(in srgb, var(--eb-accent) 8%, var(--background-primary)); }
+.nimble-entity-builder .eb-template-icon { display: inline-flex; color: var(--text-accent); }
+.nimble-entity-builder .eb-template-icon svg { width: 15px; height: 15px; }
+.nimble-entity-builder .eb-template-name { font-weight: 650; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-entity-builder .eb-template-meta { flex: 1 1 auto; font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
+
+/* Movement modes and saves */
+.nimble-entity-builder .eb-modes { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.nimble-entity-builder .eb-mode { display: inline-flex; align-items: center; height: var(--eb-h); border: 1px solid var(--background-modifier-border); border-radius: 999px; overflow: hidden; background: var(--background-primary); }
+.nimble-entity-builder button.eb-mode-toggle { height: 100%; padding: 0 0.75rem; border: 0; border-radius: 0; background: transparent; font-size: var(--eb-text); font-weight: 600; color: var(--text-muted); }
+.nimble-entity-builder input.eb-mode-num { display: none; width: 2.6rem; height: 100%; border: 0; border-left: 1px solid var(--background-modifier-border); border-radius: 0; text-align: center; font-variant-numeric: tabular-nums; background: transparent; }
+.nimble-entity-builder .eb-mode.is-on { border-color: color-mix(in srgb, var(--eb-accent) 55%, transparent); }
+.nimble-entity-builder .eb-mode.is-on button.eb-mode-toggle { color: var(--text-normal); background: color-mix(in srgb, var(--eb-accent) 12%, transparent); }
+.nimble-entity-builder .eb-mode.is-on input.eb-mode-num { display: block; }
+.nimble-entity-builder .eb-saves { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.5rem 1.5rem; justify-content: start; }
+.nimble-entity-builder .eb-save { display: flex; align-items: center; gap: 0.45rem; }
+.nimble-entity-builder .eb-save-stat { width: 2.2rem; font-size: var(--eb-text); font-weight: 750; letter-spacing: 0.03em; }
+
+/* Attacks and abilities */
+.nimble-entity-builder .eb-attacks, .nimble-entity-builder .eb-abilities { display: flex; flex-direction: column; gap: 0.5rem; }
+.nimble-entity-builder .eb-attack { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.55rem 0.7rem; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); background: var(--background-primary); }
+.nimble-entity-builder .eb-attack-head { display: flex; align-items: center; gap: 0.5rem; }
+.nimble-entity-builder .eb-attack-head input.eb-attack-name { flex: 1 1 auto; font-weight: 650; }
+.nimble-entity-builder .eb-dice { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; }
+.nimble-entity-builder button.eb-dice-btn, .nimble-entity-builder button.eb-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; padding: 0; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-muted); flex: 0 0 auto; }
+.nimble-entity-builder button.eb-dice-btn svg, .nimble-entity-builder button.eb-icon-btn svg { width: 14px; height: 14px; }
+.nimble-entity-builder button.eb-icon-btn:hover, .nimble-entity-builder button.eb-dice-btn:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.nimble-entity-builder .eb-dice-text { min-width: 2.6rem; text-align: center; font-family: var(--font-monospace); font-size: var(--eb-text); font-weight: 700; }
+.nimble-entity-builder .eb-dice-sep { margin-left: 0.4rem; font-size: 0.72rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+.nimble-entity-builder .eb-dice-avg { display: inline-flex; align-items: center; gap: 0.35rem; margin-left: auto; font-size: 0.78rem; }
+.nimble-entity-builder .eb-dice-avg-have { font-weight: 650; font-variant-numeric: tabular-nums; }
+.nimble-entity-builder .eb-dice-avg-want { display: inline-flex; align-items: center; height: 1.4rem; padding: 0 0.5rem; border-radius: 999px; font-weight: 650; line-height: 1; }
+.nimble-entity-builder .eb-dice-avg-want.is-ok { background: color-mix(in srgb, var(--color-green) 14%, transparent); color: var(--color-green); }
+.nimble-entity-builder .eb-dice-avg-want.is-high { background: color-mix(in srgb, var(--color-red) 14%, transparent); color: var(--color-red); }
+.nimble-entity-builder .eb-dice-avg-want.is-low { background: color-mix(in srgb, var(--color-blue) 14%, transparent); color: var(--color-blue); }
+.nimble-entity-builder .eb-ability { display: grid; grid-template-columns: minmax(8rem, 0.35fr) minmax(0, 1fr) auto; gap: 0.5rem; align-items: center; }
+.nimble-entity-builder .eb-add-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.45rem 0 var(--eb-gap); }
+.nimble-entity-builder button.eb-text-btn { display: inline-flex; align-items: center; gap: 0.4rem; height: 2rem; padding: 0 0.8rem; border-radius: 999px; font-size: var(--eb-text); font-weight: 600; line-height: 1; }
+.nimble-entity-builder .eb-text-btn-icon { display: inline-flex; }
+.nimble-entity-builder .eb-text-btn-icon svg { width: 14px; height: 14px; }
+
+/* Review */
+.nimble-entity-builder .eb-review { display: flex; flex-direction: column; margin-bottom: var(--eb-gap); border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); overflow: hidden; }
+.nimble-entity-builder .eb-review-row { display: grid; grid-template-columns: 9rem minmax(0, 1fr) auto; gap: 0.75rem; align-items: center; padding: 0.55rem 0.75rem; }
+.nimble-entity-builder .eb-review-row + .eb-review-row { border-top: 1px solid var(--background-modifier-border); }
+.nimble-entity-builder .eb-review-label { font-size: var(--eb-text); color: var(--text-muted); }
+.nimble-entity-builder .eb-review-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-entity-builder button.eb-review-edit { height: 1.75rem; padding: 0 0.6rem; font-size: 0.75rem; }
+
+/* Footer */
+.nimble-entity-builder .eb-foot { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--background-modifier-border); background: var(--background-primary); flex: 0 0 auto; }
+.nimble-entity-builder .eb-counter { flex: 1 1 auto; text-align: center; font-size: 0.78rem; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.nimble-entity-builder :is(button.eb-back, button.eb-next, button.eb-create, button.eb-preview-btn) { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: var(--eb-h); padding: 0 1rem; line-height: 1; font-weight: 700; }
+.nimble-entity-builder :is(.eb-back, .eb-next) > span { display: flex; align-items: center; }
+.nimble-entity-builder :is(.eb-back, .eb-next) svg { width: 16px; height: 16px; }
+.nimble-entity-builder button.eb-create { font-weight: 600; }
+
+/* Narrow windows and phones: one column; the preview is a sheet behind a button */
+@media (max-width: 760px) {
+	.nimble-entity-builder .eb-body { grid-template-columns: minmax(0, 1fr); }
+	.nimble-entity-builder .eb-grid.cols-2, .nimble-entity-builder .eb-grid.cols-3 { grid-template-columns: minmax(0, 1fr); }
+	.nimble-entity-builder .eb-ability { grid-template-columns: minmax(0, 1fr) auto; }
+	.nimble-entity-builder .eb-ability .eb-ability-text { grid-column: 1 / -1; grid-row: 2; }
+	.nimble-entity-builder .eb-review-row { grid-template-columns: minmax(0, 1fr) auto; }
+	.nimble-entity-builder .eb-review-label { grid-column: 1 / -1; }
+	.nimble-entity-builder .eb-counter { display: none; }
+	.nimble-entity-builder .eb-next { flex: 1 1 auto; }
+	.nimble-entity-builder .eb-title { display: none; }
+}
+.modal.nimble-entity-builder.is-phone-layout { width: 100vw; height: 100%; max-width: 100vw; max-height: none; border-radius: 0; }
+.nimble-entity-builder.is-phone-layout .eb-head { padding: calc(0.6rem + var(--safe-area-inset-top, 0px)) 3.25rem 0.5rem 0.9rem; }
+.nimble-entity-builder.is-phone-layout .eb-dots { padding-left: 0.9rem; padding-right: 0.9rem; }
+.nimble-entity-builder.is-phone-layout .eb-panel { padding: 0.9rem 0.9rem 1.5rem; }
+.nimble-entity-builder.is-phone-layout .eb-foot { padding: 0.6rem 0.9rem calc(0.6rem + var(--safe-area-inset-bottom, 0px)); }
+.nimble-entity-builder.is-phone-layout .eb-chip { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+.nimble-entity-builder.is-phone-layout .eb-chip.is-hidden { display: none; }
+.nimble-entity-builder.is-phone-layout .eb-kind > span:last-child { display: none; }
+.nimble-entity-builder.is-phone-layout button.eb-kind { width: var(--eb-h); padding: 0; justify-content: center; }
+.nimble-entity-builder.is-phone-layout .eb-body { position: relative; overflow: hidden; }
+.nimble-entity-builder.is-phone-layout .eb-side { position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: 94%; border: 0; border-top: 1px solid var(--background-modifier-border); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25); transform: translateY(105%); transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.nimble-entity-builder.is-phone-layout .eb-side.is-open { transform: translateY(0); }
+.nimble-entity-builder.is-phone-layout .eb-sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.9rem; font-weight: 700; border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-entity-builder.is-phone-layout button.eb-sheet-close { width: var(--eb-h); height: var(--eb-h); padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; }
+.nimble-entity-builder.is-phone-layout button.eb-preview-btn { width: var(--eb-h); padding: 0; }
+.nimble-entity-builder.is-phone-layout button.eb-preview-btn.is-active { background: var(--eb-accent); color: var(--text-on-accent); }
+.nimble-entity-builder.is-phone-layout input, .nimble-entity-builder.is-phone-layout textarea { font-size: 16px; }
+body.is-tablet .nimble-entity-builder :is(button.eb-seg-btn, button.eb-kind, button.eb-dot, button.eb-auto, button.eb-text-btn, button.eb-back, button.eb-next, button.eb-create) { padding-left: 0.85rem; padding-right: 0.85rem; }
+body.is-tablet .nimble-entity-builder :is(button.eb-num-btn, button.eb-dice-btn, button.eb-icon-btn, button.eb-preview-btn) { padding: 0; }
+
+/* Last, so it beats every button's display. */
+.nimble-entity-builder .is-hidden, .nimble-entity-builder button.is-hidden { display: none; }

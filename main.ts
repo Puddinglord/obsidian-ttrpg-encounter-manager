@@ -59,6 +59,7 @@ import { registerReadingMode } from './src/reading-mode';
 import { noteKind, safeName } from './src/campaign-model';
 import { readCharacter } from './src/character-def';
 import { creatureNote } from './src/campaign-templates';
+import { registerBuilders } from './src/builder-register';
 import { bundledCompendium, setCompendiumDrafts, sheetCompendium } from './src/compendium-data';
 
 const ROLL_LOG_LIMIT = 30;
@@ -210,6 +211,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		registerMapBlock(this);
 		setCompendiumDrafts(this.settings.compendiumDrafts);
 		registerCharacterFeatures(this);
+		registerBuilders(this);
 		registerReadingMode(this);
 
 		// Reading view: `nimble:Name` inline references
