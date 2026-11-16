@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-16
+
 ### Added
 
 - Quests. New campaigns get a Quests folder, next to NPCs and Locations, and you can add a quest from the folder's **+**, **New quest** on the Campaign heading, the **New quest…** command or Spotlight. A GM's quest note opens with the hook in a quest box, a checklist of objectives, then stakes, the truth behind it, clues, the people and places involved, complications, rewards and progress. A player's is written from the party's side: the job as it was put to you, what you know, leads, questions and progress. Properties hold the status, type, who gave it, where it leads, the reward and (for GMs) the level.
