@@ -5,49 +5,222 @@ import { ArmorType, MonsterRole, NimbleAbility, NimbleAttack, NimbleMonster } fr
 const DEFAULT_HP = 10;
 
 export function parseStatblock(content: string): NimbleMonster | null {
+	return readStatblock(content).monster;
+}
+
+/**
+ * Something in a hand-written stat block that couldn't be used as written, in
+ * words for someone who writes notes, not code. `line` is the 0-based line in
+ * the block; `fix`, when there's an obvious one, replaces lines start..end.
+ */
+export interface StatblockIssue {
+	line: number;
+	/** The line as written (trimmed). */
+	text: string;
+	/** The part of the line the message is about, to highlight. */
+	mark?: string;
+	message: string;
+	hint?: string;
+	fix?: { label: string; start: number; end: number; lines: string[] };
+}
+
+export interface StatblockReading {
+	monster: NimbleMonster | null;
+	issues: StatblockIssue[];
+}
+
+/** "**Last Stand**" → "laststand": how field names compare (case, spaces, dashes, underscores and bold don't matter). */
+export function fieldKey(raw: string): string {
+	return raw.replace(/^[\s*_]+|[\s*_]+$/g, '').toLowerCase().replace(/[\s_-]+/g, '');
+}
+
+/** Every field a line can start with ("hp: 20"), as fieldKey() writes it. */
+const FIELDS = new Set([
+	'name', 'type', 'size', 'level', 'lvl', 'armor', 'armour', 'ac', 'hp', 'hitpoints', 'health', 'hpperhero', 'role', 'kind', 'monstertype',
+	'saves', 'save', 'str', 'dex', 'int', 'will', 'wil', 'miniondie', 'die', 'source', 'group', 'family', 'habitat', 'easier', 'harder',
+	'movement', 'speed', 'move', 'cr', 'senses', 'languages', 'multiattack', 'description', 'desc', 'flavor', 'flavour', 'bloodied',
+	'laststand', 'actiontext', 'actionsintro', 'resistances', 'resistance', 'immunities', 'immunity', 'vulnerabilities', 'vulnerability',
+]);
+
+/** List headings ("attacks:" on its own line), and the list each one fills. */
+const LISTS: Record<string, 'attacks' | 'abilities' | 'resistances' | 'immunities' | 'vulnerabilities'> = {
+	attacks: 'attacks', attack: 'attacks', actions: 'attacks', action: 'attacks', legendaryactions: 'attacks',
+	abilities: 'abilities', ability: 'abilities', traits: 'abilities', trait: 'abilities', features: 'abilities', specialabilities: 'abilities',
+	resistances: 'resistances', resistance: 'resistances', immunities: 'immunities', immunity: 'immunities',
+	vulnerabilities: 'vulnerabilities', vulnerability: 'vulnerabilities',
+};
+
+/** How the guide writes each field, for "did you mean" (the fields people actually use). */
+const FIELD_NAMES = ['name', 'level', 'role', 'size', 'type', 'hp', 'armor', 'movement', 'saves', 'actionText', 'attacks', 'abilities',
+	'bloodied', 'lastStand', 'easier', 'harder', 'description', 'source', 'group', 'habitat', 'minion die', 'senses', 'languages',
+	'resistances', 'immunities', 'vulnerabilities'];
+
+const isBullet = (t: string) => t.startsWith('-') || /^[*+]\s/.test(t);
+/** A wrapped sentence's next line: starts lower case, with a digit, or a bracket. */
+const continues = (t: string) => /^[a-z0-9([,;]/.test(t);
+
+/**
+ * Reads a ```nimble block. Forgiving first ("**Bloodied:**", "Last Stand:",
+ * "Legendary actions:", a bare "actionText:" over the attacks, sentences that
+ * wrap onto a second line all work); anything still left over is an issue.
+ */
+export function readStatblock(content: string): StatblockReading {
+	const issues: StatblockIssue[] = [];
 	try {
 		const monster: Partial<NimbleMonster> = {};
 		const lines = content.split(/\r?\n/);
+		const seen = new Map<string, number>();
 
-		let currentSection: string | null = null;
-		let currentList: string[] = [];
+		/** The open heading: a list ("attacks:"), a sentence field written as a heading ("bloodied:"), or something unknown. */
+		let section: { kind: 'list' | 'text' | 'unknown'; key: string; raw: string; line: number; items: { text: string; line: number }[] } | null = null;
+		/** What a wrapped line joins onto: the last list item or sentence field, until a blank line. */
+		let tail: { item?: { text: string; line: number }; field?: string; line: number } | null = null;
+		const orphans: { text: string; line: number }[] = [];
+		const values: Partial<Record<string, string>> = {};
 
+		const setField = (key: string, value: string) => { values[key] = value; processKeyValue(monster, key, value); };
 		const flush = () => {
-			if (currentSection && currentList.length > 0) {
-				processSection(monster, currentSection, currentList);
+			const s = section;
+			section = null;
+			if (!s) return;
+			if (s.kind === 'list') {
+				if (s.items.length) processSection(monster, LISTS[s.key], s.items.map(i => i.text));
+			} else if (s.kind === 'text') {
+				if (!s.items.length) return;
+				// "actionText:" over a list: the list is the attacks it introduces.
+				if (s.key === 'actiontext' || s.key === 'actionsintro') processSection(monster, 'attacks', s.items.map(i => i.text));
+				else setField(s.key, [values[s.key], ...s.items.map(i => i.text)].filter(Boolean).join(' '));
+			} else if (s.items.length) {
+				const near = suggest(s.key);
+				issues.push({
+					line: s.line, text: s.raw, mark: s.raw.replace(/:\s*$/, ''),
+					message: `The list under “${s.raw}” isn't shown: stat blocks show lists under attacks:, abilities:, resistances:, immunities: and vulnerabilities:.`,
+					hint: near ? `Did you mean ${near}:?` : 'Put these under attacks: or abilities:.',
+					fix: near ? { label: `Change to ${near}:`, start: s.line, end: s.line, lines: [`${near}:`] } : undefined,
+				});
 			}
-			currentList = [];
+		};
+		const stray = (i: number, t: string) => {
+			const first = t.match(/^([A-Za-z][A-Za-z ]*?)\s+(\S.*)$/);
+			const key = first ? fieldKey(first[1]) : '';
+			if (first && FIELDS.has(key) && !LISTS[key]) {
+				issues.push({ line: i, text: t, mark: first[1], message: `“${first[1]}” needs a colon after it, so this line isn't shown.`, hint: `Write it as ${first[1]}: ${first[2]}`, fix: { label: 'Add the colon', start: i, end: i, lines: [`${first[1]}: ${first[2]}`] } });
+				return;
+			}
+			const prev = tail;
+			issues.push({
+				line: i, text: t,
+				message: 'This line isn\'t shown. Lines start with a field and a colon (like hp: 20), or with a dash for an attack or ability (like - Bite 1d6).',
+				hint: prev ? 'If it belongs to the line above, join the two: each attack or ability is one line.' : undefined,
+				fix: prev ? { label: 'Join to the line above', start: prev.line, end: i, lines: [`${lines[prev.line].replace(/\s+$/, '')} ${t}`, ...lines.slice(prev.line + 1, i).filter(l => !l.trim())] } : undefined,
+			});
 		};
 
-		for (const line of lines) {
-			const trimmed = line.trim();
-			if (!trimmed) continue;
+		for (let i = 0; i < lines.length; i++) {
+			const t = lines[i].trim();
+			if (!t) { tail = null; continue; }
 
-			// Section header (e.g., "abilities:" or "attacks:")
-			if (/^[a-z]+:$/i.test(trimmed)) {
+			// A heading on its own line: "attacks:", "**Legendary Actions:**", "bloodied:".
+			const head = t.match(/^([*_]*[A-Za-z][A-Za-z \t_-]*?[*_]*)\s*:[*_]*$/);
+			if (head) {
 				flush();
-				currentSection = trimmed.slice(0, -1).toLowerCase();
+				const key = fieldKey(head[1]);
+				const kind = LISTS[key] ? 'list' : FREE_TEXT.has(key) && key !== 'name' ? 'text' : 'unknown';
+				section = { kind, key, raw: t, line: i, items: [] };
+				tail = null;
+				if (kind === 'unknown' && FIELDS.has(key)) issues.push({ line: i, text: t, mark: head[1], message: `“${head[1]}” has nothing after its colon.`, hint: `Put the value on the same line, like ${head[1]}: …` });
 				continue;
 			}
 
-			// List item - check BEFORE key-value to handle "- Name: description" format
-			// "*" and "+" bullets count too, but need the space ("**Bold.** text" is not a bullet).
-			if (trimmed.startsWith('-') || /^[*+]\s/.test(trimmed)) {
-				currentList.push(trimmed.slice(1).trim());
+			// A list item. "*" and "+" bullets need the space ("**Bold.** text" is not a bullet).
+			if (isBullet(t)) {
+				const item = { text: t.slice(1).trim(), line: i };
+				if (!item.text) continue;
+				checkBold(issues, i, t);
+				if (section) section.items.push(item);
+				else orphans.push(item);
+				tail = { item, line: i };
 				continue;
 			}
 
-			// Key: value
-			const match = trimmed.match(/^([^:]+):\s*(.+)$/);
+			// A sentence field written as a heading takes the next line as its value.
+			const s = section;
+			if (s?.kind === 'text' && !s.items.length && !values[s.key]) {
+				checkBold(issues, i, t);
+				const item = { text: t, line: i };
+				s.items.push(item);
+				tail = { item, line: i };
+				continue;
+			}
+
+			const match = t.match(/^([^:]+):\s*(.+)$/);
+			const key = match ? fieldKey(match[1]) : '';
+			if (match && FIELDS.has(key)) {
+				flush();
+				// "**Bloodied:** text": the bold's closing stars land in front of the value.
+				let value = match[2].trim();
+				if (/[*_]/.test(match[1])) value = value.replace(/^[*_]{1,3}\s*/, '');
+				if (FREE_TEXT.has(key)) checkBold(issues, i, value);
+				const before = seen.get(key);
+				if (before !== undefined && !LISTS[key]) issues.push({ line: i, text: t, mark: match[1].trim(), message: `There are two “${match[1].trim()}” lines. Only this one, the last, is used.` });
+				seen.set(key, i);
+				checkValue(issues, i, t, key, value);
+				setField(key, value);
+				tail = FREE_TEXT.has(key) && key !== 'name' ? { field: key, line: i } : null;
+				continue;
+			}
+
+			// A sentence that wrapped onto the next line (not "movment: 8" or "level 2", which are fields gone wrong).
+			const labelled = !!match && match[1].trim().split(/\s+/).length <= 3;
+			if (tail && continues(t) && !labelled && !FIELDS.has(fieldKey(t.split(/\s+/)[0]))) {
+				if (tail.item) tail.item.text = `${tail.item.text} ${t}`;
+				else if (tail.field) setField(tail.field, `${values[tail.field]} ${t}`);
+				tail.line = i;
+				continue;
+			}
+
+			// Inside a list, "Bite: 1d6" without its dash is still an item.
+			if (match && section?.kind === 'list') {
+				const item = { text: t, line: i };
+				checkBold(issues, i, t);
+				section.items.push(item);
+				tail = { item, line: i };
+				continue;
+			}
+
 			if (match) {
 				flush();
-				currentSection = null;
-				processKeyValue(monster, match[1].trim().toLowerCase(), match[2].trim());
+				const raw = match[1].trim();
+				const near = raw.split(/\s+/).length <= 3 ? suggest(key) : undefined;
+				const word = raw.split(/\s+/).length <= 3;
+				issues.push({
+					line: i, text: t, mark: raw,
+					message: word ? `“${raw.replace(/[*_]/g, '')}” isn't a stat block field, so this line isn't shown.` : 'This line isn\'t shown: it doesn\'t start with a field the stat block knows.',
+					hint: near ? `Did you mean ${near}?` : word ? 'To show it, make it an ability: put it under abilities: as “- Name: what it does”.' : undefined,
+					fix: near ? { label: `Change to ${near}:`, start: i, end: i, lines: [`${near}: ${match[2].trim()}`] } : undefined,
+				});
+				tail = null;
+				continue;
 			}
+
+			stray(i, t);
 		}
 		flush();
 
-		if (!monster.name) return null;
+		if (orphans.length) {
+			const n = orphans.length;
+			const dice = orphans.some(o => /\d*d\d+/i.test(o.text));
+			const heading = dice ? 'attacks' : 'abilities';
+			issues.push({
+				line: orphans[0].line, text: lines[orphans[0].line].trim(),
+				message: n === 1 ? 'This list item isn\'t under a heading, so it isn\'t shown.' : `These ${n} list items aren't under a heading, so they aren't shown.`,
+				hint: `Put ${heading}: on its own line above ${n === 1 ? 'it' : 'them'}.`,
+				fix: { label: `Add ${heading}: above`, start: orphans[0].line, end: orphans[0].line, lines: [`${heading}:`, lines[orphans[0].line]] },
+			});
+		}
+		issues.sort((a, b) => a.line - b.line);
+
+		if (!monster.name) return { monster: null, issues };
 
 		monster.armor = monster.armor || 'none';
 		if (monster.hp === undefined) monster.hp = monster.hpPerHero ? monster.hpPerHero * 4 : DEFAULT_HP;
@@ -55,10 +228,66 @@ export function parseStatblock(content: string): NimbleMonster | null {
 		if (!monster.role && monster.monsterType === 'solo') monster.role = 'legendary';
 		if (monster.tactics && !monster.tactics.easier && !monster.tactics.harder) delete monster.tactics;
 
-		return monster as NimbleMonster;
+		return { monster: monster as NimbleMonster, issues };
 	} catch (e) {
 		console.error('Ember Vault: parse error', e);
-		return null;
+		return { monster: null, issues };
+	}
+}
+
+/** The closest field name to a misspelling, if one is close enough to be what they meant. */
+function suggest(key: string): string | undefined {
+	if (!key) return undefined;
+	let best: string | undefined;
+	let bestD = Infinity;
+	for (const name of FIELD_NAMES) {
+		const d = editDistance(key, fieldKey(name));
+		if (d < bestD) { bestD = d; best = name; }
+	}
+	const limit = key.length <= 4 ? 1 : key.length <= 7 ? 2 : 3;
+	return bestD <= limit ? best : undefined;
+}
+
+function editDistance(a: string, b: string): number {
+	const row = Array.from({ length: b.length + 1 }, (_, j) => j);
+	for (let i = 1; i <= a.length; i++) {
+		let prev = row[0];
+		row[0] = i;
+		for (let j = 1; j <= b.length; j++) {
+			const cur = row[j];
+			row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+			prev = cur;
+		}
+	}
+	return row[b.length];
+}
+
+/** "**Paw 3d6": bold that opens and never closes shows its stars instead of bold. */
+function checkBold(issues: StatblockIssue[], line: number, text: string): void {
+	const stars = [...text.matchAll(/\*\*/g)];
+	if (stars.length % 2 === 0) return;
+	const at = stars[stars.length - 1].index ?? 0;
+	const word = text.slice(at + 2).match(/^\s*([^\s*.:,]+(?:\s+[^\s*.:,\d][^\s*.:,]*)?)/)?.[1];
+	const mark = word ? `**${word}` : '**';
+	issues.push({
+		line, text: text.trim(), mark,
+		message: word ? `The bold here isn't closed: “**${word}” has ** in front but not after.` : 'This line has ** that isn\'t closed, so the stars show instead of bold.',
+		hint: word ? `Add ** after it, like **${word}**.` : 'Bold text needs ** on both sides, like **Bite**.',
+	});
+}
+
+/** Values that don't mean anything to Nimble, and what the stat block shows instead. */
+function checkValue(issues: StatblockIssue[], line: number, text: string, key: string, value: string): void {
+	const v = FREE_TEXT.has(key) ? value : value.replace(/(^|\s+)#\s.*$/, '').trim();
+	const add = (message: string, hint: string) => issues.push({ line, text, mark: v, message, hint });
+	if ((key === 'hp' || key === 'hitpoints' || key === 'health') && !/^\d+\s*(?:\/|per)\s*hero/i.test(v) && Number.isNaN(parseInt(v, 10))) {
+		add(`“${v}” isn't a number, so it has ${DEFAULT_HP} HP for now.`, 'Write a number (hp: 25), or HP per hero for a solo monster (hp: 28/hero).');
+	} else if ((key === 'armor' || key === 'armour' || key === 'ac') && !/^(none|n|no|-|m|medium|h|heavy)$/i.test(v)) {
+		add(`“${v}” isn't one of Nimble's armor types, so it shows as no armor.`, 'Use none, medium (or M) or heavy (or H).');
+	} else if ((key === 'role' || key === 'kind') && !normalizeRole(v)) {
+		add(`“${v}” isn't a role, so it's a regular monster.`, 'Use regular, minion, solo or legendary.');
+	} else if ((key === 'level' || key === 'lvl') && !/^(\d+(\s*\/\s*\d+)?|\d*\.\d+|[½¼⅓⅛]|\d*x)$/i.test(v)) {
+		add(`“${v}” isn't a level, so encounter difficulty can't count this monster.`, 'Write a number like 3, or a fraction like 1/2.');
 	}
 }
 
@@ -83,10 +312,10 @@ function processKeyValue(monster: Partial<NimbleMonster>, key: string, value: st
 		case 'type': monster.type = value; break;
 		case 'size': monster.size = value; break;
 		case 'level': case 'lvl': monster.level = value; break;
-		case 'armor': case 'ac':
+		case 'armor': case 'armour': case 'ac':
 			monster.armor = normalizeArmor(value);
 			break;
-		case 'hp': case 'hitpoints': {
+		case 'hp': case 'hitpoints': case 'health': {
 			const perHero = value.match(/^(\d+)\s*(?:\/|per)\s*hero/i);
 			if (perHero) {
 				monster.hpPerHero = parseInt(perHero[1], 10);
@@ -125,10 +354,10 @@ function processKeyValue(monster: Partial<NimbleMonster>, key: string, value: st
 		case 'habitat': monster.habitat = value; break;
 		case 'easier': monster.tactics = { ...monster.tactics, easier: value }; break;
 		case 'harder': monster.tactics = { ...monster.tactics, harder: value }; break;
-		case 'movement': case 'speed': monster.movement = value; break;
+		case 'movement': case 'speed': case 'move': monster.movement = value; break;
 		case 'str': monster.str = value; break;
 		case 'dex': monster.dex = value; break;
-		case 'will': monster.will = value; break;
+		case 'will': case 'wil': monster.will = value; break;
 		case 'cr': monster.cr = value; break;
 		case 'senses': monster.senses = value; break;
 		case 'languages': monster.languages = value; break;
@@ -148,20 +377,21 @@ function processKeyValue(monster: Partial<NimbleMonster>, key: string, value: st
 
 function processSection(monster: Partial<NimbleMonster>, section: string, items: string[]): void {
 	switch (section) {
+		// A second "attacks:" heading adds to the list rather than replacing it.
 		case 'attacks': case 'actions':
-			monster.attacks = items.map(parseAttack);
+			monster.attacks = [...monster.attacks ?? [], ...items.map(parseAttack)];
 			break;
 		case 'abilities': case 'traits':
-			monster.abilities = items.map(parseAbility);
+			monster.abilities = [...monster.abilities ?? [], ...items.map(parseAbility)];
 			break;
 		case 'resistances':
-			monster.resistances = items;
+			monster.resistances = [...monster.resistances ?? [], ...items];
 			break;
 		case 'immunities':
-			monster.immunities = items;
+			monster.immunities = [...monster.immunities ?? [], ...items];
 			break;
 		case 'vulnerabilities':
-			monster.vulnerabilities = items;
+			monster.vulnerabilities = [...monster.vulnerabilities ?? [], ...items];
 			break;
 	}
 }
@@ -334,4 +564,11 @@ export function extractNimbleBlocks(content: string): string[] {
 		body.push(line);
 	}
 	return blocks;
+}
+
+/** The block's text with one issue's fix applied (lines fix.start..fix.end replaced). */
+export function applyStatblockFix(source: string, fix: NonNullable<StatblockIssue['fix']>): string {
+	const lines = source.split(/\r?\n/);
+	lines.splice(fix.start, fix.end - fix.start + 1, ...fix.lines);
+	return lines.join('\n');
 }

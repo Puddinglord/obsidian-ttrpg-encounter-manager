@@ -201,6 +201,28 @@ test('hp 0, tilde fences and missing names are handled', async (o) => {
 	assert.ok(await o.eval((app, plugin) => !!plugin.index.get('Tilde Toad')));
 });
 
+test('stat block hints: a quiet line under a hand-written block, opening into fixes', async (o) => {
+	await o.openFile('Hand-written Bear.md');
+	const box = o.page.locator(`${R} .nimble-issues`);
+	await box.waitFor();
+	// The forgiving reader still shows the bear's attacks and Bloodied.
+	assert.equal(await o.page.locator(`${R} .nimble-statblock .actions-list li`).count(), 3);
+	assert.match(await o.page.locator(`${R} .nimble-statblock .phase-section`).first().textContent(), /bite as a free action/);
+	assert.match(await box.locator('.nimble-issues-summary').textContent(), /3 lines here aren't shown as written/);
+	assert.equal(await box.locator('.nimble-issues-list').isVisible(), false);
+	await box.locator('.nimble-issues-toggle').click();
+	assert.equal(await box.locator('.nimble-issue').count(), 3);
+	assert.deepEqual(await box.locator('.nimble-issue-line mark').allTextContents(), ['movment', '**Bite']);
+	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-statblock-hints.png') });
+	await box.locator('.nimble-issue-fix', { hasText: 'Change to movement:' }).click();
+	await o.page.waitForTimeout(600);
+	const text = await o.eval((app) => app.vault.adapter.read('Hand-written Bear.md'));
+	assert.match(text, /\nmovement: 6\/10 charge {13}# e\.g\. 8, fly 10\n/);
+	// Re-rendered: two left, and the list stays open.
+	await o.page.locator(`${R} .nimble-issues.is-open .nimble-issue`).nth(1).waitFor();
+	assert.equal(await o.page.locator(`${R} .nimble-issues .nimble-issue`).count(), 2);
+});
+
 // ---------------------------------------------------------------------------
 // Inline references
 

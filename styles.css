@@ -691,6 +691,26 @@ body {
 	border-radius: 4px;
 }
 
+/* Stat block hints (statblock-issues.ts): one quiet line under a hand-written block, opening into notes. */
+.nimble-statblock + .nimble-issues { margin-top: -0.6rem; }
+.nimble-issues { margin: 0.4rem 0 1rem; font-size: var(--font-ui-small); color: var(--text-muted); }
+.nimble-issues button.nimble-issues-toggle { display: inline-flex; align-items: center; gap: 0.4rem; height: auto; min-height: 1.75rem; padding: 0.15rem 0.55rem 0.15rem 0.4rem; background: transparent; box-shadow: none; border: 1px solid transparent; border-radius: var(--radius-s); color: var(--text-muted); font-size: var(--font-ui-small); font-weight: 500; cursor: pointer; }
+.nimble-issues button.nimble-issues-toggle:hover, .nimble-issues.is-open button.nimble-issues-toggle { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-issues-icon { display: inline-flex; color: var(--text-accent); }
+.nimble-issues-icon svg { width: 14px; height: 14px; }
+.nimble-issues-more { color: var(--text-accent); }
+.nimble-issues-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; padding: 0.6rem 0.75rem; border: 1px solid var(--background-modifier-border); border-radius: var(--nimble-radius); background: var(--background-secondary); }
+.nimble-issues-list[hidden] { display: none; }
+.nimble-issue { display: flex; flex-direction: column; gap: 0.2rem; }
+.nimble-issue + .nimble-issue { padding-top: 0.5rem; border-top: 1px solid var(--background-modifier-border); }
+.nimble-issue code.nimble-issue-line { align-self: flex-start; max-width: 100%; overflow-wrap: anywhere; white-space: pre-wrap; font-size: var(--font-ui-smaller); padding: 0.1rem 0.4rem; color: var(--text-muted); background: var(--background-primary); border-radius: var(--radius-s); }
+.nimble-issue-line mark { color: var(--text-normal); background: color-mix(in srgb, var(--color-yellow) 35%, transparent); border-radius: 2px; padding: 0 1px; }
+.nimble-issue-message { color: var(--text-normal); }
+.nimble-issue-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; }
+.nimble-issue-hint { flex: 1 1 14rem; }
+.nimble-issues button.nimble-issue-fix { height: auto; min-height: 1.6rem; padding: 0.1rem 0.6rem; font-size: var(--font-ui-smaller); }
+body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-issues button.nimble-issue-fix { min-height: 2.25rem; padding: 0.2rem 0.85rem; }
+
 .custom-condition-add {
 	background: var(--background-secondary);
 	border: 1px solid var(--background-modifier-border);

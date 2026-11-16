@@ -4,7 +4,8 @@ import {
 	migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings,
 	mergeParty, PartyMember, RollLogEntry, uid,
 } from './src/types';
-import { parseStatblock, toStatblockSource } from './src/parser';
+import { readStatblock, toStatblockSource } from './src/parser';
+import { renderStatblockIssues } from './src/statblock-issues';
 import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './src/render';
 import { MonsterIndex } from './src/monster-index';
 import { EncounterStore } from './src/encounters';
@@ -180,16 +181,18 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerHoverLinkSource('nimble-gm', { display: 'Ember Vault', defaultMod: true });
 
 		this.registerMarkdownCodeBlockProcessor('nimble', (source, el, ctx) => {
-			const monster = parseStatblock(source);
+			const { monster, issues } = readStatblock(source);
 			if (!monster) {
 				const err = el.createDiv({ cls: 'nimble-error' });
 				err.createEl('strong', { text: 'Nimble stat block needs a name. ' });
 				err.appendText('Add a line like "name: Goblin" to this block.');
+				renderStatblockIssues(this, el, issues, source, ctx);
 				return;
 			}
 			this.renderStatblock(el, monster, ctx.sourcePath, 'block', (ev) => {
 				void this.addToEncounter(monster, ctx.sourcePath, ev.shiftKey ? 2 : 1);
 			});
+			if (this.settings.statblockHints) renderStatblockIssues(this, el, issues, source, ctx);
 		});
 		registerEncounterBlock(this);
 		registerBoxBlock(this);

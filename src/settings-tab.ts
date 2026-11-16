@@ -115,6 +115,11 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					render: toggle(() => s.bundledBestiary, v => { s.bundledBestiary = v; }, () => this.plugin.loadBundledBestiary()),
 				},
 				{
+					name: 'Help with stat blocks you write',
+					desc: 'Under a stat block in your notes, a quiet line when something in it couldn\'t be shown as written, with what to change (and a Fix button when the fix is obvious).',
+					render: toggle(() => s.statblockHints, v => { s.statblockHints = v; }),
+				},
+				{
 					name: 'Nimble slash commands',
 					desc: 'Nimble commands in the / menu.',
 					render: toggle(() => s.slashCommands, v => { s.slashCommands = v; }),
