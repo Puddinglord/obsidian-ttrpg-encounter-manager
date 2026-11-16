@@ -3,12 +3,16 @@
 import type NimbleStatblocksPlugin from '../main';
 import { EntityKind, kindAvailable, openBuilder } from './entity-builder';
 import { registerMonsterBuilder } from './entity-monster-ui';
+import { registerHomebrewBuilders } from './entity-homebrew-ui';
 
 export function registerBuilders(plugin: NimbleStatblocksPlugin): void {
 	registerMonsterBuilder();
+	registerHomebrewBuilders();
 	const cmd = (kind: EntityKind, name: string, icon: string) => {
 		if (!kindAvailable(kind)) return;
 		plugin.addCommand({ id: `new-${kind}`, name, icon, callback: () => { openBuilder(plugin, { kind }); } });
 	};
 	cmd('monster', 'New monster…', 'skull');
+	cmd('spell', 'New spell…', 'wand-2');
+	cmd('item', 'New item…', 'backpack');
 }

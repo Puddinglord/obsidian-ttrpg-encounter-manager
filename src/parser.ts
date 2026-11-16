@@ -531,11 +531,11 @@ export function parseMovement(movement: string | undefined): MovementInfo {
 // ----------------------------------------------------------------------------
 
 /**
- * Returns the body of every ```nimble / ~~~nimble fenced block in a note.
+ * Returns the body of every ```nimble / ~~~nimble fenced block in a note (or ```nimble-spell, … with `lang`).
  * Handles CRLF line endings, longer fences (````nimble), and blocks indented
  * under list items (spaces or tabs), which Obsidian still renders.
  */
-export function extractNimbleBlocks(content: string): string[] {
+export function extractNimbleBlocks(content: string, lang = 'nimble'): string[] {
 	const lines = content.split(/\r?\n/);
 	const blocks: string[] = [];
 	let fence: { char: string; len: number } | null = null;
@@ -551,7 +551,7 @@ export function extractNimbleBlocks(content: string): string[] {
 			// so a line like ```js``` is inline code, not a fence.
 			if (open[1][0] === '`' && info.includes('`')) continue;
 			fence = { char: open[1][0], len: open[1].length };
-			isNimble = info.trim().split(/\s+/)[0].toLowerCase() === 'nimble';
+			isNimble = info.trim().split(/\s+/)[0].toLowerCase() === lang;
 			body = [];
 			continue;
 		}

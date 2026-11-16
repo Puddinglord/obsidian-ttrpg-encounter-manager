@@ -12,7 +12,7 @@ import {
 	MonsterDraft, MOVE_MODES, missing, newMonsterDraft, SAVE_STATS, setRole, settledLevel, suggestedBloodied, suggestedLastStand, toMonster, toSource, withDice,
 } from './entity-monster';
 import {
-	BuilderUI, bookTag, field, grid, homeFolder, iconButton, KindBuilder, meter, numberInput, Output, registerKind, section, segmented, StepDef,
+	BuilderUI, bookTag, dicePad, field, grid, homeFolder, iconButton, KindBuilder, meter, numberInput, Output, registerKind, section, segmented, StepDef,
 	textArea, textButton, textInput,
 } from './entity-builder';
 
@@ -316,40 +316,16 @@ class MonsterBuilder implements KindBuilder {
 		const body = textInput(card, { value: '', label: 'What it does', code: false, cls: 'eb-attack-body', onInput: v => { a.body = v; this.settle(); ui.changed(); } });
 		body.placeholder = 'Dice and what else it does';
 
-		const pad = card.createDiv({ cls: 'eb-dice eb-noswipe' });
-		const parts = () => parseDiceParts(attackBody(this.d, a)) ?? { count: 1, sides: this.d.role === 'minion' ? this.d.minionDie ?? minionDie(this.d.partyLevel) : this.d.die, bonus: 0 };
-		const setParts = (p: { count: number; sides: number; bonus: number }) => {
-			a.body = withDice(attackBody(this.d, a), formatDiceParts(p).replace(/^d(\d+)$/, '1d$1'));
-			this.settle();
-			ui.changed();
-		};
-		const step = (label: string, icon: string, fn: () => void) => iconButton(pad, icon, label, fn, 'eb-dice-btn');
-		step('One die fewer', 'minus', () => { const p = parts(); if (p.count > 1) setParts({ ...p, count: p.count - 1 }); });
-		const diceText = pad.createSpan({ cls: 'eb-dice-text' });
-		step('One die more', 'plus', () => { const p = parts(); setParts({ ...p, count: Math.min(20, p.count + 1) }); });
-		pad.createSpan({ cls: 'eb-dice-sep', text: 'bonus' });
-		step('Less bonus', 'minus', () => { const p = parts(); setParts({ ...p, bonus: Math.max(0, p.bonus - (p.bonus > 20 ? 5 : 1)) }); });
-		const bonusText = pad.createSpan({ cls: 'eb-dice-text' });
-		step('More bonus', 'plus', () => { const p = parts(); setParts({ ...p, bonus: p.bonus + (p.bonus >= 20 ? 5 : 1) }); });
-		const avg = pad.createSpan({ cls: 'eb-dice-avg' });
-		const reset = textButton(pad, 'rotate-ccw', 'Book dice', () => { a.body = undefined; this.settle(); ui.changed(); }, 'eb-dice-reset');
-
-		ui.live(() => {
-			const text = attackBody(this.d, a);
-			if (activeDocument.activeElement !== body) body.value = text;
-			const p = parseDiceParts(text);
-			diceText.setText(p ? `${p.count}d${p.sides}` : '—');
-			bonusText.setText(p ? `+${Math.max(0, p.bonus)}` : '—');
-			const have = diceAverage(text);
-			const want = attackTarget(this.d, a);
-			avg.empty();
-			if (have !== null) {
-				avg.createSpan({ cls: 'eb-dice-avg-have', text: `avg ${Math.round(have * 10) / 10}` });
-				const off = want ? have / want : 1;
-				avg.createSpan({ cls: `eb-dice-avg-want ${off > 1.25 ? 'is-high' : off < 0.75 ? 'is-low' : 'is-ok'}`, text: `book ${Math.round(want)}` });
-			}
-			reset.toggleClass('is-hidden', a.body === undefined || (a.base !== undefined && a.body === undefined));
+		dicePad(card, {
+			read: () => parseDiceParts(attackBody(this.d, a)),
+			write: (p) => { a.body = withDice(attackBody(this.d, a), formatDiceParts(p).replace(/^d(\d+)$/, '1d$1')); this.settle(); },
+			sides: () => this.d.role === 'minion' ? this.d.minionDie ?? minionDie(this.d.partyLevel) : this.d.die,
+			avg: () => diceAverage(attackBody(this.d, a)),
+			want: () => attackTarget(this.d, a),
+			reset: { shown: () => a.body !== undefined, run: () => { a.body = undefined; this.settle(); } },
+			ui,
 		});
+		ui.live(() => { if (activeDocument.activeElement !== body) body.value = attackBody(this.d, a); });
 	}
 
 	// ------------------------------------------------------------------------
