@@ -223,6 +223,59 @@ test('stat block hints: a quiet line under a hand-written block, opening into fi
 	assert.equal(await o.page.locator(`${R} .nimble-issues .nimble-issue`).count(), 2);
 });
 
+test('monster builder: a quick build makes a note with a clean stat block', async (o) => {
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
+	const B = '.modal.nimble-entity-builder';
+	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Quick Bear');
+	// One level up from the party's (1), then Create from the first step.
+	await o.page.locator(`${B} button[aria-label="Higher level"]`).click();
+	assert.equal(await o.page.locator(`${B} .eb-level-value`).textContent(), '2');
+	assert.match(await o.page.locator(`${B} .eb-preview .nimble-statblock`).textContent(), /Quick Bear/);
+	await o.page.locator(`${B} .eb-create`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	const text = await o.eval((app) => app.vault.adapter.read('Bestiary/Quick Bear.md'));
+	assert.match(text, /^---\nnimble: monster\nlevel: "2"\nrole: regular\n---/);
+	assert.match(text, /```nimble\nname: Quick Bear\nlevel: 2\nsize: Medium\nhp: 31\nattacks:\n- \*\*Strike\.\*\* 1d8\+6\.\n```/);
+	// The new note opens in the editor (Live Preview), its block rendered there.
+	const leaf = '.workspace-leaf.mod-active';
+	await o.page.locator(`${leaf} .nimble-statblock`).waitFor();
+	assert.equal(await o.page.locator(`${leaf} .nimble-issues`).count(), 0);
+	assert.ok(await o.eval((app, plugin) => !!plugin.index.get('Quick Bear')));
+});
+
+test('monster builder: a solo from a template, re-levelled, with stats typed first', async (o) => {
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
+	const B = '.modal.nimble-entity-builder';
+	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Goblin Warlord');
+	await o.page.locator(`${B} input[aria-label="Copy a monster"]`).fill('goblin boss');
+	await o.page.locator(`${B} .eb-search-row.is-selected`, { hasText: 'Goblin Boss' }).waitFor();
+	await o.page.keyboard.press('Enter');
+	await o.page.locator(`${B} .eb-template`).waitFor();
+	assert.equal(await o.page.locator(`${B} .eb-panel.is-active input`).first().inputValue(), 'Goblin Warlord');
+	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Solo' }).click();
+	// Stats first: type HP per hero, and the level check says what it plays like.
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Toughness' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active input[aria-label="HP"]`).fill('44');
+	await o.page.waitForTimeout(150);
+	assert.match(await o.page.locator(`${B} .eb-check-value`).textContent(), /level 4/);
+	await o.page.locator(`${B} .eb-check-fix`).click();
+	// The template's attacks move up with it, and the check settles on a level that agrees.
+	await o.page.locator(`${B} .eb-verdict`, { hasText: /^Right for level \d+$/ }).waitFor();
+	assert.equal(await o.page.locator(`${B} .eb-check-fix`).count(), 0);
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Review' }).click();
+	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-monster-builder.png') });
+	await o.page.locator(`${B} .eb-next`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	const text = await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin Warlord.md'));
+	assert.match(text, /role: solo\n/);
+	assert.match(text, /saves: STR\+ DEX\+\+ WIL-/); // the Goblin Boss's old-style saves, carried over
+	assert.match(text, /hp: 44\/hero/);
+	assert.match(text, /actionText: After each hero's turn, choose one:/);
+	assert.match(text, /lastStand: Regains \d+ HP per hero and fights on\./);
+	await o.page.locator('.workspace-leaf.mod-active .nimble-statblock').waitFor();
+	assert.equal(await o.page.locator('.workspace-leaf.mod-active .nimble-issues').count(), 0);
+});
+
 // ---------------------------------------------------------------------------
 // Inline references
 

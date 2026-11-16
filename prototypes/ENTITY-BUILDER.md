@@ -70,7 +70,7 @@ Same frame as the level-up wizard: a carousel of steps with step chips across th
 
 ## Where it's saved
 
-A new note per creation, named after it. In the active campaign, monsters go in its `Bestiary` folder, spells and items in `Homebrew`. With no active campaign, a `Bestiary` or `Homebrew` folder at the vault root. The Review step shows the folder and lets you change it.
+A new note per creation, named after it. In the active campaign you run, monsters go in its `Monsters` folder (where campaign monster notes already live), spells and items in `Homebrew`. With no active campaign, a `Bestiary` or `Homebrew` folder at the vault root. The Review step shows the folder and lets you change it.
 
 ## Ways in
 
@@ -82,13 +82,13 @@ A new note per creation, named after it. In the active campaign, monsters go in 
 ## Stages (one PR, a commit each)
 
 1. Forgiving stat blocks and quiet hints. **Done.**
-2. Builder math: the GM Guide tables, expected stats, level and tier guesses, re-levelling, d44/d66/d88 dice. Pure and unit-tested against the bundled data.
-3. The builder frame and the monster builder: quick and full, regular, solo and minion, from a template.
+2. Builder math: the GM Guide tables, expected stats, level and tier guesses, re-levelling, d44/d66/d88 averages. Pure and unit-tested against the bundled data. Tougher/Weaker moves onto the same tables. **Done.**
+3. The builder frame and the monster builder: quick and full, regular, solo and minion, from a template. **Done.**
 4. Spell and item builders, and homebrew spells and items in the compendium.
 5. Ways in: compendium, commands, Spotlight, slash commands, Edit in builder.
 6. Phone and layout pass, guide pages, e2e tests, screenshots.
 
 ## Found along the way
 
-- `parseDice('d44')` rolls one 44-sided die (average 22.5). In Nimble d44 is a tens die and a ones die (average 27.5); d66 and d88 the same. Fixed in stage 2, since the builder suggests them.
+- `parseDice('d44')` rolls one 44-sided die (average 22.5). In Nimble d44 is a tens die and a ones die (average 27.5); d66 and d88 the same. The builder computes their averages correctly; rolling them (and the 3D dice) is a follow-up.
 - Tougher/Weaker in the tracker multiplies HP by 1.25 per level. The GM Guide table grows more slowly at high levels (and so do the bundled monsters, about ×1.16 per level): +6 levels on a 40 HP level-4 monster gives 153 HP, where the table says a level 10 monster has 126.
