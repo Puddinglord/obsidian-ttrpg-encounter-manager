@@ -125,6 +125,24 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					render: toggle(() => s.spotlightKey, v => { s.spotlightKey = v; }, () => this.plugin.campaigns.trigger('changed')), // the Campaign panel's search bar shows the key
 				},
 			] },
+			{ heading: 'Maps', rows: [
+				{
+					name: 'Grid line strength',
+					desc: 'How strongly grids are drawn over maps. Themes and CSS snippets can change the colour with --nimble-map-grid-color.',
+					render: (setting) => {
+						setting.addSlider(sl => showSliderValue(sl.setLimits(10, 100, 5).setValue(Math.round(s.mapGridOpacity * 100))).onChange(async v => {
+							s.mapGridOpacity = v / 100;
+							await save();
+							activeDocument.querySelectorAll<HTMLElement>('.nimble-map').forEach(el => el.style.setProperty('--nimble-map-grid-opacity', String(s.mapGridOpacity)));
+						}));
+					},
+				},
+				{
+					name: 'Travel moves the clock without asking',
+					desc: 'When you drag the party across a map that has a travel: line, the campaign clock moves on by itself (with a notice saying so) instead of asking first.',
+					render: toggle(() => s.travelAdvancesClock, v => { s.travelAdvancesClock = v; }),
+				},
+			] },
 			{ heading: 'Campaigns', rows: [
 				{
 					name: 'Campaigns folder',

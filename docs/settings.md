@@ -8,6 +8,11 @@ Open **Settings → Ember Vault**, or type `/settings` in a note.
 - **Nimble slash commands:** show the Nimble commands in the `/` menu.
 - **Open Spotlight with Cmd/Ctrl+K:** off until you turn it on. [Spotlight](spotlight.md) then shares the key with Obsidian's Insert Markdown link: Spotlight when nothing is selected, a link when text is.
 
+## Maps
+
+- **Grid line strength:** how strongly grids are drawn over maps. A theme or CSS snippet can change the colour with `--nimble-map-grid-color`.
+- **Travel moves the clock without asking:** off by default. When it's on, dragging the party across a map with a `travel:` line moves the campaign clock on by itself, with a notice saying so, instead of asking first.
+
 ## Campaigns
 
 - **Campaigns folder:** where **New campaign** creates its folders.

@@ -265,8 +265,20 @@ export interface NimbleStatblocksSettings {
 	looseParty?: PartyMember[];
 	/** Token positions on GM maps: map key → combatant id → percent position. */
 	mapTokens?: Record<string, Record<string, { x: number; y: number }>>;
+	/** How strongly map grid lines are drawn, 0–1. */
+	mapGridOpacity: number;
+	/** Show the campaign clock as a chip on maps. */
+	mapClock: boolean;
+	/** Dragging the party on a map with `travel:` moves the clock on without asking (it still says so). */
+	travelAdvancesClock: boolean;
+	/** The note a map tab opens beside it, per map (note path and block index). */
+	mapNotes?: Record<string, string>;
+	/** The campaign clock's last changes per campaign folder (newest last), for Undo. */
+	clockHistory?: Record<string, { from: number; to: number; at: number; label?: string }[]>;
 	settingsVersion: number;
 }
+
+export const DEFAULT_GRID_OPACITY = 0.45;
 
 export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	statblockStyle: 'book',
@@ -297,6 +309,9 @@ export const DEFAULT_SETTINGS: NimbleStatblocksSettings = {
 	compendiumDrafts: true,
 	compendiumArt: {},
 	compendiumArtFolder: 'Ember Vault/Compendium Art',
+	mapGridOpacity: DEFAULT_GRID_OPACITY,
+	mapClock: true,
+	travelAdvancesClock: false,
 	rollDialog: true,
 	classDice: { color: '#d4a72c', finish: 'metal' },
 	autoLinkNpcs: true,
@@ -367,6 +382,7 @@ export function migrateSettings(saved: unknown): NimbleStatblocksSettings {
 	s.party = items(s.party);
 	s.campaigns = record(s.campaigns);
 	s.activeCampaign = typeof s.activeCampaign === 'string' ? s.activeCampaign : null;
+	s.mapGridOpacity = typeof s.mapGridOpacity === 'number' && s.mapGridOpacity >= 0 && s.mapGridOpacity <= 1 ? s.mapGridOpacity : DEFAULT_GRID_OPACITY;
 	const cd = record(data.classDice);
 	s.classDice = {
 		color: typeof cd.color === 'string' && /^#[0-9a-f]{6}$/i.test(cd.color) ? cd.color : DEFAULT_SETTINGS.classDice.color,

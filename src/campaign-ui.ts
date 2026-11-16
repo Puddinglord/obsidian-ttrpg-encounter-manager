@@ -18,6 +18,7 @@ import { draggedPaths, startFileDrag } from './internals';
 import { createCharacterNote, NewCharacterModal } from './character-modals';
 import { handEnteredLeft, PartyMember } from './types';
 import { confirmAction, onLongPress } from './touch';
+import { formatSpan } from './calendar-def';
 
 export { KIND_ICON };
 const SECTION_ICON: Record<string, string> = { Party: 'shield', NPCs: 'users-round', Locations: 'map-pin', Quests: 'flag', Sessions: 'calendar-days', Monsters: 'skull', Handouts: 'scroll-text', Assets: 'image', Maps: 'map' };
@@ -223,7 +224,7 @@ export function renderRoster(el: HTMLElement, plugin: NimbleStatblocksPlugin, c:
  * (a menu on right-click or long-press, and it drags into notes); without one
  * (a party entered by hand), it's just the card.
  */
-function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<CharacterInfo> & { name: string; showHp?: boolean }, menu?: (e: MouseEvent | PointerEvent) => void): HTMLElement {
+export function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<CharacterInfo> & { name: string; showHp?: boolean }, menu?: (e: MouseEvent | PointerEvent) => void): HTMLElement {
 	const path = h.path;
 	const card: HTMLElement = path
 		? list.createEl('a', { cls: `campaign-hero${h.mine ? ' is-mine' : ''}`, href: '#', attr: { 'data-path': path } })
@@ -391,7 +392,8 @@ function renderSection(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campa
 	}, (b) => {
 		// Newest session first; quests still to do above the finished ones.
 		const notes = s.name === 'Sessions' ? [...s.notes].reverse() : questOrder(s.notes);
-		for (const n of notes) noteRow(b, plugin, c, n, opts);
+		const rows = notes.map(n => noteRow(b, plugin, c, n, opts));
+		if (s.name === 'Sessions') void sessionDates(plugin, c, s.notes, rows.reverse());
 		for (const f of s.files) fileRow(b, plugin, c, f, opts);
 		if (!s.notes.length && !s.files.length) {
 			const empty = b.createDiv({ cls: 'campaign-empty' });
@@ -408,6 +410,20 @@ function renderSection(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campa
 	});
 	onLongPress(h, (e) => sectionMenu(plugin, c, s, e, opts));
 	dropTarget(g, plugin, s.folder);
+}
+
+/**
+ * "Day 14 → 17" beside each session: its `world-date`, to the next session's
+ * (or, for the latest, to now). Sessions without a world-date show nothing.
+ */
+async function sessionDates(plugin: NimbleStatblocksPlugin, c: Campaign, notes: NoteRef[], rows: HTMLElement[]): Promise<void> {
+	const st = await plugin.clock.state(c);
+	const dates = await Promise.all(notes.map(n => plugin.clock.noteDate(c, n.path)));
+	dates.forEach((d, i) => {
+		if (d === null || !rows[i]?.isConnected) return;
+		const next = dates.slice(i + 1).find((x): x is number => x !== null) ?? (st.now > d ? st.now : null);
+		rows[i].createSpan({ cls: 'campaign-session-date', text: formatSpan(st.calendar, d, next) });
+	});
 }
 
 // ---------------------------------------------------------------------------

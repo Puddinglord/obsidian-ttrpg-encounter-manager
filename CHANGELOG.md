@@ -6,6 +6,29 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ## [Unreleased]
 
+### Added
+
+- Map pins can link to other maps. Pick a map note in the pin's **Links to** picker (map notes are listed first, with a map icon) and the pin becomes a **map** pin; clicking it opens that map in the same tab, so Back takes you up again.
+- Hex and square grids on maps, set up with the new **Grid** button: pick a type, then **Detect** finds the grid printed on the map, or **Fit to 3 × 3** sets it from a box you drag over three cells. Nudge the size and position with the buttons or arrow keys, turn the drawn lines off for maps with their own grid, and say what one cell is (`6 miles`). Grid lines stay thin at any zoom; **Grid line strength** in settings sets how strong they are.
+- A party marker on maps. **Place party**, then drag it to travel: it snaps to cells (Alt to place it anywhere), and a chip shows how far you've gone, like "3 hexes · 18 miles". It shows your heroes' portraits, and hovering (or tapping) shows the party's cards. It's saved in the map block.
+- **Measure**: a travel ruler. Click along the way to see the distance in cells and miles, without moving anyone.
+- Drawing on maps: freehand pen, routes that show their length, text labels and an eraser, in six colours plus your accent colour and three widths. Cmd/Ctrl+Z undoes, **Show drawings** hides them, and they're saved in the block with long strokes smoothed to a few points.
+- A campaign clock. It's under the party in the Campaign panel, in the corner of every map in the campaign, and anywhere you put a `nimble-clock` block, and they all move together. **+** gives you steps like **+1 quarter**, your calendar's quick jumps (**Camp** until Morning), a field for "+3 days 4 hours", **Set date…** and **Undo**. It counts days with nothing set up.
+- Calendars of your own: **New calendar…** writes one into your campaign from a starter (Day count, Day and night, Quarter days, Watches, 12 months, 13 × 28) for you to edit, with your own months, weekdays, parts of the day, era and date format. A calendar note shows a month at a time, with today marked and dated notes on their days.
+- The date is kept in the campaign home's properties as `world-date: 1247-03-12 14:30`. New session notes get the world date when you make them, and the Sessions list shows the time each one covered ("Day 14 → 17").
+- Travel moves the clock: give a map a `travel:` line (`travel: 1 quarter`), and dragging the party across cells offers **Advance the clock 3 quarters? (3 hexes · 18 miles)**. It never moves the clock silently; **Travel moves the clock without asking** in settings makes it automatic, with a notice.
+- **Full screen** on any map (or press F): the map fills its whole tab, with its toolbar, and **Exit full screen** or Escape puts it back in the note where you were.
+- **Open in tab** puts a map in its own tab, filling the pane and saving into its note, and it comes back after a restart. **Notes** opens your latest session note (or one you pick) in a split beside it; **Toggle map note panel** does the same from a hotkey you choose.
+- Map blocks understand new optional keys (`grid: hex`, `cell`, `offset`, `show-grid`, `scale`, `travel`, `party` and `drawings`), ready for grids, the party marker and drawing.
+
+### Fixed
+
+- The old `grid: 30x20` is drawn the same way as the new grids, sharp at any zoom.
+- Saving a map (adding, moving or editing a pin) no longer deletes lines from the block that Ember Vault doesn't know about, and lines you didn't change are written back exactly as you typed them.
+- On a phone, tapping a map's buttons quickly (Zoom in twice) or double-tapping the map to zoom no longer switches the note into editing.
+- A map keeps what you were doing (the Grid panel, Draw, full screen) when the note redraws itself, as it does when campaign links change.
+- A map keeps its zoom and position after you add or move a pin, and when you switch between Add pin and Move pins, instead of jumping back to the whole map. Coming back to a map's note puts you where you were.
+
 ## [1.4.0] - 2026-11-16
 
 ### Added

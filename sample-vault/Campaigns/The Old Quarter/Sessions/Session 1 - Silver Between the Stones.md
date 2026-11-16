@@ -1,6 +1,7 @@
 ---
 nimble: session
 date: 2026-11-07
+world-date: day 1 08:00
 ---
 
 ## Prep

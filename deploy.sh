@@ -9,14 +9,11 @@ npm run build
 
 # Check if build succeeded
 if [ $? -eq 0 ]; then
-    # Ensure plugin directory exists
-    mkdir -p "$VAULT_PLUGIN_DIR"
-
-    # Copy to vault
-    cp main.js styles.css manifest.json "$VAULT_PLUGIN_DIR/"
+    # Copy to the vault, with Hot Reload installed so Obsidian picks the build up by itself
+    node scripts/dev-vault.mjs "$HOME/Documents/DevVault" --once
     echo ""
-    echo "✓ Deployed to $VAULT_PLUGIN_DIR"
-    echo "→ Reload Obsidian (Cmd+R) or toggle the plugin to see changes"
+    echo "✓ Deployed to $VAULT_PLUGIN_DIR (Hot Reload reloads it in Obsidian)"
+    echo "→ For live rebuilds while you edit: npm run dev:vault"
 else
     echo ""
     echo "✗ Build failed"

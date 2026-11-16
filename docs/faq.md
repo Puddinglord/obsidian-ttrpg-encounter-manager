@@ -1,5 +1,8 @@
 # FAQ and troubleshooting
 
+**Does Ember Vault do battle maps, fog of war or spell templates?**
+No: use Atlas VTT (or another virtual tabletop) for that. Ember Vault's maps are for prep, travel and bookkeeping: pins, grids, the party marker, routes and the campaign clock.
+
 **Is this a virtual tabletop?**
 No. Everything is for the GM: your notes, your monsters, your tracker. Players don't connect to anything. To show players a character, open their portrait and use **Show in its own window** to put it on a second screen.
 
@@ -25,7 +28,7 @@ They switch off by themselves without WebGL, or when your system asks for reduce
 Yes. See [Phone and iPad](mobile.md).
 
 **Does the plugin use the internet?**
-Only when you ask it to. Importing a dice set by link downloads it from the address you give (a module.json you import, as a link or a file, points at the set's download, and that is fetched too). An NPC portrait you set to an `https://` image URL is loaded from that address. Nothing else goes online, and no data about you or your vault is sent anywhere. It writes to the clipboard only when you select a **Copy** button.
+Only when you ask it to. Importing a dice set by link downloads it from the address you give (a module.json you import, as a link or a file, points at the set's download, and that is fetched too). An NPC portrait or a map image you set to an `https://` address is loaded from it (a map's is read again when you select **Detect** on its grid). Nothing else goes online, and no data about you or your vault is sent anywhere. It writes to the clipboard only when you select a **Copy** button.
 
 **Where's my data?**
 Encounters, stat blocks, maps and NPC cards are text in your notes. The party, the tracker's current fight and map token positions are in the plugin's `data.json` inside your vault's `.obsidian` folder.

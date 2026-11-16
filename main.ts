@@ -29,6 +29,10 @@ import { registerEncounterBlock } from './src/encounter-block';
 import { BuilderModal } from './src/builder-modal';
 import { PartyModal } from './src/party';
 import { registerMapBlock } from './src/map-block';
+import { MAP_VIEW_TYPE, MapView, toggleMapNotes } from './src/map-view';
+import { ClockStore } from './src/clock';
+import { newCalendar, openClockPopover, registerClockBlock } from './src/clock-ui';
+import { registerCalendarBlock } from './src/calendar-block';
 import { keywordPattern } from './src/markdown';
 import { openPopover } from './src/popover';
 import { CampaignStore } from './src/campaigns';
@@ -55,7 +59,7 @@ import { newSceneAnywhere, promptCharacter, promptChapter, promptSectionNote } f
 import BESTIARY from './src/data/bestiary.json';
 import { registerCharacterFeatures } from './src/character-register';
 import { registerReadingMode } from './src/reading-mode';
-import { noteKind, safeName } from './src/campaign-model';
+import { Campaign, noteKind, safeName } from './src/campaign-model';
 import { readCharacter } from './src/character-def';
 import { creatureNote } from './src/campaign-templates';
 import { bundledCompendium, setCompendiumDrafts, sheetCompendium } from './src/compendium-data';
@@ -119,6 +123,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	indexVersion = 0;
 	private keywordCache: { key: string; re: RegExp | undefined } | null = null;
 	campaigns!: CampaignStore;
+	/** The campaign clock: each campaign's world date and every change to it. */
+	clock!: ClockStore;
 	/** Bumped when the NPC list changes; Live Preview decorations watch it. */
 	npcVersion = 0;
 	private wakeLock: WakeLockSentinel | null = null;
@@ -155,6 +161,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 
 		this.index = new MonsterIndex(this.app);
 		this.campaigns = new CampaignStore(this);
+		this.clock = new ClockStore(this);
 		this.encounters = new EncounterStore(() => this.settings, () => this.saveSettings(), () => this.campaigns.defaults());
 		this.hover = new HoverPreview(this);
 		this.loadBundledBestiary();
@@ -205,6 +212,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		}));
 		this.registerMarkdownCodeBlockProcessor('nimble-campaign', (_source, el, ctx) => ctx.addChild(new CampaignBlock(this, el, ctx)));
 		registerMapBlock(this);
+		this.registerView(MAP_VIEW_TYPE, (leaf) => new MapView(leaf, this));
+		registerClockBlock(this);
+		registerCalendarBlock(this);
 		setCompendiumDrafts(this.settings.compendiumDrafts);
 		registerCharacterFeatures(this);
 		registerReadingMode(this);
@@ -267,6 +277,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(async () => {
 			this.campaigns.start();
+			this.clock.start();
 			// First run in a vault with campaigns: show the Campaign panel once.
 			if (!this.settings.campaignPanelShown && this.campaigns.campaigns.length) {
 				this.settings.campaignPanelShown = true;
@@ -313,6 +324,15 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.addCommand({ id: 'add-monster', name: 'Add monster to encounter…', checkCallback: gm(() => this.openAddMonsterModal()) });
 		this.addCommand({ id: 'build-encounter', name: 'Build an encounter…', checkCallback: gm(() => new BuilderModal(this).open()) });
 		this.addCommand({ id: 'edit-party', name: 'Edit party…', callback: () => this.openParty() });
+		// No default key: pick one under Hotkeys (Tab moves keyboard focus, so it isn't taken over).
+		this.addCommand({ id: 'toggle-map-note-panel', name: 'Toggle map note panel', icon: 'panel-right', checkCallback: (checking) => toggleMapNotes(this, checking) });
+		this.addCommand({ id: 'new-calendar', name: 'New calendar…', icon: 'calendar-plus', callback: () => newCalendar(this, this.campaigns.active) });
+		this.addCommand({ id: 'advance-clock', name: 'Advance the campaign clock…', icon: 'calendar-clock', checkCallback: (checking) => {
+			const c = this.campaigns.active;
+			if (!c) return false;
+			if (!checking) void this.openClock(c);
+			return true;
+		} });
 		this.addCommand({ id: 'open-settings', name: 'Open Nimble settings', callback: () => this.openSettings() });
 		const withActive = (fn: (encId: string) => void) => (checking: boolean) => {
 			const enc = this.encounters.active;
@@ -1011,6 +1031,15 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	private openingCampaignView: Promise<void> | null = null;
 
 	/** Show the Campaign panel, opening it if needed. Two calls at once still give one panel. */
+	/** Show the Campaign panel and open its clock's + popover. */
+	async openClock(c: Campaign): Promise<void> {
+		await this.openCampaignView();
+		window.setTimeout(() => {
+			const plus = activeDocument.querySelector<HTMLElement>(`.nimble-campaign-view .nimble-clock[data-campaign="${CSS.escape(c.folder)}"] .nimble-clock-plus`);
+			if (plus) openClockPopover(plus, this, c);
+		}, 300);
+	}
+
 	openCampaignView(): Promise<void> {
 		this.openingCampaignView ??= (async () => {
 			// Shown once is enough: don't auto-open a second panel after an update or reload.

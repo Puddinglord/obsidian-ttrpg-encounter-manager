@@ -2,6 +2,7 @@
 // campaign follows the note you open, and each campaign keeps its own party.
 
 import { debounce, Events, normalizePath, Notice, TAbstractFile, TFile, TFolder } from 'obsidian';
+import { formatWorldDate } from './calendar-def';
 import type NimbleStatblocksPlugin from '../main';
 import {
 	adjacentScene, buildCampaigns, Campaign, campaignOf, CampaignRole, fmTrue, canMoveInto, Chapter, chapterOf, fmText, homeFolderFor, isPlayable, joinPath, nextOrder, NoteInfo, noteKind, parentOf, safeName,
@@ -391,6 +392,11 @@ export class CampaignStore extends Events {
 			case 'session': {
 				const last = c && this.lastScene(c);
 				body = sessionNote(name, new Date().toISOString().slice(0, 10), last?.replace(/^.*\//, '').replace(/\.md$/, ''), side);
+				// The session starts at the campaign's world date; `date:` stays the real-world day.
+				if (c) {
+					const st = await this.plugin.clock.state(c);
+					body = body.replace(/^(---\n[\s\S]*?)\n---\n/, `$1\nworld-date: ${formatWorldDate(st.calendar, st.now)}\n---\n`);
+				}
 				break;
 			}
 			case 'map': {
