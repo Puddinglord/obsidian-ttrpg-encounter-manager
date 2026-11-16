@@ -2071,7 +2071,7 @@ body.is-tablet .nimble-box-editor .bxe-font { padding: 0 0.45rem; }
 
 /* ---------- Live Preview: no frame around our blocks on hover ---------- */
 /* Obsidian marks each code block's frame with cm-lang-<language>. */
-.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-box, .cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble):hover {
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-box, .cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble-calendar, .cm-lang-nimble-clock, .cm-lang-nimble):hover {
 	box-shadow: none; border-radius: 0; background: transparent;
 }
 /* The "edit source" button sits quietly in the box's header instead of on its corner. */
@@ -2081,13 +2081,17 @@ body.is-tablet .nimble-box-editor .bxe-font { padding: 0 0.45rem; }
 }
 .markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block.cm-lang-box:hover > .edit-block-button { opacity: 1; }
 .markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block.cm-lang-box > .edit-block-button:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
-.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble) > .edit-block-button {
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble-calendar, .cm-lang-nimble-clock, .cm-lang-nimble) > .edit-block-button {
 	opacity: 0; transition: opacity .12s; top: 0.5rem; right: 0.5rem;
 }
-.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble):hover > .edit-block-button { opacity: 1; }
+.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble-calendar, .cm-lang-nimble-clock, .cm-lang-nimble):hover > .edit-block-button { opacity: 1; }
+/* Room for that button on the right, so it never covers a block's own controls. */
+.markdown-source-view.mod-cm6 .cm-preview-code-block.cm-lang-nimble-calendar .nimble-calendar-head,
+.markdown-source-view.mod-cm6 .cm-preview-code-block.cm-lang-nimble-clock .nimble-clock.is-block,
+.markdown-source-view.mod-cm6 .cm-preview-code-block.cm-lang-nimble-map .nimble-map-toolbar { padding-right: 2.4rem; }
 @media (pointer: coarse) {
 	.markdown-source-view.mod-cm6 .cm-embed-block > .edit-block-button,
-	.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-box, .cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble) > .edit-block-button { opacity: 1; }
+	.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-box, .cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble-calendar, .cm-lang-nimble-clock, .cm-lang-nimble) > .edit-block-button { opacity: 1; }
 }
 
 /* ---------- Tables ---------- */
