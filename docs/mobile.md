@@ -1,6 +1,12 @@
 # Phone and iPad
 
-Everything works in the Obsidian mobile app. On a touch screen:
+Everything works in the Obsidian mobile app.
+
+![Ember Vault on an iPad: the Campaign panel beside a scene with a read-aloud box and an encounter block](images/device-ipad.png)
+
+![A character sheet on a phone](images/device-phone.png)
+
+On a touch screen:
 
 - **Monster references and NPCs:** tap once to look (a bottom sheet on phones), tap again, or use **Open** in the sheet, to go to the page. The note scrolls so what you tapped stays visible above the sheet.
 - **HP:** tapping a combatant's HP opens a keypad with Damage, Heal, Set HP and Temp HP, plus Crit / Vulnerable / Resisted toggles. It shows the armor working before you apply it, so you don't need the phone keyboard.
