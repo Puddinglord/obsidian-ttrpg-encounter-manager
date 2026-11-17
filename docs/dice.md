@@ -10,6 +10,8 @@ Everything below is in **Settings → Ember Vault → 3D dice**.
 
 ### Dice Workshop
 
+![The Dice Workshop: looks for each kind of die, test rolls for crits, misses and pools, and size, speed and shadow settings](images/guide-dice-workshop.png)
+
 **Open Dice Workshop** (in the 3D dice settings, or the command palette) opens over settings. Each test sits beside the effect it plays:
 
 - **Crit**, **Miss**: the primary die (d4 to start; pick the size and how many times a crit explodes).
@@ -85,8 +87,12 @@ Imported files stay on your device, in the plugin's folder. Only model and image
 
 ## The roll log
 
+![Recent rolls in the tracker, with totals, dice, a miss and a crit](images/guide-roll-log.png)
+
 Every roll is kept in the tracker's **Recent rolls** list. Right-click an entry for **Copy result**. **Clear roll log** in the command palette empties it.
 
 ## Rolling into a note
+
+![Two /roll results in a note: a plain roll and an attack that crit](images/guide-roll-note.png)
 
 `/roll 2d6+3` rolls now and writes the result into the note, either plainly or as a Nimble attack.

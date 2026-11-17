@@ -3,16 +3,17 @@
 // module initializer, so three.js only runs on the first roll and plugin
 // startup doesn't pay for it.
 
-import type { Dice3dOptions, DiceMaterial, Die3d, DieLook, RollStats } from './renderer';
+import type { Dice3dOptions, DiceMaterial, Die3d, DieLook, PreviewHandle, RollStats } from './renderer';
 
-export type { Dice3dOptions, DiceMaterial, Die3d, DieLook, RollStats } from './renderer';
+export type { Dice3dOptions, DiceMaterial, Die3d, DieLook, PreviewHandle, RollStats } from './renderer';
 
 export { DICE3D_MATERIALS } from './materials';
 
 interface RendererLib {
 	roll: (dice: Die3d[], opts: Dice3dOptions) => Promise<void>;
 	warm: (dice: Die3d[], opts: Dice3dOptions) => void;
-	preview: (canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }) => () => void;
+	preview: (canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }) => PreviewHandle;
+	legacyLook: (color: string, material: DiceMaterial) => DieLook;
 	stats: { last: RollStats | null };
 }
 
@@ -95,10 +96,15 @@ export async function warm3d(dice: Die3d[], opts: Dice3dOptions): Promise<void> 
 	(await load()).warm(dice, opts);
 }
 
-/** A slowly turning die on `canvas`, for settings. Returns a function that stops it (it also stops when the canvas leaves the page). */
-export async function preview3d(canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }): Promise<() => void> {
-	if (!dice3dSupported()) return () => {};
+/** A slowly turning die on `canvas`, for settings. Returns a function that stops it (it also stops when the canvas leaves the page), with `setLook` to change its look. */
+export async function preview3d(canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }): Promise<PreviewHandle> {
+	if (!dice3dSupported()) return Object.assign(() => {}, { setLook: () => {}, preload: () => {} });
 	return (await load()).preview(canvas, die);
+}
+
+/** The look a die gets from a colour and one of the built-in finishes (Classic, Lava, Frost…). */
+export async function looks3d(): Promise<(color: string, material: DiceMaterial) => DieLook> {
+	return (await load()).legacyLook;
 }
 
 /** Timings of the last roll, for tuning (not needed to use the dice). */

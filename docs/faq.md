@@ -9,14 +9,20 @@ The plugin includes the Nimble monsters, conditions and rules text with the crea
 **Can I use it for another system?**
 Campaigns, NPC cards, boxes and maps work with any game. The bestiary, encounter difficulty and tracker follow Nimble's rules. You can turn the bundled bestiary off and write your own stat blocks.
 
+**Can I make my own monsters, spells and items?**
+Yes. The [builder](builder.md) (**New monster…**, **New spell…**, **New item…**) fills in the books' numbers for the level or tier you pick and writes an ordinary block into a note. You can also write the blocks by hand; homebrew spells and items join the compendium and the character sheet's Add spell and Add item.
+
+**A stat block says some lines "aren't shown as written".**
+A line in a ```` ```nimble ```` block you wrote couldn't be read: a misspelled field, a missing colon, list items with no heading. Click the line under the stat block to see which ones and why, and use **Fix** where it's offered. See [When a line isn't shown](bestiary.md#when-a-line-isnt-shown).
+
 **A monster reference shows as unknown.**
-The name has to match a bundled monster or a note in your vault that has a `nimble` stat block. Check the spelling in the bestiary, or use `/monster` to insert it with autocomplete.
+The name has to match a bundled monster or a note in your vault that has a `nimble` stat block. Check the spelling in the compendium, or use `/monster` to insert it with autocomplete.
 
 **My encounter is rated against the wrong party.**
 Inside a campaign, encounters use that campaign's party. Outside, they use the party in settings. The line under the encounter block ("4 heroes, level 2") shows which, and clicking it opens that party.
 
 **I changed a monster but the old version still shows.**
-A note with the same name as a bundled monster replaces it. Use **Copy to vault** in the bestiary to make an editable copy, then edit that note.
+A note with the same name as a bundled monster replaces it. Use **Copy to vault** in the compendium to make an editable copy, then edit that note.
 
 **The 3D dice don't appear.**
 They switch off by themselves without WebGL, or when your system asks for reduced motion. On phones they're off unless you turn on **3D dice on phones** in settings. A d100 or other odd-sized die, or more than 12 dice at once, shows just the result.

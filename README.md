@@ -1,6 +1,6 @@
 # Ember Vault
 
-A companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.3 rules), built into Obsidian, for both sides of the table. GMs prep and run their game from their own notes: a campaign manager, a searchable compendium of everything in Nimble (525 monsters, every spell, item, class feature and class), encounter blocks rated against your party, a combat tracker, GM maps with pins, NPC portrait cards, styled read-aloud boxes and 3D dice. Players get an interactive Nimble character sheet, a party roster, and session notes on the people, places and fights they've met.
+A companion for the [Nimble TTRPG](https://nimbleRPG.com) (3.3 rules), built into Obsidian, for both sides of the table. GMs prep and run their game from their own notes: a campaign manager, a searchable compendium of everything in Nimble (525 monsters, every spell, item, class feature and class), a builder for your own monsters, spells and items, quest notes, encounter blocks rated against your party, a combat tracker, GM maps with pins, NPC portrait cards, styled read-aloud boxes and 3D dice. Players get an interactive Nimble character sheet, a party roster, and session notes on the people, places and fights they've met.
 
 If you run one game and play in another, keep both in one vault: every campaign is either one you run or one you play in, and the plugin switches over when you do. It isn't a virtual tabletop.
 
@@ -26,6 +26,12 @@ If you run one game and play in another, keep both in one vault: every campaign 
 
 ![A monster reference's hover preview](docs/images/hover.png)
 
+**Make your own monsters on the book's numbers.** Run **New monster…**, pick a role and a level, and press **Create now** for a stat block with the GM Guide's HP and damage for that level. Or type your own numbers and the level check says what they play like. Spells and items work the same way, and homebrew spells and items join the compendium. See [the builder](docs/builder.md).
+
+![The monster builder with its level check and live stat block](docs/images/builder.png)
+
+**Quests that keep score.** Every job gets a note in the campaign's Quests folder: the hook, objectives, the truth behind it and the reward. Link one anywhere with `/quest`; finished quests get a tick and sink below the open ones. See [Quests](docs/quests.md).
+
 **Maps with pins.** Put a pin on every room, linked to its note. Drag the tracker's combatants onto the map as tokens.
 
 ![A GM map with a pin on every area](docs/images/map.png)
@@ -40,6 +46,9 @@ If you run one game and play in another, keep both in one vault: every campaign 
 
 **And more:**
 - campaigns, chapters and scenes in a sidebar panel
+- links to quests, places and heroes that show as pills with their icon
+- Spotlight (Cmd/Ctrl+K) to find anything, roll dice and add monsters
+- help with stat blocks you write, with fixes for lines it can't read
 - read-aloud, trap, treasure and clue boxes
 - clickable dice and 3D dice
 - slash commands for everything
@@ -66,9 +75,11 @@ The full guide is in **[docs/](docs/README.md)**:
 - [Getting started](docs/getting-started.md)
 - [Campaigns](docs/campaigns.md)
 - [NPCs and portraits](docs/npcs.md)
+- [Quests](docs/quests.md)
 - [Boxes](docs/boxes.md)
 - [The compendium](docs/compendium.md)
 - [Bestiary and stat blocks](docs/bestiary.md)
+- [The builder](docs/builder.md)
 - [Encounters](docs/encounters.md)
 - [GM maps](docs/maps.md)
 - [Combat tracker](docs/tracker.md)
@@ -78,6 +89,8 @@ The full guide is in **[docs/](docs/README.md)**:
 - [Phone and iPad](docs/mobile.md)
 - [Settings](docs/settings.md)
 - [FAQ](docs/faq.md)
+
+What changed in each release: [CHANGELOG.md](CHANGELOG.md), or the [changelog on the site](https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/changelog/).
 
 ## Privacy
 

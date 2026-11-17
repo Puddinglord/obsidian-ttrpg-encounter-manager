@@ -11,7 +11,7 @@ Styled boxes for adventure notes: read-aloud text, what's in a room, treasure, t
 | `/treasure` (`/loot`) | Treasure and rewards |
 | `/trap` (`/hazard`) | A trap or hazard, with Trigger / Spot / Effect / Disarm lines |
 | `/secret`, `/clue`, `/checks`, `/exits` | GM-only notes, clues, a check table, exits |
-| `/handout`, `/lore`, `/rumor`, `/hook` | A handout (old paper), lore, rumors, a quest hook or objective (`/objective` works too; `/quest` [links a quest note](campaigns.md#quests)) |
+| `/handout`, `/lore`, `/rumor`, `/hook` | A handout (old paper), lore, rumors, a quest hook or objective (`/objective` works too; `/quest` [links a quest note](quests.md#linking-a-quest)) |
 | `/box` | Any of the above, searchable |
 
 **Restyling a box:** click its icon. A small panel opens with three tabs (Type, Icon, Look); the title is edited at the top. You can pick:

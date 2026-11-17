@@ -36,6 +36,8 @@ Every row of pips works the same way, one step at a time: tapping an empty pip a
 
 ## Rolling
 
+![The roll dialog for a STR check: Check or Save, the dice, advantage, a modifier and Roll](images/guide-roll-dialog.png)
+
 Saves, checks, attacks and spells open the roll dialog first:
 
 - **Check** or **Save**, for a stat: the title follows, and Save starts at your ▲ or ▼.
@@ -46,6 +48,8 @@ Saves, checks, attacks and spells open the roll dialog first:
 Press **Roll** or Enter. To roll straight away, turn off **Ask before rolling** under Settings → Character sheets.
 
 ## Class dice
+
+![The This turn card: action pips, Hit Dice, and Fury Dice drawn as d4s](images/guide-class-dice.png)
 
 Class dice show on the sheet as dice of their size (a d6 is a rounded square, a d8 a diamond, a d10 a kite, a d12 a pentagon, a d20 a hexagon), in gold. Change the colour and the 3D finish under Settings → Character sheets → **Class dice**.
 
@@ -61,6 +65,8 @@ Judgment Dice and Fury Dice are gone after a Safe Rest; they don't outlast a fig
 **Camp**, in the hero card, has **Field rest** (spend Hit Dice to heal), **Safe rest** (shows what comes back: HP, Hit Dice, mana and class resources, one Wound, temp HP gone) and **Level up**.
 
 ## Levelling up
+
+![The level-up wizard on Hit points: roll the Hit Die with advantage or take the flat bonus, with the new max HP](images/guide-level-up.png)
 
 **Level up** (under **Camp**) opens a wizard: one decision per screen, with chips along the top to jump between them. Everything you choose is kept as you move back and forth, and nothing is written to the note until you press **Reach level N** on the last screen.
 
@@ -80,6 +86,8 @@ Every **+** opens [Spotlight](spotlight.md), filtered to what you're adding: ite
 Spotlight also finds compendium entries on its own: type "flame dart" or "battleaxe" anywhere and press Enter for the card.
 
 ## The Character panel
+
+![The Character panel in the right sidebar: the character menu, the hero card, HP, wounds and stats](images/guide-character-panel.png)
 
 **Open my character** (the person icon in the ribbon) shows your sheet in the right sidebar, so it sits beside your session notes on a desktop and is one tap away on a phone. It follows the campaign you're in; its menu switches to any other character.
 

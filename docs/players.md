@@ -35,6 +35,8 @@ In a player campaign the top of the Campaign panel shows your party instead of t
 
 ## Battle notes
 
+![A player's battle note: who they fought, how it went, where, the loot and notes](images/guide-battle-notes.png)
+
 In a campaign you play in, an encounter block is a note about a fight you were in: who you fought, how many, how it went, where, and what you found.
 
 Type `/fought` in a note, optionally followed by who was there:
@@ -65,6 +67,8 @@ notes: The shaman fled north.
 It's the same block the GM uses, so a note you write as a player still makes sense if you later switch that campaign to GM view.
 
 ## Lore cards
+
+![A player's lore card for Elder Ooze: size, family and habitat, the book's description and its pages](images/feature-lore.png)
 
 As a player, monsters show as lore cards rather than stat blocks: the name, size and kind, the family and habitat, and the book's description. HP, armor, attacks and abilities stay hidden. This applies to the bestiary, `nimble:` references, hover previews and quick looks.
 

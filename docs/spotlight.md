@@ -1,5 +1,7 @@
 # Spotlight
 
+![Spotlight over a scene note, with an adversary, an NPC, a location and class features for "alchemist"](images/spotlight.png)
+
 One box for whatever you need mid-session. Press **Cmd+K** (Mac) or **Ctrl+K** (Windows, Linux), type, and press Enter. The same key closes it. You can also click the search bar at the top of the Campaign panel.
 
 ## What you can type

@@ -1129,7 +1129,13 @@ export function warm(dice: Die3d[], opts: Dice3dOptions): void {
 // ---------------------------------------------------------------------------
 // Settings preview: one die turning slowly on its own small canvas.
 
-export function preview(canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }): () => void {
+/**
+ * A running preview: call it to stop. `setLook` swaps the die's look in place, with a quick spin;
+ * `preload` builds looks ahead (hidden, shaders compiled) so a later swap doesn't stutter.
+ */
+export type PreviewHandle = (() => void) & { setLook: (look: DieLook) => void; preload: (looks: DieLook[]) => void };
+
+export function preview(canvas: HTMLCanvasElement, die: { sides: number; look: DieLook; modelUrl?: string }): PreviewHandle {
 	let stopped = false;
 	let raf = 0;
 	const w = canvas.clientWidth || 160, h = canvas.clientHeight || 160;
@@ -1152,36 +1158,93 @@ export function preview(canvas: HTMLCanvasElement, die: { sides: number; look: D
 	camera.lookAt(0, 0, 0);
 	const time = { value: 0 };
 	let meshes: DieMeshes | null = null;
-	const color = die.look.body[0] ?? '#ece6d8';
+	// Every look built so far, kept (hidden) so switching back is instant.
+	const built = new Map<string, DieMeshes>();
+	const keyOf = (look: DieLook) => JSON.stringify(look);
+	// A look change spins the die once around, easing out.
+	let spinFrom = -Infinity;
+	const disposeMeshes = () => {
+		for (const m of built.values()) {
+			scene.remove(m.group);
+			for (const mat of m.materials) mat.dispose();
+			for (const t of m.textures) t.dispose();
+		}
+		built.clear();
+		meshes = null;
+	};
 	const stop = () => {
 		if (stopped) return;
 		stopped = true;
 		window.cancelAnimationFrame(raf);
-		if (meshes) { for (const m of meshes.materials) m.dispose(); for (const t of meshes.textures) t.dispose(); }
+		disposeMeshes();
 		env.dispose();
 		renderer.dispose();
 	};
+	const make = (look: DieLook, image: HTMLImageElement | null): DieMeshes => {
+		const key = keyOf(look);
+		let m = built.get(key);
+		if (!m) {
+			const shape = dieShape(die.sides);
+			m = makeDieMeshes(shape, defaultLabels(shape), look, look.body[0] ?? '#ece6d8', time, 1, image);
+			m.group.visible = false;
+			scene.add(m.group);
+			built.set(key, m);
+		}
+		return m;
+	};
+	const build = (look: DieLook, image: HTMLImageElement | null) => {
+		const next = make(look, image);
+		if (meshes && meshes !== next) { next.group.rotation.copy(meshes.group.rotation); meshes.group.visible = false; }
+		next.group.visible = true;
+		meshes = next;
+	};
+	let ready = false;
 	void (async () => {
 		const model = die.modelUrl && hasModelLayout(die.sides) ? await loadModel(die.modelUrl) : null;
 		const image = die.look.textureUrl ? await loadImage(die.look.textureUrl) : null;
 		if (stopped) return;
-		if (model) meshes = makeModelMeshes(model);
-		else {
-			const shape = dieShape(die.sides);
-			meshes = makeDieMeshes(shape, defaultLabels(shape), die.look, color, time, 1, image);
-		}
-		scene.add(meshes.group);
+		if (model) { meshes = makeModelMeshes(model); scene.add(meshes.group); } else build(die.look, image);
+		ready = true;
 		const t0 = performance.now();
 		const tick = () => {
 			if (stopped) return;
 			if (!canvas.isConnected) { stop(); return; }
-			const t = (performance.now() - t0) / 1000;
+			const now = performance.now();
+			const t = (now - t0) / 1000;
 			time.value = t;
-			meshes!.group.rotation.set(0.5 + Math.sin(t * 0.4) * 0.3, t * 0.6, 0.2);
+			const k = Math.min(1, (now - spinFrom) / 900);
+			const spin = k < 1 ? (1 - Math.pow(1 - k, 3)) * Math.PI * 2 : 0;
+			meshes?.group.rotation.set(0.5 + Math.sin(t * 0.4) * 0.3, t * 0.6 + spin, 0.2);
 			renderer.render(scene, camera);
 			raf = window.requestAnimationFrame(tick);
 		};
 		tick();
 	})();
-	return stop;
+	const handle: PreviewHandle = Object.assign(stop, {
+		setLook(look: DieLook) {
+			if (stopped || !ready) return;
+			void (async () => {
+				const image = look.textureUrl ? await loadImage(look.textureUrl) : null;
+				if (stopped) return;
+				build(look, image);
+				spinFrom = performance.now();
+			})();
+		},
+		preload(looks: DieLook[]) {
+			if (stopped) return;
+			if (!ready) { window.setTimeout(() => handle.preload(looks), 100); return; }
+			void (async () => {
+				for (const look of looks) {
+					const image = look.textureUrl ? await loadImage(look.textureUrl) : null;
+					if (stopped) return;
+					make(look, image);
+				}
+				// Compile every look's shaders now, while nothing is changing.
+				for (const m of built.values()) m.group.visible = true;
+				renderer.compile(scene, camera);
+				for (const m of built.values()) m.group.visible = m === meshes;
+			})();
+		},
+	});
+	return handle;
 }
