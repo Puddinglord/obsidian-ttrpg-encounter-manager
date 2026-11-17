@@ -68,17 +68,20 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		button('Add to fight', 'plus', () => void this.run(false));
 	}
 
-	/** Run: a new fight with these monsters (and the party, if the block asks). Add: into the current one. */
-	private async run(fresh: boolean): Promise<void> {
-		const path = this.ctx.sourcePath;
-		const store = this.rt.fights;
-		if (fresh) store.reset(this.def.name, this.rt.edition(path), path);
-		store.change(f => {
-			for (const { m, entry } of this.def.monsters.map(m => ({ m, entry: this.rt.get(m.name, path) }))) {
-				if (entry) addMonster(f, entry.monster, m.count, { sourceFile: entry.filePath || undefined });
-			}
-			if (fresh && this.def.party) for (const h of this.rt.plugin.settings.party) addHero(f, { name: h.name, maxHp: h.maxHp, ac: h.defense });
-		});
-		await this.rt.openTracker();
+	private run(fresh: boolean): Promise<void> {
+		return runEncounter5e(this.rt, this.def, this.ctx.sourcePath, fresh);
 	}
+}
+
+/** Run: a new fight with these monsters (and the party, if the block asks). Add: into the current one. */
+export async function runEncounter5e(rt: Dnd5eRuntime, def: EncounterDef, path: string | undefined, fresh: boolean): Promise<void> {
+	const store = rt.fights;
+	if (fresh) store.reset(def.name, rt.edition(path), path);
+	store.change(f => {
+		for (const { m, entry } of def.monsters.map(m => ({ m, entry: rt.get(m.name, path) }))) {
+			if (entry) addMonster(f, entry.monster, m.count, { sourceFile: entry.filePath || undefined });
+		}
+		if (fresh && def.party) for (const h of rt.plugin.settings.party) addHero(f, { name: h.name, maxHp: h.maxHp, ac: h.defense });
+	});
+	await rt.openTracker();
 }

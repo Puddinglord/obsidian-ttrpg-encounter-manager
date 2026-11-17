@@ -10,7 +10,7 @@ Three layers, enforced by `npm run lint` (eslint `no-restricted-imports`, see es
 
 - **`src/core/`** is shared by every game system. It never imports a system or the app layer. When it needs something system-specific it asks the plugin: `plugin.system(path)` returns the note's campaign's `GameSystem` (src/systems/contract.ts).
 - **`src/systems/<id>/`** is one game system (today only `nimble`). It may import core and the contract, never another system or the app layer. A change inside one system can only break another through core or the contract.
-- **`src/app/`** and `main.ts` wire it together (settings page, slash commands, Spotlight, maps with encounter tokens, the list of shipped systems). They may import anything.
+- **`src/app/`** and `main.ts` wire it together (settings page, Spotlight, maps with encounter tokens, the list of shipped systems). They may import anything.
 
 Core modules take the plugin type with `import type NimbleStatblocksPlugin from '../../main'` (type only). New system-specific behaviour that core needs becomes a member of `GameSystem`, written from the real call site.
 
@@ -20,11 +20,11 @@ src/systems/
   contract.ts           GameSystem: what core may ask a system for (attribution, conditions, characters, quick look…)
   registry.ts           SystemRegistry: register, resolve a campaign's `system:` (case-insensitive), fall back to the default (pure, tested)
 src/app/
-  slash.ts              "/" commands
   spotlight.ts          Cmd/Ctrl+K box: search adversaries/NPCs/notes, roll dice, run commands (spotlight-def.ts is the pure query parser)
   settings-tab.ts       Settings UI (party, bestiary, rules, custom conditions)
   systems.ts            SHIPPED_SYSTEMS and createSystems(): every system the plugin ships, the first is the default
 src/core/
+  slash.ts              "/" menu engine and the commands every game shares (boxes, NPCs, quests, maps, party, roll, conditions); systems add theirs through `slashCommands`
   markdown.ts           Safe inline markdown (bold/italic/wikilinks/dice/keywords) built as DOM nodes
   encounter-def.ts      ```nimble-encounter format (pure); Nimble's encounter-block.ts renders it
   map-def.ts            ```nimble-map format (pure); app/map-block.ts renders it (pins, encounter tokens)

@@ -12,7 +12,7 @@ import type { Dnd5eEntry } from './types';
 
 export const DND5E_COMPENDIUM_VIEW = 'nimble-dnd5e-compendium';
 
-type Tab = 'all' | 'monsters' | 'spells' | 'items' | 'equipment' | 'classes' | 'origins' | 'feats' | 'rules';
+export type Tab = 'all' | 'monsters' | 'spells' | 'items' | 'equipment' | 'classes' | 'origins' | 'feats' | 'rules';
 const TABS: { id: Tab; label: string; kinds?: Kind5e[] }[] = [
 	{ id: 'all', label: 'All' },
 	{ id: 'monsters', label: 'Monsters' },

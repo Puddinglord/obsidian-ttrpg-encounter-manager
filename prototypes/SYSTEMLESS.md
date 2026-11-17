@@ -137,6 +137,10 @@ Each phase ends green (unit, lint, the full e2e suite) and is one commit.
 8. **Roll types and the tracker engine.** Roll types per system; turn models and tracks; both trackers become one engine. Do this last, because it's the most visible change to Nimble's table play.
 9. **Pilot a third system** (Daggerheart is the best candidate: an SRD, and a different engine on every axis). It proves the guides. Anything the pilot needs that core can't give goes back into the engines, not into the system.
 
+## As built
+
+**Phase 2, slash commands.** `src/core/slash.ts` is the engine: the menu, matching, the GM/player split, writing text and blocks, and the commands every game shares (`/npc`, `/quest`, `/npc-card`, the box presets with `/hook`, `/box`, `/map`, `/roll`, `/condition` from the note's system, `/party`, `/tracker`, `/bestiary`, `/settings`, `/party-table` headed by the system's `vocabulary.defense`). A system adds commands with `slashCommands(plugin)`; one with a base command's name or alias replaces it. `SLASH_ORDER` keeps the bare menu in the old order whichever system defined a command. Nimble's commands moved to `nimble/slash.ts` unchanged. 5e's are in `dnd5e/slash.ts`: the compendium kinds write `5e:<kind>:Name`, `/encounter` rates by the edition, `/add` fills the 5e tracker, `/roll +5` offers advantage and disadvantage (through the plugin's `rollWithEdge`, which still imports Nimble's roll maths: phase 8). 5e has no `/builder`, `/new-monster`, `/legendary` or `/summary` yet (phase 4 and 8).
+
 ## Decisions to make
 
 1. **Ship order.** Merge what's on the branch now (Nimble + 5e, 7 commits) as one PR first, then do this as the next PR. Or keep going on this branch.

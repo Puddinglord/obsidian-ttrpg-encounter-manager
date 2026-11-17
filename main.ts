@@ -14,7 +14,7 @@ import { nimbleRefProvider } from './src/systems/nimble/inline-ref';
 import { InlineRefs, inlineRefsLivePreview } from './src/core/inline-refs';
 import { HoverPreview } from './src/core/hover-preview';
 import { InlineRefSuggest } from './src/systems/nimble/suggest';
-import { NimbleSlashSuggest } from './src/app/slash';
+import { SlashSuggest } from './src/core/slash';
 import { NimbleSettingsTab } from './src/app/settings-tab';
 import { parseDice, rollDie, rollPlain } from './src/core/dice';
 import { rollNimbleAttack } from './src/systems/nimble/attack-roll';
@@ -280,7 +280,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerEditorExtension(npcLivePreview(this));
 		this.registerEvent(this.campaigns.on('changed', () => { this.npcVersion++; this.pokeEditors(); }));
 		this.registerEditorSuggest(new InlineRefSuggest(this.app, this));
-		const slash = new NimbleSlashSuggest(this.app, this);
+		const slash = new SlashSuggest(this.app, this);
 		this.registerEditorSuggest(slash);
 		// Put ours ahead of Obsidian's core "/" menu; it only claims input that matches a Nimble command.
 		const suggests = editorSuggests(this.app.workspace);

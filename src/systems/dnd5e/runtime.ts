@@ -19,7 +19,7 @@ import { Dnd5eEncounterBlock } from './encounter-block';
 import type { EncounterDef } from '../../core/encounter-def';
 import { findHit, Hit5e, KIND5E, kindFromWord } from './compendium';
 import { renderCard5e } from './cards';
-import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView } from './compendium-view';
+import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-view';
 import { Dnd5eSheet, SHEET_LANG } from './sheet';
 
 /** `5e:Goblin` → "Goblin". */
@@ -110,13 +110,13 @@ export class Dnd5eRuntime {
 		return leaf;
 	}
 
-	/** Show the 5e compendium in a tab, set to the active campaign's edition. */
-	async openCompendium(): Promise<void> {
+	/** Show the 5e compendium in a tab, set to the note's (else the active campaign's) edition. */
+	async openCompendium(o: { tab?: Tab; query?: string; path?: string } = {}): Promise<void> {
 		const ws = this.plugin.app.workspace;
 		const leaf = ws.getLeavesOfType(DND5E_COMPENDIUM_VIEW)[0] ?? ws.getLeaf('tab');
 		await leaf.setViewState({ type: DND5E_COMPENDIUM_VIEW, active: true });
 		await ws.revealLeaf(leaf);
-		if (leaf.view instanceof Dnd5eCompendiumView) leaf.view.show({ edition: this.edition(this.plugin.campaigns.active?.home.path) });
+		if (leaf.view instanceof Dnd5eCompendiumView) leaf.view.show({ edition: this.edition(o.path ?? this.plugin.campaigns.active?.home.path), tab: o.tab, query: o.query });
 	}
 
 	encounterBlock(def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext): void {

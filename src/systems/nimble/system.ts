@@ -6,6 +6,7 @@ import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './b
 import { createCharacterNote, NewCharacterModal } from './character-modals';
 import { openRecord } from './record-modal';
 import { nimbleEncounterBlock } from './encounter-block';
+import { nimbleSlashCommands } from './slash';
 import { NIMBLE_CONDITIONS } from './types';
 import { readCharacter } from './character-def';
 import { sheetCompendium } from './compendium-data';
@@ -43,4 +44,6 @@ export const nimbleSystem: GameSystem = {
 		openRecord(plugin, target);
 	},
 	encounterBlock: nimbleEncounterBlock,
+	slashCommands: nimbleSlashCommands,
+	vocabulary: { defense: 'DEF' },
 };

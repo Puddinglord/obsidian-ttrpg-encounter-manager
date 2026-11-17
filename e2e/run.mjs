@@ -5104,6 +5104,95 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 	}
 });
 
+test('5e slash commands: /monster, /spell, /encounter rated by 2024 XP, /statblock, /add into the 5e tracker, /roll with advantage, AC in /party-table', async (o) => {
+	const C = 'Campaigns/Slash Coast';
+	const note = `${C}/Prep.md`;
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			await plugin.campaigns.createCampaign({ name: 'Slash Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Prep.md`, '# Prep\n\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(note, 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 2, ch: 0 }); ed.focus(); });
+		const type = async (t) => { await o.page.keyboard.type(t, { delay: 15 }); await o.page.waitForTimeout(250); };
+		const menu = o.page.locator('.suggestion-container .nimble-slash-item');
+		const titles = () => menu.locator('.nimble-slash-title').allInnerTexts();
+
+		// The bare menu offers 5e's commands, not Nimble's builders.
+		await type('/');
+		await o.waitFor(async () => (await menu.count()) > 10, { what: 'the slash menu' });
+		const all = await titles();
+		for (const c of ['/monster', '/spell', '/species', '/encounter', '/condition']) assert.ok(all.includes(c), `${c} in ${all.join(' ')}`);
+		for (const c of ['/legendary', '/minion', '/new-monster', '/companion']) assert.ok(!all.includes(c), `${c} is Nimble's`);
+		await o.page.keyboard.press('Backspace');
+
+		// /encounter: four level-3 heroes, 4 Goblin Warriors + an Ogre = 650 XP, Low.
+		await type('/enc 4 goblin warrior, ogre');
+		await o.waitFor(async () => /Ogre/.test(await menu.first().textContent()), { what: 'encounter suggestion' });
+		assert.match(await menu.first().locator('.nimble-slash-badge').innerText(), /Low 41%/i);
+		assert.match(await menu.first().locator('.nimble-slash-detail').innerText(), /650 XP/);
+		await o.page.keyboard.press('Enter');
+		await type('Boss: /monster ogre');
+		await o.waitFor(async () => (await titles())[0] === 'Ogre', { what: 'Ogre first' });
+		assert.match(await menu.first().locator('.nimble-slash-detail').innerText(), /CR 2/);
+		await o.page.keyboard.press('Enter');
+		await type('/spell firebal');
+		await o.waitFor(async () => (await titles())[0] === 'Fireball', { what: 'Fireball' });
+		await o.page.keyboard.press('Enter');
+		await o.page.keyboard.press('Enter');
+		await type('/roll +5');
+		await o.waitFor(async () => (await titles()).some(t => /advantage/.test(t)), { what: 'advantage row' });
+		await o.page.keyboard.press('ArrowDown');
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(300);
+		await o.page.keyboard.press('Enter');
+		await type('/statblock goblin war');
+		await o.waitFor(async () => (await titles())[0] === 'Goblin Warrior', { what: 'Goblin Warrior stat block' });
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(300);
+
+		const text = await o.eval((app) => app.workspace.activeEditor.editor.getValue());
+		assert.match(text, /```nimble-encounter\nname: New encounter\nmonsters:\n- 4 Goblin Warrior\n- 1 Ogre\n```\nBoss: `5e:Ogre` `5e:spell:Fireball` /);
+		assert.match(text, /🎲 1d20\+5 \(advantage\) → \*\*\d+\*\*/);
+		assert.match(text, /```5e\nname: Goblin Warrior\n[\s\S]*\n```/);
+		assert.match(await o.eval((app, plugin) => plugin.settings.rollLog[0]?.detail ?? ''), /\[\d+, \d+\]|drop/i);
+
+		// /add: straight into the 5e tracker.
+		await type('/add 2 ogre');
+		await o.waitFor(async () => /Add 2 × Ogre/.test(await menu.first().textContent()), { what: 'add suggestion' });
+		await o.page.keyboard.press('Enter');
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant`).count()) === 2, { what: 'two ogres' });
+		assert.doesNotMatch(await o.eval((app, plugin, p) => app.vault.cachedRead(app.vault.getAbstractFileByPath(p)), note), /\/add/);
+
+		// /party-table says AC in a 5e campaign.
+		await o.eval(async (app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
+		await o.openFile(note, 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: ed.lineCount() - 1, ch: ed.getLine(ed.lineCount() - 1).length }); ed.focus(); });
+		await o.page.keyboard.press('Enter');
+		await type('/party-table');
+		await o.waitFor(async () => (await titles())[0] === '/party-table', { what: '/party-table' });
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(300);
+		assert.match(await o.eval((app) => app.workspace.activeEditor.editor.getValue()), /\| Hero \| Class \| Level \| HP \| AC \|\n[^\n]*\n\| Ilse \|  \| 3 \| 24 \| 16 \|/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('5e compendium: spells, items and classes for both editions, 5e:spell: references, autocomplete, Spotlight', async (o) => {
 	const C = 'Campaigns/Sword Coast';
 	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';

@@ -11,6 +11,7 @@ import { dnd5e, registerDnd5e } from './runtime';
 import { readSheet5e } from './character';
 import { asEdition } from './editions';
 import { createCharacterNote5e, Dnd5eNewCharacterModal } from './new-character';
+import { dnd5eSlashCommands } from './slash';
 
 export const dnd5eSystem: GameSystem = {
 	id: 'dnd5e',
@@ -18,6 +19,8 @@ export const dnd5eSystem: GameSystem = {
 	aliases: ['5e', '5.5e', 'dnd 5e', 'd&d 5e', 'dnd5e 2024', 'dnd5e 2014', 'fifth edition'],
 	editions: EDITIONS,
 	attribution: DND5E_ATTRIBUTION,
+	vocabulary: { defense: 'AC' },
+	slashCommands: dnd5eSlashCommands,
 	conditions: (edition?: string): readonly ConditionDef[] => conditionsFor(edition ?? DEFAULT_EDITION),
 	quickLook(plugin, target) {
 		openNoteQuickLook(plugin.app, target);

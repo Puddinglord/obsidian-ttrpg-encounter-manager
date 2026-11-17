@@ -2,7 +2,7 @@
 
 A game system (Nimble, 5e, and next maybe Daggerheart, Call of Cthulhu, Fallout) is a folder here that plugs into core through **the contract**, `contract.ts`. Core never imports a system; systems never import each other (eslint enforces both). `registry.ts` maps a campaign's `system:` property (and aliases, case-insensitive) to a system and resolves its `edition:`.
 
-Where the engines are going (shared slash commands, compendium, entity builder, character wizard, content packs, tracker): [prototypes/SYSTEMLESS.md](../../prototypes/SYSTEMLESS.md). When an engine exists, use it; don't build a private copy in your system.
+Where the engines are going (compendium, entity builder, character wizard, content packs, tracker): [prototypes/SYSTEMLESS.md](../../prototypes/SYSTEMLESS.md). When an engine exists, use it; don't build a private copy in your system.
 
 ## The contract today
 
@@ -16,6 +16,8 @@ Where the engines are going (shared slash commands, compendium, entity builder, 
 | `register(plugin)` | Wire in its blocks, references, indexes, views, suggest, at load | (in main.ts) | ✓ |
 | `encounterBlock` | Draw ```nimble-encounter in its campaigns (difficulty, Run) | ✓ | ✓ |
 | `openTracker`, `openCompendium` | Its tracker and compendium (Open… commands, ribbon) | (default) | ✓ |
+| `slashCommands(plugin)` | Its "/" commands, added to core's (`core/slash.ts`). One with a base command's name or alias replaces it (5e's `/roll` adds advantage). Name shared commands as SLASH_ORDER does (`monster`, `spell`, `item`, `encounter`, `add`, `statblock`) so they sit in the same place in every game's menu. Look up runtime state when a command runs, not when the list is made | ✓ | ✓ |
+| `vocabulary` | Words core shows for the system's ideas: `defense` ("DEF", "AC") | ✓ | ✓ |
 
 Missing optional members fall back to Nimble's behaviour or a "not yet" notice. Add members from **real call sites**: when core or `src/app` needs to ask a system something, add it here, document it in the table above, implement it in every system, and extend the conformance suite in `tests/systems.test.ts`.
 

@@ -12,6 +12,7 @@ import type { MarkdownPostProcessorContext, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../../main';
 import type { ConditionDef, PartyMember } from '../core/types';
 import type { EncounterDef } from '../core/encounter-def';
+import type { SlashCommand } from '../core/slash';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
 export interface Attribution {
@@ -81,4 +82,8 @@ export interface GameSystem {
 	openTracker?(plugin: NimbleStatblocksPlugin): Promise<void>;
 	/** Show this system's compendium (Open compendium, the ribbon). */
 	openCompendium?(plugin: NimbleStatblocksPlugin): Promise<void>;
+	/** "/" commands in its campaigns, added to core's base ones (a command with a base command's name replaces it). */
+	slashCommands?(plugin: NimbleStatblocksPlugin): SlashCommand[];
+	/** The system's words for things core shows: the party table's defense column ("DEF", "AC"). */
+	readonly vocabulary?: { readonly defense?: string };
 }

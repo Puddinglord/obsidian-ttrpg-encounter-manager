@@ -15,7 +15,7 @@ An Obsidian plugin (TypeScript, esbuild) for running and playing tabletop RPG ca
 
 ```
 main.ts              the plugin: wiring, settings, plugin.system(path), plugin.edition(path)
-src/app/             wiring that needs both core and systems: settings tab, slash commands, Spotlight,
+src/app/             wiring that needs both core and systems: settings tab, Spotlight,
                      maps with encounter tokens, encounter blocks (picks the system), SHIPPED_SYSTEMS
 src/core/            shared by every game; imports no system
 src/systems/

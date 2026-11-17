@@ -24,7 +24,8 @@ export class FightStore extends Events {
 
 	get fight(): Fight5e {
 		const saved = this.data.fight;
-		if (!this.cached || (saved !== undefined && saved !== this.source && saved !== this.cached)) {
+		// Re-read when the saved fight was replaced or removed under us (settings reloaded after a sync).
+		if (!this.cached || (saved !== this.source && saved !== this.cached)) {
 			this.cached = normalizeFight(saved) ?? newFight();
 			this.source = saved;
 		}
@@ -34,7 +35,7 @@ export class FightStore extends Events {
 	/** Change the fight, save it, and redraw every tracker. */
 	change<T>(fn: (f: Fight5e) => T): T {
 		const result = fn(this.fight);
-		this.data.fight = this.fight;
+		this.data.fight = this.source = this.fight;
 		void this.plugin.saveSettings();
 		this.trigger('changed');
 		return result;
