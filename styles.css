@@ -4732,7 +4732,11 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .dnd5e-hp-bar { flex: 1 1 auto; height: 6px; border-radius: 3px; background: var(--background-modifier-border); overflow: hidden; min-width: 3rem; }
 .dnd5e-hp-fill { height: 100%; background: var(--color-green); }
 .dnd5e-combatant.is-down .dnd5e-hp-fill { background: var(--color-red); }
-.dnd5e-hp-text { font-variant-numeric: tabular-nums; font-size: 0.85rem; white-space: nowrap; }
+button.dnd5e-hp-text {
+	font-variant-numeric: tabular-nums; font-size: 0.85rem; white-space: nowrap;
+	height: auto; padding: 0.1rem 0.35rem; border-radius: var(--radius-s); box-shadow: none; background: transparent; color: var(--text-normal);
+}
+button.dnd5e-hp-text:hover { background: var(--background-modifier-hover); }
 .dnd5e-hp-input { width: 5.5rem; font-size: 0.8rem; }
 .dnd5e-hp-input.is-invalid { border-color: var(--color-red); }
 .dnd5e-death,

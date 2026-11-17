@@ -3,6 +3,7 @@
 // durations. Pure: no Obsidian imports, so the rules here are unit-tested.
 // Every function changes the fight in place and returns what happened.
 
+import { HpCommand, parseHpCommand } from '../../core/tracker/hp';
 import type { AppliedCondition } from '../../core/types';
 import { uid } from '../../core/types';
 import { initiativeOf } from './rules';
@@ -223,25 +224,17 @@ export function remove(f: Fight5e, id: string): void {
 // ----------------------------------------------------------------------------
 // Hit points
 
-export type HpChange =
-	| { kind: 'damage'; amount: number; crit?: boolean }
-	| { kind: 'heal'; amount: number }
-	| { kind: 'temp'; amount: number }
-	| { kind: 'set'; amount: number };
+/** A change to HP, in the HP language every tracker shares (core/tracker/hp.ts). */
+export type HpChange = HpCommand;
 
-/** "7" or "-7" damage, "!7" a crit's damage, "+7" heal, "t7" temp HP, "=12" set HP. */
+/** "7" damage, "!7" a crit's, "7v" vulnerable (doubled), "7r" resisted (halved), "+7" heal, "t7" temp HP, "=12" set HP. */
 export function parseHp(input: string): HpChange | null {
-	const s = input.trim().replace('−', '-').toLowerCase();
-	const m = /^([+\-!=t]?)\s*(\d+)$/.exec(s);
-	if (!m) return null;
-	const amount = Number(m[2]);
-	switch (m[1]) {
-		case '+': return { kind: 'heal', amount };
-		case '=': return { kind: 'set', amount };
-		case 't': return { kind: 'temp', amount };
-		case '!': return { kind: 'damage', amount, crit: true };
-		default: return { kind: 'damage', amount };
-	}
+	return parseHpCommand(input);
+}
+
+/** Damage after vulnerability (doubled) or resistance (halved, rounded down). */
+export function damageTaken(change: Extract<HpChange, { kind: 'damage' }>): number {
+	return change.type === 'vulnerable' ? change.amount * 2 : change.type === 'resisted' ? Math.floor(change.amount / 2) : change.amount;
 }
 
 /** Apply a change to HP, following the rules for temporary HP, dropping to 0 and death saves. Returns a log line. */
@@ -251,14 +244,15 @@ export function applyHp(f: Fight5e, id: string, change: HpChange): string | unde
 	let text: string;
 	switch (change.kind) {
 		case 'damage': {
-			let rest = change.amount;
+			const taken = damageTaken(change);
+			let rest = taken;
 			const fromTemp = Math.min(c.tempHp, rest);
 			c.tempHp -= fromTemp;
 			rest -= fromTemp;
 			const wasDown = c.hp <= 0;
 			const left = c.hp - rest;
 			c.hp = Math.max(0, left);
-			text = `${c.label} takes ${change.amount}${fromTemp ? ` (${fromTemp} from temp HP)` : ''}`;
+			text = `${c.label} takes ${taken}${change.type ? ` (${change.type})` : ''}${fromTemp ? ` (${fromTemp} from temp HP)` : ''}`;
 			if (c.side === 'hero') {
 				if (wasDown && rest > 0) {
 					// Damage while at 0 HP is a failed death save; a crit is two.
@@ -360,4 +354,14 @@ export function normalizeFight(raw: unknown): Fight5e | null {
 		log: Array.isArray(f.log) ? f.log : [],
 		sourcePath: typeof f.sourcePath === 'string' ? f.sourcePath : undefined,
 	};
+}
+
+/** What a change would do, without doing it: "→ 8/20 · takes 7", for the HP keypad. */
+export function previewHp(f: Fight5e, id: string, change: HpChange): string {
+	const copy = JSON.parse(JSON.stringify(f)) as Fight5e;
+	const said = applyHp(copy, id, change);
+	const c = find(copy, id);
+	if (!c || !said) return '';
+	const what = said.replace(new RegExp(`^${c.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*`), '');
+	return `→ ${c.hp}/${c.maxHp}${c.tempHp ? ` +${c.tempHp}` : ''} · ${what}`;
 }

@@ -5063,6 +5063,14 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 		await ogre.locator('.dnd5e-hp-input').fill('10');
 		await ogre.locator('.dnd5e-hp-input').press('Enter');
 		await o.waitFor(async () => /^58\/68$/.test(await ogre.locator('.dnd5e-hp-text').innerText()), { what: 'ogre damaged' });
+		// The HP keypad: 6 damage, resisted (halved to 3), previewed before it lands.
+		await ogre.locator('.dnd5e-hp-text').click();
+		const pad = o.page.locator('.nimble-hp-pad');
+		await pad.waitFor();
+		await o.page.keyboard.type('6r');
+		assert.match(await pad.locator('.hp-pad-preview').innerText(), /→ 55\/68 · takes 3 \(resisted\)/);
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => /^55\/68$/.test(await ogre.locator('.dnd5e-hp-text').innerText()), { what: 'ogre resisted 6' });
 		await ogre.locator('.dnd5e-condition-add').click();
 		await clickMenu(o, 'Prone');
 		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition', { hasText: 'Prone' }).count()) === 1, { what: 'Prone chip' });

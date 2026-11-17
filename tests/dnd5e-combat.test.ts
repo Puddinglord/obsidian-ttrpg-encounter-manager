@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addCondition, addHero, addMonster, applyHp, current, deathSave, end, legendaryUses, newFight, next, normalizeFight, order, parseHp, previous, remove, rollInitiative, setInitiative, start, useLegendary } from '../src/systems/dnd5e/combat';
+import { addCondition, addHero, addMonster, applyHp, current, deathSave, end, legendaryUses, newFight, next, normalizeFight, order, parseHp, previewHp, previous, remove, rollInitiative, setInitiative, start, useLegendary } from '../src/systems/dnd5e/combat';
 import type { Dnd5eMonster } from '../src/systems/dnd5e/types';
 
 const goblin: Dnd5eMonster = { name: 'Goblin', ac: 15, hp: 7, cr: '1/4', abilities: [8, 14, 10, 10, 8, 8] };
@@ -86,13 +86,31 @@ describe('a 5e fight', () => {
 
 describe('hit points', () => {
 	it('reads what is typed: damage, a crit, healing, temp HP, a set value', () => {
-		expect(parseHp('7')).toEqual({ kind: 'damage', amount: 7 });
-		expect(parseHp('-7')).toEqual({ kind: 'damage', amount: 7 });
-		expect(parseHp('!7')).toEqual({ kind: 'damage', amount: 7, crit: true });
+		expect(parseHp('7')).toMatchObject({ kind: 'damage', amount: 7, crit: false });
+		expect(parseHp('-7')).toMatchObject({ kind: 'damage', amount: 7 });
+		expect(parseHp('!7')).toMatchObject({ kind: 'damage', amount: 7, crit: true });
+		expect(parseHp('7!')).toMatchObject({ kind: 'damage', amount: 7, crit: true });
+		expect(parseHp('7v')).toMatchObject({ kind: 'damage', amount: 7, type: 'vulnerable' });
+		expect(parseHp('7r!')).toMatchObject({ kind: 'damage', amount: 7, type: 'resisted', crit: true });
 		expect(parseHp('+5')).toEqual({ kind: 'heal', amount: 5 });
 		expect(parseHp('t8')).toEqual({ kind: 'temp', amount: 8 });
 		expect(parseHp('=3')).toEqual({ kind: 'set', amount: 3 });
 		expect(parseHp('lots')).toBeNull();
+	});
+	it('vulnerable doubles damage; resisted halves it, rounding down', () => {
+		const f = newFight();
+		const h = addHero(f, { name: 'Bo', maxHp: 30 });
+		expect(applyHp(f, h.id, parseHp('7v')!)).toBe('Bo takes 14 (vulnerable)');
+		expect(applyHp(f, h.id, parseHp('7r')!)).toBe('Bo takes 3 (resisted)');
+		expect(f.combatants[0].hp).toBe(30 - 14 - 3);
+	});
+	it('previews a change without making it (the HP keypad)', () => {
+		const f = newFight();
+		const h = addHero(f, { name: 'Bo', maxHp: 20 });
+		expect(previewHp(f, h.id, parseHp('7v')!)).toBe('→ 6/20 · takes 14 (vulnerable)');
+		expect(previewHp(f, h.id, parseHp('25')!)).toBe('→ 0/20 · takes 25 and falls unconscious');
+		expect(f.combatants[0].hp).toBe(20);
+		expect(f.log.length).toBe(0);
 	});
 	it('takes damage from temp HP first; temp HP don’t stack; healing stops at the maximum', () => {
 		const f = newFight();

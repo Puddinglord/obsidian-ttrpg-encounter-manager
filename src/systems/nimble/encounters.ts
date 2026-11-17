@@ -399,7 +399,7 @@ export class EncounterStore extends Events {
 					c.tempHp -= absorbed;
 					amount -= absorbed;
 				}
-				const r = heroDamage(c.currentHp, c.wounds ?? 0, c.maxWounds ?? 6, amount, cmd.crit);
+				const r = heroDamage(c.currentHp, c.wounds ?? 0, c.maxWounds ?? 6, amount, !!cmd.crit);
 				c.currentHp = r.hp;
 				c.wounds = r.wounds;
 				events.push(...r.events.map(e => `${c.label} ${e}`));
@@ -415,7 +415,7 @@ export class EncounterStore extends Events {
 			}
 		} else {
 			if (cmd.kind === 'damage') {
-				const r = monsterHit(c, cmd.amount, cmd.crit, { autoArmor: this.s.autoArmor, mod: cmd.type });
+				const r = monsterHit(c, cmd.amount, !!cmd.crit, { autoArmor: this.s.autoArmor, mod: cmd.type });
 				const amount = r.taken;
 				if (c.tempHp) c.tempHp -= r.absorbed;
 				c.currentHp = r.hp;

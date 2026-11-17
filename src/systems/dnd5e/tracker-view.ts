@@ -2,9 +2,10 @@
 // HP with temporary HP, AC, conditions with durations, death saves for heroes
 // at 0 HP, and legendary action uses. Every change goes through the store.
 
+import { openHpPad } from '../../core/tracker/hp-pad';
 import { FuzzySuggestModal, ItemView, Menu, setIcon, WorkspaceLeaf } from 'obsidian';
 import {
-	addCondition, addHero, addMonster, applyHp, Combatant5e, current, deathSave, end, Fight5e, isRunning, next, order, parseHp,
+	addCondition, addHero, addMonster, applyHp, Combatant5e, current, deathSave, end, Fight5e, isRunning, next, order, parseHp, previewHp,
 	previous, remove, removeCondition, rollInitiative, setInitiative, start, useLegendary,
 } from './combat';
 import type { Dnd5eRuntime } from './runtime';
@@ -98,8 +99,19 @@ export class Dnd5eTrackerView extends ItemView {
 		const hp = main.createDiv({ cls: 'dnd5e-hp' });
 		const meter = hp.createDiv({ cls: 'dnd5e-hp-bar' });
 		meter.createDiv({ cls: 'dnd5e-hp-fill' }).setCssStyles({ width: `${Math.round(100 * Math.max(0, c.hp) / Math.max(1, c.maxHp))}%` });
-		hp.createSpan({ cls: 'dnd5e-hp-text', text: `${c.hp}/${c.maxHp}${c.tempHp ? ` +${c.tempHp}` : ''}` });
-		const box = hp.createEl('input', { cls: 'dnd5e-hp-input', type: 'text', attr: { placeholder: '−dmg +heal', 'aria-label': `${c.label} HP change`, title: 'Damage (7), crit (!7), heal (+7), temp HP (t7), set (=7); Enter' } });
+		// The numbers open the HP keypad (Damage, Heal, Set, Temp; Crit, Vulnerable, Resisted).
+		const hpText = hp.createEl('button', { cls: 'dnd5e-hp-text', text: `${c.hp}/${c.maxHp}${c.tempHp ? ` +${c.tempHp}` : ''}`, attr: { 'aria-label': `${c.label}: change HP` } });
+		hpText.onclick = () => openHpPad(hpText, {
+			id: c.id, label: c.label, sub: `${c.hp}/${c.maxHp} HP${c.tempHp ? ` +${c.tempHp} temp` : ''}${c.ac !== undefined ? ` · AC ${c.ac}` : ''}`,
+			crit: true, mods: { vulnerable: 'Vulnerable ×2', resisted: 'Resisted ½' },
+			preview: (mode, v, crit, mod) => {
+				const cmd = mode === 'damage' ? (v > 0 ? { kind: 'damage' as const, amount: v, crit, type: mod } : null) : mode === 'set' ? { kind: 'set' as const, amount: v } : v > 0 ? { kind: mode, amount: v } : null;
+				return cmd ? previewHp(this.fight, c.id, cmd) : '';
+			},
+			sideOf: this.containerEl,
+			apply: (cmd) => this.change(f => applyHp(f, c.id, cmd)),
+		});
+		const box = hp.createEl('input', { cls: 'dnd5e-hp-input', type: 'text', attr: { placeholder: '−dmg +heal', 'aria-label': `${c.label} HP change`, title: 'Damage (7), crit (7!), vulnerable (7v), resisted (7r), heal (+7), temp HP (t7), set (=7); Enter' } });
 		box.addEventListener('keydown', (e) => {
 			if (e.key !== 'Enter') return;
 			const change = parseHp(box.value);
