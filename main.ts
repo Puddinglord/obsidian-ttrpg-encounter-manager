@@ -59,7 +59,7 @@ import { registerReadingMode } from './src/reading-mode';
 import { noteKind, safeName } from './src/campaign-model';
 import { readCharacter } from './src/character-def';
 import { creatureNote } from './src/campaign-templates';
-import { registerBuilders } from './src/builder-register';
+import { addEditButton, registerBuilders } from './src/builder-register';
 import { registerHomebrewBlocks } from './src/homebrew-block';
 import { bundledCompendium, setCompendiumDrafts, setHomebrew, sheetCompendium } from './src/compendium-data';
 
@@ -195,6 +195,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 				void this.addToEncounter(monster, ctx.sourcePath, ev.shiftKey ? 2 : 1);
 			});
 			if (this.settings.statblockHints) renderStatblockIssues(this, el, issues, source, ctx);
+			if (!this.playerView(ctx.sourcePath)) addEditButton(this, el, ctx, { kind: 'monster', lang: 'nimble', source, seed: { monster, copyName: true, editing: true } });
 		});
 		registerEncounterBlock(this);
 		registerBoxBlock(this);

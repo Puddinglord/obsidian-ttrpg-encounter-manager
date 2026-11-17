@@ -31,10 +31,14 @@ class MonsterBuilder implements KindBuilder {
 	icon = 'skull';
 	d: MonsterDraft;
 
+	/** Editing a block in a note (not copying a monster): no "Start from". */
+	private editing: boolean;
+
 	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
 		const party = partyOf(plugin);
-		const s = seed as { monster?: NimbleMonster; copyName?: boolean } | undefined;
+		const s = seed as { monster?: NimbleMonster; copyName?: boolean; editing?: boolean } | undefined;
 		this.d = s?.monster ? draftFromMonster(s.monster, party, s.copyName ?? false) : newMonsterDraft(party);
+		this.editing = !!s?.editing;
 	}
 
 	steps(): StepDef[] {
@@ -74,8 +78,13 @@ class MonsterBuilder implements KindBuilder {
 		const name = field(top, 'Name');
 		textInput(name.control, { value: d.name, placeholder: d.template ? `${d.template.name} variant` : 'Cave bear', words: true, label: 'Name', onInput: v => { d.name = v; ui.changed(); } });
 
-		const from = field(top, 'Start from', { help: d.template ? undefined : 'Copy a monster and change what you like. Its numbers move with the level.' });
-		this.templatePicker(from.control, ui);
+		if (this.editing) {
+			const lvlNote = field(top, 'Editing', { help: 'Move the level and its HP and attacks move with it, the GM Guide\'s way. Save writes the block back in your note.' });
+			lvlNote.control.createDiv({ cls: 'eb-template-meta', text: d.template ? `${d.template.name}, level ${levelLabel(d.template.level)}` : '' });
+		} else {
+			const from = field(top, 'Start from', { help: d.template ? undefined : 'Copy a monster and change what you like. Its numbers move with the level.' });
+			this.templatePicker(from.control, ui);
+		}
 
 		const mid = grid(panel, 2);
 		const role = field(mid, 'Role');

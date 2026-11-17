@@ -238,7 +238,7 @@ test('monster builder: a quick build makes a note with a clean stat block', asyn
 	assert.match(text, /```nimble\nname: Quick Bear\nlevel: 2\nsize: Medium\nhp: 31\nattacks:\n- \*\*Strike\.\*\* 1d8\+6\.\n```/);
 	// The new note opens in the editor (Live Preview), its block rendered there.
 	const leaf = '.workspace-leaf.mod-active';
-	await o.page.locator(`${leaf} .nimble-statblock`).waitFor();
+	await o.page.locator(`${leaf} .nimble-statblock >> visible=true`).first().waitFor();
 	assert.equal(await o.page.locator(`${leaf} .nimble-issues`).count(), 0);
 	assert.ok(await o.eval((app, plugin) => !!plugin.index.get('Quick Bear')));
 });
@@ -272,7 +272,7 @@ test('monster builder: a solo from a template, re-levelled, with stats typed fir
 	assert.match(text, /hp: 44\/hero/);
 	assert.match(text, /actionText: After each hero's turn, choose one:/);
 	assert.match(text, /lastStand: Regains \d+ HP per hero and fights on\./);
-	await o.page.locator('.workspace-leaf.mod-active .nimble-statblock').waitFor();
+	await o.page.locator('.workspace-leaf.mod-active .nimble-statblock >> visible=true').first().waitFor();
 	assert.equal(await o.page.locator('.workspace-leaf.mod-active .nimble-issues').count(), 0);
 });
 
@@ -301,6 +301,46 @@ test('spell and item builders: homebrew lands in a note, renders as a card and j
 	const item = await o.eval((app) => app.vault.adapter.read('Homebrew/Lantern of Echoes.md'));
 	assert.match(item, /category: magic\nrarity: rare\ncost: 500 gp\ntext: Replays the last minute of sound\./);
 	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.item('Lantern of Echoes')?.rarity === 'rare'), { what: 'the item in the compendium' });
+});
+
+test('builder ways in: Edit on a block writes it back, /new-spell builds in place, the compendium has New', async (o) => {
+	const B = '.modal.nimble-entity-builder';
+	// Edit a hand-written stat block: change its HP, Save writes the block back.
+	await o.openFile('Bestiary/Goblin.md');
+	const block = o.page.locator(`${R} .block-language-nimble`).first();
+	await block.hover();
+	await block.locator('.nimble-block-edit').click();
+	await o.page.locator(B).waitFor();
+	assert.equal(await o.page.locator(`${B} .eb-panel.is-active input`).first().inputValue(), 'Goblin');
+	assert.equal(await o.page.locator(`${B} input[aria-label="Copy a monster"]`).count(), 0); // editing, not copying
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Toughness' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active input[aria-label="HP"]`).fill('14');
+	await o.page.locator(`${B} .eb-create`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	await o.waitFor(async () => /\nhp: 14\n/.test(await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin.md'))), { what: 'the block written back' });
+	assert.match(await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin.md')), /^# Goblin\n\n```nimble\nname: Goblin\n/);
+
+	// /new-spell in a note: the builder, then the block lands where the slash was.
+	await o.eval(async (app) => { await app.vault.create('Spellbook.md', 'Spells:\n'); });
+	await o.openFile('Spellbook.md', 'source');
+	await o.eval((app) => { const e = app.workspace.activeEditor.editor; e.focus(); e.setCursor({ line: 1, ch: 0 }); });
+	await o.page.keyboard.type('/new-spell', { delay: 20 });
+	await o.page.keyboard.press('Enter');
+	await o.page.locator(B).waitFor();
+	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Frost Nip');
+	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Ice' }).click();
+	await o.page.locator(`${B} .eb-create`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	await o.waitFor(async () => /```nimble-spell\nname: Frost Nip\nschool: Ice\n/.test(await o.eval((app) => app.workspace.activeEditor.editor.getValue())), { what: 'the spell block in the note' });
+
+	// The compendium's New button opens the builder for the tab you're on.
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:open-bestiary'));
+	await o.page.locator('.nimble-cmpx-new').first().waitFor();
+	await o.page.locator('.nimble-cmpx-new').first().click();
+	await o.page.locator(B).waitFor();
+	assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).textContent(), 'Monster');
+	await o.page.keyboard.press('Escape');
+	await o.page.locator(B).waitFor({ state: 'detached' });
 });
 
 // ---------------------------------------------------------------------------
