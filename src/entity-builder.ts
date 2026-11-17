@@ -5,9 +5,10 @@
 // numbers; whatever the GM types is kept. The first step holds everything a
 // quick build needs, and Create works from any step.
 
-import { Modal, normalizePath, Notice, setIcon, TFile } from 'obsidian';
+import { App, Menu, Modal, normalizePath, Notice, setIcon, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
-import { isPhone, isTouch } from './touch';
+import { confirmAction, isPhone, isTouch } from './touch';
+import { fuzzyRank } from './compendium-query';
 import type { Dice } from './builder-math';
 
 export type EntityKind = 'monster' | 'spell' | 'item';
@@ -122,9 +123,9 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		contentEl.empty();
 
 		const head = contentEl.createDiv({ cls: 'eb-head' });
-		this.kindBar = head.createDiv({ cls: 'eb-kinds', attr: { role: 'radiogroup', 'aria-label': 'What to make' } });
+		this.kindBar = head.createDiv({ cls: 'eb-kinds', attr: { role: 'radiogroup' } });
 		this.chip = head.createDiv({ cls: 'eb-chip', attr: { 'aria-live': 'polite' } });
-		this.dots = contentEl.createDiv({ cls: 'eb-dots', attr: { role: 'tablist', 'aria-label': 'Steps' } });
+		this.dots = contentEl.createDiv({ cls: 'eb-dots', attr: { role: 'tablist' } });
 
 		const body = contentEl.createDiv({ cls: 'eb-body' });
 		this.viewport = body.createDiv({ cls: 'eb-viewport' });
@@ -214,7 +215,9 @@ export class EntityBuilder extends Modal implements BuilderUI {
 			const on = k === this.b.kind;
 			const btn = this.kindBar.createEl('button', { cls: `eb-kind${on ? ' is-active' : ''}`, attr: { role: 'radio', 'aria-checked': String(on) } });
 			setIcon(btn.createSpan({ cls: 'eb-kind-icon' }), KIND_LABEL[k].icon);
-			btn.createSpan({ text: KIND_LABEL[k].label });
+			btn.createSpan({ cls: 'eb-t', text: KIND_LABEL[k].label });
+			// Phones show the icon only: then it needs a name (and gets a tooltip).
+			if (this.phone) btn.setAttr('aria-label', KIND_LABEL[k].label);
 			btn.addEventListener('click', () => { if (k !== this.b.kind) this.setKind(k); });
 		}
 		const title = this.kindBar.createDiv({ cls: 'eb-title' });
@@ -260,7 +263,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		this.chip.empty();
 		this.chip.toggleClass('is-hidden', c.tone === 'none');
 		this.chip.className = `eb-chip tone-${c.tone}${c.tone === 'none' ? ' is-hidden' : ''}`;
-		this.chip.setText(c.text);
+		this.chip.createSpan({ cls: 'eb-t', text: c.text });
 		this.renderChrome();
 	}
 
@@ -289,30 +292,30 @@ export class EntityBuilder extends Modal implements BuilderUI {
 	private renderChrome(): void {
 		this.dots.empty();
 		this.steps.forEach((st, i) => {
-			const d = this.dots.createEl('button', { cls: `eb-dot${i === this.at ? ' is-active' : ''}${i < this.at ? ' is-done' : ''}`, attr: { role: 'tab', 'aria-selected': String(i === this.at), 'aria-label': st.label } });
+			const d = this.dots.createEl('button', { cls: `eb-dot${i === this.at ? ' is-active' : ''}${i < this.at ? ' is-done' : ''}`, attr: { role: 'tab', 'aria-selected': String(i === this.at) } });
 			setIcon(d.createSpan({ cls: 'eb-dot-icon' }), st.icon);
-			d.createSpan({ cls: 'eb-dot-label', text: st.label });
+			d.createSpan({ cls: 'eb-dot-label eb-t', text: st.label });
 			d.addEventListener('click', () => this.go(st.id));
 		});
 		this.dots.querySelector('.is-active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
 		this.backBtn.empty();
-		if (this.at === 0) this.backBtn.createSpan({ text: 'Cancel' });
-		else { setIcon(this.backBtn.createSpan(), 'chevron-left'); this.backBtn.createSpan({ text: 'Back' }); }
+		if (this.at === 0) this.backBtn.createSpan({ cls: 'eb-t', text: 'Cancel' });
+		else { setIcon(this.backBtn.createSpan(), 'chevron-left'); this.backBtn.createSpan({ cls: 'eb-t', text: 'Back' }); }
 		this.counter.setText(`${this.at + 1} of ${this.steps.length}`);
 		const last = this.at === this.steps.length - 1;
 		const verb = this.o.writeBack ? 'Save' : this.o.insert ? 'Insert' : 'Create';
 		this.nextBtn.empty();
 		if (last) {
 			setIcon(this.nextBtn.createSpan(), 'check');
-			this.nextBtn.createSpan({ text: `${verb} ${this.b.noun}` });
+			this.nextBtn.createSpan({ cls: 'eb-t', text: `${verb} ${this.b.noun}` });
 		} else {
-			this.nextBtn.createSpan({ text: `Next: ${this.steps[this.at + 1].label}` });
+			this.nextBtn.createSpan({ cls: 'eb-t', text: `Next: ${this.steps[this.at + 1].label}` });
 			setIcon(this.nextBtn.createSpan(), 'chevron-right');
 		}
 		// Create from any step: the rest fills in from the book.
 		this.createBtn.toggleClass('is-hidden', last);
-		this.createBtn.setText(this.phone ? verb : `${verb} now`);
-		this.createBtn.setAttr('title', 'Anything you haven\'t filled in uses the book\'s numbers');
+		this.createBtn.empty();
+		this.createBtn.createSpan({ cls: 'eb-t', text: this.phone ? verb : `${verb} now` });
 	}
 
 	private toggleSheet(open?: boolean): void {
@@ -396,8 +399,29 @@ export function openBuilder(plugin: NimbleStatblocksPlugin, o: BuilderOptions): 
 // ----------------------------------------------------------------------------
 // Fields: one look for every kind. Labels above, help under, expected values
 // beside, controls that fit a phone.
+//
+// Obsidian shows a tooltip for anything with an aria-label, so only buttons get
+// one (worded as what they do). Fields take their name from the visible label
+// (aria-labelledby), or a hidden one where there's no label on screen.
 
-export interface FieldParts { row: HTMLElement; control: HTMLElement; aside: HTMLElement; help: HTMLElement }
+export interface FieldParts { row: HTMLElement; control: HTMLElement; aside: HTMLElement; help: HTMLElement; labelId: string }
+
+let ids = 0;
+const nextId = () => `eb-l-${++ids}`;
+
+/** A name for a control that has no label on screen, read by screen readers but never shown as a tooltip. */
+function hiddenLabel(parent: HTMLElement, text: string): string {
+	const id = nextId();
+	parent.createSpan({ cls: 'eb-sr', text, attr: { id } });
+	return id;
+}
+
+/** Name a control: by a label's id, or by a hidden label. `data-field` is for finding it again (tests, focus). */
+function name(el: HTMLElement, parent: HTMLElement, o: { labelledBy?: string; label?: string }): void {
+	const id = o.labelledBy ?? (o.label ? hiddenLabel(parent, o.label) : undefined);
+	if (id) el.setAttr('aria-labelledby', id);
+	if (o.label) el.dataset.field = o.label;
+}
 
 export function section(panel: HTMLElement, title: string, sub?: string): HTMLElement {
 	const h = panel.createDiv({ cls: 'eb-step-head' });
@@ -413,29 +437,32 @@ export function grid(parent: HTMLElement, cols = 2): HTMLElement {
 export function field(parent: HTMLElement, label: string, o: { help?: string; wide?: boolean; cls?: string } = {}): FieldParts {
 	const row = parent.createDiv({ cls: `eb-field${o.wide ? ' is-wide' : ''}${o.cls ? ` ${o.cls}` : ''}` });
 	const top = row.createDiv({ cls: 'eb-label-row' });
-	top.createEl('label', { cls: 'eb-label', text: label });
+	const labelId = nextId();
+	top.createEl('label', { cls: 'eb-label', text: label, attr: { id: labelId } });
 	const aside = top.createDiv({ cls: 'eb-aside' });
 	const control = row.createDiv({ cls: 'eb-control' });
 	const help = row.createDiv({ cls: 'eb-help' });
 	if (o.help) help.setText(o.help); else help.addClass('is-empty');
-	return { row, control, aside, help };
+	return { row, control, aside, help, labelId };
 }
 
-export function textInput(parent: HTMLElement, o: { value?: string; placeholder?: string; onInput: (v: string) => void; words?: boolean; code?: boolean; label?: string; cls?: string }): HTMLInputElement {
-	const i = parent.createEl('input', { cls: `eb-input${o.cls ? ` ${o.cls}` : ''}`, attr: { type: 'text', enterkeyhint: 'next', spellcheck: o.code ? 'false' : 'true' } });
-	if (o.label) i.setAttr('aria-label', o.label);
+export interface TextOpts { value?: string; placeholder?: string; onInput: (v: string) => void; words?: boolean; code?: boolean; label?: string; labelledBy?: string; cls?: string }
+
+export function textInput(parent: HTMLElement, o: TextOpts): HTMLInputElement {
+	const i = parent.createEl('input', { cls: `eb-input${o.cls ? ` ${o.cls}` : ''}`, attr: { type: 'text', enterkeyhint: 'next', spellcheck: o.code ? 'false' : 'true', autocomplete: 'off' } });
+	name(i, parent, o);
 	i.autocapitalize = o.code ? 'off' : o.words ? 'words' : 'sentences';
 	if (o.code) i.setAttr('autocorrect', 'off');
 	i.value = o.value ?? '';
 	if (o.placeholder) i.placeholder = o.placeholder;
 	i.addEventListener('input', () => o.onInput(i.value));
-	i.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); focusNext(i); } });
+	i.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing && !e.defaultPrevented) { e.preventDefault(); focusNext(i); } });
 	return i;
 }
 
-export function textArea(parent: HTMLElement, o: { value?: string; placeholder?: string; onInput: (v: string) => void; rows?: number; label?: string }): HTMLTextAreaElement {
+export function textArea(parent: HTMLElement, o: { value?: string; placeholder?: string; onInput: (v: string) => void; rows?: number; label?: string; labelledBy?: string }): HTMLTextAreaElement {
 	const t = parent.createEl('textarea', { cls: 'eb-textarea', attr: { rows: String(o.rows ?? 2) } });
-	if (o.label) t.setAttr('aria-label', o.label);
+	name(t, parent, o);
 	t.value = o.value ?? '';
 	if (o.placeholder) t.placeholder = o.placeholder;
 	t.addEventListener('input', () => o.onInput(t.value));
@@ -452,17 +479,28 @@ function focusNext(from: HTMLElement): void {
 	else from.blur();
 }
 
+/** ↑ and ↓ (Shift for 10) nudge a number typed in a text field. */
+export function arrowNudge(input: HTMLInputElement, bump: (dir: number, mult: number) => void): void {
+	input.addEventListener('keydown', (e) => {
+		if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+		e.preventDefault();
+		bump(e.key === 'ArrowUp' ? 1 : -1, e.shiftKey ? 10 : 1);
+	});
+}
+
 /**
  * A number with − and + either side. Empty means "use the book's number",
  * which shows as the placeholder. `get` keeps it current when something else
  * moves it (the level, a template).
  */
-export function numberInput(parent: HTMLElement, o: { get: () => number | undefined; placeholder: () => string; set: (v: number | undefined) => void; min?: number; max?: number; step?: number; label: string; ui: BuilderUI }): HTMLInputElement {
+export function numberInput(parent: HTMLElement, o: { get: () => number | undefined; placeholder: () => string; set: (v: number | undefined) => void; min?: number; max?: number; step?: number; label: string; labelledBy?: string; ui: BuilderUI }): HTMLInputElement {
 	const wrap = parent.createDiv({ cls: 'eb-num' });
-	const minus = wrap.createEl('button', { cls: 'eb-num-btn', attr: { 'aria-label': `Less ${o.label}`, tabindex: '-1' } });
+	const step = o.step ?? 1;
+	const minus = wrap.createEl('button', { cls: 'eb-num-btn', attr: { 'aria-label': `Subtract ${step}`, tabindex: '-1' } });
 	setIcon(minus, 'minus');
-	const input = wrap.createEl('input', { cls: 'eb-num-input', attr: { type: 'text', inputmode: 'numeric', pattern: '[0-9]*', enterkeyhint: 'next', 'aria-label': o.label, autocomplete: 'off' } });
-	const plus = wrap.createEl('button', { cls: 'eb-num-btn', attr: { 'aria-label': `More ${o.label}`, tabindex: '-1' } });
+	const input = wrap.createEl('input', { cls: 'eb-num-input', attr: { type: 'text', inputmode: 'numeric', pattern: '[0-9]*', enterkeyhint: 'next', autocomplete: 'off' } });
+	name(input, wrap, o);
+	const plus = wrap.createEl('button', { cls: 'eb-num-btn', attr: { 'aria-label': `Add ${step}`, tabindex: '-1' } });
 	setIcon(plus, 'plus');
 	const min = o.min ?? 0;
 	const max = o.max ?? 9999;
@@ -479,16 +517,14 @@ export function numberInput(parent: HTMLElement, o: { get: () => number | undefi
 		o.ui.changed();
 	});
 	input.addEventListener('blur', () => sync());
-	input.addEventListener('keydown', (e) => {
-		if (e.key === 'Enter') { e.preventDefault(); focusNext(input); }
-		else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); bump(e.key === 'ArrowUp' ? 1 : -1, e.shiftKey ? 10 : 1); }
-	});
+	input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); focusNext(input); } });
 	const bump = (dir: number, mult = 1) => {
 		const base = o.get() ?? (parseFloat(o.placeholder()) || 0);
-		o.set(clamp(Math.round(base + dir * (o.step ?? 1) * mult)));
+		o.set(clamp(Math.round(base + dir * step * mult)));
 		input.value = String(o.get());
 		o.ui.changed();
 	};
+	arrowNudge(input, bump);
 	minus.addEventListener('click', () => bump(-1));
 	plus.addEventListener('click', () => bump(1));
 	o.ui.live(sync);
@@ -498,24 +534,42 @@ export function numberInput(parent: HTMLElement, o: { get: () => number | undefi
 
 export interface SegOption<T> { value: T; label: string; icon?: string; title?: string }
 
-/** A row of buttons, one picked. Wraps on narrow screens rather than shrinking text. */
-export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: () => T, set: (v: T) => void, o: { label: string; ui: BuilderUI; cls?: string }): HTMLElement {
-	const row = parent.createDiv({ cls: `eb-seg${o.cls ? ` ${o.cls}` : ''}`, attr: { role: 'radiogroup', 'aria-label': o.label } });
+/**
+ * A row of buttons, one picked, with a thumb that slides to the pick (across
+ * rows too, when it wraps into a grid). Never shrinks text: it wraps instead.
+ */
+export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: () => T, set: (v: T) => void, o: { label: string; labelledBy?: string; ui: BuilderUI; cls?: string }): HTMLElement {
+	const row = parent.createDiv({ cls: `eb-seg${o.cls ? ` ${o.cls}` : ''}`, attr: { role: 'radiogroup' } });
+	name(row, parent, o);
+	const thumb = row.createDiv({ cls: 'eb-seg-thumb is-still', attr: { 'aria-hidden': 'true' } });
 	const buttons = options.map(opt => {
 		const b = row.createEl('button', { cls: 'eb-seg-btn', attr: { role: 'radio' } });
 		if (opt.icon) setIcon(b.createSpan({ cls: 'eb-seg-icon' }), opt.icon);
-		b.createSpan({ text: opt.label });
+		b.createSpan({ cls: 'eb-t', text: opt.label });
 		if (opt.title) b.setAttr('title', opt.title);
 		b.addEventListener('click', () => { set(opt.value); o.ui.changed(); });
 		return { b, opt };
 	});
+	let placed = false;
+	const place = (animate: boolean) => {
+		const on = buttons.find(x => x.opt.value === get())?.b;
+		thumb.toggleClass('is-hidden', !on);
+		if (!on) return;
+		if (!on.offsetWidth) { window.requestAnimationFrame(() => place(false)); return; } // not laid out yet
+		thumb.toggleClass('is-still', !animate || !placed);
+		thumb.setCssProps({ '--x': `${on.offsetLeft}px`, '--y': `${on.offsetTop}px`, '--w': `${on.offsetWidth}px`, '--h': `${on.offsetHeight}px` });
+		placed = true;
+	};
 	const sync = () => {
 		for (const { b, opt } of buttons) {
-			const on = opt.value === get();
-			b.toggleClass('is-active', on);
-			b.setAttr('aria-checked', String(on));
+			const v = opt.value === get();
+			b.toggleClass('is-active', v);
+			b.setAttr('aria-checked', String(v));
 		}
+		place(true);
 	};
+	// A wrap or a resize moves the buttons: the thumb follows without sliding.
+	new ResizeObserver(() => place(false)).observe(row);
 	o.ui.live(sync);
 	sync();
 	return row;
@@ -524,14 +578,22 @@ export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: 
 /** A small "Book: 52 · Use it" tag beside a field, shown while the field differs from the book. */
 export function bookTag(aside: HTMLElement, o: { text: () => string | null; use?: () => void; ui: BuilderUI }): void {
 	const tag = aside.createDiv({ cls: 'eb-book' });
-	const label = tag.createSpan({ cls: 'eb-book-text' });
-	const btn = o.use ? tag.createEl('button', { cls: 'eb-book-use', text: 'Use' }) : null;
+	const label = tag.createSpan({ cls: 'eb-book-text eb-t' });
+	const btn = o.use ? tag.createEl('button', { cls: 'eb-book-use' }) : null;
+	btn?.createSpan({ cls: 'eb-t', text: 'Use' });
 	btn?.addEventListener('click', () => { o.use!(); o.ui.changed(); });
 	o.ui.live(() => {
 		const t = o.text();
 		tag.toggleClass('is-hidden', t === null);
 		label.setText(t ?? '');
 	});
+}
+
+/** A pill whose text is centred on its letters, whatever the font. */
+export function pill(parent: HTMLElement, text: string, cls: string): HTMLElement {
+	const el = parent.createSpan({ cls: `eb-pill ${cls}` });
+	el.createSpan({ cls: 'eb-t', text });
+	return el;
 }
 
 /** A meter: how a value compares with what the book expects (100% in the middle band). */
@@ -549,7 +611,7 @@ export function meter(parent: HTMLElement, label: string, have: number, want: nu
 }
 
 export function iconButton(parent: HTMLElement, icon: string, label: string, onClick: () => void, cls = ''): HTMLButtonElement {
-	const b = parent.createEl('button', { cls: `eb-icon-btn ${cls}`.trim(), attr: { 'aria-label': label, title: label } });
+	const b = parent.createEl('button', { cls: `eb-icon-btn ${cls}`.trim(), attr: { 'aria-label': label } });
 	setIcon(b, icon);
 	b.addEventListener('click', onClick);
 	return b;
@@ -558,33 +620,177 @@ export function iconButton(parent: HTMLElement, icon: string, label: string, onC
 export function textButton(parent: HTMLElement, icon: string, text: string, onClick: () => void, cls = ''): HTMLButtonElement {
 	const b = parent.createEl('button', { cls: `eb-text-btn ${cls}`.trim() });
 	setIcon(b.createSpan({ cls: 'eb-text-btn-icon' }), icon);
-	b.createSpan({ text });
+	b.createSpan({ cls: 'eb-t', text });
 	b.addEventListener('click', onClick);
 	return b;
 }
 
+/** Remove something only after "Are you sure?" (the plugin's own small dialog, which works on phones too). */
+export function removeButton(parent: HTMLElement, app: App, what: string, onRemove: () => void): HTMLButtonElement {
+	return iconButton(parent, 'trash-2', `Remove ${what}`, () => {
+		void confirmAction(app, `Remove ${what}?`, '', 'Remove', true).then(ok => { if (ok) onRemove(); });
+	}, 'eb-remove');
+}
+
+// ----------------------------------------------------------------------------
+// Type to filter: a field with suggestions under it that narrow as you type
+// (fuzzy, like the compendium's search). ↑ ↓ move, Enter picks, Escape closes;
+// anything else typed is kept as it is.
+
+export interface Suggestion<T> { item: T; label: string; meta?: string }
+
+export function suggestField<T>(parent: HTMLElement, o: TextOpts & {
+	suggest: (query: string) => Suggestion<T>[];
+	onPick: (s: Suggestion<T>, input: HTMLInputElement) => void;
+	/** Show suggestions before anything is typed (the most used ones). */
+	onEmpty?: boolean;
+	/** Word fields: once what's typed is exactly the one suggestion, there's nothing left to suggest. */
+	hideExact?: boolean;
+}): HTMLInputElement {
+	const box = parent.createDiv({ cls: 'eb-search' });
+	const input = textInput(box, o);
+	input.setAttr('role', 'combobox');
+	input.setAttr('aria-autocomplete', 'list');
+	input.setAttr('aria-expanded', 'false');
+	const list = box.createDiv({ cls: 'eb-search-list', attr: { role: 'listbox', id: nextId() } });
+	input.setAttr('aria-controls', list.id);
+	let hits: Suggestion<T>[] = [];
+	let sel = -1;
+	const close = () => { list.removeClass('is-open'); input.setAttr('aria-expanded', 'false'); hits = []; sel = -1; };
+	const pick = (s: Suggestion<T>) => { close(); o.onPick(s, input); };
+	const mark = () => [...list.children].forEach((r, i) => { r.toggleClass('is-selected', i === sel); if (i === sel) r.scrollIntoView({ block: 'nearest' }); });
+	const draw = () => {
+		const q = input.value.trim();
+		list.empty();
+		hits = q || o.onEmpty ? o.suggest(q).slice(0, 6) : [];
+		// Nothing to suggest when what's typed is already exactly a suggestion.
+		if (o.hideExact && hits.length === 1 && hits[0].label.toLowerCase() === q.toLowerCase()) hits = [];
+		sel = hits.length && q ? 0 : -1;
+		hits.forEach((h, i) => {
+			const r = list.createDiv({ cls: 'eb-search-row', attr: { role: 'option', id: `${list.id}-${i}` } });
+			r.createSpan({ cls: 'eb-search-name', text: h.label });
+			if (h.meta) r.createSpan({ cls: 'eb-search-meta', text: h.meta });
+			r.addEventListener('mousedown', (ev) => { ev.preventDefault(); pick(h); });
+		});
+		mark();
+		list.toggleClass('is-open', hits.length > 0);
+		input.setAttr('aria-expanded', String(hits.length > 0));
+	};
+	input.addEventListener('input', draw);
+	input.addEventListener('focus', draw);
+	input.addEventListener('blur', () => window.setTimeout(close, 100));
+	input.addEventListener('keydown', (e) => {
+		if (!hits.length) return;
+		if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+			e.preventDefault(); e.stopPropagation();
+			sel = (sel + (e.key === 'ArrowDown' ? 1 : -1) + hits.length) % hits.length;
+			input.setAttr('aria-activedescendant', `${list.id}-${sel}`);
+			mark();
+		} else if (e.key === 'Enter' && sel >= 0) { e.preventDefault(); e.stopPropagation(); pick(hits[sel]); }
+		else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+	}, true);
+	return input;
+}
+
+/** Fuzzy suggestions from a list of words with how often each is used (most used first when nothing's typed). */
+export function wordSuggestions(words: Map<string, number>, query: string, noun = 'monster'): Suggestion<string>[] {
+	const all = [...words.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([w, n]) => ({ item: w, label: w, meta: `${n} ${noun}${n === 1 ? '' : 's'}` }));
+	if (!query) return all;
+	return fuzzyRank(all, query.toLowerCase(), s => [s.label], 12).map(x => x.item);
+}
+
+// ----------------------------------------------------------------------------
+// Where it's saved: a pill ("Saved in Monsters") that opens into a folder
+// picker; type a new path to make one.
+
+export function folderPill(parent: HTMLElement, o: { app: App; get: () => string; set: (path: string) => void }): HTMLElement {
+	const wrap = parent.createDiv({ cls: 'eb-folder' });
+	const draw = () => {
+		wrap.empty();
+		const path = o.get() || '/';
+		const parts = path.split('/').filter(Boolean);
+		const btn = wrap.createEl('button', { cls: 'eb-folder-pill', attr: { 'aria-label': `Saved in ${path}. Change the folder` } });
+		setIcon(btn.createSpan({ cls: 'eb-folder-icon' }), 'save');
+		btn.createSpan({ cls: 'eb-folder-kicker eb-t', text: 'Saved in' });
+		btn.createSpan({ cls: 'eb-folder-name eb-t', text: parts[parts.length - 1] ?? 'the vault root' });
+		if (parts.length > 1) btn.createSpan({ cls: 'eb-folder-parent eb-t', text: parts.slice(0, -1).join(' / ') });
+		setIcon(btn.createSpan({ cls: 'eb-folder-edit' }), 'chevron-down');
+		btn.addEventListener('click', () => edit());
+	};
+	const edit = () => {
+		wrap.empty();
+		const folders = o.app.vault.getAllFolders(true).map(f => f.path || '/').filter(p => !p.startsWith('.'));
+		let committed = false;
+		const commit = (v: string) => { if (committed) return; committed = true; o.set(v.trim().replace(/^\/+|\/+$/g, '') || '/'); draw(); };
+		const input = suggestField<string>(wrap, {
+			value: o.get(), code: true, label: 'Folder', placeholder: 'Folder path', onEmpty: true, onInput: () => { /* committed on Enter or leaving */ },
+			suggest: (q) => fuzzyRank(folders, q.toLowerCase(), f => [f, f.split('/').pop() ?? f], 40).map(x => ({ item: x.item, label: x.item })).concat(q ? [] : folders.slice(0, 40).map(f => ({ item: f, label: f }))).slice(0, 8),
+			onPick: (s) => commit(s.item),
+		});
+		input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.defaultPrevented) { e.preventDefault(); commit(input.value); } else if (e.key === 'Escape') { committed = true; draw(); } });
+		input.addEventListener('blur', () => window.setTimeout(() => commit(input.value), 120));
+		input.focus();
+		input.select();
+	};
+	draw();
+	return wrap;
+}
+
+// ----------------------------------------------------------------------------
+// Dice without typing
+
+/** What a die is for, from the GM Guide's themes (p.26). */
+export const DIE_THEME: Record<number, string> = { 4: 'Undead: slow, big bonus damage', 6: 'Goblins: chaotic, likely to miss or crit', 8: 'Humans: balanced and reliable', 10: 'Beasts: stronger than humans', 12: 'Giants: superhumanly strong', 20: 'The mightiest creatures' };
+
 /**
- * Dice without typing: − count +, the die, − bonus +, the average against what
- * the book expects, and a reset to the book's dice. `read` and `write` work on
- * whatever holds the dice (an attack's text, a spell's damage).
+ * Dice without typing: − count +, the die (a menu, when it can change), − bonus +,
+ * the average against what the book expects, and a reset to the book's dice.
+ * `read` and `write` work on whatever holds the dice (an attack's text, a spell's damage).
  */
-export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write: (d: Dice) => void; sides: () => number; avg: () => number | null; want?: () => number; reset?: { shown: () => boolean; run: () => void }; ui: BuilderUI }): HTMLElement {
+export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write: (d: Dice) => void; sides: () => number; avg: () => number | null; want?: () => number; reset?: { shown: () => boolean; run: () => void }; dieMenu?: boolean; ui: BuilderUI }): HTMLElement {
 	const pad = parent.createDiv({ cls: 'eb-dice eb-noswipe' });
 	const parts = () => o.read() ?? { count: 1, sides: o.sides(), bonus: 0 };
 	const set = (d: Dice) => { o.write(d); o.ui.changed(); };
-	iconButton(pad, 'minus', 'One die fewer', () => { const p = parts(); if (p.count > 1) set({ ...p, count: p.count - 1 }); }, 'eb-dice-btn');
-	const diceText = pad.createSpan({ cls: 'eb-dice-text' });
-	iconButton(pad, 'plus', 'One die more', () => { const p = parts(); set({ ...p, count: Math.min(20, p.count + 1) }); }, 'eb-dice-btn');
-	pad.createSpan({ cls: 'eb-dice-sep', text: 'bonus' });
-	iconButton(pad, 'minus', 'Less bonus', () => { const p = parts(); set({ ...p, bonus: Math.max(0, p.bonus - (p.bonus > 20 ? 5 : 1)) }); }, 'eb-dice-btn');
+	const lessDie = iconButton(pad, 'minus', 'Remove a die', () => { const p = parts(); if (p.count > 1) set({ ...p, count: p.count - 1 }); }, 'eb-dice-btn');
+	const count = pad.createSpan({ cls: 'eb-dice-text' });
+	const moreDie = iconButton(pad, 'plus', 'Add a die', () => { const p = parts(); set({ ...p, count: Math.min(20, p.count + 1) }); }, 'eb-dice-btn');
+	const die = pad.createEl('button', { cls: 'eb-die-chip' });
+	const dieText = die.createSpan({ cls: 'eb-t' });
+	if (o.dieMenu) setIcon(die.createSpan({ cls: 'eb-die-caret' }), 'chevron-down');
+	else die.disabled = true;
+	die.addEventListener('click', (ev) => {
+		if (!o.dieMenu) return;
+		const m = new Menu();
+		for (const sides of [4, 6, 8, 10, 12, 20]) {
+			m.addItem(i => i.setTitle(`d${sides}  ·  ${DIE_THEME[sides]}`).setChecked(parts().sides === sides).onClick(() => {
+				// Same damage in the new die: the bonus makes up the difference.
+				const p = parts();
+				const avg = p.count * (p.sides + 1) / 2 + p.bonus;
+				set({ count: p.count, sides, bonus: Math.max(0, Math.round(avg - p.count * (sides + 1) / 2)) });
+			}));
+		}
+		m.showAtMouseEvent(ev);
+	});
+	const lessBonus = iconButton(pad, 'minus', 'Subtract 1', () => { const p = parts(); set({ ...p, bonus: Math.max(0, p.bonus - (p.bonus > 20 ? 5 : 1)) }); }, 'eb-dice-btn');
 	const bonusText = pad.createSpan({ cls: 'eb-dice-text' });
-	iconButton(pad, 'plus', 'More bonus', () => { const p = parts(); set({ ...p, bonus: p.bonus + (p.bonus >= 20 ? 5 : 1) }); }, 'eb-dice-btn');
+	const moreBonus = iconButton(pad, 'plus', 'Add 1', () => { const p = parts(); set({ ...p, bonus: p.bonus + (p.bonus >= 20 ? 5 : 1) }); }, 'eb-dice-btn');
 	const avg = pad.createSpan({ cls: 'eb-dice-avg' });
 	const reset = o.reset ? textButton(pad, 'rotate-ccw', 'Book dice', () => { o.reset!.run(); o.ui.changed(); }, 'eb-dice-reset') : null;
 	o.ui.live(() => {
 		const p = o.read();
-		diceText.setText(p ? `${p.count}d${p.sides}` : '—');
+		const sides = p?.sides ?? o.sides();
+		count.setText(p ? String(p.count) : '—');
+		dieText.setText(`d${sides}`);
+		die.setAttr('aria-label', o.dieMenu ? `d${sides}: change the die` : `d${sides}`);
 		bonusText.setText(p ? `+${Math.max(0, p.bonus)}` : '—');
+		// Tooltips say exactly what a press does.
+		lessDie.setAttr('aria-label', `Remove 1d${sides}`);
+		moreDie.setAttr('aria-label', `Add 1d${sides}`);
+		const step = (p?.bonus ?? 0) >= 20 ? 5 : 1;
+		moreBonus.setAttr('aria-label', `Add ${step}`);
+		lessBonus.setAttr('aria-label', `Subtract ${(p?.bonus ?? 0) > 20 ? 5 : 1}`);
+		lessDie.disabled = !p || p.count <= 1;
+		lessBonus.disabled = !p || p.bonus <= 0;
 		avg.empty();
 		const have = o.avg();
 		const want = o.want?.();
@@ -592,10 +798,49 @@ export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write
 			avg.createSpan({ cls: 'eb-dice-avg-have', text: `avg ${Math.round(have * 10) / 10}` });
 			if (want !== undefined) {
 				const off = want ? have / want : 1;
-				avg.createSpan({ cls: `eb-dice-avg-want ${off > 1.25 ? 'is-high' : off < 0.75 ? 'is-low' : 'is-ok'}`, text: `book ${Math.round(want)}` });
+				pill(avg, `book ${Math.round(want)}`, `eb-dice-avg-want ${off > 1.25 ? 'is-high' : off < 0.75 ? 'is-low' : 'is-ok'}`);
 			}
 		}
 		reset?.toggleClass('is-hidden', !o.reset!.shown());
 	});
 	return pad;
+}
+
+// ----------------------------------------------------------------------------
+// Review notes: what's worth a second look before saving, each with its fixes.
+
+export interface NoteView { tone: 'warn' | 'tip' | 'ok'; text: string; fixes: { label: string; run: () => void }[] }
+
+export function reviewNotesView(parent: HTMLElement, ui: BuilderUI, notes: () => NoteView[]): void {
+	const box = parent.createDiv({ cls: 'eb-checks' });
+	ui.live(() => {
+		box.empty();
+		for (const n of notes()) {
+			const row = box.createDiv({ cls: `eb-note tone-${n.tone}` });
+			setIcon(row.createSpan({ cls: 'eb-note-icon' }), n.tone === 'ok' ? 'circle-check' : n.tone === 'warn' ? 'triangle-alert' : 'lightbulb');
+			const body = row.createDiv({ cls: 'eb-note-body' });
+			body.createDiv({ cls: 'eb-note-text', text: n.text });
+			if (!n.fixes.length) continue;
+			const acts = body.createDiv({ cls: 'eb-note-fixes' });
+			for (const f of n.fixes) {
+				const b = acts.createEl('button', { cls: 'eb-note-fix' });
+				b.createSpan({ cls: 'eb-t', text: f.label });
+				b.addEventListener('click', f.run);
+			}
+		}
+	});
+}
+
+/** The review's summary: label, value, and a jump back to the step. */
+export function reviewRows(panel: HTMLElement, ui: BuilderUI, rows: [string, string, () => string][]): void {
+	const box = panel.createDiv({ cls: 'eb-review' });
+	for (const [label, step, text] of rows) {
+		const r = box.createDiv({ cls: 'eb-review-row' });
+		r.createSpan({ cls: 'eb-review-label', text: label });
+		const v = r.createSpan({ cls: 'eb-review-value' });
+		const edit = r.createEl('button', { cls: 'eb-review-edit' });
+		edit.createSpan({ cls: 'eb-t', text: 'Edit' });
+		edit.addEventListener('click', () => ui.go(step));
+		ui.live(() => v.setText(text()));
+	}
 }

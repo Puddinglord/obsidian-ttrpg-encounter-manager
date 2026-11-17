@@ -5,10 +5,10 @@
 
 import { ArmorType, NimbleMonster } from './types';
 import { toStatblockSource } from './parser';
-import { levelValue, monsterRole, monsterSaves } from './rules';
+import { lastStandEffect, levelValue, monsterRole, monsterSaves } from './rules';
 import {
 	diceAverage, DIE_SIZES, expectedRegular, expectedSolo, formatDiceParts, guessRegularLevel, guessSoloLevel, LevelGuess, levelLabel,
-	minionDie, parseDiceParts, relevelRegular, relevelSolo, scaleAttack, snapLevel, suggestDice,
+	minionDie, parseDiceParts, relevelRegular, relevelSolo, scaleAttack, snapLevel, stepLevel, suggestDice, ARMOR_FROM, LEGENDARY_ARMOR_FROM,
 } from './builder-math';
 
 export type BuildRole = 'regular' | 'solo' | 'minion';
@@ -25,6 +25,8 @@ export interface AttackDraft {
 	base?: string;
 	/** Solos: the small (moves, utility) or big attack (GM Guide p.40). */
 	size?: 'small' | 'big';
+	/** This attack's die, when it differs from the monster's (d6 claws, a d12 slam). */
+	die?: number;
 }
 
 export interface MonsterDraft {
@@ -158,7 +160,7 @@ export function attackTarget(d: MonsterDraft, a: AttackDraft): number {
 /** Suggested dice for an attack in the monster's die. */
 export function suggestedDice(d: MonsterDraft, a: AttackDraft): string {
 	if (d.role === 'minion') return `1d${d.minionDie ?? minionDie(d.partyLevel)}`;
-	return formatDiceParts(suggestDice(attackTarget(d, a), d.die));
+	return formatDiceParts(suggestDice(attackTarget(d, a), a.die ?? d.die));
 }
 
 /** What follows an attack's name in the stat block. */
@@ -366,7 +368,8 @@ export function draftFromMonster(m: NimbleMonster, party: Party, copyName = true
 		die: firstDie ?? 8,
 		attacks: (m.attacks ?? []).map((a, i) => {
 			const { name, rest } = splitAttack(a.raw);
-			return { name, base: rest, size: role === 'solo' ? (i === 0 ? 'small' : 'big') : undefined };
+			const sides = parseDiceParts(rest)?.sides;
+			return { name, base: rest, size: role === 'solo' ? (i === 0 ? 'small' : 'big') : undefined, die: sides && (DIE_SIZES as readonly number[]).includes(sides) ? sides : undefined };
 		}),
 		actionText: m.actionText,
 		abilities: (m.abilities ?? []).map(a => ({ name: a.name, text: a.description })),
@@ -400,4 +403,91 @@ export function splitAttack(raw: string): { name: string; rest: string } {
 export function missing(d: MonsterDraft): string | null {
 	if (!d.name.trim()) return 'Give it a name.';
 	return null;
+}
+
+// ----------------------------------------------------------------------------
+// The review: what to look at before saving, each with a fix where there's one
+
+export type ReviewFix =
+	| { kind: 'level'; to: number }
+	| { kind: 'book-numbers' }
+	| { kind: 'book-dice'; attack: number }
+	| { kind: 'roll-ability' }
+	| { kind: 'hp-step' }
+	| { kind: 'armor'; to: ArmorType }
+	| { kind: 'last-stand' }
+	| { kind: 'add-attack' }
+	| { kind: 'go'; step: string; open?: 'saves' };
+
+export interface ReviewNote {
+	tone: 'warn' | 'tip' | 'ok';
+	text: string;
+	fixes: { label: string; fix: ReviewFix }[];
+}
+
+/** Everything worth a second look, most important first. */
+export function reviewNotes(d: MonsterDraft): ReviewNote[] {
+	const notes: ReviewNote[] = [];
+	const add = (tone: ReviewNote['tone'], text: string, ...fixes: ReviewNote['fixes']) => notes.push({ tone, text, fixes });
+	if (!d.name.trim()) add('warn', 'It has no name yet.', { label: 'Name it', fix: { kind: 'go', step: 'start' } });
+	const c = levelCheck(d);
+	if (c && c.verdict !== 0) {
+		const to = settledLevel(d);
+		const lv = levelLabel(d.level);
+		add('warn', `Its HP and damage play like level ${levelLabel(c.guess.level)}, not ${lv}${c.verdict > 0 ? ': a harder fight than its level says.' : ': an easier fight than its level says.'}`,
+			...(to !== d.level ? [{ label: `Make it level ${levelLabel(to)}`, fix: { kind: 'level', to } as ReviewFix }] : []),
+			{ label: `Use level ${lv} numbers`, fix: { kind: 'book-numbers' } });
+	}
+	if (d.role !== 'minion') {
+		d.attacks.forEach((a, i) => {
+			const have = diceAverage(attackBody(d, a));
+			const want = attackTarget(d, a);
+			if (have === null || !want || (c && c.verdict !== 0)) return; // the level note covers it
+			if (have > want * 1.4 || have < want * 0.6) add('tip', `${attackName(d, a, i)} averages ${Math.round(have)} damage; the book has ${Math.round(want)} at this level.`, { label: 'Book dice', fix: { kind: 'book-dice', attack: i } });
+		});
+		const e = expected(d);
+		if (e.armorEarly) {
+			const from = d.role === 'solo' ? LEGENDARY_ARMOR_FROM : ARMOR_FROM;
+			add('warn', `${d.armor === 'heavy' ? 'Heavy' : 'Medium'} armor at level ${levelLabel(d.level)} is earlier than the book uses it (level ${from[d.armor as 'medium' | 'heavy']}): a slog for heroes this early.`,
+				...(d.armor === 'heavy' && d.level >= ARMOR_FROM.medium ? [{ label: 'Medium armor', fix: { kind: 'armor', to: 'medium' } as ReviewFix }] : []),
+				{ label: 'No armor', fix: { kind: 'armor', to: 'none' } });
+		}
+		if (!d.abilities.some(a => a.name.trim() || a.text.trim())) {
+			add('tip', 'No ability yet. The book\'s numbers assume one simple ability; without one, it gives the monster a level\'s more HP or damage.',
+				{ label: 'Roll an ability', fix: { kind: 'roll-ability' } }, ...(d.hp === undefined ? [{ label: 'A level\'s more HP', fix: { kind: 'hp-step' } as ReviewFix }] : []));
+		}
+	}
+	if (d.role === 'solo') {
+		if (!savesText(d)) add('tip', 'Legendary monsters usually get one or two advantaged saves.', { label: 'Set saves', fix: { kind: 'go', step: 'tough', open: 'saves' } });
+		if (d.attacks.length < 2) add('tip', 'After each hero\'s turn a solo picks between a small attack that moves and a big one.', { label: 'Add an attack', fix: { kind: 'add-attack' } });
+		const ls = toMonster(d).lastStand;
+		if (ls && !lastStandEffect(ls, d.partySize)) add('tip', 'The tracker can\'t apply this Last Stand. Say "regains N HP per hero" or "N more damage and it dies".', { label: 'Use the suggested one', fix: { kind: 'last-stand' } });
+	}
+	if (!d.easier?.trim() && !d.harder?.trim() && d.role !== 'minion') add('tip', 'No Easier or Harder tactics: they help tune the fight at the table.', { label: 'Add tactics', fix: { kind: 'go', step: 'story' } });
+	if (!notes.some(n => n.tone === 'warn')) notes.unshift({ tone: 'ok', text: d.role === 'minion' ? 'Ready to run.' : `Ready to run as a level ${levelLabel(d.level)} ${d.role === 'solo' ? 'solo' : 'monster'}.`, fixes: [] });
+	return notes;
+}
+
+/** Apply a review fix to the draft (the UI handles the ones that move between steps). */
+export function applyFix(d: MonsterDraft, fix: ReviewFix): MonsterDraft {
+	switch (fix.kind) {
+		case 'level': return { ...d, level: fix.to, autoLevel: false };
+		case 'book-numbers': return { ...d, hp: undefined, template: undefined, autoLevel: false, attacks: d.attacks.map(a => ({ name: a.name, size: a.size, die: a.die })) };
+		case 'book-dice': return { ...d, attacks: d.attacks.map((a, i) => (i === fix.attack ? { name: a.name, size: a.size, die: a.die } : a)) };
+		case 'hp-step': {
+			const next = d.role === 'solo' ? d.level + 1 : stepLevel(d.level, 1);
+			return { ...d, hp: effectiveHp({ ...d, level: next, hp: undefined }) };
+		}
+		case 'armor': return { ...d, armor: fix.to };
+		case 'last-stand': return { ...d, lastStand: undefined };
+		case 'add-attack': return { ...d, attacks: [...d.attacks, { name: '', size: d.role === 'solo' ? 'big' : undefined }] };
+		default: return d;
+	}
+}
+
+/** The level, armor and HP in the words the stat block uses: "41 HP · Armor: None". */
+export function toughnessLine(d: MonsterDraft): string {
+	if (d.role === 'minion') return `Minion, d${d.minionDie ?? minionDie(d.partyLevel)} · Armor: ${d.armor === 'none' ? 'None' : d.armor === 'medium' ? 'Medium' : 'Heavy'}`;
+	const hp = effectiveHp(d);
+	return `${d.role === 'solo' ? `${hp} HP per hero (${hp * d.partySize} for ${d.partySize})` : `${hp} HP`} · Armor: ${d.armor === 'none' ? 'None' : d.armor === 'medium' ? 'Medium' : 'Heavy'}`;
 }

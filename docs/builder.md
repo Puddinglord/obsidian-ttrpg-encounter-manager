@@ -6,7 +6,7 @@ Make your own monsters, spells and items without learning a format. The builder 
 
 - **New monster…**, **New spell…** or **New item…** in the command palette or [Spotlight](spotlight.md).
 - The **+** button in the [compendium](compendium.md)'s search bar opens it on the tab you're on: Spells makes a spell, Items an item.
-- On a monster's page in the compendium, **Use as a template** starts a new monster from that one. Spells and items have it too.
+- On a monster's page in the compendium, **Use as a template** starts a new monster from that one. Spells and items have it too, and every builder's first step has **Start from** to search for one to copy.
 - `/new-monster`, `/new-spell` or `/new-item` in a note builds it right there: the block goes where you typed the slash.
 - Hover a monster, spell or item block in your notes and click the **pencil** to edit it in the builder. Save writes the block back in place.
 
@@ -26,16 +26,22 @@ Or press **Next** and go through the rest. Every step shows the stat block as it
 
 Numbers you type are never overwritten. A **Book: 52 · Use** tag beside a changed field puts the book's number back.
 
+**Type**, **Group** and **Habitat** suggest the compendium's own words as you type (`und` finds Undead); ↑ ↓ and Enter pick one, or keep typing your own.
+
 ## Monsters
 
 - **Regular** monsters use the GM Guide's Monster Builder table (levels 1/3 to 20, and past 20). Armor lowers HP (armored monsters aren't meant to be harder, just different), and the builder warns when armor comes earlier than the book recommends: Medium from level 3, Heavy from 8.
 - **Solo** monsters use the Legendary Monster Builder: HP per hero, a small attack that moves or sets up and a big one, Bloodied at half HP and a Last Stand. The suggested Last Stand reads "Regains N HP per hero", which the [tracker](tracker.md) applies when it hits 0 HP.
 - **Minions** take the party's level and the book's minion die for it.
-- **Attacks** start at the book's damage. The dice pad changes the count and the bonus without typing, and each attack shows its average against the book. **Book dice** puts it back. The die (d8 by default) follows the GM Guide's themes: d4 for undead, d6 goblins, d8 humans, d10 beasts, d12 giants, d20 the mightiest.
+- **Attacks** start at the book's damage. The dice pad changes the count and the bonus without typing, and each attack shows its average against the book. **Book dice** puts it back. Each attack has its own die (d8 unless you pick another from its menu, which lists the GM Guide's themes: d4 for undead, d6 goblins, d8 humans, d10 beasts, d12 giants, d20 the mightiest). Removing an attack or ability asks first.
 - **Abilities**: the book assumes every monster has one simple ability. **Roll an ability** picks one from the GM Guide's table of flavourful abilities.
 - **From a template**: start from any monster, a Goblin or one of your own. Move the level and its HP and attacks move with it along the book's tables, so a fragile hard-hitter stays one. Going down, armor the book holds back at that level drops a step.
 
-New monsters are saved as a note in the active campaign's **Monsters** folder (or **Bestiary** with no campaign), with an ordinary ```` ```nimble ```` stat block you can edit by hand.
+## Review
+
+The last step sums the build up and checks it against the books: stats that play like another level (with **Make it level 5** or **Use level 4 numbers**), attacks far from the book's damage, armor earlier than the book uses it, a monster with no ability, a solo without saves or a Last Stand the tracker can't apply, a spell that hits harder than its tier, a magic item without a catch. Each comes with a button that fixes it, or you can save as it is.
+
+The **Saved in** pill shows where it goes. Click it to pick another folder, or type a new one. New monsters go in the active campaign's **Monsters** folder (or **Bestiary** with no campaign), as an ordinary ```` ```nimble ```` stat block you can edit by hand.
 
 ## Spells
 

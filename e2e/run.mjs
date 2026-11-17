@@ -247,7 +247,7 @@ test('monster builder: a solo from a template, re-levelled, with stats typed fir
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
 	const B = '.modal.nimble-entity-builder';
 	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Goblin Warlord');
-	await o.page.locator(`${B} input[aria-label="Copy a monster"]`).fill('goblin boss');
+	await o.page.locator(`${B} input[data-field="Copy a monster"]`).fill('goblin boss');
 	await o.page.locator(`${B} .eb-search-row.is-selected`, { hasText: 'Goblin Boss' }).waitFor();
 	await o.page.keyboard.press('Enter');
 	await o.page.locator(`${B} .eb-template`).waitFor();
@@ -255,7 +255,7 @@ test('monster builder: a solo from a template, re-levelled, with stats typed fir
 	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Solo' }).click();
 	// Stats first: type HP per hero, and the level check says what it plays like.
 	await o.page.locator(`${B} .eb-dot`, { hasText: 'Toughness' }).click();
-	await o.page.locator(`${B} .eb-panel.is-active input[aria-label="HP"]`).fill('44');
+	await o.page.locator(`${B} .eb-panel.is-active input[data-field="HP"]`).fill('44');
 	await o.page.waitForTimeout(150);
 	assert.match(await o.page.locator(`${B} .eb-check-value`).textContent(), /level 4/);
 	await o.page.locator(`${B} .eb-check-fix`).click();
@@ -312,9 +312,9 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	await block.locator('.nimble-block-edit').click();
 	await o.page.locator(B).waitFor();
 	assert.equal(await o.page.locator(`${B} .eb-panel.is-active input`).first().inputValue(), 'Goblin');
-	assert.equal(await o.page.locator(`${B} input[aria-label="Copy a monster"]`).count(), 0); // editing, not copying
+	assert.equal(await o.page.locator(`${B} input[data-field="Copy a monster"]`).count(), 0); // editing, not copying
 	await o.page.locator(`${B} .eb-dot`, { hasText: 'Toughness' }).click();
-	await o.page.locator(`${B} .eb-panel.is-active input[aria-label="HP"]`).fill('14');
+	await o.page.locator(`${B} .eb-panel.is-active input[data-field="HP"]`).fill('14');
 	await o.page.locator(`${B} .eb-create`).click();
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	await o.waitFor(async () => /\nhp: 14\n/.test(await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin.md'))), { what: 'the block written back' });
@@ -341,6 +341,66 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).textContent(), 'Monster');
 	await o.page.keyboard.press('Escape');
 	await o.page.locator(B).waitFor({ state: 'detached' });
+});
+
+test('builder feedback round: type-to-filter, sliding segments, a die per attack, review fixes, folder pill', async (o) => {
+	const B = '.modal.nimble-entity-builder';
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
+	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Grave Hound');
+	// Type: "und" narrows to the compendium's Undead; ↓ Enter picks it.
+	const type = o.page.locator(`${B} input[data-field="Type"]`);
+	await type.click();
+	await type.pressSequentially('und', { delay: 20 });
+	await o.page.locator(`${B} .eb-search-list.is-open .eb-search-row`, { hasText: 'Undead' }).first().waitFor();
+	const rows = await o.page.locator(`${B} .eb-search-list.is-open .eb-search-name`).allTextContents();
+	await o.page.keyboard.press('ArrowDown');
+	await o.page.keyboard.press('ArrowUp');
+	await o.page.keyboard.press('Enter');
+	assert.equal(await type.inputValue(), rows[0]);
+	assert.match(rows[0], /undead/i);
+	// The thumb slides under the picked size.
+	const thumb = async () => o.page.evaluate(() => { const t = document.querySelector('.modal.nimble-entity-builder .eb-panel.is-active .is-wrap .eb-seg-thumb'); return t && getComputedStyle(t).transform; });
+	const before = await thumb();
+	await o.page.locator(`${B} .eb-panel.is-active .eb-seg-btn`, { hasText: 'Huge' }).click();
+	await o.page.waitForTimeout(350);
+	assert.notEqual(await thumb(), before);
+	// No tooltip on the step chips' row, and fields aren't labelled with tooltips.
+	assert.equal(await o.page.locator(`${B} .eb-dots[aria-label]`).count(), 0);
+	assert.equal(await o.page.locator(`${B} input[aria-label]`).count(), 0);
+
+	// Attacks: each has its own die; removing one asks first.
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Attacks' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active .eb-add-row .eb-text-btn`, { hasText: 'Add an attack' }).click();
+	const second = o.page.locator(`${B} .eb-panel.is-active .eb-attack`).nth(1);
+	await second.locator('.eb-die-chip').click();
+	await o.page.locator('.menu .menu-item', { hasText: 'd12' }).click();
+	assert.match(await second.locator('input.eb-attack-body').inputValue(), /\dd12/);
+	assert.match(await o.page.locator(`${B} .eb-panel.is-active .eb-attack`).nth(0).locator('input.eb-attack-body').inputValue(), /\dd8/);
+	assert.equal(await second.locator('button[aria-label^="Add 1d12"]').count(), 1);
+	await second.locator('.eb-remove').click();
+	await o.page.locator('.modal-container .mod-warning, .modal-container button', { hasText: 'Remove' }).last().click();
+	await o.page.waitForTimeout(200);
+	assert.equal(await o.page.locator(`${B} .eb-panel.is-active .eb-attack`).count(), 1);
+
+	// Review: type tough HP, and the review offers to move the level.
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Toughness' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active input[data-field="HP"]`).fill('90');
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Review' }).click();
+	const fix = o.page.locator(`${B} .eb-panel.is-active .eb-note.tone-warn .eb-note-fix`, { hasText: /^Make it level/ });
+	await fix.waitFor();
+	await fix.click();
+	await o.page.locator(`${B} .eb-panel.is-active .eb-note.tone-ok`).waitFor();
+	assert.match(await o.page.locator(`${B} .eb-panel.is-active .eb-review-value`).nth(1).textContent(), /^90 HP · Armor: None$/);
+	// Saved in: a pill that opens into a folder picker.
+	await o.page.locator(`${B} .eb-folder-pill`).click();
+	const folder = o.page.locator(`${B} input[data-field="Folder"]`);
+	await folder.fill('Bestiary/Undead');
+	await folder.press('Enter');
+	assert.equal(await o.page.locator(`${B} .eb-folder-name`).textContent(), 'Undead');
+	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-builder-review.png') });
+	await o.page.locator(`${B} .eb-next`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	assert.match(await o.eval((app) => app.vault.adapter.read('Bestiary/Undead/Grave Hound.md')), /hp: 90\n/);
 });
 
 // ---------------------------------------------------------------------------

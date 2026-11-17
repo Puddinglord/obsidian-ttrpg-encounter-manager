@@ -8,9 +8,11 @@ const kind = process.argv[3] || 'monster';
 mkdirSync(out, { recursive: true });
 const o = await launchObsidian();
 const { page } = o;
+if (process.env.DARK) await o.eval((app) => { app.setTheme?.('obsidian'); document.body.classList.remove('theme-light'); document.body.classList.add('theme-dark'); });
+const only = process.env.ONLY ? process.env.ONLY.split(',') : null;
 try {
 	const scenario = process.argv[4] || 'regular';
-	for (const [w, h, tag] of [[1440, 900, 'wide'], [1024, 768, 'tablet'], [768, 1024, 'ipad'], [390, 844, 'phone']]) {
+	for (const [w, h, tag] of [[1440, 900, 'wide'], [1024, 768, 'tablet'], [768, 1024, 'ipad'], [390, 844, 'phone']].filter(([, , t]) => !only || only.includes(t))) {
 		await page.setViewportSize({ width: w, height: h });
 		await page.evaluate(([p, t]) => { document.body.classList.toggle('is-phone', p); document.body.classList.toggle('is-tablet', t); document.body.classList.toggle('is-mobile', p || t); }, [tag === 'phone', tag === 'ipad' || tag === 'tablet']);
 		await o.eval((app, _p, k) => app.commands.executeCommandById(`nimble-gm:new-${k}`), kind);

@@ -4239,10 +4239,9 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder .eb-check-value { font-size: 1.35rem; font-weight: 800; }
 .nimble-entity-builder .eb-check-title { font-weight: 700; }
 .nimble-entity-builder .eb-check-text { font-size: 0.8rem; color: var(--text-muted); }
-.nimble-entity-builder .eb-verdict { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 0.7rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; line-height: 1; }
-.nimble-entity-builder .tone-ok { background: color-mix(in srgb, var(--color-green) 16%, transparent); color: var(--color-green); }
-.nimble-entity-builder .tone-high { background: color-mix(in srgb, var(--color-red) 14%, transparent); color: var(--color-red); }
-.nimble-entity-builder .tone-low { background: color-mix(in srgb, var(--color-blue) 14%, transparent); color: var(--color-blue); }
+.nimble-entity-builder :is(.eb-pill, .eb-chip).tone-ok { background: color-mix(in srgb, var(--color-green) 16%, transparent); color: var(--color-green); }
+.nimble-entity-builder :is(.eb-pill, .eb-chip).tone-high { background: color-mix(in srgb, var(--color-red) 14%, transparent); color: var(--color-red); }
+.nimble-entity-builder :is(.eb-pill, .eb-chip).tone-low { background: color-mix(in srgb, var(--color-blue) 14%, transparent); color: var(--color-blue); }
 .nimble-entity-builder .eb-meter { display: flex; flex-direction: column; gap: 0.25rem; }
 .nimble-entity-builder .eb-meter-top { display: flex; justify-content: space-between; font-size: 0.78rem; }
 .nimble-entity-builder .eb-meter-label { color: var(--text-muted); }
@@ -4296,8 +4295,14 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder button.eb-seg-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; height: calc(var(--eb-h) - 4px); padding: 0 0.85rem; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); font-size: var(--eb-text); font-weight: 600; line-height: 1; white-space: nowrap; }
 .nimble-entity-builder .eb-seg.is-compact button.eb-seg-btn { padding: 0 0.6rem; }
 .nimble-entity-builder .eb-seg.is-tight button.eb-seg-btn { min-width: 2.1rem; padding: 0 0.45rem; }
-.nimble-entity-builder button.eb-seg-btn:hover:not(.is-active) { color: var(--text-normal); background: var(--background-modifier-hover); }
-.nimble-entity-builder button.eb-seg-btn.is-active { background: var(--background-primary); color: var(--text-normal); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); }
+.nimble-entity-builder button.eb-seg-btn:hover:not(.is-active) { color: var(--text-normal); }
+.nimble-entity-builder button.eb-seg-btn.is-active { background: transparent; color: var(--text-normal); }
+/* The thumb slides to the picked segment (across rows when the control wraps into a grid). */
+.nimble-entity-builder .eb-seg { position: relative; isolation: isolate; }
+.nimble-entity-builder button.eb-seg-btn { position: relative; z-index: 1; transition: color 0.2s ease; }
+.nimble-entity-builder .eb-seg-thumb { position: absolute; z-index: 0; top: 0; left: 0; width: var(--w, 0); height: var(--h, 0); transform: translate(var(--x, 0), var(--y, 0)); border-radius: 999px; background: var(--background-primary); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); transition: transform 0.26s cubic-bezier(0.3, 0.8, 0.25, 1), width 0.26s cubic-bezier(0.3, 0.8, 0.25, 1), height 0.26s cubic-bezier(0.3, 0.8, 0.25, 1); pointer-events: none; }
+.nimble-entity-builder .eb-seg-thumb.is-still { transition: none; }
+@media (prefers-reduced-motion: reduce) { .nimble-entity-builder .eb-seg-thumb { transition: none; } }
 .nimble-entity-builder .eb-seg-icon { display: inline-flex; }
 .nimble-entity-builder .eb-seg-icon svg { width: 14px; height: 14px; }
 
@@ -4339,7 +4344,8 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder .eb-attacks, .nimble-entity-builder .eb-abilities { display: flex; flex-direction: column; gap: 0.5rem; }
 .nimble-entity-builder .eb-attack { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.55rem 0.7rem; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); background: var(--background-primary); }
 .nimble-entity-builder .eb-attack-head { display: flex; align-items: center; gap: 0.5rem; }
-.nimble-entity-builder .eb-attack-head input.eb-attack-name { flex: 1 1 auto; font-weight: 650; }
+.nimble-entity-builder .eb-attack-head input.eb-attack-name { flex: 0 1 11rem; min-width: 6rem; font-weight: 650; }
+.nimble-entity-builder .eb-attack-head input.eb-attack-body { flex: 1 1 14rem; min-width: 0; }
 .nimble-entity-builder .eb-dice { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; }
 .nimble-entity-builder button.eb-dice-btn, .nimble-entity-builder button.eb-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; padding: 0; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-muted); flex: 0 0 auto; }
 .nimble-entity-builder button.eb-dice-btn svg, .nimble-entity-builder button.eb-icon-btn svg { width: 14px; height: 14px; }
@@ -4348,7 +4354,7 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder .eb-dice-sep { margin-left: 0.4rem; font-size: 0.72rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; }
 .nimble-entity-builder .eb-dice-avg { display: inline-flex; align-items: center; gap: 0.35rem; margin-left: auto; font-size: 0.78rem; }
 .nimble-entity-builder .eb-dice-avg-have { font-weight: 650; font-variant-numeric: tabular-nums; }
-.nimble-entity-builder .eb-dice-avg-want { display: inline-flex; align-items: center; height: 1.4rem; padding: 0 0.5rem; border-radius: 999px; font-weight: 650; line-height: 1; }
+.nimble-entity-builder .eb-dice-avg-want { font-weight: 650; }
 .nimble-entity-builder .eb-dice-avg-want.is-ok { background: color-mix(in srgb, var(--color-green) 14%, transparent); color: var(--color-green); }
 .nimble-entity-builder .eb-dice-avg-want.is-high { background: color-mix(in srgb, var(--color-red) 14%, transparent); color: var(--color-red); }
 .nimble-entity-builder .eb-dice-avg-want.is-low { background: color-mix(in srgb, var(--color-blue) 14%, transparent); color: var(--color-blue); }
@@ -4359,8 +4365,8 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder .eb-text-btn-icon svg { width: 14px; height: 14px; }
 
 /* Review */
-.nimble-entity-builder .eb-review { display: flex; flex-direction: column; margin-bottom: var(--eb-gap); border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); overflow: hidden; }
-.nimble-entity-builder .eb-review-row { display: grid; grid-template-columns: 9rem minmax(0, 1fr) auto; gap: 0.75rem; align-items: center; padding: 0.55rem 0.75rem; }
+.nimble-entity-builder .eb-review { display: flex; flex-direction: column; margin-bottom: 0.6rem; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); overflow: hidden; }
+.nimble-entity-builder .eb-review-row { display: grid; grid-template-columns: 9rem minmax(0, 1fr) auto; gap: 0.75rem; align-items: center; padding: 0.4rem 0.75rem; }
 .nimble-entity-builder .eb-review-row + .eb-review-row { border-top: 1px solid var(--background-modifier-border); }
 .nimble-entity-builder .eb-review-label { font-size: var(--eb-text); color: var(--text-muted); }
 .nimble-entity-builder .eb-review-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4410,7 +4416,7 @@ body.is-tablet .nimble-entity-builder :is(button.eb-num-btn, button.eb-dice-btn,
 .nimble-entity-builder .eb-row-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; width: 100%; }
 .nimble-entity-builder input.eb-input.eb-input-short { width: 9rem; flex: 0 0 auto; }
 .nimble-entity-builder .eb-tier-value { min-width: 6.5rem; font-size: 1.15rem; }
-.nimble-entity-builder .eb-seg.eb-seg-3 { max-width: 34rem; }
+.nimble-entity-builder .eb-seg.eb-seg-3 { width: 100%; }
 .nimble-entity-builder button.eb-chip-toggle { height: 2rem; padding: 0 0.75rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-muted); font-size: var(--eb-text); font-weight: 600; line-height: 1; }
 .nimble-entity-builder button.eb-chip-toggle.is-active { border-color: color-mix(in srgb, var(--eb-accent) 55%, transparent); background: color-mix(in srgb, var(--eb-accent) 12%, var(--background-primary)); color: var(--text-normal); }
 .nimble-entity-builder .eb-inline-field { display: inline-flex; align-items: center; gap: 0.45rem; }
@@ -4419,6 +4425,50 @@ body.is-tablet .nimble-entity-builder :is(button.eb-num-btn, button.eb-dice-btn,
 .nimble-entity-builder .eb-peer-name { font-size: var(--eb-text); font-weight: 650; }
 .nimble-entity-builder .eb-peer-detail { font-size: 0.75rem; color: var(--text-muted); }
 .nimble-entity-builder .eb-preview .nimble-cmp-card { margin: 0; }
+
+/* Text in pills, chips and buttons is trimmed to its capital letters and baseline, so flex centring
+   centres the letters whatever the font's ascent and descent (line-height: 1 alone centres the font's
+   box, which sits the letters high in many fonts, more so with descenders). */
+.nimble-entity-builder .eb-t { text-box: trim-both cap alphabetic; }
+.nimble-entity-builder .eb-pill { display: inline-flex; align-items: center; height: 1.6rem; padding: 0 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+.nimble-entity-builder .eb-dice-avg .eb-pill { height: 1.4rem; padding: 0 0.5rem; }
+.nimble-entity-builder .eb-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
+/* Remove asks first; the bin is a muted red under the pointer. */
+.nimble-entity-builder button.eb-remove:hover { color: color-mix(in srgb, var(--color-red) 80%, var(--text-muted)); background: color-mix(in srgb, var(--color-red) 10%, transparent); border-color: color-mix(in srgb, var(--color-red) 35%, var(--background-modifier-border)); }
+
+/* The die of an attack: a chip with a menu */
+.nimble-entity-builder button.eb-die-chip { display: inline-flex; align-items: center; gap: 0.2rem; height: 2rem; padding: 0 0.45rem 0 0.6rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); font-family: var(--font-monospace); font-size: var(--eb-text); font-weight: 700; color: var(--text-normal); }
+.nimble-entity-builder button.eb-die-chip:disabled { padding-right: 0.6rem; opacity: 1; cursor: default; }
+.nimble-entity-builder .eb-die-caret { display: inline-flex; color: var(--text-muted); }
+.nimble-entity-builder .eb-die-caret svg { width: 13px; height: 13px; }
+
+/* Saved in: a pill that opens into a folder picker */
+.nimble-entity-builder .eb-folder { width: 100%; }
+.nimble-entity-builder button.eb-folder-pill { display: inline-flex; align-items: center; gap: 0.45rem; max-width: 100%; height: var(--eb-h); padding: 0 0.6rem 0 0.75rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); font-size: var(--eb-text); }
+.nimble-entity-builder .eb-folder-icon, .nimble-entity-builder .eb-folder-edit { display: inline-flex; color: var(--text-muted); }
+.nimble-entity-builder .eb-folder-icon svg, .nimble-entity-builder .eb-folder-edit svg { width: 14px; height: 14px; }
+.nimble-entity-builder .eb-folder-kicker { color: var(--text-muted); }
+.nimble-entity-builder .eb-folder-name { font-weight: 700; color: var(--text-normal); }
+.nimble-entity-builder .eb-folder-parent { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-faint); }
+
+/* Review: what's worth a second look, each with its fix */
+.nimble-entity-builder .eb-checks { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: var(--eb-gap); }
+.nimble-entity-builder .eb-note { display: flex; gap: 0.55rem; align-items: flex-start; padding: 0.5rem 0.7rem; border-radius: var(--radius-m); border: 1px solid var(--background-modifier-border); background: var(--background-primary); }
+.nimble-entity-builder .eb-note-icon { display: inline-flex; flex: 0 0 auto; margin-top: 0.1rem; }
+.nimble-entity-builder .eb-note-icon svg { width: 16px; height: 16px; }
+.nimble-entity-builder .eb-note.tone-ok { background: color-mix(in srgb, var(--color-green) 8%, var(--background-primary)); border-color: color-mix(in srgb, var(--color-green) 30%, var(--background-modifier-border)); }
+.nimble-entity-builder .eb-note.tone-ok .eb-note-icon { color: var(--color-green); }
+.nimble-entity-builder .eb-note.tone-warn { background: color-mix(in srgb, var(--color-orange) 8%, var(--background-primary)); border-color: color-mix(in srgb, var(--color-orange) 35%, var(--background-modifier-border)); }
+.nimble-entity-builder .eb-note.tone-warn .eb-note-icon { color: var(--color-orange); }
+.nimble-entity-builder .eb-note.tone-tip .eb-note-icon { color: var(--text-accent); }
+.nimble-entity-builder .eb-note-body { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; min-width: 0; flex: 1 1 auto; }
+.nimble-entity-builder .eb-note-text { flex: 1 1 18rem; }
+.nimble-entity-builder .eb-note-text { font-size: var(--font-ui-small); line-height: 1.4; color: var(--text-normal); }
+.nimble-entity-builder .eb-note-fixes { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-left: auto; }
+.nimble-entity-builder button.eb-note-fix { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 0.7rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); font-size: var(--eb-text); font-weight: 600; }
+.nimble-entity-builder .eb-step-head.has-aside { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.nimble-entity-builder .eb-step-head.has-aside .eb-folder { width: auto; min-width: 0; }
 
 /* Last, so it beats every button's display. */
 .nimble-entity-builder .is-hidden, .nimble-entity-builder button.is-hidden { display: none; }
