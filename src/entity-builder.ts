@@ -110,6 +110,11 @@ export class EntityBuilder extends Modal implements BuilderUI {
 	private nextBtn!: HTMLButtonElement;
 	private previewBtn?: HTMLButtonElement;
 	private busy = false;
+	/** Each kind's output as it opened, so closing only asks when something has changed. */
+	private baselines = new Map<EntityKind, string>();
+	/** Leaving on purpose (saved, or Discard chosen): close without asking. */
+	private leaving = false;
+	private asking = false;
 
 	constructor(public plugin: NimbleStatblocksPlugin, private o: BuilderOptions) {
 		super(plugin.app);
@@ -178,6 +183,37 @@ export class EntityBuilder extends Modal implements BuilderUI {
 
 	onClose(): void { this.contentEl.empty(); }
 
+	/** The kinds with something changed since they opened (the one on screen first). */
+	private changedKinds(): KindBuilder[] {
+		const all = [this.b, ...[...this.builders.values()].filter(b => b !== this.b)];
+		return all.filter(b => b && this.baselines.has(b.kind) && b.output().body !== this.baselines.get(b.kind));
+	}
+
+	/**
+	 * Every way out (Cancel, the x, Escape, a click outside) asks first when
+	 * something's been filled in, so a stray click doesn't lose a build.
+	 */
+	close(): void {
+		if (this.leaving || this.asking) { if (this.leaving) super.close(); return; }
+		const changed = this.changedKinds();
+		if (!changed.length) { super.close(); return; }
+		const b = changed[0];
+		const title = this.o.writeBack ? `Discard your changes to ${b.output().name || `this ${b.noun}`}?` : `Discard this new ${b.noun}?`;
+		this.asking = true;
+		void confirmAction(this.app, title, '', 'Discard', true, 'Keep building').then((discard) => {
+			this.asking = false;
+			if (!discard) return;
+			this.leaving = true;
+			super.close();
+		});
+	}
+
+	/** Close after saving: nothing to ask about. */
+	private done(): void {
+		this.leaving = true;
+		this.close();
+	}
+
 	// ------------------------------------------------------------------------
 	// Kinds and steps
 
@@ -196,6 +232,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		const b = this.builderFor(kind, seed);
 		if (!b) return;
 		this.b = b;
+		if (!this.baselines.has(kind)) this.baselines.set(kind, b.output().body);
 		this.modalEl.dataset.kind = kind;
 		this.renderKinds();
 		this.at = 0;
@@ -361,12 +398,12 @@ export class EntityBuilder extends Modal implements BuilderUI {
 			const out = this.b.output();
 			const block = fence(out.lang, out.body);
 			if (this.o.writeBack) {
-				if (await this.o.writeBack(out.body)) { this.close(); new Notice(`Saved ${out.name}.`); }
+				if (await this.o.writeBack(out.body)) { this.done(); new Notice(`Saved ${out.name}.`); }
 				return;
 			}
-			if (this.o.insert) { this.o.insert(block); this.close(); return; }
+			if (this.o.insert) { this.o.insert(block); this.done(); return; }
 			const file = await this.createNote(out, block);
-			this.close();
+			this.done();
 			await this.app.workspace.getLeaf(false).openFile(file);
 			new Notice(`Created ${file.path}.`);
 		} catch (e) {
