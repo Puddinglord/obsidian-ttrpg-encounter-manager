@@ -4551,5 +4551,12 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 	.nimble-entity-builder.is-phone-layout .eb-seg.is-schools button.eb-seg-btn:nth-of-type(7) { grid-column: 1 / -1; }
 }
 
+/* Small phones: the footer's four buttons fit without the preview button being squeezed or Next running off. */
+.nimble-entity-builder.is-phone-layout button.eb-preview-btn { flex: 0 0 auto; }
+@media (max-width: 380px) {
+	.nimble-entity-builder.is-phone-layout .eb-foot { gap: 0.4rem; padding-left: 0.6rem; padding-right: 0.6rem; }
+	.nimble-entity-builder.is-phone-layout :is(button.eb-back, button.eb-create, button.eb-next) { min-width: 0; padding-left: 0.65rem; padding-right: 0.65rem; }
+}
+
 /* Last, so it beats every button's display. */
 .nimble-entity-builder .is-hidden, .nimble-entity-builder button.is-hidden { display: none; }
