@@ -364,6 +364,19 @@ test('builder feedback round: type-to-filter, sliding segments, a die per attack
 	await o.page.locator(`${B} .eb-panel.is-active .eb-seg-btn`, { hasText: 'Huge' }).click();
 	await o.page.waitForTimeout(350);
 	assert.notEqual(await thumb(), before);
+	// Role slides too, even though picking it redraws the step: sampled mid-slide, the thumb is between the two.
+	const mid = await o.page.evaluate(async () => {
+		const seg = () => document.querySelector('.modal.nimble-entity-builder .eb-panel.is-active .eb-seg');
+		const x = () => new DOMMatrix(getComputedStyle(seg().querySelector('.eb-seg-thumb')).transform).m41;
+		const start = x();
+		[...seg().querySelectorAll('.eb-seg-btn')].find(b => b.textContent.includes('Minion')).click();
+		await new Promise(r => setTimeout(r, 70));
+		const during = x();
+		await new Promise(r => setTimeout(r, 400));
+		return { start, during, end: x() };
+	});
+	assert.ok(mid.during > mid.start && mid.during < mid.end, `role thumb slides: ${JSON.stringify(mid)}`);
+	await o.page.locator(`${B} .eb-panel.is-active .eb-seg-btn`, { hasText: 'Regular' }).click();
 	// No tooltip on the step chips' row, and fields aren't labelled with tooltips.
 	assert.equal(await o.page.locator(`${B} .eb-dots[aria-label]`).count(), 0);
 	assert.equal(await o.page.locator(`${B} input[aria-label]`).count(), 0);
@@ -372,7 +385,7 @@ test('builder feedback round: type-to-filter, sliding segments, a die per attack
 	await o.page.locator(`${B} .eb-dot`, { hasText: 'Attacks' }).click();
 	await o.page.locator(`${B} .eb-panel.is-active .eb-add-row .eb-text-btn`, { hasText: 'Add an attack' }).click();
 	const second = o.page.locator(`${B} .eb-panel.is-active .eb-attack`).nth(1);
-	await second.locator('.eb-die-chip').click();
+	await second.locator('.eb-df-die').click();
 	await o.page.locator('.menu .menu-item', { hasText: 'd12' }).click();
 	assert.match(await second.locator('input.eb-attack-body').inputValue(), /\dd12/);
 	assert.match(await o.page.locator(`${B} .eb-panel.is-active .eb-attack`).nth(0).locator('input.eb-attack-body').inputValue(), /\dd8/);
@@ -385,6 +398,13 @@ test('builder feedback round: type-to-filter, sliding segments, a die per attack
 	// Review: type tough HP, and the review offers to move the level.
 	await o.page.locator(`${B} .eb-dot`, { hasText: 'Toughness' }).click();
 	await o.page.locator(`${B} .eb-panel.is-active input[data-field="HP"]`).fill('90');
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Review' }).click();
+	// The footer doesn't shift from step to step.
+	assert.equal(await o.page.locator(`${B} .eb-next`).evaluate(b => b.getBoundingClientRect().width), 176);
+	// A fix that names a field jumps to it, focused, with a glow.
+	await o.page.locator(`${B} .eb-panel.is-active .eb-note-fix`, { hasText: 'Add tactics' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active .eb-field.eb-nudge`).waitFor();
+	assert.equal(await o.page.evaluate(() => document.activeElement?.getAttribute('data-field')), 'Easier');
 	await o.page.locator(`${B} .eb-dot`, { hasText: 'Review' }).click();
 	const fix = o.page.locator(`${B} .eb-panel.is-active .eb-note.tone-warn .eb-note-fix`, { hasText: /^Make it level/ });
 	await fix.waitFor();
