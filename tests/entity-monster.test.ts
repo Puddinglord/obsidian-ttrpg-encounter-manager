@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readStatblock } from '../src/parser';
 import {
-	attackBody, autoLevel, draftFromMonster, effectiveHp, levelCheck, newMonsterDraft, setRole, splitAttack, toMonster, toSource, withDice,
+	applyFix, attackBody, autoLevel, draftFromMonster, effectiveHp, levelCheck, newMonsterDraft, reviewNotes, setRole, splitAttack, toMonster, toSource, toughnessLine, withDice,
 } from '../src/entity-monster';
 
 const party = { level: 4, size: 4 };
@@ -91,5 +91,37 @@ describe('editing', () => {
 	it('keeps named attacks when the role changes', () => {
 		const d = setRole({ ...newMonsterDraft(party), attacks: [{ name: 'Bite' }] }, 'solo');
 		expect(d.attacks.map(a => [a.name, a.size])).toEqual([['Bite', 'small'], ['', 'big']]);
+	});
+});
+
+describe('review notes', () => {
+	it('says a fresh quick build is ready, and suggests an ability and tactics', () => {
+		const notes = reviewNotes({ ...newMonsterDraft(party), name: 'Bear' });
+		expect(notes[0]).toMatchObject({ tone: 'ok', text: 'Ready to run as a level 4 monster.' });
+		expect(notes.map(n => n.fixes.map(f => f.label))).toContainEqual(['Roll an ability', 'A level\'s more HP']);
+	});
+
+	it('flags stats that play like another level, with both ways out', () => {
+		const d = { ...newMonsterDraft(party), name: 'Brute', hp: 100 };
+		const warn = reviewNotes(d).find(n => n.tone === 'warn')!;
+		expect(warn.text).toMatch(/play like level \d+, not 4: a harder fight/);
+		const moved = applyFix(d, warn.fixes[0].fix);
+		expect(levelCheck(moved)!.verdict).toBe(0);
+		const book = applyFix(d, warn.fixes[1].fix);
+		expect(book.hp).toBeUndefined();
+	});
+
+	it('warns about armor the book holds back, and solos without saves', () => {
+		const solo = { ...newMonsterDraft({ level: 2, size: 4 }, 'solo'), name: 'Boss', armor: 'heavy' as const };
+		const notes = reviewNotes(solo);
+		expect(notes.some(n => /Heavy armor at level 2 is earlier/.test(n.text))).toBe(true);
+		expect(notes.some(n => n.fixes.some(f => f.label === 'Set saves'))).toBe(true);
+		expect(toughnessLine(solo)).toBe('18 HP per hero (72 for 4) · Armor: Heavy'); // 28 × the book's heavy ratio (42/64)
+	});
+
+	it('gives each attack its own die', () => {
+		const d = { ...newMonsterDraft(party), attacks: [{ name: 'Bite' }, { name: 'Slam', die: 12 }] };
+		expect(attackBody(d, d.attacks[0])).toMatch(/d8/);
+		expect(attackBody(d, d.attacks[1])).toMatch(/1d12\+\d+/);
 	});
 });

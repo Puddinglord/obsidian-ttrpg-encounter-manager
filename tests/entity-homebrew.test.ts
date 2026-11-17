@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseItemBlock, parseSpellBlock } from '../src/homebrew-def';
-import { autoTier, itemSource, newItemDraft, newSpellDraft, spellSource, suggestedCost, tierCheck, toItem, toSpell } from '../src/entity-homebrew';
+import { applyItemFix, applySpellFix, autoTier, itemNotes, itemSource, newItemDraft, newSpellDraft, spellNotes, spellSource, suggestedCost, tierCheck, toItem, toSpell } from '../src/entity-homebrew';
 
 describe('spell builder', () => {
 	it('fills a tier 1 spell from the Creator\'s Kit, and the block reads back', () => {
@@ -34,5 +34,22 @@ describe('item builder', () => {
 		const lantern = { ...newItemDraft('magic'), name: 'Lantern', rarity: 'rare' as const, charges: '3', text: 'Replays sound.', catch: 'It also replays your whispers.' };
 		const it = parseItemBlock(itemSource(lantern))!;
 		expect(it).toMatchObject({ category: 'magic', rarity: 'rare', charges: '3', cost: '500 gp', text: 'Replays sound. **Catch:** It also replays your whispers.' });
+	});
+});
+
+describe('spell and item review notes', () => {
+	it('suggests a drawback (or a lower tier) for a spell that hits too hard, and no save on cantrips', () => {
+		const d = { ...newSpellDraft(), name: 'Big', damage: '4d10+10' };
+		const warn = spellNotes(d).find(n => n.tone === 'warn')!;
+		expect(warn.text).toMatch(/averages 32 damage, more than a tier 1 spell \(14\)\. The Creator's Kit: give it a drawback/);
+		expect(applySpellFix(d, warn.fixes[0].fix).tier).toBe(3);
+		expect(spellNotes({ ...newSpellDraft(), name: 'Zap', tier: 0, save: 'DEX' }).some(n => /Cantrips shouldn't ask for a save/.test(n.text))).toBe(true);
+	});
+
+	it('asks a magic item for its effect and its catch, and checks the price', () => {
+		const notes = itemNotes({ ...newItemDraft('weapon'), name: 'Blade', damage: '1d8', cost: '900 gp' });
+		const price = notes.find(n => /Priced at 900 gp/.test(n.text))!;
+		expect(applyItemFix(newItemDraft('weapon'), price.fixes[0].fix).cost).toBe('30 gp');
+		expect(itemNotes({ ...newItemDraft('magic'), name: 'Orb' }).map(n => n.tone)).toEqual(['warn', 'tip']);
 	});
 });

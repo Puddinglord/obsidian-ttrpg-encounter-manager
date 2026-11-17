@@ -199,3 +199,70 @@ export function bookPeers(d: ItemDraft, book: Item[]): Item[] {
 	if (d.rarity) return book.filter(i => i.rarity === d.rarity).slice(0, 3);
 	return [];
 }
+
+// ----------------------------------------------------------------------------
+// The review: what to look at before saving, each with a fix where there's one
+
+export type HomebrewFix =
+	| { kind: 'tier'; to: number }
+	| { kind: 'book-damage' }
+	| { kind: 'save'; to: SaveKey }
+	| { kind: 'actions'; to: number }
+	| { kind: 'cost'; to: string }
+	| { kind: 'go'; step: string };
+
+export interface HomebrewNote { tone: 'warn' | 'tip' | 'ok'; text: string; fixes: { label: string; fix: HomebrewFix }[] }
+
+const tierWord = (t: number) => (t === 0 ? 'cantrip' : `tier ${t} spell`);
+
+export function spellNotes(d: SpellDraft): HomebrewNote[] {
+	const notes: HomebrewNote[] = [];
+	const add = (tone: HomebrewNote['tone'], text: string, ...fixes: HomebrewNote['fixes']) => notes.push({ tone, text, fixes });
+	if (!d.name.trim()) add('warn', 'It has no name yet.', { label: 'Name it', fix: { kind: 'go', step: 'start' } });
+	const c = tierCheck(d);
+	if (c && c.verdict !== 0) {
+		const more = c.verdict > 0;
+		add('warn', `It averages ${Math.round(c.have)} damage, ${more ? 'more' : 'less'} than a ${tierWord(d.tier)} (${Math.round(c.want)}). The Creator's Kit: ${more ? 'give it a drawback, like a short range or a condition to meet' : 'give it a benefit, like ignoring armor or never missing'}.`,
+			{ label: `Make it ${tierWord(c.tier).replace(' spell', '')}`, fix: { kind: 'tier', to: c.tier } },
+			{ label: `${TIER_NAME(d.tier)} damage`, fix: { kind: 'book-damage' } });
+	}
+	if (d.tier === 0 && d.save) add('warn', 'Cantrips shouldn\'t ask for a save (the Creator\'s Kit keeps saves for bigger spells).', { label: 'No save', fix: { kind: 'save', to: '' } });
+	if (d.area !== 'none' && d.rangeKind === 'range' && spellActions(d) < 3 && d.tier > 0) add('tip', 'Area spells cast at range usually take 3 actions.', { label: '3 actions', fix: { kind: 'actions', to: 3 } });
+	if (!d.text.trim()) add(d.utility ? 'warn' : 'tip', d.utility ? 'It doesn\'t say what it does yet.' : 'No effect beyond damage. A rider on a crit or a hit makes it more than a number.', { label: 'Write it', fix: { kind: 'go', step: 'effect' } });
+	if (!notes.some(n => n.tone === 'warn')) notes.unshift({ tone: 'ok', text: `Ready: a ${d.school} ${tierWord(d.tier)}.`, fixes: [] });
+	return notes;
+}
+
+const TIER_NAME = (t: number) => (t === 0 ? 'Cantrip' : `Tier ${t}`);
+
+export function applySpellFix(d: SpellDraft, fix: HomebrewFix): SpellDraft {
+	switch (fix.kind) {
+		case 'tier': return { ...d, tier: fix.to, autoTier: false };
+		case 'book-damage': return { ...d, damage: undefined, autoTier: false };
+		case 'save': return { ...d, save: fix.to };
+		case 'actions': return { ...d, actions: fix.to };
+		default: return d;
+	}
+}
+
+export function itemNotes(d: ItemDraft): HomebrewNote[] {
+	const notes: HomebrewNote[] = [];
+	const add = (tone: HomebrewNote['tone'], text: string, ...fixes: HomebrewNote['fixes']) => notes.push({ tone, text, fixes });
+	if (!d.name.trim()) add('warn', 'It has no name yet.', { label: 'Name it', fix: { kind: 'go', step: 'start' } });
+	const magic = d.kind === 'magic' || (!!d.rarity && d.rarity !== 'common');
+	if (magic && !d.text.trim()) add('warn', 'It doesn\'t say what it does yet.', { label: 'Write it', fix: { kind: 'go', step: 'details' } });
+	if (magic && !d.catch.trim()) add('tip', 'The GM Guide: the memorable items have a trade-off. What does it cost the hero?', { label: 'Add a catch', fix: { kind: 'go', step: 'details' } });
+	const suggested = suggestedCost(d);
+	const typed = d.cost?.match(/[\d,]+/)?.[0];
+	const want = suggested?.match(/[\d,]+/)?.[0];
+	if (typed && want) {
+		const r = Number(typed.replace(/,/g, '')) / Number(want.replace(/,/g, ''));
+		if (r > 3 || r < 1 / 3) add('tip', `Priced at ${d.cost}; the book puts an item like this around ${suggested}.`, { label: `Use ${suggested}`, fix: { kind: 'cost', to: suggested } });
+	}
+	if (!notes.some(n => n.tone === 'warn')) notes.unshift({ tone: 'ok', text: 'Ready to hand out.', fixes: [] });
+	return notes;
+}
+
+export function applyItemFix(d: ItemDraft, fix: HomebrewFix): ItemDraft {
+	return fix.kind === 'cost' ? { ...d, cost: fix.to } : d;
+}
