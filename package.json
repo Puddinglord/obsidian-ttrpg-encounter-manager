@@ -10,7 +10,7 @@
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"test": "vitest run",
 		"test:e2e": "npm run build && node e2e/run.mjs",
-		"lint": "eslint . --max-warnings 0 && stylelint styles.css",
+		"lint": "eslint . --max-warnings 0 && stylelint styles.css \"site/**/*.css\"",
 		"screenshots": "npm run build && node e2e/screenshots.mjs",
 		"site": "node scripts/build-site.mjs",
 		"site:serve": "node scripts/build-site.mjs --serve"

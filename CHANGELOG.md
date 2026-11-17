@@ -6,6 +6,10 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Fixed
+
+- The user guide's style sheet no longer uses `:has()`, which Obsidian's plugin review flags. Phone screenshots in the guide still get their narrower frame.
+
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
