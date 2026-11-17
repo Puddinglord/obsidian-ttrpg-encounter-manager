@@ -123,13 +123,16 @@ h3:not(.obs *) { font-size: 25px; font-weight: 600; letter-spacing: -0.012em; }
 .hero h1 { font-size: clamp(40px, 5.3vw, 68px); max-width: 21ch; margin: 0 auto 24px; }
 .hero h1 em {
 	font-style: italic; font-weight: 640;
-	background: linear-gradient(100deg, var(--ember-soft) 0%, var(--ember) 40%, #ffd3a8 50%, var(--ember) 60%, var(--ember-deep) 100%);
-	background-size: 250% 100%;
+	/* Two layers: a shine that sweeps across, over the word's own ember gradient. The shine starts and ends
+	   fully off the word (the layer is 250% wide), so each loop restarts without a visible jump. */
+	background:
+		linear-gradient(100deg, transparent 40%, rgba(255, 228, 196, 0.95) 50%, transparent 60%) 100% 0 / 250% 100% no-repeat,
+		linear-gradient(100deg, var(--ember-soft) 0%, var(--ember) 45%, var(--ember-deep) 100%);
 	-webkit-background-clip: text; background-clip: text; color: transparent;
 	animation: glint 6s ease-in-out 1s infinite;
 	padding-right: 0.05em;
 }
-@keyframes glint { 0%, 70% { background-position: 100% 0; } 85%, 100% { background-position: 0 0; } }
+@keyframes glint { 0%, 70% { background-position: 100% 0, 0 0; } 85%, 100% { background-position: 0 0, 0 0; } }
 .lede { font-size: clamp(18px, 2vw, 21px); color: var(--muted-dark); max-width: 38em; margin: 0 auto 32px; text-wrap: pretty; }
 .hero-meta { list-style: none; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 26px; margin: 24px 0 0; padding: 0; color: var(--muted-dark); font-size: 14px; }
 .hero-meta li { display: inline-flex; align-items: center; gap: 8px; }
@@ -260,7 +263,8 @@ h3:not(.obs *) { font-size: 25px; font-weight: 600; letter-spacing: -0.012em; }
    ===================================================================== */
 [data-embers] { position: relative; }
 .ember-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-.hero .ember-canvas { z-index: -1; }
+/* Above the hero's sky (which is also z-index -1 and later in the page), below the copy and the demo. */
+.hero .ember-canvas { z-index: 0; }
 [data-embers] > .wrap { position: relative; z-index: 1; }
 .torchlight { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(460px circle at var(--mx, 50%) var(--my, 30%), rgba(255, 140, 60, 0.13), transparent 70%); transition: opacity .4s; }
 
@@ -389,3 +393,174 @@ h3:not(.obs *) { font-size: 25px; font-weight: 600; letter-spacing: -0.012em; }
 
 /* Grid children may shrink below their content (wide code lines scroll inside the card instead). */
 .notes-grid > *, .sample-grid > *, .step > *, .foot-grid > * { min-width: 0; }
+
+/* =====================================================================
+   What's new, and the full features bento
+   ===================================================================== */
+
+/* Pill text: centre the capitals, not the font box (text-box trims to cap height and baseline). */
+.t { display: block; text-box: trim-both cap alphabetic; }
+
+/* The hero's "New in x.y.z" chip (build-site.mjs fills in the latest release). */
+.hero-chips { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin: 0 0 26px; }
+.hero-chips .chip { margin: 0; }
+.new-chip { display: inline-flex; max-width: 100%; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 999px; background: linear-gradient(90deg, rgba(255, 106, 31, 0.2), rgba(255, 106, 31, 0.06)); border: 1px solid rgba(255, 140, 60, 0.35); color: #ffe6d2; font-size: 14px; font-weight: 550; text-decoration: none; transition: border-color .2s, background .2s, transform .2s cubic-bezier(.2, .8, .2, 1); }
+.new-chip b { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: linear-gradient(180deg, #ff8c42, var(--ember-deep)); color: #fff; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+.new-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 62ch; }
+.new-chip::after { content: "→"; color: var(--ember-soft); transition: translate .2s; }
+.new-chip:hover { border-color: rgba(255, 178, 89, 0.7); transform: translateY(-1px); }
+.new-chip:hover::after { translate: 3px 0; }
+
+.new-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: linear-gradient(180deg, #ff8c42, var(--ember-deep)); color: #fff; font: 700 11.5px/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 6px 14px -6px var(--glow); }
+
+/* What's new */
+.whats-new { background: radial-gradient(70% 50% at 50% 0%, rgba(255, 140, 60, 0.12), transparent 70%), var(--ash); }
+.spot-hero { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 60px; align-items: center; margin-bottom: 64px; }
+.spot-hero .new-tag { margin-bottom: 18px; }
+.spot-hero h3 { font-size: clamp(30px, 3.2vw, 42px); margin-bottom: 16px; }
+.spot-hero p { color: var(--muted); font-size: 18px; margin: 0; }
+.spot-points { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 10px; }
+.spot-points li { position: relative; padding-left: 30px; font-weight: 550; }
+.spot-points li::before { content: ""; position: absolute; left: 0; top: 4px; width: 18px; height: 18px; background: url("d20.svg") center / contain no-repeat; }
+.spot-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; color: var(--ember-deep); font-weight: 680; text-decoration: none; }
+.spot-link::after { content: "→"; transition: translate .2s; }
+.spot-link:hover::after { translate: 4px 0; }
+.spot-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.spot-row .spot { display: flex; flex-direction: column; background: #fff; border: 1px solid rgba(30, 25, 34, 0.08); border-radius: 22px; overflow: hidden; box-shadow: 0 24px 50px -30px rgba(60, 30, 10, 0.3); transition: transform .45s cubic-bezier(.2, .8, .2, 1), box-shadow .45s; }
+.spot-row .spot:hover { transform: translateY(-6px); box-shadow: 0 0 0 1px rgba(255, 140, 60, .2), 0 34px 60px -26px rgba(255, 106, 31, .45); }
+.spot-row .spot-copy { position: relative; padding: 22px 26px 26px; display: flex; flex-direction: column; flex: 1; }
+.spot-row .new-tag { position: absolute; top: -12px; right: 22px; }
+.spot-row h3 { font-size: 24px; margin-bottom: 8px; }
+.spot-row p { color: var(--muted); font-size: 16px; margin: 0; }
+.spot-row .spot-link { margin-top: auto; padding-top: 16px; }
+.new-more { text-align: center; margin: 48px 0 0; }
+.new-more a { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 999px; background: #fff; border: 1px solid var(--ash-2); color: var(--ink); font-weight: 650; text-decoration: none; box-shadow: 0 6px 18px -10px rgba(40, 20, 10, 0.3); transition: transform .2s cubic-bezier(.2, .8, .2, 1), border-color .2s; }
+.new-more a::after { content: "→"; color: var(--ember); }
+.new-more a:hover { transform: translateY(-2px); border-color: rgba(255, 140, 60, .45); }
+
+/* =====================================================================
+   Frames: a focused shot (docs/images/feature-*.png) in a small window on a warm backdrop.
+   In cards and tiles the window runs off the bottom edge; .frame-hero and .frame-fit show it whole.
+   ===================================================================== */
+.frame { position: relative; margin: 0; overflow: hidden; aspect-ratio: 16 / 10; padding: 22px 22px 0; background: radial-gradient(90% 80% at 85% 0%, rgba(255, 140, 60, 0.28), transparent 65%), radial-gradient(70% 70% at 0% 100%, rgba(132, 92, 200, 0.12), transparent 70%), linear-gradient(160deg, #fff6ee, #f3ebe2); border-bottom: 1px solid rgba(30, 25, 34, 0.07); }
+.win { height: 100%; overflow: hidden; border-radius: 12px 12px 0 0; background: #fff; border: 1px solid rgba(30, 25, 34, 0.1); border-bottom: 0; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 18px 40px -18px rgba(60, 30, 10, 0.35), 0 4px 12px -6px rgba(60, 30, 10, 0.18); transition: transform .6s cubic-bezier(.2, .8, .2, 1), box-shadow .6s; }
+.win-bar { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; background: linear-gradient(180deg, #faf7f3, #f1ece6); border-bottom: 1px solid rgba(30, 25, 34, 0.07); }
+.win-bar span { width: 9px; height: 9px; flex: none; border-radius: 50%; background: #e2dad1; }
+.win-bar span:nth-child(1) { background: #ff6159; }
+.win-bar span:nth-child(2) { background: #ffbd2e; }
+.win-bar span:nth-child(3) { background: #28c941; }
+.win-bar b { flex: 1; min-width: 0; margin-right: 33px; overflow: hidden; text-align: center; text-overflow: ellipsis; white-space: nowrap; color: #8a8090; font: 600 11.5px/1 var(--sans); }
+.win img { display: block; width: 100%; height: auto; }
+.tile:hover .win, .spot:hover .win { transform: translateY(-4px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 26px 50px -18px rgba(255, 106, 31, 0.4), 0 6px 14px -6px rgba(60, 30, 10, 0.2); }
+
+.frame-hero { aspect-ratio: auto; padding: 34px; border: 1px solid rgba(30, 25, 34, 0.08); border-radius: 24px; box-shadow: 0 30px 60px -32px rgba(60, 30, 10, 0.35); }
+.frame-hero .win, .frame-fit .win { height: auto; border-radius: 12px; border-bottom: 1px solid rgba(30, 25, 34, 0.1); }
+.frame-hero .win-bar { height: 34px; }
+.frame-hero .win-bar span { width: 11px; height: 11px; }
+.frame-hero .win-bar b { font-size: 13px; }
+.frame-fit { display: flex; align-items: center; justify-content: center; padding: 24px; }
+
+/* The torch-lit steps and the sample adventure: the same frames, on obsidian. */
+.frame-dark { aspect-ratio: auto; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; background: radial-gradient(80% 70% at 85% 0%, rgba(255, 106, 31, 0.24), transparent 65%), radial-gradient(60% 60% at 0% 100%, rgba(132, 92, 200, 0.16), transparent 70%), linear-gradient(160deg, #221b28, #16121a); box-shadow: 0 40px 80px -30px rgba(255, 106, 31, 0.3); }
+.frame-dark .win { height: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3); }
+.frame-dark .win-bar { height: 32px; background: linear-gradient(180deg, #2a2430, #221d27); border-bottom-color: rgba(255, 255, 255, 0.06); }
+.frame-dark .win-bar b { color: #9d93a6; font-size: 12.5px; }
+.vault .frame-dark .win img { filter: brightness(calc(0.26 + 0.74 * var(--lit, 1))) saturate(calc(0.35 + 0.65 * var(--lit, 1))) sepia(calc(0.35 - 0.35 * var(--lit, 1))); transition: filter .4s ease; }
+.vault .frame-dark { border-color: rgba(255, 255, 255, calc(0.04 + 0.1 * var(--lit, 1))); box-shadow: 0 40px 80px -30px rgba(255, 106, 31, calc(0.08 + 0.3 * var(--lit, 1))); }
+
+/* =====================================================================
+   The bento: every feature, same anatomy (a visual on the backdrop, then the copy), each linking its guide page.
+   ===================================================================== */
+.bento-full { grid-auto-flow: row dense; grid-auto-rows: 440px; }
+.bento-full .tile { display: flex; flex-direction: column; padding: 0; }
+.bento-full .tile .frame { flex: 1 1 0; min-height: 0; aspect-ratio: auto; }
+.bento-full .tile-wide .frame { padding: 26px 44px 0; }
+.bento-full .tile-tall { grid-row: span 2; }
+.bento-full .tile-copy { position: relative; padding: 22px 26px 26px; }
+.bento-full .tile-copy .new-tag { position: absolute; top: -12px; left: 24px; }
+.bento-full .tile h3 { font-size: 23px; margin: 0 0 8px; }
+.bento-full .tile h3 a { color: inherit; text-decoration: none; }
+.bento-full .tile h3 a::after { content: " →"; color: var(--ember); opacity: 0; transition: opacity .2s; }
+.bento-full .tile:hover h3 a::after { opacity: 1; }
+/* The whole tile is the link, except tiles with a live demo inside. */
+.bento-full .tile:not(.tile-live) h3 a::before { content: ""; position: absolute; inset: 0; z-index: 1; }
+.bento-full .tile:not(.tile-live) .tile-copy { position: static; }
+.bento-full .tile:not(.tile-live) .tile-copy .new-tag { position: relative; top: auto; left: auto; display: flex; width: fit-content; margin: -34px 0 10px -2px; }
+.bento-full .tile p a { position: relative; z-index: 2; }
+
+/* Live demos sit on the backdrop too. */
+.stage { display: flex; flex-direction: column; justify-content: center; padding: 22px; }
+.stage .tile-demo { margin: 0; }
+
+/* The 525: a dark, tall tile with monster names drifting up behind the number. */
+.bento-full .tile-stat { justify-content: flex-end; padding: 30px; overflow: hidden; }
+.bento-full .tile-stat h3 { color: #fff; font-size: 24px; position: relative; }
+.bento-full .tile-stat p { position: relative; }
+.bento-full .tile-stat p a { color: var(--ember-soft); }
+.stat-cloud { position: absolute; inset: 0 0 34%; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 26px; overflow: hidden; mask-image: linear-gradient(180deg, #000 30%, transparent); -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent); }
+.stat-cloud span { padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.09); color: #d9cfe0; font-size: 13px; font-weight: 600; white-space: nowrap; animation: cloud-drift 9s ease-in-out infinite; }
+.stat-cloud span:nth-child(3n) { animation-delay: -3s; color: #ffd0a8; border-color: rgba(255, 140, 60, 0.3); }
+.stat-cloud span:nth-child(3n+1) { animation-delay: -6s; }
+@keyframes cloud-drift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+
+/* Your dice, your look: a d20 turning in the plugin's renderer (demo/tiles.ts), on obsidian. */
+.tile-dark .stage { --look: #ff6a1f; background: radial-gradient(60% 60% at 50% 45%, color-mix(in srgb, var(--look) 38%, transparent), transparent 70%), linear-gradient(160deg, #221b28, #141017); transition: background .8s ease; border-bottom-color: rgba(255, 255, 255, 0.06); padding: 14px 18px 16px; }
+.dice-looks { display: flex; flex-direction: column; align-items: center; height: 100%; }
+.dl-stage { position: relative; flex: 1; width: 100%; min-height: 0; display: grid; place-items: center; }
+.dl-canvas { width: 200px; height: 200px; flex: none; }
+.dl-still { position: absolute; left: 50%; top: 50%; margin: -54px 0 0 -54px; width: 108px; height: 108px; filter: drop-shadow(0 10px 24px rgba(255, 106, 31, 0.45)); animation: still-bob 4s ease-in-out infinite; }
+.dice-looks.is-3d .dl-still { display: none; }
+.dice-looks:not(.is-3d) .dl-canvas { visibility: hidden; }
+@keyframes still-bob { 0%, 100% { translate: 0 0; rotate: -6deg; } 50% { translate: 0 -6px; rotate: 6deg; } }
+.dl-name { position: absolute; left: 0; top: 2px; display: inline-flex; align-items: center; height: 24px; padding: 0 11px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; font: 650 12.5px/1 var(--sans); letter-spacing: .02em; }
+.dl-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 6px; }
+.dl-pill { width: 18px; height: 18px; padding: 0; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.18); background: var(--look); cursor: pointer; transition: transform .2s, border-color .2s, box-shadow .2s; }
+.dl-pill:hover { transform: scale(1.15); }
+.dl-pill.is-active { border-color: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--look) 45%, transparent), 0 0 16px var(--look); }
+.dice-looks.is-still .dl-pill { cursor: default; }
+
+/* Phone and iPad: drawn bezels (index.html) over real Obsidian mobile screenshots, peeking up from the bottom of the tile. */
+.devices { aspect-ratio: 16 / 7.4; padding: 0; display: block; }
+.device { position: absolute; filter: drop-shadow(0 26px 36px rgba(40, 20, 10, 0.32)) drop-shadow(0 6px 10px rgba(40, 20, 10, 0.18)); transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
+.device .screen { position: absolute; display: block; object-fit: cover; object-position: top left; background: #fff; }
+.device .bezel { position: relative; display: block; width: 100%; height: 100%; overflow: visible; }
+.device.ipad { left: 6%; top: 11%; width: 64%; aspect-ratio: 2497 / 1775; }
+.device.phone { right: 8%; top: 20%; width: 20%; aspect-ratio: 706 / 1466; }
+.tile-devices:hover .device.ipad { transform: translateY(-6px); }
+.tile-devices:hover .device.phone { transform: translateY(-12px) rotate(-1.5deg); }
+
+/* Tall tiles scroll slowly through a long shot, pausing at each end (main.js sets --scroll-by). */
+.frame-scroll .win { height: 100%; }
+.frame-scroll .win img { animation: shot-scroll 22s ease-in-out infinite; will-change: transform; }
+.frame-scroll:hover .win img { animation-play-state: paused; }
+@keyframes shot-scroll { 0%, 12% { transform: translateY(0); } 50%, 62% { transform: translateY(calc(-1 * var(--scroll-by, 0px))); } 100% { transform: translateY(0); } }
+
+@media (max-width: 1100px) {
+	.spot-row { grid-template-columns: 1fr 1fr; }
+	.spot-row .spot:last-child { grid-column: 1 / -1; }
+	.bento-full { grid-template-columns: 1fr 1fr; }
+	.bento-full .tile-wide { grid-column: span 2; }
+}
+@media (max-width: 960px) {
+	.spot-hero { grid-template-columns: 1fr; gap: 32px; }
+}
+@media (max-width: 680px) {
+	.spot-row { grid-template-columns: 1fr; }
+	.bento-full { grid-template-columns: 1fr; grid-auto-rows: auto; }
+	.bento-full .tile-wide, .bento-full .tile-tall { grid-column: auto; grid-row: auto; }
+	.bento-full .tile .frame { flex: none; aspect-ratio: 16 / 10; }
+	.bento-full .tile-dark .frame { aspect-ratio: 4 / 3; }
+	.bento-full .tile-wide .frame { aspect-ratio: 16 / 10; padding: 16px 16px 0; }
+	.bento-full .tile-tall .frame { aspect-ratio: 4 / 4; }
+	.bento-full .tile-stat { min-height: 420px; }
+	.frame { padding: 16px 16px 0; }
+	.frame-hero, .frame-dark { padding: 16px; border-radius: 18px; }
+	.devices { aspect-ratio: 4 / 3.2; }
+	.device.ipad { width: 80%; left: 4%; }
+	.device.phone { width: 27%; right: 5%; top: 24%; }
+	.new-chip span { max-width: 26ch; }
+}
+
+/* Single tiles and cards: the window takes the shot's own height and floats, centred, with even padding. */
+.bento-full .tile-img:not(.tile-wide):not(.tile-tall):not(.tile-live) .frame, .spot-row .frame { display: flex; align-items: center; justify-content: center; padding: 22px; }
+.bento-full .tile-img:not(.tile-wide):not(.tile-tall):not(.tile-live) .win, .spot-row .win { height: auto; max-height: 100%; width: 100%; border-radius: 12px; border-bottom: 1px solid rgba(30, 25, 34, 0.1); }

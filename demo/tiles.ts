@@ -3,7 +3,8 @@
 
 import './obsidian-shim';
 import { setIcon } from 'obsidian';
-import { dice3dSupported } from '../src/dice3d';
+import { dice3dSupported, looks3d, preview3d, DICE3D_MATERIALS } from '../src/dice3d';
+import type { DiceMaterial, PreviewHandle } from '../src/dice3d';
 import { reducedMotion, renderBox, roll, rollNotice } from './slash-demo';
 
 // ---------------------------------------------------------------------------
@@ -116,6 +117,78 @@ function buildDice(root: HTMLElement): void {
 		});
 	});
 }
+
+// ---------------------------------------------------------------------------
+// Your dice, your look: one d20 turning in the plugin's own renderer, cycling
+// through the built-in looks. three.js loads when the tile scrolls into view.
+
+const LOOK_COLORS: Record<DiceMaterial, string> = {
+	classic: '#7c3aed', gem: '#e0245e', metal: '#d4a72c', glitter: '#8b5cf6', lava: '#ff6a1f',
+	frost: '#7dd3fc', nebula: '#5b21b6', opal: '#f4ecff', marble: '#ece6d8',
+};
+const SHORT: Partial<Record<DiceMaterial, string>> = { classic: 'Resin', gem: 'Gem' };
+
+function buildLooks(root: HTMLElement): void {
+	root.empty();
+	root.addClass('is-live');
+	const looks = DICE3D_MATERIALS.map(m => ({ id: m.id, label: SHORT[m.id] ?? m.label }));
+	const stage = root.createDiv({ cls: 'dl-stage' });
+	stage.createDiv({ cls: 'dl-glow' });
+	const canvas = stage.createEl('canvas', { cls: 'dl-canvas', attr: { 'aria-hidden': 'true' } });
+	const still = stage.createEl('img', { cls: 'dl-still', attr: { src: 'd20.svg', alt: '', width: '120', height: '120' } });
+	const name = stage.createDiv({ cls: 'dl-name', attr: { 'aria-live': 'polite' } }).createSpan({ cls: 't' });
+	const pills = root.createDiv({ cls: 'dl-pills', attr: { role: 'radiogroup', 'aria-label': 'Dice looks' } });
+	const buttons = looks.map((l, i) => {
+		const b = pills.createEl('button', { cls: 'dl-pill', attr: { type: 'button', role: 'radio', 'aria-label': l.label } });
+		b.style.setProperty('--look', LOOK_COLORS[l.id]);
+		b.addEventListener('click', () => { pick(i); pausedUntil = performance.now() + 7000; });
+		return b;
+	});
+
+	let at = 0;
+	let handle: PreviewHandle | null = null;
+	let lookFor: ((color: string, material: DiceMaterial) => ReturnType<Awaited<ReturnType<typeof looks3d>>>) | null = null;
+	let pausedUntil = 0;
+	const pick = (i: number) => {
+		at = (i + looks.length) % looks.length;
+		const l = looks[at];
+		name.setText(l.label);
+		root.style.setProperty('--look', LOOK_COLORS[l.id]);
+		root.parentElement?.style.setProperty('--look', LOOK_COLORS[l.id]);
+		buttons.forEach((b, j) => { b.toggleClass('is-active', j === at); b.setAttr('aria-checked', String(j === at)); });
+		if (handle && lookFor) handle.setLook(lookFor(LOOK_COLORS[l.id], l.id));
+	};
+	pick(0);
+
+	if (!dice3dSupported()) { root.addClass('is-still'); return; }
+	let visible = false;
+	let started = false;
+	const start = async () => {
+		started = true;
+		try {
+			lookFor = await looks3d();
+			const lookOf = lookFor;
+			handle = await preview3d(canvas, { sides: 20, look: lookOf(LOOK_COLORS[looks[at].id], looks[at].id) });
+			// Build and compile every look now, so the cycle never waits on a shader.
+			window.setTimeout(() => handle?.preload(looks.map(l => lookOf(LOOK_COLORS[l.id], l.id))), 300);
+			root.addClass('is-3d');
+			still.remove();
+		} catch { root.addClass('is-still'); }
+	};
+	new IntersectionObserver((entries) => {
+		visible = entries.some(e => e.isIntersecting);
+		if (visible && !started) void start();
+	}, { rootMargin: '200px' }).observe(root);
+	root.addEventListener('pointerenter', () => { pausedUntil = Infinity; });
+	root.addEventListener('pointerleave', () => { pausedUntil = performance.now() + 1200; });
+	window.setInterval(() => {
+		if (!visible || !handle || performance.now() < pausedUntil) return;
+		pick(at + 1);
+	}, 2600);
+}
+
+const looksRoot = activeDocument.getElementById('tile-looks-demo');
+if (looksRoot) buildLooks(looksRoot);
 
 const boxesRoot = activeDocument.getElementById('tile-boxes-demo');
 if (boxesRoot) buildBoxes(boxesRoot);
