@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Nimble TTRPG Encounter Builder for Obsidian | Ember Vault</title>
-	<meta name="description" content="Free, open-source Obsidian plugin for Nimble TTRPG GMs. Build rated encounters, track combat, roll dice and drop in 525 monsters, all inside your notes.">
+	<meta name="description" content="Free, open-source Obsidian plugin for Nimble TTRPG GMs and players. Rated encounters, a combat tracker, the whole Nimble compendium, a monster builder, quests and character sheets, all inside your notes.">
 	<link rel="canonical" href="https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/">
 	<meta property="og:type" content="website">
 	<meta property="og:site_name" content="Ember Vault">
@@ -23,19 +23,20 @@
 	<link rel="icon" href="favicon.svg" type="image/svg+xml">
 	<link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
 	<link rel="preload" href="fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
-	<link rel="stylesheet" href="plugin.css?v=9">
-	<link rel="stylesheet" href="style.css?v=9">
-	<link rel="stylesheet" href="demo.css?v=9">
-	<link rel="stylesheet" href="interactive.css?v=9">
+	<link rel="stylesheet" href="plugin.css?v=13">
+	<link rel="stylesheet" href="style.css?v=13">
+	<link rel="stylesheet" href="demo.css?v=13">
+	<link rel="stylesheet" href="interactive.css?v=13">
 	<script>document.documentElement.classList.add('js');try{if(/[?&]intro\b/.test(location.search)||!sessionStorage.getItem('ev-intro'))document.documentElement.classList.add('gate-on')}catch(e){document.documentElement.classList.add('gate-on')}</script>
-	<script src="main.js?v=9" defer></script>
-	<script type="module" src="demo/gate.js?v=9"></script>
-	<script type="module" src="demo/demo.js?v=9"></script>
+	<script src="embers.js?v=13" defer></script>
+	<script src="main.js?v=13" defer></script>
+	<script type="module" src="demo/gate.js?v=13"></script>
+	<script type="module" src="demo/demo.js?v=13"></script>
 	<script type="application/ld+json">
 	{"@context":"https://schema.org","@graph":[
 	{"@type":"WebSite","name":"Ember Vault","url":"https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/"},
 	{"@type":"SoftwareApplication","name":"Ember Vault","alternateName":"Nimble GM",
-	"description":"Free, open-source Obsidian plugin for Nimble TTRPG game masters: encounter builder with difficulty ratings, combat tracker, 525-monster bestiary, dice and GM maps in plain Markdown notes.",
+	"description":"Free, open-source Obsidian plugin for Nimble TTRPG game masters and players: encounter builder with difficulty ratings, combat tracker, the searchable Nimble compendium, a monster, spell and item builder, quests, character sheets, dice and GM maps in plain Markdown notes.",
 	"url":"https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/",
 	"applicationCategory":"GameApplication","applicationSubCategory":"Obsidian plugin",
 	"operatingSystem":"Windows, macOS, Linux, iOS, Android",
@@ -93,18 +94,18 @@
 		<div class="wrap nav-inner">
 			<a class="logo" href="./" aria-label="Ember Vault home"><svg class="logo-mark" aria-hidden="true"><use href="#d20"/></svg><span>Ember <b>Vault</b></span></a>
 			<nav class="nav-links" aria-label="Sections">
-				<a href="#faster">Faster play</a>
-				<a href="#notes">Your notes</a>
 				<a href="#features">Features</a>
 				<a href="#sample">Sample adventure</a>
 				<a href="docs/">Guide</a>
+				<a href="changelog/">Changelog</a>
+				<a href="https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager" rel="noopener">GitHub</a>
 			</nav>
 			<a class="btn btn-ember btn-sm" href="#install">Get it free</a>
 		</div>
 	</header>
 
 	<main id="main">
-		<section class="hero" data-embers>
+		<section class="hero" data-embers="3.5">
 			<div class="hero-sky" aria-hidden="true"></div>
 			<div class="torchlight" aria-hidden="true"></div>
 			<svg class="float-shard s1" aria-hidden="true"><use href="#d20"/></svg>
@@ -112,13 +113,20 @@
 			<svg class="float-shard s3" aria-hidden="true"><use href="#d20-line"/></svg>
 
 			<div class="wrap hero-copy">
-				<p class="chip"><svg aria-hidden="true"><use href="#d20"/></svg>Free, open-source Obsidian plugin for Nimble GMs</p>
+				<div class="hero-chips">
+					<!-- latest-release --><a class="new-chip" href="changelog/"><b><span class="t">New</span></b><span>See what's new</span></a><!-- /latest-release -->
+				</div>
 				<h1>A GM toolkit as <em>nimble</em> as you are.</h1>
-				<p class="lede">Manage your campaign, encounters, NPCs, dice rolls and more in Obsidian, so you spend more time at the table and less time in your notes.</p>
+				<p class="lede">Manage your campaign, encounters, monsters, quests, characters and dice in Obsidian, so you spend more time at the table and less time in your notes.</p>
 				<div class="cta">
 					<a class="btn btn-ember" href="#install">Install free Obsidian plugin</a>
 					<a class="btn btn-glass" href="#demo">Try the live demo</a>
 				</div>
+				<ul class="hero-meta">
+					<li>Free and open-source plugin</li>
+					<li>Works offline</li>
+					<li>Desktop, iPad and phone</li>
+				</ul>
 			</div>
 
 			<div class="wrap demo-wrap" id="demo">
@@ -151,9 +159,7 @@
 							<h3>Build a fight in one line</h3>
 							<p>Type <code>/encounter 4 quicksilver hound</code>. You get a block that rates the fight against your party, from Easy to Very Deadly, and suggests tweaks to hit the difficulty you want.</p>
 						</div>
-						<figure class="pane">
-							<img src="images/encounter-block.png" alt="Encounter block rated Easy for a party of four level 2 heroes, with Run and Edit buttons" loading="lazy" width="1200" height="800">
-						</figure>
+						<figure class="frame frame-dark"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Q3 The Calcinator.md</b></div><img src="images/feature-encounter.png" alt="An encounter block rated Easy against a party of four level 2 heroes, with Run, Add to current and Edit" loading="lazy"></div></figure>
 					</article>
 
 					<article class="step flip reveal">
@@ -162,9 +168,7 @@
 							<h3>Let it do the math</h3>
 							<p>Tap a monster's HP. The calculator applies crits, armor, vulnerabilities and minion overkill, and shows you the sum before you commit. Bloodied and Last Stand pop up when they happen.</p>
 						</div>
-						<figure class="pane">
-							<img src="images/hp-calculator.png" alt="The HP calculator open on a Quicksilver Hound, showing 9 damage plus 10 for vulnerability before it is applied" loading="lazy" width="1200" height="800">
-						</figure>
+						<figure class="frame frame-dark"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Combat tracker</b></div><img src="images/feature-hp.png" alt="The HP calculator on a Quicksilver Hound: 9 damage plus 10 for vulnerability, shown before it's applied" loading="lazy"></div></figure>
 					</article>
 
 					<article class="step reveal">
@@ -173,11 +177,64 @@
 							<h3>Stat blocks pop up over your note</h3>
 							<p>Click any monster or NPC and their sheet opens over your note, with HP, turn and actions. Close it and you're right where you left off.</p>
 						</div>
-						<figure class="pane">
-							<img src="images/boss.png" alt="Quick look showing a legendary monster's stat block and HP over the scene note" loading="lazy" width="1200" height="800">
-						</figure>
+						<figure class="frame frame-dark"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>The Alchemist</b></div><img src="images/feature-boss.png" alt="The quick look on a legendary monster: its stat block, HP and actions over your note" loading="lazy"></div></figure>
 					</article>
 				</div>
+			</div>
+		</section>
+
+		<section id="new" class="section ash whats-new">
+			<div class="wrap">
+				<header class="section-head reveal">
+					<p class="kicker">New in the vault</p>
+					<h2>Make it, look it up, play it.</h2>
+					<p>Build monsters on the books' numbers, search everything Nimble in one place, give every job a quest note, and play your own hero from a sheet that does the math.</p>
+				</header>
+
+				<article class="spot spot-hero reveal">
+					<div class="spot-copy">
+						<span class="new-tag"><span class="t">New in 1.5</span></span>
+						<h3>Build a monster on the book's numbers</h3>
+						<p>Pick a role and a level and press <b>Create now</b>: the GM Guide's HP, damage and dice for that level, written into your note. Or type your own numbers and the level check says what they play like. Spells and items too, with the Creator's Kit damage for each tier.</p>
+						<ul class="spot-points">
+							<li>Start from any monster and re-level it</li>
+							<li>A review that checks the build and offers fixes</li>
+							<li>Edit any block in your notes with the pencil</li>
+						</ul>
+						<a class="spot-link" href="docs/builder.html">The builder</a>
+					</div>
+					<figure class="frame frame-hero"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>New monster</b></div><img src="images/feature-builder.png" alt="The monster builder on its Attacks step: two attacks, the Right for level 3 check with HP and damage bars, and the Cave Bear's live stat block" loading="lazy"></div></figure>
+				</article>
+
+				<div class="spot-row">
+					<article class="spot reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Nimble Compendium</b></div><img src="images/feature-compendium.png" alt="The compendium's Spells tab filtered by a School: Fire chip, with fire spells by tier and Pyroclasm's card" loading="lazy"></div></figure>
+						<div class="spot-copy">
+							<h3>Everything Nimble, one search</h3>
+							<p>Monsters, spells, items, class features, classes and rules. Typed filters like <code>school:fire</code>, and typos forgiven.</p>
+							<a class="spot-link" href="docs/compendium.html">The compendium</a>
+						</div>
+					</article>
+					<article class="spot reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Bring Wick Home.md</b></div><img src="images/feature-quest.png" alt="A quest note with status, type, giver, location, reward and level pills, the hook box and an Objectives checklist" loading="lazy"></div></figure>
+						<div class="spot-copy">
+							<span class="new-tag"><span class="t">New in 1.4</span></span>
+							<h3>Quests that keep score</h3>
+							<p>A note for every job: the hook, objectives, the truth behind it. Finished quests tick themselves off and sink below the open ones.</p>
+							<a class="spot-link" href="docs/quests.html">Quests</a>
+						</div>
+					</article>
+					<article class="spot reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Brakka.md</b></div><img src="images/feature-character-sheet.png" alt="Brakka's character sheet: portrait, armor, initiative and speed, an HP bar with wounds, stats and skills" loading="lazy"></div></figure>
+						<div class="spot-copy">
+							<h3>Players get a sheet</h3>
+							<p>Switch a campaign to <b>I play in it</b> for an interactive character sheet, lore cards instead of stat blocks, and level-ups that follow the rules.</p>
+							<a class="spot-link" href="docs/character-sheets.html">Character sheets</a>
+						</div>
+					</article>
+				</div>
+
+				<p class="new-more reveal"><a href="changelog/">See the changelog</a></p>
 			</div>
 		</section>
 
@@ -230,37 +287,126 @@ area: Q6
 		<section id="features" class="section ash">
 			<div class="wrap">
 				<header class="section-head reveal">
+					<p class="kicker">Everything in the box</p>
 					<h2>The rest of your GM toolkit</h2>
+					<p>Every feature is in the free plugin, works offline, and keeps your game in plain notes.</p>
 				</header>
 
-				<div class="bento">
-					<article class="tile tile-wide tile-img reveal">
-						<div class="crop" style="--y: -12%"><img src="images/map.png" alt="GM map in Obsidian with a pin on every room, linked to its note" loading="lazy" width="1200" height="800"></div>
-						<div class="tile-copy"><h3>Maps with pins</h3><p>A pin on every room, linked to its note. Drag fighters on as tokens.</p></div>
+				<!-- Every feature gets a tile. A new feature adds one here and links its guide page (see CLAUDE_CODE_GUIDE.md, "Shipping a feature"). -->
+				<div class="bento bento-full">
+					<article class="tile tile-img tile-wide reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Q3 The Calcinator.md</b></div><img src="images/feature-encounter.png" alt="An encounter block for The Ash Phantom, rated Easy against a party of four level 2 heroes" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/encounters.html">Encounters rated for your party</a></h3><p><code>/encounter 3 goblin, 2 wolf</code> rates the fight from Easy to Very Deadly against your heroes, and suggests tweaks to hit the difficulty you want.</p></div>
 					</article>
-					<article class="tile tile-stat reveal">
+					<article class="tile tile-stat tile-tall reveal">
+						<div class="stat-cloud" aria-hidden="true"><span>Goblin</span><span>Krogg, Goblin King</span><span>Owlbear</span><span>Night Hag</span><span>Red Dragon</span><span>Wyvern</span><span>Zombie</span><span>Book Mimic</span><span>Bugbear</span><span>Harpy</span><span>Basilisk</span><span>Briarbane Treant</span><span>Banshee</span><span>Troll</span><span>Gray Ooze</span><span>Werebear</span><span>Kobold</span><span>Ogre</span><span>Vampire Gorger</span><span>Gargoyle</span><span>Hydra</span><span>Wraith</span><span>Polar Bear</span><span>Dire Wolf</span><span>Skeleton</span><span>Green Hag</span><span>Young Red Dragon</span><span>Hallway Mimic</span><span>Faerie Dragon</span><span>Sea Hag</span></div>
 						<h3><b class="big">525</b> monsters, ready to drop in</h3>
-						<p>Every monster from the Nimble GM Guide and Monsters &amp; More, bundled and searchable.</p>
+						<p>Every monster from the Nimble GM Guide and Monsters &amp; More, plus every spell, item, class and rule. <a href="docs/compendium.html">Search them all</a>.</p>
+					</article>
+					<article class="tile tile-img tile-tall reveal">
+						<figure class="frame frame-scroll"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Combat tracker</b></div><img src="images/feature-tracker-tall.png" alt="The combat tracker mid-fight: round 1 on the monsters' turn, four Quicksilver Hounds with one Bloodied, then the four heroes with HP bars" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/tracker.html">A combat tracker that keeps up</a></h3><p>Heroes' turn, monsters' turn, HP, Wounds, conditions and legendary phases, in the sidebar beside your notes.</p></div>
 					</article>
 					<article class="tile tile-img reveal">
-						<div class="crop" style="--zoom: 160%; --x: -53%; --y: -12%"><img src="images/npc-card.png" alt="NPC character card with a portrait, notes and a blurred secret" loading="lazy" width="1200" height="800"></div>
-						<div class="tile-copy"><h3>NPCs with faces</h3><p>Portrait cards, with a secret you reveal when nobody's looking.</p></div>
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Combat tracker</b></div><img src="images/feature-hp.png" alt="The HP calculator on a Quicksilver Hound: 9 damage plus 10 for vulnerability, before it's applied" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/tracker.html">HP math, done for you</a></h3><p>Crits, armor, vulnerability and minion overkill, shown before you commit.</p></div>
 					</article>
-					<article class="tile reveal">
-						<span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/><path d="M6 8h2M6 12h2M16 8h2M16 12h2"/></svg></span>
-						<h3>Read-aloud boxes</h3>
-						<p>Read-aloud text, traps, treasure and clues, each styled so you spot them mid-session.</p>
-						<!-- Callout types: built by demo/tiles.ts -->
-						<div class="tile-demo" id="tile-boxes-demo"></div>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Spotlight</b></div><img src="images/feature-spotlight.png" alt="Spotlight searching "alchemist": an adversary, an NPC, a location and class features in one list" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/spotlight.html">Spotlight, one key away</a></h3><p>Cmd/Ctrl+K: find a monster, NPC or note, roll dice, add three goblins to the fight.</p></div>
 					</article>
-					<article class="tile reveal">
-						<span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01M10 14h.01M15 6h.01M18 9h.01"/></svg></span>
-						<h3>Dice, two ways</h3>
-						<p>Choose between quick dice results or 3D dice.</p>
-						<!-- Quick vs 3D dice buttons and result card: built by demo/tiles.ts -->
-						<div class="tile-demo" id="tile-dice-demo"></div>
+					<article class="tile tile-img tile-wide reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>New monster</b></div><img src="images/feature-builder.png" alt="The monster builder on its Attacks step, with the level check and the Cave Bear's live stat block" loading="lazy"></div></figure>
+						<div class="tile-copy"><span class="new-tag"><span class="t">New</span></span><h3><a href="docs/builder.html">Monster, spell and item builder</a></h3><p>Pick a level and press <b>Create now</b> for a monster on the GM Guide's numbers, or type your own and see what level they play like. Spells and items follow the Creator's Kit.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Ember Lash.md</b></div><img src="images/feature-homebrew.png" alt="A homebrew spell block shown as its compendium card" loading="lazy"></div></figure>
+						<div class="tile-copy"><span class="new-tag"><span class="t">New</span></span><h3><a href="docs/builder.html#homebrew-spells-and-items-in-your-notes">Homebrew in the compendium</a></h3><p>Your own spells and items, written as blocks in any note, join the search and the character sheet.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Nimble Compendium</b></div><img src="images/feature-compendium.png" alt="The compendium's Spells tab filtered to fire spells, with Pyroclasm's card" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/compendium.html">The whole compendium</a></h3><p>Monsters, spells, items, features, classes and rules. Typed filters, sorting, and typos forgiven.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Brakka.md</b></div><img src="images/feature-character-sheet.png" alt="Brakka's character sheet: armor, initiative, an HP bar with wounds, stats and skills" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/character-sheets.html">Character sheets that roll</a></h3><p>Tap a stat to roll it, tap HP to take a hit. Rests, level-ups and class dice follow the rules.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Brakka's Journal</b></div><img src="images/feature-lore.png" alt="A lore card: what a player knows about a monster, in place of its stat block" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/players.html">For players too</a></h3><p>Set a campaign to <b>I play in it</b>: lore cards instead of stat blocks, battle notes, and your party up front.</p></div>
+					</article>
+					<article class="tile tile-img tile-wide reveal">
+						<figure class="frame frame-fit"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>The Old Quarter · Bring Wick Home</b></div><img src="images/feature-quest-panel.png" alt="The Campaign panel folded down to its Quests folder beside the Bring Wick Home quest note" loading="lazy"></div></figure>
+						<div class="tile-copy"><span class="new-tag"><span class="t">New</span></span><h3><a href="docs/quests.html">Quests that keep score</a></h3><p>The hook, objectives and the truth behind it. Finished quests get a tick and sink below the open ones.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Session 1 - Silver Between the Stones.md</b></div><img src="images/feature-pills.png" alt="A session prep checklist where links show as pills for a location, scenes, the map, a quest and NPCs" loading="lazy"></div></figure>
+						<div class="tile-copy"><span class="new-tag"><span class="t">New</span></span><h3><a href="docs/campaigns.html#links-to-campaign-notes">Links that say what they are</a></h3><p>A link to a quest, place or hero shows as a pill with its icon, so a session log reads at a glance.</p></div>
+					</article>
+					<article class="tile tile-img tile-tall reveal">
+						<figure class="frame frame-scroll"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>The Old Quarter</b></div><img src="images/feature-panel-full.png" alt="The Campaign panel with everything open: the party with HP bars, the first chapter with its map and scenes, then Sessions, Quests, NPCs with portraits, Locations, Party, Monsters and Assets" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/campaigns.html">Campaigns that stay tidy</a></h3><p>Chapters, scenes, NPCs, quests and sessions in one panel. Drag to reorganise, and step scene to scene at the table.</p></div>
+					</article>
+					<article class="tile tile-img tile-wide reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Map - The Quicksilver Vaults.md</b></div><img src="images/feature-map.png" alt="A dungeon map with its toolbar and labelled pins on the rooms" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/maps.html">Maps with pins</a></h3><p>A pin on every room, linked to its note. Drag fighters on as tokens.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Tobren Kask.md</b></div><img src="images/feature-npc.png" alt="Tobren Kask's NPC card with a portrait and a blurred secret" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/npcs.html">NPCs with faces</a></h3><p>Portrait cards, with a secret you reveal when nobody's looking.</p></div>
+					</article>
+					<article class="tile tile-img tile-live reveal">
+						<div class="frame stage"><!-- Callout types: built by demo/tiles.ts --><div class="tile-demo" id="tile-boxes-demo"></div></div>
+						<div class="tile-copy"><h3><a href="docs/boxes.html">Read-aloud boxes</a></h3><p>Read-aloud text, traps, treasure and clues, each styled so you spot them mid-session.</p></div>
+					</article>
+					<article class="tile tile-img tile-live reveal">
+						<div class="frame stage"><!-- Quick vs 3D dice buttons and result card: built by demo/tiles.ts --><div class="tile-demo" id="tile-dice-demo"></div></div>
+						<div class="tile-copy"><h3><a href="docs/dice.html">Dice, two ways</a></h3><p>Quick results in the corner, or 3D dice across your notes. Try both.</p></div>
+					</article>
+					<article class="tile tile-img tile-live tile-dark reveal">
+						<div class="frame stage"><!-- A turning d20 cycling the dice looks: built by demo/tiles.ts --><div class="tile-demo dice-looks" id="tile-looks-demo"></div></div>
+						<div class="tile-copy"><h3><a href="docs/dice.html">Your dice, your look</a></h3><p>Nine finishes from resin to lava, your own colours in the Dice Workshop, and Dice So Nice and Rollsmith sets.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Q1 Entry Chamber.md</b></div><img src="images/feature-slash.png" alt="The slash menu open in a note, listing commands with what each does" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/slash-commands.html">Type a slash, get a tool</a></h3><p>Encounters, monsters, quests, NPCs, rolls and boxes, written where you're typing.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Cave Bear.md</b></div><img src="images/feature-statblock-help.png" alt="A stat block's problem lines listed in plain words, each with a Fix button" loading="lazy"></div></figure>
+						<div class="tile-copy"><span class="new-tag"><span class="t">New</span></span><h3><a href="docs/bestiary.html#when-a-line-isnt-shown">Stat blocks that help</a></h3><p>Write your own and it forgives capitals and bold. When a line can't be read, it says why and offers a fix.</p></div>
+					</article>
+					<article class="tile tile-img reveal">
+						<figure class="frame"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>Q6 Storage Vault.md</b></div><img src="images/feature-tougher.png" alt="Making a monster tougher in an encounter block" loading="lazy"></div></figure>
+						<div class="tile-copy"><h3><a href="docs/encounters.html#encounter-blocks">Tougher or weaker in a click</a></h3><p>Shift any monster a level up or down. HP and dice move to the GM Guide's numbers for the new level.</p></div>
+					</article>
+					<article class="tile tile-img tile-wide tile-devices reveal">
+						<div class="frame devices" aria-hidden="true">
+							<div class="device ipad"><img class="screen" src="images/device-ipad.png" alt="" loading="lazy" style="left: 2.403%; top: 3.380%; width: 95.194%; height: 93.239%; border-radius: 5.048% / 7.251%;"><svg class="bezel" viewBox="0 0 2497 1775" aria-hidden="true">
+<defs><linearGradient id="al" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a9aa0"/><stop offset=".5" stop-color="#5b5b62"/><stop offset="1" stop-color="#8d8d94"/></linearGradient></defs>
+<rect x="2137" y="-6" width="150" height="10" rx="4" fill="#7c7c83"/><rect x="1937" y="-6" width="150" height="10" rx="4" fill="#7c7c83"/>
+<path fill="url(#al)" fill-rule="evenodd" d="M170,0H2327A170,170 0 0 1 2497,170V1605A170,170 0 0 1 2327,1775H170A170,170 0 0 1 0,1605V170A170,170 0 0 1 170,0ZM171,9H2326A162,162 0 0 1 2488,171V1604A162,162 0 0 1 2326,1766H171A162,162 0 0 1 9,1604V171A162,162 0 0 1 171,9Z"/>
+<path fill="#0b0b0d" fill-rule="evenodd" d="M171,9H2326A162,162 0 0 1 2488,171V1604A162,162 0 0 1 2326,1766H171A162,162 0 0 1 9,1604V171A162,162 0 0 1 171,9ZM180,60H2317A120,120 0 0 1 2437,180V1595A120,120 0 0 1 2317,1715H180A120,120 0 0 1 60,1595V180A120,120 0 0 1 180,60Z"/>
+<circle cx="1248.5" cy="34" r="11" fill="#14161f"/><circle cx="1245.5" cy="31" r="3.5" fill="#2c3352"/>
+</svg></div>
+							<div class="device phone"><img class="screen" src="images/device-phone.png" alt="" loading="lazy" style="left: 3.966%; top: 1.944%; width: 92.068%; height: 96.112%; border-radius: 14.154% / 6.529%;"><svg class="bezel" viewBox="0 0 706 1466" aria-hidden="true">
+<defs>
+<linearGradient id="ti" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5d5853"/><stop offset=".06" stop-color="#b9b3ac"/><stop offset=".5" stop-color="#8e8882"/><stop offset=".94" stop-color="#c4beb7"/><stop offset="1" stop-color="#5a554f"/></linearGradient>
+<linearGradient id="ti-btn" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6a655f"/><stop offset="1" stop-color="#a8a29b"/></linearGradient>
+</defs>
+<rect x="-5" y="250" width="9" height="62" rx="4" fill="url(#ti-btn)"/>
+<rect x="-5" y="380" width="9" height="122" rx="4" fill="url(#ti-btn)"/>
+<rect x="-5" y="530" width="9" height="122" rx="4" fill="url(#ti-btn)"/>
+<rect x="702" y="430" width="9" height="196" rx="4" fill="url(#ti-btn)"/>
+<path fill="url(#ti)" fill-rule="evenodd" d="M118,0H588A118,118 0 0 1 706,118V1348A118,118 0 0 1 588,1466H118A118,118 0 0 1 0,1348V118A118,118 0 0 1 118,0ZM119,7H587A112,112 0 0 1 699,119V1347A112,112 0 0 1 587,1459H119A112,112 0 0 1 7,1347V119A112,112 0 0 1 119,7Z"/>
+<path fill="#0a0a0c" fill-rule="evenodd" d="M119,7H587A112,112 0 0 1 699,119V1347A112,112 0 0 1 587,1459H119A112,112 0 0 1 7,1347V119A112,112 0 0 1 119,7ZM120,28.5H586A92,92 0 0 1 678,120.5V1345.5A92,92 0 0 1 586,1437.5H120A92,92 0 0 1 28,1345.5V120.5A92,92 0 0 1 120,28.5Z"/>
+<rect x="249.0" y="47.5" width="208" height="61" rx="30.5" fill="#000"/>
+<circle cx="423.0" cy="78.0" r="11" fill="#0d0f1a"/><circle cx="420.0" cy="75.0" r="3.5" fill="#2a3150"/>
+</svg></div>
+						</div>
+						<div class="tile-copy"><h3><a href="docs/mobile.html">Phone and iPad</a></h3><p>Run the fight from a tablet at the table and keep your sheet on your phone. Every view is laid out for touch, and your vault syncs however Obsidian does.</p></div>
 					</article>
 				</div>
+				<p class="new-more reveal"><a href="docs/">Read the user guide</a></p>
 			</div>
 		</section>
 
@@ -273,16 +419,14 @@ area: Q6
 						<a class="btn btn-ember" href="Ember-Vault-Sample-Adventure.zip" download>Download the adventure</a>
 					</div>
 				</div>
-				<figure class="pane reveal">
-					<img src="images/campaign-panel.png" alt="The sample adventure's first room, with the Campaign panel listing every scene" loading="lazy" width="1200" height="800">
-				</figure>
+				<figure class="frame frame-dark reveal"><div class="win"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span><b>The Old Quarter · Q1 Entry Chamber</b></div><img src="images/feature-sample.png" alt="The sample adventure's first room beside the Campaign panel" loading="lazy"></div></figure>
 			</div>
 		</section>
 
 		<section id="install" class="section ash install">
 			<div class="wrap narrow">
 				<header class="section-head reveal">
-					<h2>Install in about a minute</h2>
+					<h2>Install it from Obsidian</h2>
 				</header>
 				<ol class="install-steps reveal">
 					<li>Open Obsidian and go to <b>Settings → Community plugins → Browse</b>.</li>
