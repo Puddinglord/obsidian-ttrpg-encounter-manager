@@ -5,10 +5,11 @@
 //   node scripts/build-site.mjs            build once
 //   node scripts/build-site.mjs --serve    build, then serve on http://localhost:8765
 import esbuild from 'esbuild';
-import { cpSync, mkdirSync, rmSync, readdirSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { buildDocs } from './build-docs.mjs';
+import { buildChangelog } from './build-changelog.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, '_site');
@@ -17,6 +18,17 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(join(out, 'images'), { recursive: true });
 cpSync(join(root, 'site'), out, { recursive: true });
 buildDocs({ root, out });
+const releases = buildChangelog({ root, out });
+// The landing page's "New in" chip links the latest release.
+const latest = releases[0];
+if (latest) {
+	const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	const html = readFileSync(join(out, 'index.html'), 'utf8').replace(
+		/<!-- latest-release -->[\s\S]*?<!-- \/latest-release -->/,
+		`<a class="new-chip" href="changelog/${latest.version}/"><b><span class="t">New in ${esc(latest.version)}</span></b><span>${esc(latest.title)}</span></a>`,
+	);
+	writeFileSync(join(out, 'index.html'), html);
+}
 for (const f of readdirSync(join(root, 'docs/images'))) {
 	if (f.endsWith('.png')) cpSync(join(root, 'docs/images', f), join(out, 'images', f));
 }
