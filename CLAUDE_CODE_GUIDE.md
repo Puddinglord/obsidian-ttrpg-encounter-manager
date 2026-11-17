@@ -172,6 +172,18 @@ Every PR merged into `main` is released by `.github/workflows/auto-release.yml` 
 - Run `npm test && npm run test:e2e` before merging; `release.yml` lints, tests, builds and attaches `main.js`, `manifest.json`, `styles.css`.
 - Every PR adds its changes to `CHANGELOG.md` under `## [Unreleased]` (Added / Changed / Fixed), written plainly in the user's voice; the release workflow turns that section into the tag message and the release notes (`scripts/changelog.mjs`).
 
+## Shipping a feature
+
+A feature isn't done until people can find out about it. Every PR that adds or changes something a user sees does all of this before it merges, in the same PR (a commit per part is fine):
+
+1. **Changelog.** Bullets under `## [Unreleased]` in `CHANGELOG.md`, in `### Added`, `### Changed` or `### Fixed`. For a release worth announcing, put a one-line headline on its own line above `### Added`: it's the title on the site's changelog page and in the link preview when the release is shared (Discord, etc.). End a feature's bullet with a link to its guide page, written repo-relative: `See the [builder guide](docs/builder.md).` The site's changelog shows it as a Guide pill and lists the release's guide pages under its title; release notes point it at the guide on the site.
+2. **User guide.** Explain it in `docs/` with an example: the block, the command, what to click. A big feature gets its own page, listed in `docs/README.md`; a smaller one goes in the page it belongs to. Add it to `docs/slash-commands.md` or `docs/settings.md` if it adds a command or setting, and `docs/faq.md` if people will ask.
+3. **Landing page.** Give it a tile in the features bento (`#features` in `site/index.html`), linking its guide page, with a `<span class="new-tag">New</span>` while it's recent (drop the tag from tiles two minor releases old). A headline feature can replace a card in the "What's new" section (`#new`).
+4. **Screenshots.** If the guide or the tile shows it, add a shot to `e2e/screenshots.mjs` and run `node e2e/screenshots.mjs <name>` (it runs hidden). Only commit the PNGs you meant to change.
+5. **Check.** `node scripts/check-docs.mjs --base origin/main` runs the same check as the PR's **Docs check** workflow: broken links fail, and a new `### Added` entry without a `docs/` change or a `site/index.html` change fails. If one half really isn't needed (a small option that doesn't merit a tile), label the PR `docs: skip` or `site: skip`. `npm run site:serve` previews the landing page, the guide and the changelog at <http://localhost:8765>.
+
+The site's changelog (`/changelog/`, one page per release at `/changelog/<version>/`, and an Atom feed) is built from `CHANGELOG.md` by `scripts/build-changelog.mjs`; never edit it by hand. It redeploys after every release, and the landing page's "New in" chip follows the latest release.
+
 ## Mobile
 
 - Test any UI change on a phone-sized screen too. The `phone:` e2e test emulates a phone (CDP touch plus `app.emulateMobile(true)`) and covers the HP pad, sheets, the narrow bestiary and map pinch.

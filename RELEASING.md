@@ -57,6 +57,8 @@ Once it's listed, the landing page's **Install in Obsidian** button (`obsidian:/
 
 Merging a PR into `main` releases it. `.github/workflows/auto-release.yml` bumps the version in `package.json`, `manifest.json` and `versions.json`, moves `CHANGELOG.md`'s `## [Unreleased]` section under the new version and date, commits `🔖 Release x.y.z (#PR)` to `main`, makes an annotated tag whose message is that changelog, and runs `release.yml` for the tag. The release notes on GitHub are the same changelog section, with GitHub's list of merged PRs under it.
 
+Before a PR merges, the **Docs check** workflow (`scripts/check-docs.mjs`) makes sure the guide and the landing page keep up: a new `### Added` entry needs a change in `docs/` and in the landing page's features bento, unless the PR is labelled `docs: skip` or `site: skip`. See "Shipping a feature" in `CLAUDE_CODE_GUIDE.md`. After the release, the landing page workflow rebuilds the site's changelog page (`/changelog/`) from `CHANGELOG.md`, so the new version gets its own shareable page at `/changelog/<version>/`.
+
 Write the changelog as part of the PR: add bullets under `## [Unreleased]`, in `### Added`, `### Changed` or `### Fixed` ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/)). Empty subsections are dropped. If a PR leaves Unreleased empty, its title becomes the entry, so a release always says something. `node scripts/changelog.mjs notes <version>` prints a released version's notes.
 
 The PR's labels pick the bump:
