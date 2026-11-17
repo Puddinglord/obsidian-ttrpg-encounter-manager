@@ -6,13 +6,13 @@
 // Always shown cropped to fill a rounded square.
 
 import { FuzzySuggestModal, Menu, normalizePath, Notice, setIcon, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { safeName } from '../../core/campaign-model';
 
 const IMAGE = /^(png|jpe?g|gif|webp|avif|svg|bmp)$/i;
 
 /** The image file set for an entry key, if it still exists. */
-export function artFile(plugin: NimbleStatblocksPlugin, key: string): TFile | null {
+export function artFile(plugin: EmberVaultPlugin, key: string): TFile | null {
 	const path = plugin.settings.compendiumArt[key];
 	if (!path) return null;
 	const f = plugin.app.vault.getAbstractFileByPath(path);
@@ -20,12 +20,12 @@ export function artFile(plugin: NimbleStatblocksPlugin, key: string): TFile | nu
 }
 
 /** A URL the img tag can load, or null. */
-export function artSrc(plugin: NimbleStatblocksPlugin, key: string): string | null {
+export function artSrc(plugin: EmberVaultPlugin, key: string): string | null {
 	const f = artFile(plugin, key);
 	return f ? plugin.app.vault.getResourcePath(f) : null;
 }
 
-async function setArt(plugin: NimbleStatblocksPlugin, key: string, path: string | null): Promise<void> {
+async function setArt(plugin: EmberVaultPlugin, key: string, path: string | null): Promise<void> {
 	if (path) plugin.settings.compendiumArt[key] = path;
 	else delete plugin.settings.compendiumArt[key];
 	await plugin.saveSettings();
@@ -33,7 +33,7 @@ async function setArt(plugin: NimbleStatblocksPlugin, key: string, path: string 
 }
 
 /** Save picked or dropped bytes into the art folder (a free name), then use them. */
-async function saveUpload(plugin: NimbleStatblocksPlugin, key: string, title: string, file: File): Promise<void> {
+async function saveUpload(plugin: EmberVaultPlugin, key: string, title: string, file: File): Promise<void> {
 	const ext = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] ?? file.type.split('/')[1] ?? 'png').toLowerCase();
 	if (!IMAGE.test(ext)) { new Notice('That isn\'t an image Obsidian can show.'); return; }
 	const folder = normalizePath(plugin.settings.compendiumArtFolder || 'Ember Vault/Compendium Art');
@@ -52,7 +52,7 @@ async function saveUpload(plugin: NimbleStatblocksPlugin, key: string, title: st
 	new Notice(`Saved art for ${title}`);
 }
 
-function upload(plugin: NimbleStatblocksPlugin, key: string, title: string): void {
+function upload(plugin: EmberVaultPlugin, key: string, title: string): void {
 	const input = activeDocument.body.createEl('input', { type: 'file', attr: { accept: 'image/*' } });
 	input.hide();
 	input.addEventListener('change', () => {
@@ -64,7 +64,7 @@ function upload(plugin: NimbleStatblocksPlugin, key: string, title: string): voi
 }
 
 class ImagePicker extends FuzzySuggestModal<TFile> {
-	constructor(private plugin: NimbleStatblocksPlugin, private onPick: (f: TFile) => void) {
+	constructor(private plugin: EmberVaultPlugin, private onPick: (f: TFile) => void) {
 		super(plugin.app);
 		this.setPlaceholder('Pick an image from your vault');
 	}
@@ -74,7 +74,7 @@ class ImagePicker extends FuzzySuggestModal<TFile> {
 }
 
 /** The menu behind the portrait: upload, pick from the vault, remove. */
-export function artMenu(plugin: NimbleStatblocksPlugin, key: string, title: string, ev: MouseEvent): void {
+export function artMenu(plugin: EmberVaultPlugin, key: string, title: string, ev: MouseEvent): void {
 	const m = new Menu();
 	m.addItem(i => i.setTitle('Upload from this device…').setIcon('upload').onClick(() => upload(plugin, key, title)));
 	m.addItem(i => i.setTitle('Choose from vault…').setIcon('image').onClick(() => new ImagePicker(plugin, (f) => void setArt(plugin, key, f.path)).open()));
@@ -89,7 +89,7 @@ export function artMenu(plugin: NimbleStatblocksPlugin, key: string, title: stri
  * The portrait slot in an entry's header: its art, or a faint "add art" tile.
  * Click for the menu; drop an image on it to use that.
  */
-export function renderArtSlot(plugin: NimbleStatblocksPlugin, header: HTMLElement, key: string, title: string): void {
+export function renderArtSlot(plugin: EmberVaultPlugin, header: HTMLElement, key: string, title: string): void {
 	header.addClass('has-art-slot');
 	// The title lines go in one column, centred beside the square.
 	let titles = header.querySelector<HTMLElement>(':scope > .nimble-art-titles');
@@ -123,7 +123,7 @@ export function renderArtSlot(plugin: NimbleStatblocksPlugin, header: HTMLElemen
 }
 
 /** Put the art (if any) in a list badge, cropped to its rounded square. True when it did. */
-export function renderBadgeArt(plugin: NimbleStatblocksPlugin, badge: HTMLElement, key: string): boolean {
+export function renderBadgeArt(plugin: EmberVaultPlugin, badge: HTMLElement, key: string): boolean {
 	const src = artSrc(plugin, key);
 	if (!src) return false;
 	badge.addClass('has-art');
@@ -132,7 +132,7 @@ export function renderBadgeArt(plugin: NimbleStatblocksPlugin, badge: HTMLElemen
 }
 
 /** Keep the paths right when images are renamed, moved or deleted. */
-export function watchArt(plugin: NimbleStatblocksPlugin): void {
+export function watchArt(plugin: EmberVaultPlugin): void {
 	plugin.registerEvent(plugin.app.vault.on('rename', (f, oldPath) => {
 		const art = plugin.settings.compendiumArt;
 		let changed = false;

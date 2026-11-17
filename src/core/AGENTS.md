@@ -8,11 +8,13 @@ When a **second** game needs it. Don't move code into core because it might be s
 
 ## Reaching a game system from core
 
-Core gets the plugin as a type (`import type NimbleStatblocksPlugin from '../../main'`) and asks it:
+Core gets the plugin as a type (`import type EmberVaultPlugin from '../../main'`) and asks it:
 
 - `plugin.system(path?)`: the `GameSystem` for a note. It resolves the note's campaign, else the active campaign, else the default (Nimble).
 - `plugin.edition(path?)`: the rules version, for systems that have several.
 - `plugin.systems`: the registry (every shipped system).
+
+Core tells systems what happened through `plugin.events`: `party-changed` (the party was edited or swapped) and `active-campaign-changed`. Systems listen in their `register()`.
 
 Then it calls a contract member: `system.characters?.promptNew(…)`, `system.quickLook(…)`, `system.conditions(edition)`. If what you need isn't in the contract, add it there (see [src/systems/AGENTS.md](../systems/AGENTS.md)). Don't reach into `plugin.encounters` or other Nimble-typed members from new core code: they're Nimble's.
 

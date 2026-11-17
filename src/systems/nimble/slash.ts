@@ -8,7 +8,7 @@
 //   /roll 2d6+3         → plain or Nimble attack roll
 
 import { Notice } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { parseDice } from '../../core/dice';
 import { encounterBlockSource, EncounterDef, parseMonsterLine } from '../../core/encounter-def';
 import { plainRoll, SlashCommand, SlashItem, SlashWriter, writeAt } from '../../core/slash';
@@ -62,7 +62,7 @@ const PICKERS: Record<string, Picker> = {
 	compendium: { segment: 'all', segments: ['all', 'adversaries', 'npcs', 'companions', 'spells', 'items', 'features', 'classes', 'origins', 'rules'], title: 'Insert a reference' },
 };
 
-export function nimbleSlashCommands(plugin: NimbleStatblocksPlugin): SlashCommand[] {
+export function nimbleSlashCommands(plugin: EmberVaultPlugin): SlashCommand[] {
 	const p = plugin;
 	/** The compendium dialog, ready to type in; the pick lands where the slash was. */
 	const picker = (name: string) => (w: SlashWriter) => { w.clear(); insertFromCompendium(p, w.editor, w.start, PICKERS[name]); };
@@ -105,7 +105,7 @@ export function nimbleSlashCommands(plugin: NimbleStatblocksPlugin): SlashComman
 }
 
 /** /roll: a plain roll, or a Nimble attack (a 1 on the primary die misses, its max explodes). */
-function rollItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
+function rollItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 	const expr = arg.trim().replace(/\s+/g, '') || '1d20';
 	if (!parseDice(expr)) return [{ icon: 'dices', title: `Can't roll "${arg.trim()}"`, detail: 'Try 2d6+3, d20, 4d4-1' }];
 	return [
@@ -120,7 +120,7 @@ function rollItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
 	];
 }
 
-function searchMonsters(plugin: NimbleStatblocksPlugin, q: string, limit = 30): MonsterIndexEntry[] {
+function searchMonsters(plugin: EmberVaultPlugin, q: string, limit = 30): MonsterIndexEntry[] {
 	const query = q.trim().toLowerCase();
 	const all = plugin.index.all();
 	if (!query) return all.slice(0, limit);
@@ -140,7 +140,7 @@ function monsterBadge(e: MonsterIndexEntry) {
 }
 
 /** /spell fire, /feature lay on hands: the compendium's search, inline; the last row opens the full dialog. */
-function compendiumItems(plugin: NimbleStatblocksPlugin, arg: string, picker: Picker, icon: string, path?: string): SlashItem[] {
+function compendiumItems(plugin: EmberVaultPlugin, arg: string, picker: Picker, icon: string, path?: string): SlashItem[] {
 	const lore = plugin.hideStats('', path);
 	const res = searchCompendium(compendiumEntries(plugin, lore), arg, { segment: picker.segment, only: e => !!entryReference(e), lore, limit: 30 });
 	const items: SlashItem[] = res.entries.map(e => ({
@@ -154,14 +154,14 @@ function compendiumItems(plugin: NimbleStatblocksPlugin, arg: string, picker: Pi
 	return items;
 }
 
-function moreItem(plugin: NimbleStatblocksPlugin, arg: string, picker: Picker): SlashItem {
+function moreItem(plugin: EmberVaultPlugin, arg: string, picker: Picker): SlashItem {
 	return {
 		icon: 'library', title: 'Search the compendium…', detail: 'Filters, sorting and the full page of each entry',
 		run: (w) => { w.clear(); insertFromCompendium(plugin, w.editor, w.start, { ...picker, query: arg }); },
 	};
 }
 
-function monsterItems(plugin: NimbleStatblocksPlugin, q: string, mode: 'ref' | 'statblock', path?: string): SlashItem[] {
+function monsterItems(plugin: EmberVaultPlugin, q: string, mode: 'ref' | 'statblock', path?: string): SlashItem[] {
 	const lore = plugin.hideStats('', path);
 	const picker = PICKERS[mode === 'ref' ? 'monster' : 'statblock'];
 	// Typed filters ("type:goblin level:3") go through the compendium's search.
@@ -185,7 +185,7 @@ function monsterItem(e: MonsterIndexEntry, mode: 'ref' | 'statblock', lore: bool
 	};
 }
 
-function addItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
+function addItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 	const m = arg.match(/^(\d+)\s*[x×]?\s*(.*)$/i);
 	const count = m ? Math.max(1, Number(m[1])) : 1;
 	const q = m ? m[2] : arg;
@@ -199,7 +199,7 @@ function addItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
 }
 
 /** Player battle notes: the foes by name, matched to the bestiary when they're in it, kept as typed when not. */
-function foughtItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
+function foughtItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 	const def: EncounterDef = { name: 'Battle', party: false, monsters: [], extra: ['outcome: won'] };
 	for (const part of arg.split(/[,;]+/).map(x => x.trim()).filter(Boolean)) {
 		const parsed = parseMonsterLine(part);
@@ -228,7 +228,7 @@ function foughtItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
 	return items;
 }
 
-function encounterItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
+function encounterItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 	const parts = arg.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
 	const def: EncounterDef = { name: 'New encounter', party: plugin.settings.party.length > 0, monsters: [] };
 	const missing: string[] = [];

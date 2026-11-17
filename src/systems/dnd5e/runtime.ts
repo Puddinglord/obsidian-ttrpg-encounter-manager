@@ -3,7 +3,7 @@
 // system's register(); everything else in dnd5e reaches it through dnd5e().
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, Modal, normalizePath, Notice, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import type { HoverContent } from '../../core/hover-preview';
 import type { InlineRefProvider } from '../../core/inline-refs';
 import { homeFolderFor } from '../../core/campaign-model';
@@ -44,7 +44,7 @@ export class Dnd5eRuntime {
 	/** Your ```5e-spell and ```5e-item blocks. */
 	readonly homebrew: Homebrew5e;
 
-	constructor(readonly plugin: NimbleStatblocksPlugin) {
+	constructor(readonly plugin: EmberVaultPlugin) {
 		this.index = new Dnd5eIndex(plugin.app);
 		this.fights = new FightStore(plugin);
 		this.homebrew = new Homebrew5e(plugin.app);
@@ -245,7 +245,7 @@ export class Dnd5eRuntime {
 		};
 	}
 
-	cardOptions(sourcePath: string): { app: NimbleStatblocksPlugin['app']; sourcePath: string; onRoll?: (e: string, l: string) => void } {
+	cardOptions(sourcePath: string): { app: EmberVaultPlugin['app']; sourcePath: string; onRoll?: (e: string, l: string) => void } {
 		return { app: this.plugin.app, sourcePath, onRoll: this.plugin.settings.clickableDice ? (expr, label) => { this.plugin.rollDice(expr, label, 'effect'); } : undefined };
 	}
 
@@ -385,7 +385,7 @@ export function dnd5e(): Dnd5eRuntime {
 	return runtime;
 }
 
-export function registerDnd5e(plugin: NimbleStatblocksPlugin): Dnd5eRuntime {
+export function registerDnd5e(plugin: EmberVaultPlugin): Dnd5eRuntime {
 	runtime = new Dnd5eRuntime(plugin);
 	runtime.register();
 	plugin.register(() => { runtime = null; });

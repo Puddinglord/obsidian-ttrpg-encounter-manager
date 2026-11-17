@@ -9,7 +9,7 @@ import {
 	App, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownRenderer, Menu, Modal, Notice, Platform,
 	setIcon, TFile,
 } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { fmText, safeName } from './campaign-model';
 import { onLongPress } from './touch';
 import { IMAGE_EXTENSIONS, isRemote, NPC_ATTITUDES, NPC_STATUSES, npcFacts, parseNpcCard, portraitLink, SECRET_KEYS } from './npc-card-def';
@@ -17,7 +17,7 @@ import { appendRichText } from './markdown';
 import { wireWikiLinks } from './wiki-links';
 import { drawSystemExtras, extensionFor, extrasKey } from './note-card';
 
-export function registerNpcCard(plugin: NimbleStatblocksPlugin): void {
+export function registerNpcCard(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-npc', (source, el, ctx) => {
 		ctx.addChild(new NpcCard(plugin, el, source, ctx));
 	});
@@ -57,7 +57,7 @@ class NpcCard extends MarkdownRenderChild {
 	/** The note the card is in. Tracked through renames, which don't re-render the block. */
 	private path: string;
 
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 		this.path = ctx.sourcePath;
 	}

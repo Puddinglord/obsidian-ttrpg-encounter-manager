@@ -6,7 +6,7 @@
 // the file. Hover shows Obsidian's page preview.
 
 import { App, MarkdownPostProcessorContext, setIcon, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import type { NpcInfo } from './campaigns';
 import { Campaign, linkPill, NoteRef } from './campaign-model';
 
@@ -27,7 +27,7 @@ const typedNotes = (c: Campaign): NoteRef[] =>
 export class NpcLinker {
 	private cache = new Map<string, { re: RegExp | null; byName: Map<string, NpcInfo> }>();
 
-	constructor(private plugin: NimbleStatblocksPlugin) {
+	constructor(private plugin: EmberVaultPlugin) {
 		// Notes opened before the NPC list was built (at startup) re-render once it changes.
 		let key = '';
 		plugin.registerEvent(plugin.campaigns.on('changed', () => {
@@ -160,6 +160,6 @@ export class NpcLinker {
 	}
 }
 
-export function isNpcFile(plugin: NimbleStatblocksPlugin, f: TFile | null): boolean {
+export function isNpcFile(plugin: EmberVaultPlugin, f: TFile | null): boolean {
 	return !!f && plugin.campaigns.npcs.some(n => n.path === f.path);
 }

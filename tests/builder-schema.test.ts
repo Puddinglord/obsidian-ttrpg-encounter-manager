@@ -2,7 +2,7 @@
 // step of every kind draws, its fields write the draft, formulas show as
 // hints, lists add and remove, and the preview and output follow.
 import { describe, expect, it } from 'vitest';
-import type NimbleStatblocksPlugin from '../main';
+import type EmberVaultPlugin from '../main';
 import type { BuilderUI } from '../src/core/builder/frame';
 import { EntitySchema, SchemaBuilder } from '../src/core/builder/schema';
 import { itemSchema, monsterSchema, spellSchema } from '../src/systems/dnd5e/builders';
@@ -13,7 +13,7 @@ import { parseStatblock5e } from '../src/systems/dnd5e/parser';
 import { parseItem5e, parseSpell5e } from '../src/systems/dnd5e/homebrew';
 
 const app = { workspace: { getActiveFile: () => null }, metadataCache: { getFirstLinkpathDest: () => null } };
-const plugin = { app, campaigns: { active: null } } as unknown as NimbleStatblocksPlugin;
+const plugin = { app, campaigns: { active: null } } as unknown as EmberVaultPlugin;
 const rt = (edition: '2024' | '2014') => ({
 	plugin, edition: () => edition,
 	render: (el: HTMLElement, m: Parameters<typeof renderStatblock5e>[1], o: { edition?: '2024' | '2014' }) => renderStatblock5e(el, m, { app, sourcePath: '', variant: 'block', edition: o.edition ?? edition } as unknown as Parameters<typeof renderStatblock5e>[2]),

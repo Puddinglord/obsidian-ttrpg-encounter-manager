@@ -5,7 +5,7 @@
 
 import { normalizePath, Notice, requestUrl } from 'obsidian';
 import { unzipSync } from 'fflate';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { parseDiceModule, parseDsnExport } from './dsn-parse';
 import { cleanStyle, DiceStyle, ImportedSet } from './styles';
 
@@ -24,18 +24,18 @@ export interface ImportResult {
 	apply?: { normal?: string; perDie: Partial<Record<number, string>> };
 }
 
-function setsDir(plugin: NimbleStatblocksPlugin): string {
+function setsDir(plugin: EmberVaultPlugin): string {
 	const base = plugin.manifest.dir ?? `${plugin.app.vault.configDir}/plugins/${plugin.manifest.id}`;
 	return normalizePath(`${base}/dice-sets`);
 }
 
 /** Folder for one imported set. */
-export function setFolder(plugin: NimbleStatblocksPlugin, id: string): string {
+export function setFolder(plugin: EmberVaultPlugin, id: string): string {
 	return normalizePath(`${setsDir(plugin)}/${id.replace(/[^\w.-]+/g, '-')}`);
 }
 
 /** A URL three.js can load for a file in an imported set. */
-export function setFileUrl(plugin: NimbleStatblocksPlugin, set: ImportedSet, rel: string): string {
+export function setFileUrl(plugin: EmberVaultPlugin, set: ImportedSet, rel: string): string {
 	return plugin.app.vault.adapter.getResourcePath(normalizePath(`${setFolder(plugin, set.id)}/${rel}`));
 }
 
@@ -46,7 +46,7 @@ function safeRel(path: string): string | null {
 	return parts.join('/');
 }
 
-async function ensureDir(plugin: NimbleStatblocksPlugin, path: string): Promise<void> {
+async function ensureDir(plugin: EmberVaultPlugin, path: string): Promise<void> {
 	const a = plugin.app.vault.adapter;
 	const parts = path.split('/');
 	for (let i = 1; i <= parts.length; i++) {
@@ -56,7 +56,7 @@ async function ensureDir(plugin: NimbleStatblocksPlugin, path: string): Promise<
 }
 
 /** Unpack a module zip and add its dice. */
-export async function importZip(plugin: NimbleStatblocksPlugin, data: ArrayBuffer): Promise<ImportResult> {
+export async function importZip(plugin: EmberVaultPlugin, data: ArrayBuffer): Promise<ImportResult> {
 	if (data.byteLength > MAX_BYTES) throw new Error('That file is too big for a dice set (over 80 MB).');
 	let files: Record<string, Uint8Array>;
 	try {
@@ -110,7 +110,7 @@ export async function importZip(plugin: NimbleStatblocksPlugin, data: ArrayBuffe
 }
 
 /** Import from a link: a module.json (The Rollsmith's download links) or a zip. */
-export async function importUrl(plugin: NimbleStatblocksPlugin, url: string): Promise<ImportResult> {
+export async function importUrl(plugin: EmberVaultPlugin, url: string): Promise<ImportResult> {
 	const u = url.trim();
 	if (!/^https?:\/\//i.test(u)) throw new Error('Paste a link that starts with https://');
 	const res = await requestUrl({ url: u, throw: false });
@@ -134,7 +134,7 @@ export async function importUrl(plugin: NimbleStatblocksPlugin, url: string): Pr
 }
 
 /** Import a Dice So Nice export (Profiles & Data → Export). */
-export function importExport(plugin: NimbleStatblocksPlugin, json: unknown): ImportResult {
+export function importExport(plugin: EmberVaultPlugin, json: unknown): ImportResult {
 	const known = plugin.settings.dice.sets.map(s => s.id);
 	const parsed = parseDsnExport(json, known);
 	const missing = parsed.systems.filter(s => !known.includes(s));
@@ -144,7 +144,7 @@ export function importExport(plugin: NimbleStatblocksPlugin, json: unknown): Imp
 }
 
 /** Import whatever file the user picked: a zip, a module.json-less JSON export, etc. */
-export async function importFile(plugin: NimbleStatblocksPlugin, file: File): Promise<ImportResult> {
+export async function importFile(plugin: EmberVaultPlugin, file: File): Promise<ImportResult> {
 	const data = await file.arrayBuffer();
 	const head = new Uint8Array(data.slice(0, 2));
 	if (head[0] === 0x50 && head[1] === 0x4b) return importZip(plugin, data);
@@ -166,14 +166,14 @@ export async function importFile(plugin: NimbleStatblocksPlugin, file: File): Pr
 }
 
 /** Add or replace sets and styles in settings (same id = updated). */
-function save(plugin: NimbleStatblocksPlugin, sets: ImportedSet[], styles: DiceStyle[]): void {
+function save(plugin: EmberVaultPlugin, sets: ImportedSet[], styles: DiceStyle[]): void {
 	const d = plugin.settings.dice;
 	for (const s of sets) d.sets = [...d.sets.filter(x => x.id !== s.id), s];
 	for (const s of styles) d.styles = [...d.styles.filter(x => x.id !== s.id), s];
 }
 
 /** Remove an imported set: its files, and the style that uses its models (other styles fall back to colours). */
-export async function removeSet(plugin: NimbleStatblocksPlugin, id: string): Promise<void> {
+export async function removeSet(plugin: EmberVaultPlugin, id: string): Promise<void> {
 	const d = plugin.settings.dice;
 	d.sets = d.sets.filter(s => s.id !== id);
 	d.styles = d.styles.filter(s => s.id !== `set:${id}`).map(s => (s.model === id ? { ...s, model: undefined } : s));

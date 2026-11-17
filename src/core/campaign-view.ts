@@ -2,7 +2,7 @@
 // where you left off, and move through chapters and scenes.
 
 import { ItemView, MarkdownPostProcessorContext, MarkdownRenderChild, Platform, setIcon, WorkspaceLeaf } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { campaignMenu, renderOutline, renderPartyLine } from './campaign-ui';
 import { ROLE_INFO } from './campaign-modals';
 
@@ -11,7 +11,7 @@ export const CAMPAIGN_VIEW_TYPE = 'nimble-campaign';
 export class CampaignView extends ItemView {
 	private collapsed = new Set<string>();
 
-	constructor(leaf: WorkspaceLeaf, private plugin: NimbleStatblocksPlugin) {
+	constructor(leaf: WorkspaceLeaf, private plugin: EmberVaultPlugin) {
 		super(leaf);
 	}
 
@@ -93,7 +93,7 @@ export class CampaignView extends ItemView {
 export class CampaignBlock extends MarkdownRenderChild {
 	private collapsed = new Set<string>();
 
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 	}
 

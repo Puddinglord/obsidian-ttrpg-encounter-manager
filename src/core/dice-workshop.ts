@@ -5,7 +5,7 @@
 // the modal. Nothing here is logged.
 
 import { Modal, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { dice3dBlockedText } from './dice3d';
 import { allStyles, EFFECTS, EffectId, RollEvent, useForAllDice } from './dice3d/styles';
 import { onLongPress } from './touch';
@@ -31,7 +31,7 @@ export class DiceWorkshopModal extends Modal {
 	private explosions = 2;
 	private resultEl!: HTMLElement;
 
-	constructor(private plugin: NimbleStatblocksPlugin) {
+	constructor(private plugin: EmberVaultPlugin) {
 		super(plugin.app);
 	}
 

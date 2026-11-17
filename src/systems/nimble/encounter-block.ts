@@ -3,7 +3,7 @@
 
 import { confirmReplaceFight, resumeSavedFight, savedFightsFor } from './saved-fight';
 import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { EncounterDef, encounterBlockSource, replaceEncounterBlock } from '../../core/encounter-def';
 import { budgetPhrase, monsterRole, rateEncounter, shiftLabel, shiftMonster } from './rules';
 import { createInlineRef } from './inline-ref';
@@ -13,7 +13,7 @@ import { renderBalance } from './balance-ui';
 import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover';
 import { renderBattleNotes } from './battle-notes';
 
-export function partyLevels(plugin: NimbleStatblocksPlugin): number[] {
+export function partyLevels(plugin: EmberVaultPlugin): number[] {
 	const party = plugin.settings.party;
 	if (party.length) return party.map(p => p.level || 1);
 	// No heroes entered yet: the campaign's starting level and hero count.
@@ -26,7 +26,7 @@ export function ratingChip(parent: HTMLElement, label: string, pct: number): HTM
 }
 
 /** Resolve a definition against the index: what can be run, and what's unknown. */
-export function resolveDef(plugin: NimbleStatblocksPlugin, def: EncounterDef, from?: string) {
+export function resolveDef(plugin: EmberVaultPlugin, def: EncounterDef, from?: string) {
 	const found: EncounterTemplate['monsters'] = [];
 	const missing: string[] = [];
 	for (const m of def.monsters) {
@@ -38,7 +38,7 @@ export function resolveDef(plugin: NimbleStatblocksPlugin, def: EncounterDef, fr
 }
 
 /** Load an encounter into the tracker. False when nothing was loaded (no monsters found, or the GM kept the fight in progress). */
-export async function runEncounter(plugin: NimbleStatblocksPlugin, def: EncounterDef, sourcePath?: string): Promise<boolean> {
+export async function runEncounter(plugin: EmberVaultPlugin, def: EncounterDef, sourcePath?: string): Promise<boolean> {
 	const { found, missing } = resolveDef(plugin, def, sourcePath);
 	if (!found.length) { new Notice('None of these monsters are in the bestiary or your notes yet.'); return false; }
 	if (!await confirmReplaceFight(plugin, def.name)) return false;
@@ -50,7 +50,7 @@ export async function runEncounter(plugin: NimbleStatblocksPlugin, def: Encounte
 }
 
 /** A ```nimble-encounter block in a Nimble campaign (app/encounter-blocks.ts picks the system). */
-export function nimbleEncounterBlock(plugin: NimbleStatblocksPlugin, def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void {
+export function nimbleEncounterBlock(plugin: EmberVaultPlugin, def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void {
 	ctx.addChild(new EncounterBlockChild(plugin, el, def, ctx, source));
 }
 
@@ -59,7 +59,7 @@ export function nimbleEncounterBlock(plugin: NimbleStatblocksPlugin, def: Encoun
  * in after startup), the campaign (its level and party) and the party itself.
  */
 class EncounterBlockChild extends MarkdownRenderChild {
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private def: EncounterDef, private ctx: MarkdownPostProcessorContext, private source: string) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private def: EncounterDef, private ctx: MarkdownPostProcessorContext, private source: string) {
 		super(el);
 	}
 
@@ -84,7 +84,7 @@ class EncounterBlockChild extends MarkdownRenderChild {
  * the section Obsidian reports is the whole callout or list, so the block's
  * own fence is looked up (by its source) and nothing else is touched.
  */
-async function writeBack(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: EncounterDef): Promise<void> {
+async function writeBack(plugin: EmberVaultPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: EncounterDef): Promise<void> {
 	const info = ctx.getSectionInfo(el);
 	const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
 	if (!info || !file) { new Notice('Could not find this block in the note to update it.'); return; }
@@ -101,14 +101,14 @@ async function writeBack(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: M
 	if (!ok) new Notice('Couldn\'t update this encounter: the note changed. Nothing was written. Try again.');
 }
 
-function partyText(plugin: NimbleStatblocksPlugin, levels: number[]): string {
+function partyText(plugin: EmberVaultPlugin, levels: number[]): string {
 	const avg = levels.reduce((a, b) => a + b, 0) / levels.length;
 	return plugin.settings.party.length
 		? `${levels.length} heroes, level ${avg.toFixed(levels.every(l => l === levels[0]) ? 0 : 1)}`
 		: `${levels.length} level-${levels[0] ?? 1} heroes (no party set)`;
 }
 
-function renderEncounterBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, source: string): void {
+function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, source: string): void {
 	const save = (next: EncounterDef) => void writeBack(plugin, el, ctx, source, next);
 	// In a campaign you play in, the same block is your battle notes.
 	if (plugin.playerView(ctx.sourcePath)) { renderBattleNotes(plugin, el, def, ctx, save); return; }

@@ -13,7 +13,7 @@ Where the engines came from, and what's still each system's own: [prototypes/SYS
 | `conditions(edition)` | The rules' conditions | ✓ | ✓ |
 | `quickLook` | A note in a modal (an NPC from a link) | ✓ | ✓ |
 | `characters` | `promptNew`, `createFromPartyMember`, `partyMember` (the encounter party reads sheets) | ✓ | ✓ |
-| `register(plugin)` | Wire in its blocks, references, indexes, views, suggest, at load | (in main.ts) | ✓ |
+| `register(plugin)` | Wire in its blocks, references, indexes, views, suggest, at load | ✓ (`nimble/register.ts`) | ✓ |
 | `encounterBlock` | Draw ```nimble-encounter in its campaigns (difficulty, Run) | ✓ | ✓ |
 | `openTracker`, `openCompendium` | Its tracker and compendium (Open… commands, ribbon) | (default) | ✓ |
 | `slashCommands(plugin)` | Its "/" commands, added to core's (`core/slash.ts`). One with a base command's name or alias replaces it (5e's `/roll` adds advantage). Name shared commands as SLASH_ORDER does (`monster`, `spell`, `item`, `encounter`, `add`, `statblock`) so they sit in the same place in every game's menu. Look up runtime state when a command runs, not when the list is made | ✓ | ✓ |

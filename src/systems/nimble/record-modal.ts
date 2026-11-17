@@ -7,7 +7,7 @@
 
 import { App, Component, EventRef, MarkdownRenderer, Modal, Notice, setIcon, TFile } from 'obsidian';
 import { baseCreatureName } from './compendium-entries';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { EncounterCreature, MonsterIndexEntry } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
 import { conditionLabel, formatLevel, HpCommand, monsterRole } from './rules';
@@ -21,7 +21,7 @@ export type RecordTarget =
 	| { kind: 'note'; file: TFile; sourcePath?: string; subtitle?: string }
 	| { kind: 'combatant'; encId: string; creatureId: string };
 
-export function openRecord(plugin: NimbleStatblocksPlugin, target: RecordTarget): Modal {
+export function openRecord(plugin: EmberVaultPlugin, target: RecordTarget): Modal {
 	closePopover();
 	plugin.hover.hide();
 	const m = new RecordModal(plugin.app, plugin, target);
@@ -36,7 +36,7 @@ class RecordModal extends Modal {
 	/** Bars and pips as last drawn, so changes animate (shared with the character sheet). */
 	private vitals = new VitalsMemory();
 
-	constructor(app: App, private plugin: NimbleStatblocksPlugin, private target: RecordTarget) {
+	constructor(app: App, private plugin: EmberVaultPlugin, private target: RecordTarget) {
 		super(app);
 	}
 

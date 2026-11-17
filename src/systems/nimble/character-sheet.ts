@@ -10,7 +10,7 @@
 // Note text is only ever set with createEl/setText or appendRichText.
 
 import { App, Component, MarkdownPostProcessorContext, MarkdownRenderChild, Modal, Notice, setIcon, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { Compendium, CompendiumHit, CompendiumKind, nameKey, STATS, StatKey, tierLabel, weaponDamage } from './compendium';
 import { compendiumFor } from './compendium-data';
 import { renderHitBody, renderRulesText, renderSource } from './compendium-card';
@@ -77,7 +77,7 @@ function stateFor(path: string): SheetState {
 const STAT_NAME: Record<StatKey, string> = { STR: 'Strength', DEX: 'Dexterity', INT: 'Intelligence', WIL: 'Will' };
 
 /** Character notes the sheet can show: `nimble: character` in the frontmatter. */
-export function isCharacterNote(plugin: NimbleStatblocksPlugin, file: TFile): boolean {
+export function isCharacterNote(plugin: EmberVaultPlugin, file: TFile): boolean {
 	const fm = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
 	return String(fm?.nimble ?? '').toLowerCase().trim() === 'character';
 }
@@ -98,7 +98,7 @@ export class CharacterSheetRenderer extends Component {
 	private fm: Frontmatter = {};
 	private state: SheetState;
 
-	constructor(private plugin: NimbleStatblocksPlugin, private root: HTMLElement, private file: TFile, private opts: SheetOptions = {}) {
+	constructor(private plugin: EmberVaultPlugin, private root: HTMLElement, private file: TFile, private opts: SheetOptions = {}) {
 		super();
 		this.state = stateFor(file.path);
 	}
@@ -1445,7 +1445,7 @@ function isActionFeature(f: SheetFeature): boolean {
 // The ```nimble-sheet block
 
 class SheetBlock extends MarkdownRenderChild {
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 	}
 
@@ -1464,7 +1464,7 @@ class SheetBlock extends MarkdownRenderChild {
 	}
 }
 
-export function registerSheetBlock(plugin: NimbleStatblocksPlugin): void {
+export function registerSheetBlock(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-sheet', (source, el, ctx) => {
 		ctx.addChild(new SheetBlock(plugin, el, source, ctx));
 	});

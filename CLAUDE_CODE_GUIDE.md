@@ -12,10 +12,10 @@ Three layers, enforced by `npm run lint` (eslint `no-restricted-imports`, see es
 - **`src/systems/<id>/`** is one game system (today only `nimble`). It may import core and the contract, never another system or the app layer. A change inside one system can only break another through core or the contract.
 - **`src/app/`** and `main.ts` wire it together (settings page, Spotlight, maps with encounter tokens, the list of shipped systems). They may import anything.
 
-Core modules take the plugin type with `import type NimbleStatblocksPlugin from '../../main'` (type only). New system-specific behaviour that core needs becomes a member of `GameSystem`, written from the real call site.
+Core modules take the plugin type with `import type EmberVaultPlugin from '../../main'` (type only). New system-specific behaviour that core needs becomes a member of `GameSystem`, written from the real call site.
 
 ```
-main.ts                 Plugin entry: wiring, commands, dice rolls, settings load/migration, bestiary, copy-to-vault, system(path)
+main.ts                 The plugin (EmberVaultPlugin): what every game shares, then each system's register(); dice rolls, settings load/migration, system(path). Still holds Nimble's monster index, encounter store and helpers (see SYSTEMLESS.md, phase 9)
 src/systems/
   contract.ts           GameSystem: what core may ask a system for (attribution, conditions, characters, quick look…)
   registry.ts           SystemRegistry: register, resolve a campaign's `system:` (case-insensitive), fall back to the default (pure, tested)

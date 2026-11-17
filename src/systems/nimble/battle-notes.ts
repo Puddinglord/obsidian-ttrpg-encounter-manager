@@ -5,7 +5,7 @@
 // reads fine on either side of the table.
 
 import { AbstractInputSuggest, App, MarkdownPostProcessorContext, Menu, Modal, setIcon, Setting } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { battleField, EncounterDef, OUTCOMES, Outcome, outcomeOf, withBattleField } from '../../core/encounter-def';
 import { createInlineRef } from './inline-ref';
 import { appendRichText } from '../../core/markdown';
@@ -20,7 +20,7 @@ const OUTCOME_INFO: Record<Outcome, { label: string; icon: string }> = {
 	ongoing: { label: 'Ongoing', icon: 'hourglass' },
 };
 
-export function renderBattleNotes(plugin: NimbleStatblocksPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, save: (next: EncounterDef) => void): void {
+export function renderBattleNotes(plugin: EmberVaultPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, save: (next: EncounterDef) => void): void {
 	const card = el.createDiv({ cls: 'nimble-encounter-block nimble-battle-notes' });
 	const head = card.createDiv({ cls: 'encounter-block-head' });
 	setIcon(head.createSpan({ cls: 'encounter-block-icon' }), 'swords');
@@ -81,7 +81,7 @@ export function renderBattleNotes(plugin: NimbleStatblocksPlugin, el: HTMLElemen
 
 /** Bestiary names as you type, for the "Add a foe" box. Anything else typed is kept as written. */
 class FoeSuggest extends AbstractInputSuggest<string> {
-	constructor(app: App, private input: HTMLInputElement, private plugin: NimbleStatblocksPlugin, private onPick: (name: string) => void) {
+	constructor(app: App, private input: HTMLInputElement, private plugin: EmberVaultPlugin, private onPick: (name: string) => void) {
 		super(app, input);
 	}
 
@@ -104,7 +104,7 @@ class FoeSuggest extends AbstractInputSuggest<string> {
 export class BattleNotesModal extends Modal {
 	private draft: EncounterDef;
 
-	constructor(private plugin: NimbleStatblocksPlugin, def: EncounterDef, private onSave: (next: EncounterDef) => void) {
+	constructor(private plugin: EmberVaultPlugin, def: EncounterDef, private onSave: (next: EncounterDef) => void) {
 		super(plugin.app);
 		this.draft = { ...def, monsters: def.monsters.map(m => ({ ...m })), extra: def.extra ? [...def.extra] : undefined };
 	}

@@ -1,7 +1,7 @@
 // "Balance for the party": pick a target difficulty, see the smallest edits that
 // get there, click one to apply it. Used by encounter blocks and the builder.
 
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { EncounterDef } from '../../core/encounter-def';
 import { BALANCE_TARGETS, BalanceGroup, BalanceTarget, balanceEncounter, describeChange, monsterRole, rateEncounter, shiftMonster } from './rules';
 import { partyLevels } from './encounter-block';
@@ -9,7 +9,7 @@ import { partyLevels } from './encounter-block';
 const TARGETS = Object.keys(BALANCE_TARGETS) as BalanceTarget[];
 
 /** Minion types from the same families as the monsters already in the fight. */
-function familyMinions(plugin: NimbleStatblocksPlugin, groups: BalanceGroup[]): BalanceGroup[] {
+function familyMinions(plugin: EmberVaultPlugin, groups: BalanceGroup[]): BalanceGroup[] {
 	const families = new Set(groups.map(g => g.monster.group).filter(Boolean));
 	if (!families.size || groups.some(g => monsterRole(g.monster) === 'minion')) return [];
 	return plugin.index.all()
@@ -18,7 +18,7 @@ function familyMinions(plugin: NimbleStatblocksPlugin, groups: BalanceGroup[]): 
 		.map(e => ({ name: e.name, monster: e.monster, count: 0 }));
 }
 
-export function renderBalance(el: HTMLElement, plugin: NimbleStatblocksPlugin, def: EncounterDef, apply: (next: EncounterDef) => void, opts: { initial?: BalanceTarget; onTarget?: (t: BalanceTarget) => void; hideTitle?: boolean } = {}): void {
+export function renderBalance(el: HTMLElement, plugin: EmberVaultPlugin, def: EncounterDef, apply: (next: EncounterDef) => void, opts: { initial?: BalanceTarget; onTarget?: (t: BalanceTarget) => void; hideTitle?: boolean } = {}): void {
 	const groups: BalanceGroup[] = def.monsters
 		// As they'll be run: a tougher or weaker monster counts as its shifted level.
 		.map(m => { const e = plugin.index.get(m.name); return { name: m.name, monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })

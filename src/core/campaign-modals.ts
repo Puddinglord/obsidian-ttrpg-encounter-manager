@@ -2,7 +2,7 @@
 // and pick a campaign or chapter from a list.
 
 import { App, FuzzySuggestModal, FuzzyMatch, Modal, setIcon, Setting } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { Campaign, Chapter, CampaignRole, FileRef } from './campaign-model';
 import { STARTERS, StarterKind } from './campaign-templates';
 import { isTouch } from './touch';
@@ -13,14 +13,14 @@ import type { GameSystem } from '../systems/contract';
 interface SystemChoice { value: string; label: string; system: GameSystem; edition?: string }
 
 /** Every system and edition the plugin ships, as the Game system picker lists them. */
-export function systemChoices(plugin: NimbleStatblocksPlugin): SystemChoice[] {
+export function systemChoices(plugin: EmberVaultPlugin): SystemChoice[] {
 	return plugin.systems.all().flatMap((system): SystemChoice[] => system.editions?.length
 		? system.editions.map(e => ({ value: `${system.id}:${e.id}`, label: `${system.name}, ${e.label}`, system, edition: e.id }))
 		: [{ value: system.id, label: system.name, system }]);
 }
 
 /** The picker value for a campaign's `system:` and `edition:`. */
-function choiceFor(plugin: NimbleStatblocksPlugin, system: string | undefined, edition: string | undefined): string {
+function choiceFor(plugin: EmberVaultPlugin, system: string | undefined, edition: string | undefined): string {
 	const choices = systemChoices(plugin);
 	const s = plugin.systems.resolve(system);
 	const ed = s.editions?.length ? (s.editions.find(e => e.id === String(edition ?? '').trim()) ?? s.editions[0]).id : undefined;
@@ -28,7 +28,7 @@ function choiceFor(plugin: NimbleStatblocksPlugin, system: string | undefined, e
 }
 
 /** A Game system dropdown (only when the plugin ships more than one). */
-function systemSetting(parent: HTMLElement, plugin: NimbleStatblocksPlugin, value: string, desc: string, onPick: (c: SystemChoice) => void): void {
+function systemSetting(parent: HTMLElement, plugin: EmberVaultPlugin, value: string, desc: string, onPick: (c: SystemChoice) => void): void {
 	const choices = systemChoices(plugin);
 	if (choices.length < 2) return;
 	new Setting(parent).setName('Game system').setDesc(desc).addDropdown(d => {
@@ -97,7 +97,7 @@ export class NewCampaignModal extends Modal {
 	private character = '';
 	private system?: SystemChoice;
 
-	constructor(private plugin: NimbleStatblocksPlugin, role?: CampaignRole) {
+	constructor(private plugin: EmberVaultPlugin, role?: CampaignRole) {
 		super(plugin.app);
 		this.heroes = plugin.settings.defaultPartySize || 4;
 		if (role) this.role = role;
@@ -172,7 +172,7 @@ export class CampaignSettingsModal extends Modal {
 	private status: string;
 	private system?: SystemChoice;
 
-	constructor(private plugin: NimbleStatblocksPlugin, private c: Campaign) {
+	constructor(private plugin: EmberVaultPlugin, private c: Campaign) {
 		super(plugin.app);
 		const fm = plugin.app.metadataCache.getCache(c.home.path)?.frontmatter ?? {};
 		const text = (v: unknown) => (typeof v === 'string' || typeof v === 'number' ? String(v) : '');

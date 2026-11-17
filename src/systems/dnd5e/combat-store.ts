@@ -3,7 +3,7 @@
 // fires 'changed' so every open tracker redraws.
 
 import { Events } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { Fight5e, newFight, normalizeFight } from './combat';
 import type { Dnd5eEdition } from './editions';
 
@@ -12,7 +12,7 @@ export class FightStore extends Events {
 	/** The saved object the cache was read from: when settings are re-read from disk (sync), it changes. */
 	private source: unknown = undefined;
 
-	constructor(private plugin: NimbleStatblocksPlugin) {
+	constructor(private plugin: EmberVaultPlugin) {
 		super();
 	}
 

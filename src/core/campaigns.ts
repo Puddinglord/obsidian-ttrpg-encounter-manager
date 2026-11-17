@@ -3,7 +3,7 @@
 
 import { fieldDefaults, SHARED_NOTE_KINDS, SharedNoteKind } from './note-kinds';
 import { debounce, Events, normalizePath, Notice, TAbstractFile, TFile, TFolder } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import {
 	adjacentScene, buildCampaigns, Campaign, campaignOf, CampaignRole, fmTrue, canMoveInto, Chapter, chapterOf, fmText, homeFolderFor, isPlayable, joinPath, nextOrder, NoteInfo, noteKind, parentOf, safeName,
 } from './campaign-model';
@@ -59,7 +59,7 @@ export class CampaignStore extends Events {
 	private lastRoles = new Map<string, CampaignRole>();
 	private ready = false;
 
-	constructor(private plugin: NimbleStatblocksPlugin) {
+	constructor(private plugin: EmberVaultPlugin) {
 		super();
 	}
 
@@ -221,8 +221,9 @@ export class CampaignStore extends Events {
 		this.s.party = (folder ? store[folder]?.party : this.s.looseParty) ?? [];
 		this.s.activeCampaign = folder;
 		await this.plugin.saveSettings();
-		this.plugin.loadBundledBestiary();
-		this.plugin.encounters.trigger('changed');
+		// Systems follow the new campaign (Nimble reloads its bundled bestiary for the campaign's books).
+		this.plugin.events.trigger('active-campaign-changed', folder);
+		this.plugin.events.trigger('party-changed');
 		this.plugin.rerenderNotes();
 		this.trigger('changed');
 	}

@@ -4,22 +4,22 @@
 // with a New character button.
 
 import { ItemView, Menu, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { CharacterSheetRenderer } from './character-sheet';
 import { NewCharacterModal } from './character-modals';
 import { fmTrue } from '../../core/campaign-model';
 
 export const CHARACTER_VIEW_TYPE = 'nimble-character';
 
-function isMine(plugin: NimbleStatblocksPlugin, f: TFile): boolean {
+function isMine(plugin: EmberVaultPlugin, f: TFile): boolean {
 	return fmTrue(plugin.app.metadataCache.getFileCache(f)?.frontmatter?.mine);
 }
 
-const isCharacter = (plugin: NimbleStatblocksPlugin, path: string) =>
+const isCharacter = (plugin: EmberVaultPlugin, path: string) =>
 	String(plugin.app.metadataCache.getCache(path)?.frontmatter?.nimble ?? '').toLowerCase().trim() === 'character';
 
 /** Character notes in the vault, yours first, then the active campaign's, then by name. */
-export function characterNotes(plugin: NimbleStatblocksPlugin): TFile[] {
+export function characterNotes(plugin: EmberVaultPlugin): TFile[] {
 	const app = plugin.app;
 	const active = plugin.settings.activeCampaign;
 	const inActive = (f: TFile) => !!active && f.path.startsWith(`${active}/`);
@@ -31,7 +31,7 @@ export function characterNotes(plugin: NimbleStatblocksPlugin): TFile[] {
 }
 
 /** "My character": yours in the active campaign, else any of yours. */
-export function myCharacter(plugin: NimbleStatblocksPlugin): TFile | null {
+export function myCharacter(plugin: EmberVaultPlugin): TFile | null {
 	const list = characterNotes(plugin);
 	const mine = (f: TFile) => isMine(plugin, f);
 	const active = plugin.settings.activeCampaign;
@@ -44,7 +44,7 @@ export class CharacterView extends ItemView {
 	private sheet: CharacterSheetRenderer | null = null;
 	private shownPath: string | null = null;
 
-	constructor(leaf: WorkspaceLeaf, private plugin: NimbleStatblocksPlugin) {
+	constructor(leaf: WorkspaceLeaf, private plugin: EmberVaultPlugin) {
 		super(leaf);
 	}
 

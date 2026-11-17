@@ -2,7 +2,7 @@
 // then save to a note block, insert one, or run it straight away.
 
 import { MarkdownView, Modal, Notice, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { EncounterDef, encounterBlockSource } from '../../core/encounter-def';
 import { BalanceTarget, budgetPhrase, formatLevel, levelValue, monsterRole, rateEncounter, shiftMonster } from './rules';
 import { renderBalance } from './balance-ui';
@@ -20,7 +20,7 @@ export class BuilderModal extends Modal {
 	private balanceTarget?: BalanceTarget;
 
 	/** `onSave` writes the result back (editing a block); without it the modal inserts a new block. */
-	constructor(private plugin: NimbleStatblocksPlugin, def?: EncounterDef, private onSave?: (def: EncounterDef) => void) {
+	constructor(private plugin: EmberVaultPlugin, def?: EncounterDef, private onSave?: (def: EncounterDef) => void) {
 		super(plugin.app);
 		this.def = def ? JSON.parse(JSON.stringify(def)) as EncounterDef : { name: 'New encounter', party: plugin.settings.party.length > 0, monsters: [] };
 	}

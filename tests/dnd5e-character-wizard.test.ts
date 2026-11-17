@@ -3,7 +3,7 @@
 // and every class levels from 1 to 20 with each kind of increase. Then the
 // wizard's steps, drawn by core's schema builder and driven like a user.
 import { describe, expect, it } from 'vitest';
-import type NimbleStatblocksPlugin from '../main';
+import type EmberVaultPlugin from '../main';
 import type { BuilderUI } from '../src/core/builder/frame';
 import { SchemaBuilder } from '../src/core/builder/schema';
 import { readSheet5e, SKILLS } from '../src/systems/dnd5e/character';
@@ -164,7 +164,7 @@ describe('every class levels from 1 to 20', () => {
 // The wizard's steps
 
 const app = { workspace: { getActiveFile: () => null }, metadataCache: { getFirstLinkpathDest: () => null } };
-const plugin = { app, campaigns: { active: null } } as unknown as NimbleStatblocksPlugin;
+const plugin = { app, campaigns: { active: null } } as unknown as EmberVaultPlugin;
 const rt = (ed: Dnd5eEdition) => ({ plugin, edition: () => ed }) as unknown as Dnd5eRuntime;
 function harness<M extends Record<string, unknown>>(b: SchemaBuilder<M>) {
 	let lives: (() => void)[] = [];

@@ -5,14 +5,14 @@
 // once its campaign (and with it its system) is known.
 
 import { Component, MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { parseEncounterBlock } from '../core/encounter-def';
 
 class EncounterBlockHost extends MarkdownRenderChild {
 	private inner: Component | null = null;
 	private drawnFor = '';
 
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 	}
 
@@ -37,7 +37,7 @@ class EncounterBlockHost extends MarkdownRenderChild {
 	}
 }
 
-export function registerEncounterBlocks(plugin: NimbleStatblocksPlugin): void {
+export function registerEncounterBlocks(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-encounter', (source, el, ctx) => {
 		ctx.addChild(new EncounterBlockHost(plugin, el, source, ctx));
 	});

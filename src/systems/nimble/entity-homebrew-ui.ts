@@ -2,7 +2,7 @@
 // the cards they preview are the compendium's own.
 
 import { setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { Compendium, CompendiumHit, Item, itemDetail, Spell, spellDetail } from './compendium';
 import { pluginCardOptions, renderHitCard } from './compendium-card';
 import { bundledCompendium } from './compendium-data';
@@ -63,7 +63,7 @@ class SpellBuilder implements KindBuilder {
 	private otherSchool = false;
 	private folder: string;
 
-	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
+	constructor(private plugin: EmberVaultPlugin, seed: unknown) {
 		this.folder = homeFolder(plugin, 'Homebrew', 'Homebrew');
 		const sd = seed as { spell?: Spell | null; editing?: boolean } | undefined;
 		if (sd?.spell) this.d = fromSpell(sd.spell, sd.editing ?? false);
@@ -250,7 +250,7 @@ class ItemBuilder implements KindBuilder {
 	private copied?: string;
 	private folder: string;
 
-	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
+	constructor(private plugin: EmberVaultPlugin, seed: unknown) {
 		this.folder = homeFolder(plugin, 'Homebrew', 'Homebrew');
 		const s = seed as { itemKind?: ItemKind; item?: HomebrewItem | null; editing?: boolean } | undefined;
 		if (s?.item) this.d = fromItem(s.item, s.editing ?? false);

@@ -15,7 +15,7 @@
 //     preview, missing, output })
 
 import { setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { BuilderUI, field, grid, iconButton, KindBuilder, KindFactory, numberInput, Output, section, segmented, StepDef, textArea, textButton, textInput } from './frame';
 
 /** A draft: what the fields edit. */
@@ -63,9 +63,9 @@ export interface EntitySchema<M extends Draft> {
 	noun: string;
 	icon: string;
 	/** A new draft, for the note it's built from. */
-	blank(plugin: NimbleStatblocksPlugin, sourcePath: string): M;
+	blank(plugin: EmberVaultPlugin, sourcePath: string): M;
 	/** A draft from what the builder was opened on (a block being edited, a template). */
-	seed?(seed: unknown, plugin: NimbleStatblocksPlugin, sourcePath: string): M | undefined;
+	seed?(seed: unknown, plugin: EmberVaultPlugin, sourcePath: string): M | undefined;
 	steps(m: M): StepSchema<M>[];
 	/** The thing as it will look. */
 	preview(el: HTMLElement, m: M, ui: BuilderUI): void;
@@ -88,7 +88,7 @@ export class SchemaBuilder<M extends Draft> implements KindBuilder {
 	readonly icon: string;
 	readonly draft: M;
 
-	constructor(plugin: NimbleStatblocksPlugin, private s: EntitySchema<M>, seed: unknown) {
+	constructor(plugin: EmberVaultPlugin, private s: EntitySchema<M>, seed: unknown) {
 		this.kind = s.kind;
 		this.noun = s.noun;
 		this.icon = s.icon;

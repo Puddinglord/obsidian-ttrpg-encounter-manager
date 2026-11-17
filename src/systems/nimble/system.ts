@@ -10,6 +10,7 @@ import { nimbleSlashCommands } from './slash';
 import { NIMBLE_CONDITIONS } from './types';
 import { readCharacter } from './character-def';
 import { sheetCompendium } from './compendium-data';
+import { registerNimble } from './register';
 
 export const nimbleSystem: GameSystem = {
 	id: 'nimble',
@@ -42,6 +43,9 @@ export const nimbleSystem: GameSystem = {
 	},
 	quickLook(plugin, target) {
 		openRecord(plugin, target);
+	},
+	register(plugin) {
+		registerNimble(plugin);
 	},
 	encounterBlock: nimbleEncounterBlock,
 	slashCommands: nimbleSlashCommands,

@@ -15,7 +15,7 @@
 
 import { Component, MarkdownRenderer, setIcon, TFile } from 'obsidian';
 import { copyReference as copyRef, insertReference as insertRef } from '../../core/compendium/refs';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { bundledCompendium } from './compendium-data';
 import { artKey, buildEntries, Entry, entryPills, entrySnippet, Segment, SEGMENTS, bookOf, baseCreatureName } from './compendium-entries';
 import { renderArtSlot, renderBadgeArt } from './compendium-art';
@@ -37,7 +37,7 @@ let cache: { key: string; entries: Entry[] } | null = null;
 export function invalidateCompendium(): void { cache = null; }
 
 /** Every compendium entry for the current side of the table. */
-export function compendiumEntries(plugin: NimbleStatblocksPlugin, lore = plugin.hideStats()): Entry[] {
+export function compendiumEntries(plugin: EmberVaultPlugin, lore = plugin.hideStats()): Entry[] {
 	const noted = lore ? new Set(plugin.creatureNotes().keys()) : new Set<string>();
 	const conditions = plugin.getAllConditions();
 	const key = [lore, plugin.index.size, plugin.campaigns.npcs.length, conditions.length, plugin.settings.compendiumDrafts, [...noted].sort().join('|')].join('#');
@@ -65,7 +65,7 @@ export function copyReference(e: Entry): void {
 }
 
 /** Put an entry's reference into the note you were last editing; with no note open, copy it instead. Focus stays where it is. */
-export function insertReference(plugin: NimbleStatblocksPlugin, e: Entry): void {
+export function insertReference(plugin: EmberVaultPlugin, e: Entry): void {
 	insertRef(plugin.app, entryReference(e), e.name);
 }
 
@@ -73,7 +73,7 @@ export function insertReference(plugin: NimbleStatblocksPlugin, e: Entry): void 
 // An entry's page
 
 export interface DetailContext {
-	plugin: NimbleStatblocksPlugin;
+	plugin: EmberVaultPlugin;
 	component: Component;
 	lore: boolean;
 	/** Extra buttons under a monster's stat block (the tab's +2, Insert reference). */
@@ -139,7 +139,7 @@ export function renderEntryDetail(el: HTMLElement, e: Entry, ctx: DetailContext)
 }
 
 /** Your art beside the page's title: a portrait you can change (NPCs have their own portraits). */
-function addArtSlot(plugin: NimbleStatblocksPlugin, page: HTMLElement, e: Entry): void {
+function addArtSlot(plugin: EmberVaultPlugin, page: HTMLElement, e: Entry): void {
 	if (e.npc) return;
 	const header = page.querySelector<HTMLElement>('.monster-header, .nimble-cmp-head');
 	if (header) renderArtSlot(plugin, header, artKey(e), e.name);
@@ -169,7 +169,7 @@ const PANEL: Record<Segment, string[]> = {
 };
 
 /** Nimble's compendium, for core's browser. */
-export function nimbleSource(plugin: NimbleStatblocksPlugin): CompendiumSource<Entry, Segment, NimbleDetailOptions> {
+export function nimbleSource(plugin: EmberVaultPlugin): CompendiumSource<Entry, Segment, NimbleDetailOptions> {
 	return {
 		query: NIMBLE_QUERY,
 		entries: lore => compendiumEntries(plugin, lore),
@@ -232,7 +232,7 @@ export function nimbleSource(plugin: NimbleStatblocksPlugin): CompendiumSource<E
 
 /** Core's browser with Nimble's compendium. */
 export class CompendiumBrowser extends CoreBrowser<Entry, Segment, NimbleDetailOptions> {
-	constructor(plugin: NimbleStatblocksPlugin, parent: HTMLElement, o: BrowserOptions) {
+	constructor(plugin: EmberVaultPlugin, parent: HTMLElement, o: BrowserOptions) {
 		super(parent, nimbleSource(plugin), { newLabel: 'New monster, spell or item', ...o });
 	}
 }

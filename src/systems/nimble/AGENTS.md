@@ -14,6 +14,7 @@ Nimble predates the system split, so much of its wiring still lives in `main.ts`
 | Compendium | `compendium.ts` + `data/compendium.json`, `compendium-data.ts` (with homebrew), `compendium-entries.ts`, `compendium-query.ts` (Nimble's words for core's search language), `filter-field.ts` (core's, with Nimble's words), `compendium-browser.ts` (Nimble's `CompendiumSource` for core's browser, and its page), `compendium-view.ts`, `compendium-modal.ts`, `compendium-pickers.ts`, `compendium-card.ts`, `compendium-art.ts` |
 | Encounters and the tracker | `encounters.ts` (the store), `tracker-view.ts`, `hp-pad.ts`, `vitals-ui.ts`, `record-modal.ts` (quick look), `encounter-block.ts`, `battle-notes.ts` (players), `builder-modal.ts`, `balance-ui.ts`, `count-modal.ts`, `saved-fight.ts` |
 | Characters | `character-def.ts` (frontmatter in, edits out; pure), `character-sheet.ts` (```nimble-sheet), `character-view.ts`, `character-modals.ts`, `level-up.ts`, `level-plan.ts`, `roll-dialog.ts`, `character-register.ts` |
+| Wiring | `register.ts` (its `register()`: views, the ```nimble block, `nimble:` references and autocomplete, builders, homebrew and saved-fight blocks, character features, the monster index kept current) |
 | Builders | `entity-builder.ts` (Nimble's kinds for core's builder frame), `entity-monster*.ts`, `entity-homebrew*.ts`, `homebrew-def.ts`, `homebrew-block.ts`, `builder-register.ts` |
 | The system | `system.ts` |
 

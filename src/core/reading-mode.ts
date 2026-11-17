@@ -5,7 +5,7 @@
 // open however Obsidian would open them, and so does a note you just made.
 
 import { MarkdownView, TFile, WorkspaceLeaf } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { opensInReading } from './campaign-model';
 
 /** A note made this recently is being written, not read. */
@@ -16,7 +16,7 @@ const FRESH_MS = 15_000;
  * (Ancestry Human · Status alive…) instead of Obsidian's form. The class goes
  * on the tab; styles.css does the rest, and Live Preview keeps the form for editing.
  */
-function tagProperties(plugin: NimbleStatblocksPlugin): void {
+function tagProperties(plugin: EmberVaultPlugin): void {
 	for (const leaf of plugin.app.workspace.getLeavesOfType('markdown')) {
 		const view = leaf.view;
 		if (!(view instanceof MarkdownView)) continue;
@@ -58,7 +58,7 @@ function watchEmptyProperties(view: MarkdownView, on: boolean): void {
 	mark();
 }
 
-export function registerReadingMode(plugin: NimbleStatblocksPlugin): void {
+export function registerReadingMode(plugin: EmberVaultPlugin): void {
 	const app = plugin.app;
 	const tag = () => tagProperties(plugin);
 	plugin.registerEvent(app.workspace.on('layout-change', tag));

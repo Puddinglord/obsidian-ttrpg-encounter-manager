@@ -7,7 +7,7 @@
 // source note also offers to resume it.
 
 import { App, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, normalizePath, setIcon, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { Encounter, EncounterCreature } from './types';
 import { fightInProgress, isDown, isHero, isMinionGroup, sameFight } from './encounters';
 import { confirmAction } from '../../core/touch';
@@ -55,7 +55,7 @@ export function fightDigest(enc: Encounter, when: Date): string {
 }
 
 /** Where a fight's note goes: Fights/ next to its source note, else in the campaign, else the vault root. */
-export function fightNotePath(plugin: NimbleStatblocksPlugin, enc: Encounter): string {
+export function fightNotePath(plugin: EmberVaultPlugin, enc: Encounter): string {
 	const source = enc.sourcePath ? plugin.app.vault.getFileByPath(enc.sourcePath) : null;
 	const base = source?.parent?.path ?? plugin.campaigns.active?.folder ?? '';
 	const name = source ? `${source.basename} - ${enc.name}` : enc.name;
@@ -67,7 +67,7 @@ export function fightNotePath(plugin: NimbleStatblocksPlugin, enc: Encounter): s
  * a different fight (or isn't a fight note at all). Then the next free
  * "<name> 2", "<name> 3"… so no other fight is overwritten.
  */
-export async function freeFightNotePath(plugin: NimbleStatblocksPlugin, enc: Encounter): Promise<string> {
+export async function freeFightNotePath(plugin: EmberVaultPlugin, enc: Encounter): Promise<string> {
 	const first = fightNotePath(plugin, enc);
 	const stem = first.replace(/\.md$/, '');
 	for (let n = 1; n < 500; n++) {
@@ -85,7 +85,7 @@ export async function freeFightNotePath(plugin: NimbleStatblocksPlugin, enc: Enc
  * fight (started, ended part-way, or with someone already hurt). Run, Resume
  * and the builder's "Run now" all come through here. True means go ahead.
  */
-export async function confirmReplaceFight(plugin: NimbleStatblocksPlugin, incoming: string): Promise<boolean> {
+export async function confirmReplaceFight(plugin: EmberVaultPlugin, incoming: string): Promise<boolean> {
 	// With several encounters, a new one is added next to the others; nothing is replaced.
 	if (plugin.settings.multipleEncounters) return true;
 	const active = plugin.encounters.active;
@@ -98,7 +98,7 @@ export async function confirmReplaceFight(plugin: NimbleStatblocksPlugin, incomi
 		'Replace', true);
 }
 
-export async function saveFight(plugin: NimbleStatblocksPlugin, enc: Encounter): Promise<TFile | null> {
+export async function saveFight(plugin: EmberVaultPlugin, enc: Encounter): Promise<TFile | null> {
 	const { app } = plugin;
 	const path = await freeFightNotePath(plugin, enc);
 	const now = new Date();
@@ -160,7 +160,7 @@ export function savedFightsFor(app: App, sourcePath: string, encounterName: stri
 }
 
 /** `sourcePath`: the note the fight is being resumed for, when known (the saved one may have moved since). */
-export async function resumeSavedFight(plugin: NimbleStatblocksPlugin, file: TFile, sourcePath?: string): Promise<void> {
+export async function resumeSavedFight(plugin: EmberVaultPlugin, file: TFile, sourcePath?: string): Promise<void> {
 	const snapshot = await readSavedFight(plugin.app, file);
 	if (!snapshot) { new Notice(`${file.basename} has no saved fight in it`); return; }
 	if (!await confirmReplaceFight(plugin, snapshot.name)) return;
@@ -171,14 +171,14 @@ export async function resumeSavedFight(plugin: NimbleStatblocksPlugin, file: TFi
 }
 
 /** The ```nimble-fight block: a card with the fight's state and a Resume button. */
-export function registerFightBlock(plugin: NimbleStatblocksPlugin): void {
+export function registerFightBlock(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor(FIGHT_BLOCK, (source, el, ctx) => {
 		ctx.addChild(new FightCard(plugin, el, source, ctx));
 	});
 }
 
 class FightCard extends MarkdownRenderChild {
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 	}
 

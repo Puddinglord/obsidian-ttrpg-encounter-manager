@@ -338,7 +338,8 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Other' }).click();
 	const schoolName = o.page.locator(`${B} input[data-field="School name"]`);
 	await schoolName.waitFor();
-	assert.equal(await o.page.evaluate(() => document.activeElement?.getAttribute('data-field')), 'School name');
+	// Focus moves on the next tick, after the field shows.
+	await o.waitFor(async () => (await o.page.evaluate(() => document.activeElement?.getAttribute('data-field'))) === 'School name', { what: 'the school name field focused', timeout: 3000 });
 	await schoolName.fill('Shadow');
 	assert.match(await o.page.locator(`${B} .eb-preview .nimble-cmp-detail`).textContent(), /^Shadow · /);
 	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Ice' }).click();

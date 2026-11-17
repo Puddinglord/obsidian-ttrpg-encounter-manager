@@ -1,19 +1,13 @@
 import { Component, debounce, Events, MarkdownRenderer, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
 import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/core/internals';
-import {
-	migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings,
-	mergeParty, PartyMember, RollLogEntry, uid,
-} from './src/systems/nimble/types';
-import { readStatblock, toStatblockSource } from './src/systems/nimble/parser';
-import { renderStatblockIssues } from './src/systems/nimble/statblock-issues';
+import { migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings, mergeParty, PartyMember, RollLogEntry, uid } from './src/systems/nimble/types';
+import { toStatblockSource } from './src/systems/nimble/parser';
 import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './src/systems/nimble/render';
 import { MonsterIndex } from './src/systems/nimble/monster-index';
 import { EncounterStore } from './src/systems/nimble/encounters';
 import { ENCOUNTER_VIEW_TYPE, EncounterTrackerView } from './src/systems/nimble/tracker-view';
-import { nimbleRefProvider } from './src/systems/nimble/inline-ref';
 import { InlineRefs, inlineRefsLivePreview } from './src/core/inline-refs';
 import { HoverPreview } from './src/core/hover-preview';
-import { InlineRefSuggest } from './src/systems/nimble/suggest';
 import { SlashSuggest } from './src/core/slash';
 import { NimbleSettingsTab } from './src/app/settings-tab';
 import { parseDice, rollDie, rollPlain } from './src/core/dice';
@@ -25,7 +19,6 @@ import { COMPENDIUM_VIEW_TYPE, CompendiumView } from './src/systems/nimble/compe
 import { invalidateCompendium } from './src/systems/nimble/compendium-browser';
 import { openCompendiumSearch } from './src/systems/nimble/compendium-modal';
 import { openAddMonsterPicker } from './src/systems/nimble/compendium-pickers';
-import { watchArt } from './src/systems/nimble/compendium-art';
 import type { Segment } from './src/systems/nimble/compendium-entries';
 import { notesBody } from './src/systems/nimble/creature-notes';
 import { registerEncounterBlocks } from './src/app/encounter-blocks';
@@ -38,7 +31,7 @@ import { CampaignStore } from './src/core/campaigns';
 import { registerBoxBlock } from './src/core/box-block';
 import { registerNpcCard } from './src/core/npc-card';
 import { registerNoteCard } from './src/core/note-card';
-import { registerFightBlock, saveFight } from './src/systems/nimble/saved-fight';
+import { saveFight } from './src/systems/nimble/saved-fight';
 import { NpcLinker } from './src/core/npc-links';
 import { npcLivePreview } from './src/core/npc-live-preview';
 import { SpotlightModal } from './src/app/spotlight';
@@ -57,16 +50,14 @@ import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/core/camp
 import { CampaignPicker, NewCampaignModal } from './src/core/campaign-modals';
 import { newSceneAnywhere, promptCharacter, promptChapter, promptSectionNote } from './src/core/campaign-ui';
 import BESTIARY from './src/systems/nimble/data/bestiary.json';
-import { registerCharacterFeatures, openCharacterView } from './src/systems/nimble/character-register';
+import { openCharacterView } from './src/systems/nimble/character-register';
 import { registerReadingMode } from './src/core/reading-mode';
 import { noteKind, safeName } from './src/core/campaign-model';
 import { creatureNote } from './src/core/campaign-templates';
-import { addEditButton, registerBuilders } from './src/systems/nimble/builder-register';
 import { registerBuilderCommands } from './src/core/builder/commands';
 import { ContentStore } from './src/core/content/store';
 import { ImportContentModal } from './src/core/content/import-modal';
-import { registerHomebrewBlocks } from './src/systems/nimble/homebrew-block';
-import { bundledCompendium, setCompendiumDrafts, setHomebrew } from './src/systems/nimble/compendium-data';
+import { bundledCompendium, setCompendiumDrafts } from './src/systems/nimble/compendium-data';
 import type { GameSystem } from './src/systems/contract';
 import { createSystems } from './src/app/systems';
 import { NewCharacterModal } from './src/systems/nimble/character-modals';
@@ -120,7 +111,7 @@ monsters:
 
 const INSERT_LINK = 'editor:insert-link';
 
-export default class NimbleStatblocksPlugin extends Plugin {
+export default class EmberVaultPlugin extends Plugin {
 	settings: NimbleStatblocksSettings;
 	index: MonsterIndex;
 	encounters: EncounterStore;
@@ -216,15 +207,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.hover = new HoverPreview(this);
 		this.loadBundledBestiary();
 
-		this.registerView(ENCOUNTER_VIEW_TYPE, (leaf) => new EncounterTrackerView(leaf, this));
-		this.registerView(COMPENDIUM_VIEW_TYPE, (leaf) => new CompendiumView(leaf, this));
-		watchArt(this);
-		// The compendium's entries are built once; anything that changes them throws them away.
-		this.registerEvent(this.index.on('changed', () => { setHomebrew(this.index.homebrew()); invalidateCompendium(); }));
-		this.registerEvent(this.campaigns.on('changed', () => invalidateCompendium()));
 		this.registerView(CAMPAIGN_VIEW_TYPE, (leaf) => new CampaignView(leaf, this));
-		this.addRibbonIcon('castle', 'Nimble campaign', () => this.openCampaignView());
-		const trackerRibbon = this.addRibbonIcon('swords', 'Nimble encounter tracker', () => void this.openTracker());
+		this.addRibbonIcon('castle', 'Campaign', () => this.openCampaignView());
+		const trackerRibbon = this.addRibbonIcon('swords', 'Encounter tracker', () => void this.openTracker());
 		// The tracker is a GM tool: its ribbon button hides while you're in a campaign you play in.
 		const syncRibbon = () => trackerRibbon.toggle(!this.playerView());
 		this.registerEvent(this.campaigns.on('changed', syncRibbon));
@@ -233,29 +218,13 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerEvent(this.campaigns.on('changed', syncParty));
 		this.registerEvent(this.app.metadataCache.on('changed', (_f, _d, cache) => { if (noteKind(cache.frontmatter ?? {}) === 'character') syncParty(); }));
 		syncRibbon();
-		this.addRibbonIcon('book-open', 'Nimble compendium', () => void this.openSystemCompendium());
+		this.addRibbonIcon('book-open', 'Compendium', () => void this.openSystemCompendium());
 		this.registerHoverLinkSource('nimble-gm', { display: 'Ember Vault', defaultMod: true });
 
-		this.registerMarkdownCodeBlockProcessor('nimble', (source, el, ctx) => {
-			const { monster, issues } = readStatblock(source);
-			if (!monster) {
-				const err = el.createDiv({ cls: 'nimble-error' });
-				err.createEl('strong', { text: 'Nimble stat block needs a name. ' });
-				err.appendText('Add a line like "name: Goblin" to this block.');
-				renderStatblockIssues(this, el, issues, source, ctx);
-				return;
-			}
-			this.renderStatblock(el, monster, ctx.sourcePath, 'block', (ev) => {
-				void this.addToEncounter(monster, ctx.sourcePath, ev.shiftKey ? 2 : 1);
-			});
-			if (this.settings.statblockHints) renderStatblockIssues(this, el, issues, source, ctx);
-			if (!this.playerView(ctx.sourcePath)) addEditButton(this, el, ctx, { kind: 'monster', lang: 'nimble', source, seed: { monster, copyName: true, editing: true }, unread: new Set(issues.map(i => i.line)).size });
-		});
 		registerEncounterBlocks(this);
 		registerBoxBlock(this);
 		registerNpcCard(this);
 		registerNoteCard(this);
-		registerFightBlock(this);
 		new NpcLinker(this);
 		registerTables(this);
 		registerTooltips(this);
@@ -266,15 +235,9 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		}));
 		this.registerMarkdownCodeBlockProcessor('nimble-campaign', (_source, el, ctx) => ctx.addChild(new CampaignBlock(this, el, ctx)));
 		registerMapBlock(this);
-		setCompendiumDrafts(this.settings.compendiumDrafts);
-		registerCharacterFeatures(this);
-		registerBuilders(this);
 		registerBuilderCommands(this);
-		registerHomebrewBlocks(this);
 		registerReadingMode(this);
 
-		// Reading view: `nimble:Name` inline references
-		this.inlineRefs.add(nimbleRefProvider(this));
 		// The other game systems wire in their own blocks, references and indexes.
 		for (const system of this.systems.all()) system.register?.(this);
 		this.content.register();
@@ -289,7 +252,6 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		}));
 		this.registerEditorExtension(npcLivePreview(this));
 		this.registerEvent(this.campaigns.on('changed', () => { this.npcVersion++; this.pokeEditors(); }));
-		this.registerEditorSuggest(new InlineRefSuggest(this.app, this));
 		const slash = new SlashSuggest(this.app, this);
 		this.registerEditorSuggest(slash);
 		// Put ours ahead of Obsidian's core "/" menu; it only claims input that matches a Nimble command.
@@ -306,20 +268,6 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.register(() => { void this.wakeLock?.release().catch(() => undefined); this.wakeLock = null; });
 		this.app.workspace.onLayoutReady(() => this.syncWakeLock());
 
-		// Campaigns keep their monsters to themselves: a name in Brakka's Journal never opens the GM's
-		// Quicksilver Construct. A monster written in a campaign's notes is seen only from that campaign;
-		// one in a loose note, from campaigns you run (and notes outside any). The bestiary is seen everywhere.
-		this.index.setScope((filePath, from) => this.canSee(filePath, from));
-		// Which monsters a lookup sees follows the active campaign and the campaigns' folders and roles.
-		let scope = '';
-		this.registerEvent(this.campaigns.on('changed', () => {
-			const next = JSON.stringify([this.campaigns.active?.folder ?? null, this.campaigns.campaigns.map(c => [c.folder, c.role])]);
-			if (next === scope) return;
-			scope = next;
-			this.index.trigger('changed');
-		}));
-
-		this.registerEvent(this.index.on('changed', () => this.refsChanged()));
 
 		this.app.workspace.onLayoutReady(async () => {
 			this.campaigns.start();
@@ -329,15 +277,6 @@ export default class NimbleStatblocksPlugin extends Plugin {
 				void this.saveSettings();
 				if (!this.app.workspace.getLeavesOfType(CAMPAIGN_VIEW_TYPE).length) void this.openCampaignView();
 			}
-			await this.index.build();
-			this.registerEvent(this.app.vault.on('modify', f => { if (f instanceof TFile) void this.index.update(f); }));
-			this.registerEvent(this.app.vault.on('create', f => { if (f instanceof TFile) void this.index.update(f); }));
-			this.registerEvent(this.app.vault.on('delete', f => this.index.remove(f.path)));
-			this.registerEvent(this.app.vault.on('rename', (f, oldPath) => {
-				this.index.remove(oldPath, false);
-				if (f instanceof TFile) void this.index.update(f);
-				this.renameSourceFile(oldPath, f.path);
-			}));
 		});
 	}
 
@@ -1206,14 +1145,4 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	}
 
 	/** Keep "open source note" links in the tracker working after a file move. */
-	private renameSourceFile(oldPath: string, newPath: string): void {
-		let changed = false;
-		for (const enc of this.settings.encounters) {
-			if (enc.sourcePath === oldPath) { enc.sourcePath = newPath; changed = true; }
-			for (const c of enc.creatures) {
-				if (c.sourceFile === oldPath) { c.sourceFile = newPath; changed = true; }
-			}
-		}
-		if (changed) void this.saveSettings();
-	}
 }

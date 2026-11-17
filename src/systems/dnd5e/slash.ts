@@ -8,7 +8,7 @@
 //   /add 3 goblin         → three goblins straight into the 5e tracker
 //   /roll +5, /roll 1d20+5 → with advantage or disadvantage
 
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { parseDice } from '../../core/dice';
 import { encounterBlockSource, EncounterDef, parseMonsterLine } from '../../core/encounter-def';
 import { plainRoll, SlashCommand, SlashItem, SlashWriter } from '../../core/slash';
@@ -37,7 +37,7 @@ const KINDS: Record<string, Kinds> = {
 	rule: { kinds: ['rule', 'condition'], tab: 'rules' },
 };
 
-export function dnd5eSlashCommands(plugin: NimbleStatblocksPlugin): SlashCommand[] {
+export function dnd5eSlashCommands(plugin: EmberVaultPlugin): SlashCommand[] {
 	// The runtime is looked up when a command is used: the list is made before 5e registers (and in tests).
 	const kind = (name: string, icon: string, desc: string, aliases: string[], hint?: string): SlashCommand => ({
 		name, aliases, icon, desc, hint, items: (arg, q) => compendiumItems(dnd5e(), arg, KINDS[name], q.path),
@@ -68,7 +68,7 @@ export function rollExpression5e(arg: string): string {
 	return /^[+\-−]\d+$/.test(s) ? `1d20${s.replace('−', '-')}` : s;
 }
 
-function rollItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
+function rollItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 	const expr = rollExpression5e(arg);
 	const dice = parseDice(expr);
 	if (!dice) return [{ icon: 'dices', title: `Can't roll "${arg.trim()}"`, detail: 'Try 1d20+5, +3, 2d6+3' }];

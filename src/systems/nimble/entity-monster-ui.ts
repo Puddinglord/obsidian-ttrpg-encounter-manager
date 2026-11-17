@@ -3,7 +3,7 @@
 // entity-monster.ts; this file only lays them out.
 
 import { setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { ArmorType, NimbleMonster } from './types';
 import { describeMonster, searchMonsters } from './suggest';
 import { diceAverage, expectedRegular, FLAVOR_ABILITIES, formatDiceParts, levelLabel, LEVELS, minionDie, parseDiceParts, stepLevel, ARMOR_FROM, LEGENDARY_ARMOR_FROM } from './builder-math';
@@ -19,14 +19,14 @@ import {
 
 const SIZES = ['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan'];
 
-function partyOf(plugin: NimbleStatblocksPlugin): { level: number; size: number } {
+function partyOf(plugin: EmberVaultPlugin): { level: number; size: number } {
 	const party = plugin.settings.party ?? [];
 	const level = party.length ? Math.round(party.reduce((a, p) => a + (p.level || 1), 0) / party.length) : 1;
 	return { level: Math.max(1, level), size: plugin.encounters.partySize() };
 }
 
 /** How often each type, group or habitat is used across the monsters the note can see (the compendium's own facets). */
-function monsterWords(plugin: NimbleStatblocksPlugin, from: string, key: 'type' | 'group' | 'habitat'): Map<string, number> {
+function monsterWords(plugin: EmberVaultPlugin, from: string, key: 'type' | 'group' | 'habitat'): Map<string, number> {
 	const out = new Map<string, number>();
 	for (const e of plugin.index.all(from)) {
 		const m = e.monster;
@@ -51,7 +51,7 @@ class MonsterBuilder implements KindBuilder {
 	private editing: boolean;
 	private folder: string;
 
-	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
+	constructor(private plugin: EmberVaultPlugin, seed: unknown) {
 		const party = partyOf(plugin);
 		const s = seed as { monster?: NimbleMonster; copyName?: boolean; editing?: boolean } | undefined;
 		this.d = s?.monster ? draftFromMonster(s.monster, party, s.copyName ?? false, s.editing ?? false) : newMonsterDraft(party);

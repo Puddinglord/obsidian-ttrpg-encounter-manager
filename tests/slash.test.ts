@@ -2,13 +2,13 @@
 // (which replace a base command of the same name), the GM/player split, and
 // the menu order. Then each shipped system's commands, and 5e's helpers.
 import { describe, expect, it } from 'vitest';
-import type NimbleStatblocksPlugin from '../main';
+import type EmberVaultPlugin from '../main';
 import { commandsFor, SLASH_ORDER, SlashCommand, slashItems } from '../src/core/slash';
 import { SHIPPED_SYSTEMS } from '../src/app/systems';
 import { parseEncounterArg, rollExpression5e } from '../src/systems/dnd5e/slash';
 
 /** Just enough plugin for the menu: a system per note and a player-view switch. */
-function fakePlugin(o: { commands?: SlashCommand[]; player?: boolean } = {}): NimbleStatblocksPlugin {
+function fakePlugin(o: { commands?: SlashCommand[]; player?: boolean } = {}): EmberVaultPlugin {
 	const system = { id: 'x', slashCommands: o.commands ? () => o.commands! : undefined, conditions: () => [{ id: 'prone', name: 'Prone', description: 'Down.' }], vocabulary: { defense: 'AC' } };
 	return {
 		playerView: () => !!o.player,
@@ -16,11 +16,11 @@ function fakePlugin(o: { commands?: SlashCommand[]; player?: boolean } = {}): Ni
 		edition: () => undefined,
 		settings: { party: [], customConditions: [] },
 		campaigns: { npcs: [] },
-	} as unknown as NimbleStatblocksPlugin;
+	} as unknown as EmberVaultPlugin;
 }
 
 const names = (cs: SlashCommand[]) => cs.map(c => c.name);
-const titles = (p: NimbleStatblocksPlugin, q: string) => slashItems(p, q, 'note.md', null).map(i => i.title);
+const titles = (p: EmberVaultPlugin, q: string) => slashItems(p, q, 'note.md', null).map(i => i.title);
 
 describe('slash engine', () => {
 	it('offers the base commands with no system commands', () => {

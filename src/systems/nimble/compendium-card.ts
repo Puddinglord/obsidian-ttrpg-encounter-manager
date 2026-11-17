@@ -6,7 +6,7 @@
 // Rules text goes through appendRichText, never innerHTML.
 
 import { App, EventRef, Modal, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import {
 	Ancestry, Background, Boon, ClassEntry, ClassOption, CompendiumHit, CompendiumKind, Feature, Item, KIND_LABEL, LevelFeatures,
 	nameKey, OptionGroup, Spell, Subclass, tierLabel, weaponDamage,
@@ -410,7 +410,7 @@ export function renderCard(parent: HTMLElement, target: CardTarget, o: CardOptio
  * Card options wired to the plugin: dice roll (labelled with `label`), condition
  * names open their rules. Pass `onOpenHit` to make class/spell names links.
  */
-export function pluginCardOptions(plugin: NimbleStatblocksPlugin, label: string, onOpenHit?: (hit: CompendiumHit) => void): CardOptions {
+export function pluginCardOptions(plugin: EmberVaultPlugin, label: string, onOpenHit?: (hit: CompendiumHit) => void): CardOptions {
 	return {
 		onDice: (el, expr) => {
 			el.addClass('is-clickable');
@@ -435,7 +435,7 @@ export function pluginCardOptions(plugin: NimbleStatblocksPlugin, label: string,
 export class CompendiumCardModal extends Modal {
 	private history: CardTarget[] = [];
 
-	constructor(app: App, private plugin: NimbleStatblocksPlugin, private target: CardTarget, private action?: { label: string; run: () => void }) {
+	constructor(app: App, private plugin: EmberVaultPlugin, private target: CardTarget, private action?: { label: string; run: () => void }) {
 		super(app);
 	}
 

@@ -7,7 +7,7 @@ import { syntaxTree } from '@codemirror/language';
 import { Range } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import type { NpcInfo } from './campaigns';
 import { notePill } from './npc-links';
 
@@ -43,7 +43,7 @@ function skippable(view: EditorView, pos: number): boolean {
 	return false;
 }
 
-export function npcLivePreview(plugin: NimbleStatblocksPlugin) {
+export function npcLivePreview(plugin: EmberVaultPlugin) {
 	const plug = ViewPlugin.fromClass(class {
 		decorations: DecorationSet;
 		version = -1;

@@ -4,14 +4,14 @@
 // person reading is the person who wrote it), never in the bestiary or hovers.
 
 import { MarkdownPostProcessorContext, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { applyStatblockFix, StatblockIssue } from './parser';
 import { rewriteBlock } from '../../core/builder/commands';
 
 /** Remembers which blocks were opened, so a re-render (typing in the note) keeps them open. */
 const opened = new Set<string>();
 
-export function renderStatblockIssues(plugin: NimbleStatblocksPlugin, el: HTMLElement, issues: StatblockIssue[], source: string, ctx: MarkdownPostProcessorContext): void {
+export function renderStatblockIssues(plugin: EmberVaultPlugin, el: HTMLElement, issues: StatblockIssue[], source: string, ctx: MarkdownPostProcessorContext): void {
 	if (!issues.length) return;
 	const key = `${ctx.sourcePath}\n${source}`;
 	const box = el.createDiv({ cls: 'nimble-issues' });
@@ -63,7 +63,7 @@ function quote(el: HTMLElement, text: string, mark?: string): void {
 	el.appendText(text.slice(at + mark.length));
 }
 
-async function writeFix(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: string): Promise<void> {
+async function writeFix(plugin: EmberVaultPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: string): Promise<void> {
 	await rewriteBlock(plugin, el, ctx, source, next, 'nimble', 'fix it');
 }
 

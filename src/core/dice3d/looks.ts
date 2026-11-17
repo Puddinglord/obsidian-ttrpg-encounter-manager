@@ -2,12 +2,12 @@
 // textures turned into URLs) and, for imported sets, a model URL per die size.
 
 import { TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { setFileUrl } from './importer';
 import type { Die3d, DieLook, Dice3dOptions } from './renderer';
 import { DiceSettings, DiceStyle, RollEvent, rollEvent, styleFor } from './styles';
 
-export function lookOf(plugin: NimbleStatblocksPlugin, st: DiceStyle): DieLook {
+export function lookOf(plugin: EmberVaultPlugin, st: DiceStyle): DieLook {
 	let textureUrl: string | undefined;
 	if (st.texture.startsWith('vault:')) {
 		const f = plugin.app.vault.getAbstractFileByPath(st.texture.slice(6));
@@ -20,7 +20,7 @@ export function lookOf(plugin: NimbleStatblocksPlugin, st: DiceStyle): DieLook {
 }
 
 /** The model to roll for a die of this size in this style, if its set has one. */
-export function modelUrlOf(plugin: NimbleStatblocksPlugin, st: DiceStyle, sides: number): string | undefined {
+export function modelUrlOf(plugin: EmberVaultPlugin, st: DiceStyle, sides: number): string | undefined {
 	if (!st.model) return undefined;
 	const set = plugin.settings.dice.sets.find(s => s.id === st.model);
 	const rel = set?.models[sides];
@@ -28,7 +28,7 @@ export function modelUrlOf(plugin: NimbleStatblocksPlugin, st: DiceStyle, sides:
 }
 
 /** Give each die its style's look and model. A crit's primary die takes the crit style, so every die that crit matches. */
-export function dressDice(plugin: NimbleStatblocksPlugin, dice: Die3d[], crit: boolean): Die3d[] {
+export function dressDice(plugin: EmberVaultPlugin, dice: Die3d[], crit: boolean): Die3d[] {
 	const d = plugin.settings.dice;
 	return dice.map(die => {
 		const role = crit && die.role === 'primary' ? 'explosion' : die.role;

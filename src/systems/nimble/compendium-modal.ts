@@ -5,7 +5,7 @@
 // with the search box focused the moment it opens and Enter doing the job.
 
 import { Component, Modal, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { BrowserOptions, CompendiumBrowser, insertReference, renderEntryDetail } from './compendium-browser';
 import type { Entry, Segment } from './compendium-entries';
 import { CompendiumCardModal } from './compendium-card';
@@ -40,7 +40,7 @@ export class CompendiumModal extends Modal {
 	private browser: CompendiumBrowser | null = null;
 	private picked = false;
 
-	constructor(private plugin: NimbleStatblocksPlugin, private o: PickOptions) {
+	constructor(private plugin: EmberVaultPlugin, private o: PickOptions) {
 		super(plugin.app);
 	}
 
@@ -89,14 +89,14 @@ export class CompendiumModal extends Modal {
 	}
 }
 
-export function openCompendiumModal(plugin: NimbleStatblocksPlugin, o: PickOptions): CompendiumModal {
+export function openCompendiumModal(plugin: EmberVaultPlugin, o: PickOptions): CompendiumModal {
 	const m = new CompendiumModal(plugin, o);
 	m.open();
 	return m;
 }
 
 /** An entry in a window of its own: a monster's quick look, an NPC's note, a compendium card, a rule. */
-export function openEntry(plugin: NimbleStatblocksPlugin, e: Entry): Modal | undefined {
+export function openEntry(plugin: EmberVaultPlugin, e: Entry): Modal | undefined {
 	if (e.monster) return openRecord(plugin, { kind: 'monster', entry: e.monster });
 	if (e.npc) {
 		const f = plugin.app.vault.getAbstractFileByPath(e.npc.path);
@@ -112,7 +112,7 @@ export function openEntry(plugin: NimbleStatblocksPlugin, e: Entry): Modal | und
 class EntryModal extends Modal {
 	private component = new Component();
 
-	constructor(private plugin: NimbleStatblocksPlugin, private entry: Entry) {
+	constructor(private plugin: EmberVaultPlugin, private entry: Entry) {
 		super(plugin.app);
 	}
 
@@ -129,7 +129,7 @@ class EntryModal extends Modal {
 }
 
 /** The search-everything dialog (the "Search the compendium" command): Enter opens the page, Cmd/Ctrl+Enter inserts a reference. */
-export function openCompendiumSearch(plugin: NimbleStatblocksPlugin, query = '', segment: Segment = 'all'): CompendiumModal {
+export function openCompendiumSearch(plugin: EmberVaultPlugin, query = '', segment: Segment = 'all'): CompendiumModal {
 	return openCompendiumModal(plugin, {
 		title: 'Compendium',
 		segment,

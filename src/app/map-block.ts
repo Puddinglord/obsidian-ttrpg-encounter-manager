@@ -3,7 +3,7 @@
 // It's a GM companion, not a virtual tabletop: nothing here is shown to players.
 
 import { App, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { MapDef, mapBlockSource, MapPin, parseMapBlock, PIN_KINDS, PinKind, replaceMapBlock } from '../core/map-def';
 import { EncounterCreature } from '../systems/nimble/types';
 import { isDown, isHero, isMinionGroup } from '../systems/nimble/encounters';
@@ -19,7 +19,7 @@ const PIN_ICON: Record<PinKind, string> = {
 
 type Mode = 'view' | 'add' | 'move';
 
-export function registerMapBlock(plugin: NimbleStatblocksPlugin): void {
+export function registerMapBlock(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-map', (source, el, ctx) => {
 		ctx.addChild(new MapBlock(plugin, el, source, ctx));
 	});
@@ -48,7 +48,7 @@ class MapBlock extends MarkdownRenderChild {
 	private editable = false;
 
 	/** `source` is the block as it is in the note: what a save looks for, and what a failed save goes back to. */
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 		this.def = parseMapBlock(source);
 	}

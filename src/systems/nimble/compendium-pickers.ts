@@ -3,7 +3,7 @@
 // and insert a reference (or a whole stat block) into the note being edited.
 
 import { Editor, EditorPosition } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { CompendiumHit, CompendiumKind } from './compendium';
 import type { Entry, Segment } from './compendium-entries';
 import { entryReference } from './compendium-browser';
@@ -12,7 +12,7 @@ import { isHero } from './encounters';
 import { toStatblockSource } from './parser';
 
 /** How many of this monster are in the current fight. */
-function inFight(plugin: NimbleStatblocksPlugin, e: Entry): number {
+function inFight(plugin: EmberVaultPlugin, e: Entry): number {
 	const enc = plugin.encounters.active;
 	if (!e.monster) return 0;
 	return (enc?.creatures ?? []).filter(c => !isHero(c) && c.monster.name === e.monster!.monster.name).reduce((n, c) => n + (c.count ?? 1), 0);
@@ -23,7 +23,7 @@ function inFight(plugin: NimbleStatblocksPlugin, e: Entry): number {
  * three, Shift+Enter for two, Cmd/Ctrl+Enter or the row's + to add and keep
  * going, so a whole fight can be built in one go.
  */
-export function openAddMonsterPicker(plugin: NimbleStatblocksPlugin, query = ''): void {
+export function openAddMonsterPicker(plugin: EmberVaultPlugin, query = ''): void {
 	const add = (e: Entry, n: number) => plugin.addToEncounter(e.monster!.monster, e.monster!.filePath || undefined, n);
 	openCompendiumModal(plugin, {
 		title: 'Add to the encounter',
@@ -69,7 +69,7 @@ export interface HitPick {
 }
 
 /** Pick a compendium entry (the character sheet's Add buttons). Cmd/Ctrl+Enter adds and keeps the dialog open. */
-export function pickFromCompendium(plugin: NimbleStatblocksPlugin, p: HitPick): void {
+export function pickFromCompendium(plugin: EmberVaultPlugin, p: HitPick): void {
 	const kinds = new Set(p.kinds);
 	const hitOf = (e: Entry) => e.hit!;
 	const custom = (name: string): CompendiumHit => ({ kind: p.kinds[0] ?? 'item', name, detail: '', entry: {} });
@@ -93,7 +93,7 @@ export type InsertMode = 'reference' | 'statblock';
  * (or a monster's whole stat block) where the cursor was, then hand the
  * cursor back to the note so typing carries on.
  */
-export function insertFromCompendium(plugin: NimbleStatblocksPlugin, editor: Editor, at: EditorPosition, o: { segment: Segment; segments?: Segment[]; mode?: InsertMode; title: string; query?: string }): void {
+export function insertFromCompendium(plugin: EmberVaultPlugin, editor: Editor, at: EditorPosition, o: { segment: Segment; segments?: Segment[]; mode?: InsertMode; title: string; query?: string }): void {
 	const mode = o.mode ?? 'reference';
 	const write = (text: string, block: boolean) => {
 		let pos = at;

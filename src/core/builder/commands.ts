@@ -2,12 +2,12 @@
 // (for the active note's system), and the Edit button on blocks in notes.
 
 import { MarkdownPostProcessorContext, Notice, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { replaceEncounterBlock } from '../encounter-def';
 import { EntityKind, kindAvailable, kindsOf, openBuilder } from './frame';
 
 /** The commands (their ids are kept from when only Nimble had them, so hotkeys still work). */
-export function registerBuilderCommands(plugin: NimbleStatblocksPlugin): void {
+export function registerBuilderCommands(plugin: EmberVaultPlugin): void {
 	const cmd = (kind: EntityKind, name: string, icon: string) => {
 		plugin.addCommand({
 			id: `new-${kind}`, name, icon,
@@ -26,7 +26,7 @@ export function registerBuilderCommands(plugin: NimbleStatblocksPlugin): void {
 }
 
 /** Write a block's new body over the old one, where it is in the note. False (with a notice) when the note changed meanwhile. */
-export async function rewriteBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: string, lang: string, what = 'save it'): Promise<boolean> {
+export async function rewriteBlock(plugin: EmberVaultPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: string, lang: string, what = 'save it'): Promise<boolean> {
 	const info = ctx.getSectionInfo(el);
 	const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
 	if (!info || !file) { new Notice(`Couldn't find this block in the note to ${what}.`); return false; }
@@ -48,7 +48,7 @@ export async function rewriteBlock(plugin: NimbleStatblocksPlugin, el: HTMLEleme
  * A small Edit button on a block in a note: opens the system's builder on it,
  * and Save writes the block back in place. Only where the block can be found to save.
  */
-export function addEditButton(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, o: { system: string; kind: EntityKind; lang: string; source: string; seed: unknown; unread?: number }): void {
+export function addEditButton(plugin: EmberVaultPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, o: { system: string; kind: EntityKind; lang: string; source: string; seed: unknown; unread?: number }): void {
 	if (!kindAvailable(o.system, o.kind) || !ctx.getSectionInfo(el)) return;
 	const btn = el.createEl('button', { cls: 'nimble-block-edit clickable-icon', attr: { 'aria-label': `Edit in the ${o.kind} builder` } });
 	setIcon(btn, 'pencil');

@@ -1,7 +1,7 @@
 // Tables: DC columns get their numbers as pills (in reading view and inside
 // boxes). The rest of the table styling is CSS (see "Tables" in styles.css).
 
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 
 const DC_HEADER = /^(dc|difficulty|target)$/i;
 
@@ -36,12 +36,12 @@ export function dcPills(el: HTMLElement): void {
 const styledDocs = new Set<Document>();
 
 /** Puts the "Styled tables" class on a window's body, per the setting. Call for each pop-out window. */
-export function styleTablesIn(plugin: NimbleStatblocksPlugin, doc: Document): void {
+export function styleTablesIn(plugin: EmberVaultPlugin, doc: Document): void {
 	styledDocs.add(doc);
 	doc.body.toggleClass('nimble-tables', plugin.settings.styleTables);
 }
 
-export function registerTables(plugin: NimbleStatblocksPlugin): void {
+export function registerTables(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownPostProcessor((el) => {
 		// Tables in boxes are always styled; tables in notes only with "Styled tables" on.
 		if (plugin.settings.styleTables || el.closest('.nimble-box-body')) dcPills(el);

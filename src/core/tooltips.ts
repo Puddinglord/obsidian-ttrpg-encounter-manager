@@ -3,7 +3,7 @@
 // Obsidian's tooltip instead.
 
 import { setTooltip } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 
 const OURS = '[class*="nimble-"], [class*="campaign-"], [class*="bxe-"], [class*="encounter-"], [class*="bestiary-"], [class*="builder-"], [class*="hp-pad"]';
 
@@ -25,7 +25,7 @@ function sweep(root: Element): void {
 const watched = new WeakSet<Document>();
 
 /** Moves our `title` tooltips into Obsidian's in one window, now and as they appear. Call for each pop-out window. */
-export function watchTooltips(plugin: NimbleStatblocksPlugin, doc: Document): void {
+export function watchTooltips(plugin: EmberVaultPlugin, doc: Document): void {
 	if (watched.has(doc)) return;
 	watched.add(doc);
 	const obs = new MutationObserver((records) => {
@@ -39,7 +39,7 @@ export function watchTooltips(plugin: NimbleStatblocksPlugin, doc: Document): vo
 	sweep(doc.body);
 }
 
-export function registerTooltips(plugin: NimbleStatblocksPlugin): void {
+export function registerTooltips(plugin: EmberVaultPlugin): void {
 	// The main window, where the plugin loads, and any pop-out already open.
 	watchTooltips(plugin, activeDocument);
 	plugin.app.workspace.onLayoutReady(() => {

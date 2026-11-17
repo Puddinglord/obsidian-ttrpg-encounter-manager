@@ -3,7 +3,7 @@
 // how the dice move, effects, and importing from Dice So Nice.
 
 import { App, FuzzySuggestModal, Notice, setIcon, Setting, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { showSliderValue } from './compat';
 import { pickFiles } from './campaign-modals';
 import { dice3dBlockedText, preview3d } from './dice3d';
@@ -21,7 +21,7 @@ let previewSides = 20;
 const isPreset = (id: string) => PRESETS.some(p => p.id === id);
 
 /** Dropdown options: every look, with optional "same as…" first. */
-function styleOptions(plugin: NimbleStatblocksPlugin, first?: [string, string]): Record<string, string> {
+function styleOptions(plugin: EmberVaultPlugin, first?: [string, string]): Record<string, string> {
 	const out: Record<string, string> = {};
 	if (first) out[first[0]] = first[1];
 	for (const s of allStyles(plugin.settings.dice)) out[s.id] = s.model ? `${s.name} (3D models)` : s.name;
@@ -29,7 +29,7 @@ function styleOptions(plugin: NimbleStatblocksPlugin, first?: [string, string]):
 }
 
 /** "Which look each die uses" rows. */
-export function diceAssignmentRows(plugin: NimbleStatblocksPlugin, visible: () => boolean, refresh: () => void) {
+export function diceAssignmentRows(plugin: EmberVaultPlugin, visible: () => boolean, refresh: () => void) {
 	const d = () => plugin.settings.dice;
 	const save = async () => { await plugin.saveSettings(); };
 	const pick = (name: string, desc: string, get: () => string, set: (v: string) => void, first?: [string, string]) => ({
@@ -70,7 +70,7 @@ export function diceAssignmentRows(plugin: NimbleStatblocksPlugin, visible: () =
 }
 
 /** Motion and effects rows. */
-export function diceMotionRows(plugin: NimbleStatblocksPlugin, visible: () => boolean) {
+export function diceMotionRows(plugin: EmberVaultPlugin, visible: () => boolean) {
 	const d = () => plugin.settings.dice;
 	const save = async () => { await plugin.saveSettings(); };
 	const effect = (event: RollEvent, name: string, desc: string) => ({
@@ -162,7 +162,7 @@ function swatch(parent: HTMLElement, st: DiceStyle): HTMLElement {
 }
 
 /** The gallery, the editor for the selected look, and importing. */
-export function renderDiceStudio(el: HTMLElement, plugin: NimbleStatblocksPlugin, refresh: () => void): void {
+export function renderDiceStudio(el: HTMLElement, plugin: EmberVaultPlugin, refresh: () => void): void {
 	const d = plugin.settings.dice;
 	const save = async () => { await plugin.saveSettings(); };
 	if (!findStyle(d, selected)) selected = d.normal;
@@ -302,7 +302,7 @@ export function renderDiceStudio(el: HTMLElement, plugin: NimbleStatblocksPlugin
 }
 
 /** Fields for a look you own. */
-function editFields(ed: HTMLElement, plugin: NimbleStatblocksPlugin, st: DiceStyle, refresh: () => void): void {
+function editFields(ed: HTMLElement, plugin: EmberVaultPlugin, st: DiceStyle, refresh: () => void): void {
 	const d = plugin.settings.dice;
 	const save = async (redraw = true) => { await plugin.saveSettings(); if (redraw) refresh(); };
 	const fields = ed.createDiv({ cls: 'nimble-dice-fields' });

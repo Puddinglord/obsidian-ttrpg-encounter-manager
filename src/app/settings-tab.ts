@@ -1,7 +1,7 @@
 import { App, Modal, Notice, PluginSettingTab, requireApiVersion, Setting } from 'obsidian';
 import type { SettingDefinition, SettingDefinitionGroup, SettingDefinitionItem } from 'obsidian';
 import { showSliderValue } from '../core/compat';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { NIMBLE_CONDITIONS, NimbleCondition } from '../systems/nimble/types';
 import { renderPartyEditor } from '../core/party';
 import { diceAssignmentRows, diceMotionRows, renderDiceStudio } from '../core/dice-settings';
@@ -31,7 +31,7 @@ interface Section { heading?: string; cls?: string; rows: Row[] }
  * rows the old way.
  */
 export class NimbleSettingsTab extends PluginSettingTab {
-	constructor(app: App, private plugin: NimbleStatblocksPlugin) {
+	constructor(app: App, private plugin: EmberVaultPlugin) {
 		super(app, plugin);
 	}
 
@@ -438,7 +438,7 @@ class EditConditionModal extends Modal {
 }
 
 /** The packs in the content folder: each one's game and what it adds, and a click for what was left out. */
-function renderPackList(el: HTMLElement, plugin: NimbleStatblocksPlugin): void {
+function renderPackList(el: HTMLElement, plugin: EmberVaultPlugin): void {
 	const list = el.createDiv({ cls: 'nimble-pack-list' });
 	const draw = () => {
 		list.empty();

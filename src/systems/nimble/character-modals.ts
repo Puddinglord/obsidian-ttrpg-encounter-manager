@@ -2,7 +2,7 @@
 // custom ability. Levelling up is its own wizard (level-up.ts).
 
 import { App, Modal, normalizePath, Notice, Setting, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { bundledCompendium } from './compendium-data';
 import { joinPath, safeName } from '../../core/campaign-model';
 import { assignStats, fmtMod, Frontmatter, newCharacterFrontmatter, NewCharacterOptions, STAT_ARRAYS } from './character-def';
@@ -10,13 +10,13 @@ import { assignStats, fmtMod, Frontmatter, newCharacterFrontmatter, NewCharacter
 const SHEET_BODY = '```nimble-sheet\n```\n\n## Backstory\n\n\n## Notes\n\n';
 
 /** Where new characters go: the active campaign's Party folder, else the vault root. */
-export function defaultCharacterFolder(plugin: NimbleStatblocksPlugin): string {
+export function defaultCharacterFolder(plugin: EmberVaultPlugin): string {
 	const c = plugin.campaigns?.active;
 	return c ? normalizePath(`${c.folder}/Party`) : '';
 }
 
 /** Write a character note (frontmatter + sheet block + Backstory and Notes headings) and return it. */
-export async function createCharacterNote(plugin: NimbleStatblocksPlugin, o: NewCharacterOptions, folder = defaultCharacterFolder(plugin)): Promise<TFile> {
+export async function createCharacterNote(plugin: EmberVaultPlugin, o: NewCharacterOptions, folder = defaultCharacterFolder(plugin)): Promise<TFile> {
 	const app = plugin.app;
 	const comp = bundledCompendium();
 	const dir = folder ? normalizePath(folder) : '';
@@ -37,7 +37,7 @@ export class NewCharacterModal extends Modal {
 	private o: NewCharacterOptions = { name: '', array: 'Standard', mine: true };
 
 	/** `initial` pre-fills the dialog: a party member is `{ mine: false }`, a name typed elsewhere carries over. */
-	constructor(private plugin: NimbleStatblocksPlugin, private folder?: string, private onCreated?: (f: TFile) => void, initial: Partial<NewCharacterOptions> = {}) {
+	constructor(private plugin: EmberVaultPlugin, private folder?: string, private onCreated?: (f: TFile) => void, initial: Partial<NewCharacterOptions> = {}) {
 		super(plugin.app);
 		Object.assign(this.o, initial);
 	}

@@ -9,7 +9,7 @@
 // quick build needs, and Create works from any step.
 
 import { App, Menu, Modal, normalizePath, Notice, setIcon, stringifyYaml, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { confirmAction, isPhone, isTouch } from '../touch';
 import { fuzzyRank } from '../compendium/query';
 
@@ -57,7 +57,7 @@ export interface KindBuilder {
 
 /** What a step can ask of the frame. */
 export interface BuilderUI {
-	plugin: NimbleStatblocksPlugin;
+	plugin: EmberVaultPlugin;
 	sourcePath: string;
 	/** Something changed that only the preview, the check and live hints show. */
 	changed(): void;
@@ -91,7 +91,7 @@ export interface BuilderOptions {
 	onCreated?: (file: TFile) => void;
 }
 
-export type KindFactory = (plugin: NimbleStatblocksPlugin, seed: unknown) => KindBuilder;
+export type KindFactory = (plugin: EmberVaultPlugin, seed: unknown) => KindBuilder;
 
 /** A kind a system can build, in the order the kind bar shows them. */
 interface KindEntry { system: string; kind: EntityKind; label: string; icon: string; factory: KindFactory; hidden?: boolean }
@@ -149,7 +149,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 	/** The game system whose kinds this builder makes. */
 	readonly system: string;
 
-	constructor(public plugin: NimbleStatblocksPlugin, private o: BuilderOptions) {
+	constructor(public plugin: EmberVaultPlugin, private o: BuilderOptions) {
 		super(plugin.app);
 		this.sourcePath = o.sourcePath ?? plugin.app.workspace.getActiveFile()?.path ?? '';
 		this.system = o.system ?? plugin.system(this.sourcePath).id;
@@ -479,13 +479,13 @@ function typing(e: KeyboardEvent): boolean {
 }
 
 /** Where new homebrew goes: the active GM campaign's folder for it, else a vault-level one. */
-export function homeFolder(plugin: NimbleStatblocksPlugin, campaignSub: string, vaultFolder: string): string {
+export function homeFolder(plugin: EmberVaultPlugin, campaignSub: string, vaultFolder: string): string {
 	const c = plugin.campaigns?.active;
 	return c && c.role !== 'player' ? normalizePath(`${c.folder}/${campaignSub}`) : vaultFolder;
 }
 
 /** Open the builder for a kind of the note's system (or `o.system`). Null when that system can't build it. */
-export function openBuilder(plugin: NimbleStatblocksPlugin, o: BuilderOptions): EntityBuilder | null {
+export function openBuilder(plugin: EmberVaultPlugin, o: BuilderOptions): EntityBuilder | null {
 	const sourcePath = o.sourcePath ?? plugin.app.workspace.getActiveFile()?.path ?? '';
 	const system = o.system ?? plugin.system(sourcePath).id;
 	if (!kindAvailable(system, o.kind)) return null;

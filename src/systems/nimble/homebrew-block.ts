@@ -1,7 +1,7 @@
 // ```nimble-spell and ```nimble-item blocks: a homebrew spell or item shown as
 // the compendium's own card, in reading view and Live Preview.
 
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { Compendium, CompendiumHit } from './compendium';
 import { pluginCardOptions, renderHitCard } from './compendium-card';
 import { addEditButton } from './builder-register';
@@ -17,7 +17,7 @@ export function homebrewHit(kind: 'spell' | 'item', body: string): CompendiumHit
 	return it ? new Compendium({ items: [itemForCompendium(it)] }).all()[0] ?? null : null;
 }
 
-export function registerHomebrewBlocks(plugin: NimbleStatblocksPlugin): void {
+export function registerHomebrewBlocks(plugin: EmberVaultPlugin): void {
 	for (const [lang, kind] of [[SPELL_LANG, 'spell'], [ITEM_LANG, 'item']] as const) {
 		plugin.registerMarkdownCodeBlockProcessor(lang, (source, el, ctx) => {
 			const hit = homebrewHit(kind, source);

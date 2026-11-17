@@ -14,7 +14,7 @@
 // is for getting anywhere fast.
 
 import { Modal, Notice, Platform, prepareFuzzySearch, setIcon, SuggestModal, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { KIND_ICON } from '../core/campaign-ui';
 import type { NoteRef } from '../core/campaign-model';
 import type { NpcInfo } from '../core/campaigns';
@@ -69,7 +69,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 	/** Where the selection started after the last keystroke. */
 	private startSel = 0;
 
-	constructor(private plugin: NimbleStatblocksPlugin, private onClosed?: () => void) {
+	constructor(private plugin: EmberVaultPlugin, private onClosed?: () => void) {
 		super(plugin.app);
 		this.modalEl.addClass('nimble-spotlight');
 		const player = plugin.playerView();

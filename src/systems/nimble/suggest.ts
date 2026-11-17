@@ -3,7 +3,7 @@
 import {
 	App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile,
 } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { MonsterIndexEntry } from './types';
 import { formatLevel, monsterRole } from './rules';
 import { compendiumEntries, entryReference } from './compendium-browser';
@@ -26,7 +26,7 @@ export function describeMonster(entry: MonsterIndexEntry): string {
 }
 
 export class InlineRefSuggest extends EditorSuggest<Entry> {
-	constructor(app: App, private plugin: NimbleStatblocksPlugin) {
+	constructor(app: App, private plugin: EmberVaultPlugin) {
 		super(app);
 		this.limit = 50;
 		this.setInstructions([

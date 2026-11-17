@@ -9,7 +9,7 @@
 
 import { Menu, Notice, setIcon, TFile, TFolder } from 'obsidian';
 import { portraitOf, renderAvatar } from './npc-card';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, KIND_ICON, NoteRef, questOrder, questState, Section } from './campaign-model';
 import { CharacterInfo, SECTION_FOR } from './campaigns';
 import { CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles, ROLE_INFO } from './campaign-modals';
@@ -54,7 +54,7 @@ const baseName = (path: string) => path.replace(/^.*\//, '').replace(/\.md$/i, '
 // Rows
 
 /** Rows can be dragged onto a chapter or folder here, into a note (as a link), or onto the file explorer. */
-function draggable(row: HTMLElement, plugin: NimbleStatblocksPlugin, path: string): void {
+function draggable(row: HTMLElement, plugin: EmberVaultPlugin, path: string): void {
 	row.draggable = true;
 	row.addEventListener('dragstart', (e) => {
 		if (!e.dataTransfer) return;
@@ -71,7 +71,7 @@ function draggable(row: HTMLElement, plugin: NimbleStatblocksPlugin, path: strin
 }
 
 /** What's being dropped: a row from the outline, or files/folders from Obsidian's file explorer. */
-function dropPaths(plugin: NimbleStatblocksPlugin, e: DragEvent): string[] {
+function dropPaths(plugin: EmberVaultPlugin, e: DragEvent): string[] {
 	const own = e.dataTransfer?.getData(DRAG_TYPE);
 	if (own) return [own];
 	const dragged = draggedPaths(plugin.app);
@@ -86,7 +86,7 @@ function dropPaths(plugin: NimbleStatblocksPlugin, e: DragEvent): string[] {
 }
 
 /** Let notes and files be dropped onto `el` to move them into `folder`. */
-function dropTarget(el: HTMLElement, plugin: NimbleStatblocksPlugin, folder: string): void {
+function dropTarget(el: HTMLElement, plugin: EmberVaultPlugin, folder: string): void {
 	el.dataset.dropFolder = folder;
 	const accepts = (e: DragEvent) => !!e.dataTransfer && (e.dataTransfer.types.includes(DRAG_TYPE) || draggedPaths(plugin.app).length > 0 || e.dataTransfer.types.includes('text/uri-list'));
 	el.addEventListener('dragover', (e) => {
@@ -110,7 +110,7 @@ function dropTarget(el: HTMLElement, plugin: NimbleStatblocksPlugin, folder: str
 	});
 }
 
-function noteRow(parent: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, n: NoteRef, opts: OutlineOptions, sourcePath?: string): HTMLElement {
+function noteRow(parent: HTMLElement, plugin: EmberVaultPlugin, c: Campaign, n: NoteRef, opts: OutlineOptions, sourcePath?: string): HTMLElement {
 	const row = parent.createEl('a', { cls: `campaign-note kind-${n.kind}`, href: '#', attr: { 'data-path': n.path } });
 	if (n.path === opts.current) row.addClass('is-current');
 	// A finished quest is ticked off (or crossed out) and fades back.
@@ -136,7 +136,7 @@ function noteRow(parent: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaig
 }
 
 /** An image, PDF or other file in a folder. Opens in Obsidian's own viewer. */
-function fileRow(parent: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, f: FileRef, opts: OutlineOptions): HTMLElement {
+function fileRow(parent: HTMLElement, plugin: EmberVaultPlugin, c: Campaign, f: FileRef, opts: OutlineOptions): HTMLElement {
 	const row = parent.createEl('a', { cls: 'campaign-note campaign-file', href: '#', attr: { 'data-path': f.path } });
 	if (f.path === opts.current) row.addClass('is-current');
 	setIcon(row.createSpan({ cls: 'campaign-note-icon' }), fileIcon(f.ext));
@@ -178,7 +178,7 @@ function group(parent: HTMLElement, key: string, opts: OutlineOptions, head: (h:
  * in, your hero comes first and larger, marked You; in one you run, every hero
  * shows their HP, and the encounter party is read from these sheets.
  */
-export function renderRoster(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign): void {
+export function renderRoster(el: HTMLElement, plugin: EmberVaultPlugin, c: Campaign): void {
 	const gm = c.role !== 'player';
 	const heroes = plugin.campaigns.characters(c);
 	const roster = el.createDiv({ cls: `campaign-roster${gm ? ' is-gm' : ''}` });
@@ -222,7 +222,7 @@ export function renderRoster(el: HTMLElement, plugin: NimbleStatblocksPlugin, c:
  * (a menu on right-click or long-press, and it drags into notes); without one
  * (a party entered by hand), it's just the card.
  */
-function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<CharacterInfo> & { name: string; showHp?: boolean }, menu?: (e: MouseEvent | PointerEvent) => void): HTMLElement {
+function heroCard(list: HTMLElement, plugin: EmberVaultPlugin, h: Partial<CharacterInfo> & { name: string; showHp?: boolean }, menu?: (e: MouseEvent | PointerEvent) => void): HTMLElement {
 	const path = h.path;
 	const card: HTMLElement = path
 		? list.createEl('a', { cls: `campaign-hero${h.mine ? ' is-mine' : ''}`, href: '#', attr: { 'data-path': path } })
@@ -258,7 +258,7 @@ function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<
 }
 
 /** Make a new hero (ancestry, class, stats, background) in the campaign's Party folder. Yours, or another party member. */
-export function promptCharacter(plugin: NimbleStatblocksPlugin, c: Campaign, mine: boolean, name = '', level = c.level): void {
+export function promptCharacter(plugin: EmberVaultPlugin, c: Campaign, mine: boolean, name = '', level = c.level): void {
 	const folder = homeFolderFor(c, 'character', c.folder);
 	const system = plugin.system(c.folder);
 	if (!system.characters) { new Notice(`${system.name} campaigns don't have character sheets yet.`); return; }
@@ -272,12 +272,12 @@ export function promptCharacter(plugin: NimbleStatblocksPlugin, c: Campaign, min
 }
 
 /** The party, as character sheets: the same section for campaigns you run and ones you play in. */
-export function renderPartyLine(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign): void {
+export function renderPartyLine(el: HTMLElement, plugin: EmberVaultPlugin, c: Campaign): void {
 	renderRoster(el, plugin, c);
 }
 
 /** A party entered by hand (name, class, level, HP): a character note for each, keeping their HP, Defense and Wounds. */
-async function sheetsForParty(plugin: NimbleStatblocksPlugin, c: Campaign, party: PartyMember[]): Promise<void> {
+async function sheetsForParty(plugin: EmberVaultPlugin, c: Campaign, party: PartyMember[]): Promise<void> {
 	const folder = homeFolderFor(c, 'character', c.folder);
 	let made = 0;
 	const failed: string[] = [];
@@ -296,7 +296,7 @@ async function sheetsForParty(plugin: NimbleStatblocksPlugin, c: Campaign, party
 	new Notice(`Made ${made} character sheet${made === 1 ? '' : 's'} in ${folder}.${failed.length ? ` Couldn't make ${failed.join(', ')}.` : ''}`);
 }
 
-export function renderOutline(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, opts: OutlineOptions): void {
+export function renderOutline(el: HTMLElement, plugin: EmberVaultPlugin, c: Campaign, opts: OutlineOptions): void {
 	const store = plugin.campaigns;
 
 	if (!opts.inNote) {
@@ -354,7 +354,7 @@ function orderedSections(c: Campaign): Section[] {
 	return [...c.sections].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, undefined, { numeric: true }));
 }
 
-function renderChapter(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, ch: Chapter, opts: OutlineOptions): void {
+function renderChapter(el: HTMLElement, plugin: EmberVaultPlugin, c: Campaign, ch: Chapter, opts: OutlineOptions): void {
 	const { g, h } = group(el, ch.folder, opts, (h) => {
 		h.addClass('campaign-chapter-head');
 		if (ch.home.path === opts.current) h.addClass('is-current');
@@ -380,7 +380,7 @@ function renderChapter(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campa
 	dropTarget(g, plugin, ch.folder);
 }
 
-function renderSection(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campaign, s: Section, opts: OutlineOptions): void {
+function renderSection(el: HTMLElement, plugin: EmberVaultPlugin, c: Campaign, s: Section, opts: OutlineOptions): void {
 	const files = isFileFolder(s);
 	const { g, h } = group(el, s.folder, opts, (h) => {
 		setIcon(h.createSpan({ cls: 'campaign-section-icon' }), SECTION_ICON[s.name] ?? (files ? 'image' : 'folder'));
@@ -413,7 +413,7 @@ function renderSection(el: HTMLElement, plugin: NimbleStatblocksPlugin, c: Campa
 // ---------------------------------------------------------------------------
 // Menus
 
-function newMenu(plugin: NimbleStatblocksPlugin, c: Campaign, e: MouseEvent | PointerEvent, opts?: OutlineOptions): void {
+function newMenu(plugin: EmberVaultPlugin, c: Campaign, e: MouseEvent | PointerEvent, opts?: OutlineOptions): void {
 	const m = new Menu();
 	m.addItem(i => i.setTitle('New session log').setIcon('calendar-days').onClick(() => promptSectionNote(plugin, c, 'session')));
 	m.addItem(i => i.setTitle('New NPC').setIcon('user-round').onClick(() => promptSectionNote(plugin, c, 'npc')));
@@ -428,7 +428,7 @@ function newMenu(plugin: NimbleStatblocksPlugin, c: Campaign, e: MouseEvent | Po
 }
 
 /** Right-click or long-press on a note or file row. */
-function itemMenu(plugin: NimbleStatblocksPlugin, c: Campaign, path: string, e: MouseEvent | PointerEvent): void {
+function itemMenu(plugin: EmberVaultPlugin, c: Campaign, path: string, e: MouseEvent | PointerEvent): void {
 	const f = plugin.app.vault.getAbstractFileByPath(path);
 	if (!f) return;
 	const m = new Menu();
@@ -442,7 +442,7 @@ function itemMenu(plugin: NimbleStatblocksPlugin, c: Campaign, path: string, e: 
 	m.showAtMouseEvent(e);
 }
 
-function sectionMenu(plugin: NimbleStatblocksPlugin, c: Campaign, s: Section, e: MouseEvent | PointerEvent, opts: OutlineOptions): void {
+function sectionMenu(plugin: EmberVaultPlugin, c: Campaign, s: Section, e: MouseEvent | PointerEvent, opts: OutlineOptions): void {
 	const folder = plugin.app.vault.getAbstractFileByPath(s.folder);
 	const m = new Menu();
 	m.addItem(i => i.setTitle('New note…').setIcon('file-plus').setSection('action-primary').onClick(() => promptNew(plugin, c, s.folder, opts)));
@@ -457,7 +457,7 @@ function sectionMenu(plugin: NimbleStatblocksPlugin, c: Campaign, s: Section, e:
 	m.showAtMouseEvent(e);
 }
 
-function chapterMenu(plugin: NimbleStatblocksPlugin, c: Campaign, ch: Chapter, e: MouseEvent | PointerEvent, opts: OutlineOptions): void {
+function chapterMenu(plugin: EmberVaultPlugin, c: Campaign, ch: Chapter, e: MouseEvent | PointerEvent, opts: OutlineOptions): void {
 	const folder = plugin.app.vault.getAbstractFileByPath(ch.folder);
 	const m = new Menu();
 	m.addItem(i => i.setTitle('New scene or note…').setIcon('file-plus').setSection('action-primary').onClick(() => promptNew(plugin, c, ch.folder, opts)));
@@ -480,7 +480,7 @@ const TRASH_NOTE = 'Deleted files follow your Obsidian setting under Files and l
 // ---------------------------------------------------------------------------
 // Prompts
 
-async function openNew(plugin: NimbleStatblocksPlugin, p: Promise<{ path: string }>): Promise<void> {
+async function openNew(plugin: EmberVaultPlugin, p: Promise<{ path: string }>): Promise<void> {
 	try {
 		const f = await p;
 		await plugin.campaigns.open(f.path);
@@ -501,7 +501,7 @@ function starterFor(folderName: string, isChapter: boolean): StarterKind {
 }
 
 /** The guided New note dialog for a chapter or folder (or the campaign folder itself). */
-export function promptNew(plugin: NimbleStatblocksPlugin, c: Campaign, folder: string, opts?: OutlineOptions): void {
+export function promptNew(plugin: EmberVaultPlugin, c: Campaign, folder: string, opts?: OutlineOptions): void {
 	const ch = c.chapters.find(x => x.folder === folder);
 	const name = folder === c.folder ? c.name : folder.replace(/^.*\//, '');
 	const kind = starterFor(ch ? '' : name, !!ch);
@@ -526,7 +526,7 @@ export function promptNew(plugin: NimbleStatblocksPlugin, c: Campaign, folder: s
 	}).open();
 }
 
-function addFiles(plugin: NimbleStatblocksPlugin, folder: string, opts?: OutlineOptions): void {
+function addFiles(plugin: EmberVaultPlugin, folder: string, opts?: OutlineOptions): void {
 	void pickFiles().then(files => {
 		if (!files.length) return;
 		expand(opts, folder);
@@ -534,11 +534,11 @@ function addFiles(plugin: NimbleStatblocksPlugin, folder: string, opts?: Outline
 	});
 }
 
-function promptFolder(plugin: NimbleStatblocksPlugin, c: Campaign, opts?: OutlineOptions): void {
+function promptFolder(plugin: EmberVaultPlugin, c: Campaign, opts?: OutlineOptions): void {
 	new NamePrompt(plugin.app, 'New folder', 'Folder name, e.g. Factions', '', 'Create', (name) => void plugin.campaigns.createFolder(c.folder, name).then(path => expand(opts, path))).open();
 }
 
-function promptRename(plugin: NimbleStatblocksPlugin, path: string): void {
+function promptRename(plugin: EmberVaultPlugin, path: string): void {
 	const f = plugin.app.vault.getAbstractFileByPath(path);
 	if (!f) return;
 	const current = f instanceof TFile && f.extension === 'md' ? f.basename : f.name;
@@ -557,11 +557,11 @@ export function moveTargets(c: Campaign, path: string): MoveTarget[] {
 	return all.filter(t => t.folder !== parent && t.folder !== path && !t.folder.startsWith(path + '/'));
 }
 
-function promptMove(plugin: NimbleStatblocksPlugin, c: Campaign, path: string): void {
+function promptMove(plugin: EmberVaultPlugin, c: Campaign, path: string): void {
 	new MovePicker(plugin.app, moveTargets(c, path), (t) => void plugin.campaigns.move([path], t.folder)).open();
 }
 
-export function promptChapter(plugin: NimbleStatblocksPlugin, c: Campaign): void {
+export function promptChapter(plugin: EmberVaultPlugin, c: Campaign): void {
 	let label = '';
 	new NamePrompt(plugin.app, 'New chapter', 'Chapter name, e.g. The Sunless Citadel', `Chapter ${c.chapters.length + 1}`, 'Create',
 		(name) => void openNew(plugin, plugin.campaigns.createChapter(c, name, label || undefined)),
@@ -571,7 +571,7 @@ export function promptChapter(plugin: NimbleStatblocksPlugin, c: Campaign): void
 		}).open();
 }
 
-export function promptScene(plugin: NimbleStatblocksPlugin, ch: Chapter): void {
+export function promptScene(plugin: EmberVaultPlugin, ch: Chapter): void {
 	const c = plugin.campaigns.of(ch.home.path);
 	if (c) { promptNew(plugin, c, ch.folder); return; }
 	new NamePrompt(plugin.app, `New scene in ${ch.name}`, 'Scene name, e.g. The Collapsed Bridge', '', 'Create',
@@ -579,7 +579,7 @@ export function promptScene(plugin: NimbleStatblocksPlugin, ch: Chapter): void {
 }
 
 /** New scene from a command: the chapter you're in, or ask which. */
-export function newSceneAnywhere(plugin: NimbleStatblocksPlugin): void {
+export function newSceneAnywhere(plugin: EmberVaultPlugin): void {
 	const f = plugin.app.workspace.getActiveFile();
 	const here = f ? plugin.campaigns.chapterOf(f.path) : undefined;
 	if (here) { promptScene(plugin, here); return; }
@@ -590,7 +590,7 @@ export function newSceneAnywhere(plugin: NimbleStatblocksPlugin): void {
 	new ChapterPicker(plugin.app, c.chapters, (ch) => promptScene(plugin, ch)).open();
 }
 
-export function promptSectionNote(plugin: NimbleStatblocksPlugin, c: Campaign, kind: keyof typeof SECTION_FOR): void {
+export function promptSectionNote(plugin: EmberVaultPlugin, c: Campaign, kind: keyof typeof SECTION_FOR): void {
 	const label = kind === 'npc' ? 'NPC' : kind;
 	const initial = kind === 'session' ? plugin.campaigns.nextSessionName(c) : '';
 	const placeholder = STARTERS.find(s => s.kind === kind)?.placeholder ?? 'Name';
@@ -603,7 +603,7 @@ export function promptSectionNote(plugin: NimbleStatblocksPlugin, c: Campaign, k
  * and campaigns you play in are listed apart, and picking one switches the
  * plugin to that side.
  */
-export function campaignMenu(plugin: NimbleStatblocksPlugin, e: MouseEvent | PointerEvent): void {
+export function campaignMenu(plugin: EmberVaultPlugin, e: MouseEvent | PointerEvent): void {
 	const m = new Menu();
 	const all = plugin.campaigns.campaigns;
 	const groups: [string, Campaign[]][] = [['Running', all.filter(c => c.role === 'gm')], ['Playing', all.filter(c => c.role === 'player')]];

@@ -3,7 +3,7 @@
 
 import { setIcon } from 'obsidian';
 import { openRecord } from './record-modal';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { MonsterIndexEntry } from './types';
 import { CompendiumHit, KIND_LABEL } from './compendium';
 import { CardTarget, CompendiumCardModal, compendiumIcon, CONDITION_ICON, isHit, pluginCardOptions, renderCard } from './compendium-card';
@@ -31,7 +31,7 @@ export type InlineTarget =
  * of that kind. A bare name is a monster first (vault or bestiary), then any
  * compendium entry, then a condition.
  */
-export function resolveInlineRef(plugin: NimbleStatblocksPlugin, text: string, sourcePath: string): InlineTarget | undefined {
+export function resolveInlineRef(plugin: EmberVaultPlugin, text: string, sourcePath: string): InlineTarget | undefined {
 	const ref = parseCompendiumRef(text);
 	if (!ref) return undefined;
 	const condition = (name: string) => {
@@ -52,12 +52,12 @@ export function resolveInlineRef(plugin: NimbleStatblocksPlugin, text: string, s
 }
 
 /** Open a compendium entry or condition in its card modal. */
-export function openCompendiumCard(plugin: NimbleStatblocksPlugin, target: CardTarget): void {
+export function openCompendiumCard(plugin: EmberVaultPlugin, target: CardTarget): void {
 	plugin.hover.hide();
 	new CompendiumCardModal(plugin.app, plugin, target).open();
 }
 
-export function createInlineRef(plugin: NimbleStatblocksPlugin, monsterName: string, sourcePath: string): HTMLElement {
+export function createInlineRef(plugin: EmberVaultPlugin, monsterName: string, sourcePath: string): HTMLElement {
 	const ref = parseCompendiumRef(monsterName);
 	// A bare name that's a monster (or might be, while indexing) takes the monster path, unchanged.
 	if (ref?.kind) {
@@ -83,7 +83,7 @@ function unresolvedRef(text: string, sourcePath: string, shown: string, what: st
 }
 
 /** A spell, item, feature, class… or condition: [icon | name], a card on hover, the card modal on click. */
-function createCompendiumRef(plugin: NimbleStatblocksPlugin, text: string, sourcePath: string, target: CardTarget): HTMLElement {
+function createCompendiumRef(plugin: EmberVaultPlugin, text: string, sourcePath: string, target: CardTarget): HTMLElement {
 	const hit: CompendiumHit | undefined = isHit(target) ? target : undefined;
 	const kind = hit ? hit.kind : 'condition';
 	const label = hit ? KIND_LABEL[hit.kind] : 'Condition';
@@ -107,7 +107,7 @@ function createCompendiumRef(plugin: NimbleStatblocksPlugin, text: string, sourc
 	return container;
 }
 
-function createMonsterRef(plugin: NimbleStatblocksPlugin, monsterName: string, sourcePath: string): HTMLElement {
+function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourcePath: string): HTMLElement {
 	const container = createSpan({ cls: 'nimble-inline-ref' });
 	container.dataset.nimbleRef = monsterName;
 	container.dataset.sourcePath = sourcePath;
@@ -166,7 +166,7 @@ function createMonsterRef(plugin: NimbleStatblocksPlugin, monsterName: string, s
 }
 
 /** Re-render every inline reference on screen, e.g. after the index changes. */
-export function refreshInlineRefs(plugin: NimbleStatblocksPlugin, root?: ParentNode): void {
+export function refreshInlineRefs(plugin: EmberVaultPlugin, root?: ParentNode): void {
 	// By default, every window with a leaf in it: the main one and any popouts.
 	const roots = new Set<ParentNode>(root ? [root] : [activeDocument]);
 	if (!root) plugin.app.workspace.iterateAllLeaves((leaf) => { roots.add(leaf.view.containerEl.doc); });
@@ -186,7 +186,7 @@ export function refreshInlineRefs(plugin: NimbleStatblocksPlugin, root?: ParentN
 // What Nimble shows in the preview card (core/hover-preview.ts owns the card).
 
 /** A monster's stat block (or lore card for players), for the preview card. */
-export function monsterHover(plugin: NimbleStatblocksPlugin, entry: MonsterIndexEntry, anchor?: HTMLElement): HoverContent {
+export function monsterHover(plugin: EmberVaultPlugin, entry: MonsterIndexEntry, anchor?: HTMLElement): HoverContent {
 	const viewPath = anchor?.closest<HTMLElement>('[data-source-path]')?.dataset.sourcePath || undefined;
 	return {
 		name: entry.name,
@@ -200,7 +200,7 @@ export function monsterHover(plugin: NimbleStatblocksPlugin, entry: MonsterIndex
 }
 
 /** A compendium entry (spell, item, feature, class page…) or a condition, as its card. Dice roll, conditions open, links go to the card modal. */
-export function hitHover(plugin: NimbleStatblocksPlugin, target: CardTarget): HoverContent {
+export function hitHover(plugin: EmberVaultPlugin, target: CardTarget): HoverContent {
 	const label = isHit(target) ? KIND_LABEL[target.kind] : 'Condition';
 	return {
 		name: target.name,
@@ -212,7 +212,7 @@ export function hitHover(plugin: NimbleStatblocksPlugin, target: CardTarget): Ho
 }
 
 /** Preview a monster after a short hover. `entry` may be a function so callers can resolve late. */
-export function attachMonsterHover(plugin: NimbleStatblocksPlugin, anchor: HTMLElement, entry: MonsterIndexEntry | (() => MonsterIndexEntry | undefined)): void {
+export function attachMonsterHover(plugin: EmberVaultPlugin, anchor: HTMLElement, entry: MonsterIndexEntry | (() => MonsterIndexEntry | undefined)): void {
 	plugin.hover.attach(anchor, (a) => {
 		const e = typeof entry === 'function' ? entry() : entry;
 		return e ? monsterHover(plugin, e, a) : undefined;
@@ -220,7 +220,7 @@ export function attachMonsterHover(plugin: NimbleStatblocksPlugin, anchor: HTMLE
 }
 
 /** The same for a compendium entry or a condition. */
-export function attachHitHover(plugin: NimbleStatblocksPlugin, anchor: HTMLElement, target: CardTarget | (() => CardTarget | undefined)): void {
+export function attachHitHover(plugin: EmberVaultPlugin, anchor: HTMLElement, target: CardTarget | (() => CardTarget | undefined)): void {
 	plugin.hover.attach(anchor, () => {
 		const t = typeof target === 'function' ? target() : target;
 		return t ? hitHover(plugin, t) : undefined;
@@ -228,7 +228,7 @@ export function attachHitHover(plugin: NimbleStatblocksPlugin, anchor: HTMLEleme
 }
 
 /** `nimble:Name` references, for core's inline-ref finder (Reading view and Live Preview). */
-export function nimbleRefProvider(plugin: NimbleStatblocksPlugin): InlineRefProvider {
+export function nimbleRefProvider(plugin: EmberVaultPlugin): InlineRefProvider {
 	return {
 		id: 'nimble',
 		parse: parseInlineRef,

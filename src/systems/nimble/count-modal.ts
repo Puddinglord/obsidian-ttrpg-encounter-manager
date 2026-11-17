@@ -3,7 +3,7 @@
 // menu's own Add tougher / Add weaker do). Enter adds, Escape cancels.
 
 import { App, Modal, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import type { NimbleMonster } from './types';
 import { formatLevel, monsterRole, shiftMonster } from './rules';
 
@@ -28,7 +28,7 @@ export class AddSeveralModal extends Modal {
 	private summary!: HTMLElement;
 	private strengthDesc: HTMLElement | null = null;
 
-	constructor(app: App, private plugin: NimbleStatblocksPlugin, private monster: NimbleMonster, private filePath?: string) {
+	constructor(app: App, private plugin: EmberVaultPlugin, private monster: NimbleMonster, private filePath?: string) {
 		super(app);
 	}
 

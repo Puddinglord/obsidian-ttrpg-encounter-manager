@@ -1,7 +1,7 @@
 // Nimble's kinds for core's builder (core/builder/frame.ts): the frame and its
 // fields are core's; these wrappers register and open Nimble's own kinds.
 
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import {
 	BuilderOptions, EntityBuilder, kindAvailable as coreAvailable, KindFactory, openBuilder as coreOpen, registerKind as coreRegister,
 } from '../../core/builder/frame';
@@ -26,6 +26,6 @@ export function kindAvailable(kind: EntityKind): boolean {
 }
 
 /** Nimble's builder, wherever it's opened from. */
-export function openBuilder(plugin: NimbleStatblocksPlugin, o: BuilderOptions): EntityBuilder | null {
+export function openBuilder(plugin: EmberVaultPlugin, o: BuilderOptions): EntityBuilder | null {
 	return coreOpen(plugin, { system: 'nimble', ...o });
 }

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type NimbleStatblocksPlugin from '../main';
+import type EmberVaultPlugin from '../main';
 import { FightStore } from '../src/systems/dnd5e/combat-store';
 
-function plugin(): NimbleStatblocksPlugin {
-	return { settings: {}, saveSettings: async () => {} } as unknown as NimbleStatblocksPlugin;
+function plugin(): EmberVaultPlugin {
+	return { settings: {}, saveSettings: async () => {} } as unknown as EmberVaultPlugin;
 }
 
 describe('5e FightStore', () => {

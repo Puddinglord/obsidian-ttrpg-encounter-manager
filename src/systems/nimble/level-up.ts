@@ -5,7 +5,7 @@
 // Nothing is written to the note until the review's button is pressed.
 
 import { Menu, Modal, Notice, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { Compendium, nameKey, ResolvedFeature, StatKey, Subclass } from './compendium';
 import { compendiumFor } from './compendium-data';
 import { renderRulesText, renderSource } from './compendium-card';
@@ -55,7 +55,7 @@ export class LevelUpWizard extends Modal {
 	private comp: Compendium;
 
 	constructor(
-		private plugin: NimbleStatblocksPlugin,
+		private plugin: EmberVaultPlugin,
 		private s: CharacterSheet,
 		private mutate: (fn: (fm: Frontmatter, s: CharacterSheet) => void) => Promise<void>,
 	) {

@@ -6,7 +6,7 @@
 // keeps its view id, so tabs people already had open come back as this.
 
 import { debounce, ItemView, ViewStateResult, WorkspaceLeaf } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { openBuilder } from './entity-builder';
 import type { Item, Spell } from './compendium';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
@@ -26,7 +26,7 @@ export class CompendiumView extends ItemView {
 	/** Where to go once the browser exists (a tab restored with the workspace). */
 	private pendingState: BrowserSnapshot | null = null;
 
-	constructor(leaf: WorkspaceLeaf, private plugin: NimbleStatblocksPlugin) {
+	constructor(leaf: WorkspaceLeaf, private plugin: EmberVaultPlugin) {
 		super(leaf);
 		// Not a navigation view: notes opened from here go to their own tab instead of replacing the compendium.
 		// Back/forward still work: setState records our own moves in the leaf's history.
@@ -168,7 +168,7 @@ export class CompendiumView extends ItemView {
 }
 
 /** Buttons under a non-monster entry's page. */
-export function detailActions(plugin: NimbleStatblocksPlugin, e: Entry): { label: string; icon: string; run: () => void; cta?: boolean }[] {
+export function detailActions(plugin: EmberVaultPlugin, e: Entry): { label: string; icon: string; run: () => void; cta?: boolean }[] {
 	const out: { label: string; icon: string; run: () => void; cta?: boolean }[] = [];
 	if (e.npc) out.push({ label: 'Open note', icon: 'file-symlink', cta: true, run: () => void plugin.app.workspace.openLinkText(e.npc!.path, '', false) });
 	if (entryReference(e)) {

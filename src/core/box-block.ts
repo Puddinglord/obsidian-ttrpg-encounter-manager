@@ -3,13 +3,13 @@
 // written back to the fence line when the editor closes.
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownRenderer, Notice, setIcon, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import {
 	BOX_COLORS, BOX_FONTS, BOX_ICONS, BOX_PRESETS, BOX_STYLES, boxColor, boxFence, BoxOptions, parseBoxFence, resolveBox,
 } from './box-def';
 import { closePopover, openPopover } from './popover';
 
-export function registerBoxBlock(plugin: NimbleStatblocksPlugin): void {
+export function registerBoxBlock(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('box', (source, el, ctx) => {
 		ctx.addChild(new BoxBlock(plugin, el, source, ctx));
 	});
@@ -23,7 +23,7 @@ class BoxBlock extends MarkdownRenderChild {
 	private folded = false;
 	private box!: HTMLElement;
 
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private source: string, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 	}
 

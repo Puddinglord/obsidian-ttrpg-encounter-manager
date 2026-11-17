@@ -2,7 +2,7 @@
 // the ```nimble-sheet block, the Character panel, the commands and the ribbon.
 
 import { Notice, TFile, WorkspaceLeaf } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { registerSheetBlock } from './character-sheet';
 import { CHARACTER_VIEW_TYPE, CharacterView, myCharacter } from './character-view';
 
@@ -11,7 +11,7 @@ import { addItem, Frontmatter } from './character-def';
 import { bundledCompendium } from './compendium-data';
 
 /** Show the Character panel (right sidebar), optionally on a given note. */
-export async function openCharacterView(plugin: NimbleStatblocksPlugin, file?: TFile): Promise<void> {
+export async function openCharacterView(plugin: EmberVaultPlugin, file?: TFile): Promise<void> {
 	const ws = plugin.app.workspace;
 	let leaf: WorkspaceLeaf | null = ws.getLeavesOfType(CHARACTER_VIEW_TYPE)[0] ?? null;
 	if (!leaf) {
@@ -23,7 +23,7 @@ export async function openCharacterView(plugin: NimbleStatblocksPlugin, file?: T
 	if (file && leaf.view instanceof CharacterView) leaf.view.show(file);
 }
 
-export function registerCharacterFeatures(plugin: NimbleStatblocksPlugin): void {
+export function registerCharacterFeatures(plugin: EmberVaultPlugin): void {
 	registerSheetBlock(plugin);
 	plugin.registerView(CHARACTER_VIEW_TYPE, (leaf) => new CharacterView(leaf, plugin));
 	plugin.addRibbonIcon('user-round', 'My character', () => void plugin.openMyCharacter());

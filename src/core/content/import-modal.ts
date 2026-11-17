@@ -2,7 +2,7 @@
 // left out (and why), then add it to the content folder.
 
 import { App, Modal, Notice, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { LoadedPack, packSummary } from './packs';
 
 export class ImportContentModal extends Modal {
@@ -12,7 +12,7 @@ export class ImportContentModal extends Modal {
 	private reportEl!: HTMLElement;
 	private addBtn!: HTMLButtonElement;
 
-	constructor(private plugin: NimbleStatblocksPlugin) {
+	constructor(private plugin: EmberVaultPlugin) {
 		super(plugin.app);
 	}
 

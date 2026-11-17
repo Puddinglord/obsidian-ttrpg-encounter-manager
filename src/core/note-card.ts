@@ -6,12 +6,12 @@
 // the system's stats, or nothing.
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { noteKind } from './campaign-model';
 import { fieldsKey, NoteKindExtension, noteStats, SHARED_NOTE_KINDS, SharedNoteKind } from './note-kinds';
 
 /** The system's stats ("AC 15 · HP 22") and its own drawing, for a note of `kind`. */
-export function drawSystemExtras(plugin: NimbleStatblocksPlugin, el: HTMLElement, ext: NoteKindExtension | undefined, path: string, fm: Record<string, unknown>): void {
+export function drawSystemExtras(plugin: EmberVaultPlugin, el: HTMLElement, ext: NoteKindExtension | undefined, path: string, fm: Record<string, unknown>): void {
 	if (!ext) return;
 	const player = plugin.playerView(path);
 	const stats = noteStats(ext.fields, fm, player);
@@ -28,18 +28,18 @@ export function drawSystemExtras(plugin: NimbleStatblocksPlugin, el: HTMLElement
 }
 
 /** The extension for a note's kind in its campaign's system. */
-export function extensionFor(plugin: NimbleStatblocksPlugin, path: string, kind: string): NoteKindExtension | undefined {
+export function extensionFor(plugin: EmberVaultPlugin, path: string, kind: string): NoteKindExtension | undefined {
 	if (!(SHARED_NOTE_KINDS as readonly string[]).includes(kind)) return undefined;
 	return plugin.system(path).noteKinds?.[kind as SharedNoteKind];
 }
 
 /** What a card depends on, so it redraws when any of it changes: the system, and its fields' values. */
-export function extrasKey(plugin: NimbleStatblocksPlugin, path: string, kind: string, fm: Record<string, unknown>): string {
+export function extrasKey(plugin: EmberVaultPlugin, path: string, kind: string, fm: Record<string, unknown>): string {
 	const ext = extensionFor(plugin, path, kind);
 	return `${plugin.system(path).id}|${plugin.playerView(path)}|${fieldsKey(ext?.fields, fm)}`;
 }
 
-export function registerNoteCard(plugin: NimbleStatblocksPlugin): void {
+export function registerNoteCard(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-note', (_source, el, ctx) => {
 		ctx.addChild(new NoteCard(plugin, el, ctx));
 	});
@@ -48,7 +48,7 @@ export function registerNoteCard(plugin: NimbleStatblocksPlugin): void {
 class NoteCard extends MarkdownRenderChild {
 	private key = '';
 
-	constructor(private plugin: NimbleStatblocksPlugin, el: HTMLElement, private ctx: MarkdownPostProcessorContext) {
+	constructor(private plugin: EmberVaultPlugin, el: HTMLElement, private ctx: MarkdownPostProcessorContext) {
 		super(el);
 	}
 

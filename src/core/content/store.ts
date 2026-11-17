@@ -5,7 +5,7 @@
 // what they ship; a note in the vault still beats a pack.
 
 import { debounce, Events, normalizePath, TAbstractFile, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { KindsFor, LoadedPack, packsEnabled, readPack } from './packs';
 
 export const DEFAULT_CONTENT_FOLDER = 'Ember Vault/Content';
@@ -13,7 +13,7 @@ export const DEFAULT_CONTENT_FOLDER = 'Ember Vault/Content';
 export class ContentStore extends Events {
 	private packs = new Map<string, LoadedPack>();
 
-	constructor(private plugin: NimbleStatblocksPlugin) {
+	constructor(private plugin: EmberVaultPlugin) {
 		super();
 	}
 

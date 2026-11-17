@@ -9,7 +9,7 @@
 //   src/app/** + main  wiring: may import core and any system
 
 import type { MarkdownPostProcessorContext, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import type { ConditionDef, PartyMember } from '../core/types';
 import type { EncounterDef } from '../core/encounter-def';
 import type { SlashCommand } from '../core/slash';
@@ -39,11 +39,11 @@ export interface NewCharacterRequest {
 
 export interface CharacterCapability {
 	/** Ask for a new character (the system's own dialog) and make its note. */
-	promptNew(plugin: NimbleStatblocksPlugin, request: NewCharacterRequest): void;
+	promptNew(plugin: EmberVaultPlugin, request: NewCharacterRequest): void;
 	/** Make a character note for a hero entered by hand, keeping what the party row knows. */
-	createFromPartyMember(plugin: NimbleStatblocksPlugin, member: PartyMember, folder: string): Promise<TFile>;
+	createFromPartyMember(plugin: EmberVaultPlugin, member: PartyMember, folder: string): Promise<TFile>;
 	/** A character note as an encounter party member (level, max HP, armor). */
-	partyMember(plugin: NimbleStatblocksPlugin, frontmatter: Record<string, unknown>, file: TFile): PartyMember;
+	partyMember(plugin: EmberVaultPlugin, frontmatter: Record<string, unknown>, file: TFile): PartyMember;
 }
 
 /** Something to show in a quick look (a modal over whatever you're doing). */
@@ -75,17 +75,17 @@ export interface GameSystem {
 	conditions(edition?: string): readonly ConditionDef[];
 	readonly characters?: CharacterCapability;
 	/** Open a quick look on a note (an NPC, a hero). */
-	quickLook(plugin: NimbleStatblocksPlugin, target: QuickLookNote): void;
+	quickLook(plugin: EmberVaultPlugin, target: QuickLookNote): void;
 	/** Wire the system into the plugin at load: its code blocks, references, indexes, views. Called once. */
-	register?(plugin: NimbleStatblocksPlugin): void;
+	register?(plugin: EmberVaultPlugin): void;
 	/** Draw a ```nimble-encounter block in one of this system's campaigns (difficulty by its rules, Run into its tracker). */
-	encounterBlock?(plugin: NimbleStatblocksPlugin, def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void;
+	encounterBlock?(plugin: EmberVaultPlugin, def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void;
 	/** Show this system's combat tracker (Open encounter tracker, the ribbon). */
-	openTracker?(plugin: NimbleStatblocksPlugin): Promise<void>;
+	openTracker?(plugin: EmberVaultPlugin): Promise<void>;
 	/** Show this system's compendium (Open compendium, the ribbon). */
-	openCompendium?(plugin: NimbleStatblocksPlugin): Promise<void>;
+	openCompendium?(plugin: EmberVaultPlugin): Promise<void>;
 	/** "/" commands in its campaigns, added to core's base ones (a command with a base command's name replaces it). */
-	slashCommands?(plugin: NimbleStatblocksPlugin): SlashCommand[];
+	slashCommands?(plugin: EmberVaultPlugin): SlashCommand[];
 	/** The system's words for things core shows: the party table's defense column ("DEF", "AC"). */
 	readonly vocabulary?: { readonly defense?: string };
 	/**

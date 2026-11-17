@@ -2,14 +2,15 @@
 // "Edit party" modal (opened from /party, the tracker menu and encounter blocks).
 
 import { App, Modal, Notice, setIcon } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { isSheetMember, uid } from './types';
 
-export function renderPartyEditor(container: HTMLElement, plugin: NimbleStatblocksPlugin, rerender: () => void): void {
+export function renderPartyEditor(container: HTMLElement, plugin: EmberVaultPlugin, rerender: () => void): void {
 	const party = plugin.settings.party;
 	const save = async () => {
 		await plugin.saveSettings();
-		plugin.encounters.trigger('changed');
+		// Systems redraw what depends on the party (Nimble's encounter ratings).
+		plugin.events.trigger('party-changed');
 		plugin.rerenderNotes();
 	};
 	const table = container.createDiv({ cls: 'nimble-party-table', attr: { role: 'table', 'aria-label': 'Party' } });
@@ -92,7 +93,7 @@ export function renderPartyEditor(container: HTMLElement, plugin: NimbleStatbloc
 }
 
 export class PartyModal extends Modal {
-	constructor(app: App, private plugin: NimbleStatblocksPlugin) {
+	constructor(app: App, private plugin: EmberVaultPlugin) {
 		super(app);
 	}
 

@@ -2,7 +2,7 @@
 // order, then the monsters. Every change goes through plugin.encounters.
 
 import { App, ItemView, Menu, Modal, Notice, Setting, setIcon, WorkspaceLeaf } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../../main';
+import type EmberVaultPlugin from '../../../main';
 import { AppliedCondition, Encounter, EncounterCreature, MonsterIndexEntry } from './types';
 import { awaitingLastStand, EncounterStore, HpResult, isDown, isHero, isMinionGroup } from './encounters';
 import { conditionLabel, formatLevel, groupAttack, lastStandEffect, minionDie, monsterRole, parseHpCommand, pipStep } from './rules';
@@ -48,7 +48,7 @@ export class EncounterTrackerView extends ItemView {
 	/** Last turn shown, so the turn control can slide from it. */
 	private lastTurn: number | undefined;
 
-	constructor(leaf: WorkspaceLeaf, private plugin: NimbleStatblocksPlugin) {
+	constructor(leaf: WorkspaceLeaf, private plugin: EmberVaultPlugin) {
 		super(leaf);
 	}
 

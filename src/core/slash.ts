@@ -10,7 +10,7 @@
 //   /roll 2d6+3       → rolls and writes the result
 
 import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, Notice, setIcon, TFile } from 'obsidian';
-import type NimbleStatblocksPlugin from '../../main';
+import type EmberVaultPlugin from '../../main';
 import { BOX_PRESETS, boxColor, newBox } from './box-def';
 import { Campaign, fmText, homeFolderFor, NoteRef, questsIn, questState, safeName } from './campaign-model';
 import { parseDice } from './dice';
@@ -60,14 +60,14 @@ export interface SlashCommand {
 }
 
 export interface SlashQuery {
-	plugin: NimbleStatblocksPlugin;
+	plugin: EmberVaultPlugin;
 	/** The note being edited. */
 	path?: string;
 	file: TFile | null;
 }
 
 /** The commands for a note: the base ones, then its system's (which win a name). */
-export function commandsFor(plugin: NimbleStatblocksPlugin, path: string | undefined): SlashCommand[] {
+export function commandsFor(plugin: EmberVaultPlugin, path: string | undefined): SlashCommand[] {
 	const side = plugin.playerView(path) ? 'player' : 'gm';
 	const system = plugin.system(path).slashCommands?.(plugin) ?? [];
 	const names = new Set(system.flatMap(c => [c.name, ...(c.aliases ?? [])]));
@@ -93,7 +93,7 @@ export const SLASH_ORDER = ['monster', 'spell', 'item', 'feature', 'class', 'com
 const rank = (c: SlashCommand) => { const i = SLASH_ORDER.indexOf(c.name); return i !== -1 ? i : c.order ?? SLASH_ORDER.length; };
 
 /** Rows for a query: the matching commands, or (after a space) the command's own rows. */
-export function slashItems(plugin: NimbleStatblocksPlugin, query: string, path: string | undefined, file: TFile | null): SlashItem[] {
+export function slashItems(plugin: EmberVaultPlugin, query: string, path: string | undefined, file: TFile | null): SlashItem[] {
 	const space = query.indexOf(' ');
 	const head = (space === -1 ? query : query.slice(0, space)).toLowerCase();
 	const arg = space === -1 ? null : query.slice(space + 1);
@@ -135,7 +135,7 @@ export function writeAt(editor: Editor, start: EditorPosition, end: EditorPositi
 }
 
 export class SlashSuggest extends EditorSuggest<SlashItem> {
-	constructor(app: App, private plugin: NimbleStatblocksPlugin) {
+	constructor(app: App, private plugin: EmberVaultPlugin) {
 		super(app);
 		this.limit = 40;
 		this.setInstructions([
@@ -198,14 +198,14 @@ export class SlashSuggest extends EditorSuggest<SlashItem> {
 // The commands every game shares.
 
 /** Insert a fixed text (no argument). */
-const insert = (text: string | ((p: NimbleStatblocksPlugin, w: SlashWriter) => string | null), o: { block?: boolean; inside?: boolean } = {}) =>
-	(plugin: NimbleStatblocksPlugin) => (w: SlashWriter) => {
+const insert = (text: string | ((p: EmberVaultPlugin, w: SlashWriter) => string | null), o: { block?: boolean; inside?: boolean } = {}) =>
+	(plugin: EmberVaultPlugin) => (w: SlashWriter) => {
 		const t = typeof text === 'string' ? text : text(plugin, w);
 		if (t === null) { w.clear(); return; }
 		w.write(t, o);
 	};
 
-function baseCommands(plugin: NimbleStatblocksPlugin, path?: string): SlashCommand[] {
+function baseCommands(plugin: EmberVaultPlugin, path?: string): SlashCommand[] {
 	const p = plugin;
 	return [
 		// What the note's system can build (core/builder): /new-monster, /new-spell… The block lands where the slash was.
@@ -254,7 +254,7 @@ function baseCommands(plugin: NimbleStatblocksPlugin, path?: string): SlashComma
 }
 
 /** The note's system's conditions (and the GM's own), as a callout with the rules text. */
-function conditionItems(plugin: NimbleStatblocksPlugin, q: string, path?: string): SlashItem[] {
+function conditionItems(plugin: EmberVaultPlugin, q: string, path?: string): SlashItem[] {
 	const query = q.trim().toLowerCase();
 	const list = [...plugin.system(path).conditions(plugin.edition(path)), ...plugin.settings.customConditions];
 	return list
@@ -268,13 +268,13 @@ function conditionItems(plugin: NimbleStatblocksPlugin, q: string, path?: string
 }
 
 /** /roll: a plain roll. Systems replace /roll to add their own kinds (Nimble's attack rolls, 5e's advantage). */
-export function rollItems(plugin: NimbleStatblocksPlugin, arg: string): SlashItem[] {
+export function rollItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 	const expr = arg.trim().replace(/\s+/g, '') || '1d20';
 	if (!parseDice(expr)) return [{ icon: 'dices', title: `Can't roll "${arg.trim()}"`, detail: 'Try 2d6+3, d20, 4d4-1' }];
 	return [plainRoll(plugin, expr)];
 }
 
-export function plainRoll(plugin: NimbleStatblocksPlugin, expr: string, label = `Roll ${expr}`, title = `Roll ${expr}`): SlashItem {
+export function plainRoll(plugin: EmberVaultPlugin, expr: string, label = `Roll ${expr}`, title = `Roll ${expr}`): SlashItem {
 	return {
 		icon: 'dices', title, detail: '',
 		run: (w) => {
@@ -298,7 +298,7 @@ function boxItems(q: string): SlashItem[] {
 }
 
 /** NPCs in the note's campaign (or anywhere), plus "create one". */
-function npcItems(plugin: NimbleStatblocksPlugin, q: string, here?: string): SlashItem[] {
+function npcItems(plugin: EmberVaultPlugin, q: string, here?: string): SlashItem[] {
 	const query = q.trim().toLowerCase();
 	const store = plugin.campaigns;
 	const camp = here ? store.of(here) : store.active;
@@ -330,7 +330,7 @@ function npcItems(plugin: NimbleStatblocksPlugin, q: string, here?: string): Sla
 }
 
 /** Quests in this note's campaign (or the active one), open ones first, as links. */
-function questItems(plugin: NimbleStatblocksPlugin, q: string, here = ''): SlashItem[] {
+function questItems(plugin: EmberVaultPlugin, q: string, here = ''): SlashItem[] {
 	const query = q.trim().toLowerCase();
 	const store = plugin.campaigns;
 	const app = plugin.app;
@@ -357,7 +357,7 @@ function questItems(plugin: NimbleStatblocksPlugin, q: string, here = ''): Slash
 	});
 }
 
-function imageItems(plugin: NimbleStatblocksPlugin, q: string): SlashItem[] {
+function imageItems(plugin: EmberVaultPlugin, q: string): SlashItem[] {
 	const query = q.trim().toLowerCase();
 	const images = plugin.app.vault.getFiles().filter((f: TFile) => /^(png|jpe?g|webp|gif|avif|svg)$/i.test(f.extension) && (!query || f.path.toLowerCase().includes(query)));
 	const items: SlashItem[] = images.slice(0, 30).map(f => ({
