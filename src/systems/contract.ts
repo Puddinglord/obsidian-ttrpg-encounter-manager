@@ -14,6 +14,7 @@ import type { ConditionDef, PartyMember } from '../core/types';
 import type { EncounterDef } from '../core/encounter-def';
 import type { SlashCommand } from '../core/slash';
 import type { NoteKindExtensions } from '../core/note-kinds';
+import type { KindSpec } from '../core/content/spec';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
 export interface Attribution {
@@ -92,4 +93,10 @@ export interface GameSystem {
 	 * notes get and their cards show, and optionally its own drawing of a kind's card.
 	 */
 	readonly noteKinds?: NoteKindExtensions;
+	/**
+	 * What it takes in content packs (JSON files in the vault): each kind and its
+	 * fields. Packs are checked against these; the system reads the packs a
+	 * campaign uses from `plugin.content.enabled(id, path)`.
+	 */
+	readonly content?: { readonly kinds: readonly KindSpec[] };
 }

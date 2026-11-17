@@ -7,6 +7,7 @@
 import c2014 from './data/compendium-2014.json?gz';
 import c2024 from './data/compendium-2024.json?gz';
 import { conditionsFor } from './conditions';
+import { Content5e, mergeCompendium5e } from './content';
 import type { Dnd5eEdition } from './editions';
 import type { Feature5e } from './types';
 
@@ -44,8 +45,43 @@ export interface Compendium5e {
 	rules: Rule5e[];
 }
 
+// ----------------------------------------------------------------------------
+// Content packs on top (the runtime sets the layer for the active campaign's packs)
+
+let layer: ((edition: Dnd5eEdition) => Content5e | null) | null = null;
+let version = 0;
+const merged = new Map<Dnd5eEdition, Compendium5e>();
+const added = new Map<Dnd5eEdition, Content5e | null>();
+
+/** Put content packs' entries on top of the SRD (null: none). Everything built from the compendium is rebuilt. */
+export function setContentLayer5e(fn: ((edition: Dnd5eEdition) => Content5e | null) | null): void {
+	layer = fn;
+	version++;
+	merged.clear();
+	added.clear();
+	cache.clear();
+}
+
+/** Changes whenever the layer does (for caches built from the compendium). */
+export function contentVersion5e(): number {
+	return version;
+}
+
+/** What the packs add for an edition. */
+export function packContent5e(edition: Dnd5eEdition): Content5e | null {
+	if (!layer) return null;
+	if (!added.has(edition)) added.set(edition, layer(edition));
+	return added.get(edition) ?? null;
+}
+
+/** An edition's compendium: the SRD, with any content packs on top. */
 export function compendium5e(edition: Dnd5eEdition): Compendium5e {
-	return (edition === '2014' ? c2014 : c2024)() as Compendium5e;
+	const base = (edition === '2014' ? c2014 : c2024)() as Compendium5e;
+	const add = packContent5e(edition);
+	if (!add) return base;
+	let m = merged.get(edition);
+	if (!m) merged.set(edition, m = mergeCompendium5e(base, add));
+	return m;
 }
 
 export type Kind5e = 'spell' | 'item' | 'equipment' | 'class' | 'subclass' | 'species' | 'background' | 'feat' | 'rule' | 'condition';

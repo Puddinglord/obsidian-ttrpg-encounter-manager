@@ -15,6 +15,7 @@ The second game system, and the template for adding more. One system, two **edit
 | Encounters | `encounter-block.ts`, `combat-store.ts` (saved under `settings.systemData.dnd5e.fight`), `tracker-view.ts` |
 | Characters | `character.ts`, `sheet.ts`, `new-character.ts` |
 | Builders | `builder-model.ts` (pure: the monster draft and its formulas: HP from hit dice and Con, PB and XP from CR, saves, skills, passive Perception, attacks in each edition's words), `builders.ts` (monster, spell and magic item schemas for core's builder), `homebrew.ts` (pure: the ```5e-spell and ```5e-item formats), `homebrew-index.ts` (your spells and items, before the SRD's) |
+| Content packs | `content.ts` (pure: the kinds 5e takes, `content5e` and `mergeCompendium5e`); `compendium.ts` and `monster-index.ts` read the layer the runtime sets (`setContentLayer5e`) from the active campaign's packs. The schema is `docs/content/5e.schema.json` (UPDATE_SCHEMAS=1 on the content-packs test writes it) |
 | NPCs | `npc.ts` (the NPC fields 5e adds to core's NPC notes: `ac`, `hp`, `cr`, `statblock`; the NPC as a monster for the tracker), `npc-card.ts` (the stat block reference and Add to fight in the NPC card) |
 | Editor | `suggest.ts` (`5e:` autocomplete), `slash.ts` ("/" commands: `/monster`, `/spell` and the other compendium kinds, `/encounter`, `/add`, `/statblock`, `/fought`, `/roll` with advantage) |
 | Data | `conditions.ts`, `data/*.json` |

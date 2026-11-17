@@ -63,6 +63,8 @@ import { noteKind, safeName } from './src/core/campaign-model';
 import { creatureNote } from './src/core/campaign-templates';
 import { addEditButton, registerBuilders } from './src/systems/nimble/builder-register';
 import { registerBuilderCommands } from './src/core/builder/commands';
+import { ContentStore } from './src/core/content/store';
+import { ImportContentModal } from './src/core/content/import-modal';
 import { registerHomebrewBlocks } from './src/systems/nimble/homebrew-block';
 import { bundledCompendium, setCompendiumDrafts, setHomebrew } from './src/systems/nimble/compendium-data';
 import type { GameSystem } from './src/systems/contract';
@@ -133,6 +135,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	readonly inlineRefs = new InlineRefs();
 	/** The game systems the plugin knows. Nimble is the default (and, for now, the only one). */
 	readonly systems = createSystems();
+	/** Content packs in the vault (JSON), for the systems that take them. */
+	readonly content = new ContentStore(this);
 	/** Bumped when the NPC list changes; Live Preview decorations watch it. */
 	npcVersion = 0;
 	private wakeLock: WakeLockSentinel | null = null;
@@ -273,6 +277,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.inlineRefs.add(nimbleRefProvider(this));
 		// The other game systems wire in their own blocks, references and indexes.
 		for (const system of this.systems.all()) system.register?.(this);
+		this.content.register();
+		this.addCommand({ id: 'import-content', name: 'Import content…', icon: 'package-plus', callback: () => new ImportContentModal(this).open() });
 		this.registerMarkdownPostProcessor((el, ctx) => this.inlineRefs.process(el, ctx.sourcePath));
 
 		// Live Preview + autocomplete

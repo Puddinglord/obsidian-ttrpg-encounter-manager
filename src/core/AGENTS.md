@@ -34,6 +34,7 @@ Then it calls a contract member: `system.characters?.promptNew(…)`, `system.qu
 | `slash.ts` | The "/" menu and the commands every game shares; systems add theirs with `slashCommands` |
 | `builder/` | The builder: `frame.ts` (the dialog: steps, preview, check, fields; kinds registered per system with `registerKind(system, kind, …)`), `schema.ts` (a builder from a schema: steps of fields, formulas as hints and placeholders), `commands.ts` (New monster/spell/item… for the note's system, the Edit pencil, `rewriteBlock`). Core's slash menu offers `/new-<kind>` for whatever the note's system registered |
 | `compendium/` | The compendium engine: `query.ts` (the search language, bound to a system's words by `createCompendiumQuery(schema)`), `filter-field.ts` (filters as chips), `browser.ts` (the browser: tabs, list, page, keys, fed by a system's `CompendiumSource`), `refs.ts` (copy or insert a reference) |
+| `content/` | Content packs: `spec.ts` (kinds as fields: checks entries with plain reasons, and writes the JSON Schema), `packs.ts` (reading a pack, `packs:` per campaign), `store.ts` (`plugin.content`: the packs in the content folder, kept current), `import-modal.ts` (Import content…, the report) |
 | `note-kinds.ts`, `note-card.ts` | The shared note kinds (NPC, location, quest, map) and what a system adds: properties new notes get (`fields`), stats on the card, its own drawing (`card`, or `replace` to draw the whole card). NPCs draw it in their ```nimble-npc card; other kinds in a ```nimble-note block that new notes get when the system has a `card` for them |
 | `types.ts` | Conditions (`ConditionDef`, `AppliedCondition`), party members, roll log, `uid()` |
 | `popover.ts`, `touch.ts`, `segmented.ts`, `tooltips.ts`, `compat.ts`, `internals.ts` | UI helpers |
@@ -43,4 +44,4 @@ Then it calls a contract member: `system.characters?.promptNew(…)`, `system.qu
 - **Campaigns are indexed after Obsidian's layout is ready.** Anything drawn at startup that depends on the note's system or edition must redraw on `plugin.campaigns.on('changed')` if the answer changed (see `app/encounter-blocks.ts`).
 - **`title` attributes become Obsidian tooltips:** `tooltips.ts` moves them to `aria-label`. Tests should read either.
 - **Names in frontmatter can be numbers** (`edition: 2024` is a YAML number); read them through helpers that accept both.
-- **Pure modules** (`types.ts`, `note-kinds.ts`, `compendium/query.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `campaign-model.ts`) must not import `obsidian`.
+- **Pure modules** (`types.ts`, `note-kinds.ts`, `compendium/query.ts`, `content/spec.ts`, `content/packs.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `campaign-model.ts`) must not import `obsidian`.

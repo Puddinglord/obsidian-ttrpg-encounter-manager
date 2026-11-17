@@ -70,4 +70,6 @@ export interface Dnd5eEntry {
 	filePath: string;
 	monster: Dnd5eMonster;
 	bundled?: boolean;
+	/** From this content pack. */
+	pack?: string;
 }

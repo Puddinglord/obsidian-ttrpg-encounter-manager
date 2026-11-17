@@ -9,6 +9,9 @@ import { confirmAction } from '../core/touch';
 import { setCompendiumDrafts } from '../systems/nimble/compendium-data';
 import { FINISHES } from '../core/dice3d/styles';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from '../systems/nimble/bestiary';
+import { DEFAULT_CONTENT_FOLDER } from '../core/content/store';
+import { ImportContentModal, PackReportModal } from '../core/content/import-modal';
+import { packSummary } from '../core/content/packs';
 
 /** One settings row. `block` rows draw their own content instead of a name and controls. */
 interface Row {
@@ -169,6 +172,24 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					name: 'Stat blocks in campaigns you play in',
 					desc: 'In a player campaign, monsters show as lore cards (what your hero could know) instead of stat blocks. Turn this on if you don\'t mind spoilers.',
 					render: toggle(() => s.playerStatblocks, v => { s.playerStatblocks = v; }, () => { this.plugin.refreshSide(); this.plugin.campaigns.trigger('changed'); }),
+				},
+			] },
+			{ heading: 'Content packs', rows: [
+				{
+					name: 'Content folder',
+					desc: 'JSON files here add monsters, spells, subclasses and more to a game. A campaign can pick its packs with "packs:" on its home note.',
+					render: (setting) => {
+						setting.addText(t => t.setPlaceholder(DEFAULT_CONTENT_FOLDER).setValue(s.contentFolder ?? '').onChange(async (v) => {
+							s.contentFolder = v.trim() || undefined;
+							await save();
+							void this.plugin.content.load();
+						}));
+						setting.addButton(b => b.setButtonText('Import content…').onClick(() => new ImportContentModal(this.plugin).open()));
+					},
+				},
+				{
+					name: 'Packs',
+					block: (el) => renderPackList(el, this.plugin),
 				},
 			] },
 			{ heading: 'Character sheets', rows: [
@@ -414,4 +435,26 @@ class EditConditionModal extends Modal {
 	onClose(): void {
 		this.contentEl.empty();
 	}
+}
+
+/** The packs in the content folder: each one's game and what it adds, and a click for what was left out. */
+function renderPackList(el: HTMLElement, plugin: NimbleStatblocksPlugin): void {
+	const list = el.createDiv({ cls: 'nimble-pack-list' });
+	const draw = () => {
+		list.empty();
+		const packs = plugin.content.all();
+		if (!packs.length) { list.createDiv({ cls: 'nimble-pack-empty', text: `No packs yet. Put a pack's .json file in ${plugin.content.folder()}, or use Import content.` }); return; }
+		for (const p of packs) {
+			const row = list.createDiv({ cls: `nimble-pack-row${p.error ? ' is-error' : p.rejected.length ? ' is-partial' : ''}` });
+			const text = row.createDiv({ cls: 'nimble-pack-text' });
+			text.createDiv({ cls: 'nimble-pack-name', text: `${p.name}${p.system ? ` · ${plugin.systems.get(p.system)?.name ?? p.system}${p.edition ? ` ${p.edition}` : ''}` : ''}` });
+			text.createDiv({ cls: 'nimble-pack-summary', text: packSummary(p) });
+			if (p.error || p.rejected.length || p.warnings.length) {
+				const b = row.createEl('button', { text: 'Details' });
+				b.addEventListener('click', () => new PackReportModal(plugin.app, p).open());
+			}
+		}
+	};
+	draw();
+	const ref = plugin.content.on('changed', () => { if (!list.isConnected) plugin.content.offref(ref); else draw(); });
 }

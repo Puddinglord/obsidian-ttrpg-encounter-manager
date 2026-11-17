@@ -7,7 +7,7 @@
 // Pure: no Obsidian imports.
 
 import { CompendiumEntry, createCompendiumQuery, QuerySchema, SegmentDef, SortDef } from '../../core/compendium/query';
-import { allHits, Hit5e, KIND5E, Kind5e } from './compendium';
+import { allHits, contentVersion5e, Hit5e, KIND5E, Kind5e } from './compendium';
 import type { Dnd5eEdition } from './editions';
 import { crLabel, crValue, xpOf } from './rules';
 import type { Dnd5eEntry } from './types';
@@ -125,7 +125,7 @@ function monsterEntry(e: Dnd5eEntry, lore: boolean): Entry5e {
 	const facets: Record<string, string[]> = {
 		type: type ? [type] : [],
 		size: m.size ? [cap(m.size.toLowerCase())] : [],
-		source: [e.bundled ? (m.source ?? 'SRD') : 'Your notes'],
+		source: [e.pack ?? (e.bundled ? (m.source ?? 'SRD') : 'Your notes')],
 	};
 	const nums: Record<string, number> = {};
 	const flags: string[] = [];
@@ -140,7 +140,8 @@ function monsterEntry(e: Dnd5eEntry, lore: boolean): Entry5e {
 		if (m.legendaryActions?.length) flags.push('legendary');
 		if ((m.traits ?? []).concat(m.actions ?? []).some(f => /spellcasting/i.test(f.name))) flags.push('spellcaster');
 	}
-	if (!e.bundled) flags.push('mine');
+	if (!e.bundled && !e.pack) flags.push('mine');
+	if (e.pack) flags.push('pack');
 	if (swarm) flags.push('swarm');
 	return {
 		id: `monster:${m.bundledId ?? `${e.filePath}#${e.name}`}`,
@@ -231,18 +232,23 @@ function hitEntry(h: Hit5e): Entry5e {
 			text = firstLine(h.desc, 600);
 			break;
 	}
+	// A content pack's entry says which pack.
+	const from = (Object.values(h).find(v => v && typeof v === 'object' && typeof (v as { source?: unknown }).source === 'string') as { source?: string } | undefined)?.source;
+	if (from) { facets.source = [from]; flags.push('pack'); }
 	return { id: `${h.kind}:${h.name}`, kind: h.kind, segments: [SEGMENT_OF[h.kind]], name: h.name, detail: h.detail, badge, facets, nums, flags, text, hit: h };
 }
 
-const hitCache = new Map<Dnd5eEdition, Entry5e[]>();
+const hitCache = new Map<string, Entry5e[]>();
 
 /**
  * Every entry for an edition: the monsters a note can see, your spells and
  * items (`mine`, which replace the SRD's of the same name), then the compendium.
  */
 export function buildEntries5e(edition: Dnd5eEdition, monsters: Dnd5eEntry[], lore = false, mine: Hit5e[] = []): Entry5e[] {
-	let hits = hitCache.get(edition);
-	if (!hits) hitCache.set(edition, hits = allHits(edition).map(hitEntry));
+	// Content packs change what's in the compendium: the version keeps the cache honest.
+	const key = `${edition}:${contentVersion5e()}`;
+	let hits = hitCache.get(key);
+	if (!hits) { hitCache.clear(); hitCache.set(key, hits = allHits(edition).map(hitEntry)); }
 	const yours = mine.map(h => { const e = hitEntry(h); e.id = `mine:${e.id}`; e.facets.source = ['Your notes']; e.flags.push('mine'); return e; });
 	const taken = new Set(mine.map(h => `${h.kind}:${h.name.toLowerCase()}`));
 	return [...monsters.map(m => monsterEntry(m, lore)), ...yours, ...(taken.size ? hits.filter(e => !taken.has(`${e.kind}:${e.name.toLowerCase()}`)) : hits)];

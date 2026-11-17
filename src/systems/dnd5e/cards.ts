@@ -185,7 +185,8 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			text(hit.desc);
 			break;
 	}
-	card.createDiv({ cls: 'dnd5e-source', text: hit.edition === '2014' ? 'SRD 5.1' : 'SRD 5.2' });
+	const own = (Object.values(hit).find(v => v && typeof v === 'object' && typeof (v as { source?: unknown }).source === 'string') as { source?: string } | undefined)?.source;
+	card.createDiv({ cls: 'dnd5e-source', text: own ?? (hit.edition === '2014' ? 'SRD 5.1' : 'SRD 5.2') });
 	wireWikiLinks(card, o.app, o.sourcePath);
 	return card;
 }

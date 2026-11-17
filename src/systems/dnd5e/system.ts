@@ -12,6 +12,7 @@ import { readSheet5e } from './character';
 import { asEdition } from './editions';
 import { createCharacterNote5e, Dnd5eNewCharacterModal } from './new-character';
 import { dnd5eSlashCommands } from './slash';
+import { KINDS_5E } from './content';
 import { NPC_FIELDS_5E } from './npc';
 import { drawNpc5e } from './npc-card';
 
@@ -22,6 +23,7 @@ export const dnd5eSystem: GameSystem = {
 	editions: EDITIONS,
 	attribution: DND5E_ATTRIBUTION,
 	vocabulary: { defense: 'AC' },
+	content: { kinds: KINDS_5E },
 	slashCommands: dnd5eSlashCommands,
 	noteKinds: {
 		npc: { fields: NPC_FIELDS_5E, card: (el, ctx) => drawNpc5e(dnd5e(), el, ctx) },

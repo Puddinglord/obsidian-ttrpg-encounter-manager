@@ -19,6 +19,9 @@ import { Dnd5eEncounterBlock } from './encounter-block';
 import type { EncounterDef } from '../../core/encounter-def';
 import { Hit5e, KIND5E, Kind5e, kindFromWord, spellLine } from './compendium';
 import { findIn, Homebrew5e, mergeHits } from './homebrew-index';
+import { setContentLayer5e } from './compendium';
+import { content5e } from './content';
+import type { LoadedPack } from '../../core/content/packs';
 import { ITEM_LANG, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
 import { registerBuilders5e } from './builders';
 import { addEditButton } from '../../core/builder/commands';
@@ -98,6 +101,22 @@ export class Dnd5eRuntime {
 		plugin.registerEditorSuggest(new Dnd5eRefSuggest(plugin.app, this));
 		plugin.registerView(DND5E_TRACKER_VIEW, (leaf) => new Dnd5eTrackerView(leaf, this));
 		plugin.registerView(DND5E_COMPENDIUM_VIEW, (leaf) => new Dnd5eCompendiumView(leaf, this));
+
+		// Content packs the active campaign uses go on top of the SRD (a note still beats them).
+		let applied: LoadedPack[] = [];
+		const applyPacks = () => {
+			const packs = plugin.content.enabled('dnd5e', plugin.campaigns.active?.home.path);
+			if (packs.length === applied.length && packs.every((p, i) => p === applied[i])) return;
+			applied = packs;
+			const forEdition = (ed: Dnd5eEdition) => {
+				const mine = packs.filter(p => !p.edition || p.edition === ed);
+				return mine.length ? content5e(mine.flatMap(p => p.entries.map(e => ({ ...e, pack: p.name })))) : null;
+			};
+			setContentLayer5e(packs.length ? forEdition : null);
+			this.index.vault.trigger('changed');
+		};
+		plugin.registerEvent(plugin.content.on('changed', applyPacks));
+		plugin.registerEvent(plugin.campaigns.on('changed', applyPacks));
 
 		const indexes = [this.index.vault, ...this.homebrew.indexes];
 		for (const index of indexes) {

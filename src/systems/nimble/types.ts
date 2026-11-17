@@ -215,6 +215,8 @@ export interface NimbleStatblocksSettings {
 	mapTokens?: Record<string, Record<string, { x: number; y: number }>>;
 	/** Each other game system's own saved state, by system id (5e: its current fight). Each system reads its own defensively. */
 	systemData?: Record<string, Record<string, unknown>>;
+	/** Where content packs (JSON) live; empty means Ember Vault/Content. */
+	contentFolder?: string;
 	settingsVersion: number;
 }
 

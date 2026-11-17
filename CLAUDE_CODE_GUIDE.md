@@ -24,6 +24,7 @@ src/app/
   settings-tab.ts       Settings UI (party, bestiary, rules, custom conditions)
   systems.ts            SHIPPED_SYSTEMS and createSystems(): every system the plugin ships, the first is the default
 src/core/
+  content/              Content packs: spec.ts (fields → checks and JSON Schema), packs.ts (read a pack, packs: per campaign), store.ts (plugin.content), import-modal.ts
   builder/              The builder for every system: frame.ts (the dialog, its fields, kinds registered per system), schema.ts (builders from a schema of fields and formulas), commands.ts (New monster/spell/item…, the Edit pencil, rewriteBlock)
   compendium/           The compendium engine: query.ts (search language: typed filters, fuzzy names, sorts, suggestions; pure, tested), filter-field.ts (filters as chips), browser.ts (tabs, list, page, keys), refs.ts
   slash.ts              "/" menu engine and the commands every game shares (boxes, NPCs, quests, maps, party, roll, conditions); systems add theirs through `slashCommands`

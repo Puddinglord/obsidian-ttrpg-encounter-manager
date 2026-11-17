@@ -1,0 +1,1113 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Ember Vault content pack (5e)",
+	"description": "An Ember Vault content pack for 5e. Put the file in your content folder (Ember Vault/Content by default), or use Import content.",
+	"type": "object",
+	"required": [
+		"pack",
+		"system",
+		"entries"
+	],
+	"properties": {
+		"pack": {
+			"type": "string",
+			"description": "The pack's name, as campaigns turn it on or off."
+		},
+		"system": {
+			"const": "5e"
+		},
+		"edition": {
+			"enum": [
+				"2024",
+				"2014"
+			],
+			"description": "Only for campaigns on these rules. Leave it out for both."
+		},
+		"version": {
+			"type": "number"
+		},
+		"description": {
+			"type": "string"
+		},
+		"entries": {
+			"type": "array",
+			"items": {
+				"oneOf": [
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "monster"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"statblock": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The whole stat block in the ```5e block format, instead of the fields below."
+							},
+							"size": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Tiny, Small, Medium, Large, Huge or Gargantuan."
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"humanoid (goblinoid)\""
+							},
+							"alignment": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"ac": {
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 40
+							},
+							"acNote": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"natural armor\""
+							},
+							"hp": {
+								"type": "integer",
+								"minimum": 1
+							},
+							"hpFormula": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"4d8 + 4\""
+							},
+							"speed": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"30 ft., fly 60 ft.\""
+							},
+							"abilities": {
+								"type": "array",
+								"items": {
+									"type": "number"
+								},
+								"minItems": 6,
+								"maxItems": 6,
+								"description": "Str, Dex, Con, Int, Wis, Cha scores."
+							},
+							"saves": {
+								"type": "object",
+								"additionalProperties": {
+									"type": "number"
+								},
+								"description": "Saving throw bonuses that differ from the modifier: { \"dex\": 5 }."
+							},
+							"skills": {
+								"type": "object",
+								"additionalProperties": {
+									"type": "number"
+								},
+								"description": "{ \"Stealth\": 6 }"
+							},
+							"vulnerabilities": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"resistances": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"immunities": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"conditionImmunities": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"senses": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"languages": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"cr": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"1/4\", \"5\""
+							},
+							"xp": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"pb": {
+								"type": "integer"
+							},
+							"initiative": {
+								"type": "integer"
+							},
+							"gear": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"traits": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"actions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"bonusActions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"reactions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"legendaryActions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"legendaryIntro": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"description": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"source": {
+								"type": [
+									"string",
+									"number"
+								]
+							}
+						},
+						"required": [
+							"kind",
+							"name"
+						],
+						"title": "Monster",
+						"description": "A stat block. Give the fields, or \"statblock\" with the text of a ```5e block."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "spell"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"level": {
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 9,
+								"description": "0 for a cantrip."
+							},
+							"school": {
+								"type": [
+									"string",
+									"number"
+								],
+								"enum": [
+									"Abjuration",
+									"Conjuration",
+									"Divination",
+									"Enchantment",
+									"Evocation",
+									"Illusion",
+									"Necromancy",
+									"Transmutation"
+								]
+							},
+							"castingTime": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Action\", \"1 minute\""
+							},
+							"range": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"60 feet\""
+							},
+							"components": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"V, S, M (a pinch of ash)\""
+							},
+							"duration": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Instantaneous\", \"Concentration, up to 1 minute\""
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"higherLevel": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "What a higher-level slot adds."
+							},
+							"classes": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"concentration": {
+								"type": "boolean"
+							},
+							"ritual": {
+								"type": "boolean"
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"level",
+							"school",
+							"castingTime",
+							"range",
+							"components",
+							"duration",
+							"desc"
+						],
+						"title": "Spell",
+						"description": "A spell, as the compendium shows it."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "item"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"rarity": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Common, Uncommon, Rare, Very Rare, Legendary or Artifact."
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Wondrous item\", \"Weapon (Longsword)\""
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"attunement": {
+								"type": "boolean"
+							},
+							"line": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The line under the name, if not the usual \"Weapon (Longsword), rare\"."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"rarity",
+							"type",
+							"desc"
+						],
+						"title": "Magic item",
+						"description": "A magic item."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "equipment"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"category": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Weapon\", \"Armor\", \"Adventuring Gear\", \"Tools\""
+							},
+							"cost": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"15 gp\""
+							},
+							"weight": {
+								"type": "number",
+								"minimum": 0
+							},
+							"weaponCategory": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Simple or Martial."
+							},
+							"weaponRange": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Melee or Ranged."
+							},
+							"damage": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"1d8 slashing\""
+							},
+							"versatile": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"range": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"properties": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"mastery": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"armorCategory": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Light, Medium, Heavy or Shield."
+							},
+							"ac": {
+								"type": "object",
+								"properties": {
+									"base": {
+										"type": "integer"
+									},
+									"dex": {
+										"type": "boolean"
+									},
+									"max": {
+										"type": "integer"
+									}
+								},
+								"required": [
+									"base",
+									"dex"
+								]
+							},
+							"strMin": {
+								"type": "integer"
+							},
+							"stealthDisadvantage": {
+								"type": "boolean"
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"category"
+						],
+						"title": "Equipment",
+						"description": "A weapon, armor, tool or piece of gear."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "feat"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"prerequisite": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "origin, general, fighting-style, epic-boon"
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"desc"
+						],
+						"title": "Feat",
+						"description": "A feat."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "background"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"proficiencies": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"abilityScores": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"feat": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"feature": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": [
+											"string",
+											"number"
+										]
+									},
+									"desc": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "The text. Markdown is fine."
+									}
+								},
+								"required": [
+									"name",
+									"desc"
+								]
+							},
+							"equipment": {
+								"type": [
+									"string",
+									"number"
+								]
+							}
+						},
+						"required": [
+							"kind",
+							"name"
+						],
+						"title": "Background",
+						"description": "A background."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "species"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"size": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"speed": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"abilityBonuses": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"traits": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"subspecies": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"traits": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"desc": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The text. Markdown is fine."
+													}
+												},
+												"required": [
+													"name",
+													"desc"
+												]
+											}
+										}
+									},
+									"required": [
+										"name"
+									]
+								}
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"size",
+							"speed"
+						],
+						"title": "Species",
+						"description": "A species (2014: a race)."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "class"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"hitDie": {
+								"type": "integer",
+								"minimum": 4,
+								"maximum": 12
+							},
+							"primary": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"saves": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"proficiencies": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"skillChoice": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"spellcasting": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"features": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"level",
+										"name",
+										"desc"
+									]
+								}
+							},
+							"levels": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"pb": {
+											"type": "integer"
+										},
+										"features": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"slots": {
+											"type": "array",
+											"items": {
+												"type": "number"
+											}
+										},
+										"cantrips": {
+											"type": "integer"
+										}
+									},
+									"required": [
+										"level",
+										"pb"
+									]
+								}
+							},
+							"subclasses": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"flavor": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"features": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"level": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20
+													},
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"desc": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The text. Markdown is fine."
+													}
+												},
+												"required": [
+													"level",
+													"name",
+													"desc"
+												]
+											}
+										}
+									},
+									"required": [
+										"name"
+									]
+								}
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"hitDie",
+							"saves",
+							"features"
+						],
+						"title": "Class",
+						"description": "A whole class, with its features and level table."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "subclass"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"class": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The class it belongs to: \"Barbarian\"."
+							},
+							"flavor": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Primal Path\""
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"features": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"level",
+										"name",
+										"desc"
+									]
+								}
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"class",
+							"features"
+						],
+						"title": "Subclass",
+						"description": "A subclass for a class (the SRD's or a pack's), by the class's name."
+					}
+				]
+			}
+		}
+	}
+}

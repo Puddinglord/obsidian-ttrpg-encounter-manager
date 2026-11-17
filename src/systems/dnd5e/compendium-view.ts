@@ -7,7 +7,7 @@ import { CompendiumBrowser, CompendiumSource } from '../../core/compendium/brows
 import { copyReference, insertReference } from '../../core/compendium/refs';
 import { renderCard5e } from './cards';
 import { addMonster } from './combat';
-import { KIND5E } from './compendium';
+import { contentVersion5e, KIND5E } from './compendium';
 import { buildEntries5e, Entry5e, entryPills5e, entryReference5e, QUERY_5E, Segment5e, SEGMENTS_5E } from './compendium-entries';
 import type { Dnd5eEdition } from './editions';
 import type { Dnd5eRuntime } from './runtime';
@@ -56,7 +56,7 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 			const ed = edition();
 			const monsters = rt.index.all(ed, path() || undefined);
 			const mine = rt.homebrew.hits(ed, path() || undefined);
-			const key = `${ed}|${lore}|${monsters.length}|${monsters.filter(m => !m.bundled).map(m => m.filePath + m.name).join(',')}|${mine.map(h => `${h.filePath}${h.name}`).join(',')}`;
+			const key = `${ed}|${lore}|${contentVersion5e()}|${monsters.length}|${monsters.filter(m => !m.bundled).map(m => m.filePath + m.name).join(',')}|${mine.map(h => `${h.filePath}${h.name}`).join(',')}`;
 			if (cache?.key !== key) cache = { key, entries: buildEntries5e(ed, monsters, lore, mine) };
 			return cache.entries;
 		},
@@ -73,6 +73,7 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 		pills: entryPills5e,
 		maxPills: e => (e.monster ? 4 : 5),
 		tags(e, el) {
+			if (e.flags.includes('pack')) { el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-pack', text: e.facets.source?.[0] ?? 'Pack' }); return; }
 			if (!e.monster) {
 				if (e.flags.includes('mine')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-note', text: 'Note' });
 				return;

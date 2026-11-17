@@ -6,7 +6,7 @@
 //
 // Screenshots of failures (and a few showcase shots) go to e2e/artifacts/.
 
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -16,6 +16,7 @@ import { createServer } from 'node:http';
 import { strToU8, zipSync } from 'fflate';
 
 const ARTIFACTS = join(dirname(fileURLToPath(import.meta.url)), 'artifacts');
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 rmSync(ARTIFACTS, { recursive: true, force: true });
 mkdirSync(ARTIFACTS, { recursive: true });
 
@@ -5344,6 +5345,62 @@ test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reo
 			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
 			await plugin.campaigns.setActive(null);
 		}, C);
+	}
+});
+
+test('content packs: a pack in the content folder adds a 5e spell, subclass and monster; a campaign can turn packs off; Import content reports what it left out', async (o) => {
+	const C = 'Campaigns/Pack Coast';
+	const F = 'Ember Vault/Content';
+	const example = readFileSync(join(ROOT, 'docs/content/examples/5e-hearth-and-cinder.json'), 'utf8');
+	try {
+		await o.eval(async (app, plugin, [C, F, example]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, F]) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Pack Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Refs.md`, 'She casts `5e:spell:Ember Lash`, a `5e:Cinder Hound` growls, and the barbarian walks the `5e:subclass:Path of the Hearthguard`.\n');
+			await app.vault.createFolder(F);
+			await app.vault.create(`${F}/hearth.json`, example);
+		}, [C, F, example]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => `${p.name}:${p.entries.length}`).join())) === 'Hearth and Cinder:5', { what: 'the pack loaded' });
+		await o.openFile(`${C}/Refs.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.dnd5e-hit`).count()) === 2 && (await o.page.locator(`${R} .dnd5e-ref .nimble-inline-unknown`).count()) === 0, { what: 'the pack\'s spell, subclass and monster resolve' });
+		await o.page.locator(`${R} .dnd5e-ref.kind-spell .nimble-inline-name`).hover();
+		await o.waitFor(async () => /whip of fire[\s\S]*Hearth and Cinder/.test(await o.page.locator('.nimble-hover-preview .dnd5e-card').innerText().catch(() => '')), { what: 'the pack spell\'s card, naming its pack' });
+		await o.page.keyboard.press('Escape');
+		// The subclass is the Barbarian's.
+		assert.match(await o.page.locator(`${R} .dnd5e-ref.kind-subclass`).innerText(), /Path of the Hearthguard/);
+
+		// The campaign turns packs off: the references don't find them any more.
+		await o.eval(async (app, plugin, C) => {
+			const home = plugin.campaigns.campaigns.find(c => c.folder === C).home.path;
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(home), (fm) => { fm.packs = 'none'; });
+		}, C);
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref .nimble-inline-unknown`).count()) >= 1 && (await o.page.locator(`${R} .dnd5e-ref.kind-spell`).count()) === 0, { what: 'packs off' });
+		await o.eval(async (app, plugin, C) => {
+			const home = plugin.campaigns.campaigns.find(c => c.folder === C).home.path;
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(home), (fm) => { fm.packs = ['Hearth and Cinder']; });
+		}, C);
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.kind-spell`).count()) === 1, { what: 'the pack back on by name' });
+
+		// Import content: paste a pack with a bad entry; the report says why; Add saves the rest.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		const M = '.modal.nimble-import-content';
+		await o.page.locator(M).waitFor();
+		const pasted = JSON.stringify({ pack: 'Table Rules', system: '5e', entries: [{ kind: 'feat', name: 'Lucky Charm', desc: 'Once a day, reroll a 1.' }, { kind: 'spell', name: 'Half Done', level: 2 }] });
+		await o.page.locator(`${M} textarea`).fill(pasted);
+		await o.waitFor(async () => /1 entry: 1 feat · 1 left out/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the import report' });
+		assert.match(await o.page.locator(`${M} .nimble-pack-notes.is-rejected`).innerText(), /Entry 2 \(Half Done\): "school" is missing; "castingTime" is missing/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-import.png') });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await o.eval((app, _p, F) => app.vault.getAbstractFileByPath(`${F}/Table Rules.json`) !== null, F)), { what: 'the pack saved' });
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => p.name).join())) === 'Hearth and Cinder,Table Rules', { what: 'both packs loaded' });
+	} finally {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, F]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
 	}
 });
 
