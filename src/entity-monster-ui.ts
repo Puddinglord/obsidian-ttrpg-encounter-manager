@@ -9,7 +9,7 @@ import { searchMonsters, describeMonster } from './suggest';
 import { diceAverage, DIE_SIZES, FLAVOR_ABILITIES, levelLabel, LEVELS, minionDie, parseDiceParts, formatDiceParts, stepLevel, ARMOR_FROM, LEGENDARY_ARMOR_FROM } from './builder-math';
 import {
 	AttackDraft, attackBody, attackName, attackTarget, autoLevel, BuildRole, draftFromMonster, effectiveHp, expected, levelCheck,
-	MonsterDraft, MOVE_MODES, missing, newMonsterDraft, SAVE_STATS, setRole, settledLevel, suggestedBloodied, suggestedLastStand, toMonster, toSource, withDice,
+	MonsterDraft, MOVE_MODES, missing, newMonsterDraft, SAVE_STATS, savesText, setRole, settledLevel, suggestedBloodied, suggestedLastStand, toMonster, toSource, withDice,
 } from './entity-monster';
 import {
 	BuilderUI, bookTag, dicePad, field, grid, homeFolder, iconButton, KindBuilder, meter, numberInput, Output, registerKind, section, segmented, StepDef,
@@ -31,6 +31,8 @@ class MonsterBuilder implements KindBuilder {
 	icon = 'skull';
 	d: MonsterDraft;
 
+	/** The four save rows are open (they start folded to one line). */
+	private savesOpen = false;
 	/** Editing a block in a note (not copying a monster): no "Start from". */
 	private editing: boolean;
 
@@ -250,7 +252,11 @@ class MonsterBuilder implements KindBuilder {
 			});
 		}
 
-		const saves = field(panel, 'Saves', { wide: true, help: d.role === 'solo' ? 'Legendary monsters usually get one or two advantaged saves, sometimes one disadvantaged.' : 'Most monsters roll a plain d20. Mark only what stands out.' });
+		// Most monsters roll a plain d20 for every save, so the four rows open only when asked (solos usually want them).
+		const saves = field(panel, 'Saves', { wide: true, help: d.role === 'solo' ? 'Legendary monsters usually get one or two advantaged saves, sometimes one disadvantaged.' : undefined });
+		const summary = saves.control.createDiv({ cls: 'eb-saves-summary' });
+		const sumText = summary.createSpan({ cls: 'eb-saves-text' });
+		textButton(summary, 'pencil', 'Change', () => { this.savesOpen = !this.savesOpen; ui.changed(); });
 		const sgrid = saves.control.createDiv({ cls: 'eb-saves' });
 		for (const s of SAVE_STATS) {
 			const cell = sgrid.createDiv({ cls: 'eb-save' });
@@ -258,9 +264,16 @@ class MonsterBuilder implements KindBuilder {
 			segmented<number>(cell, [{ value: -1, label: '−', title: 'Disadvantage' }, { value: 0, label: '0', title: 'Plain d20' }, { value: 1, label: '+', title: 'Advantage' }, { value: 2, label: '++', title: 'Advantage 2' }],
 				() => this.d.saves[s] ?? 0, v => { if (v) this.d.saves[s] = v; else delete this.d.saves[s]; }, { label: `${s} save`, ui, cls: 'is-compact is-tight' });
 		}
+		ui.live(() => {
+			const text = savesText(this.d);
+			sumText.setText(text || 'Plain d20 for every save');
+			sumText.toggleClass('is-plain', !text);
+			summary.toggleClass('is-hidden', this.savesOpen);
+			sgrid.toggleClass('is-hidden', !this.savesOpen);
+		});
 
 		const defs = grid(panel, 3);
-		for (const [key, label, ph] of [['resistances', 'Resists (−10 damage)', 'fire, cold'], ['immunities', 'Immune to', 'poison'], ['vulnerabilities', 'Vulnerable (+10)', 'radiant']] as const) {
+		for (const [key, label, ph] of [['resistances', 'Resists (−10)', 'fire, cold'], ['immunities', 'Immune to', 'poison'], ['vulnerabilities', 'Vulnerable (+10)', 'radiant']] as const) {
 			const f = field(defs, label);
 			textInput(f.control, { value: this.d[key].join(', '), placeholder: ph, label, onInput: v => { this.d[key] = v.split(/[,;]/).map(x => x.trim()).filter(Boolean); ui.changed(); } });
 		}

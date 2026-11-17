@@ -4188,6 +4188,7 @@ body.is-mobile .nimble-art-slot.has-art .nimble-art-edit { opacity: 1; }
 	display: flex; flex-direction: column; padding: 0; overflow: hidden;
 }
 body.is-tablet .modal.nimble-entity-builder, body.is-mobile .modal.nimble-entity-builder { --eb-h: 2.75rem; }
+body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(740px, 94vh); max-height: 94vh; }
 .nimble-entity-builder .modal-header { display: none; }
 .nimble-entity-builder .modal-close-button { z-index: 3; }
 .nimble-entity-builder .modal-content { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; overflow: hidden; margin: 0; padding: 0; }
@@ -4330,6 +4331,9 @@ body.is-tablet .modal.nimble-entity-builder, body.is-mobile .modal.nimble-entity
 .nimble-entity-builder .eb-saves { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.5rem 1.5rem; justify-content: start; }
 .nimble-entity-builder .eb-save { display: flex; align-items: center; gap: 0.45rem; }
 .nimble-entity-builder .eb-save-stat { width: 2.2rem; font-size: var(--eb-text); font-weight: 750; letter-spacing: 0.03em; }
+.nimble-entity-builder .eb-saves-summary { display: flex; align-items: center; gap: 0.6rem; min-height: var(--eb-h); }
+.nimble-entity-builder .eb-saves-text { font-size: var(--font-ui-medium); font-weight: 600; }
+.nimble-entity-builder .eb-saves-text.is-plain { color: var(--text-muted); font-weight: 500; }
 
 /* Attacks and abilities */
 .nimble-entity-builder .eb-attacks, .nimble-entity-builder .eb-abilities { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -4391,7 +4395,7 @@ body.is-tablet .modal.nimble-entity-builder, body.is-mobile .modal.nimble-entity
 .nimble-entity-builder.is-phone-layout .eb-chip.is-hidden { display: none; }
 .nimble-entity-builder.is-phone-layout .eb-kind > span:last-child { display: none; }
 .nimble-entity-builder.is-phone-layout button.eb-kind { width: var(--eb-h); padding: 0; justify-content: center; }
-.nimble-entity-builder.is-phone-layout .eb-body { position: relative; overflow: hidden; }
+.nimble-entity-builder.is-phone-layout .eb-body { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1fr); }
 .nimble-entity-builder.is-phone-layout .eb-side { position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: 94%; border: 0; border-top: 1px solid var(--background-modifier-border); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25); transform: translateY(105%); transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .nimble-entity-builder.is-phone-layout .eb-side.is-open { transform: translateY(0); }
 .nimble-entity-builder.is-phone-layout .eb-sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.9rem; font-weight: 700; border-bottom: 1px solid var(--background-modifier-border); }

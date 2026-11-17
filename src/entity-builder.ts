@@ -84,7 +84,8 @@ const KIND_LABEL: Record<EntityKind, { label: string; icon: string }> = {
 };
 
 export class EntityBuilder extends Modal implements BuilderUI {
-	phone = isPhone();
+	/** Phones, and anything narrower than two columns need (an iPad held upright): one column, the preview as a sheet. */
+	phone = isPhone() || (typeof window !== 'undefined' && window.innerWidth < 900);
 	sourcePath: string;
 	private builders = new Map<EntityKind, KindBuilder>();
 	private b!: KindBuilder;

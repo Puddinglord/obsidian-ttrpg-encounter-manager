@@ -10,9 +10,9 @@ const o = await launchObsidian();
 const { page } = o;
 try {
 	const scenario = process.argv[4] || 'regular';
-	for (const [w, h, tag] of [[1440, 900, 'wide'], [1024, 768, 'tablet'], [390, 844, 'phone']]) {
+	for (const [w, h, tag] of [[1440, 900, 'wide'], [1024, 768, 'tablet'], [768, 1024, 'ipad'], [390, 844, 'phone']]) {
 		await page.setViewportSize({ width: w, height: h });
-		await page.evaluate((p) => document.body.classList.toggle('is-phone', p), tag === 'phone');
+		await page.evaluate(([p, t]) => { document.body.classList.toggle('is-phone', p); document.body.classList.toggle('is-tablet', t); document.body.classList.toggle('is-mobile', p || t); }, [tag === 'phone', tag === 'ipad' || tag === 'tablet']);
 		await o.eval((app, _p, k) => app.commands.executeCommandById(`nimble-gm:new-${k}`), kind);
 		await page.waitForSelector('.nimble-entity-builder .eb-panel.is-active');
 		await page.locator('.nimble-entity-builder .eb-panel.is-active input').first().fill('Cave Bear');
@@ -35,7 +35,7 @@ try {
 			const scroll = await page.evaluate(() => { const p = document.querySelector('.nimble-entity-builder .eb-panel.is-active'); return p ? p.scrollHeight - p.clientHeight : -1; });
 			console.log(tag, i, 'overflow', scroll);
 			await page.screenshot({ path: `${out}/${scenario}-${tag}-${i}.png` });
-			if (tag === 'phone' && i === 0) { await page.locator('.eb-preview-btn').click(); await page.waitForTimeout(400); await page.screenshot({ path: `${out}/${scenario}-${tag}-sheet.png` }); await page.locator('.eb-preview-btn').click(); await page.waitForTimeout(300); }
+			if ((tag === 'phone' || tag === 'ipad') && i === 0) { await page.locator('.eb-preview-btn').click(); await page.waitForTimeout(400); await page.screenshot({ path: `${out}/${scenario}-${tag}-sheet.png` }); await page.locator('.eb-preview-btn').click(); await page.waitForTimeout(300); }
 		}
 		console.log(tag, 'modal sizes', [...new Set(sizes)].join(' '));
 		await page.keyboard.press('Escape');
