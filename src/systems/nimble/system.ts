@@ -7,6 +7,8 @@ import { createCharacterNote, NewCharacterModal } from './character-modals';
 import { openRecord } from './record-modal';
 import { nimbleEncounterBlock } from './encounter-block';
 import { NIMBLE_CONDITIONS } from './types';
+import { readCharacter } from './character-def';
+import { sheetCompendium } from './compendium-data';
 
 export const nimbleSystem: GameSystem = {
 	id: 'nimble',
@@ -31,6 +33,10 @@ export const nimbleSystem: GameSystem = {
 				if (h.maxWounds !== undefined) fm.wounds_max = h.maxWounds;
 			});
 			return f;
+		},
+		partyMember(_plugin, fm, file) {
+			const s = readCharacter(fm, sheetCompendium(), file.basename);
+			return { id: `sheet:${file.path}`, name: s.name, level: s.level, maxHp: s.hpMax, defense: s.armor, maxWounds: s.woundsMax, ...(s.className ? { className: s.className } : {}) };
 		},
 	},
 	quickLook(plugin, target) {

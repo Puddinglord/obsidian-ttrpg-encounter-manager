@@ -5,7 +5,7 @@ import { Notice, TFile, WorkspaceLeaf } from 'obsidian';
 import type NimbleStatblocksPlugin from '../../../main';
 import { registerSheetBlock } from './character-sheet';
 import { CHARACTER_VIEW_TYPE, CharacterView, myCharacter } from './character-view';
-import { NewCharacterModal } from './character-modals';
+
 import { pickFromCompendium } from './compendium-pickers';
 import { addItem, Frontmatter } from './character-def';
 import { bundledCompendium } from './compendium-data';
@@ -26,13 +26,16 @@ export async function openCharacterView(plugin: NimbleStatblocksPlugin, file?: T
 export function registerCharacterFeatures(plugin: NimbleStatblocksPlugin): void {
 	registerSheetBlock(plugin);
 	plugin.registerView(CHARACTER_VIEW_TYPE, (leaf) => new CharacterView(leaf, plugin));
-	plugin.addRibbonIcon('user-round', 'My Nimble character', () => void openCharacterView(plugin));
+	plugin.addRibbonIcon('user-round', 'My character', () => void plugin.openMyCharacter());
 
-	plugin.addCommand({ id: 'open-my-character', name: 'Open my character', icon: 'user-round', callback: () => void openCharacterView(plugin) });
-	plugin.addCommand({ id: 'new-character', name: 'New character…', icon: 'user-round-plus', callback: () => new NewCharacterModal(plugin).open() });
+	plugin.addCommand({ id: 'open-my-character', name: 'Open my character', icon: 'user-round', callback: () => void plugin.openMyCharacter() });
+	plugin.addCommand({ id: 'new-character', name: 'New character…', icon: 'user-round-plus', callback: () => plugin.newCharacter() });
 	plugin.addCommand({
 		id: 'add-item-to-character', name: 'Add item to my character…', icon: 'backpack',
-		callback: () => {
+		// Nimble's items, for Nimble characters: other systems' sheets have their own Add item.
+		checkCallback: (checking) => {
+			if (plugin.system().id !== 'nimble') return false;
+			if (checking) return true;
 			const file = myCharacter(plugin);
 			if (!file) { new Notice('No character of yours yet: make one with "New character", or set mine: true on a character note.'); return; }
 			pickFromCompendium(plugin, {

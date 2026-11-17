@@ -5179,6 +5179,90 @@ test('5e compendium: spells, items and classes for both editions, 5e:spell: refe
 	}
 });
 
+test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, tracks HP, skills, items, spells, slots, rests and levels', async (o) => {
+	const C = 'Campaigns/Sword Coast';
+	const note = `${C}/Party/Ilse Vane.md`;
+	const fm = () => o.eval((app, _p, path) => app.metadataCache.getCache(path)?.frontmatter ?? {}, note);
+	const S = `${R} .dnd5e-sheet`;
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: true, system: '5e', edition: '2024' });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		// New character is 5e's dialog in a 5e campaign.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+		const modal = o.page.locator('.modal.dnd5e-new-character');
+		await modal.waitFor({ timeout: 3000 });
+		await modal.locator('input[type="text"]').first().fill('Ilse Vane');
+		await modal.locator('select').first().selectOption('Wizard');
+		await modal.locator('.setting-item', { hasText: 'Level' }).locator('input').fill('3');
+		await modal.locator('button', { hasText: 'Create character' }).click();
+		await o.waitFor(async () => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), note), { what: 'character note' });
+		await o.waitFor(async () => (await fm()).class === 'Wizard', { what: 'frontmatter indexed' });
+		const f0 = await fm();
+		assert.deepEqual([f0.level, f0.int, f0.wis, f0.con, f0.dex, f0.str, f0.cha, f0.hp_max, f0.edition], [3, 15, 14, 13, 12, 10, 8, 17, '2024']);
+		assert.match(await read(o, note), /```5e-sheet\n```/);
+
+		await o.openFile(note, 'preview');
+		await o.page.locator(S).waitFor({ timeout: 5000 });
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-sub`).innerText(), /Level 3[\s\S]*Wizard/);
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'AC' }).innerText(), /11/);
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Intelligence · Save DC 12 · Attack \+4/);
+		assert.deepEqual(await o.page.locator(`${S} .dnd5e-slot-group`).evaluateAll(gs => gs.map(g => g.querySelectorAll('.dnd5e-pip').length)), [4, 2]);
+		await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'Initiative' }).locator('.dnd5e-sheet-roll').click();
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse Vane: initiative', { what: 'initiative rolled' });
+
+		// Skills: the dot makes Arcana proficient (+2 → +4).
+		const arcana = o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Arcana' });
+		assert.match(await arcana.locator('.dnd5e-sheet-roll').innerText(), /\+2/);
+		await arcana.locator('.dnd5e-skill-dot').click();
+		await o.waitFor(async () => (await fm()).skills?.includes('Arcana'), { what: 'Arcana proficient' });
+		await o.waitFor(async () => /\+4/.test(await o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Arcana' }).locator('.dnd5e-sheet-roll').innerText()), { what: 'Arcana +4' });
+
+		// HP: 5 damage.
+		await o.page.locator(`${S} .dnd5e-sheet-hp .dnd5e-hp-input`).fill('5');
+		await o.page.locator(`${S} .dnd5e-sheet-hp .dnd5e-hp-input`).press('Enter');
+		await o.waitFor(async () => (await fm()).hp === 12, { what: 'HP 12' });
+
+		// A quarterstaff becomes an attack; Magic Missile joins the spells.
+		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add item' }).click();
+		await o.page.locator('.prompt-input').fill('Quarterstaff');
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff attack' });
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-attack`).first().innerText(), /Quarterstaff\s*\+2\s*1d6 bludgeoning/);
+		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add spell' }).click();
+		await o.page.locator('.prompt-input').fill('Magic Missile');
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-spell`, { hasText: 'Magic Missile' }).count()) === 1, { what: 'Magic Missile listed' });
+
+		// Spend a slot, then a long rest brings everything back.
+		await o.page.locator(`${S} .dnd5e-slot-group`).first().locator('.dnd5e-pip').first().click();
+		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[1]', { what: 'slot spent' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet.png') });
+		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Long rest' }).click();
+		await o.waitFor(async () => { const f = await fm(); return f.hp === 17 && f.slots_used === undefined; }, { what: 'long rest' });
+
+		// Level up: level 4, d6 average (4) + Con (1).
+		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();
+		await o.waitFor(async () => { const f = await fm(); return f.level === 4 && f.hp_max === 22; }, { what: 'level 4' });
+
+		// The encounter party reads the sheet: level and AC.
+		await o.eval((app, plugin) => plugin.syncPartyFromSheets());
+		await o.waitFor(async () => (await o.eval((app, plugin) => JSON.stringify(plugin.settings.party.map(p => [p.name, p.level, p.maxHp, p.defense])))) === JSON.stringify([['Ilse Vane', 4, 22, 11]]), { what: 'party from the sheet' });
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			plugin.settings.party = [];
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);

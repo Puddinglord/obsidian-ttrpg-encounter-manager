@@ -4796,3 +4796,67 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 	.dnd5e-cmp-list { max-height: 40vh; border-right: none; }
 }
 .dnd5e-card .dnd5e-source { margin-top: 0.6rem; font-size: 0.75em; color: var(--text-faint); text-align: right; }
+
+/* 5e character sheets (src/systems/dnd5e/sheet.ts) */
+.dnd5e-sheet { border: 1px solid var(--background-modifier-border); border-radius: var(--nimble-radius); background: var(--background-secondary); padding: 0.8rem 1rem; margin: 1rem 0; line-height: 1.4; }
+.dnd5e-sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; flex-wrap: wrap; }
+.dnd5e-sheet-name { font-size: 1.35rem; font-weight: 700; }
+.dnd5e-sheet-sub { color: var(--text-muted); }
+.dnd5e-sheet-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.dnd5e-sheet-actions button { display: inline-flex; align-items: center; gap: 0.3rem; }
+.dnd5e-sheet-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: 0.4rem; margin: 0.7rem 0 0.4rem; }
+.dnd5e-sheet-box { border: 1px solid var(--background-modifier-border); border-radius: 6px; padding: 0.3rem; text-align: center; background: var(--background-primary); }
+.dnd5e-sheet-box-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.dnd5e-sheet-box-value { font-size: 1.1rem; font-weight: 700; }
+.dnd5e-sheet-toggle { font-size: 0.85rem; padding: 0 0.5rem; height: auto; }
+.dnd5e-sheet-toggle.is-on { background: var(--interactive-accent); color: var(--text-on-accent); }
+.dnd5e-sheet-hp { display: flex; align-items: center; gap: 0.5rem; margin: 0.4rem 0; flex-wrap: wrap; }
+.dnd5e-sheet-hp .dnd5e-hp-bar { height: 8px; min-width: 6rem; }
+.dnd5e-sheet-hp-text { font-weight: 700; font-variant-numeric: tabular-nums; }
+.dnd5e-sheet-roll { padding: 0 0.35rem; height: auto; min-height: 0; font-weight: 600; font-variant-numeric: tabular-nums; background: transparent; box-shadow: none; border: 1px dotted var(--background-modifier-border); }
+.dnd5e-sheet-roll:hover { border-color: var(--interactive-accent); color: var(--interactive-accent); }
+.dnd5e-sheet-abilities { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.4rem; margin: 0.6rem 0; }
+.dnd5e-sheet-ability { border: 1px solid var(--background-modifier-border); border-radius: 8px; padding: 0.35rem 0.2rem; text-align: center; background: var(--background-primary); display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
+.dnd5e-sheet-ability-name { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+.dnd5e-sheet-ability .dnd5e-sheet-roll.is-mod { font-size: 1.2rem; border-style: solid; }
+.dnd5e-sheet-ability-score { font-size: 0.8rem; color: var(--text-muted); }
+.dnd5e-sheet-save { font-size: 0.75rem; color: var(--text-muted); }
+.dnd5e-sheet-save.is-prof { color: var(--text-normal); font-weight: 600; }
+.dnd5e-sheet-cols { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(0, 2fr); gap: 1rem; }
+.dnd5e-sheet-section { font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; color: var(--text-muted); margin: 0.6rem 0 0.3rem; border-bottom: 1px solid var(--background-modifier-border); }
+.dnd5e-sheet-skill { display: flex; align-items: center; gap: 0.35rem; margin: 0.1rem 0; }
+.dnd5e-skill-dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; border: 1px solid var(--text-muted); cursor: pointer; flex: 0 0 auto; }
+.dnd5e-skill-dot.is-prof { background: var(--text-normal); border-color: var(--text-normal); }
+.dnd5e-skill-dot.is-expert { background: var(--interactive-accent); border-color: var(--interactive-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 30%, transparent); }
+.dnd5e-skill-ab { color: var(--text-faint); font-size: 0.7rem; }
+.dnd5e-sheet-passive { margin-top: 0.4rem; color: var(--text-muted); font-size: 0.85rem; }
+.dnd5e-sheet-attack,
+.dnd5e-sheet-spell,
+.dnd5e-sheet-item { display: flex; align-items: center; gap: 0.4rem; margin: 0.15rem 0; }
+.dnd5e-sheet-attack-name,
+.dnd5e-sheet-spell-name,
+.dnd5e-sheet-item-name { flex: 1 1 auto; min-width: 0; }
+.dnd5e-sheet-spell-name.is-unresolved { color: var(--text-faint); }
+.dnd5e-sheet-tag { font-size: 0.65rem; border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 0 0.25rem; color: var(--text-muted); }
+.dnd5e-sheet-cast { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.3rem; }
+.dnd5e-sheet-slots { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.4rem; }
+.dnd5e-slot-group { display: inline-flex; align-items: center; gap: 0.2rem; }
+.dnd5e-slot-group .dnd5e-pip { cursor: pointer; }
+.dnd5e-slot-group .dnd5e-pip.is-on { background: var(--interactive-accent); border-color: var(--interactive-accent); }
+.dnd5e-slot-level { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-right: 0.1rem; }
+.dnd5e-sheet-item.is-equipped .dnd5e-sheet-item-name { font-weight: 600; }
+.dnd5e-sheet-add { margin-top: 0.3rem; font-size: 0.8rem; }
+.dnd5e-sheet-gold { margin-top: 0.3rem; color: var(--text-muted); font-size: 0.85rem; }
+.dnd5e-sheet-empty { color: var(--text-faint); font-size: 0.85rem; font-style: italic; }
+.dnd5e-sheet-feature summary { cursor: pointer; display: flex; justify-content: space-between; gap: 0.5rem; }
+.dnd5e-sheet-feature-name { font-weight: 600; }
+.dnd5e-sheet-feature-src { color: var(--text-faint); font-size: 0.75rem; }
+.dnd5e-sheet-feature-text { white-space: pre-wrap; color: var(--text-muted); font-size: 0.88rem; margin: 0.2rem 0 0.5rem; }
+.dnd5e-sheet .dnd5e-death { margin: 0.2rem 0 0.4rem; }
+.dnd5e-new-score-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.4rem; margin: 0.4rem 0 0.8rem; text-align: center; font-size: 0.8rem; }
+.dnd5e-new-score input { width: 100%; text-align: center; }
+@media (max-width: 640px) {
+	.dnd5e-sheet-abilities,
+	.dnd5e-new-score-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.dnd5e-sheet-cols { grid-template-columns: 1fr; }
+}

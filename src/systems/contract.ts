@@ -39,6 +39,8 @@ export interface CharacterCapability {
 	promptNew(plugin: NimbleStatblocksPlugin, request: NewCharacterRequest): void;
 	/** Make a character note for a hero entered by hand, keeping what the party row knows. */
 	createFromPartyMember(plugin: NimbleStatblocksPlugin, member: PartyMember, folder: string): Promise<TFile>;
+	/** A character note as an encounter party member (level, max HP, armor). */
+	partyMember(plugin: NimbleStatblocksPlugin, frontmatter: Record<string, unknown>, file: TFile): PartyMember;
 }
 
 /** Something to show in a quick look (a modal over whatever you're doing). */

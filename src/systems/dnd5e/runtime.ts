@@ -2,7 +2,7 @@
 // and quick look, the monster index, and Copy to vault. Created once by the
 // system's register(); everything else in dnd5e reaches it through dnd5e().
 
-import { MarkdownPostProcessorContext, Modal, normalizePath, Notice, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderChild, Modal, normalizePath, Notice, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
 import type NimbleStatblocksPlugin from '../../../main';
 import type { HoverContent } from '../../core/hover-preview';
 import type { InlineRefProvider } from '../../core/inline-refs';
@@ -20,6 +20,7 @@ import type { EncounterDef } from '../../core/encounter-def';
 import { findHit, Hit5e, KIND5E, kindFromWord } from './compendium';
 import { renderCard5e } from './cards';
 import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView } from './compendium-view';
+import { Dnd5eSheet, SHEET_LANG } from './sheet';
 
 /** `5e:Goblin` → "Goblin". */
 export const REF_PREFIX = '5e:';
@@ -55,8 +56,18 @@ export class Dnd5eRuntime {
 				el.createDiv({ cls: 'dnd5e-empty', text: 'A 5e stat block starts with a name line, like "name: Goblin".' });
 				return;
 			}
-			this.render(el, m, { sourcePath: ctx.sourcePath, variant: 'block', lore: plugin.hideStats(ctx.sourcePath, ctx.sourcePath) });
+			const draw = () => { el.empty(); this.render(el, m, { sourcePath: ctx.sourcePath, variant: 'block', lore: plugin.hideStats(ctx.sourcePath, ctx.sourcePath) }); };
+			draw();
+			// The campaign's edition (the layout) and side (lore for players) can change, or only be known after startup.
+			const child = new MarkdownRenderChild(el);
+			let seen = `${this.edition(ctx.sourcePath)}:${plugin.hideStats(ctx.sourcePath, ctx.sourcePath)}`;
+			child.registerEvent(plugin.campaigns.on('changed', () => {
+				const now = `${this.edition(ctx.sourcePath)}:${plugin.hideStats(ctx.sourcePath, ctx.sourcePath)}`;
+				if (now !== seen) { seen = now; draw(); }
+			}));
+			ctx.addChild(child);
 		});
+		plugin.registerMarkdownCodeBlockProcessor(SHEET_LANG, (_source, el, ctx) => { ctx.addChild(new Dnd5eSheet(this, el, ctx)); });
 		plugin.inlineRefs.add(this.refProvider());
 		plugin.registerEditorSuggest(new Dnd5eRefSuggest(plugin.app, this));
 		plugin.registerView(DND5E_TRACKER_VIEW, (leaf) => new Dnd5eTrackerView(leaf, this));

@@ -56,16 +56,16 @@ import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/core/camp
 import { CampaignPicker, NewCampaignModal } from './src/core/campaign-modals';
 import { newSceneAnywhere, promptCharacter, promptChapter, promptSectionNote } from './src/core/campaign-ui';
 import BESTIARY from './src/systems/nimble/data/bestiary.json';
-import { registerCharacterFeatures } from './src/systems/nimble/character-register';
+import { registerCharacterFeatures, openCharacterView } from './src/systems/nimble/character-register';
 import { registerReadingMode } from './src/core/reading-mode';
 import { noteKind, safeName } from './src/core/campaign-model';
-import { readCharacter } from './src/systems/nimble/character-def';
 import { creatureNote } from './src/core/campaign-templates';
 import { addEditButton, registerBuilders } from './src/systems/nimble/builder-register';
 import { registerHomebrewBlocks } from './src/systems/nimble/homebrew-block';
-import { bundledCompendium, setCompendiumDrafts, setHomebrew, sheetCompendium } from './src/systems/nimble/compendium-data';
+import { bundledCompendium, setCompendiumDrafts, setHomebrew } from './src/systems/nimble/compendium-data';
 import type { GameSystem } from './src/systems/contract';
 import { createSystems } from './src/app/systems';
+import { NewCharacterModal } from './src/systems/nimble/character-modals';
 import { resolveEdition } from './src/systems/registry';
 
 const ROLL_LOG_LIMIT = 30;
@@ -1031,13 +1031,14 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	syncPartyFromSheets(): void {
 		const c = this.campaigns?.active;
 		if (!c || c.role === 'player') return;
-		const comp = sheetCompendium();
+		// Each sheet is read by the campaign's own system (Nimble: armor and Wounds; 5e: AC).
+		const characters = this.system(c.folder).characters;
+		if (!characters) return;
 		const party: PartyMember[] = [];
 		for (const h of this.campaigns.characters(c)) {
 			const f = this.app.vault.getFileByPath(h.path);
 			if (!f) continue;
-			const s = readCharacter(this.app.metadataCache.getFileCache(f)?.frontmatter ?? {}, comp, f.basename);
-			party.push({ id: `sheet:${h.path}`, name: s.name, level: s.level, maxHp: s.hpMax, defense: s.armor, maxWounds: s.woundsMax, ...(s.className ? { className: s.className } : {}) });
+			party.push(characters.partyMember(this, this.app.metadataCache.getFileCache(f)?.frontmatter ?? {}, f));
 		}
 		const next = mergeParty(party, this.settings.party);
 		if (JSON.stringify(next) === JSON.stringify(this.settings.party)) return;
@@ -1127,6 +1128,22 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	getEncounterView(): EncounterTrackerView | null {
 		const leaf = this.app.workspace.getLeavesOfType(ENCOUNTER_VIEW_TYPE)[0];
 		return leaf?.view instanceof EncounterTrackerView ? leaf.view : null;
+	}
+
+	/** New character: the active campaign's system's dialog (Nimble's outside campaigns). */
+	newCharacter(): void {
+		const system = this.system();
+		if (system.id !== 'nimble' && system.characters) system.characters.promptNew(this, { mine: true });
+		else new NewCharacterModal(this).open();
+	}
+
+	/** Your character: Nimble's Character panel, or, for another system, your character note. */
+	async openMyCharacter(): Promise<void> {
+		const system = this.system();
+		if (system.id === 'nimble') { await openCharacterView(this); return; }
+		const mine = this.campaigns.myCharacter();
+		if (!mine) { new Notice('No character of yours in this campaign yet: make one with "New character".'); return; }
+		await this.campaigns.open(mine.path);
 	}
 
 	/** The active campaign's compendium: its system's own, else Nimble's. */

@@ -173,7 +173,8 @@ export class CampaignStore extends Events {
 				name: textOf(fm.title) ?? f.basename,
 				mine: fmTrue(fm.mine),
 				player: textOf(fm.player),
-				ancestry: textOf(fm.ancestry),
+				// Nimble says ancestry; 5e says species (race in 2014 notes).
+				ancestry: textOf(fm.ancestry) ?? textOf(fm.species) ?? textOf(fm.race),
 				className: textOf(fm.class),
 				level: numOf(fm.level),
 				hp: numOf(fm.hp),
