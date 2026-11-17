@@ -13,7 +13,7 @@ The quickest way to learn Ember Vault is to open a vault where everything is alr
 - **A GM map** with a pin on every area.
 - **Four NPCs with portraits:** the Alchemist herself, the Guild's master assayer, a trapped thief and a Guild enforcer.
 - **Six custom monsters** written as stat blocks, from Quicksilver Hounds to a Mercury Elemental, plus the Alchemist as a legendary boss.
-- **A Start Here note:** a ten-minute tour that touches every feature.
+- **A Start Here note:** a short tour that touches every feature.
 
 ## Open it
 

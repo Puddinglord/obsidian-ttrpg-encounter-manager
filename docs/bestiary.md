@@ -17,6 +17,8 @@ Turn the bundled bestiary off in settings if you only want your own monsters.
 
 ## Monster references
 
+![A monster reference's hover preview: the full stat block over the note, with Add and Open note](images/hover.png)
+
 Write `` `nimble:Goblin` `` (inline code) anywhere in a note. It shows as a reference chip. Hover it for the stat block, or click it for a quick look: the full stat block in a window over your note, with **Add to fight** and **Open page**. Cmd/Ctrl-click goes straight to the page. The chip's **+** button puts the monster in the tracker. `/monster` opens the compendium and inserts one for you; `/monster goblin` picks from the menu.
 
 - **Hover previews** stay open while you move into them. Click inside to pin one; drag its top bar to move it. Its **Add** button has a menu with Add 2, Add tougher (+1 level) and Add weaker (−1 level). Easier/Harder notes appear in full stat blocks and the bestiary, not the hover card. Escape closes the preview.
@@ -71,9 +73,13 @@ Each line is a field, a colon, then its value. Lists (attacks, abilities) are a 
 
 - Each attack or ability is one line in your note. Long ones can wrap on screen; just don't press Enter in the middle.
 - Field names don't mind capitals, spaces or bold: `Last Stand:`, `**Bloodied:**` and `lastStand:` all work.
+- Lists can be headed the way books write them: `Legendary actions:` or `Traits:` work as well as `attacks:` and `abilities:`, and a second `attacks:` heading adds to the list. A `Choose one:` line over the attacks introduces them, like `actionText:`.
+- A sentence that wraps onto the next line in your note is joined back up.
 - A ` # comment` after a short value, as in the example above, is ignored. Sentences (`description:`, `bloodied:`, `lastStand:` and the like) and the name are kept whole.
 - Notes in the older format (`monsterType: solo`, `str: +`, `dex: ++`, `will: -`) still work.
 
 ### When a line isn't shown
+
+![The helper opened under a hand-written stat block: each line it couldn't read, what's wrong in plain words, and a Fix button](images/feature-statblock-help.png)
 
 If something in a stat block you wrote can't be shown as written, a quiet line appears under it: **2 lines here aren't shown as written**. Click it to see which lines, what's wrong in plain words, and what to change. When the fix is obvious, such as a misspelled field name or a missing colon, a button makes the change for you. Turn this off in **Settings → Bestiary → Help with stat blocks you write**.

@@ -2,6 +2,54 @@
 
 Make your own monsters, spells and items without learning a format. The builder knows the books' numbers: tell it a level and it fills in the rest, or type your own numbers and it tells you what level they play like.
 
+![The monster builder making a Cave Bear, with the stat block preview and the level check beside the form](images/builder.png)
+
+## Your first monster
+
+Your party is level 3 and you need a bear for tonight.
+
+1. Run **New monster…** (or type `/new-monster` in the scene note).
+2. Name it **Cave Bear**, leave the role on **Regular** and the level on **3**.
+3. Press **Create now**.
+
+That's it. The builder looks up the GM Guide's numbers for a level 3 monster and writes this block into your Monsters folder (or where you typed the slash):
+
+````markdown
+```nimble
+name: Cave Bear
+level: 3
+size: Large
+type: Beast
+hp: 41
+abilities:
+- Keen Nose: Can't be surprised.
+attacks:
+- **Maul.** 1d10+9.
+```
+````
+
+This one also has a size, a type, a d10 die (the GM Guide's die for beasts) and a Keen Nose ability typed in on the way. Leave those blank and the book's defaults are used.
+
+Now say you'd rather write the numbers yourself: **hp 70** and a Maul of **2d10+8**. The level check beside the form reads **Plays like level 5**: HP like level 6, damage like level 5, a harder fight than level 3 says. The review step offers two fixes, **Make it level 5** (keep your numbers, change the level) or **Use level 3 numbers** (keep the level, go back to the book's numbers). Or save it as it is.
+
+A **Solo** at the same level gets the Legendary Monster Builder's numbers, HP per hero, a small and a big attack, and a Bloodied and Last Stand the tracker can apply:
+
+````markdown
+```nimble
+name: Mother of Mercury
+level: 3
+role: solo
+type: Elemental
+hp: 40/hero
+actionText: After each hero's turn, choose one:
+bloodied: Its damage dice grow a size: d8s become d10s.
+lastStand: Regains 10 HP per hero and fights on.
+attacks:
+- **Lunge.** Move 6. 1d8+4.
+- **Crush.** 1d8+10.
+```
+````
+
 ## Opening it
 
 - **New monster…**, **New spell…** or **New item…** in the command palette or [Spotlight](spotlight.md).
@@ -19,6 +67,8 @@ The first step holds everything a quick build needs. Pick a role and a level and
 Or press **Next** and go through the rest. Every step shows the stat block as it will look on the right (a **Preview** button on phones), with the level check above it.
 
 ## Level first, or stats first
+
+![The Toughness step with 70 HP typed: a Book: 41 · Use tag beside HP, and the level check reading Plays like level 5](images/guide-builder-level.png)
 
 - **Level first.** Set the level and every field you haven't touched follows the GM Guide's numbers for it: HP for its armor, damage per attack for how many attacks it makes, the book's sample dice in your monster's die size.
 - **Stats first.** Type your own HP or dice and the **level check** says what it plays like: "Plays like level 4", with a bar each for HP and damage against the book. HP and damage can disagree (a glass cannon has level 3 HP and level 7 damage), and the check tells you both. **Make it level 4** moves the level to match, keeping your numbers.
@@ -39,6 +89,8 @@ Numbers you type are never overwritten. A **Book: 52 · Use** tag beside a chang
 
 ## Review
 
+![The builder's Review step: the build checked against the book, with Make it level 5 and Use level 3 numbers, and the Saved in pill](images/guide-builder-review.png)
+
 The last step sums the build up and checks it against the books: stats that play like another level (with **Make it level 5** or **Use level 4 numbers**), attacks far from the book's damage, armor earlier than the book uses it, a monster with no ability, a solo without saves or a Last Stand the tracker can't apply, a spell that hits harder than its tier, a magic item without a catch. Each comes with a button that fixes it, or you can save as it is.
 
 The **Saved in** pill shows where it goes. Click it to pick another folder, or type a new one. New monsters go in the active campaign's **Monsters** folder (or **Bestiary** with no campaign), as an ordinary ```` ```nimble ```` stat block you can edit by hand.
@@ -58,6 +110,8 @@ The **Saved in** pill shows where it goes. Click it to pick another folder, or t
 - **The catch**: the GM Guide says the memorable items have a trade-off. Write it on its own line and it's shown in bold.
 
 ## Homebrew spells and items in your notes
+
+![A homebrew spell block shown as its compendium card](images/feature-homebrew.png)
 
 Spells and items are saved as blocks too, and any you write by hand work the same:
 

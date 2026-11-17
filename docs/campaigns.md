@@ -32,7 +32,7 @@ The panel in the left sidebar is home base. From it you can:
 | Scene | Read-aloud box, what's here, encounter and exits (chapters only) |
 | NPC | An NPC with a [character card](npcs.md) |
 | Location | Description and connections |
-| Quest | The hook, objectives, stakes, the truth behind it, clues, complications and rewards ([more](#quests)) |
+| Quest | The hook, objectives, stakes, the truth behind it, clues, complications and rewards ([more](quests.md)) |
 | Session log | Prep checklist, recap and loose threads, dated today |
 | Map | A map block; pick its image from the campaign's files, or set it later |
 | Monster | A stat block the bestiary picks up |
@@ -48,26 +48,13 @@ On a folder of files like **Assets**, **+** adds files from your computer or pho
 
 ### Quests
 
-New campaigns come with a **Quests** folder. Make a quest with its **+**, **New quest** on the **Campaign** heading's **+**, or the **New quest…** command (also in [Spotlight](spotlight.md)). A folder called Quest log, Missions, Jobs or Bounties works the same way.
+New campaigns come with a **Quests** folder. Make a quest with its **+**, **New quest** on the **Campaign** heading's **+**, or the **New quest…** command. A quest note holds the hook, a checklist of objectives, the stakes, the truth behind it, clues and rewards, with its status, giver and reward as properties. The folder lists open quests first; set `status: completed` and the quest gets a green tick and moves below them. `/quest` links one in any note.
 
-A quest note starts with a quest box for the hook, then a checklist of objectives and headings to fill or delete: Stakes, The truth (what the heroes don't know yet), Clues & leads, People & places, Complications, Rewards and Progress. Its properties hold the quick facts:
-
-| Property | Meaning |
-|---|---|
-| `status:` | `available` (not offered yet), `active`, `completed` or `failed`. Anything else counts as still open |
-| `type:` | `main`, `side`, `personal`, or your own word |
-| `giver:` | Who asked; link the NPC, like `"[[Tobren Kask]]"` |
-| `location:` | Where it leads |
-| `reward:` | What it pays |
-| `level:` | The hero level it's meant for |
-
-**Linking a quest:** type `/quest` in any note to link one of the campaign's quests, like `/npc` does for NPCs. `/quest` on its own lists them all, open ones first, with their status and who gave them; type a few letters to narrow it down. Quests are made here in the panel, not from the slash menu.
-
-The Quests folder lists open quests first. Set `status: completed` and the quest gets a green tick and moves below the open ones; `failed` (or `abandoned`) crosses it out. Objectives can be ticked off in reading view.
-
-In a campaign you [play in](players.md), the quest starts out `active` and is written from your side of the table, with no GM secrets.
+See [Quests](quests.md) for the full note, every property and examples.
 
 ### Links to campaign notes
+
+![A session log where links to a location, scenes, a map and NPCs show as pills with their icons](images/link-pills.png)
 
 A link to a campaign note shows what it links to. `[[Bring Wick Home]]` is an orange pill with a flag, in reading view and Live Preview:
 
@@ -144,4 +131,4 @@ A ```` ```nimble-campaign ```` block on the home note shows the same outline ins
 | `order:` | any | Sort order |
 | `area:` | scene | Area key shown in the panel |
 | `nimble: npc` / `location` / `quest` / `session` / `map` / `monster` / `handout` | any note | What kind of note it is (sets its icon) |
-| `status:` | quest | Where it stands; `completed` and `failed` quests move to the bottom of the folder ([quests](#quests)) |
+| `status:` | quest | Where it stands; `completed` and `failed` quests move to the bottom of the folder ([quests](quests.md#open-finished-and-failed)) |

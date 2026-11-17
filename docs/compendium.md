@@ -1,5 +1,7 @@
 # The compendium
 
+![The compendium's Spells tab filtered by a School: Fire chip, with Pyroclasm's card beside the list](images/compendium.png)
+
 Everything in Nimble, and everything you've written, in one searchable place: adversaries, NPCs, companions, spells, items, class features, classes and subclasses, ancestries and backgrounds, conditions and rules. It replaces the old bestiary tab.
 
 Open it with the book icon in the ribbon, the **Open compendium** command, or `/bestiary` in a note. **Search the compendium…** opens the same thing as a dialog over whatever you're doing.
@@ -56,6 +58,8 @@ Click a chip's × to remove it. Switching tabs drops filters that don't apply to
 
 ### Sorting
 
+![The Spells tab's sort panel: sort by school, then by tier, with Then by… and Reset](images/guide-compendium-sort.png)
+
 Each tab has a sensible default (adversaries by level, spells by tier, items by category, features by class) and switches to best match once you type a name. Sorts chain as far as you like: level, then name; or school, then tier from high to low. The sort button next to the search box opens the chain. Pick a key, flip its direction, and add **Then by…** for the next one. You can also type it: `sort:level,name`, `sort:school,-tier`, or several `sort:` filters in a row. The first sort decides the headings: type, school, class and the like put a heading over each group.
 
 The filter button (the sliders) opens a panel with the tab's common filters as pills, with counts, for when you'd rather click.
@@ -73,9 +77,11 @@ The filter button (the sliders) opens a panel with the tab's common filters as p
 
 ## The compendium as a dialog
 
+![The compendium as a dialog, adding to a character's inventory: shields listed with Iron Shield's page beside them](images/guide-compendium-dialog.png)
+
 Everywhere the plugin asks you to pick something, it opens the compendium already set to what you need, with the search box focused:
 
-- **Add monster** (the tracker's button and the command): adversaries and companion stat blocks. `3 goblin` adds three, Shift+Enter adds two, ⌘/Ctrl+Enter or a row's + adds and keeps the dialog open, and each row shows how many are already in the fight.
+- **Add monster** (the tracker's button and the command): adversaries and companion stat blocks. `3 goblin` adds three, Shift+Enter adds two, ⌘/Ctrl+Enter or a row's + adds and keeps the dialog open, and each row shows how many are already in the fight. **Add several…** on a monster page's Add menu asks how many.
 - **Slash commands:** `/monster`, `/statblock`, `/spell`, `/item`, `/feature`, `/class`, `/companion` and `/compendium` open it set to that tab. Enter writes the reference where you typed the slash, and the cursor goes back to the note so you can keep typing.
 - **Character sheets:** Add item, Add spell and Add feature pick from it. Your class's own options and your schools come first (`is:suggested` shows only those), things already on the sheet are tagged Added, and you can add something that isn't in the books by name.
 
@@ -88,6 +94,8 @@ Give any entry a picture or GIF: click the square beside its title (on its page,
 Uploaded images are saved in **Ember Vault/Compendium Art** (change the folder in settings), so they sync with the rest of your vault. Rename or move an image and it stays linked; **Remove art** in the same menu takes it off the entry without deleting the file.
 
 ## Referencing anything
+
+![Compendium references as chips in a note, with Dazed hovered and its card showing](images/guide-compendium-ref.png)
 
 Every entry's page has **Copy reference**, which copies it to paste into any note, and **Insert in note**, which writes it into the note you were last editing and leaves you in the compendium. With no note open, Insert copies instead. The button at the end of a row copies too, and Enter on a non-monster row inserts.
 

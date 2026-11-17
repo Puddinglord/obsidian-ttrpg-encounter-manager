@@ -4,7 +4,7 @@ This vault holds a short, ready-to-run Nimble adventure, **The Quicksilver Vault
 
 > When Obsidian asks whether you trust this vault, choose **Trust author and enable plugins**. That turns on Ember Vault, which is already installed here.
 
-## A ten-minute tour
+## A short tour
 
 1. **Open the Campaign panel.** Click the castle icon in the left ribbon. You'll see the party (Brakka, Wren, Ilse and Tomas), the chapter and its seven areas, and the NPCs with their portraits.
 2. **Read the chapter.** Open [[1 The Quicksilver Vaults]] for the story of Magistrix Vess and the hooks.

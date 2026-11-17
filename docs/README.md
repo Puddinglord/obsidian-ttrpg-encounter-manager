@@ -4,14 +4,17 @@ Ember Vault turns an Obsidian vault into a GM screen for the [Nimble TTRPG](http
 
 New here? Start with **[Getting started](getting-started.md)**, or download the **[sample adventure](sample-adventure.md)** and open it as a vault. It's a short dungeon with every feature already set up.
 
+What changed lately is in the **[changelog](../CHANGELOG.md)**.
+
 ## Prep
 
 | Page | What it covers |
 |---|---|
-| [Getting started](getting-started.md) | Install, add your party, your first encounter in two minutes |
+| [Getting started](getting-started.md) | Install, add your party, your first encounter |
 | [Sample adventure](sample-adventure.md) | The Quicksilver Vaults, a ready-made vault that shows every feature |
 | [Campaigns](campaigns.md) | Campaigns, chapters and scenes, the Campaign panel, moving through scenes |
 | [NPCs](npcs.md) | NPC notes, portraits and character cards, automatic name linking |
+| [Quests](quests.md) | Quest notes, their status and properties, `/quest` links and quest pills |
 | [Boxes](boxes.md) | Read-aloud text, treasure, traps, clues, handouts, and restyling them |
 | [The compendium](compendium.md) | Every monster, NPC, companion, spell, item, class feature, class and rule in one search, with typed filters and sorting |
 | [Bestiary and stat blocks](bestiary.md) | The 525 bundled monsters, references, writing your own stat blocks |
@@ -40,3 +43,4 @@ New here? Start with **[Getting started](getting-started.md)**, or download the 
 
 - [Settings](settings.md)
 - [FAQ and troubleshooting](faq.md)
+- [Changelog](../CHANGELOG.md): what changed in each release

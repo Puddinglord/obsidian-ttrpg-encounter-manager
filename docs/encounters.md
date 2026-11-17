@@ -24,6 +24,9 @@ The block shows its difficulty using the GM Guide budget:
 
 You also get warnings, for example armor before level 3, or more than 3 monsters per hero. **Scaling and balancing:**
 - Click a monster's count (`2×`) to change how many, make them **tougher or weaker** (one level each way), or remove them. The note updates when the editor closes.
+
+  ![The count editor on an encounter block's monster: how many, and Weaker, As written or Tougher](images/feature-tougher.png)
+
 - A shift is written into the block, e.g. `- 2 Cultist +1`. It counts toward difficulty and carries into the tracker.
 - A shift moves the monster's HP and attack dice to the new level's numbers in the GM Guide's monster tables (the legendary table for solos), so a fragile hard-hitter stays one. Armor the book holds back at low levels drops a step. The stat block shows a Tougher or Weaker line so you can see what changed at the table.
 - Click the difficulty chip (e.g. *Very Deadly · 144%*) and pick a target (Easy, Medium, Hard or Deadly). You get the two or three smallest edits that reach it, for example "Remove all 3 Goblin Minions → Hard 106%". One click applies it. Legendary monsters are kept, and minions from the same family can be suggested.
@@ -33,6 +36,8 @@ You also get warnings, for example armor before level 3, or more than 3 monsters
 **Run** loads the encounter into the tracker, **Add to current** adds its monsters to the encounter already running, and **Edit** opens the builder and saves back into the block.
 
 ## The encounter builder
+
+![The encounter builder: three Quicksilver Hounds and a Mercury Ooze rated Medium, the budget meter, suggestions and the monster search](images/guide-encounter-builder.png)
 
 `/builder`, or **Build an encounter…** in the command palette, opens the builder. Search the bestiary, add monsters, and watch the budget meter as you go. The balancer under the meter suggests edits to reach the difficulty you want. **Insert into note** writes an encounter block where your cursor is, and **Run now** sends it straight to the tracker.
 
