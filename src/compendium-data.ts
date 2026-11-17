@@ -12,8 +12,16 @@ let full: Compendium | null = null;
 /** The book's data with the vault's homebrew in front, so a note named like a book entry replaces it. */
 function data(): unknown {
 	if (!homebrew.spells.length && !homebrew.items.length) return COMPENDIUM_JSON;
-	const book = COMPENDIUM_JSON as unknown as { spells?: unknown[]; items?: unknown[] };
-	return { ...COMPENDIUM_JSON, spells: [...homebrew.spells, ...(book.spells ?? [])], items: [...homebrew.items.map(itemForCompendium), ...(book.items ?? [])] };
+	const book = COMPENDIUM_JSON as unknown as { spells?: { name: string }[]; items?: { name: string }[] };
+	return { ...COMPENDIUM_JSON, spells: replacing(homebrew.spells, book.spells ?? []), items: replacing(homebrew.items.map(itemForCompendium), book.items ?? []) };
+}
+
+/** Homebrew first (the first note wins a name), then the book's entries it doesn't replace. */
+function replacing<T extends { name: string }>(mine: T[], book: { name: string }[]): unknown[] {
+	const key = (e: { name: string }) => e.name.trim().toLowerCase();
+	const seen = new Set<string>();
+	const own = mine.filter(e => !seen.has(key(e)) && !!seen.add(key(e)));
+	return [...own, ...book.filter(e => !seen.has(key(e)))];
 }
 
 export function bundledCompendium(): Compendium {

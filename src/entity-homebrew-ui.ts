@@ -10,7 +10,7 @@ import { diceAverage, formatDiceParts, parseDiceParts, RARITIES, Rarity, SPELL_D
 import { HomebrewItem, ITEM_LANG, ItemKind, itemForCompendium, SPELL_LANG } from './homebrew-def';
 import {
 	applyItemFix, applySpellFix, AreaShape, autoTier, bookPeers, HomebrewFix, ItemDraft, itemNotes, itemSource, newItemDraft, newSpellDraft, rarityGuide,
-	RangeKind, SaveKey, SCHOOLS, SpellDraft, spellActions, spellDamage, spellExpected, spellNotes, spellSource, suggestedCost, suggestedScaling,
+	fromItem, fromSpell, RangeKind, SaveKey, SCHOOLS, SpellDraft, spellActions, spellDamage, spellExpected, spellNotes, spellSource, suggestedCost, suggestedScaling,
 	suggestedUpcast, tierCheck, toItem, toSpell, WEAPON_PROPS,
 } from './entity-homebrew';
 import {
@@ -65,8 +65,8 @@ class SpellBuilder implements KindBuilder {
 
 	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
 		this.folder = homeFolder(plugin, 'Homebrew', 'Homebrew');
-		const s = (seed as { spell?: Spell | null } | undefined)?.spell;
-		if (s) this.d = fromSpell(s);
+		const sd = seed as { spell?: Spell | null; editing?: boolean } | undefined;
+		if (sd?.spell) this.d = fromSpell(sd.spell, sd.editing ?? false);
 		this.otherSchool = !SCHOOLS.includes(this.d.school);
 	}
 
@@ -233,25 +233,6 @@ class SpellBuilder implements KindBuilder {
 	}
 }
 
-function fromSpell(s: Spell): SpellDraft {
-	const d = newSpellDraft();
-	const range = s.range?.match(/^(Range|Reach)\s+(\d+)/i);
-	const area = s.aoe?.match(/^(Cone|Line)\s+(\d+)/i);
-	const sq = s.aoe?.match(/^(\d+)\s*[×x]\s*\d+/);
-	const sides = parseDiceParts(s.damage ?? '')?.sides;
-	return {
-		...d, name: s.name, school: s.school ?? d.school, tier: s.tier ?? 0, utility: !!s.utility,
-		actions: parseInt(s.actions ?? '', 10) || undefined,
-		rangeKind: /^self/i.test(s.range ?? '') ? 'self' : range ? (range[1].toLowerCase() as RangeKind) : 'range',
-		distance: range ? Number(range[2]) : undefined,
-		area: area ? (area[1].toLowerCase() as AreaShape) : sq ? 'square' : s.aoe ? 'aoe' : 'none',
-		areaSize: area ? Number(area[2]) : sq ? Number(sq[1]) : undefined,
-		concentration: s.concentration, damage: s.damage, upcast: s.higherLevels, scaling: s.cantripScaling, sides: sides ?? d.sides,
-		// "DEX save for half." leads the text when the builder wrote it: read it back as the save.
-		save: (s.text?.match(/^(STR|DEX|INT|WIL) save for half\./)?.[1] ?? '') as SaveKey,
-		text: (s.text ?? '').replace(/^(STR|DEX|INT|WIL) save for half\.\s*/, ''),
-	};
-}
 
 // ----------------------------------------------------------------------------
 // Items
@@ -271,8 +252,8 @@ class ItemBuilder implements KindBuilder {
 
 	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
 		this.folder = homeFolder(plugin, 'Homebrew', 'Homebrew');
-		const s = seed as { itemKind?: ItemKind; item?: HomebrewItem | null } | undefined;
-		if (s?.item) this.d = fromItem(s.item);
+		const s = seed as { itemKind?: ItemKind; item?: HomebrewItem | null; editing?: boolean } | undefined;
+		if (s?.item) this.d = fromItem(s.item, s.editing ?? false);
 		else if (s?.itemKind) this.d = newItemDraft(s.itemKind);
 	}
 
@@ -396,16 +377,6 @@ class ItemBuilder implements KindBuilder {
 	}
 }
 
-function fromItem(it: HomebrewItem): ItemDraft {
-	const kind = (['weapon', 'armor', 'shield', 'consumable', 'magic', 'gear'] as ItemKind[]).find(k => k === it.category) ?? (it.category === 'wand' || it.category === 'scroll' ? 'magic' : 'gear');
-	const text = it.text ?? '';
-	const c = text.match(/\s*\*\*Catch:\*\*\s*(.+)$/);
-	return {
-		...newItemDraft(kind), name: it.name, rarity: (RARITIES as readonly string[]).includes(it.rarity ?? '') ? it.rarity as Rarity : '',
-		damage: it.damage, stat: it.stat === 'DEX' ? 'DEX' : 'STR', damageType: it.damageType ?? '', props: it.properties ?? [], armor: it.armor,
-		strength: it.strength, cost: it.cost, charges: it.charges, text: c ? text.slice(0, c.index).trim() : text, catch: c ? c[1].trim() : '',
-	};
-}
 
 export function registerHomebrewBuilders(): void {
 	registerKind('spell', (plugin, seed) => new SpellBuilder(plugin, seed));

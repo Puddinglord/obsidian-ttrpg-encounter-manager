@@ -4468,6 +4468,10 @@ body.is-tablet .nimble-entity-builder :is(button.eb-num-btn, button.eb-dice-btn,
 .nimble-entity-builder .eb-note-fixes { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-left: auto; }
 .nimble-entity-builder button.eb-note-fix { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 0.7rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); font-size: var(--eb-text); font-weight: 600; cursor: var(--cursor-link, pointer); transition: background-color 0.15s ease, border-color 0.15s ease; }
 .nimble-entity-builder button.eb-note-fix:hover { background: var(--background-modifier-hover); border-color: var(--background-modifier-border-hover); }
+/* Touch: the review's small buttons get the hint Fix button's height */
+body.is-tablet .nimble-entity-builder button.eb-note-fix, body.is-mobile .nimble-entity-builder button.eb-note-fix,
+body.is-tablet .nimble-entity-builder button.eb-review-edit, body.is-mobile .nimble-entity-builder button.eb-review-edit,
+body.is-tablet .nimble-entity-builder button.eb-book-use, body.is-mobile .nimble-entity-builder button.eb-book-use { height: auto; min-height: 2.25rem; }
 .nimble-entity-builder .eb-step-head.has-aside { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
 .nimble-entity-builder .eb-step-head.has-aside .eb-folder { width: auto; min-width: 0; }
 

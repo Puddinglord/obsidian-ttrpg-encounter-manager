@@ -43,6 +43,26 @@ function fields(body: string): { values: Map<string, string>; text: string } {
 	return { values, text: (text ?? []).join('\n').replace(/^\s+|\s+$/g, '') };
 }
 
+const KNOWN: Record<'spell' | 'item', Set<string>> = {
+	spell: new Set(['name', 'school', 'tier', 'utility', 'actions', 'cost', 'range', 'reach', 'aoe', 'area', 'concentration', 'damage', 'upcast', 'higherlevels', 'scaling', 'cantripscaling', 'class', 'source']),
+	item: new Set(['name', 'category', 'kind', 'type', 'subcategory', 'rarity', 'cost', 'price', 'damage', 'damagetype', 'stat', 'properties', 'range', 'armor', 'defense', 'strength', 'str', 'slots', 'charges', 'source']),
+};
+
+/** Lines above `text:` that the block doesn't read (unknown fields, repeats, lines without a colon): Edit can't write them back. */
+export function unreadLines(body: string, kind: 'spell' | 'item'): number {
+	let n = 0;
+	const seen = new Set<string>();
+	for (const line of body.split(/\r?\n/)) {
+		if (!line.trim()) continue;
+		const m = line.match(/^\s*([A-Za-z][\w *-]*?)\s*:\s*(.*)$/);
+		const key = m ? fieldKey(m[1]) : '';
+		if (key === 'text' || key === 'description' || key === 'effect') break;
+		if (!m || !KNOWN[kind].has(key) || seen.has(key)) n++;
+		seen.add(key);
+	}
+	return n;
+}
+
 const yes = (v: string | undefined) => !!v && /^(yes|true|y|1|utility)$/i.test(v.trim());
 
 /** "1", "Tier 1", "cantrip" → 0..9. */
@@ -144,6 +164,7 @@ export function itemBlockSource(it: HomebrewItem): string {
 	kv('stat', it.stat);
 	kv('damage type', it.damageType);
 	kv('properties', it.properties?.join(', '));
+	kv('range', it.range);
 	kv('armor', it.armor);
 	kv('strength', it.strength);
 	kv('slots', it.slots);

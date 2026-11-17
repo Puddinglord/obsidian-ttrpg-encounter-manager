@@ -179,13 +179,25 @@ export function findEncounterFence(lines: string[], lineStart: number, lineEnd: 
 /**
  * A note's text with one encounter block's body replaced, or null when the
  * block can't be found (the note changed since it was rendered). Every written
- * line keeps the block's prefix, and the fences themselves aren't touched.
+ * line keeps the block's prefix. The fences only change to outgrow a ``` line
+ * in the new body.
  */
 export function replaceEncounterBlock(text: string, lineStart: number, lineEnd: number, oldBody: string, newBody: string, lang = 'nimble-encounter'): string | null {
 	const lines = text.split('\n');
 	const span = findEncounterFence(lines, lineStart, lineEnd, oldBody, lang);
 	if (!span) return null;
 	const cr = lines[span.open].endsWith('\r') ? '\r' : '';
+	// A line of ``` in the new body would close the block early: lengthen both fences past it.
+	const fence = lines[span.open].replace(/^[ \t>]*/, '').match(/^(`{3,}|~{3,})/)?.[1];
+	if (fence) {
+		const run = new RegExp(`^\\s*([${fence[0]}]{3,})`);
+		const longest = Math.max(0, ...newBody.split(/\r?\n/).map(l => run.exec(l)?.[1].length ?? 0));
+		if (longest >= fence.length) {
+			const longer = fence[0].repeat(longest + 1);
+			lines[span.open] = lines[span.open].replace(fence, longer);
+			lines[span.close] = lines[span.close].replace(new RegExp(`[${fence[0]}]{3,}`), longer);
+		}
+	}
 	const next = newBody.split(/\r?\n/).map(l => (l ? span.prefix + l : span.prefix.trimEnd()) + cr);
 	lines.splice(span.open + 1, span.close - span.open - 1, ...next);
 	return lines.join('\n');

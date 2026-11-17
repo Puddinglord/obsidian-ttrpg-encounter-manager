@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { itemBlockSource, itemForCompendium, parseItemBlock, parseSpellBlock, readTier, spellBlockSource } from '../src/homebrew-def';
 import { bundledCompendium, setHomebrew } from '../src/compendium-data';
 import { extractNimbleBlocks } from '../src/parser';
+import { replaceEncounterBlock } from '../src/encounter-def';
 
 const LASH = `name: Ember Lash
 school: Fire
@@ -49,10 +50,23 @@ describe('homebrew in the compendium', () => {
 			expect(bundledCompendium().spell('Ember Lash')?.damage).toBe('3d6+4');
 			expect(bundledCompendium().item('Dagger')?.text).toBe('A better dagger.');
 			expect(bundledCompendium().search('ember lash', ['spell'])[0]?.detail).toBe('Fire · Tier 1 · 2 Actions · Range 8 · 3d6+4');
+			// Listed once: the book's Dagger steps aside.
+			expect(bundledCompendium().all().filter(h => h.kind === 'item' && h.name === 'Dagger')).toHaveLength(1);
 		} finally {
 			setHomebrew({ spells: [], items: [] });
 		}
 		expect(bundledCompendium().spell('Ember Lash')).toBeUndefined();
 		expect(bundledCompendium().item('Dagger')?.damage).toBe(bookDagger);
+	});
+});
+
+describe('Edit writing a homebrew block back', () => {
+	it('lengthens the fences when the new text has a ``` line, and leaves them alone otherwise', () => {
+		const note = 'Intro\n\n```nimble-spell\nname: Zap\ntext: Old.\n```\n\nAfter';
+		const plain = replaceEncounterBlock(note, 2, 5, 'name: Zap\ntext: Old.', 'name: Zap\ntext: New.', 'nimble-spell')!;
+		expect(plain).toBe('Intro\n\n```nimble-spell\nname: Zap\ntext: New.\n```\n\nAfter');
+		const fenced = replaceEncounterBlock(note, 2, 5, 'name: Zap\ntext: Old.', 'name: Zap\ntext: Say\n```\nthis', 'nimble-spell')!;
+		expect(fenced).toBe('Intro\n\n````nimble-spell\nname: Zap\ntext: Say\n```\nthis\n````\n\nAfter');
+		expect(extractNimbleBlocks(fenced, 'nimble-spell')).toEqual(['name: Zap\ntext: Say\n```\nthis']);
 	});
 });

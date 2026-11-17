@@ -4,8 +4,13 @@
 // bands). Pure, so it's tested.
 
 import { Item, Spell } from './compendium';
-import { diceAverage, expectedSpell, formatDiceParts, guessSpellTier, RARITY_GUIDE, Rarity, weaponPrice } from './builder-math';
+import { diceAverage, expectedSpell, formatDiceParts, guessSpellTier, parseDiceParts, RARITIES, RARITY_GUIDE, Rarity, weaponPrice } from './builder-math';
 import { HomebrewItem, ItemKind, itemBlockSource, spellBlockSource } from './homebrew-def';
+
+/** Are these draft fields as they were when the block was read? */
+function untouched<T extends object>(d: T, at: T) {
+	return (...keys: (keyof T)[]) => keys.every(k => JSON.stringify(d[k]) === JSON.stringify(at[k]));
+}
 
 // ----------------------------------------------------------------------------
 // Spells
@@ -35,6 +40,8 @@ export interface SpellDraft {
 	upcast?: string;
 	scaling?: string;
 	text: string;
+	/** Editing a block: the spell as written, and the draft it was read into. Untouched controls write back what was written. */
+	orig?: { spell: Spell; at: SpellDraft };
 }
 
 export function newSpellDraft(): SpellDraft {
@@ -98,8 +105,47 @@ export function toSpell(d: SpellDraft): Spell {
 		cantripScaling: d.tier === 0 ? (d.scaling?.trim() || suggestedScaling(d)) : undefined,
 		text: [save, d.text.trim()].filter(Boolean).join(' ') || undefined,
 	};
+	const o = d.orig;
+	if (o) {
+		const was = o.spell;
+		const same = untouched(d, o.at);
+		// "Reaction", "1 Minute", "Touch", "Sphere 3": what the controls can't say stays as written until it's changed.
+		if (same('actions')) s.actions = was.actions;
+		if (same('rangeKind', 'distance')) s.range = was.range;
+		if (same('area', 'areaSize')) s.aoe = was.aoe;
+		// A spell written without damage or upcast doesn't get the tier's until something they follow changes.
+		const follows = ['utility', 'tier', 'area', 'areaSize', 'rangeKind', 'distance', 'sides', 'damage'] as const;
+		if (same(...follows)) s.damage = was.damage;
+		if (same(...follows, 'upcast')) s.higherLevels = was.higherLevels;
+		if (same(...follows, 'scaling')) s.cantripScaling = was.cantripScaling;
+		s.class = was.class;
+		s.source = was.source;
+	}
 	for (const k of Object.keys(s) as (keyof Spell)[]) if (s[k] === undefined) delete s[k];
 	return s;
+}
+
+/** A draft from a spell: a template, or (`editing`) the block being edited, which keeps what the builder has no control for. */
+export function fromSpell(s: Spell, editing = false): SpellDraft {
+	const d = newSpellDraft();
+	const range = s.range?.match(/^(Range|Reach)\s+(\d+)/i);
+	const area = s.aoe?.match(/^(Cone|Line)\s+(\d+)/i);
+	const sq = s.aoe?.match(/^(\d+)\s*[×x]\s*\d+/);
+	const sides = parseDiceParts(s.damage ?? '')?.sides;
+	const out: SpellDraft = {
+		...d, name: s.name, school: s.school ?? d.school, tier: s.tier ?? 0, utility: !!s.utility,
+		actions: parseInt(s.actions ?? '', 10) || undefined,
+		rangeKind: /^self/i.test(s.range ?? '') ? 'self' : range ? (range[1].toLowerCase() as RangeKind) : 'range',
+		distance: range ? Number(range[2]) : undefined,
+		area: area ? (area[1].toLowerCase() as AreaShape) : sq ? 'square' : s.aoe ? 'aoe' : 'none',
+		areaSize: area ? Number(area[2]) : sq ? Number(sq[1]) : undefined,
+		concentration: s.concentration, damage: s.damage, upcast: s.higherLevels, scaling: s.cantripScaling, sides: sides ?? d.sides,
+		// "DEX save for half." leads the text when the builder wrote it: read it back as the save.
+		save: (s.text?.match(/^(STR|DEX|INT|WIL) save for half\./)?.[1] ?? '') as SaveKey,
+		text: (s.text ?? '').replace(/^(STR|DEX|INT|WIL) save for half\.\s*/, ''),
+	};
+	if (editing) out.orig = { spell: s, at: { ...out } };
+	return out;
 }
 
 export function spellSource(d: SpellDraft): string { return spellBlockSource(toSpell(d)); }
@@ -142,6 +188,8 @@ export interface ItemDraft {
 	text: string;
 	/** The GM Guide: a memorable item has a catch. Shown as its own line. */
 	catch: string;
+	/** Editing a block: the item as written and the kind it was read as, for what the builder has no control for. */
+	orig?: { item: HomebrewItem; at: ItemDraft };
 }
 
 export function newItemDraft(kind: ItemKind = 'magic'): ItemDraft {
@@ -182,8 +230,51 @@ export function toItem(d: ItemDraft): HomebrewItem {
 		charges: d.charges?.trim() || undefined,
 		text: [d.text.trim(), d.catch.trim() ? `**Catch:** ${d.catch.trim()}` : ''].filter(Boolean).join(' ') || undefined,
 	};
+	const o = d.orig;
+	if (o) {
+		const was = o.item;
+		const same = untouched(d, o.at);
+		Object.assign(it, { subcategory: was.subcategory, slots: was.slots, range: was.range, source: was.source });
+		// "varies", "STR/DEX": what the controls can't say stays while they're as they were read.
+		if (same('rarity')) it.rarity = was.rarity;
+		if (same('kind')) {
+			// A wand stays a wand; a non-weapon's damage and properties have no control here, so they stay too.
+			it.category = was.category;
+			if (d.kind !== 'weapon') Object.assign(it, { damage: was.damage, stat: was.stat, damageType: was.damageType, properties: was.properties });
+			else {
+				if (same('damage')) it.damage = was.damage;
+				if (same('stat')) it.stat = was.stat;
+			}
+			if (same('armor')) it.armor = was.armor;
+			// No price written: none suggested, until something the price follows changes.
+			if (same('rarity', 'damage', 'cost')) it.cost = was.cost;
+		}
+	}
 	for (const k of Object.keys(it) as (keyof HomebrewItem)[]) if (it[k] === undefined) delete it[k];
 	return it;
+}
+
+/** An item's kind in the builder ("wand" and "scroll" are magic items). */
+export function itemKind(category: string | undefined): ItemKind {
+	return (['weapon', 'armor', 'shield', 'consumable', 'magic', 'gear'] as ItemKind[]).find(k => k === category) ?? (category === 'wand' || category === 'scroll' ? 'magic' : 'gear');
+}
+
+/** A draft from an item: a template, or (`editing`) the block being edited, which keeps what the builder has no control for. */
+export function fromItem(it: HomebrewItem, editing = false): ItemDraft {
+	const kind = itemKind(it.category);
+	// The book stores charges as a number.
+	const charges = it.charges !== undefined && it.charges !== null && String(it.charges).trim() ? String(it.charges).trim() : undefined;
+	let text = it.text ?? '';
+	// The compendium's copy of a homebrew item leads with its charges (itemForCompendium): they're a field here.
+	if (charges) text = text.replace(/^\*\*Charges:\*\*[^.]*\.\s*/, '');
+	const c = text.match(/\s*\*\*Catch:\*\*\s*(.+)$/);
+	const out: ItemDraft = {
+		...newItemDraft(kind), name: it.name, rarity: (RARITIES as readonly string[]).includes(it.rarity ?? '') ? it.rarity as Rarity : '',
+		damage: it.damage, stat: it.stat === 'DEX' ? 'DEX' : 'STR', damageType: it.damageType ?? '', props: it.properties ?? [], armor: it.armor,
+		strength: it.strength, cost: it.cost, charges, text: c ? text.slice(0, c.index).trim() : text, catch: c ? c[1].trim() : '',
+	};
+	if (editing) out.orig = { item: it, at: { ...out } };
+	return out;
 }
 
 export function itemSource(d: ItemDraft): string { return itemBlockSource(toItem(d)); }

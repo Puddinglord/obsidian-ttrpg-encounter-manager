@@ -49,7 +49,7 @@ export interface MonsterDraft {
 	die: number;
 	attacks: AttackDraft[];
 	actionText?: string;
-	abilities: { name: string; text: string }[];
+	abilities: { name: string; text: string; legendary?: boolean }[];
 	bloodied?: string;
 	lastStand?: string;
 	description?: string;
@@ -65,7 +65,16 @@ export interface MonsterDraft {
 	template?: { name: string; level: number; hp: number; hpPerHero?: number; armor: ArmorType };
 	partyLevel: number;
 	partySize: number;
+	/** Editing a block in a note: what the builder has no field for, written back as it was. */
+	keep?: Partial<NimbleMonster>;
+	/** Editing: the movement as written ("Leap 6", "6, teleport 8"), kept while speed and moves are as they were read. */
+	movementAsRead?: { text: string; speed: number; moves: string };
+	/** Editing: the HP as written (a solo's flat "hp: 25" too), kept until the HP, level, role or party size changes. */
+	hpAsRead?: { hp: number; hpPerHero?: number; level: number; role: BuildRole; partySize: number };
 }
+
+/** The fields a block can have that the builder doesn't edit; Edit carries them through. */
+const KEPT: (keyof NimbleMonster)[] = ['senses', 'languages', 'source', 'cr', 'multiattack', 'roleLabel'];
 
 export interface Party { level: number; size: number }
 
@@ -240,20 +249,23 @@ export function toMonster(d: MonsterDraft): NimbleMonster {
 	const name = d.name.trim() || 'New monster';
 	const hp = effectiveHp(d);
 	const m: NimbleMonster = {
+		...d.keep,
 		name,
 		level: d.role === 'minion' ? undefined : levelLabel(d.level),
 		role: d.role === 'solo' ? 'legendary' : d.role,
-		roleLabel: d.role === 'solo' ? 'Solo' : undefined,
+		// An edited block keeps its own word ("legendary" or "solo").
+		roleLabel: d.role === 'solo' ? (d.keep?.roleLabel || 'Solo') : undefined,
 		size: d.size || undefined,
 		type: d.type.trim() || undefined,
 		armor: d.armor,
 		hp: d.role === 'solo' ? hp * d.partySize : hp,
 		hpPerHero: d.role === 'solo' ? hp : undefined,
-		movement: movementText(d),
+		...(hpUnchanged(d) ? { hp: d.hpAsRead!.hp, hpPerHero: d.hpAsRead!.hpPerHero } : {}),
+		movement: d.movementAsRead && d.speed === d.movementAsRead.speed && JSON.stringify(d.moves) === d.movementAsRead.moves ? d.movementAsRead.text : movementText(d),
 		saves: savesText(d) || undefined,
 		actionText: effectiveActionText(d),
 		attacks: d.attacks.map((a, i) => ({ raw: `**${attackName(d, a, i)}.** ${attackBody(d, a)}`.trim() })),
-		abilities: d.abilities.filter(a => a.name.trim() || a.text.trim()).map(a => ({ name: a.name.trim() || 'Ability', description: a.text.trim() })),
+		abilities: d.abilities.filter(a => a.name.trim() || a.text.trim()).map(a => ({ name: a.name.trim() || 'Ability', description: a.text.trim(), ...(a.legendary ? { isLegendary: true } : {}) })),
 		bloodied: d.role === 'solo' ? (d.bloodied?.trim() || suggestedBloodied(d)) : d.bloodied?.trim() || undefined,
 		lastStand: d.role === 'solo' ? (d.lastStand?.trim() || suggestedLastStand(d)) : undefined,
 		description: d.description?.trim() || undefined,
@@ -333,8 +345,12 @@ export function autoLevel(d: MonsterDraft): number {
 // ----------------------------------------------------------------------------
 // From an existing monster
 
-/** A draft copied from a monster, whose HP and attacks re-level as the level moves. */
-export function draftFromMonster(m: NimbleMonster, party: Party, copyName = true): MonsterDraft {
+/**
+ * A draft copied from a monster, whose HP and attacks re-level as the level moves.
+ * `editing`: the block itself is being edited, so the fields the builder has no
+ * control for ride along and Save doesn't drop them.
+ */
+export function draftFromMonster(m: NimbleMonster, party: Party, copyName = true, editing = false): MonsterDraft {
 	const role: BuildRole = monsterRole(m) === 'legendary' ? 'solo' : monsterRole(m) === 'minion' ? 'minion' : 'regular';
 	const lvl = levelValue(m.level);
 	const level = lvl === null ? Math.max(1, Math.round(party.level || 1)) : role === 'solo' ? Math.max(1, Math.round(lvl)) : snapLevel(lvl);
@@ -372,7 +388,7 @@ export function draftFromMonster(m: NimbleMonster, party: Party, copyName = true
 			return { name, base: rest, size: role === 'solo' ? (i === 0 ? 'small' : 'big') : undefined, die: sides && (DIE_SIZES as readonly number[]).includes(sides) ? sides : undefined };
 		}),
 		actionText: m.actionText,
-		abilities: (m.abilities ?? []).map(a => ({ name: a.name, text: a.description })),
+		abilities: (m.abilities ?? []).map(a => ({ name: a.name, text: a.description, ...(a.isLegendary ? { legendary: true } : {}) })),
 		bloodied: m.bloodied,
 		lastStand: m.lastStand,
 		description: m.description,
@@ -385,7 +401,21 @@ export function draftFromMonster(m: NimbleMonster, party: Party, copyName = true
 		vulnerabilities: m.vulnerabilities ?? [],
 		minionDie: m.minionDie,
 		template: { name: m.name, level, hp: m.hp, hpPerHero: m.hpPerHero, armor: m.armor ?? 'none' },
+		keep: editing ? kept(m) : undefined,
+		movementAsRead: editing && m.movement ? { text: m.movement, speed, moves: JSON.stringify(moves) } : undefined,
+		hpAsRead: editing ? { hp: m.hp, hpPerHero: m.hpPerHero, level, role, partySize: d.partySize } : undefined,
 	};
+}
+
+function hpUnchanged(d: MonsterDraft): boolean {
+	const r = d.hpAsRead;
+	return !!r && d.hp === undefined && d.level === r.level && d.role === r.role && d.partySize === r.partySize;
+}
+
+function kept(m: NimbleMonster): Partial<NimbleMonster> | undefined {
+	const out: Partial<NimbleMonster> = {};
+	for (const k of KEPT) if (m[k] !== undefined && m[k] !== '') (out as Record<string, unknown>)[k] = m[k];
+	return Object.keys(out).length ? out : undefined;
 }
 
 /** "**Bite.** 1d6+2, Grappled." → name "Bite", rest "1d6+2, Grappled." (a name without bold is everything before the dice). */

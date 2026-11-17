@@ -2,7 +2,7 @@
 // Obsidian imports), so every rule here is unit-tested.
 
 import { AppliedCondition, ArmorType, MonsterRole, NimbleMonster } from './types';
-import { relevelRegular, relevelSolo, scaleAttack } from './builder-math';
+import { relevelRegular, relevelSolo, scaleAttack, stepLevel } from './builder-math';
 
 // ----------------------------------------------------------------------------
 // Monster facts
@@ -408,13 +408,9 @@ export function balanceEncounter(groups: BalanceGroup[], partyLevels: number[], 
 // ----------------------------------------------------------------------------
 // Tougher / weaker monsters: shift a stat block up or down a level.
 
-const LEVEL_LADDER = [1 / 8, 1 / 4, 1 / 3, 1 / 2, ...Array.from({ length: 30 }, (_, i) => i + 1)];
-
-/** The level `shift` steps away on Nimble's ladder (… 1/3, 1/2, 1, 2, 3 …). */
+/** The level `shift` steps away on Nimble's ladder (… 1/3, 1/2, 1, 2, 3 …): the builder's ladder (builder-math LEVELS). */
 export function shiftLevel(level: number, shift: number): number {
-	let i = 0;
-	for (let k = 0; k < LEVEL_LADDER.length; k++) if (Math.abs(LEVEL_LADDER[k] - level) < Math.abs(LEVEL_LADDER[i] - level)) i = k;
-	return LEVEL_LADDER[Math.max(0, Math.min(LEVEL_LADDER.length - 1, i + shift))];
+	return stepLevel(level, shift);
 }
 
 /** When a monster has no level to read from: HP ×1.25 (or ÷1.25) a step, as before the GM Guide tables were built in. */

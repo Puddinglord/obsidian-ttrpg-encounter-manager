@@ -54,7 +54,7 @@ class MonsterBuilder implements KindBuilder {
 	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
 		const party = partyOf(plugin);
 		const s = seed as { monster?: NimbleMonster; copyName?: boolean; editing?: boolean } | undefined;
-		this.d = s?.monster ? draftFromMonster(s.monster, party, s.copyName ?? false) : newMonsterDraft(party);
+		this.d = s?.monster ? draftFromMonster(s.monster, party, s.copyName ?? false, s.editing ?? false) : newMonsterDraft(party);
 		this.editing = !!s?.editing;
 		this.folder = homeFolder(plugin, 'Monsters', 'Bestiary');
 	}
