@@ -125,3 +125,42 @@ describe('review notes', () => {
 		expect(attackBody(d, d.attacks[1])).toMatch(/1d12\+\d+/);
 	});
 });
+
+describe('Edit on a block in a note', () => {
+	const BLOCK = [
+		'name: Wyrmling', 'level: 4', 'role: legendary', 'hp: 30/hero', 'senses: darkvision 12', 'languages: Draconic', 'source: My campaign', 'cr: 3',
+		'multiattack: Two claws.', 'habitat: Mountains', 'abilities:', '- Wing Beat (L): Everyone nearby falls prone.', 'attacks:', '- Claw 2d6',
+	].join('\n');
+
+	it('writes back what the builder has no field for', () => {
+		const m = readStatblock(BLOCK).monster!;
+		const back = readStatblock(toSource({ ...draftFromMonster(m, party, true, true), hp: 40 })).monster!;
+		expect(back).toMatchObject({ senses: 'darkvision 12', languages: 'Draconic', source: 'My campaign', cr: '3', multiattack: 'Two claws.', habitat: 'Mountains', roleLabel: 'Legendary', hpPerHero: 40 });
+		expect(back.abilities).toEqual([{ name: 'Wing Beat', description: 'Everyone nearby falls prone.', isLegendary: true }]);
+	});
+
+	it('keeps movement the controls can\'t say until the speed changes', () => {
+		const m = readStatblock('name: Toad\nlevel: 2\nmovement: Leap 6 (it hops)\nattacks:\n- Tongue 1d6').monster!;
+		const d = draftFromMonster(m, party, true, true);
+		expect(toMonster(d).movement).toBe('Leap 6 (it hops)');
+		expect(toMonster({ ...d, speed: 8 }).movement).toBe('8');
+	});
+
+	it('a template keeps only what the builder shows, and the GM can still change the role', () => {
+		const m = readStatblock(BLOCK).monster!;
+		expect(toMonster(draftFromMonster(m, party, false)).senses).toBeUndefined();
+		const regular = toMonster(setRole(draftFromMonster(m, party, true, true), 'regular'));
+		expect(regular.roleLabel).toBeUndefined();
+		expect(regular.senses).toBe('darkvision 12');
+	});
+});
+
+describe('Edit keeps HP as written', () => {
+	it('a solo written with flat HP stays flat until the HP, level or role changes', () => {
+		const m = readStatblock('name: Bear\nlevel: 2\nrole: solo\nhp: 25\nattacks:\n- Paw 3d6+2').monster!;
+		const d = draftFromMonster(m, party, true, true);
+		expect(toSource(d)).toMatch(/\nhp: 25\n/);
+		expect(toSource({ ...d, hp: 8 })).toMatch(/\nhp: 8\/hero\n/);
+		expect(toSource({ ...d, level: 3 })).toMatch(/\nhp: \d+\/hero\n/);
+	});
+});

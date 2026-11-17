@@ -8,7 +8,7 @@ Make your own monsters, spells and items without learning a format. The builder 
 - The **+** button in the [compendium](compendium.md)'s search bar opens it on the tab you're on: Spells makes a spell, Items an item.
 - On a monster's page in the compendium, **Use as a template** starts a new monster from that one. Spells and items have it too, and every builder's first step has **Start from** to search for one to copy.
 - `/new-monster`, `/new-spell` or `/new-item` in a note builds it right there: the block goes where you typed the slash.
-- Hover a monster, spell or item block in your notes and click the **pencil** to edit it in the builder. Save writes the block back in place.
+- Hover a monster, spell or item block in your notes and click the **pencil** to edit it in the builder. Save writes the block back in place, keeping what the builder has no control for (senses, languages, a spell's class, a wand's charges). If the block has lines it can't read, Save asks first, because those lines won't be in the rewritten block.
 
 The switch at the top changes what you're making. Each kind keeps what you've typed, so you can look at a spell and come back to your monster. Closing the builder (Cancel, the ×, Escape) asks before throwing away anything you've filled in.
 
@@ -87,4 +87,4 @@ text: Replays the last minute of sound in the room. **Catch:** it replays your w
 - `text:` comes last and can run over several lines.
 - Spell fields: `school`, `tier` (or `cantrip`), `utility: yes`, `actions`, `range`, `aoe`, `concentration`, `damage`, `upcast`, `scaling` (a cantrip's higher levels).
 - Item fields: `category` (weapon, armor, shield, consumable, magic, gear), `rarity`, `damage`, `stat`, `damage type`, `properties` (a list on one line), `armor`, `strength`, `charges`, `cost`.
-- A note with the same name as a book spell or item replaces it everywhere, the way a monster note does.
+- A note with the same name as a book spell or item replaces it in the compendium, for every campaign in the vault. If two notes use the same name, the first by path wins.

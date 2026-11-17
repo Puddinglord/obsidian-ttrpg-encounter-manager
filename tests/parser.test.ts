@@ -298,6 +298,41 @@ harder: Move often; end turns out of melee reach.`;
 		expect(issues[0]).toMatchObject({ line: 1, hint: 'Did you mean abilities:?' });
 	});
 
+	it('keeps attacks under a "Choose one:" line, and reads it as the attacks intro', () => {
+		for (const intro of ['Choose one:', '**Pick two:**', 'Choose 1:', "After each hero's turn, choose one:"]) {
+			const { monster: m, issues } = readStatblock(`name: Ogre\nattacks:\n${intro}\n- Club 2d6\n- Rock 1d8`);
+			expect(m!.attacks?.map(a => a.raw)).toEqual(['Club 2d6', 'Rock 1d8']);
+			expect(m!.actionText).toBe(intro.replace(/\*/g, ''));
+			expect(issues).toEqual([]);
+		}
+	});
+
+	it('leaves an attack that ends "or choose twice:" as an attack', () => {
+		const { monster: m } = readStatblock('name: Eye\nattacks:\n- **Eye Rays.** (Reach 10) roll 2d6 or choose twice:\n- Bite 1d6\nchoose twice:');
+		expect(m!.attacks?.map(a => a.raw)).toEqual(['**Eye Rays.** (Reach 10) roll 2d6 or choose twice:', 'Bite 1d6']);
+	});
+
+	it('still flags other headings after attacks: as lists that are not shown', () => {
+		const { monster: m, issues } = readStatblock('name: Knight\nattacks:\n- Sword 1d10\nReactions:\n- Parry: +2 armor');
+		expect(m!.attacks?.map(a => a.raw)).toEqual(['Sword 1d10']);
+		expect(issues[0]).toMatchObject({ line: 3, text: 'Reactions:' });
+	});
+
+	it('joins a stray line only to the line right above, never across another stray line', () => {
+		const lines = ['name: Bear', 'attacks:', '- Bite 1d6+2 piercing.', 'On a crit, the target is grappled.', "It can't move until freed."];
+		const { issues } = readStatblock(lines.join('\n'));
+		expect(issues.map(i => i.line)).toEqual([3, 4]);
+		expect(issues[0].fix).toEqual({ label: 'Join to the line above', start: 2, end: 3, lines: ['- Bite 1d6+2 piercing. On a crit, the target is grappled.'] });
+		// The second line can't join past the first, so no Fix can delete it.
+		expect(issues[1].fix).toBeUndefined();
+	});
+
+	it('still joins a wrapped lower-case line onto the attack, past a line that is not shown', () => {
+		const { monster: m, issues } = readStatblock('name: Bear\nattacks:\n- Bite 1d6+2.\nOn a crit, grappled.\nand also prone.');
+		expect(m!.attacks?.map(a => a.raw)).toEqual(['Bite 1d6+2. and also prone.']);
+		expect(issues.map(i => i.line)).toEqual([3]);
+	});
+
 	it('points at bold that never closes', () => {
 		const { issues } = readStatblock('name: A\nattacks:\n- **Paw 3d6+2.\n- ***Bite.*** 1d6');
 		expect(issues).toHaveLength(1);

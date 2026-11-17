@@ -69,6 +69,8 @@ export interface BuilderOptions {
 	insert?: (block: string) => void;
 	/** Editing a block in a note: write it back instead. */
 	writeBack?: (body: string) => Promise<boolean>;
+	/** Lines in the block being edited that it doesn't read: Save rewrites the block without them, so it asks first. */
+	unread?: number;
 	/** The note the builder was opened from (for links and the preview). */
 	sourcePath?: string;
 }
@@ -398,6 +400,10 @@ export class EntityBuilder extends Modal implements BuilderUI {
 			const out = this.b.output();
 			const block = fence(out.lang, out.body);
 			if (this.o.writeBack) {
+				const n = this.o.unread ?? 0;
+				if (n && !await confirmAction(this.app, 'Save without the lines it can\'t read?',
+					`${n === 1 ? 'One line in this block isn\'t' : `${n} lines in this block aren't`} shown as written. Saving rewrites the block without ${n === 1 ? 'it' : 'them'}.`,
+					'Save anyway', true, 'Keep editing')) return;
 				if (await this.o.writeBack(out.body)) { this.done(); new Notice(`Saved ${out.name}.`); }
 				return;
 			}

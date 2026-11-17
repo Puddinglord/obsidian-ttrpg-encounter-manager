@@ -195,7 +195,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 				void this.addToEncounter(monster, ctx.sourcePath, ev.shiftKey ? 2 : 1);
 			});
 			if (this.settings.statblockHints) renderStatblockIssues(this, el, issues, source, ctx);
-			if (!this.playerView(ctx.sourcePath)) addEditButton(this, el, ctx, { kind: 'monster', lang: 'nimble', source, seed: { monster, copyName: true, editing: true } });
+			if (!this.playerView(ctx.sourcePath)) addEditButton(this, el, ctx, { kind: 'monster', lang: 'nimble', source, seed: { monster, copyName: true, editing: true }, unread: new Set(issues.map(i => i.line)).size });
 		});
 		registerEncounterBlock(this);
 		registerBoxBlock(this);

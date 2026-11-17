@@ -24,13 +24,13 @@ export function registerBuilders(plugin: NimbleStatblocksPlugin): void {
  * A small Edit button on a block in a note: opens the builder on it, and Save
  * writes the block back in place. Only where the block can be found to save.
  */
-export function addEditButton(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, o: { kind: EntityKind; lang: string; source: string; seed: unknown }): void {
+export function addEditButton(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, o: { kind: EntityKind; lang: string; source: string; seed: unknown; unread?: number }): void {
 	if (!kindAvailable(o.kind) || !ctx.getSectionInfo(el)) return;
 	const btn = el.createEl('button', { cls: 'nimble-block-edit clickable-icon', attr: { 'aria-label': `Edit in the ${o.kind} builder` } });
 	setIcon(btn, 'pencil');
 	btn.addEventListener('click', (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		openBuilder(plugin, { kind: o.kind, seed: o.seed, sourcePath: ctx.sourcePath, writeBack: (body) => rewriteBlock(plugin, el, ctx, o.source, body, o.lang) });
+		openBuilder(plugin, { kind: o.kind, seed: o.seed, sourcePath: ctx.sourcePath, unread: o.unread, writeBack: (body) => rewriteBlock(plugin, el, ctx, o.source, body, o.lang) });
 	});
 }

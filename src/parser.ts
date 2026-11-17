@@ -101,24 +101,34 @@ export function readStatblock(content: string): StatblockReading {
 			}
 		};
 		const stray = (i: number, t: string) => {
+			// "Join" only to the line right above: joining past another line that isn't shown would delete it.
+			const prev = tail?.line === i - 1 ? tail : null;
 			const first = t.match(/^([A-Za-z][A-Za-z ]*?)\s+(\S.*)$/);
 			const key = first ? fieldKey(first[1]) : '';
 			if (first && FIELDS.has(key) && !LISTS[key]) {
 				issues.push({ line: i, text: t, mark: first[1], message: `“${first[1]}” needs a colon after it, so this line isn't shown.`, hint: `Write it as ${first[1]}: ${first[2]}`, fix: { label: 'Add the colon', start: i, end: i, lines: [`${first[1]}: ${first[2]}`] } });
 				return;
 			}
-			const prev = tail;
 			issues.push({
 				line: i, text: t,
 				message: 'This line isn\'t shown. Lines start with a field and a colon (like hp: 20), or with a dash for an attack or ability (like - Bite 1d6).',
 				hint: prev ? 'If it belongs to the line above, join the two: each attack or ability is one line.' : undefined,
-				fix: prev ? { label: 'Join to the line above', start: prev.line, end: i, lines: [`${lines[prev.line].replace(/\s+$/, '')} ${t}`, ...lines.slice(prev.line + 1, i).filter(l => !l.trim())] } : undefined,
+				fix: prev ? { label: 'Join to the line above', start: prev.line, end: i, lines: [`${lines[prev.line].replace(/\s+$/, '')} ${t}`] } : undefined,
 			});
 		};
 
 		for (let i = 0; i < lines.length; i++) {
 			const t = lines[i].trim();
 			if (!t) { tail = null; continue; }
+
+			// "Choose one:" / "After each hero's turn, choose one:" on its own line inside attacks: introduces
+			// them; the list stays open. Not an attack that ends "…or choose twice:" (a bullet, or dice).
+			const open = section as { kind: string; key: string } | null;
+			if (open?.kind === 'list' && LISTS[open.key] === 'attacks' && !isBullet(t) && !/\d*d\d+/i.test(t) && /^[^:]*\b(choose|pick|select)\b[^:]*:[*_]*$/i.test(t)) {
+				if (!values.actiontext) setField('actiontext', t.replace(/[*_]/g, '').trim());
+				tail = null;
+				continue;
+			}
 
 			// A heading on its own line: "attacks:", "**Legendary Actions:**", "bloodied:".
 			const head = t.match(/^([*_]*[A-Za-z][A-Za-z \t_-]*?[*_]*)\s*:[*_]*$/);
@@ -464,11 +474,13 @@ export function toStatblockSource(m: NimbleMonster): string {
 	if (m.armor !== 'none') kv('armor', m.armor);
 	if (m.hpPerHero) kv('hp', `${m.hpPerHero}/hero`);
 	else if (m.role !== 'minion') kv('hp', m.hp);
+	kv('cr', m.cr);
 	if (m.minionDie) kv('minion die', `d${m.minionDie}`);
 	if (m.movement && m.movement !== '6') kv('movement', m.movement);
 	kv('saves', m.saves);
 	kv('senses', m.senses);
 	kv('languages', m.languages);
+	kv('multiattack', m.multiattack);
 	kv('actionText', m.actionText);
 	kv('bloodied', m.bloodied);
 	kv('lastStand', m.lastStand);
@@ -476,13 +488,14 @@ export function toStatblockSource(m: NimbleMonster): string {
 	kv('easier', m.tactics?.easier);
 	kv('harder', m.tactics?.harder);
 	kv('group', m.group);
+	kv('habitat', m.habitat);
 	kv('source', m.source);
 	const list = (key: string, items: string[] | undefined) => {
 		if (!items?.length) return;
 		lines.push(`${key}:`);
 		for (const item of items) lines.push(`- ${oneLine(item)}`);
 	};
-	list('abilities', m.abilities?.map(a => `${a.name}: ${a.description}`));
+	list('abilities', m.abilities?.map(a => `${a.name}${a.isLegendary ? ' (L)' : ''}: ${a.description}`));
 	list('attacks', m.attacks?.map(a => a.raw));
 	list('resistances', m.resistances);
 	list('immunities', m.immunities);
