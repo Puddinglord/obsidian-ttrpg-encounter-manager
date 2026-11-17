@@ -75,7 +75,10 @@ export interface Campaign {
 	/** Number of heroes; same use as `level`. */
 	heroes?: number;
 	status?: string;
+	/** The game system, as the home note's `system:` names it ("Nimble", "5e"). Missing: the default. */
 	system?: string;
+	/** The rules version, for systems with more than one (`edition: 2024`). */
+	edition?: string;
 	chapters: Chapter[];
 	sections: Section[];
 	/** Notes sitting directly in the campaign folder. */
@@ -319,6 +322,7 @@ export function buildCampaigns(notes: NoteInfo[], folders: string[] = []): Campa
 			heroes: num(home.fm.heroes),
 			status: str(home.fm.status),
 			system: str(home.fm.system),
+			edition: str(home.fm.edition),
 			chapters,
 			sections,
 			loose: loose.sort(byOrder),

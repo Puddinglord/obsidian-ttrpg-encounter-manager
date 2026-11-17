@@ -260,7 +260,9 @@ function heroCard(list: HTMLElement, plugin: NimbleStatblocksPlugin, h: Partial<
 /** Make a new hero (ancestry, class, stats, background) in the campaign's Party folder. Yours, or another party member. */
 export function promptCharacter(plugin: NimbleStatblocksPlugin, c: Campaign, mine: boolean, name = '', level = c.level): void {
 	const folder = homeFolderFor(c, 'character', c.folder);
-	plugin.system(c.folder).characters?.promptNew(plugin, {
+	const system = plugin.system(c.folder);
+	if (!system.characters) { new Notice(`${system.name} campaigns don't have character sheets yet.`); return; }
+	system.characters.promptNew(plugin, {
 		folder, mine, name, level,
 		onCreated: (f) => void (async () => {
 			if (mine) await plugin.campaigns.setMine(c, f.path);

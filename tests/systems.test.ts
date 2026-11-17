@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { SystemRegistry, normalizeSystemId } from '../src/systems/registry';
+import { SystemRegistry, normalizeSystemId, resolveEdition } from '../src/systems/registry';
 import type { GameSystem } from '../src/systems/contract';
 import { createSystems, SHIPPED_SYSTEMS } from '../src/app/systems';
 
 const fake = (id: string): GameSystem => ({
 	id, name: id,
 	attribution: { text: '', supportNotice: '', storeUrl: '', storeLabel: '' },
-	conditions: [],
+	conditions: () => [],
 	quickLook: () => {},
 });
 
@@ -26,6 +26,22 @@ describe('SystemRegistry', () => {
 		expect(r.resolve('').id).toBe('a');
 		expect(r.resolve('gurps').id).toBe('a');
 	});
+	it('finds a system by any of its aliases, and refuses an alias another system has', () => {
+		const r = new SystemRegistry('a');
+		r.register({ ...fake('dnd5e'), aliases: ['5e', 'D&D  5e'] });
+		expect(r.resolve('5E').id).toBe('dnd5e');
+		expect(r.resolve('d&d 5e').id).toBe('dnd5e');
+		expect(() => r.register({ ...fake('other'), aliases: ['5e'] })).toThrow(/already names/);
+	});
+	it('resolves an edition the system has, else its first', () => {
+		const s = { ...fake('x'), editions: [{ id: '2024', label: '' }, { id: '2014', label: '' }] };
+		expect(resolveEdition(s, '2014')).toBe('2014');
+		expect(resolveEdition(s, 2014)).toBe('2014');
+		expect(resolveEdition(s, ' 2014 ')).toBe('2014');
+		expect(resolveEdition(s, undefined)).toBe('2024');
+		expect(resolveEdition(s, '1999')).toBe('2024');
+		expect(resolveEdition(fake('y'), '2014')).toBeUndefined();
+	});
 	it('refuses the same id twice, and a default that was never registered', () => {
 		const r = new SystemRegistry('a');
 		r.register(fake('a'));
@@ -42,10 +58,18 @@ describe.each(SHIPPED_SYSTEMS.map(s => [s.id, s] as const))('game system %s', (_
 		expect(system.attribution.text.trim()).not.toBe('');
 		expect(system.attribution.storeUrl).toMatch(/^https:\/\//);
 	});
-	it('names each condition once, with a description', () => {
-		const names = system.conditions.map(c => c.name.toLowerCase());
+	const editions = system.editions?.map(e => e.id) ?? [undefined];
+	it.each(editions)('names each condition once, with a description (edition %s)', (edition) => {
+		const list = system.conditions(edition);
+		expect(list.length).toBeGreaterThan(0);
+		const names = list.map(c => c.name.toLowerCase());
 		expect(new Set(names).size).toBe(names.length);
-		for (const c of system.conditions) expect(c.description.trim()).not.toBe('');
+		for (const c of list) expect(c.description.trim()).not.toBe('');
+	});
+	it('has unique edition ids, each with a label', () => {
+		const ids = (system.editions ?? []).map(e => e.id);
+		expect(new Set(ids).size).toBe(ids.length);
+		for (const e of system.editions ?? []) expect(e.label.trim()).not.toBe('');
 	});
 	it('can open a quick look', () => {
 		expect(typeof system.quickLook).toBe('function');
@@ -62,5 +86,14 @@ describe('shipped systems', () => {
 		const r = createSystems();
 		expect(r.default.id).toBe('nimble');
 		expect(r.all().map(s => s.id)).toEqual(SHIPPED_SYSTEMS.map(s => s.id));
+	});
+	it('read what campaigns write: "Nimble", and "5e" with an edition', () => {
+		const r = createSystems();
+		expect(r.resolve('Nimble').id).toBe('nimble');
+		expect(r.resolve('5e').id).toBe('dnd5e');
+		const dnd = r.resolve('5e');
+		expect(resolveEdition(dnd, '2014')).toBe('2014');
+		expect(resolveEdition(dnd, undefined)).toBe('2024');
+		expect(dnd.conditions('2014').find(c => c.name === 'Exhaustion')?.hasValue).toBe(true);
 	});
 });

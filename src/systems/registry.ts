@@ -10,13 +10,20 @@ export class SystemRegistry {
 
 	constructor(private readonly defaultId: string) {}
 
+	/** Every name (id and aliases, normalised) → its system. */
+	private readonly names = new Map<string, GameSystem>();
+
 	register(system: GameSystem): void {
 		if (this.systems.has(system.id)) throw new Error(`Game system "${system.id}" is already registered`);
+		const names = [system.id, ...(system.aliases ?? [])].map(normalizeSystemId);
+		const taken = names.find(n => this.names.has(n));
+		if (taken) throw new Error(`"${taken}" already names the ${this.names.get(taken)?.name} system`);
 		this.systems.set(system.id, system);
+		for (const n of names) this.names.set(n, system);
 	}
 
 	get(id: string): GameSystem | undefined {
-		return this.systems.get(normalizeSystemId(id));
+		return this.names.get(normalizeSystemId(id));
 	}
 
 	all(): GameSystem[] {
@@ -35,7 +42,18 @@ export class SystemRegistry {
 	}
 }
 
-/** `Nimble`, ` nimble ` and `NIMBLE` all mean `nimble`. */
+/** `Nimble`, ` nimble ` and `NIMBLE` all mean `nimble`; `D&D 5e` and `d&d  5E` are the same name. */
 export function normalizeSystemId(id: string): string {
-	return id.trim().toLowerCase();
+	return id.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * The edition a campaign asked for, if the system has it (`2024`, ` 2024 `),
+ * else the system's default (its first). Undefined for a system with one version.
+ */
+export function resolveEdition(system: GameSystem, edition: string | number | undefined): string | undefined {
+	const editions = system.editions;
+	if (!editions?.length) return undefined;
+	const want = String(edition ?? '').trim().toLowerCase();
+	return (editions.find(e => e.id.toLowerCase() === want) ?? editions[0]).id;
 }

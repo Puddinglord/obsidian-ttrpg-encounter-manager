@@ -65,6 +65,7 @@ import { registerHomebrewBlocks } from './src/systems/nimble/homebrew-block';
 import { bundledCompendium, setCompendiumDrafts, setHomebrew, sheetCompendium } from './src/systems/nimble/compendium-data';
 import type { GameSystem } from './src/systems/contract';
 import { createSystems } from './src/app/systems';
+import { resolveEdition } from './src/systems/registry';
 
 const ROLL_LOG_LIMIT = 30;
 
@@ -166,6 +167,12 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	system(path?: string): GameSystem {
 		const campaign = (path ? this.campaigns?.of(path) : undefined) ?? this.campaigns?.active;
 		return this.systems.resolve(campaign?.system);
+	}
+
+	/** The rules version for a note (same fallback as system()); undefined for a system with one version. */
+	edition(path?: string): string | undefined {
+		const campaign = (path ? this.campaigns?.of(path) : undefined) ?? this.campaigns?.active;
+		return resolveEdition(this.systems.resolve(campaign?.system), campaign?.edition);
 	}
 
 	async onload() {

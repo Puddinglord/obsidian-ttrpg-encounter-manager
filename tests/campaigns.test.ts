@@ -460,3 +460,21 @@ describe('opensInReading', () => {
 		expect(opensInReading({ nimble: 'session' }, true)).toBe(false);
 	});
 });
+
+describe('a campaign\'s game system', () => {
+	it('is read from system: and edition: on the home note (a YAML number edition too)', () => {
+		const [c] = buildCampaigns([n('C/C.md', { nimble: 'campaign', system: '5e', edition: 2014 })]);
+		expect(c.system).toBe('5e');
+		expect(c.edition).toBe('2014');
+		const [d] = buildCampaigns([n('D/D.md', { nimble: 'campaign' })]);
+		expect(d.system).toBeUndefined();
+		expect(d.edition).toBeUndefined();
+	});
+	it('is written by the home note template: Nimble by default, an edition only when given', () => {
+		expect(campaignHome('A', 1, 4)).toContain('system: Nimble');
+		expect(campaignHome('A', 1, 4)).not.toContain('edition:');
+		const home = campaignHome('A', 1, 4, '5e', '2024');
+		expect(home).toContain('system: 5e');
+		expect(home).toContain('edition: 2024');
+	});
+});

@@ -4852,6 +4852,55 @@ test('pills: every icon and label sits on its pill centre line (within 1px)', as
 	assert.deepEqual(bad, [], 'misaligned pills');
 });
 
+test('game systems: a new campaign can be 5e (2014 rules), and Campaign settings switch it back to Nimble', async (o) => {
+	const home = 'Campaigns/Dragon Coast/Dragon Coast.md';
+	try {
+		await o.eval(async (app) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath('Campaigns/Dragon Coast');
+			if (old) await app.vault.delete(old, true);
+			app.commands.executeCommandById('nimble-gm:new-campaign');
+		});
+		const modal = o.page.locator('.modal.nimble-new-campaign');
+		await modal.waitFor({ timeout: 3000 });
+		const options = await modal.locator('select').first().locator('option').allInnerTexts();
+		assert.deepEqual(options, ['Nimble', '5e, 2024 rules (SRD 5.2)', '5e, 2014 rules (SRD 5.1)']);
+		assert.equal(await modal.locator('select').first().inputValue(), 'nimble');
+		await modal.locator('input[type="text"]').first().fill('Dragon Coast');
+		await modal.locator('select').first().selectOption({ label: '5e, 2014 rules (SRD 5.1)' });
+		await modal.locator('button', { hasText: 'Create campaign' }).click();
+		await o.waitFor(async () => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), home), { what: 'home note' });
+		const text = await read(o, home);
+		assert.match(text, /system: 5e/);
+		assert.match(text, /edition: 2014/);
+		await o.waitFor(async () => (await o.eval((app, plugin, path) => plugin.system(path).id, home)) === 'dnd5e', { what: '5e resolved' });
+		assert.equal(await o.eval((app, plugin, path) => plugin.edition(path), home), '2014');
+		assert.equal(await o.eval((app, plugin, path) => plugin.system(path).conditions(plugin.edition(path)).length, home), 15);
+
+		// Campaign settings show the same picker, set to this campaign's system, and switch it.
+		await o.eval(async (app, plugin) => { await plugin.openCampaignView(); });
+		await o.page.locator(`${CP} .campaign-switch-btn`).first().click();
+		await clickMenu(o, 'Campaign settings…');
+		const settings = o.page.locator('.modal.nimble-campaign-settings');
+		await settings.waitFor({ timeout: 3000 });
+		const select = settings.locator('select').filter({ has: o.page.locator('option', { hasText: '5e, 2014 rules' }) });
+		assert.equal(await select.inputValue(), 'dnd5e:2014');
+		await select.selectOption({ label: 'Nimble' });
+		await settings.locator('button', { hasText: 'Save' }).click();
+		await o.waitFor(async () => /system: Nimble/.test(await read(o, home)), { what: 'system: Nimble written' });
+		assert.doesNotMatch(await read(o, home), /edition:/);
+		await o.waitFor(async () => (await o.eval((app, plugin, path) => plugin.system(path).id, home)) === 'nimble', { what: 'Nimble resolved' });
+		assert.equal(await o.eval((app, plugin, path) => plugin.edition(path), home), undefined);
+	} finally {
+		await o.eval(async (app, plugin) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath('Campaigns/Dragon Coast');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);

@@ -4,8 +4,9 @@
 import type { GameSystem } from '../systems/contract';
 import { SystemRegistry } from '../systems/registry';
 import { nimbleSystem } from '../systems/nimble/system';
+import { dnd5eSystem } from '../systems/dnd5e/system';
 
-export const SHIPPED_SYSTEMS: readonly GameSystem[] = [nimbleSystem];
+export const SHIPPED_SYSTEMS: readonly GameSystem[] = [nimbleSystem, dnd5eSystem];
 
 export function createSystems(): SystemRegistry {
 	const systems = new SystemRegistry(SHIPPED_SYSTEMS[0].id);

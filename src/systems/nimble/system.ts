@@ -16,7 +16,7 @@ export const nimbleSystem: GameSystem = {
 		storeUrl: NIMBLE_STORE_URL,
 		storeLabel: 'nimbleRPG.com',
 	},
-	conditions: NIMBLE_CONDITIONS,
+	conditions: () => NIMBLE_CONDITIONS,
 	characters: {
 		promptNew(plugin, r) {
 			new NewCharacterModal(plugin, r.folder, r.onCreated, { mine: r.mine, name: r.name ?? '', level: r.level }).open();

@@ -326,7 +326,7 @@ export class CampaignStore extends Events {
 	/** metadataCache fills in a moment after create; rebuild once it has. */
 	private rebuildSoon(): void { window.setTimeout(() => this.rebuild(), 300); }
 
-	async createCampaign(opts: { name: string; level: number; heroes: number; starter: boolean; firstChapter?: string; role?: CampaignRole; gm?: string; character?: string }): Promise<TFile> {
+	async createCampaign(opts: { name: string; level: number; heroes: number; starter: boolean; firstChapter?: string; role?: CampaignRole; gm?: string; character?: string; system?: string; edition?: string }): Promise<TFile> {
 		const name = safeName(opts.name);
 		const root = normalizePath(this.s.campaignsFolder || 'Campaigns');
 		let folder = `${root}/${name}`;
@@ -336,8 +336,8 @@ export class CampaignStore extends Events {
 		const title = opts.name.trim() || name;
 		const hero = opts.character?.trim();
 		const home = await this.createNote(`${folder}/${name}.md`, player
-			? playerCampaignHome(title, { gm: opts.gm?.trim() || undefined, level: opts.level, character: hero })
-			: campaignHome(title, opts.level, opts.heroes));
+			? playerCampaignHome(title, { gm: opts.gm?.trim() || undefined, level: opts.level, character: hero }, opts.system, opts.edition)
+			: campaignHome(title, opts.level, opts.heroes, opts.system, opts.edition));
 		if (opts.starter) {
 			const subs = player ? ['Party', 'Sessions', 'Quests', 'NPCs', 'Locations', 'Assets'] : ['Party', 'Quests', 'NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets'];
 			for (const sub of subs) await this.ensureFolder(`${folder}/${sub}`);

@@ -48,13 +48,25 @@ export interface QuickLookNote {
 	subtitle?: string;
 }
 
+/** One version of a system's rules (5e: the 2014 and 2024 rules). */
+export interface Edition {
+	/** As written in a campaign's `edition:` property: "2024". */
+	readonly id: string;
+	/** In pickers: "2024 rules (SRD 5.2)". */
+	readonly label: string;
+}
+
 export interface GameSystem {
-	/** Stable id, as written in a campaign's `system:` property. */
+	/** Stable id. A campaign's `system:` property may name it by this or by an alias. */
 	readonly id: string;
 	readonly name: string;
+	/** Other names a campaign may use in `system:` ("5e", "D&D 5e"). Matched like the id: case and spaces don't matter. */
+	readonly aliases?: readonly string[];
+	/** The system's rules versions, newest first; the first is the default. None: the system has one version. */
+	readonly editions?: readonly Edition[];
 	readonly attribution: Attribution;
-	/** The rules' conditions, before any the GM adds in settings. */
-	readonly conditions: readonly ConditionDef[];
+	/** The rules' conditions for an edition (the default one when missing), before any the GM adds in settings. */
+	conditions(edition?: string): readonly ConditionDef[];
 	readonly characters?: CharacterCapability;
 	/** Open a quick look on a note (an NPC, a hero). */
 	quickLook(plugin: NimbleStatblocksPlugin, target: QuickLookNote): void;

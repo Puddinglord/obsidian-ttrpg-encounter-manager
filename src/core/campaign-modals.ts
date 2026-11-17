@@ -7,6 +7,35 @@ import { Campaign, Chapter, CampaignRole, FileRef } from './campaign-model';
 import { STARTERS, StarterKind } from './campaign-templates';
 import { isTouch } from './touch';
 import { promptCharacter } from './campaign-ui';
+import type { GameSystem } from '../systems/contract';
+
+/** One entry in the Game system picker: a system, and for systems with versions, one of them. */
+interface SystemChoice { value: string; label: string; system: GameSystem; edition?: string }
+
+/** Every system and edition the plugin ships, as the Game system picker lists them. */
+export function systemChoices(plugin: NimbleStatblocksPlugin): SystemChoice[] {
+	return plugin.systems.all().flatMap((system): SystemChoice[] => system.editions?.length
+		? system.editions.map(e => ({ value: `${system.id}:${e.id}`, label: `${system.name}, ${e.label}`, system, edition: e.id }))
+		: [{ value: system.id, label: system.name, system }]);
+}
+
+/** The picker value for a campaign's `system:` and `edition:`. */
+function choiceFor(plugin: NimbleStatblocksPlugin, system: string | undefined, edition: string | undefined): string {
+	const choices = systemChoices(plugin);
+	const s = plugin.systems.resolve(system);
+	const ed = s.editions?.length ? (s.editions.find(e => e.id === String(edition ?? '').trim()) ?? s.editions[0]).id : undefined;
+	return choices.find(c => c.system === s && c.edition === ed)?.value ?? choices[0].value;
+}
+
+/** A Game system dropdown (only when the plugin ships more than one). */
+function systemSetting(parent: HTMLElement, plugin: NimbleStatblocksPlugin, value: string, desc: string, onPick: (c: SystemChoice) => void): void {
+	const choices = systemChoices(plugin);
+	if (choices.length < 2) return;
+	new Setting(parent).setName('Game system').setDesc(desc).addDropdown(d => {
+		for (const c of choices) d.addOption(c.value, c.label);
+		d.setValue(value).onChange(v => { const c = choices.find(x => x.value === v); if (c) onPick(c); });
+	});
+}
 
 /** The two sides of the table, as the New campaign and Campaign settings dialogs offer them. */
 export const ROLE_INFO: Record<CampaignRole, { icon: string; title: string; short: string; desc: string }> = {
@@ -66,6 +95,7 @@ export class NewCampaignModal extends Modal {
 	private role: CampaignRole = 'gm';
 	private gm = '';
 	private character = '';
+	private system?: SystemChoice;
 
 	constructor(private plugin: NimbleStatblocksPlugin, role?: CampaignRole) {
 		super(plugin.app);
@@ -84,6 +114,7 @@ export class NewCampaignModal extends Modal {
 			window.setTimeout(() => t.inputEl.focus(), 0);
 			t.inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); void this.create(); } });
 		});
+		systemSetting(c, this.plugin, choiceFor(this.plugin, undefined, undefined), 'Its rules, monsters and character sheets.', (choice) => { this.system = choice; });
 		const hero = new Setting(c).setName('Your character').setDesc('Next you\'ll pick their ancestry, class and stats. Their sheet goes in the Party folder.')
 			.addText(t => t.setPlaceholder('e.g. Thorga Ironbrow').onChange(v => { this.character = v; }));
 		const gm = new Setting(c).setName('Who runs it').addText(t => t.setPlaceholder('GM name (optional)').onChange(v => { this.gm = v; }));
@@ -119,6 +150,7 @@ export class NewCampaignModal extends Modal {
 		const home = await this.plugin.campaigns.createCampaign({
 			name: this.name, level: this.level, heroes: this.heroes, starter: this.starter, firstChapter: this.firstChapter,
 			role: this.role, gm: this.gm,
+			system: this.system?.system.name, edition: this.system?.edition,
 		});
 		await this.plugin.app.workspace.getLeaf(false).openFile(home);
 		void this.plugin.openCampaignView();
@@ -138,6 +170,7 @@ export class CampaignSettingsModal extends Modal {
 	private heroes: string;
 	private gm: string;
 	private status: string;
+	private system?: SystemChoice;
 
 	constructor(private plugin: NimbleStatblocksPlugin, private c: Campaign) {
 		super(plugin.app);
@@ -159,6 +192,7 @@ export class CampaignSettingsModal extends Modal {
 		rolePicker(el, this.role, (r) => { this.role = r; sync(); });
 		const hint = el.createEl('p', { cls: 'setting-item-description' });
 		new Setting(el).setName('Name').setDesc('Shown in the switcher. The folder keeps its name.').addText(t => t.setValue(this.title).onChange(v => { this.title = v; }));
+		systemSetting(el, this.plugin, choiceFor(this.plugin, this.c.system, this.c.edition), 'Notes and stat blocks you already wrote stay as they are.', (choice) => { this.system = choice; });
 		const level = new Setting(el).setName('Level').addText(t => { t.inputEl.type = 'number'; t.inputEl.inputMode = 'numeric'; t.setValue(this.level).onChange(v => { this.level = v; }); });
 		const heroes = new Setting(el).setName('Heroes').setDesc('Used for encounter maths until the party is filled in.')
 			.addText(t => { t.inputEl.type = 'number'; t.inputEl.inputMode = 'numeric'; t.setValue(this.heroes).onChange(v => { this.heroes = v; }); });
@@ -197,6 +231,10 @@ export class CampaignSettingsModal extends Modal {
 		};
 		if (this.role === 'gm') values.heroes = num(this.heroes);
 		else values.gm = this.gm.trim() || undefined;
+		if (this.system) {
+			values.system = this.system.system.name;
+			values.edition = this.system.edition;
+		}
 		await store.setDetails(this.c, values);
 		if (this.role !== this.c.role) await store.setRole(this.c, this.role);
 	}

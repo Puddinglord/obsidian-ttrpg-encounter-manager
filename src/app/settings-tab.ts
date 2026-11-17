@@ -107,7 +107,16 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					const support = notice.createDiv({ text: `${NIMBLE_SUPPORT_NOTICE.replace(' at nimbleRPG.com.', '')} ` });
 					support.createEl('a', { text: 'nimbleRPG.com', href: NIMBLE_STORE_URL, cls: 'external-link', attr: { target: '_blank', rel: 'noopener' } });
 				},
-			}] },
+			}, ...this.plugin.systems.all().filter(sys => sys.id !== 'nimble').map((sys): Row => ({
+				name: `${sys.name} attribution`,
+				searchable: false,
+				block: (el) => {
+					const notice = el.createDiv({ cls: 'nimble-notice' });
+					notice.createDiv({ text: sys.attribution.text });
+					const support = notice.createDiv({ text: `${sys.attribution.supportNotice} ` });
+					support.createEl('a', { text: sys.attribution.storeLabel, href: sys.attribution.storeUrl, cls: 'external-link', attr: { target: '_blank', rel: 'noopener' } });
+				},
+			}))] },
 			{ heading: 'Bestiary', rows: [
 				{
 					name: 'Include the Nimble bestiary',

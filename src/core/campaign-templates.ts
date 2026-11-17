@@ -48,8 +48,8 @@ const titleOf = (name: string): string | undefined => {
 const fm = (fields: Record<string, string | number | undefined>) =>
 	'---\n' + Object.entries(fields).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => `${k}: ${v}`).join('\n') + '\n---\n';
 
-export function campaignHome(name: string, level: number, heroes: number, system = 'Nimble'): string {
-	return fm({ nimble: 'campaign', title: titleOf(name), system, level, heroes, status: 'active' }) + `
+export function campaignHome(name: string, level: number, heroes: number, system = 'Nimble', edition?: string): string {
+	return fm({ nimble: 'campaign', title: titleOf(name), system, edition, level, heroes, status: 'active' }) + `
 
 *One or two sentences on what this campaign is about.*
 
@@ -62,8 +62,8 @@ export function campaignHome(name: string, level: number, heroes: number, system
 }
 
 /** The home note of a campaign you play in: what it's about, the party's goals, the table. */
-export function playerCampaignHome(name: string, opts: { gm?: string; level?: number; character?: string } = {}, system = 'Nimble'): string {
-	return fm({ nimble: 'campaign', role: 'player', title: titleOf(name), system, gm: opts.gm ? JSON.stringify(opts.gm) : undefined, level: opts.level, status: 'active' }) + `
+export function playerCampaignHome(name: string, opts: { gm?: string; level?: number; character?: string } = {}, system = 'Nimble', edition?: string): string {
+	return fm({ nimble: 'campaign', role: 'player', title: titleOf(name), system, edition, gm: opts.gm ? JSON.stringify(opts.gm) : undefined, level: opts.level, status: 'active' }) + `
 
 *What this campaign is about, as the GM pitched it.*
 
