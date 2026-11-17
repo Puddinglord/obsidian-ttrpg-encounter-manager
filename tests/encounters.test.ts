@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyHpInput, crossedThreshold, EncounterStore, nextLabel } from '../src/encounters';
-import { DEFAULT_SETTINGS, NimbleStatblocksSettings } from '../src/types';
+import { applyHpInput, crossedThreshold, EncounterStore, nextLabel } from '../src/systems/nimble/encounters';
+import { DEFAULT_SETTINGS, NimbleStatblocksSettings } from '../src/systems/nimble/types';
 
 const goblin = { name: 'Goblin', hp: 12, armor: 'none' as const, movement: '6' };
 

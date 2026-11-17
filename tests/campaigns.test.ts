@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { campaignHome, npcNote, sceneNote } from '../src/campaign-templates';
-import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, homeFolderFor, isFileFolder, linkPill, nextOrder, questOrder, questsIn, questState, safeName } from '../src/campaign-model';
+import { campaignHome, npcNote, sceneNote } from '../src/core/campaign-templates';
+import { adjacentScene, buildCampaigns, campaignOf, canMoveInto, chapterOf, defaultKindFor, homeFolderFor, isFileFolder, linkPill, nextOrder, questOrder, questsIn, questState, safeName } from '../src/core/campaign-model';
 
 const n = (path: string, fm: Record<string, unknown> = {}) => ({ path, fm });
 
@@ -317,7 +317,7 @@ describe('names a file name cannot hold', () => {
 
 describe('player campaigns', () => {
 	it('reads the side from role: on the home note, gm by default', async () => {
-		const { campaignRole } = await import('../src/campaign-model');
+		const { campaignRole } = await import('../src/core/campaign-model');
 		const all = buildCampaigns([
 			n('Campaigns/Run/Run.md', { nimble: 'campaign' }),
 			n('Campaigns/Play/Play.md', { nimble: 'campaign', role: 'player' }),
@@ -341,7 +341,7 @@ describe('player campaigns', () => {
 	});
 
 	it('writes player starters from the party\'s side', async () => {
-		const t = await import('../src/campaign-templates');
+		const t = await import('../src/core/campaign-templates');
 		const home = t.playerCampaignHome('Ironbrow Saga', { gm: 'Sam', character: 'Thorga' });
 		expect(home).toMatch(/role: player/);
 		expect(home).toMatch(/gm: "Sam"/);
@@ -363,7 +363,7 @@ describe('player campaigns', () => {
 
 describe('quests', () => {
 	it('writes a GM quest with the hook, the truth behind it and its rewards', async () => {
-		const t = await import('../src/campaign-templates');
+		const t = await import('../src/core/campaign-templates');
 		const q = t.questNote('The Missing Caravan');
 		expect(q).toMatch(/^---\nnimble: quest\nstatus: available\ntype: side\ngiver: ""\nlocation: ""\nreward: ""\nlevel: ""\n---\n/);
 		expect(q).toContain('```box quest title="The hook"\n');
@@ -371,7 +371,7 @@ describe('quests', () => {
 	});
 
 	it('writes a player quest from the party\'s side, without the GM\'s secrets', async () => {
-		const t = await import('../src/campaign-templates');
+		const t = await import('../src/core/campaign-templates');
 		const q = t.questNote('Tobren\'s Job', 'player');
 		expect(q).toMatch(/nimble: quest\nstatus: active\n/);
 		expect(q).not.toMatch(/^level:/m);
@@ -381,12 +381,12 @@ describe('quests', () => {
 	});
 
 	it('keeps a name that isn\'t a safe file name as its title', async () => {
-		const t = await import('../src/campaign-templates');
+		const t = await import('../src/core/campaign-templates');
 		expect(t.questNote('Vecna: The Hand')).toMatch(/title: "Vecna: The Hand"/);
 	});
 
 	it('is offered to GMs and players alike', async () => {
-		const t = await import('../src/campaign-templates');
+		const t = await import('../src/core/campaign-templates');
 		expect(t.STARTERS.find(s => s.kind === 'quest')).toMatchObject({ label: 'Quest', icon: 'flag' });
 		expect(t.PLAYER_STARTERS).toContain('quest');
 	});
@@ -452,7 +452,7 @@ describe('linkPill', () => {
 
 describe('opensInReading', () => {
 	it('reads pages, writes sessions and plain notes', async () => {
-		const { opensInReading } = await import('../src/campaign-model');
+		const { opensInReading } = await import('../src/core/campaign-model');
 		for (const nimble of ['character', 'chapter', 'scene', 'npc', 'location', 'quest', 'map', 'handout', 'monster', 'campaign']) expect(opensInReading({ nimble }, false)).toBe(true);
 		expect(opensInReading({ nimble: 'session' }, false)).toBe(false);
 		expect(opensInReading({}, false)).toBe(false); // a loose note

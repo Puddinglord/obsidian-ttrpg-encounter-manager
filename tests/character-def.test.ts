@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { Compendium } from '../src/compendium';
+import { Compendium } from '../src/systems/nimble/compendium';
 import {
 	addCondition, addFeature, addItem, addLanguage, addSpell, adjustResource, applyDamage, assignStats, classOptions, damageRoll, evalFormula,
 	fieldRest, fmtMod, Frontmatter, heal, hitDiceHealing, hpAverage, levelUp, newCharacterFrontmatter, parseArmor, parseDamage, readCharacter,
 	readInventoryEntry, regainMana, removeCondition, removeFeature, removeItem, removeLanguage, removeSpell, safeRest, setCoins,
 	setEquipped, setField, setHp, setMana, setOverride, setQty, setResource, setSave, setSkill, setStat, setTempHp, setWounds,
 	spendMana, traitBonuses,
-} from '../src/character-def';
+} from '../src/systems/nimble/character-def';
 import { FIXTURE } from './compendium-fixture';
-import BUNDLED from '../src/data/compendium.json';
+import BUNDLED from '../src/systems/nimble/data/compendium.json';
 
 const comp = new Compendium(FIXTURE);
 
@@ -439,7 +439,7 @@ describe('every bundled class', () => {
 
 describe('review fixes', () => {
 	it('only counts bonuses that always apply', async () => {
-		const { traitBonuses } = await import('../src/character-def');
+		const { traitBonuses } = await import('../src/systems/nimble/character-def');
 		expect(traitBonuses(['Gain +2 Defense if you moved on your last turn. +1 Speed.']).armor).toBe(0);
 		expect(traitBonuses(['Gain +2 Defense if you moved on your last turn. +1 Speed.']).speed).toBe(1);
 		expect(traitBonuses(['You can survive +3 max Wounds as long as they are nearby.']).wounds).toBe(0);
@@ -447,7 +447,7 @@ describe('review fixes', () => {
 	});
 
 	it('keeps keys the player added to an inventory line when it changes', async () => {
-		const { addItem, setEquipped, setQty } = await import('../src/character-def');
+		const { addItem, setEquipped, setQty } = await import('../src/systems/nimble/character-def');
 		const fm: Record<string, unknown> = { inventory: [{ name: 'Longsword', charges: 3, cost: '15 gp' }, 'Rope (50 ft.)'] };
 		setEquipped(fm, { index: 0, name: 'Longsword' }, true);
 		expect((fm.inventory as unknown[])[0]).toEqual({ name: 'Longsword', equipped: true, charges: 3, cost: '15 gp' });

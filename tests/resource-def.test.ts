@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { dieAt, heldFaces, resourceRule, spendsOn, startsOn } from '../src/resource-def';
-import { rollEdge } from '../src/roll-def';
-import { safeRest, setResource, setRolled, readCharacter, Frontmatter } from '../src/character-def';
-import { Compendium } from '../src/compendium';
-import { poolText, spendCount } from '../src/roll-def';
+import { dieAt, heldFaces, resourceRule, spendsOn, startsOn } from '../src/systems/nimble/resource-def';
+import { rollEdge } from '../src/systems/nimble/roll-def';
+import { safeRest, setResource, setRolled, readCharacter, Frontmatter } from '../src/systems/nimble/character-def';
+import { Compendium } from '../src/systems/nimble/compendium';
+import { poolText, spendCount } from '../src/systems/nimble/roll-def';
 
 const comp = new Compendium({ classes: [], ancestries: [], backgrounds: [], spells: [], items: [], boons: [] } as never);
 

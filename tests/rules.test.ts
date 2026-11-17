@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	balanceEncounter, budgetPhrase, describeChange, formatLevel, groupAttack, heroDamage, initiativeActions, lastStandEffect, levelValue, minionDie, minionKills, monsterDamage,
 	monsterRole, monsterSaves, parseHpCommand, rateEncounter, scaledHp, tickConditions,
-} from '../src/rules';
-import { NimbleMonster } from '../src/types';
+} from '../src/systems/nimble/rules';
+import { NimbleMonster } from '../src/systems/nimble/types';
 
 const mon = (over: Partial<NimbleMonster> = {}): NimbleMonster => ({ name: 'M', armor: 'none', hp: 20, movement: '6', ...over });
 
@@ -224,7 +224,7 @@ describe('budgetPhrase', () => {
 
 describe('pipStep', () => {
 	it('an empty pip adds one, a filled pip takes one away, whichever pip it is', async () => {
-		const { pipStep } = await import('../src/rules');
+		const { pipStep } = await import('../src/systems/nimble/rules');
 		expect(pipStep(3, true)).toBe(2); // the first of 3 filled: down to 2, not 0
 		expect(pipStep(1, true)).toBe(0); // the only one left: off
 		expect(pipStep(1, false)).toBe(2); // the last empty one of 3: up to 2, not 3

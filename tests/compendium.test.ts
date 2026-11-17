@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Compendium, nameKey } from '../src/compendium';
-import BUNDLED from '../src/data/compendium.json';
+import { Compendium, nameKey } from '../src/systems/nimble/compendium';
+import BUNDLED from '../src/systems/nimble/data/compendium.json';
 import { FIXTURE } from './compendium-fixture';
 
 const comp = new Compendium(FIXTURE);
@@ -94,8 +94,8 @@ describe('Compendium', () => {
 
 describe('combined names', () => {
 	it('finds "Club/Mace" as "Mace" and as "Club"', async () => {
-		const { Compendium } = await import('../src/compendium');
-		const data = (await import('../src/data/compendium.json')).default;
+		const { Compendium } = await import('../src/systems/nimble/compendium');
+		const data = (await import('../src/systems/nimble/data/compendium.json')).default;
 		const comp = new Compendium(data);
 		expect(comp.item('Mace')?.name).toBe('Club/Mace');
 		expect(comp.item('club')?.name).toBe('Club/Mace');

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { readStatblock } from '../src/parser';
+import { readStatblock } from '../src/systems/nimble/parser';
 import {
 	applyFix, attackBody, autoLevel, draftFromMonster, effectiveHp, levelCheck, newMonsterDraft, reviewNotes, setRole, splitAttack, toMonster, toSource, toughnessLine, withDice,
-} from '../src/entity-monster';
+} from '../src/systems/nimble/entity-monster';
 
 const party = { level: 4, size: 4 };
 

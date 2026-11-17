@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dcPills } from '../src/tables';
+import { dcPills } from '../src/core/tables';
 
 function table(head: string[], rows: string[][]): HTMLElement {
 	const el = document.createElement('div');

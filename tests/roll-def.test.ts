@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actionCost, edgeLabel, keepAfterEdge, rollEdge } from '../src/roll-def';
+import { actionCost, edgeLabel, keepAfterEdge, rollEdge } from '../src/systems/nimble/roll-def';
 
 /** An rng that returns these die faces in order (for a die of `sides`). */
 const faces = (sides: number, ...vals: number[]) => { let i = 0; return () => (vals[i++ % vals.length] - 0.5) / sides; };

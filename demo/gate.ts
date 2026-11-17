@@ -3,7 +3,7 @@
 // to reveal the site. Shown once per browser session.
 
 import './obsidian-shim';
-import { dice3dSupported, roll3d } from '../src/dice3d';
+import { dice3dSupported, roll3d } from '../src/core/dice3d';
 
 const LINES = [
 	'A sharp wind rushes down the corridor. Your torch slips from your fingers, and when it hits the stone, the flame dies.',

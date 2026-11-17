@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { itemBlockSource, itemForCompendium, parseItemBlock, parseSpellBlock, readTier, spellBlockSource } from '../src/homebrew-def';
-import { bundledCompendium, setHomebrew } from '../src/compendium-data';
-import { extractNimbleBlocks } from '../src/parser';
-import { replaceEncounterBlock } from '../src/encounter-def';
+import { itemBlockSource, itemForCompendium, parseItemBlock, parseSpellBlock, readTier, spellBlockSource } from '../src/systems/nimble/homebrew-def';
+import { bundledCompendium, setHomebrew } from '../src/systems/nimble/compendium-data';
+import { extractNimbleBlocks } from '../src/systems/nimble/parser';
+import { replaceEncounterBlock } from '../src/core/encounter-def';
 
 const LASH = `name: Ember Lash
 school: Fire

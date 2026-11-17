@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDice, parseDice, rollPlain } from '../src/dice';
+import { formatDice, parseDice, rollPlain } from '../src/core/dice';
 
 /** RNG that returns the given die faces in order for the given die size. */
 function faces(sides: number, ...values: number[]) {
@@ -43,7 +43,7 @@ describe('rollPlain', () => {
 	});
 });
 
-import { rollNimbleAttack } from '../src/dice';
+import { rollNimbleAttack } from '../src/systems/nimble/attack-roll';
 
 describe('rollNimbleAttack', () => {
 	it('misses when the primary die is a 1', () => {

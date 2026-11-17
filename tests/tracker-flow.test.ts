@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { EncounterStore, fightInProgress, isDown, monsterHit, sameFight } from '../src/encounters';
-import { parseHpCommand } from '../src/rules';
-import { DEFAULT_SETTINGS, NimbleMonster, NimbleStatblocksSettings } from '../src/types';
+import { EncounterStore, fightInProgress, isDown, monsterHit, sameFight } from '../src/systems/nimble/encounters';
+import { parseHpCommand } from '../src/systems/nimble/rules';
+import { DEFAULT_SETTINGS, NimbleMonster, NimbleStatblocksSettings } from '../src/systems/nimble/types';
 
 const goblin: NimbleMonster = { name: 'Goblin', hp: 15, armor: 'none', movement: '6', level: '1/2' };
 const knight: NimbleMonster = { name: 'Knight', hp: 40, armor: 'medium', movement: '6', level: 4 };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Compendium } from '../src/compendium';
-import { chooseCount, groupFor, levelPlan, statIncrease } from '../src/level-plan';
-import BUNDLED from '../src/data/compendium.json';
+import { Compendium } from '../src/systems/nimble/compendium';
+import { chooseCount, groupFor, levelPlan, statIncrease } from '../src/systems/nimble/level-plan';
+import BUNDLED from '../src/systems/nimble/data/compendium.json';
 
 const comp = new Compendium(BUNDLED);
 const plan = (className: string, level: number, subclass = '') => levelPlan(comp, { className, subclass, level, hitDie: 12, average: 8 });

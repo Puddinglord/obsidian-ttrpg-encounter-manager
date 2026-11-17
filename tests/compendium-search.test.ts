@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import BESTIARY from '../src/data/bestiary.json';
-import DATA from '../src/data/compendium.json';
-import { BestiaryEntry, bestiaryEntries } from '../src/bestiary';
-import { Compendium } from '../src/compendium';
-import { artKey, buildEntries, Entry, entryPills, entrySnippet, hitArtKey, propertyName, priceGp } from '../src/compendium-entries';
+import BESTIARY from '../src/systems/nimble/data/bestiary.json';
+import DATA from '../src/systems/nimble/data/compendium.json';
+import { BestiaryEntry, bestiaryEntries } from '../src/systems/nimble/bestiary';
+import { Compendium } from '../src/systems/nimble/compendium';
+import { artKey, buildEntries, Entry, entryPills, entrySnippet, hitArtKey, propertyName, priceGp } from '../src/systems/nimble/compendium-entries';
 import {
 	applySuggestion, editDistance, finishedFilters, fuzzyRank, nameMatch, parseQuery, parseRange, search, suggest, tokenize, valueMatches,
-} from '../src/compendium-query';
-import type { MonsterIndexEntry } from '../src/types';
+} from '../src/systems/nimble/compendium-query';
+import type { MonsterIndexEntry } from '../src/systems/nimble/types';
 
 const monsters = bestiaryEntries(BESTIARY as unknown as BestiaryEntry[]);
 const comp = new Compendium(DATA);

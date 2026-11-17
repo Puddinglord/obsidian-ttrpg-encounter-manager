@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { encounterBlockSource, parseEncounterBlock, parseMonsterLine } from '../src/encounter-def';
-import { shiftLevel, shiftMonster } from '../src/rules';
-import type { NimbleMonster } from '../src/types';
+import { encounterBlockSource, parseEncounterBlock, parseMonsterLine } from '../src/core/encounter-def';
+import { shiftLevel, shiftMonster } from '../src/systems/nimble/rules';
+import type { NimbleMonster } from '../src/systems/nimble/types';
 
 describe('level shifts in encounter blocks', () => {
 	it('reads +N / -N / (−N) at the end of a line', () => {

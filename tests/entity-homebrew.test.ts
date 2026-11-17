@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { itemForCompendium, parseItemBlock, parseSpellBlock, unreadLines } from '../src/homebrew-def';
-import { applyItemFix, applySpellFix, autoTier, fromItem, fromSpell, itemNotes, itemSource, newItemDraft, newSpellDraft, spellNotes, spellSource, suggestedCost, tierCheck, toItem, toSpell } from '../src/entity-homebrew';
+import { itemForCompendium, parseItemBlock, parseSpellBlock, unreadLines } from '../src/systems/nimble/homebrew-def';
+import { applyItemFix, applySpellFix, autoTier, fromItem, fromSpell, itemNotes, itemSource, newItemDraft, newSpellDraft, spellNotes, spellSource, suggestedCost, tierCheck, toItem, toSpell } from '../src/systems/nimble/entity-homebrew';
 
 describe('spell builder', () => {
 	it('fills a tier 1 spell from the Creator\'s Kit, and the block reads back', () => {

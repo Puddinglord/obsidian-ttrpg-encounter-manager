@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Merge the per-page-range extractions in raw/ into src/data/bestiary.json.
+"""Merge the per-page-range extractions in raw/ into src/systems/nimble/data/bestiary.json.
 
 Run from the repo root:  python3 -I scripts/bestiary/merge.py
 
@@ -13,7 +13,7 @@ Policy:
 import glob, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(ROOT, '..', '..', 'src', 'data', 'bestiary.json')
+OUT = os.path.join(ROOT, '..', '..', 'src', 'systems', 'nimble', 'data', 'bestiary.json')
 KEEP = ['name', 'book', 'page', 'group', 'habitat', 'levelText', 'level', 'size', 'kind', 'role', 'armor', 'hp',
         'hpPerHero', 'hpText', 'speed', 'fly', 'swim', 'climb', 'burrow', 'movementText', 'saves', 'resist', 'vuln',
         'immune', 'minionDie', 'traits', 'groupTraits', 'actionsIntro', 'actions', 'bloodied', 'lastStand', 'flavor', 'tactics']

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boxColor, boxFence, boxType, newBox, parseBoxFence, resolveBox } from '../src/box-def';
+import { boxColor, boxFence, boxType, newBox, parseBoxFence, resolveBox } from '../src/core/box-def';
 
 describe('box fence', () => {
 	it('reads the type, aliases and overrides', () => {

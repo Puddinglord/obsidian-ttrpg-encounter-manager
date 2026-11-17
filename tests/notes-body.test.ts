@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { notesBody } from '../src/creature-notes';
+import { notesBody } from '../src/systems/nimble/creature-notes';
 
 describe('notesBody', () => {
 	it('drops properties, empty bullets and empty headings', () => {

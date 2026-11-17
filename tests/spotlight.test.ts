@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { orderPicks, parseSpotlight, rankByName } from '../src/spotlight-def';
+import { orderPicks, parseSpotlight, rankByName } from '../src/core/spotlight-def';
 
 describe('parseSpotlight', () => {
 	it('reads dice, with or without "roll"', () => {

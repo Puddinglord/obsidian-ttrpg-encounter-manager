@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import BESTIARY from '../src/data/bestiary.json';
-import { bestiaryEntries } from '../src/bestiary';
+import BESTIARY from '../src/systems/nimble/data/bestiary.json';
+import { bestiaryEntries } from '../src/systems/nimble/bestiary';
 import {
 	diceAverage, dieAverage, expectedRegular, expectedSolo, expectedSpell, formatDiceParts, guessRegularLevel, guessSoloLevel,
 	guessSpellTier, levelLabel, minionDie, relevelRegular, relevelSolo, scaleAttack, snapLevel, stepLevel, suggestDice, weaponPrice,
-} from '../src/builder-math';
-import { levelValue, monsterRole } from '../src/rules';
+} from '../src/systems/nimble/builder-math';
+import { levelValue, monsterRole } from '../src/systems/nimble/rules';
 
 describe('dice', () => {
 	it('reads Nimble dice, including the tens-and-ones d44/d66/d88', () => {

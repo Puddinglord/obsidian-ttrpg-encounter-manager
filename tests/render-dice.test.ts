@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { attackDiceKind, DiceKind, renderStatblock } from '../src/render';
-import { NimbleMonster } from '../src/types';
+import { attackDiceKind, DiceKind, renderStatblock } from '../src/systems/nimble/render';
+import { NimbleMonster } from '../src/systems/nimble/types';
 
 describe('attackDiceKind', () => {
 	it('treats a plain attack as an attack', () => {

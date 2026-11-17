@@ -5,17 +5,18 @@
 
 import './obsidian-shim';
 import { setIcon } from 'obsidian';
-import { renderStatblock, DiceKind } from '../src/render';
-import { appendRichText } from '../src/markdown';
-import { extractNimbleBlocks, parseStatblock, toStatblockSource } from '../src/parser';
-import { formatLevel, monsterRole, rateEncounter } from '../src/rules';
-import { DiceResult, parseDice, rollNimbleAttack, rollPlain } from '../src/dice';
-import { dice3dSupported, roll3d, diceForRoll } from '../src/dice3d';
-import { ratingChip } from '../src/encounter-block';
-import { encounterBlockSource, EncounterDef, parseMonsterLine } from '../src/encounter-def';
-import { BOX_PRESETS, boxColor, resolveBox } from '../src/box-def';
-import { describeMonster } from '../src/suggest';
-import type { MonsterIndexEntry, NimbleMonster } from '../src/types';
+import { renderStatblock, DiceKind } from '../src/systems/nimble/render';
+import { appendRichText } from '../src/core/markdown';
+import { extractNimbleBlocks, parseStatblock, toStatblockSource } from '../src/systems/nimble/parser';
+import { formatLevel, monsterRole, rateEncounter } from '../src/systems/nimble/rules';
+import { DiceResult, parseDice, rollPlain } from '../src/core/dice';
+import { rollNimbleAttack } from '../src/systems/nimble/attack-roll';
+import { dice3dSupported, roll3d, diceForRoll } from '../src/core/dice3d';
+import { ratingChip } from '../src/systems/nimble/encounter-block';
+import { encounterBlockSource, EncounterDef, parseMonsterLine } from '../src/core/encounter-def';
+import { BOX_PRESETS, boxColor, resolveBox } from '../src/core/box-def';
+import { describeMonster } from '../src/systems/nimble/suggest';
+import type { MonsterIndexEntry, NimbleMonster } from '../src/systems/nimble/types';
 
 import hound from '../sample-vault/Campaigns/The Old Quarter/Monsters/Quicksilver Hound.md';
 import construct from '../sample-vault/Campaigns/The Old Quarter/Monsters/Quicksilver Construct.md';

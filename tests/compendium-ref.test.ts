@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Compendium, nameKey } from '../src/compendium';
-import { formatCompendiumRef, parseCompendiumRef, refForHit, resolveCompendiumRef } from '../src/compendium-ref';
-import BUNDLED from '../src/data/compendium.json';
+import { Compendium, nameKey } from '../src/systems/nimble/compendium';
+import { formatCompendiumRef, parseCompendiumRef, refForHit, resolveCompendiumRef } from '../src/systems/nimble/compendium-ref';
+import BUNDLED from '../src/systems/nimble/data/compendium.json';
 import { FIXTURE } from './compendium-fixture';
 
 const real = new Compendium(BUNDLED);

@@ -11,10 +11,10 @@ vi.mock('obsidian', () => ({
 	setIcon: (el: HTMLElement, icon: string) => { el.dataset.icon = icon; },
 }));
 
-import { Compendium, CompendiumHit, nameKey } from '../src/compendium';
-import { compendiumIcon, renderCard, renderConditionCard, renderHitCard } from '../src/compendium-card';
-import { bundledCompendium } from '../src/compendium-data';
-import { resolveCompendiumRef } from '../src/compendium-ref';
+import { Compendium, CompendiumHit, nameKey } from '../src/systems/nimble/compendium';
+import { compendiumIcon, renderCard, renderConditionCard, renderHitCard } from '../src/systems/nimble/compendium-card';
+import { bundledCompendium } from '../src/systems/nimble/compendium-data';
+import { resolveCompendiumRef } from '../src/systems/nimble/compendium-ref';
 import { FIXTURE } from './compendium-fixture';
 
 const real = bundledCompendium();

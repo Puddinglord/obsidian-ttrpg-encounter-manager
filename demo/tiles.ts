@@ -3,7 +3,7 @@
 
 import './obsidian-shim';
 import { setIcon } from 'obsidian';
-import { dice3dSupported } from '../src/dice3d';
+import { dice3dSupported } from '../src/core/dice3d';
 import { reducedMotion, renderBox, roll, rollNotice } from './slash-demo';
 
 // ---------------------------------------------------------------------------

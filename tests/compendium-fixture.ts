@@ -1,6 +1,6 @@
 // A small compendium for unit tests, so they don't depend on the bundled
 // src/data/compendium.json (which is replaced by the full transcription).
-import type { CompendiumData } from '../src/compendium';
+import type { CompendiumData } from '../src/systems/nimble/compendium';
 
 export const FIXTURE: CompendiumData = {
 	classes: [

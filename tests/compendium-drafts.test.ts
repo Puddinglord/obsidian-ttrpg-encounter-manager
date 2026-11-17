@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { bundledCompendium, compendiumFor, setCompendiumDrafts } from '../src/compendium-data';
-import { readCharacter } from '../src/character-def';
+import { bundledCompendium, compendiumFor, setCompendiumDrafts } from '../src/systems/nimble/compendium-data';
+import { readCharacter } from '../src/systems/nimble/character-def';
 
 describe('expansion drafts turned off', () => {
 	afterEach(() => setCompendiumDrafts(true));

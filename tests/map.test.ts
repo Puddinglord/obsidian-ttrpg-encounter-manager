@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findMapFence, mapBlockSource, parseMapBlock, parsePinLine, replaceMapBlock } from '../src/map-def';
+import { findMapFence, mapBlockSource, parseMapBlock, parsePinLine, replaceMapBlock } from '../src/core/map-def';
 
 describe('nimble-map blocks', () => {
 	it('parses pins in any order of extras', () => {

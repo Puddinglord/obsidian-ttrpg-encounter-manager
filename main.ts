@@ -1,67 +1,70 @@
 import { Component, debounce, Events, MarkdownRenderer, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
-import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/internals';
+import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/core/internals';
 import {
 	migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings,
 	mergeParty, PartyMember, RollLogEntry, uid,
-} from './src/types';
-import { readStatblock, toStatblockSource } from './src/parser';
-import { renderStatblockIssues } from './src/statblock-issues';
-import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './src/render';
-import { MonsterIndex } from './src/monster-index';
-import { EncounterStore } from './src/encounters';
-import { ENCOUNTER_VIEW_TYPE, EncounterTrackerView } from './src/tracker-view';
-import { createInlineRef, HoverPreview, parseInlineRef, refreshInlineRefs } from './src/inline-ref';
-import { inlineRefLivePreview } from './src/live-preview';
-import { InlineRefSuggest } from './src/suggest';
-import { NimbleSlashSuggest } from './src/slash';
-import { NimbleSettingsTab } from './src/settings-tab';
-import { parseDice, rollDie, rollNimbleAttack, rollPlain } from './src/dice';
-import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/roll-def';
-import { BestiaryEntry, bestiaryEntries } from './src/bestiary';
-import { baseCreatureName, bookOf } from './src/compendium-entries';
-import { COMPENDIUM_VIEW_TYPE, CompendiumView } from './src/compendium-view';
-import { invalidateCompendium } from './src/compendium-browser';
-import { openCompendiumSearch } from './src/compendium-modal';
-import { openAddMonsterPicker } from './src/compendium-pickers';
-import { watchArt } from './src/compendium-art';
-import type { Segment } from './src/compendium-entries';
-import { notesBody } from './src/creature-notes';
-import { registerEncounterBlock } from './src/encounter-block';
-import { BuilderModal } from './src/builder-modal';
-import { PartyModal } from './src/party';
-import { registerMapBlock } from './src/map-block';
-import { keywordPattern } from './src/markdown';
-import { openPopover } from './src/popover';
-import { CampaignStore } from './src/campaigns';
-import { registerBoxBlock } from './src/box-block';
-import { registerNpcCard } from './src/npc-card';
-import { registerFightBlock, saveFight } from './src/saved-fight';
-import { NpcLinker } from './src/npc-links';
-import { npcLivePreview } from './src/npc-live-preview';
-import { SpotlightModal } from './src/spotlight';
-import { registerTables, styleTablesIn } from './src/tables';
-import { registerTooltips, watchTooltips } from './src/tooltips';
-import { monsterRole, shiftMonster } from './src/rules';
-import { AddSeveralModal } from './src/count-modal';
-import { canRoll3d, dice3dLastStats, dice3dSupported, diceForRoll, landedWithin, roll3d, warm3d } from './src/dice3d';
-import { dressDice, rollEvent, rollOptions } from './src/dice3d/looks';
-import type { Die3d } from './src/dice3d';
-import type { DieLook } from './src/dice3d/renderer';
-import { inkOn } from './src/die-shape';
-import type { RollEvent } from './src/dice3d/styles';
-import { DiceWorkshopModal } from './src/dice-workshop';
-import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/campaign-view';
-import { CampaignPicker, NewCampaignModal } from './src/campaign-modals';
-import { newSceneAnywhere, promptCharacter, promptChapter, promptSectionNote } from './src/campaign-ui';
-import BESTIARY from './src/data/bestiary.json';
-import { registerCharacterFeatures } from './src/character-register';
-import { registerReadingMode } from './src/reading-mode';
-import { noteKind, safeName } from './src/campaign-model';
-import { readCharacter } from './src/character-def';
-import { creatureNote } from './src/campaign-templates';
-import { addEditButton, registerBuilders } from './src/builder-register';
-import { registerHomebrewBlocks } from './src/homebrew-block';
-import { bundledCompendium, setCompendiumDrafts, setHomebrew, sheetCompendium } from './src/compendium-data';
+} from './src/systems/nimble/types';
+import { readStatblock, toStatblockSource } from './src/systems/nimble/parser';
+import { renderStatblockIssues } from './src/systems/nimble/statblock-issues';
+import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './src/systems/nimble/render';
+import { MonsterIndex } from './src/systems/nimble/monster-index';
+import { EncounterStore } from './src/systems/nimble/encounters';
+import { ENCOUNTER_VIEW_TYPE, EncounterTrackerView } from './src/systems/nimble/tracker-view';
+import { createInlineRef, HoverPreview, parseInlineRef, refreshInlineRefs } from './src/systems/nimble/inline-ref';
+import { inlineRefLivePreview } from './src/systems/nimble/live-preview';
+import { InlineRefSuggest } from './src/systems/nimble/suggest';
+import { NimbleSlashSuggest } from './src/app/slash';
+import { NimbleSettingsTab } from './src/app/settings-tab';
+import { parseDice, rollDie, rollPlain } from './src/core/dice';
+import { rollNimbleAttack } from './src/systems/nimble/attack-roll';
+import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/systems/nimble/roll-def';
+import { BestiaryEntry, bestiaryEntries } from './src/systems/nimble/bestiary';
+import { baseCreatureName, bookOf } from './src/systems/nimble/compendium-entries';
+import { COMPENDIUM_VIEW_TYPE, CompendiumView } from './src/systems/nimble/compendium-view';
+import { invalidateCompendium } from './src/systems/nimble/compendium-browser';
+import { openCompendiumSearch } from './src/systems/nimble/compendium-modal';
+import { openAddMonsterPicker } from './src/systems/nimble/compendium-pickers';
+import { watchArt } from './src/systems/nimble/compendium-art';
+import type { Segment } from './src/systems/nimble/compendium-entries';
+import { notesBody } from './src/systems/nimble/creature-notes';
+import { registerEncounterBlock } from './src/systems/nimble/encounter-block';
+import { BuilderModal } from './src/systems/nimble/builder-modal';
+import { PartyModal } from './src/core/party';
+import { registerMapBlock } from './src/app/map-block';
+import { keywordPattern } from './src/core/markdown';
+import { openPopover } from './src/core/popover';
+import { CampaignStore } from './src/core/campaigns';
+import { registerBoxBlock } from './src/core/box-block';
+import { registerNpcCard } from './src/core/npc-card';
+import { registerFightBlock, saveFight } from './src/systems/nimble/saved-fight';
+import { NpcLinker } from './src/core/npc-links';
+import { npcLivePreview } from './src/core/npc-live-preview';
+import { SpotlightModal } from './src/app/spotlight';
+import { registerTables, styleTablesIn } from './src/core/tables';
+import { registerTooltips, watchTooltips } from './src/core/tooltips';
+import { monsterRole, shiftMonster } from './src/systems/nimble/rules';
+import { AddSeveralModal } from './src/systems/nimble/count-modal';
+import { canRoll3d, dice3dLastStats, dice3dSupported, diceForRoll, landedWithin, roll3d, warm3d } from './src/core/dice3d';
+import { dressDice, rollEvent, rollOptions } from './src/core/dice3d/looks';
+import type { Die3d } from './src/core/dice3d';
+import type { DieLook } from './src/core/dice3d/renderer';
+import { inkOn } from './src/core/die-shape';
+import type { RollEvent } from './src/core/dice3d/styles';
+import { DiceWorkshopModal } from './src/core/dice-workshop';
+import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/core/campaign-view';
+import { CampaignPicker, NewCampaignModal } from './src/core/campaign-modals';
+import { newSceneAnywhere, promptCharacter, promptChapter, promptSectionNote } from './src/core/campaign-ui';
+import BESTIARY from './src/systems/nimble/data/bestiary.json';
+import { registerCharacterFeatures } from './src/systems/nimble/character-register';
+import { registerReadingMode } from './src/core/reading-mode';
+import { noteKind, safeName } from './src/core/campaign-model';
+import { readCharacter } from './src/systems/nimble/character-def';
+import { creatureNote } from './src/core/campaign-templates';
+import { addEditButton, registerBuilders } from './src/systems/nimble/builder-register';
+import { registerHomebrewBlocks } from './src/systems/nimble/homebrew-block';
+import { bundledCompendium, setCompendiumDrafts, setHomebrew, sheetCompendium } from './src/systems/nimble/compendium-data';
+import type { GameSystem } from './src/systems/contract';
+import { createSystems } from './src/app/systems';
 
 const ROLL_LOG_LIMIT = 30;
 
@@ -122,6 +125,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	indexVersion = 0;
 	private keywordCache: { key: string; re: RegExp | undefined } | null = null;
 	campaigns!: CampaignStore;
+	/** The game systems the plugin knows. Nimble is the default (and, for now, the only one). */
+	readonly systems = createSystems();
 	/** Bumped when the NPC list changes; Live Preview decorations watch it. */
 	npcVersion = 0;
 	private wakeLock: WakeLockSentinel | null = null;
@@ -151,6 +156,16 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			this.wakeLock = null;
 			void lock.release().catch(() => undefined);
 		}
+	}
+
+	/**
+	 * The game system for a note: its campaign's, else (outside any campaign, or
+	 * with no note) the active campaign's, else the default. The same fallback
+	 * as campaigns.role().
+	 */
+	system(path?: string): GameSystem {
+		const campaign = (path ? this.campaigns?.of(path) : undefined) ?? this.campaigns?.active;
+		return this.systems.resolve(campaign?.system);
 	}
 
 	async onload() {

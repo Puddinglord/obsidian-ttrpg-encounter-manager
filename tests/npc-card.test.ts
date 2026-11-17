@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseNpcCard, portraitLink } from '../src/npc-card-def';
+import { parseNpcCard, portraitLink } from '../src/core/npc-card-def';
 
 describe('parseNpcCard', () => {
 	it('reads label: value rows in order', () => {
@@ -61,7 +61,7 @@ describe('portraitLink', () => {
 
 describe('npcFacts', () => {
 	it('reads the quick facts from properties', async () => {
-		const { npcFacts } = await import('../src/npc-card-def');
+		const { npcFacts } = await import('../src/core/npc-card-def');
 		const f = npcFacts({ ancestry: 'Dwarf', pronouns: 'she/her', age: 54, faction: '[[Zhentarim]]', location: '', status: 'Alive', attitude: 'Hostile', first_met: '[[Session 2]]' });
 		expect(f.details).toEqual(['Dwarf', 'she/her', '54 years']);
 		expect(f.faction).toBe('[[Zhentarim]]');
@@ -72,7 +72,7 @@ describe('npcFacts', () => {
 	});
 
 	it('is empty for a bare note', async () => {
-		const { npcFacts } = await import('../src/npc-card-def');
+		const { npcFacts } = await import('../src/core/npc-card-def');
 		expect(npcFacts({})).toEqual({ details: [] });
 	});
 });

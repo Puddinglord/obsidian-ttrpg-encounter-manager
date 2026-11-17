@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Merge the transcriptions in raw/ into src/data/compendium.json.
+"""Merge the transcriptions in raw/ into src/systems/nimble/data/compendium.json.
 
 Run from the repo root:  python3 -I scripts/compendium/merge.py
 
@@ -17,7 +17,7 @@ Policy:
 import glob, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(ROOT, '..', '..', 'src', 'data', 'compendium.json')
+OUT = os.path.join(ROOT, '..', '..', 'src', 'systems', 'nimble', 'data', 'compendium.json')
 LISTS = ['classes', 'ancestries', 'backgrounds', 'motivations', 'items', 'properties', 'spells', 'boons']
 
 def key(name):

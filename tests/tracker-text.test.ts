@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseCountQuery } from '../src/tracker-text';
+import { parseCountQuery } from '../src/systems/nimble/tracker-text';
 
 describe('parseCountQuery', () => {
 	it.each([
