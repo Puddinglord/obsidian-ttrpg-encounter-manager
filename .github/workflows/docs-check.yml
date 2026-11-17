@@ -1,0 +1,45 @@
+name: Docs check
+
+# Holds a pull request until the user guide, the landing page and the changelog keep up with it
+# (scripts/check-docs.mjs):
+#   - every link in docs/, README.md, CHANGELOG.md and the landing page points somewhere real;
+#   - a new entry under "## [Unreleased]" → "### Added" needs a guide change (docs/*.md) and a
+#     landing page change (the features bento in site/index.html). Label the PR "docs: skip" or
+#     "site: skip" when one isn't needed;
+#   - plugin code with nothing new under Unreleased gets a warning (the PR title becomes the note).
+# It re-runs when labels change, so adding a skip label clears it without a new push.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Links
+        if: github.event_name == 'push'
+        run: node scripts/check-docs.mjs
+
+      - name: Guide, landing page and changelog keep up with the PR
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          # Through env, never interpolated into the script: label names are user text.
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: node scripts/check-docs.mjs --base "$BASE"

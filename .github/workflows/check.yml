@@ -34,3 +34,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Build the site (landing page, guide and changelog)
+        run: npm run site
