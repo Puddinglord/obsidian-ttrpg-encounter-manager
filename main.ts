@@ -62,6 +62,7 @@ import { registerReadingMode } from './src/core/reading-mode';
 import { noteKind, safeName } from './src/core/campaign-model';
 import { creatureNote } from './src/core/campaign-templates';
 import { addEditButton, registerBuilders } from './src/systems/nimble/builder-register';
+import { registerBuilderCommands } from './src/core/builder/commands';
 import { registerHomebrewBlocks } from './src/systems/nimble/homebrew-block';
 import { bundledCompendium, setCompendiumDrafts, setHomebrew } from './src/systems/nimble/compendium-data';
 import type { GameSystem } from './src/systems/contract';
@@ -264,6 +265,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		setCompendiumDrafts(this.settings.compendiumDrafts);
 		registerCharacterFeatures(this);
 		registerBuilders(this);
+		registerBuilderCommands(this);
 		registerHomebrewBlocks(this);
 		registerReadingMode(this);
 

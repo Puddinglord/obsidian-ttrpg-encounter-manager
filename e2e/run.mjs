@@ -5128,8 +5128,8 @@ test('5e slash commands: /monster, /spell, /encounter rated by 2024 XP, /statblo
 		await type('/');
 		await o.waitFor(async () => (await menu.count()) > 10, { what: 'the slash menu' });
 		const all = await titles();
-		for (const c of ['/monster', '/spell', '/species', '/encounter', '/condition']) assert.ok(all.includes(c), `${c} in ${all.join(' ')}`);
-		for (const c of ['/legendary', '/minion', '/new-monster', '/companion']) assert.ok(!all.includes(c), `${c} is Nimble's`);
+		for (const c of ['/monster', '/spell', '/species', '/encounter', '/condition', '/new-monster', '/new-item']) assert.ok(all.includes(c), `${c} in ${all.join(' ')}`);
+		for (const c of ['/legendary', '/minion', '/companion']) assert.ok(!all.includes(c), `${c} is Nimble's`);
 		await o.page.keyboard.press('Backspace');
 
 		// /encounter: four level-3 heroes, 4 Goblin Warriors + an Ogre = 650 XP, Low.
@@ -5253,6 +5253,94 @@ test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its c
 			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
 			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
 			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reopens it, /new-spell makes a homebrew spell that 5e:spell: and /spell find, New item… is 5e\'s', async (o) => {
+	const C = 'Campaigns/Forge Coast';
+	const note = `${C}/Forge.md`;
+	const B = '.modal.nimble-entity-builder';
+	// Create from any step; on the last one it's the Next button.
+	const create = async () => {
+		const c = o.page.locator(`${B} .eb-create`);
+		if (await c.isVisible()) await c.click(); else await o.page.locator(`${B} .eb-next`).click();
+	};
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Forge Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Forge.md`, '# Forge\n\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(note, 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 2, ch: 0 }); ed.focus(); });
+
+		// /new-monster: 5e's builder, with 5e's kinds.
+		await o.page.keyboard.type('/new-monster', { delay: 20 });
+		await o.page.keyboard.press('Enter');
+		await o.page.locator(B).waitFor();
+		assert.deepEqual(await o.page.locator(`${B} .eb-kind`).allInnerTexts(), ['Monster', 'Spell', 'Magic item']);
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).fill('Ember Hound');
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Challenge"]`).selectOption('5');
+		assert.match(await o.page.locator(`${B} .eb-panel.is-active [data-key="cr"] .eb-aside`).innerText(), /PB \+3 · 1,800 XP/);
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="CON"]`).fill('16');
+		await o.waitFor(async () => /4d8 \+ 12/.test(await o.page.locator(`${B} .eb-panel.is-active [data-key="hp"] .eb-aside`).innerText()), { what: 'HP formula hint' });
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ember Hound[\s\S]*30 \(4d8 \+ 12\)/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-builder-monster.png') });
+		await create();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		const text = await o.eval((app) => app.workspace.activeEditor.editor.getValue());
+		assert.match(text, /```5e\nname: Ember Hound\nedition: 2024\nsize: Medium\ntype: humanoid\n[\s\S]*hp: 30 \(4d8 \+ 12\)[\s\S]*cr: 5\n[\s\S]*- Strike: Melee Attack Roll: \+3, reach 5 ft\. Hit: 3 \(1d6\) Slashing damage\.\n```/);
+
+		// Edit on the block: the builder opens on it; Save writes it back.
+		await o.openFile(note, 'preview');
+		const block = o.page.locator(`${R} .block-language-5e`).first();
+		await block.waitFor();
+		await block.hover();
+		await block.locator('.nimble-block-edit').click();
+		await o.page.locator(B).waitFor();
+		assert.equal(await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).inputValue(), 'Ember Hound');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Stats' }).click();
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="AC"]`).fill('15');
+		await create();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /\nac: 15\n/.test(await o.eval((app, _p, p) => app.vault.adapter.read(p), note)), { what: 'AC written back' });
+
+		// /new-spell: a homebrew spell block; references and /spell find it before the SRD.
+		await o.openFile(note, 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; const n = ed.lineCount(); ed.setCursor({ line: n - 1, ch: ed.getLine(n - 1).length }); ed.replaceSelection('\n'); ed.focus(); });
+		await o.page.keyboard.type('/new-spell', { delay: 20 });
+		await o.page.keyboard.press('Enter');
+		await o.page.locator(B).waitFor();
+		assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Spell');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).fill('Ember Lash');
+		await o.page.locator(`${B} .eb-panel.is-active .eb-pick[data-value="Wizard"]`).click();
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Effect' }).click();
+		await o.page.locator(`${B} .eb-panel.is-active textarea[data-field="Text"]`).fill('A whip of fire deals 2d6 Fire damage.');
+		await create();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /```5e-spell\nname: Ember Lash\nlevel: 1\nschool: Evocation\n[\s\S]*classes: Wizard\n\nA whip of fire deals 2d6 Fire damage\.\n```/.test(await o.eval((app) => app.workspace.activeEditor.editor.getValue())), { what: 'the spell block' });
+		await o.eval(async (app, _p, C) => { await app.vault.create(`${C}/Lash.md`, 'She casts `5e:spell:Ember Lash`.\n'); }, C);
+		await o.openFile(`${C}/Lash.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.kind-spell`).count()) === 1, { what: 'the homebrew spell reference' });
+		await o.page.locator(`${R} .dnd5e-ref.kind-spell .nimble-inline-name`).hover();
+		await o.waitFor(async () => /A whip of fire/.test(await o.page.locator('.nimble-hover-preview .dnd5e-card').innerText().catch(() => '')), { what: 'homebrew card on hover' });
+		await o.page.keyboard.press('Escape');
+
+		// New item… in a 5e campaign is 5e's item builder.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-item'); });
+		await o.page.locator(B).waitFor();
+		assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Magic item');
+		await o.page.keyboard.press('Escape');
+		await o.page.locator(B).waitFor({ state: 'detached' });
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
 			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
 			await plugin.campaigns.setActive(null);
 		}, C);

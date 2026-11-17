@@ -16,6 +16,7 @@ import { Campaign, fmText, homeFolderFor, NoteRef, questsIn, questState, safeNam
 import { parseDice } from './dice';
 import { insideCodeFence, placeBlock, slashQuery } from './markdown';
 import { NPC_CARD_BLOCK } from './npc-card-def';
+import { kindsOf, openBuilder } from './builder/frame';
 
 /** One row in the menu. */
 export interface SlashItem {
@@ -70,7 +71,7 @@ export function commandsFor(plugin: NimbleStatblocksPlugin, path: string | undef
 	const side = plugin.playerView(path) ? 'player' : 'gm';
 	const system = plugin.system(path).slashCommands?.(plugin) ?? [];
 	const names = new Set(system.flatMap(c => [c.name, ...(c.aliases ?? [])]));
-	const base = baseCommands(plugin).filter(c => !names.has(c.name));
+	const base = baseCommands(plugin, path).filter(c => !names.has(c.name));
 	return [...system, ...base].filter(c => !c.side || c.side === side);
 }
 
@@ -204,9 +205,18 @@ const insert = (text: string | ((p: NimbleStatblocksPlugin, w: SlashWriter) => s
 		w.write(t, o);
 	};
 
-function baseCommands(plugin: NimbleStatblocksPlugin): SlashCommand[] {
+function baseCommands(plugin: NimbleStatblocksPlugin, path?: string): SlashCommand[] {
 	const p = plugin;
 	return [
+		// What the note's system can build (core/builder): /new-monster, /new-spell… The block lands where the slash was.
+		...kindsOf(p.system(path).id).map((k): SlashCommand => ({
+			name: `new-${k.kind}`, aliases: [`build-${k.kind}`], icon: k.icon, desc: `Build a ${k.label.toLowerCase()} here`, side: k.kind === 'monster' ? 'gm' : undefined,
+			run: (w) => {
+				w.clear();
+				const at = { ...w.start };
+				openBuilder(p, { kind: k.kind, sourcePath: w.path, insert: (block) => writeAt(w.editor, at, at, block, true) });
+			},
+		})),
 		{ name: 'npc', aliases: ['who'], icon: 'user-round', desc: 'Link an NPC, or create one', hint: '/npc kevori', items: (arg, q) => npcItems(p, arg, q.path) },
 		{ name: 'quest', aliases: ['quests'], icon: 'flag', desc: 'Link a quest', hint: '/quest caravan', items: (arg, q) => questItems(p, arg, q.path) },
 		{

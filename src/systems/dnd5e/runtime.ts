@@ -17,7 +17,11 @@ import { FightStore } from './combat-store';
 import { DND5E_TRACKER_VIEW, Dnd5eTrackerView } from './tracker-view';
 import { Dnd5eEncounterBlock } from './encounter-block';
 import type { EncounterDef } from '../../core/encounter-def';
-import { findHit, Hit5e, KIND5E, kindFromWord } from './compendium';
+import { Hit5e, KIND5E, Kind5e, kindFromWord, spellLine } from './compendium';
+import { findIn, Homebrew5e, mergeHits } from './homebrew-index';
+import { ITEM_LANG, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
+import { registerBuilders5e } from './builders';
+import { addEditButton } from '../../core/builder/commands';
 import { renderCard5e } from './cards';
 import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-view';
 import { Dnd5eSheet, SHEET_LANG } from './sheet';
@@ -32,11 +36,14 @@ export function parse5eRef(code: string): string | null {
 export class Dnd5eRuntime {
 	readonly index: Dnd5eIndex;
 	readonly fights: FightStore;
+	/** Your ```5e-spell and ```5e-item blocks. */
+	readonly homebrew: Homebrew5e;
 
 	constructor(readonly plugin: NimbleStatblocksPlugin) {
 		this.index = new Dnd5eIndex(plugin.app);
 		this.fights = new FightStore(plugin);
-		this.index.vault.setScope((filePath, from) => plugin.canSee(filePath, from));
+		this.homebrew = new Homebrew5e(plugin.app);
+		for (const i of [this.index.vault, ...this.homebrew.indexes]) i.setScope((filePath, from) => plugin.canSee(filePath, from));
 	}
 
 	/** Which rules a note plays by: its campaign's 5e edition, else 2024. */
@@ -56,7 +63,12 @@ export class Dnd5eRuntime {
 				el.createDiv({ cls: 'dnd5e-empty', text: 'A 5e stat block starts with a name line, like "name: Goblin".' });
 				return;
 			}
-			const draw = () => { el.empty(); this.render(el, m, { sourcePath: ctx.sourcePath, variant: 'block', lore: plugin.hideStats(ctx.sourcePath, ctx.sourcePath) }); };
+			const draw = () => {
+				el.empty();
+				const lore = plugin.hideStats(ctx.sourcePath, ctx.sourcePath);
+				this.render(el, m, { sourcePath: ctx.sourcePath, variant: 'block', lore });
+				if (!lore) addEditButton(plugin, el, ctx, { system: 'dnd5e', kind: 'monster', lang: STATBLOCK_LANG, source, seed: { monster: m } });
+			};
 			draw();
 			// The campaign's edition (the layout) and side (lore for players) can change, or only be known after startup.
 			const child = new MarkdownRenderChild(el);
@@ -67,24 +79,42 @@ export class Dnd5eRuntime {
 			}));
 			ctx.addChild(child);
 		});
+		// Your own spells and items: the compendium's card, and Edit for the GM.
+		const homebrew = (lang: string, kind: 'spell' | 'item') => plugin.registerMarkdownCodeBlockProcessor(lang, (source, el, ctx) => {
+			const edition = this.edition(ctx.sourcePath);
+			const spell = kind === 'spell' ? parseSpell5e(source) : null;
+			const item = kind === 'item' ? parseItem5e(source, edition) : null;
+			const hit: Hit5e | null = spell ? { kind: 'spell', name: spell.name, edition, detail: spellLine(spell, edition), spell }
+				: item ? { kind: 'item', name: item.name, edition, detail: item.line ?? '', item } : null;
+			if (!hit) { el.createDiv({ cls: 'dnd5e-empty', text: `A ${kind} block starts with a name line, like "name: ${kind === 'spell' ? 'Ember Lash' : 'Ember Blade'}".` }); return; }
+			renderCard5e(el, hit, this.cardOptions(ctx.sourcePath));
+			if (!plugin.playerView(ctx.sourcePath)) addEditButton(plugin, el, ctx, { system: 'dnd5e', kind, lang, source, seed: spell ? { spell } : { item } });
+		});
+		homebrew(SPELL_LANG, 'spell');
+		homebrew(ITEM_LANG, 'item');
+		registerBuilders5e(this);
 		plugin.registerMarkdownCodeBlockProcessor(SHEET_LANG, (_source, el, ctx) => { ctx.addChild(new Dnd5eSheet(this, el, ctx)); });
 		plugin.inlineRefs.add(this.refProvider());
 		plugin.registerEditorSuggest(new Dnd5eRefSuggest(plugin.app, this));
 		plugin.registerView(DND5E_TRACKER_VIEW, (leaf) => new Dnd5eTrackerView(leaf, this));
 		plugin.registerView(DND5E_COMPENDIUM_VIEW, (leaf) => new Dnd5eCompendiumView(leaf, this));
 
-		const index = this.index.vault;
-		plugin.registerEvent(index.on('changed', () => plugin.refsChanged()));
-		// Campaigns moving, switching sides or editions change what a reference sees.
-		plugin.registerEvent(plugin.campaigns.on('changed', () => index.trigger('changed')));
+		const indexes = [this.index.vault, ...this.homebrew.indexes];
+		for (const index of indexes) {
+			plugin.registerEvent(index.on('changed', () => plugin.refsChanged()));
+			// Campaigns moving, switching sides or editions change what a reference sees.
+			plugin.registerEvent(plugin.campaigns.on('changed', () => index.trigger('changed')));
+		}
 		plugin.app.workspace.onLayoutReady(async () => {
-			await index.build();
-			plugin.registerEvent(plugin.app.vault.on('modify', f => { if (f instanceof TFile) void index.update(f); }));
-			plugin.registerEvent(plugin.app.vault.on('create', f => { if (f instanceof TFile) void index.update(f); }));
-			plugin.registerEvent(plugin.app.vault.on('delete', f => index.remove(f.path)));
+			await Promise.all(indexes.map(i => i.build()));
+			plugin.registerEvent(plugin.app.vault.on('modify', f => { if (f instanceof TFile) for (const i of indexes) void i.update(f); }));
+			plugin.registerEvent(plugin.app.vault.on('create', f => { if (f instanceof TFile) for (const i of indexes) void i.update(f); }));
+			plugin.registerEvent(plugin.app.vault.on('delete', f => { for (const i of indexes) i.remove(f.path); }));
 			plugin.registerEvent(plugin.app.vault.on('rename', (f, oldPath) => {
-				index.remove(oldPath, false);
-				if (f instanceof TFile) void index.update(f);
+				for (const i of indexes) {
+					i.remove(oldPath, false);
+					if (f instanceof TFile) void i.update(f);
+				}
 			}));
 		});
 	}
@@ -159,15 +189,25 @@ export class Dnd5eRuntime {
 		return m;
 	}
 
+	/** Every compendium hit a note can see: your spells and items, then the edition's SRD. */
+	hits(edition: Dnd5eEdition, from?: string): Hit5e[] {
+		return mergeHits(this.homebrew.hits(edition, from), edition);
+	}
+
+	/** A compendium hit by name: yours first, then the SRD's. */
+	findHit(name: string, sourcePath: string, kind?: Kind5e): Hit5e | undefined {
+		const edition = this.edition(sourcePath);
+		return findIn(this.homebrew.hits(edition, sourcePath || undefined), edition, name, kind);
+	}
+
 	/** `spell:Fireball` → the spell; `Fireball` → a monster of that name, else anything in the compendium called that. */
 	resolveRef(ref: string, sourcePath: string): { monster: Dnd5eEntry } | { hit: Hit5e } | undefined {
 		const m = /^\s*([a-z]+)\s*:\s*(.+)$/i.exec(ref);
 		const kind = m ? kindFromWord(m[1]) : undefined;
-		const edition = this.edition(sourcePath);
-		if (kind) { const hit = findHit(edition, m![2], kind); return hit ? { hit } : undefined; }
+		if (kind) { const hit = this.findHit(m![2], sourcePath, kind); return hit ? { hit } : undefined; }
 		const monster = this.get(ref, sourcePath);
 		if (monster) return { monster };
-		const hit = findHit(edition, ref);
+		const hit = this.findHit(ref, sourcePath);
 		return hit ? { hit } : undefined;
 	}
 

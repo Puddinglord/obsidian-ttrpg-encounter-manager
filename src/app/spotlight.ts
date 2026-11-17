@@ -34,7 +34,7 @@ import { describeMonster } from '../systems/nimble/suggest';
 import type { MonsterIndexEntry, NimbleCondition } from '../systems/nimble/types';
 import { dnd5e } from '../systems/dnd5e/runtime';
 import type { Dnd5eEntry } from '../systems/dnd5e/types';
-import { allHits, Hit5e, KIND5E } from '../systems/dnd5e/compendium';
+import { Hit5e, KIND5E } from '../systems/dnd5e/compendium';
 
 type Item =
 	| { kind: 'roll'; expression: string }
@@ -245,7 +245,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const conditions = [...this.plugin.system().conditions(edition), ...this.plugin.settings.customConditions];
 		for (const condition of conditions.filter(c => !c.auto)) rank({ kind: 'condition', condition }, 3, [condition.name]);
 		// Spells, items, classes, rules…: the edition's compendium (its conditions are listed above).
-		for (const x of fuzzyRank(allHits(edition).filter(h => h.kind !== 'condition'), text, h => [h.name], 8, true)) rank({ kind: 'dnd5eHit', hit: x.item }, 4, [x.item.name], [x.item.detail]);
+		for (const x of fuzzyRank(rt.hits(edition, path).filter(h => h.kind !== 'condition'), text, h => [h.name], 8, true)) rank({ kind: 'dnd5eHit', hit: x.item }, 4, [x.item.name], [x.item.detail]);
 		for (const c of this.commands(text, 8)) if (c.kind === 'command') rank(c, 5, [c.name]);
 		const anyReal = ranked.some(r => !r.fuzzy);
 		return ranked.filter(r => !anyReal || !r.fuzzy).sort((a, b) => a.score - b.score || a.order - b.order).slice(0, 14).map(r => r.item);

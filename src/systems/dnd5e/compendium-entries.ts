@@ -236,11 +236,16 @@ function hitEntry(h: Hit5e): Entry5e {
 
 const hitCache = new Map<Dnd5eEdition, Entry5e[]>();
 
-/** Every entry for an edition: the monsters a note can see, then the compendium. */
-export function buildEntries5e(edition: Dnd5eEdition, monsters: Dnd5eEntry[], lore = false): Entry5e[] {
+/**
+ * Every entry for an edition: the monsters a note can see, your spells and
+ * items (`mine`, which replace the SRD's of the same name), then the compendium.
+ */
+export function buildEntries5e(edition: Dnd5eEdition, monsters: Dnd5eEntry[], lore = false, mine: Hit5e[] = []): Entry5e[] {
 	let hits = hitCache.get(edition);
 	if (!hits) hitCache.set(edition, hits = allHits(edition).map(hitEntry));
-	return [...monsters.map(m => monsterEntry(m, lore)), ...hits];
+	const yours = mine.map(h => { const e = hitEntry(h); e.id = `mine:${e.id}`; e.facets.source = ['Your notes']; e.flags.push('mine'); return e; });
+	const taken = new Set(mine.map(h => `${h.kind}:${h.name.toLowerCase()}`));
+	return [...monsters.map(m => monsterEntry(m, lore)), ...yours, ...(taken.size ? hits.filter(e => !taken.has(`${e.kind}:${e.name.toLowerCase()}`)) : hits)];
 }
 
 // ----------------------------------------------------------------------------

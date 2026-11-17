@@ -14,7 +14,7 @@ import { encounterBlockSource, EncounterDef, parseMonsterLine } from '../../core
 import { plainRoll, SlashCommand, SlashItem, SlashWriter } from '../../core/slash';
 import { rankByName } from '../../core/spotlight-def';
 import { addMonster } from './combat';
-import { allHits, Hit5e, KIND5E, Kind5e } from './compendium';
+import { Hit5e, KIND5E, Kind5e } from './compendium';
 import { buildEntries5e, QUERY_5E } from './compendium-entries';
 import type { Tab } from './compendium-view';
 import { runEncounter5e } from './encounter-block';
@@ -140,17 +140,17 @@ function hitItem(h: Hit5e): SlashItem {
 function compendiumItems(rt: Dnd5eRuntime, arg: string, k: Kinds, path?: string): SlashItem[] {
 	// Typed filters ("school:evocation level:3") go through the compendium's search.
 	if (FILTER.test(arg)) {
-		const res = QUERY_5E.search(buildEntries5e(rt.edition(path), []), arg, { segment: k.tab, only: e => !!e.hit && k.kinds.includes(e.hit.kind), limit: 30 });
+		const res = QUERY_5E.search(buildEntries5e(rt.edition(path), [], false, rt.homebrew.hits(rt.edition(path), path)), arg, { segment: k.tab, only: e => !!e.hit && k.kinds.includes(e.hit.kind), limit: 30 });
 		return [...res.entries.map(e => hitItem(e.hit!)), moreItem(rt, arg, k.tab, path)];
 	}
-	const hits = allHits(rt.edition(path)).filter(h => k.kinds.includes(h.kind));
+	const hits = rt.hits(rt.edition(path), path).filter(h => k.kinds.includes(h.kind));
 	return [...rankByName(hits, arg, h => [h.name], 30).map(hitItem), moreItem(rt, arg, k.tab, path)];
 }
 
 /** /compendium: monsters first, then everything else. */
 function anyItems(rt: Dnd5eRuntime, arg: string, path?: string): SlashItem[] {
 	const monsters = monsterItems(rt, arg, 'ref', path).slice(0, -1).slice(0, 10);
-	const hits = rankByName(allHits(rt.edition(path)), arg, h => [h.name], 30).map(hitItem);
+	const hits = rankByName(rt.hits(rt.edition(path), path), arg, h => [h.name], 30).map(hitItem);
 	return [...monsters, ...hits].slice(0, 30).concat(moreItem(rt, arg, 'all', path));
 }
 

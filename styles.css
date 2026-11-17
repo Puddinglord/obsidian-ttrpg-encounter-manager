@@ -4354,6 +4354,19 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder .eb-attack-head { display: flex; align-items: center; gap: 0.5rem; }
 .nimble-entity-builder .eb-attack-head input.eb-attack-name { flex: 0 1 11rem; min-width: 6rem; font-weight: 650; }
 .nimble-entity-builder .eb-attack-head input.eb-attack-body { flex: 1 1 14rem; min-width: 0; }
+/* Builders from a schema (core/builder/schema.ts): lists of things, chips, dropdowns. */
+.nimble-entity-builder .eb-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.4rem; }
+.nimble-entity-builder .eb-list-head { justify-content: space-between; }
+.nimble-entity-builder .eb-list-title { font-weight: 650; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-entity-builder .eb-picks { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.nimble-entity-builder button.eb-pick {
+	height: 1.9rem; padding: 0 0.7rem; border-radius: 999px; box-shadow: none; border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary); color: var(--text-muted); font-size: var(--eb-text); font-weight: 600;
+}
+.nimble-entity-builder button.eb-pick.is-active { background: var(--interactive-accent); border-color: var(--interactive-accent); color: var(--text-on-accent); }
+.nimble-entity-builder select.eb-select { width: 100%; height: var(--eb-h); }
+.nimble-entity-builder .eb-check-line { font-weight: 650; }
+.nimble-entity-builder .eb-check-line.is-muted { font-weight: 500; font-size: 0.8rem; color: var(--text-muted); }
 .nimble-entity-builder .eb-dice { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; }
 .nimble-entity-builder button.eb-dice-btn, .nimble-entity-builder button.eb-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; padding: 0; border-radius: 999px; border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-muted); flex: 0 0 auto; }
 .nimble-entity-builder button.eb-dice-btn svg, .nimble-entity-builder button.eb-icon-btn svg { width: 14px; height: 14px; }

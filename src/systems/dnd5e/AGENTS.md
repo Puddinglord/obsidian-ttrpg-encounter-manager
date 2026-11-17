@@ -14,6 +14,7 @@ The second game system, and the template for adding more. One system, two **edit
 | Compendium | `compendium.ts` (types, `allHits`, `findHit`, the `5e:<kind>:Name` kinds), `compendium-entries.ts` (entries, facets and sorts for core's compendium engine; the facets read both editions the same way), `cards.ts`, `compendium-view.ts` (core's browser with an edition switch) |
 | Encounters | `encounter-block.ts`, `combat-store.ts` (saved under `settings.systemData.dnd5e.fight`), `tracker-view.ts` |
 | Characters | `character.ts`, `sheet.ts`, `new-character.ts` |
+| Builders | `builder-model.ts` (pure: the monster draft and its formulas: HP from hit dice and Con, PB and XP from CR, saves, skills, passive Perception, attacks in each edition's words), `builders.ts` (monster, spell and magic item schemas for core's builder), `homebrew.ts` (pure: the ```5e-spell and ```5e-item formats), `homebrew-index.ts` (your spells and items, before the SRD's) |
 | NPCs | `npc.ts` (the NPC fields 5e adds to core's NPC notes: `ac`, `hp`, `cr`, `statblock`; the NPC as a monster for the tracker), `npc-card.ts` (the stat block reference and Add to fight in the NPC card) |
 | Editor | `suggest.ts` (`5e:` autocomplete), `slash.ts` ("/" commands: `/monster`, `/spell` and the other compendium kinds, `/encounter`, `/add`, `/statblock`, `/fought`, `/roll` with advantage) |
 | Data | `conditions.ts`, `data/*.json` |
@@ -43,5 +44,4 @@ The second game system, and the template for adding more. One system, two **edit
 - **What 5e doesn't have yet** (see MULTI-SYSTEM.md, "Known gaps"):
   - a level-up wizard;
   - multiclassing;
-  - builders;
   These are planned as shared engines in SYSTEMLESS.md, not 5e-only code.

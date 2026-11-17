@@ -7,7 +7,7 @@ import { FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, M
 import {
 	addItem, addListEntry, changeHp, cycleSkill, Frontmatter, levelUp, longRest, readSheet5e, removeListEntry, setDeathSaves, setItem, Sheet5e, shortRest, useSlot,
 } from './character';
-import { allHits, findHit, Hit5e, KIND5E } from './compendium';
+import { findHit, Hit5e, KIND5E } from './compendium';
 import { asEdition } from './editions';
 import { parseHp } from './combat';
 import { formatMod } from './rules';
@@ -266,7 +266,7 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 	}
 
 	private pick(kind: 'spell' | 'item', s: Sheet5e, onPick: (hit: Hit5e) => void): void {
-		const all = allHits(s.edition).filter(h => kind === 'spell' ? h.kind === 'spell' : h.kind === 'item' || h.kind === 'equipment');
+		const all = this.rt.hits(s.edition, this.ctx.sourcePath).filter(h => kind === 'spell' ? h.kind === 'spell' : h.kind === 'item' || h.kind === 'equipment');
 		// A caster's own class list first.
 		const mine = kind === 'spell' && s.className ? all.filter(h => h.kind === 'spell' && h.spell.classes.includes(s.className)) : [];
 		new HitPicker(this.rt, mine.length ? [...mine, ...all.filter(h => !mine.includes(h))] : all, kind === 'spell' ? 'Add a spell…' : 'Add an item…', onPick).open();

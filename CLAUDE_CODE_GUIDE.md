@@ -24,6 +24,7 @@ src/app/
   settings-tab.ts       Settings UI (party, bestiary, rules, custom conditions)
   systems.ts            SHIPPED_SYSTEMS and createSystems(): every system the plugin ships, the first is the default
 src/core/
+  builder/              The builder for every system: frame.ts (the dialog, its fields, kinds registered per system), schema.ts (builders from a schema of fields and formulas), commands.ts (New monster/spell/item…, the Edit pencil, rewriteBlock)
   compendium/           The compendium engine: query.ts (search language: typed filters, fuzzy names, sorts, suggestions; pure, tested), filter-field.ts (filters as chips), browser.ts (tabs, list, page, keys), refs.ts
   slash.ts              "/" menu engine and the commands every game shares (boxes, NPCs, quests, maps, party, roll, conditions); systems add theirs through `slashCommands`
   markdown.ts           Safe inline markdown (bold/italic/wikilinks/dice/keywords) built as DOM nodes
@@ -81,11 +82,11 @@ src/systems/nimble/
   creature-notes.ts     A player's `nimble: creature` notes, as the bestiary shows them (pure, tested)
   statblock-issues.ts   The quiet "N lines here aren't shown as written" hints under hand-written stat blocks (parser.ts readStatblock finds them), Fix buttons, rewriteBlock()
   builder-math.ts       The GM Guide's monster and legendary tables, spell damage by tier, item prices: expected stats, level/tier guesses, re-levelling, dice suggestions (pure, tested)
-  entity-builder.ts     The builder's frame (one fixed-size dialog for monsters, spells, items; steps, live preview, phone sheet) and its shared fields
+  entity-builder.ts     Nimble's kinds for core's builder (core/builder/frame.ts)
   entity-monster.ts     The monster draft: typed values kept, the rest from the level; quick build, solo, minion, from a template (pure, tested); entity-monster-ui.ts its steps
   entity-homebrew.ts    Spell and item drafts (pure, tested); entity-homebrew-ui.ts their steps
   homebrew-def.ts       ```nimble-spell / ```nimble-item blocks (pure, tested); homebrew-block.ts renders them; the monster index collects them into the compendium
-  builder-register.ts   Builder commands and the Edit pencil on blocks in notes
+  builder-register.ts   Registers Nimble's builder kinds; the Edit pencil on Nimble's blocks
   system.ts             Nimble as a GameSystem: the contract's members, each a thin call into the modules below
   attack-roll.ts        Nimble attack rolls: miss on a 1, explode on max (pure, tested)
 scripts/bestiary/       Raw per-page extractions from the Nimble PDFs, the brief, and merge.py

@@ -55,8 +55,9 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 		entries(lore) {
 			const ed = edition();
 			const monsters = rt.index.all(ed, path() || undefined);
-			const key = `${ed}|${lore}|${monsters.length}|${monsters.filter(m => !m.bundled).map(m => m.filePath + m.name).join(',')}`;
-			if (cache?.key !== key) cache = { key, entries: buildEntries5e(ed, monsters, lore) };
+			const mine = rt.homebrew.hits(ed, path() || undefined);
+			const key = `${ed}|${lore}|${monsters.length}|${monsters.filter(m => !m.bundled).map(m => m.filePath + m.name).join(',')}|${mine.map(h => `${h.filePath}${h.name}`).join(',')}`;
+			if (cache?.key !== key) cache = { key, entries: buildEntries5e(ed, monsters, lore, mine) };
 			return cache.entries;
 		},
 		panel: (seg, lore) => PANEL[seg].filter(k => !(lore && k === 'cr')),
@@ -72,7 +73,10 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 		pills: entryPills5e,
 		maxPills: e => (e.monster ? 4 : 5),
 		tags(e, el) {
-			if (!e.monster) return;
+			if (!e.monster) {
+				if (e.flags.includes('mine')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-note', text: 'Note' });
+				return;
+			}
 			el.createSpan({ cls: `nimble-cmpx-pill-tag bestiary-tag is-source is-${e.monster.bundled ? 'mm' : 'note'}`, text: e.monster.bundled ? 'SRD' : 'Note' });
 		},
 		renderDetail(el, e) {
@@ -113,7 +117,7 @@ export class Dnd5eCompendiumView extends ItemView {
 
 	async onOpen(): Promise<void> {
 		const refresh = debounce(() => { cache = null; this.browser?.update(); }, 300, true);
-		this.registerEvent(this.rt.index.vault.on('changed', refresh));
+		for (const i of [this.rt.index.vault, ...this.rt.homebrew.indexes]) this.registerEvent(i.on('changed', refresh));
 		this.registerEvent(this.rt.plugin.campaigns.on('changed', () => { if (this.rt.plugin.hideStats() !== this.lore) this.build(); }));
 		this.build();
 		const ro = new ResizeObserver(() => {

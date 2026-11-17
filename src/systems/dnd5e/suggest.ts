@@ -4,7 +4,7 @@ import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, Edito
 import { rankByName } from '../../core/spotlight-def';
 import type { Dnd5eRuntime } from './runtime';
 import type { Dnd5eEntry } from './types';
-import { allHits, Hit5e, KIND5E, kindFromWord } from './compendium';
+import { Hit5e, KIND5E, kindFromWord } from './compendium';
 
 /** A monster, or a compendium entry (inserted as `5e:spell:Name`). */
 type Pick = { monster: Dnd5eEntry } | { hit: Hit5e };
@@ -28,7 +28,7 @@ export class Dnd5eRefSuggest extends EditorSuggest<Pick> {
 		const typed = /^([a-z]+):(.*)$/i.exec(ctx.query);
 		const kind = typed ? kindFromWord(typed[1]) : undefined;
 		const query = kind ? typed![2] : ctx.query;
-		const hits = allHits(edition).filter(h => !kind || h.kind === kind);
+		const hits = this.rt.hits(edition, path).filter(h => !kind || h.kind === kind);
 		const fromHits = rankByName(hits, query, h => [h.name], 50).map((hit): Pick => ({ hit }));
 		if (kind) return fromHits;
 		const monsters = rankByName(this.rt.index.all(edition, path), query, e => [e.name, e.monster.type ?? ''], 50).map((monster): Pick => ({ monster }));

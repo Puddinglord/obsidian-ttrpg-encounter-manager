@@ -3,10 +3,10 @@
 // it's about, with a Fix button when the fix is obvious. Only in notes (the
 // person reading is the person who wrote it), never in the bestiary or hovers.
 
-import { MarkdownPostProcessorContext, Notice, setIcon } from 'obsidian';
+import { MarkdownPostProcessorContext, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../../../main';
 import { applyStatblockFix, StatblockIssue } from './parser';
-import { replaceEncounterBlock } from '../../core/encounter-def';
+import { rewriteBlock } from '../../core/builder/commands';
 
 /** Remembers which blocks were opened, so a re-render (typing in the note) keeps them open. */
 const opened = new Set<string>();
@@ -72,20 +72,5 @@ async function writeFix(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: Ma
  * block in a callout or list is found too). Nothing is written if the note
  * changed since it was shown. Returns whether it was written.
  */
-export async function rewriteBlock(plugin: NimbleStatblocksPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: string, lang: string, what = 'save it'): Promise<boolean> {
-	const info = ctx.getSectionInfo(el);
-	const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
-	if (!info || !file) { new Notice(`Couldn't find this block in the note to ${what}.`); return false; }
-	let ok = false;
-	try {
-		await plugin.app.vault.process(file, (text) => {
-			const out = replaceEncounterBlock(text, info.lineStart, info.lineEnd, source, next, lang);
-			ok = out !== null;
-			return out ?? text;
-		});
-	} catch (e) {
-		console.error('Ember Vault: could not rewrite the block', e);
-	}
-	if (!ok) new Notice(`Couldn't ${what}: the note changed since this was shown. Nothing was written.`);
-	return ok;
-}
+/** Write a block's new body over the old one (core's; kept here for Nimble's callers). */
+export { rewriteBlock };
