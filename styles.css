@@ -4476,10 +4476,16 @@ body.is-tablet .nimble-entity-builder :is(button.eb-num-btn, button.eb-dice-btn,
 .nimble-entity-builder .eb-template button.eb-icon-btn:hover { background: var(--background-modifier-hover); }
 
 /* A fix that jumps to a field: the field glows, then fades */
-@keyframes eb-nudge { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--eb-accent) 0%, transparent); } 15% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--eb-accent) 55%, transparent); } 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--eb-accent) 0%, transparent); } }
-.nimble-entity-builder .eb-nudge { border-radius: var(--radius-m); animation: eb-nudge 1.8s ease-out; }
-.nimble-entity-builder .eb-field.eb-nudge { outline: 1px solid transparent; outline-offset: 4px; }
-@media (prefers-reduced-motion: reduce) { .nimble-entity-builder .eb-nudge { animation: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--eb-accent) 40%, transparent); } }
+@keyframes eb-nudge { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+/* The glow is a layer over the whole field, above the focused box's own focus ring. */
+.nimble-entity-builder .eb-nudge { position: relative; }
+.nimble-entity-builder .eb-nudge::after { content: ''; position: absolute; inset: -5px; z-index: 10; border-radius: calc(var(--radius-m) + 4px); box-shadow: 0 0 0 3px color-mix(in srgb, var(--eb-accent) 60%, transparent), 0 0 14px color-mix(in srgb, var(--eb-accent) 35%, transparent); pointer-events: none; opacity: 0; animation: eb-nudge 1.8s ease-out; }
+@media (prefers-reduced-motion: reduce) { .nimble-entity-builder .eb-nudge::after { animation: none; opacity: 0.6; } }
+.nimble-entity-builder .eb-control.is-stack { flex-direction: column; align-items: stretch; }
+.nimble-entity-builder .eb-control.is-stack > .eb-seg { align-self: stretch; }
+/* The schools fill the field's width (to the same gutter as the name field under them), each segment growing to share it. */
+.nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn { flex: 1 1 auto; padding: 0 0.3rem; gap: 0.3rem; }
+.nimble-entity-builder .eb-school-other { width: 100%; }
 
 /* Dice in one joined field: [ 1 ⌃⌄ │ d8 ▾ │ + 6 ⌃⌄ ] */
 .nimble-entity-builder .eb-dice { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 1rem; }
@@ -4530,6 +4536,20 @@ body.is-mobile .nimble-entity-builder input.eb-df-num { font-size: 16px; }
 .nimble-entity-builder button.eb-seg-btn[class*="tone-"].is-active { color: color-mix(in srgb, var(--tone) 45%, var(--text-normal)); }
 .nimble-entity-builder .eb-seg-thumb[class*="tone-"] { background: color-mix(in srgb, var(--tone) 16%, var(--background-primary)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone) 45%, transparent), 0 1px 3px rgba(0, 0, 0, 0.18); }
 .nimble-entity-builder .eb-seg.is-schools { flex-wrap: wrap; border-radius: calc(var(--eb-h) / 2 + 2px); }
+
+/* Tablets and phones: the schools sit four over three, rather than squeezing seven onto one row. A 12-column
+   grid: the first four take a quarter each, the last three a third each, so both rows are full (no empty cell). */
+body.is-tablet .nimble-entity-builder .eb-seg.is-schools, .nimble-entity-builder.is-phone-layout .eb-seg.is-schools { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn, .nimble-entity-builder.is-phone-layout .eb-seg.is-schools button.eb-seg-btn { grid-column: span 3; min-width: 0; padding-left: 0.3rem; padding-right: 0.3rem; }
+body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-of-type(n+5), .nimble-entity-builder.is-phone-layout .eb-seg.is-schools button.eb-seg-btn:nth-of-type(n+5) { grid-column: span 4; }
+
+/* Phones: three to a row (Fire Ice Lightning / Necrotic Radiant Wind) and Other across the last, so every
+   name has room beside its icon and no row has a gap. */
+@media (max-width: 440px) {
+	.nimble-entity-builder.is-phone-layout .eb-seg.is-schools { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.nimble-entity-builder.is-phone-layout .eb-seg.is-schools button.eb-seg-btn, .nimble-entity-builder.is-phone-layout .eb-seg.is-schools button.eb-seg-btn:nth-of-type(n+5) { grid-column: span 1; }
+	.nimble-entity-builder.is-phone-layout .eb-seg.is-schools button.eb-seg-btn:nth-of-type(7) { grid-column: 1 / -1; }
+}
 
 /* Last, so it beats every button's display. */
 .nimble-entity-builder .is-hidden, .nimble-entity-builder button.is-hidden { display: none; }

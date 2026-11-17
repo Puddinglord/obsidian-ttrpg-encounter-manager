@@ -328,7 +328,15 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	await o.page.keyboard.press('Enter');
 	await o.page.locator(B).waitFor();
 	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Frost Nip');
+	// Other: a full-width field for the school's name, focused; a core school hides it again.
+	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Other' }).click();
+	const schoolName = o.page.locator(`${B} input[data-field="School name"]`);
+	await schoolName.waitFor();
+	assert.equal(await o.page.evaluate(() => document.activeElement?.getAttribute('data-field')), 'School name');
+	await schoolName.fill('Shadow');
+	assert.match(await o.page.locator(`${B} .eb-preview .nimble-cmp-detail`).textContent(), /^Shadow · /);
 	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Ice' }).click();
+	assert.equal(await schoolName.isVisible(), false);
 	await o.page.locator(`${B} .eb-create`).click();
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	await o.waitFor(async () => /```nimble-spell\nname: Frost Nip\nschool: Ice\n/.test(await o.eval((app) => app.workspace.activeEditor.editor.getValue())), { what: 'the spell block in the note' });

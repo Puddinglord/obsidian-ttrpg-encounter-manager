@@ -229,7 +229,7 @@ export function spellNotes(d: SpellDraft): HomebrewNote[] {
 	if (d.tier === 0 && d.save) add('warn', 'Cantrips shouldn\'t ask for a save (the Creator\'s Kit keeps saves for bigger spells).', { label: 'No save', fix: { kind: 'save', to: '' } });
 	if (d.area !== 'none' && d.rangeKind === 'range' && spellActions(d) < 3 && d.tier > 0) add('tip', 'Area spells cast at range usually take 3 actions.', { label: '3 actions', fix: { kind: 'actions', to: 3 } });
 	if (!d.text.trim()) add(d.utility ? 'warn' : 'tip', d.utility ? 'It doesn\'t say what it does yet.' : 'No effect beyond damage. A rider on a crit or a hit makes it more than a number.', { label: 'Write it', fix: { kind: 'go', step: 'effect', field: 'What it does' } });
-	if (!notes.some(n => n.tone === 'warn')) notes.unshift({ tone: 'ok', text: `Ready: a ${d.school} ${tierWord(d.tier)}.`, fixes: [] });
+	if (!notes.some(n => n.tone === 'warn')) notes.unshift({ tone: 'ok', text: `Ready: a ${d.school ? `${d.school} ` : ''}${tierWord(d.tier)}.`, fixes: [] });
 	return notes;
 }
 

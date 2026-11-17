@@ -20,6 +20,9 @@ import {
 
 const TIER_LABEL = (t: number) => (t === 0 ? 'Cantrip' : `Tier ${t}`);
 
+/** The School control's Other segment (a school name typed in its own field). */
+const OTHER_SCHOOL = '\u0000other';
+
 /** Each core school's icon (its colour comes from the stylesheet's tone-<school>). */
 const SCHOOL_ICON: Record<string, string> = { Fire: 'flame', Ice: 'snowflake', Lightning: 'zap', Necrotic: 'skull', Radiant: 'sun', Wind: 'wind' };
 
@@ -56,12 +59,15 @@ class SpellBuilder implements KindBuilder {
 	d: SpellDraft = newSpellDraft();
 	/** The book spell this one was copied from. */
 	private copied?: string;
+	/** School is Other: the name is typed, not picked. */
+	private otherSchool = false;
 	private folder: string;
 
 	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
 		this.folder = homeFolder(plugin, 'Homebrew', 'Homebrew');
 		const s = (seed as { spell?: Spell | null } | undefined)?.spell;
 		if (s) this.d = fromSpell(s);
+		this.otherSchool = !SCHOOLS.includes(this.d.school);
 	}
 
 	steps(): StepDef[] {
@@ -85,8 +91,8 @@ class SpellBuilder implements KindBuilder {
 			const from = field(top, 'Start from', { help: this.copied ? undefined : 'Copy a spell and change what you like.' });
 			startFrom(from, {
 				kind: 'spell', copied: this.copied, placeholder: 'Blank, or search: ignite, frost…',
-				clear: () => { const n = this.d.name; this.d = { ...newSpellDraft(), name: n }; this.copied = undefined; ui.rebuild(); },
-				pick: (hit) => { const n = this.d.name; this.d = { ...fromSpell(hit.entry as Spell), name: n }; this.copied = hit.name; ui.rebuild(); },
+				clear: () => { const n = this.d.name; this.d = { ...newSpellDraft(), name: n }; this.copied = undefined; this.otherSchool = false; ui.rebuild(); },
+				pick: (hit) => { const n = this.d.name; this.d = { ...fromSpell(hit.entry as Spell), name: n }; this.copied = hit.name; this.otherSchool = !SCHOOLS.includes(this.d.school); ui.rebuild(); },
 			});
 
 			const mid = grid(panel, 2);
@@ -110,10 +116,19 @@ class SpellBuilder implements KindBuilder {
 				tier.help.setText(d.tier === 0 ? 'Costs no mana.' : `Costs ${d.tier} mana.`);
 			});
 
+			// The six schools, or Other: then a full-width field for the school's name.
 			const school = field(panel, 'School', { wide: true });
-			const row = school.control.createDiv({ cls: 'eb-row-wrap' });
-			segmented<string>(row, SCHOOLS.map(s => ({ value: s, label: s, icon: SCHOOL_ICON[s], tone: s.toLowerCase() })), () => d.school, v => { d.school = v; custom.value = ''; }, { label: 'School', labelledBy: school.labelId, ui, cls: 'is-compact is-schools', key: 'spell-school' });
-			const custom = textInput(row, { value: SCHOOLS.includes(d.school) ? '' : d.school, placeholder: 'Other', words: true, label: 'Other school', cls: 'eb-input-short', onInput: v => { d.school = v.trim() || 'Fire'; ui.changed(); } });
+			school.control.addClass('is-stack');
+			segmented<string>(school.control, [...SCHOOLS.map(s => ({ value: s, label: s, icon: SCHOOL_ICON[s], tone: s.toLowerCase() })), { value: OTHER_SCHOOL, label: 'Other', icon: 'pencil' }],
+				() => (this.otherSchool ? OTHER_SCHOOL : d.school),
+				v => {
+					this.otherSchool = v === OTHER_SCHOOL;
+					d.school = this.otherSchool ? custom.value.trim() : v;
+					if (this.otherSchool) window.setTimeout(() => custom.focus(), 0);
+				}, { label: 'School', labelledBy: school.labelId, ui, cls: 'is-compact is-schools', key: 'spell-school' });
+			const other = school.control.createDiv({ cls: 'eb-school-other' });
+			const custom = textInput(other, { value: this.otherSchool ? d.school : '', placeholder: 'School name, like Shadow or Blood', words: true, label: 'School name', onInput: v => { d.school = v.trim(); ui.changed(); } });
+			ui.live(() => other.toggleClass('is-hidden', !this.otherSchool));
 			return;
 		}
 		if (id === 'casting') {
@@ -174,7 +189,7 @@ class SpellBuilder implements KindBuilder {
 		head.addClass('has-aside');
 		folderPill(head, { app: this.plugin.app, get: () => this.folder, set: (p) => { this.folder = p; } });
 		reviewRows(panel, ui, [
-			['School and tier', 'start', () => `${d.school}, ${TIER_LABEL(d.tier).toLowerCase()}${d.utility ? ' (utility)' : ''}`],
+			['School and tier', 'start', () => `${d.school || 'No school'}, ${TIER_LABEL(d.tier).toLowerCase()}${d.utility ? ' (utility)' : ''}`],
 			['Casting', 'casting', () => [toSpell(d).actions, toSpell(d).range, toSpell(d).aoe].filter(Boolean).join(' · ')],
 			['Damage', 'effect', () => toSpell(d).damage ?? 'None'],
 		]);
