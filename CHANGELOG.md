@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-17
+
 ### Added
 
 - The monster builder: **New monster…** in the command palette. Pick a role (regular, solo or minion) and a level and press **Create now** for a monster ready to run, with the GM Guide's HP, damage and dice for that level. Or walk through Toughness, Attacks, Abilities and Story, where everything you leave blank follows the book and everything you type is kept. Type the stats first and the level check beside the form says what it plays like ("Plays like level 4"), with one click to match. Start from any monster (a Goblin, your own note) and its HP and attacks re-level as you move the level. Solos get HP per hero, small and big attacks, Bloodied and a Last Stand the tracker can apply. The dialog keeps one size on every step, with a live stat block beside the form, and fills the screen on phones with the preview a tap away.
