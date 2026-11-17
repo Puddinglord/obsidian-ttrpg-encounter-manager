@@ -66,16 +66,17 @@ function makeRenderer(root, state) {
 				const local = /^images\//.test(href);
 				const size = local ? pngSize(join(root, 'docs', href)) : null;
 				const dims = size ? ` width="${size.w}" height="${size.h}"` : '';
-				// Portrait shots (a phone, a tall panel) get a narrower frame, so they aren't page-tall.
-				const tall = size && size.h > size.w * 1.15 ? ' class="tall"' : '';
-				return `<img${tall} src="${esc(local ? `../${href}` : href)}" alt="${esc(text)}"${dims} loading="lazy" decoding="async">`;
+				return `<img src="${esc(local ? `../${href}` : href)}" alt="${esc(text)}"${dims} loading="lazy" decoding="async">`;
 			},
 			paragraph({ tokens }) {
 				const inner = this.parser.parseInline(tokens);
 				const solo = tokens.filter((t) => !(t.type === 'text' && !t.text.trim()));
 				if (solo.length === 1 && solo[0].type === 'image') {
 					const cap = solo[0].text;
-					return `<figure class="shot"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span></div>${inner}${cap ? `<figcaption>${esc(cap)}</figcaption>` : ''}</figure>\n`;
+					// Portrait shots (a phone, a tall panel) get a narrower frame, so they aren't page-tall.
+					const size = /^images\//.test(solo[0].href) ? pngSize(join(root, 'docs', solo[0].href)) : null;
+					const tall = size && size.h > size.w * 1.15 ? ' tall' : '';
+					return `<figure class="shot${tall}"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span></div>${inner}${cap ? `<figcaption>${esc(cap)}</figcaption>` : ''}</figure>\n`;
 				}
 				return `<p>${inner}</p>\n`;
 			},
