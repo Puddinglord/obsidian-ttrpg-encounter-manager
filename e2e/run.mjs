@@ -431,6 +431,38 @@ test('builder feedback round: type-to-filter, sliding segments, a die per attack
 	assert.match(await o.eval((app) => app.vault.adapter.read('Bestiary/Undead/Grave Hound.md')), /hp: 90\n/);
 });
 
+test('builder asks before discarding: Cancel, Escape and the x, only once something is filled in', async (o) => {
+	const B = '.modal.nimble-entity-builder';
+	const ask = '.modal:not(.nimble-entity-builder)';
+	// Untouched: Cancel just closes.
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-spell'));
+	await o.page.locator(`${B} .eb-back`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	assert.equal(await o.page.locator(ask).count(), 0);
+	// Something typed: Cancel asks; Keep building stays.
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-spell'));
+	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Half a spell');
+	await o.page.locator(`${B} .eb-back`).click();
+	await o.page.locator(`${ask} .modal-title`, { hasText: 'Discard this new spell?' }).waitFor();
+	await o.page.locator(`${ask} button`, { hasText: 'Keep building' }).click();
+	await o.page.locator(ask).waitFor({ state: 'detached' });
+	assert.equal(await o.page.locator(`${B} .eb-panel.is-active input`).first().inputValue(), 'Half a spell');
+	// Escape asks too; Discard closes it.
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Casting' }).click();
+	await o.page.keyboard.press('Escape');
+	await o.page.locator(`${ask} button`, { hasText: 'Discard' }).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	assert.equal(await o.eval((app) => app.vault.getFiles().some(f => f.basename === 'Half a spell')), false);
+	// Editing a block without changing it: the x just closes.
+	await o.openFile('Bestiary/Goblin.md');
+	const block = o.page.locator(`${R} .block-language-nimble`).first();
+	await block.hover();
+	await block.locator('.nimble-block-edit').click();
+	await o.page.locator(`${B} .modal-close-button`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	assert.equal(await o.page.locator(ask).count(), 0);
+});
+
 // ---------------------------------------------------------------------------
 // Inline references
 

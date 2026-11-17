@@ -10,7 +10,7 @@ Make your own monsters, spells and items without learning a format. The builder 
 - `/new-monster`, `/new-spell` or `/new-item` in a note builds it right there: the block goes where you typed the slash.
 - Hover a monster, spell or item block in your notes and click the **pencil** to edit it in the builder. Save writes the block back in place.
 
-The switch at the top changes what you're making. Each kind keeps what you've typed, so you can look at a spell and come back to your monster.
+The switch at the top changes what you're making. Each kind keeps what you've typed, so you can look at a spell and come back to your monster. Closing the builder (Cancel, the ×, Escape) asks before throwing away anything you've filled in.
 
 ## Quick or full, without being asked
 

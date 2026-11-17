@@ -60,7 +60,7 @@ export function onLongPress(el: HTMLElement, handler: (e: MouseEvent | PointerEv
 }
 
 /** Obsidian-styled confirm dialog (window.confirm isn't reliable in the mobile app). */
-export function confirmAction(app: App, title: string, body: string, cta = 'OK', warning = false): Promise<boolean> {
+export function confirmAction(app: App, title: string, body: string, cta = 'OK', warning = false, cancel = 'Cancel'): Promise<boolean> {
 	return new Promise((resolve) => {
 		let answered = false;
 		const modal = new (class extends Modal {
@@ -68,7 +68,7 @@ export function confirmAction(app: App, title: string, body: string, cta = 'OK',
 				this.titleEl.setText(title);
 				if (body) this.contentEl.createEl('p', { text: body });
 				new Setting(this.contentEl)
-					.addButton(b => b.setButtonText('Cancel').onClick(() => this.close()))
+					.addButton(b => b.setButtonText(cancel).onClick(() => this.close()))
 					.addButton(b => {
 						b.setButtonText(cta).onClick(() => { answered = true; resolve(true); this.close(); });
 						if (warning) setWarningButton(b); else b.setCta();
