@@ -11,7 +11,7 @@ The second game system, and the template for adding more. One system, two **edit
 | The system | `system.ts` (contract members), `runtime.ts` (made by `register()`: the ```5e and ```5e-sheet processors, `5e:` references, hover cards, quick look, Copy to vault, the index, views), `editions.ts`, `attribution.ts` |
 | Rules (pure, tested) | `rules.ts` (modifiers, CR/XP/PB, encounter difficulty: 2014 thresholds × multiplier, 2024 XP budget), `combat.ts` (initiative, turns, temp HP, death saves, legendary actions, conditions), `character.ts` (the sheet from frontmatter, and every edit) |
 | Monsters | `types.ts` (`Dnd5eMonster`), `parser.ts` (```5e blocks: forgiving field names, `- Name: text` lists, `toStatblockSource5e`), `render.ts` (both layouts), `bestiary.ts`, `monster-index.ts` (vault blocks through core's `BlockIndex`, then this edition's SRD monsters, then the other edition's) |
-| Compendium | `compendium.ts` (types, `allHits`, `findHit`, the `5e:<kind>:Name` kinds), `cards.ts`, `compendium-view.ts` |
+| Compendium | `compendium.ts` (types, `allHits`, `findHit`, the `5e:<kind>:Name` kinds), `compendium-entries.ts` (entries, facets and sorts for core's compendium engine; the facets read both editions the same way), `cards.ts`, `compendium-view.ts` (core's browser with an edition switch) |
 | Encounters | `encounter-block.ts`, `combat-store.ts` (saved under `settings.systemData.dnd5e.fight`), `tracker-view.ts` |
 | Characters | `character.ts`, `sheet.ts`, `new-character.ts` |
 | NPCs | `npc.ts` (the NPC fields 5e adds to core's NPC notes: `ac`, `hp`, `cr`, `statblock`; the NPC as a monster for the tracker), `npc-card.ts` (the stat block reference and Add to fight in the NPC card) |
@@ -44,5 +44,4 @@ The second game system, and the template for adding more. One system, two **edit
   - a level-up wizard;
   - multiclassing;
   - builders;
-  - typed compendium filters.
   These are planned as shared engines in SYSTEMLESS.md, not 5e-only code.

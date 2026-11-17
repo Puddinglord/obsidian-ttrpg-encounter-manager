@@ -1,6 +1,6 @@
 // 5e's "/" commands, added to core's (core/slash.ts) in 5e campaigns. They
 // search the note's edition (and fall back to the other one, as references do):
-//   /monster gob          → `5e:Goblin Warrior`
+//   /monster gob          → `5e:Goblin Warrior` (/monster type:undead cr:1-4 filters, as the compendium does)
 //   /spell fire           → `5e:spell:Fireball` (and /item, /equipment, /class, /species, /background, /feat, /rule)
 //   /compendium shield    → anything: monsters first, then the compendium
 //   /statblock ogre       → the full ```5e stat block, editable in the note
@@ -15,6 +15,7 @@ import { plainRoll, SlashCommand, SlashItem, SlashWriter } from '../../core/slas
 import { rankByName } from '../../core/spotlight-def';
 import { addMonster } from './combat';
 import { allHits, Hit5e, KIND5E, Kind5e } from './compendium';
+import { buildEntries5e, QUERY_5E } from './compendium-entries';
 import type { Tab } from './compendium-view';
 import { runEncounter5e } from './encounter-block';
 import { toStatblockSource5e } from './parser';
@@ -103,9 +104,15 @@ function describe(e: Dnd5eEntry, lore: boolean): string {
 
 const badge = (e: Dnd5eEntry) => ({ text: e.bundled ? 'SRD' : 'note', cls: 'is-muted' });
 
+/** "type:undead", "cr:1-4": a typed filter. */
+const FILTER = /\b[a-z]+:\S/i;
+
 function monsterItems(rt: Dnd5eRuntime, q: string, mode: 'ref' | 'statblock', path?: string): SlashItem[] {
 	const lore = rt.plugin.hideStats('', path);
-	const items = searchMonsters(rt, q, path).map((e): SlashItem => ({
+	const found = FILTER.test(q)
+		? QUERY_5E.search(buildEntries5e(rt.edition(path), rt.index.all(rt.edition(path), path), lore), q, { segment: 'monsters', lore, limit: 30 }).entries.map(e => e.monster!)
+		: searchMonsters(rt, q, path);
+	const items = found.map((e): SlashItem => ({
 		icon: mode === 'ref' ? 'skull' : 'scroll-text',
 		title: e.name,
 		detail: describe(e, lore),
@@ -131,6 +138,11 @@ function hitItem(h: Hit5e): SlashItem {
 
 /** /spell fire: the edition's entries of those kinds; the last row opens the compendium tab. */
 function compendiumItems(rt: Dnd5eRuntime, arg: string, k: Kinds, path?: string): SlashItem[] {
+	// Typed filters ("school:evocation level:3") go through the compendium's search.
+	if (FILTER.test(arg)) {
+		const res = QUERY_5E.search(buildEntries5e(rt.edition(path), []), arg, { segment: k.tab, only: e => !!e.hit && k.kinds.includes(e.hit.kind), limit: 30 });
+		return [...res.entries.map(e => hitItem(e.hit!)), moreItem(rt, arg, k.tab, path)];
+	}
 	const hits = allHits(rt.edition(path)).filter(h => k.kinds.includes(h.kind));
 	return [...rankByName(hits, arg, h => [h.name], 30).map(hitItem), moreItem(rt, arg, k.tab, path)];
 }

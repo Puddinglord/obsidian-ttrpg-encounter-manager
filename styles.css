@@ -4782,31 +4782,16 @@ button.dnd5e-npc-fight { display: inline-flex; align-items: center; gap: 0.3rem;
 .dnd5e-ref .dnd5e-ref-icon { display: inline-flex; margin-right: 0.2rem; color: var(--interactive-accent); }
 .dnd5e-ref .dnd5e-ref-icon svg { width: 13px; height: 13px; }
 
-/* 5e compendium view (src/systems/dnd5e/compendium-view.ts) */
-.dnd5e-compendium { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; }
-.dnd5e-cmp-top { display: flex; gap: 0.5rem; align-items: center; }
+/* 5e compendium tab (src/systems/dnd5e/compendium-view.ts): core's browser, with the rules edition above it */
+.workspace-leaf-content .view-content.dnd5e-compendium { display: flex; flex-direction: column; }
+.dnd5e-cmp-top { display: flex; gap: 0.5rem; align-items: center; padding: 0.5rem 0.75rem 0; }
 .dnd5e-cmp-editions { display: inline-flex; border: 1px solid var(--background-modifier-border); border-radius: 6px; overflow: hidden; }
-.dnd5e-cmp-editions button { border-radius: 0; box-shadow: none; }
-.dnd5e-cmp-editions button.is-active,
-.dnd5e-cmp-tabs button.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
-.dnd5e-cmp-search { flex: 1 1 auto; }
-.dnd5e-cmp-tabs { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-.dnd5e-cmp-body { display: grid; grid-template-columns: minmax(220px, 340px) minmax(0, 1fr); gap: 0.75rem; min-height: 0; flex: 1 1 auto; }
-.dnd5e-cmp-list { overflow-y: auto; max-height: 75vh; border-right: 1px solid var(--background-modifier-border); padding-right: 0.4rem; }
-.dnd5e-cmp-detail { overflow-y: auto; max-height: 75vh; min-width: 0; }
-.dnd5e-cmp-count { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.3rem; }
-.dnd5e-cmp-row { display: flex; gap: 0.5rem; align-items: center; padding: 0.3rem 0.4rem; border-radius: 6px; cursor: pointer; }
-.dnd5e-cmp-row:hover { background: var(--background-modifier-hover); }
-.dnd5e-cmp-row.is-selected { background: color-mix(in srgb, var(--interactive-accent) 16%, transparent); }
+.dnd5e-cmp-editions button { border-radius: 0; box-shadow: none; font-size: 0.8rem; height: auto; padding: 0.2rem 0.65rem; }
+.dnd5e-cmp-editions button.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
+.dnd5e-compendium > .nimble-cmpx-layout { flex: 1 1 auto; min-height: 0; height: auto; }
+.dnd5e-cmp-page + .statblock-actions { margin-top: 0.75rem; }
+/* The spell level badge on a sheet's spell rows. */
 .dnd5e-cmp-badge { min-width: 2.1rem; height: 1.6rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: var(--background-secondary); font-size: 0.75rem; font-weight: 700; }
-.dnd5e-cmp-badge svg { width: 14px; height: 14px; }
-.dnd5e-cmp-titles { min-width: 0; }
-.dnd5e-cmp-name { font-weight: 600; }
-.dnd5e-cmp-detail-line { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@media (max-width: 640px) {
-	.dnd5e-cmp-body { grid-template-columns: 1fr; }
-	.dnd5e-cmp-list { max-height: 40vh; border-right: none; }
-}
 .dnd5e-card .dnd5e-source { margin-top: 0.6rem; font-size: 0.75em; color: var(--text-faint); text-align: right; }
 
 /* 5e character sheets (src/systems/dnd5e/sheet.ts) */

@@ -32,6 +32,7 @@ Then it calls a contract member: `system.characters?.promptNew(…)`, `system.qu
 | `encounter-def.ts` | The ```nimble-encounter format, shared by every system (`- 3 Goblin`, `` - `5e:Goblin` ``) |
 | `map-def.ts`, `box-def.ts`, `box-block.ts`, `npc-*`, `tables.ts` | Maps, boxes, NPC cards and links, styled tables |
 | `slash.ts` | The "/" menu and the commands every game shares; systems add theirs with `slashCommands` |
+| `compendium/` | The compendium engine: `query.ts` (the search language, bound to a system's words by `createCompendiumQuery(schema)`), `filter-field.ts` (filters as chips), `browser.ts` (the browser: tabs, list, page, keys, fed by a system's `CompendiumSource`), `refs.ts` (copy or insert a reference) |
 | `note-kinds.ts`, `note-card.ts` | The shared note kinds (NPC, location, quest, map) and what a system adds: properties new notes get (`fields`), stats on the card, its own drawing (`card`, or `replace` to draw the whole card). NPCs draw it in their ```nimble-npc card; other kinds in a ```nimble-note block that new notes get when the system has a `card` for them |
 | `types.ts` | Conditions (`ConditionDef`, `AppliedCondition`), party members, roll log, `uid()` |
 | `popover.ts`, `touch.ts`, `segmented.ts`, `tooltips.ts`, `compat.ts`, `internals.ts` | UI helpers |
@@ -41,4 +42,4 @@ Then it calls a contract member: `system.characters?.promptNew(…)`, `system.qu
 - **Campaigns are indexed after Obsidian's layout is ready.** Anything drawn at startup that depends on the note's system or edition must redraw on `plugin.campaigns.on('changed')` if the answer changed (see `app/encounter-blocks.ts`).
 - **`title` attributes become Obsidian tooltips:** `tooltips.ts` moves them to `aria-label`. Tests should read either.
 - **Names in frontmatter can be numbers** (`edition: 2024` is a YAML number); read them through helpers that accept both.
-- **Pure modules** (`types.ts`, `note-kinds.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `campaign-model.ts`) must not import `obsidian`.
+- **Pure modules** (`types.ts`, `note-kinds.ts`, `compendium/query.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `campaign-model.ts`) must not import `obsidian`.

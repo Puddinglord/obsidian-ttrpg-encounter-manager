@@ -5142,6 +5142,10 @@ test('5e slash commands: /monster, /spell, /encounter rated by 2024 XP, /statblo
 		await o.waitFor(async () => (await titles())[0] === 'Ogre', { what: 'Ogre first' });
 		assert.match(await menu.first().locator('.nimble-slash-detail').innerText(), /CR 2/);
 		await o.page.keyboard.press('Enter');
+		await type('/spell school:evocation level:3 class:wiz');
+		await o.waitFor(async () => (await titles()).includes('Fireball'), { what: 'Fireball by its facets' });
+		assert.ok(!(await titles()).includes('Magic Missile'));
+		for (let i = 0; i < 'school:evocation level:3 class:wiz'.length + 7; i++) await o.page.keyboard.press('Backspace');
 		await type('/spell firebal');
 		await o.waitFor(async () => (await titles())[0] === 'Fireball', { what: 'Fireball' });
 		await o.page.keyboard.press('Enter');
@@ -5267,27 +5271,47 @@ test('5e compendium: spells, items and classes for both editions, 5e:spell: refe
 		}, C);
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
 
-		// Open compendium in a 5e campaign is the 5e one.
+		// Open compendium in a 5e campaign is the 5e one: the shared browser, with tabs, typed filters and chips.
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
 		await o.page.locator(V).waitFor({ timeout: 5000 });
-		await o.page.locator(`${V} .dnd5e-cmp-tabs button`, { hasText: 'Spells' }).click();
-		await o.page.locator(`${V} .dnd5e-cmp-search`).fill('fireball');
-		await o.waitFor(async () => (await o.page.locator(`${V} .dnd5e-cmp-row.is-selected .dnd5e-cmp-name`).innerText().catch(() => '')) === 'Fireball', { what: 'Fireball selected' });
-		const card = o.page.locator(`${V} .dnd5e-cmp-detail .dnd5e-card`);
+		const input = o.page.locator(`${V} .nimble-cmpx-input`);
+		const selected = () => o.page.locator(`${V} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name`).innerText().catch(() => '');
+		const tab = (name) => o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: name }).click();
+		await tab('Spells');
+		await input.fill('fireball');
+		await o.waitFor(async () => (await selected()) === 'Fireball', { what: 'Fireball selected' });
+		const card = o.page.locator(`${V} .nimble-cmpx-detail .dnd5e-card`);
 		assert.match(await card.innerText(), /Level 3 Evocation[\s\S]*Casting Time\s*Action[\s\S]*Range\s*150 feet/);
 		await card.locator('.nimble-dice.is-clickable').first().click();
 		await o.waitFor(async () => /8d6/.test(await o.eval((app, plugin) => plugin.settings.rollLog[0]?.expression ?? '')), { what: 'fireball damage rolled' });
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-compendium.png') });
+
+		// Typed filters become chips: level 3 evocation wizard spells.
+		await input.fill('');
+		await input.pressSequentially('school:evocation level:3 class:wizard ', { delay: 20 });
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-chip`).count()) === 3, { what: 'three filter chips' });
+		const rows = o.page.locator(`${V} .nimble-cmpx-row.is-card .nimble-cmpx-row-name`);
+		await o.waitFor(async () => (await rows.allInnerTexts()).includes('Fireball'), { what: 'Fireball in the filtered list' });
+		assert.ok(!(await rows.allInnerTexts()).includes('Magic Missile'));
+		// Monsters sort by CR, with headings; a filter suggestion completes as you type.
+		await tab('Monsters');
+		await o.waitFor(async () => /^CR /.test(await o.page.locator(`${V} .nimble-cmpx-group`).first().innerText().catch(() => '')), { what: 'CR headings' });
+		await input.pressSequentially('type:und', { delay: 20 });
+		await o.waitFor(async () => /type:\s*Undead/.test(await o.page.locator(`${V} .nimble-cmpx-row.is-suggestion`).first().innerText().catch(() => '')), { what: 'type:Undead suggested' });
+		await o.page.keyboard.press('Tab');
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-chip`, { hasText: /Undead/ }).count()) === 1, { what: 'Undead chip' });
+		await o.waitFor(async () => (await rows.allInnerTexts()).includes('Zombie'), { what: 'Zombie listed' });
+
 		// The 2014 rules print it the 2014 way.
 		await o.page.locator(`${V} .dnd5e-cmp-editions button`, { hasText: '2014' }).click();
-		await o.page.locator(`${V} .dnd5e-cmp-tabs button`, { hasText: 'Spells' }).click();
-		await o.page.locator(`${V} .dnd5e-cmp-search`).fill('fireball');
-		await o.waitFor(async () => /3rd-level evocation/.test(await o.page.locator(`${V} .dnd5e-cmp-detail .dnd5e-card-line`).innerText().catch(() => '')), { what: '2014 Fireball' });
+		await tab('Spells');
+		await o.page.locator(`${V} .nimble-cmpx-input`).fill('fireball');
+		await o.waitFor(async () => /3rd-level evocation/.test(await o.page.locator(`${V} .nimble-cmpx-detail .dnd5e-card-line`).innerText().catch(() => '')), { what: '2014 Fireball' });
 		// A class page: hit die and the level table with spell slots.
-		await o.page.locator(`${V} .dnd5e-cmp-tabs button`, { hasText: 'Classes' }).click();
-		await o.page.locator(`${V} .dnd5e-cmp-search`).fill('wizard');
-		await o.waitFor(async () => (await o.page.locator(`${V} .dnd5e-cmp-detail .dnd5e-level-table tr`).count()) === 21, { what: 'wizard level table' });
-		assert.match(await o.page.locator(`${V} .dnd5e-cmp-detail .dnd5e-card`).innerText(), /Hit Die\s*d6/);
+		await tab('Classes');
+		await o.page.locator(`${V} .nimble-cmpx-input`).fill('wizard');
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-detail .dnd5e-level-table tr`).count()) === 21, { what: 'wizard level table' });
+		assert.match(await o.page.locator(`${V} .nimble-cmpx-detail .dnd5e-card`).innerText(), /Hit Die\s*d6/);
 
 		// References: a spell, an item, and a bare name that's a condition.
 		await o.openFile(`${C}/Spells.md`, 'preview');

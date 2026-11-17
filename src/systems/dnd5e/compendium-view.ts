@@ -1,39 +1,106 @@
-// The 5e compendium: monsters, spells, magic items, equipment, classes,
-// origins, feats, rules and conditions from the SRD (and your ```5e notes),
-// searchable, with the selected entry's stat block or card beside the list.
+// The 5e compendium tab: core's compendium browser (typed filters, chips,
+// sorts, keyboard) over the 5e entries (compendium-entries.ts) for one
+// edition, chosen at the top. Monsters are the SRD's plus your ```5e blocks.
 
-import { ItemView, setIcon, WorkspaceLeaf } from 'obsidian';
-import { rankByName } from '../../core/spotlight-def';
-import { allHits, Hit5e, Kind5e, KIND5E } from './compendium';
+import { debounce, ItemView, setIcon, WorkspaceLeaf } from 'obsidian';
+import { CompendiumBrowser, CompendiumSource } from '../../core/compendium/browser';
+import { copyReference, insertReference } from '../../core/compendium/refs';
 import { renderCard5e } from './cards';
+import { addMonster } from './combat';
+import { KIND5E } from './compendium';
+import { buildEntries5e, Entry5e, entryPills5e, entryReference5e, QUERY_5E, Segment5e, SEGMENTS_5E } from './compendium-entries';
 import type { Dnd5eEdition } from './editions';
 import type { Dnd5eRuntime } from './runtime';
-import type { Dnd5eEntry } from './types';
 
 export const DND5E_COMPENDIUM_VIEW = 'nimble-dnd5e-compendium';
 
-export type Tab = 'all' | 'monsters' | 'spells' | 'items' | 'equipment' | 'classes' | 'origins' | 'feats' | 'rules';
-const TABS: { id: Tab; label: string; kinds?: Kind5e[] }[] = [
-	{ id: 'all', label: 'All' },
-	{ id: 'monsters', label: 'Monsters' },
-	{ id: 'spells', label: 'Spells', kinds: ['spell'] },
-	{ id: 'items', label: 'Magic items', kinds: ['item'] },
-	{ id: 'equipment', label: 'Equipment', kinds: ['equipment'] },
-	{ id: 'classes', label: 'Classes', kinds: ['class', 'subclass'] },
-	{ id: 'origins', label: 'Origins', kinds: ['species', 'background'] },
-	{ id: 'feats', label: 'Feats', kinds: ['feat'] },
-	{ id: 'rules', label: 'Rules', kinds: ['rule', 'condition'] },
-];
+/** A tab of the 5e compendium. */
+export type Tab = Segment5e;
 
-type Row = { id: string; name: string; detail: string; badge?: string; icon?: string; monster?: Dnd5eEntry; hit?: Hit5e };
+const PANEL: Record<Segment5e, string[]> = {
+	all: ['kind', 'source'],
+	monsters: ['type', 'cr', 'size', 'source'],
+	spells: ['level', 'school', 'class', 'casting'],
+	items: ['rarity', 'type'],
+	equipment: ['category', 'weapon', 'range', 'prop', 'mastery', 'armor'],
+	classes: ['kind', 'die', 'class'],
+	origins: ['kind', 'size'],
+	feats: ['category'],
+	rules: ['topic'],
+};
+
+const PLACEHOLDER: Partial<Record<Segment5e, string>> = {
+	all: 'Search the SRD and your notes… try school:evocation',
+	monsters: 'Search monsters… try type:undead cr:1-4',
+	spells: 'Search spells… try level:3 class:wizard',
+	items: 'Search magic items… try rarity:rare is:attunement',
+	equipment: 'Search equipment… try weapon:martial prop:finesse',
+};
+
+let cache: { key: string; entries: Entry5e[] } | null = null;
+
+/** The 5e compendium for core's browser, for one edition. */
+export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: () => string): CompendiumSource<Entry5e, Segment5e, object> {
+	const buttons = (el: HTMLElement, list: { label: string; icon: string; run: () => void }[]) => {
+		const row = el.createDiv({ cls: 'statblock-actions' });
+		for (const a of list) {
+			const b = row.createEl('button', { cls: 'statblock-action' });
+			setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
+			b.createSpan({ text: a.label });
+			b.addEventListener('click', (ev) => { ev.preventDefault(); a.run(); });
+		}
+	};
+	return {
+		query: QUERY_5E,
+		entries(lore) {
+			const ed = edition();
+			const monsters = rt.index.all(ed, path() || undefined);
+			const key = `${ed}|${lore}|${monsters.length}|${monsters.filter(m => !m.bundled).map(m => m.filePath + m.name).join(',')}`;
+			if (cache?.key !== key) cache = { key, entries: buildEntries5e(ed, monsters, lore) };
+			return cache.entries;
+		},
+		panel: (seg, lore) => PANEL[seg].filter(k => !(lore && k === 'cr')),
+		panelLimit: key => (key === 'type' || key === 'class' ? 24 : 16),
+		panelTip: 'Type filters too: cr:1/4, school:evocation, -level:0, is:concentration, sort:-cr',
+		placeholder: seg => PLACEHOLDER[seg],
+		drawBadge(badge, e, lore) {
+			if (e.monster && !lore) { badge.addClass('is-level'); badge.setText(e.badge ?? '–'); return; }
+			if (e.monster) { setIcon(badge, 'paw-print'); return; }
+			if (e.hit?.kind === 'spell') { badge.addClass('is-tier', `school-${(e.facets.school?.[0] ?? '').toLowerCase()}`); badge.setText(e.badge ?? ''); return; }
+			setIcon(badge, KIND5E[e.hit!.kind].icon);
+		},
+		pills: entryPills5e,
+		maxPills: e => (e.monster ? 4 : 5),
+		tags(e, el) {
+			if (!e.monster) return;
+			el.createSpan({ cls: `nimble-cmpx-pill-tag bestiary-tag is-source is-${e.monster.bundled ? 'mm' : 'note'}`, text: e.monster.bundled ? 'SRD' : 'Note' });
+		},
+		renderDetail(el, e) {
+			const at = path();
+			const ref = entryReference5e(e);
+			const refs = [
+				{ label: 'Copy reference', icon: 'copy', run: () => copyReference(ref, e.name) },
+				{ label: 'Insert in note', icon: 'at-sign', run: () => insertReference(rt.plugin.app, ref, e.name) },
+			];
+			if (e.monster) {
+				const actions = [...rt.actions(e.monster, at), ...refs.map(r => ({ label: r.label, icon: r.icon, onClick: r.run }))];
+				rt.render(el, e.monster.monster, { sourcePath: at, variant: 'block', edition: edition(), actions, lore: rt.plugin.hideStats(e.monster.filePath, at || undefined) });
+				return;
+			}
+			renderCard5e(el.createDiv({ cls: 'dnd5e-cmp-page' }), e.hit!, rt.cardOptions(at));
+			buttons(el, refs);
+		},
+	};
+}
 
 export class Dnd5eCompendiumView extends ItemView {
 	private edition: Dnd5eEdition;
-	private tab: Tab = 'all';
+	private tab: Segment5e = 'all';
 	private query = '';
-	private selected?: string;
-	private listEl!: HTMLElement;
-	private detailEl!: HTMLElement;
+	private browser: CompendiumBrowser<Entry5e, Segment5e, object> | null = null;
+	private layout: HTMLElement | null = null;
+	private narrow = false;
+	private lore = false;
 
 	constructor(leaf: WorkspaceLeaf, private rt: Dnd5eRuntime) {
 		super(leaf);
@@ -45,11 +112,26 @@ export class Dnd5eCompendiumView extends ItemView {
 	getIcon(): string { return 'book-open'; }
 
 	async onOpen(): Promise<void> {
-		this.registerEvent(this.rt.index.vault.on('changed', () => this.renderList()));
+		const refresh = debounce(() => { cache = null; this.browser?.update(); }, 300, true);
+		this.registerEvent(this.rt.index.vault.on('changed', refresh));
+		this.registerEvent(this.rt.plugin.campaigns.on('changed', () => { if (this.rt.plugin.hideStats() !== this.lore) this.build(); }));
 		this.build();
+		const ro = new ResizeObserver(() => {
+			const narrow = this.containerEl.clientWidth > 0 && this.containerEl.clientWidth < 620;
+			if (narrow === this.narrow) return;
+			this.narrow = narrow;
+			this.layout?.toggleClass('is-narrow', narrow);
+		});
+		ro.observe(this.containerEl);
+		this.register(() => ro.disconnect());
 	}
 
-	/** Show an edition, a tab and (optionally) an entry. */
+	async onClose(): Promise<void> {
+		if (this.browser) this.removeChild(this.browser);
+		this.browser = null;
+	}
+
+	/** Show an edition and a tab, with a search typed in. */
 	show(o: { edition?: Dnd5eEdition; tab?: Tab; query?: string }): void {
 		if (o.edition) this.edition = o.edition;
 		if (o.tab) this.tab = o.tab;
@@ -57,75 +139,55 @@ export class Dnd5eCompendiumView extends ItemView {
 		this.build();
 	}
 
+	/** Show one entry ("spell:Fireball"). */
+	select(id: string): void {
+		this.browser?.select(id);
+	}
+
 	private build(): void {
 		const root = this.contentEl;
 		root.empty();
-		root.addClass('dnd5e-compendium');
+		root.addClass('nimble-bestiary', 'nimble-compendium', 'dnd5e-compendium');
+		if (this.browser) { this.tab = this.browser.currentSegment; this.removeChild(this.browser); }
+		const plugin = this.rt.plugin;
+		const lore = this.lore = plugin.hideStats();
+		root.toggleClass('is-lore', lore);
+
 		const top = root.createDiv({ cls: 'dnd5e-cmp-top' });
 		const eds = top.createDiv({ cls: 'dnd5e-cmp-editions', attr: { role: 'radiogroup', 'aria-label': 'Rules' } });
 		for (const e of ['2024', '2014'] as Dnd5eEdition[]) {
-			const b = eds.createEl('button', { text: e, cls: e === this.edition ? 'is-active' : '', attr: { role: 'radio', 'aria-checked': String(e === this.edition) } });
-			b.onclick = () => { this.edition = e; this.selected = undefined; this.build(); };
+			const b = eds.createEl('button', { text: `${e} rules`, cls: e === this.edition ? 'is-active' : '', attr: { role: 'radio', 'aria-checked': String(e === this.edition) } });
+			b.onclick = () => { if (e === this.edition) return; this.edition = e; this.query = ''; this.build(); };
 		}
-		const search = top.createEl('input', { type: 'search', cls: 'dnd5e-cmp-search', attr: { placeholder: 'Search the SRD and your notes…', 'aria-label': 'Search' } });
-		search.value = this.query;
-		search.addEventListener('input', () => { this.query = search.value; this.renderList(); });
-		const tabs = root.createDiv({ cls: 'dnd5e-cmp-tabs' });
-		for (const t of TABS) {
-			const b = tabs.createEl('button', { text: t.label, cls: t.id === this.tab ? 'is-active' : '' });
-			b.dataset.tab = t.id;
-			b.onclick = () => { this.tab = t.id; this.build(); };
-		}
-		const body = root.createDiv({ cls: 'dnd5e-cmp-body' });
-		this.listEl = body.createDiv({ cls: 'dnd5e-cmp-list' });
-		this.detailEl = body.createDiv({ cls: 'dnd5e-cmp-detail' });
-		this.renderList();
-		window.setTimeout(() => search.focus(), 0);
-	}
 
-	private rows(): Row[] {
-		const tab = TABS.find(t => t.id === this.tab)!;
-		const out: Row[] = [];
-		const path = this.rt.plugin.campaigns.active?.home.path;
-		if (this.tab === 'all' || this.tab === 'monsters') {
-			for (const e of this.rt.index.all(this.edition, path)) out.push({ id: `monster:${e.monster.bundledId ?? e.filePath + e.name}`, name: e.name, detail: [`CR ${e.monster.cr}`, [e.monster.size, e.monster.type].filter(Boolean).join(' '), e.bundled ? '' : 'your note'].filter(Boolean).join(' · '), badge: e.monster.cr, monster: e });
-		}
-		if (this.tab !== 'monsters') {
-			for (const h of allHits(this.edition)) {
-				if (tab.kinds && !tab.kinds.includes(h.kind)) continue;
-				const badge = h.kind === 'spell' ? (h.spell.level === 0 ? 'C' : String(h.spell.level)) : undefined;
-				out.push({ id: `${h.kind}:${h.name}`, name: h.name, detail: h.detail, badge, icon: badge ? undefined : KIND5E[h.kind].icon, hit: h });
-			}
-		}
-		return out;
-	}
-
-	private renderList(): void {
-		const all = this.rows();
-		const q = this.query.trim();
-		const list = q ? rankByName(all, q, r => [r.name, r.detail], 200) : all.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 400);
-		this.listEl.empty();
-		this.listEl.createDiv({ cls: 'dnd5e-cmp-count', text: `${q ? list.length : all.length} ${all.length === 1 ? 'entry' : 'entries'}${!q && all.length > 400 ? ' (first 400 shown; search to find more)' : ''}` });
-		for (const r of list) {
-			const row = this.listEl.createDiv({ cls: `dnd5e-cmp-row${r.id === this.selected ? ' is-selected' : ''}` });
-			row.dataset.id = r.id;
-			const badge = row.createSpan({ cls: 'dnd5e-cmp-badge' });
-			if (r.badge) badge.setText(r.badge);
-			else if (r.icon) setIcon(badge, r.icon);
-			const t = row.createDiv({ cls: 'dnd5e-cmp-titles' });
-			t.createDiv({ cls: 'dnd5e-cmp-name', text: r.name });
-			t.createDiv({ cls: 'dnd5e-cmp-detail-line', text: r.detail });
-			row.onclick = () => { this.selected = r.id; this.listEl.querySelectorAll('.is-selected').forEach(x => x.removeClass('is-selected')); row.addClass('is-selected'); this.renderDetail(r); };
-		}
-		const sel = list.find(r => r.id === this.selected) ?? list[0];
-		if (sel) { this.selected = sel.id; this.listEl.querySelector(`[data-id="${CSS.escape(sel.id)}"]`)?.addClass('is-selected'); this.renderDetail(sel); }
-		else this.detailEl.empty();
-	}
-
-	private renderDetail(r: Row): void {
-		this.detailEl.empty();
-		const path = this.rt.plugin.campaigns.active?.home.path ?? '';
-		if (r.monster) this.rt.render(this.detailEl, r.monster.monster, { sourcePath: path, variant: 'block', edition: this.edition, actions: this.rt.actions(r.monster, path) });
-		else if (r.hit) renderCard5e(this.detailEl, r.hit, this.rt.cardOptions(path));
+		const layout = this.layout = root.createDiv({ cls: 'nimble-cmpx-layout' });
+		layout.toggleClass('is-narrow', this.narrow);
+		const path = () => plugin.campaigns.active?.home.path ?? '';
+		const rt = this.rt;
+		const fight = (e: Entry5e, n: number) => {
+			rt.fights.change(f => { addMonster(f, e.monster!.monster, n, { sourceFile: e.monster!.filePath || undefined }); });
+			void rt.openTracker();
+		};
+		const insert = (e: Entry5e) => insertReference(plugin.app, entryReference5e(e), e.name);
+		const browser = this.browser = new CompendiumBrowser<Entry5e, Segment5e, object>(layout, source5e(rt, () => this.edition, path), {
+			segments: SEGMENTS_5E.map(s => s.id),
+			segment: this.tab,
+			lore,
+			query: this.query || undefined,
+			primary: (e) => (e.monster && !lore
+				? { label: 'Add to fight', run: (x, _ev, n) => fight(x, n) }
+				: { label: 'Insert reference', run: (x) => insert(x) }),
+			secondary: (e) => (e.monster && !lore ? { label: 'Insert reference', run: (x) => insert(x) } : undefined),
+			rowButton: (e) => (e.monster && !lore
+				? { icon: 'plus', label: `Add ${e.name} to the fight`, run: (ev) => fight(e, ev.shiftKey ? 2 : 1) }
+				: { icon: 'copy', label: `Copy a reference to ${e.name}`, run: () => copyReference(entryReference5e(e), e.name) }),
+			detail: {},
+			onNarrowShow: (d) => {
+				layout.toggleClass('show-detail', d && this.narrow);
+				if (d) layout.querySelector('.nimble-cmpx-detail')?.scrollTo({ top: 0 });
+			},
+		});
+		this.addChild(browser);
+		browser.focus();
 	}
 }

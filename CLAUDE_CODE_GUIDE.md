@@ -24,6 +24,7 @@ src/app/
   settings-tab.ts       Settings UI (party, bestiary, rules, custom conditions)
   systems.ts            SHIPPED_SYSTEMS and createSystems(): every system the plugin ships, the first is the default
 src/core/
+  compendium/           The compendium engine: query.ts (search language: typed filters, fuzzy names, sorts, suggestions; pure, tested), filter-field.ts (filters as chips), browser.ts (tabs, list, page, keys), refs.ts
   slash.ts              "/" menu engine and the commands every game shares (boxes, NPCs, quests, maps, party, roll, conditions); systems add theirs through `slashCommands`
   markdown.ts           Safe inline markdown (bold/italic/wikilinks/dice/keywords) built as DOM nodes
   encounter-def.ts      ```nimble-encounter format (pure); Nimble's encounter-block.ts renders it
@@ -58,8 +59,8 @@ src/systems/nimble/
   monster-index.ts      Vault monsters + bundled bestiary, by name
   encounters.ts         Encounter state + every mutation (EncounterStore)
   tracker-view.ts       The encounter tracker sidebar
-  compendium-query.ts   The search language: typed filters, fuzzy names, sorts, autocomplete suggestions (pure, tested)
-  filter-field.ts       The search field shared by the compendium and Spotlight: filters as chips, a chip waiting for its value, Backspace/Escape (tested)
+  compendium-query.ts   Nimble's words (facets, sorts, tabs) for core's search language (core/compendium/query.ts) (pure, tested)
+  filter-field.ts       Core's filter field with Nimble's words, for the compendium and Spotlight
   compendium-view.ts    The Compendium tab (view type is still `nimble-bestiary`)
   compendium-modal.ts   The compendium as a pre-filtered dialog; openEntry() quick looks
   compendium-art.ts     Your art for compendium entries: the portrait slot, list icons, upload/pick, rename tracking (settings.compendiumArt)

@@ -22,6 +22,10 @@ Where the engines are going (compendium, entity builder, character wizard, conte
 
 Missing optional members fall back to Nimble's behaviour or a "not yet" notice. Add members from **real call sites**: when core or `src/app` needs to ask a system something, add it here, document it in the table above, implement it in every system, and extend the conformance suite in `tests/systems.test.ts`.
 
+## Engines a system uses (not contract members)
+
+- **Compendium** (`core/compendium/`). Give your entries the `CompendiumEntry` shape (id, kind, tabs, facets, numbers, flags, text), describe your words in a `QuerySchema` (tabs, facets, sorts per tab, kind names) and bind them with `createCompendiumQuery`. Your Compendium tab and pickers are core's `CompendiumBrowser` with a `CompendiumSource` (entries, a row's badge, pills and tags, the page). See `dnd5e/compendium-entries.ts` and `dnd5e/compendium-view.ts` for the whole thing in about 400 lines. Test your facets the way `tests/dnd5e-compendium-search.test.ts` does.
+
 ## Adding a game system: checklist
 
 **1. Research before code.** Write the answers in a spec under `prototypes/`:
