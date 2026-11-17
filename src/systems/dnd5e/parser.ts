@@ -103,7 +103,8 @@ function parseFeature(line: string): Feature5e {
 	if (colon > 0 && colon < 80) return { name: body.slice(0, colon).trim(), desc: body.slice(colon + 2).trim() };
 	const dot = /^([^.]{1,60})\.\s+(.*)$/.exec(body);
 	if (dot) return { name: dot[1].trim(), desc: dot[2].trim() };
-	return { name: body.trim(), desc: '' };
+	// "- Name:" with nothing after it.
+	return { name: body.trim().replace(/\s*:$/, ''), desc: '' };
 }
 
 /** Parse a ```5e block. Null when it has no name. */
@@ -153,6 +154,12 @@ export function parseStatblock5e(source: string): Dnd5eMonster | null {
 	m.xp ??= xpForCr(m.cr);
 	m.pb ??= pbForCr(m.cr);
 	return m as Dnd5eMonster;
+}
+
+/** True when a line of text would be read as a field or a list heading ("Actions:", "Senses: …"), not as more of the text above. */
+export function isStatblockField5e(line: string): boolean {
+	const key = /^\s*([A-Za-z][A-Za-z ]*?)\s*:\s*(.*)$/.exec(line)?.[1].toLowerCase();
+	return !!key && (key in LIST_KEYS || key in ABILITY_WORDS || FIELD_KEYS.has(key));
 }
 
 const FIELD_KEYS = new Set([

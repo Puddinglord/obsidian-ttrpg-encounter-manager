@@ -22,6 +22,7 @@ What changed lately is in the **[changelog](../CHANGELOG.md)**.
 | [Encounters](encounters.md) | Encounter blocks, difficulty, scaling monsters, the builder |
 | [GM maps](maps.md) | Maps with pins linked to your notes, tokens |
 | [Content packs](content-packs.md) | Add what the plugin can't ship (a book's subclasses, a bestiary, homebrew) as JSON files in your vault |
+| [Importing](import.md) | Bring in a D&D Beyond character or a Fantasy Statblocks creature |
 | [Playing 5e](5e.md) | 5e campaigns: SRD monsters and ```5e stat blocks, XP-rated encounters, the initiative tracker, the compendium, character sheets |
 
 ## Playing
