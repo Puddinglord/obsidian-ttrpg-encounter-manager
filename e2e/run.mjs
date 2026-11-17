@@ -286,7 +286,8 @@ test('spell and item builders: homebrew lands in a note, renders as a card and j
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const spell = await o.eval((app) => app.vault.adapter.read('Homebrew/Ember Lash.md'));
 	assert.match(spell, /```nimble-spell\nname: Ember Lash\nschool: Fire\ntier: 2\nactions: 2 Actions\nrange: Range 8\ndamage: \S+\nupcast: \+\d+ damage\.\n```/);
-	await o.page.locator('.workspace-leaf.mod-active .nimble-homebrew .nimble-cmp-card').waitFor();
+	// The tab holds both the reading view and the editor, so only one card is on screen.
+	await o.page.locator('.workspace-leaf.mod-active .nimble-homebrew .nimble-cmp-card:visible').first().waitFor();
 	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.spell('Ember Lash')?.tier === 2), { what: 'the spell in the compendium' });
 
 	// An item from the switch at the top of the same dialog.
@@ -306,6 +307,7 @@ test('spell and item builders: homebrew lands in a note, renders as a card and j
 test('builder ways in: Edit on a block writes it back, /new-spell builds in place, the compendium has New', async (o) => {
 	const B = '.modal.nimble-entity-builder';
 	// Edit a hand-written stat block: change its HP, Save writes the block back.
+	const goblin = await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin.md'));
 	await o.openFile('Bestiary/Goblin.md');
 	const block = o.page.locator(`${R} .block-language-nimble`).first();
 	await block.hover();
@@ -319,6 +321,9 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	await o.waitFor(async () => /\nhp: 14\n/.test(await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin.md'))), { what: 'the block written back' });
 	assert.match(await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin.md')), /^# Goblin\n\n```nimble\nname: Goblin\n/);
+	// Later tests count on the fixture's Goblin (12 HP).
+	await o.eval((app, _p, text) => app.vault.adapter.write('Bestiary/Goblin.md', text), goblin);
+	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Goblin')?.monster.hp === 12), { what: 'the Goblin back to 12 HP' });
 
 	// /new-spell in a note: the builder, then the block lands where the slash was.
 	await o.eval(async (app) => { await app.vault.create('Spellbook.md', 'Spells:\n'); });
@@ -349,6 +354,88 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).textContent(), 'Monster');
 	await o.page.keyboard.press('Escape');
 	await o.page.locator(B).waitFor({ state: 'detached' });
+});
+
+test('builder Edit on spell and item blocks: one change is written back, the rest stays as written', async (o) => {
+	const B = '.modal.nimble-entity-builder';
+	// Fields the builder has no control for (Reaction, Touch, class, a wand, "varies", slots) and no damage or price.
+	const spell = ['name: Ward', 'school: Wind', 'tier: 1', 'actions: Reaction', 'range: Touch', 'class: Mage', 'source: My book', 'text: +2 armor until your next turn.'];
+	const item = ['name: Wand of Sparks', 'category: wand', 'subcategory: arcane', 'rarity: varies', 'range: 8', 'slots: 1', 'charges: 3', 'source: Mine', 'text: Shoots sparks.'];
+	await o.eval(async (app, _p, [s, i]) => {
+		await app.vault.create('Edit Spell.md', `# Ward\n\n\`\`\`nimble-spell\n${s}\n\`\`\`\n`);
+		await app.vault.create('Edit Item.md', `# Wand\n\n\`\`\`nimble-item\n${i}\n\`\`\`\n`);
+	}, [spell.join('\n'), item.join('\n')]);
+	const edit = async (path, lang) => {
+		await o.openFile(path);
+		const block = o.page.locator(`${R} .block-language-${lang}`).first();
+		await block.waitFor();
+		await block.hover();
+		await block.locator('.nimble-block-edit').click();
+		await o.page.locator(B).waitFor();
+	};
+
+	// The spell: concentration on the Casting step.
+	await edit('Edit Spell.md', 'nimble-spell');
+	assert.equal(await o.page.locator(`${B} .eb-panel.is-active input`).first().inputValue(), 'Ward');
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Casting' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active input[data-field="Concentration"]`).fill('up to 1 minute');
+	await o.page.locator(`${B} .eb-create`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	const wantSpell = [...spell.slice(0, 5), 'concentration: up to 1 minute', ...spell.slice(5)].join('\n');
+	await o.waitFor(async () => (await o.eval((app) => app.vault.adapter.read('Edit Spell.md'))).includes(`\`\`\`nimble-spell\n${wantSpell}\n\`\`\``), { what: 'the spell written back with only concentration added' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.spell('Ward')?.actions === 'Reaction'), { what: 'the edited spell in the compendium' });
+
+	// The item: a price on the Details step.
+	await edit('Edit Item.md', 'nimble-item');
+	await o.page.locator(`${B} .eb-dot`, { hasText: 'Details' }).click();
+	await o.page.locator(`${B} .eb-panel.is-active input[data-field="Price"]`).fill('40 gp');
+	await o.page.locator(`${B} .eb-create`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	const wantItem = [...item.slice(0, 7), 'cost: 40 gp', ...item.slice(7)].join('\n');
+	await o.waitFor(async () => (await o.eval((app) => app.vault.adapter.read('Edit Item.md'))).includes(`\`\`\`nimble-item\n${wantItem}\n\`\`\``), { what: 'the item written back with only its price added' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.item('Wand of Sparks')?.category === 'wand'), { what: 'the edited item in the compendium' });
+});
+
+test('builder Edit asks before Save drops lines the block can\'t read', async (o) => {
+	const B = '.modal.nimble-entity-builder';
+	await o.eval(async (app) => { await app.vault.create('Edit Unread.md', '# Gust\n\n```nimble-spell\nname: Gust\nschool: Wind\ntier: 1\nflavour: very windy\ntext: Pushes.\n```\n'); });
+	await o.openFile('Edit Unread.md');
+	const block = o.page.locator(`${R} .block-language-nimble-spell`).first();
+	await block.waitFor();
+	await block.hover();
+	await block.locator('.nimble-block-edit').click();
+	await o.page.locator(B).waitFor();
+	const ask = o.page.locator('.modal', { hasText: 'Save without the lines it can\'t read?' });
+	// Keep editing: nothing written, the builder stays open.
+	await o.page.locator(`${B} .eb-create`).click();
+	await ask.waitFor();
+	assert.match(await ask.textContent(), /One line in this block isn't shown as written/);
+	await ask.getByRole('button', { name: 'Keep editing' }).click();
+	await ask.waitFor({ state: 'detached' });
+	assert.equal(await o.page.locator(B).count(), 1);
+	assert.match(await o.eval((app) => app.vault.adapter.read('Edit Unread.md')), /flavour: very windy/);
+	// Save anyway: written without it.
+	await o.page.locator(`${B} .eb-create`).click();
+	await ask.getByRole('button', { name: 'Save anyway' }).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	await o.waitFor(async () => !/flavour/.test(await o.eval((app) => app.vault.adapter.read('Edit Unread.md'))), { what: 'the block saved without the unread line' });
+	assert.match(await o.eval((app) => app.vault.adapter.read('Edit Unread.md')), /```nimble-spell\nname: Gust\nschool: Wind\ntier: 1\ntext: Pushes\.\n```/);
+});
+
+test('monster builder: a minion, with the party level\'s die, joins the tracker as a group', async (o) => {
+	const B = '.modal.nimble-entity-builder';
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
+	await o.page.locator(`${B} .eb-panel.is-active input`).first().fill('Pack Rat');
+	await o.page.locator(`${B} .eb-seg-btn`, { hasText: /^Minion$/ }).click();
+	await o.page.locator(`${B} .eb-create`).click();
+	await o.page.locator(B).waitFor({ state: 'detached' });
+	const text = await o.eval((app) => app.vault.adapter.read('Bestiary/Pack Rat.md'));
+	assert.match(text, /```nimble\nname: Pack Rat\nrole: minion\nsize: Medium\nminion die: d\d+\nattacks:\n- \*\*\w+\.\*\* 1d\d+ \(follows minion rules\)\.\n```/);
+	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Pack Rat')?.monster.role === 'minion'), { what: 'the minion in the index' });
+	await resetEncounter(o);
+	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Pack Rat').monster, 'Bestiary/Pack Rat.md', 4));
+	const group = await o.eval((app, plugin) => plugin.encounters.active?.creatures.map(c => ({ count: c.count, alive: c.alive })));
+	assert.deepEqual(group, [{ count: 4, alive: 4 }]);
 });
 
 test('builder feedback round: type-to-filter, sliding segments, a die per attack, review fixes, folder pill', async (o) => {
