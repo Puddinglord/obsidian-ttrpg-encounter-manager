@@ -27,3 +27,19 @@ In a campaign you [play in](players.md), the GM-only commands (`/add`, `/encount
 | `/roll 2d6+3` | Rolls now and writes the result (plain or as a Nimble attack) |
 | `/party`, `/bestiary`, `/tracker`, `/settings` | Jump straight to the party (the Campaign panel in a campaign you run, your sheet in one you play in), the compendium, tracker or settings |
 | `/summary`, `/party-table` | The current encounter's summary; a table of your heroes |
+
+## In a 5e campaign
+
+The same menu, with 5e's compendium and rules behind it. Shared commands (`/npc`, `/quest`, the boxes, `/map`, `/condition`, `/party`…) work as above.
+
+| Type | Get |
+|---|---|
+| `/monster goblin` | `` `5e:Goblin Warrior` ``, from the campaign's edition. Filters work too: `/monster type:undead cr:1-4` |
+| `/spell fireball`, `/item`, `/equipment`, `/class`, `/species`, `/background`, `/feat`, `/rule` | A `` `5e:spell:Fireball` ``-style reference. Filters work too: `/spell school:evocation level:3` |
+| `/compendium shield` | Anything: monsters first, then the rest |
+| `/encounter 4 goblin warrior, ogre` | An encounter block, rated by your edition's rules (or "Insert and run it now") |
+| `/add 2 ogre` | Straight into the 5e tracker |
+| `/statblock ogre` | The full ```` ```5e ```` stat block, editable in the note |
+| `/new-monster`, `/new-spell`, `/new-item` | 5e's [builder](5e.md#make-your-own); what you make goes where you typed |
+| `/roll +5` | A d20 check; the menu also offers it with advantage or disadvantage |
+| `/party-table` | A table of your heroes, with their AC |

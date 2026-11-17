@@ -7,7 +7,7 @@
 //   node e2e/screenshots.mjs map   only shots whose name contains "map"
 //   THEME=dark node e2e/screenshots.mjs
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launchObsidian } from './harness.mjs';
@@ -676,6 +676,71 @@ const features = {
 		show: () => ['.modal-container .modal'],
 	},
 	// A homebrew spell written as a block, shown as its compendium card.
+	// 5e: New character in a 5e campaign, on its Class step with the sheet in brief beside it.
+	'feature-5e-character': {
+		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+				for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100));
+				app.commands.executeCommandById('nimble-gm:new-character');
+			});
+			const B = '.modal.nimble-entity-builder';
+			const panel = `${B} .eb-panel.is-active`;
+			await page.locator(B).waitFor();
+			await page.locator(`${panel} input[data-field="Name"]`).fill('Ilse Vane');
+			await page.locator(`${panel} select[data-field="Class"]`).selectOption('Wizard');
+			await page.locator(`${panel} input[data-field="Level"]`).fill('3');
+			await page.locator(`${B} .eb-dot`, { hasText: 'Skills' }).click();
+			for (const sk of ['Arcana', 'History']) await page.locator(`${panel} .eb-pick[data-value="${sk}"]`).click();
+			await page.locator(`${B} .eb-dot`, { hasText: 'Class' }).click();
+			await page.locator(`${panel} select[data-field="Subclass"]`).selectOption({ index: 1 });
+			for (const sp of ['Fire Bolt', 'Light', 'Mage Hand']) await page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="${sp}"]`).click();
+			for (const sp of ['Shield', 'Magic Missile', 'Misty Step']) await page.locator(`${panel} [data-key="spells"] .eb-pick[data-value="${sp}"]`).click();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+	},
+	// A 5e stat block (the example content pack's Cinder Hound) laid out the 2024 way.
+	'feature-5e-statblock': {
+		lineWidth: 520,
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			});
+			await writeNote('Campaigns/Sword Coast/Cinder Hound.md', [
+				'```5e', 'name: Cinder Hound', 'size: Medium', 'type: elemental', 'alignment: Neutral', 'ac: 13 (natural armor)', 'hp: 27 (5d8 + 5)', 'speed: 40 ft.',
+				'str: 14', 'dex: 15', 'con: 12', 'int: 4', 'wis: 13', 'cha: 6', 'immunities: Fire', 'senses: Darkvision 60 ft., Passive Perception 13', 'languages: —', 'cr: 1',
+				'traits:', '- Glowing Coat: The hound sheds dim light in a 10-foot radius.',
+				'actions:', '- Bite: Melee Attack Roll: +4, reach 5 ft. Hit: 7 (1d10 + 2) Piercing damage plus 3 (1d6) Fire damage.', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/Cinder Hound.md');
+		},
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .dnd5e-statblock'],
+		// From the name to Languages: the shot ends on a whole line.
+		region: () => {
+			const block = document.querySelector('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-statblock');
+			const b = block.getBoundingClientRect();
+			const lang = [...block.querySelectorAll('*')].find(n => /^Languages/.test(n.textContent?.trim() ?? '') && n.getBoundingClientRect().height < 40);
+			return { left: b.left, right: b.right, top: b.top, bottom: (lang?.getBoundingClientRect().bottom ?? b.bottom) + 2 };
+		},
+	},
+	// Import content with the example pack pasted in: what it adds, before it's saved.
+	'feature-content-packs': {
+		viewport: [1000, 800], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const pack = readFileSync(join(ROOT, 'docs/content/examples/5e-hearth-and-cinder.json'), 'utf8');
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+			await page.locator('.modal.nimble-import-content textarea').fill(pack);
+			await page.locator('.modal.nimble-import-content textarea').evaluate(t => { t.scrollTop = 0; });
+			await page.waitForTimeout(500);
+		},
+		css: '.nimble-import-content textarea.nimble-import-text { height: 6.5em !important; }',
+		show: () => ['.modal.nimble-import-content'],
+	},
 	'feature-homebrew': {
 		lineWidth: 500,
 		setup: async () => {
