@@ -23,6 +23,8 @@ Write `` `nimble:Goblin` `` (inline code) anywhere in a note. It shows as a refe
 
 ## Writing a stat block
 
+The easiest way is the [builder](builder.md): **New monster…** in the command palette fills in the GM Guide's numbers for the level, and writes the block for you. To write one by hand:
+
 ````markdown
 ```nimble
 name: Krogg, Goblin King

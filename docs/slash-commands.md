@@ -2,7 +2,7 @@
 
 Type `/` at the start of a line or after a space:
 
-In a campaign you [play in](players.md), the GM-only commands (`/add`, `/encounter`, `/statblock`, `/builder`, `/tracker`, the stat block templates and `/summary`) are left out, and `/encounter` means `/fought`.
+In a campaign you [play in](players.md), the GM-only commands (`/add`, `/encounter`, `/statblock`, `/builder`, `/tracker`, `/new-monster`, the stat block templates and `/summary`) are left out, and `/encounter` means `/fought`.
 
 | Command | Does |
 |---|---|
@@ -14,7 +14,8 @@ In a campaign you [play in](players.md), the GM-only commands (`/add`, `/encount
 | `/fought 4 goblin, goblin shaman` | [Battle notes](players.md#battle-notes) in a campaign you play in (also `/battle`) |
 | `/statblock krogg` | The full stat block, editable in the note (`/statblock` on its own opens the compendium) |
 | `/builder` | Opens the encounter builder |
-| `/legendary`, `/minion`, `/new-monster` | Stat block templates |
+| `/new-monster`, `/new-spell`, `/new-item` | Opens the [builder](builder.md); what you make goes where you typed |
+| `/legendary`, `/minion` | Stat block templates |
 | `/condition dazed` | The condition's rules as a callout |
 | `/read-aloud`, `/look`, `/treasure`, `/trap`, `/clue`, `/hook`… | Styled boxes (see [Boxes](boxes.md)); `/hook` is the quest box |
 | `/npc tobren` | Link an NPC, or create a new one |
