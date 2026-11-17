@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { encounterBlockSource, findEncounterFence, parseEncounterBlock, replaceEncounterBlock } from '../src/core/encounter-def';
+import { encounterBlockSource, findEncounterFence, parseEncounterBlock, parseMonsterLine, replaceEncounterBlock } from '../src/core/encounter-def';
 
 /** What a stepper click does: parse, change one count, write. */
 function bump(src: string): string {
@@ -135,5 +135,11 @@ describe('battle notes fields', () => {
 		expect(outcomeOf('TPK')).toBe('lost');
 		expect(outcomeOf('talked them down')).toBe('parley');
 		expect(outcomeOf('something odd')).toBeUndefined();
+	});
+});
+
+describe('5e references in an encounter list', () => {
+	it('reads `5e:Name` like `nimble:Name`, keeping what was written', () => {
+		expect(parseMonsterLine('- 3 `5e:Goblin Warrior`')).toEqual({ name: 'Goblin Warrior', count: 3, written: '`5e:Goblin Warrior`' });
 	});
 });

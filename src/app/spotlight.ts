@@ -32,10 +32,13 @@ import { FilterField } from '../systems/nimble/filter-field';
 import { CompendiumCardModal, compendiumIcon } from '../systems/nimble/compendium-card';
 import { describeMonster } from '../systems/nimble/suggest';
 import type { MonsterIndexEntry, NimbleCondition } from '../systems/nimble/types';
+import { dnd5e } from '../systems/dnd5e/runtime';
+import type { Dnd5eEntry } from '../systems/dnd5e/types';
 
 type Item =
 	| { kind: 'roll'; expression: string }
 	| { kind: 'monster'; entry: MonsterIndexEntry; count: number; add: boolean }
+	| { kind: 'dnd5e'; entry: Dnd5eEntry }
 	| { kind: 'npc'; npc: NpcInfo }
 	| { kind: 'note'; note: NoteRef; where: string }
 	| { kind: 'condition'; condition: NimbleCondition }
@@ -178,6 +181,8 @@ export class SpotlightModal extends SuggestModal<Item> {
 		if (q.commandsOnly) return this.commands(q.text, 40);
 		if (!q.text) return this.home();
 
+		if (this.plugin.system().id === 'dnd5e') return this.dnd5eSuggestions(q.text);
+
 		// Everything is ranked the same forgiving way: names first, and typo matches ("zombieq") only when
 		// nothing matches outright, so they never crowd a real hit.
 		const mons = fuzzyRank(this.plugin.index.all(), q.text, e => [e.name, e.monster.group ?? ''], q.counted ? 20 : 8, true);
@@ -214,6 +219,32 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const anyReal = ranked.some(r => !r.fuzzy);
 		const list = ranked.filter(r => !anyReal || !r.fuzzy).sort((a, b) => a.score - b.score || a.order - b.order).slice(0, 14).map(r => r.item);
 		return [...list, ...lookup];
+	}
+
+	/**
+	 * A 5e campaign: its monsters (your ```5e notes, then the edition's SRD ones), people, places, its
+	 * conditions and commands, ranked like everything else. The Nimble bestiary and compendium stay out.
+	 */
+	private dnd5eSuggestions(text: string): Item[] {
+		const rt = dnd5e();
+		const path = this.plugin.campaigns.active?.home.path;
+		const edition = rt.edition(path);
+		type Ranked = { item: Item; score: number; fuzzy: boolean; order: number };
+		const ranked: Ranked[] = [];
+		const rank = (item: Item, order: number, names: string[], others: string[] = []) => {
+			const own = nameMatch(names, text);
+			const other = own ? null : nameMatch(others, text);
+			const m = own ?? (other ? { score: other.score + 8, fuzzy: other.fuzzy } : null);
+			if (m) ranked.push({ item, score: m.score + (m.fuzzy ? 100 : 0), fuzzy: m.fuzzy, order });
+		};
+		for (const x of fuzzyRank(rt.index.all(edition, path), text, e => [e.name, e.monster.type ?? ''], 10, true)) rank({ kind: 'dnd5e', entry: x.item }, 0, [x.item.name], [x.item.monster.type ?? '']);
+		for (const npc of this.npcs()) rank({ kind: 'npc', npc }, 1, [npc.name, ...npc.aliases]);
+		for (const n of this.notes()) rank(n, 2, [n.note.title], [n.note.area ? `${n.note.area} ${n.note.title}` : '']);
+		const conditions = [...this.plugin.system().conditions(edition), ...this.plugin.settings.customConditions];
+		for (const condition of conditions.filter(c => !c.auto)) rank({ kind: 'condition', condition }, 3, [condition.name]);
+		for (const c of this.commands(text, 8)) if (c.kind === 'command') rank(c, 5, [c.name]);
+		const anyReal = ranked.some(r => !r.fuzzy);
+		return ranked.filter(r => !anyReal || !r.fuzzy).sort((a, b) => a.score - b.score || a.order - b.order).slice(0, 14).map(r => r.item);
 	}
 
 	/** With nothing typed: what's most useful right now. */
@@ -275,6 +306,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 			case 'monster': return i.entry.name;
 			case 'npc': return i.npc.name;
 			case 'note': return i.note.title;
+			case 'dnd5e': return i.entry.name;
 			case 'condition': return i.condition.name;
 			case 'command': return i.name;
 			case 'compendium': return i.hit.name;
@@ -317,6 +349,22 @@ export class SpotlightModal extends SuggestModal<Item> {
 				name.setText(i.add ? `Add ${i.count} × ${i.entry.name}` : i.entry.name);
 				meta(`${describeMonster(i.entry)}${i.entry.bundled ? (m.source ? ` · ${m.source}` : '') : ' · your note'}`);
 				tag(i.add ? 'Add to encounter' : 'Adversary');
+				break;
+			}
+			case 'dnd5e': {
+				const m = i.entry.monster;
+				if (this.plugin.hideStats(i.entry.filePath)) {
+					setIcon(icon, 'paw-print');
+					name.setText(i.entry.name);
+					meta([m.size, m.type].filter(Boolean).join(' '));
+					tag('Creature');
+					break;
+				}
+				icon.addClass('nimble-spot-level');
+				icon.setText(m.cr);
+				name.setText(i.entry.name);
+				meta([`CR ${m.cr}`, [m.size, m.type].filter(Boolean).join(' '), i.entry.bundled ? m.source : 'your note'].filter(Boolean).join(' · '));
+				tag('Adversary');
 				break;
 			}
 			case 'npc': {
@@ -408,6 +456,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const mod = evt.metaKey || evt.ctrlKey;
 		switch (i.kind) {
 			case 'roll': this.roll(i.expression, false); break;
+			case 'dnd5e': this.escapeBack(dnd5e().quickLook(i.entry, this.plugin.campaigns.active?.home.path ?? '')); break;
 			case 'monster':
 				if (i.add) void this.plugin.addToEncounter(i.entry.monster, i.entry.filePath || undefined, i.count);
 				else this.escapeBack(openRecord(this.plugin, { kind: 'monster', entry: i.entry }));

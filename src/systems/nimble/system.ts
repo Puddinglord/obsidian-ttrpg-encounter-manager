@@ -5,6 +5,7 @@ import type { GameSystem } from '../contract';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
 import { createCharacterNote, NewCharacterModal } from './character-modals';
 import { openRecord } from './record-modal';
+import { nimbleEncounterBlock } from './encounter-block';
 import { NIMBLE_CONDITIONS } from './types';
 
 export const nimbleSystem: GameSystem = {
@@ -35,4 +36,5 @@ export const nimbleSystem: GameSystem = {
 	quickLook(plugin, target) {
 		openRecord(plugin, target);
 	},
+	encounterBlock: nimbleEncounterBlock,
 };

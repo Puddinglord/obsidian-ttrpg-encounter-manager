@@ -15,6 +15,7 @@ import { openPluginSettings } from '../../core/internals';
 import { slideThumb } from '../../core/segmented';
 import { saveFight } from './saved-fight';
 import { openRecord } from './record-modal';
+import { attachMonsterHover } from './inline-ref';
 
 export const ENCOUNTER_VIEW_TYPE = 'nimble-encounter-tracker';
 
@@ -423,7 +424,7 @@ export class EncounterTrackerView extends ItemView {
 		const label = nameBox.createEl('button', { cls: 'creature-label', text: c.label, attr: { 'aria-haspopup': 'dialog' } });
 		// Their sheet opens over the tracker, with the fight's state; no page jump.
 		label.onclick = () => openRecord(this.plugin, { kind: 'combatant', encId: enc.id, creatureId: c.id });
-		if (!isHero(c)) this.plugin.hover.attach(label, () => this.entryFor(c));
+		if (!isHero(c)) attachMonsterHover(this.plugin, label, () => this.entryFor(c));
 		const meta = nameBox.createSpan({ cls: 'creature-meta' });
 		const part = (text: string) => { if (meta.childElementCount) meta.createSpan({ cls: 'meta-sep', text: '·' }); return meta.createSpan({ text }); };
 		if (isHero(c)) {

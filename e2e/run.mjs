@@ -4901,6 +4901,209 @@ test('game systems: a new campaign can be 5e (2014 rules), and Campaign settings
 	}
 });
 
+test('5e monsters: ```5e blocks in both layouts, 5e: references with CR, hover card, quick look, Copy to vault', async (o) => {
+	const C = 'Campaigns/Sword Coast';
+	const note = `${C}/Session 1.md`;
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, 'Campaigns/Old Rules']) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: true, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Session 1.md`, [
+				'# Session 1', '',
+				'An ambush by `5e:Goblin Warrior`, an old-rules `5e:Goblin`, and a `5e:Nobody Knows`.', '',
+				'```5e', 'name: Ash Wight', 'type: Undead', 'ac: 14 (studded leather)', 'hp: 45 (6d8 + 18)', 'speed: 30 ft.',
+				'str: 15', 'dex: 14', 'con: 16', 'int: 10', 'wis: 13', 'cha: 15', 'saves: Con +5', 'cr: 3',
+				'actions:', '- Claw: Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8 + 2) Slashing damage.', '```', '',
+			].join('\n'));
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(note, 'preview');
+		const block = o.page.locator(`${R} .dnd5e-statblock`);
+		await o.waitFor(async () => (await block.count()) === 1, { what: '5e stat block' });
+		assert.ok(await block.evaluate(el => el.classList.contains('ed-2024')), '2024 layout in a 2024 campaign');
+		assert.match(await block.locator('.dnd5e-name').innerText(), /Ash Wight/i);
+		assert.match(await block.innerText(), /AC\s*14[\s\S]*Initiative\s*\+2 \(12\)[\s\S]*HP\s*45/);
+		assert.match(await block.locator('.ab-con').innerText(), /16\s*\+3\s*\+5/);
+		assert.match(await block.innerText(), /CR\s*3 \(XP 700; PB \+2\)/);
+		// The attack bonus rolls a d20.
+		await block.locator('.dnd5e-feature .dnd5e-roll.is-clickable').first().click();
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.expression)) === '1d20+4', { what: 'attack roll logged' });
+
+		// References: the edition's monster, the other edition's when this one hasn't got it, and an unknown name.
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.nimble-inline-found`).count()) === 2, { what: 'two found refs' });
+		const refs = await o.page.evaluate((R) => [...document.querySelectorAll(`${R} .dnd5e-ref`)].map(r => ({ name: r.dataset.dnd5eRef, cr: r.querySelector('.nimble-inline-level')?.textContent ?? null, found: r.classList.contains('nimble-inline-found') })), R);
+		assert.deepEqual(refs, [{ name: 'Goblin Warrior', cr: '1/4', found: true }, { name: 'Goblin', cr: '1/4', found: true }, { name: 'Nobody Knows', cr: null, found: false }]);
+
+		// Hover: the stat block card. Click: a quick look.
+		const warrior = o.page.locator(`${R} .dnd5e-ref`).first().locator('.nimble-inline-name');
+		await warrior.hover();
+		await o.waitFor(async () => (await o.page.locator('.nimble-hover-preview .dnd5e-statblock').count()) === 1, { what: 'hover card' });
+		assert.match(await o.page.locator('.nimble-hover-preview .dnd5e-name').innerText(), /Goblin Warrior/i);
+		await o.page.keyboard.press('Escape');
+		await warrior.click();
+		const look = o.page.locator('.modal.dnd5e-quick-look');
+		await look.waitFor({ timeout: 3000 });
+		assert.match(await look.locator('.record-sub').innerText(), /CR 1\/4/);
+		assert.ok(await look.locator('.dnd5e-statblock.ed-2024').count() === 1);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-quick-look.png') });
+
+		// Copy to vault: a note in the campaign's Monsters folder, and the reference now opens it.
+		await look.locator('button', { hasText: 'Copy to vault' }).click();
+		const copy = `${C}/Monsters/Goblin Warrior.md`;
+		await o.waitFor(async () => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), copy), { what: 'copied note' });
+		const copied = await read(o, copy);
+		assert.match(copied, /```5e\nname: Goblin Warrior\nedition: 2024\n[\s\S]*cr: 1\/4[\s\S]*```/);
+		await o.page.keyboard.press('Escape');
+		await o.openFile(note, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.nimble-inline-found`).count()) === 2, { what: 'refs again' });
+		await o.page.locator(`${R} .dnd5e-ref`).first().locator('.nimble-inline-name').click();
+		await o.waitFor(async () => (await o.page.locator('.modal.dnd5e-quick-look button', { hasText: 'Open note' }).count()) === 1, { what: 'the copy is the one referenced' });
+		assert.equal(await o.page.locator('.modal.dnd5e-quick-look button', { hasText: 'Copy to vault' }).count(), 0);
+		await o.page.keyboard.press('Escape');
+
+		// Spotlight in a 5e campaign: 5e monsters with their CR, no Nimble bestiary; Enter is a quick look.
+		await o.eval(async (app, plugin, C) => { await plugin.campaigns.setActive(C); app.commands.executeCommandById('nimble-gm:spotlight'); }, C);
+		const SP = '.modal-container .prompt.nimble-spotlight';
+		await o.page.locator(`${SP} .prompt-input`).waitFor();
+		await o.page.locator(`${SP} .prompt-input`).fill('goblin');
+		await o.waitFor(async () => (await o.page.locator(`${SP} .suggestion-item .nimble-spot-name`).allInnerTexts()).includes('Goblin Warrior'), { what: '5e goblin in Spotlight' });
+		const spotNames = await o.page.locator(`${SP} .suggestion-item .nimble-spot-name`).allInnerTexts();
+		assert.ok(!spotNames.includes('Goblin Taskmaster'), 'no Nimble monsters in a 5e campaign');
+		assert.match(await o.page.locator(`${SP} .suggestion-item`, { hasText: 'Goblin Warrior' }).first().innerText(), /1\/4[\s\S]*Goblin Warrior[\s\S]*CR 1\/4/);
+		await o.page.locator(`${SP} .suggestion-item`, { hasText: 'Goblin Warrior' }).first().click();
+		await o.page.locator('.modal.dnd5e-quick-look').waitFor({ timeout: 3000 });
+		// Escape from the quick look goes back to Spotlight; a second closes it.
+		await o.page.keyboard.press('Escape');
+		await o.page.locator(`${SP} .prompt-input`).waitFor({ timeout: 3000 });
+		await o.page.keyboard.press('Escape');
+		await o.waitFor(async () => (await o.page.locator('.modal-container').count()) === 0, { what: 'Spotlight closed' });
+
+		// Typing `5e: suggests 5e monsters.
+		await o.eval(async (app, plugin, C) => {
+			const f = await app.vault.create(`${C}/Scratch.md`, 'Meet the \n');
+			await app.workspace.getLeaf(false).openFile(f, { state: { mode: 'source' } });
+			const editor = app.workspace.activeEditor.editor;
+			editor.setCursor({ line: 0, ch: 9 });
+			editor.focus();
+		}, C);
+		await o.page.keyboard.type('`5e:adult red', { delay: 30 });
+		await o.waitFor(() => o.page.evaluate(() => document.querySelector('.suggestion-container .nimble-suggestion-name')?.textContent === 'Adult Red Dragon'), { timeout: 5000, what: 'Adult Red Dragon suggested' });
+		assert.match(await o.page.locator('.suggestion-container .nimble-suggestion-note').first().innerText(), /CR 17/);
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(200);
+		assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), 'Meet the `5e:Adult Red Dragon`');
+
+		// A 2014 campaign lays its monsters out the 2014 way.
+		await o.eval(async (app, plugin) => {
+			await plugin.campaigns.createCampaign({ name: 'Old Rules', level: 1, heroes: 4, starter: false, system: '5e', edition: '2014' });
+			await app.vault.create('Campaigns/Old Rules/Notes.md', 'Watch out for `5e:Goblin`.\n');
+		});
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.edition('Campaigns/Old Rules/Notes.md'))) === '2014', { what: '2014 campaign' });
+		await o.openFile('Campaigns/Old Rules/Notes.md', 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.nimble-inline-found`).count()) === 1, { what: 'goblin ref' });
+		await o.page.locator(`${R} .dnd5e-ref .nimble-inline-name`).click();
+		await o.page.locator('.modal.dnd5e-quick-look .dnd5e-statblock.ed-2014').waitFor({ timeout: 3000 });
+		assert.match(await o.page.locator('.modal.dnd5e-quick-look .dnd5e-statblock').innerText(), /Armor Class\s*15 \(leather armor, shield\)[\s\S]*Challenge\s*1\/4 \(50 XP\)/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-2014.png') });
+		await o.page.keyboard.press('Escape');
+
+		// Live Preview draws them too.
+		await o.openFile('Campaigns/Old Rules/Notes.md', 'source');
+		await o.waitFor(async () => (await o.page.locator('.workspace-leaf.mod-active .markdown-source-view .dnd5e-ref.nimble-inline-found').count()) === 1, { what: 'live preview ref' });
+	} finally {
+		await o.eval(async (app, plugin) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of ['Campaigns/Sword Coast', 'Campaigns/Old Rules']) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiative, turns, HP, conditions, death saves', async (o) => {
+	const C = 'Campaigns/Sword Coast';
+	const note = `${C}/Ambush.md`;
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Ambush.md`, '# Ambush\n\n```nimble-encounter\nname: Road ambush\nparty: true\nmonsters:\n- 4 `5e:Goblin Warrior`\n- Ogre\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(note, 'preview');
+		const block = o.page.locator(`${R} .dnd5e-encounter`);
+		await o.waitFor(async () => (await block.count()) === 1, { what: '5e encounter block' });
+		// Four level-3 heroes: Low 600, Moderate 900, High 1,600. 4 × 50 + 450 = 650 XP.
+		await o.waitFor(async () => /Low · 41%/i.test(await block.locator('.nimble-difficulty').innerText().catch(() => '')), { what: 'Low rating' });
+		assert.match((await block.locator('.nimble-difficulty').getAttribute('title')) ?? (await block.locator('.nimble-difficulty').getAttribute('aria-label')), /650 XP[\s\S]*Low: 600 XP[\s\S]*High: 1,600 XP[\s\S]*2024 rules/);
+		assert.deepEqual(await block.locator('.dnd5e-encounter-xp').allInnerTexts(), ['200 XP', '450 XP']);
+
+		// Run: a fresh fight in the 5e tracker.
+		await block.locator('button', { hasText: 'Run' }).click();
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		const rows = o.page.locator(`${T} .dnd5e-combatant`);
+		await o.waitFor(async () => (await rows.count()) === 5, { what: 'five combatants' });
+		assert.deepEqual((await o.page.locator(`${T} .dnd5e-combatant-name`).allInnerTexts()).sort(), ['Goblin Warrior', 'Goblin Warrior 2', 'Goblin Warrior 3', 'Goblin Warrior 4', 'Ogre']);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-setup.png') });
+
+		await o.page.locator(`${T} button`, { hasText: 'Roll initiative' }).click();
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-init`).evaluateAll(els => els.every(e => e.value !== ''))), { what: 'initiative rolled' });
+		await o.page.locator(`${T} button`, { hasText: 'Start' }).click();
+		await o.waitFor(async () => /Round 1/.test(await o.page.locator(`${T} .dnd5e-tracker-round`).innerText()), { what: 'round 1' });
+		assert.equal(await o.page.locator(`${T} .dnd5e-combatant.is-turn`).count(), 1);
+		const first = await o.page.locator(`${T} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).innerText();
+
+		// Damage the Ogre: 68 HP → 58. Then knock it Prone.
+		const ogre = o.page.locator(`${T} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: /^Ogre$/ }) });
+		assert.match(await ogre.locator('.dnd5e-hp-text').innerText(), /^68\/68$/);
+		await ogre.locator('.dnd5e-hp-input').fill('10');
+		await ogre.locator('.dnd5e-hp-input').press('Enter');
+		await o.waitFor(async () => /^58\/68$/.test(await ogre.locator('.dnd5e-hp-text').innerText()), { what: 'ogre damaged' });
+		await ogre.locator('.dnd5e-condition-add').click();
+		await clickMenu(o, 'Prone');
+		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition', { hasText: 'Prone' }).count()) === 1, { what: 'Prone chip' });
+
+		// Next turn moves on.
+		await o.page.locator(`${T} button`, { hasText: 'Next turn' }).click();
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).innerText()) !== first, { what: 'turn passed' });
+
+		// The party joins; a hero at 0 HP makes death saves.
+		await o.eval(async (app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
+		await o.page.locator(`${T} button`, { hasText: 'Party' }).click();
+		const ilse = o.page.locator(`${T} .dnd5e-combatant.side-hero`);
+		await o.waitFor(async () => (await ilse.count()) === 1, { what: 'hero added' });
+		assert.match(await ilse.locator('.dnd5e-ac').innerText(), /AC 16/);
+		await ilse.locator('.dnd5e-hp-input').fill('30');
+		await ilse.locator('.dnd5e-hp-input').press('Enter');
+		await o.waitFor(async () => (await ilse.locator('.dnd5e-death').count()) === 1, { what: 'death saves' });
+		await ilse.locator('.dnd5e-death-roll').click();
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse: death save', { what: 'death save rolled' });
+		await o.waitFor(async () => {
+			const t = await ilse.innerText();
+			return (await ilse.locator('.dnd5e-pip.is-on').count()) >= 1 || /Stable|Dead/.test(t) || /\b1\/24\b/.test(t);
+		}, { what: 'death save recorded' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-fight.png') });
+
+		// The fight is saved with the plugin's data, and Open encounter tracker shows it in a 5e campaign.
+		assert.equal(await o.eval((app, plugin) => plugin.settings.systemData?.dnd5e?.fight?.combatants?.length), 6);
+		await o.eval(async (app) => { app.workspace.detachLeavesOfType('nimble-dnd5e-tracker'); app.commands.executeCommandById('nimble-gm:open-tracker'); });
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		assert.equal(await o.page.locator(`${T} .dnd5e-combatant`).count(), 6);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);

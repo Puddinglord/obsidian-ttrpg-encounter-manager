@@ -4,7 +4,7 @@
 import { confirmReplaceFight, resumeSavedFight, savedFightsFor } from './saved-fight';
 import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../../../main';
-import { EncounterDef, encounterBlockSource, parseEncounterBlock, replaceEncounterBlock } from '../../core/encounter-def';
+import { EncounterDef, encounterBlockSource, replaceEncounterBlock } from '../../core/encounter-def';
 import { budgetPhrase, monsterRole, rateEncounter, shiftLabel, shiftMonster } from './rules';
 import { createInlineRef } from './inline-ref';
 import { BuilderModal } from './builder-modal';
@@ -49,10 +49,9 @@ export async function runEncounter(plugin: NimbleStatblocksPlugin, def: Encounte
 	return true;
 }
 
-export function registerEncounterBlock(plugin: NimbleStatblocksPlugin): void {
-	plugin.registerMarkdownCodeBlockProcessor('nimble-encounter', (source, el, ctx) => {
-		ctx.addChild(new EncounterBlockChild(plugin, el, parseEncounterBlock(source), ctx, source));
-	});
+/** A ```nimble-encounter block in a Nimble campaign (app/encounter-blocks.ts picks the system). */
+export function nimbleEncounterBlock(plugin: NimbleStatblocksPlugin, def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void {
+	ctx.addChild(new EncounterBlockChild(plugin, el, def, ctx, source));
 }
 
 /**

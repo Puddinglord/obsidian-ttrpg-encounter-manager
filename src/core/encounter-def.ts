@@ -30,7 +30,7 @@ export interface EncounterDef {
 	monsterExtra?: string[];
 }
 
-/** "2 Goblin", "2x Goblin", "2× Goblin", "Goblin x2", "[[Goblin]]", "`nimble:Goblin`". */
+/** "2 Goblin", "2x Goblin", "2× Goblin", "Goblin x2", "[[Goblin]]", "`nimble:Goblin`", "`5e:Goblin`". */
 export function parseMonsterLine(line: string): EncounterDefMonster | null {
 	let s = line.trim().replace(/^[-*+]\s*/, '').trim();
 	if (!s) return null;
@@ -44,7 +44,7 @@ export function parseMonsterLine(line: string): EncounterDefMonster | null {
 	if (lead) { count = Number(lead[1]); s = lead[2]; }
 	else if (trail) { s = trail[1]; count = Number(trail[2]); }
 	const written = s.trim();
-	s = s.replace(/^`nimble:\s*/i, '').replace(/`$/, '');
+	s = s.replace(/^`(?:nimble|5e):\s*/i, '').replace(/`$/, '');
 	const link = s.match(/^\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]$/);
 	if (link) s = link[1];
 	s = s.trim();

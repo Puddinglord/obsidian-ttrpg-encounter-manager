@@ -10,8 +10,9 @@ import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './src
 import { MonsterIndex } from './src/systems/nimble/monster-index';
 import { EncounterStore } from './src/systems/nimble/encounters';
 import { ENCOUNTER_VIEW_TYPE, EncounterTrackerView } from './src/systems/nimble/tracker-view';
-import { createInlineRef, HoverPreview, parseInlineRef, refreshInlineRefs } from './src/systems/nimble/inline-ref';
-import { inlineRefLivePreview } from './src/systems/nimble/live-preview';
+import { nimbleRefProvider } from './src/systems/nimble/inline-ref';
+import { InlineRefs, inlineRefsLivePreview } from './src/core/inline-refs';
+import { HoverPreview } from './src/core/hover-preview';
 import { InlineRefSuggest } from './src/systems/nimble/suggest';
 import { NimbleSlashSuggest } from './src/app/slash';
 import { NimbleSettingsTab } from './src/app/settings-tab';
@@ -27,7 +28,7 @@ import { openAddMonsterPicker } from './src/systems/nimble/compendium-pickers';
 import { watchArt } from './src/systems/nimble/compendium-art';
 import type { Segment } from './src/systems/nimble/compendium-entries';
 import { notesBody } from './src/systems/nimble/creature-notes';
-import { registerEncounterBlock } from './src/systems/nimble/encounter-block';
+import { registerEncounterBlocks } from './src/app/encounter-blocks';
 import { BuilderModal } from './src/systems/nimble/builder-modal';
 import { PartyModal } from './src/core/party';
 import { registerMapBlock } from './src/app/map-block';
@@ -126,6 +127,8 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	indexVersion = 0;
 	private keywordCache: { key: string; re: RegExp | undefined } | null = null;
 	campaigns!: CampaignStore;
+	/** Inline references (`nimble:Goblin`, `5e:Goblin`): each system adds its prefix. */
+	readonly inlineRefs = new InlineRefs();
 	/** The game systems the plugin knows. Nimble is the default (and, for now, the only one). */
 	readonly systems = createSystems();
 	/** Bumped when the NPC list changes; Live Preview decorations watch it. */
@@ -157,6 +160,29 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			this.wakeLock = null;
 			void lock.release().catch(() => undefined);
 		}
+	}
+
+	/**
+	 * Can a lookup from the note `from` (or, with none, the active campaign) see
+	 * something written in the note `filePath`? Campaigns keep their monsters to
+	 * themselves: one written in a campaign's notes is seen only from that
+	 * campaign; one in a loose note, from campaigns you run (and notes outside
+	 * any). Bundled monsters (no path) are seen everywhere.
+	 */
+	canSee(filePath: string, from?: string): boolean {
+		const cs = this.campaigns;
+		if (!filePath || !cs) return true;
+		const here = (from ? cs.of(from) : undefined) ?? cs.active;
+		const home = cs.of(filePath);
+		if (home) return home.folder === here?.folder;
+		return here?.role !== 'player';
+	}
+
+	/** What references point at changed (an index was rebuilt): redraw every reference pill. */
+	refsChanged(): void {
+		this.indexVersion++;
+		this.inlineRefs.refresh();
+		this.pokeEditors();
 	}
 
 	/**
@@ -192,7 +218,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerEvent(this.campaigns.on('changed', () => invalidateCompendium()));
 		this.registerView(CAMPAIGN_VIEW_TYPE, (leaf) => new CampaignView(leaf, this));
 		this.addRibbonIcon('castle', 'Nimble campaign', () => this.openCampaignView());
-		const trackerRibbon = this.addRibbonIcon('swords', 'Nimble encounter tracker', () => this.activateEncounterView());
+		const trackerRibbon = this.addRibbonIcon('swords', 'Nimble encounter tracker', () => void this.openTracker());
 		// The tracker is a GM tool: its ribbon button hides while you're in a campaign you play in.
 		const syncRibbon = () => trackerRibbon.toggle(!this.playerView());
 		this.registerEvent(this.campaigns.on('changed', syncRibbon));
@@ -219,7 +245,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			if (this.settings.statblockHints) renderStatblockIssues(this, el, issues, source, ctx);
 			if (!this.playerView(ctx.sourcePath)) addEditButton(this, el, ctx, { kind: 'monster', lang: 'nimble', source, seed: { monster, copyName: true, editing: true }, unread: new Set(issues.map(i => i.line)).size });
 		});
-		registerEncounterBlock(this);
+		registerEncounterBlocks(this);
 		registerBoxBlock(this);
 		registerNpcCard(this);
 		registerFightBlock(this);
@@ -240,16 +266,17 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		registerReadingMode(this);
 
 		// Reading view: `nimble:Name` inline references
-		this.registerMarkdownPostProcessor((el, ctx) => {
-			el.querySelectorAll('code').forEach((codeEl) => {
-				if (codeEl.closest('pre')) return; // skip code blocks
-				const name = parseInlineRef(codeEl.textContent || '');
-				if (name) codeEl.replaceWith(createInlineRef(this, name, ctx.sourcePath));
-			});
-		});
+		this.inlineRefs.add(nimbleRefProvider(this));
+		// The other game systems wire in their own blocks, references and indexes.
+		for (const system of this.systems.all()) system.register?.(this);
+		this.registerMarkdownPostProcessor((el, ctx) => this.inlineRefs.process(el, ctx.sourcePath));
 
 		// Live Preview + autocomplete
-		this.registerEditorExtension(inlineRefLivePreview(this));
+		this.registerEditorExtension(inlineRefsLivePreview(this.inlineRefs, {
+			version: () => this.indexVersion,
+			// Don't strand a hover card whose reference just got re-rendered.
+			onDestroy: (dom) => { if (this.hover.isAnchoredIn(dom)) this.hover.hide(); },
+		}));
 		this.registerEditorExtension(npcLivePreview(this));
 		this.registerEvent(this.campaigns.on('changed', () => { this.npcVersion++; this.pokeEditors(); }));
 		this.registerEditorSuggest(new InlineRefSuggest(this.app, this));
@@ -272,14 +299,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		// Campaigns keep their monsters to themselves: a name in Brakka's Journal never opens the GM's
 		// Quicksilver Construct. A monster written in a campaign's notes is seen only from that campaign;
 		// one in a loose note, from campaigns you run (and notes outside any). The bestiary is seen everywhere.
-		this.index.setScope((filePath, from) => {
-			const cs = this.campaigns;
-			if (!filePath || !cs) return true;
-			const here = (from ? cs.of(from) : undefined) ?? cs.active;
-			const home = cs.of(filePath);
-			if (home) return home.folder === here?.folder;
-			return here?.role !== 'player';
-		});
+		this.index.setScope((filePath, from) => this.canSee(filePath, from));
 		// Which monsters a lookup sees follows the active campaign and the campaigns' folders and roles.
 		let scope = '';
 		this.registerEvent(this.campaigns.on('changed', () => {
@@ -289,11 +309,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			this.index.trigger('changed');
 		}));
 
-		this.registerEvent(this.index.on('changed', () => {
-			this.indexVersion++;
-			refreshInlineRefs(this);
-			this.pokeEditors();
-		}));
+		this.registerEvent(this.index.on('changed', () => this.refsChanged()));
 
 		this.app.workspace.onLayoutReady(async () => {
 			this.campaigns.start();
@@ -337,7 +353,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			if (!checking) fn();
 			return true;
 		};
-		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', checkCallback: gm(() => void this.activateEncounterView()) });
+		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', checkCallback: gm(() => void this.openTracker()) });
 		this.addCommand({ id: 'open-bestiary', name: 'Open compendium', icon: 'book-open', callback: () => this.openBestiary() });
 		this.addCommand({ id: 'search-compendium', name: 'Search the compendium…', icon: 'library', callback: () => openCompendiumSearch(this) });
 		this.addCommand({ id: 'add-monster', name: 'Add monster to encounter…', checkCallback: gm(() => this.openAddMonsterModal()) });
@@ -939,7 +955,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	 */
 	refreshSide(): void {
 		this.indexVersion++;
-		refreshInlineRefs(this);
+		this.inlineRefs.refresh();
 		this.rerenderNotes();
 		for (const leaf of this.app.workspace.getLeavesOfType('markdown')) {
 			if (leaf.view instanceof MarkdownView && leaf.view.getMode() === 'source') {
@@ -1111,6 +1127,13 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	getEncounterView(): EncounterTrackerView | null {
 		const leaf = this.app.workspace.getLeavesOfType(ENCOUNTER_VIEW_TYPE)[0];
 		return leaf?.view instanceof EncounterTrackerView ? leaf.view : null;
+	}
+
+	/** The active campaign's combat tracker: its system's own, else Nimble's. */
+	async openTracker(): Promise<void> {
+		const system = this.system();
+		if (system.openTracker) await system.openTracker(this);
+		else await this.activateEncounterView();
 	}
 
 	async activateEncounterView(focus = true): Promise<WorkspaceLeaf | null> {

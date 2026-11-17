@@ -11,6 +11,7 @@ import { monsterRole } from '../systems/nimble/rules';
 import { confirmAction, isTouch, onLongPress } from '../core/touch';
 import { setWarningButton } from '../core/compat';
 import { closePopover, isPopoverOpenFor, openPopover } from '../core/popover';
+import { attachMonsterHover } from '../systems/nimble/inline-ref';
 
 const PIN_ICON: Record<PinKind, string> = {
 	place: 'map-pin', area: 'flag', encounter: 'swords', npc: 'user', treasure: 'gem', danger: 'skull', note: 'sticky-note', secret: 'eye-off',
@@ -475,7 +476,7 @@ class MapBlock extends MarkdownRenderChild {
 		if (isDown(c)) el.addClass('is-down');
 		const initials = c.label.replace(/[^A-Za-z0-9 ]/g, '').split(/\s+|-/).filter(Boolean).map(w => w[0]).join('').slice(0, 3).toUpperCase();
 		el.createSpan({ cls: 'nimble-map-token-text', text: isMinionGroup(c) ? `${c.alive}` : initials || '?' });
-		if (!isHero(c)) this.plugin.hover.attach(el, { name: c.monster.name, filePath: c.sourceFile || '', monster: c.monster, bundled: !c.sourceFile && !!c.monster.bundledId });
+		if (!isHero(c)) attachMonsterHover(this.plugin, el, { name: c.monster.name, filePath: c.sourceFile || '', monster: c.monster, bundled: !c.sourceFile && !!c.monster.bundledId });
 		return el;
 	}
 

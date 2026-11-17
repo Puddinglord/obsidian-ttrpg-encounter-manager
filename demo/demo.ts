@@ -4,7 +4,8 @@
 
 import './obsidian-shim';
 import { setIcon, Notice, Events } from 'obsidian';
-import { createInlineRef, HoverPreview } from '../src/systems/nimble/inline-ref';
+import { createInlineRef, monsterHover } from '../src/systems/nimble/inline-ref';
+import { HoverPreview } from '../src/core/hover-preview';
 import { renderStatblock, DiceKind, RenderOptions } from '../src/systems/nimble/render';
 import { appendRichText } from '../src/core/markdown';
 import { extractNimbleBlocks, parseStatblock } from '../src/systems/nimble/parser';
@@ -412,7 +413,7 @@ function build(root: HTMLElement): void {
 		e.stopPropagation();
 		const ref = name.closest<HTMLElement>('.nimble-inline-ref');
 		const entry = byName.get((ref?.dataset.nimbleRef ?? '').toLowerCase());
-		if (entry) plugin.hover.show(name, entry, true);
+		if (entry) plugin.hover.show(name, monsterHover(plugin as never, entry, name), true);
 		markDone('hover');
 	}, true);
 

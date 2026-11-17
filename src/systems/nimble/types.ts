@@ -213,6 +213,8 @@ export interface NimbleStatblocksSettings {
 	looseParty?: PartyMember[];
 	/** Token positions on GM maps: map key → combatant id → percent position. */
 	mapTokens?: Record<string, Record<string, { x: number; y: number }>>;
+	/** Each other game system's own saved state, by system id (5e: its current fight). Each system reads its own defensively. */
+	systemData?: Record<string, Record<string, unknown>>;
 	settingsVersion: number;
 }
 
@@ -304,6 +306,7 @@ export function migrateSettings(saved: unknown): NimbleStatblocksSettings {
 	s.party = items(s.party);
 	s.campaigns = record(s.campaigns);
 	s.activeCampaign = typeof s.activeCampaign === 'string' ? s.activeCampaign : null;
+	if (s.systemData !== undefined) s.systemData = Object.fromEntries(Object.entries(record(s.systemData)).filter(([, v]) => v && typeof v === 'object' && !Array.isArray(v)));
 	const cd = record(data.classDice);
 	s.classDice = {
 		color: typeof cd.color === 'string' && /^#[0-9a-f]{6}$/i.test(cd.color) ? cd.color : DEFAULT_SETTINGS.classDice.color,

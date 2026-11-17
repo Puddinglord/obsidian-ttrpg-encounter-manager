@@ -9,6 +9,7 @@ import { renderBalance } from './balance-ui';
 import { partyLevels, ratingChip, runEncounter } from './encounter-block';
 import { describeMonster } from './suggest';
 import { isTouch } from '../../core/touch';
+import { attachMonsterHover } from './inline-ref';
 
 export class BuilderModal extends Modal {
 	private def: EncounterDef;
@@ -113,7 +114,7 @@ export class BuilderModal extends Modal {
 			};
 			row.addEventListener('click', (ev) => add(ev.shiftKey ? 2 : 1));
 			row.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') add(ev.shiftKey ? 2 : 1); });
-			this.plugin.hover.attach(row, e);
+			attachMonsterHover(this.plugin, row, e);
 		}
 		if (all.length > shown.length) el.createDiv({ cls: 'builder-more', text: `${all.length - shown.length} more; keep typing to narrow it down` });
 	}
@@ -132,7 +133,7 @@ export class BuilderModal extends Modal {
 			const entry = this.plugin.index.get(m.name);
 			const name = row.createSpan({ cls: 'builder-pick-name', text: m.name });
 			if (!entry) name.addClass('is-missing');
-			else this.plugin.hover.attach(name, entry);
+			else attachMonsterHover(this.plugin, name, entry);
 			minus.addEventListener('click', () => { m.count--; if (m.count <= 0) this.def.monsters.remove(m); this.renderPicked(); });
 			plus.addEventListener('click', () => { m.count++; this.renderPicked(); });
 		}

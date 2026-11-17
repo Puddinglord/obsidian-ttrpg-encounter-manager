@@ -25,6 +25,7 @@ export class Setting {}
 export class Menu {}
 export class Notice { constructor(public message?: string) {} }
 export class EditorSuggest<T> extends Component { declare _t?: T; }
+export class AbstractInputSuggest<T> extends Component { declare _t?: T; constructor(public app?: unknown, public inputEl?: HTMLElement) { super(); } }
 export class TAbstractFile {}
 export class TFile extends TAbstractFile {}
 export class TFolder extends TAbstractFile {}

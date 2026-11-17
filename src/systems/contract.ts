@@ -8,9 +8,10 @@
 //   src/systems/<id>/  one game system; imports core and the contract, never another system
 //   src/app/** + main  wiring: may import core and any system
 
-import type { TFile } from 'obsidian';
+import type { MarkdownPostProcessorContext, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../../main';
 import type { ConditionDef, PartyMember } from '../core/types';
+import type { EncounterDef } from '../core/encounter-def';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
 export interface Attribution {
@@ -70,4 +71,10 @@ export interface GameSystem {
 	readonly characters?: CharacterCapability;
 	/** Open a quick look on a note (an NPC, a hero). */
 	quickLook(plugin: NimbleStatblocksPlugin, target: QuickLookNote): void;
+	/** Wire the system into the plugin at load: its code blocks, references, indexes, views. Called once. */
+	register?(plugin: NimbleStatblocksPlugin): void;
+	/** Draw a ```nimble-encounter block in one of this system's campaigns (difficulty by its rules, Run into its tracker). */
+	encounterBlock?(plugin: NimbleStatblocksPlugin, def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void;
+	/** Show this system's combat tracker (Open encounter tracker, the ribbon). */
+	openTracker?(plugin: NimbleStatblocksPlugin): Promise<void>;
 }
