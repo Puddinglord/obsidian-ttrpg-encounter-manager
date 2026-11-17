@@ -14,6 +14,7 @@ The second game system, and the template for adding more. One system, two **edit
 | Compendium | `compendium.ts` (types, `allHits`, `findHit`, the `5e:<kind>:Name` kinds), `cards.ts`, `compendium-view.ts` |
 | Encounters | `encounter-block.ts`, `combat-store.ts` (saved under `settings.systemData.dnd5e.fight`), `tracker-view.ts` |
 | Characters | `character.ts`, `sheet.ts`, `new-character.ts` |
+| NPCs | `npc.ts` (the NPC fields 5e adds to core's NPC notes: `ac`, `hp`, `cr`, `statblock`; the NPC as a monster for the tracker), `npc-card.ts` (the stat block reference and Add to fight in the NPC card) |
 | Editor | `suggest.ts` (`5e:` autocomplete), `slash.ts` ("/" commands: `/monster`, `/spell` and the other compendium kinds, `/encounter`, `/add`, `/statblock`, `/fought`, `/roll` with advantage) |
 | Data | `conditions.ts`, `data/*.json` |
 

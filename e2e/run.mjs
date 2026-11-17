@@ -5193,6 +5193,68 @@ test('5e slash commands: /monster, /spell, /encounter rated by 2024 XP, /statblo
 	}
 });
 
+test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its card and joins the 5e fight; a system can draw a location card', async (o) => {
+	const C = 'Campaigns/Kinds Coast';
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	try {
+		const npc = await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			await plugin.campaigns.createCampaign({ name: 'Kinds Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			let camp;
+			for (let i = 0; i < 50 && !(camp = plugin.campaigns.campaigns.find(c => c.folder === C && c.system)); i++) await new Promise(r => setTimeout(r, 100));
+			const f = await plugin.campaigns.createInSection(camp, 'npc', 'Marta Hale');
+			return { path: f.path, text: await app.vault.read(f) };
+		}, C);
+		assert.match(npc.text, /attitude: neutral\nac: ""\nhp: ""\ncr: ""\nstatblock: ""\n---/);
+		await o.eval(async (app, plugin, p) => {
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(p), (fm) => { fm.ac = 15; fm.hp = '30 (4d8 + 12)'; fm.statblock = 'Bandit Captain'; });
+		}, npc.path);
+		await o.openFile(npc.path, 'preview');
+		const card = o.page.locator(`${R} .nimble-npc-card`);
+		await o.waitFor(async () => (await card.locator('.nimble-note-stat').count()) === 2, { what: 'AC and HP on the card' });
+		assert.deepEqual((await card.locator('.nimble-note-stat').allInnerTexts()).map(x => x.replace(/\s+/g, '')), ['AC15', 'HP30(4d8+12)']);
+		assert.match(await card.locator('.dnd5e-npc-row').innerText(), /Stats[\s\S]*Bandit Captain/i);
+		await card.screenshot({ path: join(ARTIFACTS, 'note-kinds-5e-npc.png') });
+
+		// Add to fight: the NPC under her own name, AC and HP, with the Bandit Captain's actions.
+		await card.locator('button.dnd5e-npc-fight').click();
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		const row = o.page.locator(`${T} .dnd5e-combatant`);
+		await o.waitFor(async () => (await row.count()) === 1, { what: 'Marta in the tracker' });
+		assert.match(await row.locator('.dnd5e-combatant-name').innerText(), /^Marta Hale$/);
+		assert.match(await row.locator('.dnd5e-hp-text').innerText(), /^30\/30$/);
+		assert.match(await row.locator('.dnd5e-ac').innerText(), /AC 15/);
+		assert.ok((await o.eval((app, plugin) => plugin.settings.systemData.dnd5e.fight.combatants[0].monster.actions.length)) > 0);
+
+		// A system that draws locations its own way: new locations get a ```nimble-note block for it.
+		const loc = await o.eval(async (app, plugin, C) => {
+			const sys = plugin.systems.resolve('5e');
+			sys.noteKinds.location = { fields: [{ key: 'danger', label: 'Danger' }], card: (el, ctx) => { el.createDiv({ cls: 'e2e-location-card', text: `Spooky ${ctx.fm.title ?? ''}`.trim() }); } };
+			const camp = plugin.campaigns.campaigns.find(c => c.folder === C);
+			const f = await plugin.campaigns.createInSection(camp, 'location', 'Old Mill');
+			await app.fileManager.processFrontMatter(f, (fm) => { fm.danger = 'high'; });
+			return { path: f.path, text: await app.vault.read(f) };
+		}, C);
+		assert.match(loc.text, /danger: /);
+		assert.match(loc.text, /\n---\n\n```nimble-note\n```\n/);
+		await o.openFile(loc.path, 'preview');
+		const lc = o.page.locator(`${R} .nimble-note-card`);
+		await o.waitFor(async () => (await lc.locator('.e2e-location-card').count()) === 1, { what: 'the system\'s location card' });
+		assert.match(await lc.locator('.nimble-note-stat').innerText(), /Danger\s*high/i);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			delete plugin.systems.resolve('5e').noteKinds.location;
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('5e compendium: spells, items and classes for both editions, 5e:spell: references, autocomplete, Spotlight', async (o) => {
 	const C = 'Campaigns/Sword Coast';
 	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';

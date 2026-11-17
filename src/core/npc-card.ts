@@ -15,6 +15,7 @@ import { onLongPress } from './touch';
 import { IMAGE_EXTENSIONS, isRemote, NPC_ATTITUDES, NPC_STATUSES, npcFacts, parseNpcCard, portraitLink, SECRET_KEYS } from './npc-card-def';
 import { appendRichText } from './markdown';
 import { wireWikiLinks } from './wiki-links';
+import { drawSystemExtras, extensionFor, extrasKey } from './note-card';
 
 export function registerNpcCard(plugin: NimbleStatblocksPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-npc', (source, el, ctx) => {
@@ -72,6 +73,11 @@ class NpcCard extends MarkdownRenderChild {
 			const key = this.portraitKey();
 			if (key !== last) { last = key; this.render(); }
 		}));
+		// The campaign's game system (and so its NPC fields) can change under the note.
+		this.registerEvent(this.plugin.campaigns.on('changed', () => {
+			const key = this.portraitKey();
+			if (key !== last) { last = key; this.render(); }
+		}));
 		this.registerEvent(this.app.vault.on('rename', (f, oldPath) => {
 			if (oldPath !== this.path) return;
 			this.path = f.path;
@@ -92,7 +98,7 @@ class NpcCard extends MarkdownRenderChild {
 	private portraitKey(): string {
 		const fm = this.frontmatter();
 		const facts = ['ancestry', 'pronouns', 'age', 'faction', 'location', 'status', 'attitude', 'first_met'].map(k => fmText(fm[k])).join('|');
-		return `${fmText(fm.portrait ?? fm.image)}|${fmText(fm['portrait-position'])}|${fmText(fm.role)}|${fmText(fm.title)}|${facts}`;
+		return `${fmText(fm.portrait ?? fm.image)}|${fmText(fm['portrait-position'])}|${fmText(fm.role)}|${fmText(fm.title)}|${facts}|${extrasKey(this.plugin, this.path, 'npc', fm)}`;
 	}
 
 	private render(): void {
@@ -101,6 +107,11 @@ class NpcCard extends MarkdownRenderChild {
 		// The card's narrow layout is a container query on this wrapper (see styles.css).
 		el.addClass('nimble-npc-wrap');
 		const fm = this.frontmatter();
+		const ext = extensionFor(this.plugin, this.path, 'npc');
+		if (ext?.replace && ext.card) {
+			ext.card(el, { path: this.path, fm, player: this.plugin.playerView(this.path) });
+			return;
+		}
 		const def = parseNpcCard(this.source);
 		// `title:` holds the name as typed when the file name couldn't (Sister "Red" Garaele).
 		const name = def.name || fmText(fm.title).trim() || this.note()?.basename || 'NPC';
@@ -113,6 +124,7 @@ class NpcCard extends MarkdownRenderChild {
 		head.createDiv({ cls: 'nimble-npc-name', text: name });
 		if (role) head.createDiv({ cls: 'nimble-npc-role', text: role });
 		this.renderFacts(head, fm);
+		drawSystemExtras(this.plugin, head, ext, this.path, fm);
 
 		if (!def.fields.length) return;
 		const rows = card.createDiv({ cls: 'nimble-npc-fields' });

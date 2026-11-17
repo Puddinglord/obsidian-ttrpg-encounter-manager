@@ -12,6 +12,8 @@ import { readSheet5e } from './character';
 import { asEdition } from './editions';
 import { createCharacterNote5e, Dnd5eNewCharacterModal } from './new-character';
 import { dnd5eSlashCommands } from './slash';
+import { NPC_FIELDS_5E } from './npc';
+import { drawNpc5e } from './npc-card';
 
 export const dnd5eSystem: GameSystem = {
 	id: 'dnd5e',
@@ -21,6 +23,9 @@ export const dnd5eSystem: GameSystem = {
 	attribution: DND5E_ATTRIBUTION,
 	vocabulary: { defense: 'AC' },
 	slashCommands: dnd5eSlashCommands,
+	noteKinds: {
+		npc: { fields: NPC_FIELDS_5E, card: (el, ctx) => drawNpc5e(dnd5e(), el, ctx) },
+	},
 	conditions: (edition?: string): readonly ConditionDef[] => conditionsFor(edition ?? DEFAULT_EDITION),
 	quickLook(plugin, target) {
 		openNoteQuickLook(plugin.app, target);

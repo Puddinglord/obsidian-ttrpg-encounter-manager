@@ -112,12 +112,13 @@ export function sceneNote(name: string, order: number): string {
  * headings below are prompts, all optional. A player's version is written
  * from the outside: what we've seen and suspect, not their secrets.
  */
-export function npcNote(name: string, side: NoteSide = 'gm'): string {
+export function npcNote(name: string, side: NoteSide = 'gm', x: SystemExtras = {}): string {
 	const props = fm({
 		nimble: 'npc', title: titleOf(name), role: '""', portrait: '""', aliases: '[]',
 		ancestry: '""', pronouns: '""', age: '""', faction: '""', location: '""',
 		status: 'alive', attitude: side === 'player' ? 'unknown' : 'neutral',
 		first_met: side === 'player' ? '""' : undefined,
+		...x.fields,
 	});
 	if (side === 'player') {
 		return props + `
@@ -166,10 +167,10 @@ ${NPC_CARD_BLOCK}
 }
 
 /** A place. `region:` links to the place it sits in, so locations nest (a tavern in a town in a region). */
-export function locationNote(name: string, side: NoteSide = 'gm'): string {
-	const props = fm({ nimble: 'location', title: titleOf(name), type: '""', region: '""', status: '""', image: '""' });
+export function locationNote(name: string, side: NoteSide = 'gm', x: SystemExtras = {}): string {
+	const props = fm({ nimble: 'location', title: titleOf(name), type: '""', region: '""', status: '""', image: '""', ...x.fields });
 	const player = side === 'player';
-	return props + `
+	return props + (x.card ? `\n${NOTE_CARD}` : '') + `
 *${player ? 'What it looks, sounds and smells like when we arrive.' : 'Sights, sounds, smells. What the heroes notice first.'}*
 
 ## Overview
@@ -204,14 +205,15 @@ export function locationNote(name: string, side: NoteSide = 'gm'): string {
  * once it's completed or failed. The GM's version holds the truth behind it;
  * a player's is what the party was told and has pieced together since.
  */
-export function questNote(name: string, side: NoteSide = 'gm'): string {
+export function questNote(name: string, side: NoteSide = 'gm', x: SystemExtras = {}): string {
 	const player = side === 'player';
 	const props = fm({
 		nimble: 'quest', title: titleOf(name), status: player ? 'active' : 'available', type: 'side',
 		giver: '""', location: '""', reward: '""', level: player ? undefined : '""',
+		...x.fields,
 	});
 	if (player) {
-		return props + `
+		return props + (x.card ? `\n${NOTE_CARD}` : '') + `
 \`\`\`box quest title="The job"
 Who asked, what they want done, and what they offered.
 \`\`\`
@@ -235,7 +237,7 @@ Who asked, what they want done, and what they offered.
 -
 `;
 	}
-	return props + `
+	return props + (x.card ? `\n${NOTE_CARD}` : '') + `
 \`\`\`box quest title="The hook"
 How the heroes hear about it, who asks, and what they're offered.
 \`\`\`
@@ -338,14 +340,26 @@ export function creatureNote(creature: string): string {
 `;
 }
 
+/**
+ * What the campaign's game system adds to a kind of note: its properties (a 5e
+ * NPC's AC and HP, as `key: '""'`), and whether it draws a card for the kind
+ * (then the note starts with a ```nimble-note block for it to draw in).
+ */
+export interface SystemExtras {
+	fields?: Record<string, string>;
+	card?: boolean;
+}
+
+const NOTE_CARD = '```nimble-note\n```\n';
+
 /** A blank note: no properties, nothing to delete. */
 export function blankNote(): string {
 	return '';
 }
 
 /** A map note. `image` is link text for the map picture, or empty to fill in later. */
-export function mapNote(name: string, image?: string): string {
-	return fm({ nimble: 'map', title: titleOf(name) }) + `
+export function mapNote(name: string, image?: string, x: SystemExtras = {}): string {
+	return fm({ nimble: 'map', title: titleOf(name), ...x.fields }) + (x.card ? `\n${NOTE_CARD}` : '') + `
 *What this map shows. Click a pin to open its note.*
 
 \`\`\`nimble-map

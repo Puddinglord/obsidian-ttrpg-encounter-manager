@@ -17,6 +17,7 @@ Where the engines are going (compendium, entity builder, character wizard, conte
 | `encounterBlock` | Draw ```nimble-encounter in its campaigns (difficulty, Run) | ✓ | ✓ |
 | `openTracker`, `openCompendium` | Its tracker and compendium (Open… commands, ribbon) | (default) | ✓ |
 | `slashCommands(plugin)` | Its "/" commands, added to core's (`core/slash.ts`). One with a base command's name or alias replaces it (5e's `/roll` adds advantage). Name shared commands as SLASH_ORDER does (`monster`, `spell`, `item`, `encounter`, `add`, `statblock`) so they sit in the same place in every game's menu. Look up runtime state when a command runs, not when the list is made | ✓ | ✓ |
+| `noteKinds` | What it adds to the shared note kinds: `npc`, `location`, `quest`, `map`. `fields` are properties new notes get and the card shows as stats (keys lowercase, not core's own; `gmOnly` keeps them out of players' notes). `card(el, ctx)` draws more below core's card; with `replace: true` it draws the whole card. Keep it light: most kinds need no drawing of their own | – | ✓ (NPC: AC, HP, CR, `statblock`, Add to fight) |
 | `vocabulary` | Words core shows for the system's ideas: `defense` ("DEF", "AC") | ✓ | ✓ |
 
 Missing optional members fall back to Nimble's behaviour or a "not yet" notice. Add members from **real call sites**: when core or `src/app` needs to ask a system something, add it here, document it in the table above, implement it in every system, and extend the conformance suite in `tests/systems.test.ts`.

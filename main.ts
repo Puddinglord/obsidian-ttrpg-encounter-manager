@@ -37,6 +37,7 @@ import { openPopover } from './src/core/popover';
 import { CampaignStore } from './src/core/campaigns';
 import { registerBoxBlock } from './src/core/box-block';
 import { registerNpcCard } from './src/core/npc-card';
+import { registerNoteCard } from './src/core/note-card';
 import { registerFightBlock, saveFight } from './src/systems/nimble/saved-fight';
 import { NpcLinker } from './src/core/npc-links';
 import { npcLivePreview } from './src/core/npc-live-preview';
@@ -248,6 +249,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		registerEncounterBlocks(this);
 		registerBoxBlock(this);
 		registerNpcCard(this);
+		registerNoteCard(this);
 		registerFightBlock(this);
 		new NpcLinker(this);
 		registerTables(this);

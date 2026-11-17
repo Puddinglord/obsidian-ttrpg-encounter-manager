@@ -13,6 +13,7 @@ import type NimbleStatblocksPlugin from '../../main';
 import type { ConditionDef, PartyMember } from '../core/types';
 import type { EncounterDef } from '../core/encounter-def';
 import type { SlashCommand } from '../core/slash';
+import type { NoteKindExtensions } from '../core/note-kinds';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
 export interface Attribution {
@@ -86,4 +87,9 @@ export interface GameSystem {
 	slashCommands?(plugin: NimbleStatblocksPlugin): SlashCommand[];
 	/** The system's words for things core shows: the party table's defense column ("DEF", "AC"). */
 	readonly vocabulary?: { readonly defense?: string };
+	/**
+	 * What it adds to the shared note kinds (NPC, location, quest, map): properties new
+	 * notes get and their cards show, and optionally its own drawing of a kind's card.
+	 */
+	readonly noteKinds?: NoteKindExtensions;
 }

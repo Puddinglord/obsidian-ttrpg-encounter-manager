@@ -1,6 +1,7 @@
 // Live campaign index for the vault, plus the active campaign. The active
 // campaign follows the note you open, and each campaign keeps its own party.
 
+import { fieldDefaults, SHARED_NOTE_KINDS, SharedNoteKind } from './note-kinds';
 import { debounce, Events, normalizePath, Notice, TAbstractFile, TFile, TFolder } from 'obsidian';
 import type NimbleStatblocksPlugin from '../../main';
 import {
@@ -380,12 +381,15 @@ export class CampaignStore extends Events {
 		const c = this.of(path);
 		const ch = c && chapterOf(c, path);
 		const side = c?.role ?? this.role();
+		// What the campaign's game system adds to this kind of note.
+		const ext = (SHARED_NOTE_KINDS as readonly string[]).includes(kind) ? this.plugin.system(path).noteKinds?.[kind as SharedNoteKind] : undefined;
+		const x = { fields: fieldDefaults(ext?.fields, side), card: !!ext?.card && kind !== 'npc' };
 		let body: string;
 		switch (kind) {
 			case 'scene': body = sceneNote(name, nextOrder(ch?.scenes ?? [])); break;
-			case 'npc': body = npcNote(name, side); break;
-			case 'location': body = locationNote(name, side); break;
-			case 'quest': body = questNote(name, side); break;
+			case 'npc': body = npcNote(name, side, x); break;
+			case 'location': body = locationNote(name, side, x); break;
+			case 'quest': body = questNote(name, side, x); break;
 			case 'monster': body = monsterNote(name); break;
 			case 'handout': body = handoutNote(name, side); break;
 			case 'character': body = characterNote(name, { level: c?.level, mine: opts.mine }); break;
@@ -396,7 +400,7 @@ export class CampaignStore extends Events {
 			}
 			case 'map': {
 				const img = opts.image ? this.app.vault.getAbstractFileByPath(opts.image) : null;
-				body = mapNote(name, img instanceof TFile ? this.app.metadataCache.fileToLinktext(img, path, false) : undefined);
+				body = mapNote(name, img instanceof TFile ? this.app.metadataCache.fileToLinktext(img, path, false) : undefined, x);
 				break;
 			}
 			default: body = blankNote();

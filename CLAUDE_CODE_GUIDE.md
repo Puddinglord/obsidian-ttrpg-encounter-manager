@@ -36,6 +36,8 @@ src/core/
   box-def.ts            ```box fence format: presets, colours, styles, icon library (pure, tested)
   box-block.ts          Box renderer and the icon/colour/style editor (writes the fence line back)
   npc-links.ts          Reading view: NPC link chips and auto-linked mentions
+  note-kinds.ts         The shared note kinds and what a system adds to them (fields, card) (pure, tested)
+  note-card.ts          Draws a system's stats and card in the NPC card, and the ```nimble-note block for other kinds
   npc-live-preview.ts   The same for Live Preview (CodeMirror decorations)
   tables.ts             DC columns as pills; the "Styled tables" body class
   dice3d/               3D dice: index.ts (tiny entry), renderer.ts (three.js), geometry.ts (shapes, face-up math, tested)

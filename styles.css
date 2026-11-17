@@ -2283,6 +2283,15 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 .nimble-npc-link-icon { display: inline-flex; color: var(--text-faint); }
 .nimble-npc-link-icon svg { width: 13px; height: 13px; }
 .nimble-npc-pills { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
+/* What the campaign's game system adds to a note's card (core/note-card.ts): stats such as AC 15 · HP 22. */
+.nimble-note-stats { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
+.nimble-note-stat {
+	display: inline-flex; align-items: baseline; gap: 0.3rem; padding: 0.15rem 0.5rem; border-radius: var(--radius-s);
+	background: var(--background-modifier-hover); font-size: 0.8rem; line-height: 1.3;
+}
+.nimble-note-stat-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+.nimble-note-stat-value { font-weight: 600; color: var(--text-normal); font-variant-numeric: tabular-nums; }
+.nimble-note-card { margin: 0.25rem 0 0.75rem; }
 /* button.… so Obsidian's own button look (white, shadow) never wins over the pill's */
 button.nimble-npc-pill {
 	display: inline-flex; align-items: center; gap: 0.25rem; height: 1.45rem; padding: 0 0.55rem; border-radius: 999px; box-shadow: none; border: none;
@@ -4740,6 +4749,9 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .dnd5e-encounter-notes { color: var(--text-muted); font-size: 0.9rem; white-space: pre-wrap; }
 .dnd5e-encounter-missing { color: var(--color-red); font-size: 0.85rem; }
 .dnd5e-encounter-actions { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+.dnd5e-npc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.45rem; font-size: 0.85rem; }
+.dnd5e-npc-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+button.dnd5e-npc-fight { display: inline-flex; align-items: center; gap: 0.3rem; height: auto; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
 /* 2024 difficulty names, in the 2014 ones' colours. */
 .diff-low { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
 .diff-moderate { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
