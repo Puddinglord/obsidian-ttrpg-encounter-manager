@@ -19,7 +19,7 @@ The second game system, and the template for adding more. One system, two **edit
 
 ## Data
 
-- `scripts/dnd5e/fetch.sh <dir>` downloads the 5e-bits SRD JSON pinned to one commit. `python3 -I scripts/dnd5e/build.py <dir>` writes `data/conditions.json`, `monsters-<ed>.json` and `compendium-<ed>.json`.
+- `scripts/dnd5e/fetch.sh <dir>` downloads the SRD JSON from 5e-bits/5e-srd-api (packages/5e-database; the old 5e-database repo is archived) pinned to one commit. `python3 -I scripts/dnd5e/build.py <dir>` writes `data/conditions.json`, `monsters-<ed>.json` and `compendium-<ed>.json`.
 - Monsters and the compendium are imported with `?gz` (lazy). Conditions are imported directly.
 - What `build.py` fixes up:
   - It adds usage to names ("(Recharge 5–6)", "(3/Day, or 4/Day in Lair)").

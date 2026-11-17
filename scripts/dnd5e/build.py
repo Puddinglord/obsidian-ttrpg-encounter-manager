@@ -314,6 +314,15 @@ def feats(ed):
     return out
 
 def rules(ed):
+    """The SRD's rules text. 5e-srd-api keeps it as a heading tree in Rules.json (each heading
+    its own entry, with a parent); older data had a flat Rule-Sections.json."""
+    tree = load(ed, 'Rules')
+    if tree and any('parent' in r or 'children' in r for r in tree):
+        by = {r['index']: r for r in tree}
+        def top(r):
+            while r.get('parent'): r = by.get(r['parent']['index'] if isinstance(r['parent'], dict) else r['parent'], {})
+            return r.get('name', '')
+        return [{'name': r['name'], 'desc': text(r.get('desc')), 'topic': top(r)} for r in tree if text(r.get('desc'))]
     return [{'name': r['name'], 'desc': text(r.get('desc'))} for r in load(ed, 'Rule-Sections')]
 
 def compendium():

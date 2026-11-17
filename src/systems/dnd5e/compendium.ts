@@ -30,7 +30,7 @@ export interface Class5e {
 export interface Species5e { name: string; size: string; speed: number; type?: string; abilityBonuses?: string; desc?: string; traits: Feature5e[]; subspecies: { name: string; desc?: string; traits: Feature5e[] }[] }
 export interface Background5e { name: string; proficiencies: string[]; abilityScores?: string[]; feat?: string; feature?: Feature5e; equipment?: string }
 export interface Feat5e { name: string; desc: string; prerequisite?: string; type?: string }
-export interface Rule5e { name: string; desc: string }
+export interface Rule5e { name: string; desc: string; topic?: string }
 
 export interface Compendium5e {
 	spells: Spell5e[];
@@ -121,7 +121,7 @@ export function allHits(edition: Dnd5eEdition): Hit5e[] {
 		...c.species.map((species): Hit5e => ({ kind: 'species', name: species.name, edition, detail: [edition === '2014' ? 'Race' : 'Species', species.size, `${species.speed} ft.`].join(' · '), species })),
 		...c.backgrounds.map((background): Hit5e => ({ kind: 'background', name: background.name, edition, detail: background.feat ? `Background · ${background.feat}` : 'Background', background })),
 		...c.feats.map((feat): Hit5e => ({ kind: 'feat', name: feat.name, edition, detail: [feat.type ? `${feat.type} feat` : 'Feat', feat.prerequisite ? `needs ${feat.prerequisite}` : ''].filter(Boolean).join(' · '), feat })),
-		...c.rules.map((rule): Hit5e => ({ kind: 'rule', name: rule.name, edition, detail: 'Rule', rule })),
+		...c.rules.map((rule): Hit5e => ({ kind: 'rule', name: rule.name, edition, detail: rule.topic && rule.topic !== rule.name ? `Rule · ${rule.topic}` : 'Rule', rule })),
 		...conditionsFor(edition).map((cond): Hit5e => ({ kind: 'condition', name: cond.name, edition, detail: 'Condition', desc: cond.description })),
 	];
 	cache.set(edition, list);
