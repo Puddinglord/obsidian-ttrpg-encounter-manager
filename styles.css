@@ -1798,6 +1798,9 @@ body.is-tablet :is(.battle-outcome, .nimble-role-card) { padding-left: 0.7rem; p
 }
 .nimble-box-icon:hover { background: color-mix(in srgb, var(--box-color) 30%, transparent); transform: scale(1.06); }
 .nimble-box-icon svg { width: 17px; height: 17px; stroke-width: 2.2; }
+/* Obsidian's phone and tablet buttons pad 4px 20px, which left the icon no room; this outranks that. */
+.nimble-box-head button.nimble-box-icon { padding: 0; }
+.nimble-box-icon svg { flex: none; }
 .nimble-box-title {
 	flex: 1; min-width: 0; cursor: pointer; user-select: none;
 	font-size: 0.74rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
