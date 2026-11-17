@@ -1,6 +1,6 @@
 # Ember Vault user guide
 
-Ember Vault turns an Obsidian vault into a GM screen for the [Nimble TTRPG](https://nimbleRPG.com). Your adventure stays in ordinary Markdown notes, and the plugin adds the tools you need at the table on top of them.
+Ember Vault turns an Obsidian vault into a GM screen for the [Nimble TTRPG](https://nimbleRPG.com) and for [5e](5e.md) (the 2024 and 2014 rules, from the SRD). Your adventure stays in ordinary Markdown notes, and the plugin adds the tools you need at the table on top of them.
 
 New here? Start with **[Getting started](getting-started.md)**, or download the **[sample adventure](sample-adventure.md)** and open it as a vault. It's a short dungeon with every feature already set up.
 
@@ -18,6 +18,7 @@ New here? Start with **[Getting started](getting-started.md)**, or download the 
 | [The builder](builder.md) | Make monsters, spells and items on the books' numbers: quick or full, level first or stats first, from a template |
 | [Encounters](encounters.md) | Encounter blocks, difficulty, scaling monsters, the builder |
 | [GM maps](maps.md) | Maps with pins linked to your notes, tokens |
+| [Playing 5e](5e.md) | 5e campaigns: SRD monsters and ```5e stat blocks, XP-rated encounters, the initiative tracker, the compendium, character sheets |
 
 ## Playing
 

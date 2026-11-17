@@ -3,7 +3,7 @@
 	"name": "Ember Vault",
 	"version": "1.5.0",
 	"minAppVersion": "1.7.2",
-	"description": "Run and play Nimble TTRPG campaigns from your notes: a bundled bestiary, encounter blocks rated for your party, a combat tracker, GM maps, 3D dice, and interactive character sheets for players.",
+	"description": "Run and play Nimble and 5e campaigns from your notes: bundled bestiaries, encounter blocks rated for your party, combat trackers, GM maps, 3D dice, and interactive character sheets for players.",
 	"author": "Dakotah",
 	"authorUrl": "https://github.com/Puddinglord",
 	"isDesktopOnly": false

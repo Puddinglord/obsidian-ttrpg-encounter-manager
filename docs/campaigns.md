@@ -6,13 +6,13 @@ Run several campaigns from one vault. Each has its own chapters, scenes, NPCs, s
 
 ## Start one
 
-Use **New campaign**, from the castle icon in the ribbon or the command palette. First pick whether you **run it** or **[play in it](players.md)**. For a game you run, give it a name, a starting level and the number of heroes; it creates a folder with a home note, a first chapter and an opening scene. For a game you play in, name it and your character.
+Use **New campaign**, from the castle icon in the ribbon or the command palette. First pick whether you **run it** or **[play in it](players.md)**, and its **Game system**: Nimble, or [5e](5e.md) with the 2024 or 2014 rules. For a game you run, give it a name, a starting level and the number of heroes; it creates a folder with a home note, a first chapter and an opening scene. For a game you play in, name it and your character.
 
 ## The Campaign panel
 
 The panel in the left sidebar is home base. From it you can:
 
-- switch campaigns, and with them between GM and [player](players.md) view; **Campaign settings…** in the same menu changes the name, side and level
+- switch campaigns, and with them between GM and [player](players.md) view; **Campaign settings…** in the same menu changes the name, side, level and game system
 - open [Spotlight](spotlight.md) from the search bar under the campaign name, to find adversaries, NPCs and notes or roll dice
 - see the party: a card for each hero's character sheet, with their HP
 - **Continue** where you left off

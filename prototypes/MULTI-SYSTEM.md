@@ -183,6 +183,43 @@ Phase 3/4 pulls the generic parts back into core when 5e needs them: the compend
 - **No saved-format changes.** There's no `data.json` migration and no `settings.systems[id]` namespace yet. Encounters still embed `NimbleMonster`; they gain a system tag when a second system can be in a fight (Phase 3). Absent always means Nimble, so nothing old ever needs migrating.
 - **Core still takes the plugin type** (`import type … from '../../main'`), which exposes Nimble-typed members like `plugin.encounters`. The lint rule covers imports, not this. Phase 3 narrows it as the tracker becomes per-system.
 
+## Phases 2–5 as built (2026-11-17)
+
+**The order changed.** A system picker with one system in it couldn't be tested, so Phase 2 registered 5e (with its SRD conditions) and added the picker in the same step.
+
+**Commits:**
+1. Phase 1: the layers.
+2. Phase 2: 5e as a second system, plus the picker.
+3. Phase 3: 5e at the table (stat blocks, bestiaries, references, encounters, initiative tracker).
+4. Phase 4: the 5e compendium.
+5. Phase 5: 5e character sheets, both editions from one sheet.
+
+**The contract, as it ended up:**
+- `aliases`, `editions` and `conditions(edition)`
+- `characters`: `promptNew`, `createFromPartyMember`, `partyMember`
+- `quickLook`, `register(plugin)`, `encounterBlock`, `openTracker`, `openCompendium`
+
+Every member was written from a real call site in core or the app layer.
+
+**Moved to core because 5e needed them:**
+- `core/hover-preview.ts`: the floating card.
+- `core/inline-refs.ts`: finding `prefix:Name` in Reading view and Live Preview. Each system adds its provider.
+- `core/block-index.ts`: the vault index of fenced blocks.
+- `core/note-quick-look.ts` and `core/wiki-links.ts`.
+
+Nimble's own versions became thin users of these where that was cheap (references and hover). Nimble's monster index still has its own copy, because it also indexes homebrew spells and items.
+
+**Data.** `scripts/dnd5e/fetch.sh` pins 5e-bits/5e-database at a commit, and `build.py` writes `src/systems/dnd5e/data/` (conditions, monsters and compendium, per edition). The big files are imported with `?gz` (`scripts/gz-data.mjs`). They ship gzip-compressed in main.js and inflate on first use. main.js went from 2.18 MB (Nimble only) to 3.0 MB with everything.
+
+**Saved data.** The 5e fight lives in `settings.systemData.dnd5e.fight`, which is new and absent for existing users. Nothing older was migrated.
+
+**Known gaps** (5e has these in a simpler form, or not yet):
+- **Nimble-only tools.** The monster, spell and item builders; Nimble's slash commands (`/monster`, `/spell`, the encounter builder); saved fights; GM map tokens (they follow Nimble's tracker); the Character side panel (5e's "Open my character" opens the note). These stay out of the way in a 5e campaign or keep working on Nimble content.
+- **The compendium browser.** 5e has its own simple compendium view. Nimble's browser (typed filters, sorts, art) wasn't made generic. That's the obvious next extraction once someone wants filters in 5e.
+- **Sheets.** No level-up wizard (subclass choice, ASIs and feats, known or prepared spell counts), no multiclassing, and no 2024 weapon mastery on the sheet. Ability score bonuses from species or background are entered by hand. The party editor still labels AC as "Defense".
+- **Players.** A 5e encounter block in a player campaign lists the monsters without stats or a Run button. There are no battle-note outcomes like Nimble's.
+- **Fantasy Statblocks import.** Not done (open question 2).
+
 ## 10. Feasibility
 
 **Feasible, and the codebase is in good shape for it.** Campaigns, maps and quests need nothing. The real cost is phase 1, which unpicks `rules.ts` from 20 importers and turns the tracker's built-in Nimble phases into a pluggable turn model. Phase 5 (5e sheets) is the biggest new build. Phases 2–4 are mostly data and rendering on top of the contract.

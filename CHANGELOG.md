@@ -6,6 +6,18 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. Whe
 
 ## [Unreleased]
 
+### Added
+
+- 5e campaigns, with the 2024 rules (SRD 5.2) or the 2014 rules (SRD 5.1). Pick **Game system** in **New campaign** or **Campaign settings…**; everything else about campaigns works as before. See the new [Playing 5e](docs/5e.md) guide.
+- Both SRD bestiaries (341 and 334 monsters), ```` ```5e ```` stat blocks laid out the way each edition prints them, with clickable attack bonuses, saves, checks and damage, and `` `5e:Goblin` `` references with the CR, a hover card and a quick look. **Copy to vault** makes a book monster your campaign's own.
+- 5e encounters: an encounter block in a 5e campaign shows XP and difficulty by its rules (2024's XP budget, or 2014's thresholds and multipliers), and **Run** starts the fight in a 5e combat tracker with initiative order, turns and rounds, temporary HP, death saves, legendary actions and conditions.
+- The 5e compendium: spells, magic items, equipment, classes with their level tables, species and races, backgrounds, feats, rules and conditions from both SRDs, with `` `5e:spell:Fireball` ``-style references, autocomplete and Spotlight.
+- 5e character sheets: **New character** in a 5e campaign makes a note with a ```` ```5e-sheet ```` sheet that works out saves, skills, AC, attacks, spell DC and slots and features, rolls everything, and tracks HP, death saves, slots, rests and levels. The encounter party comes from the sheets.
+
+### Changed
+
+- Under the hood, Nimble and 5e are separate modules that can't reach into each other (the build checks), so a change to one can't break the other.
+
 ## [1.5.0] - 2026-11-17
 
 ### Added
