@@ -240,7 +240,8 @@ export class EntityBuilder extends Modal implements BuilderUI {
 	changed(): void {
 		if (this.queued) return;
 		this.queued = true;
-		window.requestAnimationFrame(() => { this.queued = false; this.refresh(); });
+		// Batches a burst of changes from one event; a microtask, not a frame, so a hidden window doesn't hold it back.
+		queueMicrotask(() => { this.queued = false; this.refresh(); });
 	}
 
 	live(fn: () => void): void { this.updaters.push(fn); }

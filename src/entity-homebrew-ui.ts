@@ -6,7 +6,7 @@ import { Compendium, itemDetail, Spell } from './compendium';
 import { pluginCardOptions, renderHitCard } from './compendium-card';
 import { bundledCompendium } from './compendium-data';
 import { diceAverage, formatDiceParts, parseDiceParts, RARITIES, Rarity, SPELL_DAMAGE } from './builder-math';
-import { ITEM_LANG, ItemKind, itemForCompendium, SPELL_LANG } from './homebrew-def';
+import { HomebrewItem, ITEM_LANG, ItemKind, itemForCompendium, SPELL_LANG } from './homebrew-def';
 import {
 	AreaShape, autoTier, bookPeers, ItemDraft, itemSource, newItemDraft, newSpellDraft, rarityGuide, RangeKind, SaveKey, SCHOOLS, SpellDraft,
 	spellActions, spellDamage, spellExpected, spellSource, suggestedCost, suggestedScaling, suggestedUpcast, tierCheck, toItem, toSpell, WEAPON_PROPS,
@@ -46,7 +46,7 @@ class SpellBuilder implements KindBuilder {
 
 	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
 		this.folder = homeFolder(plugin, 'Homebrew', 'Homebrew');
-		const s = (seed as { spell?: Spell } | undefined)?.spell;
+		const s = (seed as { spell?: Spell | null } | undefined)?.spell;
 		if (s) this.d = fromSpell(s);
 	}
 
@@ -200,7 +200,10 @@ function fromSpell(s: Spell): SpellDraft {
 		distance: range ? Number(range[2]) : undefined,
 		area: area ? (area[1].toLowerCase() as AreaShape) : sq ? 'square' : s.aoe ? 'aoe' : 'none',
 		areaSize: area ? Number(area[2]) : sq ? Number(sq[1]) : undefined,
-		concentration: s.concentration, damage: s.damage, upcast: s.higherLevels, scaling: s.cantripScaling, text: s.text ?? '',
+		concentration: s.concentration, damage: s.damage, upcast: s.higherLevels, scaling: s.cantripScaling,
+		// "DEX save for half." leads the text when the builder wrote it: read it back as the save.
+		save: (s.text?.match(/^(STR|DEX|INT|WIL) save for half\./)?.[1] ?? '') as SaveKey,
+		text: (s.text ?? '').replace(/^(STR|DEX|INT|WIL) save for half\.\s*/, ''),
 	};
 }
 
@@ -221,8 +224,9 @@ class ItemBuilder implements KindBuilder {
 
 	constructor(private plugin: NimbleStatblocksPlugin, seed: unknown) {
 		this.folder = homeFolder(plugin, 'Homebrew', 'Homebrew');
-		const k = (seed as { itemKind?: ItemKind } | undefined)?.itemKind;
-		if (k) this.d = newItemDraft(k);
+		const s = seed as { itemKind?: ItemKind; item?: HomebrewItem | null } | undefined;
+		if (s?.item) this.d = fromItem(s.item);
+		else if (s?.itemKind) this.d = newItemDraft(s.itemKind);
 	}
 
 	steps(): StepDef[] {
@@ -325,6 +329,17 @@ class ItemBuilder implements KindBuilder {
 	output(): Output {
 		return { lang: ITEM_LANG, body: itemSource(this.d), name: this.d.name.trim(), frontmatter: { nimble: 'item' }, folder: this.folder };
 	}
+}
+
+function fromItem(it: HomebrewItem): ItemDraft {
+	const kind = (['weapon', 'armor', 'shield', 'consumable', 'magic', 'gear'] as ItemKind[]).find(k => k === it.category) ?? (it.category === 'wand' || it.category === 'scroll' ? 'magic' : 'gear');
+	const text = it.text ?? '';
+	const c = text.match(/\s*\*\*Catch:\*\*\s*(.+)$/);
+	return {
+		...newItemDraft(kind), name: it.name, rarity: (RARITIES as readonly string[]).includes(it.rarity ?? '') ? it.rarity as Rarity : '',
+		damage: it.damage, stat: it.stat === 'DEX' ? 'DEX' : 'STR', damageType: it.damageType ?? '', props: it.properties ?? [], armor: it.armor,
+		strength: it.strength, cost: it.cost, charges: it.charges, text: c ? text.slice(0, c.index).trim() : text, catch: c ? c[1].trim() : '',
+	};
 }
 
 export function registerHomebrewBuilders(): void {

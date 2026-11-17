@@ -30,6 +30,7 @@ import type { Segment } from './compendium-entries';
 import { compendiumEntries, entryReference } from './compendium-browser';
 import { search as searchCompendium } from './compendium-query';
 import { insertFromCompendium, InsertMode, openAddMonsterPicker } from './compendium-pickers';
+import { EntityKind, openBuilder } from './entity-builder';
 
 type ArgKind = 'monster' | 'add' | 'list' | 'fought' | 'condition' | 'image' | 'dice' | 'box' | 'npc' | 'quest' | 'compendium';
 
@@ -51,6 +52,8 @@ interface SlashCommand {
 	side?: 'gm' | 'player';
 	/** Enter on the bare command opens the compendium dialog, set to this. */
 	picker?: Picker;
+	/** Opens the builder; what it makes goes where the slash was. */
+	build?: EntityKind;
 }
 
 interface SlashItem {
@@ -86,19 +89,6 @@ attacks:
 - **Stab.** 1d6 (follows minion rules).
 \`\`\``;
 
-const NEW_MONSTER = `\`\`\`nimble
-name: New Monster
-level: 1
-size: Medium
-type: Beast
-hp: 21
-saves: DEX+
-abilities:
-- Pack Hunter: Advantage on attacks against a target next to another ally.
-attacks:
-- **Bite.** 1d8+2.
-\`\`\``;
-
 const COMMANDS: SlashCommand[] = [
 	{ name: 'monster', aliases: ['m', 'adversary'], icon: 'skull', desc: 'Monster reference', hint: '/monster goblin', arg: 'monster', picker: { segment: 'adversaries', segments: ['adversaries', 'companions'], title: 'Insert a monster' } },
 	{ name: 'spell', aliases: ['sp'], icon: 'wand-2', desc: 'Spell reference', hint: '/spell school:fire', arg: 'compendium', picker: { segment: 'spells', title: 'Insert a spell' } },
@@ -114,7 +104,9 @@ const COMMANDS: SlashCommand[] = [
 	{ name: 'builder', side: 'gm', icon: 'scale', desc: 'Open the encounter builder', action: (p) => new BuilderModal(p).open() },
 	{ name: 'legendary', side: 'gm', aliases: ['boss', 'solo'], icon: 'crown', desc: 'Legendary monster template', insert: () => ({ text: LEGENDARY, block: true }) },
 	{ name: 'minion', side: 'gm', icon: 'users', desc: 'Minion template', insert: () => ({ text: MINION, block: true }) },
-	{ name: 'new-monster', side: 'gm', aliases: ['template'], icon: 'file-plus', desc: 'Blank monster stat block', insert: () => ({ text: NEW_MONSTER, block: true }) },
+	{ name: 'new-monster', side: 'gm', aliases: ['template', 'build-monster'], icon: 'skull', desc: 'Build a monster here, with the GM Guide\'s numbers', build: 'monster' },
+	{ name: 'new-spell', aliases: ['build-spell', 'homebrew-spell'], icon: 'wand-2', desc: 'Build a homebrew spell here', build: 'spell' },
+	{ name: 'new-item', aliases: ['build-item', 'homebrew-item'], icon: 'backpack', desc: 'Build a homebrew item here', build: 'item' },
 	{ name: 'condition', aliases: ['cond', 'status'], icon: 'activity', desc: 'Condition rules', hint: '/condition dazed', arg: 'condition' },
 	{ name: 'box', aliases: ['callout'], icon: 'square-dashed', desc: 'Any box type', hint: '/box treasure', arg: 'box' },
 	{ name: 'npc', aliases: ['who'], icon: 'user-round', desc: 'Link an NPC, or create one', hint: '/npc kevori', arg: 'npc' },
@@ -262,6 +254,11 @@ export class NimbleSlashSuggest extends EditorSuggest<SlashItem> {
 			// The dialog, ready to type in; the pick lands where the slash was and the cursor comes back to the note.
 			editor.replaceRange('', start, end);
 			insertFromCompendium(this.plugin, editor, start, c.picker!);
+		};
+		else if (c.build) item.run = (editor, start, end) => {
+			editor.replaceRange('', start, end);
+			const at = { ...start };
+			openBuilder(this.plugin, { kind: c.build!, sourcePath: this.plugin.app.workspace.getActiveFile()?.path, insert: (block) => this.write(editor, at, at, block, true) });
 		};
 		else if (c.arg) item.complete = `/${c.name} `;
 		else if (c.action) item.run = (editor, start, end) => { editor.replaceRange('', start, end); c.action!(this.plugin); };

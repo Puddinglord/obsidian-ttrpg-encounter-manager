@@ -4,6 +4,7 @@
 import type NimbleStatblocksPlugin from '../main';
 import { Compendium, CompendiumHit } from './compendium';
 import { pluginCardOptions, renderHitCard } from './compendium-card';
+import { addEditButton } from './builder-register';
 import { ITEM_LANG, itemForCompendium, parseItemBlock, parseSpellBlock, SPELL_LANG } from './homebrew-def';
 
 /** The card the compendium would show for one homebrew entry. */
@@ -18,7 +19,7 @@ export function homebrewHit(kind: 'spell' | 'item', body: string): CompendiumHit
 
 export function registerHomebrewBlocks(plugin: NimbleStatblocksPlugin): void {
 	for (const [lang, kind] of [[SPELL_LANG, 'spell'], [ITEM_LANG, 'item']] as const) {
-		plugin.registerMarkdownCodeBlockProcessor(lang, (source, el) => {
+		plugin.registerMarkdownCodeBlockProcessor(lang, (source, el, ctx) => {
 			const hit = homebrewHit(kind, source);
 			if (!hit) {
 				const err = el.createDiv({ cls: 'nimble-error' });
@@ -28,6 +29,8 @@ export function registerHomebrewBlocks(plugin: NimbleStatblocksPlugin): void {
 			}
 			const wrap = el.createDiv({ cls: 'nimble-homebrew' });
 			renderHitCard(wrap, hit, pluginCardOptions(plugin, hit.name));
+			const seed = kind === 'spell' ? { spell: parseSpellBlock(source) } : { item: parseItemBlock(source) };
+			addEditButton(plugin, el, ctx, { kind, lang, source, seed });
 		});
 	}
 }

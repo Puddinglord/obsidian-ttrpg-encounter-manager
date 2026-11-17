@@ -7,6 +7,8 @@
 
 import { debounce, ItemView, ViewStateResult, WorkspaceLeaf } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
+import { openBuilder } from './entity-builder';
+import type { Item, Spell } from './compendium';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
 import { ALL_SEGMENTS, BrowserSnapshot, CompendiumBrowser, copyReference, entryReference, insertReference, invalidateCompendium } from './compendium-browser';
 import type { Entry, Segment } from './compendium-entries';
@@ -135,10 +137,15 @@ export class CompendiumView extends ItemView {
 				if (entryReference(e)) return { icon: 'copy', label: `Copy a reference to ${e.name}`, run: () => copyReference(e) };
 				return undefined;
 			},
+			onNew: (seg) => {
+				const kind = seg === 'spells' ? 'spell' : seg === 'items' ? 'item' : lore ? 'spell' : 'monster';
+				openBuilder(plugin, { kind });
+			},
 			detail: {
 				monsterActions: (e) => [
 					{ label: 'Copy reference', icon: 'copy', title: 'Copy `nimble:Name` to paste into any note', onClick: () => copyReference(e) },
 					{ label: 'Insert in note', icon: 'at-sign', title: 'Insert `nimble:Name` into the note you were editing (copies it when no note is open)', onClick: () => insertReference(plugin, e) },
+					...(lore || !e.monster ? [] : [{ label: 'Use as a template', icon: 'copy-plus', title: 'Make a new monster from this one in the builder', onClick: () => { openBuilder(plugin, { kind: 'monster', seed: { monster: e.monster!.monster } }); } }]),
 				],
 				actions: (e) => detailActions(plugin, e),
 			},
@@ -169,5 +176,7 @@ export function detailActions(plugin: NimbleStatblocksPlugin, e: Entry): { label
 		out.push({ label: 'Insert in note', icon: 'at-sign', run: () => insertReference(plugin, e) });
 	}
 	if (e.hit || e.condition || e.rule) out.push({ label: 'Quick look', icon: 'maximize-2', run: () => openEntry(plugin, e) });
+	if (e.hit?.kind === 'spell') out.push({ label: 'Use as a template', icon: 'copy-plus', run: () => { openBuilder(plugin, { kind: 'spell', seed: { spell: { ...(e.hit!.entry as Spell), name: `${e.hit!.name} (variant)` } } }); } });
+	if (e.hit?.kind === 'item') out.push({ label: 'Use as a template', icon: 'copy-plus', run: () => { openBuilder(plugin, { kind: 'item', seed: { item: { ...(e.hit!.entry as Item), name: `${e.hit!.name} (variant)` } } }); } });
 	return out;
 }

@@ -193,6 +193,8 @@ export interface BrowserOptions {
 	prefer?: { label: string; test: (e: Entry) => boolean };
 	/** Already chosen: tagged and listed after the rest. */
 	isTaken?: (e: Entry) => boolean;
+	/** A New button in the search bar: make something for the tab you're on. */
+	onNew?: (segment: Segment) => void;
 	/** Offer "Add “what you typed”" when nothing matches exactly. */
 	custom?: { label: (text: string) => string; run: (text: string, ev: KeyboardEvent | MouseEvent) => void };
 	placeholder?: string;
@@ -401,6 +403,11 @@ export class CompendiumBrowser extends Component {
 		this.filterBtn = bar.createEl('button', { cls: 'clickable-icon nimble-cmpx-filter', attr: { 'aria-label': 'Filters', 'aria-expanded': 'false' } });
 		setIcon(this.filterBtn, 'sliders-horizontal');
 		this.filterBtn.addEventListener('click', () => { this.panelOpen = !this.panelOpen; if (this.panelOpen) this.sortOpen = false; this.drawSortPanel(); this.drawPanel(); this.input.focus(); });
+		if (this.o.onNew) {
+			const nb = bar.createEl('button', { cls: 'clickable-icon nimble-cmpx-new', attr: { 'aria-label': 'New monster, spell or item' } });
+			setIcon(nb, 'plus');
+			nb.addEventListener('click', () => this.o.onNew!(this.segment));
+		}
 
 		this.sortEl = side.createDiv({ cls: 'nimble-cmpx-sortpanel' });
 		this.panelEl = side.createDiv({ cls: 'nimble-cmpx-panel' });

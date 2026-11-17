@@ -691,6 +691,15 @@ body {
 	border-radius: 4px;
 }
 
+/* Edit in the builder: a pencil on a monster, spell or item block in a note. Live Preview's own
+   "edit source" button takes the corner, so ours sits beside it there. */
+:is(.block-language-nimble, .block-language-nimble-spell, .block-language-nimble-item) { position: relative; }
+button.nimble-block-edit { position: absolute; top: 0.55rem; right: 0.55rem; z-index: 2; width: 1.9rem; height: 1.9rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-s); background: var(--background-primary); border: 1px solid var(--background-modifier-border); opacity: 0; transition: opacity 0.15s ease; }
+button.nimble-block-edit svg { width: 14px; height: 14px; }
+.block-language-nimble:hover > button.nimble-block-edit, :is(.block-language-nimble-spell, .block-language-nimble-item):hover > button.nimble-block-edit, button.nimble-block-edit:focus-visible { opacity: 1; }
+.markdown-source-view button.nimble-block-edit { right: 2.6rem; }
+body.is-mobile button.nimble-block-edit { opacity: 0.85; }
+
 /* Stat block hints (statblock-issues.ts): one quiet line under a hand-written block, opening into notes. */
 .nimble-statblock + .nimble-issues { margin-top: -0.6rem; }
 .nimble-issues { margin: 0.4rem 0 1rem; font-size: var(--font-ui-small); color: var(--text-muted); }
