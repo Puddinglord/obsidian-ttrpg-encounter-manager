@@ -5513,35 +5513,54 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		}, C);
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
 
-		// New character is 5e's dialog in a 5e campaign.
+		// New character is 5e's wizard in a 5e campaign: who, abilities, skills, subclass and spells.
+		const B = '.modal.nimble-entity-builder';
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
-		const modal = o.page.locator('.modal.dnd5e-new-character');
-		await modal.waitFor({ timeout: 3000 });
-		await modal.locator('input[type="text"]').first().fill('Ilse Vane');
-		await modal.locator('select').first().selectOption('Wizard');
-		await modal.locator('.setting-item', { hasText: 'Level' }).locator('input').fill('3');
-		await modal.locator('button', { hasText: 'Create character' }).click();
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Character');
+		assert.equal(await o.page.locator(`${B} .eb-kind`).count(), 1);
+		const panel = `${B} .eb-panel.is-active`;
+		await o.page.locator(`${panel} input[data-field="Name"]`).fill('Ilse Vane');
+		await o.page.locator(`${panel} select[data-field="Class"]`).selectOption('Wizard');
+		await o.page.locator(`${panel} input[data-field="Level"]`).fill('3');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Skills' }).click();
+		for (const sk of ['Arcana', 'History']) await o.page.locator(`${panel} .eb-pick[data-value="${sk}"]`).click();
+		// Wizards pick two: the rest wait until one is taken off.
+		assert.equal(await o.page.locator(`${panel} .eb-pick.is-active`).count(), 2);
+		assert.equal(await o.page.locator(`${panel} .eb-pick[data-value="Investigation"]`).isDisabled(), true);
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Class' }).click();
+		await o.page.locator(`${panel} select[data-field="Subclass"]`).selectOption({ index: 1 });
+		for (const sp of ['Fire Bolt', 'Light']) await o.page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="${sp}"]`).click();
+		await o.page.locator(`${panel} [data-key="spells"] .eb-pick[data-value="Shield"]`).click();
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane[\s\S]*Level 3[\s\S]*Wizard[\s\S]*HP\s*17/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-new-character.png') });
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
 		await o.waitFor(async () => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), note), { what: 'character note' });
 		await o.waitFor(async () => (await fm()).class === 'Wizard', { what: 'frontmatter indexed' });
 		const f0 = await fm();
-		assert.deepEqual([f0.level, f0.int, f0.wis, f0.con, f0.dex, f0.str, f0.cha, f0.hp_max, f0.edition], [3, 15, 14, 13, 12, 10, 8, 17, '2024']);
+		// The standard array set out for a wizard, then the Acolyte's +2 Int and +1 Wis.
+		assert.deepEqual([f0.level, f0.int, f0.wis, f0.con, f0.dex, f0.str, f0.cha, f0.hp_max, f0.edition], [3, 17, 15, 13, 12, 10, 8, 17, '2024']);
+		assert.deepEqual([...f0.skills].sort(), ['Arcana', 'History', 'Insight', 'Religion']);
+		assert.deepEqual(f0.spells, ['Fire Bolt', 'Light', 'Shield']);
+		assert.ok(f0.subclass);
 		assert.match(await read(o, note), /```5e-sheet\n```/);
 
 		await o.openFile(note, 'preview');
 		await o.page.locator(S).waitFor({ timeout: 5000 });
 		assert.match(await o.page.locator(`${S} .dnd5e-sheet-sub`).innerText(), /Level 3[\s\S]*Wizard/);
 		assert.match(await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'AC' }).innerText(), /11/);
-		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Intelligence · Save DC 12 · Attack \+4/);
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Intelligence · Save DC 13 · Attack \+5/);
 		assert.deepEqual(await o.page.locator(`${S} .dnd5e-slot-group`).evaluateAll(gs => gs.map(g => g.querySelectorAll('.dnd5e-pip').length)), [4, 2]);
 		await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'Initiative' }).locator('.dnd5e-sheet-roll').click();
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse Vane: initiative', { what: 'initiative rolled' });
 
-		// Skills: the dot makes Arcana proficient (+2 → +4).
-		const arcana = o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Arcana' });
-		assert.match(await arcana.locator('.dnd5e-sheet-roll').innerText(), /\+2/);
-		await arcana.locator('.dnd5e-skill-dot').click();
-		await o.waitFor(async () => (await fm()).skills?.includes('Arcana'), { what: 'Arcana proficient' });
-		await o.waitFor(async () => /\+4/.test(await o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Arcana' }).locator('.dnd5e-sheet-roll').innerText()), { what: 'Arcana +4' });
+		// Skills: the dot takes Nature from untrained (+3) to proficient (+5).
+		const nature = o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Nature' });
+		assert.match(await nature.locator('.dnd5e-sheet-roll').innerText(), /\+3/);
+		await nature.locator('.dnd5e-skill-dot').click();
+		await o.waitFor(async () => (await fm()).skills?.includes('Nature'), { what: 'Nature proficient' });
+		await o.waitFor(async () => /\+5/.test(await o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Nature' }).locator('.dnd5e-sheet-roll').innerText()), { what: 'Nature +5' });
 
 		// HP: 5 damage.
 		await o.page.locator(`${S} .dnd5e-sheet-hp .dnd5e-hp-input`).fill('5');
@@ -5566,9 +5585,17 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Long rest' }).click();
 		await o.waitFor(async () => { const f = await fm(); return f.hp === 17 && f.slots_used === undefined; }, { what: 'long rest' });
 
-		// Level up: level 4, d6 average (4) + Con (1).
+		// Level up in the wizard: d6 average (4) + Con (1), and level 4's increase (+2 Int, the best score).
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();
-		await o.waitFor(async () => { const f = await fm(); return f.level === 4 && f.hp_max === 22; }, { what: 'level 4' });
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		assert.deepEqual(await o.page.locator(`${B} .eb-dot`).allInnerTexts(), ['Hit points', 'Increase', 'Spells']);
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane, level 4[\s\S]*\+5/);
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Spells' }).click();
+		await o.page.locator(`${panel} .eb-pick[data-value="Misty Step"]`).click();
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => { const f = await fm(); return f.level === 4 && f.hp_max === 22 && f.int === 19; }, { what: 'level 4' });
+		assert.ok((await fm()).spells.includes('Misty Step'));
 
 		// The encounter party reads the sheet: level and AC.
 		await o.eval((app, plugin) => plugin.syncPartyFromSheets());

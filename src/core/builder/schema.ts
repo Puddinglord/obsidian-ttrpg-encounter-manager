@@ -31,6 +31,8 @@ interface FieldBase<M> {
 	show?: (m: M) => boolean;
 	/** A formula's result beside the label ("+5", "DC 13"). */
 	hint?: (m: M) => string;
+	/** Other fields' options or steps depend on this one (a class's skills): redraw the steps when it changes. */
+	rebuilds?: boolean;
 }
 
 export type FieldDef<M = Draft> =
@@ -41,7 +43,7 @@ export type FieldDef<M = Draft> =
 	/** One of a few (buttons), or of many (a dropdown). */
 	| FieldBase<M> & { type: 'choice'; options: (m: M) => { value: string; label: string; icon?: string }[]; dropdown?: boolean }
 	/** Any of these (the draft holds a string[]). */
-	| FieldBase<M> & { type: 'chips'; options: (m: M) => string[] }
+	| FieldBase<M> & { type: 'chips'; options: (m: M) => string[]; max?: (m: M) => number }
 	| FieldBase<M> & { type: 'toggle' }
 	/** A list of things, each with its own fields (the draft holds an array of drafts). */
 	| FieldBase<M> & { type: 'list'; item: (item: Draft) => (FieldDef | FieldDef[])[]; blank: () => Draft; add: string; title?: (item: Draft, i: number) => string };
@@ -129,7 +131,9 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 	const { show, hint } = f;
 	if (show) ui.live(() => parts.row.toggleClass('is-hidden', !show(m)));
 	if (hint) ui.live(() => parts.aside.setText(hint(m)));
-	const set = (v: unknown) => { m[f.key] = v; };
+	// A field others depend on redraws the steps once the change has landed.
+	const redraw = () => { if (f.rebuilds) window.setTimeout(() => ui.rebuild(), 0); };
+	const set = (v: unknown) => { const was = m[f.key]; m[f.key] = v; if (was !== v) redraw(); };
 	const named = { label: f.label, labelledBy: parts.labelId };
 	switch (f.type) {
 		case 'text': {
@@ -143,12 +147,14 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 			return;
 		case 'number': {
 			const ph = f.placeholder;
-			numberInput(parts.control, {
+			// Typing doesn't redraw (the cursor would jump); leaving the field does.
+			const input = numberInput(parts.control, {
 				...named, ui, min: f.min, max: f.max, step: f.step,
 				get: () => (typeof m[f.key] === 'number' ? m[f.key] as number : undefined),
-				set: v => set(v),
+				set: v => { m[f.key] = v; },
 				placeholder: () => (ph ? ph(m) : ''),
 			});
+			if (f.rebuilds) input.addEventListener('change', redraw);
 			return;
 		}
 		case 'choice': {
@@ -177,7 +183,14 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 					set(now.includes(opt) ? now.filter(x => x !== opt) : [...now, opt]);
 					ui.changed();
 				});
-				ui.live(() => { const on = list().includes(opt); b.toggleClass('is-active', on); b.setAttr('aria-pressed', String(on)); });
+				const { max } = f;
+				ui.live(() => {
+					const on = list().includes(opt);
+					b.toggleClass('is-active', on);
+					b.setAttr('aria-pressed', String(on));
+					// At the limit, the rest wait until one is taken off.
+					b.disabled = !on && !!max && list().length >= max(m);
+				});
 			}
 			return;
 		}

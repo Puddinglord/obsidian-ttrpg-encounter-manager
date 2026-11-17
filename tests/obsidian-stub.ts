@@ -34,6 +34,10 @@ export class MarkdownRenderer {}
 export const Platform = { isMobile: false, isPhone: false, isTablet: false, isDesktop: true, isMacOS: true };
 export function setIcon(): void {}
 export function setTooltip(): void {}
+/** Enough YAML for tests: one key per line, values as JSON. */
+export function stringifyYaml(o: Record<string, unknown>): string {
+	return Object.entries(o).map(([k, v]) => `${k}: ${typeof v === 'string' && /^[\w ./-]+$/.test(v) ? v : JSON.stringify(v)}`).join('\n') + '\n';
+}
 export function normalizePath(p: string): string { return p.replace(/\/+/g, '/').replace(/^\/|\/$/g, ''); }
 export function requireApiVersion(): boolean { return true; }
 export function debounce<T extends (...a: never[]) => unknown>(fn: T): T { return fn; }

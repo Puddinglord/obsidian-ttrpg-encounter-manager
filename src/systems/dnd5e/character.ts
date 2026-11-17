@@ -19,6 +19,7 @@
 //   hit_dice_used: 0
 //   slots_used: [1, 0]       (per spell level)
 //   spells: [Fire Bolt, Magic Missile]
+//   feats: [Alert]          (taken at level up; the background's comes on its own)
 //   inventory: [{ name: Quarterstaff, equipped: true }, { name: Potion of Healing, qty: 2 }]
 //   gold: 10
 
@@ -190,6 +191,11 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		...(sub ? fromClass(sub.features, sub.name) : []),
 		...(sp?.traits ?? []).map(t => ({ ...t, source: sp!.name })),
 		...(bg?.feature ? [{ ...bg.feature, source: bg.name }] : []),
+		// Feats: the background's (2024), then any taken (`feats:`), with their text from the compendium.
+		...[...(bg?.feat ? [bg.feat] : []), ...(Array.isArray(fm.feats) ? (fm.feats as unknown[]).map(text) : [])].filter(Boolean).map((name): SheetFeature => {
+			const feat = c.feats.find(f => same(f.name, name.replace(/\s*\(.*\)$/, '')));
+			return { name, desc: feat?.desc ?? '', source: 'Feat' };
+		}),
 		...own,
 	];
 

@@ -13,7 +13,7 @@ The second game system, and the template for adding more. One system, two **edit
 | Monsters | `types.ts` (`Dnd5eMonster`), `parser.ts` (```5e blocks: forgiving field names, `- Name: text` lists, `toStatblockSource5e`), `render.ts` (both layouts), `bestiary.ts`, `monster-index.ts` (vault blocks through core's `BlockIndex`, then this edition's SRD monsters, then the other edition's) |
 | Compendium | `compendium.ts` (types, `allHits`, `findHit`, the `5e:<kind>:Name` kinds), `compendium-entries.ts` (entries, facets and sorts for core's compendium engine; the facets read both editions the same way), `cards.ts`, `compendium-view.ts` (core's browser with an edition switch) |
 | Encounters | `encounter-block.ts`, `combat-store.ts` (saved under `settings.systemData.dnd5e.fight`), `tracker-view.ts` |
-| Characters | `character.ts`, `sheet.ts`, `new-character.ts` |
+| Characters | `character.ts` (the sheet from frontmatter, and every edit), `sheet.ts`, `character-draft.ts` (pure: the wizards' rules: skill choices, bonuses, point buy, subclass and increase levels, spells, level up), `character-wizard.ts` (New character and Level up as hidden kinds in core's builder), `new-character.ts` (writing a note for a hand-typed party member) |
 | Builders | `builder-model.ts` (pure: the monster draft and its formulas: HP from hit dice and Con, PB and XP from CR, saves, skills, passive Perception, attacks in each edition's words), `builders.ts` (monster, spell and magic item schemas for core's builder), `homebrew.ts` (pure: the ```5e-spell and ```5e-item formats), `homebrew-index.ts` (your spells and items, before the SRD's) |
 | Content packs | `content.ts` (pure: the kinds 5e takes, `content5e` and `mergeCompendium5e`); `compendium.ts` and `monster-index.ts` read the layer the runtime sets (`setContentLayer5e`) from the active campaign's packs. The schema is `docs/content/5e.schema.json` (UPDATE_SCHEMAS=1 on the content-packs test writes it) |
 | NPCs | `npc.ts` (the NPC fields 5e adds to core's NPC notes: `ac`, `hp`, `cr`, `statblock`; the NPC as a monster for the tracker), `npc-card.ts` (the stat block reference and Add to fight in the NPC card) |
@@ -43,6 +43,5 @@ The second game system, and the template for adding more. One system, two **edit
 - **The tracker's turn model is initiative** (`combat.ts`), unlike Nimble's sides. Monsters at 0 HP are skipped; heroes at 0 make death saves.
 - **Edition at render time:** `runtime.edition(path)` is 2024 until campaigns are indexed; the ```5e processor redraws when that changes.
 - **What 5e doesn't have yet** (see MULTI-SYSTEM.md, "Known gaps"):
-  - a level-up wizard;
   - multiclassing;
   These are planned as shared engines in SYSTEMLESS.md, not 5e-only code.

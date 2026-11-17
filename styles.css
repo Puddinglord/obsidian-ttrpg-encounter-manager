@@ -4896,3 +4896,14 @@ button.dnd5e-npc-fight { display: inline-flex; align-items: center; gap: 0.3rem;
 .nimble-pack-row.is-error { border-color: color-mix(in srgb, var(--text-error) 50%, transparent); }
 .nimble-pack-row.is-error .nimble-pack-summary { color: var(--text-error); }
 .nimble-cmpx-pill-tag.bestiary-tag.is-pack { background: color-mix(in srgb, var(--interactive-accent) 16%, transparent); color: var(--text-accent); }
+
+/* 5e character wizards' preview (src/systems/dnd5e/character-wizard.ts): the sheet in brief */
+.dnd5e-wizard-summary .dnd5e-card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; }
+.dnd5e-wizard-facts, .dnd5e-wizard-scores { display: grid; gap: 0.35rem; margin: 0.6rem 0; }
+.dnd5e-wizard-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.dnd5e-wizard-scores { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.dnd5e-wizard-fact, .dnd5e-wizard-score { display: flex; flex-direction: column; align-items: center; padding: 0.3rem 0.2rem; border-radius: var(--radius-s); background: var(--background-secondary); }
+.dnd5e-wizard-fact-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+.dnd5e-wizard-fact-value { font-weight: 650; font-variant-numeric: tabular-nums; }
+.dnd5e-wizard-summary .dnd5e-card-row { margin-top: 0.3rem; }
+.dnd5e-wizard-summary .dnd5e-card-label { font-weight: 650; }

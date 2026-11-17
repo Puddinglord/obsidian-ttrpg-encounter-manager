@@ -5,13 +5,14 @@
 
 import { FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Notice, setIcon, TFile } from 'obsidian';
 import {
-	addItem, addListEntry, changeHp, cycleSkill, Frontmatter, levelUp, longRest, readSheet5e, removeListEntry, setDeathSaves, setItem, Sheet5e, shortRest, useSlot,
+	addItem, addListEntry, changeHp, cycleSkill, Frontmatter, longRest, readSheet5e, removeListEntry, setDeathSaves, setItem, Sheet5e, shortRest, useSlot,
 } from './character';
 import { findHit, Hit5e, KIND5E } from './compendium';
 import { asEdition } from './editions';
 import { parseHp } from './combat';
 import { formatMod } from './rules';
 import type { Dnd5eRuntime } from './runtime';
+import { openLevelUp5e } from './character-wizard';
 import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
 
 export const SHEET_LANG = '5e-sheet';
@@ -258,11 +259,11 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		this.edit((fm, sh) => shortRest(fm, sh, 1, Math.max(0, total)));
 	}
 
+	/** The level-up wizard: hit points, a subclass when it's time, an increase or a feat, new spells. */
 	private levelUp(s: Sheet5e): void {
-		this.edit((fm, sh) => levelUp(fm, sh));
-		const next = s.level + 1;
-		const fresh = [...(s.cls?.features ?? []), ...(s.cls?.subclasses.find(x => x.name === s.subclass)?.features ?? [])].filter(f => f.level === next).map(f => f.name);
-		new Notice(`${s.name} is level ${next}.${fresh.length ? ` New: ${fresh.join(', ')}.` : ''}${!s.subclass && s.cls?.subclasses.length && next >= 3 ? ' Pick a subclass in the note’s properties.' : ''}`, 8000);
+		const file = this.file;
+		if (!file) return;
+		openLevelUp5e(this.rt, file, { ...this.fm }, s.edition, s.name);
 	}
 
 	private pick(kind: 'spell' | 'item', s: Sheet5e, onPick: (hit: Hit5e) => void): void {

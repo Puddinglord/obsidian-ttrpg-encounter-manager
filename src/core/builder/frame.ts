@@ -8,7 +8,7 @@
 // numbers; whatever the GM types is kept. The first step holds everything a
 // quick build needs, and Create works from any step.
 
-import { App, Menu, Modal, normalizePath, Notice, setIcon, TFile } from 'obsidian';
+import { App, Menu, Modal, normalizePath, Notice, setIcon, stringifyYaml, TFile } from 'obsidian';
 import type NimbleStatblocksPlugin from '../../../main';
 import { confirmAction, isPhone, isTouch } from '../touch';
 import { fuzzyRank } from '../compendium/query';
@@ -31,6 +31,10 @@ export interface Output {
 	frontmatter: Record<string, string>;
 	/** The folder a new note goes in, before the GM changes it. */
 	folder: string;
+	/** Properties of any shape (lists, numbers) for a new note; written as YAML instead of `frontmatter`. */
+	properties?: Record<string, unknown>;
+	/** Text after the block in a new note ("## Notes"). */
+	after?: string;
 }
 
 /** What the frame needs from each kind. */
@@ -81,16 +85,21 @@ export interface BuilderOptions {
 	unread?: number;
 	/** The note the builder was opened from (for links and the preview). */
 	sourcePath?: string;
+	/** Finish some other way (a level up writes a sheet's properties). True when it's done. */
+	apply?: (out: Output) => Promise<boolean>;
+	/** A new note was made (instead of opening it). */
+	onCreated?: (file: TFile) => void;
 }
 
 export type KindFactory = (plugin: NimbleStatblocksPlugin, seed: unknown) => KindBuilder;
 
 /** A kind a system can build, in the order the kind bar shows them. */
-interface KindEntry { system: string; kind: EntityKind; label: string; icon: string; factory: KindFactory }
+interface KindEntry { system: string; kind: EntityKind; label: string; icon: string; factory: KindFactory; hidden?: boolean }
 const KINDS: KindEntry[] = [];
 
 /** Systems register their kinds when they load, so this file doesn't import them. */
-export function registerKind(system: string, kind: EntityKind, meta: { label: string; icon: string }, f: KindFactory): void {
+/** `hidden`: opened only on purpose (a character, a level up), never in the kind bar or the New… commands. */
+export function registerKind(system: string, kind: EntityKind, meta: { label: string; icon: string; hidden?: boolean }, f: KindFactory): void {
 	const i = KINDS.findIndex(k => k.system === system && k.kind === kind);
 	const entry = { system, kind, ...meta, factory: f };
 	if (i >= 0) KINDS[i] = entry; else KINDS.push(entry);
@@ -102,7 +111,7 @@ export function kindAvailable(system: string, kind: EntityKind): boolean {
 
 /** What a system can build ("New monster…"), in order. */
 export function kindsOf(system: string): { kind: EntityKind; label: string; icon: string }[] {
-	return KINDS.filter(k => k.system === system).map(({ kind, label, icon }) => ({ kind, label, icon }));
+	return KINDS.filter(k => k.system === system && !k.hidden).map(({ kind, label, icon }) => ({ kind, label, icon }));
 }
 
 const factory = (system: string, kind: EntityKind) => KINDS.find(k => k.system === system && k.kind === kind)?.factory;
@@ -273,7 +282,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 	private renderKinds(): void {
 		this.kindBar.empty();
 		// Editing a block in place keeps its kind.
-		const kinds = kindsOf(this.system).filter(k => !this.o.writeBack || k.kind === this.b.kind);
+		const kinds = KINDS.filter(k => k.system === this.system && (k.kind === this.b.kind || (!k.hidden && !this.o.writeBack && !this.o.apply && !KINDS.find(x => x.system === this.system && x.kind === this.b.kind)?.hidden)));
 		for (const { kind: k, label, icon } of kinds) {
 			const on = k === this.b.kind;
 			const btn = this.kindBar.createEl('button', { cls: `eb-kind${on ? ' is-active' : ''}`, attr: { role: 'radio', 'aria-checked': String(on) } });
@@ -430,10 +439,12 @@ export class EntityBuilder extends Modal implements BuilderUI {
 				if (await this.o.writeBack(out.body)) { this.done(); new Notice(`Saved ${out.name}.`); }
 				return;
 			}
+			if (this.o.apply) { if (await this.o.apply(out)) this.done(); return; }
 			if (this.o.insert) { this.o.insert(block); this.done(); return; }
 			const file = await this.createNote(out, block);
 			this.done();
-			await this.app.workspace.getLeaf(false).openFile(file);
+			if (this.o.onCreated) this.o.onCreated(file);
+			else await this.app.workspace.getLeaf(false).openFile(file);
 			new Notice(`Created ${file.path}.`);
 		} catch (e) {
 			console.error('Ember Vault: could not save from the builder', e);
@@ -449,7 +460,8 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		const safe = out.name.replace(/[\\/:*?"<>|#^[\]]/g, '').trim() || 'Untitled';
 		const path = this.plugin.campaigns.available(`${folder === '/' ? '' : `${folder}/`}${safe}.md`);
 		const fm = Object.entries(out.frontmatter).filter(([, v]) => v !== '').map(([k, v]) => `${k}: ${/^[\w ./-]+$/.test(v) && !/^\d/.test(v) ? v : JSON.stringify(v)}`);
-		const text = `${fm.length ? `---\n${fm.join('\n')}\n---\n\n` : ''}${block}\n`;
+		const props = out.properties ? `---\n${stringifyYaml(out.properties)}---\n\n` : fm.length ? `---\n${fm.join('\n')}\n---\n\n` : '';
+		const text = `${props}${block}\n${out.after ? `\n${out.after}\n` : ''}`;
 		return this.app.vault.create(path, text);
 	}
 }
@@ -458,7 +470,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 export function fence(lang: string, body: string): string {
 	const longest = Math.max(2, ...[...body.matchAll(/`{3,}/g)].map(m => m[0].length));
 	const f = '`'.repeat(longest + 1);
-	return `${f}${lang}\n${body}\n${f}`;
+	return body ? `${f}${lang}\n${body}\n${f}` : `${f}${lang}\n${f}`;
 }
 
 function typing(e: KeyboardEvent): boolean {

@@ -10,7 +10,8 @@ import { DEFAULT_EDITION, EDITIONS } from './editions';
 import { dnd5e, registerDnd5e } from './runtime';
 import { readSheet5e } from './character';
 import { asEdition } from './editions';
-import { createCharacterNote5e, Dnd5eNewCharacterModal } from './new-character';
+import { createCharacterNote5e } from './new-character';
+import { openNewCharacter5e } from './character-wizard';
 import { dnd5eSlashCommands } from './slash';
 import { KINDS_5E } from './content';
 import { NPC_FIELDS_5E } from './npc';
@@ -34,7 +35,7 @@ export const dnd5eSystem: GameSystem = {
 	},
 	characters: {
 		promptNew(_plugin, r) {
-			new Dnd5eNewCharacterModal(dnd5e(), r).open();
+			openNewCharacter5e(dnd5e(), r);
 		},
 		async createFromPartyMember(plugin, h, folder) {
 			const rt = dnd5e();

@@ -2,7 +2,7 @@
 
 A game system (Nimble, 5e, and next maybe Daggerheart, Call of Cthulhu, Fallout) is a folder here that plugs into core through **the contract**, `contract.ts`. Core never imports a system; systems never import each other (eslint enforces both). `registry.ts` maps a campaign's `system:` property (and aliases, case-insensitive) to a system and resolves its `edition:`.
 
-Where the engines are going (compendium, entity builder, character wizard, content packs, tracker): [prototypes/SYSTEMLESS.md](../../prototypes/SYSTEMLESS.md). When an engine exists, use it; don't build a private copy in your system.
+Where the engines are going (the tracker is the one left): [prototypes/SYSTEMLESS.md](../../prototypes/SYSTEMLESS.md). When an engine exists, use it; don't build a private copy in your system.
 
 ## The contract today
 
@@ -28,6 +28,8 @@ Missing optional members fall back to Nimble's behaviour or a "not yet" notice. 
 - **Compendium** (`core/compendium/`). Give your entries the `CompendiumEntry` shape (id, kind, tabs, facets, numbers, flags, text), describe your words in a `QuerySchema` (tabs, facets, sorts per tab, kind names) and bind them with `createCompendiumQuery`. Your Compendium tab and pickers are core's `CompendiumBrowser` with a `CompendiumSource` (entries, a row's badge, pills and tags, the page). See `dnd5e/compendium-entries.ts` and `dnd5e/compendium-view.ts` for the whole thing in about 400 lines. Test your facets the way `tests/dnd5e-compendium-search.test.ts` does.
 
 - **Builder** (`core/builder/`). Register each kind you can build with `registerKind('<your id>', kind, { label, icon }, factory)` when your system loads. The easy way is a schema (`schemaKind`, see `dnd5e/builders.ts`): steps of fields that read and write a draft, formulas as hints, a preview, and an output block. Write the formulas in a pure module (`dnd5e/builder-model.ts`) and test every permutation the way `tests/dnd5e-builders.test.ts` does: every option of every field, both ways through your parser, and every bundled entry through the builder and back. New monster…, New spell…, New item… and `/new-<kind>` find your kinds by themselves.
+
+- **Character wizards.** Use the builder: register `character` and `level-up` kinds with `hidden: true`, open them from `characters.promptNew` and your sheet's Level up (`openBuilder` with `apply` to write the sheet's properties). See `dnd5e/character-wizard.ts`, and test every class × origin × level the way `tests/dnd5e-character-wizard.test.ts` does.
 
 ## Adding a game system: checklist
 
