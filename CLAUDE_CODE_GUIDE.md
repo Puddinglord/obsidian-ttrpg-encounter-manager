@@ -1,5 +1,7 @@
 # Ember Vault - Development Guide
 
+Start with [AGENTS.md](AGENTS.md) (the overview, and which guide to read for each part). This page is the detailed map.
+
 An Obsidian plugin (TypeScript, bundled with esbuild) that renders Nimble TTRPG monster stat blocks, `nimble:` inline references, and an encounter tracker.
 
 ## Project structure
