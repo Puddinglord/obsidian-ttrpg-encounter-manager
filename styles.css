@@ -4557,6 +4557,16 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 
 /* Small phones: the footer's four buttons fit without the preview button being squeezed or Next running off. */
 .nimble-entity-builder.is-phone-layout button.eb-preview-btn { flex: 0 0 auto; }
+/* The last step's Create (in Next's place) gets the room the hidden "Create now" held: on a narrow footer,
+   Next already stretches, so taking the hidden button out doesn't move anything. */
+@media (max-width: 760px) {
+	.nimble-entity-builder button.eb-create.is-gone { display: none; }
+	.nimble-entity-builder button.eb-next { min-width: 0; }
+	.nimble-entity-builder button.eb-next .eb-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.nimble-entity-builder.is-phone-layout button.eb-create.is-gone { display: none; }
+.nimble-entity-builder.is-phone-layout button.eb-next { min-width: 0; }
+.nimble-entity-builder.is-phone-layout button.eb-next .eb-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 380px) {
 	.nimble-entity-builder.is-phone-layout .eb-foot { gap: 0.4rem; padding-left: 0.6rem; padding-right: 0.6rem; }
 	.nimble-entity-builder.is-phone-layout :is(button.eb-back, button.eb-create, button.eb-next) { min-width: 0; padding-left: 0.65rem; padding-right: 0.65rem; }
