@@ -14,8 +14,10 @@ on:
       - "styles.css"
       - "sample-vault/**"
       - "docs/**"
+      - "CHANGELOG.md"
       - "scripts/build-site.mjs"
       - "scripts/build-docs.mjs"
+      - "scripts/build-changelog.mjs"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 

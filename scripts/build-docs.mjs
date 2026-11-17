@@ -32,6 +32,8 @@ const plain = (html) => decode(html
 const slug = (text) => text.toLowerCase().trim().replace(/[^\p{L}\p{N}\s_-]/gu, '').replace(/\s/g, '-');
 
 function rewriteHref(href) {
+	// The changelog is its own section of the site (scripts/build-changelog.mjs).
+	if (/^\.\.\/CHANGELOG\.md(#.*)?$/.test(href)) return href.replace(/^\.\.\/CHANGELOG\.md/, '../changelog/');
 	const m = /^([\w-]+)\.md(#.*)?$/.exec(href);
 	return m ? pageUrl(`${m[1]}.md`) + (m[2] ?? '') : href;
 }
@@ -64,14 +66,16 @@ function makeRenderer(root, state) {
 				const local = /^images\//.test(href);
 				const size = local ? pngSize(join(root, 'docs', href)) : null;
 				const dims = size ? ` width="${size.w}" height="${size.h}"` : '';
-				return `<img src="${esc(local ? `../${href}` : href)}" alt="${esc(text)}"${dims} loading="lazy" decoding="async">`;
+				// Portrait shots (a phone, a tall panel) get a narrower frame, so they aren't page-tall.
+				const tall = size && size.h > size.w * 1.15 ? ' class="tall"' : '';
+				return `<img${tall} src="${esc(local ? `../${href}` : href)}" alt="${esc(text)}"${dims} loading="lazy" decoding="async">`;
 			},
 			paragraph({ tokens }) {
 				const inner = this.parser.parseInline(tokens);
 				const solo = tokens.filter((t) => !(t.type === 'text' && !t.text.trim()));
 				if (solo.length === 1 && solo[0].type === 'image') {
 					const cap = solo[0].text;
-					return `<figure class="shot">${inner}${cap ? `<figcaption>${esc(cap)}</figcaption>` : ''}</figure>\n`;
+					return `<figure class="shot"><div class="win-bar" aria-hidden="true"><span></span><span></span><span></span></div>${inner}${cap ? `<figcaption>${esc(cap)}</figcaption>` : ''}</figure>\n`;
 				}
 				return `<p>${inner}</p>\n`;
 			},
@@ -173,8 +177,9 @@ function layout(p, ctx) {
 			<a class="logo" href="../" aria-label="Ember Vault home">${LOGO}</a>
 			<nav class="dnav-links" aria-label="Site">
 				<a href="../#features">Features</a>
-				<a href="../#demo">Live demo</a>
+				<a href="../#sample">Sample adventure</a>
 				<a href="./" class="is-active"${p.name === 'index' ? ' aria-current="page"' : ''}>Guide</a>
+				<a href="../changelog/">Changelog</a>
 				<a href="${REPO}" rel="noopener">GitHub</a>
 			</nav>
 			<button class="search-btn" type="button" aria-haspopup="dialog" aria-controls="search" aria-keyshortcuts="/ Control+K Meta+K">${ICON_SEARCH}<span>Search the guide</span><kbd>/</kbd></button>
@@ -215,6 +220,7 @@ function layout(p, ctx) {
 			<nav class="foot-links" aria-label="Project links">
 				<a href="${REPO}" rel="noopener">Source on GitHub</a>
 				<a href="./">User guide</a>
+				<a href="../changelog/">Changelog</a>
 				<a href="${REPO}/issues" rel="noopener">Report a bug</a>
 			</nav>
 		</div>

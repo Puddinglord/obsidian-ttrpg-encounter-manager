@@ -65,6 +65,17 @@ export function releaseChangelog(text, version, date, fallback = '') {
 	return { text: `${out.trimEnd()}\n`, notes };
 }
 
+const SITE = 'https://puddinglord.github.io/obsidian-ttrpg-encounter-manager/';
+
+/**
+ * Links to the user guide in CHANGELOG.md are written repo-relative (`[the builder guide](docs/builder.md)`),
+ * so they work on GitHub and pass scripts/check-docs.mjs. Release notes and tag messages live outside the
+ * repo tree, so they point at the guide on the site instead.
+ */
+export function siteLinks(notes) {
+	return notes.replace(/\]\(docs\/([\w-]+)\.md(#[^)\s]*)?\)/g, (_, page, anchor = '') => `](${SITE}docs/${page === 'README' ? '' : `${page}.html`}${anchor})`);
+}
+
 const args = process.argv.slice(2);
 const flag = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
@@ -77,9 +88,9 @@ if (isMain) {
 		const date = flag('--date') ?? new Date().toISOString().slice(0, 10);
 		const r = releaseChangelog(text, version, date, flag('--fallback') ?? '');
 		writeFileSync(file, r.text);
-		write(r.notes);
+		write(siteLinks(r.notes));
 	} else if (cmd === 'notes' && version) {
-		write(dropEmptySubsections(sectionBody(text, version)));
+		write(siteLinks(dropEmptySubsections(sectionBody(text, version))));
 	} else {
 		console.error('Usage: node scripts/changelog.mjs release <version> [--date YYYY-MM-DD] [--fallback text] [--out file]\n       node scripts/changelog.mjs notes <version> [--out file]');
 		process.exit(1);
