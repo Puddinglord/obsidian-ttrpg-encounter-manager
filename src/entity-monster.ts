@@ -417,7 +417,7 @@ export type ReviewFix =
 	| { kind: 'armor'; to: ArmorType }
 	| { kind: 'last-stand' }
 	| { kind: 'add-attack' }
-	| { kind: 'go'; step: string; open?: 'saves' };
+	| { kind: 'go'; step: string; open?: 'saves'; field?: string };
 
 export interface ReviewNote {
 	tone: 'warn' | 'tip' | 'ok';
@@ -429,7 +429,7 @@ export interface ReviewNote {
 export function reviewNotes(d: MonsterDraft): ReviewNote[] {
 	const notes: ReviewNote[] = [];
 	const add = (tone: ReviewNote['tone'], text: string, ...fixes: ReviewNote['fixes']) => notes.push({ tone, text, fixes });
-	if (!d.name.trim()) add('warn', 'It has no name yet.', { label: 'Name it', fix: { kind: 'go', step: 'start' } });
+	if (!d.name.trim()) add('warn', 'It has no name yet.', { label: 'Name it', fix: { kind: 'go', step: 'start', field: 'Name' } });
 	const c = levelCheck(d);
 	if (c && c.verdict !== 0) {
 		const to = settledLevel(d);
@@ -463,7 +463,7 @@ export function reviewNotes(d: MonsterDraft): ReviewNote[] {
 		const ls = toMonster(d).lastStand;
 		if (ls && !lastStandEffect(ls, d.partySize)) add('tip', 'The tracker can\'t apply this Last Stand. Say "regains N HP per hero" or "N more damage and it dies".', { label: 'Use the suggested one', fix: { kind: 'last-stand' } });
 	}
-	if (!d.easier?.trim() && !d.harder?.trim() && d.role !== 'minion') add('tip', 'No Easier or Harder tactics: they help tune the fight at the table.', { label: 'Add tactics', fix: { kind: 'go', step: 'story' } });
+	if (!d.easier?.trim() && !d.harder?.trim() && d.role !== 'minion') add('tip', 'No Easier or Harder tactics: they help tune the fight at the table.', { label: 'Add tactics', fix: { kind: 'go', step: 'story', field: 'Easier' } });
 	if (!notes.some(n => n.tone === 'warn')) notes.unshift({ tone: 'ok', text: d.role === 'minion' ? 'Ready to run.' : `Ready to run as a level ${levelLabel(d.level)} ${d.role === 'solo' ? 'solo' : 'monster'}.`, fixes: [] });
 	return notes;
 }

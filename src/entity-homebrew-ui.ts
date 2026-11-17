@@ -20,6 +20,9 @@ import {
 
 const TIER_LABEL = (t: number) => (t === 0 ? 'Cantrip' : `Tier ${t}`);
 
+/** Each core school's icon (its colour comes from the stylesheet's tone-<school>). */
+const SCHOOL_ICON: Record<string, string> = { Fire: 'flame', Ice: 'snowflake', Lightning: 'zap', Necrotic: 'skull', Radiant: 'sun', Wind: 'wind' };
+
 /** Start from: search the compendium's spells or items, or show the one copied (with a way back to blank). */
 function startFrom(f: ReturnType<typeof field>, o: {
 	kind: 'spell' | 'item';
@@ -88,7 +91,7 @@ class SpellBuilder implements KindBuilder {
 
 			const mid = grid(panel, 2);
 			const kind = field(mid, 'Kind');
-			segmented<boolean>(kind.control, [{ value: false, label: 'Damage', icon: 'flame' }, { value: true, label: 'Utility', icon: 'sparkle' }], () => d.utility, v => { d.utility = v; }, { label: 'Kind', labelledBy: kind.labelId, ui });
+			segmented<boolean>(kind.control, [{ value: false, label: 'Damage', icon: 'swords', tone: 'damage' }, { value: true, label: 'Utility', icon: 'sparkles', tone: 'utility' }], () => d.utility, v => { d.utility = v; }, { label: 'Kind', labelledBy: kind.labelId, ui, key: 'spell-kind' });
 			const tier = field(mid, 'Tier');
 			const tw = tier.control.createDiv({ cls: 'eb-level' });
 			const down = iconButton(tw, 'minus', 'Lower tier', () => { d.autoTier = false; d.tier = Math.max(0, d.tier - 1); ui.changed(); }, 'eb-num-btn');
@@ -109,7 +112,7 @@ class SpellBuilder implements KindBuilder {
 
 			const school = field(panel, 'School', { wide: true });
 			const row = school.control.createDiv({ cls: 'eb-row-wrap' });
-			segmented<string>(row, SCHOOLS.map(s => ({ value: s, label: s })), () => d.school, v => { d.school = v; custom.value = ''; }, { label: 'School', labelledBy: school.labelId, ui, cls: 'is-compact' });
+			segmented<string>(row, SCHOOLS.map(s => ({ value: s, label: s, icon: SCHOOL_ICON[s], tone: s.toLowerCase() })), () => d.school, v => { d.school = v; custom.value = ''; }, { label: 'School', labelledBy: school.labelId, ui, cls: 'is-compact is-schools', key: 'spell-school' });
 			const custom = textInput(row, { value: SCHOOLS.includes(d.school) ? '' : d.school, placeholder: 'Other', words: true, label: 'Other school', cls: 'eb-input-short', onInput: v => { d.school = v.trim() || 'Fire'; ui.changed(); } });
 			return;
 		}
@@ -164,7 +167,7 @@ class SpellBuilder implements KindBuilder {
 				ui.live(() => { t.placeholder = suggestedUpcast(d) ?? '+1 target.'; });
 			}
 			const text = field(panel, 'What it does', { wide: true });
-			textArea(text.control, { value: d.text, placeholder: 'A whip of flame cracks across one target. On a crit, it\'s Smoldering.', labelledBy: text.labelId, label: 'What it does', rows: 3, onInput: v => { d.text = v; ui.changed(); } });
+			textArea(text.control, { value: d.text, placeholder: 'A whip of flame cracks across one target. On a crit, it\'s Smoldering.', labelledBy: text.labelId, label: 'What it does', rows: 4, onInput: v => { d.text = v; ui.changed(); } });
 			return;
 		}
 		const head = section(panel, 'Review');
@@ -179,7 +182,7 @@ class SpellBuilder implements KindBuilder {
 	}
 
 	private fix(f: HomebrewFix, ui: BuilderUI): void {
-		if (f.kind === 'go') { ui.go(f.step); return; }
+		if (f.kind === 'go') { if (f.field) ui.nudge(f.step, f.field); else ui.go(f.step); return; }
 		this.d = applySpellFix(this.d, f);
 		ui.rebuild();
 	}
@@ -280,7 +283,7 @@ class ItemBuilder implements KindBuilder {
 				pick: (hit) => { const n = this.d.name; this.d = { ...fromItem(hit.entry as HomebrewItem), name: n }; this.copied = hit.name; ui.rebuild(); },
 			});
 			const kind = field(panel, 'Kind', { wide: true });
-			segmented<ItemKind>(kind.control, KIND_OPTIONS, () => d.kind, v => { if (v !== d.kind) { d.kind = v; ui.rebuild(); } }, { label: 'Kind', labelledBy: kind.labelId, ui, cls: 'is-wrap is-compact eb-seg-3' });
+			segmented<ItemKind>(kind.control, KIND_OPTIONS, () => d.kind, v => { if (v !== d.kind) { d.kind = v; ui.rebuild(); } }, { label: 'Kind', labelledBy: kind.labelId, ui, cls: 'is-wrap is-compact eb-seg-3', key: 'item-kind' });
 			const rarity = field(panel, 'Rarity', { wide: true });
 			segmented<Rarity | ''>(rarity.control, [{ value: '', label: 'Mundane' }, ...RARITIES.map(r => ({ value: r, label: r[0].toUpperCase() + r.slice(1) }))], () => d.rarity, v => { d.rarity = v; }, { label: 'Rarity', labelledBy: rarity.labelId, ui, cls: 'is-wrap is-compact eb-seg-3' });
 			ui.live(() => {
@@ -328,7 +331,7 @@ class ItemBuilder implements KindBuilder {
 				textInput(ch.control, { value: d.charges ?? '', placeholder: 'None, or 3 (recharges at dawn)', labelledBy: ch.labelId, label: 'Charges', onInput: v => { d.charges = v; ui.changed(); } });
 			}
 			const text = field(panel, 'What it does', { wide: true });
-			textArea(text.control, { value: d.text, placeholder: d.kind === 'consumable' ? '(1 action) Heal 2d4+4 HP.' : 'While you hold it, you hear the last minute of sound in the room.', labelledBy: text.labelId, label: 'What it does', rows: 2, onInput: v => { d.text = v; ui.changed(); } });
+			textArea(text.control, { value: d.text, placeholder: d.kind === 'consumable' ? '(1 action) Heal 2d4+4 HP.' : 'While you hold it, you hear the last minute of sound in the room.', labelledBy: text.labelId, label: 'What it does', rows: 4, onInput: v => { d.text = v; ui.changed(); } });
 			if (d.kind !== 'gear') {
 				const cat = field(panel, 'The catch', { wide: true });
 				textInput(cat.control, { value: d.catch, placeholder: 'Each use, roll a d6: on a 1 it cracks.', labelledBy: cat.labelId, label: 'The catch', onInput: v => { d.catch = v; ui.changed(); } });
@@ -346,7 +349,7 @@ class ItemBuilder implements KindBuilder {
 	}
 
 	private fix(f: HomebrewFix, ui: BuilderUI): void {
-		if (f.kind === 'go') { ui.go(f.step); return; }
+		if (f.kind === 'go') { if (f.field) ui.nudge(f.step, f.field); else ui.go(f.step); return; }
 		this.d = applyItemFix(this.d, f);
 		ui.rebuild();
 	}

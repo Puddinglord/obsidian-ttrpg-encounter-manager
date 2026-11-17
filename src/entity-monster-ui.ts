@@ -6,7 +6,7 @@ import { setIcon } from 'obsidian';
 import type NimbleStatblocksPlugin from '../main';
 import { ArmorType, NimbleMonster } from './types';
 import { describeMonster, searchMonsters } from './suggest';
-import { diceAverage, FLAVOR_ABILITIES, formatDiceParts, levelLabel, LEVELS, minionDie, parseDiceParts, stepLevel, ARMOR_FROM, LEGENDARY_ARMOR_FROM } from './builder-math';
+import { diceAverage, expectedRegular, FLAVOR_ABILITIES, formatDiceParts, levelLabel, LEVELS, minionDie, parseDiceParts, stepLevel, ARMOR_FROM, LEGENDARY_ARMOR_FROM } from './builder-math';
 import {
 	applyFix, AttackDraft, attackBody, attackName, attackTarget, autoLevel, BuildRole, draftFromMonster, effectiveHp, expected, levelCheck,
 	MonsterDraft, MOVE_MODES, missing, newMonsterDraft, reviewNotes, ReviewFix, SAVE_STATS, savesText, setRole, settledLevel, suggestedBloodied,
@@ -45,6 +45,8 @@ class MonsterBuilder implements KindBuilder {
 
 	/** The four save rows are open (they start folded to one line). */
 	private savesOpen = false;
+	/** A regular monster's Bloodied field is showing (it's a solo rule, so it's asked for). */
+	private bloodiedOpen = false;
 	/** Editing a block in a note (not copying a monster): no "Start from". */
 	private editing: boolean;
 	private folder: string;
@@ -119,7 +121,7 @@ class MonsterBuilder implements KindBuilder {
 			{ value: 'regular', label: 'Regular', icon: 'skull' },
 			{ value: 'solo', label: 'Solo', icon: 'crown' },
 			{ value: 'minion', label: 'Minion', icon: 'users' },
-		], () => d.role, v => { if (v !== d.role) { this.d = setRole(d, v); ui.rebuild(); } }, { label: 'Role', labelledBy: role.labelId, ui });
+		], () => d.role, v => { if (v !== d.role) { this.d = setRole(d, v); ui.rebuild(); } }, { label: 'Role', labelledBy: role.labelId, ui, key: 'monster-role' });
 
 		const lvl = field(mid, d.role === 'minion' ? 'Party level' : 'Level');
 		if (d.role === 'minion') {
@@ -282,8 +284,15 @@ class MonsterBuilder implements KindBuilder {
 			: d.role === 'minion' ? 'Minions attacking one hero roll together as one attack.' : undefined);
 
 		if (d.role === 'regular') {
-			const per = field(panel, 'Attacks a turn', { help: 'More attacks hit for less each.' });
+			const per = field(panel, 'Attacks a turn', { cls: 'eb-per-turn' });
 			segmented<number>(per.control, [1, 2, 3].map(n => ({ value: n, label: String(n) })), () => this.d.attacksPerTurn, v => { this.d.attacksPerTurn = v; this.settle(); }, { label: 'Attacks a turn', labelledBy: per.labelId, ui });
+			// What the choice means in numbers: the book splits a turn's damage over the attacks.
+			per.help.removeClass('is-empty');
+			ui.live(() => {
+				const lv = levelLabel(this.d.level);
+				const each = [1, 2, 3].map(n => expectedRegular(this.d.level, this.d.armor, n).perAttack);
+				per.help.setText(`At level ${lv} the book has one hit of ${each[0]}, two of ${each[1]} or three of ${each[2]}.`);
+			});
 		} else if (d.role === 'solo') {
 			const f = field(panel, 'Before the attacks', { wide: true });
 			textInput(f.control, { value: d.actionText ?? '', placeholder: 'After each hero\'s turn, choose one:', labelledBy: f.labelId, label: 'Before the attacks', onInput: v => { this.d.actionText = v; ui.changed(); } });
@@ -348,10 +357,11 @@ class MonsterBuilder implements KindBuilder {
 		section(panel, d.role === 'solo' ? 'Abilities and phases' : 'Abilities', 'The GM Guide\'s numbers assume one simple ability.');
 		const list = panel.createDiv({ cls: 'eb-abilities' });
 		d.abilities.forEach((ab, i) => {
-			const row = list.createDiv({ cls: 'eb-ability' });
-			textInput(row, { value: ab.name, placeholder: 'Pack Tactics', words: true, label: 'Ability name', cls: 'eb-ability-name', onInput: v => { ab.name = v; ui.changed(); } });
-			textInput(row, { value: ab.text, placeholder: 'Advantage when an ally is adjacent to the target.', label: 'What it does', cls: 'eb-ability-text', onInput: v => { ab.text = v; ui.changed(); } });
-			removeButton(row, this.plugin.app, ab.name.trim() || 'this ability', () => { this.d.abilities.splice(i, 1); ui.rebuild(); });
+			const card = list.createDiv({ cls: 'eb-ability' });
+			const head = card.createDiv({ cls: 'eb-ability-head' });
+			textInput(head, { value: ab.name, placeholder: 'Pack Tactics', words: true, label: 'Ability name', cls: 'eb-ability-name', onInput: v => { ab.name = v; ui.changed(); } });
+			removeButton(head, this.plugin.app, ab.name.trim() || 'this ability', () => { this.d.abilities.splice(i, 1); ui.rebuild(); });
+			textArea(card, { value: ab.text, placeholder: 'Advantage when an ally is adjacent to the target.', label: 'What it does', rows: 2, onInput: v => { ab.text = v; ui.changed(); } });
 		});
 		const add = panel.createDiv({ cls: 'eb-add-row' });
 		textButton(add, 'plus', 'Add an ability', () => {
@@ -362,7 +372,12 @@ class MonsterBuilder implements KindBuilder {
 		textButton(add, 'dices', 'Roll an ability', () => { this.rollAbility(); ui.rebuild(); });
 
 		if (d.role !== 'solo') {
-			const f = field(panel, 'Bloodied (optional)', { wide: true });
+			// Bloodied is a legendary rule (GM Guide p.39); Monsters & More gives one to a few tough regulars (giants, golems, hags).
+			if (d.bloodied === undefined && !this.bloodiedOpen) {
+				textButton(add, 'droplet', 'Add a Bloodied phase', () => { this.bloodiedOpen = true; ui.rebuild(); window.setTimeout(() => ui.nudge('abilities', 'Bloodied'), 0); });
+				return;
+			}
+			const f = field(panel, 'Bloodied', { wide: true, help: 'At half HP. A few tough regular monsters have one.' });
 			textInput(f.control, { value: d.bloodied ?? '', placeholder: 'At half HP it goes berserk: +2 damage.', labelledBy: f.labelId, label: 'Bloodied', onInput: v => { this.d.bloodied = v; ui.changed(); } });
 			return;
 		}
@@ -386,11 +401,10 @@ class MonsterBuilder implements KindBuilder {
 		const d = this.d;
 		section(panel, 'Story and tactics');
 		const desc = field(panel, 'Description', { wide: true });
-		textArea(desc.control, { value: d.description ?? '', placeholder: 'What the heroes see, hear and smell.', labelledBy: desc.labelId, label: 'Description', rows: 2, onInput: v => { this.d.description = v; ui.changed(); } });
-		const t = grid(panel, 2);
-		const easy = field(t, 'Easier');
+		textArea(desc.control, { value: d.description ?? '', placeholder: 'What the heroes see, hear and smell.', labelledBy: desc.labelId, label: 'Description', rows: 4, onInput: v => { this.d.description = v; ui.changed(); } });
+		const easy = field(panel, 'Easier', { wide: true });
 		textInput(easy.control, { value: d.easier ?? '', placeholder: 'Spread its attacks around.', labelledBy: easy.labelId, label: 'Easier', onInput: v => { this.d.easier = v; ui.changed(); } });
-		const hard = field(t, 'Harder');
+		const hard = field(panel, 'Harder', { wide: true });
 		textInput(hard.control, { value: d.harder ?? '', placeholder: 'Focus the weakest hero.', labelledBy: hard.labelId, label: 'Harder', onInput: v => { this.d.harder = v; ui.changed(); } });
 		const g = grid(panel, 2);
 		const group = field(g, 'Group');
@@ -419,7 +433,7 @@ class MonsterBuilder implements KindBuilder {
 	private fix(f: ReviewFix, ui: BuilderUI): void {
 		if (f.kind === 'go') {
 			if (f.open === 'saves') this.savesOpen = true;
-			ui.go(f.step);
+			if (f.field) ui.nudge(f.step, f.field); else ui.go(f.step);
 			ui.changed();
 			return;
 		}

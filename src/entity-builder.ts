@@ -56,6 +56,8 @@ export interface BuilderUI {
 	/** Run on every change: keep a hint, an expected value or an untouched field current. */
 	live(fn: () => void): void;
 	go(stepId: string): void;
+	/** Go to a step and put the cursor in a field (by its data-field), with a glow that fades. */
+	nudge(stepId: string, field: string): void;
 	phone: boolean;
 }
 
@@ -107,7 +109,6 @@ export class EntityBuilder extends Modal implements BuilderUI {
 	private createBtn!: HTMLButtonElement;
 	private nextBtn!: HTMLButtonElement;
 	private previewBtn?: HTMLButtonElement;
-	private counter!: HTMLElement;
 	private busy = false;
 
 	constructor(public plugin: NimbleStatblocksPlugin, private o: BuilderOptions) {
@@ -142,7 +143,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 
 		const foot = contentEl.createDiv({ cls: 'eb-foot' });
 		this.backBtn = foot.createEl('button', { cls: 'eb-back' });
-		this.counter = foot.createDiv({ cls: 'eb-counter' });
+		foot.createDiv({ cls: 'eb-foot-space' });
 		if (this.phone) {
 			this.previewBtn = foot.createEl('button', { cls: 'eb-preview-btn', attr: { 'aria-label': 'Preview' } });
 			setIcon(this.previewBtn, 'eye');
@@ -220,8 +221,6 @@ export class EntityBuilder extends Modal implements BuilderUI {
 			if (this.phone) btn.setAttr('aria-label', KIND_LABEL[k].label);
 			btn.addEventListener('click', () => { if (k !== this.b.kind) this.setKind(k); });
 		}
-		const title = this.kindBar.createDiv({ cls: 'eb-title' });
-		title.setText(this.o.writeBack ? `Edit ${this.b.noun}` : `New ${this.b.noun}`);
 	}
 
 	rebuild(): void {
@@ -275,6 +274,25 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		this.renderChrome();
 	}
 
+	nudge(id: string, fieldName: string): void {
+		this.go(id);
+		const i = this.steps.findIndex(s => s.id === id);
+		const panel = this.panels[i];
+		if (!panel) return;
+		// After the slide, so the browser doesn't scroll the carousel to reach the field.
+		window.setTimeout(() => {
+			const el = panel.querySelector<HTMLElement>(`[data-field="${CSS.escape(fieldName)}"]`);
+			if (!el) return;
+			const target = el.closest<HTMLElement>('.eb-field, .eb-attack, .eb-ability') ?? el;
+			target.removeClass('eb-nudge');
+			void target.offsetWidth; // restart the glow
+			target.addClass('eb-nudge');
+			window.setTimeout(() => target.removeClass('eb-nudge'), 1900);
+			if (el.matches('input, textarea')) (el as HTMLInputElement).focus({ preventScroll: true });
+			target.scrollIntoView({ block: 'nearest' });
+		}, 360);
+	}
+
 	private step(by: number): void {
 		const next = this.steps[this.at + by];
 		if (next) this.go(next.id);
@@ -301,7 +319,6 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		this.backBtn.empty();
 		if (this.at === 0) this.backBtn.createSpan({ cls: 'eb-t', text: 'Cancel' });
 		else { setIcon(this.backBtn.createSpan(), 'chevron-left'); this.backBtn.createSpan({ cls: 'eb-t', text: 'Back' }); }
-		this.counter.setText(`${this.at + 1} of ${this.steps.length}`);
 		const last = this.at === this.steps.length - 1;
 		const verb = this.o.writeBack ? 'Save' : this.o.insert ? 'Insert' : 'Create';
 		this.nextBtn.empty();
@@ -309,11 +326,11 @@ export class EntityBuilder extends Modal implements BuilderUI {
 			setIcon(this.nextBtn.createSpan(), 'check');
 			this.nextBtn.createSpan({ cls: 'eb-t', text: `${verb} ${this.b.noun}` });
 		} else {
-			this.nextBtn.createSpan({ cls: 'eb-t', text: `Next: ${this.steps[this.at + 1].label}` });
+			this.nextBtn.createSpan({ cls: 'eb-t', text: 'Next' });
 			setIcon(this.nextBtn.createSpan(), 'chevron-right');
 		}
 		// Create from any step: the rest fills in from the book.
-		this.createBtn.toggleClass('is-hidden', last);
+		this.createBtn.toggleClass('is-gone', last);
 		this.createBtn.empty();
 		this.createBtn.createSpan({ cls: 'eb-t', text: this.phone ? verb : `${verb} now` });
 	}
@@ -532,18 +549,21 @@ export function numberInput(parent: HTMLElement, o: { get: () => number | undefi
 	return input;
 }
 
-export interface SegOption<T> { value: T; label: string; icon?: string; title?: string }
+export interface SegOption<T> { value: T; label: string; icon?: string; title?: string; /** A tint for this option (a school's colour). */ tone?: string }
 
 /**
  * A row of buttons, one picked, with a thumb that slides to the pick (across
  * rows too, when it wraps into a grid). Never shrinks text: it wraps instead.
  */
-export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: () => T, set: (v: T) => void, o: { label: string; labelledBy?: string; ui: BuilderUI; cls?: string }): HTMLElement {
+/** Where each keyed thumb was, so a control drawn again (a step redrawn after the pick) still slides from the old pick. */
+const thumbs = new Map<string, Record<string, string>>();
+
+export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: () => T, set: (v: T) => void, o: { label: string; labelledBy?: string; ui: BuilderUI; cls?: string; key?: string }): HTMLElement {
 	const row = parent.createDiv({ cls: `eb-seg${o.cls ? ` ${o.cls}` : ''}`, attr: { role: 'radiogroup' } });
 	name(row, parent, o);
 	const thumb = row.createDiv({ cls: 'eb-seg-thumb is-still', attr: { 'aria-hidden': 'true' } });
 	const buttons = options.map(opt => {
-		const b = row.createEl('button', { cls: 'eb-seg-btn', attr: { role: 'radio' } });
+		const b = row.createEl('button', { cls: `eb-seg-btn${opt.tone ? ` tone-${opt.tone}` : ''}`, attr: { role: 'radio' } });
 		if (opt.icon) setIcon(b.createSpan({ cls: 'eb-seg-icon' }), opt.icon);
 		b.createSpan({ cls: 'eb-t', text: opt.label });
 		if (opt.title) b.setAttr('title', opt.title);
@@ -556,8 +576,17 @@ export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: 
 		thumb.toggleClass('is-hidden', !on);
 		if (!on) return;
 		if (!on.offsetWidth) { window.requestAnimationFrame(() => place(false)); return; } // not laid out yet
-		thumb.toggleClass('is-still', !animate || !placed);
-		thumb.setCssProps({ '--x': `${on.offsetLeft}px`, '--y': `${on.offsetTop}px`, '--w': `${on.offsetWidth}px`, '--h': `${on.offsetHeight}px` });
+		const to = { '--x': `${on.offsetLeft}px`, '--y': `${on.offsetTop}px`, '--w': `${on.offsetWidth}px`, '--h': `${on.offsetHeight}px` };
+		const from = !placed && o.key ? thumbs.get(o.key) : undefined;
+		if (from && JSON.stringify(from) !== JSON.stringify(to)) {
+			// Drawn again after a pick: start where the old control's thumb was, then slide.
+			thumb.addClass('is-still');
+			thumb.setCssProps(from);
+			void thumb.offsetWidth;
+			thumb.removeClass('is-still');
+		} else thumb.toggleClass('is-still', !animate || !placed);
+		thumb.setCssProps(to);
+		if (o.key) thumbs.set(o.key, to);
 		placed = true;
 	};
 	const sync = () => {
@@ -566,10 +595,19 @@ export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: 
 			b.toggleClass('is-active', v);
 			b.setAttr('aria-checked', String(v));
 		}
+		// The thumb takes the picked option's tint.
+		const tone = options.find(x => x.value === get())?.tone;
+		thumb.className = `eb-seg-thumb${thumb.hasClass('is-still') ? ' is-still' : ''}${tone ? ` tone-${tone}` : ''}`;
 		place(true);
 	};
-	// A wrap or a resize moves the buttons: the thumb follows without sliding.
-	new ResizeObserver(() => place(false)).observe(row);
+	// A wrap or a resize moves the buttons: the thumb follows without sliding. Not on the observer's first
+	// call (it fires as the control appears), which would cut short a slide that has just started.
+	let size = '';
+	new ResizeObserver(() => {
+		const now = `${row.offsetWidth}x${row.offsetHeight}`;
+		if (size && now !== size) place(false);
+		size = now;
+	}).observe(row);
 	o.ui.live(sync);
 	sync();
 	return row;
@@ -743,18 +781,55 @@ export function folderPill(parent: HTMLElement, o: { app: App; get: () => string
 export const DIE_THEME: Record<number, string> = { 4: 'Undead: slow, big bonus damage', 6: 'Goblins: chaotic, likely to miss or crit', 8: 'Humans: balanced and reliable', 10: 'Beasts: stronger than humans', 12: 'Giants: superhumanly strong', 20: 'The mightiest creatures' };
 
 /**
- * Dice without typing: − count +, the die (a menu, when it can change), − bonus +,
- * the average against what the book expects, and a reset to the book's dice.
- * `read` and `write` work on whatever holds the dice (an attack's text, a spell's damage).
+ * Dice in one joined field: [ 1 ⌃⌄ │ d8 ▾ │ + 6 ⌃⌄ ]. The numbers can be typed
+ * (the number pad on phones, ↑ ↓ on a keyboard) or stepped; the die is a menu.
+ * Beside it, the average and the book's figure, which puts the book's dice
+ * back when they've been changed. `read` and `write` work on whatever holds the
+ * dice (an attack's text, a spell's damage).
  */
 export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write: (d: Dice) => void; sides: () => number; avg: () => number | null; want?: () => number; reset?: { shown: () => boolean; run: () => void }; dieMenu?: boolean; ui: BuilderUI }): HTMLElement {
 	const pad = parent.createDiv({ cls: 'eb-dice eb-noswipe' });
 	const parts = () => o.read() ?? { count: 1, sides: o.sides(), bonus: 0 };
 	const set = (d: Dice) => { o.write(d); o.ui.changed(); };
-	const lessDie = iconButton(pad, 'minus', 'Remove a die', () => { const p = parts(); if (p.count > 1) set({ ...p, count: p.count - 1 }); }, 'eb-dice-btn');
-	const count = pad.createSpan({ cls: 'eb-dice-text' });
-	const moreDie = iconButton(pad, 'plus', 'Add a die', () => { const p = parts(); set({ ...p, count: Math.min(20, p.count + 1) }); }, 'eb-dice-btn');
-	const die = pad.createEl('button', { cls: 'eb-die-chip' });
+	const box = pad.createDiv({ cls: 'eb-dicefield' });
+
+	/** A typeable number with a tiny up/down stepper. */
+	const spin = (cls: string, get: () => number, put: (n: number) => void, min: number, max: number, labels: () => [string, string]) => {
+		const seg = box.createDiv({ cls: `eb-df-seg ${cls}` });
+		const input = seg.createEl('input', { cls: 'eb-df-num', attr: { type: 'text', inputmode: 'numeric', pattern: '[0-9]*', autocomplete: 'off', enterkeyhint: 'done' } });
+		input.dataset.field = cls === 'is-count' ? 'Dice' : 'Bonus';
+		input.setAttr('aria-labelledby', hiddenLabel(seg, cls === 'is-count' ? 'Number of dice' : 'Bonus'));
+		const steps = seg.createDiv({ cls: 'eb-df-steps' });
+		const up = steps.createEl('button', { cls: 'eb-df-step', attr: { tabindex: '-1' } });
+		setIcon(up, 'chevron-up');
+		const down = steps.createEl('button', { cls: 'eb-df-step', attr: { tabindex: '-1' } });
+		setIcon(down, 'chevron-down');
+		const clamp = (n: number) => Math.max(min, Math.min(max, n));
+		const bump = (dir: number, mult = 1) => { const step = cls === 'is-bonus' && get() >= 20 ? 5 : 1; put(clamp(get() + dir * step * mult)); };
+		up.addEventListener('click', () => bump(1));
+		down.addEventListener('click', () => bump(-1));
+		arrowNudge(input, bump);
+		input.addEventListener('input', () => {
+			const t = input.value.replace(/[^\d]/g, '');
+			if (t !== input.value) input.value = t;
+			if (t !== '') put(clamp(parseInt(t, 10)));
+		});
+		input.addEventListener('focus', () => input.select());
+		input.addEventListener('blur', () => { input.value = String(get()); });
+		input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
+		o.ui.live(() => {
+			if (activeDocument.activeElement !== input) input.value = String(get());
+			const [u, d] = labels();
+			up.setAttr('aria-label', u);
+			down.setAttr('aria-label', d);
+			up.disabled = get() >= max;
+			down.disabled = get() <= min;
+		});
+		return seg;
+	};
+
+	spin('is-count', () => parts().count, (n) => set({ ...parts(), count: n }), 1, 20, () => [`Add 1d${parts().sides}`, `Remove 1d${parts().sides}`]);
+	const die = box.createEl('button', { cls: 'eb-df-seg eb-df-die' });
 	const dieText = die.createSpan({ cls: 'eb-t' });
 	if (o.dieMenu) setIcon(die.createSpan({ cls: 'eb-die-caret' }), 'chevron-down');
 	else die.disabled = true;
@@ -771,37 +846,32 @@ export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write
 		}
 		m.showAtMouseEvent(ev);
 	});
-	const lessBonus = iconButton(pad, 'minus', 'Subtract 1', () => { const p = parts(); set({ ...p, bonus: Math.max(0, p.bonus - (p.bonus > 20 ? 5 : 1)) }); }, 'eb-dice-btn');
-	const bonusText = pad.createSpan({ cls: 'eb-dice-text' });
-	const moreBonus = iconButton(pad, 'plus', 'Add 1', () => { const p = parts(); set({ ...p, bonus: p.bonus + (p.bonus >= 20 ? 5 : 1) }); }, 'eb-dice-btn');
-	const avg = pad.createSpan({ cls: 'eb-dice-avg' });
-	const reset = o.reset ? textButton(pad, 'rotate-ccw', 'Book dice', () => { o.reset!.run(); o.ui.changed(); }, 'eb-dice-reset') : null;
+	box.createSpan({ cls: 'eb-df-plus', text: '+' });
+	spin('is-bonus', () => Math.max(0, parts().bonus), (n) => set({ ...parts(), bonus: n }), 0, 200, () => {
+		const b = parts().bonus;
+		return [`Add ${b >= 20 ? 5 : 1}`, `Subtract ${b > 20 ? 5 : 1}`];
+	});
+
+	const avg = pad.createDiv({ cls: 'eb-dice-avg' });
 	o.ui.live(() => {
-		const p = o.read();
-		const sides = p?.sides ?? o.sides();
-		count.setText(p ? String(p.count) : '—');
+		const sides = o.read()?.sides ?? o.sides();
 		dieText.setText(`d${sides}`);
 		die.setAttr('aria-label', o.dieMenu ? `d${sides}: change the die` : `d${sides}`);
-		bonusText.setText(p ? `+${Math.max(0, p.bonus)}` : '—');
-		// Tooltips say exactly what a press does.
-		lessDie.setAttr('aria-label', `Remove 1d${sides}`);
-		moreDie.setAttr('aria-label', `Add 1d${sides}`);
-		const step = (p?.bonus ?? 0) >= 20 ? 5 : 1;
-		moreBonus.setAttr('aria-label', `Add ${step}`);
-		lessBonus.setAttr('aria-label', `Subtract ${(p?.bonus ?? 0) > 20 ? 5 : 1}`);
-		lessDie.disabled = !p || p.count <= 1;
-		lessBonus.disabled = !p || p.bonus <= 0;
 		avg.empty();
 		const have = o.avg();
 		const want = o.want?.();
-		if (have !== null) {
-			avg.createSpan({ cls: 'eb-dice-avg-have', text: `avg ${Math.round(have * 10) / 10}` });
-			if (want !== undefined) {
-				const off = want ? have / want : 1;
-				pill(avg, `book ${Math.round(want)}`, `eb-dice-avg-want ${off > 1.25 ? 'is-high' : off < 0.75 ? 'is-low' : 'is-ok'}`);
-			}
-		}
-		reset?.toggleClass('is-hidden', !o.reset!.shown());
+		if (have === null) return;
+		avg.createSpan({ cls: 'eb-dice-avg-have', text: `avg ${Math.round(have * 10) / 10}` });
+		if (want === undefined) return;
+		const off = want ? have / want : 1;
+		const tone = off > 1.25 ? 'is-high' : off < 0.75 ? 'is-low' : 'is-ok';
+		if (o.reset?.shown()) {
+			// Changed from the book's dice: the book's figure is the way back.
+			const b = avg.createEl('button', { cls: `eb-pill eb-dice-avg-want eb-book-reset ${tone}`, attr: { 'aria-label': 'Use the book\'s dice' } });
+			b.createSpan({ cls: 'eb-t', text: `book ${Math.round(want)}` });
+			setIcon(b.createSpan({ cls: 'eb-book-reset-icon' }), 'rotate-ccw');
+			b.addEventListener('click', () => { o.reset!.run(); o.ui.changed(); });
+		} else pill(avg, `book ${Math.round(want)}`, `eb-dice-avg-want ${tone}`);
 	});
 	return pad;
 }
