@@ -347,8 +347,8 @@ export function importDdbCharacter(input: unknown, opts: DdbImportOptions = {}):
 
 	const feats = featsOf(c);
 	if (feats.length) {
-		fm.features = feats;
-		notes.push(`Feats are listed by name under features: ${feats.join(', ')}.`);
+		// The sheet finds each feat's text in the compendium (the SRD's, or a content pack's).
+		fm.feats = feats;
 	}
 
 	return { frontmatter: fm, name, edition, notes };

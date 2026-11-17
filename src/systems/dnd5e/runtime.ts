@@ -25,6 +25,7 @@ import type { LoadedPack } from '../../core/content/packs';
 import { ITEM_LANG, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
 import { registerBuilders5e } from './builders';
 import { registerWizards5e } from './character-wizard';
+import { registerImports5e } from './import-ui';
 import { addEditButton } from '../../core/builder/commands';
 import { renderCard5e } from './cards';
 import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-view';
@@ -98,6 +99,7 @@ export class Dnd5eRuntime {
 		homebrew(ITEM_LANG, 'item');
 		registerBuilders5e(this);
 		registerWizards5e(this);
+		registerImports5e(this);
 		plugin.registerMarkdownCodeBlockProcessor(SHEET_LANG, (_source, el, ctx) => { ctx.addChild(new Dnd5eSheet(this, el, ctx)); });
 		plugin.inlineRefs.add(this.refProvider());
 		plugin.registerEditorSuggest(new Dnd5eRefSuggest(plugin.app, this));

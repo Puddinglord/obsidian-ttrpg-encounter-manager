@@ -4907,3 +4907,6 @@ button.dnd5e-npc-fight { display: inline-flex; align-items: center; gap: 0.3rem;
 .dnd5e-wizard-fact-value { font-weight: 650; font-variant-numeric: tabular-nums; }
 .dnd5e-wizard-summary .dnd5e-card-row { margin-top: 0.3rem; }
 .dnd5e-wizard-summary .dnd5e-card-label { font-weight: 650; }
+.dnd5e-import .dnd5e-import-link { width: 100%; margin-bottom: 0.4rem; }
+.dnd5e-import .dnd5e-import-url { display: flex; flex-direction: column; gap: 0.15rem; margin-bottom: 0.6rem; font-size: 0.85rem; color: var(--text-muted); }
+.dnd5e-import .dnd5e-import-url-text { font-family: var(--font-monospace); font-size: 0.75rem; word-break: break-all; }

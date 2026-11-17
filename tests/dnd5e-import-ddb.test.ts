@@ -238,12 +238,16 @@ describe('importing a D&D Beyond character', () => {
 		expect(importDdbCharacter(c).frontmatter.gold).toBe(5);
 	});
 
-	it('feats: by name under features, with a note', () => {
+	it('feats: by name, once each, and the sheet shows them with the compendium\'s text', () => {
 		const c = wizard();
 		c.feats = [{ definition: { name: 'Alert', description: '<p>book text</p>' } }, { definition: { name: 'Tough' } }, { definition: { name: 'alert' } }];
 		const r = importDdbCharacter(c);
-		expect(r.frontmatter.features).toEqual(['Alert', 'Tough']);
-		expect(r.notes).toEqual(['Feats are listed by name under features: Alert, Tough.']);
+		expect(r.frontmatter.feats).toEqual(['Alert', 'Tough']);
+		expect(r.frontmatter.features).toBeUndefined();
+		const s = readSheet5e(r.frontmatter, r.edition, r.name);
+		const alert = s.features.find(f => f.name === 'Alert' && f.source === 'Feat');
+		expect(alert?.desc).toBeTruthy();
+		expect(alert?.desc).not.toContain('book text');
 	});
 
 	it('never copies book text', () => {

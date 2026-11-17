@@ -5404,6 +5404,76 @@ test('content packs: a pack in the content folder adds a 5e spell, subclass and 
 	}
 });
 
+test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its data address); Fantasy Statblocks creatures become ```5e notes', async (o) => {
+	const C = 'Campaigns/Import Coast';
+	const M = '.modal.dnd5e-import';
+	// A made-up character in D&D Beyond's shape (names and numbers only).
+	const stat = (v) => v.map((value, i) => ({ id: i + 1, name: null, value }));
+	const ddb = { success: true, data: {
+		id: 1001, name: 'Pip Underbough',
+		race: { fullName: 'Elf', baseRaceName: 'Elf', isLegacy: false, isSubRace: false, sources: [{ sourceId: 145 }] },
+		background: { hasCustomBackground: false, definition: { name: 'Sage', sources: [{ sourceId: 145 }] } },
+		classes: [{ level: 3, isStartingClass: true, hitDiceUsed: 0, definition: { name: 'Wizard', sources: [{ sourceId: 145 }] }, subclassDefinition: { name: 'Evoker' } }],
+		stats: stat([8, 14, 13, 15, 12, 10]), bonusStats: stat([null, null, null, null, null, null]), overrideStats: stat([null, null, null, null, null, null]),
+		modifiers: { race: [], class: [{ type: 'proficiency', subType: 'arcana' }], background: [{ type: 'bonus', subType: 'intelligence-score', value: 2 }], item: [], feat: [], condition: [] },
+		baseHitPoints: 14, removedHitPoints: 0, temporaryHitPoints: 0,
+		classSpells: [{ spells: [{ definition: { name: 'Fire Bolt' } }, { definition: { name: 'Shield' } }] }],
+		spells: { race: [], class: [], feat: [], item: [] },
+		inventory: [{ quantity: 1, equipped: true, definition: { id: 10, name: 'Quarterstaff' } }],
+		currencies: { cp: 0, sp: 0, ep: 0, gp: 12, pp: 0 }, feats: [{ definition: { name: 'Alert' } }],
+	} };
+	const creatures = '```statblock\nname: Bog Wisp\nsize: Tiny\ntype: undead\nalignment: chaotic evil\nac: 13\nhp: 9\nhit_dice: 2d4 + 4\nspeed: 0 ft., fly 40 ft. (hover)\nstats: [3, 16, 14, 10, 12, 6]\ncr: 1/2\nactions:\n  - name: Chill Touch\n    desc: "Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3) Cold damage."\n```';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Import Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} .dnd5e-import-link`).fill('https://www.dndbeyond.com/characters/123456789/AbCdEf');
+		assert.equal(await o.page.locator(`${M} .dnd5e-import-url a`).getAttribute('href'), 'https://character-service.dndbeyond.com/character/v5/character/123456789');
+		await o.page.locator(`${M} textarea`).fill(JSON.stringify(ddb));
+		await o.waitFor(async () => /Pip Underbough[\s\S]*Level 3 Wizard[\s\S]*2024 rules/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the character found' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb.png') });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		const sheet = `${C}/Party/Pip Underbough.md`;
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter?.class, sheet)) === 'Wizard', { what: 'the imported character note' });
+		const fm = await o.eval((app, _p, p) => app.metadataCache.getCache(p).frontmatter, sheet);
+		assert.deepEqual([fm.level, fm.subclass, fm.int, fm.gold, fm.feats], [3, 'Evoker', 17, 12, ['Alert']]);
+		await o.openFile(sheet, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		assert.match(await o.page.locator(`${R} .dnd5e-sheet`).innerText(), /Alert/);
+
+		// A private character's page says so plainly.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill('{"success":false,"message":"Unauthorized Access Attempt."}');
+		await o.waitFor(async () => /Public/i.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the private character message' });
+		assert.equal(await o.page.locator(`${M} button.mod-cta`).isDisabled(), true);
+		await o.page.keyboard.press('Escape');
+
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-fantasy-statblocks'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(creatures);
+		await o.waitFor(async () => /Bog Wisp/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the creature found' });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		const wisp = `${C}/Monsters/Bog Wisp.md`;
+		await o.waitFor(async () => o.eval((app, _p, p) => !!app.vault.getAbstractFileByPath(p), wisp), { what: 'the creature note' });
+		assert.match(await read(o, wisp), /```5e\nname: Bog Wisp\n[\s\S]*hp: 9 \(2d4 \+ 4\)[\s\S]*cr: 1\/2[\s\S]*- Chill Touch: Melee Attack Roll: \+5/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('5e compendium: spells, items and classes for both editions, 5e:spell: references, autocomplete, Spotlight', async (o) => {
 	const C = 'Campaigns/Sword Coast';
 	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';

@@ -16,10 +16,8 @@ D&D Beyond only shares public characters.
 
 ### 2. Get the character's data
 
-1. Look at the character's address in your browser. It ends in a number, like `https://www.dndbeyond.com/characters/123456789`.
-2. Open this address, with your number at the end instead of `123456789`:
-
-   `https://character-service.dndbeyond.com/character/v5/character/123456789`
+1. In Obsidian, run **Import a D&D Beyond character…** from the command palette (**Ctrl+P**, or **Cmd+P** on a Mac).
+2. Paste the character's link (from your browser's address bar, like `https://www.dndbeyond.com/characters/123456789`) into the top box, and choose **Open the character's data**.
 
 3. The page is a wall of text. That's the character. Do one of these:
    - Select all of it (**Ctrl+A**, or **Cmd+A** on a Mac) and copy it (**Ctrl+C** or **Cmd+C**). In Firefox, click **Raw Data** first.
@@ -29,10 +27,8 @@ If the page says "Unauthorized Access Attempt", the character isn't public yet. 
 
 ### 3. Import it
 
-1. In Obsidian, open the command palette (**Ctrl+P**, or **Cmd+P** on a Mac).
-2. Run **Import a D&D Beyond character…**.
-3. Paste the text, or choose the file you saved.
-4. Choose **Import**.
+1. Back in the import window, paste the text into the big box, or choose the file you saved.
+2. Check what it found, then choose **Import**.
 
 You get a character note with a 5e sheet.
 
@@ -46,7 +42,7 @@ A few things to check after importing:
 
 - **Rules.** Ember Vault works out whether the character uses the 2014 or the 2024 rules. If it got it wrong, change `edition` on the note.
 - **More than one class.** The sheet shows the first class, at the character's total level. The other classes are listed on the note under `classes`.
-- **Feats** are listed by name in the sheet's features.
+- **Feats** show on the sheet. Ones in the SRD or a content pack come with their text.
 
 The import window lists anything else that didn't come across.
 
