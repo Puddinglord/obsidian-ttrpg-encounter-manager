@@ -77,4 +77,6 @@ export interface GameSystem {
 	encounterBlock?(plugin: NimbleStatblocksPlugin, def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void;
 	/** Show this system's combat tracker (Open encounter tracker, the ribbon). */
 	openTracker?(plugin: NimbleStatblocksPlugin): Promise<void>;
+	/** Show this system's compendium (Open compendium, the ribbon). */
+	openCompendium?(plugin: NimbleStatblocksPlugin): Promise<void>;
 }

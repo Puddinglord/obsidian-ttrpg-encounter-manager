@@ -4744,3 +4744,55 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .diff-low { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
 .diff-moderate { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
 .diff-high { background: rgba(224, 138, 65, 0.2); color: #c9702a; }
+
+/* 5e compendium cards (src/systems/dnd5e/cards.ts) */
+.dnd5e-card { line-height: 1.5; }
+.dnd5e-card-head { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.4rem; }
+.dnd5e-card-icon { display: inline-flex; padding: 0.35rem; border-radius: 6px; background: color-mix(in srgb, var(--interactive-accent) 14%, transparent); color: var(--interactive-accent); }
+.dnd5e-card-name { font-size: 1.15rem; font-weight: 700; }
+.dnd5e-card-line { color: var(--text-muted); font-style: italic; font-size: 0.9rem; }
+.dnd5e-card-facts { margin: 0.3rem 0 0.5rem; }
+.dnd5e-card-field { margin: 0.1rem 0; }
+.dnd5e-card-label { font-weight: 700; }
+.dnd5e-card-sub { font-weight: 700; margin-top: 0.6rem; }
+.dnd5e-card-level { font-weight: 700; margin-top: 0.9rem; color: var(--interactive-accent); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; }
+.dnd5e-card p { margin: 0.3rem 0; }
+.dnd5e-card ul { margin: 0.3rem 0; padding-left: 1.3rem; }
+.dnd5e-card-table { border-collapse: collapse; margin: 0.5rem 0; font-size: 0.85rem; width: 100%; }
+.dnd5e-card-table th,
+.dnd5e-card-table td { border: 1px solid var(--background-modifier-border); padding: 0.15rem 0.35rem; text-align: left; }
+.dnd5e-level-table td:nth-child(n+4),
+.dnd5e-level-table th:nth-child(n+4) { text-align: center; }
+.dnd5e-card .nimble-dice.is-clickable { cursor: pointer; border-bottom: 1px dotted currentColor; }
+.dnd5e-card-modal { width: min(720px, 94vw); }
+
+/* 5e references to compendium entries */
+.dnd5e-ref .dnd5e-ref-icon { display: inline-flex; margin-right: 0.2rem; color: var(--interactive-accent); }
+.dnd5e-ref .dnd5e-ref-icon svg { width: 13px; height: 13px; }
+
+/* 5e compendium view (src/systems/dnd5e/compendium-view.ts) */
+.dnd5e-compendium { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; }
+.dnd5e-cmp-top { display: flex; gap: 0.5rem; align-items: center; }
+.dnd5e-cmp-editions { display: inline-flex; border: 1px solid var(--background-modifier-border); border-radius: 6px; overflow: hidden; }
+.dnd5e-cmp-editions button { border-radius: 0; box-shadow: none; }
+.dnd5e-cmp-editions button.is-active,
+.dnd5e-cmp-tabs button.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
+.dnd5e-cmp-search { flex: 1 1 auto; }
+.dnd5e-cmp-tabs { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.dnd5e-cmp-body { display: grid; grid-template-columns: minmax(220px, 340px) minmax(0, 1fr); gap: 0.75rem; min-height: 0; flex: 1 1 auto; }
+.dnd5e-cmp-list { overflow-y: auto; max-height: 75vh; border-right: 1px solid var(--background-modifier-border); padding-right: 0.4rem; }
+.dnd5e-cmp-detail { overflow-y: auto; max-height: 75vh; min-width: 0; }
+.dnd5e-cmp-count { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.3rem; }
+.dnd5e-cmp-row { display: flex; gap: 0.5rem; align-items: center; padding: 0.3rem 0.4rem; border-radius: 6px; cursor: pointer; }
+.dnd5e-cmp-row:hover { background: var(--background-modifier-hover); }
+.dnd5e-cmp-row.is-selected { background: color-mix(in srgb, var(--interactive-accent) 16%, transparent); }
+.dnd5e-cmp-badge { min-width: 2.1rem; height: 1.6rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: var(--background-secondary); font-size: 0.75rem; font-weight: 700; }
+.dnd5e-cmp-badge svg { width: 14px; height: 14px; }
+.dnd5e-cmp-titles { min-width: 0; }
+.dnd5e-cmp-name { font-weight: 600; }
+.dnd5e-cmp-detail-line { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 640px) {
+	.dnd5e-cmp-body { grid-template-columns: 1fr; }
+	.dnd5e-cmp-list { max-height: 40vh; border-right: none; }
+}
+.dnd5e-card .dnd5e-source { margin-top: 0.6rem; font-size: 0.75em; color: var(--text-faint); text-align: right; }

@@ -28,4 +28,7 @@ export const dnd5eSystem: GameSystem = {
 	async openTracker() {
 		await dnd5e().openTracker();
 	},
+	async openCompendium() {
+		await dnd5e().openCompendium();
+	},
 };

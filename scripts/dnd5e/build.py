@@ -149,6 +149,182 @@ def monsters():
         out.sort(key=lambda x: x['name'])
         write(f'monsters-{ed}.json', out)
 
+def components(sp):
+    c = ', '.join(sp.get('components') or [])
+    m = sp.get('material')
+    return f'{c} ({m})' if m and 'M' in (sp.get('components') or []) else c
+
+def spells(ed):
+    out = []
+    for sp in load(ed, 'Spells'):
+        x = {
+            'name': sp['name'], 'level': sp.get('level', 0), 'school': (sp.get('school') or {}).get('name', ''),
+            'castingTime': sp.get('casting_time', ''), 'range': sp.get('range', ''), 'components': components(sp),
+            'duration': sp.get('duration', ''), 'desc': text(sp.get('desc') or sp.get('description')),
+            'classes': [c['name'] for c in sp.get('classes') or []],
+        }
+        if sp.get('concentration'): x['concentration'] = True
+        if sp.get('ritual'): x['ritual'] = True
+        hl = text(sp.get('higher_level'))
+        if hl: x['higherLevel'] = hl
+        out.append(x)
+    return sorted(out, key=lambda x: x['name'])
+
+def magic_items(ed):
+    out = []
+    for it in load(ed, 'Magic-Items'):
+        if it.get('variant'): continue
+        d = text(it.get('desc'))
+        first, _, rest = d.partition('\n')
+        x = {'name': it['name'], 'rarity': (it.get('rarity') or {}).get('name', ''), 'type': (it.get('equipment_category') or {}).get('name', ''), 'desc': rest.strip() if rest else d}
+        if first and rest: x['line'] = first.strip()
+        att = it.get('attunement')
+        if att is True or 'requires attunement' in first.lower(): x['attunement'] = True
+        out.append(x)
+    return sorted(out, key=lambda x: x['name'])
+
+def equipment(ed):
+    props = {}
+    for wp in load(ed, 'Weapon-Properties'): props[wp['name']] = text(wp.get('desc') or wp.get('description'))
+    out = []
+    for e in load(ed, 'Equipment'):
+        cats = [c['name'] for c in (e.get('equipment_categories') or ([e['equipment_category']] if e.get('equipment_category') else []))]
+        x = {'name': e['name'], 'category': cats[0] if cats else ''}
+        if len(cats) > 1: x['tags'] = cats[1:]
+        cost = e.get('cost')
+        if cost: x['cost'] = f"{cost['quantity']} {cost['unit']}"
+        if e.get('weight') is not None: x['weight'] = e['weight']
+        if e.get('weapon_category'): x['weaponCategory'] = e['weapon_category']
+        if e.get('weapon_range'): x['weaponRange'] = e['weapon_range']
+        dmg = e.get('damage')
+        if dmg: x['damage'] = f"{dmg.get('damage_dice', '')} {(dmg.get('damage_type') or {}).get('name', '').lower()}".strip()
+        two = e.get('two_handed_damage')
+        if two: x['versatile'] = two.get('damage_dice')
+        rng = e.get('range') or {}
+        if rng.get('long'): x['range'] = f"{rng.get('normal')}/{rng.get('long')}"
+        tr = e.get('throw_range') or {}
+        if tr.get('long'): x['range'] = f"{tr.get('normal')}/{tr.get('long')}"
+        if e.get('properties'): x['properties'] = [p['name'] for p in e['properties']]
+        if e.get('mastery'): x['mastery'] = e['mastery']['name']
+        if e.get('armor_category'): x['armorCategory'] = e['armor_category']
+        ac = e.get('armor_class')
+        if ac: x['ac'] = {'base': ac.get('base'), 'dex': bool(ac.get('dex_bonus')), **({'max': ac['max_bonus']} if ac.get('max_bonus') else {})}
+        if e.get('str_minimum'): x['strMin'] = e['str_minimum']
+        if e.get('stealth_disadvantage'): x['stealthDisadvantage'] = True
+        d = text(e.get('desc') or e.get('description'))
+        if d: x['desc'] = d
+        out.append(x)
+    return sorted(out, key=lambda x: x['name']), props
+
+def slots(sc):
+    return [sc.get(f'spell_slots_level_{i}', 0) for i in range(1, 10)] if sc else None
+
+def classes(ed):
+    feats = load(ed, 'Features')
+    lv = load(ed, 'Levels')
+    subs = load(ed, 'Subclasses')
+    out = []
+    for c in load(ed, 'Classes'):
+        cid = c['index']
+        mine = [f for f in feats if (f.get('class') or {}).get('index') == cid and not f.get('subclass')]
+        def level_of(f):
+            l = f.get('level')
+            return l if isinstance(l, int) else int(str((l or {}).get('index', '0')).rsplit('-', 1)[-1] or 0)
+        x = {
+            'name': c['name'], 'hitDie': c.get('hit_die'),
+            'saves': [s['name'] for s in c.get('saving_throws') or []],
+            'proficiencies': [p['name'] for p in c.get('proficiencies') or []],
+            'skillChoice': (c.get('proficiency_choices') or [{}])[0].get('desc', ''),
+            'features': sorted(({'level': level_of(f), 'name': f['name'], 'desc': text(f.get('desc') or f.get('description'))} for f in mine), key=lambda f: (f['level'], f['name'])),
+        }
+        pa = c.get('primary_ability')
+        if pa: x['primary'] = pa.get('desc', '')
+        sc = c.get('spellcasting')
+        if sc: x['spellcasting'] = (sc.get('spellcasting_ability') or {}).get('name', '')
+        levels = []
+        for L in sorted((l for l in lv if (l.get('class') or {}).get('index') == cid and not l.get('subclass')), key=lambda l: l['level']):
+            row = {'level': L['level'], 'pb': L.get('prof_bonus'), 'features': [f['name'] for f in L.get('features') or []]}
+            sl = slots(L.get('spellcasting'))
+            if sl and any(sl): row['slots'] = sl
+            if L.get('spellcasting') and L['spellcasting'].get('cantrips_known') is not None: row['cantrips'] = L['spellcasting']['cantrips_known']
+            if L.get('class_specific'): row['extra'] = L['class_specific']
+            levels.append(row)
+        x['levels'] = levels
+        sub_out = []
+        for sc_ in (s_ for s_ in subs if (s_.get('class') or {}).get('index') == cid):
+            sf = sc_.get('features')
+            if sf is None:
+                sf = [{'level': level_of(f), 'name': f['name'], 'desc': text(f.get('desc'))} for f in feats if (f.get('subclass') or {}).get('index') == sc_['index']]
+            else:
+                sf = [{'level': f.get('level', 0), 'name': f['name'], 'desc': text(f.get('desc') or f.get('description'))} for f in sf]
+            sub_out.append({'name': sc_['name'], 'flavor': sc_.get('subclass_flavor') or sc_.get('summary') or '', 'desc': text(sc_.get('desc') or sc_.get('description')), 'features': sorted(sf, key=lambda f: (f['level'], f['name']))})
+        x['subclasses'] = sub_out
+        out.append(x)
+    return out
+
+def species(ed):
+    traits = {t['index']: t for t in load(ed, 'Traits')}
+    tr = lambda refs: [{'name': traits.get(r['index'], r)['name'], 'desc': text(traits.get(r['index'], {}).get('desc') or traits.get(r['index'], {}).get('description'))} for r in refs or []]
+    out = []
+    if ed == '2014':
+        subs = {s['index']: s for s in load(ed, 'Subraces')}
+        for r in load(ed, 'Races'):
+            x = {'name': r['name'], 'size': r.get('size', ''), 'speed': r.get('speed'), 'traits': tr(r.get('traits')),
+                 'abilityBonuses': ', '.join(f"{b['ability_score']['name']} +{b['bonus']}" for b in r.get('ability_bonuses') or []),
+                 'desc': '\n\n'.join(text(r.get(k)) for k in ('age', 'alignment', 'size_description', 'language_desc') if r.get(k))}
+            x['subspecies'] = [{'name': subs[s['index']]['name'], 'desc': text(subs[s['index']].get('desc')), 'traits': tr(subs[s['index']].get('racial_traits'))} for s in r.get('subraces') or [] if s['index'] in subs]
+            out.append(x)
+    else:
+        subs = {s['index']: s for s in load(ed, 'Subspecies')}
+        for r in load(ed, 'Species'):
+            x = {'name': r['name'], 'size': r.get('size', ''), 'speed': r.get('speed'), 'traits': tr(r.get('traits')), 'type': r.get('type', '')}
+            x['subspecies'] = [{'name': subs[s['index']]['name'], 'traits': tr(subs[s['index']].get('traits'))} for s in r.get('subspecies') or [] if s['index'] in subs]
+            out.append(x)
+    return out
+
+def backgrounds(ed):
+    out = []
+    for b in load(ed, 'Backgrounds'):
+        x = {'name': b['name']}
+        profs = b.get('proficiencies') or b.get('starting_proficiencies') or []
+        x['proficiencies'] = [p['name'] for p in profs]
+        if b.get('ability_scores'): x['abilityScores'] = [a['name'] for a in b['ability_scores']]
+        if b.get('feat'): x['feat'] = b['feat']['name'] + (f" ({b['feat']['note']})" if b['feat'].get('note') else '')
+        if b.get('feature'): x['feature'] = {'name': b['feature']['name'], 'desc': text(b['feature'].get('desc'))}
+        eq = b.get('equipment_options')
+        if eq: x['equipment'] = '\n'.join(o.get('desc', '') for o in eq)
+        elif b.get('starting_equipment'): x['equipment'] = ', '.join(f"{e['equipment']['name']}" + (f" ({e['quantity']})" if e.get('quantity', 1) > 1 else '') for e in b['starting_equipment'])
+        out.append(x)
+    return out
+
+def feats(ed):
+    out = []
+    for f in load(ed, 'Feats'):
+        x = {'name': f['name'], 'desc': text(f.get('desc') or f.get('description'))}
+        pre = f.get('prerequisites') or []
+        if isinstance(pre, str): pre = [pre]
+        def one(p):
+            if isinstance(p, str): return p
+            if p.get('ability_score'): return f"{p['ability_score']['name']} {p['minimum_score']}+"
+            return str(p.get('desc') or p.get('type') or '')
+        if pre: x['prerequisite'] = ', '.join(filter(None, map(one, pre)))
+        if isinstance(f.get('prerequisite'), str): x['prerequisite'] = f['prerequisite']
+        if f.get('type'): x['type'] = f['type']
+        out.append(x)
+    return out
+
+def rules(ed):
+    return [{'name': r['name'], 'desc': text(r.get('desc'))} for r in load(ed, 'Rule-Sections')]
+
+def compendium():
+    for ed in EDITIONS:
+        eq, props = equipment(ed)
+        write(f'compendium-{ed}.json', {
+            'spells': spells(ed), 'items': magic_items(ed), 'equipment': eq, 'weaponProperties': props,
+            'classes': classes(ed), 'species': species(ed), 'backgrounds': backgrounds(ed), 'feats': feats(ed), 'rules': rules(ed),
+        })
+
 if __name__ == '__main__':
     conditions()
     monsters()
+    compendium()

@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import { builtinModules } from "node:module";
+import { gzDataEsbuild } from "./scripts/gz-data.mjs";
 
 const banner =
 `/*
@@ -39,6 +40,7 @@ const context = await esbuild.context({
 	treeShaking: true,
 	minify: prod,
 	outfile: "main.js",
+	plugins: [gzDataEsbuild],
 });
 
 if (prod) {

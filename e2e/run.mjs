@@ -5104,6 +5104,81 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 	}
 });
 
+test('5e compendium: spells, items and classes for both editions, 5e:spell: references, autocomplete, Spotlight', async (o) => {
+	const C = 'Campaigns/Sword Coast';
+	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Spells.md`, 'She casts `5e:spell:Fireball`, drinks a `5e:item:Potion of Healing` and is `5e:Prone`.\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		// Open compendium in a 5e campaign is the 5e one.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.page.locator(V).waitFor({ timeout: 5000 });
+		await o.page.locator(`${V} .dnd5e-cmp-tabs button`, { hasText: 'Spells' }).click();
+		await o.page.locator(`${V} .dnd5e-cmp-search`).fill('fireball');
+		await o.waitFor(async () => (await o.page.locator(`${V} .dnd5e-cmp-row.is-selected .dnd5e-cmp-name`).innerText().catch(() => '')) === 'Fireball', { what: 'Fireball selected' });
+		const card = o.page.locator(`${V} .dnd5e-cmp-detail .dnd5e-card`);
+		assert.match(await card.innerText(), /Level 3 Evocation[\s\S]*Casting Time\s*Action[\s\S]*Range\s*150 feet/);
+		await card.locator('.nimble-dice.is-clickable').first().click();
+		await o.waitFor(async () => /8d6/.test(await o.eval((app, plugin) => plugin.settings.rollLog[0]?.expression ?? '')), { what: 'fireball damage rolled' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-compendium.png') });
+		// The 2014 rules print it the 2014 way.
+		await o.page.locator(`${V} .dnd5e-cmp-editions button`, { hasText: '2014' }).click();
+		await o.page.locator(`${V} .dnd5e-cmp-tabs button`, { hasText: 'Spells' }).click();
+		await o.page.locator(`${V} .dnd5e-cmp-search`).fill('fireball');
+		await o.waitFor(async () => /3rd-level evocation/.test(await o.page.locator(`${V} .dnd5e-cmp-detail .dnd5e-card-line`).innerText().catch(() => '')), { what: '2014 Fireball' });
+		// A class page: hit die and the level table with spell slots.
+		await o.page.locator(`${V} .dnd5e-cmp-tabs button`, { hasText: 'Classes' }).click();
+		await o.page.locator(`${V} .dnd5e-cmp-search`).fill('wizard');
+		await o.waitFor(async () => (await o.page.locator(`${V} .dnd5e-cmp-detail .dnd5e-level-table tr`).count()) === 21, { what: 'wizard level table' });
+		assert.match(await o.page.locator(`${V} .dnd5e-cmp-detail .dnd5e-card`).innerText(), /Hit Die\s*d6/);
+
+		// References: a spell, an item, and a bare name that's a condition.
+		await o.openFile(`${C}/Spells.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.dnd5e-hit`).count()) === 3, { what: 'three compendium refs' });
+		assert.deepEqual(await o.page.locator(`${R} .dnd5e-ref.dnd5e-hit`).evaluateAll(els => els.map(e => [...e.classList].find(c => c.startsWith('kind-')))), ['kind-spell', 'kind-item', 'kind-condition']);
+		await o.page.locator(`${R} .dnd5e-ref.kind-spell .nimble-inline-name`).hover();
+		await o.waitFor(async () => (await o.page.locator('.nimble-hover-preview .dnd5e-card.kind-spell').count()) === 1, { what: 'spell hover card' });
+		await o.page.keyboard.press('Escape');
+		await o.page.locator(`${R} .dnd5e-ref.kind-item .nimble-inline-name`).click();
+		await o.page.locator('.modal.dnd5e-card-modal .dnd5e-card.kind-item').waitFor({ timeout: 3000 });
+		await o.page.keyboard.press('Escape');
+
+		// Autocomplete: `5e:spell: lists spells and writes the kind.
+		await o.eval(async (app, plugin, C) => {
+			const f = await app.vault.create(`${C}/Scratch.md`, 'Cast \n');
+			await app.workspace.getLeaf(false).openFile(f, { state: { mode: 'source' } });
+			const editor = app.workspace.activeEditor.editor;
+			editor.setCursor({ line: 0, ch: 5 });
+			editor.focus();
+		}, C);
+		await o.page.keyboard.type('`5e:spell:magic miss', { delay: 30 });
+		await o.waitFor(() => o.page.evaluate(() => document.querySelector('.suggestion-container .nimble-suggestion-name')?.textContent === 'Magic Missile'), { timeout: 5000, what: 'Magic Missile suggested' });
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(200);
+		assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), 'Cast `5e:spell:Magic Missile`');
+
+		// Spotlight finds spells in a 5e campaign.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+		const SP = '.modal-container .prompt.nimble-spotlight';
+		await o.page.locator(`${SP} .prompt-input`).fill('magic missile');
+		await o.waitFor(async () => /Magic Missile[\s\S]*Spell/i.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'spell in Spotlight' });
+		await o.page.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);

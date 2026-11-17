@@ -227,7 +227,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 		this.registerEvent(this.campaigns.on('changed', syncParty));
 		this.registerEvent(this.app.metadataCache.on('changed', (_f, _d, cache) => { if (noteKind(cache.frontmatter ?? {}) === 'character') syncParty(); }));
 		syncRibbon();
-		this.addRibbonIcon('book-open', 'Nimble compendium', () => this.openBestiary());
+		this.addRibbonIcon('book-open', 'Nimble compendium', () => void this.openSystemCompendium());
 		this.registerHoverLinkSource('nimble-gm', { display: 'Ember Vault', defaultMod: true });
 
 		this.registerMarkdownCodeBlockProcessor('nimble', (source, el, ctx) => {
@@ -354,7 +354,7 @@ export default class NimbleStatblocksPlugin extends Plugin {
 			return true;
 		};
 		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', checkCallback: gm(() => void this.openTracker()) });
-		this.addCommand({ id: 'open-bestiary', name: 'Open compendium', icon: 'book-open', callback: () => this.openBestiary() });
+		this.addCommand({ id: 'open-bestiary', name: 'Open compendium', icon: 'book-open', callback: () => void this.openSystemCompendium() });
 		this.addCommand({ id: 'search-compendium', name: 'Search the compendium…', icon: 'library', callback: () => openCompendiumSearch(this) });
 		this.addCommand({ id: 'add-monster', name: 'Add monster to encounter…', checkCallback: gm(() => this.openAddMonsterModal()) });
 		this.addCommand({ id: 'build-encounter', name: 'Build an encounter…', checkCallback: gm(() => new BuilderModal(this).open()) });
@@ -1127,6 +1127,13 @@ export default class NimbleStatblocksPlugin extends Plugin {
 	getEncounterView(): EncounterTrackerView | null {
 		const leaf = this.app.workspace.getLeavesOfType(ENCOUNTER_VIEW_TYPE)[0];
 		return leaf?.view instanceof EncounterTrackerView ? leaf.view : null;
+	}
+
+	/** The active campaign's compendium: its system's own, else Nimble's. */
+	async openSystemCompendium(): Promise<void> {
+		const system = this.system();
+		if (system.openCompendium) await system.openCompendium(this);
+		else await this.openBestiary();
 	}
 
 	/** The active campaign's combat tracker: its system's own, else Nimble's. */

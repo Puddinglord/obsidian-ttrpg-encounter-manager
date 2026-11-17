@@ -17,6 +17,9 @@ import { FightStore } from './combat-store';
 import { DND5E_TRACKER_VIEW, Dnd5eTrackerView } from './tracker-view';
 import { Dnd5eEncounterBlock } from './encounter-block';
 import type { EncounterDef } from '../../core/encounter-def';
+import { findHit, Hit5e, KIND5E, kindFromWord } from './compendium';
+import { renderCard5e } from './cards';
+import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView } from './compendium-view';
 
 /** `5e:Goblin` → "Goblin". */
 export const REF_PREFIX = '5e:';
@@ -57,6 +60,7 @@ export class Dnd5eRuntime {
 		plugin.inlineRefs.add(this.refProvider());
 		plugin.registerEditorSuggest(new Dnd5eRefSuggest(plugin.app, this));
 		plugin.registerView(DND5E_TRACKER_VIEW, (leaf) => new Dnd5eTrackerView(leaf, this));
+		plugin.registerView(DND5E_COMPENDIUM_VIEW, (leaf) => new Dnd5eCompendiumView(leaf, this));
 
 		const index = this.index.vault;
 		plugin.registerEvent(index.on('changed', () => plugin.refsChanged()));
@@ -93,6 +97,15 @@ export class Dnd5eRuntime {
 		}
 		await ws.revealLeaf(leaf);
 		return leaf;
+	}
+
+	/** Show the 5e compendium in a tab, set to the active campaign's edition. */
+	async openCompendium(): Promise<void> {
+		const ws = this.plugin.app.workspace;
+		const leaf = ws.getLeavesOfType(DND5E_COMPENDIUM_VIEW)[0] ?? ws.getLeaf('tab');
+		await leaf.setViewState({ type: DND5E_COMPENDIUM_VIEW, active: true });
+		await ws.revealLeaf(leaf);
+		if (leaf.view instanceof Dnd5eCompendiumView) leaf.view.show({ edition: this.edition(this.plugin.campaigns.active?.home.path) });
 	}
 
 	encounterBlock(def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext): void {
@@ -135,8 +148,58 @@ export class Dnd5eRuntime {
 		return m;
 	}
 
-	/** A pill for `5e:Name`: CR, name (hover for the card, click for a quick look). */
+	/** `spell:Fireball` → the spell; `Fireball` → a monster of that name, else anything in the compendium called that. */
+	resolveRef(ref: string, sourcePath: string): { monster: Dnd5eEntry } | { hit: Hit5e } | undefined {
+		const m = /^\s*([a-z]+)\s*:\s*(.+)$/i.exec(ref);
+		const kind = m ? kindFromWord(m[1]) : undefined;
+		const edition = this.edition(sourcePath);
+		if (kind) { const hit = findHit(edition, m![2], kind); return hit ? { hit } : undefined; }
+		const monster = this.get(ref, sourcePath);
+		if (monster) return { monster };
+		const hit = findHit(edition, ref);
+		return hit ? { hit } : undefined;
+	}
+
+	/** A compendium entry's card, as hover content. */
+	hitHover(hit: Hit5e, sourcePath: string): HoverContent {
+		return {
+			name: hit.name,
+			label: `${hit.name} (${KIND5E[hit.kind].label.toLowerCase()})`,
+			cls: 'is-compendium',
+			open: () => this.openCard(hit, sourcePath),
+			render: (body) => { renderCard5e(body, hit, this.cardOptions(sourcePath)); },
+		};
+	}
+
+	cardOptions(sourcePath: string): { app: NimbleStatblocksPlugin['app']; sourcePath: string; onRoll?: (e: string, l: string) => void } {
+		return { app: this.plugin.app, sourcePath, onRoll: this.plugin.settings.clickableDice ? (expr, label) => { this.plugin.rollDice(expr, label, 'effect'); } : undefined };
+	}
+
+	openCard(hit: Hit5e, sourcePath: string): Modal {
+		this.plugin.hover.hide();
+		const m = new Card5eModal(this, hit, sourcePath);
+		m.open();
+		return m;
+	}
+
+	/** A pill for `5e:Name` or `5e:spell:Name`: the monster's CR or the entry's icon, its name (hover for the card, click to open it). */
 	createRef(name: string, sourcePath: string): HTMLElement {
+		const target = this.resolveRef(name, sourcePath);
+		if (target && 'hit' in target) {
+			const hit = target.hit;
+			const el = createSpan({ cls: `nimble-inline-ref dnd5e-ref nimble-inline-found dnd5e-hit kind-${hit.kind}` });
+			el.dataset.dnd5eRef = name;
+			el.dataset.sourcePath = sourcePath;
+			setIcon(el.createSpan({ cls: 'dnd5e-ref-icon' }), KIND5E[hit.kind].icon);
+			const link = el.createEl('a', { text: hit.name, cls: 'nimble-inline-name', attr: { href: '#', role: 'link' } });
+			link.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.openCard(hit, sourcePath); });
+			this.plugin.hover.attach(link, () => this.hitHover(hit, sourcePath));
+			return el;
+		}
+		return this.createMonsterRef(name, sourcePath);
+	}
+
+	private createMonsterRef(name: string, sourcePath: string): HTMLElement {
 		const plugin = this.plugin;
 		const el = createSpan({ cls: 'nimble-inline-ref dnd5e-ref' });
 		el.dataset.dnd5eRef = name;
@@ -167,7 +230,7 @@ export class Dnd5eRuntime {
 			id: 'dnd5e',
 			parse: parse5eRef,
 			create: (ref, sourcePath) => this.createRef(ref, sourcePath),
-			resolves: (ref, sourcePath) => !!this.get(ref, sourcePath),
+			resolves: (ref, sourcePath) => !!this.resolveRef(ref, sourcePath),
 			refresh: (root) => {
 				const roots = new Set<ParentNode>(root ? [root] : [activeDocument]);
 				if (!root) this.plugin.app.workspace.iterateAllLeaves((leaf) => { roots.add(leaf.view.containerEl.doc); });
@@ -198,6 +261,20 @@ export class Dnd5eRuntime {
 		new Notice(`Created ${file.path}. Edits here replace the book version in this campaign.`);
 		return file;
 	}
+}
+
+/** A compendium entry's card in a modal. */
+class Card5eModal extends Modal {
+	constructor(private rt: Dnd5eRuntime, private hit: Hit5e, private sourcePath: string) {
+		super(rt.plugin.app);
+	}
+
+	onOpen(): void {
+		this.modalEl.addClass('dnd5e-card-modal');
+		renderCard5e(this.contentEl, this.hit, this.rt.cardOptions(this.sourcePath));
+	}
+
+	onClose(): void { this.contentEl.empty(); }
 }
 
 /** A 5e monster's stat block in a modal over whatever you're doing. */

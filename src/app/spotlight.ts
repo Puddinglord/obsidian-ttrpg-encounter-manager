@@ -34,11 +34,13 @@ import { describeMonster } from '../systems/nimble/suggest';
 import type { MonsterIndexEntry, NimbleCondition } from '../systems/nimble/types';
 import { dnd5e } from '../systems/dnd5e/runtime';
 import type { Dnd5eEntry } from '../systems/dnd5e/types';
+import { allHits, Hit5e, KIND5E } from '../systems/dnd5e/compendium';
 
 type Item =
 	| { kind: 'roll'; expression: string }
 	| { kind: 'monster'; entry: MonsterIndexEntry; count: number; add: boolean }
 	| { kind: 'dnd5e'; entry: Dnd5eEntry }
+	| { kind: 'dnd5eHit'; hit: Hit5e }
 	| { kind: 'npc'; npc: NpcInfo }
 	| { kind: 'note'; note: NoteRef; where: string }
 	| { kind: 'condition'; condition: NimbleCondition }
@@ -242,6 +244,8 @@ export class SpotlightModal extends SuggestModal<Item> {
 		for (const n of this.notes()) rank(n, 2, [n.note.title], [n.note.area ? `${n.note.area} ${n.note.title}` : '']);
 		const conditions = [...this.plugin.system().conditions(edition), ...this.plugin.settings.customConditions];
 		for (const condition of conditions.filter(c => !c.auto)) rank({ kind: 'condition', condition }, 3, [condition.name]);
+		// Spells, items, classes, rules…: the edition's compendium (its conditions are listed above).
+		for (const x of fuzzyRank(allHits(edition).filter(h => h.kind !== 'condition'), text, h => [h.name], 8, true)) rank({ kind: 'dnd5eHit', hit: x.item }, 4, [x.item.name], [x.item.detail]);
 		for (const c of this.commands(text, 8)) if (c.kind === 'command') rank(c, 5, [c.name]);
 		const anyReal = ranked.some(r => !r.fuzzy);
 		return ranked.filter(r => !anyReal || !r.fuzzy).sort((a, b) => a.score - b.score || a.order - b.order).slice(0, 14).map(r => r.item);
@@ -307,6 +311,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 			case 'npc': return i.npc.name;
 			case 'note': return i.note.title;
 			case 'dnd5e': return i.entry.name;
+			case 'dnd5eHit': return i.hit.name;
 			case 'condition': return i.condition.name;
 			case 'command': return i.name;
 			case 'compendium': return i.hit.name;
@@ -367,6 +372,12 @@ export class SpotlightModal extends SuggestModal<Item> {
 				tag('Adversary');
 				break;
 			}
+			case 'dnd5eHit':
+				setIcon(icon, KIND5E[i.hit.kind].icon);
+				name.setText(i.hit.name);
+				meta(i.hit.detail);
+				tag(KIND5E[i.hit.kind].label);
+				break;
 			case 'npc': {
 				const portrait = portraitOf(this.app, i.npc.path);
 				if (portrait) renderAvatar(icon, portrait, 'nimble-spot-avatar');
@@ -457,6 +468,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		switch (i.kind) {
 			case 'roll': this.roll(i.expression, false); break;
 			case 'dnd5e': this.escapeBack(dnd5e().quickLook(i.entry, this.plugin.campaigns.active?.home.path ?? '')); break;
+			case 'dnd5eHit': this.escapeBack(dnd5e().openCard(i.hit, this.plugin.campaigns.active?.home.path ?? '')); break;
 			case 'monster':
 				if (i.add) void this.plugin.addToEncounter(i.entry.monster, i.entry.filePath || undefined, i.count);
 				else this.escapeBack(openRecord(this.plugin, { kind: 'monster', entry: i.entry }));
