@@ -84,9 +84,9 @@ A new note per creation, named after it. In the active campaign you run, monster
 1. Forgiving stat blocks and quiet hints. **Done.**
 2. Builder math: the GM Guide tables, expected stats, level and tier guesses, re-levelling, d44/d66/d88 averages. Pure and unit-tested against the bundled data. Tougher/Weaker moves onto the same tables. **Done.**
 3. The builder frame and the monster builder: quick and full, regular, solo and minion, from a template. **Done.**
-4. Spell and item builders, and homebrew spells and items in the compendium.
-5. Ways in: compendium, commands, Spotlight, slash commands, Edit in builder.
-6. Phone and layout pass, guide pages, e2e tests, screenshots.
+4. Spell and item builders, and homebrew spells and items in the compendium. **Done.**
+5. Ways in: compendium, commands, slash commands, Edit in builder. **Done.**
+6. Phone and layout pass, guide pages, e2e tests, screenshots. **Done.**
 
 ## Found along the way
 

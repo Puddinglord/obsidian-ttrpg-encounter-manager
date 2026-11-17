@@ -14,6 +14,10 @@ From the search box, ⌥/Alt + ← and → step through the tabs, and ⌥/Alt + 
 - **Classes** shows each class as a full page: key stats, hit die, saves, gear, every level's features, its option groups and every subclass.
 - **Companions** has the Beastmaster's companions, the Shepherd's companion abilities, the Adventuring Companions rules from Monsters & More (draft), and any stat block in your vault whose `type:` or `group:` says Companion. The companion stat blocks themselves aren't printed in the current Monsters & More draft yet.
 
+## Making your own
+
+The **+** at the end of the search bar opens the [builder](builder.md) for the tab you're on: a monster on Adversaries, a spell on Spells, an item on Items. On an entry's page, **Use as a template** starts a new one from it. Homebrew spells and items you make (or write as ```` ```nimble-spell ```` and ```` ```nimble-item ```` blocks) show up here with the book's, marked Homebrew.
+
 ## Searching
 
 Type a name. Search ignores case and punctuation and forgives typos (`pyroclsm` finds Pyroclasm). Names count most, then the detail line, then rules and ability text. Put a phrase in quotes to keep it together: `"lay on hands"`.

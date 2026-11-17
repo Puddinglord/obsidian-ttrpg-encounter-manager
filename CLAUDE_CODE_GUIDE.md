@@ -63,6 +63,13 @@ src/
   roll-def.ts           Rolls with stacked advantage/disadvantage, modifiers and extra dice (pure, tested); roll-dialog.ts is the dialog
   resource-def.ts       How class dice behave (rolled when gained or spent, all/any/one per roll, kept or spent), from scripts/compendium/raw/resources.json (pure, tested)
   creature-notes.ts     A player's `nimble: creature` notes, as the bestiary shows them (pure, tested)
+  statblock-issues.ts   The quiet "N lines here aren't shown as written" hints under hand-written stat blocks (parser.ts readStatblock finds them), Fix buttons, rewriteBlock()
+  builder-math.ts       The GM Guide's monster and legendary tables, spell damage by tier, item prices: expected stats, level/tier guesses, re-levelling, dice suggestions (pure, tested)
+  entity-builder.ts     The builder's frame (one fixed-size dialog for monsters, spells, items; steps, live preview, phone sheet) and its shared fields
+  entity-monster.ts     The monster draft: typed values kept, the rest from the level; quick build, solo, minion, from a template (pure, tested); entity-monster-ui.ts its steps
+  entity-homebrew.ts    Spell and item drafts (pure, tested); entity-homebrew-ui.ts their steps
+  homebrew-def.ts       ```nimble-spell / ```nimble-item blocks (pure, tested); homebrew-block.ts renders them; the monster index collects them into the compendium
+  builder-register.ts   Builder commands and the Edit pencil on blocks in notes
 scripts/bestiary/       Raw per-page extractions from the Nimble PDFs, the brief, and merge.py
 tests/                  Unit tests (vitest + happy-dom); obsidian-stub.ts stands in for the API
 e2e/                    End-to-end tests that drive a real Obsidian
@@ -88,7 +95,7 @@ e2e/                    End-to-end tests that drive a real Obsidian
 
 Rules that keep this healthy:
 
-- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts` must not import `obsidian`, so unit tests run in plain Node.
+- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
 - Views don't mutate encounter data directly. Call `plugin.encounters.*`; it saves and fires `changed`, and every open tracker re-renders.
