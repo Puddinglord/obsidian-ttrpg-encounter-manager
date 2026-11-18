@@ -38,29 +38,38 @@ export class Dnd5eTrackerView extends ItemView {
 		root.addClass('dnd5e-tracker');
 		const f = this.fight;
 
-		// Header: the fight, the round, and the turn buttons.
+		// Header: the fight, where it's at, and a menu for the rest.
 		const head = root.createDiv({ cls: 'dnd5e-tracker-head' });
 		head.createDiv({ cls: 'dnd5e-tracker-title', text: f.name });
 		head.createDiv({ cls: 'dnd5e-tracker-round', text: isRunning(f) ? `Round ${f.round}` : f.combatants.length ? 'Not started' : 'No one here yet' });
-		const bar = root.createDiv({ cls: 'dnd5e-tracker-bar' });
-		const btn = (label: string, icon: string, run: () => void, cta = false) => {
-			const b = bar.createEl('button', { cls: cta ? 'mod-cta' : '' });
+		const more = head.createEl('button', { cls: 'clickable-icon dnd5e-tracker-more', attr: { 'aria-label': 'Fight options' } });
+		setIcon(more, 'more-horizontal');
+		more.onclick = (e) => this.fightMenu(e);
+
+		// The fight's controls, as Nimble's tracker has them: one big button for what comes next.
+		const combat = root.createDiv({ cls: 'dnd5e-tracker-combat' });
+		const btn = (parent: HTMLElement, label: string, icon: string, run: () => void, cls = '') => {
+			const b = parent.createEl('button', { cls });
 			setIcon(b.createSpan({ cls: 'dnd5e-btn-icon' }), icon);
-			b.createSpan({ text: label });
+			b.createSpan({ cls: 'dnd5e-btn-text', text: label });
 			b.onclick = run;
 			return b;
 		};
-		btn('Monster', 'plus', () => this.pickMonster());
-		btn('Party', 'users', () => this.addParty());
 		if (!isRunning(f)) {
-			if (f.combatants.some(c => c.side === 'monster')) btn('Roll initiative', 'dices', () => this.change(x => rollInitiative(x)));
-			if (f.combatants.length) btn('Start', 'play', () => this.change(x => start(x)), true);
+			const go = btn(combat, 'Start combat', 'swords', () => this.change(x => start(x)), 'mod-cta dnd5e-tracker-primary');
+			go.disabled = !f.combatants.length;
+			if (f.combatants.some(c => c.side === 'monster')) btn(combat, 'Roll initiative', 'dices', () => this.change(x => rollInitiative(x)));
 		} else {
-			btn('Back', 'undo-2', () => this.change(x => previous(x)));
-			btn('Next turn', 'skip-forward', () => this.change(x => next(x)), true);
-			btn('End', 'square', () => this.change(x => end(x)));
+			const back = btn(combat, 'Back', 'undo-2', () => this.change(x => previous(x)), 'dnd5e-tracker-icon');
+			back.setAttr('aria-label', 'Back a turn');
+			btn(combat, 'Next turn', 'skip-forward', () => this.change(x => next(x)), 'mod-cta dnd5e-tracker-primary');
+			btn(combat, 'End', 'square', () => this.change(x => end(x)));
 		}
-		if (f.combatants.length && !isRunning(f)) btn('Clear', 'trash-2', () => this.rt.fights.reset('Encounter', f.edition));
+
+		// Adding people.
+		const tools = root.createDiv({ cls: 'dnd5e-tracker-tools' });
+		btn(tools, 'Add monster', 'plus', () => this.pickMonster(), 'dnd5e-tracker-add');
+		if (!f.combatants.some(c => c.side === 'hero')) btn(tools, 'Add party', 'users', () => this.addParty());
 
 		const list = root.createDiv({ cls: 'dnd5e-tracker-list' });
 		if (!f.combatants.length) {
@@ -189,6 +198,20 @@ export class Dnd5eTrackerView extends ItemView {
 		this.change(f => {
 			for (const h of party) if (!f.combatants.some(c => c.side === 'hero' && c.name === h.name)) addHero(f, { name: h.name, maxHp: h.maxHp, ac: h.defense });
 		});
+	}
+
+	private fightMenu(e: MouseEvent): void {
+		const f = this.fight;
+		const menu = new Menu();
+		menu.addItem(i => i.setTitle('Add the party').setIcon('users').onClick(() => this.addParty()));
+		menu.addItem(i => i.setTitle('Add monster…').setIcon('plus').onClick(() => this.pickMonster()));
+		if (f.combatants.some(c => c.side === 'monster')) menu.addItem(i => i.setTitle('Roll initiative').setIcon('dices').onClick(() => this.change(x => rollInitiative(x))));
+		menu.addItem(i => i.setTitle('Open compendium').setIcon('book-open').onClick(() => void this.rt.openCompendium({ path: f.sourcePath })));
+		if (f.combatants.length) {
+			menu.addSeparator();
+			menu.addItem(i => i.setTitle('Clear the fight').setIcon('trash-2').onClick(() => this.rt.fights.reset('Encounter', f.edition)));
+		}
+		menu.showAtMouseEvent(e);
 	}
 
 	private pickMonster(): void {

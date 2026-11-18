@@ -5089,7 +5089,7 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 
 		// The party joins; a hero at 0 HP makes death saves.
 		await o.eval(async (app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
-		await o.page.locator(`${T} button`, { hasText: 'Party' }).click();
+		await o.page.locator(`${T} button`, { hasText: 'Add party' }).click();
 		const ilse = o.page.locator(`${T} .dnd5e-combatant.side-hero`);
 		await o.waitFor(async () => (await ilse.count()) === 1, { what: 'hero added' });
 		assert.match(await ilse.locator('.dnd5e-ac').innerText(), /AC 16/);

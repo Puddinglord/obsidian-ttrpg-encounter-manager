@@ -4775,11 +4775,27 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 
 /* 5e combat tracker (src/systems/dnd5e/tracker-view.ts) */
 .dnd5e-tracker { padding: 0.6rem; }
-.dnd5e-tracker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
-.dnd5e-tracker-title { font-weight: 700; font-size: 1.05rem; }
-.dnd5e-tracker-round { color: var(--text-muted); font-size: 0.85rem; }
-.dnd5e-tracker-bar { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 0 0.7rem; }
-.dnd5e-tracker-bar button,
+.dnd5e-tracker { container-type: inline-size; }
+.dnd5e-tracker-head { display: flex; align-items: center; gap: 0.5rem; }
+.dnd5e-tracker-title { flex: 1 1 auto; min-width: 0; font-weight: 700; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dnd5e-tracker-round { color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; }
+/* Controls as Nimble's tracker draws them: one big button for what's next, the rest beside it. */
+.dnd5e-tracker-combat, .dnd5e-tracker-tools { display: flex; gap: 0.4rem; }
+.dnd5e-tracker-combat { margin: 0.55rem 0 0.4rem; }
+.dnd5e-tracker-tools { margin-bottom: 0.7rem; }
+:is(.dnd5e-tracker-combat, .dnd5e-tracker-tools) button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; height: 2.1rem; padding: 0 0.8rem; white-space: nowrap; }
+.dnd5e-tracker-primary { flex: 1 1 auto; font-weight: 600; }
+.dnd5e-tracker-add { flex: 1 1 auto; }
+.dnd5e-tracker-icon .dnd5e-btn-text { display: none; }
+.dnd5e-tracker-icon { padding: 0 0.6rem; }
+:is(.dnd5e-tracker-combat, .dnd5e-tracker-tools) .dnd5e-btn-icon svg { width: 15px; height: 15px; }
+/* Narrow: the secondary buttons keep only their icons. */
+@container (max-width: 300px) {
+	.dnd5e-tracker-combat button:not(.dnd5e-tracker-primary) .dnd5e-btn-text { display: none; }
+	.dnd5e-tracker-combat button:not(.dnd5e-tracker-primary) { padding: 0 0.6rem; }
+}
+body.is-tablet :is(.dnd5e-tracker-combat, .dnd5e-tracker-tools) button { padding: 0 0.8rem; }
+@media (pointer: coarse) { :is(.dnd5e-tracker-combat, .dnd5e-tracker-tools) button { height: 2.5rem; } }
 .dnd5e-encounter-actions button { display: inline-flex; align-items: center; gap: 0.3rem; }
 .dnd5e-btn-icon { display: inline-flex; }
 .dnd5e-btn-icon svg { width: 14px; height: 14px; }
@@ -4805,7 +4821,7 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .dnd5e-combatant-name { font-weight: 600; }
 .dnd5e-ac,
 .dnd5e-cr { font-size: 0.75rem; color: var(--text-muted); border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 0 0.3rem; }
-.dnd5e-hp { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.25rem; }
+.dnd5e-hp { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem 0.4rem; margin-top: 0.25rem; }
 .dnd5e-hp-bar { flex: 1 1 auto; height: 6px; border-radius: 3px; background: var(--background-modifier-border); overflow: hidden; min-width: 3rem; }
 .dnd5e-hp-fill { height: 100%; background: var(--color-green); }
 .dnd5e-combatant.is-down .dnd5e-hp-fill { background: var(--color-red); }
@@ -4814,7 +4830,7 @@ button.dnd5e-hp-text {
 	height: auto; padding: 0.1rem 0.35rem; border-radius: var(--radius-s); box-shadow: none; background: transparent; color: var(--text-normal);
 }
 button.dnd5e-hp-text:hover { background: var(--background-modifier-hover); }
-.dnd5e-hp-input { width: 5.5rem; font-size: 0.8rem; }
+.dnd5e-hp-input { flex: 0 1 5.5rem; width: 5.5rem; min-width: 4rem; font-size: 0.8rem; }
 .dnd5e-hp-input.is-invalid { border-color: var(--color-red); }
 .dnd5e-death,
 .dnd5e-legendary { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.3rem; font-size: 0.8rem; flex-wrap: wrap; }
