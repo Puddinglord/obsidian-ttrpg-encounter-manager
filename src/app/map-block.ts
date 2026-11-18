@@ -327,17 +327,20 @@ class MapBlock extends MarkdownRenderChild {
 				e.stopPropagation();
 				// Touch has no hover preview, so a tap shows the pin's card first.
 				if (isTouch()) this.pinCard(el, i);
-				else if (pin.link) void this.app.workspace.openLinkText(pin.link, this.ctx.sourcePath, e.metaKey || e.ctrlKey);
+				else if (pin.link) this.openPin(pin.link, e.metaKey || e.ctrlKey);
 				else this.editPin(i);
 			});
 			el.addEventListener('keydown', (e) => {
-				if (e.key === 'Enter' && pin.link) void this.app.workspace.openLinkText(pin.link, this.ctx.sourcePath, e.metaKey || e.ctrlKey);
+				if (e.key === 'Enter' && pin.link) this.openPin(pin.link, e.metaKey || e.ctrlKey);
 				else if (e.key === 'Enter' || e.key === 'F2') this.editPin(i);
 			});
 			onLongPress(el, (e) => {
 				if (this.mode === 'move') return;
 				const menu = new Menu();
-				if (pin.link) menu.addItem(it => it.setTitle('Open note').setIcon('file-symlink').onClick(() => void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false)));
+				if (pin.link) {
+					menu.addItem(it => it.setTitle('Quick look').setIcon('eye').onClick(() => this.openPin(pin.link!)));
+					menu.addItem(it => it.setTitle('Open note').setIcon('file-symlink').onClick(() => void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false)));
+				}
 				if (this.canSave()) {
 					menu.addItem(it => it.setTitle('Edit pin…').setIcon('pencil').onClick(() => this.editPin(i)));
 					menu.addItem(it => it.setTitle('Delete pin').setIcon('trash-2').onClick(() => { this.def.pins.splice(i, 1); void this.save(); }));
@@ -348,7 +351,21 @@ class MapBlock extends MarkdownRenderChild {
 		});
 	}
 
-	/** Touch: a small card for a pin (open, edit, delete) instead of a hover preview. */
+	/**
+	 * A pin's note, without leaving the map: a quick look over it (the campaign's game
+	 * draws NPCs, monsters and places its own way). Only what a quick look can't show
+	 * (an image, a PDF, a link to nothing) opens as a page, and so does Cmd/Ctrl-click.
+	 */
+	private openPin(link: string, newTab = false): void {
+		const file = this.app.metadataCache.getFirstLinkpathDest(link.split('#')[0].split('|')[0].trim(), this.ctx.sourcePath);
+		if (!newTab && file && file.extension === 'md') {
+			this.plugin.system(file.path).quickLook(this.plugin, { kind: 'note', file, sourcePath: this.ctx.sourcePath });
+			return;
+		}
+		void this.app.workspace.openLinkText(link, this.ctx.sourcePath, newTab);
+	}
+
+	/** Touch: a small card for a pin (quick look, open, edit, delete) instead of a hover preview. */
 	private pinCard(el: HTMLElement, i: number): void {
 		const pin = this.def.pins[i];
 		if (isPopoverOpenFor(el)) { closePopover(); return; }
@@ -358,7 +375,9 @@ class MapBlock extends MarkdownRenderChild {
 			if (pin.link) pop.createDiv({ cls: 'popover-body', text: pin.link.replace('#', ' › ') });
 			const row = pop.createDiv({ cls: 'pin-card-actions' });
 			if (pin.link) {
-				const open = row.createEl('button', { cls: 'mod-cta', text: 'Open note' });
+				const look = row.createEl('button', { cls: 'mod-cta', text: 'Quick look' });
+				look.onclick = () => { close(); this.openPin(pin.link!); };
+				const open = row.createEl('button', { text: 'Open note' });
 				open.onclick = () => { close(); void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false); };
 			}
 			if (!this.canSave()) return;

@@ -5121,6 +5121,41 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 	}
 });
 
+test('map pins: a click shows the note in a quick look over the map; Cmd/Ctrl-click opens the page', async (o) => {
+	await resetEncounter(o);
+	const M = '.workspace-leaf.mod-active .markdown-reading-view';
+	try {
+		await o.eval(async (app) => {
+			for (const f of ['Pin Map.md', 'Pin NPC.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+			const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+			c.getContext('2d').fillRect(0, 0, 400, 300);
+			const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+			if (!app.vault.getAbstractFileByPath('pin-map.png')) await app.vault.createBinary('pin-map.png', await blob.arrayBuffer());
+			await app.vault.create('Pin NPC.md', '---\nnimble: npc\nrole: Ferryman\n---\nHe ferries smugglers.\n');
+			await app.vault.create('Pin Map.md', '```nimble-map\nimage: [[pin-map.png]]\npins:\n- 50, 50 | The ferryman | [[Pin NPC]] | npc\n```\n');
+		});
+		await o.openFile('Pin Map.md', 'preview');
+		// The pin's own box is a point; its badge is what you click.
+		const pin = o.page.locator(`${M} .nimble-map-pin .nimble-map-pin-inner`).first();
+		await o.waitFor(() => o.page.evaluate((M) => { const img = document.querySelector(`${M} .nimble-map img`); return !!img && img.naturalWidth > 0; }, M), { what: 'the map image' });
+		await pin.waitFor({ state: 'visible', timeout: 10000 });
+		await pin.click();
+		await o.waitFor(async () => (await o.page.locator('.modal-container .modal').count()) === 1, { what: 'a quick look' });
+		assert.match(await o.page.locator('.modal-container .modal').innerText(), /Pin NPC|ferries smugglers/);
+		assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Pin Map.md', 'still on the map');
+		await o.page.keyboard.press('Escape');
+		await o.waitFor(async () => (await o.page.locator('.modal-container').count()) === 0, { what: 'quick look closed' });
+		await pin.click({ modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'] });
+		await o.waitFor(async () => (await o.eval((app) => app.workspace.getLeavesOfType('markdown').some(l => l.view.file?.path === 'Pin NPC.md'))), { what: 'the page in a new tab' });
+	} finally {
+		await o.eval(async (app) => {
+			app.workspace.getLeavesOfType('markdown').filter(l => l.view.file?.path === 'Pin NPC.md').forEach(l => l.detach());
+			document.querySelectorAll('.modal-container').forEach(n => n.remove());
+			for (const f of ['Pin Map.md', 'Pin NPC.md', 'pin-map.png']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+		});
+	}
+});
+
 test('map tokens come from the campaign\'s game: Nimble\'s encounter, then 5e\'s fight', async (o) => {
 	await resetEncounter(o);
 	const C = 'Campaigns/Token Coast';
