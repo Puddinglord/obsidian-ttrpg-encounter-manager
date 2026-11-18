@@ -6143,7 +6143,11 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.page.locator(S).waitFor({ timeout: 5000 });
 		const tab = async (id) => { await o.page.locator(`${S} .dnd5e-tab[data-tab="${id}"]`).click(); await o.page.locator(`${S} .dnd5e-panel.is-${id}`).waitFor(); };
 		// The sheet is the page: no inline title, no Properties box until its button shows them.
-		const pageShows = () => o.page.evaluate((R) => ({ title: !!document.querySelector(`${R} .inline-title`)?.checkVisibility(), props: !!document.querySelector(`${R} .metadata-container`)?.checkVisibility() }), R);
+		// The view the sheet is drawn in (other tabs, left open by earlier tests, have reading views too).
+		const pageShows = () => o.page.evaluate((S) => {
+			const view = [...document.querySelectorAll(S)].find(n => n.checkVisibility())?.closest('.markdown-preview-view');
+			return { title: !!view?.querySelector('.inline-title')?.checkVisibility(), props: !!view?.querySelector('.metadata-container')?.checkVisibility() };
+		}, S);
 		assert.deepEqual(await pageShows(), { title: false, props: false });
 		await o.page.locator(`${S} .dnd5e-props-btn`).click();
 		await o.waitFor(async () => (await pageShows()).props, { what: 'properties shown' });
@@ -6221,7 +6225,11 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		// Another note in the same tab has its title and properties back.
 		await o.eval(async (app, _p, C) => { await app.vault.create(`${C}/Plain note.md`, '---\ntags: [x]\n---\nJust a note.\n'); }, C);
 		await o.openFile(`${C}/Plain note.md`, 'preview');
-		await o.waitFor(async () => { const v = await pageShows(); return v.title && v.props; }, { what: 'a plain note shows its title and properties' });
+		const activeShows = () => o.page.evaluate(() => {
+			const view = document.querySelector('.workspace-leaf.mod-active .markdown-preview-view');
+			return { title: !!view?.querySelector('.inline-title')?.checkVisibility(), props: !!view?.querySelector('.metadata-container')?.checkVisibility() };
+		});
+		await o.waitFor(async () => { const v = await activeShows(); return v.title && v.props; }, { what: 'a plain note shows its title and properties' });
 
 		// The encounter party reads the sheet: level and AC.
 		await o.eval((app, plugin) => plugin.syncPartyFromSheets());
