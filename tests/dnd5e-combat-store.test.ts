@@ -32,4 +32,14 @@ describe('5e FightStore', () => {
 		delete (p.settings as unknown as { systemData: { dnd5e: Record<string, unknown> } }).systemData.dnd5e.fight;
 		expect(store.fight.name).not.toBe('Ambush');
 	});
+	it('a new fight wins over one re-read from disk (Run after settings synced)', () => {
+		const p = plugin();
+		const store = new FightStore(p);
+		store.reset('Old', '2024');
+		const data = (p.settings as unknown as { systemData: { dnd5e: Record<string, unknown> } }).systemData.dnd5e;
+		data.fight = { ...(data.fight as object), name: 'Synced' }; // settings re-read: a new object, not yet read by the store
+		store.reset('Bridge', '2024');
+		expect(store.fight.name).toBe('Bridge');
+		expect((data.fight as { name: string }).name).toBe('Bridge');
+	});
 });

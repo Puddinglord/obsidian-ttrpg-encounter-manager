@@ -197,7 +197,8 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 			// Disconnecting from a CDP-attached browser can hang; never wait long.
 			await Promise.race([browser.close().catch(() => {}), new Promise(r => setTimeout(r, 2000))]);
 			await killProc();
-			if (!process.env.KEEP_E2E) rmSync(work, { recursive: true, force: true });
+			// Obsidian may still be writing as it quits: retry, and never fail a passing run over a temp folder.
+			if (!process.env.KEEP_E2E) { try { rmSync(work, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch (e) { console.warn(`Could not remove ${work}: ${e.message}`); } }
 		},
 	};
 	return obsidian;

@@ -44,7 +44,10 @@ export class FightStore extends Events {
 
 	/** A fresh fight (the old one is dropped). */
 	reset(name: string, edition: Dnd5eEdition, sourcePath?: string): Fight5e {
-		this.cached = { ...newFight(name, edition), sourcePath };
+		// Saved and cached together, so a fight re-read from disk can't come back in its place.
+		const fight = { ...newFight(name, edition), sourcePath };
+		this.cached = fight;
+		this.data.fight = this.source = fight;
 		return this.change(f => f);
 	}
 

@@ -5124,7 +5124,7 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 test('map tokens come from the campaign\'s game: Nimble\'s encounter, then 5e\'s fight', async (o) => {
 	await resetEncounter(o);
 	const C = 'Campaigns/Token Coast';
-	const M = '.markdown-reading-view';
+	const M = '.workspace-leaf.mod-active .markdown-reading-view';
 	const trayNames = () => o.page.locator(`${M} .nimble-map-token.in-tray .nimble-map-token-name`).allInnerTexts();
 	const openMap = async (path) => {
 		await o.openFile(path, 'preview');
@@ -5158,14 +5158,15 @@ test('map tokens come from the campaign\'s game: Nimble\'s encounter, then 5e\'s
 		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Ambush.md`)) === 'dnd5e', { what: '5e campaign' });
 		await o.openFile(`${C}/Ambush.md`, 'preview');
 		const block = o.page.locator(`${M} .dnd5e-encounter`);
+		await block.locator('button', { hasText: 'Run' }).waitFor();
 		await block.locator('button', { hasText: 'Run' }).click();
-		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.length === 2), { what: 'the 5e fight' });
+		await o.waitFor(() => o.eval((app, plugin) => { const f = plugin.runtime('dnd5e').fights.fight; return f.name === 'Bridge' && f.combatants.length === 2; }), { what: 'the 5e fight' });
 		await openMap(`${C}/Bridge Map.md`);
 		await o.waitFor(async () => {
 			const n = await trayNames();
 			return n.length === 2 && n.every(x => /^Goblin Warrior/.test(x));
 		}, { what: '5e fighters in the tray' });
-		assert.match(await o.page.locator(`${M} .nimble-map-tray-title`).innerText(), /Bridge: drag onto the map/);
+		await o.waitFor(async () => /Bridge: drag onto the map/.test(await o.page.locator(`${M} .nimble-map-tray-title`).innerText().catch(() => '')), { what: 'the 5e fight\'s name over the tray' });
 		// A change in the fight redraws the tokens.
 		await o.eval((app, plugin) => { plugin.runtime("dnd5e").fights.change(f => { f.combatants[0].hp = 0; }); });
 		await o.waitFor(async () => (await o.page.locator(`${M} .nimble-map-token.in-tray.is-down`).count()) === 1, { what: 'the downed goblin' });
