@@ -5708,11 +5708,16 @@ test('map tokens come from the campaign\'s game: Nimble\'s encounter, then 5e\'s
 			const md = '```nimble-map\nimage: [[token-map.png]]\n```\n';
 			for (const f of ['Token Map.md', C]) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x, true); }
 			await app.vault.create('Token Map.md', md);
-			const nb = plugin.runtime('nimble');
-			await nb.addToEncounter(nb.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
 		}, C);
 
-		// Nimble (no campaign): the Nimble encounter.
+		// Nimble (a map outside any campaign): the active campaign's Nimble encounter. Each campaign keeps its
+		// own fight, so the goblin goes in once the map is open and whichever campaign is active has settled.
+		await o.openFile('Token Map.md', 'preview');
+		await o.page.waitForTimeout(300);
+		await o.eval(async (app, plugin) => {
+			const nb = plugin.runtime('nimble');
+			await nb.addToEncounter(nb.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
+		});
 		await openMap('Token Map.md');
 		await o.waitFor(async () => (await trayNames()).some(n => /^Goblin Boss/.test(n)), { what: 'the Nimble encounter in the tray' });
 
