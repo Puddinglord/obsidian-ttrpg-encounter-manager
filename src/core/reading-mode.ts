@@ -28,6 +28,9 @@ function tagProperties(plugin: EmberVaultPlugin): void {
 	}
 }
 
+/** Properties the row of tags always leaves out (styles.css hides them too). */
+const BOOKKEEPING = ['nimble', 'portrait', 'portrait-position', 'cssclasses', 'title', 'order'];
+
 /** What an NPC's card shows (its facts and the game's fields); the row of tags leaves them to the card. */
 const NPC_CARD_KEYS = ['role', 'ancestry', 'pronouns', 'age', 'faction', 'location', 'status', 'attitude', 'first_met'];
 
@@ -65,10 +68,10 @@ function watchEmptyProperties(view: MarkdownView, on: boolean, onCard: () => Set
 			const text = value?.querySelector('.metadata-input-longtext');
 			el.toggleClass('nimble-prop-empty', !!value && (!value.hasChildNodes() || (!!text && !text.hasChildNodes())));
 		});
-		// Nothing left to show: the row goes too, so the page doesn't open on a gap.
+		// An NPC whose card shows everything: the row goes too, so the page doesn't open on a gap.
 		reading.querySelectorAll<HTMLElement>('.metadata-container').forEach((box) => {
 			const props = Array.from(box.querySelectorAll<HTMLElement>('.metadata-property'));
-			box.toggleClass('nimble-props-none', props.length > 0 && props.every(p => p.hasClass('nimble-prop-empty') || p.hasClass('nimble-prop-on-card') || window.getComputedStyle(p).display === 'none'));
+			box.toggleClass('nimble-props-none', card.size > 0 && props.length > 0 && props.every(p => p.hasClass('nimble-prop-empty') || p.hasClass('nimble-prop-on-card') || BOOKKEEPING.includes(p.dataset.propertyKey ?? '')));
 		});
 	};
 	// Only nodes coming and going are watched, so marking (a class change) doesn't wake it again.

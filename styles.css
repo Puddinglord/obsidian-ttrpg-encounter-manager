@@ -4946,6 +4946,11 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 	.dnd5e-tracker-side .ev-pill-text { display: none; }
 	.dnd5e-tracker-side { flex: 0 0 2.3rem; padding: 0; }
 }
+/* Narrower still, with Add the party beside it: the big button drops its icon so "Next turn" fits. */
+@container (max-width: 360px) {
+	.dnd5e-tracker-combat .dnd5e-tracker-primary { padding: 0 0.4rem; }
+	.dnd5e-tracker-combat .dnd5e-tracker-primary:not(#nimble-pill) > .ev-pill-icon { display: none; }
+}
 body.is-tablet .dnd5e-tracker-combat button { padding: 0 0.6rem; }
 body.is-tablet .dnd5e-tracker-combat .dnd5e-tracker-icon { padding: 0; }
 @media (pointer: coarse) { .dnd5e-tracker-combat button { height: 2.6rem; } .dnd5e-tracker-icon { flex-basis: 2.7rem; } }
@@ -5349,7 +5354,8 @@ button.dnd5e-npc-fight { height: auto; padding: 0.2rem 0.6rem; font-size: 0.8rem
 	background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--d5-red) 70%, #f3d9b0), color-mix(in srgb, var(--d5-red) 75%, #000));
 	box-shadow: 0 0 0 3px var(--d5-card), 0 0 0 4.5px var(--d5-gold), 0 6px 16px rgba(0, 0, 0, 0.18);
 }
-.dnd5e-sheet .dnd5e-portrait img { width: 100%; height: 100%; object-fit: cover; }
+.dnd5e-sheet .dnd5e-portrait { aspect-ratio: 1; }
+.dnd5e-sheet .dnd5e-portrait img { display: block; width: 100%; height: 100%; max-width: none; margin: 0; border-radius: 0; object-fit: cover; object-position: var(--nimble-portrait-position, center 25%); }
 .dnd5e-sheet .dnd5e-portrait-initial { font-family: var(--ev-display-font); font-weight: var(--ev-display-weight); font-size: 2.1rem; line-height: normal; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35); }
 .dnd5e-sheet .dnd5e-hero-titles { flex: 1 1 9rem; min-width: 0; }
 .dnd5e-sheet .dnd5e-sheet-name {

@@ -131,7 +131,11 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		const top = card.createDiv({ cls: 'dnd5e-hero-top' });
 		const pic = top.createDiv({ cls: 'dnd5e-portrait' });
 		const portrait = resolvePortrait(this.rt.plugin.app, this.fm, this.path);
-		if (portrait) pic.createEl('img', { attr: { src: portrait.src, alt: '', draggable: 'false' } });
+		if (portrait) {
+			const img = pic.createEl('img', { attr: { src: portrait.src, alt: '', draggable: 'false' } });
+			const pos = this.fm['portrait-position'];
+			if (typeof pos === 'string' && pos.trim()) img.setCssProps({ '--nimble-portrait-position': pos });
+		}
 		else pic.createSpan({ cls: 'dnd5e-portrait-initial', text: (s.name.trim()[0] ?? '?').toUpperCase() });
 
 		const titles = top.createDiv({ cls: 'dnd5e-hero-titles' });
