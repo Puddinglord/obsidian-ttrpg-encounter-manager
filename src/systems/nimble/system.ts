@@ -3,6 +3,8 @@
 
 import type { GameSystem } from '../contract';
 import { nimbleSettingsSections } from './settings-ui';
+import { compendiumEntries } from './compendium-browser';
+import { openEntry } from './compendium-modal';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
 import { createCharacterNote, NewCharacterModal } from './character-modals';
 import { openRecord } from './record-modal';
@@ -30,6 +32,11 @@ export const nimbleSystem: GameSystem = {
 	conditions: () => NIMBLE_CONDITIONS,
 	settings: NIMBLE_SETTINGS,
 	settingsSections: nimbleSettingsSections,
+	ruleTerms: () => nimble().terms(),
+	ruleTermPage(plugin, term) {
+		const entry = compendiumEntries(plugin).find(e => e.id === term.id);
+		return entry ? () => { openEntry(plugin, entry); } : undefined;
+	},
 	attackRolls: (plugin) => (plugin.settings.nimbleAttackRolls ? 'exploding' : undefined),
 	characters: {
 		promptNew(plugin, r) {

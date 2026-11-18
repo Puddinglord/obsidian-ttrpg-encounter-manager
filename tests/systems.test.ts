@@ -83,6 +83,10 @@ describe.each(SHIPPED_SYSTEMS.map(s => [s.id, s] as const))('game system %s', (_
 		// Spotlight imports no game: without this, a campaign's Spotlight finds only notes, people and commands.
 		expect(typeof system.spotlight).toBe('function');
 	});
+	it('makes its rules words clickable, each with a page to open', () => {
+		expect(typeof system.ruleTerms).toBe('function');
+		expect(typeof system.ruleTermPage).toBe('function');
+	});
 });
 
 describe('shipped systems', () => {

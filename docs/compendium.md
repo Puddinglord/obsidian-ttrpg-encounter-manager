@@ -115,6 +115,10 @@ Each shows as a chip with the kind's icon. Hover it for the card, click it for a
 
 Typing `` `nimble: `` offers monsters and everything else as you type, and `` `nimble:spell: `` offers only spells.
 
+## Rules words
+
+Conditions, the four stats (STR, DEX, INT, WIL), Concentration and other rules are underlined in stat blocks, the tracker, character sheets and compendium pages, and so are languages on a sheet. Click one, or press Enter on it, for its rule. Words in the card open in the same card, with a back arrow, and **Open in compendium** goes to the page. Conditions you add in settings work the same way.
+
 ## In a campaign you play in
 
 Players see creatures as lore: names, families, habitats and descriptions, no levels or stats, one row per creature with a pill for every book it's in, and a Notes pill when you've written notes on it. Enter and the row button insert a reference instead of adding to a fight.

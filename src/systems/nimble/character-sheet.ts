@@ -935,10 +935,7 @@ export class CharacterSheetRenderer extends Component {
 				el.addEventListener('click', (e) => { e.stopPropagation(); this.roll(expr, el.closest('.ns-row')?.querySelector('.ns-row-name')?.textContent ?? 'Roll'); });
 			},
 			keywords: nimble().conditionKeywords(),
-			onKeyword: (el: HTMLElement, word: string) => {
-				el.addClass('nimble-condition-ref');
-				el.addEventListener('click', (e) => { e.stopPropagation(); nimble().showConditionInfo(el, word); });
-			},
+			onKeyword: (el: HTMLElement, word: string) => nimble().markWord(el, word, this.file.path),
 		};
 	}
 
@@ -1215,7 +1212,7 @@ export class CharacterSheetRenderer extends Component {
 		const chips = langs.createDiv({ cls: 'ns-langs' });
 		for (const l of s.languages) {
 			const tag = chips.createSpan({ cls: 'ns-lang' });
-			tag.createSpan({ text: l });
+			nimble().markWord(tag.createSpan({ text: l }), l, this.file.path);
 			const x = iconStep(tag, 'x', { 'aria-label': `Remove ${l}` }, 'ns-cond-x');
 			x.addEventListener('click', () => void this.mutate((fm, cur) => removeLanguage(fm, cur, l)));
 		}

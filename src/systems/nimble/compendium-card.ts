@@ -420,10 +420,7 @@ export function pluginCardOptions(plugin: EmberVaultPlugin, label: string, onOpe
 			el.addEventListener('click', (e) => { e.stopPropagation(); plugin.rollDice(expr, label); });
 		},
 		keywords: nimble().conditionKeywords(),
-		onKeyword: (el, word) => {
-			el.addClass('nimble-condition-ref');
-			el.addEventListener('click', (e) => { e.stopPropagation(); nimble().showConditionInfo(el, word); });
-		},
+		onKeyword: (el, word) => nimble().markWord(el, word),
 		onOpenHit,
 	};
 }

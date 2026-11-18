@@ -18,12 +18,14 @@ The second game system, and the template for adding more. One system, two **edit
 | Content packs | `content.ts` (pure: the kinds 5e takes, `content5e` and `mergeCompendium5e`); `compendium.ts` and `monster-index.ts` read the layer the runtime sets (`setContentLayer5e`) from the active campaign's packs. The schema is `docs/content/5e.schema.json` (UPDATE_SCHEMAS=1 on the content-packs test writes it) |
 | NPCs | `npc.ts` (the NPC fields 5e adds to core's NPC notes: `ac`, `hp`, `cr`, `statblock`; the NPC as a monster for the tracker), `npc-card.ts` (the stat block reference and Add to fight in the NPC card) |
 | Importers | `import-ddb.ts` (pure: a D&D Beyond character's JSON → character note frontmatter, names and numbers only, never book text; `ddbJsonUrl` for a link or id), `import-fstatblocks.ts` (pure: a Fantasy Statblocks creature → `Dnd5eMonster` that round-trips through the ```5e block), `yaml-lite.ts` (the YAML subset it reads). The user brings the data; nothing connects to D&D Beyond |
+| Rules words | `rule-terms.ts` (pure: conditions, senses, abilities, skills, languages and the glossary or rules sections a stat block names, with each edition's spellings; `termPage5e` finds each one's page). `render.ts`, `cards.ts` and `sheet.ts` mark them through core's `rule-term-ui.ts` |
 | Editor | `suggest.ts` (`5e:` autocomplete), `slash.ts` ("/" commands: `/monster`, `/spell` and the other compendium kinds, `/encounter`, `/add`, `/statblock`, `/fought`, `/roll` with advantage) |
 | Data | `conditions.ts`, `data/*.json` |
 
 ## Data
 
 - `scripts/dnd5e/fetch.sh <dir>` downloads the SRD JSON from 5e-bits/5e-srd-api (packages/5e-database; the old 5e-database repo is archived) pinned to one commit. `python3 -I scripts/dnd5e/build.py <dir>` writes `data/conditions.json`, `monsters-<ed>.json` and `compendium-<ed>.json`.
+- 5e-srd-api has no 2024 rules, so `fetch.sh` also downloads the SRD 5.2.1 PDF and `glossary.py` reads its Rules Glossary (155 entries) by font: entry names are 18pt GillSans SemiBold in the heading red, and a line opening in bold is a run-in label. It needs `pdftohtml` (poppler). `build.py` makes those 2024's rules, and adds `abilities`, `skills` and `languages` for both editions.
 - Monsters and the compendium are imported with `?gz` (lazy). Conditions are imported directly.
 - What `build.py` fixes up:
   - It adds usage to names ("(Recharge 5–6)", "(3/Day, or 4/Day in Lair)").

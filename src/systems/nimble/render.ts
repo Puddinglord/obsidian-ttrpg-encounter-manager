@@ -40,6 +40,8 @@ export interface RenderOptions {
 	/** Condition names to mark up in rules text, and what to do with them. */
 	keywords?: RegExp;
 	onKeyword?: (el: HTMLElement, word: string) => void;
+	/** Rules words for fields (Senses, Languages, Immune…): every term, where `keywords` is only running-text ones. */
+	fieldKeywords?: RegExp;
 	/** Party size for per-hero HP. */
 	partySize?: number;
 	/** Hide flavour text and tactics (tight spaces). */
@@ -226,7 +228,8 @@ function defenses(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): vo
 		const p = box.createEl('p');
 		p.createEl('strong', { text: `${label}:` });
 		p.appendText(' ');
-		appendRichText(p, value!, textOpts(opts, m.name, label));
+		const o = textOpts(opts, m.name, label);
+		appendRichText(p, value!, opts.fieldKeywords && o.onKeyword ? { ...o, keywords: opts.fieldKeywords } : o);
 	}
 }
 

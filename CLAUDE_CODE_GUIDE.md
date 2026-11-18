@@ -52,6 +52,7 @@ src/core/
   settings.ts           EmberVaultSettings (what every game shares), CORE_DEFAULTS, migrateSettings(saved, parts); systems augment the interface
   settings-ui.ts        Settings rows and sections, for app/settings-tab.ts and each system's settingsSections
   dice-edge.ts          Rolls with stacked advantage/disadvantage, modifiers and extra dice (pure, tested)
+  rule-terms.ts         A game's rules words (abilities, senses, conditions…) as lookups and patterns (pure, tested); rule-term-ui.ts underlines them and shows a term's card
   dice-attack.ts        Exploding attack rolls, for a game whose attackRolls says 'exploding' (pure, tested)
   wiki-links.ts         [[Wiki links]] inside rendered text: resolve, open, hover preview
 src/systems/nimble/
@@ -59,6 +60,7 @@ src/systems/nimble/
   settings.ts           Nimble's settings fields (augmenting EmberVaultSettings), NIMBLE_DEFAULTS, its migration; settings-ui.ts its settings sections
   runtime.ts            nimble(): Nimble's live state (monster index, encounter store) and helpers; register.ts wires it in at load
   map-tokens.ts         The active encounter as map tokens (combatTokens)
+  rule-terms.ts         Nimble's rules words (conditions, stats, skills, languages, magic rules) for ruleTerms, each id its compendium entry's (pure, tested)
   rules.ts              Nimble 3.3 / GMG 3.0 rules: armor, hero Wounds, minions, Last Stand, conditions, difficulty budget
   parser.ts             Stat block parsing (+ legacy fields), toStatblockSource(), finding ```nimble blocks
   bestiary.ts           Bundled bestiary conversion, attribution text

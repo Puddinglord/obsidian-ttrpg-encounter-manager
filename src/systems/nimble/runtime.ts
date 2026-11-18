@@ -8,8 +8,9 @@ import { Component, MarkdownRenderer, Menu, normalizePath, Notice, setIcon, TFil
 import type EmberVaultPlugin from '../../../main';
 import { safeName } from '../../core/campaign-model';
 import { creatureNote } from '../../core/campaign-templates';
-import { keywordPattern } from '../../core/markdown';
-import { openPopover } from '../../core/popover';
+import { markTerm, showTerm, termContext } from '../../core/rule-term-ui';
+import { RuleTerm, RuleTerms, ruleTerms } from '../../core/rule-terms';
+import { nimbleRuleTerms } from './rule-terms';
 import { BestiaryEntry, bestiaryEntries } from './bestiary';
 import { openAddMonsterPicker } from './compendium-pickers';
 import { baseCreatureName, bookOf } from './compendium-entries';
@@ -38,7 +39,7 @@ export function nimble(): NimbleRuntime {
 export class NimbleRuntime {
 	readonly index: MonsterIndex;
 	readonly encounters: EncounterStore;
-	private keywordCache: { key: string; re: RegExp | undefined } | null = null;
+	private termCache: { key: string; list: RuleTerm[] } | null = null;
 
 	constructor(readonly plugin: EmberVaultPlugin) {
 		this.index = new MonsterIndex(plugin.app);
@@ -66,23 +67,30 @@ export class NimbleRuntime {
 		return this.getAllConditions().find(c => c.name.toLowerCase() === name.toLowerCase());
 	}
 
-	/** Matches condition names in rules text ("Grappled", "Prone", "Dazed"…). */
-	conditionKeywords(): RegExp | undefined {
-		const names = this.getAllConditions().filter(c => !c.auto).map(c => c.name);
-		const key = names.join('|');
-		if (this.keywordCache?.key !== key) this.keywordCache = { key, re: keywordPattern(names) };
-		return this.keywordCache.re;
+	/** Nimble's rules words: conditions (yours too), stats, skills, languages, rules (rule-terms.ts). */
+	terms(): RuleTerms {
+		const comp = this.compendium;
+		const conditions = this.getAllConditions();
+		const key = `${conditions.map(c => `${c.name}\u0000${c.description}`).join('\u0001')}|${comp.all().length}`;
+		if (this.termCache?.key !== key) this.termCache = { key, list: nimbleRuleTerms(comp, conditions) };
+		return ruleTerms(this.termCache.list);
 	}
 
-	/** A small popover with a condition's rules text. */
+	/** Matches Nimble's running-text rules words (conditions, stats, Concentration…). */
+	conditionKeywords(): RegExp | undefined {
+		return this.terms().pattern(true);
+	}
+
+	/** Make a matched word open its rule's card (conditions keep their old class too). */
+	markWord(el: HTMLElement, word: string, path = this.plugin.campaigns?.active?.home.path ?? ''): void {
+		markTerm(el, { plugin: this.plugin, path, terms: this.terms() }, word);
+		if (this.terms().get(word)?.tag === 'Condition') el.addClass('nimble-condition-ref');
+	}
+
+	/** A condition's (or any rules word's) card. */
 	showConditionInfo(anchor: HTMLElement, name: string): void {
-		const cond = this.condition(name);
-		if (!cond) return;
-		openPopover(anchor, (el) => {
-			el.addClass('condition-info');
-			el.createDiv({ cls: 'popover-title', text: cond.name });
-			el.createDiv({ cls: 'popover-body', text: cond.description });
-		}, { width: 280 });
+		const term = this.terms().get(name);
+		if (term) showTerm(anchor, term, { ...termContext(this.plugin, this.plugin.campaigns?.active?.home.path ?? ''), terms: this.terms() });
 	}
 
 	renderStatblock(
@@ -104,7 +112,8 @@ export class NimbleRuntime {
 			onAdd,
 			onDice: this.settings.clickableDice ? (el, expr, label, kind) => this.wireDice(el, expr, label, kind) : undefined,
 			keywords: this.conditionKeywords(),
-			onKeyword: (el, word) => this.wireKeyword(el, word),
+			onKeyword: (el, word) => this.markWord(el, word, sourcePath),
+			fieldKeywords: this.terms().pattern(false),
 			partySize: this.encounters.partySize(this.encounters.active),
 			// Lore cards list every book the creature is in, wherever they show.
 			sources: lore ? extra.sources ?? this.printingsOf(monster) : undefined,
@@ -147,17 +156,6 @@ export class NimbleRuntime {
 		await MarkdownRenderer.render(this.app, body, md, file.path, owner);
 		const gone = new MutationObserver(() => { if (!box.isConnected) { owner.unload(); gone.disconnect(); } });
 		gone.observe(box.ownerDocument.body, { childList: true, subtree: true });
-	}
-
-	private wireKeyword(el: HTMLElement, word: string): void {
-		const cond = this.condition(word);
-		if (!cond) return;
-		el.addClass('nimble-condition-ref');
-		el.setAttr('role', 'button');
-		el.setAttr('tabindex', '0');
-		const show = (e: Event) => { e.preventDefault(); e.stopPropagation(); this.showConditionInfo(el, word); };
-		el.addEventListener('click', show);
-		el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') show(e); });
 	}
 
 	/** Buttons shown under a hover preview or bestiary stat block. */

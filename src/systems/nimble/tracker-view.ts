@@ -387,10 +387,7 @@ export class EncounterTrackerView extends ItemView {
 				span.onclick = (e) => { e.stopPropagation(); this.plugin.rollDice(expr, label, kind); };
 			} : undefined,
 			keywords: nimble().conditionKeywords(),
-			onKeyword: (span, word) => {
-				span.addClass('nimble-condition-ref');
-				span.onclick = (e) => { e.stopPropagation(); nimble().showConditionInfo(span, word); };
-			},
+			onKeyword: (span, word) => nimble().markWord(span, word),
 		});
 	}
 
