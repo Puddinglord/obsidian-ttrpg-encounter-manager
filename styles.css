@@ -4644,18 +4644,20 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 }
 .dnd5e-statblock .dnd5e-ability-name { font-weight: 700; font-size: 0.85em; }
 .dnd5e-statblock .dnd5e-ability-score { color: var(--text-normal); white-space: nowrap; }
+.dnd5e-statblock .dnd5e-ab24-wrap { container: dnd5e-ab / inline-size; }
 .dnd5e-statblock .dnd5e-abilities-2024 {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 0.2rem 0.4rem;
+	grid-template-columns: repeat(3, auto auto minmax(2.4em, 1fr) minmax(2.4em, 1fr));
+	gap: 0.2rem 0.3rem;
 	font-size: 0.95em;
+	font-variant-numeric: tabular-nums;
 }
 .dnd5e-statblock .dnd5e-ab24 {
+	grid-column: span 4;
 	display: grid;
-	grid-template-columns: minmax(1.9em, auto) minmax(1.6em, auto) minmax(2em, auto) minmax(2em, auto);
+	grid-template-columns: subgrid;
 	align-items: center;
-	gap: 0.15rem;
-	padding: 0.1rem 0.3rem;
+	padding: 0.1rem 0.35rem;
 	border-radius: 4px;
 	background: color-mix(in srgb, var(--dnd5e-accent) 8%, transparent);
 }
@@ -4670,8 +4672,21 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 	padding-block: 0;
 }
 .dnd5e-statblock .dnd5e-ab24-name { font-weight: 700; color: var(--dnd5e-accent); }
+.dnd5e-statblock .dnd5e-ab24-score { text-align: right; }
 .dnd5e-statblock .dnd5e-ab24-mod,
-.dnd5e-statblock .dnd5e-ab24-save { text-align: center; }
+.dnd5e-statblock .dnd5e-ab24-save { text-align: center; white-space: nowrap; }
+/* Narrow blocks: two groups a row (Str Dex / Con Int / Wis Cha), then one. */
+@container dnd5e-ab (max-width: 470px) {
+	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: repeat(2, auto auto minmax(2.4em, 1fr) minmax(2.4em, 1fr)); }
+	.dnd5e-statblock .dnd5e-ab24.is-head:nth-child(3) { display: none; }
+}
+@container dnd5e-ab (max-width: 360px) {
+	.dnd5e-statblock .dnd5e-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 0.4rem; }
+}
+@container dnd5e-ab (max-width: 260px) {
+	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: auto auto minmax(2.4em, 1fr) minmax(2.4em, 1fr); }
+	.dnd5e-statblock .dnd5e-ab24.is-head:nth-child(2) { display: none; }
+}
 .dnd5e-statblock .dnd5e-section {
 	margin-top: 0.7rem;
 	font-family: var(--font-interface);

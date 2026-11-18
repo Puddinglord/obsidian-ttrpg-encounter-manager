@@ -136,7 +136,7 @@ export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render
 	// Abilities.
 	rule();
 	if (edition === '2014') {
-		const grid = block.createDiv({ cls: 'dnd5e-abilities' });
+		const grid = block.createDiv({ cls: 'dnd5e-ab24-wrap' }).createDiv({ cls: 'dnd5e-abilities' });
 		ABILITIES.forEach((a, i) => {
 			const cell = grid.createDiv({ cls: 'dnd5e-ability' });
 			cell.createDiv({ cls: 'dnd5e-ability-name', text: LABEL[a] });
@@ -147,7 +147,8 @@ export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render
 			v.appendText(')');
 		});
 	} else {
-		const table = block.createDiv({ cls: 'dnd5e-abilities-2024' });
+		// One grid for the whole table (each cell a subgrid), so MOD and SAVE line up at any width.
+		const table = block.createDiv({ cls: 'dnd5e-ab24-wrap' }).createDiv({ cls: 'dnd5e-abilities-2024' });
 		for (let i = 0; i < 3; i++) {
 			const h = table.createDiv({ cls: 'dnd5e-ab24 is-head', attr: { 'aria-hidden': 'true' } });
 			for (const t of ['', '', 'Mod', 'Save']) h.createSpan({ text: t });
