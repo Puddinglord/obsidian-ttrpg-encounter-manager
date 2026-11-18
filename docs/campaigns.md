@@ -1,6 +1,6 @@
 # Campaigns
 
-Run several campaigns from one vault. Each has its own chapters, scenes, NPCs, session logs and party.
+Run several campaigns from one vault. Each has its own chapters, scenes, NPCs, session logs, party and fight.
 
 ![The Campaign panel beside a scene note](images/campaign-panel.png)
 
@@ -86,7 +86,9 @@ It's the `nimble:` property on the linked note that counts, so a link to a plain
 
 Obsidian's own items (Bookmark, Reveal in navigation, and items from other plugins) are in the same menus. Deleted notes go wherever Obsidian's **Deleted files** setting sends them.
 
-**Each campaign has its own party.** In a campaign you run, the party is the [character sheets](character-sheets.md) in its Party folder: **+** next to Party makes a new one, and each card opens the hero's sheet. Encounter blocks and the tracker read the party from those sheets (name, level, max HP, armor and max Wounds), so levelling a hero up changes the encounter maths too. Opening a note inside a campaign makes that campaign active, so encounter blocks in it are rated against that table's heroes. Until you add heroes, the campaign's `level:` and `heroes:` properties are used. A party you entered by hand before keeps counting: those heroes show in the Party section after the sheets, with a button to make character sheets for them, until a sheet with the same name replaces each one.
+**Each campaign has its own party.** In a campaign you run, the party is the [character sheets](character-sheets.md) in its Party folder: **+** next to Party makes a new one, and each card opens the hero's sheet. Encounter blocks and the tracker read the party from those sheets (name, level, max HP, armor and max Wounds), so levelling a hero up changes the encounter maths too. Opening a note inside a campaign makes that campaign active, so encounter blocks in it are rated against that table's heroes. Until you add heroes, the campaign's `level:` and `heroes:` properties are used.
+
+**Each campaign has its own fight.** The tracker shows the active campaign's encounter: open a note in another campaign and the tracker switches to that campaign's fight (and to its game's tracker, for a 5e campaign beside a Nimble one). Go back and the first fight is where you left it. A party you entered by hand before keeps counting: those heroes show in the Party section after the sheets, with a button to make character sheets for them, until a sheet with the same name replaces each one.
 
 **Pages open ready to read.** Characters, chapters, scenes, NPCs, locations, quests, maps and handouts open in reading view, where cards, sheets and blocks look their best. Use Obsidian's edit button (or its hotkey) to change one; it stays in editing until you move to another page. Session logs, which you write in at the table, and notes you've just made open for editing as usual. Turn this off under Settings → Campaigns → **Open campaign pages in reading view**. In reading view, a campaign note's properties show as a row of tags (Ancestry Human, Status alive…) rather than the Properties form; switch to editing to change them, or turn off **Properties as tags**.
 

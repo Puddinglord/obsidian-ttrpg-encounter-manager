@@ -87,6 +87,13 @@ describe.each(SHIPPED_SYSTEMS.map(s => [s.id, s] as const))('game system %s', (_
 		expect(typeof system.ruleTerms).toBe('function');
 		expect(typeof system.ruleTermPage).toBe('function');
 	});
+	it('keeps its fight per campaign, if it has a tracker', () => {
+		// Without campaignState, switching campaigns would carry one campaign's fight into another.
+		if (!system.openTracker) return;
+		expect(system.trackerView).toMatch(/^nimble-/);
+		expect(typeof system.campaignState?.take).toBe('function');
+		expect(typeof system.campaignState?.put).toBe('function');
+	});
 });
 
 describe('shipped systems', () => {

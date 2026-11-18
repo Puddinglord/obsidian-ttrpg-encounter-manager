@@ -55,11 +55,13 @@ export interface EmberVaultSettings {
 	/** Folder of the active campaign (see campaigns.ts). `party` above is always its party. */
 	activeCampaign: string | null;
 	/** Per-campaign data, keyed by campaign folder: its party and the last scene opened. */
-	campaigns: Record<string, { party: PartyMember[]; last?: string }>;
+	campaigns: Record<string, { party: PartyMember[]; last?: string; games?: Record<string, unknown> }>;
 	/** Set once the Campaign panel has been opened for the user the first time. */
 	campaignPanelShown?: boolean;
 	/** The party used when no campaign is active. */
 	looseParty?: PartyMember[];
+	/** Each game's per-campaign state (its fight) when no campaign is active; a campaign's is in `campaigns[folder].games`. */
+	looseGames?: Record<string, unknown>;
 	/** Token positions on GM maps: map key → combatant id → percent position. */
 	mapTokens?: Record<string, Record<string, { x: number; y: number }>>;
 	/** Each other game system's own saved state, by system id (5e: its current fight). Each system reads its own defensively. */

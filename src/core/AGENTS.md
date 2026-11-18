@@ -14,7 +14,7 @@ Core gets the plugin as a type (`import type EmberVaultPlugin from '../../main'`
 - `plugin.edition(path?)`: the rules version, for systems that have several.
 - `plugin.systems`: the registry (every shipped system).
 
-Core tells systems what happened through `plugin.events`: `party-changed` (the party was edited or swapped) and `active-campaign-changed`. Systems listen in their `register()`.
+Core tells systems what happened through `plugin.events`: `party-changed` (the party was edited or swapped) and `active-campaign-changed`. Each campaign keeps its own party and, through `GameSystem.campaignState`, each game's fight (`settings.campaigns[folder].games`); `CampaignStore.setActive` swaps both. Systems listen in their `register()`.
 
 Then it calls a contract member: `system.characters?.promptNew(…)`, `system.quickLook(…)`, `system.conditions(edition)`. If what you need isn't in the contract, add it there (see [src/systems/AGENTS.md](../systems/AGENTS.md)). Core never reaches into a game's state (`nimble()`, `dnd5e()`, `plugin.runtime(id)`); ask through the contract.
 

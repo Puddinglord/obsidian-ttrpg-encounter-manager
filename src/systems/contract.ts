@@ -67,6 +67,12 @@ export interface Edition {
 	readonly label: string;
 }
 
+/** A game's per-campaign state (GameSystem.campaignState). */
+export interface CampaignState {
+	take(plugin: EmberVaultPlugin): unknown;
+	put(plugin: EmberVaultPlugin, state: unknown): void;
+}
+
 export interface GameSystem {
 	/** Stable id. A campaign's `system:` property may name it by this or by an alias. */
 	readonly id: string;
@@ -110,6 +116,14 @@ export interface GameSystem {
 	combatTokens?(plugin: EmberVaultPlugin): CombatTokens | null;
 	/** Is one of its fights running (the screen stays awake on phones)? Trigger `plugin.events` 'combat-changed' when it changes. */
 	inCombat?(plugin: EmberVaultPlugin): boolean;
+	/**
+	 * What it keeps per campaign (its fight). When the active campaign changes, core takes the old campaign's
+	 * state, saves it with that campaign, and puts the next campaign's back (undefined: it has none yet, start
+	 * fresh). Return plain JSON; redraw your views in `put`.
+	 */
+	readonly campaignState?: CampaignState;
+	/** Its tracker's view type: an open tracker switches to the active campaign's game. */
+	readonly trackerView?: string;
 	/** Your character, its own way (Nimble's Character panel); without it, your character note opens. */
 	openMyCharacter?(plugin: EmberVaultPlugin): Promise<void>;
 	/** Its fields in the plugin's settings: defaults and migration (declare the fields by augmenting EmberVaultSettings, core/settings.ts). */

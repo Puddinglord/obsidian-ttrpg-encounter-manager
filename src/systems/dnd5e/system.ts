@@ -22,6 +22,7 @@ import { drawNpc5e } from './npc-card';
 import { ruleTerms5e, termPage5e } from './rule-terms';
 import { settingsSections5e } from './settings';
 import { ruleTerms } from '../../core/rule-terms';
+import { DND5E_TRACKER_VIEW } from './tracker-view';
 
 export const dnd5eSystem: GameSystem = {
 	id: 'dnd5e',
@@ -80,4 +81,9 @@ export const dnd5eSystem: GameSystem = {
 	inCombat() {
 		return isRunning(dnd5e().fights.fight);
 	},
+	campaignState: {
+		take: () => dnd5e().fights.take(),
+		put: (_plugin, state) => dnd5e().fights.put(state),
+	},
+	trackerView: DND5E_TRACKER_VIEW,
 };

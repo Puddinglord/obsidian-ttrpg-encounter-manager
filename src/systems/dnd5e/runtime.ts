@@ -33,6 +33,7 @@ import { renderCard5e, Card5eOptions } from './cards';
 import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-view';
 import { Dnd5eSheet, SHEET_LANG } from './sheet';
 import { applyLook } from '../../core/look';
+import { anyTrackerLeaf } from '../../core/tracker/follow';
 
 /** `5e:Goblin` → "Goblin". */
 export const REF_PREFIX = '5e:';
@@ -157,6 +158,9 @@ export class Dnd5eRuntime {
 	async openTracker(): Promise<WorkspaceLeaf | null> {
 		const ws = this.plugin.app.workspace;
 		let leaf: WorkspaceLeaf | null = ws.getLeavesOfType(DND5E_TRACKER_VIEW)[0] ?? null;
+		// Another game's tracker is open: this one takes its place.
+		const other = leaf ? null : anyTrackerLeaf(this.plugin);
+		if (other) { await other.setViewState({ type: DND5E_TRACKER_VIEW, active: true }); leaf = other; }
 		if (!leaf) {
 			leaf = ws.getRightLeaf(false);
 			if (!leaf) return null;

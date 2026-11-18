@@ -155,6 +155,20 @@ export class EncounterStore extends Events {
 		return { id, name, creatures: [], round: 1, phase: 'setup', log: [] };
 	}
 
+	/** The encounters, for putting away with their campaign (core/campaigns.ts). */
+	take(): { encounters: Encounter[]; activeEncounterId: string | null } {
+		return { encounters: this.s.encounters, activeEncounterId: this.s.activeEncounterId };
+	}
+
+	/** Swap in another campaign's encounters (undefined: none yet), and redraw. */
+	put(saved: unknown): void {
+		const v = (saved && typeof saved === 'object' ? saved : {}) as { encounters?: unknown; activeEncounterId?: unknown };
+		this.s.encounters = Array.isArray(v.encounters) ? v.encounters as Encounter[] : [];
+		this.s.activeEncounterId = typeof v.activeEncounterId === 'string' ? v.activeEncounterId : null;
+		this.ensureActive();
+		this.commit();
+	}
+
 	setActive(id: string | null): void {
 		this.s.activeEncounterId = id;
 		this.commit();

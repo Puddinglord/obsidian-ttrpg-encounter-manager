@@ -15,6 +15,7 @@ import { registerMapBlock } from './src/app/map-block';
 import { CampaignStore } from './src/core/campaigns';
 import { registerBoxBlock } from './src/core/box-block';
 import { registerNpcCard } from './src/core/npc-card';
+import { registerTrackerFollow } from './src/core/tracker/follow';
 import { registerNoteCard } from './src/core/note-card';
 import { NpcLinker } from './src/core/npc-links';
 import { npcLivePreview } from './src/core/npc-live-preview';
@@ -168,6 +169,7 @@ export default class EmberVaultPlugin extends Plugin {
 		registerMapBlock(this);
 		registerBuilderCommands(this);
 		registerReadingMode(this);
+		registerTrackerFollow(this);
 
 		// The other game systems wire in their own blocks, references and indexes.
 		for (const system of this.systems.all()) system.register?.(this);

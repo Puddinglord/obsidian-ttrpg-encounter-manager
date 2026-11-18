@@ -19,6 +19,7 @@ import { nimble } from './runtime';
 import { nimbleTokens } from './map-tokens';
 import { openCharacterView } from './character-register';
 import { nimbleSpotlight } from './spotlight';
+import { ENCOUNTER_VIEW_TYPE } from './tracker-view';
 
 export const nimbleSystem: GameSystem = {
 	id: 'nimble',
@@ -77,6 +78,11 @@ export const nimbleSystem: GameSystem = {
 		const enc = nimble().encounters.active;
 		return !!enc?.phase && enc.phase !== 'setup';
 	},
+	campaignState: {
+		take: () => nimble().encounters.take(),
+		put: (_plugin, state) => nimble().encounters.put(state),
+	},
+	trackerView: ENCOUNTER_VIEW_TYPE,
 	encounterBlock: nimbleEncounterBlock,
 	slashCommands: nimbleSlashCommands,
 	spotlight: nimbleSpotlight,

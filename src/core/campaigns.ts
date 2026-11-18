@@ -216,10 +216,15 @@ export class CampaignStore extends Events {
 		const prev = this.s.activeCampaign ?? null;
 		if (prev === folder) return;
 		const store = this.s.campaigns ?? (this.s.campaigns = {});
-		if (prev) store[prev] = { ...(store[prev] ?? {}), party: this.s.party };
-		else this.s.looseParty = this.s.party;
+		// Each game's fight belongs to the campaign it was run in: put it away, and bring back the next one's.
+		const games: Record<string, unknown> = {};
+		for (const sys of this.plugin.systems.all()) if (sys.campaignState) games[sys.id] = sys.campaignState.take(this.plugin);
+		if (prev) store[prev] = { ...(store[prev] ?? {}), party: this.s.party, games };
+		else { this.s.looseParty = this.s.party; this.s.looseGames = games; }
 		this.s.party = (folder ? store[folder]?.party : this.s.looseParty) ?? [];
 		this.s.activeCampaign = folder;
+		const next = (folder ? store[folder]?.games : this.s.looseGames) ?? {};
+		for (const sys of this.plugin.systems.all()) sys.campaignState?.put(this.plugin, next[sys.id]);
 		await this.plugin.saveSettings();
 		// Systems follow the new campaign (Nimble reloads its bundled bestiary for the campaign's books).
 		this.plugin.events.trigger('active-campaign-changed', folder);

@@ -42,6 +42,21 @@ export class FightStore extends Events {
 		return result;
 	}
 
+	/** The saved fight, for putting away with its campaign (core/campaigns.ts). */
+	take(): unknown {
+		return this.data.fight;
+	}
+
+	/** Swap in another campaign's saved fight (undefined: a fresh one), and redraw. */
+	put(saved: unknown): void {
+		if (saved === undefined) delete this.data.fight;
+		else this.data.fight = saved;
+		this.cached = null;
+		this.source = undefined;
+		this.trigger('changed');
+		this.plugin.events.trigger('combat-changed');
+	}
+
 	/** A fresh fight (the old one is dropped). */
 	reset(name: string, edition: Dnd5eEdition, sourcePath?: string): Fight5e {
 		// Saved and cached together, so a fight re-read from disk can't come back in its place.

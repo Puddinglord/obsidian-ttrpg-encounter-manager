@@ -5675,6 +5675,44 @@ test('5e slash commands: /monster, /spell, /encounter rated by 2024 XP, /statblo
 	}
 });
 
+test('fights follow the campaign: each campaign keeps its own, and the tracker switches to the campaign\'s game', async (o) => {
+	const A = 'Campaigns/Follow Coast', B = 'Campaigns/Follow Vale';
+	const TR5 = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	const TRN = '.workspace-leaf-content[data-type="nimble-encounter-tracker"]';
+	try {
+		await o.eval(async (app, plugin, [A, B]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const c of [A, B]) { const old = app.vault.getAbstractFileByPath(c); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Follow Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await plugin.campaigns.createCampaign({ name: 'Follow Vale', level: 2, heroes: 4, starter: false });
+			await app.vault.create(`${A}/Fight.md`, '```nimble-encounter\nname: Bridge toll\nmonsters:\n- 2 `5e:Goblin Warrior`\n```\n');
+			await app.vault.create(`${B}/Note.md`, 'A Nimble note.\n');
+		}, [A, B]);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${A}/Fight.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${A}/Fight.md`, 'preview');
+		await o.page.locator(`${R} .dnd5e-encounter button`, { hasText: 'Run' }).click();
+		await o.waitFor(async () => (await o.page.locator(`${TR5} .dnd5e-combatant`).count()) === 2, { what: 'two goblins in the 5e tracker' });
+
+		// A Nimble campaign: the same panel becomes Nimble's tracker, with no goblins in it.
+		await o.openFile(`${B}/Note.md`, 'preview');
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.campaigns.active?.folder)) === B, { what: 'Nimble campaign active' });
+		await o.waitFor(async () => (await o.page.locator(TRN).count()) === 1 && (await o.page.locator(TR5).count()) === 0, { what: 'the tracker switched to Nimble\'s' });
+		assert.equal(await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.length), 0, 'the Nimble campaign has no 5e fight');
+
+		// Back to the 5e campaign: its fight comes back.
+		await o.openFile(`${A}/Fight.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${TR5} .dnd5e-combatant`).count()) === 2, { what: 'the goblins came back with their campaign' });
+		assert.equal(await o.page.locator(TRN).count(), 0);
+	} finally {
+		await o.eval(async (app, plugin, [A, B]) => {
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			await plugin.campaigns.setActive(null);
+			for (const c of [A, B]) { const f = app.vault.getAbstractFileByPath(c); if (f) await app.vault.delete(f, true); }
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+		}, [A, B]);
+	}
+});
+
 test('NPC card without the block: a hand-written NPC note still shows its card, portrait slot and game stats; the tags leave them to the card', async (o) => {
 	const C = 'Campaigns/Bare Coast';
 	try {
