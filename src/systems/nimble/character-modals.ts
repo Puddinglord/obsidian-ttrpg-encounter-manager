@@ -112,7 +112,7 @@ export class NewCharacterModal extends Modal {
 			if (this.onCreated) this.onCreated(file);
 			else await this.app.workspace.getLeaf(false).openFile(file);
 		} catch (e) {
-			console.error('Nimble: could not create the character', e);
+			console.error('Ember Vault: could not create the character', e);
 			new Notice('Couldn\'t create the character note.');
 		}
 	}

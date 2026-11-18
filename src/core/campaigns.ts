@@ -339,8 +339,8 @@ export class CampaignStore extends Events {
 		const title = opts.name.trim() || name;
 		const hero = opts.character?.trim();
 		const home = await this.createNote(`${folder}/${name}.md`, player
-			? playerCampaignHome(title, { gm: opts.gm?.trim() || undefined, level: opts.level, character: hero }, opts.system, opts.edition)
-			: campaignHome(title, opts.level, opts.heroes, opts.system, opts.edition));
+			? playerCampaignHome(title, { gm: opts.gm?.trim() || undefined, level: opts.level, character: hero }, opts.system ?? this.plugin.systems.default.name, opts.edition)
+			: campaignHome(title, opts.level, opts.heroes, opts.system ?? this.plugin.systems.default.name, opts.edition));
 		if (opts.starter) {
 			const subs = player ? ['Party', 'Sessions', 'Quests', 'NPCs', 'Locations', 'Assets'] : ['Party', 'Quests', 'NPCs', 'Locations', 'Sessions', 'Monsters', 'Assets'];
 			for (const sub of subs) await this.ensureFolder(`${folder}/${sub}`);

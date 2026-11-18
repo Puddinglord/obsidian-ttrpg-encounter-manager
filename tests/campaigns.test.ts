@@ -301,12 +301,12 @@ describe('next and previous scene from notes that are not scenes', () => {
 
 describe('names a file name cannot hold', () => {
 	it('keeps the name as typed in a title property', () => {
-		expect(campaignHome('Vecna: Eve of Ruin', 3, 4)).toContain('title: "Vecna: Eve of Ruin"');
+		expect(campaignHome('Vecna: Eve of Ruin', 3, 4, 'Nimble')).toContain('title: "Vecna: Eve of Ruin"');
 		expect(sceneNote('Who goes there?', 2)).toContain('title: "Who goes there?"');
 		expect(npcNote('Sister "Red" Garaele')).toContain('title: "Sister \\"Red\\" Garaele"');
 	});
 	it('adds nothing when the file name is the name', () => {
-		expect(campaignHome('Lost Mine', 1, 4)).not.toContain('title:');
+		expect(campaignHome('Lost Mine', 1, 4, 'Nimble')).not.toContain('title:');
 		expect(npcNote('Marta Hale')).not.toContain('title:');
 	});
 	it('is read back as the name shown', () => {
@@ -342,7 +342,7 @@ describe('player campaigns', () => {
 
 	it('writes player starters from the party\'s side', async () => {
 		const t = await import('../src/core/campaign-templates');
-		const home = t.playerCampaignHome('Ironbrow Saga', { gm: 'Sam', character: 'Thorga' });
+		const home = t.playerCampaignHome('Ironbrow Saga', { gm: 'Sam', character: 'Thorga' }, 'Nimble');
 		expect(home).toMatch(/role: player/);
 		expect(home).toMatch(/gm: "Sam"/);
 		expect(home).toContain('```nimble-campaign');
@@ -471,8 +471,8 @@ describe('a campaign\'s game system', () => {
 		expect(d.edition).toBeUndefined();
 	});
 	it('is written by the home note template: Nimble by default, an edition only when given', () => {
-		expect(campaignHome('A', 1, 4)).toContain('system: Nimble');
-		expect(campaignHome('A', 1, 4)).not.toContain('edition:');
+		expect(campaignHome('A', 1, 4, 'Nimble')).toContain('system: Nimble');
+		expect(campaignHome('A', 1, 4, 'Nimble')).not.toContain('edition:');
 		const home = campaignHome('A', 1, 4, '5e', '2024');
 		expect(home).toContain('system: 5e');
 		expect(home).toContain('edition: 2024');

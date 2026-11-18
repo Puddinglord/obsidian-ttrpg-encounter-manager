@@ -289,7 +289,7 @@ async function sheetsForParty(plugin: EmberVaultPlugin, c: Campaign, party: Part
 			made++;
 		} catch (e) {
 			// One hero that can't be written doesn't stop the rest; they stay in the party until it's sorted.
-			console.error(`Nimble: could not make a character sheet for ${h.name}`, e);
+			console.error(`Ember Vault: could not make a character sheet for ${h.name}`, e);
 			failed.push(h.name);
 		}
 	}

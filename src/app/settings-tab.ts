@@ -167,7 +167,7 @@ export class EmberVaultSettingsTab extends PluginSettingTab {
 				},
 				{
 					name: 'Class dice',
-					desc: 'Dice a class gains and spends (Judgment Dice, Fury Dice and the like): their colour on the sheet and how they look in 3D.',
+					desc: 'Dice a class gains and spends: their colour on the sheet and how they look in 3D.',
 					render: (setting: Setting) => {
 						setting.addColorPicker(c => c.setValue(s.classDice.color).onChange(async (v) => { s.classDice.color = v; await save(); this.plugin.rerenderNotes(); }));
 						setting.addDropdown(d => {

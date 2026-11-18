@@ -456,7 +456,7 @@ function loadModel(url: string): Promise<Object3D | null> {
 			holder.add(root);
 			holder.scale.setScalar(r > 0 ? 1 / r : 1);
 			return holder;
-		}).catch((e) => { console.warn('Nimble: could not load a dice model', url, e); return null; });
+		}).catch((e) => { console.warn('Ember Vault: could not load a dice model', url, e); return null; });
 		modelCache.set(url, p);
 	}
 	return p;

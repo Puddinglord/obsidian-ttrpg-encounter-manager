@@ -352,7 +352,7 @@ export default class EmberVaultPlugin extends Plugin {
 			if (raw == null && await this.settingsFileUnreadable()) throw new Error('data.json is not valid JSON');
 			next = migrateSettings(raw, this.settingsParts());
 		} catch (e) {
-			console.error('Nimble: could not read settings', e);
+			console.error('Ember Vault: could not read settings', e);
 			if (this.settings) return false;
 			ok = false;
 			next = migrateSettings(null, this.settingsParts());
@@ -400,7 +400,7 @@ export default class EmberVaultPlugin extends Plugin {
 			await this.app.vault.adapter.copy(this.settingsPath(), this.settingsPath(name));
 			return name;
 		} catch (e) {
-			console.error('Nimble: could not copy the unreadable settings file', e);
+			console.error('Ember Vault: could not copy the unreadable settings file', e);
 			return null;
 		}
 	}
@@ -489,7 +489,7 @@ export default class EmberVaultPlugin extends Plugin {
 		d.normal = styleId; d.primary = ''; d.perDie = {};
 		const dice = dressDice(this, [4, 6, 8, 10, 12, 20].map((sides, i) => ({ sides, role: 'normal' as const, value: values?.[i] ?? 1 + Math.floor(Math.random() * sides) })), false);
 		Object.assign(d, prev);
-		return roll3d(dice, rollOptions(d)).catch((e) => { console.warn('Nimble: 3D dice failed', e); });
+		return roll3d(dice, rollOptions(d)).catch((e) => { console.warn('Ember Vault: 3D dice failed', e); });
 	}
 
 	/**
@@ -522,7 +522,7 @@ export default class EmberVaultPlugin extends Plugin {
 		if (o.style) { d.normal = o.style; d.primary = ''; d.crit = ''; d.perDie = {}; }
 		const dressed = dressDice(this, dice, event === 'crit');
 		Object.assign(d, prev);
-		return { values, landed: roll3d(dressed, rollOptions(d, event)).catch((e) => { console.warn('Nimble: 3D dice failed', e); }) };
+		return { values, landed: roll3d(dressed, rollOptions(d, event)).catch((e) => { console.warn('Ember Vault: 3D dice failed', e); }) };
 	}
 
 	openDiceWorkshop(): void {
@@ -579,7 +579,7 @@ export default class EmberVaultPlugin extends Plugin {
 		if (!canRoll3d([...thrown, ...classDice])) return undefined;
 		const dice = [...dressDice(this, thrown, outcome === 'crit'), ...this.classDiceLook(dressDice(this, classDice, false))];
 		const landed = roll3d(dice, rollOptions(s.dice, rollEvent(sides, rolls.slice(0, count), outcome)))
-			.catch((e) => { console.warn('Nimble: 3D dice failed, showing the result only', e); });
+			.catch((e) => { console.warn('Ember Vault: 3D dice failed, showing the result only', e); });
 		// Dice that never land (a minimised window draws no frames) mustn't hold the result back for good.
 		return landedWithin(landed, (6000 + 2000 * Math.max(0, rolls.length - count)) / (s.dice.speed || 1));
 	}

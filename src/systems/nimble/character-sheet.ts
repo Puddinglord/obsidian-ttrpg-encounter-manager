@@ -136,7 +136,7 @@ export class CharacterSheetRenderer extends Component {
 				fn(fm, readCharacter(fm, this.comp, this.file.basename));
 			});
 		} catch (e) {
-			console.error('Nimble: could not update the character', e);
+			console.error('Ember Vault: could not update the character', e);
 			new Notice(`Couldn't update ${this.file.basename}: its properties may not be valid YAML.`);
 		}
 	}
