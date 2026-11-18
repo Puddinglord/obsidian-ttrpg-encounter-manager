@@ -5044,6 +5044,17 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 			await o.page.keyboard.press('Escape');
 		}
 
+		// New character: the skill chips (the background's ticked, the class's to pick) and the sheet in brief.
+		const B = '.modal.nimble-entity-builder';
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Class"]`).selectOption('Wizard');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Skills' }).click();
+		await o.page.locator(`${B} .eb-panel.is-active .eb-pick[data-value="Arcana"]`).click();
+		await o.page.waitForTimeout(500);
+		await measurePills(o, bad, '5e New character', B);
+		await o.eval(() => document.querySelectorAll('.modal-container').forEach(n => n.remove()));
+
 		// Spotlight in a 5e campaign, with a typed filter.
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
 		const SP = '.modal-container .prompt.nimble-spotlight';
@@ -6090,7 +6101,7 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();
 		await o.page.locator(B).waitFor({ timeout: 3000 });
 		assert.deepEqual(await o.page.locator(`${B} .eb-dot`).allInnerTexts(), ['Hit points', 'Increase', 'Spells']);
-		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane, level 4[\s\S]*\+5/);
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane[\s\S]*level 3 → 4[\s\S]*HP\s*\+5\s*max 22/);
 		await o.page.locator(`${B} .eb-dot`, { hasText: 'Spells' }).click();
 		await o.page.locator(`${panel} .eb-pick[data-value="Misty Step"]`).click();
 		await o.page.locator(`${B} .eb-next`).click();

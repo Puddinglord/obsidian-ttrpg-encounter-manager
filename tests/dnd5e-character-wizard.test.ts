@@ -8,7 +8,7 @@ import type { BuilderUI } from '../src/core/builder/frame';
 import { SchemaBuilder } from '../src/core/builder/schema';
 import { readSheet5e, SKILLS } from '../src/systems/dnd5e/character';
 import {
-	applyLevelUp5e, asiLevels, backgroundSkills, bonuses, Character5eDraft, characterFm, characterMissing, classOf, finalScores, hasAsi, needsSubclass, newCharacter5e,
+	applyLevelUp5e, asiLevels, averageGain, backgroundOf, backgroundSkills, bonuses, Character5eDraft, characterFm, characterMissing, classOf, finalScores, hasAsi, needsSubclass, newCharacter5e,
 	newLevelUp5e, pointsSpent, skillChoice, speciesBonuses, spellsAt, subclassLevel, withArray,
 } from '../src/systems/dnd5e/character-draft';
 import { characterSchema, levelUpSchema } from '../src/systems/dnd5e/character-wizard';
@@ -199,6 +199,37 @@ describe.each(EDITIONS)('the wizards drawn by the schema engine (%s)', (ed) => {
 		expect(out.properties).toMatchObject({ system: '5e', edition: ed, class: 'Wizard', level: 3, mine: true });
 		expect(out.after).toBe('## Notes');
 	});
+	it('New character: a card per ability, point buy\'s budget, the background\'s skills ticked, spells under their levels', () => {
+		const b = new SchemaBuilder(plugin, characterSchema(rt(ed)), { request: { mine: true, name: 'Ilse', level: 5 } });
+		const h = harness(b);
+		const d = b.draft;
+		d.className = 'Wizard';
+		h.draw('abilities');
+		expect(h.panel.querySelectorAll('.dnd5e-ab-card').length).toBe(6);
+		expect(h.panel.querySelector('[data-key="points"]')!.classList.contains('is-hidden')).toBe(true);
+		d.method = 'pointbuy';
+		h.draw('abilities');
+		expect(h.panel.querySelector('[data-key="points"]')!.classList.contains('is-hidden')).toBe(false);
+		expect(h.panel.querySelector('.dnd5e-budget-spent')!.textContent).toBe(`${pointsSpent(d)} of 27 points`);
+		h.draw('skills');
+		expect([...h.panel.querySelectorAll<HTMLElement>('.eb-pick-given')].map(e => e.dataset.fixed)).toEqual(backgroundSkills(backgroundOf(d)));
+		h.draw('class');
+		const heads = [...h.panel.querySelectorAll('[data-key="spells"] .eb-pick-head-label')].map(e => e.textContent);
+		expect(heads).toEqual(ed === '2014' ? ['1st level', '2nd level', '3rd level'] : ['Level 1', 'Level 2', 'Level 3']);
+		const preview = document.createElement('div');
+		b.renderPreview(preview, h.ui);
+		expect(preview.querySelectorAll('.dnd5e-brief-ability').length).toBe(6);
+		expect(preview.querySelector('.dnd5e-brief-ability.is-prof .dnd5e-brief-ab-name')?.textContent).toBe('INT');
+	});
+	it('Level up: the draft knows the hit point maximum, and the summary shows the new one', () => {
+		const fm = characterFm(withArray({ ...newCharacter5e(ed, { name: 'Vex', level: 3 }), className: 'Fighter' }));
+		const d = newLevelUp5e(fm, ed, 'Vex');
+		expect(d.hpMax).toBe(Number(fm.hp_max));
+		const b = new SchemaBuilder(plugin, levelUpSchema(rt(ed)), { fm, edition: ed, name: 'Vex' });
+		const preview = document.createElement('div');
+		b.renderPreview(preview, harness(b).ui);
+		expect(preview.textContent).toContain(`max ${Number(fm.hp_max) + averageGain(d)}`);
+	});
 	it('Level up: steps follow the level (a subclass at 3, an increase at 4), and the output carries the draft', () => {
 		const fm = characterFm(withArray({ ...newCharacter5e(ed, { name: 'Vex', level: 3 }), className: 'Fighter' }));
 		delete fm.subclass;
@@ -210,7 +241,7 @@ describe.each(EDITIONS)('the wizards drawn by the schema engine (%s)', (ed) => {
 		for (const s of at4.steps()) h.draw(s.id);
 		const preview = document.createElement('div');
 		at4.renderPreview(preview, h.ui);
-		expect(preview.textContent).toMatch(/Vex, level 4/);
+		expect(preview.textContent).toMatch(/Vex[\s\S]*level 3 → 4/);
 		expect((at4.output() as { data?: unknown }).data).toBe(at4.draft);
 	});
 });

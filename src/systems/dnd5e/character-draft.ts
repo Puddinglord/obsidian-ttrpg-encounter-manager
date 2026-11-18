@@ -209,6 +209,8 @@ export interface LevelUp5eDraft extends Draft {
 	spells: string[];
 	/** Scores now (for the caps and hints). */
 	scores: Record<AbilityKey, number>;
+	/** Hit point maximum now (for the summary). */
+	hpMax?: number;
 	known: string[];
 }
 
@@ -220,7 +222,7 @@ export function newLevelUp5e(fm: Frontmatter, edition: Dnd5eEdition, name = 'Her
 	const best = [...ABILITIES].sort((x, y) => scores[y] - scores[x]).filter(a => scores[a] < 20);
 	return {
 		edition, name: s.name, className: s.className ?? '', level: Math.min(20, s.level + 1), hitDie: cls?.hitDie ?? s.hitDie, conMod: abilityMod(scores.con),
-		hasSubclass: !!s.subclass, hp: 'average', subclass: '', asi: 'plus2', a1: best[0] ?? 'str', a2: best[1] ?? 'dex', feat: '', spells: [], scores,
+		hasSubclass: !!s.subclass, hp: 'average', subclass: '', asi: 'plus2', a1: best[0] ?? 'str', a2: best[1] ?? 'dex', feat: '', spells: [], scores, hpMax: s.hpMax,
 		known: Array.isArray(fm.spells) ? (fm.spells as unknown[]).map(String) : [],
 	};
 }

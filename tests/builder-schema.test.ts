@@ -127,3 +127,51 @@ describe.each(['2024', '2014'] as const)('5e builders drawn by the schema engine
 		expect(i.line).toBe(ed === '2014' ? 'Weapon (Longsword), rare (requires attunement by a Paladin)' : 'Weapon (Longsword), Rare (Requires Attunement by a Paladin)');
 	});
 });
+
+// ----------------------------------------------------------------------------
+// The engine's own controls: grouped, fixed and labelled chips, and a system's own field.
+
+describe('schema chips and custom fields', () => {
+	type D = { picks: string[]; drew: number };
+	const schema = (groups: boolean): EntitySchema<D> => ({
+		kind: 'test', noun: 'test', icon: 'x', blank: () => ({ picks: [], drew: 0 }),
+		steps: () => [{
+			id: 'one', label: 'One', icon: 'x', rows: [
+				{
+					type: 'chips', key: 'picks', label: 'Picks', options: () => ['A', 'B', 'C', 'D'], max: () => 2,
+					groups: groups ? () => [{ label: 'First', options: ['A', 'B'] }, { label: 'Empty', options: [] }, { label: 'Second', options: ['C', 'D'] }] : undefined,
+					fixed: () => ({ values: ['Z'], why: 'Already yours' }),
+					meta: o => (o === 'A' ? 'Str' : ''),
+				},
+				{ type: 'custom', key: 'own', label: 'Own', draw: (el, m) => { m.drew++; el.createDiv({ cls: 'own-thing', text: 'mine' }); } },
+			],
+		}],
+		preview: () => {}, missing: () => null, output: () => ({ lang: 'x', body: '', name: '', frontmatter: {}, folder: '' }),
+	});
+
+	it('groups chips under headings (empty groups left out), counting the picks in each', () => {
+		const h = harness(schema(true));
+		h.draw('one');
+		expect([...h.panel.querySelectorAll('.eb-pick-head-label')].map(e => e.textContent)).toEqual(['First', 'Second']);
+		h.panel.querySelector<HTMLButtonElement>('.eb-pick[data-value="C"]')!.click();
+		h.panel.querySelector<HTMLButtonElement>('.eb-pick[data-value="D"]')!.click();
+		expect(h.b.draft.picks).toEqual(['C', 'D']);
+		expect([...h.panel.querySelectorAll('.eb-pick-head-count')].map(e => e.textContent)).toEqual(['', '2 picked']);
+		// At the limit the rest wait; the fixed one is never a button.
+		expect(h.panel.querySelector<HTMLButtonElement>('.eb-pick[data-value="A"]')!.disabled).toBe(true);
+		expect(h.panel.querySelector('.eb-pick-given')!.tagName).toBe('SPAN');
+	});
+
+	it('shows fixed chips first, a chip\'s word, and draws a system\'s own field', () => {
+		const h = harness(schema(false));
+		h.draw('one');
+		const first = h.panel.querySelector<HTMLElement>('[data-key="picks"] .eb-picks')!.firstElementChild as HTMLElement;
+		expect(first.classList.contains('eb-pick-given')).toBe(true);
+		expect(first.dataset.fixed).toBe('Z');
+		expect(h.panel.querySelectorAll('[data-key="picks"] .eb-pick').length).toBe(4);
+		expect(h.panel.querySelector('.eb-pick[data-value="A"] .eb-pick-meta')?.textContent).toBe('Str');
+		expect(h.panel.querySelector('.eb-pick[data-value="B"] .eb-pick-meta')).toBeNull();
+		expect(h.panel.querySelector('[data-key="own"] .own-thing')?.textContent).toBe('mine');
+		expect(h.b.draft.drew).toBe(1);
+	});
+});

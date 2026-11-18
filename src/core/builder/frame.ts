@@ -393,7 +393,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		if (this.at === 0) this.backBtn.createSpan({ cls: 'eb-t', text: 'Cancel' });
 		else { setIcon(this.backBtn.createSpan(), 'chevron-left'); this.backBtn.createSpan({ cls: 'eb-t', text: 'Back' }); }
 		const last = this.at === this.steps.length - 1;
-		const verb = this.o.writeBack ? 'Save' : this.o.insert ? 'Insert' : 'Create';
+		const verb = this.o.writeBack ? 'Save' : this.o.insert ? 'Insert' : this.o.apply ? 'Finish' : 'Create';
 		this.nextBtn.empty();
 		if (last) {
 			setIcon(this.nextBtn.createSpan(), 'check');
@@ -715,6 +715,35 @@ export function pill(parent: HTMLElement, text: string, cls: string): HTMLElemen
 	const el = parent.createSpan({ cls: `eb-pill ${cls}` });
 	el.createSpan({ cls: 'eb-t', text });
 	return el;
+}
+
+/** One of a row of stat tiles: a label over a big number, with a line under it ("4d8", "200 XP"). */
+export interface StatTile { label: string; value: string; sub?: string; /** The one that matters most: set in the game's colour. */ lead?: boolean; title?: string }
+
+/**
+ * Stat tiles (AC 15, HP 22, PB +2…): the numbers a GM or player checks at a
+ * glance, in the game's paper and type. A game's builder check and summaries use them.
+ */
+export function statTiles(parent: HTMLElement, tiles: StatTile[], cls = ''): HTMLElement {
+	const row = parent.createDiv({ cls: `eb-tiles${cls ? ` ${cls}` : ''}` });
+	for (const t of tiles) {
+		const tile = row.createDiv({ cls: `eb-tile${t.lead ? ' is-lead' : ''}` });
+		if (t.title) tile.setAttr('title', t.title);
+		tile.createDiv({ cls: 'eb-tile-label', text: t.label });
+		tile.createDiv({ cls: 'eb-tile-value', text: t.value });
+		if (t.sub) tile.createDiv({ cls: 'eb-tile-sub', text: t.sub });
+	}
+	return row;
+}
+
+/** The head of a check: a kicker over a big value ("Challenge / CR 3"), and a tag beside it. */
+export function checkHead(parent: HTMLElement, o: { kicker: string; value: string; tag?: string }): HTMLElement {
+	const head = parent.createDiv({ cls: 'eb-check-head' });
+	const level = head.createDiv({ cls: 'eb-check-level' });
+	level.createSpan({ cls: 'eb-check-kicker', text: o.kicker });
+	level.createSpan({ cls: 'eb-check-value', text: o.value });
+	if (o.tag) pill(head, o.tag, 'eb-check-tag');
+	return head;
 }
 
 /** A meter: how a value compares with what the book expects (100% in the middle band). */

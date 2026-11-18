@@ -62,5 +62,6 @@ el.removeClass ??= function (this: HTMLElement, ...c: string[]) { this.classList
 el.toggleClass ??= function (this: HTMLElement, c: string, on: boolean) { this.classList.toggle(c, on); };
 el.hasClass ??= function (this: HTMLElement, c: string) { return this.classList.contains(c); };
 el.setCssStyles ??= function (this: HTMLElement, s: Record<string, string>) { Object.assign(this.style, s); };
+el.setCssProps ??= function (this: HTMLElement, s: Record<string, string>) { for (const [k, v] of Object.entries(s)) this.style.setProperty(k, v); };
 el.setAttr ??= function (this: HTMLElement, k: string, v: string | number | boolean | null) { if (v === null || v === false) this.removeAttribute(k); else this.setAttribute(k, String(v)); };
 el.setText ??= function (this: HTMLElement, t: string) { this.textContent = t; };

@@ -2,7 +2,7 @@
 // builder (core/builder/schema.ts). The numbers come from builder-model.ts;
 // the previews are the stat block and the compendium cards themselves.
 
-import { homeFolder, registerKind } from '../../core/builder/frame';
+import { checkHead, homeFolder, registerKind, statTiles } from '../../core/builder/frame';
 import { EntitySchema, FieldDef, schemaKind } from '../../core/builder/schema';
 import {
 	ABILITY_SHORT, Action5eDraft, attackAbility, CREATURE_TYPES, CRS, DAMAGE_TYPES, damageText, Feature5eDraft, fromMonster5e, hpOf, HIT_DIE, modOf, Monster5eDraft,
@@ -116,7 +116,7 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 								],
 								[
 									{ type: 'number', key: 'count', label: 'Dice', min: 1, max: 40, placeholder: () => '1', show: () => x.kind !== 'text' },
-									{ type: 'choice', key: 'sides', label: 'Die', show: () => x.kind !== 'text', options: () => ['4', '6', '8', '10', '12', '20'].map(s => ({ value: s, label: `d${s}` })) },
+									{ type: 'choice', key: 'sides', label: 'Die', dropdown: true, show: () => x.kind !== 'text', options: () => ['4', '6', '8', '10', '12', '20'].map(s => ({ value: s, label: `d${s}` })) },
 									{ type: 'choice', key: 'damageType', label: 'Damage', show: () => x.kind !== 'text', options: opts(DAMAGE_TYPES), dropdown: true, hint: () => damageText(d, x) },
 								],
 								{ type: 'text', key: 'extra', label: 'And then', placeholder: 'If the target is a creature, it has the Prone condition.', show: () => x.kind !== 'text' },
@@ -141,8 +141,13 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 		},
 		check(el, d) {
 			const m = toMonster5e(d);
-			el.createDiv({ cls: 'eb-check-line', text: `CR ${d.cr} · ${xpOfDraft(d).toLocaleString('en-US')} XP · PB ${formatMod(pbOf(d))}` });
-			el.createDiv({ cls: 'eb-check-line is-muted', text: `AC ${m.ac} · ${m.hp} HP · ${d.edition} rules` });
+			checkHead(el, { kicker: 'Challenge', value: `CR ${d.cr}`, tag: `${d.edition} rules` });
+			statTiles(el, [
+				{ label: 'XP', value: xpOfDraft(d).toLocaleString('en-US'), lead: true },
+				{ label: 'AC', value: String(m.ac), sub: m.acNote || undefined },
+				{ label: 'HP', value: String(m.hp), sub: m.hpFormula || undefined },
+				{ label: 'PB', value: formatMod(pbOf(d)) },
+			]);
 		},
 		chip: d => ({ text: `CR ${d.cr} · ${xpOfDraft(d).toLocaleString('en-US')} XP`, tone: 'none' }),
 		missing: d => (d.name.trim() ? null : 'Name the monster first.'),
@@ -248,7 +253,8 @@ export function spellSchema(rt: Dnd5eRuntime): EntitySchema<Spell5eDraft> {
 			},
 		],
 		preview(el, d) {
-			const spell = toSpell5e(d);
+			// Yours, not the SRD's: the card's foot says so.
+			const spell = Object.assign(toSpell5e(d), { source: 'Homebrew' });
 			renderCard5e(el, { kind: 'spell', name: spell.name, edition: d.edition, detail: spellLine(spell, d.edition), spell }, rt.cardOptions(''));
 		},
 		chip: d => ({ text: d.level === 0 ? 'Cantrip' : `Level ${d.level ?? 1}`, tone: 'none' }),
@@ -324,7 +330,7 @@ export function itemSchema(rt: Dnd5eRuntime): EntitySchema<Item5eDraft> {
 			},
 		],
 		preview(el, d) {
-			const item = toItem5e(d);
+			const item = Object.assign(toItem5e(d), { source: 'Homebrew' });
 			renderCard5e(el, { kind: 'item', name: item.name, edition: d.edition, detail: item.line ?? '', item }, rt.cardOptions(''));
 		},
 		chip: d => ({ text: d.rarity, tone: 'none' }),

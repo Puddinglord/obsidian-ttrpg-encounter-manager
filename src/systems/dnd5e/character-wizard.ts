@@ -8,10 +8,10 @@ import { Notice, TFile } from 'obsidian';
 import type { NewCharacterRequest } from '../contract';
 import { openBuilder, registerKind } from '../../core/builder/frame';
 import { EntitySchema, schemaKind } from '../../core/builder/schema';
-import { Frontmatter, readSheet5e, Sheet5e } from './character';
+import { Frontmatter, readSheet5e, SKILLS } from './character';
 import {
-	ABILITY_OF, applyLevelUp5e, asiLevels, averageGain, backgroundOf, backgroundSkills, bonuses, Character5eDraft, characterFm, characterMissing, classOf, classSpells,
-	finalScores, hasAsi, plusOf, LevelUp5eDraft, needsSubclass, newCharacter5e, newLevelUp5e, newSpellLevel, pointsSpent, skillChoice, speciesOf, spellsAt, subclassLevel, withArray,
+	ABILITY_OF, applyLevelUp5e, asiLevels, averageGain, backgroundOf, backgroundSkills, Character5eDraft, characterFm, characterMissing, classOf, classSpells,
+	hasAsi, plusOf, LevelUp5eDraft, needsSubclass, newCharacter5e, newLevelUp5e, newSpellLevel, skillChoice, speciesOf, spellsAt, subclassLevel, withArray,
 } from './character-draft';
 import { compendium5e } from './compendium';
 import type { Dnd5eEdition } from './editions';
@@ -19,35 +19,18 @@ import { formatMod } from './rules';
 import type { Dnd5eRuntime } from './runtime';
 import { SHEET_LANG } from './sheet';
 import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
-import { applyLook } from '../../core/look';
+import { abilityCards, levelUpBrief, pointBudget, sheetBrief, spellLevelLabel } from './wizard-ui';
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 const short = (a: AbilityKey) => a.toUpperCase();
+const titleCase = (a: string) => a.charAt(0).toUpperCase() + a.slice(1).toLowerCase();
 
-/** The sheet in brief: what the new or levelled character will have. */
-function sheetSummary(el: HTMLElement, s: Sheet5e, title: string): void {
-	const card = el.createDiv({ cls: 'dnd5e-card dnd5e-wizard-summary' });
-	applyLook(card, 'dnd5e');
-	const head = card.createDiv({ cls: 'dnd5e-card-head' });
-	head.createDiv({ cls: 'dnd5e-card-name', text: s.name || 'New hero' });
-	head.createDiv({ cls: 'dnd5e-card-line', text: title });
-	const facts = card.createDiv({ cls: 'dnd5e-wizard-facts' });
-	for (const [k, v] of [['HP', String(s.hpMax)], ['AC', String(s.ac)], ['PB', formatMod(s.pb)], ['Speed', `${s.speed} ft.`]] as const) {
-		const f = facts.createDiv({ cls: 'dnd5e-wizard-fact' });
-		f.createSpan({ cls: 'dnd5e-wizard-fact-label', text: k });
-		f.createSpan({ cls: 'dnd5e-wizard-fact-value', text: v });
-	}
-	const scores = card.createDiv({ cls: 'dnd5e-wizard-scores' });
-	for (const a of ABILITIES) {
-		const c = scores.createDiv({ cls: 'dnd5e-wizard-score' });
-		c.createSpan({ cls: 'dnd5e-wizard-fact-label', text: short(a) });
-		c.createSpan({ cls: 'dnd5e-wizard-fact-value', text: `${s.scores[a]} (${formatMod(s.mods[a])})` });
-	}
-	const line = (label: string, text: string) => { if (!text) return; const p = card.createDiv({ cls: 'dnd5e-card-row' }); p.createSpan({ cls: 'dnd5e-card-label', text: `${label} ` }); p.appendText(text); };
-	line('Saves', ABILITIES.filter(a => s.saves[a].proficient).map(a => `${short(a)} ${formatMod(s.saves[a].bonus)}`).join(', '));
-	line('Skills', s.skills.filter(x => x.proficient).map(x => `${x.name} ${formatMod(x.bonus)}`).join(', '));
-	if (s.spellcasting) line('Spells', `DC ${s.spellcasting.dc}, ${formatMod(s.spellcasting.attack)} to hit · ${s.spells.length} known`);
-	line('Features', s.features.filter(f => f.source !== 'Yours').map(f => f.name).slice(0, 12).join(', '));
+/** A class's spells up to a level, under their levels' headings. */
+function spellGroups(edition: Dnd5eEdition, cls: string, upTo: number, without: string[] = []): { label: string; options: string[] }[] {
+	const all = new Set(classSpells(edition, cls, upTo, false).filter(n => !without.some(k => same(k, n))));
+	const levels = new Map<number, string[]>();
+	for (const sp of compendium5e(edition).spells) if (all.has(sp.name)) levels.set(sp.level, [...(levels.get(sp.level) ?? []), sp.name]);
+	return [...levels.keys()].sort((x, y) => x - y).map(l => ({ label: spellLevelLabel(l, edition), options: [...new Set(levels.get(l))].sort() }));
 }
 
 // ----------------------------------------------------------------------------
@@ -91,14 +74,14 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 				rows: [
 					{ type: 'text', key: 'name', label: 'Name', words: true, placeholder: 'Ilse Vane' },
 					[
-						{ type: 'choice', rebuilds: true, key: 'className', label: 'Class', dropdown: true, options: x => comp(x).classes.map(c => ({ value: c.name, label: `${c.name} (d${c.hitDie})` })), hint: x => (classOf(x.edition, x.className)?.saves ?? []).join(', ') },
+						{ type: 'choice', rebuilds: true, key: 'className', label: 'Class', dropdown: true, options: x => comp(x).classes.map(c => ({ value: c.name, label: `${c.name} (d${c.hitDie})` })), hint: x => { const sv = classOf(x.edition, x.className)?.saves ?? []; return sv.length ? `Saves ${sv.map(titleCase).join(', ')}` : ''; } },
 						{ type: 'number', rebuilds: true, key: 'level', label: 'Level', min: 1, max: 20, placeholder: () => '1' },
 					],
 					[
 						{ type: 'choice', rebuilds: true, key: 'species', label: d.edition === '2014' ? 'Race' : 'Species', dropdown: true, options: x => comp(x).species.map(s => ({ value: s.name, label: s.name })) },
 						{ type: 'choice', rebuilds: true, key: 'subspecies', label: d.edition === '2014' ? 'Subrace' : 'Lineage', dropdown: true, show: x => (speciesOf(x)?.subspecies.length ?? 0) > 0, options: x => [{ value: '', label: '—' }, ...(speciesOf(x)?.subspecies ?? []).map(s => ({ value: s.name, label: s.name }))] },
 					],
-					{ type: 'choice', rebuilds: true, key: 'background', label: 'Background', dropdown: true, options: x => comp(x).backgrounds.map(b => ({ value: b.name, label: b.name })), hint: x => backgroundSkills(backgroundOf(x)).join(', ') },
+					{ type: 'choice', rebuilds: true, key: 'background', label: 'Background', dropdown: true, options: x => comp(x).backgrounds.map(b => ({ value: b.name, label: b.name })), hint: x => { const sk = backgroundSkills(backgroundOf(x)); return sk.length ? `Skills ${sk.join(', ')}` : ''; } },
 				],
 			},
 			{
@@ -106,12 +89,10 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 				rows: [
 					{
 						type: 'choice', rebuilds: true, key: 'method', label: 'Scores', options: () => [{ value: 'array', label: 'Standard array' }, { value: 'pointbuy', label: 'Point buy' }, { value: 'manual', label: 'Your own' }],
-						hint: x => (x.method === 'pointbuy' ? `${pointsSpent(x)} of 27 points` : x.method === 'array' ? 'Set out for your class' : ''),
+						hint: x => (x.method === 'array' ? 'Set out for your class' : x.method === 'manual' ? 'Rolled or given' : ''),
 					},
-					...[['str', 'dex', 'con'], ['int', 'wis', 'cha']].map(row => row.map(a => ({
-						type: 'number' as const, key: a, label: ABILITY_NAME[a as AbilityKey], min: d.method === 'pointbuy' ? 8 : 1, max: d.method === 'pointbuy' ? 15 : 20, placeholder: () => '10',
-						hint: (x: Character5eDraft) => { const f = finalScores(settle(x))[a as AbilityKey]; const b = bonuses(x)[a as AbilityKey]; return `${b ? `+${b} → ` : ''}${f} (${formatMod(Math.floor((f - 10) / 2))})`; },
-					}))),
+					{ type: 'custom', key: 'points', label: 'Points', show: x => x.method === 'pointbuy', draw: (el, x, ui) => pointBudget(el, x, ui) },
+					{ type: 'custom', key: 'abilities', label: 'Abilities', draw: (el, x, ui) => abilityCards(el, x, ui, settle) },
 					...(d.edition === '2024' ? [[
 						{ type: 'choice' as const, key: 'plus2', label: '+2 to', dropdown: true, options: (x: Character5eDraft) => plusOptions(x, 'p2') },
 						{ type: 'choice' as const, key: 'plus1', label: '+1 to', dropdown: true, options: (x: Character5eDraft) => plusOptions(x, 'p1') },
@@ -125,7 +106,8 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 						type: 'chips', key: 'skills', label: 'Class skills', options: x => { const bg = backgroundSkills(backgroundOf(x)); return skillChoice(classOf(x.edition, x.className)?.skillChoice ?? '').from.filter(s => !bg.includes(s)); },
 						max: x => skillChoice(classOf(x.edition, x.className)?.skillChoice ?? '').count,
 						hint: x => `${x.skills.length} of ${skillChoice(classOf(x.edition, x.className)?.skillChoice ?? '').count}`,
-						help: (() => { const bg = backgroundSkills(backgroundOf(d)); return bg.length ? `From your background: ${bg.join(', ')}.` : undefined; })(),
+						fixed: x => ({ values: backgroundSkills(backgroundOf(x)), why: 'From your background' }),
+						meta: opt => titleCase(SKILLS.find(k => same(k.name, opt))?.ability ?? ''),
 					},
 				],
 			},
@@ -134,14 +116,19 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 				rows: [
 					{ type: 'choice', key: 'subclass', label: 'Subclass', dropdown: true, show: x => (x.level ?? 1) >= subclassLevel(classOf(x.edition, x.className)) && (classOf(x.edition, x.className)?.subclasses.length ?? 0) > 0, options: x => [{ value: '', label: 'Choose later' }, ...(classOf(x.edition, x.className)?.subclasses ?? []).map(s => ({ value: s.name, label: s.name }))] },
 					{ type: 'chips', key: 'cantrips', label: 'Cantrips', show: x => spellsAt(classOf(x.edition, x.className), x.level ?? 1).cantrips > 0, options: x => classSpells(x.edition, x.className, 0, true), max: x => spellsAt(classOf(x.edition, x.className), x.level ?? 1).cantrips, hint: x => `${x.cantrips.length} of ${spellsAt(classOf(x.edition, x.className), x.level ?? 1).cantrips}` },
-					{ type: 'chips', key: 'spells', label: 'Spells', show: x => spellsAt(classOf(x.edition, x.className), x.level ?? 1).maxLevel > 0, options: x => classSpells(x.edition, x.className, spellsAt(classOf(x.edition, x.className), x.level ?? 1).maxLevel, false), hint: x => `up to level ${spellsAt(classOf(x.edition, x.className), x.level ?? 1).maxLevel}` },
+					{
+						type: 'chips', key: 'spells', label: 'Spells', show: x => spellsAt(classOf(x.edition, x.className), x.level ?? 1).maxLevel > 0,
+						options: x => classSpells(x.edition, x.className, spellsAt(classOf(x.edition, x.className), x.level ?? 1).maxLevel, false),
+						groups: x => spellGroups(x.edition, x.className, spellsAt(classOf(x.edition, x.className), x.level ?? 1).maxLevel),
+						hint: x => `${x.spells.length} picked`,
+					},
 				],
 			},
 		],
 		preview(el, d) {
 			settle(d);
 			const s = readSheet5e(characterFm({ ...d, name: d.name || 'New hero' }), d.edition, d.name || 'New hero');
-			sheetSummary(el, s, `Level ${s.level} ${[d.edition === '2014' && d.subspecies ? d.subspecies : d.species, d.className].filter(Boolean).join(' ')}${s.subclass ? ` (${s.subclass})` : ''}`);
+			sheetBrief(el, s, `Level ${s.level} ${[d.edition === '2014' && d.subspecies ? d.subspecies : d.species, d.className].filter(Boolean).join(' ')}${s.subclass ? ` (${s.subclass})` : ''}${d.background ? ` · ${d.background}` : ''}`);
 		},
 		chip: d => ({ text: `${d.className} ${d.level ?? 1}`, tone: 'none' }),
 		missing: d => characterMissing(settle(d)),
@@ -192,24 +179,26 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 			}] : []),
 			...(newSpellLevel(d) > 0 ? [{
 				id: 'spells', label: 'Spells', icon: 'wand-2', title: 'New spells',
-				rows: [{ type: 'chips' as const, key: 'spells', label: `Spells up to level ${newSpellLevel(d)}`, options: (x: LevelUp5eDraft) => classSpells(x.edition, x.className, newSpellLevel(x), false).filter(n => !x.known.some(k => same(k, n))) }],
+				rows: [{
+					type: 'chips' as const, key: 'spells', label: 'Spells', hint: (x: LevelUp5eDraft) => `${x.spells.length} picked`,
+					options: (x: LevelUp5eDraft) => classSpells(x.edition, x.className, newSpellLevel(x), false).filter(n => !x.known.some(k => same(k, n))),
+					groups: (x: LevelUp5eDraft) => spellGroups(x.edition, x.className, newSpellLevel(x), x.known),
+				}],
 			}] : []),
 		],
 		preview(el, d) {
 			const cls = classOf(d.edition, d.className);
-			const gained = (cls?.features ?? []).filter(f => f.level === d.level).map(f => f.name);
-			const card = el.createDiv({ cls: 'dnd5e-card dnd5e-wizard-summary' });
-			const head = card.createDiv({ cls: 'dnd5e-card-head' });
-			head.createDiv({ cls: 'dnd5e-card-name', text: `${d.name}, level ${d.level}` });
-			head.createDiv({ cls: 'dnd5e-card-line', text: d.className });
-			const row = (label: string, text: string) => { if (!text) return; const p = card.createDiv({ cls: 'dnd5e-card-row' }); p.createSpan({ cls: 'dnd5e-card-label', text: `${label} ` }); p.appendText(text); };
-			row('Hit points', d.hp === 'roll' ? `roll 1d${d.hitDie}${d.conMod ? ` ${formatMod(d.conMod)}` : ''} when you finish` : `+${d.hp === 'manual' ? Math.max(1, (d.manual ?? Math.floor(d.hitDie / 2) + 1) + d.conMod) : averageGain(d)}`);
-			row('New', gained.join(', '));
-			if (needsSubclass(d)) row('Subclass', d.subclass || 'not yet');
-			if (hasAsi(d)) row('Increase', d.asi === 'feat' ? d.feat || 'a feat' : d.asi === 'plus2' ? `${short(d.a1 as AbilityKey)} +2` : `${short(d.a1 as AbilityKey)} +1, ${short(d.a2 as AbilityKey)} +1`);
-			if (d.spells.length) row('Spells', d.spells.join(', '));
-			const next = asiLevels(cls).find(l => l > d.level);
-			if (next) row('Next increase', `level ${next}`);
+			const gain = d.hp === 'roll' ? `1d${d.hitDie}${d.conMod ? ` ${formatMod(d.conMod)}` : ''}` : `+${d.hp === 'manual' ? Math.max(1, (d.manual ?? Math.floor(d.hitDie / 2) + 1) + d.conMod) : averageGain(d)}`;
+			levelUpBrief(el, d, {
+				gained: (cls?.features ?? []).filter(f => f.level === d.level).map(f => f.name),
+				hpGain: gain,
+				subclass: needsSubclass(d) ? d.subclass : undefined,
+				increase: !hasAsi(d) ? undefined : d.asi === 'feat' ? d.feat || 'Not chosen yet'
+					: d.asi === 'plus2' ? `${short(d.a1 as AbilityKey)} ${d.scores[d.a1 as AbilityKey]} → ${Math.min(20, d.scores[d.a1 as AbilityKey] + 2)}`
+						: d.a1 === d.a2 ? `${short(d.a1 as AbilityKey)} ${d.scores[d.a1 as AbilityKey]} → ${Math.min(20, d.scores[d.a1 as AbilityKey] + 2)}`
+							: `${short(d.a1 as AbilityKey)} +1, ${short(d.a2 as AbilityKey)} +1`,
+				nextIncrease: asiLevels(cls).find(l => l > d.level),
+			});
 		},
 		chip: d => ({ text: `Level ${d.level}`, tone: 'none' }),
 		missing: d => (d.level > 20 || d.level < 2 ? 'This character is already level 20.' : null),

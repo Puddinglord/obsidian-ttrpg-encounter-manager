@@ -16,6 +16,7 @@
 
 import { setIcon } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
+import { pill } from '../pill';
 import { BuilderUI, field, grid, iconButton, KindBuilder, KindFactory, numberInput, Output, section, segmented, StepDef, textArea, textButton, textInput } from './frame';
 
 /** A draft: what the fields edit. */
@@ -42,9 +43,15 @@ export type FieldDef<M = Draft> =
 	| FieldBase<M> & { type: 'number'; placeholder?: (m: M) => string; min?: number; max?: number; step?: number }
 	/** One of a few (buttons), or of many (a dropdown). */
 	| FieldBase<M> & { type: 'choice'; options: (m: M) => { value: string; label: string; icon?: string }[]; dropdown?: boolean }
-	/** Any of these (the draft holds a string[]). */
-	| FieldBase<M> & { type: 'chips'; options: (m: M) => string[]; max?: (m: M) => number }
+	/**
+	 * Any of these (the draft holds a string[]). `groups` sorts long lists under headings (spells by level);
+	 * `fixed` are already theirs from elsewhere (a background's skills), shown first and not pickable;
+	 * `meta` is a small word after a chip's name ("Int").
+	 */
+	| FieldBase<M> & { type: 'chips'; options: (m: M) => string[]; max?: (m: M) => number; groups?: (m: M) => { label: string; options: string[] }[]; fixed?: (m: M) => { values: string[]; why: string }; meta?: (opt: string, m: M) => string }
 	| FieldBase<M> & { type: 'toggle' }
+	/** Drawn by the system (a game's own control, built from the frame's parts). */
+	| FieldBase<M> & { type: 'custom'; draw: (control: HTMLElement, m: M, ui: BuilderUI) => void }
 	/** A list of things, each with its own fields (the draft holds an array of drafts). */
 	| FieldBase<M> & { type: 'list'; item: (item: Draft) => (FieldDef | FieldDef[])[]; blank: () => Draft; add: string; title?: (item: Draft, i: number) => string };
 
@@ -175,15 +182,17 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 		case 'chips': {
 			const box = parts.control.createDiv({ cls: 'eb-picks', attr: { role: 'group', 'aria-labelledby': parts.labelId } });
 			const list = () => (Array.isArray(m[f.key]) ? m[f.key] as string[] : []);
-			for (const opt of f.options(m)) {
-				const b = box.createEl('button', { cls: 'eb-pick', text: opt, attr: { type: 'button', 'aria-pressed': 'false' } });
+			const { max, meta, groups, fixed } = f;
+			const chip = (into: HTMLElement, opt: string) => {
+				const b = pill(into, { tag: 'button', text: opt, cls: 'eb-pick', attr: { type: 'button', 'aria-pressed': 'false' } }) as HTMLButtonElement;
+				const word = meta?.(opt, m);
+				if (word) b.createSpan({ cls: 'eb-pick-meta', text: word });
 				b.dataset.value = opt;
 				b.addEventListener('click', () => {
 					const now = list();
 					set(now.includes(opt) ? now.filter(x => x !== opt) : [...now, opt]);
 					ui.changed();
 				});
-				const { max } = f;
 				ui.live(() => {
 					const on = list().includes(opt);
 					b.toggleClass('is-active', on);
@@ -191,11 +200,39 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 					// At the limit, the rest wait until one is taken off.
 					b.disabled = !on && !!max && list().length >= max(m);
 				});
+			};
+			const given = fixed?.(m);
+			if (given?.values.length) {
+				const row = groups ? box.createDiv({ cls: 'eb-pick-row' }) : box;
+				for (const v of given.values) {
+					const b = pill(row, { tag: 'span', icon: 'check', text: v, cls: 'eb-pick-given', title: given.why });
+					b.dataset.fixed = v;
+				}
+			}
+			if (!groups) { for (const opt of f.options(m)) chip(box, opt); return; }
+			box.addClass('is-grouped');
+			for (const g of groups(m)) {
+				if (!g.options.length) continue;
+				const sec = box.createDiv({ cls: 'eb-pick-group' });
+				const head = sec.createDiv({ cls: 'eb-pick-head' });
+				head.createSpan({ cls: 'eb-pick-head-label', text: g.label });
+				const count = head.createSpan({ cls: 'eb-pick-head-count' });
+				ui.live(() => {
+					const n = g.options.filter(o => list().includes(o)).length;
+					count.setText(n ? `${n} picked` : '');
+				});
+				const row = sec.createDiv({ cls: 'eb-pick-row' });
+				for (const opt of g.options) chip(row, opt);
 			}
 			return;
 		}
+		case 'custom':
+			f.draw(parts.control, m, ui);
+			return;
 		case 'list': {
 			const items = Array.isArray(m[f.key]) ? m[f.key] as Draft[] : (m[f.key] = [] as Draft[]);
+			// The cards across the field, Add under them.
+			parts.control.addClass('is-stack');
 			const box = parts.control.createDiv({ cls: 'eb-attacks eb-list' });
 			items.forEach((item, i) => {
 				const card = box.createDiv({ cls: 'eb-attack eb-list-item' });
