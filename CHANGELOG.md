@@ -35,6 +35,11 @@ Ember Vault runs 5e campaigns as well as Nimble, on shared engines for slash com
 - Clicking a map pin shows its note in a quick look over the map instead of opening the page; Cmd/Ctrl-click still opens it. **Show pin labels** now shows labels on small maps too. See the [maps guide](docs/maps.md).
 - Pips work the same in both games: tap a filled pip to take one away, an empty one to add one, and the one that changed animates. 5e's legendary actions, death saves and spell slots use them. See [Playing 5e](docs/5e.md#the-5e-combat-tracker).
 - The 5e tracker's controls sit on one line, with Next turn the big button.
+- Each game has its own look. 5e's tracker, encounter blocks, builder, character wizards, stat blocks, compendium cards and NPC cards are set like its book: warm paper, rubric red, gold rules and small-caps names. Nimble's keep following your theme. See [Playing 5e](docs/5e.md).
+- The 5e tracker shows each combatant on one row (initiative, name, conditions, CR or level, AC and HP), about twice as many on screen. The current turn says **Up now**, heroes and monsters have their own colour, defeated monsters fold away at the bottom, and tapping initiative lets you type or roll it. See [Playing 5e](docs/5e.md#the-5e-combat-tracker).
+- The 5e tracker tracks concentration (it gives the save's DC when someone concentrating takes damage) and Legendary Resistance, and conditions open with their rules and how long they last. See [Playing 5e](docs/5e.md#the-5e-combat-tracker).
+- 5e encounter blocks show each group's CR, AC and HP, and a bar of the fight's XP against the party's thresholds. See [Playing 5e](docs/5e.md#encounters).
+- 5e's New character and Level up show the character in brief beside every step; abilities are a card each, with point buy's points left; spells are grouped by level. See [Playing 5e](docs/5e.md#character-sheets).
 
 - Under the hood, Nimble and 5e are separate modules that can't reach into each other (the build checks), so a change to one can't break the other. The plugin itself holds no game: Nimble plugs in the same way 5e does.
 - Settings are grouped: what every game shares first (General, Campaigns, Party, Content packs, Dice, Combat), then Nimble's own. See the [settings guide](docs/settings.md).
