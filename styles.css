@@ -4671,46 +4671,59 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .dnd5e-statblock .dnd5e-ability-score { color: var(--text-normal); white-space: nowrap; }
 .dnd5e-statblock .dnd5e-ab24-wrap { container: dnd5e-ab / inline-size; }
 .dnd5e-statblock .dnd5e-abilities-2024 {
+	/* Each group keeps its own width (name, score, then MOD and SAVE the same size, as the book sets them);
+	   spare width goes only into the spacer columns between groups, so the numbers stay evenly spaced
+	   however wide the block is. Groups: columns 1–4, 6–9 and 11–14. */
+	--ab-group: auto minmax(1.5em, auto) minmax(2.6em, 3.1em) minmax(2.6em, 3.1em);
+	--ab-space: minmax(0.6rem, 1fr);
 	display: grid;
-	grid-template-columns: repeat(3, auto auto minmax(2.4em, 1fr) minmax(2.4em, 1fr));
-	gap: 0.2rem 0.3rem;
+	grid-template-columns: var(--ab-group) var(--ab-space) var(--ab-group) var(--ab-space) var(--ab-group);
+	gap: 0.2rem 0;
 	font-size: 0.95em;
 	font-variant-numeric: tabular-nums;
 }
 .dnd5e-statblock .dnd5e-ab24 {
-	grid-column: span 4;
+	grid-column: 1 / span 4;
 	display: grid;
 	grid-template-columns: subgrid;
-	align-items: center;
-	padding: 0.1rem 0.35rem;
+	align-items: stretch;
 	border-radius: 4px;
-	background: color-mix(in srgb, var(--dnd5e-accent) 8%, transparent);
+	overflow: hidden;
+	background: color-mix(in srgb, var(--dnd5e-accent) 7%, transparent);
 }
+.dnd5e-statblock .dnd5e-ab24.is-head:nth-child(2), .dnd5e-statblock .dnd5e-ab24:is(.ab-dex, .ab-wis) { grid-column: 6 / span 4; }
+.dnd5e-statblock .dnd5e-ab24.is-head:nth-child(3), .dnd5e-statblock .dnd5e-ab24:is(.ab-con, .ab-cha) { grid-column: 11 / span 4; }
+.dnd5e-statblock .dnd5e-ab24 > span { display: flex; align-items: center; padding: 0.1rem 0.3rem; }
+/* MOD and SAVE on a slightly stronger tint than the name and score, like the book's shaded columns. */
+.dnd5e-statblock .dnd5e-ab24:not(.is-head) > :is(.dnd5e-ab24-mod, .dnd5e-ab24-save) { background: color-mix(in srgb, var(--dnd5e-accent) 9%, transparent); }
 .dnd5e-statblock .dnd5e-ab24.is-head {
 	background: none;
 	white-space: nowrap;
-	text-align: center;
 	font-size: 0.7em;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 	color: var(--text-muted);
-	padding-block: 0;
 }
-.dnd5e-statblock .dnd5e-ab24-name { font-weight: 700; color: var(--dnd5e-accent); }
-.dnd5e-statblock .dnd5e-ab24-score { text-align: right; }
+.dnd5e-statblock .dnd5e-ab24.is-head > span { justify-content: center; padding-block: 0; }
+.dnd5e-statblock .dnd5e-ab24 > .dnd5e-ab24-name { justify-self: start; margin-left: 0.3rem; padding-inline: 0; font-weight: 700; color: var(--dnd5e-accent); }
+.dnd5e-statblock .dnd5e-ab24-score { justify-content: flex-end; }
 .dnd5e-statblock .dnd5e-ab24-mod,
-.dnd5e-statblock .dnd5e-ab24-save { text-align: center; white-space: nowrap; }
+.dnd5e-statblock .dnd5e-ab24-save { justify-content: center; white-space: nowrap; }
 /* Narrow blocks: two groups a row (Str Dex / Con Int / Wis Cha), then one. */
 @container dnd5e-ab (max-width: 470px) {
-	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: repeat(2, auto auto minmax(2.4em, 1fr) minmax(2.4em, 1fr)); }
+	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: var(--ab-group) var(--ab-space) var(--ab-group); }
 	.dnd5e-statblock .dnd5e-ab24.is-head:nth-child(3) { display: none; }
+	.dnd5e-statblock .dnd5e-ab24:is(.ab-str, .ab-con, .ab-wis) { grid-column: 1 / span 4; }
+	.dnd5e-statblock .dnd5e-ab24:is(.ab-dex, .ab-int, .ab-cha) { grid-column: 6 / span 4; }
 }
 @container dnd5e-ab (max-width: 360px) {
 	.dnd5e-statblock .dnd5e-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 0.4rem; }
 }
 @container dnd5e-ab (max-width: 260px) {
-	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: auto auto minmax(2.4em, 1fr) minmax(2.4em, 1fr); }
+	/* One group: the name takes the spare width, so the score stays beside MOD. */
+	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: 1fr minmax(1.5em, auto) minmax(2.6em, 3.1em) minmax(2.6em, 3.1em); }
 	.dnd5e-statblock .dnd5e-ab24.is-head:nth-child(2) { display: none; }
+	.dnd5e-statblock .dnd5e-ab24:not(.is-head) { grid-column: 1 / span 4; }
 }
 .dnd5e-statblock .dnd5e-section {
 	margin-top: 0.7rem;
