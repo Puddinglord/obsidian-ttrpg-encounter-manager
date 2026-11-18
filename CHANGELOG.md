@@ -50,6 +50,7 @@ Ember Vault runs 5e campaigns as well as Nimble, on shared engines for slash com
 ### Fixed
 
 - An NPC note written by hand, without a `nimble-npc` block, shows its card and portrait instead of only a row of properties. See the [NPCs guide](docs/npcs.md#character-cards).
+- Spell, item and condition references (`5e:spell:Fireball`, `nimble:spell:…`) sit on the line exactly like monster references, instead of a little higher.
 - The icons on the quick look's buttons (Add to fight, Open page, Open notes) sit level with their labels instead of a little high.
 
 ## [1.6.0] - 2026-11-17

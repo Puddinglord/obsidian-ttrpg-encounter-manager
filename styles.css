@@ -1019,6 +1019,11 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 	overflow: hidden;
 	transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
 }
+/* Every pill sits on the line the same way, whatever comes first. An inline-flex box takes its baseline from
+   its first item: a monster's level badge is text, but a spell's icon isn't, and the browser then used the
+   icon's bottom edge and the pill rode ~3px high. This zero-width first item, set like the level badge and
+   centred, gives every pill the badge's baseline. */
+.nimble-inline-ref::before { content: "\200b"; align-self: center; width: 0; overflow: hidden; font-size: 0.78em; font-weight: 700; }
 .nimble-inline-ref:hover { border-color: color-mix(in srgb, var(--ref-tint) 60%, transparent); box-shadow: 0 1px 4px color-mix(in srgb, var(--ref-tint) 18%, transparent); }
 .nimble-inline-ref.role-legendary { --ref-tint: var(--nimble-legendary); }
 .nimble-inline-ref.role-minion { --ref-tint: var(--nimble-minion); }

@@ -5068,6 +5068,15 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 		await o.page.locator(`${R} .dnd5e-encounter`).waitFor();
 		await o.page.waitForTimeout(300);
 		await o.page.locator(`${R} p`, { has: o.page.locator('.dnd5e-ref') }).first().screenshot({ path: join(ARTIFACTS, 'pill-5e-refs.png') });
+		// Every reference sits on the line the same way: a spell's (icon first) as high as a monster's (level first).
+		const tops = await o.page.locator(`${R} p`, { has: o.page.locator('.dnd5e-ref') }).first().evaluate((p) => {
+			const line = (n) => Math.round(n.getBoundingClientRect().top / 4);
+			const refs = [...p.querySelectorAll('.nimble-inline-ref')];
+			const first = refs.filter(r => line(r) === line(refs[0]));
+			return first.map(r => ({ cls: r.className, top: r.getBoundingClientRect().top }));
+		});
+		assert.ok(tops.length >= 2, 'two references on the first line');
+		for (const t of tops) assert.ok(Math.abs(t.top - tops[0].top) < 0.6, `${t.cls} sits ${(t.top - tops[0].top).toFixed(1)}px off the monster reference`);
 		await measurePills(o, bad, '5e note (reading)', `${R}`);
 		await o.openFile(note, 'source');
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-ref.dnd5e-hit`).count()) >= 3, { what: 'Live Preview refs' });
