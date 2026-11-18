@@ -22,6 +22,7 @@ export const PILL_SELECTORS = [
 	'.dnd5e-encounter-actions button', '.dnd5e-sheet-actions button', '.dnd5e-sheet-roll', '.dnd5e-sheet-tag', '.dnd5e-cmp-badge', '.dnd5e-sheet-add',
 	'.dnd5e-sheet-toggle', '.dnd5e-cmp-editions button', '.dnd5e-npc-fight', '.record-btn', '.stat-badge', '.add-btn',
 	'.eb-pick', '.eb-pick-given', '.dnd5e-brief-chip',
+	'.dnd5e-tab', '.dnd5e-sheet-condition', '.dnd5e-sheet-condition-add', '.dnd5e-sheet-death-roll', '.dnd5e-turn-action', '.dnd5e-sheet-gold', '.dnd5e-qty',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {

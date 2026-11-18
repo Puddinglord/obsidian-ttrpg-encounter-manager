@@ -2804,73 +2804,73 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 /* Hit points and mana: big bars with − and + either side, and a calculator. White numbers on every part
    of the bar: the fills are shaded so white reads at 4.5:1 or better (more shade in dark mode, whose
    HP and mana colours are lighter), and the empty part is a dark track. */
-.nimble-sheet { --ns-shade: 80%; --ns-shade-2: 66%; }
-.theme-dark .nimble-sheet { --ns-shade: 64%; --ns-shade-2: 52%; }
+:is(.nimble-sheet, .ev-vitals) { --ns-shade: 80%; --ns-shade-2: 66%; }
+.theme-dark :is(.nimble-sheet, .ev-vitals) { --ns-shade: 64%; --ns-shade-2: 52%; }
 .nimble-sheet .ns-meters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.8rem 1.3rem; padding: 0.85rem 0.95rem 0.9rem; }
-.nimble-sheet .ns-meter-head { grid-area: head; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.5rem; min-height: 1.5rem; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-head { grid-area: head; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.5rem; min-height: 1.5rem; }
 /* Hit points: the header with Wounds on its right, the bar under both. Narrow: Wounds under the bar. */
-.nimble-sheet .ns-meter { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "head wounds" "row row"; gap: 0.4rem 0.6rem; align-items: center; }
-.nimble-sheet .ns-meter-row { grid-area: row; }
-.nimble-sheet .ns-meter > .ns-wounds { grid-area: wounds; margin-left: 0; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "head wounds" "row row"; gap: 0.4rem 0.6rem; align-items: center; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-row { grid-area: row; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter > .ns-wounds { grid-area: wounds; margin-left: 0; }
 @container nimble-sheet (max-width: 440px) {
 	.nimble-sheet .ns-meter.is-hp { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "row" "wounds"; }
 	.nimble-sheet .ns-meter > .ns-wounds { justify-content: center; }
 }
-.nimble-sheet .ns-meter-label { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
-.nimble-sheet .ns-meter-icon { display: inline-flex; }
-.nimble-sheet .ns-meter-icon svg { width: 13px; height: 13px; }
-.nimble-sheet .ns-meter.is-hp .ns-meter-icon { color: var(--ns-hp); }
-.nimble-sheet .ns-meter.is-hp .ns-meter-icon svg { fill: currentColor; }
-.nimble-sheet .ns-meter.is-mana .ns-meter-icon { color: var(--ns-mana); }
-.nimble-sheet .ns-meter-extra { display: inline-flex; align-items: center; padding: 0.05rem 0.45rem; border-radius: 999px; font-size: 0.68rem; font-weight: 700; line-height: normal; background: color-mix(in srgb, var(--ns-temp) 16%, transparent); color: var(--ns-temp); }
-.nimble-sheet .ns-meter-state { margin-left: auto; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ns-wound); }
-.nimble-sheet .ns-meter-row { display: flex; align-items: center; gap: 0.4rem; }
-.nimble-sheet .ns-meter-step.ns-step, .nimble-sheet .ns-meter-calc.ns-step { width: 2.1rem; height: 2.1rem; }
-.nimble-sheet .ns-meter-step.ns-step svg, .nimble-sheet .ns-meter-calc.ns-step svg { width: 15px; height: 15px; }
-.nimble-sheet .ns-meter-calc.ns-step { border-radius: 8px; }
-.nimble-sheet button.ns-meter-bar {
+:is(.nimble-sheet, .ev-vitals) .ns-meter-label { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-icon { display: inline-flex; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-icon svg { width: 13px; height: 13px; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter.is-hp .ns-meter-icon { color: var(--ns-hp); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter.is-hp .ns-meter-icon svg { fill: currentColor; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter.is-mana .ns-meter-icon { color: var(--ns-mana); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-extra { display: inline-flex; align-items: center; padding: 0.05rem 0.45rem; border-radius: 999px; font-size: 0.68rem; font-weight: 700; line-height: normal; background: color-mix(in srgb, var(--ns-temp) 16%, transparent); color: var(--ns-temp); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-state { margin-left: auto; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ns-wound); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-row { display: flex; align-items: center; gap: 0.4rem; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-step.ns-step, :is(.nimble-sheet, .ev-vitals) .ns-meter-calc.ns-step { width: 2.1rem; height: 2.1rem; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-step.ns-step svg, :is(.nimble-sheet, .ev-vitals) .ns-meter-calc.ns-step svg { width: 15px; height: 15px; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-calc.ns-step { border-radius: 8px; }
+:is(.nimble-sheet, .ev-vitals) button.ns-meter-bar {
 	--ns-c: var(--ns-hp);
 	position: relative; flex: 1; min-width: 0; height: 2.1rem; padding: 0; border-radius: 999px; overflow: hidden; box-shadow: none; cursor: pointer;
 	background: color-mix(in srgb, var(--ns-c) 32%, #16161a); border: 1px solid color-mix(in srgb, var(--ns-c) 60%, #000);
 }
-.nimble-sheet button.ns-meter-bar.ns-mana { --ns-c: var(--ns-mana); }
-.nimble-sheet button.ns-meter-bar:hover { border-color: var(--ns-c); }
-.nimble-sheet .ns-meter-fill { position: absolute; inset: 0 auto 0 0; width: var(--ns-fill, 0%); background: color-mix(in srgb, var(--ns-c) var(--ns-shade), #000); transition: width 0.55s cubic-bezier(0.25, 0.8, 0.3, 1); }
-.nimble-sheet .ns-meter-fill.is-instant { transition: none; }
+:is(.nimble-sheet, .ev-vitals) button.ns-meter-bar.ns-mana { --ns-c: var(--ns-mana); }
+:is(.nimble-sheet, .ev-vitals) button.ns-meter-bar:hover { border-color: var(--ns-c); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-fill { position: absolute; inset: 0 auto 0 0; width: var(--ns-fill, 0%); background: color-mix(in srgb, var(--ns-c) var(--ns-shade), #000); transition: width 0.55s cubic-bezier(0.25, 0.8, 0.3, 1); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-fill.is-instant { transition: none; }
 /* A change lingers, then drains (or a gain lights up first): see animateBar(). */
-.nimble-sheet { --ns-loss: #f2b632; --ns-gain: #3fcf7f; }
-.nimble-sheet .ns-meter-ghost {
+:is(.nimble-sheet, .ev-vitals) { --ns-loss: #f2b632; --ns-gain: #3fcf7f; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-ghost {
 	position: absolute; top: 0; bottom: 0; left: var(--ns-from, 0%); width: var(--ns-w, 0%);
 	transition: width 0.7s cubic-bezier(0.55, 0, 0.75, 0.6), opacity 0.5s ease;
 }
-.nimble-sheet .ns-meter-ghost.is-loss { background: var(--ns-loss); }
-.nimble-sheet .ns-meter-ghost.is-loss.is-draining { width: 0; }
-.nimble-sheet .ns-meter-ghost.is-gain { background: var(--ns-gain); }
-.nimble-sheet .ns-meter-extra-fill {
+:is(.nimble-sheet, .ev-vitals) .ns-meter-ghost.is-loss { background: var(--ns-loss); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-ghost.is-loss.is-draining { width: 0; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-ghost.is-gain { background: var(--ns-gain); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-extra-fill {
 	position: absolute; top: 0; bottom: 0; left: var(--ns-from, 0%); width: var(--ns-fill, 0%); max-width: calc(100% - var(--ns-from, 0%));
 	background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ns-temp) var(--ns-shade), #000) 0 6px, color-mix(in srgb, var(--ns-temp) var(--ns-shade-2), #000) 6px 12px);
 }
-.nimble-sheet .ns-meter-nums {
+:is(.nimble-sheet, .ev-vitals) .ns-meter-nums {
 	position: relative; display: flex; align-items: center; justify-content: center; gap: 0.2rem; height: 100%;
 	font-variant-numeric: tabular-nums; color: #fff; line-height: normal; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
-.nimble-sheet .ns-meter-cur { font-size: 1.15rem; font-weight: 800; }
-.nimble-sheet .ns-meter-slash { color: rgba(255, 255, 255, 0.85); }
-.nimble-sheet .ns-meter-max { font-size: 0.9rem; font-weight: 700; color: #fff; }
-.nimble-sheet .ns-meter-delta { margin-left: 0.35rem; padding: 0 0.4rem; border-radius: 999px; font-size: 0.78rem; font-weight: 800; line-height: 1.35; color: #1d1405; text-shadow: none; animation: ns-delta-pop 0.18s ease-out; }
-.nimble-sheet .ns-meter-delta.is-loss { background: var(--ns-loss); }
-.nimble-sheet .ns-meter-delta.is-gain { background: var(--ns-gain); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-cur { font-size: 1.15rem; font-weight: 800; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-slash { color: rgba(255, 255, 255, 0.85); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-max { font-size: 0.9rem; font-weight: 700; color: #fff; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-delta { margin-left: 0.35rem; padding: 0 0.4rem; border-radius: 999px; font-size: 0.78rem; font-weight: 800; line-height: 1.35; color: #1d1405; text-shadow: none; animation: ns-delta-pop 0.18s ease-out; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-delta.is-loss { background: var(--ns-loss); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-delta.is-gain { background: var(--ns-gain); }
 @keyframes ns-delta-pop { from { transform: scale(0.7); } to { transform: scale(1); } }
-.nimble-sheet .ns-meter-plus { margin-left: 0.25rem; font-size: 0.8rem; font-weight: 800; color: #fff; }
-.nimble-sheet .ns-meter.is-low .ns-meter-label, .nimble-sheet.is-dying .ns-meter.is-hp .ns-meter-label { color: var(--ns-wound); }
+:is(.nimble-sheet, .ev-vitals) .ns-meter-plus { margin-left: 0.25rem; font-size: 0.8rem; font-weight: 800; color: #fff; }
+:is(.nimble-sheet, .ev-vitals) .ns-meter.is-low .ns-meter-label, .nimble-sheet.is-dying .ns-meter.is-hp .ns-meter-label { color: var(--ns-wound); }
 /* Narrow (the Character panel, phones): the bar itself opens the calculator, so its button goes. */
 @container nimble-sheet (max-width: 400px) {
 	.nimble-sheet .ns-meter-calc.ns-step { display: none; }
 	.nimble-sheet .ns-meters { padding: 0.75rem; }
 }
 @media (pointer: coarse) {
-	.nimble-sheet button.ns-meter-bar { height: 2.5rem; }
-	.nimble-sheet .ns-meter-step.ns-step, .nimble-sheet .ns-meter-calc.ns-step { width: 2.5rem; height: 2.5rem; }
+	:is(.nimble-sheet, .ev-vitals) button.ns-meter-bar { height: 2.5rem; }
+	:is(.nimble-sheet, .ev-vitals) .ns-meter-step.ns-step, :is(.nimble-sheet, .ev-vitals) .ns-meter-calc.ns-step { width: 2.5rem; height: 2.5rem; }
 }
 
 /* Armor, Initiative, Speed: tiles in the hero card */
@@ -2926,16 +2926,16 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet button.ns-chip-label:hover { color: var(--text-accent); }
 .nimble-sheet .ns-chip-value { display: inline-flex; align-items: center; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .nimble-sheet .ns-chip.is-edit input { width: 4rem; height: 1.6rem; padding: 0 0.3rem; }
-.nimble-sheet .ns-step {
+:is(.nimble-sheet, .ev-vitals) .ns-step {
 	width: 1.65rem; height: 1.65rem; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
 	padding: 0; border-radius: 50%; line-height: 0; color: var(--text-muted);
 }
-.nimble-sheet .ns-step svg { width: 13px; height: 13px; stroke-width: 2.6; display: block; }
+:is(.nimble-sheet, .ev-vitals) .ns-step svg { width: 13px; height: 13px; stroke-width: 2.6; display: block; }
 .nimble-sheet .ns-cond-x { display: inline-flex; align-items: center; justify-content: center; padding: 0; line-height: 0; }
 .nimble-sheet .ns-cond-x svg { width: 12px; height: 12px; stroke-width: 2.4; display: block; }
 .nimble-sheet .ns-cond-name { display: inline-flex; align-items: center; line-height: 1; }
-.nimble-sheet button.ns-step { background: var(--background-modifier-hover); }
-.nimble-sheet button.ns-step:hover:not(:disabled) { background: var(--ns-accent); color: var(--text-on-accent); }
+:is(.nimble-sheet, .ev-vitals) button.ns-step { background: var(--background-modifier-hover); }
+:is(.nimble-sheet, .ev-vitals) button.ns-step:hover:not(:disabled) { background: var(--ns-accent); color: var(--text-on-accent); }
 .nimble-sheet .ns-res-pips { display: inline-flex; gap: 0.2rem; }
 .nimble-sheet .ns-res-pip { width: 0.62rem; height: 0.62rem; border-radius: 50%; border: 2px solid var(--ns-line); }
 .nimble-sheet .ns-res-pip.is-on { background: var(--ns-gold); border-color: var(--ns-gold); }
@@ -3800,13 +3800,13 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .ev-pill):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .ev-pill):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .ev-pill):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* The standard pill, core/pill.ts: [icon] [text] on one centre line, one gap, the icon at the text's size.
@@ -5290,66 +5290,364 @@ button.dnd5e-npc-fight { height: auto; padding: 0.2rem 0.6rem; font-size: 0.8rem
 .dnd5e-cmp-badge { min-width: 2.1rem; height: 1.6rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: var(--background-secondary); font-size: 0.75rem; font-weight: 700; }
 .dnd5e-card .dnd5e-source { margin-top: 0.6rem; font-size: 0.75em; color: var(--text-faint); text-align: right; }
 
-/* 5e character sheets (src/systems/dnd5e/sheet.ts) */
-.dnd5e-sheet { border: 1px solid var(--background-modifier-border); border-radius: var(--nimble-radius); background: var(--background-secondary); padding: 0.8rem 1rem; margin: 1rem 0; line-height: 1.4; }
-.dnd5e-sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; flex-wrap: wrap; }
-.dnd5e-sheet-name { font-size: 1.35rem; font-weight: 700; }
-.dnd5e-sheet-sub { color: var(--text-muted); }
-.dnd5e-sheet-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.dnd5e-sheet-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: 0.4rem; margin: 0.7rem 0 0.4rem; }
-.dnd5e-sheet-box { border: 1px solid var(--background-modifier-border); border-radius: 6px; padding: 0.3rem; text-align: center; background: var(--background-primary); }
-.dnd5e-sheet-box-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
-.dnd5e-sheet-box-value { font-size: 1.1rem; font-weight: 700; }
-.dnd5e-sheet-toggle { font-size: 0.85rem; padding: 0 0.5rem; height: auto; }
-.dnd5e-sheet-toggle.is-on { background: var(--interactive-accent); color: var(--text-on-accent); }
-.dnd5e-sheet-hp { display: flex; align-items: center; gap: 0.5rem; margin: 0.4rem 0; flex-wrap: wrap; }
-.dnd5e-sheet-hp .dnd5e-hp-bar { height: 8px; min-width: 6rem; }
-.dnd5e-sheet-hp-text { font-weight: 700; font-variant-numeric: tabular-nums; }
-.dnd5e-sheet-roll { padding: 0 0.35rem; height: auto; min-height: 0; font-weight: 600; font-variant-numeric: tabular-nums; background: transparent; box-shadow: none; border: 1px dotted var(--background-modifier-border); }
-.dnd5e-sheet-roll:hover { border-color: var(--interactive-accent); color: var(--interactive-accent); }
-.dnd5e-sheet-abilities { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.4rem; margin: 0.6rem 0; }
-.dnd5e-sheet-ability { border: 1px solid var(--background-modifier-border); border-radius: 8px; padding: 0.35rem 0.2rem; text-align: center; background: var(--background-primary); display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
-.dnd5e-sheet-ability-name { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
-.dnd5e-sheet-ability .dnd5e-sheet-roll.is-mod { font-size: 1.2rem; border-style: solid; }
-.dnd5e-sheet-ability-score { font-size: 0.8rem; color: var(--text-muted); }
-.dnd5e-sheet-save { font-size: 0.75rem; color: var(--text-muted); }
-.dnd5e-sheet-save.is-prof { color: var(--text-normal); font-weight: 600; }
-.dnd5e-sheet-cols { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(0, 2fr); gap: 1rem; }
-.dnd5e-sheet-section { font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; color: var(--text-muted); margin: 0.6rem 0 0.3rem; border-bottom: 1px solid var(--background-modifier-border); }
-.dnd5e-sheet-skill { display: flex; align-items: center; gap: 0.35rem; margin: 0.1rem 0; }
-.dnd5e-skill-dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; border: 1px solid var(--text-muted); cursor: pointer; flex: 0 0 auto; }
-.dnd5e-skill-dot.is-prof { background: var(--text-normal); border-color: var(--text-normal); }
-.dnd5e-skill-dot.is-expert { background: var(--interactive-accent); border-color: var(--interactive-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 30%, transparent); }
-.dnd5e-skill-ab { color: var(--text-faint); font-size: 0.7rem; }
-.dnd5e-sheet-passive { margin-top: 0.4rem; color: var(--text-muted); font-size: 0.85rem; }
-.dnd5e-sheet-attack,
-.dnd5e-sheet-spell,
-.dnd5e-sheet-item { display: flex; align-items: center; gap: 0.4rem; margin: 0.15rem 0; }
-.dnd5e-sheet-attack-name,
-.dnd5e-sheet-spell-name,
-.dnd5e-sheet-item-name { flex: 1 1 auto; min-width: 0; }
-.dnd5e-sheet-spell-name.is-unresolved { color: var(--text-faint); }
-.dnd5e-sheet-tag { font-size: 0.65rem; border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 0 0.25rem; color: var(--text-muted); }
-.dnd5e-sheet-cast { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.3rem; }
-.dnd5e-sheet-slots { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.4rem; }
-.dnd5e-slot-group { display: inline-flex; align-items: center; gap: 0.2rem; }
-.dnd5e-slot-level { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-right: 0.1rem; }
-.dnd5e-sheet-item.is-equipped .dnd5e-sheet-item-name { font-weight: 600; }
-.dnd5e-sheet-add { margin-top: 0.3rem; font-size: 0.8rem; }
-.dnd5e-sheet-gold { margin-top: 0.3rem; color: var(--text-muted); font-size: 0.85rem; }
-.dnd5e-sheet-empty { color: var(--text-faint); font-size: 0.85rem; font-style: italic; }
-.dnd5e-sheet-feature summary { cursor: pointer; display: flex; justify-content: space-between; gap: 0.5rem; }
-.dnd5e-sheet-feature-name { font-weight: 600; }
-.dnd5e-sheet-feature-src { color: var(--text-faint); font-size: 0.75rem; }
-.dnd5e-sheet-feature-text { white-space: pre-wrap; color: var(--text-muted); font-size: 0.88rem; margin: 0.2rem 0 0.5rem; }
-.dnd5e-sheet .dnd5e-death { margin: 0.2rem 0 0.4rem; }
-.dnd5e-new-score-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.4rem; margin: 0.4rem 0 0.8rem; text-align: center; font-size: 0.8rem; }
-.dnd5e-new-score input { width: 100%; text-align: center; }
-@media (max-width: 640px) {
-	.dnd5e-sheet-abilities,
-	.dnd5e-new-score-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-	.dnd5e-sheet-cols { grid-template-columns: 1fr; }
+/* 5e character sheets (src/systems/dnd5e/sheet.ts)
+   The shared sheet language (cards on paper, a hero header, HP as core's meter, pips, pills) in 5e's
+   book: the game's tokens (--ev-accent rubric red, --ev-paper, --ev-ornament gold, the display serif).
+   Cards: hero, hit points, conditions, abilities (each with its save and skills), then tabs. */
+.dnd5e-sheet {
+	--d5-card: var(--ev-paper);
+	--d5-edge: var(--ev-paper-edge);
+	--d5-tile: var(--background-primary);
+	--d5-gold: var(--ev-ornament);
+	--d5-gold-text: color-mix(in srgb, var(--ev-ornament) 70%, var(--text-normal));
+	--d5-red: var(--ev-accent);
+	--d5-wash: color-mix(in srgb, var(--ev-accent) 9%, transparent);
+	/* Core's meter (core/vitals/meter.ts) in 5e's colours. */
+	--ns-hp: var(--ev-accent);
+	--ns-temp: #2b8a7e;
+	--ns-wound: var(--ev-accent-text);
+	--ns-accent: var(--ev-accent);
+	container-type: inline-size;
+	container-name: dnd5e-sheet;
+	/* The sheet redraws on every change; the browser mustn't pick its parts as scroll anchors and jump. */
+	overflow-anchor: none;
+	margin: 0.25rem 0 1.25rem;
+	font-family: var(--font-interface);
+	color: var(--text-normal);
+	line-height: 1.3;
+	-webkit-user-select: none;
+	user-select: none;
 }
+.theme-dark .dnd5e-sheet {
+	--d5-tile: color-mix(in srgb, var(--ev-paper) 70%, #000);
+	--ns-hp: #e2604f;
+	--d5-gold-text: color-mix(in srgb, var(--ev-ornament) 85%, #fff);
+	--ns-temp: #3cb5a6;
+	--d5-wash: color-mix(in srgb, var(--ev-accent) 14%, transparent);
+}
+/* Every sheet button starts bare (beating Obsidian's button:not(.clickable-icon)); each part styles its own. */
+.dnd5e-sheet :where(button):not(.mod-cta, .ev-pip) { background: none; box-shadow: none; border: none; padding: 0; height: auto; font: inherit; color: inherit; cursor: pointer; }
+.dnd5e-sheet :where(button):not(.mod-cta, .ev-pip):focus-visible { outline: 2px solid var(--d5-red); outline-offset: 2px; }
+.dnd5e-sheet button:disabled { cursor: default; opacity: 0.4; }
+.dnd5e-sheet .dnd5e-card { position: relative; margin-bottom: 0.75rem; border: 1px solid var(--d5-edge); border-radius: 14px; background: var(--d5-card); }
+/* Rules words stay quiet in a sheet full of them: a faint line, the full one on hover. */
+.dnd5e-sheet .ev-term { border-bottom-color: color-mix(in srgb, currentColor 16%, transparent); }
+.dnd5e-sheet .dnd5e-section-title.ev-term { border-bottom-color: transparent; }
+.dnd5e-sheet .ev-term:hover { border-bottom-color: currentColor; }
+.dnd5e-sheet .dnd5e-ability-short { display: none; }
+.dnd5e-sheet .dnd5e-card-link { cursor: pointer; border-bottom: 1px dotted transparent; }
+.dnd5e-sheet .dnd5e-card-link:hover, .dnd5e-sheet .dnd5e-card-link:focus-visible { border-bottom-color: currentColor; outline: none; }
+
+/* Hero: portrait, name, who they are, rests; then the numbers under a gold rule. */
+.dnd5e-sheet .dnd5e-hero {
+	padding: 1rem 1.1rem 0.95rem; overflow: hidden;
+	background: radial-gradient(130% 160% at 0% 0%, var(--d5-wash), transparent 60%), var(--d5-card);
+}
+.dnd5e-sheet .dnd5e-hero-top { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
+.dnd5e-sheet .dnd5e-portrait {
+	flex: 0 0 auto; width: 4.6rem; height: 4.6rem; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;
+	background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--d5-red) 70%, #f3d9b0), color-mix(in srgb, var(--d5-red) 75%, #000));
+	box-shadow: 0 0 0 3px var(--d5-card), 0 0 0 4.5px var(--d5-gold), 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+.dnd5e-sheet .dnd5e-portrait img { width: 100%; height: 100%; object-fit: cover; }
+.dnd5e-sheet .dnd5e-portrait-initial { font-family: var(--ev-display-font); font-weight: var(--ev-display-weight); font-size: 2.1rem; line-height: normal; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35); }
+.dnd5e-sheet .dnd5e-hero-titles { flex: 1 1 9rem; min-width: 0; }
+.dnd5e-sheet .dnd5e-sheet-name {
+	font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight);
+	font-size: 2rem; line-height: 1.1; letter-spacing: 0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dnd5e-sheet .dnd5e-sheet-sub { margin-top: 0.2rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ev-accent-text); }
+.dnd5e-sheet .dnd5e-hero-meta { margin-top: 0.15rem; font-family: var(--ev-display-font); font-style: italic; font-size: 0.92rem; color: var(--text-muted); }
+.dnd5e-sheet .dnd5e-hero-tools { display: flex; align-items: center; gap: 0.35rem; align-self: flex-start; margin-left: auto; }
+.dnd5e-sheet .dnd5e-sheet-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.35rem; }
+.dnd5e-sheet button.dnd5e-rest-btn {
+	padding: 0.3rem 0.75rem; border: 1px solid var(--d5-edge); border-radius: 999px; background: var(--d5-tile);
+	font-size: 0.8rem; font-weight: 600; color: var(--text-normal); transition: border-color 0.12s, color 0.12s;
+}
+.dnd5e-sheet button.dnd5e-rest-btn .ev-pill-icon { color: var(--d5-gold-text); }
+.dnd5e-sheet button.dnd5e-rest-btn:hover { border-color: var(--d5-red); color: var(--ev-accent-text); }
+.dnd5e-sheet button.dnd5e-props-btn { width: 1.9rem; height: 1.9rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--text-muted); }
+.dnd5e-sheet button.dnd5e-props-btn:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.dnd5e-sheet button.dnd5e-props-btn.is-active { color: var(--ev-accent-text); }
+.dnd5e-sheet .dnd5e-props-btn svg { width: 16px; height: 16px; }
+
+.dnd5e-sheet .dnd5e-stats {
+	position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem;
+	margin-top: 1rem; padding-top: 1rem; border-top: 1px solid color-mix(in srgb, var(--d5-gold) 55%, transparent);
+}
+/* The rule's centre ornament. */
+.dnd5e-sheet .dnd5e-stats::before { content: ""; position: absolute; top: -4.5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); background: var(--d5-gold); box-shadow: 0 0 0 3px var(--d5-card); }
+.dnd5e-sheet .dnd5e-sheet-box {
+	position: relative; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem;
+	padding: 0.55rem 0.3rem; border: 1px solid var(--d5-edge); border-radius: 12px; background: var(--d5-tile);
+}
+.dnd5e-sheet .dnd5e-sheet-box-label { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); white-space: nowrap; }
+.dnd5e-sheet .dnd5e-sheet-box-value { display: flex; align-items: baseline; justify-content: center; font-size: 1.6rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.dnd5e-sheet .dnd5e-unit { margin-left: 0.15rem; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
+.dnd5e-sheet .dnd5e-box-note { max-width: 100%; font-size: 0.62rem; color: var(--text-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Armor Class sits on a shield. */
+.dnd5e-sheet .dnd5e-ac-shield { position: relative; width: 2.7rem; height: 3.05rem; display: flex; align-items: center; justify-content: center; }
+.dnd5e-sheet .dnd5e-ac-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.dnd5e-sheet .dnd5e-ac-svg path { fill: var(--d5-wash); stroke: var(--d5-gold); stroke-width: 2; stroke-linejoin: round; }
+.dnd5e-sheet .dnd5e-ac-num { position: relative; margin-top: -0.15rem; font-size: 1.4rem; }
+.dnd5e-sheet .dnd5e-sheet-box.is-insp.is-on { border-color: color-mix(in srgb, var(--d5-gold) 70%, transparent); background: color-mix(in srgb, var(--d5-gold) 14%, var(--d5-tile)); }
+.dnd5e-sheet button.dnd5e-sheet-toggle { width: 2.3rem; height: 2.3rem; align-items: center; border-radius: 50%; color: var(--text-faint); border: 1.5px dashed color-mix(in srgb, var(--text-faint) 60%, transparent); }
+.dnd5e-sheet button.dnd5e-sheet-toggle:hover { color: var(--d5-gold-text); border-color: var(--d5-gold); }
+.dnd5e-sheet button.dnd5e-sheet-toggle.is-on { color: #fff; border: 1.5px solid var(--d5-gold); background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--d5-gold) 70%, #fff), var(--d5-gold)); }
+.dnd5e-sheet .dnd5e-insp-icon { display: flex; }
+.dnd5e-sheet .dnd5e-insp-icon svg { width: 17px; height: 17px; }
+
+/* Rolls: a number you click. Big ones (initiative, spell attack) read as numbers; small ones as pills. */
+.dnd5e-sheet button.dnd5e-sheet-roll { font-variant-numeric: tabular-nums; font-weight: 800; border-radius: 8px; transition: background 0.12s, color 0.12s, transform 0.12s; }
+.dnd5e-sheet button.dnd5e-sheet-roll:hover { color: var(--ev-accent-text); background: var(--d5-wash); }
+.dnd5e-sheet button.dnd5e-sheet-roll:active { transform: scale(0.95); }
+.dnd5e-sheet button.dnd5e-sheet-roll.is-big { padding: 0 0.4rem; }
+.dnd5e-sheet button.dnd5e-sheet-roll.is-bonus {
+	min-width: 2.5rem; padding: 0.12rem 0.45rem; justify-content: center; border-radius: 999px; font-size: 0.82rem; font-weight: 700;
+	background: color-mix(in srgb, var(--text-normal) 6%, transparent);
+}
+.dnd5e-sheet button.dnd5e-sheet-roll.is-bonus:hover { background: var(--d5-red); color: var(--ev-on-accent); }
+
+/* Hit points: core's meter, then hit dice (and death saves at 0). */
+.dnd5e-sheet .dnd5e-vitals { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.7rem; padding: 0.85rem 0.95rem 0.75rem; }
+.dnd5e-sheet .dnd5e-vitals-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.4rem; padding-top: 0.65rem; border-top: 1px dashed var(--d5-edge); }
+.dnd5e-sheet :is(.dnd5e-hit-dice, .dnd5e-sheet-death) { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; }
+.dnd5e-sheet :is(.dnd5e-foot-label, .dnd5e-row-label) { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.dnd5e-sheet .ns-die.dnd5e-hit-die { width: 1.3rem; height: 1.3rem; color: var(--d5-gold); }
+.dnd5e-sheet .ev-pips.is-hit-dice { --pip: var(--d5-gold); }
+.dnd5e-sheet .dnd5e-foot-count { font-size: 0.85rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.dnd5e-sheet .dnd5e-sheet-death .ev-pips + .ev-pips { margin-left: 0.4rem; }
+.dnd5e-sheet button.dnd5e-sheet-death-roll { padding: 0.25rem 0.7rem; border-radius: 999px; background: var(--d5-red); color: var(--ev-on-accent); font-size: 0.8rem; font-weight: 700; }
+.dnd5e-sheet button.dnd5e-sheet-death-roll:hover { background: var(--ev-accent-hover); }
+.dnd5e-sheet.is-down .dnd5e-vitals { border-color: color-mix(in srgb, var(--d5-red) 55%, var(--d5-edge)); }
+
+/* Conditions: a strip of chips (each opens its rule), Exhaustion as pips. */
+.dnd5e-sheet .dnd5e-conditions-row {
+	display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.75rem; margin-bottom: 0.75rem; padding: 0.55rem 0.95rem;
+	border: 1px solid var(--d5-edge); border-radius: 14px; background: var(--d5-card);
+}
+.dnd5e-sheet .dnd5e-condition-list { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+.dnd5e-sheet .dnd5e-none { font-size: 0.82rem; color: var(--text-faint); }
+.dnd5e-sheet .dnd5e-sheet-condition {
+	display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.3rem 0.15rem 0.65rem; border-radius: 999px;
+	background: var(--d5-wash); color: var(--ev-accent-text); font-size: 0.8rem; font-weight: 650; line-height: normal;
+}
+.dnd5e-sheet .dnd5e-sheet-condition.is-exhaustion { padding-right: 0.55rem; gap: 0.45rem; }
+.dnd5e-sheet .ev-pips.is-exhaustion { --pip: var(--d5-red); }
+.dnd5e-sheet button.dnd5e-sheet-condition-x { width: 1.2rem; height: 1.2rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: inherit; opacity: 0.7; }
+.dnd5e-sheet button.dnd5e-sheet-condition-x:hover { opacity: 1; background: color-mix(in srgb, var(--d5-red) 18%, transparent); }
+.dnd5e-sheet .dnd5e-sheet-condition-x svg { width: 12px; height: 12px; stroke-width: 2.4; display: block; }
+.dnd5e-sheet button.dnd5e-sheet-condition-add { padding: 0.15rem 0.6rem; border: 1px dashed var(--d5-edge); border-radius: 999px; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+.dnd5e-sheet button.dnd5e-sheet-condition-add:hover { border-color: var(--d5-red); color: var(--ev-accent-text); }
+
+/* Abilities: six cards, each modifier (rolls a check), score, save and skills. */
+.dnd5e-sheet .dnd5e-abilities { padding: 0.75rem; }
+.dnd5e-sheet .dnd5e-ability-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
+.dnd5e-sheet .dnd5e-sheet-ability { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--d5-edge); border-radius: 12px; background: var(--d5-tile); overflow: hidden; }
+.dnd5e-sheet .dnd5e-ability-head {
+	display: flex; align-items: center; gap: 0.65rem; padding: 0.55rem 0.6rem;
+	border-bottom: 1px solid color-mix(in srgb, var(--d5-gold) 45%, transparent); background: color-mix(in srgb, var(--d5-gold) 7%, transparent);
+}
+.dnd5e-sheet button.dnd5e-sheet-roll.is-mod {
+	flex: 0 0 auto; width: 3.1rem; height: 3.1rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 11px;
+	border: 1.5px solid color-mix(in srgb, var(--d5-gold) 75%, transparent); background: var(--d5-card); font-size: 1.5rem; letter-spacing: -0.02em;
+}
+.dnd5e-sheet button.dnd5e-sheet-roll.is-mod:hover { border-color: var(--d5-red); background: var(--d5-wash); }
+.dnd5e-sheet .dnd5e-ability-names { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+.dnd5e-sheet .dnd5e-sheet-ability-name {
+	max-width: 100%; font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight);
+	font-size: 1.05rem; letter-spacing: 0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dnd5e-sheet .dnd5e-sheet-ability-score {
+	padding: 0 0.5rem; border: 1px solid var(--d5-edge); border-radius: 999px; background: var(--d5-card);
+	font-size: 0.75rem; font-weight: 700; line-height: 1.5; font-variant-numeric: tabular-nums; color: var(--text-muted);
+}
+.dnd5e-sheet .dnd5e-ability-rows { display: flex; flex-direction: column; padding: 0.3rem 0.35rem 0.4rem; }
+.dnd5e-sheet :is(.dnd5e-sheet-save, .dnd5e-sheet-skill) {
+	display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.4rem; min-height: 1.75rem; padding: 0.1rem 0.25rem; border-radius: 7px;
+}
+.dnd5e-sheet :is(.dnd5e-sheet-save, .dnd5e-sheet-skill):hover { background: color-mix(in srgb, var(--text-normal) 4%, transparent); }
+.dnd5e-sheet .dnd5e-sheet-save { margin-bottom: 0.15rem; padding-bottom: 0.2rem; border-bottom: 1px solid color-mix(in srgb, var(--d5-edge) 70%, transparent); border-radius: 7px 7px 0 0; }
+.dnd5e-sheet .dnd5e-sheet-save .dnd5e-row-name { font-weight: 650; }
+.dnd5e-sheet .dnd5e-row-name { min-width: 0; justify-self: start; max-width: 100%; font-size: 0.84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dnd5e-sheet .dnd5e-sheet-skill:not(.is-prof) .dnd5e-row-name { color: var(--text-muted); }
+.dnd5e-sheet .dnd5e-sheet-skill.is-prof .dnd5e-row-name { font-weight: 600; }
+/* Proficiency: an empty ring, a filled one, or (expertise) filled with a second ring. The button is bigger than the mark. */
+.dnd5e-sheet .dnd5e-prof-mark { position: relative; width: 1.2rem; height: 1.2rem; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.dnd5e-sheet .dnd5e-prof-mark::before { content: ""; width: 0.62rem; height: 0.62rem; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--text-faint) 80%, transparent); box-sizing: border-box; transition: background 0.12s, border-color 0.12s; }
+.dnd5e-sheet .dnd5e-prof-mark.is-prof::before { background: var(--d5-red); border-color: var(--d5-red); }
+.dnd5e-sheet .dnd5e-prof-mark.is-expert::before { background: var(--d5-red); border-color: var(--d5-red); box-shadow: 0 0 0 2px var(--d5-tile), 0 0 0 3.5px var(--d5-red); }
+.dnd5e-sheet button.dnd5e-prof-mark { border-radius: 50%; }
+.dnd5e-sheet button.dnd5e-prof-mark:hover::before { border-color: var(--d5-red); }
+.dnd5e-sheet .dnd5e-passives { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.6rem; }
+.dnd5e-sheet .dnd5e-sheet-passive { min-width: 0; display: flex; align-items: center; gap: 0.55rem; padding: 0.35rem 0.6rem; border: 1px dashed var(--d5-edge); border-radius: 10px; }
+.dnd5e-sheet .dnd5e-passive-value { min-width: 1.6rem; font-size: 1.15rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
+.dnd5e-sheet .dnd5e-passive-name { min-width: 0; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Tabs (sticky while the note scrolls), then each tab's sections under a small-caps heading and a gold rule. */
+.dnd5e-sheet .dnd5e-tabs { position: sticky; top: 0; z-index: 2; display: flex; margin-top: 1rem; background: var(--background-primary); border-bottom: 1px solid var(--d5-edge); }
+.dnd5e-sheet button.dnd5e-tab {
+	flex: 1 1 0; min-width: 0; padding: 0.5rem 0.2rem 0.45rem; margin-bottom: -1px; border-bottom: 2.5px solid transparent; border-radius: 0;
+	font-size: 0.86rem; font-weight: 700; color: var(--text-muted);
+}
+.dnd5e-sheet button.dnd5e-tab:hover { color: var(--text-normal); }
+.dnd5e-sheet button.dnd5e-tab.is-active { color: var(--ev-accent-text); border-bottom-color: var(--d5-red); }
+.dnd5e-sheet .dnd5e-tab-count { font-size: 0.66rem; font-weight: 700; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.dnd5e-sheet .dnd5e-panel { min-height: 6rem; padding-top: 0.1rem; }
+.dnd5e-sheet .dnd5e-sheet-section { display: flex; align-items: center; gap: 0.6rem; margin: 1rem 0 0.5rem; }
+.dnd5e-sheet .dnd5e-section-title {
+	font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight);
+	font-size: 1.1rem; letter-spacing: 0.03em; color: var(--ev-accent-text); white-space: nowrap;
+}
+.dnd5e-sheet .dnd5e-section-rule { flex: 1 1 auto; min-width: 1rem; height: 1px; background: linear-gradient(90deg, var(--d5-gold), transparent); }
+.dnd5e-sheet .dnd5e-section-end { display: inline-flex; align-items: center; gap: 0.4rem; }
+.dnd5e-sheet .dnd5e-sheet-empty { padding: 0.2rem 0.1rem; font-size: 0.85rem; font-style: italic; color: var(--text-faint); }
+.dnd5e-sheet .dnd5e-row-meta { margin-top: 0.05rem; font-size: 0.74rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dnd5e-sheet :is(.dnd5e-sheet-attack, .dnd5e-sheet-spell, .dnd5e-sheet-item, .dnd5e-sheet-feature) { border: 1px solid var(--d5-edge); border-radius: 10px; background: var(--d5-card); }
+.dnd5e-sheet button.dnd5e-sheet-add { margin-top: 0.75rem; padding: 0.3rem 0.8rem; border: 1px dashed var(--d5-edge); border-radius: 999px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+.dnd5e-sheet button.dnd5e-sheet-add:hover { border-color: var(--d5-red); color: var(--ev-accent-text); }
+
+/* Actions: attacks with to-hit and damage pills, then what anyone can do on a turn. */
+.dnd5e-sheet .dnd5e-attacks { display: grid; gap: 0.4rem; }
+.dnd5e-sheet .dnd5e-sheet-attack { display: grid; grid-template-columns: minmax(0, 1fr) 3.6rem minmax(0, 10.5rem); align-items: center; gap: 0.6rem; padding: 0.5rem 0.6rem 0.5rem 0.8rem; }
+.dnd5e-sheet .dnd5e-attack-who { min-width: 0; }
+.dnd5e-sheet .dnd5e-sheet-attack-name { font-weight: 700; }
+.dnd5e-sheet button.dnd5e-sheet-roll.is-hit { justify-self: center; min-width: 3rem; padding: 0.25rem 0.6rem; justify-content: center; border-radius: 999px; background: var(--d5-red); color: var(--ev-on-accent); }
+.dnd5e-sheet button.dnd5e-sheet-roll.is-hit:hover { background: var(--ev-accent-hover); color: var(--ev-on-accent); }
+.dnd5e-sheet button.dnd5e-sheet-roll.is-damage { display: inline-block; justify-self: start; max-width: 100%; padding: 0.25rem 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid var(--d5-edge); border-radius: 999px; background: var(--d5-tile); font-weight: 700; }
+.dnd5e-sheet button.dnd5e-sheet-roll.is-damage:hover { border-color: var(--d5-red); }
+.dnd5e-sheet .dnd5e-dmg-type { font-weight: 500; color: var(--text-muted); }
+.dnd5e-sheet .dnd5e-turn-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.dnd5e-sheet .dnd5e-turn-action { padding: 0.2rem 0.7rem; border: 1px solid var(--d5-edge); border-radius: 999px; background: var(--d5-card); font-size: 0.8rem; font-weight: 600; line-height: normal; }
+.dnd5e-sheet .dnd5e-turn-action:hover { border-color: var(--d5-gold); }
+
+/* Spells: casting ability, save DC and attack; then each level with its slots as pips. */
+.dnd5e-sheet .dnd5e-sheet-cast { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.75rem; }
+.dnd5e-sheet .dnd5e-cast-fact { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.1rem; padding: 0.5rem 0.3rem; border: 1px solid var(--d5-edge); border-radius: 12px; background: var(--d5-card); }
+.dnd5e-sheet .dnd5e-cast-value { max-width: 100%; display: flex; justify-content: center; font-size: 1.25rem; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dnd5e-sheet .dnd5e-cast-label { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.dnd5e-sheet .dnd5e-slot-group { display: inline-flex; align-items: center; gap: 0.45rem; }
+.dnd5e-sheet .ev-pips.is-slot { --pip: var(--d5-red); }
+.dnd5e-sheet .dnd5e-slot-count { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.dnd5e-sheet .dnd5e-spell-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem 0.5rem; }
+.dnd5e-sheet .dnd5e-sheet-spell { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.35rem; padding: 0.4rem 0.4rem 0.4rem 0.75rem; }
+.dnd5e-sheet .dnd5e-spell-who { min-width: 0; }
+.dnd5e-sheet .dnd5e-sheet-spell-name { font-weight: 650; }
+.dnd5e-sheet .dnd5e-sheet-spell-name.is-unresolved { font-style: italic; color: var(--text-faint); }
+.dnd5e-sheet .dnd5e-spell-tags { display: inline-flex; gap: 0.2rem; }
+.dnd5e-sheet .dnd5e-sheet-tag {
+	min-width: 1.25rem; height: 1.25rem; display: inline-flex; align-items: center; justify-content: center; border: 1px solid color-mix(in srgb, var(--d5-gold) 70%, transparent);
+	border-radius: 50%; font-size: 0.62rem; font-weight: 800; line-height: normal; color: var(--d5-gold-text);
+}
+.dnd5e-sheet button.dnd5e-sheet-x { width: 1.6rem; height: 1.6rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--text-faint); opacity: 0; transition: opacity 0.12s; }
+.dnd5e-sheet .dnd5e-sheet-x svg { width: 14px; height: 14px; }
+.dnd5e-sheet .dnd5e-sheet-spell:hover button.dnd5e-sheet-x, .dnd5e-sheet button.dnd5e-sheet-x:focus-visible { opacity: 1; }
+.dnd5e-sheet button.dnd5e-sheet-x:hover { color: var(--text-error); background: var(--background-modifier-hover); }
+
+/* Features, grouped by where they come from; each opens to its text. */
+.dnd5e-sheet .dnd5e-feature-list { display: grid; gap: 0.35rem; }
+.dnd5e-sheet .dnd5e-sheet-feature summary { display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.75rem; list-style: none; cursor: pointer; }
+.dnd5e-sheet .dnd5e-sheet-feature summary::-webkit-details-marker { display: none; }
+.dnd5e-sheet .dnd5e-sheet-feature summary::before {
+	content: ""; flex: 0 0 auto; width: 0.38rem; height: 0.38rem; margin: 0 0.1rem; border-right: 2px solid var(--d5-gold); border-bottom: 2px solid var(--d5-gold);
+	transform: rotate(-45deg); transition: transform 0.15s;
+}
+.dnd5e-sheet .dnd5e-sheet-feature[open] summary::before { transform: rotate(45deg); }
+.dnd5e-sheet .dnd5e-sheet-feature-name { flex: 1 1 auto; min-width: 0; font-weight: 650; }
+.dnd5e-sheet .dnd5e-sheet-feature-src { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); white-space: nowrap; }
+.dnd5e-sheet .dnd5e-sheet-feature-text { padding: 0 0.9rem 0.75rem 1.65rem; font-size: 0.88rem; line-height: 1.5; color: var(--text-muted); -webkit-user-select: text; user-select: text; }
+.dnd5e-sheet .dnd5e-feature-para { white-space: pre-line; }
+.dnd5e-sheet .dnd5e-feature-para + .dnd5e-feature-para { margin-top: 0.45rem; }
+
+/* Inventory: what's equipped stands out; quantity as a chip; gold by the heading. */
+.dnd5e-sheet .dnd5e-item-list { display: grid; gap: 0.35rem; }
+.dnd5e-sheet .dnd5e-sheet-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 0.55rem; padding: 0.4rem 0.4rem 0.4rem 0.5rem; }
+.dnd5e-sheet .dnd5e-sheet-item.is-equipped { border-color: color-mix(in srgb, var(--d5-gold) 65%, var(--d5-edge)); }
+.dnd5e-sheet button.dnd5e-equip { width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--d5-edge); border-radius: 8px; background: var(--d5-tile); color: var(--text-faint); }
+.dnd5e-sheet button.dnd5e-equip:hover { border-color: var(--d5-red); color: var(--ev-accent-text); }
+.dnd5e-sheet button.dnd5e-equip.is-on { border-color: var(--d5-red); background: var(--d5-red); color: var(--ev-on-accent); }
+.dnd5e-sheet .dnd5e-equip svg { width: 15px; height: 15px; }
+.dnd5e-sheet .dnd5e-item-who { min-width: 0; }
+.dnd5e-sheet .dnd5e-sheet-item-name { font-weight: 600; }
+.dnd5e-sheet .dnd5e-equipped-tag { font-weight: 700; color: var(--ev-accent-text); }
+.dnd5e-sheet .dnd5e-qty { padding: 0.05rem 0.5rem; border-radius: 999px; background: color-mix(in srgb, var(--text-normal) 7%, transparent); font-size: 0.8rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.dnd5e-sheet button.dnd5e-item-more { width: 1.8rem; height: 1.8rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--text-muted); }
+.dnd5e-sheet button.dnd5e-item-more:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.dnd5e-sheet .dnd5e-item-more svg { width: 16px; height: 16px; }
+.dnd5e-sheet .dnd5e-sheet-gold { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; font-weight: 800; line-height: normal; color: var(--d5-gold-text); font-variant-numeric: tabular-nums; }
+.dnd5e-sheet .dnd5e-gold-icon { display: inline-flex; }
+.dnd5e-sheet .dnd5e-gold-icon svg { width: 14px; height: 14px; display: block; }
+
+/* Narrower sheets: a sidebar, a split pane, a phone. */
+@container dnd5e-sheet (max-width: 640px) {
+	.dnd5e-sheet .dnd5e-ability-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.dnd5e-sheet .dnd5e-spell-list { grid-template-columns: minmax(0, 1fr); }
+}
+@container dnd5e-sheet (max-width: 520px) {
+	.dnd5e-sheet .dnd5e-hero { padding: 0.85rem 0.85rem 0.8rem; }
+	.dnd5e-sheet .dnd5e-hero-top { padding-right: 2rem; }
+	/* The eye in the corner; the rests a row under the name. */
+	.dnd5e-sheet .dnd5e-hero-tools { flex: 1 1 100%; margin-left: 0; }
+	.dnd5e-sheet .dnd5e-sheet-actions { justify-content: flex-start; }
+	.dnd5e-sheet button.dnd5e-props-btn { position: absolute; top: 0.5rem; right: 0.5rem; }
+	.dnd5e-sheet .dnd5e-portrait { width: 3.8rem; height: 3.8rem; }
+	.dnd5e-sheet .dnd5e-sheet-name { font-size: 1.6rem; }
+	.dnd5e-sheet .dnd5e-stats { gap: 0.35rem; }
+	.dnd5e-sheet .dnd5e-sheet-box { padding: 0.45rem 0.15rem; }
+	.dnd5e-sheet .dnd5e-sheet-box-value { font-size: 1.3rem; }
+	.dnd5e-sheet .dnd5e-box-long, .dnd5e-sheet .dnd5e-box-note { display: none; }
+	/* Tabs keep their words and lose the extras (the pill rule outranks plain selectors, hence :not(#ev-pill)). */
+	.dnd5e-sheet button.dnd5e-tab > :is(.dnd5e-tab-count, .ev-pill-icon):not(#ev-pill) { display: none; }
+	.dnd5e-sheet .dnd5e-ac-shield { width: 2.3rem; height: 2.6rem; }
+	.dnd5e-sheet .dnd5e-ac-num { font-size: 1.2rem; }
+	.dnd5e-sheet .dnd5e-passives { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; }
+	.dnd5e-sheet .dnd5e-sheet-attack { grid-template-columns: minmax(0, 1fr) auto; }
+	.dnd5e-sheet .dnd5e-sheet-attack button.is-damage { grid-column: 1 / -1; justify-self: start; }
+	.dnd5e-sheet .dnd5e-sheet-attack .dnd5e-attack-spacer { display: none; }
+	.dnd5e-sheet button.dnd5e-tab { font-size: 0.78rem; --ev-pill-gap: 0.3rem; }
+}
+/* Narrow: one ability per row, its modifier and short name down the left, the save and skills beside. */
+@container dnd5e-sheet (max-width: 460px) {
+	.dnd5e-sheet .dnd5e-abilities { padding: 0.5rem; }
+	.dnd5e-sheet .dnd5e-ability-grid { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
+	.dnd5e-sheet .dnd5e-sheet-ability { flex-direction: row; }
+	.dnd5e-sheet .dnd5e-ability-head {
+		flex: 0 0 4.6rem; flex-direction: column; justify-content: center; gap: 0.3rem; padding: 0.5rem 0.3rem;
+		border-bottom: none; border-right: 1px solid color-mix(in srgb, var(--d5-gold) 45%, transparent);
+	}
+	.dnd5e-sheet .dnd5e-ability-names { flex-direction: row; align-items: center; gap: 0.3rem; }
+	.dnd5e-sheet .dnd5e-ability-long { display: none; }
+	.dnd5e-sheet .dnd5e-ability-short { display: inline; }
+	.dnd5e-sheet .dnd5e-sheet-ability-name { font-size: 0.9rem; }
+	.dnd5e-sheet .dnd5e-sheet-ability-score { padding: 0 0.35rem; font-size: 0.68rem; }
+	.dnd5e-sheet .dnd5e-ability-rows { flex: 1 1 auto; min-width: 0; justify-content: center; padding: 0.25rem 0.3rem; }
+}
+@container dnd5e-sheet (max-width: 420px) {
+	.dnd5e-sheet button.dnd5e-sheet-roll.is-mod { width: 2.7rem; height: 2.7rem; font-size: 1.3rem; }
+	.dnd5e-sheet .ns-meter-calc.ns-step { display: none; }
+	.dnd5e-sheet .dnd5e-sheet-cast { gap: 0.35rem; }
+	.dnd5e-sheet .dnd5e-cast-value { font-size: 1.05rem; }
+}
+/* Touch: no hover, so what hover shows is always there; bigger marks. */
+@media (pointer: coarse) {
+	.dnd5e-sheet button.dnd5e-sheet-x { opacity: 1; }
+	.dnd5e-sheet .dnd5e-prof-mark { width: 1.6rem; height: 1.6rem; }
+	.dnd5e-sheet :is(.dnd5e-sheet-save, .dnd5e-sheet-skill) { min-height: 2.1rem; }
+}
+/* Obsidian's tablet theme pads every button: give the sheet's back their own. */
+body.is-tablet .dnd5e-sheet :is(.ns-step, .ns-meter-bar, .dnd5e-prof-mark, .dnd5e-equip, .dnd5e-sheet-condition-x, .dnd5e-sheet-x, .dnd5e-item-more, .dnd5e-props-btn, .dnd5e-sheet-toggle) { padding: 0; }
+body.is-tablet .dnd5e-sheet button.dnd5e-sheet-roll.is-bonus { padding: 0.12rem 0.45rem; }
+body.is-tablet .dnd5e-sheet :is(button.dnd5e-sheet-roll.is-hit, button.dnd5e-sheet-roll.is-damage) { padding: 0.25rem 0.65rem; }
+body.is-tablet .dnd5e-sheet button.dnd5e-sheet-roll.is-mod { padding: 0; }
+body.is-tablet .dnd5e-sheet button.dnd5e-sheet-roll.is-big { padding: 0 0.4rem; }
+body.is-tablet .dnd5e-sheet :is(button.dnd5e-rest-btn, button.dnd5e-sheet-add, button.dnd5e-sheet-death-roll) { padding: 0.3rem 0.75rem; }
+body.is-tablet .dnd5e-sheet button.dnd5e-sheet-condition-add { padding: 0.15rem 0.6rem; }
+body.is-tablet .dnd5e-sheet button.dnd5e-tab { padding: 0.5rem 0.2rem 0.45rem; }
+
+/* Notes whose page is a sheet (core/sheet-page.ts): the sheet is the title, and its button shows the properties. */
+.ev-sheet-page:not(.nimble-show-props) { --metadata-display-editing: none; --metadata-display-reading: none; }
+body .workspace-leaf-content .ev-sheet-page:not(.nimble-show-props) .metadata-container { display: none; }
+.ev-sheet-page .inline-title { display: none; }
 
 /* Content packs (src/core/content): Import content, and the list in settings */
 .nimble-import-content .nimble-import-lead { margin-top: 0; color: var(--text-muted); }

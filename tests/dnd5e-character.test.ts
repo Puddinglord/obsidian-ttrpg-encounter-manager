@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addItem, changeHp, cycleSkill, Frontmatter, levelUp, longRest, newCharacterFm, pbForLevel, readSheet5e, setItem, shortRest, useSlot } from '../src/systems/dnd5e/character';
+import { addItem, addListEntry, changeHp, cycleSkill, Frontmatter, levelUp, longRest, newCharacterFm, pbForLevel, readSheet5e, removeListEntry, setExhaustion, setHitDiceLeft, setItem, shortRest, useSlot } from '../src/systems/dnd5e/character';
 
 const wizard = (): Frontmatter => ({ class: 'Wizard', subclass: 'Evoker', level: 5, species: 'Elf', background: 'Sage', str: 8, dex: 14, con: 14, int: 16, wis: 12, cha: 10, skills: ['Arcana', 'History'], hp: 27, hp_max: 32, spells: ['Fireball', 'Shield', 'Not A Spell'] });
 
@@ -16,6 +16,7 @@ describe('a 5e character sheet, read from its note', () => {
 		expect(s.skills.find(k => k.name === 'Arcana')).toMatchObject({ proficient: true, bonus: 6 });
 		expect(s.skills.find(k => k.name === 'Stealth')).toMatchObject({ proficient: false, bonus: 2 });
 		expect(s.passivePerception).toBe(11);
+		expect([s.passiveInsight, s.passiveInvestigation]).toEqual([11, 13]);
 		expect(s.hitDie).toBe(6);
 	});
 	it('casts with the class ability: DC, attack and slots from the class table', () => {
@@ -94,6 +95,37 @@ describe('changes to a 5e character note', () => {
 		expect([fm.hit_dice_used, fm.hp]).toEqual([2, 32]);
 		levelUp(fm, readSheet5e(fm, '2024'));
 		expect([fm.level, fm.hp_max]).toEqual([6, 38]);
+	});
+	it('conditions and Exhaustion: listed, removed, and a long rest takes one level of Exhaustion', () => {
+		const fm = wizard();
+		expect(readSheet5e(fm, '2024')).toMatchObject({ conditions: [], exhaustion: 0 });
+		addListEntry(fm, 'conditions', 'Poisoned');
+		addListEntry(fm, 'conditions', 'poisoned');
+		addListEntry(fm, 'conditions', 'Prone');
+		setExhaustion(fm, 2);
+		expect(readSheet5e(fm, '2024')).toMatchObject({ conditions: ['Poisoned', 'Prone'], exhaustion: 2 });
+		// Hand-written "Exhaustion 2" in the list isn't a second copy of the track.
+		expect(readSheet5e({ ...fm, conditions: ['Exhaustion 2', 'Prone'] }, '2024').conditions).toEqual(['Prone']);
+		removeListEntry(fm, 'conditions', 'Poisoned');
+		removeListEntry(fm, 'conditions', 'Prone');
+		expect(fm.conditions).toBeUndefined();
+		setExhaustion(fm, 9);
+		expect(fm.exhaustion).toBe(6);
+		longRest(fm, readSheet5e(fm, '2024'));
+		expect(fm.exhaustion).toBe(5);
+		setExhaustion(fm, 1);
+		longRest(fm, readSheet5e(fm, '2024'));
+		expect(fm.exhaustion).toBeUndefined();
+	});
+	it('sets hit dice left from the pips', () => {
+		const fm = wizard();
+		setHitDiceLeft(fm, readSheet5e(fm, '2024'), 3);
+		expect(fm.hit_dice_used).toBe(2);
+		expect(readSheet5e(fm, '2024').hitDiceLeft).toBe(3);
+		setHitDiceLeft(fm, readSheet5e(fm, '2024'), 5);
+		expect(fm.hit_dice_used).toBeUndefined();
+		setHitDiceLeft(fm, readSheet5e(fm, '2024'), -2);
+		expect(fm.hit_dice_used).toBe(5);
 	});
 	it('adds and stacks inventory, and equips', () => {
 		const fm: Frontmatter = {};

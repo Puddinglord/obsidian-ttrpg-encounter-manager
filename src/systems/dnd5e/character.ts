@@ -22,6 +22,8 @@
 //   feats: [Alert]          (taken at level up; the background's comes on its own)
 //   inventory: [{ name: Quarterstaff, equipped: true }, { name: Potion of Healing, qty: 2 }]
 //   gold: 10
+//   conditions: [Poisoned]  (the rules' conditions on you now)
+//   exhaustion: 1           (levels of Exhaustion, 1–6)
 
 import { abilityMod } from './rules';
 import { Class5e, ClassFeature5e, compendium5e, Equipment5e, Item5e, Spell5e } from './compendium';
@@ -82,6 +84,13 @@ export interface Sheet5e {
 	inventory: SheetItem[];
 	features: SheetFeature[];
 	gold: number;
+	/** Conditions on the character now (Exhaustion is `exhaustion`, a level). */
+	conditions: string[];
+	/** Levels of Exhaustion, 0–6. */
+	exhaustion: number;
+	/** Passive Insight and Investigation, beside Perception. */
+	passiveInsight: number;
+	passiveInvestigation: number;
 }
 
 const num = (v: unknown, d: number): number => {
@@ -202,11 +211,14 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 	const hpMax = Math.max(1, num(fm.hp_max, (cls?.hitDie ?? 8) + mods.con));
 	const ds = Array.isArray(fm.death_saves) ? fm.death_saves : [];
 	const perception = skills.find(s => s.name === 'Perception')!;
+	const passive = (name: string) => 10 + skills.find(s => s.name === name)!.bonus;
 	return {
 		name: text(fm.title) || fallbackName,
 		edition,
 		className, cls, subclass, level, species, background, pb, scores, mods, saves, skills,
 		passivePerception: 10 + perception.bonus,
+		passiveInsight: passive('Insight'),
+		passiveInvestigation: passive('Investigation'),
 		initiative: mods.dex,
 		speed: num(fm.speed, sp?.speed ?? 30),
 		ac, acFrom,
@@ -224,6 +236,8 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		inventory,
 		features,
 		gold: num(fm.gold, 0),
+		conditions: list(fm.conditions).filter(c => !/^exhaustion\b/i.test(c)),
+		exhaustion: Math.max(0, Math.min(6, Math.floor(num(fm.exhaustion, 0)))),
 	};
 }
 
@@ -277,11 +291,13 @@ export function cycleSkill(fm: Frontmatter, skill: string): void {
 }
 
 /**
- * A long rest: full HP, no temp HP, every slot back, death saves cleared, and
- * hit dice back: all of them (2024), or half your level, at least one (2014).
+ * A long rest: full HP, no temp HP, every slot back, death saves cleared, one
+ * level of Exhaustion gone, and hit dice back: all of them (2024), or half your
+ * level, at least one (2014).
  */
 export function longRest(fm: Frontmatter, s: Sheet5e): void {
 	fm.hp = s.hpMax;
+	if (s.exhaustion) setExhaustion(fm, s.exhaustion - 1);
 	delete fm.temp_hp;
 	delete fm.slots_used;
 	delete fm.death_saves;
@@ -306,13 +322,28 @@ export function levelUp(fm: Frontmatter, s: Sheet5e, hpGain?: number): void {
 	fm.hp = s.hp + gain;
 }
 
-export function addListEntry(fm: Frontmatter, key: 'spells', name: string): void {
+export function addListEntry(fm: Frontmatter, key: 'spells' | 'conditions', name: string): void {
 	const now = list(fm[key]);
 	if (!now.some(x => same(x, name))) fm[key] = [...now, name];
 }
 
-export function removeListEntry(fm: Frontmatter, key: 'spells', name: string): void {
-	fm[key] = list(fm[key]).filter(x => !same(x, name));
+export function removeListEntry(fm: Frontmatter, key: 'spells' | 'conditions', name: string): void {
+	const left = list(fm[key]).filter(x => !same(x, name));
+	// An empty condition list goes away; spells: [] stays (new notes start with it).
+	if (key === 'conditions' && !left.length) delete fm.conditions;
+	else fm[key] = left;
+}
+
+/** Hit dice left, set from the sheet's pips (0 to level). */
+export function setHitDiceLeft(fm: Frontmatter, s: Sheet5e, left: number): void {
+	const used = s.level - Math.max(0, Math.min(s.level, Math.floor(left)));
+	if (used) fm.hit_dice_used = used; else delete fm.hit_dice_used;
+}
+
+/** Levels of Exhaustion (0–6); 0 removes the key. */
+export function setExhaustion(fm: Frontmatter, level: number): void {
+	const n = Math.max(0, Math.min(6, Math.floor(level)));
+	if (n) fm.exhaustion = n; else delete fm.exhaustion;
 }
 
 export function addItem(fm: Frontmatter, name: string, o: { qty?: number; equipped?: boolean } = {}): void {

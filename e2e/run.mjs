@@ -4539,6 +4539,80 @@ test('phone: character sheet at phone width, HP pad as a sheet, sticky tabs', as
 	}
 });
 
+test('phone: the 5e character sheet fits a phone, its HP opens the keypad as a sheet', async (o) => {
+	const p = o.page;
+	const C = 'Campaigns/Phone Coast';
+	const note = `${C}/Party/Wren.md`;
+	const cdp = await p.context().newCDPSession(p);
+	const tap = async (loc) => {
+		await loc.scrollIntoViewIfNeeded().catch(() => {});
+		const b = await loc.boundingBox();
+		assert.ok(b, 'tap target is visible');
+		const x = b.x + b.width / 2, y = b.y + b.height / 2;
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await p.waitForTimeout(250);
+	};
+	await o.eval(async (app, plugin, [C, note]) => {
+		const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+		await plugin.campaigns.createCampaign({ name: 'Phone Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+		await app.vault.createFolder(`${C}/Party`).catch(() => {});
+		// Written by hand, without the sheet note class: the sheet still takes the page.
+		await app.vault.create(note, ['---', 'class: Wizard', 'species: Elf', 'background: Sage', 'level: 5', 'edition: "2024"', 'int: 17', 'dex: 14', 'con: 13', 'hp: 20', 'hp_max: 27',
+			'skills: [Arcana, Sleight of Hand]', 'spells: [Fire Bolt, Shield, Fireball]', 'conditions: [Frightened]', 'inventory:', '  - { name: Dagger, equipped: true }', '---', '', '```5e-sheet', '```', ''].join('\n'));
+	}, [C, note]);
+	await p.setViewportSize({ width: 360, height: 780 });
+	await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+	await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400); // switching to and from phone mode reloads settings; don't let it read a half-written file
+	await o.eval((app) => app.emulateMobile(true));
+	await p.waitForTimeout(1200);
+	try {
+		await o.openFile(note, 'preview');
+		const sheet = p.locator(`${R} .dnd5e-sheet`);
+		await sheet.waitFor({ timeout: 5000 });
+		await p.waitForTimeout(300);
+		// Nothing spills past the screen, and the labels show in full.
+		const spill = await p.evaluate((R) => {
+			const s = document.querySelector(`${R} .dnd5e-sheet`);
+			const r = s.getBoundingClientRect();
+			return [...s.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > r.right + 1 || b.left < r.left - 1); }).map(e => e.className).slice(0, 5);
+		}, R);
+		assert.deepEqual(spill, [], 'nothing wider than the sheet');
+		const clipped = await p.evaluate((R) => [...document.querySelectorAll(`${R} .dnd5e-sheet :is(.dnd5e-sheet-box-label, .dnd5e-row-name, .dnd5e-sheet-ability-name, .dnd5e-tab .ev-pill-text)`)]
+			.filter(e => e.checkVisibility() && e.scrollWidth > e.clientWidth + 1).map(e => e.textContent), R);
+		assert.deepEqual(clipped, [], 'labels cut off on a phone');
+		assert.equal(await p.evaluate((R) => document.querySelector(`${R} .metadata-container`)?.checkVisibility() ?? false, R), false, 'properties hidden');
+		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet-phone-light.png') });
+
+		// The bar opens the keypad, a bottom sheet on a phone.
+		await tap(sheet.locator('.ns-meter-bar'));
+		assert.equal(await p.locator('.nimble-hp-pad.is-sheet').count(), 1, 'HP pad is a bottom sheet');
+		await tap(p.locator('.hp-pad-keys button', { hasText: exact('3') }));
+		await tap(p.locator('.hp-pad-apply'));
+		await o.waitFor(async () => (await o.eval((app, _p, path) => app.metadataCache.getCache(path)?.frontmatter?.hp, note)) === 17, { what: 'hp 17' });
+		await tap(sheet.locator('.dnd5e-tab[data-tab="spells"]'));
+		await p.waitForTimeout(200);
+		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet-phone-spells.png') });
+		await tap(sheet.locator('.dnd5e-tab[data-tab="actions"]'));
+		await setTheme(o, 'theme-dark');
+		await p.waitForTimeout(250);
+		await p.evaluate((R) => { document.querySelector(`${R} .markdown-preview-view`).scrollTop = 0; }, R);
+		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet-phone-dark.png') });
+	} finally {
+		await setTheme(o, 'theme-light');
+		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
+		await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400);
+		await o.eval((app) => app.emulateMobile(false));
+		await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+		await p.setViewportSize({ width: 1400, height: 900 });
+		await p.waitForTimeout(800);
+		await o.eval(async (app, plugin, C) => {
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('campaign pages open in reading view; sessions and new notes open for editing', async (o) => {
 	const mode = () => o.eval((app) => app.workspace.getActiveFileView()?.getMode?.() ?? null);
 	const open = (path) => o.eval(async (app, _p, path) => { await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath(path), { state: { mode: 'source' } }); }, path);
@@ -4983,7 +5057,7 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 			].join('\n'));
 			await app.vault.create(`${C}/Ilse.md`, [
 				'---', 'title: Ilse', 'class: Wizard', 'level: 5', 'edition: "2024"', 'str: 8', 'dex: 14', 'con: 13', 'int: 17', 'wis: 12', 'cha: 10',
-				'skills: [Arcana, History]', 'spells: [Fire Bolt, Shield, Fireball, Hold Person]', 'inventory:', '  - { name: Dagger, equipped: true }', '---', '', '```5e-sheet', '```', '',
+				'skills: [Arcana, History]', 'spells: [Fire Bolt, Shield, Fireball, Hold Person]', 'conditions: [Prone]', 'exhaustion: 1', 'inventory:', '  - { name: Dagger, equipped: true }', '  - { name: Potion of Healing, qty: 2 }', 'gold: 12', '---', '', '```5e-sheet', '```', '',
 			].join('\n'));
 		}, C);
 		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
@@ -5036,6 +5110,12 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
 		await o.page.waitForTimeout(300);
 		await measurePills(o, bad, '5e sheet', `${R} .dnd5e-sheet`);
+		for (const t of ['spells', 'inventory']) {
+			await o.page.locator(`${R} .dnd5e-tab[data-tab="${t}"]`).click();
+			await o.page.locator(`${R} .dnd5e-panel.is-${t}`).waitFor();
+			await measurePills(o, bad, `5e sheet (${t})`, `${R} .dnd5e-sheet`);
+		}
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="actions"]`).click();
 		const term = o.page.locator(`${R} .dnd5e-sheet .ev-term`).first();
 		if (await term.count()) {
 			await term.click();
@@ -5880,7 +5960,8 @@ test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its
 		assert.deepEqual([fm.level, fm.subclass, fm.int, fm.gold, fm.feats], [3, 'Evoker', 17, 12, ['Alert']]);
 		await o.openFile(sheet, 'preview');
 		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
-		assert.match(await o.page.locator(`${R} .dnd5e-sheet`).innerText(), /Alert/);
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="features"]`).click();
+		await o.waitFor(async () => /Alert/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'the feat on the sheet' });
 
 		// A private character's page says so plainly.
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
@@ -6060,9 +6141,18 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 
 		await o.openFile(note, 'preview');
 		await o.page.locator(S).waitFor({ timeout: 5000 });
-		assert.match(await o.page.locator(`${S} .dnd5e-sheet-sub`).innerText(), /Level 3[\s\S]*Wizard/);
+		const tab = async (id) => { await o.page.locator(`${S} .dnd5e-tab[data-tab="${id}"]`).click(); await o.page.locator(`${S} .dnd5e-panel.is-${id}`).waitFor(); };
+		// The sheet is the page: no inline title, no Properties box until its button shows them.
+		const pageShows = () => o.page.evaluate((R) => ({ title: !!document.querySelector(`${R} .inline-title`)?.checkVisibility(), props: !!document.querySelector(`${R} .metadata-container`)?.checkVisibility() }), R);
+		assert.deepEqual(await pageShows(), { title: false, props: false });
+		await o.page.locator(`${S} .dnd5e-props-btn`).click();
+		await o.waitFor(async () => (await pageShows()).props, { what: 'properties shown' });
+		await o.page.locator(`${S} .dnd5e-props-btn`).click();
+		await o.waitFor(async () => !(await pageShows()).props, { what: 'properties hidden again' });
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-sub`).innerText(), /Level 3[\s\S]*Wizard/i);
 		assert.match(await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'AC' }).innerText(), /11/);
-		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Intelligence · Save DC 13 · Attack \+5/);
+		await tab('spells');
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Intelligence[\s\S]*13\s*Save DC[\s\S]*\+5\s*Attack/i);
 		assert.deepEqual(await o.page.locator(`${S} .dnd5e-slot-group`).evaluateAll(gs => gs.map(g => g.querySelectorAll('.ev-pip').length)), [4, 2]);
 		await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'Initiative' }).locator('.dnd5e-sheet-roll').click();
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse Vane: initiative', { what: 'initiative rolled' });
@@ -6074,17 +6164,36 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.waitFor(async () => (await fm()).skills?.includes('Nature'), { what: 'Nature proficient' });
 		await o.waitFor(async () => /\+5/.test(await o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Nature' }).locator('.dnd5e-sheet-roll').innerText()), { what: 'Nature +5' });
 
-		// HP: 5 damage.
-		await o.page.locator(`${S} .dnd5e-sheet-hp .dnd5e-hp-input`).fill('5');
-		await o.page.locator(`${S} .dnd5e-sheet-hp .dnd5e-hp-input`).press('Enter');
+		// HP: 5 damage on the keypad, then − twice and + once add up to one change of 1 damage.
+		await o.page.locator(`${S} .ns-meter-calc`).click();
+		await o.page.locator('.nimble-hp-pad').waitFor();
+		await o.page.keyboard.type('5');
+		assert.match(await o.page.locator('.nimble-hp-pad .hp-pad-preview').innerText(), /→ 12\/17/);
+		await o.page.keyboard.press('Enter');
 		await o.waitFor(async () => (await fm()).hp === 12, { what: 'HP 12' });
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-hp-cur`).innerText()) === '12', { what: 'bar shows 12' });
+		for (const step of ['Take 1 damage', 'Take 1 damage', 'Heal 1']) await o.page.locator(`${S} .ns-meter-step[aria-label="${step}"]`).click();
+		await o.waitFor(async () => (await fm()).hp === 11, { what: 'HP 11 from the steps' });
+		// Hit dice: a filled pip spends one.
+		await o.page.locator(`${S} .ev-pips.is-hit-dice .ev-pip.is-on`).first().click();
+		await o.waitFor(async () => (await fm()).hit_dice_used === 1, { what: 'a hit die spent' });
+		// A condition from the rules' list, and off again.
+		await o.page.locator(`${S} .dnd5e-sheet-condition-add`).click();
+		await clickMenu(o, 'Poisoned');
+		await o.waitFor(async () => JSON.stringify((await fm()).conditions) === '["Poisoned"]', { what: 'Poisoned' });
+		await o.page.locator(`${S} .dnd5e-sheet-condition-x[aria-label="End Poisoned"]`).click();
+		await o.waitFor(async () => (await fm()).conditions === undefined, { what: 'Poisoned ends' });
 
 		// A quarterstaff becomes an attack; Magic Missile joins the spells.
+		await tab('inventory');
 		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add item' }).click();
 		await o.page.locator('.prompt-input').fill('Quarterstaff');
 		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-item`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff carried' });
+		await tab('actions');
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff attack' });
-		assert.match(await o.page.locator(`${S} .dnd5e-sheet-attack`).first().innerText(), /Quarterstaff\s*\+2\s*1d6 bludgeoning/);
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-attack`).first().innerText(), /Quarterstaff[\s\S]*\+2\s*1d6 bludgeoning/);
+		await tab('spells');
 		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add spell' }).click();
 		await o.page.locator('.prompt-input').fill('Magic Missile');
 		await o.page.keyboard.press('Enter');
@@ -6095,7 +6204,7 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[1]', { what: 'slot spent' });
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet.png') });
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Long rest' }).click();
-		await o.waitFor(async () => { const f = await fm(); return f.hp === 17 && f.slots_used === undefined; }, { what: 'long rest' });
+		await o.waitFor(async () => { const f = await fm(); return f.hp === 17 && f.slots_used === undefined && f.hit_dice_used === undefined; }, { what: 'long rest' });
 
 		// Level up in the wizard: d6 average (4) + Con (1), and level 4's increase (+2 Int, the best score).
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();
@@ -6108,6 +6217,11 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.page.locator(B).waitFor({ state: 'detached' });
 		await o.waitFor(async () => { const f = await fm(); return f.level === 4 && f.hp_max === 22 && f.int === 19; }, { what: 'level 4' });
 		assert.ok((await fm()).spells.includes('Misty Step'));
+
+		// Another note in the same tab has its title and properties back.
+		await o.eval(async (app, _p, C) => { await app.vault.create(`${C}/Plain note.md`, '---\ntags: [x]\n---\nJust a note.\n'); }, C);
+		await o.openFile(`${C}/Plain note.md`, 'preview');
+		await o.waitFor(async () => { const v = await pageShows(); return v.title && v.props; }, { what: 'a plain note shows its title and properties' });
 
 		// The encounter party reads the sheet: level and AC.
 		await o.eval((app, plugin) => plugin.syncPartyFromSheets());
