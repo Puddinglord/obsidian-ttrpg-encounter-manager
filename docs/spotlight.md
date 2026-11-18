@@ -34,6 +34,8 @@ Press Escape in a card or quick look you opened from Spotlight to come back to S
 
 NPCs match on their name and their aliases. Notes come from the active campaign.
 
+In a [5e campaign](5e.md), Spotlight searches the edition's monsters and compendium, and takes the 5e compendium's filters (`school:evocation`, `cr:1/4 type:undead`). Enter on a monster is a quick look; `3 goblin` doesn't add to the 5e tracker yet.
+
 ## The shortcut
 
 Cmd/Ctrl+K is Obsidian's key for **Insert Markdown link**, so Spotlight shares it and doesn't take it away:

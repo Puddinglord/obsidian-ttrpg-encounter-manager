@@ -16,6 +16,7 @@ import { NIMBLE_SETTINGS } from './settings';
 import { nimble } from './runtime';
 import { nimbleTokens } from './map-tokens';
 import { openCharacterView } from './character-register';
+import { nimbleSpotlight } from './spotlight';
 
 export const nimbleSystem: GameSystem = {
 	id: 'nimble',
@@ -50,7 +51,7 @@ export const nimbleSystem: GameSystem = {
 		},
 	},
 	quickLook(plugin, target) {
-		openRecord(plugin, target);
+		return openRecord(plugin, target);
 	},
 	register(plugin) {
 		registerNimble(plugin);
@@ -71,5 +72,6 @@ export const nimbleSystem: GameSystem = {
 	},
 	encounterBlock: nimbleEncounterBlock,
 	slashCommands: nimbleSlashCommands,
+	spotlight: nimbleSpotlight,
 	vocabulary: { defense: 'DEF' },
 };

@@ -8,7 +8,7 @@
 //   src/systems/<id>/  one game system; imports core and the contract, never another system
 //   src/app/** + main  wiring: may import core and any system
 
-import type { MarkdownPostProcessorContext, TFile } from 'obsidian';
+import type { MarkdownPostProcessorContext, Modal, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../main';
 import type { ConditionDef, PartyMember } from '../core/types';
 import type { EncounterDef } from '../core/encounter-def';
@@ -18,6 +18,7 @@ import type { KindSpec } from '../core/content/spec';
 import type { SettingsPart } from '../core/settings';
 import type { SettingsSection } from '../core/settings-ui';
 import type { CombatTokens } from '../core/tracker/tokens';
+import type { SpotlightSource } from '../core/spotlight-source';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
 export interface Attribution {
@@ -77,8 +78,8 @@ export interface GameSystem {
 	/** The rules' conditions for an edition (the default one when missing), before any the GM adds in settings. */
 	conditions(edition?: string): readonly ConditionDef[];
 	readonly characters?: CharacterCapability;
-	/** Open a quick look on a note (an NPC, a hero). */
-	quickLook(plugin: EmberVaultPlugin, target: QuickLookNote): void;
+	/** Open a quick look on a note (an NPC, a hero). Returns the dialog (Spotlight comes back when it's closed with Escape). */
+	quickLook(plugin: EmberVaultPlugin, target: QuickLookNote): Modal | void;
 	/** Wire the system into the plugin at load: its code blocks, references, indexes, views. Called once. */
 	register?(plugin: EmberVaultPlugin): void;
 	/** Draw a ```nimble-encounter block in one of this system's campaigns (difficulty by its rules, Run into its tracker). */
@@ -89,6 +90,12 @@ export interface GameSystem {
 	openCompendium?(plugin: EmberVaultPlugin): Promise<void>;
 	/** "/" commands in its campaigns, added to core's base ones (a command with a base command's name replaces it). */
 	slashCommands?(plugin: EmberVaultPlugin): SlashCommand[];
+	/**
+	 * Its part of Spotlight (Cmd/Ctrl+K) in its campaigns: its monsters and compendium as
+	 * rows (how each looks, Enter, Cmd/Ctrl+Enter), adding several ("3 goblin"), typed
+	 * filters with chips, and the "Search the compendium" row. Asked each time Spotlight opens.
+	 */
+	spotlight?(plugin: EmberVaultPlugin): SpotlightSource;
 	/** The system's words for things core shows: the party table's defense column ("DEF", "AC"). */
 	readonly vocabulary?: { readonly defense?: string };
 	/**

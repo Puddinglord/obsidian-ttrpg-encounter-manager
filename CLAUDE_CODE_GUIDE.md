@@ -20,7 +20,7 @@ src/systems/
   contract.ts           GameSystem: what core may ask a system for (attribution, conditions, characters, quick look…)
   registry.ts           SystemRegistry: register, resolve a campaign's `system:` (case-insensitive), fall back to the default (pure, tested)
 src/app/
-  spotlight.ts          Cmd/Ctrl+K box: search adversaries/NPCs/notes, roll dice, run commands (spotlight-def.ts is the pure query parser)
+  spotlight.ts          Cmd/Ctrl+K box: search NPCs/notes/conditions, roll dice, run commands; the campaign's system adds its monsters, compendium and typed filters through `spotlight` (core/spotlight-source.ts); spotlight-def.ts is the pure query parser and ranking
   settings-tab.ts       The settings page: shared rows (core/settings-ui.ts), then each system's settingsSections
   systems.ts            SHIPPED_SYSTEMS and createSystems(): every system the plugin ships, the first is the default
 src/core/

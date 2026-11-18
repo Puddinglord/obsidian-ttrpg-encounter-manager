@@ -11,12 +11,13 @@ Where the engines came from, and what's still each system's own: [prototypes/SYS
 | `id`, `name`, `aliases`, `editions` | How campaigns name it (`system: 5e`, `edition: 2014`) | ✓ | ✓ |
 | `attribution` | Licence line and where to buy; shown in settings | ✓ | ✓ |
 | `conditions(edition)` | The rules' conditions | ✓ | ✓ |
-| `quickLook` | A note in a modal (an NPC from a link) | ✓ | ✓ |
+| `quickLook` | A note in a modal (an NPC from a link); returns the modal, so Spotlight can come back on Escape | ✓ | ✓ |
 | `characters` | `promptNew`, `createFromPartyMember`, `partyMember` (the encounter party reads sheets) | ✓ | ✓ |
 | `register(plugin)` | Wire in its blocks, references, indexes, views, suggest, at load | ✓ (`nimble/register.ts`) | ✓ |
 | `encounterBlock` | Draw ```nimble-encounter in its campaigns (difficulty, Run) | ✓ | ✓ |
 | `openTracker`, `openCompendium`, `openMyCharacter` | Its tracker, compendium and your character (Open… commands, ribbon) | ✓ | ✓ (character: the note) |
 | `slashCommands(plugin)` | Its "/" commands, added to core's (`core/slash.ts`). One with a base command's name or alias replaces it (5e's `/roll` adds advantage). Name shared commands as SLASH_ORDER does (`monster`, `spell`, `item`, `encounter`, `add`, `statblock`) so they sit in the same place in every game's menu. Look up runtime state when a command runs, not when the list is made | ✓ | ✓ |
+| `spotlight(plugin)` | Its part of Spotlight (Cmd/Ctrl+K), a `SpotlightSource` (`core/spotlight-source.ts`): `results(q, input)` gives rows (names to rank by, secondary text, an order group: monsters 0, compendium 4; how each draws: icon or badge, title, meta, tag; `open()` for Enter, returning the modal to come back from on Escape; `alt()` for Cmd/Ctrl+Enter, Spotlight kept open). `adding(q)` answers "3 goblin". `filters` gives typed filters with chips: build it with `compendiumFilters({ query, all, entries, row })` from your compendium's bound query. `lookup(query)` opens your compendium for "Search the compendium for …". Spotlight keeps NPCs, notes, conditions, commands and dice itself | ✓ (adds to the encounter) | ✓ (typed filters too) |
 | `noteKinds` | What it adds to the shared note kinds: `npc`, `location`, `quest`, `map`. `fields` are properties new notes get and the card shows as stats (keys lowercase, not core's own; `gmOnly` keeps them out of players' notes). `card(el, ctx)` draws more below core's card; with `replace: true` it draws the whole card. Keep it light: most kinds need no drawing of their own | – | ✓ (NPC: AC, HP, CR, `statblock`, Add to fight) |
 | `content` | What it takes in content packs: `{ kinds }`, each a `KindSpec` of fields (`core/content/spec.ts`). Core reads and checks the packs; the system asks `plugin.content.enabled(id, path)` for the ones a campaign uses and puts them between the vault's notes and what it ships. Publish the JSON Schema (`packSchema`) and an example pack, and test both the way `tests/content-packs.test.ts` does | – | ✓ |
 | `vocabulary` | Words core shows for the system's ideas: `defense` ("DEF", "AC") | ✓ | ✓ |
@@ -84,7 +85,7 @@ Add the system to `SHIPPED_SYSTEMS` in `src/app/systems.ts`. The lint rules pick
 - `plugin.hideStats` for player campaigns.
 
 **6. Hook into the app layer where the user expects it.** Find the right place, don't add parallel commands:
-- **Spotlight** (`app/spotlight.ts`): a system branch, like `dnd5eSuggestions`.
+- **Spotlight:** the `spotlight` member (see `nimble/spotlight.ts`, `dnd5e/spotlight.ts`). `app/spotlight.ts` imports no system.
 - **Encounter blocks:** through the contract.
 - **Open tracker, Open compendium, New character, Open my character:** through the contract and plugin methods.
 

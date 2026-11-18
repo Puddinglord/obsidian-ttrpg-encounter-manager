@@ -5,6 +5,7 @@
 //   3 goblin               search, with a count for "add to the encounter"
 //   > next                 commands only
 
+import { nameMatch } from './compendium/query';
 import { formatDice, parseDice } from './dice';
 
 export interface SpotlightQuery {
@@ -30,6 +31,36 @@ export function parseSpotlight(input: string): SpotlightQuery {
 	const m = raw.match(/^(\d+)\s*[x×]?\s+(\S.*)$/i);
 	if (m) return { count: Math.max(1, Math.min(50, Number(m[1]))), counted: true, commandsOnly: false, text: m[2].trim().toLowerCase() };
 	return { count: 1, counted: false, commandsOnly: false, text: raw.toLowerCase() };
+}
+
+/** Something Spotlight lists for a typed name: a monster, an NPC, a note, a spell, a command. */
+export interface SpotlightCandidate<T> {
+	item: T;
+	/** Names to rank by, the main one first (aliases after). */
+	names: string[];
+	/** Secondary text (a monster's group, a note's area): a match here ranks below name matches. */
+	others?: string[];
+	/** Ties go to the lower group: monsters 0, people 1, places 2, conditions 3, the compendium 4, commands 5. */
+	order: number;
+}
+
+/**
+ * Spotlight's one list, ranked by how well each name matches (an exact name, then
+ * the start of a name, then the start of a word…), whatever kind of thing it is.
+ * A match only in secondary text ranks below name matches, and typo matches
+ * ("compen" for Companions) only show when nothing anywhere matches for real.
+ * Ties go to the lower order group, then to the order the candidates came in.
+ */
+export function rankSpotlight<T>(candidates: SpotlightCandidate<T>[], text: string, limit = 14): T[] {
+	const ranked: { item: T; score: number; fuzzy: boolean; order: number }[] = [];
+	for (const c of candidates) {
+		const own = nameMatch(c.names, text);
+		const other = own ? null : nameMatch(c.others ?? [], text);
+		const m = own ?? (other ? { score: other.score + 8, fuzzy: other.fuzzy } : null);
+		if (m) ranked.push({ item: c.item, score: m.score + (m.fuzzy ? 100 : 0), fuzzy: m.fuzzy, order: c.order });
+	}
+	const anyReal = ranked.some(r => !r.fuzzy);
+	return ranked.filter(r => !anyReal || !r.fuzzy).sort((a, b) => a.score - b.score || a.order - b.order).slice(0, limit).map(r => r.item);
 }
 
 /** Rank `items` by how well `text` of each matches the query: prefix, then word start, then anywhere. Non-matches are dropped. */

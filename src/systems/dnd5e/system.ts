@@ -15,6 +15,7 @@ import { asEdition } from './editions';
 import { createCharacterNote5e } from './new-character';
 import { openNewCharacter5e } from './character-wizard';
 import { dnd5eSlashCommands } from './slash';
+import { dnd5eSpotlight } from './spotlight';
 import { KINDS_5E } from './content';
 import { NPC_FIELDS_5E } from './npc';
 import { drawNpc5e } from './npc-card';
@@ -28,12 +29,13 @@ export const dnd5eSystem: GameSystem = {
 	vocabulary: { defense: 'AC' },
 	content: { kinds: KINDS_5E },
 	slashCommands: dnd5eSlashCommands,
+	spotlight: dnd5eSpotlight,
 	noteKinds: {
 		npc: { fields: NPC_FIELDS_5E, card: (el, ctx) => drawNpc5e(dnd5e(), el, ctx) },
 	},
 	conditions: (edition?: string): readonly ConditionDef[] => conditionsFor(edition ?? DEFAULT_EDITION),
 	quickLook(plugin, target) {
-		openNoteQuickLook(plugin.app, target);
+		return openNoteQuickLook(plugin.app, target);
 	},
 	characters: {
 		promptNew(_plugin, r) {

@@ -5630,6 +5630,14 @@ test('5e compendium: spells, items and classes for both editions, 5e:spell: refe
 		const SP = '.modal-container .prompt.nimble-spotlight';
 		await o.page.locator(`${SP} .prompt-input`).fill('magic missile');
 		await o.waitFor(async () => /Magic Missile[\s\S]*Spell/i.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'spell in Spotlight' });
+		// Typed filters work in a 5e campaign's Spotlight too: a chip in 5e's words, 5e entries that match.
+		await o.page.locator(`${SP} .prompt-input`).fill('school:evocation ');
+		await o.waitFor(async () => (await cmpChips(o, SP)).length === 1, { timeout: 3000, what: 'the School chip in 5e Spotlight' });
+		assert.deepEqual(await cmpChips(o, SP), [['School', 'evocation']]);
+		await o.waitFor(async () => (await o.page.locator(`${SP} .spot-entry .nimble-spot-name`).allInnerTexts()).includes('Fireball'), { timeout: 3000, what: 'Fireball for school:evocation' });
+		const evocation = await o.page.locator(`${SP} .spot-entry .nimble-spot-name`).allInnerTexts();
+		assert.ok(!evocation.includes('Mage Hand'), `only evocation spells: ${evocation.slice(0, 8)}`);
+		assert.equal(await o.page.locator(`${SP} .suggestion-item.spot-lookup`).count(), 1, 'the lookup row');
 		await o.page.keyboard.press('Escape');
 	} finally {
 		await o.eval(async (app, plugin, C) => {
