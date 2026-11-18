@@ -36,6 +36,10 @@ export interface Combatant5e {
 	dead?: boolean;
 	/** Legendary actions: uses per round and how many are spent. */
 	legendary?: { max: number; used: number };
+	/** Legendary Resistance: uses per day and how many are spent (they don't come back during a fight). */
+	resistances?: { max: number; used: number };
+	/** Holding concentration on a spell: damage calls for a Constitution save, dropping to 0 ends it. */
+	concentrating?: boolean;
 	note?: string;
 }
 
@@ -75,6 +79,14 @@ export function legendaryUses(m: Dnd5eMonster): number | undefined {
 	return n ? Number(n[1] ?? n[2]) : 3;
 }
 
+/** Legendary Resistance uses per day, from its trait: "Legendary Resistance (3/Day, or 4/Day in Lair)". */
+export function legendaryResistances(m: Dnd5eMonster): number | undefined {
+	const t = m.traits?.find(x => /^legendary resistance\b/i.test(x.name));
+	if (!t) return undefined;
+	const n = /(\d+)\s*\/\s*day/i.exec(`${t.name} ${t.desc}`);
+	return n ? Number(n[1]) : 3;
+}
+
 /** The next free label for a name: "Goblin", then "Goblin 2", "Goblin 3"… (the first stays as it is). */
 export function nextLabel(f: Fight5e, name: string): string {
 	const taken = new Set(f.combatants.map(c => c.label.toLowerCase()));
@@ -93,6 +105,8 @@ export function addMonster(f: Fight5e, m: Dnd5eMonster, count = 1, opts: { sourc
 			initBonus: initiativeOf(m), hp: m.hp, maxHp: m.hp, tempHp: 0, ac: m.ac, conditions: [],
 		};
 		if (legendary) c.legendary = { max: legendary, used: 0 };
+		const resist = legendaryResistances(m);
+		if (resist) c.resistances = { max: resist, used: 0 };
 		if (isRunning(f)) c.init = d20(rng) + c.initBonus;
 		f.combatants.push(c);
 		added.push(c);
@@ -270,6 +284,10 @@ export function applyHp(f: Fight5e, id: string, change: HpChange): string | unde
 					else { c.deathSaves = { success: 0, failure: 0 }; text += ' and falls unconscious'; }
 				}
 			} else if (c.hp === 0 && !wasDown) text += ' and drops';
+			if (c.concentrating && taken > 0) {
+				if (c.hp === 0) { c.concentrating = false; text += ', concentration ends'; }
+				else text += `; concentration save DC ${concentrationDc(taken, f.edition)}`;
+			}
 			break;
 		}
 		case 'heal': {
@@ -328,6 +346,40 @@ export function setDeathSaves5e(f: Fight5e, id: string, success: number, failure
 	c.dead = c.deathSaves.failure >= 3;
 }
 
+/** The Constitution save to keep concentrating after taking damage: 10 or half the damage, whichever is higher (2024 caps it at 30). */
+export function concentrationDc(taken: number, edition: Dnd5eEdition = '2024'): number {
+	const dc = Math.max(10, Math.floor(taken / 2));
+	return edition === '2024' ? Math.min(30, dc) : dc;
+}
+
+/** Start or stop concentrating. */
+export function setConcentration(f: Fight5e, id: string, on: boolean): void {
+	const c = find(f, id);
+	if (!c || !!c.concentrating === on) return;
+	c.concentrating = on || undefined;
+	log(f, `${c.label} ${on ? 'is concentrating' : 'stops concentrating'}`);
+}
+
+/** Spend a Legendary Resistance (or give one back with -1). */
+export function useResistance(f: Fight5e, id: string, delta = 1): void {
+	const c = find(f, id);
+	if (!c?.resistances) return;
+	const was = c.resistances.used;
+	c.resistances.used = Math.max(0, Math.min(c.resistances.max, was + delta));
+	if (c.resistances.used > was) log(f, `${c.label} uses a Legendary Resistance`);
+}
+
+/** How a combatant's HP reads at a glance: Bloodied at half or less (the 2024 term), down at 0. */
+export function hpState(c: Combatant5e): 'healthy' | 'bloodied' | 'critical' | 'down' {
+	if (c.hp <= 0) return 'down';
+	if (c.hp <= c.maxHp / 4) return 'critical';
+	if (c.hp <= c.maxHp / 2) return 'bloodied';
+	return 'healthy';
+}
+
+/** A monster at 0 HP (or anyone dead) is out of the fight. */
+export const isDefeated = (c: Combatant5e) => (c.side === 'monster' && c.hp <= 0) || !!c.dead;
+
 /** Spend a legendary action (or give one back with -1). */
 export function useLegendary(f: Fight5e, id: string, delta = 1): void {
 	const c = find(f, id);
@@ -344,6 +396,14 @@ export function addCondition(f: Fight5e, id: string, name: string, o: { rounds?:
 	if (existing) { if (o.rounds !== undefined) existing.rounds = o.rounds; if (o.value !== undefined) existing.value = o.value; return; }
 	c.conditions.push({ name, ...(o.rounds !== undefined ? { rounds: o.rounds } : {}), ...(o.value !== undefined ? { value: o.value } : {}) });
 	log(f, `${c.label} is ${name}${o.value ? ` ${o.value}` : ''}`);
+}
+
+/** Change a condition's duration (null: until removed) or value. */
+export function updateCondition(f: Fight5e, id: string, name: string, o: { rounds?: number | null; value?: number }): void {
+	const x = find(f, id)?.conditions.find(x => x.name.toLowerCase() === name.toLowerCase());
+	if (!x) return;
+	if (o.rounds === null) { delete x.rounds; delete x.tickedRound; } else if (o.rounds !== undefined) { x.rounds = o.rounds; delete x.tickedRound; }
+	if (o.value !== undefined) x.value = Math.max(1, o.value);
 }
 
 export function removeCondition(f: Fight5e, id: string, name: string): void {

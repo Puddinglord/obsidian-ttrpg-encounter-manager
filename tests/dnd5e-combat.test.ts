@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addCondition, addHero, addMonster, applyHp, current, deathSave, end, legendaryUses, newFight, next, normalizeFight, order, parseHp, previewHp, previous, remove, rollInitiative, setInitiative, start, useLegendary } from '../src/systems/dnd5e/combat';
+import { addCondition, addHero, concentrationDc, hpState, isDefeated, legendaryResistances, setConcentration, updateCondition, useResistance, addMonster, applyHp, current, deathSave, end, legendaryUses, newFight, next, normalizeFight, order, parseHp, previewHp, previous, remove, rollInitiative, setInitiative, start, useLegendary } from '../src/systems/dnd5e/combat';
 import type { Dnd5eMonster } from '../src/systems/dnd5e/types';
 
 const goblin: Dnd5eMonster = { name: 'Goblin', ac: 15, hp: 7, cr: '1/4', abilities: [8, 14, 10, 10, 8, 8] };
@@ -216,5 +216,64 @@ describe('Start combat follows the encounter settings', async () => {
 		const f = fight();
 		start(f, () => 0.5, { monsters: false, heroes: false });
 		expect(f.combatants.every(c => c.init === undefined)).toBe(true);
+	});
+});
+
+describe('5e concentration, Legendary Resistance and HP at a glance', () => {
+	const lich: Dnd5eMonster = { ...dragon, name: 'Lich', traits: [{ name: 'Legendary Resistance (4/Day, or 5/Day in Lair)', desc: 'If the lich fails a saving throw, it can choose to succeed instead.' }] };
+	it('reads Legendary Resistance uses from the trait, in either edition\'s wording', () => {
+		expect(legendaryResistances(lich)).toBe(4);
+		expect(legendaryResistances({ ...goblin, traits: [{ name: 'Legendary Resistance', desc: '(3/Day). If the dragon fails a saving throw, it can choose to succeed instead.' }] })).toBe(3);
+		expect(legendaryResistances(goblin)).toBeUndefined();
+		const f = newFight();
+		const [l] = addMonster(f, lich);
+		expect(l.resistances).toEqual({ max: 4, used: 0 });
+		useResistance(f, l.id);
+		useResistance(f, l.id);
+		useResistance(f, l.id, -1);
+		expect(l.resistances?.used).toBe(1);
+		expect(f.log.at(-1)?.text).toBe('Lich uses a Legendary Resistance');
+		// They don't come back at the start of its turn, unlike legendary actions.
+		start(f, faces(10));
+		next(f);
+		expect(l.resistances?.used).toBe(1);
+	});
+	it('asks for a concentration save on damage, and ends concentration at 0 HP', () => {
+		expect(concentrationDc(7)).toBe(10);
+		expect(concentrationDc(31)).toBe(15);
+		expect(concentrationDc(80, '2024')).toBe(30);
+		expect(concentrationDc(80, '2014')).toBe(40);
+		const f = newFight();
+		const [g] = addMonster(f, { ...goblin, hp: 40 });
+		setConcentration(f, g.id, true);
+		expect(g.concentrating).toBe(true);
+		expect(applyHp(f, g.id, { kind: 'damage', amount: 24 })).toBe('Goblin takes 24; concentration save DC 12');
+		expect(applyHp(f, g.id, { kind: 'damage', amount: 30 })).toBe('Goblin takes 30 and drops, concentration ends');
+		expect(g.concentrating).toBeFalsy();
+		setConcentration(f, g.id, false);
+		expect(f.log.filter(l => /concentrat/.test(l.text)).length).toBe(3);
+	});
+	it('changes a condition\'s duration or value, and back to until removed', () => {
+		const f = newFight();
+		const [g] = addMonster(f, goblin);
+		addCondition(f, g.id, 'Exhaustion', { value: 1 });
+		updateCondition(f, g.id, 'exhaustion', { rounds: 2, value: 3 });
+		expect(g.conditions[0]).toMatchObject({ name: 'Exhaustion', rounds: 2, value: 3 });
+		updateCondition(f, g.id, 'Exhaustion', { rounds: null });
+		expect(g.conditions[0].rounds).toBeUndefined();
+	});
+	it('reads HP as healthy, bloodied, critical or down; monsters at 0 and the dead are defeated', () => {
+		const f = newFight();
+		const [g] = addMonster(f, { ...goblin, hp: 20 });
+		const h = addHero(f, { name: 'Bo', maxHp: 10 });
+		expect(hpState(g)).toBe('healthy');
+		g.hp = 10; expect(hpState(g)).toBe('bloodied');
+		g.hp = 5; expect(hpState(g)).toBe('critical');
+		g.hp = 0; expect(hpState(g)).toBe('down');
+		expect(isDefeated(g)).toBe(true);
+		h.hp = 0;
+		expect(isDefeated(h)).toBe(false);
+		h.dead = true;
+		expect(isDefeated(h)).toBe(true);
 	});
 });

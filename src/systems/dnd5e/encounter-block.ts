@@ -2,7 +2,7 @@
 // the difficulty against the party (the edition's rules), and Run / Add to
 // fight. Players see who was fought, not the numbers.
 
-import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderChild, setIcon } from 'obsidian';
 import { pill } from '../../core/pill';
 import type { EncounterDef } from '../../core/encounter-def';
 import { addHero, addMonster } from './combat';
@@ -30,41 +30,68 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		const card = el.createDiv({ cls: 'nimble-encounter-block dnd5e-encounter' });
 		applyLook(card, 'dnd5e');
 		const head = card.createDiv({ cls: 'dnd5e-encounter-head' });
+		setIcon(head.createSpan({ cls: 'dnd5e-encounter-icon' }), 'swords');
 		head.createDiv({ cls: 'dnd5e-encounter-name', text: this.def.name });
 		const player = this.rt.plugin.playerView(path);
 		const groups = this.def.monsters.map(m => ({ m, entry: this.rt.get(m.name, path) }));
 		const known = groups.filter(g => g.entry).map(g => ({ monster: g.entry!.monster, count: g.m.count }));
+		const levels = this.rt.partyLevels();
+		const edition = this.rt.edition(path);
+		const r = rateEncounter5e(known, levels, edition);
+		const party = `${levels.length} hero${levels.length === 1 ? '' : 'es'}, level ${[...new Set(levels)].join('/')}`;
+		const xp = (n: number) => `${n.toLocaleString('en-US')} XP`;
 
 		if (!player) {
-			const levels = this.rt.partyLevels();
-			const edition = this.rt.edition(path);
-			const r = rateEncounter5e(known, levels, edition);
 			const chip = head.createSpan({ cls: `nimble-difficulty diff-${r.label.toLowerCase()}`, text: `${r.label} · ${Math.round(r.pct * 100)}%` });
 			chip.setAttr('title', [
-				`${r.xp.toLocaleString('en-US')} XP${r.multiplier !== 1 ? ` × ${r.multiplier} = ${r.adjusted.toLocaleString('en-US')}` : ''}`,
-				`Party: ${levels.length} hero${levels.length === 1 ? '' : 'es'}, level ${[...new Set(levels)].join('/')}`,
-				...r.thresholds.map(t => `${t.label}: ${t.xp.toLocaleString('en-US')} XP`),
+				`${xp(r.xp)}${r.multiplier !== 1 ? ` × ${r.multiplier} = ${r.adjusted.toLocaleString('en-US')}` : ''}`,
+				`Party: ${party}`,
+				...r.thresholds.map(t => `${t.label}: ${xp(t.xp)}`),
 				edition === '2014' ? '2014 rules (DMG thresholds and multipliers)' : '2024 rules (XP budget per character)',
 			].join('\n'));
 		}
 
+		// The roster: how many, the monster (its reference, with CR), AC and HP, and the XP they're worth.
 		const list = card.createDiv({ cls: 'dnd5e-encounter-monsters' });
 		for (const { m, entry } of groups) {
 			const row = list.createDiv({ cls: 'dnd5e-encounter-row' });
 			row.createSpan({ cls: 'dnd5e-encounter-count', text: `${m.count}×` });
-			row.appendChild(this.rt.createRef(m.name, path));
-			if (entry && !player) row.createSpan({ cls: 'dnd5e-encounter-xp', text: `${(xpOf(entry.monster) * m.count).toLocaleString('en-US')} XP` });
+			row.appendChild(this.rt.createRef(m.name, path)).addClass('dnd5e-encounter-ref');
+			if (entry && !player) {
+				const stats = row.createSpan({ cls: 'dnd5e-encounter-stats' });
+				stats.createSpan({ text: `AC ${entry.monster.ac}` });
+				stats.createSpan({ text: `HP ${entry.monster.hp}` });
+				row.createSpan({ cls: 'dnd5e-encounter-xp', text: xp(xpOf(entry.monster) * m.count) });
+			}
+		}
+
+		// The budget: the total, and where it sits against the party's thresholds.
+		if (!player && known.length) {
+			const total = card.createDiv({ cls: 'dnd5e-encounter-total' });
+			total.createSpan({ cls: 'dnd5e-encounter-party', text: party });
+			total.createSpan({ cls: 'dnd5e-encounter-sum', text: r.multiplier !== 1 ? `${r.xp.toLocaleString('en-US')} × ${r.multiplier} = ${xp(r.adjusted)}` : xp(r.xp) });
+			// The top threshold sits near the end; a fight past the scale fills it and says so.
+			const top = r.thresholds[r.thresholds.length - 1]?.xp || 1;
+			const scale = top * 1.2;
+			const over = r.adjusted > scale;
+			const meter = card.createDiv({ cls: `dnd5e-encounter-budget diff-${r.label.toLowerCase()}${over ? ' is-over' : ''}`, attr: { 'aria-hidden': 'true' } });
+			meter.createDiv({ cls: 'dnd5e-encounter-budget-fill' }).setCssStyles({ width: `${Math.min(100, (100 * r.adjusted) / scale)}%` });
+			for (const t of r.thresholds) {
+				const tick = meter.createDiv({ cls: 'dnd5e-encounter-budget-tick' });
+				tick.setCssStyles({ left: `${(100 * t.xp) / scale}%` });
+				tick.createSpan({ cls: 'dnd5e-encounter-budget-label', text: t.label });
+			}
 		}
 		if (this.def.notes) card.createDiv({ cls: 'dnd5e-encounter-notes', text: this.def.notes });
 		if (player) return;
 
+		const missing = groups.filter(g => !g.entry).map(g => g.m.name);
+		if (missing.length) card.createDiv({ cls: 'dnd5e-encounter-missing', text: `Not found: ${missing.join(', ')}` });
 		const bar = card.createDiv({ cls: 'dnd5e-encounter-actions' });
 		const button = (label: string, icon: string, run: () => void, cta = false) => {
 			const b = pill(bar, { tag: 'button', cls: cta ? 'mod-cta' : '', icon, text: label });
 			b.onclick = run;
 		};
-		const missing = groups.filter(g => !g.entry).map(g => g.m.name);
-		if (missing.length) card.createDiv({ cls: 'dnd5e-encounter-missing', text: `Not found: ${missing.join(', ')}` });
 		button('Run', 'play', () => void this.run(true), true);
 		button('Add to fight', 'plus', () => void this.run(false));
 	}

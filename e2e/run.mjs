@@ -2663,6 +2663,16 @@ const cgroup = (o, folder) => o.page.locator(`${CP} .campaign-group[data-folder=
 const crow = (o, path) => o.page.locator(`${CP} .campaign-note[data-path="${path}"]`);
 const menuTitles = (o) => o.page.evaluate(() => [...document.querySelectorAll('.menu .menu-item-title')].map(e => e.textContent));
 const clickMenu = (o, title) => o.page.locator('.menu .menu-item', { hasText: exact(title) }).click();
+/** The 5e tracker's condition picker: the row's +, then the condition. */
+const pickCondition5e = async (o, row, name) => { await row.locator('.dnd5e-condition-add').click(); await o.page.locator('.condition-picker .condition-option', { hasText: exact(name) }).click(); };
+/** Type into the 5e tracker's HP keypad (the HP language: 7, 7r, +7, t7, =7) and apply. */
+const hpPad5e = async (o, row, keys) => {
+	await row.locator('.dnd5e-hp-text').click();
+	await o.page.locator('.nimble-hp-pad').waitFor();
+	await o.page.keyboard.type(keys);
+	await o.page.keyboard.press('Enter');
+	await o.page.locator('.nimble-hp-pad').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {});
+};
 const exists = (o, path) => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), path);
 const read = (o, path) => o.eval((app, _p, path) => app.vault.adapter.read(path), path);
 const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -5017,8 +5027,7 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 		await o.page.locator(TR).waitFor({ timeout: 5000 });
 		await o.waitFor(async () => (await o.page.locator(`${TR} .dnd5e-combatant`).count()) === 3, { what: 'three combatants' });
 		const ogre = o.page.locator(`${TR} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: /^Ogre$/ }) });
-		await ogre.locator('.dnd5e-condition-add').click();
-		await clickMenu(o, 'Prone');
+		await pickCondition5e(o, ogre, 'Prone');
 		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition').count()) === 1, { what: 'Prone chip' });
 		await measurePills(o, bad, '5e tracker', TR);
 
@@ -5255,19 +5264,26 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-setup.png') });
 
 		await o.page.locator(`${T} button[aria-label="Roll initiative"]`).click();
-		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-init`).evaluateAll(els => els.every(e => e.value !== ''))), { what: 'initiative rolled' });
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-init.is-unset`).count()) === 0, { what: 'initiative rolled' });
+		// The initiative badge takes a typed roll: the Ogre goes first.
+		const ogre = o.page.locator(`${T} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: /^Ogre$/ }) });
+		await ogre.locator('.dnd5e-init').click();
+		await o.page.locator('.dnd5e-init-pop input').fill('30');
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant-name`).first().innerText()) === 'Ogre', { what: 'Ogre first' });
+		assert.equal(await ogre.locator('.dnd5e-init').innerText(), '30');
 		await o.page.locator(`${T} button`, { hasText: 'Start combat' }).click();
-		await o.waitFor(async () => /Round 1/.test(await o.page.locator(`${T} .dnd5e-tracker-round`).innerText()), { what: 'round 1' });
+		await o.waitFor(async () => /Round 1/i.test(await o.page.locator(`${T} .dnd5e-tracker-round`).innerText()), { what: 'round 1' });
 		assert.equal(await o.page.locator(`${T} .dnd5e-combatant.is-turn`).count(), 1);
 		const first = await o.page.locator(`${T} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).innerText();
+		assert.equal(first, 'Ogre');
+		assert.match(await o.page.locator(`${T} .dnd5e-tracker-status`).innerText(), /Ogre's turn/);
+		assert.equal(await ogre.locator('.dnd5e-up-now').count(), 1);
 
-		// Damage the Ogre: 68 HP → 58. Then knock it Prone.
-		const ogre = o.page.locator(`${T} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: /^Ogre$/ }) });
+		// Damage the Ogre on the HP keypad: 68 HP → 58. Then 6 resisted (halved to 3), previewed before it lands.
 		assert.match(await ogre.locator('.dnd5e-hp-text').innerText(), /^68\/68$/);
-		await ogre.locator('.dnd5e-hp-input').fill('10');
-		await ogre.locator('.dnd5e-hp-input').press('Enter');
+		await hpPad5e(o, ogre, '10');
 		await o.waitFor(async () => /^58\/68$/.test(await ogre.locator('.dnd5e-hp-text').innerText()), { what: 'ogre damaged' });
-		// The HP keypad: 6 damage, resisted (halved to 3), previewed before it lands.
 		await ogre.locator('.dnd5e-hp-text').click();
 		const pad = o.page.locator('.nimble-hp-pad');
 		await pad.waitFor();
@@ -5275,9 +5291,16 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 		assert.match(await pad.locator('.hp-pad-preview').innerText(), /→ 55\/68 · takes 3 \(resisted\)/);
 		await o.page.keyboard.press('Enter');
 		await o.waitFor(async () => /^55\/68$/.test(await ogre.locator('.dnd5e-hp-text').innerText()), { what: 'ogre resisted 6' });
-		await ogre.locator('.dnd5e-condition-add').click();
-		await clickMenu(o, 'Prone');
+		// Knock it Prone, from the condition picker.
+		await pickCondition5e(o, ogre, 'Prone');
 		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition', { hasText: 'Prone' }).count()) === 1, { what: 'Prone chip' });
+		// Concentrating, from the row menu: damage calls for the save.
+		await ogre.locator('.dnd5e-combatant-more').click();
+		await clickMenu(o, 'Concentrating');
+		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition.is-concentration').count()) === 1, { what: 'concentrating' });
+		await o.eval(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+		await hpPad5e(o, ogre, '24');
+		await o.waitFor(async () => /Constitution save DC 12/.test((await o.page.locator('.notice').allInnerTexts()).join(' ')), { what: 'concentration save called' });
 
 		// Next turn moves on.
 		await o.page.locator(`${T} button`, { hasText: 'Next turn' }).click();
@@ -5288,16 +5311,21 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 		await o.page.locator(`${T} button[aria-label="Add the party"]`).click();
 		const ilse = o.page.locator(`${T} .dnd5e-combatant.side-hero`);
 		await o.waitFor(async () => (await ilse.count()) === 1, { what: 'hero added' });
-		assert.match(await ilse.locator('.dnd5e-ac').innerText(), /AC 16/);
-		await ilse.locator('.dnd5e-hp-input').fill('30');
-		await ilse.locator('.dnd5e-hp-input').press('Enter');
+		assert.equal(await ilse.locator('.dnd5e-ac').getAttribute('aria-label'), 'AC 16');
+		await hpPad5e(o, ilse, '30');
 		await o.waitFor(async () => (await ilse.locator('.dnd5e-death').count()) === 1, { what: 'death saves' });
 		await ilse.locator('.dnd5e-death-roll').click();
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse: death save', { what: 'death save rolled' });
 		await o.waitFor(async () => {
 			const t = await ilse.innerText();
-			return (await ilse.locator('.ev-pip.is-on').count()) >= 1 || /Stable|Dead/.test(t) || /\b1\/24\b/.test(t);
+			return (await ilse.locator('.ev-pip.is-on').count()) >= 1 || /Stable|Dead/i.test(t) || /\b1\/24\b/.test(t);
 		}, { what: 'death save recorded' });
+
+		// A defeated monster folds away under Defeated, still in the fight.
+		const g4 = o.page.locator(`${T} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: /^Goblin Warrior 4$/ }) });
+		await hpPad5e(o, g4, '50');
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-tracker-defeated .dnd5e-combatant`).count()) === 1, { what: 'goblin defeated' });
+		assert.match(await o.page.locator(`${T} .dnd5e-tracker-defeated summary`).innerText(), /Defeated\s*1/i);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-fight.png') });
 
 		// The fight is saved with the plugin's data, and Open encounter tracker shows it in a 5e campaign.
@@ -5625,7 +5653,7 @@ test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its c
 		await o.waitFor(async () => (await row.count()) === 1, { what: 'Marta in the tracker' });
 		assert.match(await row.locator('.dnd5e-combatant-name').innerText(), /^Marta Hale$/);
 		assert.match(await row.locator('.dnd5e-hp-text').innerText(), /^30\/30$/);
-		assert.match(await row.locator('.dnd5e-ac').innerText(), /AC 15/);
+		assert.equal(await row.locator('.dnd5e-ac').getAttribute('aria-label'), 'AC 15');
 		assert.ok((await o.eval((app, plugin) => plugin.settings.systemData.dnd5e.fight.combatants[0].monster.actions.length)) > 0);
 
 		// A system that draws locations its own way: new locations get a ```nimble-note block for it.
