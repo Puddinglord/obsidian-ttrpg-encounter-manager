@@ -351,6 +351,75 @@ body.ev-is-sorting { cursor: grabbing; }
 .condition-picker .condition-option { justify-content: flex-start; font-size: 0.82rem; height: auto; padding: 0.25rem 0.5rem; }
 .condition-picker .condition-option.is-minor { color: var(--text-muted); }
 .condition-picker .condition-option.is-applied { background: var(--interactive-accent); color: var(--text-on-accent); }
+
+/* The condition editor (core/tracker/condition-editor.ts): the picker, then a condition's
+   timing and effects. It wears the game's look (GAME LOOKS at the top). */
+.ev-cond-pop { background: var(--background-primary); }
+.condition-picker .condition-option.has-effects { gap: 0.3rem; }
+.ev-cond-mark { display: inline-flex; margin-left: auto; color: var(--ev-accent-text); opacity: 0.8; }
+.ev-cond-mark svg { width: 0.75rem; height: 0.75rem; }
+.condition-picker .condition-option.is-applied .ev-cond-mark { color: inherit; }
+.condition-picker button.ev-cond-new { grid-column: 1 / -1; justify-content: flex-start; height: auto; padding: 0.25rem 0.5rem; font-size: 0.82rem; border: 1px dashed var(--ev-accent); color: var(--ev-accent-text); background: var(--ev-tint); }
+.ev-cond-pop .picker-empty { grid-column: 1 / -1; color: var(--text-faint); font-size: 0.8rem; padding: 0.3rem 0.2rem; }
+.ev-cond-pop .ev-cond-desc { white-space: pre-line; max-height: 8rem; overflow: auto; font-size: 0.8rem; }
+.ev-cond-pop .popover-row .nimble-segmented { flex: 0 1 auto; }
+.ev-cond-pop select.ev-cond-whose { flex: 1 1 8rem; min-width: 0; height: 1.75rem; font-size: 0.8rem; }
+.ev-cond-section {
+	margin-top: 0.7rem; padding-top: 0.45rem; border-top: 1px solid var(--ev-paper-edge);
+	font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ev-accent-text);
+}
+.ev-cond-triggers { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.35rem; }
+.ev-trigger { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.4rem 0.45rem; border-radius: 8px; background: var(--ev-paper); border: 1px solid var(--ev-paper-edge); }
+.ev-trigger-head { display: flex; align-items: center; gap: 0.4rem; min-width: 0; }
+.ev-trigger-icon { display: inline-flex; flex: 0 0 auto; color: var(--ev-accent-text); }
+.ev-trigger-icon svg { width: 0.95rem; height: 0.95rem; }
+.ev-trigger-fields { display: flex; flex: 1 1 auto; gap: 0.3rem; min-width: 0; }
+.ev-trigger-fields input, .ev-trigger-fields select { min-width: 0; height: 1.75rem; font-size: 0.82rem; }
+.ev-trigger-fields input.ev-trigger-dice { flex: 0 0 4.2rem; width: 4.2rem; font-variant-numeric: tabular-nums; }
+.ev-trigger-fields input.ev-trigger-type, .ev-trigger-fields input.ev-trigger-text, .ev-trigger-fields select.ev-trigger-ability { flex: 1 1 auto; width: 100%; }
+.ev-trigger-fields input.ev-trigger-dc { flex: 0 0 3.6rem; width: 3.6rem; }
+button.ev-trigger-remove { flex: 0 0 auto; width: 1.6rem; height: 1.6rem; padding: 0; color: var(--text-faint); }
+.ev-trigger-when { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding-left: 1.35rem; }
+.ev-trigger-ends, .ev-cond-keep { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: var(--text-muted); cursor: pointer; }
+.ev-cond-adders { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.45rem; }
+button.ev-cond-add-trigger {
+	height: 1.65rem; padding: 0 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; box-shadow: none;
+	background: transparent; color: var(--ev-accent-text); border: 1px dashed color-mix(in srgb, var(--ev-accent) 55%, transparent);
+}
+button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
+.ev-cond-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+.ev-cond-foot button.ev-cond-apply { margin-left: auto; height: 1.9rem; padding: 0 0.9rem; font-weight: 600; }
+.ev-stepper { display: inline-flex; align-items: center; border: 1px solid var(--background-modifier-border); border-radius: 6px; overflow: hidden; }
+.ev-stepper button.ev-stepper-btn { width: 1.75rem; height: 1.75rem; padding: 0; border-radius: 0; box-shadow: none; background: transparent; color: var(--text-muted); }
+.ev-stepper button.ev-stepper-btn:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.ev-stepper button.ev-stepper-btn svg { width: 0.85rem; height: 0.85rem; }
+.ev-stepper input.ev-stepper-value {
+	width: 2.6rem; height: 1.75rem; padding: 0; border: none; border-left: 1px solid var(--background-modifier-border); border-right: 1px solid var(--background-modifier-border);
+	border-radius: 0; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; background: transparent;
+}
+.ev-stepper input.ev-stepper-value::-webkit-inner-spin-button { appearance: none; margin: 0; }
+.nimble-popover.is-sheet.ev-cond-pop .ev-trigger-fields input, .nimble-popover.is-sheet.ev-cond-pop .ev-trigger-fields select { height: 2.2rem; font-size: 0.95rem; }
+.nimble-popover.is-sheet.ev-cond-pop .ev-stepper button.ev-stepper-btn, .nimble-popover.is-sheet.ev-cond-pop .ev-stepper input.ev-stepper-value { height: 2.2rem; }
+.nimble-popover.is-sheet.ev-cond-pop .ev-stepper button.ev-stepper-btn { width: 2.4rem; }
+.nimble-popover.is-sheet.ev-cond-pop button.ev-cond-add-trigger { height: 2.2rem; padding: 0 0.85rem; font-size: 0.88rem; }
+
+/* What conditions ask at a turn boundary (core/tracker/effect-prompts.ts). */
+.modal.ev-effect-prompt { width: min(460px, 94vw); }
+.ev-effect-list { display: flex; flex-direction: column; gap: 0.55rem; }
+.ev-effect { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.65rem 0.75rem; border-radius: 10px; background: var(--ev-paper); border: 1px solid var(--ev-paper-edge); }
+.ev-effect.is-done { opacity: 0.85; }
+.ev-effect-head { display: flex; align-items: center; gap: 0.5rem; }
+.ev-effect-icon { display: inline-flex; color: var(--ev-accent-text); }
+.ev-effect-icon svg { width: 1.05rem; height: 1.05rem; }
+.ev-effect-title { font-size: 1rem; font-weight: var(--ev-heading-weight); }
+.ev-effect-who { font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); }
+.ev-effect-cond { color: var(--ev-accent-text); }
+.ev-effect-what { color: var(--text-muted); font-size: 0.88rem; padding-left: 1.55rem; }
+.ev-effect-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; padding-left: 1.55rem; }
+.ev-effect-actions button { height: 2rem; padding: 0 0.8rem; font-weight: 600; }
+.ev-effect-result { padding-left: 1.55rem; font-size: 0.88rem; font-weight: 600; }
+.ev-effect-foot { display: flex; justify-content: flex-end; margin-top: 0.8rem; }
+.ev-effect-foot button.ev-effect-done { height: 2rem; padding: 0 1rem; }
 .condition-picker .picker-empty { grid-column: 1 / -1; color: var(--text-muted); }
 
 .nimble-notice {
@@ -640,6 +709,8 @@ body.ev-is-sorting { cursor: grabbing; }
 	color: var(--text-on-accent);
 	padding: 0 0.25rem;
 }
+.nimble-encounter-tracker .condition-mark { display: inline-flex; opacity: 0.8; }
+.nimble-encounter-tracker .condition-mark svg { width: 0.7rem; height: 0.7rem; }
 .nimble-encounter-tracker .remove-condition { opacity: 0.55; padding: 0 0.15rem; }
 .nimble-encounter-tracker .remove-condition:hover { opacity: 1; color: var(--text-error); }
 .nimble-encounter-tracker .add-condition-btn {
@@ -5109,6 +5180,9 @@ button.dnd5e-combatant-more:hover { color: var(--text-normal); }
 	cursor: default;
 }
 .dnd5e-condition-icon svg { width: 0.8rem; height: 0.8rem; }
+.dnd5e-condition-mark { display: inline-flex; opacity: 0.85; }
+.dnd5e-condition-mark svg { width: 0.7rem; height: 0.7rem; }
+.dnd5e-condition-mark.is-damage { color: color-mix(in srgb, var(--color-red) 80%, var(--text-normal)); }
 .dnd5e-condition-rounds {
 	justify-content: center; min-width: 1rem; height: 0.95rem; padding: 0 0.2rem; border-radius: 999px;
 	font-size: 0.64rem; font-variant-numeric: tabular-nums; background: color-mix(in srgb, currentColor 18%, transparent);

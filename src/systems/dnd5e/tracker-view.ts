@@ -20,12 +20,17 @@ import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover'
 import { onLongPress } from '../../core/touch';
 import { openGameSettings } from '../../core/settings-ui';
 import { isSheetMember, type AppliedCondition, type PartyMember } from '../../core/types';
+import { ConditionEditorOptions, keepCustomCondition, openConditionDetails, openConditionPicker } from '../../core/tracker/condition-editor';
+import { showEffectPrompts } from '../../core/tracker/effect-prompts';
+import { chipSummary, triggerMark } from '../../core/tracker/effects';
 import { startRolls5e } from './settings';
 import {
-	addCondition, addHero, addMonster, applyHp, Combatant5e, concentrationDc, current, damageTaken, deathSave, end, Fight5e, hpState, isDefeated,
-	isRunning, moveCombatant, next, order, previewHp, previous, remove, removeCondition, rollInitiative, setConcentration, setDeathSaves5e, setInitiative, start,
-	updateCondition, useLegendary, useResistance,
+	addCondition, addHero, addMonster, applyHp, Combatant5e, concentrationDc, current, damageTaken, deathSave, effectDamage, end, Fight5e, hpState, isDefeated,
+	isRunning, moveCombatant, nextTurn, order, previewHp, previous, remove, removeCondition, retimeCondition, rollInitiative, saveBonus5e, setConcentration,
+	setDeathSaves5e, setInitiative, startCombat, TurnStep5e, updateCondition, useLegendary, useResistance,
 } from './combat';
+import { ABILITY_NAME, ABILITIES } from './types';
+import { DAMAGE_TYPES } from './builder-model';
 import type { Dnd5eRuntime } from './runtime';
 import type { Dnd5eEntry } from './types';
 import { formatMod } from './rules';
@@ -174,14 +179,33 @@ export class Dnd5eTrackerView extends ItemView {
 			const roll = btn('Initiative', 'dices', () => this.change(x => rollInitiative(x)), 'dnd5e-tracker-side');
 			roll.setAttr('aria-label', 'Roll initiative');
 			roll.disabled = !f.combatants.some(c => c.side === 'monster');
-			btn('Start combat', 'swords', () => this.change(x => start(x, Math.random, startRolls5e(this.rt.plugin))), 'mod-cta dnd5e-tracker-primary');
+			btn('Start combat', 'swords', () => this.turn(x => startCombat(x, Math.random, startRolls5e(this.rt.plugin))), 'mod-cta dnd5e-tracker-primary');
 		} else {
 			btn('Back', 'undo-2', () => this.change(x => previous(x)), 'dnd5e-tracker-side').setAttr('aria-label', 'Back a turn');
-			btn('Next turn', 'skip-forward', () => this.change(x => next(x)), 'mod-cta dnd5e-tracker-primary');
+			btn('Next turn', 'skip-forward', () => this.turn(x => nextTurn(x)), 'mod-cta dnd5e-tracker-primary');
 			btn('End combat', 'square', () => this.change(x => end(x)), 'dnd5e-tracker-icon', true);
 		}
 		btn('Add monster', 'plus', () => this.pickMonster(), 'dnd5e-tracker-icon', true);
 		if (!f.combatants.some(c => c.side === 'hero')) btn('Add the party', 'users', () => this.addParty(), 'dnd5e-tracker-icon', true);
+	}
+
+	/** A turn changes: run it, then ask what conditions call for (damage, saves; reminders as notices). */
+	private turn(step: (f: Fight5e) => TurnStep5e): void {
+		const r = this.change(step);
+		if (r.prompts.length) showEffectPrompts(this.rt.plugin, r.prompts, this.effectHandlers());
+	}
+
+	/** How the prompts reach this fight: damage by 5e's HP rules and the stat block's resistances, a monster's saves. */
+	private effectHandlers() {
+		return {
+			system: 'dnd5e',
+			words: { save: 'save' },
+			label: (id: string) => this.fight.combatants.find(c => c.id === id)?.label ?? '?',
+			damage: (id: string, amount: number, type?: string) => this.change(f => effectDamage(f, id, amount, type)),
+			saveBonus: (id: string, ability?: string) => saveBonus5e(this.fight, id, ability),
+			endCondition: (id: string, name: string) => this.change(f => removeCondition(f, id, name)),
+			log: (text: string) => this.change(f => { f.log.push({ round: f.round, text, time: Date.now() }); }),
+		};
 	}
 
 	private renderEmpty(root: HTMLElement): void {
@@ -402,14 +426,23 @@ export class Dnd5eTrackerView extends ItemView {
 	private renderCondition(parent: HTMLElement, c: Combatant5e, x: AppliedCondition): void {
 		const chip = parent.createSpan({ cls: 'dnd5e-condition', attr: { role: 'button', tabindex: '0', 'aria-haspopup': 'dialog' } });
 		chip.createSpan({ cls: 'dnd5e-condition-name', text: `${x.name}${x.value ? ` ${x.value}` : ''}` });
-		if (x.rounds !== undefined) chip.createSpan({ cls: 'dnd5e-condition-rounds', text: String(x.rounds), attr: { 'aria-label': `${x.rounds} round${x.rounds === 1 ? '' : 's'} left` } });
+		this.conditionMarks(chip, x);
 		this.chipRemove(chip, `Remove ${x.name}`, () => this.change(f => removeCondition(f, c.id, x.name)));
-		const open = () => this.conditionEditor(chip, c, x);
+		const open = () => openConditionDetails(chip, this.conditionOptions(c), x);
 		chip.onclick = open;
 		chip.onkeydown = (e) => {
 			if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
 			else if (e.key === 'Delete' || e.key === 'Backspace') this.change(f => removeCondition(f, c.id, x.name));
 		};
+	}
+
+	/** Rounds left, and a mark when it does something each turn (damage, a save, a reminder). */
+	private conditionMarks(chip: HTMLElement, x: AppliedCondition): void {
+		const mark = triggerMark(x);
+		if (mark) setIcon(chip.createSpan({ cls: `dnd5e-condition-mark is-${mark}`, attr: { 'aria-hidden': 'true' } }), mark === 'damage' ? 'flame' : mark === 'save' ? 'dices' : 'bell');
+		if (x.rounds !== undefined) chip.createSpan({ cls: 'dnd5e-condition-rounds', text: String(x.rounds), attr: { 'aria-label': `${x.rounds} round${x.rounds === 1 ? '' : 's'} left` } });
+		const summary = chipSummary(x, { save: 'save' });
+		if (summary) chip.setAttr('aria-label', `${x.name}: ${summary}`);
 	}
 
 	private renderConcentration(parent: HTMLElement, c: Combatant5e): void {
@@ -429,86 +462,44 @@ export class Dnd5eTrackerView extends ItemView {
 		return [...this.rt.plugin.systems.resolve('5e').conditions(this.fight.edition), ...this.rt.plugin.settings.customConditions];
 	}
 
-	/** A condition's rules, how long it lasts, its level (Exhaustion), and Remove. */
-	private conditionEditor(anchor: HTMLElement, c: Combatant5e, x: AppliedCondition): void {
-		if (isPopoverOpenFor(anchor)) { closePopover(); return; }
-		const def = this.conditionDefs().find(d => d.name.toLowerCase() === x.name.toLowerCase());
-		openPopover(anchor, (el, close) => {
-			el.addClass('condition-editor');
-			el.addClass('dnd5e-condition-pop');
-			applyLook(el, 'dnd5e');
-			el.createDiv({ cls: 'popover-title', text: `${x.name}${x.value ? ` ${x.value}` : ''}` });
-			if (def?.description) el.createDiv({ cls: 'popover-body dnd5e-condition-desc', text: def.description.replace(/\*\*/g, '') });
-			const row = el.createDiv({ cls: 'popover-row' });
-			row.createSpan({ cls: 'popover-label', text: 'Lasts' });
-			const seg = row.createDiv({ cls: 'nimble-segmented' });
-			for (const [text, rounds] of [['Until removed', null], ['1 rd', 1], ['2', 2], ['3', 3], ['10', 10]] as const) {
-				const b = seg.createEl('button', { text });
-				if ((x.rounds ?? null) === rounds) b.addClass('is-active');
-				b.onclick = () => { this.change(f => updateCondition(f, c.id, x.name, { rounds })); close(); };
-			}
-			if (def?.hasValue) {
-				const vrow = el.createDiv({ cls: 'popover-row' });
-				vrow.createSpan({ cls: 'popover-label', text: 'Level' });
-				const seg2 = vrow.createDiv({ cls: 'nimble-segmented' });
-				for (const v of [1, 2, 3, 4, 5, 6]) {
-					const b = seg2.createEl('button', { text: String(v) });
-					if (x.value === v) b.addClass('is-active');
-					b.onclick = () => { this.change(f => updateCondition(f, c.id, x.name, { value: v })); close(); };
-				}
-			}
-			const rm = el.createEl('button', { cls: 'mod-warning popover-remove', text: `Remove ${x.name}` });
-			rm.onclick = () => { this.change(f => removeCondition(f, c.id, x.name)); close(); };
-		}, { width: 300, sideOf: this.containerEl, placement: 'side' });
+	/** The core condition editor, told 5e's words and how to change this fight. */
+	private conditionOptions(c: Combatant5e): ConditionEditorOptions {
+		const f = this.fight;
+		const words = { save: 'save' };
+		return {
+			system: 'dnd5e',
+			cls: 'dnd5e-condition-pop',
+			bearer: { id: c.id, label: c.label },
+			defs: this.conditionDefs(),
+			customNames: this.rt.plugin.settings.customConditions.map(d => d.name),
+			applied: c.conditions,
+			others: order(f).filter(x => x.id !== c.id).map(x => ({ id: x.id, label: x.label })),
+			currentTurnId: isRunning(f) ? f.turnId : undefined,
+			abilities: ABILITIES.map(a => ABILITY_NAME[a]),
+			damageTypes: DAMAGE_TYPES,
+			words,
+			value: { label: 'Level' },
+			sideOf: this.containerEl,
+			// Concentrating first: it isn't a condition, but it's what the GM reaches for here.
+			extra: (grid, close, q) => {
+				if (q && !'concentrating'.includes(q)) return;
+				const on = !!c.concentrating;
+				const b = pill(grid, { tag: 'button', icon: 'brain', text: 'Concentrating', cls: `condition-option dnd5e-cond-concentration${on ? ' is-applied' : ''}`, attr: { 'aria-pressed': String(on) } });
+				b.onclick = () => { this.change(x => setConcentration(x, c.id, !on)); close(); };
+			},
+			add: (name, o) => this.change(x => addCondition(x, c.id, name, { value: o.value, timing: o.timing, sourceId: o.sourceId })),
+			update: (name, o) => this.change(x => {
+				retimeCondition(x, c.id, name, o.timing, o.sourceId);
+				if (o.value !== undefined) updateCondition(x, c.id, name, { value: o.value });
+			}),
+			remove: (name) => this.change(x => removeCondition(x, c.id, name)),
+			saveCustom: (d) => keepCustomCondition(this.rt.plugin, d, words),
+		};
 	}
 
-	/** Every condition of the fight's edition (and the custom ones) as a grid; Concentrating first. */
+	/** The "+" on a row: every condition of the fight's edition, your own, Concentrating, or a new one. */
 	private conditionPicker(anchor: HTMLElement, c: Combatant5e): void {
-		if (isPopoverOpenFor(anchor, 'condition-picker')) { closePopover(); return; }
-		let rounds: number | undefined;
-		openPopover(anchor, (el, close) => {
-			el.addClass('condition-picker');
-			el.addClass('dnd5e-condition-pop');
-			applyLook(el, 'dnd5e');
-			el.setAttr('role', 'dialog');
-			el.createDiv({ cls: 'popover-title', text: c.label });
-			const search = el.createEl('input', { type: 'search', cls: 'condition-search', attr: { placeholder: 'Condition…', 'aria-label': 'Find a condition' } });
-			const dur = el.createDiv({ cls: 'popover-row' });
-			dur.createSpan({ cls: 'popover-label', text: 'Lasts' });
-			const seg = dur.createDiv({ cls: 'nimble-segmented' });
-			for (const [text, r] of [['Until removed', undefined], ['1 rd', 1], ['2', 2], ['3', 3], ['10', 10]] as const) {
-				const b = seg.createEl('button', { text });
-				if (r === rounds) b.addClass('is-active');
-				b.onclick = () => { rounds = r; seg.querySelectorAll('button').forEach(n => n.removeClass('is-active')); b.addClass('is-active'); search.focus(); };
-			}
-			const grid = el.createDiv({ cls: 'condition-grid' });
-			const draw = () => {
-				grid.empty();
-				const q = search.value.trim().toLowerCase();
-				if (!q || 'concentrating'.includes(q)) {
-					const on = !!c.concentrating;
-					const b = pill(grid, { tag: 'button', icon: 'brain', text: 'Concentrating', cls: `condition-option dnd5e-cond-concentration${on ? ' is-applied' : ''}`, attr: { 'aria-pressed': String(on) } });
-					b.onclick = () => { this.change(f => setConcentration(f, c.id, !on)); close(); };
-				}
-				for (const def of this.conditionDefs()) {
-					if (q && !def.name.toLowerCase().includes(q)) continue;
-					const has = c.conditions.some(x => x.name.toLowerCase() === def.name.toLowerCase());
-					const b = grid.createEl('button', { cls: `condition-option${has ? ' is-applied' : ''}`, text: def.name, attr: { 'aria-pressed': String(has) } });
-					b.onclick = () => {
-						this.change(f => has ? removeCondition(f, c.id, def.name) : addCondition(f, c.id, def.name, { ...(def.hasValue ? { value: 1 } : {}), ...(rounds !== undefined ? { rounds } : {}) }));
-						close();
-					};
-				}
-			};
-			search.addEventListener('input', draw);
-			search.addEventListener('keydown', (e) => {
-				if (e.key !== 'Enter') return;
-				e.preventDefault();
-				grid.querySelector<HTMLButtonElement>('button')?.click();
-			});
-			draw();
-			window.setTimeout(() => search.focus(), 0);
-		}, { width: 300, sideOf: this.containerEl, placement: 'side' });
+		openConditionPicker(anchor, this.conditionOptions(c));
 	}
 
 	// ------------------------------------------------------------------------

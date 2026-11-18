@@ -58,4 +58,4 @@ These only change 5e campaigns. They're also in the 5e tracker's **⋯** menu, u
 
 ## Custom conditions
 
-Add your own conditions, with a name and the rules text the tracker shows.
+Add your own conditions, with a name and the rules text the tracker shows. Conditions you make in a tracker with **Keep in my conditions** are listed here too, with what they do each turn. They're offered in every game's campaigns.

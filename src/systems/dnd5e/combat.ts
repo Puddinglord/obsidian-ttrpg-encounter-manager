@@ -4,11 +4,12 @@
 // Every function changes the fight in place and returns what happened.
 
 import { HpCommand, parseHpCommand } from '../../core/tracker/hp';
-import type { AppliedCondition } from '../../core/types';
+import { applyTiming, emptyResult, EffectBearer, mergeResults, retime, turnEvent, TurnEventResult, undoTurnEvent } from '../../core/tracker/effects';
+import type { AppliedCondition, ConditionTiming, TurnBoundary } from '../../core/types';
 import { uid } from '../../core/types';
-import { initiativeOf } from './rules';
+import { initiativeOf, saveOf } from './rules';
 import type { Dnd5eEdition } from './editions';
-import type { Dnd5eMonster } from './types';
+import { ABILITIES, ABILITY_NAME, type Dnd5eMonster } from './types';
 
 export type Rng = () => number;
 
@@ -58,6 +59,13 @@ export interface Fight5e {
 	turnId?: string;
 	log: FightLogEntry[];
 	sourcePath?: string;
+	/** What the last Next turn did to conditions, so Back can put them back (one step). */
+	undo?: { turnId?: string; round: number; result: TurnEventResult };
+}
+
+/** A turn change: who's up now, and what the conditions did (core/tracker/effects.ts). */
+export interface TurnStep5e extends TurnEventResult {
+	who?: Combatant5e;
 }
 
 export function newFight(name = 'Encounter', edition: Dnd5eEdition = '2024'): Fight5e {
@@ -195,13 +203,31 @@ const takesTurns = (c: Combatant5e) => !(c.side === 'monster' && c.hp <= 0) && !
 
 /** Start combat: anyone without initiative rolls it, round 1, first in order. */
 export function start(f: Fight5e, rng: Rng = Math.random, rolls: StartRolls = { monsters: true, heroes: true }): Combatant5e | undefined {
+	return startCombat(f, rng, rolls).who;
+}
+
+/** Start combat, and what the first creature's conditions do at the start of its turn. */
+export function startCombat(f: Fight5e, rng: Rng = Math.random, rolls: StartRolls = { monsters: true, heroes: true }): TurnStep5e {
 	rollInitiative(f, rng, 'missing', rolls);
 	f.round = 1;
+	delete f.undo;
 	const first = order(f).find(takesTurns);
 	f.turnId = first?.id;
-	if (first) startTurn(f, first);
 	log(f, 'Combat starts');
-	return first;
+	if (!first) return emptyResult();
+	startTurn(f, first);
+	return { who: first, ...boundary(f, first.id, 'start') };
+}
+
+/** Run a turn boundary through the effects engine: counts down, ends what ran out (logged), and says what to ask. */
+export function boundary(f: Fight5e, id: string, when: TurnBoundary): TurnEventResult {
+	const bearers: EffectBearer[] = f.combatants.map(c => ({ id: c.id, conditions: c.conditions, out: !takesTurns(c) }));
+	const r = turnEvent(bearers, { combatantId: id, when, round: f.round });
+	bearers.forEach((b, i) => { f.combatants[i].conditions = b.conditions; });
+	const ended = new Map<string, string[]>();
+	for (const e of r.expired) ended.set(e.bearerId, [...(ended.get(e.bearerId) ?? []), e.condition.name]);
+	for (const [cid, names] of ended) log(f, `${find(f, cid)?.label ?? '?'}: ${names.join(', ')} ended`);
+	return r;
 }
 
 function startTurn(f: Fight5e, c: Combatant5e): void {
@@ -209,29 +235,22 @@ function startTurn(f: Fight5e, c: Combatant5e): void {
 	if (c.legendary) c.legendary.used = 0;
 }
 
-/** Conditions count down at the end of their bearer's turn (once per round); those that run out end. */
-export function tickConditions(c: Combatant5e, round: number): string[] {
-	const ended: string[] = [];
-	c.conditions = c.conditions.filter(x => {
-		if (x.rounds === undefined || x.tickedRound === round) return true;
-		x.rounds -= 1;
-		x.tickedRound = round;
-		if (x.rounds <= 0) { ended.push(x.name); return false; }
-		return true;
-	});
-	return ended;
-}
-
 /** End the current turn and pass to the next combatant (a new round after the last). */
 export function next(f: Fight5e): Combatant5e | undefined {
-	if (!isRunning(f)) return undefined;
+	return nextTurn(f).who;
+}
+
+/**
+ * End the current turn and pass to the next combatant: the end of this turn
+ * and the start of the next run through the effects engine (conditions count
+ * down and end; damage, saves and reminders come back to be asked).
+ */
+export function nextTurn(f: Fight5e): TurnStep5e {
+	if (!isRunning(f)) return emptyResult();
 	const list = order(f).filter(takesTurns);
-	if (!list.length) return undefined;
+	if (!list.length) return emptyResult();
 	const cur = current(f);
-	if (cur) {
-		const ended = tickConditions(cur, f.round);
-		if (ended.length) log(f, `${cur.label}: ${ended.join(', ')} ended`);
-	}
+	const ending = cur ? boundary(f, cur.id, 'end') : emptyResult();
 	let i = cur ? list.findIndex(c => c.id === cur.id) : -1;
 	// The current one may have dropped out (killed on its own turn): find who came next.
 	if (cur && i < 0) {
@@ -245,12 +264,24 @@ export function next(f: Fight5e): Combatant5e | undefined {
 	const nxt = list[i];
 	f.turnId = nxt.id;
 	startTurn(f, nxt);
-	return nxt;
+	const result = mergeResults(ending, boundary(f, nxt.id, 'start'));
+	f.undo = { turnId: nxt.id, round: f.round, result };
+	return { who: nxt, ...result };
 }
 
-/** Back to the previous combatant (undo a misclick); no conditions tick. */
+/**
+ * Back to the previous combatant (undo a misclick). Right after Next turn, what
+ * it did to conditions is put back (counts, and conditions that ran out), but
+ * damage, saves and reminders aren't asked again when you step forward.
+ */
 export function previous(f: Fight5e): Combatant5e | undefined {
 	if (!isRunning(f)) return undefined;
+	if (f.undo && f.undo.turnId === f.turnId && f.undo.round === f.round) {
+		const bearers: EffectBearer[] = f.combatants.map(c => ({ id: c.id, conditions: c.conditions }));
+		undoTurnEvent(bearers, f.undo.result);
+		bearers.forEach((b, i) => { f.combatants[i].conditions = b.conditions; });
+	}
+	delete f.undo;
 	const list = order(f).filter(takesTurns);
 	const cur = current(f);
 	let i = cur ? list.findIndex(c => c.id === cur.id) : 0;
@@ -268,6 +299,7 @@ export function end(f: Fight5e): void {
 	log(f, 'Combat ends');
 	f.round = 0;
 	f.turnId = undefined;
+	delete f.undo;
 }
 
 export function remove(f: Fight5e, id: string): void {
@@ -427,13 +459,68 @@ export function useLegendary(f: Fight5e, id: string, delta = 1): void {
 // ----------------------------------------------------------------------------
 // Conditions
 
-export function addCondition(f: Fight5e, id: string, name: string, o: { rounds?: number; value?: number } = {}): void {
+/**
+ * Put a condition on a combatant, with its timing (a preset's, a custom
+ * condition's, or the GM's: core/tracker/effects.ts). `sourceId` is who caused
+ * it, for a condition that counts on their turn. Already there: it's updated.
+ */
+export function addCondition(f: Fight5e, id: string, name: string, o: { rounds?: number; value?: number; timing?: ConditionTiming; sourceId?: string } = {}): void {
 	const c = find(f, id);
 	if (!c) return;
 	const existing = c.conditions.find(x => x.name.toLowerCase() === name.toLowerCase());
-	if (existing) { if (o.rounds !== undefined) existing.rounds = o.rounds; if (o.value !== undefined) existing.value = o.value; return; }
-	c.conditions.push({ name, ...(o.rounds !== undefined ? { rounds: o.rounds } : {}), ...(o.value !== undefined ? { value: o.value } : {}) });
-	log(f, `${c.label} is ${name}${o.value ? ` ${o.value}` : ''}`);
+	if (existing && !o.timing) { if (o.rounds !== undefined) existing.rounds = o.rounds; if (o.value !== undefined) existing.value = o.value; return; }
+	const timing: ConditionTiming = { ...o.timing, ...(o.rounds !== undefined ? { rounds: o.rounds } : {}) };
+	const applied = applyTiming(existing?.name ?? name, timing, { ...turnContext(f, id, o.sourceId), value: o.value ?? existing?.value });
+	if (existing) {
+		if (existing.fired) applied.fired = existing.fired;
+		c.conditions[c.conditions.indexOf(existing)] = applied;
+		return;
+	}
+	c.conditions.push(applied);
+	log(f, `${c.label} is ${name}${o.value ? ` ${o.value}` : ''}${applied.rounds ? ` (${applied.rounds} round${applied.rounds === 1 ? '' : 's'})` : ''}`);
+}
+
+/** Whose turn it is and who caused it, for the effects engine. */
+function turnContext(f: Fight5e, id: string, sourceId?: string) {
+	const src = sourceId ? find(f, sourceId) : undefined;
+	return {
+		bearerId: id,
+		turn: isRunning(f) && f.turnId ? { combatantId: f.turnId, round: f.round } : undefined,
+		source: src ? { id: src.id, label: src.label } : undefined,
+	};
+}
+
+/** Change how long a condition lasts and what it does (the condition editor, from its chip). */
+export function retimeCondition(f: Fight5e, id: string, name: string, timing: ConditionTiming, sourceId?: string): void {
+	const x = find(f, id)?.conditions.find(x => x.name.toLowerCase() === name.toLowerCase());
+	if (x) retime(x, timing, turnContext(f, id, sourceId));
+}
+
+/** A monster's save from the ability's name ("Wisdom", "WIS"): the listed save, else the modifier. Heroes: unknown. */
+export function saveBonus5e(f: Fight5e, id: string, ability: string | undefined): number | undefined {
+	const m = find(f, id)?.monster;
+	const a = ability?.trim().toLowerCase();
+	if (!m || !a) return undefined;
+	const key = ABILITIES.find(k => k === a.slice(0, 3) || ABILITY_NAME[k].toLowerCase() === a);
+	return key ? saveOf(m, key) : undefined;
+}
+
+/**
+ * Damage from a condition ("1d4 Fire"), through the stat block's immunities,
+ * resistances and vulnerabilities to that type. Returns the log line.
+ */
+export function effectDamage(f: Fight5e, id: string, amount: number, damageType?: string): string | undefined {
+	const c = find(f, id);
+	if (!c) return undefined;
+	const t = damageType?.trim().toLowerCase();
+	const has = (list?: string[]) => !!t && !!list?.some(x => x.toLowerCase().split(/[^a-z]+/).includes(t));
+	if (has(c.monster?.immunities)) {
+		const text = `${c.label} is immune to ${damageType ?? ''} damage`;
+		log(f, text);
+		return text;
+	}
+	const mod = has(c.monster?.resistances) ? 'resisted' : has(c.monster?.vulnerabilities) ? 'vulnerable' : undefined;
+	return applyHp(f, id, { kind: 'damage', amount, ...(mod ? { type: mod } : {}) });
 }
 
 /** Change a condition's duration (null: until removed) or value. */
@@ -463,6 +550,7 @@ export function normalizeFight(raw: unknown): Fight5e | null {
 		turnId: typeof f.turnId === 'string' ? f.turnId : undefined,
 		log: Array.isArray(f.log) ? f.log : [],
 		sourcePath: typeof f.sourcePath === 'string' ? f.sourcePath : undefined,
+		...(f.undo && typeof f.undo === 'object' && f.undo.result && typeof f.undo.round === 'number' ? { undo: f.undo } : {}),
 	};
 }
 

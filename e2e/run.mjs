@@ -1495,8 +1495,13 @@ test('conditions: durations count down at end of turn, X values, chip editor', a
 	const editor = o.page.locator('.nimble-popover.condition-editor');
 	await editor.waitFor({ timeout: 2000 });
 	assert.equal(await editor.locator('.popover-title').textContent(), 'Empowered 2');
-	await editor.locator('button', { hasText: '3 rds' }).click();
+	// Lasts: Rounds, then up to 3 (each change applies as it's made).
+	await editor.locator('.ev-cond-lasts button', { hasText: 'Rounds' }).click();
+	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Empowered', value: 2, rounds: 1 }]);
+	await editor.locator('.ev-stepper button[aria-label="More rounds"]').click();
+	await editor.locator('.ev-stepper button[aria-label="More rounds"]').click();
 	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Empowered', value: 2, rounds: 3 }]);
+	await o.page.keyboard.press('Escape');
 	await row.locator('.condition-tag', { hasText: 'Empowered' }).click();
 	await o.page.locator('.nimble-popover.condition-editor button', { hasText: exact('4') }).click();
 	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Empowered', value: 4, rounds: 3 }]);
@@ -5474,6 +5479,119 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
 			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
 			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('5e encounters: timed conditions run out, damage effects prompt at the start of a turn, your own conditions come back', async (o) => {
+	const C = 'Campaigns/Timed Coast';
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	const row = (name) => o.page.locator(`${T} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: new RegExp(`^${name}$`) }) });
+	const fight = () => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => ({ label: c.label, hp: c.hp, conditions: c.conditions.map(x => x.name), rounds: Object.fromEntries(c.conditions.map(x => [x.name, x.rounds])) })));
+	const of = async (label) => (await fight()).find(c => c.label === label);
+	const modal = o.page.locator('.modal.ev-effect-prompt');
+	const nextTurn = async () => { await o.page.locator(`${T} button`, { hasText: 'Next turn' }).click(); await o.page.waitForTimeout(150); };
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			plugin.settings.customConditions = plugin.settings.customConditions.filter(c => c.name !== 'Seared');
+			await plugin.campaigns.createCampaign({ name: 'Timed Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Fight.md`, '```nimble-encounter\nname: Timed fight\nmonsters:\n- 2 `5e:Goblin Warrior`\n- `5e:Ogre`\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Fight.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/Fight.md`, 'preview');
+		await o.page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-encounter button', { hasText: 'Run' }).first().click();
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant`).count()) === 3, { what: 'three combatants' });
+		await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.change(f => { const inits = { 'Ogre': 20, 'Goblin Warrior': 15, 'Goblin Warrior 2': 10 }; for (const c of f.combatants) c.init = inits[c.label]; }));
+		await o.page.locator(`${T} button`, { hasText: 'Start combat' }).click();
+		await o.waitFor(async () => /Ogre's turn/.test(await o.page.locator(`${T} .dnd5e-tracker-status`).innerText()), { what: "Ogre's turn" });
+
+		// Frightened for 2 rounds, from the picker: two taps and a duration.
+		await row('Goblin Warrior').locator('.dnd5e-condition-add').click();
+		await o.page.locator('.condition-picker .nimble-segmented button', { hasText: exact('2') }).click();
+		await o.page.locator('.condition-picker .condition-option', { hasText: exact('Frightened') }).click();
+		await o.waitFor(async () => (await row('Goblin Warrior').locator('.dnd5e-condition', { hasText: 'Frightened' }).locator('.dnd5e-condition-rounds').innerText().catch(() => '')) === '2', { what: 'Frightened, 2 rounds' });
+
+		// Burning (SRD 5.2) comes with its effect: 1d4 Fire at the start of each turn.
+		await row('Ogre').locator('.dnd5e-condition-add').click();
+		await o.page.locator('.condition-picker .condition-search').fill('burn');
+		await o.page.locator('.condition-picker .condition-option', { hasText: exact('Burning') }).click();
+		await o.waitFor(async () => (await row('Ogre').locator('.dnd5e-condition', { hasText: 'Burning' }).locator('.dnd5e-condition-mark.is-damage').count()) === 1, { what: 'Burning chip with its mark' });
+
+		// A condition of your own, made on the spot: 3 Fire damage at the start of its turns, kept for next time.
+		await row('Goblin Warrior 2').locator('.dnd5e-condition-add').click();
+		await o.page.locator('.condition-picker .condition-search').fill('Seared');
+		await o.page.locator('.condition-picker .ev-cond-new').click();
+		const ed = o.page.locator('.nimble-popover.condition-editor');
+		await ed.locator('.ev-cond-add-trigger', { hasText: 'Damage' }).click();
+		await ed.locator('.ev-trigger-dice').fill('3');
+		await ed.locator('.ev-trigger-type').fill('Fire');
+		await ed.locator('.ev-trigger-type').press('Tab');
+		assert.equal(await ed.locator('.ev-cond-keep input').isChecked(), true);
+		await ed.locator('.ev-cond-apply').click();
+		await o.waitFor(async () => (await of('Goblin Warrior 2')).conditions.includes('Seared'), { what: 'Seared applied' });
+		const kept = await o.eval((app, plugin) => plugin.settings.customConditions.find(c => c.name === 'Seared'));
+		assert.deepEqual(kept.timing, { triggers: [{ kind: 'damage', at: 'start', dice: '3', damageType: 'Fire' }] });
+
+		// Ogre → Goblin → Goblin 2: Frightened counts down at the end of the goblin's turn; Seared asks at the start of Goblin 2's.
+		await nextTurn();
+		assert.equal(await modal.count(), 0);
+		await nextTurn();
+		assert.equal((await of('Goblin Warrior')).rounds.Frightened, 1);
+		await modal.waitFor({ timeout: 3000 });
+		assert.match(await modal.locator('.ev-effect').innerText(), /Goblin Warrior 2 is Seared[\s\S]*3 Fire damage/i);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-effect-prompt.png') });
+		await modal.locator('.ev-effect-roll', { hasText: 'Apply 3' }).click();
+		assert.equal((await of('Goblin Warrior 2')).hp, 7);
+		await modal.locator('.ev-effect-done').click();
+		await modal.waitFor({ state: 'detached', timeout: 3000 });
+
+		// Round 2: the Ogre burns at the start of its turn; rolling applies it.
+		await nextTurn();
+		await modal.waitFor({ timeout: 3000 });
+		assert.match(await modal.innerText(), /Ogre is Burning[\s\S]*1d4 Fire damage/i);
+		const before = (await of('Ogre')).hp;
+		await modal.locator('.ev-effect-roll').click();
+		await o.waitFor(async () => /Rolled \d/.test(await modal.locator('.ev-effect-result').innerText().catch(() => '')), { what: 'burn rolled' });
+		const lost = before - (await of('Ogre')).hp;
+		assert.ok(lost >= 1 && lost <= 4, `burned for ${lost}`);
+		assert.equal(await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label), 'Ogre: Burning');
+		await modal.locator('.ev-effect-done').click();
+
+		// Goblin → Goblin 2: Frightened runs out at the end of the goblin's second turn. Skip the sear this time.
+		await nextTurn();
+		await nextTurn();
+		assert.deepEqual((await of('Goblin Warrior')).conditions, []);
+		await modal.waitFor({ timeout: 3000 });
+		await modal.locator('.ev-effect-skip').click();
+		await modal.locator('.ev-effect-done').click();
+		assert.equal((await of('Goblin Warrior 2')).hp, 7);
+
+		// Back puts Frightened back (1 round left); Next again ends it, and doesn't ask about the sear twice.
+		await o.page.locator(`${T} button[aria-label="Back a turn"]`).click();
+		await o.waitFor(async () => (await of('Goblin Warrior')).rounds.Frightened === 1, { what: 'Frightened back after Back' });
+		await nextTurn();
+		assert.deepEqual((await of('Goblin Warrior')).conditions, []);
+		assert.equal(await modal.count(), 0);
+
+		// Your own condition is offered next time, with its effect.
+		await row('Ogre').locator('.dnd5e-condition-add').click();
+		await o.page.locator('.condition-picker .condition-search').fill('sea');
+		const offered = o.page.locator('.condition-picker .condition-option', { hasText: exact('Seared') });
+		assert.equal(await offered.count(), 1);
+		assert.equal(await offered.locator('.ev-cond-mark').count(), 1);
+		await o.page.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			plugin.settings.customConditions = plugin.settings.customConditions.filter(c => c.name !== 'Seared');
 			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
 			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
 			await plugin.campaigns.setActive(null);

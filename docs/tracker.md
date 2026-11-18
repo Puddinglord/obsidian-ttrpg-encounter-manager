@@ -47,8 +47,17 @@ Each card shows the name, then a line with the level (or a hero's class and thei
 - **Heroes:** action pips (set them from Initiative: 1–9 → 1, 10–19 → 2, 20+ → 3) and Wound pips sit on one line under the HP bar. Dropping to 0 HP adds 1 Wound and makes the hero Dying; damage while Dying adds 2 Wounds (3 on a crit).
 - **Minions** share one row with a pip each. Any hit drops one; big hits drop more (one per full die of damage). **Group attack** rolls all of them at once: 1s miss, no crits, and one Defend covers the total.
 - **Legendary monsters** have HP scaled to the party, and act after each hero's turn: click their name to see their choices, with clickable dice. Bloodied and Last Stand appear as prompts, and **Apply** handles Last Stand HP (regain per hero, or a final damage pool with armor).
-- **Statuses:** all the 3.3 conditions plus minor statuses and your own custom ones. Apply one for a set number of rounds or until removed; Empowered and Weakened take a value. Durations count down when that combatant's turn ends.
+- **Statuses:** all the 3.3 conditions plus minor statuses and your own custom ones. Apply one for a set number of rounds or until removed; Empowered and Weakened take a value. Durations count down when that combatant's turn ends (marking it done, or the round ending). See [Timed statuses](#timed-statuses).
 - **Combat log and summary:** in the ⋯ menu, **Copy summary**, or **Append summary to source note** for your session log.
+
+## Timed statuses
+
+A status can last a number of rounds, end when a save succeeds, and do something at the start or end of its creature's turn: deal damage, call for a save, or remind you of something.
+
+- **Your own:** in a card's **+ Status** list, type a name that isn't there and tap **New: …**. Choose how long it lasts (**Until removed**, **Rounds** or **Until saved**) and add what it does each turn: **Damage** (dice, and a type if you like), **Save** (STR, DEX, INT or WIL, a DC, and whether a success ends it) or **Reminder** (a line of text). **Keep in my conditions** keeps it in the list for next time.
+- **When it counts down:** at the end of its creature's turn, or the start; on its own turn, or the turn of whoever caused it.
+- **Changing one:** tap its chip; changes apply as you make them. Long-press (or right-click) a status in the list to set its timing before you add it.
+- **When it fires:** a side's turn starting (**Heroes' turn**, **Monsters' turn**) is the start of every turn on that side; marking a turn done (or the round ending) is its end. A dialog asks for each effect: **Roll 1d6 and apply** or **Skip** for damage (Nimble's armor applies, as if you'd typed it in the HP box), **Passed** or **Failed** for a save. Reminders show as a notice. Nothing is asked twice in a round, even if you switch sides back and forth.
 
 ## Several encounters at once
 

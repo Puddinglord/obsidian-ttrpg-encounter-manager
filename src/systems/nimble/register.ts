@@ -5,6 +5,8 @@
 
 import { Notice, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
+import { showEffectPrompts } from '../../core/tracker/effect-prompts';
+import type { EffectPrompt } from '../../core/tracker/effects';
 import { addEditButton, registerBuilders } from './builder-register';
 import { registerCharacterFeatures } from './character-register';
 import { watchArt } from './compendium-art';
@@ -34,6 +36,20 @@ export function registerNimble(plugin: EmberVaultPlugin): void {
 	}));
 	plugin.registerEvent(plugin.events.on('settings-saving', () => invalidateCompendium()));
 	plugin.registerEvent(nb.encounters.on('changed', () => plugin.events.trigger('combat-changed')));
+	// A side's turn starting, or a turn marked done: what conditions ask (damage, saves, reminders), once, whichever tracker or command did it.
+	plugin.registerEvent(nb.encounters.on('effects', (encId: string, prompts: EffectPrompt[]) => {
+		const store = nb.encounters;
+		const who = (id: string) => store.creature(encId, id);
+		showEffectPrompts(plugin, prompts, {
+			system: 'nimble',
+			words: { save: 'save' },
+			label: (id) => who(id)?.label ?? '?',
+			// The same as typing the number in its HP box: Nimble's armor, Wounds and minions.
+			damage: (id, amount) => store.applyHp(encId, id, { kind: 'damage', amount }).events.join('; ') || undefined,
+			endCondition: (id, name) => store.removeCondition(encId, id, name),
+			log: (text) => { const enc = store.find(encId); if (enc) store.log(enc, text); },
+		});
+	}));
 	registerNimbleCommands(plugin, nb);
 	plugin.registerView(ENCOUNTER_VIEW_TYPE, (leaf) => new EncounterTrackerView(leaf, plugin));
 	plugin.registerView(COMPENDIUM_VIEW_TYPE, (leaf) => new CompendiumView(leaf, plugin));

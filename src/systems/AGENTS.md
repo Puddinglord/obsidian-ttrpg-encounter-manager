@@ -10,7 +10,7 @@ Where the engines came from, and what's still each system's own: [prototypes/SYS
 |---|---|---|---|
 | `id`, `name`, `aliases`, `editions` | How campaigns name it (`system: 5e`, `edition: 2014`) | ✓ | ✓ |
 | `attribution` | Licence line and where to buy; shown in settings | ✓ | ✓ |
-| `conditions(edition)` | The rules' conditions | ✓ | ✓ |
+| `conditions(edition)` | The rules' conditions, and other lasting effects the tracker offers. A `ConditionDef` may carry `timing` (rounds, start or end of turn, damage, saves, reminders: `core/tracker/effects.ts`), its default when applied | ✓ | ✓ (2024: Burning, 1d4 Fire at the start of each turn) |
 | `quickLook` | A note in a modal (an NPC from a link); returns the modal, so Spotlight can come back on Escape | ✓ | ✓ |
 | `characters` | `promptNew`, `createFromPartyMember`, `partyMember` (the encounter party reads sheets) | ✓ | ✓ |
 | `register(plugin)` | Wire in its blocks, references, indexes, views, suggest, at load | ✓ (`nimble/register.ts`) | ✓ |
@@ -47,6 +47,8 @@ Use the shared design language (Nimble's sheet and tracker are the benchmark): c
 - **Character wizards.** Use the builder: register `character` and `level-up` kinds with `hidden: true`, open them from `characters.promptNew` and your sheet's Level up (`openBuilder` with `apply` to write the sheet's properties). See `dnd5e/character-wizard.ts`, and test every class × origin × level the way `tests/dnd5e-character-wizard.test.ts` does.
 
 - **Tracker.** Your tracker is your own (turn order, rounds, what HP means), registered as a view and opened by `openTracker`. Take HP input with `parseHpCommand` (`core/tracker/hp.ts`) and give HP the shared keypad (`openHpPad`), so damage is typed the same way in every game. Let the GM drag rows to reorder with `makeSortable` (`core/tracker/sortable.ts`), and keep the dropped order in your model (5e: `moveCombatant` and a `tiebreak`).
+
+- **Timed conditions** (`core/tracker/effects.ts`, see [core's guide](../core/AGENTS.md#timed-conditions-trackereffectsts)). Don't count durations yourself: call `turnEvent` wherever a turn starts or ends in your turn model (initiative, sides, spotlight), keep its result for Back (`undoTurnEvent`), and show its prompts with `showEffectPrompts`, handing it your damage rule and save bonus. Add conditions with core's editor (`openConditionPicker`, `openConditionDetails`: your abilities' names, damage types, a value's label) so they're picked, timed and made up on the spot the same way in every game. Test the turn boundaries the way `tests/dnd5e-combat.test.ts` and `tests/tracker-flow.test.ts` do.
 
 ## Adding a game system: checklist
 

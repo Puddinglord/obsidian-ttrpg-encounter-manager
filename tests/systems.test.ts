@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SystemRegistry, normalizeSystemId, resolveEdition } from '../src/systems/registry';
 import type { GameSystem } from '../src/systems/contract';
 import { createSystems, SHIPPED_SYSTEMS } from '../src/app/systems';
+import { cleanTiming } from '../src/core/tracker/effects';
 
 const fake = (id: string): GameSystem => ({
 	id, name: id,
@@ -65,6 +66,14 @@ describe.each(SHIPPED_SYSTEMS.map(s => [s.id, s] as const))('game system %s', (_
 		const names = list.map(c => c.name.toLowerCase());
 		expect(new Set(names).size).toBe(names.length);
 		for (const c of list) expect(c.description.trim()).not.toBe('');
+	});
+	it.each(editions)('gives any condition’s timing in the form the tracker engine reads (edition %s)', (edition) => {
+		// Presets go straight into fights (core/tracker/effects.ts): nothing the engine would drop, and an effect for each.
+		for (const c of system.conditions(edition)) {
+			if (!c.timing) continue;
+			expect(cleanTiming(c.timing), c.name).toEqual(c.timing);
+			expect(c.timing.triggers?.length ?? c.timing.rounds, c.name).toBeTruthy();
+		}
 	});
 	it('has unique edition ids, each with a label', () => {
 		const ids = (system.editions ?? []).map(e => e.id);

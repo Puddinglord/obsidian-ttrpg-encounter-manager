@@ -263,3 +263,76 @@ describe('review fixes', () => {
 		expect(monsterHit(store.creature(enc, k.id)!, 20, false, { autoArmor: true })).toMatchObject({ absorbed: 0, taken: 10, hp: 25 });
 	});
 });
+
+describe('timed conditions on Nimble’s sides (core/tracker/effects.ts)', () => {
+	const burn = { kind: 'damage' as const, at: 'start' as const, dice: '1d4', damageType: 'Fire' };
+	const save = { kind: 'save' as const, at: 'end' as const, ability: 'STR', dc: 12, endsOnSave: true };
+	const party = (settings: NimbleStatblocksSettings) => { settings.party = [{ id: 'a', name: 'A', level: 1, maxHp: 10 }]; };
+	const listen = (store: EncounterStore) => {
+		const got: string[] = [];
+		store.on('effects', (...args: unknown[]) => { for (const p of args[1] as { condition: string; trigger: { at: string } }[]) got.push(`${p.condition}@${p.trigger.at}`); });
+		return got;
+	};
+
+	it('start effects fire when the creature’s side begins its turn, once a round', () => {
+		const { store, settings } = setup();
+		party(settings);
+		store.addParty();
+		const [g] = store.add(goblin);
+		const enc = store.active!;
+		const got = listen(store);
+		store.addCondition(enc.id, g.id, 'Burning', { timing: { triggers: [burn] } });
+		store.start(enc.id);
+		expect(got).toEqual([]); // heroes go first
+		store.setDone(enc.id, enc.creatures[0].id, true); // the last hero is done: the monsters' turn starts
+		expect(enc.phase).toBe('monsters');
+		expect(got).toEqual(['Burning@start']);
+		store.setPhase(enc.id, 'heroes');
+		store.setPhase(enc.id, 'monsters'); // toggled back: not asked twice in a round
+		expect(got).toEqual(['Burning@start']);
+		store.nextRound(enc.id);
+		store.setPhase(enc.id, 'monsters');
+		expect(got).toEqual(['Burning@start', 'Burning@start']);
+	});
+
+	it('end effects fire when the turn is marked done, or when the round ends without it', () => {
+		const { store } = setup();
+		const [g, g2] = store.add(goblin, undefined, 2);
+		const enc = store.active!;
+		const got = listen(store);
+		store.addCondition(enc.id, g.id, 'Held', { timing: { triggers: [save] } });
+		store.addCondition(enc.id, g2.id, 'Held', { timing: { triggers: [save] } });
+		store.start(enc.id);
+		store.setDone(enc.id, g.id, true);
+		expect(got).toEqual(['Held@end']);
+		store.setDone(enc.id, g.id, false);
+		store.setDone(enc.id, g.id, true); // undone and done again: asked once
+		expect(got).toEqual(['Held@end']);
+		store.nextRound(enc.id); // g2 never marked its turn
+		expect(got).toEqual(['Held@end', 'Held@end']);
+	});
+
+	it('a condition can count down on the turn of the creature that caused it', () => {
+		const { store, settings } = setup();
+		party(settings);
+		store.addParty();
+		const [g] = store.add(goblin);
+		const enc = store.active!;
+		const hero = enc.creatures[0];
+		store.addCondition(enc.id, g.id, 'Frightened', { timing: { rounds: 1, whose: 'source' }, sourceId: hero.id });
+		expect(store.creature(enc.id, g.id)!.conditions[0]).toMatchObject({ rounds: 1, whose: 'source', sourceId: hero.id, sourceLabel: hero.label });
+		store.start(enc.id);
+		store.setDone(enc.id, hero.id, true);
+		expect(store.creature(enc.id, g.id)!.conditions).toEqual([]);
+		expect(enc.log?.some(l => /Goblin.*: Frightened wore off/.test(l.text))).toBe(true);
+	});
+
+	it('changes a condition’s timing from its chip', () => {
+		const { store } = setup();
+		const [g] = store.add(goblin);
+		const enc = store.active!;
+		store.addCondition(enc.id, g.id, 'Dazed', { rounds: 2 });
+		store.retimeCondition(enc.id, g.id, 'Dazed', { triggers: [burn] });
+		expect(store.creature(enc.id, g.id)!.conditions).toEqual([{ name: 'Dazed', triggers: [burn] }]);
+	});
+});

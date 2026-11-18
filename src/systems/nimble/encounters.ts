@@ -6,9 +6,11 @@ import {
 	AppliedCondition, Encounter, EncounterCreature, EncounterPhase, NimbleMonster, NimbleStatblocksSettings, PartyMember, Side, uid,
 } from './types';
 import {
-	DamageMod, HpCommand, heroDamage, lastStandEffect, minionDie, minionKills, monsterDamage, monsterRole, parseHpCommand, scaledHp, tickConditions,
+	DamageMod, HpCommand, heroDamage, lastStandEffect, minionDie, minionKills, monsterDamage, monsterRole, parseHpCommand, scaledHp,
 	shiftMonster,
 } from './rules';
+import { applyTiming, EffectBearer, EffectPrompt, retime, turnEvent, TurnEventResult } from '../../core/tracker/effects';
+import type { ConditionTiming, TurnBoundary } from '../../core/types';
 
 export type HpThreshold = 'bloodied' | 'last-stand' | 'recovered' | null;
 
@@ -510,13 +512,20 @@ export class EncounterStore extends Events {
 	// ------------------------------------------------------------------------
 	// Conditions
 
-	addCondition(encId: string, creatureId: string, name: string, opts: { rounds?: number; value?: number } = {}): void {
+	/**
+	 * Put a condition on a combatant, with its timing (a preset's, your own
+	 * condition's, or the GM's: core/tracker/effects.ts). `sourceId` is who
+	 * caused it, for one that counts down on their side's turn.
+	 */
+	addCondition(encId: string, creatureId: string, name: string, opts: { rounds?: number; value?: number; timing?: ConditionTiming; sourceId?: string } = {}): void {
 		const enc = this.find(encId);
 		const c = enc?.creatures.find(x => x.id === creatureId);
 		if (!enc || !c) return;
-		const applied: AppliedCondition = { name };
-		if (opts.rounds && opts.rounds > 0) applied.rounds = opts.rounds;
-		if (opts.value !== undefined) applied.value = opts.value;
+		const src = opts.sourceId ? enc.creatures.find(x => x.id === opts.sourceId) : undefined;
+		const timing: ConditionTiming = { ...opts.timing };
+		if (opts.rounds && opts.rounds > 0) timing.rounds = opts.rounds;
+		// Nimble's sides have no one current turn, so nothing is skipped: "1 round" ends when its turn is marked done.
+		const applied: AppliedCondition = applyTiming(name, timing, { bearerId: c.id, value: opts.value, source: src ? { id: src.id, label: src.label } : undefined });
 		const i = c.conditions.findIndex(x => x.name === name);
 		if (i === -1) c.conditions.push(applied);
 		else c.conditions[i] = applied;
@@ -549,6 +558,48 @@ export class EncounterStore extends Events {
 		this.commit();
 	}
 
+	/** Change how long a condition lasts and what it does each turn (the condition editor, from its chip). */
+	retimeCondition(encId: string, creatureId: string, name: string, timing: ConditionTiming, sourceId?: string): void {
+		const enc = this.find(encId);
+		const cond = enc?.creatures.find(x => x.id === creatureId)?.conditions.find(x => x.name === name);
+		if (!enc || !cond) return;
+		const src = sourceId ? enc.creatures.find(x => x.id === sourceId) : undefined;
+		retime(cond, timing, { bearerId: creatureId, source: src ? { id: src.id, label: src.label } : undefined });
+		this.commit();
+	}
+
+	/**
+	 * A turn boundary for one creature, by core's rules (core/tracker/effects.ts):
+	 * conditions count down and end, and what they ask (damage, saves, reminders)
+	 * goes out as an 'effects' event once the change is saved.
+	 */
+	private boundary(enc: Encounter, creatureId: string, when: TurnBoundary): TurnEventResult {
+		const bearers: EffectBearer[] = enc.creatures.map(c => ({ id: c.id, conditions: c.conditions, out: isDown(c) }));
+		const r = turnEvent(bearers, { combatantId: creatureId, when, round: enc.round ?? 1 });
+		bearers.forEach((b, i) => { enc.creatures[i].conditions = b.conditions; });
+		// What ran out on someone else (counting on this creature's turn) goes in the log.
+		for (const e of r.expired) {
+			if (e.bearerId !== creatureId) this.log(enc, `${enc.creatures.find(c => c.id === e.bearerId)?.label ?? '?'}: ${e.condition.name} wore off`, false);
+		}
+		this.pendingEffects.push(...r.prompts);
+		return r;
+	}
+
+	/** The start of a side's turn: every creature on it that's still up. */
+	private sideStarts(enc: Encounter, side: 'heroes' | 'monsters'): void {
+		for (const c of enc.creatures) if ((side === 'heroes') === isHero(c) && !isDown(c)) this.boundary(enc, c.id, 'start');
+	}
+
+	private pendingEffects: EffectPrompt[] = [];
+
+	/** Save, then hand what conditions ask to whoever listens ('effects': the encounter's id and the prompts). */
+	private commitTurn(enc: Encounter): void {
+		const prompts = this.pendingEffects;
+		this.pendingEffects = [];
+		this.commit();
+		if (prompts.length) this.trigger('effects', enc.id, prompts);
+	}
+
 	/** Compatibility helper: on/off with no duration. */
 	toggleCondition(encId: string, creatureId: string, name: string, on: boolean): void {
 		const has = !!this.creature(encId, creatureId)?.conditions.some(x => x.name === name);
@@ -566,7 +617,8 @@ export class EncounterStore extends Events {
 		enc.phase = phase;
 		if (phase === 'heroes') this.log(enc, `Round ${enc.round ?? 1}: heroes' turn`, false);
 		if (phase === 'monsters') this.log(enc, `Round ${enc.round ?? 1}: monsters' turn`, false);
-		this.commit();
+		if (phase === 'heroes' || phase === 'monsters') this.sideStarts(enc, phase);
+		this.commitTurn(enc);
 	}
 
 	/** Pick an ended fight back up at the round and turn it stopped on. */
@@ -614,7 +666,8 @@ export class EncounterStore extends Events {
 		for (const c of enc.creatures) c.done = false;
 		enc.phase = 'heroes';
 		this.log(enc, 'Combat starts. Round 1: heroes\' turn', false);
-		this.commit();
+		this.sideStarts(enc, 'heroes');
+		this.commitTurn(enc);
 	}
 
 	/** End combat: back to setup. Combatants, HP and the log stay. Returns the rounds fought. */
@@ -638,9 +691,8 @@ export class EncounterStore extends Events {
 		c.done = done;
 		let expired: string[] = [];
 		if (done) {
-			const r = tickConditions(c.conditions, enc.round ?? 1);
-			c.conditions = r.kept;
-			expired = r.expired;
+			// Marking a turn done is its end: conditions count down, and end-of-turn effects are asked.
+			expired = this.boundary(enc, c.id, 'end').expired.filter(e => e.bearerId === c.id).map(e => e.condition.name);
 			if (isHero(c)) c.actions = 3; // heroes regain all 3 actions at the end of their turn
 			this.log(enc, `${c.label} ${isMinionGroup(c) ? 'have' : 'has'} gone${expired.length ? `; ${expired.join(', ')} wore off` : ''}`, false);
 			// Once every hero has gone, it's the monsters' turn.
@@ -648,9 +700,10 @@ export class EncounterStore extends Events {
 			if (enc.phase === 'heroes' && heroes.length && heroes.every(h => h.done)) {
 				enc.phase = 'monsters';
 				this.log(enc, `Round ${enc.round ?? 1}: monsters' turn`, false);
+				this.sideStarts(enc, 'monsters');
 			}
 		}
-		this.commit();
+		this.commitTurn(enc);
 		return expired;
 	}
 
@@ -660,18 +713,19 @@ export class EncounterStore extends Events {
 		if (!enc) return [];
 		const round = enc.round ?? 1;
 		const expiredAll: string[] = [];
-		for (const c of enc.creatures) {
+		for (const c of [...enc.creatures]) {
+			// Its turn ends with the round, marked or not (once a round either way).
 			if (!c.done) {
-				const r = tickConditions(c.conditions, round);
-				c.conditions = r.kept;
-				if (r.expired.length) expiredAll.push(...r.expired.map(n => `${c.label}: ${n}`));
+				const r = this.boundary(enc, c.id, 'end');
+				expiredAll.push(...r.expired.filter(e => e.bearerId === c.id).map(e => `${c.label}: ${e.condition.name}`));
 			}
-			c.done = false;
 		}
+		for (const c of enc.creatures) c.done = false;
 		enc.round = round + 1;
 		enc.phase = 'heroes';
 		this.log(enc, `Round ${enc.round} begins${expiredAll.length ? `; wore off: ${expiredAll.join(', ')}` : ''}`, false);
-		this.commit();
+		this.sideStarts(enc, 'heroes');
+		this.commitTurn(enc);
 		return expiredAll;
 	}
 

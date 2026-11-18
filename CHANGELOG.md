@@ -30,6 +30,8 @@ Ember Vault runs 5e campaigns as well as Nimble, on shared engines for slash com
 - The 2024 Rules tab has SRD 5.2's Rules Glossary, and both editions list the six abilities, the skills and the languages. See [Playing 5e](docs/5e.md#the-5e-compendium).
 - Encounter settings for each game, in the settings page and the tracker's **⋯** menu. 5e can leave heroes' initiative for players to type in, or monsters' too. See the [settings guide](docs/settings.md#5e).
 - Maps in a 5e campaign show the 5e fight as tokens, like Nimble's encounter in a Nimble campaign. See the [maps guide](docs/maps.md).
+- Timed conditions in both trackers. A condition can last some rounds and fall off by itself, counting down at the start or end of its creature's turn or the caster's, or last until a save ends it. It can deal damage, call for a save or show a reminder at the start or end of each of its creature's turns, and the tracker asks you when it comes up: "Ogre is Burning: 1d4 Fire damage", **Roll 1d4 and apply**. 5e's 2024 rules bring Burning ready-made. See [Playing 5e](docs/5e.md#timed-conditions).
+- Make a condition on the spot: type a new name in a tracker's condition list, set how long it lasts and what it does, and keep it for next time. See the [tracker guide](docs/tracker.md#timed-statuses).
 
 ### Changed
 

@@ -5,7 +5,7 @@ import type { ConditionDef } from '../../core/types';
 import { openNoteQuickLook } from '../../core/note-quick-look';
 import type { GameSystem } from '../contract';
 import { DND5E_ATTRIBUTION } from './attribution';
-import { conditionsFor } from './conditions';
+import { trackerConditionsFor } from './conditions';
 import { DEFAULT_EDITION, EDITIONS } from './editions';
 import { dnd5e, registerDnd5e } from './runtime';
 import { isRunning } from './combat';
@@ -44,7 +44,7 @@ export const dnd5eSystem: GameSystem = {
 	noteKinds: {
 		npc: { fields: NPC_FIELDS_5E, card: (el, ctx) => drawNpc5e(dnd5e(), el, ctx) },
 	},
-	conditions: (edition?: string): readonly ConditionDef[] => conditionsFor(edition ?? DEFAULT_EDITION),
+	conditions: (edition?: string): readonly ConditionDef[] => trackerConditionsFor(edition ?? DEFAULT_EDITION),
 	quickLook(plugin, target) {
 		return openNoteQuickLook(plugin.app, { ...target, system: 'dnd5e' });
 	},

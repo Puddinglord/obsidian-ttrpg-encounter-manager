@@ -75,6 +75,7 @@ export function minionDie(m: NimbleMonster): number {
 export { parseHpCommand } from '../../core/tracker/hp';
 export type { DamageMod, HpCommand } from '../../core/tracker/hp';
 import type { DamageMod } from '../../core/tracker/hp';
+import { type EffectBearer, turnEvent } from '../../core/tracker/effects';
 
 export interface DamageResult {
 	/** Damage actually taken after armor and resistances. */
@@ -171,17 +172,15 @@ export function lastStandEffect(text: string | undefined, partySize: number): La
 // Conditions
 // ----------------------------------------------------------------------------
 
-/** End of a combatant's turn (or the round, if it never marked a turn): count durations down. */
+/**
+ * End of a combatant's turn (or the round, if it never marked a turn): count
+ * durations down, by core's timing rules (core/tracker/effects.ts; the store
+ * calls the engine itself, with the whole fight). Leaves `conditions` as it was.
+ */
 export function tickConditions(conditions: AppliedCondition[], round: number): { kept: AppliedCondition[]; expired: string[] } {
-	const kept: AppliedCondition[] = [];
-	const expired: string[] = [];
-	for (const c of conditions) {
-		if (c.rounds === undefined || c.tickedRound === round) { kept.push(c); continue; }
-		const left = c.rounds - 1;
-		if (left <= 0) expired.push(c.name);
-		else kept.push({ ...c, rounds: left, tickedRound: round });
-	}
-	return { kept, expired };
+	const self: EffectBearer = { id: 'self', conditions: conditions.map(c => ({ ...c })) };
+	const r = turnEvent([self], { combatantId: self.id, when: 'end', round });
+	return { kept: self.conditions, expired: r.expired.map(e => e.condition.name) };
 }
 
 export function conditionLabel(c: AppliedCondition): string {

@@ -9,7 +9,7 @@ The second game system, and the template for adding more. One system, two **edit
 | Area | Modules |
 |---|---|
 | The system | `system.ts` (contract members), `runtime.ts` (made by `register()`: the ```5e and ```5e-sheet processors, `5e:` references, hover cards, quick look, Copy to vault, the index, views), `editions.ts`, `attribution.ts` |
-| Rules (pure, tested) | `rules.ts` (modifiers, CR/XP/PB, encounter difficulty: 2014 thresholds × multiplier, 2024 XP budget), `combat.ts` (initiative, turns, a dragged order kept by `tiebreak`, temp HP, death saves, legendary actions, conditions), `character.ts` (the sheet from frontmatter, and every edit) |
+| Rules (pure, tested) | `rules.ts` (modifiers, CR/XP/PB, encounter difficulty: 2014 thresholds × multiplier, 2024 XP budget), `combat.ts` (initiative, turns, a dragged order kept by `tiebreak`, temp HP, death saves, legendary actions, conditions; `nextTurn` and `startCombat` run core's timed conditions, `previous` undoes the last step's, `effectDamage` and `saveBonus5e` answer the prompts), `character.ts` (the sheet from frontmatter, and every edit) |
 | Monsters | `types.ts` (`Dnd5eMonster`), `parser.ts` (```5e blocks: forgiving field names, `- Name: text` lists, `toStatblockSource5e`), `render.ts` (both layouts), `bestiary.ts`, `monster-index.ts` (vault blocks through core's `BlockIndex`, then this edition's SRD monsters, then the other edition's) |
 | Compendium | `compendium.ts` (types, `allHits`, `findHit`, the `5e:<kind>:Name` kinds), `compendium-entries.ts` (entries, facets and sorts for core's compendium engine; the facets read both editions the same way), `cards.ts`, `compendium-view.ts` (core's browser with an edition switch) |
 | Encounters | `encounter-block.ts`, `combat-store.ts` (saved under `settings.systemData.dnd5e.fight`), `tracker-view.ts` |
@@ -20,7 +20,7 @@ The second game system, and the template for adding more. One system, two **edit
 | Importers | `import-ddb.ts` (pure: a D&D Beyond character's JSON → character note frontmatter, names and numbers only, never book text; `ddbJsonUrl` for a link or id), `import-fstatblocks.ts` (pure: a Fantasy Statblocks creature → `Dnd5eMonster` that round-trips through the ```5e block), `yaml-lite.ts` (the YAML subset it reads). The user brings the data; nothing connects to D&D Beyond |
 | Rules words | `rule-terms.ts` (pure: conditions, senses, abilities, skills, languages and the glossary or rules sections a stat block names, with each edition's spellings; `termPage5e` finds each one's page). `render.ts`, `cards.ts` and `sheet.ts` mark them through core's `rule-term-ui.ts` |
 | Editor | `suggest.ts` (`5e:` autocomplete), `slash.ts` ("/" commands: `/monster`, `/spell` and the other compendium kinds, `/encounter`, `/add`, `/statblock`, `/fought`, `/roll` with advantage) |
-| Data | `conditions.ts`, `data/*.json` |
+| Data | `conditions.ts` (the SRD conditions, and `trackerConditionsFor`: those plus 2024's Burning with its timing, for the tracker), `data/*.json` |
 
 ## Data
 

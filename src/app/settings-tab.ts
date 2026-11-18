@@ -300,7 +300,8 @@ export class EmberVaultSettingsTab extends PluginSettingTab {
 				new Notice('A condition with this name already exists');
 				return false;
 			}
-			custom[index] = { name, description };
+			// Keep what it does each turn (set in a tracker's condition editor).
+			custom[index] = { ...condition, name, description };
 			await this.plugin.saveSettings();
 			this.refresh();
 			new Notice(`Updated condition: ${name}`);

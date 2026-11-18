@@ -14,6 +14,8 @@ import { confirmAction, isTouch } from '../../core/touch';
 import { HpCommand } from './rules';
 import { openPluginSettings } from '../../core/internals';
 import { slideThumb } from '../../core/segmented';
+import { ConditionEditorOptions, keepCustomCondition, openConditionDetails, openConditionPicker } from '../../core/tracker/condition-editor';
+import { chipSummary, triggerMark } from '../../core/tracker/effects';
 import { saveFight } from './saved-fight';
 import { openRecord } from './record-modal';
 import { attachMonsterHover } from './inline-ref';
@@ -691,97 +693,45 @@ export class EncounterTrackerView extends ItemView {
 		const tag = row.createSpan({ cls: 'condition-tag', attr: { role: 'button', tabindex: '0' } });
 		if (cond?.minor) tag.addClass('is-minor');
 		tag.createSpan({ text: conditionLabel(applied) });
+		const mark = triggerMark(applied);
+		if (mark) setIcon(tag.createSpan({ cls: `condition-mark is-${mark}`, attr: { 'aria-hidden': 'true' } }), mark === 'damage' ? 'flame' : mark === 'save' ? 'dices' : 'bell');
 		if (applied.rounds) tag.createSpan({ cls: 'condition-rounds', text: String(applied.rounds), attr: { 'aria-label': `${applied.rounds} round${applied.rounds === 1 ? '' : 's'} left` } });
+		const summary = chipSummary(applied, { save: 'save' });
+		if (summary) tag.setAttr('aria-label', `${conditionLabel(applied)}: ${summary}`);
 		const x = tag.createSpan({ cls: 'remove-condition', text: '×', attr: { 'aria-label': `Remove ${applied.name}` } });
 		x.onclick = (e) => { e.stopPropagation(); this.store.removeCondition(enc.id, c.id, applied.name); };
-		const open = () => this.showConditionEditor(tag, enc, c, applied);
+		const open = () => openConditionDetails(tag, this.conditionOptions(enc, c), applied);
 		tag.onclick = open;
 		tag.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } else if (e.key === 'Delete' || e.key === 'Backspace') this.store.removeCondition(enc.id, c.id, applied.name); };
 	}
 
-	private showConditionEditor(anchor: HTMLElement, enc: Encounter, c: EncounterCreature, applied: AppliedCondition): void {
-		if (isPopoverOpenFor(anchor)) { closePopover(); return; }
-		const cond = nimble().condition(applied.name);
-		openPopover(anchor, (el, close) => {
-			el.addClass('condition-editor');
-			el.createDiv({ cls: 'popover-title', text: conditionLabel(applied) });
-			if (cond) el.createDiv({ cls: 'popover-body', text: cond.description });
-			const row = el.createDiv({ cls: 'popover-row' });
-			row.createSpan({ cls: 'popover-label', text: 'Lasts' });
-			const options: [string, number | null][] = [['Until removed', null], ['1 rd', 1], ['2 rds', 2], ['3 rds', 3], ['10 rds', 10]];
-			const seg = row.createDiv({ cls: 'nimble-segmented' });
-			for (const [text, rounds] of options) {
-				const b = seg.createEl('button', { text });
-				if ((applied.rounds ?? null) === rounds) b.addClass('is-active');
-				b.onclick = () => { this.store.updateCondition(enc.id, c.id, applied.name, { rounds }); close(); };
-			}
-			if (cond?.hasValue) {
-				const vrow = el.createDiv({ cls: 'popover-row' });
-				vrow.createSpan({ cls: 'popover-label', text: 'X =' });
-				const seg2 = vrow.createDiv({ cls: 'nimble-segmented' });
-				for (const v of [1, 2, 3, 4, 5, 6]) {
-					const b = seg2.createEl('button', { text: String(v) });
-					if (applied.value === v) b.addClass('is-active');
-					b.onclick = () => { this.store.updateCondition(enc.id, c.id, applied.name, { value: v }); close(); };
-				}
-			}
-			const rm = el.createEl('button', { cls: 'mod-warning popover-remove', text: `Remove ${applied.name}` });
-			rm.onclick = () => { this.store.removeCondition(enc.id, c.id, applied.name); close(); };
-		}, { width: 300 });
+	/** Core's condition editor (core/tracker/condition-editor.ts), told Nimble's words and how to change this fight. */
+	private conditionOptions(enc: Encounter, c: EncounterCreature): ConditionEditorOptions {
+		const words = { save: 'save' };
+		return {
+			system: 'nimble',
+			bearer: { id: c.id, label: c.label },
+			defs: nimble().getAllConditions(),
+			customNames: this.plugin.settings.customConditions.map(d => d.name),
+			applied: c.conditions,
+			others: enc.creatures.filter(x => x.id !== c.id).map(x => ({ id: x.id, label: x.label })),
+			abilities: ['STR', 'DEX', 'INT', 'WIL'],
+			words,
+			value: { label: 'X =', ask: true },
+			quick: [['Until removed', undefined], ['1 rd', 1], ['2', 2], ['3', 3]],
+			placement: 'below',
+			add: (name, o) => this.store.addCondition(enc.id, c.id, name, { value: o.value, timing: o.timing, sourceId: o.sourceId }),
+			update: (name, o) => {
+				this.store.retimeCondition(enc.id, c.id, name, o.timing, o.sourceId);
+				if (o.value !== undefined) this.store.updateCondition(enc.id, c.id, name, { value: o.value });
+			},
+			remove: (name) => this.store.removeCondition(enc.id, c.id, name),
+			saveCustom: (d) => keepCustomCondition(this.plugin, d, words),
+		};
 	}
 
 	private showConditionPicker(anchor: HTMLElement, enc: Encounter, c: EncounterCreature): void {
-		if (isPopoverOpenFor(anchor, 'condition-picker')) { closePopover(); return; }
-		let rounds: number | undefined;
-		openPopover(anchor, (el, close) => {
-			el.addClass('condition-picker');
-			el.setAttr('role', 'dialog');
-			const search = el.createEl('input', { type: 'search', cls: 'condition-search', attr: { placeholder: `Status for ${c.label}…` } });
-			const dur = el.createDiv({ cls: 'popover-row' });
-			dur.createSpan({ cls: 'popover-label', text: 'Lasts' });
-			const seg = dur.createDiv({ cls: 'nimble-segmented' });
-			const opts: [string, number | undefined][] = [['Until removed', undefined], ['1 rd', 1], ['2', 2], ['3', 3]];
-			for (const [text, r] of opts) {
-				const b = seg.createEl('button', { text });
-				if (r === rounds) b.addClass('is-active');
-				b.onclick = () => { rounds = r; seg.querySelectorAll('button').forEach(x => x.removeClass('is-active')); b.addClass('is-active'); search.focus(); };
-			}
-			const grid = el.createDiv({ cls: 'condition-grid' });
-			const valueRow = el.createDiv({ cls: 'popover-row condition-value-row' });
-			valueRow.hide();
-			const draw = () => {
-				grid.empty();
-				const q = search.value.trim().toLowerCase();
-				const all = nimble().getAllConditions().filter(x => !x.auto && (!q || x.name.toLowerCase().includes(q)));
-				for (const cond of all) {
-					const has = c.conditions.some(x => x.name === cond.name);
-					const b = grid.createEl('button', { cls: `condition-option${has ? ' is-applied' : ''}${cond.minor ? ' is-minor' : ''}`, text: cond.name, attr: { title: cond.description, 'aria-pressed': String(has) } });
-					b.onclick = () => {
-						if (has) { this.store.removeCondition(enc.id, c.id, cond.name); close(); return; }
-						if (cond.hasValue) {
-							valueRow.empty();
-							valueRow.show();
-							valueRow.createSpan({ cls: 'popover-label', text: `${cond.name} X =` });
-							const s2 = valueRow.createDiv({ cls: 'nimble-segmented' });
-							for (const v of [1, 2, 3, 4, 5, 6]) {
-								const vb = s2.createEl('button', { text: String(v) });
-								vb.onclick = () => { this.store.addCondition(enc.id, c.id, cond.name, { rounds, value: v }); close(); };
-							}
-							return;
-						}
-						this.store.addCondition(enc.id, c.id, cond.name, { rounds });
-						close();
-					};
-				}
-				if (!all.length) grid.createDiv({ cls: 'picker-empty', text: 'No match' });
-			};
-			search.addEventListener('input', draw);
-			search.addEventListener('keydown', (e) => {
-				if (e.key === 'Enter') grid.querySelector<HTMLButtonElement>('.condition-option:not(.is-applied)')?.click();
-			});
-			draw();
-			window.setTimeout(() => search.focus(), 0);
-		}, { width: 320, cls: 'condition-picker' });
+		openConditionPicker(anchor, { ...this.conditionOptions(enc, c), placeholder: `Status for ${c.label}…` });
 	}
 
 	// ------------------------------------------------------------------------

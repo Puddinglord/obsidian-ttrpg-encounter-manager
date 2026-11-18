@@ -362,3 +362,121 @@ describe('dragging someone in the turn order', async () => {
 		expect(order(f).map(c => c.id)).toEqual(['b', 'a']);
 	});
 });
+
+describe('timed conditions in the 5e tracker (core/tracker/effects.ts)', async () => {
+	const c5 = await import('../src/systems/dnd5e/combat');
+	const { trackerConditionsFor, conditionsFor } = await import('../src/systems/dnd5e/conditions');
+	const burn = { kind: 'damage' as const, at: 'start' as const, dice: '1d4', damageType: 'Fire' };
+	const hold = { kind: 'save' as const, at: 'end' as const, ability: 'Wisdom', dc: 13, endsOnSave: true };
+	/** Goblin (20), Bo (15), Ogre (10), combat started: the goblin's turn. */
+	const fight = () => {
+		const f = newFight();
+		const [g] = addMonster(f, goblin);
+		const h = addHero(f, { name: 'Bo', maxHp: 20 });
+		const [o] = addMonster(f, { ...goblin, name: 'Ogre', hp: 59, resistances: ['fire'], immunities: ['poison'], vulnerabilities: ['cold'], saves: { con: 6 } });
+		setInitiative(f, g.id, 20); setInitiative(f, h.id, 15); setInitiative(f, o.id, 10);
+		return { f, g, h, o };
+	};
+
+	it('starting combat asks for the first creature’s start-of-turn effects', () => {
+		const { f, g } = fight();
+		addCondition(f, g.id, 'Burning', { timing: { triggers: [burn] } });
+		const r = c5.startCombat(f);
+		expect(r.who?.id).toBe(g.id);
+		expect(r.prompts).toEqual([{ bearerId: g.id, condition: 'Burning', trigger: burn }]);
+	});
+
+	it('Next turn ends this turn (end effects, counts) and starts the next (start effects)', () => {
+		const { f, g, h } = fight();
+		addCondition(f, g.id, 'Held', { timing: { triggers: [hold] } });
+		addCondition(f, h.id, 'Burning', { timing: { triggers: [burn] } });
+		c5.startCombat(f);
+		const r = c5.nextTurn(f);
+		expect(r.who?.id).toBe(h.id);
+		expect(r.prompts.map(p => `${p.condition}@${p.trigger.at}`)).toEqual(['Held@end', 'Burning@start']);
+	});
+
+	it('a condition put on during its own turn lasts through its next turn; on another’s, it ends at the end of its own', () => {
+		const { f, g, h } = fight();
+		c5.startCombat(f); // the goblin's turn
+		addCondition(f, g.id, 'Dodging', { rounds: 1 });
+		addCondition(f, h.id, 'Frightened', { rounds: 1 });
+		next(f); // the goblin's turn ends: Dodging stays
+		expect(g.conditions.map(x => x.name)).toEqual(['Dodging']);
+		next(f); // Bo's turn ends: Frightened ends
+		expect(h.conditions).toEqual([]);
+		next(f); next(f); // round 2: the goblin's turn ends
+		expect(g.conditions).toEqual([]);
+	});
+
+	it('counts on the source’s turn, and on the bearer’s once the source is down', () => {
+		const { f, g, h, o } = fight();
+		c5.startCombat(f);
+		addCondition(f, h.id, 'Hexed', { timing: { rounds: 2, whose: 'source' }, sourceId: o.id });
+		expect(h.conditions[0]).toMatchObject({ whose: 'source', sourceId: o.id, sourceLabel: 'Ogre' });
+		next(f); next(f); // Bo's turn ends: not the Ogre's
+		expect(h.conditions[0].rounds).toBe(2);
+		next(f); // the Ogre's turn ends
+		expect(h.conditions[0].rounds).toBe(1);
+		applyHp(f, o.id, { kind: 'damage', amount: 100 }); // the Ogre drops and takes no more turns
+		next(f); next(f); // Bo's turn ends: now it counts there
+		expect(h.conditions).toEqual([]);
+	});
+
+	it('Back puts back what the last Next did to conditions, and Next again doesn’t ask twice', () => {
+		const { f, g, h } = fight();
+		addCondition(f, g.id, 'Dazed', { rounds: 1 });
+		addCondition(f, h.id, 'Burning', { timing: { triggers: [burn] } });
+		c5.startCombat(f);
+		expect(c5.nextTurn(f).prompts).toHaveLength(1);
+		expect(g.conditions).toEqual([]);
+		previous(f);
+		expect(current(f)?.id).toBe(g.id);
+		expect(g.conditions).toEqual([{ name: 'Dazed', rounds: 1 }]);
+		const again = c5.nextTurn(f);
+		expect(again.prompts).toEqual([]);
+		expect(g.conditions).toEqual([]);
+		// Only one step back is undone: a second Back just moves.
+		previous(f);
+		previous(f);
+		expect(f.undo).toBeUndefined();
+	});
+
+	it('effect damage follows the stat block: resisted, vulnerable, immune', () => {
+		const { f, o, h } = fight();
+		expect(c5.effectDamage(f, o.id, 4, 'Fire')).toMatch(/takes 2 \(resisted\)/);
+		expect(c5.effectDamage(f, o.id, 4, 'cold')).toMatch(/takes 8 \(vulnerable\)/);
+		expect(c5.effectDamage(f, o.id, 4, 'Poison')).toBe('Ogre is immune to Poison damage');
+		expect(o.hp).toBe(59 - 2 - 8);
+		expect(c5.effectDamage(f, h.id, 3, 'Fire')).toMatch(/Bo takes 3/);
+		expect(h.hp).toBe(17);
+	});
+
+	it('knows a monster’s save by the ability’s name or its short form; not a hero’s', () => {
+		const { f, g, o, h } = fight();
+		expect(c5.saveBonus5e(f, o.id, 'Constitution')).toBe(6);
+		expect(c5.saveBonus5e(f, o.id, 'CON')).toBe(6);
+		expect(c5.saveBonus5e(f, g.id, 'Dexterity')).toBe(2);
+		expect(c5.saveBonus5e(f, g.id, 'Luck')).toBeUndefined();
+		expect(c5.saveBonus5e(f, h.id, 'Wisdom')).toBeUndefined();
+	});
+
+	it('retimes a condition from its chip; a fight saved with an undo step loads with it', () => {
+		const { f, g } = fight();
+		addCondition(f, g.id, 'Prone');
+		c5.retimeCondition(f, g.id, 'Prone', { rounds: 2, ends: 'start' });
+		expect(g.conditions).toEqual([{ name: 'Prone', rounds: 2, ends: 'start' }]);
+		c5.startCombat(f);
+		next(f);
+		expect(normalizeFight(JSON.parse(JSON.stringify(f)))?.undo?.turnId).toBe(f.turnId);
+		expect(normalizeFight({ ...JSON.parse(JSON.stringify(f)), undo: 'junk' })?.undo).toBeUndefined();
+	});
+
+	it('2024 offers Burning from the SRD 5.2 glossary with its effect; 2014 has nothing like it', () => {
+		const b = trackerConditionsFor('2024').find(c => c.name === 'Burning');
+		expect(b?.timing).toEqual({ triggers: [burn] });
+		expect(b?.description).toMatch(/1d4 Fire damage at the start of each of its turns/);
+		expect(trackerConditionsFor('2014').some(c => c.name === 'Burning')).toBe(false);
+		expect(conditionsFor('2024').some(c => c.name === 'Burning')).toBe(false); // not a condition in the rules' sense
+	});
+});
