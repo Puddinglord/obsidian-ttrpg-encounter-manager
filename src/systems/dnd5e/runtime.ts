@@ -11,6 +11,7 @@ import { asEdition, Dnd5eEdition } from './editions';
 import { Dnd5eIndex } from './monster-index';
 import { parseStatblock5e, STATBLOCK_LANG, toStatblockSource5e } from './parser';
 import { Render5eOptions, renderStatblock5e, Statblock5eAction } from './render';
+import { termContext } from '../../core/rule-term-ui';
 import type { Dnd5eEntry, Dnd5eMonster } from './types';
 import { Dnd5eRefSuggest } from './suggest';
 import { FightStore } from './combat-store';
@@ -27,7 +28,7 @@ import { registerBuilders5e } from './builders';
 import { registerWizards5e } from './character-wizard';
 import { registerImports5e } from './import-ui';
 import { addEditButton } from '../../core/builder/commands';
-import { renderCard5e } from './cards';
+import { renderCard5e, Card5eOptions } from './cards';
 import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-view';
 import { Dnd5eSheet, SHEET_LANG } from './sheet';
 
@@ -177,11 +178,12 @@ export class Dnd5eRuntime {
 	}
 
 	/** Draw a stat block, rolling dice through the plugin (3D dice, roll log). */
-	render(el: HTMLElement, m: Dnd5eMonster, o: Omit<Render5eOptions, 'app' | 'onRoll' | 'edition'> & { edition?: Dnd5eEdition }): HTMLElement {
+	render(el: HTMLElement, m: Dnd5eMonster, o: Omit<Render5eOptions, 'app' | 'onRoll' | 'edition' | 'terms'> & { edition?: Dnd5eEdition }): HTMLElement {
 		return renderStatblock5e(el, m, {
 			...o,
 			app: this.plugin.app,
 			edition: o.edition ?? this.edition(o.sourcePath),
+			terms: termContext(this.plugin, o.sourcePath),
 			onRoll: this.plugin.settings.clickableDice ? (expr, label) => { this.plugin.rollDice(expr, label, 'effect'); } : undefined,
 		});
 	}
@@ -245,8 +247,11 @@ export class Dnd5eRuntime {
 		};
 	}
 
-	cardOptions(sourcePath: string): { app: EmberVaultPlugin['app']; sourcePath: string; onRoll?: (e: string, l: string) => void } {
-		return { app: this.plugin.app, sourcePath, onRoll: this.plugin.settings.clickableDice ? (expr, label) => { this.plugin.rollDice(expr, label, 'effect'); } : undefined };
+	cardOptions(sourcePath: string): Card5eOptions {
+		return {
+			app: this.plugin.app, sourcePath, terms: termContext(this.plugin, sourcePath),
+			onRoll: this.plugin.settings.clickableDice ? (expr, label) => { this.plugin.rollDice(expr, label, 'effect'); } : undefined,
+		};
 	}
 
 	openCard(hit: Hit5e, sourcePath: string): Modal {

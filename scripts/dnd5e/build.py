@@ -323,7 +323,33 @@ def rules(ed):
             while r.get('parent'): r = by.get(r['parent']['index'] if isinstance(r['parent'], dict) else r['parent'], {})
             return r.get('name', '')
         return [{'name': r['name'], 'desc': text(r.get('desc')), 'topic': top(r)} for r in tree if text(r.get('desc'))]
+    glossary = load(ed, 'Glossary')
+    if glossary:
+        # SRD 5.2's Rules Glossary (glossary.py): each entry a rule, tagged Condition, Action… where the book does.
+        return [{'name': g['name'], 'desc': g['desc'], 'topic': 'Rules Glossary', **({'tag': g['tag']} if g.get('tag') else {})} for g in glossary]
     return [{'name': r['name'], 'desc': text(r.get('desc'))} for r in load(ed, 'Rule-Sections')]
+
+def abilities(ed):
+    """The six abilities: what each measures and its skills."""
+    return [{'abbr': a['name'], 'name': a['full_name'], 'desc': text(a.get('desc') or a.get('description')),
+             'skills': [s['name'] for s in a.get('skills', [])]} for a in load(ed, 'Ability-Scores')]
+
+def skills(ed):
+    return [{'name': s['name'], 'ability': s['ability_score']['name'], 'desc': text(s.get('desc') or s.get('description'))} for s in load(ed, 'Skills')]
+
+def languages(ed):
+    """2014: who speaks it and its script. 2024: standard or rare (the SRD says no more)."""
+    out = []
+    for l in load(ed, 'Languages'):
+        x = {'name': l['name']}
+        if l.get('type'): x['type'] = l['type']
+        if 'is_rare' in l: x['type'] = 'Rare' if l['is_rare'] else 'Standard'
+        if l.get('typical_speakers'): x['speakers'] = ', '.join(l['typical_speakers'])
+        if l.get('script'): x['script'] = l['script']
+        if text(l.get('desc')): x['desc'] = text(l.get('desc'))
+        if l.get('note'): x['note'] = l['note']
+        out.append(x)
+    return out
 
 def compendium():
     for ed in EDITIONS:
@@ -331,6 +357,7 @@ def compendium():
         write(f'compendium-{ed}.json', {
             'spells': spells(ed), 'items': magic_items(ed), 'equipment': eq, 'weaponProperties': props,
             'classes': classes(ed), 'species': species(ed), 'backgrounds': backgrounds(ed), 'feats': feats(ed), 'rules': rules(ed),
+            'abilities': abilities(ed), 'skills': skills(ed), 'languages': languages(ed),
         })
 
 if __name__ == '__main__':

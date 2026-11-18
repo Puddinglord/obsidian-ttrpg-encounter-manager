@@ -19,6 +19,7 @@ import type { SettingsPart } from '../core/settings';
 import type { SettingsSection } from '../core/settings-ui';
 import type { CombatTokens } from '../core/tracker/tokens';
 import type { SpotlightSource } from '../core/spotlight-source';
+import type { RuleTerm, RuleTerms } from '../core/rule-terms';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
 export interface Attribution {
@@ -113,6 +114,14 @@ export interface GameSystem {
 	openMyCharacter?(plugin: EmberVaultPlugin): Promise<void>;
 	/** Its fields in the plugin's settings: defaults and migration (declare the fields by augmenting EmberVaultSettings, core/settings.ts). */
 	readonly settings?: SettingsPart;
+	/**
+	 * Its rules words for a note (abilities, senses, languages, conditions, actions…), in the
+	 * note's edition. Stat blocks, sheets and cards mark them, and a click shows the rule
+	 * (core/rule-terms.ts, core/rule-term-ui.ts).
+	 */
+	ruleTerms?(plugin: EmberVaultPlugin, path?: string): RuleTerms;
+	/** Opens a term's full page in its compendium; undefined when it has none (the card then has no button). */
+	ruleTermPage?(plugin: EmberVaultPlugin, term: RuleTerm, path?: string): (() => void) | undefined;
 	/** Its sections on the settings page, after the shared ones (core/settings-ui.ts). */
 	settingsSections?(plugin: EmberVaultPlugin): SettingsSection[];
 	/**

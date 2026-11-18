@@ -31,7 +31,12 @@ export interface Class5e {
 export interface Species5e { name: string; size: string; speed: number; type?: string; abilityBonuses?: string; desc?: string; traits: Feature5e[]; subspecies: { name: string; desc?: string; traits: Feature5e[] }[] }
 export interface Background5e { name: string; proficiencies: string[]; abilityScores?: string[]; feat?: string; feature?: Feature5e; equipment?: string }
 export interface Feat5e { name: string; desc: string; prerequisite?: string; type?: string }
-export interface Rule5e { name: string; desc: string; topic?: string }
+/** A rules section (2014) or a Rules Glossary entry (2024, `tag`: Condition, Action, Hazard…). */
+export interface Rule5e { name: string; desc: string; topic?: string; tag?: string }
+export interface Ability5e { abbr: string; name: string; desc: string; skills: string[] }
+export interface Skill5e { name: string; ability: string; desc: string }
+/** 2014: who speaks it and its script. 2024: Standard or Rare, nothing more. */
+export interface Language5e { name: string; type?: string; speakers?: string; script?: string; desc?: string; note?: string }
 
 export interface Compendium5e {
 	spells: Spell5e[];
@@ -43,6 +48,9 @@ export interface Compendium5e {
 	backgrounds: Background5e[];
 	feats: Feat5e[];
 	rules: Rule5e[];
+	abilities?: Ability5e[];
+	skills?: Skill5e[];
+	languages?: Language5e[];
 }
 
 // ----------------------------------------------------------------------------
@@ -157,11 +165,47 @@ export function allHits(edition: Dnd5eEdition): Hit5e[] {
 		...c.species.map((species): Hit5e => ({ kind: 'species', name: species.name, edition, detail: [edition === '2014' ? 'Race' : 'Species', species.size, `${species.speed} ft.`].join(' · '), species })),
 		...c.backgrounds.map((background): Hit5e => ({ kind: 'background', name: background.name, edition, detail: background.feat ? `Background · ${background.feat}` : 'Background', background })),
 		...c.feats.map((feat): Hit5e => ({ kind: 'feat', name: feat.name, edition, detail: [feat.type ? `${feat.type} feat` : 'Feat', feat.prerequisite ? `needs ${feat.prerequisite}` : ''].filter(Boolean).join(' · '), feat })),
-		...c.rules.map((rule): Hit5e => ({ kind: 'rule', name: rule.name, edition, detail: rule.topic && rule.topic !== rule.name ? `Rule · ${rule.topic}` : 'Rule', rule })),
+		// Glossary entries for conditions are the condition hits below.
+		...[...c.rules.filter(r => r.tag !== 'Condition'), ...extraRules(c)].map((rule): Hit5e => ({ kind: 'rule', name: rule.name, edition, detail: ruleDetail(rule), rule })),
 		...conditionsFor(edition).map((cond): Hit5e => ({ kind: 'condition', name: cond.name, edition, detail: 'Condition', desc: cond.description })),
 	];
 	cache.set(edition, list);
 	return list;
+}
+
+function ruleDetail(rule: Rule5e): string {
+	if (rule.tag) return `Rule · ${rule.tag}`;
+	return rule.topic && rule.topic !== rule.name ? `Rule · ${rule.topic}` : 'Rule';
+}
+
+/** The abilities, skills and languages as rules pages (so a stat block's "Str" or "Giant" has one to open). */
+export function extraRules(c: Compendium5e): Rule5e[] {
+	const taken = new Set(c.rules.map(r => r.name.toLowerCase()));
+	const out: Rule5e[] = [];
+	const add = (r: Rule5e) => { if (!taken.has(r.name.toLowerCase())) { taken.add(r.name.toLowerCase()); out.push(r); } };
+	for (const a of c.abilities ?? []) add({ name: a.name, topic: 'Abilities', desc: abilityText(a) });
+	for (const k of c.skills ?? []) add({ name: k.name, topic: 'Skills', desc: skillText(k, c) });
+	for (const l of c.languages ?? []) add({ name: l.name, topic: 'Languages', desc: languageText(l) });
+	return out;
+}
+
+const fullAbility = (abbr: string, c: Compendium5e) => c.abilities?.find(a => a.abbr.toLowerCase() === abbr.toLowerCase())?.name ?? abbr;
+
+export function abilityText(a: Ability5e): string {
+	const what = /[.!?]$/.test(a.desc) ? a.desc : `${a.name} measures: ${a.desc.charAt(0).toLowerCase()}${a.desc.slice(1)}.`;
+	return [what, a.skills.length ? `**Skills.** ${a.skills.join(', ')}.` : ''].filter(Boolean).join('\n');
+}
+
+export function skillText(k: Skill5e, c: Compendium5e): string {
+	return `${k.desc}\n**Ability.** ${fullAbility(k.ability, c)} (${k.name}) checks.`;
+}
+
+export function languageText(l: Language5e): string {
+	const lines = [l.desc ?? `${l.type === 'Rare' ? 'A rare language: secret, or from another plane of existence.' : 'A standard language, widespread in the world.'}`];
+	if (l.speakers) lines.push(`**Typical speakers.** ${l.speakers}.`);
+	if (l.script) lines.push(`**Script.** ${l.script}.`);
+	if (l.note) lines.push(l.note);
+	return lines.join('\n');
 }
 
 /** A hit by name (and kind, when given), in an edition, else the other one. */

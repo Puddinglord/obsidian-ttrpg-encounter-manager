@@ -14,6 +14,7 @@ import { formatMod } from './rules';
 import type { Dnd5eRuntime } from './runtime';
 import { openLevelUp5e } from './character-wizard';
 import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
+import { markTerm, termContext } from '../../core/rule-term-ui';
 
 export const SHEET_LANG = '5e-sheet';
 const SHORT: Record<AbilityKey, string> = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
@@ -86,26 +87,30 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		act('Long rest', 'bed', () => { this.edit(longRest); new Notice(`${s.name} takes a long rest.`); });
 		if (s.level < 20) act('Level up', 'trending-up', () => this.levelUp(s));
 
+		// The game's rules words: a label's click shows what it means.
+		const terms = termContext(this.rt.plugin, this.ctx.sourcePath);
+		const mark = <T extends HTMLElement>(el: T, word: string): T => { markTerm(el, terms, word); return el; };
+
 		// Vitals.
 		const vit = root.createDiv({ cls: 'dnd5e-sheet-vitals' });
-		const box = (label: string, fill: (b: HTMLElement) => void, title?: string) => {
+		const box = (label: string, fill: (b: HTMLElement) => void, title?: string, rule = label) => {
 			const b = vit.createDiv({ cls: 'dnd5e-sheet-box', attr: title ? { 'aria-label': title } : {} });
-			b.createDiv({ cls: 'dnd5e-sheet-box-label', text: label });
+			mark(b.createDiv({ cls: 'dnd5e-sheet-box-label' }).createSpan({ text: label }), rule);
 			fill(b.createDiv({ cls: 'dnd5e-sheet-box-value' }));
 		};
 		box('AC', b => b.setText(String(s.ac)), s.acFrom);
 		box('Initiative', b => this.rollable(b, formatMod(s.initiative), d20(s.initiative), who('initiative')));
 		box('Speed', b => b.setText(`${s.speed} ft.`));
-		box('Prof.', b => b.setText(formatMod(s.pb)));
-		box('Hit dice', b => b.setText(`${s.hitDiceLeft}/${s.level} d${s.hitDie}`));
+		box('Prof.', b => b.setText(formatMod(s.pb)), undefined, 'Proficiency Bonus');
+		box('Hit dice', b => b.setText(`${s.hitDiceLeft}/${s.level} d${s.hitDie}`), undefined, s.edition === '2014' ? 'Hit Points' : 'Hit Point Dice');
 		box('Inspiration', b => {
 			const t = b.createEl('button', { cls: `dnd5e-sheet-toggle${s.inspiration ? ' is-on' : ''}`, text: s.inspiration ? 'Yes' : 'No' });
 			t.onclick = () => this.edit(fm => { if (s.inspiration) delete fm.inspiration; else fm.inspiration = true; });
-		});
+		}, undefined, 'Heroic Inspiration');
 
 		// HP.
 		const hp = root.createDiv({ cls: 'dnd5e-sheet-hp' });
-		hp.createSpan({ cls: 'dnd5e-sheet-box-label', text: 'Hit points' });
+		mark(hp.createSpan({ cls: 'dnd5e-sheet-box-label', text: 'Hit points' }), 'Hit Points');
 		const bar = hp.createDiv({ cls: 'dnd5e-hp-bar' });
 		bar.createDiv({ cls: 'dnd5e-hp-fill' }).setCssStyles({ width: `${Math.round(100 * s.hp / s.hpMax)}%` });
 		hp.createSpan({ cls: 'dnd5e-sheet-hp-text', text: `${s.hp} / ${s.hpMax}${s.tempHp ? ` (+${s.tempHp} temp)` : ''}` });
@@ -118,7 +123,7 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		});
 		if (s.hp === 0) {
 			const ds = root.createDiv({ cls: 'dnd5e-death' });
-			ds.createSpan({ cls: 'dnd5e-death-label', text: 'Death saves' });
+			mark(ds.createSpan({ cls: 'dnd5e-death-label', text: 'Death saves' }), s.edition === '2014' ? 'Dropping to 0 Hit Points' : 'Death Saving Throw');
 			const group = (label: string, n: number, cls: string, set: (v: number) => void) => {
 				const g = ds.createSpan({ cls: `dnd5e-death-group ${cls}` });
 				g.createSpan({ cls: 'dnd5e-death-label', text: label });
@@ -142,27 +147,31 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		const abil = root.createDiv({ cls: 'dnd5e-sheet-abilities' });
 		for (const a of ABILITIES) {
 			const card = abil.createDiv({ cls: 'dnd5e-sheet-ability' });
-			card.createDiv({ cls: 'dnd5e-sheet-ability-name', text: SHORT[a] });
+			mark(card.createDiv({ cls: 'dnd5e-sheet-ability-name' }).createSpan({ text: SHORT[a] }), SHORT[a]);
 			this.rollable(card, formatMod(s.mods[a]), d20(s.mods[a]), who(`${ABILITY_NAME[a]} check`), 'is-mod');
 			card.createDiv({ cls: 'dnd5e-sheet-ability-score', text: String(s.scores[a]) });
 			const save = card.createDiv({ cls: `dnd5e-sheet-save${s.saves[a].proficient ? ' is-prof' : ''}` });
-			save.createSpan({ text: 'Save ' });
+			mark(save.createSpan({ text: 'Save' }), 'Saving Throw');
+			save.appendText(' ');
 			this.rollable(save, formatMod(s.saves[a].bonus), d20(s.saves[a].bonus), who(`${ABILITY_NAME[a]} save`));
 		}
 
 		const cols = root.createDiv({ cls: 'dnd5e-sheet-cols' });
 		// Skills: click the bonus to roll, the dot to cycle proficiency.
 		const skills = cols.createDiv({ cls: 'dnd5e-sheet-skills' });
-		skills.createDiv({ cls: 'dnd5e-sheet-section', text: 'Skills' });
+		mark(skills.createDiv({ cls: 'dnd5e-sheet-section' }).createSpan({ text: 'Skills' }), 'Skills');
 		for (const k of s.skills) {
 			const row = skills.createDiv({ cls: 'dnd5e-sheet-skill' });
 			const dot = row.createSpan({ cls: `dnd5e-skill-dot${k.expertise ? ' is-expert' : k.proficient ? ' is-prof' : ''}`, attr: { role: 'button', 'aria-label': `${k.name}: ${k.expertise ? 'expertise' : k.proficient ? 'proficient' : 'not proficient'}` } });
 			dot.onclick = () => this.edit(fm => cycleSkill(fm, k.name));
 			this.rollable(row, formatMod(k.bonus), d20(k.bonus), who(k.name));
-			row.createSpan({ cls: 'dnd5e-skill-name', text: `${k.name} ` });
+			mark(row.createSpan({ cls: 'dnd5e-skill-name', text: k.name }), k.name);
+			row.appendText(' ');
 			row.createSpan({ cls: 'dnd5e-skill-ab', text: SHORT[k.ability] });
 		}
-		skills.createDiv({ cls: 'dnd5e-sheet-passive', text: `Passive Perception ${s.passivePerception}` });
+		const passive = skills.createDiv({ cls: 'dnd5e-sheet-passive' });
+		mark(passive.createSpan({ text: 'Passive Perception' }), 'Passive Perception');
+		passive.appendText(` ${s.passivePerception}`);
 
 		const right = cols.createDiv({ cls: 'dnd5e-sheet-right' });
 		// Attacks.

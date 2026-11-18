@@ -3,7 +3,8 @@
 // by the compendium view, hover cards, the card modal and Spotlight.
 
 import { App, setIcon } from 'obsidian';
-import { appendRichText } from '../../core/markdown';
+import { appendRichText, RichTextOptions } from '../../core/markdown';
+import { appendWithTerms, TermContext } from '../../core/rule-term-ui';
 import { wireWikiLinks } from '../../core/wiki-links';
 import { compendium5e, Hit5e, KIND5E } from './compendium';
 
@@ -12,6 +13,8 @@ export interface Card5eOptions {
 	sourcePath: string;
 	/** Roll a dice expression; unset: dice are plain text. */
 	onRoll?: (expression: string, label: string) => void;
+	/** The game's rules words (conditions, senses, Dim Light…) in the text become clickable. */
+	terms?: TermContext;
 }
 
 /**
@@ -27,13 +30,17 @@ export function renderText5e(parent: HTMLElement, text: string, label: string, o
 		d.addEventListener('click', go);
 		d.addEventListener('keydown', (e) => { if ((e).key === 'Enter') go(e); });
 	} : undefined;
+	const rich = (el: HTMLElement, t: string, opts: RichTextOptions) => {
+		if (o.terms) appendWithTerms(el, t, o.terms, opts);
+		else appendRichText(el, t, opts);
+	};
 	const lines = text.split('\n');
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i].trim();
 		if (!line) continue;
 		if (/^[-*]\s/.test(line)) {
 			const ul = parent.createEl('ul');
-			for (; i < lines.length && /^\s*[-*]\s/.test(lines[i]); i++) appendRichText(ul.createEl('li'), lines[i].trim().replace(/^[-*]\s+/, ''), { onDice });
+			for (; i < lines.length && /^\s*[-*]\s/.test(lines[i]); i++) rich(ul.createEl('li'), lines[i].trim().replace(/^[-*]\s+/, ''), { onDice });
 			i--;
 			continue;
 		}
@@ -44,13 +51,13 @@ export function renderText5e(parent: HTMLElement, text: string, label: string, o
 				const cells = lines[i].trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
 				if (cells.every(c => /^:?-+:?$/.test(c))) continue;
 				const tr = table.createEl('tr');
-				for (const c of cells) appendRichText(tr.createEl(first ? 'th' : 'td'), c, { onDice });
+				for (const c of cells) rich(tr.createEl(first ? 'th' : 'td'), c, { onDice });
 				first = false;
 			}
 			i--;
 			continue;
 		}
-		appendRichText(parent.createEl('p'), line, { onDice });
+		rich(parent.createEl('p'), line, { onDice });
 	}
 }
 

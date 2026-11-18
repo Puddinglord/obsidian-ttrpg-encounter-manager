@@ -19,6 +19,8 @@ import { dnd5eSpotlight } from './spotlight';
 import { KINDS_5E } from './content';
 import { NPC_FIELDS_5E } from './npc';
 import { drawNpc5e } from './npc-card';
+import { ruleTerms5e, termPage5e } from './rule-terms';
+import { ruleTerms } from '../../core/rule-terms';
 
 export const dnd5eSystem: GameSystem = {
 	id: 'dnd5e',
@@ -30,6 +32,12 @@ export const dnd5eSystem: GameSystem = {
 	content: { kinds: KINDS_5E },
 	slashCommands: dnd5eSlashCommands,
 	spotlight: dnd5eSpotlight,
+	ruleTerms: (_plugin, path) => ruleTerms(ruleTerms5e(dnd5e().edition(path))),
+	ruleTermPage(_plugin, term, path) {
+		const rt = dnd5e();
+		const hit = termPage5e(rt.edition(path), term);
+		return hit ? () => { rt.openCard(hit, path ?? ''); } : undefined;
+	},
 	noteKinds: {
 		npc: { fields: NPC_FIELDS_5E, card: (el, ctx) => drawNpc5e(dnd5e(), el, ctx) },
 	},
