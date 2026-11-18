@@ -34,6 +34,7 @@ import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-vi
 import { Dnd5eSheet, SHEET_LANG } from './sheet';
 import { applyLook } from '../../core/look';
 import { anyTrackerLeaf } from '../../core/tracker/follow';
+import { addMonster } from './combat';
 
 /** `5e:Goblin` → "Goblin". */
 export const REF_PREFIX = '5e:';
@@ -198,9 +199,18 @@ export class Dnd5eRuntime {
 	actions(entry: Dnd5eEntry, sourcePath: string, close?: () => void): Statblock5eAction[] {
 		const plugin = this.plugin;
 		const out: Statblock5eAction[] = [];
+		// Wherever a monster shows up (quick look, Spotlight, hover card), the GM can put it in the fight.
+		if (!plugin.playerView(sourcePath || undefined)) out.push({ label: 'Add to fight', icon: 'swords', cls: 'mod-cta', onClick: () => { close?.(); plugin.hover.hide(); void this.addToFight(entry); } });
 		if (entry.filePath) out.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { close?.(); plugin.hover.hide(); void plugin.app.workspace.openLinkText(entry.filePath, sourcePath, ev.metaKey || ev.ctrlKey); } });
 		else if (entry.bundled) out.push({ label: 'Copy to vault', icon: 'file-plus', onClick: () => { close?.(); plugin.hover.hide(); void this.copyToVault(entry.monster, sourcePath); } });
 		return out;
+	}
+
+	/** Put a monster in the current fight and show the tracker. */
+	async addToFight(entry: Dnd5eEntry, count = 1): Promise<void> {
+		this.fights.change(f => { addMonster(f, entry.monster, count, { sourceFile: entry.filePath || undefined }); });
+		new Notice(count > 1 ? `Added ${count} ${entry.name} to the fight` : `Added ${entry.name} to the fight`);
+		await this.openTracker();
 	}
 
 	hover(entry: Dnd5eEntry, sourcePath: string): HoverContent {
@@ -376,7 +386,7 @@ class Dnd5eQuickLook extends Modal {
 		if (!lore) titles.createDiv({ cls: 'record-sub', text: `CR ${this.entry.monster.cr}` });
 		const bar = head.createDiv({ cls: 'record-actions' });
 		for (const a of lore ? [] : this.rt.actions(this.entry, this.sourcePath, () => this.close())) {
-			const b = pill(bar, { tag: 'button', cls: 'record-btn', icon: a.icon, text: a.label });
+			const b = pill(bar, { tag: 'button', cls: `record-btn ${a.cls ?? ''}`.trim(), icon: a.icon, text: a.label });
 			b.onclick = (e) => a.onClick(e);
 		}
 		this.rt.render(this.contentEl.createDiv({ cls: 'record-body' }), this.entry.monster, { sourcePath: this.sourcePath, variant: 'block', lore });

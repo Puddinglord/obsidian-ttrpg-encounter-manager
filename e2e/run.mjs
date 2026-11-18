@@ -5722,6 +5722,51 @@ test('fights follow the campaign: each campaign keeps its own, and the tracker s
 	}
 });
 
+test('5e: Add to fight from Spotlight and the quick look; "2 goblin warrior" adds two', async (o) => {
+	const C = 'Campaigns/Add Coast';
+	const SP = '.modal-container .prompt.nimble-spotlight';
+	const count = () => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => c.label));
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Add Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Notes.md`, 'Notes.\n');
+		}, C);
+		await o.openFile(`${C}/Notes.md`, 'preview');
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+		await o.eval((app, plugin) => { plugin.runtime('dnd5e').fights.put(undefined); });
+
+		// Spotlight → the Wyvern's quick look → Add to fight.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+		await o.page.locator(`${SP} .prompt-input`).fill('wyvern');
+		await o.waitFor(async () => /Wyvern/.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'Wyvern in Spotlight' });
+		await o.page.keyboard.press('Enter');
+		const add = o.page.locator('.modal.dnd5e-quick-look button', { hasText: 'Add to fight' });
+		await add.waitFor({ timeout: 3000 });
+		await add.click();
+		await o.waitFor(async () => (await count()).join() === 'Wyvern', { what: 'the Wyvern in the fight' });
+		await o.page.keyboard.press('Escape');
+		await o.page.waitForTimeout(200);
+		await o.eval(() => document.querySelectorAll('.modal-container').forEach(n => n.remove()));
+
+		// "2 goblin warrior": Enter adds two.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+		await o.page.locator(`${SP} .prompt-input`).fill('2 goblin warrior');
+		await o.waitFor(async () => /Add 2 × Goblin Warrior/.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'the add row' });
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await count()).length === 3, { what: 'two goblins added' });
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			plugin.runtime('dnd5e').fights.put(undefined);
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('NPC card without the block: a hand-written NPC note still shows its card, portrait slot and game stats; the tags leave them to the card', async (o) => {
 	const C = 'Campaigns/Bare Coast';
 	try {
