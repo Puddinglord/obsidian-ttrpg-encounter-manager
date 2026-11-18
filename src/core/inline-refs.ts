@@ -6,7 +6,47 @@
 import { syntaxTree } from '@codemirror/language';
 import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
-import { editorInfoField, editorLivePreviewField } from 'obsidian';
+import { editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
+
+export interface RefPillOptions {
+	/** Extra classes on the pill: `is-compendium kind-spell`, `role-minion`… (they pick its tint). */
+	cls?: string;
+	/** An icon segment before the name (a compendium entry's kind). */
+	icon?: { name: string; label?: string };
+	/** A short segment before the name (a monster's level or CR). */
+	badge?: { text: string; title?: string };
+	name: string;
+	/** Attributes on the name link (aria-label, title). */
+	nameAttr?: Record<string, string>;
+	/** A reference that names nothing: dashed, the name in grey and a "?" after it. */
+	unknown?: { title: string; label?: string };
+}
+
+/**
+ * The pill for an inline reference, the same in every game: [icon or badge | name], or
+ * [name | ?] for one that names nothing. Each segment is full height with its text or
+ * icon centred (styles.css, "INLINE MONSTER REFERENCES"). Returns the pill and its name
+ * (a link when found): wire clicks and the hover card to the name, and append any
+ * trailing segment (Nimble's + button) to the pill.
+ */
+export function refPill(o: RefPillOptions): { el: HTMLElement; name: HTMLElement } {
+	const el = createSpan({ cls: ['nimble-inline-ref', ...(o.cls ?? '').split(' ').filter(Boolean)] });
+	if (o.unknown) {
+		el.addClass('nimble-inline-unresolved');
+		const name = el.createSpan({ text: o.name, cls: 'nimble-inline-name unresolved' });
+		const q = el.createSpan({ text: '?', cls: 'nimble-inline-unknown', attr: { title: o.unknown.title } });
+		if (o.unknown.label) q.setAttr('aria-label', o.unknown.label);
+		return { el, name };
+	}
+	el.addClass('nimble-inline-found');
+	if (o.icon) {
+		const icon = el.createSpan({ cls: 'nimble-inline-kind', attr: { 'aria-hidden': 'true', ...(o.icon.label ? { title: o.icon.label } : {}) } });
+		setIcon(icon, o.icon.name);
+	}
+	if (o.badge) el.createSpan({ cls: 'nimble-inline-level', text: o.badge.text, attr: o.badge.title ? { title: o.badge.title } : {} });
+	const name = el.createEl('a', { text: o.name, cls: 'nimble-inline-name', attr: { href: '#', role: 'link', ...o.nameAttr } });
+	return { el, name };
+}
 
 export interface InlineRefProvider {
 	/** "nimble", "dnd5e". */

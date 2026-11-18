@@ -28,6 +28,7 @@ import {
 } from '../../core/compendium/browser';
 import type { StatblockAction } from './render';
 import { nimble } from './runtime';
+import { pill } from '../../core/pill';
 
 // ----------------------------------------------------------------------------
 // Entries, built once and rebuilt when the vault changes
@@ -131,9 +132,7 @@ export function renderEntryDetail(el: HTMLElement, e: Entry, ctx: DetailContext)
 	if (actions.length) {
 		const row = card.createDiv({ cls: 'statblock-actions' });
 		for (const a of actions) {
-			const b = row.createEl('button', { cls: `statblock-action${a.cta ? ' mod-cta' : ''}` });
-			setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
-			b.createSpan({ text: a.label });
+			const b = pill(row, { tag: 'button', cls: `statblock-action${a.cta ? ' mod-cta' : ''}`, icon: a.icon, text: a.label });
 			b.addEventListener('click', (ev) => { ev.preventDefault(); a.run(); });
 		}
 	}

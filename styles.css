@@ -115,8 +115,6 @@ body {
 	border-top: 1px solid var(--background-modifier-border);
 }
 .statblock-action { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; padding: 0.2rem 0.6rem; height: auto; }
-.statblock-action-icon { display: inline-flex; }
-.statblock-action-icon svg { width: 14px; height: 14px; }
 
 .nimble-statblock.is-compact { padding: 0.55rem 0.7rem; font-size: 0.9em; }
 .nimble-statblock.is-compact .monster-name { font-size: 1.05rem; margin-bottom: 0.3rem; }
@@ -927,8 +925,10 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 .nimble-map-token-ghost { position: fixed; z-index: var(--layer-popover); transform: translate(-50%, -50%); pointer-events: none; padding: 0.15rem 0.5rem; border-radius: 999px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 0.8rem; font-weight: 600; }
 
 /* ============================================
-   INLINE MONSTER REFERENCES  (`nimble:Name`)
-   A split pill: [level | name | +]
+   INLINE MONSTER REFERENCES  (`nimble:Name`, `5e:Name`)
+   A split pill: [level | name | +], [icon | name], built by refPill() in core/inline-refs.ts for every
+   game. Its segments stretch to the pill's height and centre their own content, so it isn't in the
+   shared pill rule; e2e/align.mjs measures it all the same.
    ============================================ */
 
 .nimble-inline-ref {
@@ -948,7 +948,7 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 	border: 1px solid color-mix(in srgb, var(--ref-tint) 32%, transparent);
 	background: color-mix(in srgb, var(--ref-tint) 9%, var(--background-primary));
 	font-size: 0.92em;
-	line-height: 1;
+	line-height: normal;
 	overflow: hidden;
 	transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
 }
@@ -1025,11 +1025,11 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 	border-left: 1px dashed var(--background-modifier-border);
 }
 
-/* Compendium references (`nimble:spell:Name`, `nimble:condition:Dazed`…): [icon | name], tinted by kind. */
-.nimble-inline-ref.is-compendium.kind-item { --ref-tint: #b8703a; }
+/* Compendium references (`nimble:spell:Name`, `5e:spell:Fireball`, `nimble:condition:Dazed`…): [icon | name], tinted by kind. */
+.nimble-inline-ref.is-compendium:is(.kind-item, .kind-equipment) { --ref-tint: #b8703a; }
 .nimble-inline-ref.is-compendium.kind-spell { --ref-tint: #3d7fe0; }
-.nimble-inline-ref.is-compendium:is(.kind-feature, .kind-boon) { --ref-tint: #a35fd6; }
-.nimble-inline-ref.is-compendium:is(.kind-class, .kind-subclass, .kind-ancestry, .kind-background) { --ref-tint: #24a06b; }
+.nimble-inline-ref.is-compendium:is(.kind-feature, .kind-boon, .kind-feat) { --ref-tint: #a35fd6; }
+.nimble-inline-ref.is-compendium:is(.kind-class, .kind-subclass, .kind-ancestry, .kind-background, .kind-species) { --ref-tint: #24a06b; }
 .nimble-inline-ref.is-compendium.kind-condition { --ref-tint: #d0613c; }
 .nimble-inline-kind {
 	display: inline-flex;
@@ -2225,7 +2225,6 @@ body.is-tablet .nimble-difficulty.is-button { padding: 0 0.6rem 0 0.75rem; }
 /* ---------- Hover card: proper buttons, a split Add, a draggable bar ---------- */
 :is(.nimble-statblock, .dnd5e-statblock) .statblock-actions { gap: 0.4rem; align-items: center; }
 .statblock-action:not(.hover-note *) { height: 2rem; padding: 0 0.8rem; font-size: 0.84rem; border-radius: 7px; gap: 0.35rem; }
-.statblock-action-icon svg { width: 15px; height: 15px; }
 .nimble-statblock .statblock-split { display: inline-flex; align-items: stretch; }
 .nimble-statblock .statblock-split > .statblock-action:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; padding-right: 0.7rem; }
 .nimble-statblock .statblock-split > .statblock-action-more { border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.45rem; margin-left: 1px; }
@@ -2252,7 +2251,6 @@ body.is-tablet .nimble-statblock .statblock-split > .statblock-action-more { pad
 .hover-note-body > :first-child { margin-top: 0; }
 .hover-note .statblock-actions { display: flex; gap: 0.4rem; margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--background-modifier-border); }
 .hover-note .statblock-action { display: inline-flex; align-items: center; gap: 0.35rem; height: 2.4rem; padding: 0 0.9rem; border-radius: 8px; }
-.hover-note .statblock-action svg { width: 15px; height: 15px; }
 .nimble-hover-preview .hover-preview-open {
 	height: 1.9rem; padding: 0 0.8rem; margin-left: auto; margin-right: 0.25rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
 	background: var(--interactive-accent); color: var(--text-on-accent); box-shadow: none; border: none;
@@ -2484,7 +2482,6 @@ body.is-tablet button.nimble-npc-pill { padding: 0 0.6rem; }
 .nimble-record-modal .record-sub { font-size: 0.82rem; color: var(--text-muted); }
 .nimble-record-modal .record-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
 .nimble-record-modal .record-btn { display: inline-flex; align-items: center; gap: 0.3rem; height: 2rem; }
-.nimble-record-modal .record-btn svg { width: 14px; height: 14px; }
 .nimble-record-modal .record-strip { margin-bottom: 0.25rem; }
 .nimble-record-modal .record-strip.is-down { opacity: 0.6; }
 /* The strip is the character sheet's own HP bar, Wounds, action dots and conditions (vitals-ui.ts). */
@@ -3714,15 +3711,23 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .ev-pill):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .ev-pill):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .ev-pill):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
+/* The standard pill, core/pill.ts: [icon] [text] on one centre line, one gap, the icon at the text's size.
+   Build new pills with pill() rather than hand-rolled icon + label markup. The caller's class gives the look
+   (colours, border, padding, font size); the layout here outranks it (:not(#ev-pill)) so pills can't drift.
+   A pill that needs another icon size or gap sets --ev-pill-icon or --ev-pill-gap. */
+.ev-pill:not(#ev-pill) { gap: var(--ev-pill-gap, 0.4em); justify-content: center; white-space: nowrap; vertical-align: middle; }
+.ev-pill:not(#ev-pill) > .ev-pill-icon { flex: 0 0 auto; justify-content: center; width: var(--ev-pill-icon, 1.1em); height: var(--ev-pill-icon, 1.1em); }
+.ev-pill:not(#ev-pill) > .ev-pill-icon svg { width: 100%; height: 100%; }
+.ev-pill:not(#ev-pill) > .ev-pill-text { min-width: 0; }
 /* ===== end Character sheet & compendium ===== */
 
 /* ============================================
@@ -4133,8 +4138,6 @@ body.is-mobile .nimble-cmpx-hints { display: none; }
 .nimble-cmpx-note { margin-top: 0.75rem; }
 .nimble-cmpx-page .statblock-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 1rem; padding-top: 0.6rem; border-top: 1px solid var(--background-modifier-border); }
 .nimble-cmpx-page .statblock-action { display: inline-flex; align-items: center; gap: 0.35rem; height: 2rem; padding: 0 0.8rem; font-size: 0.84rem; border-radius: 7px; }
-.nimble-cmpx-page .statblock-action-icon { display: inline-flex; }
-.nimble-cmpx-page .statblock-action-icon svg { width: 15px; height: 15px; }
 
 /* The tab: list beside the page; narrow, one or the other. */
 .nimble-compendium .nimble-cmpx .bestiary-back { display: none; }
@@ -4866,7 +4869,7 @@ button.dnd5e-hp-text:hover { background: var(--background-modifier-hover); }
 .dnd5e-encounter-actions { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
 .dnd5e-npc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.45rem; font-size: 0.85rem; }
 .dnd5e-npc-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
-button.dnd5e-npc-fight { display: inline-flex; align-items: center; gap: 0.3rem; height: auto; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
+button.dnd5e-npc-fight { height: auto; padding: 0.2rem 0.6rem; font-size: 0.8rem; }
 /* 2024 difficulty names, in the 2014 ones' colours. */
 .diff-low { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
 .diff-moderate { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
@@ -4893,10 +4896,6 @@ button.dnd5e-npc-fight { display: inline-flex; align-items: center; gap: 0.3rem;
 .dnd5e-card .nimble-dice.is-clickable { cursor: pointer; border-bottom: 1px dotted currentColor; }
 .dnd5e-card-modal { width: min(720px, 94vw); }
 
-/* 5e references to compendium entries */
-.dnd5e-ref .dnd5e-ref-icon { display: inline-flex; margin-right: 0.2rem; color: var(--interactive-accent); }
-.dnd5e-ref .dnd5e-ref-icon svg { width: 13px; height: 13px; }
-
 /* 5e compendium tab (src/systems/dnd5e/compendium-view.ts): core's browser, with the rules edition above it */
 .workspace-leaf-content .view-content.dnd5e-compendium { display: flex; flex-direction: column; }
 .dnd5e-cmp-top { display: flex; gap: 0.5rem; align-items: center; padding: 0.5rem 0.75rem 0; }
@@ -4915,7 +4914,6 @@ button.dnd5e-npc-fight { display: inline-flex; align-items: center; gap: 0.3rem;
 .dnd5e-sheet-name { font-size: 1.35rem; font-weight: 700; }
 .dnd5e-sheet-sub { color: var(--text-muted); }
 .dnd5e-sheet-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.dnd5e-sheet-actions button { display: inline-flex; align-items: center; gap: 0.3rem; }
 .dnd5e-sheet-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: 0.4rem; margin: 0.7rem 0 0.4rem; }
 .dnd5e-sheet-box { border: 1px solid var(--background-modifier-border); border-radius: 6px; padding: 0.3rem; text-align: center; background: var(--background-primary); }
 .dnd5e-sheet-box-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }

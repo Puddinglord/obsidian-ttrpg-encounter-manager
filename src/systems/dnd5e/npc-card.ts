@@ -2,7 +2,7 @@
 // block the NPC uses (a 5e: reference, with its hover card) and Add to fight,
 // which puts the NPC in the 5e tracker under its own name, AC and HP.
 
-import { setIcon } from 'obsidian';
+import { pill } from '../../core/pill';
 import { fmText } from '../../core/campaign-model';
 import type { NoteCardContext } from '../../core/note-kinds';
 import { addMonster } from './combat';
@@ -22,9 +22,7 @@ export function drawNpc5e(rt: Dnd5eRuntime, el: HTMLElement, ctx: NoteCardContex
 		row.appendChild(rt.createRef(ref, ctx.path));
 	}
 	if (!monster) return;
-	const b = row.createEl('button', { cls: 'dnd5e-npc-fight', attr: { 'aria-label': `Add ${name} to the 5e tracker` } });
-	setIcon(b.createSpan({ cls: 'dnd5e-btn-icon' }), 'swords');
-	b.createSpan({ text: 'Add to fight' });
+	const b = pill(row, { tag: 'button', cls: 'dnd5e-npc-fight', icon: 'swords', text: 'Add to fight', attr: { 'aria-label': `Add ${name} to the 5e tracker` } });
 	b.addEventListener('click', (e) => {
 		e.preventDefault();
 		e.stopPropagation();

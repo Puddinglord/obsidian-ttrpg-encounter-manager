@@ -4861,6 +4861,201 @@ test('pills: every icon and label sits on its pill centre line (within 1px)', as
 	assert.deepEqual(bad, [], 'misaligned pills');
 });
 
+/** Measure every pill under `root` and add what's off to `bad`, tagged with where it was. */
+async function measurePills(o, bad, where, root) {
+	for (const b of await o.page.evaluate(pillOffenders, { root, tolerance: 1, selectors: PILL_SELECTORS })) bad.push({ where, ...b });
+	// Which pills were there to measure, so a surface that drew none (a selector gone stale) shows up.
+	const seen = await o.page.evaluate(({ root, selectors }) => {
+		const out = {};
+		for (const scope of document.querySelectorAll(root)) {
+			for (const sel of selectors) {
+				const n = [...scope.querySelectorAll(sel)].filter(e => e.getBoundingClientRect().width).length;
+				if (n) out[sel] = (out[sel] ?? 0) + n;
+			}
+		}
+		return out;
+	}, { root, selectors: PILL_SELECTORS });
+	if (process.env.PILLS_VERBOSE) {
+		// PILLS_VERBOSE=1: what each surface had, and a picture of it in e2e/artifacts/ to look over.
+		console.log(`    ${where}: ${Object.entries(seen).map(([k, v]) => `${k}×${v}`).join(' ')}`);
+		await o.page.locator(root).filter({ visible: true }).first().screenshot({ path: join(ARTIFACTS, `pills-${where.replace(/\W+/g, '-')}.png`) }).catch(() => {});
+	}
+	if (!Object.keys(seen).length) bad.push({ where, el: root, part: 'no pills measured', offset: 0 });
+}
+
+test('pills: Nimble references, stat block buttons, compendium, Spotlight and the slash menu line up', async (o) => {
+	await resetEncounter(o);
+	const bad = [];
+	// Inline references: monsters [level | name | +], compendium entries [icon | name], unknown names; both views.
+	await o.openFile('Compendium refs.md', 'preview');
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-inline-ref.is-compendium`).count()) >= 8, { what: 'compendium refs' });
+	await o.page.waitForTimeout(200);
+	await o.page.locator(`${R} .nimble-inline-ref.kind-spell`).first().screenshot({ path: join(ARTIFACTS, 'pill-nimble-spell.png') });
+	await measurePills(o, bad, 'Nimble refs (reading)', `${R}`);
+	await o.openFile('Adventure.md', 'preview');
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-inline-ref.nimble-inline-found`).count()) >= 2, { what: 'monster refs' });
+	await measurePills(o, bad, 'Nimble monster refs (reading)', `${R}`);
+	// A monster's quick look: its buttons and the stat block's badges.
+	await o.page.locator(`${R} .nimble-inline-ref.nimble-inline-found .nimble-inline-name`).first().click();
+	await o.page.locator('.modal.nimble-record-modal').waitFor({ timeout: 3000 });
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble quick look', '.modal.nimble-record-modal');
+	await o.page.keyboard.press('Escape');
+	// The hover card, with its Add button.
+	await o.page.locator(`${R} .nimble-inline-ref.nimble-inline-found .nimble-inline-name`).first().hover();
+	await o.page.locator('.nimble-hover-preview .nimble-statblock').waitFor({ timeout: 3000 });
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble hover card', '.nimble-hover-preview');
+	await parkMouse(o);
+	await o.openFile('Compendium refs.md', 'source');
+	await o.waitFor(async () => (await o.page.locator(`${S} .nimble-inline-ref.is-compendium`).count()) >= 8, { what: 'Live Preview refs' });
+	await measurePills(o, bad, 'Nimble refs (Live Preview)', `${S}`);
+	// A stat block and its buttons.
+	await o.openFile('Bestiary/Goblin Boss.md', 'preview');
+	await o.page.locator(`${R} .nimble-statblock`).first().waitFor();
+	await measurePills(o, bad, 'Nimble stat block', `${R}`);
+	// The compendium: tabs, rows with their pills and tags, a page with its buttons, a filter chip.
+	await openCompendiumTab(o);
+	await o.page.locator(`${CMP} .nimble-cmpx-input`).pressSequentially('level:1 ', { delay: 20 });
+	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-chip`).count()) === 1, { what: 'a filter chip' });
+	await o.page.waitForTimeout(300);
+	await measurePills(o, bad, 'Nimble compendium', CMP);
+	// Spotlight with a typed filter.
+	await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+	const SP = '.modal-container .prompt.nimble-spotlight';
+	await o.page.locator(`${SP} .prompt-input`).fill('level:2 gob');
+	await o.waitFor(async () => (await o.page.locator(`${SP} .nimble-cmpx-chip`).count()) >= 1, { what: 'Spotlight chip' });
+	await o.page.waitForTimeout(300);
+	await measurePills(o, bad, 'Nimble Spotlight', SP);
+	await o.page.keyboard.press('Escape');
+	// The slash menu, with a difficulty badge.
+	await o.eval(async (app) => {
+		const old = app.vault.getAbstractFileByPath('Pill slash.md');
+		if (old) await app.vault.delete(old);
+		await app.vault.create('Pill slash.md', '# Prep\n\n');
+	});
+	await o.openFile('Pill slash.md', 'source');
+	await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 2, ch: 0 }); ed.focus(); });
+	await o.page.keyboard.type('/', { delay: 15 });
+	await o.waitFor(async () => (await o.page.locator('.suggestion-container .nimble-slash-item').count()) > 10, { what: 'the slash menu' });
+	await o.page.keyboard.type('enc', { delay: 15 });
+	await o.page.waitForTimeout(250);
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForTimeout(250);
+	await o.page.keyboard.type('3 goblin minion, krogg', { delay: 15 });
+	await o.waitFor(async () => (await o.page.locator('.suggestion-container .nimble-slash-badge').count()) >= 1, { what: 'slash menu badge' });
+	await measurePills(o, bad, 'Slash menu (encounter)', '.suggestion-container');
+	await o.page.keyboard.press('Escape');
+	await o.eval(async (app) => { const f = app.vault.getAbstractFileByPath('Pill slash.md'); if (f) await app.vault.delete(f); });
+	assert.deepEqual(bad, [], 'misaligned pills');
+});
+
+test('pills: 5e references, stat block, compendium, tracker and character sheet line up', async (o) => {
+	const C = 'Campaigns/Pill Coast';
+	const note = `${C}/Session.md`;
+	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+	const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	const bad = [];
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Pill Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Session.md`, [
+				'# Session', '',
+				'A `5e:Goblin Warrior` casts `5e:spell:Fireball`, drinks a `5e:item:Potion of Healing`, falls `5e:Prone` and meets a `5e:Nobody Knows`.', '',
+				'```5e', 'name: Ash Wight', 'type: Undead', 'ac: 14 (studded leather)', 'hp: 45 (6d8 + 18)', 'speed: 30 ft.',
+				'str: 15', 'dex: 14', 'con: 16', 'int: 10', 'wis: 13', 'cha: 15', 'cr: 3',
+				'actions:', '- Claw: Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8 + 2) Slashing damage.', '```', '',
+				'```nimble-encounter', 'name: Road ambush', 'monsters:', '- 2 `5e:Goblin Warrior`', '- Ogre', '```', '',
+			].join('\n'));
+			await app.vault.create(`${C}/Ilse.md`, [
+				'---', 'title: Ilse', 'class: Wizard', 'level: 5', 'edition: "2024"', 'str: 8', 'dex: 14', 'con: 13', 'int: 17', 'wis: 12', 'cha: 10',
+				'skills: [Arcana, History]', 'spells: [Fire Bolt, Shield, Fireball, Hold Person]', 'inventory:', '  - { name: Dagger, equipped: true }', '---', '', '```5e-sheet', '```', '',
+			].join('\n'));
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+
+		// References in both views, the stat block, the encounter block.
+		await o.openFile(note, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.dnd5e-hit`).count()) >= 3, { what: 'compendium refs' });
+		await o.page.locator(`${R} .dnd5e-encounter`).waitFor();
+		await o.page.waitForTimeout(300);
+		await o.page.locator(`${R} p`, { has: o.page.locator('.dnd5e-ref') }).first().screenshot({ path: join(ARTIFACTS, 'pill-5e-refs.png') });
+		await measurePills(o, bad, '5e note (reading)', `${R}`);
+		await o.openFile(note, 'source');
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-ref.dnd5e-hit`).count()) >= 3, { what: 'Live Preview refs' });
+		await measurePills(o, bad, '5e note (Live Preview)', `${S}`);
+		// A monster's quick look: the stat block with its buttons.
+		await o.openFile(note, 'preview');
+		await o.page.locator(`${R} .dnd5e-ref`).first().locator('.nimble-inline-name').click();
+		await o.page.locator('.modal.dnd5e-quick-look .dnd5e-statblock').waitFor({ timeout: 3000 });
+		await measurePills(o, bad, '5e quick look', '.modal.dnd5e-quick-look');
+		await o.page.keyboard.press('Escape');
+
+		// The compendium: spells with a filter chip and Fireball's page; monsters with their tags.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.page.locator(V).waitFor({ timeout: 5000 });
+		const input = o.page.locator(`${V} .nimble-cmpx-input`);
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Spells' }).click();
+		await input.fill('');
+		await input.pressSequentially('level:3 fireball', { delay: 20 });
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name`).innerText().catch(() => '')) === 'Fireball', { what: 'Fireball selected' });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e compendium (spells)', V);
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Monsters' }).click();
+		await input.fill('goblin');
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-row.is-selected`).count()) === 1, { what: 'a monster selected' });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e compendium (monsters)', V);
+
+		// The tracker with a fight and a condition.
+		await o.openFile(note, 'preview');
+		await o.page.locator(`${R} .dnd5e-encounter button`, { hasText: 'Run' }).click();
+		await o.page.locator(TR).waitFor({ timeout: 5000 });
+		await o.waitFor(async () => (await o.page.locator(`${TR} .dnd5e-combatant`).count()) === 3, { what: 'three combatants' });
+		const ogre = o.page.locator(`${TR} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: /^Ogre$/ }) });
+		await ogre.locator('.dnd5e-condition-add').click();
+		await clickMenu(o, 'Prone');
+		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition').count()) === 1, { what: 'Prone chip' });
+		await measurePills(o, bad, '5e tracker', TR);
+
+		// The character sheet, and a rules term's card.
+		await o.openFile(`${C}/Ilse.md`, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e sheet', `${R} .dnd5e-sheet`);
+		const term = o.page.locator(`${R} .dnd5e-sheet .ev-term`).first();
+		if (await term.count()) {
+			await term.click();
+			await o.page.locator('.ev-term-popover').waitFor({ timeout: 3000 });
+			await measurePills(o, bad, 'rules term card', '.ev-term-popover');
+			await o.page.keyboard.press('Escape');
+		}
+
+		// Spotlight in a 5e campaign, with a typed filter.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+		const SP = '.modal-container .prompt.nimble-spotlight';
+		await o.page.locator(`${SP} .prompt-input`).fill('school:evocation fire');
+		await o.waitFor(async () => (await o.page.locator(`${SP} .nimble-cmpx-chip`).count()) >= 1, { what: 'Spotlight chip' });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e Spotlight', SP);
+		await o.page.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container, .ev-term-popover').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+	assert.deepEqual(bad, [], 'misaligned pills');
+});
+
 test('game systems: a new campaign can be 5e (2014 rules), and Campaign settings switch it back to Nimble', async (o) => {
 	const home = 'Campaigns/Dragon Coast/Dragon Coast.md';
 	try {

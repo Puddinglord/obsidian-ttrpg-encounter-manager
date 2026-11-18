@@ -11,6 +11,7 @@ import { contentVersion5e, KIND5E } from './compendium';
 import { buildEntries5e, Entry5e, entryPills5e, entryReference5e, QUERY_5E, Segment5e, SEGMENTS_5E } from './compendium-entries';
 import type { Dnd5eEdition } from './editions';
 import type { Dnd5eRuntime } from './runtime';
+import { pill } from '../../core/pill';
 
 export const DND5E_COMPENDIUM_VIEW = 'nimble-dnd5e-compendium';
 
@@ -44,9 +45,7 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 	const buttons = (el: HTMLElement, list: { label: string; icon: string; run: () => void }[]) => {
 		const row = el.createDiv({ cls: 'statblock-actions' });
 		for (const a of list) {
-			const b = row.createEl('button', { cls: 'statblock-action' });
-			setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
-			b.createSpan({ text: a.label });
+			const b = pill(row, { tag: 'button', cls: 'statblock-action', icon: a.icon, text: a.label });
 			b.addEventListener('click', (ev) => { ev.preventDefault(); a.run(); });
 		}
 	};

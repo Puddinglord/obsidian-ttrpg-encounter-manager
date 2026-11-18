@@ -16,6 +16,7 @@ import { openHpCalculator } from './hp-pad';
 import { closePopover } from '../../core/popover';
 import { portraitOf, renderAvatar } from '../../core/npc-card';
 import { nimble } from './runtime';
+import { pill } from '../../core/pill';
 
 export type RecordTarget =
 	| { kind: 'monster'; entry: MonsterIndexEntry; sourcePath?: string }
@@ -104,25 +105,19 @@ class RecordModal extends Modal {
 		const actions = head.createDiv({ cls: 'record-actions' });
 		const lore = !c && !!src.entry && this.plugin.hideStats(src.entry.filePath, src.sourcePath || undefined);
 		if (t.kind === 'monster' && !lore) {
-			const add = actions.createEl('button', { cls: 'record-btn' });
-			setIcon(add.createSpan(), 'plus');
-			add.createSpan({ text: 'Add to fight' });
+			const add = pill(actions, { tag: 'button', cls: 'record-btn', icon: 'plus', text: 'Add to fight' });
 			add.onclick = (e) => { void nimble().addToEncounter(t.entry.monster, t.entry.filePath || undefined, e.shiftKey ? 2 : 1); };
 		}
 		// Players keep their own notes on a creature: add them, or open them.
 		if (lore && src.entry) {
 			const name = baseCreatureName(src.entry.name);
 			const noted = !!nimble().creatureNote(name);
-			const notes = actions.createEl('button', { cls: 'record-btn' });
-			setIcon(notes.createSpan(), noted ? 'notebook-pen' : 'notebook');
-			notes.createSpan({ text: noted ? 'Open notes' : 'Add notes' });
+			const notes = pill(actions, { tag: 'button', cls: 'record-btn', icon: noted ? 'notebook-pen' : 'notebook', text: noted ? 'Open notes' : 'Add notes' });
 			notes.onclick = () => { this.close(); void nimble().openCreatureNote(name); };
 		}
 		const page = this.pageAction(src);
 		if (page) {
-			const open = actions.createEl('button', { cls: 'record-btn mod-cta' });
-			setIcon(open.createSpan(), page.icon);
-			open.createSpan({ text: page.label });
+			const open = pill(actions, { tag: 'button', cls: 'record-btn mod-cta', icon: page.icon, text: page.label });
 			open.onclick = (e) => { this.close(); page.run(e.metaKey || e.ctrlKey); };
 		}
 

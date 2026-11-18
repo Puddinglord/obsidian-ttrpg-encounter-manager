@@ -3,7 +3,8 @@
 // 2024 one (AC and Initiative, abilities with MOD and SAVE, CR with XP and PB).
 // Attack bonuses, saves, checks and damage dice roll when clicked.
 
-import { App, setIcon } from 'obsidian';
+import { App } from 'obsidian';
+import { pill } from '../../core/pill';
 import { appendRichText } from '../../core/markdown';
 import { appendWithTerms, markTerm, TermContext } from '../../core/rule-term-ui';
 import { wireWikiLinks } from '../../core/wiki-links';
@@ -256,9 +257,7 @@ export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render
 	if (opts.actions?.length) {
 		const bar = block.createDiv({ cls: 'statblock-actions' });
 		for (const a of opts.actions) {
-			const b = bar.createEl('button', { cls: `statblock-action ${a.cls ?? ''}`.trim() });
-			if (a.icon) setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
-			b.createSpan({ text: a.label });
+			const b = pill(bar, { tag: 'button', cls: `statblock-action ${a.cls ?? ''}`, icon: a.icon, text: a.label });
 			b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); a.onClick(e); });
 		}
 	}

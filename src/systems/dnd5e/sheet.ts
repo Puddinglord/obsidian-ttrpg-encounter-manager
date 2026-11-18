@@ -16,6 +16,7 @@ import { openLevelUp5e } from './character-wizard';
 import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
 import { markTerm, termContext } from '../../core/rule-term-ui';
 import { renderPipRow } from '../../core/pip-row';
+import { pill } from '../../core/pill';
 
 export const SHEET_LANG = '5e-sheet';
 const SHORT: Record<AbilityKey, string> = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
@@ -79,9 +80,7 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		titles.createDiv({ cls: 'dnd5e-sheet-sub', text: [`Level ${s.level}`, s.species, [s.className || 'No class', s.subclass ? `(${s.subclass})` : ''].filter(Boolean).join(' '), s.background].filter(Boolean).join(' · ') });
 		const acts = head.createDiv({ cls: 'dnd5e-sheet-actions' });
 		const act = (label: string, icon: string, run: () => void) => {
-			const b = acts.createEl('button');
-			setIcon(b.createSpan({ cls: 'dnd5e-btn-icon' }), icon);
-			b.createSpan({ text: label });
+			const b = pill(acts, { tag: 'button', icon, text: label });
 			b.onclick = run;
 		};
 		act('Short rest', 'coffee', () => this.shortRest(s));

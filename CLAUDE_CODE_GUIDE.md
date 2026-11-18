@@ -44,6 +44,7 @@ src/core/
   npc-live-preview.ts   The same for Live Preview (CodeMirror decorations)
   tables.ts             DC columns as pills; the "Styled tables" body class
   dice3d/               3D dice: index.ts (tiny entry), renderer.ts (three.js), geometry.ts (shapes, face-up math, tested)
+  pill.ts               pill(): the one markup for pills, chips and compact icon+label buttons (see "Pills and compact buttons")
   popover.ts            Shared floating popover (condition info, pickers); a bottom sheet on phones
   touch.ts              isTouch/isPhone, onLongPress (right-click on touch), confirmAction (no window.confirm on mobile)
   party.ts              Party editor (settings tab and the /party modal); cards on narrow screens
@@ -180,7 +181,9 @@ Running a campaign and playing in one show the same things; build each once and 
 
 ## Pills and compact buttons
 
-Every pill, chip and small icon+label button is centred by one shared rule at the end of the character sheet section of `styles.css` (flex row, icons as blocks, labels at `line-height: normal`). Don't use `line-height: 1` on labels: at small sizes Chromium rounds the font's ascent and descent and the label lands ~1px high. A new pill class goes in that rule's list **and** in `PILL_SELECTORS` in `e2e/align.mjs`; the `pills:` e2e test measures the real glyphs (capital height, real baseline) and fails if an icon or label drifts more than 1px.
+Build new pills with core's `pill()` (core/pill.ts); don't hand-roll icon+label markup. `pill(parent, { icon, text, tag: 'span' | 'button' | 'a', cls, title, attr })` writes `.ev-pill` > `.ev-pill-icon` (the svg) + `.ev-pill-text`, and its CSS (next to the shared rule) puts both on one centre line with one gap and the icon at the text's size. Your class gives the look (colours, border, padding, font size); set `--ev-pill-icon` or `--ev-pill-gap` if a pill really needs another size. `setPill(el, { icon, text })` redraws one. Inline references (`nimble:…`, `5e:…`) are split pills: build them with `refPill()` (core/inline-refs.ts) so references look the same in every game.
+
+Every pill, chip and small icon+label button is centred by one shared rule at the end of the character sheet section of `styles.css` (flex row, icons as blocks, labels at `line-height: normal`). Don't use `line-height: 1` on labels: at small sizes Chromium rounds the font's ascent and descent and the label lands ~1px high. A new pill class goes in that rule's list **and** in `PILL_SELECTORS` in `e2e/align.mjs`. The `pills:` e2e tests measure the real glyphs (capital height, real baseline) in both games (Nimble's sheet, level up, references, quick look, hover card, compendium, Spotlight, slash menu; 5e's references, quick look, encounter block, compendium, tracker, sheet, rules card) and fail if an icon or label drifts more than 1px or an icon sits closer than 3px to its label. `PILLS_VERBOSE=1 node e2e/run.mjs pills` lists what each surface measured and saves a picture of each in `e2e/artifacts/`.
 
 ## Releasing
 

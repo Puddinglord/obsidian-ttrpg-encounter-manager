@@ -5,6 +5,7 @@
 
 import { Component, MarkdownRenderer, Platform, Plugin, setIcon, TFile } from 'obsidian';
 import { isPhone, isTouch } from './touch';
+import { pill } from './pill';
 
 /** What a preview card shows. */
 export interface HoverContent {
@@ -122,9 +123,7 @@ export class HoverPreview {
 			void MarkdownRenderer.render(this.plugin.app, md || '*Empty note*', content, file.path, component);
 		});
 		const actions = card.createDiv({ cls: 'statblock-actions' });
-		const open = actions.createEl('button', { cls: 'statblock-action mod-cta' });
-		setIcon(open.createSpan({ cls: 'statblock-action-icon' }), 'file-symlink');
-		open.createSpan({ text: 'Open note' });
+		const open = pill(actions, { tag: 'button', cls: 'statblock-action mod-cta', icon: 'file-symlink', text: 'Open note' });
 		open.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.hide(); void this.plugin.app.workspace.openLinkText(file.path, sourcePath, e.metaKey || e.ctrlKey); });
 		this.finish(anchor);
 	}

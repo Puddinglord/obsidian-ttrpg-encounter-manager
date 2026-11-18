@@ -2,10 +2,11 @@
 // and quick look, the monster index, and Copy to vault. Created once by the
 // system's register(); everything else in dnd5e reaches it through dnd5e().
 
-import { MarkdownPostProcessorContext, MarkdownRenderChild, Modal, normalizePath, Notice, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderChild, Modal, normalizePath, Notice, TFile, WorkspaceLeaf } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import type { HoverContent } from '../../core/hover-preview';
-import type { InlineRefProvider } from '../../core/inline-refs';
+import { refPill, type InlineRefProvider } from '../../core/inline-refs';
+import { pill } from '../../core/pill';
 import { homeFolderFor } from '../../core/campaign-model';
 import { asEdition, Dnd5eEdition } from './editions';
 import { Dnd5eIndex } from './monster-index';
@@ -266,11 +267,15 @@ export class Dnd5eRuntime {
 		const target = this.resolveRef(name, sourcePath);
 		if (target && 'hit' in target) {
 			const hit = target.hit;
-			const el = createSpan({ cls: `nimble-inline-ref dnd5e-ref nimble-inline-found dnd5e-hit kind-${hit.kind}` });
+			const label = KIND5E[hit.kind].label;
+			const { el, name: link } = refPill({
+				cls: `dnd5e-ref dnd5e-hit is-compendium kind-${hit.kind}`,
+				icon: { name: KIND5E[hit.kind].icon, label },
+				name: hit.name,
+				nameAttr: { 'aria-label': `${label}: ${hit.name}` },
+			});
 			el.dataset.dnd5eRef = name;
 			el.dataset.sourcePath = sourcePath;
-			setIcon(el.createSpan({ cls: 'dnd5e-ref-icon' }), KIND5E[hit.kind].icon);
-			const link = el.createEl('a', { text: hit.name, cls: 'nimble-inline-name', attr: { href: '#', role: 'link' } });
 			link.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.openCard(hit, sourcePath); });
 			this.plugin.hover.attach(link, () => this.hitHover(hit, sourcePath));
 			return el;
@@ -280,20 +285,14 @@ export class Dnd5eRuntime {
 
 	private createMonsterRef(name: string, sourcePath: string): HTMLElement {
 		const plugin = this.plugin;
-		const el = createSpan({ cls: 'nimble-inline-ref dnd5e-ref' });
+		const entry = this.get(name, sourcePath);
+		const lore = !!entry && plugin.hideStats(entry.filePath, sourcePath || undefined);
+		const { el, name: link } = entry
+			? refPill({ cls: 'dnd5e-ref', badge: lore ? undefined : { text: entry.monster.cr, title: `CR ${entry.monster.cr}` }, name: entry.name })
+			: refPill({ cls: 'dnd5e-ref', name, unknown: { title: this.index.ready ? 'Not found' : 'Indexing…' } });
 		el.dataset.dnd5eRef = name;
 		el.dataset.sourcePath = sourcePath;
-		const entry = this.get(name, sourcePath);
-		if (!entry) {
-			el.addClass('nimble-inline-unresolved');
-			el.createSpan({ text: name, cls: 'nimble-inline-name unresolved' });
-			el.createSpan({ text: '?', cls: 'nimble-inline-unknown', attr: { title: this.index.ready ? 'Not found' : 'Indexing…' } });
-			return el;
-		}
-		el.addClass('nimble-inline-found');
-		const lore = plugin.hideStats(entry.filePath, sourcePath || undefined);
-		if (!lore) el.createSpan({ cls: 'nimble-inline-level', text: entry.monster.cr, attr: { title: `CR ${entry.monster.cr}` } });
-		const link = el.createEl('a', { text: entry.name, cls: 'nimble-inline-name', attr: { href: '#', role: 'link' } });
+		if (!entry) return el;
 		link.addEventListener('click', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
@@ -371,9 +370,7 @@ class Dnd5eQuickLook extends Modal {
 		if (!lore) titles.createDiv({ cls: 'record-sub', text: `CR ${this.entry.monster.cr}` });
 		const bar = head.createDiv({ cls: 'record-actions' });
 		for (const a of lore ? [] : this.rt.actions(this.entry, this.sourcePath, () => this.close())) {
-			const b = bar.createEl('button', { cls: 'record-btn' });
-			if (a.icon) setIcon(b.createSpan(), a.icon);
-			b.createSpan({ text: a.label });
+			const b = pill(bar, { tag: 'button', cls: 'record-btn', icon: a.icon, text: a.label });
 			b.onclick = (e) => a.onClick(e);
 		}
 		this.rt.render(this.contentEl.createDiv({ cls: 'record-body' }), this.entry.monster, { sourcePath: this.sourcePath, variant: 'block', lore });

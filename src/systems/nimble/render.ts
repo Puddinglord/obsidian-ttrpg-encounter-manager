@@ -13,6 +13,7 @@ import { NIMBLE_STORE_URL } from './bestiary';
 /** 'attack' dice follow Nimble attack rules; 'effect' dice (saves, abilities, phases) are plain sums. */
 export type { DiceKind } from '../../core/dice-attack';
 import type { DiceKind } from '../../core/dice-attack';
+import { pill } from '../../core/pill';
 export type DiceHandler = (el: HTMLElement, expression: string, label: string, kind: DiceKind) => void;
 
 export interface StatblockAction {
@@ -116,9 +117,7 @@ function renderActionBar(block: HTMLElement, actions: StatblockAction[] | undefi
 	const bar = block.createDiv({ cls: 'statblock-actions' });
 	for (const a of actions) {
 		const host = a.menu ? bar.createDiv({ cls: `statblock-split ${a.cls || ''}` }) : bar;
-		const b = host.createEl('button', { cls: `statblock-action ${a.cls || ''}`, attr: { 'aria-label': a.title || a.label } });
-		if (a.icon) setIcon(b.createSpan({ cls: 'statblock-action-icon' }), a.icon);
-		b.createSpan({ text: a.label });
+		const b = pill(host, { tag: 'button', cls: `statblock-action ${a.cls || ''}`, icon: a.icon, text: a.label, attr: { 'aria-label': a.title || a.label } });
 		b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); a.onClick(ev); });
 		if (a.menu) {
 			const more = host.createEl('button', { cls: `statblock-action statblock-action-more ${a.cls || ''}`, attr: { 'aria-label': `More ways to ${a.label.toLowerCase()}` } });

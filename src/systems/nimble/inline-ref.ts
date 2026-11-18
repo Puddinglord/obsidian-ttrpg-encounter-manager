@@ -11,7 +11,7 @@ import { bundledCompendium } from './compendium-data';
 import { parseCompendiumRef, resolveCompendiumRef } from './compendium-ref';
 import { formatLevel, monsterRole } from './rules';
 import type { HoverContent } from '../../core/hover-preview';
-import type { InlineRefProvider } from '../../core/inline-refs';
+import { refPill, type InlineRefProvider } from '../../core/inline-refs';
 import { nimble } from './runtime';
 
 export const INLINE_PREFIX = 'nimble:';
@@ -73,14 +73,10 @@ export function createInlineRef(plugin: EmberVaultPlugin, monsterName: string, s
 
 /** A reference that names nothing: the name, dashed, with a "?". */
 function unresolvedRef(text: string, sourcePath: string, shown: string, what: string): HTMLElement {
-	const container = createSpan({ cls: 'nimble-inline-ref nimble-inline-unresolved' });
-	container.dataset.nimbleRef = text;
-	container.dataset.sourcePath = sourcePath;
-	container.createSpan({ text: shown, cls: 'nimble-inline-name unresolved' });
-	const unknown = container.createSpan({ text: '?', cls: 'nimble-inline-unknown' });
-	unknown.setAttr('aria-label', `Unknown ${what}`);
-	unknown.setAttr('title', 'Not found');
-	return container;
+	const { el } = refPill({ name: shown, unknown: { title: 'Not found', label: `Unknown ${what}` } });
+	el.dataset.nimbleRef = text;
+	el.dataset.sourcePath = sourcePath;
+	return el;
 }
 
 /** A spell, item, feature, class… or condition: [icon | name], a card on hover, the card modal on click. */
@@ -88,57 +84,46 @@ function createCompendiumRef(plugin: EmberVaultPlugin, text: string, sourcePath:
 	const hit: CompendiumHit | undefined = isHit(target) ? target : undefined;
 	const kind = hit ? hit.kind : 'condition';
 	const label = hit ? KIND_LABEL[hit.kind] : 'Condition';
-	const container = createSpan({ cls: `nimble-inline-ref nimble-inline-found is-compendium kind-${kind}` });
-	container.dataset.nimbleRef = text;
-	container.dataset.sourcePath = sourcePath;
-	const icon = container.createSpan({ cls: 'nimble-inline-kind', attr: { title: label, 'aria-hidden': 'true' } });
-	setIcon(icon, hit ? compendiumIcon(hit) : CONDITION_ICON);
 	const owner = hit?.kind === 'feature' ? hit.subclass ?? hit.className : hit?.kind === 'subclass' ? hit.className : undefined;
-	const name = container.createEl('a', {
-		text: target.name,
-		cls: 'nimble-inline-name',
-		attr: { href: '#', role: 'link', 'aria-label': `${label}: ${target.name}`, title: owner ? `${label} · ${owner}` : label },
+	const { el, name } = refPill({
+		cls: `is-compendium kind-${kind}`,
+		icon: { name: hit ? compendiumIcon(hit) : CONDITION_ICON, label },
+		name: target.name,
+		nameAttr: { 'aria-label': `${label}: ${target.name}`, title: owner ? `${label} · ${owner}` : label },
 	});
+	el.dataset.nimbleRef = text;
+	el.dataset.sourcePath = sourcePath;
 	name.addEventListener('click', (e) => {
 		e.preventDefault();
 		e.stopPropagation();
 		openCompendiumCard(plugin, target);
 	});
 	attachHitHover(plugin, name, target);
-	return container;
+	return el;
 }
 
 function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourcePath: string): HTMLElement {
-	const container = createSpan({ cls: 'nimble-inline-ref' });
-	container.dataset.nimbleRef = monsterName;
-	container.dataset.sourcePath = sourcePath;
 	const entry = nimble().index.get(monsterName, sourcePath || undefined);
-
 	if (!entry) {
-		container.addClass('nimble-inline-unresolved');
-		container.createSpan({ text: monsterName, cls: 'nimble-inline-name unresolved' });
-		const unknown = container.createSpan({ text: '?', cls: 'nimble-inline-unknown' });
-		unknown.setAttr('aria-label', 'Unknown monster');
-		unknown.setAttr('title', nimble().index.ready ? 'Not found' : 'Indexing…');
-		return container;
+		const { el } = refPill({ name: monsterName, unknown: { title: nimble().index.ready ? 'Not found' : 'Indexing…', label: 'Unknown monster' } });
+		el.dataset.nimbleRef = monsterName;
+		el.dataset.sourcePath = sourcePath;
+		return el;
 	}
 
-	container.addClass('nimble-inline-found');
-	if (entry.bundled) container.addClass('is-bundled');
 	// Player view: a name and a lore card, no level, no "add to encounter".
 	const lore = plugin.hideStats(entry.filePath, sourcePath || undefined);
-	if (lore) container.addClass('is-lore');
 	const role = monsterRole(entry.monster);
-	if (!lore) container.addClass(`role-${role}`);
 	const lvl = formatLevel(entry.monster.level);
-	if (!lore && (lvl || role === 'minion')) {
-		container.createSpan({
-			cls: 'nimble-inline-level',
-			text: lvl || 'min',
-			attr: { title: role === 'legendary' ? `Level ${lvl} ${entry.monster.roleLabel || 'Legendary'}` : role === 'minion' ? 'Minion' : `Level ${lvl}` },
-		});
-	}
-	const name = container.createEl('a', { text: entry.name, cls: 'nimble-inline-name', attr: { href: '#', role: 'link' } });
+	const { el: container, name } = refPill({
+		cls: `${entry.bundled ? 'is-bundled ' : ''}${lore ? 'is-lore' : `role-${role}`}`,
+		badge: !lore && (lvl || role === 'minion')
+			? { text: lvl || 'min', title: role === 'legendary' ? `Level ${lvl} ${entry.monster.roleLabel || 'Legendary'}` : role === 'minion' ? 'Minion' : `Level ${lvl}` }
+			: undefined,
+		name: entry.name,
+	});
+	container.dataset.nimbleRef = monsterName;
+	container.dataset.sourcePath = sourcePath;
 
 	name.addEventListener('click', (e) => {
 		e.preventDefault();

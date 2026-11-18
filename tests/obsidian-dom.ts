@@ -49,6 +49,10 @@ proto.createSpan ??= function (this: Node, o?: ElInfo | string, cb?: Cb) { retur
 const g = globalThis as unknown as Record<string, unknown>;
 g.activeDocument ??= document;
 g.activeWindow ??= window;
+// The global forms make a detached element.
+g.createEl ??= <K extends keyof HTMLElementTagNameMap>(tag: K, o?: ElInfo | string) => build(document, tag, o);
+g.createDiv ??= (o?: ElInfo | string) => build(document, 'div', o);
+g.createSpan ??= (o?: ElInfo | string) => build(document, 'span', o);
 
 const el = HTMLElement.prototype as unknown as Record<string, unknown>;
 proto.appendText ??= function (this: Node, t: string) { this.appendChild(ownerDoc(this).createTextNode(t)); };

@@ -2,7 +2,8 @@
 // the difficulty against the party (the edition's rules), and Run / Add to
 // fight. Players see who was fought, not the numbers.
 
-import { MarkdownPostProcessorContext, MarkdownRenderChild, setIcon } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
+import { pill } from '../../core/pill';
 import type { EncounterDef } from '../../core/encounter-def';
 import { addHero, addMonster } from './combat';
 import type { Dnd5eRuntime } from './runtime';
@@ -57,9 +58,7 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 
 		const bar = card.createDiv({ cls: 'dnd5e-encounter-actions' });
 		const button = (label: string, icon: string, run: () => void, cta = false) => {
-			const b = bar.createEl('button', { cls: cta ? 'mod-cta' : '' });
-			setIcon(b.createSpan({ cls: 'dnd5e-btn-icon' }), icon);
-			b.createSpan({ text: label });
+			const b = pill(bar, { tag: 'button', cls: cta ? 'mod-cta' : '', icon, text: label });
 			b.onclick = run;
 		};
 		const missing = groups.filter(g => !g.entry).map(g => g.m.name);

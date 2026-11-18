@@ -2,9 +2,10 @@
 // rendered in a modal over whatever you're doing, with Open page. The same look
 // as Nimble's quick look (record-* classes), for systems with no stat-aware one.
 
-import { App, Component, MarkdownRenderer, Modal, setIcon, TFile } from 'obsidian';
+import { App, Component, MarkdownRenderer, Modal, TFile } from 'obsidian';
 import { portraitOf, renderAvatar } from './npc-card';
 import { closePopover } from './popover';
+import { pill } from './pill';
 
 export interface NoteQuickLookTarget {
 	file: TFile;
@@ -49,9 +50,7 @@ class NoteQuickLook extends Modal {
 		const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
 		const sub = this.target.subtitle ?? (typeof fm?.role === 'string' ? fm.role : '');
 		if (sub) titles.createDiv({ cls: 'record-sub', text: sub });
-		const open = head.createDiv({ cls: 'record-actions' }).createEl('button', { cls: 'record-btn mod-cta' });
-		setIcon(open.createSpan(), 'file-symlink');
-		open.createSpan({ text: 'Open page' });
+		const open = pill(head.createDiv({ cls: 'record-actions' }), { tag: 'button', cls: 'record-btn mod-cta', icon: 'file-symlink', text: 'Open page' });
 		open.onclick = (e) => { this.close(); void this.app.workspace.openLinkText(file.path, sourcePath, e.metaKey || e.ctrlKey); };
 		const text = await this.app.vault.cachedRead(file);
 		const md = text.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();

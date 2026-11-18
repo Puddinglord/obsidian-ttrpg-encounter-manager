@@ -40,6 +40,10 @@ Ember Vault runs 5e campaigns as well as Nimble, on shared engines for slash com
 - Settings are grouped: what every game shares first (General, Campaigns, Party, Content packs, Dice, Combat), then Nimble's own. See the [settings guide](docs/settings.md).
 - Nimble attack rolls (miss on a 1, explode on the max) only apply in Nimble campaigns; 5e attack rolls are plain d20s.
 
+### Fixed
+
+- The icons on the quick look's buttons (Add to fight, Open page, Open notes) sit level with their labels instead of a little high.
+
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
