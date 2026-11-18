@@ -2,36 +2,22 @@ import { App, Modal, Notice, PluginSettingTab, requireApiVersion, Setting } from
 import type { SettingDefinition, SettingDefinitionGroup, SettingDefinitionItem } from 'obsidian';
 import { showSliderValue } from '../core/compat';
 import type EmberVaultPlugin from '../../main';
-import { NIMBLE_CONDITIONS, NimbleCondition } from '../systems/nimble/types';
+import type { ConditionDef } from '../core/types';
+import { renderAttribution, SettingsRow as Row, SettingsSection as Section, settingToggle } from '../core/settings-ui';
 import { renderPartyEditor } from '../core/party';
 import { diceAssignmentRows, diceMotionRows, renderDiceStudio } from '../core/dice-settings';
 import { confirmAction } from '../core/touch';
-import { setCompendiumDrafts } from '../systems/nimble/compendium-data';
 import { FINISHES } from '../core/dice3d/styles';
-import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from '../systems/nimble/bestiary';
 import { DEFAULT_CONTENT_FOLDER } from '../core/content/store';
 import { ImportContentModal, PackReportModal } from '../core/content/import-modal';
 import { packSummary } from '../core/content/packs';
-import { nimble } from '../systems/nimble/runtime';
-
-/** One settings row. `block` rows draw their own content instead of a name and controls. */
-interface Row {
-	name: string;
-	desc?: string;
-	visible?: () => boolean;
-	searchable?: boolean;
-	cls?: string;
-	render?: (setting: Setting) => void;
-	block?: (el: HTMLElement) => void;
-}
-interface Section { heading?: string; cls?: string; rows: Row[] }
 
 /**
  * Obsidian 1.13 and later read getSettingDefinitions(), which puts these settings
  * in the settings search. Older versions call display(), which draws the same
  * rows the old way.
  */
-export class NimbleSettingsTab extends PluginSettingTab {
+export class EmberVaultSettingsTab extends PluginSettingTab {
 	constructor(app: App, private plugin: EmberVaultPlugin) {
 		super(app, plugin);
 	}
@@ -97,50 +83,30 @@ export class NimbleSettingsTab extends PluginSettingTab {
 	private sections(): Section[] {
 		const s = this.plugin.settings;
 		const save = () => this.plugin.saveSettings();
-		const toggle = (get: () => boolean, set: (v: boolean) => void, after?: () => void) => (setting: Setting) => {
-			setting.addToggle(t => t.setValue(get()).onChange(async (v) => { set(v); await save(); after?.(); }));
-		};
+		const toggle = (get: () => boolean, set: (v: boolean) => void, after?: () => void) => settingToggle(this.plugin, get, set, after);
+		const systems = this.plugin.systems.all();
 
 		return [
-			{ rows: [{
-				name: 'Nimble attribution',
-				searchable: false,
-				block: (el) => {
-					const notice = el.createDiv({ cls: 'nimble-notice' });
-					notice.createDiv({ text: NIMBLE_ATTRIBUTION });
-					const support = notice.createDiv({ text: `${NIMBLE_SUPPORT_NOTICE.replace(' at nimbleRPG.com.', '')} ` });
-					support.createEl('a', { text: 'nimbleRPG.com', href: NIMBLE_STORE_URL, cls: 'external-link', attr: { target: '_blank', rel: 'noopener' } });
-				},
-			}, ...this.plugin.systems.all().filter(sys => sys.id !== 'nimble').map((sys): Row => ({
+			{ rows: systems.map((sys): Row => ({
 				name: `${sys.name} attribution`,
 				searchable: false,
-				block: (el) => {
-					const notice = el.createDiv({ cls: 'nimble-notice' });
-					notice.createDiv({ text: sys.attribution.text });
-					const support = notice.createDiv({ text: `${sys.attribution.supportNotice} ` });
-					support.createEl('a', { text: sys.attribution.storeLabel, href: sys.attribution.storeUrl, cls: 'external-link', attr: { target: '_blank', rel: 'noopener' } });
-				},
-			}))] },
-			{ heading: 'Bestiary', rows: [
+				block: (el) => renderAttribution(el, sys.attribution),
+			})) },
+			{ heading: 'General', rows: [
 				{
-					name: 'Include the Nimble bestiary',
-					desc: 'Over 500 monsters from the GM Guide and Monsters & More, searchable in the bestiary and usable anywhere with nimble: references. A note in your vault with the same name replaces the bundled version.',
-					render: toggle(() => s.bundledBestiary, v => { s.bundledBestiary = v; }, () => nimble().loadBundledBestiary()),
-				},
-				{
-					name: 'Help with stat blocks you write',
-					desc: 'Under a stat block in your notes, a quiet line when something in it couldn\'t be shown as written, with what to change (and a Fix button when the fix is obvious).',
-					render: toggle(() => s.statblockHints, v => { s.statblockHints = v; }),
-				},
-				{
-					name: 'Nimble slash commands',
-					desc: 'Nimble commands in the / menu.',
+					name: 'Slash commands',
+					desc: 'Your game\'s commands in the / menu.',
 					render: toggle(() => s.slashCommands, v => { s.slashCommands = v; }),
 				},
 				{
 					name: 'Open Spotlight with Cmd/Ctrl+K',
 					desc: 'Spotlight searches adversaries, NPCs and notes, rolls dice and runs commands. Cmd/Ctrl+K is Obsidian\'s Insert Markdown link key: with this on, it opens Spotlight when no text is selected, and still makes a link when some is. You can also give the Spotlight command any key under Hotkeys.',
 					render: toggle(() => s.spotlightKey, v => { s.spotlightKey = v; }, () => this.plugin.campaigns.trigger('changed')), // the Campaign panel's search bar shows the key
+				},
+				{
+					name: 'Styled tables',
+					desc: 'Applies to every table in your notes.',
+					render: toggle(() => s.styleTables, v => { s.styleTables = v; }, () => this.containerEl.doc.body.toggleClass('nimble-tables', s.styleTables)),
 				},
 			] },
 			{ heading: 'Campaigns', rows: [
@@ -175,6 +141,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					render: toggle(() => s.playerStatblocks, v => { s.playerStatblocks = v; }, () => { this.plugin.refreshSide(); this.plugin.campaigns.trigger('changed'); }),
 				},
 			] },
+			{ heading: 'Party', rows: this.partyRows() },
 			{ heading: 'Content packs', rows: [
 				{
 					name: 'Content folder',
@@ -193,15 +160,14 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					block: (el) => renderPackList(el, this.plugin),
 				},
 			] },
-			{ heading: 'Character sheets', rows: [
+			{ heading: 'Dice', rows: [
 				{
-					name: 'Ask before rolling',
-					desc: 'Attacks, spells, saves and checks open a dialog first: advantage or disadvantage, a situational modifier, and class dice to add (like Judgment Dice). Off rolls straight away.',
-					render: toggle(() => s.rollDialog, v => { s.rollDialog = v; }),
+					name: 'Clickable dice',
+					render: toggle(() => s.clickableDice, v => { s.clickableDice = v; }, () => this.plugin.rerenderNotes()),
 				},
 				{
 					name: 'Class dice',
-					desc: 'Judgment Dice, Fury Dice and the like: their colour on the sheet and when they roll with an attack, and how they look in 3D.',
+					desc: 'Dice a class gains and spends (Judgment Dice, Fury Dice and the like): their colour on the sheet and how they look in 3D.',
 					render: (setting: Setting) => {
 						setting.addColorPicker(c => c.setValue(s.classDice.color).onChange(async (v) => { s.classDice.color = v; await save(); this.plugin.rerenderNotes(); }));
 						setting.addDropdown(d => {
@@ -209,51 +175,6 @@ export class NimbleSettingsTab extends PluginSettingTab {
 							d.setValue(s.classDice.finish).onChange(async (v) => { s.classDice.finish = v; await save(); });
 						});
 					},
-				},
-				{
-					name: 'Include expansion drafts',
-					desc: 'The draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells in New character, sheet pickers and Spotlight. Drafts are marked as such wherever they show. A hero who already plays a draft class keeps their whole sheet either way.',
-					render: toggle(() => s.compendiumDrafts, v => { s.compendiumDrafts = v; }, () => { setCompendiumDrafts(s.compendiumDrafts); this.plugin.rerenderNotes(); }),
-				},
-				{
-					name: 'Compendium art folder',
-					desc: 'Where images you upload for compendium entries are saved (click the portrait on any entry\'s page to add one). Moving or renaming an image keeps it linked.',
-					render: (setting) => {
-						setting.addText(t => t.setPlaceholder('Ember Vault/Compendium Art').setValue(s.compendiumArtFolder).onChange(async (v) => { s.compendiumArtFolder = v.trim() || 'Ember Vault/Compendium Art'; await save(); }));
-					},
-				},
-			] },
-			{ heading: 'Party', rows: this.partyRows() },
-			{ heading: 'Notes', rows: [
-				{
-					name: 'Styled tables',
-					desc: 'Applies to every table in your notes.',
-					render: toggle(() => s.styleTables, v => { s.styleTables = v; }, () => this.containerEl.doc.body.toggleClass('nimble-tables', s.styleTables)),
-				},
-			] },
-			{ heading: 'Stat blocks', rows: [
-				{
-					name: 'Stat block style',
-					render: (setting) => {
-						setting.addDropdown(d => d
-							.addOption('book', 'Book')
-							.addOption('compact', 'Compact')
-							.setValue(s.statblockStyle)
-							.onChange(async (v) => {
-								s.statblockStyle = v as 'book' | 'compact';
-								await save();
-								this.plugin.rerenderNotes();
-							}));
-					},
-				},
-				{
-					name: 'Clickable dice',
-					render: toggle(() => s.clickableDice, v => { s.clickableDice = v; }, () => this.plugin.rerenderNotes()),
-				},
-				{
-					name: 'Nimble attack rolls',
-					desc: 'Attack dice miss on 1 and explode on max.',
-					render: toggle(() => s.nimbleAttackRolls, v => { s.nimbleAttackRolls = v; }, () => this.plugin.rerenderNotes()),
 				},
 				{
 					name: '3D dice',
@@ -266,28 +187,15 @@ export class NimbleSettingsTab extends PluginSettingTab {
 					render: toggle(() => s.dice3dOnPhone, v => { s.dice3dOnPhone = v; }),
 				},
 				...this.diceRows(),
+			] },
+			{ heading: 'Combat', rows: [
 				{
 					name: 'Keep the screen on during combat',
 					desc: 'Phones and tablets, while combat is running.',
 					render: toggle(() => s.keepScreenOn, v => { s.keepScreenOn = v; }, () => this.plugin.syncWakeLock()),
 				},
 			] },
-			{ heading: 'Encounters', rows: [
-				{
-					name: 'Multiple encounters',
-					render: toggle(() => s.multipleEncounters, v => { s.multipleEncounters = v; }, () => nimble().encounters.trigger('changed')),
-				},
-				{
-					name: 'Apply monster armor automatically',
-					desc: 'Typed damage: ! crit, v vulnerable, r resisted.',
-					render: toggle(() => s.autoArmor, v => { s.autoArmor = v; }),
-				},
-				{
-					name: 'Minion overkill',
-					desc: 'One more minion drops per full die of damage.',
-					render: toggle(() => s.minionOverkill, v => { s.minionOverkill = v; }),
-				},
-			] },
+			...systems.flatMap(sys => sys.settingsSections?.(this.plugin) ?? []),
 			...this.conditionSections(),
 		];
 	}
@@ -316,7 +224,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 						.onChange(async v => {
 							this.plugin.settings.defaultPartySize = v;
 							await this.plugin.saveSettings();
-							nimble().encounters.trigger('changed');
+							this.plugin.events.trigger('party-changed');
 						}));
 				},
 			},
@@ -355,7 +263,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 						.onClick(async () => {
 							const trimmed = name.trim();
 							if (!trimmed) { new Notice('Please enter a condition name'); return; }
-							if (nimble().getAllConditions().some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
+							if (this.knownConditions().some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
 								new Notice('A condition with this name already exists');
 								return;
 							}
@@ -390,12 +298,17 @@ export class NimbleSettingsTab extends PluginSettingTab {
 		return [add, list];
 	}
 
+	/** The active game's conditions and the ones added here. */
+	private knownConditions(): readonly ConditionDef[] {
+		return [...this.plugin.system().conditions(), ...this.plugin.settings.customConditions];
+	}
+
 	private openEditModal(index: number): void {
 		const custom = this.plugin.settings.customConditions;
 		const condition = custom[index];
 		if (!condition) return;
 		new EditConditionModal(this.app, condition, async (name, description) => {
-			const others = [...NIMBLE_CONDITIONS, ...custom.filter((_, i) => i !== index)];
+			const others = [...this.plugin.system().conditions(), ...custom.filter((_, i) => i !== index)];
 			if (others.some(c => c.name.toLowerCase() === name.toLowerCase())) {
 				new Notice('A condition with this name already exists');
 				return false;
@@ -413,7 +326,7 @@ class EditConditionModal extends Modal {
 	private nameValue: string;
 	private descValue: string;
 
-	constructor(app: App, condition: NimbleCondition, private onSave: (name: string, description: string) => Promise<boolean>) {
+	constructor(app: App, condition: ConditionDef, private onSave: (name: string, description: string) => Promise<boolean>) {
 		super(app);
 		this.nameValue = condition.name;
 		this.descValue = condition.description;

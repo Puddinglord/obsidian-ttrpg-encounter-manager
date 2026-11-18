@@ -387,7 +387,8 @@ export function dnd5e(): Dnd5eRuntime {
 
 export function registerDnd5e(plugin: EmberVaultPlugin): Dnd5eRuntime {
 	runtime = new Dnd5eRuntime(plugin);
+	plugin.runtimes.set('dnd5e', runtime);
 	runtime.register();
-	plugin.register(() => { runtime = null; });
+	plugin.register(() => { runtime = null; plugin.runtimes.delete('dnd5e'); });
 	return runtime;
 }

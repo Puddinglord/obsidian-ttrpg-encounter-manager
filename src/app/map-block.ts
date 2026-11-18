@@ -2,17 +2,13 @@
 // style) and, optionally, the current encounter's combatants as tokens.
 // It's a GM companion, not a virtual tabletop: nothing here is shown to players.
 
+import type { CombatToken } from '../core/tracker/tokens';
 import { App, FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Modal, Notice, Setting, setIcon, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../main';
 import { MapDef, mapBlockSource, MapPin, parseMapBlock, PIN_KINDS, PinKind, replaceMapBlock } from '../core/map-def';
-import { EncounterCreature } from '../systems/nimble/types';
-import { isDown, isHero, isMinionGroup } from '../systems/nimble/encounters';
-import { monsterRole } from '../systems/nimble/rules';
 import { confirmAction, isTouch, onLongPress } from '../core/touch';
 import { setWarningButton } from '../core/compat';
 import { closePopover, isPopoverOpenFor, openPopover } from '../core/popover';
-import { attachMonsterHover } from '../systems/nimble/inline-ref';
-import { nimble } from '../systems/nimble/runtime';
 
 const PIN_ICON: Record<PinKind, string> = {
 	place: 'map-pin', area: 'flag', encounter: 'swords', npc: 'user', treasure: 'gem', danger: 'skull', note: 'sticky-note', secret: 'eye-off',
@@ -67,7 +63,8 @@ class MapBlock extends MarkdownRenderChild {
 			const t = window.setTimeout(() => { if (!this.editable && this.canSave()) this.build(); }, 400);
 			this.register(() => window.clearTimeout(t));
 		}
-		this.registerEvent(nimble().encounters.on('changed', () => { if (this.showTokens) this.renderTokens(); }));
+		// Any game's fight: tokens follow it.
+		this.registerEvent(this.plugin.events.on('combat-changed', () => { if (this.showTokens) this.renderTokens(); }));
 	}
 
 	// ------------------------------------------------------------------------
@@ -456,37 +453,30 @@ class MapBlock extends MarkdownRenderChild {
 		this.tray.empty();
 		this.tray.toggle(this.showTokens);
 		if (!this.showTokens) return;
-		const enc = nimble().encounters.active;
-		if (!enc || !enc.creatures.length) {
+		const fight = this.plugin.system(this.ctx.sourcePath).combatTokens?.(this.plugin);
+		if (!fight || !fight.tokens.length) {
 			this.tray.createDiv({ cls: 'nimble-map-tray-empty', text: 'No encounter running' });
 			return;
 		}
 		const positions = this.tokenPositions();
-		this.tray.createDiv({ cls: 'nimble-map-tray-title', text: `${enc.name}: drag onto the map` });
-		for (const c of enc.creatures) {
+		this.tray.createDiv({ cls: 'nimble-map-tray-title', text: `${fight.name}: drag onto the map` });
+		for (const c of fight.tokens) {
 			const pos = positions[c.id];
 			if (pos) this.placeToken(c, pos);
 			else this.trayToken(c);
 		}
 	}
 
-	private tokenEl(parent: HTMLElement, c: EncounterCreature): HTMLElement {
-		const role = isHero(c) ? 'hero' : monsterRole(c.monster);
-		const el = parent.createDiv({ cls: `nimble-map-token role-${role}`, attr: { title: this.tokenTitle(c) } });
+	private tokenEl(parent: HTMLElement, c: CombatToken): HTMLElement {
+		const el = parent.createDiv({ cls: `nimble-map-token role-${c.role}`, attr: { title: c.title } });
 		if (c.done) el.addClass('is-done');
-		if (isDown(c)) el.addClass('is-down');
-		const initials = c.label.replace(/[^A-Za-z0-9 ]/g, '').split(/\s+|-/).filter(Boolean).map(w => w[0]).join('').slice(0, 3).toUpperCase();
-		el.createSpan({ cls: 'nimble-map-token-text', text: isMinionGroup(c) ? `${c.alive}` : initials || '?' });
-		if (!isHero(c)) attachMonsterHover(this.plugin, el, { name: c.monster.name, filePath: c.sourceFile || '', monster: c.monster, bundled: !c.sourceFile && !!c.monster.bundledId });
+		if (c.down) el.addClass('is-down');
+		el.createSpan({ cls: 'nimble-map-token-text', text: c.text });
+		c.hover?.(el);
 		return el;
 	}
 
-	private tokenTitle(c: EncounterCreature): string {
-		if (isMinionGroup(c)) return `${c.label}: ${c.alive}/${c.count} standing`;
-		return `${c.label}: ${c.currentHp}/${c.maxHp} HP${c.conditions.length ? ` · ${c.conditions.map(x => x.name).join(', ')}` : ''}`;
-	}
-
-	private placeToken(c: EncounterCreature, pos: { x: number; y: number }): void {
+	private placeToken(c: CombatToken, pos: { x: number; y: number }): void {
 		const el = this.tokenEl(this.tokenLayer, c);
 		el.style.left = `${pos.x}%`;
 		el.style.top = `${pos.y}%`;
@@ -502,14 +492,14 @@ class MapBlock extends MarkdownRenderChild {
 			e.stopPropagation();
 			openPopover(el, (pop) => {
 				pop.createDiv({ cls: 'popover-title', text: c.label });
-				pop.createDiv({ cls: 'popover-body', text: this.tokenTitle(c) });
+				pop.createDiv({ cls: 'popover-body', text: c.title });
 				const open = pop.createEl('button', { cls: 'mod-cta', text: 'Show tracker' });
-				open.onclick = () => { closePopover(); void nimble().activateEncounterView(true); };
+				open.onclick = () => { closePopover(); void this.plugin.openTracker(); };
 			}, { width: 240 });
 		});
 	}
 
-	private trayToken(c: EncounterCreature): void {
+	private trayToken(c: CombatToken): void {
 		const el = this.tokenEl(this.tray, c);
 		el.addClass('in-tray');
 		el.createSpan({ cls: 'nimble-map-token-name', text: c.label });

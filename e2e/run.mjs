@@ -2149,14 +2149,21 @@ test('settings tab: party editor, toggles and attribution', async (o) => {
 	}, { timeout: 5000, what: 'the settings tab' });
 	try {
 		const names = await sp.locator(`${C} .setting-item-name`).allTextContents();
-		for (const n of ['Include the Nimble bestiary', 'Nimble slash commands', 'Party', 'Stat block style', 'Clickable dice', 'Nimble attack rolls', 'Multiple encounters',
+		for (const n of ['Include the Nimble bestiary', 'Slash commands', 'Party', 'Stat block style', 'Clickable dice', 'Nimble attack rolls', 'Multiple encounters',
 			'Apply monster armor automatically', 'Minion overkill', 'Custom conditions']) assert.ok(names.includes(n), `missing setting ${n}`);
+		// The shared settings come first, then each game's own sections (from the game, not the plugin).
+		const at = (n) => names.indexOf(n);
+		assert.ok(at('Keep the screen on during combat') < at('Include the Nimble bestiary'), `order: ${names.join(' | ')}`);
+		assert.ok(at('Minion overkill') < at('Custom conditions'), `order: ${names.join(' | ')}`);
 
 		// Attribution and the link to buy the books.
 		const notice = sp.locator(`${C} .nimble-notice`).first();
 		assert.match(await notice.textContent(), /Nimble 3rd Party Creator License/);
 		const link = notice.locator('a', { hasText: 'nimbleRPG.com' });
 		assert.equal(await link.getAttribute('href'), 'https://nimbleRPG.com');
+		assert.match(await notice.textContent(), /books at nimbleRPG\.com\./, 'the store name in the notice is the link, not repeated');
+		// Every game's attribution.
+		assert.match(await sp.locator(`${C} .nimble-notice`).allTextContents().then(t => t.join(' ')), /SRD/);
 
 		// Party editor: one row per hero, with their values.
 		const rows = sp.locator(`${C} .nimble-party-row`);
@@ -5110,6 +5117,62 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
 			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
 			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('map tokens come from the campaign\'s game: Nimble\'s encounter, then 5e\'s fight', async (o) => {
+	await resetEncounter(o);
+	const C = 'Campaigns/Token Coast';
+	const M = '.markdown-reading-view';
+	const trayNames = () => o.page.locator(`${M} .nimble-map-token.in-tray .nimble-map-token-name`).allInnerTexts();
+	const openMap = async (path) => {
+		await o.openFile(path, 'preview');
+		const btn = o.page.locator(`${M} .nimble-map-btn[aria-label="Show the current encounter as tokens"]`);
+		await btn.waitFor({ timeout: 5000 });
+		await btn.click();
+	};
+	try {
+		await o.eval(async (app, plugin, C) => {
+			const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+			c.getContext('2d').fillRect(0, 0, 400, 300);
+			const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+			if (!app.vault.getAbstractFileByPath('token-map.png')) await app.vault.createBinary('token-map.png', await blob.arrayBuffer());
+			const md = '```nimble-map\nimage: [[token-map.png]]\n```\n';
+			for (const f of ['Token Map.md', C]) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x, true); }
+			await app.vault.create('Token Map.md', md);
+			const nb = plugin.runtime('nimble');
+			await nb.addToEncounter(nb.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
+		}, C);
+
+		// Nimble (no campaign): the Nimble encounter.
+		await openMap('Token Map.md');
+		await o.waitFor(async () => (await trayNames()).some(n => /^Goblin Boss/.test(n)), { what: 'the Nimble encounter in the tray' });
+
+		// 5e: Run the fight, and the 5e campaign's map shows its fighters, not Nimble's.
+		await o.eval(async (app, plugin, C) => {
+			await plugin.campaigns.createCampaign({ name: 'Token Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Ambush.md`, '```nimble-encounter\nname: Bridge\nmonsters:\n- 2 `5e:Goblin Warrior`\n```\n');
+			await app.vault.create(`${C}/Bridge Map.md`, '```nimble-map\nimage: [[token-map.png]]\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Ambush.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/Ambush.md`, 'preview');
+		const block = o.page.locator(`${M} .dnd5e-encounter`);
+		await block.locator('button', { hasText: 'Run' }).click();
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.length === 2), { what: 'the 5e fight' });
+		await openMap(`${C}/Bridge Map.md`);
+		await o.waitFor(async () => {
+			const n = await trayNames();
+			return n.length === 2 && n.every(x => /^Goblin Warrior/.test(x));
+		}, { what: '5e fighters in the tray' });
+		assert.match(await o.page.locator(`${M} .nimble-map-tray-title`).innerText(), /Bridge: drag onto the map/);
+		// A change in the fight redraws the tokens.
+		await o.eval((app, plugin) => { plugin.runtime("dnd5e").fights.change(f => { f.combatants[0].hp = 0; }); });
+		await o.waitFor(async () => (await o.page.locator(`${M} .nimble-map-token.in-tray.is-down`).count()) === 1, { what: 'the downed goblin' });
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			for (const f of ['Token Map.md', C]) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x, true); }
+			if (plugin.settings.activeCampaign) await plugin.campaigns.setActive(null);
 		}, C);
 	}
 });

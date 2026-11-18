@@ -16,6 +16,8 @@ import type { SlashCommand } from '../core/slash';
 import type { NoteKindExtensions } from '../core/note-kinds';
 import type { KindSpec } from '../core/content/spec';
 import type { SettingsPart } from '../core/settings';
+import type { SettingsSection } from '../core/settings-ui';
+import type { CombatTokens } from '../core/tracker/tokens';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
 export interface Attribution {
@@ -94,18 +96,22 @@ export interface GameSystem {
 	 * notes get and their cards show, and optionally its own drawing of a kind's card.
 	 */
 	readonly noteKinds?: NoteKindExtensions;
-	/**
-	 * What it takes in content packs (JSON files in the vault): each kind and its
-	 * fields. Packs are checked against these; the system reads the packs a
-	 * campaign uses from `plugin.content.enabled(id, path)`.
-	 */
 	/** How attack rolls go in its campaigns: 'exploding' (a 1 on the primary die misses, its max explodes), else plain. */
 	attackRolls?(plugin: EmberVaultPlugin): 'exploding' | undefined;
+	/** Its running fight's combatants as tokens for GM maps (core/tracker/tokens.ts); null with no fight. */
+	combatTokens?(plugin: EmberVaultPlugin): CombatTokens | null;
 	/** Is one of its fights running (the screen stays awake on phones)? Trigger `plugin.events` 'combat-changed' when it changes. */
 	inCombat?(plugin: EmberVaultPlugin): boolean;
 	/** Your character, its own way (Nimble's Character panel); without it, your character note opens. */
 	openMyCharacter?(plugin: EmberVaultPlugin): Promise<void>;
 	/** Its fields in the plugin's settings: defaults and migration (declare the fields by augmenting EmberVaultSettings, core/settings.ts). */
 	readonly settings?: SettingsPart;
+	/** Its sections on the settings page, after the shared ones (core/settings-ui.ts). */
+	settingsSections?(plugin: EmberVaultPlugin): SettingsSection[];
+	/**
+	 * What it takes in content packs (JSON files in the vault): each kind and its
+	 * fields. Packs are checked against these; the system reads the packs a
+	 * campaign uses from `plugin.content.enabled(id, path)`.
+	 */
 	readonly content?: { readonly kinds: readonly KindSpec[] };
 }

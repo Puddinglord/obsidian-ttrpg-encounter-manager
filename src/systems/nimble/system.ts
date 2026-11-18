@@ -2,6 +2,7 @@
 // Nimble modules that already do the work.
 
 import type { GameSystem } from '../contract';
+import { nimbleSettingsSections } from './settings-ui';
 import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './bestiary';
 import { createCharacterNote, NewCharacterModal } from './character-modals';
 import { openRecord } from './record-modal';
@@ -13,6 +14,7 @@ import { sheetCompendium } from './compendium-data';
 import { registerNimble } from './register';
 import { NIMBLE_SETTINGS } from './settings';
 import { nimble } from './runtime';
+import { nimbleTokens } from './map-tokens';
 import { openCharacterView } from './character-register';
 
 export const nimbleSystem: GameSystem = {
@@ -26,6 +28,7 @@ export const nimbleSystem: GameSystem = {
 	},
 	conditions: () => NIMBLE_CONDITIONS,
 	settings: NIMBLE_SETTINGS,
+	settingsSections: nimbleSettingsSections,
 	attackRolls: (plugin) => (plugin.settings.nimbleAttackRolls ? 'exploding' : undefined),
 	characters: {
 		promptNew(plugin, r) {
@@ -61,6 +64,7 @@ export const nimbleSystem: GameSystem = {
 	async openMyCharacter(plugin) {
 		await openCharacterView(plugin);
 	},
+	combatTokens: (plugin) => nimbleTokens(plugin),
 	inCombat() {
 		const enc = nimble().encounters.active;
 		return !!enc?.phase && enc.phase !== 'setup';

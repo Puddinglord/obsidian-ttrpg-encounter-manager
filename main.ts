@@ -5,7 +5,7 @@ import { EmberVaultSettings, migrateSettings, SettingsPart } from './src/core/se
 import { InlineRefs, inlineRefsLivePreview } from './src/core/inline-refs';
 import { HoverPreview } from './src/core/hover-preview';
 import { SlashSuggest } from './src/core/slash';
-import { NimbleSettingsTab } from './src/app/settings-tab';
+import { EmberVaultSettingsTab } from './src/app/settings-tab';
 import { parseDice, rollDie, rollPlain } from './src/core/dice';
 import { DiceKind, rollExplodingAttack } from './src/core/dice-attack';
 import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/core/dice-edge';
@@ -64,7 +64,7 @@ export default class EmberVaultPlugin extends Plugin {
 	npcVersion = 0;
 	private wakeLock: WakeLockSentinel | null = null;
 	private wakePending = false;
-	private settingsTab?: NimbleSettingsTab;
+	private settingsTab?: EmberVaultSettingsTab;
 	/** data.json couldn't be read and couldn't be copied aside: nothing is saved, so the file isn't overwritten. */
 	private settingsReadOnly = false;
 
@@ -190,7 +190,7 @@ export default class EmberVaultPlugin extends Plugin {
 		if (suggests?.includes(slash)) { suggests.remove(slash); suggests.unshift(slash); }
 
 		this.registerCommands();
-		this.settingsTab = new NimbleSettingsTab(this.app, this);
+		this.settingsTab = new EmberVaultSettingsTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
 
 		// Phones and tablets: keep the screen awake while combat is running.
