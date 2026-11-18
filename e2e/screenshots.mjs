@@ -773,6 +773,37 @@ const features = {
 			return { left: b.left, right: b.right, top: b.top, bottom: last ? last.getBoundingClientRect().bottom : b.bottom };
 		},
 	},
+	// Timed conditions: at the turn change, the tracker asks for a save and rolls Burning's damage.
+	'feature-conditions': {
+		viewport: [1200, 800], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			});
+			await writeNote('Campaigns/Sword Coast/Road Ambush.md', [
+				'# Road ambush', '', '```nimble-encounter', 'name: Road ambush', 'monsters:', '- `5e:Mage`', '- `5e:Ogre`', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/Road Ambush.md');
+			await page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-encounter button', { hasText: 'Run' }).click();
+			const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+			await page.locator(TR).waitFor();
+			await o.eval((app, plugin) => {
+				plugin.runtime('dnd5e').fights.change((f) => {
+					const mage = f.combatants.find(c => c.label === 'Mage'); const ogre = f.combatants.find(c => c.label === 'Ogre');
+					mage.init = 18; ogre.init = 9;
+					mage.conditions.push({ name: 'Hold Person', triggers: [{ kind: 'save', at: 'end', ability: 'Wisdom', dc: 13, endsOnSave: true }] });
+					ogre.conditions.push({ name: 'Burning', triggers: [{ kind: 'damage', at: 'start', dice: '1d4', damageType: 'Fire' }] });
+				});
+			});
+			await page.locator(`${TR} button`, { hasText: /Start combat/ }).first().click();
+			await page.waitForTimeout(300);
+			await page.locator(`${TR} button`, { hasText: /Next turn/ }).first().click();
+			await page.locator('.modal.ev-effect-prompt').waitFor();
+			await page.waitForTimeout(500);
+		},
+		show: () => ['.modal.ev-effect-prompt'],
+	},
 	// A 5e stat block (the example content pack's Cinder Hound) laid out the 2024 way.
 	'feature-5e-statblock': {
 		lineWidth: 520,
