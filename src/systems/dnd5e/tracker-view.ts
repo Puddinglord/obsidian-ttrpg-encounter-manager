@@ -4,9 +4,10 @@
 
 import { openHpPad } from '../../core/tracker/hp-pad';
 import { FuzzySuggestModal, ItemView, Menu, setIcon, WorkspaceLeaf } from 'obsidian';
+import { renderPipRow } from '../../core/pip-row';
 import {
 	addCondition, addHero, addMonster, applyHp, Combatant5e, current, deathSave, end, Fight5e, isRunning, next, order, parseHp, previewHp,
-	previous, remove, removeCondition, rollInitiative, setInitiative, start, useLegendary,
+	previous, remove, removeCondition, rollInitiative, setDeathSaves5e, setInitiative, start, useLegendary,
 } from './combat';
 import type { Dnd5eRuntime } from './runtime';
 import type { Dnd5eEntry } from './types';
@@ -125,28 +126,21 @@ export class Dnd5eTrackerView extends ItemView {
 			if (c.stable) ds.createSpan({ cls: 'dnd5e-death-stable', text: 'Stable' });
 			else {
 				const s = c.deathSaves ?? { success: 0, failure: 0 };
-				const pips = (label: string, n: number, cls: string) => {
-					const g = ds.createSpan({ cls: `dnd5e-death-group ${cls}`, attr: { 'aria-label': `${label} ${n} of 3` } });
-					g.createSpan({ cls: 'dnd5e-death-label', text: label });
-					for (let i = 0; i < 3; i++) g.createSpan({ cls: `dnd5e-pip${i < n ? ' is-on' : ''}` });
-				};
-				pips('Saves', s.success, 'is-success');
-				pips('Fails', s.failure, 'is-failure');
+				renderPipRow(ds, { name: 'Saves', label: true, count: s.success, max: 3, cls: 'is-success', set: n => this.change(f => setDeathSaves5e(f, c.id, n, s.failure)) });
+				renderPipRow(ds, { name: 'Fails', label: true, count: s.failure, max: 3, cls: 'is-failure', set: n => this.change(f => setDeathSaves5e(f, c.id, s.success, n)) });
 				const roll = ds.createEl('button', { cls: 'dnd5e-death-roll', text: 'Roll save' });
 				roll.onclick = () => this.rollDeathSave(c);
 			}
 		}
 		if (c.dead) main.createDiv({ cls: 'dnd5e-death-dead', text: 'Dead' });
 
-		// Legendary actions: tap a pip to spend one.
+		// Legendary actions left: core's pips (a filled one spends one, an empty one gives one back).
 		if (c.legendary) {
-			const lg = main.createDiv({ cls: 'dnd5e-legendary', attr: { title: 'Legendary actions: tap to spend, right-click to give one back' } });
-			lg.createSpan({ cls: 'dnd5e-legendary-label', text: 'Legendary' });
-			for (let i = 0; i < c.legendary.max; i++) {
-				const pip = lg.createSpan({ cls: `dnd5e-pip${i < c.legendary.max - c.legendary.used ? ' is-on' : ''}` });
-				pip.onclick = () => this.change(f => useLegendary(f, c.id, 1));
-				pip.oncontextmenu = (e) => { e.preventDefault(); this.change(f => useLegendary(f, c.id, -1)); };
-			}
+			const left = c.legendary.max - c.legendary.used;
+			renderPipRow(main.createDiv({ cls: 'dnd5e-legendary' }), {
+				name: 'Legendary', label: true, count: left, max: c.legendary.max, cls: 'is-legendary',
+				set: n => this.change(f => useLegendary(f, c.id, left - n)),
+			});
 		}
 
 		// Conditions.

@@ -316,6 +316,15 @@ export function deathSave(f: Fight5e, id: string, result: DeathSave): string | u
 	return text;
 }
 
+/** Set a hero's death saves by hand (the tracker's pips): three successes stabilise, three failures kill. */
+export function setDeathSaves5e(f: Fight5e, id: string, success: number, failure: number): void {
+	const c = find(f, id);
+	if (!c || c.side !== 'hero' || c.hp > 0) return;
+	c.deathSaves = { success: Math.max(0, Math.min(3, success)), failure: Math.max(0, Math.min(3, failure)) };
+	c.stable = c.deathSaves.success >= 3;
+	c.dead = c.deathSaves.failure >= 3;
+}
+
 /** Spend a legendary action (or give one back with -1). */
 export function useLegendary(f: Fight5e, id: string, delta = 1): void {
 	const c = find(f, id);

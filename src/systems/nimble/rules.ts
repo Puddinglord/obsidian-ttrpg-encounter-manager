@@ -446,11 +446,5 @@ export function shiftMonster(m: NimbleMonster, shift: number): NimbleMonster {
 	};
 }
 
-/**
- * Tapping a pip (actions, Wounds, minions, class dice): an empty one adds one,
- * a filled one takes one away, whichever pip it is. Counts move one step at a
- * time, never jump to the pip tapped.
- */
-export function pipStep(count: number, filled: boolean, max = Infinity): number {
-	return filled ? Math.max(0, count - 1) : Math.min(max, count + 1);
-}
+/** Tapping a pip: core's one rule for pips (core/pips.ts), here for Nimble's code. */
+export { pipStep } from '../../core/pips';

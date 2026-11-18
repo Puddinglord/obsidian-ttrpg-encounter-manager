@@ -5100,7 +5100,7 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse: death save', { what: 'death save rolled' });
 		await o.waitFor(async () => {
 			const t = await ilse.innerText();
-			return (await ilse.locator('.dnd5e-pip.is-on').count()) >= 1 || /Stable|Dead/.test(t) || /\b1\/24\b/.test(t);
+			return (await ilse.locator('.ev-pip.is-on').count()) >= 1 || /Stable|Dead/.test(t) || /\b1\/24\b/.test(t);
 		}, { what: 'death save recorded' });
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-fight.png') });
 
@@ -5702,7 +5702,7 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		assert.match(await o.page.locator(`${S} .dnd5e-sheet-sub`).innerText(), /Level 3[\s\S]*Wizard/);
 		assert.match(await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'AC' }).innerText(), /11/);
 		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Intelligence · Save DC 13 · Attack \+5/);
-		assert.deepEqual(await o.page.locator(`${S} .dnd5e-slot-group`).evaluateAll(gs => gs.map(g => g.querySelectorAll('.dnd5e-pip').length)), [4, 2]);
+		assert.deepEqual(await o.page.locator(`${S} .dnd5e-slot-group`).evaluateAll(gs => gs.map(g => g.querySelectorAll('.ev-pip').length)), [4, 2]);
 		await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'Initiative' }).locator('.dnd5e-sheet-roll').click();
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse Vane: initiative', { what: 'initiative rolled' });
 
@@ -5730,7 +5730,7 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-spell`, { hasText: 'Magic Missile' }).count()) === 1, { what: 'Magic Missile listed' });
 
 		// Spend a slot, then a long rest brings everything back.
-		await o.page.locator(`${S} .dnd5e-slot-group`).first().locator('.dnd5e-pip').first().click();
+		await o.page.locator(`${S} .dnd5e-slot-group`).first().locator('.ev-pip').first().click();
 		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[1]', { what: 'slot spent' });
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet.png') });
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Long rest' }).click();

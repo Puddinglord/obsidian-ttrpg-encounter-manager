@@ -106,7 +106,7 @@ body {
 .nimble-statblock .monster-source a { color: var(--text-faint); text-decoration: underline; }
 
 .nimble-statblock .add-btn { margin-top: 0.6rem; width: 100%; }
-.nimble-statblock .statblock-actions {
+:is(.nimble-statblock, .dnd5e-statblock) .statblock-actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.35rem;
@@ -114,9 +114,9 @@ body {
 	padding-top: 0.55rem;
 	border-top: 1px solid var(--background-modifier-border);
 }
-.nimble-statblock .statblock-action { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; padding: 0.2rem 0.6rem; height: auto; }
-.nimble-statblock .statblock-action-icon { display: inline-flex; }
-.nimble-statblock .statblock-action-icon svg { width: 14px; height: 14px; }
+.statblock-action { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; padding: 0.2rem 0.6rem; height: auto; }
+.statblock-action-icon { display: inline-flex; }
+.statblock-action-icon svg { width: 14px; height: 14px; }
 
 .nimble-statblock.is-compact { padding: 0.55rem 0.7rem; font-size: 0.9em; }
 .nimble-statblock.is-compact .monster-name { font-size: 1.05rem; margin-bottom: 0.3rem; }
@@ -136,6 +136,30 @@ body {
 	border-radius: 3px;
 }
 .nimble-condition-ref:hover, .nimble-condition-ref:focus-visible { background: var(--background-modifier-hover); outline: none; }
+
+/* Pips (core/pip-row.ts), the same in every game: Nimble's tracker look, a ring that fills when on.
+   A filled pip takes one away, an empty one adds one (core/pips.ts). The row's class sets the colour. */
+.ev-pips { --pip: var(--interactive-accent); display: inline-flex; align-items: center; flex-wrap: wrap; gap: 3px; }
+.ev-pips-label { margin-right: 0.25rem; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.ev-pip {
+	width: 13px;
+	height: 13px;
+	padding: 0;
+	min-height: 0;
+	border-radius: 50%;
+	box-shadow: none;
+	background: transparent;
+	border: 1.5px solid var(--pip);
+	cursor: pointer;
+}
+span.ev-pip { display: inline-block; cursor: default; }
+.ev-pip.is-on { background: var(--pip); }
+.ev-pip:hover { box-shadow: 0 0 0 2px color-mix(in srgb, var(--pip) 25%, transparent); }
+.ev-pips.is-legendary { --pip: var(--nimble-legendary); }
+.ev-pips.is-success { --pip: var(--color-green); }
+.ev-pips.is-failure { --pip: var(--color-red); }
+body.is-tablet .ev-pip { padding: 0; }
+@media (pointer: coarse) { .ev-pip { width: 18px; height: 18px; } .ev-pips { gap: 6px; } }
 
 /* Rules words a game makes clickable (core/rule-term-ui.ts): a quiet solid underline, unlike the dotted one on rolls. */
 .ev-term {
@@ -2191,16 +2215,16 @@ body.is-tablet .encounter-count-editor .ece-shift-btn { padding: 0 0.55rem; }
 body.is-tablet .nimble-difficulty.is-button { padding: 0 0.6rem 0 0.75rem; }
 
 /* ---------- Hover card: proper buttons, a split Add, a draggable bar ---------- */
-.nimble-statblock .statblock-actions { gap: 0.4rem; align-items: center; }
-.nimble-statblock .statblock-action { height: 2rem; padding: 0 0.8rem; font-size: 0.84rem; border-radius: 7px; gap: 0.35rem; }
-.nimble-statblock .statblock-action-icon svg { width: 15px; height: 15px; }
+:is(.nimble-statblock, .dnd5e-statblock) .statblock-actions { gap: 0.4rem; align-items: center; }
+.statblock-action:not(.hover-note *) { height: 2rem; padding: 0 0.8rem; font-size: 0.84rem; border-radius: 7px; gap: 0.35rem; }
+.statblock-action-icon svg { width: 15px; height: 15px; }
 .nimble-statblock .statblock-split { display: inline-flex; align-items: stretch; }
 .nimble-statblock .statblock-split > .statblock-action:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; padding-right: 0.7rem; }
 .nimble-statblock .statblock-split > .statblock-action-more { border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.45rem; margin-left: 1px; }
 .nimble-statblock .statblock-action-more svg { width: 14px; height: 14px; }
-body.is-tablet .nimble-statblock .statblock-action { padding: 0 0.8rem; }
+body.is-tablet .statblock-action { padding: 0 0.8rem; }
 body.is-tablet .nimble-statblock .statblock-split > .statblock-action-more { padding: 0 0.45rem; }
-@media (pointer: coarse) { .nimble-statblock .statblock-action { height: 2.5rem; } }
+@media (pointer: coarse) { .statblock-action:not(.hover-note *) { height: 2.5rem; } }
 .nimble-hover-preview .hover-preview-bar.is-draggable { cursor: grab; user-select: none; }
 .nimble-hover-preview.is-dragging, .nimble-hover-preview.is-dragging .hover-preview-bar { cursor: grabbing; }
 .nimble-hover-preview.is-dragging { box-shadow: 0 18px 40px -10px rgba(0,0,0,.45); }
@@ -3682,13 +3706,13 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-reaction-cost, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* ===== end Character sheet & compendium ===== */
@@ -4794,14 +4818,8 @@ button.dnd5e-hp-text:hover { background: var(--background-modifier-hover); }
 .dnd5e-hp-input.is-invalid { border-color: var(--color-red); }
 .dnd5e-death,
 .dnd5e-legendary { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.3rem; font-size: 0.8rem; flex-wrap: wrap; }
-.dnd5e-death-group { display: inline-flex; align-items: center; gap: 0.2rem; }
 .dnd5e-death-label,
 .dnd5e-legendary-label { color: var(--text-muted); }
-.dnd5e-pip { width: 0.7rem; height: 0.7rem; border-radius: 50%; border: 1px solid var(--text-muted); display: inline-block; }
-.dnd5e-legendary .dnd5e-pip { cursor: pointer; }
-.dnd5e-death-group.is-success .dnd5e-pip.is-on { background: var(--color-green); border-color: var(--color-green); }
-.dnd5e-death-group.is-failure .dnd5e-pip.is-on { background: var(--color-red); border-color: var(--color-red); }
-.dnd5e-legendary .dnd5e-pip.is-on { background: var(--color-orange); border-color: var(--color-orange); }
 .dnd5e-death-stable { color: var(--color-green); font-weight: 600; }
 .dnd5e-death-dead { color: var(--color-red); font-weight: 700; margin-top: 0.3rem; font-size: 0.85rem; }
 .dnd5e-conditions { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem; align-items: center; }
@@ -4911,8 +4929,6 @@ button.dnd5e-npc-fight { display: inline-flex; align-items: center; gap: 0.3rem;
 .dnd5e-sheet-cast { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.3rem; }
 .dnd5e-sheet-slots { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.4rem; }
 .dnd5e-slot-group { display: inline-flex; align-items: center; gap: 0.2rem; }
-.dnd5e-slot-group .dnd5e-pip { cursor: pointer; }
-.dnd5e-slot-group .dnd5e-pip.is-on { background: var(--interactive-accent); border-color: var(--interactive-accent); }
 .dnd5e-slot-level { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-right: 0.1rem; }
 .dnd5e-sheet-item.is-equipped .dnd5e-sheet-item-name { font-weight: 600; }
 .dnd5e-sheet-add { margin-top: 0.3rem; font-size: 0.8rem; }

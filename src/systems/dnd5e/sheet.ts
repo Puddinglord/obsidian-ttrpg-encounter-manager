@@ -15,6 +15,7 @@ import type { Dnd5eRuntime } from './runtime';
 import { openLevelUp5e } from './character-wizard';
 import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
 import { markTerm, termContext } from '../../core/rule-term-ui';
+import { renderPipRow } from '../../core/pip-row';
 
 export const SHEET_LANG = '5e-sheet';
 const SHORT: Record<AbilityKey, string> = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
@@ -124,16 +125,8 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		if (s.hp === 0) {
 			const ds = root.createDiv({ cls: 'dnd5e-death' });
 			mark(ds.createSpan({ cls: 'dnd5e-death-label', text: 'Death saves' }), s.edition === '2014' ? 'Dropping to 0 Hit Points' : 'Death Saving Throw');
-			const group = (label: string, n: number, cls: string, set: (v: number) => void) => {
-				const g = ds.createSpan({ cls: `dnd5e-death-group ${cls}` });
-				g.createSpan({ cls: 'dnd5e-death-label', text: label });
-				for (let i = 0; i < 3; i++) {
-					const pip = g.createSpan({ cls: `dnd5e-pip${i < n ? ' is-on' : ''}` });
-					pip.onclick = () => set(i < n ? i : i + 1);
-				}
-			};
-			group('Saves', s.deathSaves.success, 'is-success', v => this.edit(fm => setDeathSaves(fm, v, s.deathSaves.failure)));
-			group('Fails', s.deathSaves.failure, 'is-failure', v => this.edit(fm => setDeathSaves(fm, s.deathSaves.success, v)));
+			renderPipRow(ds, { name: 'Saves', label: true, count: s.deathSaves.success, max: 3, cls: 'is-success', set: v => this.edit(fm => setDeathSaves(fm, v, s.deathSaves.failure)) });
+			renderPipRow(ds, { name: 'Fails', label: true, count: s.deathSaves.failure, max: 3, cls: 'is-failure', set: v => this.edit(fm => setDeathSaves(fm, s.deathSaves.success, v)) });
 			const r = ds.createEl('button', { text: 'Roll save' });
 			r.onclick = () => {
 				const n = this.roll('1d20', who('death save'));
@@ -195,12 +188,11 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 			if (s.slots.length) {
 				const slots = right.createDiv({ cls: 'dnd5e-sheet-slots' });
 				for (const sl of s.slots) {
-					const g = slots.createDiv({ cls: 'dnd5e-slot-group', attr: { 'aria-label': `Level ${sl.level} slots: ${sl.max - sl.used} of ${sl.max} left` } });
+					const g = slots.createDiv({ cls: 'dnd5e-slot-group' });
 					g.createSpan({ cls: 'dnd5e-slot-level', text: String(sl.level) });
-					for (let i = 0; i < sl.max; i++) {
-						const pip = g.createSpan({ cls: `dnd5e-pip${i < sl.max - sl.used ? ' is-on' : ''}` });
-						pip.onclick = () => this.edit((fm, sh) => useSlot(fm, sh, sl.level, i < sl.max - sl.used ? 1 : -1));
-					}
+					const left = sl.max - sl.used;
+					// A filled pip spends a slot, an empty one gets one back (core's pips).
+					renderPipRow(g, { name: `Level ${sl.level} slots`, count: left, max: sl.max, cls: 'is-slot', set: n => this.edit((fm, sh) => useSlot(fm, sh, sl.level, n < left ? 1 : -1)) });
 				}
 			}
 			const byLevel = [...s.spells].sort((a, b) => (a.spell?.level ?? 99) - (b.spell?.level ?? 99) || a.name.localeCompare(b.name));
