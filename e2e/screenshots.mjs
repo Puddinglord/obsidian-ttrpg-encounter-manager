@@ -702,6 +702,77 @@ const features = {
 		},
 		show: () => ['.modal.nimble-entity-builder'],
 	},
+	// The 5e character sheet: the header, hit points, conditions and the first abilities.
+	'feature-5e-sheet': {
+		lineWidth: 900, viewport: [1200, 900],
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			});
+			await writeNote('Campaigns/Sword Coast/Party/Ilse Vane.md', [
+				'---', 'title: Ilse Vane', 'species: Elf', 'class: Wizard', 'subclass: Evoker', 'background: Sage', 'level: 5', 'edition: "2024"',
+				'str: 8', 'dex: 14', 'con: 13', 'int: 18', 'wis: 12', 'cha: 10', 'hp: 24', 'hp_max: 32', 'temp_hp: 5', 'hit_dice_used: 2', 'inspiration: true',
+				'skills: [Arcana, History, Investigation, Insight]', 'expertise: [Arcana]', 'conditions: [Poisoned]',
+				'spells: [Fire Bolt, Mage Hand, Shield, Magic Missile, Misty Step, Hold Person, Fireball, Counterspell]', 'slots_used: [1, 0, 1]',
+				'inventory:', '  - { name: Dagger, equipped: true }', '  - { name: Quarterstaff, equipped: true }', '  - { name: Potion of Healing, qty: 2 }',
+				'portrait: "[[Campaigns/The Old Quarter/Assets/Art/Tobren Kask.png]]"', 'portrait-position: center 20%', '---', '', '```5e-sheet', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/Party/Ilse Vane.md');
+			await page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-sheet').waitFor();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .dnd5e-sheet'],
+		// From the header to the conditions.
+		region: () => {
+			const sheet = document.querySelector('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-sheet');
+			const b = sheet.getBoundingClientRect();
+			const conds = sheet.querySelector('.dnd5e-conditions-row');
+			return { left: b.left, right: b.right, top: b.top, bottom: conds ? conds.getBoundingClientRect().bottom : b.top + 600 };
+		},
+	},
+	// The 5e tracker mid-fight: initiative rows, the current turn, conditions, concentration and legendary pips.
+	'feature-5e-tracker': {
+		viewport: [1200, 900], ratio: 4 / 5,
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			});
+			await writeNote('Campaigns/Sword Coast/Road Ambush.md', [
+				'# Road ambush', '', 'Goblins spring from the ditch while their mage holds back. An ogre lumbers out of the trees on round two.', '',
+				'```nimble-encounter', 'name: Road ambush', 'monsters:', '- 2 `5e:Goblin Warrior`', '- `5e:Ogre`', '- `5e:Mage`', '- `5e:Young Red Dragon`', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/Road Ambush.md');
+			const R5 = '.workspace-leaf.mod-active .markdown-reading-view';
+			await page.locator(`${R5} .dnd5e-encounter button`, { hasText: 'Run' }).click();
+			const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+			await page.locator(TR).waitFor();
+			await o.eval((app) => app.workspace.rightSplit.setSize?.(480));
+			await page.locator(`${TR} button`, { hasText: /Start combat/ }).first().click();
+			await page.waitForTimeout(400);
+			await o.eval((app, plugin) => {
+				const rt = plugin.runtime('dnd5e');
+				rt.fights.change((f) => {
+					const by = (n) => f.combatants.find(c => c.label === n);
+					const set = (n, hp, conds = []) => { const c = by(n); if (c) { c.hp = hp; c.conditions.push(...conds.map(name => ({ name }))); } };
+					set('Goblin Warrior', 4, ['Frightened']);
+					set('Goblin Warrior 2', 0);
+					set('Ogre', 41, ['Prone']);
+					const mage = by('Mage'); if (mage) { mage.hp = 52; mage.concentrating = true; }
+					const dragon = by('Young Red Dragon'); if (dragon) { dragon.hp = Math.round(dragon.maxHp * 0.62); if (dragon.legendary) dragon.legendary.used = 1; }
+				});
+			});
+			await page.waitForTimeout(700);
+		},
+		show: () => ['.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]'],
+		region: () => {
+			const b = document.querySelector('.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]').getBoundingClientRect();
+			const rows = [...document.querySelectorAll('.workspace-leaf-content[data-type="nimble-dnd5e-tracker"] .dnd5e-combatant')];
+			const last = rows[rows.length - 1];
+			return { left: b.left, right: b.right, top: b.top, bottom: last ? last.getBoundingClientRect().bottom : b.bottom };
+		},
+	},
 	// A 5e stat block (the example content pack's Cinder Hound) laid out the 2024 way.
 	'feature-5e-statblock': {
 		lineWidth: 520,
