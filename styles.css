@@ -4797,11 +4797,10 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .dnd5e-tracker-primary { flex: 2 1 0; font-weight: 600; }
 .dnd5e-tracker-side { flex: 1 1 0; }
 .dnd5e-tracker-icon { flex: 0 0 2.3rem; padding: 0; }
-.dnd5e-tracker-combat .dnd5e-btn-text { overflow: hidden; text-overflow: ellipsis; }
-.dnd5e-tracker-combat .dnd5e-btn-icon svg { width: 15px; height: 15px; }
+.dnd5e-tracker-combat .ev-pill-text { overflow: hidden; text-overflow: ellipsis; }
 /* Narrow: the side button keeps only its icon. */
 @container (max-width: 320px) {
-	.dnd5e-tracker-side .dnd5e-btn-text { display: none; }
+	.dnd5e-tracker-side .ev-pill-text { display: none; }
 	.dnd5e-tracker-side { flex: 0 0 2.3rem; padding: 0; }
 }
 body.is-tablet .dnd5e-tracker-combat button { padding: 0 0.6rem; }

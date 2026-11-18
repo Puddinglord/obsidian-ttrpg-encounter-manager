@@ -5,6 +5,7 @@
 import { openHpPad } from '../../core/tracker/hp-pad';
 import { FuzzySuggestModal, ItemView, Menu, setIcon, WorkspaceLeaf } from 'obsidian';
 import { renderPipRow } from '../../core/pip-row';
+import { pill } from '../../core/pill';
 import { openGameSettings } from '../../core/settings-ui';
 import { startRolls5e } from './settings';
 import {
@@ -53,9 +54,7 @@ export class Dnd5eTrackerView extends ItemView {
 		const running = isRunning(f);
 		const combat = root.createDiv({ cls: `dnd5e-tracker-combat${running ? ' is-running' : ''}` });
 		const btn = (label: string, icon: string, run: () => void, cls = '', iconOnly = false) => {
-			const b = combat.createEl('button', { cls, attr: iconOnly ? { 'aria-label': label } : {} });
-			setIcon(b.createSpan({ cls: 'dnd5e-btn-icon' }), icon);
-			if (!iconOnly) b.createSpan({ cls: 'dnd5e-btn-text', text: label });
+			const b = pill(combat, { tag: 'button', icon, text: iconOnly ? undefined : label, cls, attr: iconOnly ? { 'aria-label': label } : {} }) as HTMLButtonElement;
 			b.onclick = run;
 			return b;
 		};

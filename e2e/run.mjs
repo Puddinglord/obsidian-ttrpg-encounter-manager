@@ -5335,6 +5335,7 @@ test('encounter settings: the 5e tracker menu opens 5e\'s own settings; heroes l
 		await o.page.locator(`${T} button[aria-label="Add the party"]`).click();
 		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant`).count()) === 2, { what: 'two in the fight' });
 
+		await o.eval(() => document.querySelectorAll('.notice').forEach(n => n.remove())); // a notice from earlier can sit over the menu button
 		await o.page.locator(`${T} .dnd5e-tracker-more`).click();
 		await o.page.locator('.menu-item', { hasText: 'Encounter settings…' }).click();
 		const dlg = o.page.locator('.modal.ev-settings-modal');
