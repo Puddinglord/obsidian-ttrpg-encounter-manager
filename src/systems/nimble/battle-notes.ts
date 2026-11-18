@@ -11,6 +11,7 @@ import { createInlineRef } from './inline-ref';
 import { appendRichText } from '../../core/markdown';
 import { wireWikiLinks } from '../../core/wiki-links';
 import { searchMonsters } from './suggest';
+import { nimble } from './runtime';
 
 const OUTCOME_INFO: Record<Outcome, { label: string; icon: string }> = {
 	won: { label: 'Won', icon: 'trophy' },
@@ -50,7 +51,7 @@ export function renderBattleNotes(plugin: EmberVaultPlugin, el: HTMLElement, def
 		const row = list.createDiv({ cls: 'encounter-chip battle-foe' });
 		row.createSpan({ cls: 'encounter-count-n battle-foe-count', text: `${m.count}×` });
 		// In the bestiary or the player's notes: a lore card on hover. Otherwise just the name as written.
-		if (plugin.index.get(m.name, ctx.sourcePath)) row.appendChild(createInlineRef(plugin, m.name, ctx.sourcePath));
+		if (nimble().index.get(m.name, ctx.sourcePath)) row.appendChild(createInlineRef(plugin, m.name, ctx.sourcePath));
 		else appendRichText(row.createSpan({ cls: 'battle-foe-name' }), m.written ?? m.name);
 	}
 	if (!def.monsters.length) list.createDiv({ cls: 'encounter-block-empty', text: 'No foes yet' });
@@ -86,7 +87,7 @@ class FoeSuggest extends AbstractInputSuggest<string> {
 	}
 
 	protected getSuggestions(query: string): string[] {
-		return searchMonsters(this.plugin.index.all(), query, 20).map(e => e.name);
+		return searchMonsters(nimble().index.all(), query, 20).map(e => e.name);
 	}
 
 	renderSuggestion(name: string, el: HTMLElement): void {

@@ -16,6 +16,7 @@ import { resolveCompendiumRef } from './compendium-ref';
 import { appendRichText } from '../../core/markdown';
 import { renderArtSlot } from './compendium-art';
 import { hitArtKey } from './compendium-entries';
+import { nimble } from './runtime';
 
 export interface CardOptions {
 	/** Roll a dice expression found in the text. */
@@ -418,10 +419,10 @@ export function pluginCardOptions(plugin: EmberVaultPlugin, label: string, onOpe
 			el.setAttr('title', `Roll ${expr}`);
 			el.addEventListener('click', (e) => { e.stopPropagation(); plugin.rollDice(expr, label); });
 		},
-		keywords: plugin.conditionKeywords(),
+		keywords: nimble().conditionKeywords(),
 		onKeyword: (el, word) => {
 			el.addClass('nimble-condition-ref');
-			el.addEventListener('click', (e) => { e.stopPropagation(); plugin.showConditionInfo(el, word); });
+			el.addEventListener('click', (e) => { e.stopPropagation(); nimble().showConditionInfo(el, word); });
 		},
 		onOpenHit,
 	};

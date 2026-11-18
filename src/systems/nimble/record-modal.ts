@@ -15,6 +15,7 @@ import { iconStep, renderActionDots, renderMeter, renderWoundPips, VitalsMemory 
 import { openHpCalculator } from './hp-pad';
 import { closePopover } from '../../core/popover';
 import { portraitOf, renderAvatar } from '../../core/npc-card';
+import { nimble } from './runtime';
 
 export type RecordTarget =
 	| { kind: 'monster'; entry: MonsterIndexEntry; sourcePath?: string }
@@ -46,7 +47,7 @@ class RecordModal extends Modal {
 		const t = this.target;
 		if (t.kind === 'combatant') {
 			// Keep the combat strip current while the modal is open.
-			this.ref = this.plugin.encounters.on('changed', () => {
+			this.ref = nimble().encounters.on('changed', () => {
 				const c = this.creature();
 				if (!c) { this.close(); return; }
 				this.renderStrip(c);
@@ -56,7 +57,7 @@ class RecordModal extends Modal {
 	}
 
 	onClose(): void {
-		if (this.ref) this.plugin.encounters.offref(this.ref);
+		if (this.ref) nimble().encounters.offref(this.ref);
 		closePopover();
 		this.component.unload();
 		this.contentEl.empty();
@@ -64,7 +65,7 @@ class RecordModal extends Modal {
 
 	private creature(): EncounterCreature | undefined {
 		const t = this.target;
-		return t.kind === 'combatant' ? this.plugin.encounters.creature(t.encId, t.creatureId) : undefined;
+		return t.kind === 'combatant' ? nimble().encounters.creature(t.encId, t.creatureId) : undefined;
 	}
 
 	/** The monster entry or note behind the target, if any. */
@@ -106,16 +107,16 @@ class RecordModal extends Modal {
 			const add = actions.createEl('button', { cls: 'record-btn' });
 			setIcon(add.createSpan(), 'plus');
 			add.createSpan({ text: 'Add to fight' });
-			add.onclick = (e) => { void this.plugin.addToEncounter(t.entry.monster, t.entry.filePath || undefined, e.shiftKey ? 2 : 1); };
+			add.onclick = (e) => { void nimble().addToEncounter(t.entry.monster, t.entry.filePath || undefined, e.shiftKey ? 2 : 1); };
 		}
 		// Players keep their own notes on a creature: add them, or open them.
 		if (lore && src.entry) {
 			const name = baseCreatureName(src.entry.name);
-			const noted = !!this.plugin.creatureNote(name);
+			const noted = !!nimble().creatureNote(name);
 			const notes = actions.createEl('button', { cls: 'record-btn' });
 			setIcon(notes.createSpan(), noted ? 'notebook-pen' : 'notebook');
 			notes.createSpan({ text: noted ? 'Open notes' : 'Add notes' });
-			notes.onclick = () => { this.close(); void this.plugin.openCreatureNote(name); };
+			notes.onclick = () => { this.close(); void nimble().openCreatureNote(name); };
 		}
 		const page = this.pageAction(src);
 		if (page) {
@@ -130,7 +131,7 @@ class RecordModal extends Modal {
 
 		const body = contentEl.createDiv({ cls: 'record-body' });
 		if (src.entry && (!c || !isHero(c))) {
-			this.plugin.renderStatblock(body, src.entry.monster, src.sourcePath, 'block', undefined, { lore });
+			nimble().renderStatblock(body, src.entry.monster, src.sourcePath, 'block', undefined, { lore });
 		} else if (src.file) {
 			const text = await this.app.vault.cachedRead(src.file);
 			const md = text.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();
@@ -160,7 +161,7 @@ class RecordModal extends Modal {
 		const e = src.entry;
 		if (!e) return null;
 		if (e.filePath) return { label: 'Open page', icon: 'file-symlink', run: (tab) => void this.app.workspace.openLinkText(e.filePath, src.sourcePath, tab) };
-		if (e.bundled) return { label: 'Open in compendium', icon: 'book-open', run: () => void this.plugin.openBestiary(e.monster.bundledId) };
+		if (e.bundled) return { label: 'Open in compendium', icon: 'book-open', run: () => void nimble().openBestiary(e.monster.bundledId) };
 		return null;
 	}
 
@@ -171,7 +172,7 @@ class RecordModal extends Modal {
 		const strip = this.strip;
 		strip.empty();
 		const enc = t.encId;
-		const store = this.plugin.encounters;
+		const store = nimble().encounters;
 		strip.toggleClass('is-down', isDown(c));
 
 		// The character sheet's own pieces (HP bar, Wounds, action dots, the End-style pill, conditions),
@@ -231,7 +232,7 @@ class RecordModal extends Modal {
 			for (const a of c.conditions) {
 				const tag = conds.createSpan({ cls: 'ns-cond' });
 				tag.createEl('button', { cls: 'ns-cond-name', text: a.rounds ? `${conditionLabel(a)} · ${a.rounds}r` : conditionLabel(a) })
-					.addEventListener('click', (e) => this.plugin.showConditionInfo(e.currentTarget as HTMLElement, a.name));
+					.addEventListener('click', (e) => nimble().showConditionInfo(e.currentTarget as HTMLElement, a.name));
 				const x = iconStep(tag, 'x', { 'aria-label': `Remove ${a.name}` }, 'ns-cond-x');
 				x.onclick = () => store.removeCondition(enc, c.id, a.name);
 			}

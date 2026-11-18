@@ -11,6 +11,9 @@ import { NIMBLE_CONDITIONS } from './types';
 import { readCharacter } from './character-def';
 import { sheetCompendium } from './compendium-data';
 import { registerNimble } from './register';
+import { NIMBLE_SETTINGS } from './settings';
+import { nimble } from './runtime';
+import { openCharacterView } from './character-register';
 
 export const nimbleSystem: GameSystem = {
 	id: 'nimble',
@@ -22,6 +25,8 @@ export const nimbleSystem: GameSystem = {
 		storeLabel: 'nimbleRPG.com',
 	},
 	conditions: () => NIMBLE_CONDITIONS,
+	settings: NIMBLE_SETTINGS,
+	attackRolls: (plugin) => (plugin.settings.nimbleAttackRolls ? 'exploding' : undefined),
 	characters: {
 		promptNew(plugin, r) {
 			new NewCharacterModal(plugin, r.folder, r.onCreated, { mine: r.mine, name: r.name ?? '', level: r.level }).open();
@@ -46,6 +51,19 @@ export const nimbleSystem: GameSystem = {
 	},
 	register(plugin) {
 		registerNimble(plugin);
+	},
+	async openTracker() {
+		await nimble().activateEncounterView();
+	},
+	async openCompendium() {
+		await nimble().openBestiary();
+	},
+	async openMyCharacter(plugin) {
+		await openCharacterView(plugin);
+	},
+	inCombat() {
+		const enc = nimble().encounters.active;
+		return !!enc?.phase && enc.phase !== 'setup';
 	},
 	encounterBlock: nimbleEncounterBlock,
 	slashCommands: nimbleSlashCommands,

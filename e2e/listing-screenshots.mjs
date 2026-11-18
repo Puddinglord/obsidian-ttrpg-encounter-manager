@@ -76,7 +76,7 @@ async function layout({ left = false, right = false } = {}) {
 		leaves.forEach(l => l.detach());
 		if (phone) { app.workspace.leftSplit.collapse(); app.workspace.rightSplit.collapse(); return; }
 		if (left) { app.workspace.leftSplit.expand(); await plugin.openCampaignView(); } else app.workspace.leftSplit.collapse();
-		if (right) { app.workspace.rightSplit.expand(); await plugin.activateEncounterView(false); } else app.workspace.rightSplit.collapse();
+		if (right) { app.workspace.rightSplit.expand(); await plugin.runtime('nimble').activateEncounterView(false); } else app.workspace.rightSplit.collapse();
 	}, [left, right, phone]);
 	await page.waitForTimeout(500);
 }
@@ -113,7 +113,7 @@ async function resetTracker() {
 		plugin.settings.activeEncounterId = null;
 		plugin.settings.rollLog = [];
 		plugin.settings.mapTokens = {};
-		plugin.encounters.trigger('changed');
+		plugin.runtime('nimble').encounters.trigger('changed');
 		document.querySelectorAll('.notice').forEach(n => n.remove());
 	});
 }
@@ -134,7 +134,7 @@ async function houndsFight() {
 	await scrollTo(`${R} .nimble-encounter-block`, 0.2);
 	await press(page.locator(`${R} .nimble-encounter-block .encounter-block-actions button`, { hasText: 'Run' }));
 	await page.waitForTimeout(600);
-	await o.eval(async (app, plugin) => { await plugin.activateEncounterView(false); });
+	await o.eval(async (app, plugin) => { await plugin.runtime('nimble').activateEncounterView(false); });
 	await page.waitForTimeout(400);
 	const round = page.locator(`${T} .round-action`).first();
 	if (await round.count()) { await press(round); await page.waitForTimeout(300); }
@@ -142,12 +142,12 @@ async function houndsFight() {
 		for (const hero of ['Brakka', 'Wren', 'Ilse']) await row(hero).locator('.turn-toggle').click();
 	}
 	await o.eval(async (app, plugin, phone) => {
-		const enc = plugin.encounters.active;
+		const enc = plugin.runtime('nimble').encounters.active;
 		// The phone drawer may be shut, so mark turns through the API there.
 		if (phone) for (const c of enc.creatures) if (['Brakka', 'Wren', 'Ilse'].includes(c.label)) c.done = true;
 		const dmg = { 'Quicksilver Hound-1': 16, 'Quicksilver Hound-2': 9, 'Quicksilver Hound-3': 5, Brakka: 7, Ilse: 4 };
 		for (const c of enc.creatures) if (dmg[c.label] !== undefined) c.currentHp = Math.max(0, c.currentHp - dmg[c.label]);
-		plugin.encounters.trigger('changed');
+		plugin.runtime('nimble').encounters.trigger('changed');
 		document.querySelectorAll('.notice').forEach(n => n.remove());
 	}, phone);
 	await page.waitForTimeout(300);
@@ -221,7 +221,7 @@ const shots = [
 		await page.locator(`${R} .nimble-map-btn`, { hasText: 'Encounter tokens' }).first().click();
 		await page.waitForTimeout(400);
 		await o.eval(async (app, plugin) => {
-			const enc = plugin.encounters.active;
+			const enc = plugin.runtime('nimble').encounters.active;
 			const key = Object.keys(plugin.settings.mapTokens || {})[0];
 			const spots = {
 				Brakka: [74, 78], Tomas: [81, 78], Wren: [77, 66], Ilse: [84, 66],

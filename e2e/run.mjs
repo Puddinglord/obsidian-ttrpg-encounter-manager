@@ -53,26 +53,26 @@ async function resetEncounter(o, { party = [] } = {}) {
 		plugin.settings.autoArmor = true;
 		plugin.settings.minionOverkill = true;
 		plugin.settings.nimbleAttackRolls = true;
-		const view = plugin.getEncounterView();
+		const view = plugin.runtime('nimble').getEncounterView();
 		if (view) {
 			view.prompts = [];
 			view.viewingCreatureId = null;
 			view.expanded?.clear();
 			view.flash?.clear();
 		}
-		plugin.encounters.trigger('changed');
+		plugin.runtime('nimble').encounters.trigger('changed');
 		document.querySelectorAll('.notice').forEach(n => n.remove());
-		await plugin.activateEncounterView(false);
+		await plugin.runtime('nimble').activateEncounterView(false);
 	}, party);
 	await o.page.waitForTimeout(150);
 }
 
-const creatures = (o) => o.eval((app, plugin) => (plugin.encounters.active?.creatures || []).map(c => ({
+const creatures = (o) => o.eval((app, plugin) => (plugin.runtime('nimble').encounters.active?.creatures || []).map(c => ({
 	label: c.label, side: c.side, hp: c.currentHp, max: c.maxHp, conditions: c.conditions, done: !!c.done,
 	alive: c.alive, count: c.count, wounds: c.wounds, armor: c.monster.armor, lastStand: !!c.lastStand,
 })));
 const encounter = (o) => o.eval((app, plugin) => {
-	const e = plugin.encounters.active;
+	const e = plugin.runtime('nimble').encounters.active;
 	return e && { name: e.name, round: e.round, phase: e.phase, sourcePath: e.sourcePath };
 });
 const notices = (o) => o.page.evaluate(() => [...document.querySelectorAll('.notice')].map(n => n.innerText));
@@ -111,7 +111,7 @@ const rectsOverlap = (a, b) => a.left < b.right && b.left < a.right && a.top < b
 test('plugin loads cleanly', async (o) => {
 	const loaded = await o.eval((app) => !!app.plugins.plugins['nimble-gm']?._loaded);
 	assert.ok(loaded);
-	assert.ok(await o.eval((app, plugin) => plugin.index.bundledCount) >= 500, 'bundled bestiary loaded');
+	assert.ok(await o.eval((app, plugin) => plugin.runtime('nimble').index.bundledCount) >= 500, 'bundled bestiary loaded');
 });
 
 test('regular stat block renders kicker, badges, abilities and attacks', async (o) => {
@@ -199,7 +199,7 @@ test('hp 0, tilde fences and missing names are handled', async (o) => {
 	}), R);
 	assert.equal(r.golemHp, '0');
 	assert.match(r.error, /needs a name/);
-	assert.ok(await o.eval((app, plugin) => !!plugin.index.get('Tilde Toad')));
+	assert.ok(await o.eval((app, plugin) => !!plugin.runtime('nimble').index.get('Tilde Toad')));
 });
 
 test('stat block hints: a quiet line under a hand-written block, opening into fixes', async (o) => {
@@ -241,7 +241,7 @@ test('monster builder: a quick build makes a note with a clean stat block', asyn
 	const leaf = '.workspace-leaf.mod-active';
 	await o.page.locator(`${leaf} .nimble-statblock >> visible=true`).first().waitFor();
 	assert.equal(await o.page.locator(`${leaf} .nimble-issues`).count(), 0);
-	assert.ok(await o.eval((app, plugin) => !!plugin.index.get('Quick Bear')));
+	assert.ok(await o.eval((app, plugin) => !!plugin.runtime('nimble').index.get('Quick Bear')));
 });
 
 test('monster builder: a solo from a template, re-levelled, with stats typed first', async (o) => {
@@ -289,7 +289,7 @@ test('spell and item builders: homebrew lands in a note, renders as a card and j
 	assert.match(spell, /```nimble-spell\nname: Ember Lash\nschool: Fire\ntier: 2\nactions: 2 Actions\nrange: Range 8\ndamage: \S+\nupcast: \+\d+ damage\.\n```/);
 	// The tab holds both the reading view and the editor, so only one card is on screen.
 	await o.page.locator('.workspace-leaf.mod-active .nimble-homebrew .nimble-cmp-card:visible').first().waitFor();
-	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.spell('Ember Lash')?.tier === 2), { what: 'the spell in the compendium' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').compendium.spell('Ember Lash')?.tier === 2), { what: 'the spell in the compendium' });
 
 	// An item from the switch at the top of the same dialog.
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-spell'));
@@ -302,7 +302,7 @@ test('spell and item builders: homebrew lands in a note, renders as a card and j
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const item = await o.eval((app) => app.vault.adapter.read('Homebrew/Lantern of Echoes.md'));
 	assert.match(item, /category: magic\nrarity: rare\ncost: 500 gp\ntext: Replays the last minute of sound\./);
-	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.item('Lantern of Echoes')?.rarity === 'rare'), { what: 'the item in the compendium' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').compendium.item('Lantern of Echoes')?.rarity === 'rare'), { what: 'the item in the compendium' });
 });
 
 test('builder ways in: Edit on a block writes it back, /new-spell builds in place, the compendium has New', async (o) => {
@@ -324,7 +324,7 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	assert.match(await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin.md')), /^# Goblin\n\n```nimble\nname: Goblin\n/);
 	// Later tests count on the fixture's Goblin (12 HP).
 	await o.eval((app, _p, text) => app.vault.adapter.write('Bestiary/Goblin.md', text), goblin);
-	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Goblin')?.monster.hp === 12), { what: 'the Goblin back to 12 HP' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Goblin')?.monster.hp === 12), { what: 'the Goblin back to 12 HP' });
 
 	// /new-spell in a note: the builder, then the block lands where the slash was.
 	await o.eval(async (app) => { await app.vault.create('Spellbook.md', 'Spells:\n'); });
@@ -385,7 +385,7 @@ test('builder Edit on spell and item blocks: one change is written back, the res
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const wantSpell = [...spell.slice(0, 5), 'concentration: up to 1 minute', ...spell.slice(5)].join('\n');
 	await o.waitFor(async () => (await o.eval((app) => app.vault.adapter.read('Edit Spell.md'))).includes(`\`\`\`nimble-spell\n${wantSpell}\n\`\`\``), { what: 'the spell written back with only concentration added' });
-	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.spell('Ward')?.actions === 'Reaction'), { what: 'the edited spell in the compendium' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').compendium.spell('Ward')?.actions === 'Reaction'), { what: 'the edited spell in the compendium' });
 
 	// The item: a price on the Details step.
 	await edit('Edit Item.md', 'nimble-item');
@@ -395,7 +395,7 @@ test('builder Edit on spell and item blocks: one change is written back, the res
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const wantItem = [...item.slice(0, 7), 'cost: 40 gp', ...item.slice(7)].join('\n');
 	await o.waitFor(async () => (await o.eval((app) => app.vault.adapter.read('Edit Item.md'))).includes(`\`\`\`nimble-item\n${wantItem}\n\`\`\``), { what: 'the item written back with only its price added' });
-	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.item('Wand of Sparks')?.category === 'wand'), { what: 'the edited item in the compendium' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').compendium.item('Wand of Sparks')?.category === 'wand'), { what: 'the edited item in the compendium' });
 });
 
 test('builder Edit asks before Save drops lines the block can\'t read', async (o) => {
@@ -433,10 +433,10 @@ test('monster builder: a minion, with the party level\'s die, joins the tracker 
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const text = await o.eval((app) => app.vault.adapter.read('Bestiary/Pack Rat.md'));
 	assert.match(text, /```nimble\nname: Pack Rat\nrole: minion\nsize: Medium\nminion die: d\d+\nattacks:\n- \*\*\w+\.\*\* 1d\d+ \(follows minion rules\)\.\n```/);
-	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Pack Rat')?.monster.role === 'minion'), { what: 'the minion in the index' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Pack Rat')?.monster.role === 'minion'), { what: 'the minion in the index' });
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Pack Rat').monster, 'Bestiary/Pack Rat.md', 4));
-	const group = await o.eval((app, plugin) => plugin.encounters.active?.creatures.map(c => ({ count: c.count, alive: c.alive })));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Pack Rat').monster, 'Bestiary/Pack Rat.md', 4));
+	const group = await o.eval((app, plugin) => plugin.runtime('nimble').encounters.active?.creatures.map(c => ({ count: c.count, alive: c.alive })));
 	assert.deepEqual(group, [{ count: 4, alive: 4 }]);
 });
 
@@ -568,7 +568,7 @@ test('reading view: inline references resolve, unknown ones are flagged', async 
 	assert.deepEqual(r.found, ['Goblin', 'Goblin Boss', 'Young Dragon', 'Goblin']);
 	assert.equal(r.bundled, 0);
 	assert.deepEqual(r.missing, ['Mire Owlbear']);
-	assert.equal(await o.eval((app, plugin) => plugin.index.get('Goblin').filePath), 'Bestiary/Goblin.md');
+	assert.equal(await o.eval((app, plugin) => plugin.runtime('nimble').index.get('Goblin').filePath), 'Bestiary/Goblin.md');
 });
 
 test('bundled reference: Krogg resolves, previews with an action bar, and goes away with the bestiary setting', async (o) => {
@@ -605,11 +605,11 @@ test('bundled reference: Krogg resolves, previews with an action bar, and goes a
 
 	// Turning the bundled bestiary off leaves the reference unresolved.
 	try {
-		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = false; plugin.loadBundledBestiary(); });
+		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = false; plugin.runtime('nimble').loadBundledBestiary(); });
 		await o.waitFor(() => o.page.evaluate((R) => [...document.querySelectorAll(`${R} .nimble-inline-unresolved`)].some(e => e.dataset.nimbleRef === 'Krogg, Goblin King'), R),
 			{ timeout: 3000, what: 'Krogg to go unresolved' });
 	} finally {
-		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = true; plugin.loadBundledBestiary(); });
+		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = true; plugin.runtime('nimble').loadBundledBestiary(); });
 	}
 	await o.waitFor(() => o.page.evaluate((R) => !document.querySelector(`${R} .nimble-inline-unresolved`), R), { timeout: 3000, what: 'Krogg to resolve again' });
 });
@@ -773,7 +773,7 @@ test('index updates live: new, renamed and deleted monsters', async (o) => {
 	await o.eval((app) => app.vault.create('Bestiary/Mire Owlbear.md', '```nimble\nname: Mire Owlbear\nhp: 30\n```\n'));
 	await o.waitFor(() => o.page.evaluate((R) => !document.querySelector(`${R} .nimble-inline-unresolved`), R), { timeout: 5000, what: 'Mire Owlbear to resolve' });
 	await o.eval((app) => app.fileManager.renameFile(app.vault.getAbstractFileByPath('Bestiary/Mire Owlbear.md'), 'Bestiary/Mire Owlbear (Swamp).md'));
-	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Mire Owlbear')?.filePath === 'Bestiary/Mire Owlbear (Swamp).md'), { timeout: 5000, what: 'rename to be indexed' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Mire Owlbear')?.filePath === 'Bestiary/Mire Owlbear (Swamp).md'), { timeout: 5000, what: 'rename to be indexed' });
 	await o.eval((app) => app.vault.delete(app.vault.getAbstractFileByPath('Bestiary/Mire Owlbear (Swamp).md')));
 	await o.waitFor(() => o.page.evaluate((R) => !!document.querySelector(`${R} .nimble-inline-unresolved`), R), { timeout: 5000, what: 'Mire Owlbear to go unresolved' });
 });
@@ -982,7 +982,7 @@ test('compendium: typed filters become chips, Tab completes, Backspace edits, Al
 	const bad = await o.eval((app, plugin, ids) => {
 		const lvl = (v) => { const s = String(v ?? ''); const f = s.match(/^(\d+)\/(\d+)$/); return f ? Number(f[1]) / Number(f[2]) : Number(s); };
 		return ids.filter(id => {
-			const e = plugin.index.all().find(x => `monster:${x.monster.bundledId || `vault:${x.filePath}#${x.name}`}` === id);
+			const e = plugin.runtime('nimble').index.all().find(x => `monster:${x.monster.bundledId || `vault:${x.filePath}#${x.name}`}` === id);
 			if (!e) return true;
 			const types = [e.monster.group, e.monster.type].filter(Boolean).join(' ');
 			const l = lvl(e.monster.level);
@@ -1023,7 +1023,7 @@ test('compendium art: pick an image for an entry; it shows on the page and as th
 		const blob = await new Promise(r => c.toBlob(r, 'image/png'));
 		if (!app.vault.getAbstractFileByPath('flame-art.png')) await app.vault.createBinary('flame-art.png', await blob.arrayBuffer());
 	});
-	await o.eval((app, plugin) => plugin.openCompendium('spells', 'flame dart'));
+	await o.eval((app, plugin) => plugin.runtime('nimble').openCompendium('spells', 'flame dart'));
 	const D = '.nimble-compendium .nimble-cmpx-detail';
 	await o.waitFor(async () => (await o.page.locator(`${D} .nimble-cmp-name`).first().textContent().catch(() => '')) === 'Flame Dart', { timeout: 4000, what: 'Flame Dart on the page' });
 	assert.equal(await o.page.locator(`${D} .nimble-art-slot:not(.has-art)`).count(), 1, 'an empty art slot');
@@ -1221,10 +1221,10 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	await resetEncounter(o, { party: PARTY });
 	await o.eval(async (app, plugin) => {
 		plugin.settings.dice3d = false;
-		const id = plugin.encounters.ensureActive().id;
-		plugin.encounters.addParty(id);
-		await plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
-		await plugin.addToEncounter(plugin.index.get('Krogg, Goblin King').monster, undefined, 1);
+		const id = plugin.runtime('nimble').encounters.ensureActive().id;
+		plugin.runtime('nimble').encounters.addParty(id);
+		await plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
+		await plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Krogg, Goblin King').monster, undefined, 1);
 	});
 	await o.page.waitForTimeout(300);
 	const action = o.page.locator(`${T} .round-action`);
@@ -1289,7 +1289,7 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').wounds === 1, { what: 'a Wound' });
 	await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).last().click();
 	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').wounds === 2, { what: 'one more Wound, not the skull' });
-	const bramActions = () => o.eval((app, plugin) => plugin.encounters.active.creatures.find(c => c.label === 'Bram').actions ?? 3);
+	const bramActions = () => o.eval((app, plugin) => plugin.runtime('nimble').encounters.active.creatures.find(c => c.label === 'Bram').actions ?? 3);
 	const before = await bramActions();
 	await o.page.locator(`${Q} .record-strip .ns-action-dot`).first().click();
 	await o.waitFor(async () => (await bramActions()) === before - 1, { what: 'one action spent' });
@@ -1316,7 +1316,7 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	await o.eval(async (app, plugin) => {
 		for (const f of ['Fights/Saved fight test.md', 'Saved fight test.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
 		await app.vault.create('Saved fight test.md', '```nimble-encounter\nname: Current Encounter\nmonsters:\n- 1 Goblin\n```\n');
-		plugin.encounters.active.sourcePath = 'Saved fight test.md';
+		plugin.runtime('nimble').encounters.active.sourcePath = 'Saved fight test.md';
 	});
 	await o.page.locator(`${T} .tracker-save`).click();
 	await o.waitFor(() => o.eval((app) => !!app.vault.getAbstractFileByPath('Fights/Saved fight test - Current Encounter.md')), { what: 'the fight note' });
@@ -1346,7 +1346,7 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 
 test('typed damage, healing and set; invalid input is flagged', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster, 'Bestiary/Goblin.md'));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster, 'Bestiary/Goblin.md'));
 	const row = card(o, 'Goblin-1');
 	await typeHp(o, 'Goblin-1', '5');
 	assert.equal((await creatures(o))[0].hp, 7);
@@ -1378,9 +1378,9 @@ test('typed damage, healing and set; invalid input is flagged', async (o) => {
 test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
 	await resetEncounter(o, { party: PARTY.slice(0, 1) });
 	await o.eval((app, plugin) => {
-		plugin.encounters.addParty();
-		plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md');
-		plugin.addToEncounter(plugin.index.get('Goblin Minion').monster, undefined, 3);
+		plugin.runtime('nimble').encounters.addParty();
+		plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md');
+		plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Minion').monster, undefined, 3);
 	});
 	await o.page.waitForTimeout(150);
 
@@ -1441,7 +1441,7 @@ test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
 
 test('conditions: add from picker, Escape closes it, remove with ×', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
 	const row = card(o, 'Goblin-1');
 	await row.locator('.add-condition-btn').click();
 	await o.page.locator('.condition-picker .condition-option', { hasText: exact('Prone') }).click();
@@ -1462,7 +1462,7 @@ test('conditions: add from picker, Escape closes it, remove with ×', async (o) 
 
 test('conditions: durations count down at end of turn, X values, chip editor', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
 	const row = card(o, 'Goblin-1');
 
 	// Dazed for 1 round.
@@ -1511,8 +1511,8 @@ test('conditions: durations count down at end of turn, X values, chip editor', a
 test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (o) => {
 	await resetEncounter(o, { party: PARTY });
 	await o.eval((app, plugin) => {
-		plugin.encounters.addParty();
-		plugin.addToEncounter(plugin.index.get('Krogg, Goblin King').monster);
+		plugin.runtime('nimble').encounters.addParty();
+		plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Krogg, Goblin King').monster);
 	});
 	await o.page.waitForTimeout(150);
 	const label = 'Krogg, Goblin King-1';
@@ -1557,7 +1557,7 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 
 test('rename, round counter, clear all', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
 	await creatureMenu(o, 'Goblin-1', 'Rename');
 	await o.page.locator(`${T} .label-edit-input`).waitFor({ timeout: 2000 });
 	await o.page.keyboard.press('Meta+A');
@@ -1588,7 +1588,7 @@ test('rename, round counter, clear all', async (o) => {
 
 test('creature menu: view stat block, duplicate, add note', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md'));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md'));
 	await creatureMenu(o, 'Goblin Boss-1', 'View stat block');
 	const Q = '.modal.nimble-record-modal';
 	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss-1');
@@ -1943,7 +1943,7 @@ test('multiple encounters: create and switch', async (o) => {
 		plugin.settings.multipleEncounters = true;
 		plugin.settings.encounters = [];
 		plugin.settings.activeEncounterId = null;
-		plugin.encounters.trigger('changed');
+		plugin.runtime('nimble').encounters.trigger('changed');
 	});
 	assert.match(await o.page.locator(`${T} .empty-message`).textContent(), /Create or select an encounter/);
 	await o.page.locator(`${T} .encounter-picker [aria-label="New encounter"]`).click();
@@ -1954,7 +1954,7 @@ test('multiple encounters: create and switch', async (o) => {
 	await o.page.keyboard.type('Ambush');
 	await o.page.keyboard.press('Enter');
 	assert.equal((await encounter(o)).name, 'Ambush');
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
 	await o.page.locator(`${T} .encounter-picker [aria-label="New encounter"]`).click();
 	assert.equal((await encounter(o)).name, 'Encounter 2');
 	assert.equal((await creatures(o)).length, 0);
@@ -1967,8 +1967,8 @@ test('multiple encounters: create and switch', async (o) => {
 
 test('encounter state is saved to disk', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
-	await o.eval((app, plugin) => plugin.encounters.addCondition(plugin.encounters.active.id, plugin.encounters.active.creatures[0].id, 'Dazed', { rounds: 2 }));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').encounters.addCondition(plugin.runtime('nimble').encounters.active.id, plugin.runtime('nimble').encounters.active.creatures[0].id, 'Dazed', { rounds: 2 }));
 	await o.page.waitForTimeout(300);
 	const saved = await o.eval((app, plugin) => plugin.loadData());
 	assert.equal(saved.encounters[0].creatures[0].label, 'Goblin-1');
@@ -2096,12 +2096,12 @@ test('nimble attack rolls: 1 misses, max crits and explodes, saves stay plain', 
 test('stat blocks indented under a list item are indexed', async (o) => {
 	await o.openFile('Camp.md');
 	await o.waitFor(() => o.page.evaluate((R) => !!document.querySelector(`${R} .nimble-inline-found`), R), { timeout: 5000, what: 'Camp Guard ref to resolve' });
-	assert.equal(await o.eval((app, plugin) => plugin.index.get('Camp Guard')?.monster.hp), 14);
+	assert.equal(await o.eval((app, plugin) => plugin.runtime('nimble').index.get('Camp Guard')?.monster.hp), 14);
 });
 
 test('cancelling HP entry does not swallow the next click', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster, undefined, 2));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster, undefined, 2));
 	await card(o, 'Goblin-1').locator('.hp-display').click();
 	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 1);
 	// Click straight from one HP box to the next one.
@@ -2117,7 +2117,7 @@ test('adding reveals the tracker even when the sidebar is collapsed', async (o) 
 		app.workspace.getLeavesOfType('nimble-encounter-tracker').forEach(l => l.detach());
 		app.workspace.rightSplit.collapse();
 	});
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
 	await o.page.waitForTimeout(300);
 	assert.ok(await o.eval((app) => {
 		const leaf = app.workspace.getLeavesOfType('nimble-encounter-tracker')[0];
@@ -2180,11 +2180,11 @@ test('settings tab: party editor, toggles and attribution', async (o) => {
 		// Toggling the bundled bestiary from settings empties and refills the index.
 		const toggle = sp.locator(`${C} .setting-item`, { hasText: 'Include the Nimble bestiary' }).locator('.checkbox-container');
 		await toggle.click();
-		await o.waitFor(() => o.eval((app, plugin) => plugin.index.bundledCount === 0 && !plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to unload' });
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.bundledCount === 0 && !plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to unload' });
 		await toggle.click();
-		await o.waitFor(() => o.eval((app, plugin) => plugin.index.bundledCount >= 500 && plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to reload' });
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.bundledCount >= 500 && plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to reload' });
 	} finally {
-		await o.eval((app, plugin) => { app.setting.close(); plugin.settings.party = []; if (!plugin.settings.bundledBestiary) { plugin.settings.bundledBestiary = true; plugin.loadBundledBestiary(); } });
+		await o.eval((app, plugin) => { app.setting.close(); plugin.settings.party = []; if (!plugin.settings.bundledBestiary) { plugin.settings.bundledBestiary = true; plugin.runtime('nimble').loadBundledBestiary(); } });
 	}
 });
 
@@ -2299,7 +2299,7 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await o.openFile('Adventure.md', 'preview');
 	await o.page.locator(`${R} h1, ${R} p`).first().click();
 	await keyOpens('reading view');
-	await o.eval(async (app, plugin) => { await plugin.activateEncounterView(); });
+	await o.eval(async (app, plugin) => { await plugin.runtime('nimble').activateEncounterView(); });
 	await o.page.locator(`${T}`).first().click({ position: { x: 5, y: 5 } });
 	await keyOpens('the tracker sidebar');
 	await openIt();
@@ -2357,14 +2357,14 @@ test('Spotlight and the compendium forgive typos: "zombieq" still finds Zombie',
 	await o.waitFor(async () => (await o.page.locator('.nimble-spotlight .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) === 'Open compendium', { timeout: 3000, what: 'Open compendium first for "compen"' });
 	assert.equal(await o.page.locator('.nimble-spotlight .suggestion-item.spot-monster').count(), 0, 'no typo-matched monsters beside a real match');
 	await o.page.keyboard.press('Escape');
-	await o.eval((app, plugin) => plugin.openCompendium('adversaries', 'zombieq'));
+	await o.eval((app, plugin) => plugin.runtime('nimble').openCompendium('adversaries', 'zombieq'));
 	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-compendium .nimble-cmpx-row[data-id] .nimble-cmpx-row-name > span:first-child').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in the compendium' });
 	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
 });
 
 test('compendium: after picking a row, typing a filter key starts on its suggestions, and Enter makes a chip and clears the text', async (o) => {
 	const C = '.nimble-compendium';
-	await o.eval((app, plugin) => plugin.openCompendium('adversaries', 'type:undead '));
+	await o.eval((app, plugin) => plugin.runtime('nimble').openCompendium('adversaries', 'type:undead '));
 	const input = o.page.locator(`${C} .nimble-cmpx-input`);
 	await o.waitFor(async () => (await o.page.locator(`${C} .nimble-cmpx-chip`).count()) === 1, { timeout: 3000, what: 'the Undead chip' });
 	assert.match(await o.page.locator(`${C} .nimble-cmpx-chip`).first().textContent(), /undead/i);
@@ -2450,8 +2450,8 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 
 		// HP pad: tap the HP, key in 15, Damage. Medium armor takes 10 off.
 		await o.eval(async (app, plugin) => {
-			await plugin.activateEncounterView(true);
-			await plugin.addToEncounter(plugin.index.get('Goblin Taskmaster').monster, undefined, 1);
+			await plugin.runtime('nimble').activateEncounterView(true);
+			await plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Taskmaster').monster, undefined, 1);
 		});
 		await p.waitForTimeout(400);
 		const before = (await creatures(o)).find(c => c.label.startsWith('Goblin Taskmaster'));
@@ -2470,7 +2470,7 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover').forEach(n => n.remove()));
 
 		// Narrow compendium: list → monster → back; filters behind a toggle.
-		await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
+		await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
 		await p.waitForTimeout(500);
 		const layout = p.locator('.nimble-compendium .nimble-cmpx-layout');
 		assert.match(await layout.getAttribute('class'), /is-narrow/);
@@ -2823,7 +2823,7 @@ test('New note picker: each starter writes its template where it was opened', as
 	await openPicker(o, 'Campaigns/Fresh/Monsters');
 	assert.equal(await activeStarter(o), 'monster');
 	await createFromPicker(o, 'Quarry Boss');
-	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Quarry Boss')?.filePath === 'Campaigns/Fresh/Monsters/Quarry Boss.md'), { what: 'the monster in the index' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Quarry Boss')?.filePath === 'Campaigns/Fresh/Monsters/Quarry Boss.md'), { what: 'the monster in the index' });
 
 	// Map: pick the image from the campaign's files.
 	await openPicker(o, 'Campaigns/Fresh/Factions');
@@ -3700,7 +3700,7 @@ test('settings: a change synced from another device is picked up, and a damaged 
 		return good;
 	}, DATA);
 	assert.equal(await o.eval((app, plugin) => plugin.settings.party[0].name), 'Synced Hero', 'the synced party is in use');
-	await o.eval(async (app, plugin) => { plugin.encounters.trigger('changed'); await plugin.saveSettings(); });
+	await o.eval(async (app, plugin) => { plugin.runtime('nimble').encounters.trigger('changed'); await plugin.saveSettings(); });
 	assert.equal(JSON.parse(await read(o, DATA)).party[0].name, 'Synced Hero', 'and the next save keeps it');
 
 	// A file a sync conflict left unreadable: the plugin still loads, and the bad file is kept beside it.
@@ -3780,7 +3780,7 @@ test('player campaign: roster, lore cards, battle notes, GM tools hidden, switch
 		await o.waitFor(async () => /outcome: fled/.test(await read(o, 'Campaigns/Ironbrow Saga/Sessions/Session 1.md')), { what: 'outcome written' });
 
 		// The compendium's creatures are names and lore: no levels, no stats.
-		await o.eval((app, plugin) => plugin.openBestiary());
+		await o.eval((app, plugin) => plugin.runtime('nimble').openBestiary());
 		await o.waitFor(async () => (await o.page.locator('.nimble-compendium.is-lore .nimble-cmpx-row[data-id]').count()) > 0, { what: 'lore compendium' });
 		assert.equal(await o.page.locator('.nimble-compendium .nimble-cmpx-seg[data-segment="adversaries"] .nimble-cmpx-seg-label').textContent(), 'Creatures');
 		assert.equal(await o.page.locator('.nimble-compendium .nimble-cmpx-row-badge.is-level').count(), 0);
@@ -3954,10 +3954,10 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		// A skill check and an attack roll.
 		await sheet.locator('.ns-skill', { hasText: 'Might' }).click();
 		await rollThrough(o);
-		assert.match((await o.eval((app, plugin) => plugin.settings.rollLog))[0].label, /Thorga Ironbrow · Might check/);
+		await o.waitFor(async () => /Thorga Ironbrow · Might check/.test((await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) ?? ''), { what: 'the Might check logged' });
 		await sheet.locator('.ns-row.is-weapon', { hasText: 'Battleaxe' }).locator('.ns-roll').click();
 		await rollThrough(o);
-		assert.equal((await o.eval((app, plugin) => plugin.settings.rollLog))[0].label, 'Thorga Ironbrow · Battleaxe');
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Thorga Ironbrow · Battleaxe', { what: 'the Battleaxe roll logged' });
 
 		// Damage through the HP pad: 5 off 20.
 		await sheet.locator('.ns-hp').click();
@@ -4701,15 +4701,15 @@ test('campaigns keep their monsters apart: a player campaign never opens the GM\
 			await plugin.campaigns.createCampaign({ name: 'Iso Play', level: 2, heroes: 4, starter: false, role: 'player', character: 'Pip' });
 			await app.vault.create('Campaigns/Iso Play/Session.md', '---\nnimble: session\n---\nWe met `nimble:Quicksilver Hound` and `nimble:Ogre`.\n\n```nimble-encounter\nname: Cellar\noutcome: won\nmonsters:\n- 2 Quicksilver Hound\n- 1 Ogre\n```\n');
 		});
-		await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Quicksilver Hound', 'Campaigns/Iso Run/Prep.md')?.filePath === 'Campaigns/Iso Run/Monsters/Quicksilver Hound.md'), { what: 'the GM monster indexed' });
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Quicksilver Hound', 'Campaigns/Iso Run/Prep.md')?.filePath === 'Campaigns/Iso Run/Monsters/Quicksilver Hound.md'), { what: 'the GM monster indexed' });
 		const seen = await o.eval((app, plugin) => {
-			const at = (name, from) => { const e = plugin.index.get(name, from); return e ? (e.bundled ? 'bundled' : e.filePath) : null; };
+			const at = (name, from) => { const e = plugin.runtime('nimble').index.get(name, from); return e ? (e.bundled ? 'bundled' : e.filePath) : null; };
 			return {
 				gmHound: at('Quicksilver Hound', 'Campaigns/Iso Run/Prep.md'),
 				gmOgre: at('Ogre', 'Campaigns/Iso Run/Prep.md'),
 				playerHound: at('Quicksilver Hound', 'Campaigns/Iso Play/Session.md'),
 				playerOgre: at('Ogre', 'Campaigns/Iso Play/Session.md'),
-				playerAll: plugin.index.all('Campaigns/Iso Play/Session.md').some(e => e.filePath.startsWith('Campaigns/Iso Run/')),
+				playerAll: plugin.runtime('nimble').index.all('Campaigns/Iso Play/Session.md').some(e => e.filePath.startsWith('Campaigns/Iso Run/')),
 			};
 		});
 		assert.deepEqual(seen, {

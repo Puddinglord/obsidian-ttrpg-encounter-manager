@@ -35,6 +35,7 @@ import type { MonsterIndexEntry, NimbleCondition } from '../systems/nimble/types
 import { dnd5e } from '../systems/dnd5e/runtime';
 import type { Dnd5eEntry } from '../systems/dnd5e/types';
 import { Hit5e, KIND5E } from '../systems/dnd5e/compendium';
+import { nimble } from '../systems/nimble/runtime';
 
 type Item =
 	| { kind: 'roll'; expression: string }
@@ -187,7 +188,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 
 		// Everything is ranked the same forgiving way: names first, and typo matches ("zombieq") only when
 		// nothing matches outright, so they never crowd a real hit.
-		const mons = fuzzyRank(this.plugin.index.all(), q.text, e => [e.name, e.monster.group ?? ''], q.counted ? 20 : 8, true);
+		const mons = fuzzyRank(nimble().index.all(), q.text, e => [e.name, e.monster.group ?? ''], q.counted ? 20 : 8, true);
 		const found = mons.map(x => x.item);
 		const named = mons.filter(x => !x.fuzzy).map(x => x.item);
 		// Players look monsters up; they don't add them to fights.
@@ -210,7 +211,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		for (const it of asItems(found)) if (it.kind === 'monster') rank(it, 0, [it.entry.name], [it.entry.monster.group ?? '']);
 		for (const npc of this.npcs()) rank({ kind: 'npc', npc }, 1, [npc.name, ...npc.aliases]);
 		for (const n of this.notes()) rank(n, 2, [n.note.title], [n.note.area ? `${n.note.area} ${n.note.title}` : '']);
-		for (const condition of this.plugin.getAllConditions().filter(c => !c.auto)) rank({ kind: 'condition', condition }, 3, [condition.name]);
+		for (const condition of nimble().getAllConditions().filter(c => !c.auto)) rank({ kind: 'condition', condition }, 3, [condition.name]);
 		// Spells, items, class features…: the compendium's own search (typo-tolerant, typed filters).
 		const cmp = searchCompendium(compendiumEntries(this.plugin), input.trim(), { segment: 'all', only: e => !!e.hit, limit: 8 });
 		for (const e of cmp.entries) rank({ kind: 'compendium', hit: e.hit! }, 4, [e.name], [e.detail]);
@@ -470,7 +471,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 			case 'dnd5e': this.escapeBack(dnd5e().quickLook(i.entry, this.plugin.campaigns.active?.home.path ?? '')); break;
 			case 'dnd5eHit': this.escapeBack(dnd5e().openCard(i.hit, this.plugin.campaigns.active?.home.path ?? '')); break;
 			case 'monster':
-				if (i.add) void this.plugin.addToEncounter(i.entry.monster, i.entry.filePath || undefined, i.count);
+				if (i.add) void nimble().addToEncounter(i.entry.monster, i.entry.filePath || undefined, i.count);
 				else this.escapeBack(openRecord(this.plugin, { kind: 'monster', entry: i.entry }));
 				break;
 			case 'npc': {
@@ -552,7 +553,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 	}
 
 	private add(i: Extract<Item, { kind: 'monster' }>): void {
-		void this.plugin.addToEncounter(i.entry.monster, i.entry.filePath || undefined, i.count);
+		void nimble().addToEncounter(i.entry.monster, i.entry.filePath || undefined, i.count);
 		this.fill('');
 	}
 }

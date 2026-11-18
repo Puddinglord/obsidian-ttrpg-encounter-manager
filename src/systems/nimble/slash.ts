@@ -24,6 +24,7 @@ import { toStatblockSource } from './parser';
 import { formatLevel, rateEncounter } from './rules';
 import { describeMonster } from './suggest';
 import type { MonsterIndexEntry } from './types';
+import { nimble } from './runtime';
 
 /** Commands that open the compendium dialog when chosen without an argument. */
 interface Picker { segment: Segment; segments?: Segment[]; mode?: InsertMode; title: string }
@@ -95,9 +96,9 @@ export function nimbleSlashCommands(plugin: EmberVaultPlugin): SlashCommand[] {
 		{
 			name: 'summary', side: 'gm', icon: 'clipboard-list', desc: 'Write the current encounter\'s summary',
 			run: (w) => {
-				const enc = p.encounters.active;
+				const enc = nimble().encounters.active;
 				if (!enc || !enc.creatures.length) { new Notice('No encounter in the tracker'); w.clear(); return; }
-				w.write(p.encounters.summary(enc.id));
+				w.write(nimble().encounters.summary(enc.id));
 			},
 		},
 		{ name: 'roll', aliases: ['r', 'dice'], icon: 'dices', desc: 'Roll and write the result', hint: '/roll 2d6+3', items: (arg) => rollItems(p, arg) },
@@ -122,7 +123,7 @@ function rollItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 
 function searchMonsters(plugin: EmberVaultPlugin, q: string, limit = 30): MonsterIndexEntry[] {
 	const query = q.trim().toLowerCase();
-	const all = plugin.index.all();
+	const all = nimble().index.all();
 	if (!query) return all.slice(0, limit);
 	const words = query.split(/\s+/);
 	return all
@@ -194,7 +195,7 @@ function addItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 		title: `Add ${count} × ${e.name}`,
 		detail: describeMonster(e),
 		badge: monsterBadge(e),
-		run: (w: SlashWriter) => { w.clear(); void plugin.addToEncounter(e.monster, e.filePath || undefined, count); },
+		run: (w: SlashWriter) => { w.clear(); void nimble().addToEncounter(e.monster, e.filePath || undefined, count); },
 	}));
 }
 
@@ -204,7 +205,7 @@ function foughtItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 	for (const part of arg.split(/[,;]+/).map(x => x.trim()).filter(Boolean)) {
 		const parsed = parseMonsterLine(part);
 		if (!parsed) continue;
-		const hit = plugin.index.get(parsed.name) ?? searchMonsters(plugin, parsed.name, 1)[0];
+		const hit = nimble().index.get(parsed.name) ?? searchMonsters(plugin, parsed.name, 1)[0];
 		const name = hit?.name ?? parsed.name;
 		const ex = def.monsters.find(x => x.name.toLowerCase() === name.toLowerCase());
 		if (ex) ex.count += parsed.count; else def.monsters.push({ name, count: parsed.count });
@@ -235,12 +236,12 @@ function encounterItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 	for (const part of parts) {
 		const parsed = parseMonsterLine(part);
 		if (!parsed) continue;
-		const hit = plugin.index.get(parsed.name) ?? searchMonsters(plugin, parsed.name, 1)[0];
+		const hit = nimble().index.get(parsed.name) ?? searchMonsters(plugin, parsed.name, 1)[0];
 		if (!hit) { missing.push(parsed.name); continue; }
 		const ex = def.monsters.find(x => x.name === hit.name);
 		if (ex) ex.count += parsed.count; else def.monsters.push({ name: hit.name, count: parsed.count });
 	}
-	const groups = def.monsters.map(x => ({ monster: plugin.index.get(x.name)!.monster, count: x.count }));
+	const groups = def.monsters.map(x => ({ monster: nimble().index.get(x.name)!.monster, count: x.count }));
 	const rating = rateEncounter(groups, partyLevels(plugin));
 	const block = (d: EncounterDef) => `\`\`\`nimble-encounter\n${encounterBlockSource(d)}\n\`\`\``;
 	const items: SlashItem[] = [];

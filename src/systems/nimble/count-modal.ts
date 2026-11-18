@@ -6,6 +6,7 @@ import { App, Modal, setIcon } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import type { NimbleMonster } from './types';
 import { formatLevel, monsterRole, shiftMonster } from './rules';
+import { nimble } from './runtime';
 
 export const COUNT_MIN = 1;
 export const COUNT_MAX = 50;
@@ -46,7 +47,7 @@ export class AddSeveralModal extends Modal {
 		this.modalEl.addClass('nimble-count-modal');
 		this.titleEl.setText(`Add ${this.monster.name}`);
 		const c = this.contentEl;
-		const enc = this.plugin.encounters.active;
+		const enc = nimble().encounters.active;
 		const here = (enc?.creatures ?? []).filter(x => x.monster.name === this.monster.name).reduce((n, x) => n + (x.count ?? 1), 0);
 		c.createDiv({ cls: 'nimble-count-to', text: [enc?.name ? `To ${enc.name}` : 'To the current encounter', here ? `${here} already in the fight` : ''].filter(Boolean).join(' · ') });
 
@@ -137,7 +138,7 @@ export class AddSeveralModal extends Modal {
 		if (Number.isFinite(n)) this.count = clamp(n);
 		const monster = shiftMonster(this.monster, this.shift);
 		this.close();
-		void this.plugin.addToEncounter(monster, this.filePath, this.count);
+		void nimble().addToEncounter(monster, this.filePath, this.count);
 	}
 
 	onClose(): void { this.contentEl.empty(); }

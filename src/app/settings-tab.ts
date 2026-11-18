@@ -12,6 +12,7 @@ import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from '../
 import { DEFAULT_CONTENT_FOLDER } from '../core/content/store';
 import { ImportContentModal, PackReportModal } from '../core/content/import-modal';
 import { packSummary } from '../core/content/packs';
+import { nimble } from '../systems/nimble/runtime';
 
 /** One settings row. `block` rows draw their own content instead of a name and controls. */
 interface Row {
@@ -124,7 +125,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 				{
 					name: 'Include the Nimble bestiary',
 					desc: 'Over 500 monsters from the GM Guide and Monsters & More, searchable in the bestiary and usable anywhere with nimble: references. A note in your vault with the same name replaces the bundled version.',
-					render: toggle(() => s.bundledBestiary, v => { s.bundledBestiary = v; }, () => this.plugin.loadBundledBestiary()),
+					render: toggle(() => s.bundledBestiary, v => { s.bundledBestiary = v; }, () => nimble().loadBundledBestiary()),
 				},
 				{
 					name: 'Help with stat blocks you write',
@@ -274,7 +275,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 			{ heading: 'Encounters', rows: [
 				{
 					name: 'Multiple encounters',
-					render: toggle(() => s.multipleEncounters, v => { s.multipleEncounters = v; }, () => this.plugin.encounters.trigger('changed')),
+					render: toggle(() => s.multipleEncounters, v => { s.multipleEncounters = v; }, () => nimble().encounters.trigger('changed')),
 				},
 				{
 					name: 'Apply monster armor automatically',
@@ -315,7 +316,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 						.onChange(async v => {
 							this.plugin.settings.defaultPartySize = v;
 							await this.plugin.saveSettings();
-							this.plugin.encounters.trigger('changed');
+							nimble().encounters.trigger('changed');
 						}));
 				},
 			},
@@ -354,7 +355,7 @@ export class NimbleSettingsTab extends PluginSettingTab {
 						.onClick(async () => {
 							const trimmed = name.trim();
 							if (!trimmed) { new Notice('Please enter a condition name'); return; }
-							if (this.plugin.getAllConditions().some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
+							if (nimble().getAllConditions().some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
 								new Notice('A condition with this name already exists');
 								return;
 							}

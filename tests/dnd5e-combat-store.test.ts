@@ -3,7 +3,7 @@ import type EmberVaultPlugin from '../main';
 import { FightStore } from '../src/systems/dnd5e/combat-store';
 
 function plugin(): EmberVaultPlugin {
-	return { settings: {}, saveSettings: async () => {} } as unknown as EmberVaultPlugin;
+	return { settings: {}, saveSettings: async () => {}, events: { trigger: () => {} } } as unknown as EmberVaultPlugin;
 }
 
 describe('5e FightStore', () => {

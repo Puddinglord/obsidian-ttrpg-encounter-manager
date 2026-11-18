@@ -12,6 +12,7 @@ import { confirmAction, isTouch, onLongPress } from '../core/touch';
 import { setWarningButton } from '../core/compat';
 import { closePopover, isPopoverOpenFor, openPopover } from '../core/popover';
 import { attachMonsterHover } from '../systems/nimble/inline-ref';
+import { nimble } from '../systems/nimble/runtime';
 
 const PIN_ICON: Record<PinKind, string> = {
 	place: 'map-pin', area: 'flag', encounter: 'swords', npc: 'user', treasure: 'gem', danger: 'skull', note: 'sticky-note', secret: 'eye-off',
@@ -66,7 +67,7 @@ class MapBlock extends MarkdownRenderChild {
 			const t = window.setTimeout(() => { if (!this.editable && this.canSave()) this.build(); }, 400);
 			this.register(() => window.clearTimeout(t));
 		}
-		this.registerEvent(this.plugin.encounters.on('changed', () => { if (this.showTokens) this.renderTokens(); }));
+		this.registerEvent(nimble().encounters.on('changed', () => { if (this.showTokens) this.renderTokens(); }));
 	}
 
 	// ------------------------------------------------------------------------
@@ -455,7 +456,7 @@ class MapBlock extends MarkdownRenderChild {
 		this.tray.empty();
 		this.tray.toggle(this.showTokens);
 		if (!this.showTokens) return;
-		const enc = this.plugin.encounters.active;
+		const enc = nimble().encounters.active;
 		if (!enc || !enc.creatures.length) {
 			this.tray.createDiv({ cls: 'nimble-map-tray-empty', text: 'No encounter running' });
 			return;
@@ -503,7 +504,7 @@ class MapBlock extends MarkdownRenderChild {
 				pop.createDiv({ cls: 'popover-title', text: c.label });
 				pop.createDiv({ cls: 'popover-body', text: this.tokenTitle(c) });
 				const open = pop.createEl('button', { cls: 'mod-cta', text: 'Show tracker' });
-				open.onclick = () => { closePopover(); void this.plugin.activateEncounterView(true); };
+				open.onclick = () => { closePopover(); void nimble().activateEncounterView(true); };
 			}, { width: 240 });
 		});
 	}

@@ -12,6 +12,7 @@ import { parseCompendiumRef, resolveCompendiumRef } from './compendium-ref';
 import { formatLevel, monsterRole } from './rules';
 import type { HoverContent } from '../../core/hover-preview';
 import type { InlineRefProvider } from '../../core/inline-refs';
+import { nimble } from './runtime';
 
 export const INLINE_PREFIX = 'nimble:';
 
@@ -35,7 +36,7 @@ export function resolveInlineRef(plugin: EmberVaultPlugin, text: string, sourceP
 	const ref = parseCompendiumRef(text);
 	if (!ref) return undefined;
 	const condition = (name: string) => {
-		const c = plugin.condition(name);
+		const c = nimble().condition(name);
 		return c ? { kind: 'compendium' as const, target: { name: c.name, description: c.description } } : undefined;
 	};
 	if (ref.kind === 'condition') return condition(ref.name);
@@ -43,10 +44,10 @@ export function resolveInlineRef(plugin: EmberVaultPlugin, text: string, sourceP
 		const hit = resolveCompendiumRef(bundledCompendium(), ref);
 		return hit ? { kind: 'compendium', target: hit } : undefined;
 	}
-	const entry = plugin.index.get(text, sourcePath || undefined);
+	const entry = nimble().index.get(text, sourcePath || undefined);
 	if (entry) return { kind: 'monster', entry };
 	// Until the vault's monsters are indexed a bare name might still be one; it stays "Indexing…".
-	if (!plugin.index.ready) return undefined;
+	if (!nimble().index.ready) return undefined;
 	const hit = resolveCompendiumRef(bundledCompendium(), ref);
 	return hit ? { kind: 'compendium', target: hit } : condition(ref.name);
 }
@@ -65,7 +66,7 @@ export function createInlineRef(plugin: EmberVaultPlugin, monsterName: string, s
 		if (found?.kind === 'compendium') return createCompendiumRef(plugin, monsterName, sourcePath, found.target);
 		return unresolvedRef(monsterName, sourcePath, ref.name, ref.kind === 'condition' ? 'condition' : KIND_LABEL[ref.kind].toLowerCase());
 	}
-	const bare = plugin.index.ready && !plugin.index.get(monsterName, sourcePath || undefined) ? resolveInlineRef(plugin, monsterName, sourcePath) : undefined;
+	const bare = nimble().index.ready && !nimble().index.get(monsterName, sourcePath || undefined) ? resolveInlineRef(plugin, monsterName, sourcePath) : undefined;
 	if (bare?.kind === 'compendium') return createCompendiumRef(plugin, monsterName, sourcePath, bare.target);
 	return createMonsterRef(plugin, monsterName, sourcePath);
 }
@@ -111,14 +112,14 @@ function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourceP
 	const container = createSpan({ cls: 'nimble-inline-ref' });
 	container.dataset.nimbleRef = monsterName;
 	container.dataset.sourcePath = sourcePath;
-	const entry = plugin.index.get(monsterName, sourcePath || undefined);
+	const entry = nimble().index.get(monsterName, sourcePath || undefined);
 
 	if (!entry) {
 		container.addClass('nimble-inline-unresolved');
 		container.createSpan({ text: monsterName, cls: 'nimble-inline-name unresolved' });
 		const unknown = container.createSpan({ text: '?', cls: 'nimble-inline-unknown' });
 		unknown.setAttr('aria-label', 'Unknown monster');
-		unknown.setAttr('title', plugin.index.ready ? 'Not found' : 'Indexing…');
+		unknown.setAttr('title', nimble().index.ready ? 'Not found' : 'Indexing…');
 		return container;
 	}
 
@@ -144,7 +145,7 @@ function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourceP
 		e.stopPropagation();
 		plugin.hover.hide();
 		// Cmd/Ctrl-click goes straight to the page; a plain click opens the quick look.
-		if (e.metaKey || e.ctrlKey) { plugin.openMonster(entry, sourcePath, true); return; }
+		if (e.metaKey || e.ctrlKey) { nimble().openMonster(entry, sourcePath, true); return; }
 		openRecord(plugin, { kind: 'monster', entry, sourcePath });
 	});
 	attachMonsterHover(plugin, name, entry);
@@ -159,7 +160,7 @@ function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourceP
 	add.addEventListener('click', (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		void plugin.addToEncounter(entry.monster, entry.filePath, e.shiftKey ? 2 : 1);
+		void nimble().addToEncounter(entry.monster, entry.filePath, e.shiftKey ? 2 : 1);
 	});
 
 	return container;
@@ -191,9 +192,9 @@ export function monsterHover(plugin: EmberVaultPlugin, entry: MonsterIndexEntry,
 	return {
 		name: entry.name,
 		label: `${entry.name} stat block`,
-		open: () => plugin.openMonster(entry, viewPath ?? ''),
-		render: (body) => plugin.renderStatblock(body, entry.monster, entry.filePath, 'hover', undefined, {
-			actions: plugin.monsterActions(entry, { viewPath }),
+		open: () => nimble().openMonster(entry, viewPath ?? ''),
+		render: (body) => nimble().renderStatblock(body, entry.monster, entry.filePath, 'hover', undefined, {
+			actions: nimble().monsterActions(entry, { viewPath }),
 			lore: plugin.hideStats(entry.filePath, viewPath),
 		}),
 	};

@@ -8,6 +8,7 @@ import { DND5E_ATTRIBUTION } from './attribution';
 import { conditionsFor } from './conditions';
 import { DEFAULT_EDITION, EDITIONS } from './editions';
 import { dnd5e, registerDnd5e } from './runtime';
+import { isRunning } from './combat';
 import { readSheet5e } from './character';
 import { asEdition } from './editions';
 import { createCharacterNote5e } from './new-character';
@@ -61,5 +62,8 @@ export const dnd5eSystem: GameSystem = {
 	},
 	async openCompendium() {
 		await dnd5e().openCompendium();
+	},
+	inCombat() {
+		return isRunning(dnd5e().fights.fight);
 	},
 };

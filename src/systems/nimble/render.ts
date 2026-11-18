@@ -11,7 +11,8 @@ import { armorLabel, formatLevel, monsterRole, monsterSaves, scaledHp } from './
 import { NIMBLE_STORE_URL } from './bestiary';
 
 /** 'attack' dice follow Nimble attack rules; 'effect' dice (saves, abilities, phases) are plain sums. */
-export type DiceKind = 'attack' | 'effect';
+export type { DiceKind } from '../../core/dice-attack';
+import type { DiceKind } from '../../core/dice-attack';
 export type DiceHandler = (el: HTMLElement, expression: string, label: string, kind: DiceKind) => void;
 
 export interface StatblockAction {

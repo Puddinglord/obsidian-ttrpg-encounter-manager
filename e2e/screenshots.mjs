@@ -45,7 +45,7 @@ async function layout({ left = false, right = false } = {}) {
 		if (left) { app.workspace.leftSplit.expand(); await plugin.openCampaignView(); } else app.workspace.leftSplit.collapse();
 		// The panel starts at the top, whatever an earlier shot scrolled to.
 		app.workspace.leftSplit.containerEl.querySelectorAll('*').forEach(n => { if (n.scrollTop) n.scrollTop = 0; });
-		if (right) { app.workspace.rightSplit.expand(); await plugin.activateEncounterView(false); } else app.workspace.rightSplit.collapse();
+		if (right) { app.workspace.rightSplit.expand(); await plugin.runtime('nimble').activateEncounterView(false); } else app.workspace.rightSplit.collapse();
 	}, [left, right]);
 	// The builder asks before it closes with something typed in (the builder shot).
 	const discard = page.locator('.modal-container button.mod-warning', { hasText: 'Discard' });
@@ -103,7 +103,7 @@ async function resetTracker() {
 		plugin.settings.encounters = [];
 		plugin.settings.activeEncounterId = null;
 		plugin.settings.rollLog = [];
-		plugin.encounters.trigger('changed');
+		plugin.runtime('nimble').encounters.trigger('changed');
 		document.querySelectorAll('.notice').forEach(n => n.remove());
 	});
 }
@@ -191,7 +191,7 @@ const shots = {
 	},
 	async bestiary() {
 		await layout();
-		await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
+		await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
 		await page.waitForSelector('.nimble-compendium .nimble-cmpx-row[data-id]', { timeout: 5000 });
 		await page.locator('.nimble-compendium .nimble-cmpx-input').fill('quicksilver');
 		await page.waitForTimeout(500);
@@ -235,7 +235,7 @@ const shots = {
 	// The compendium's Spells tab, filtered by a typed school chip, with a spell's card beside the list.
 	async compendium() {
 		await layout();
-		await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
+		await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
 		const X = '.nimble-compendium';
 		await page.waitForSelector(`${X} .nimble-cmpx-row[data-id]`, { timeout: 5000 });
 		await page.locator(`${X} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click();
@@ -1095,7 +1095,7 @@ const features = {
 		viewport: [1000, 800], css: '.workspace-split.mod-root { margin-right: 24px !important; }', snapText: true, ratio: 1,
 		setup: async () => {
 			await layout();
-			await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
+			await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
 			const X = '.workspace-leaf.mod-active .nimble-compendium';
 			await page.waitForSelector(`${X} .nimble-cmpx-row[data-id]`, { timeout: 5000 });
 			await page.locator(`${X} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click();

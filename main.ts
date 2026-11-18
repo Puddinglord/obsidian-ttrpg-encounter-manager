@@ -1,44 +1,26 @@
-import { Component, debounce, Events, MarkdownRenderer, MarkdownView, Menu, normalizePath, Notice, Platform, Plugin, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
+import { debounce, Events, MarkdownView, normalizePath, Notice, Platform, Plugin, WorkspaceLeaf } from 'obsidian';
 import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/core/internals';
-import { migrateSettings, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster, NimbleStatblocksSettings, mergeParty, PartyMember, RollLogEntry, uid } from './src/systems/nimble/types';
-import { toStatblockSource } from './src/systems/nimble/parser';
-import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './src/systems/nimble/render';
-import { MonsterIndex } from './src/systems/nimble/monster-index';
-import { EncounterStore } from './src/systems/nimble/encounters';
-import { ENCOUNTER_VIEW_TYPE, EncounterTrackerView } from './src/systems/nimble/tracker-view';
+import { mergeParty, PartyMember, RollLogEntry, uid } from './src/core/types';
+import { EmberVaultSettings, migrateSettings, SettingsPart } from './src/core/settings';
 import { InlineRefs, inlineRefsLivePreview } from './src/core/inline-refs';
 import { HoverPreview } from './src/core/hover-preview';
 import { SlashSuggest } from './src/core/slash';
 import { NimbleSettingsTab } from './src/app/settings-tab';
 import { parseDice, rollDie, rollPlain } from './src/core/dice';
-import { rollNimbleAttack } from './src/systems/nimble/attack-roll';
-import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/systems/nimble/roll-def';
-import { BestiaryEntry, bestiaryEntries } from './src/systems/nimble/bestiary';
-import { baseCreatureName, bookOf } from './src/systems/nimble/compendium-entries';
-import { COMPENDIUM_VIEW_TYPE, CompendiumView } from './src/systems/nimble/compendium-view';
-import { invalidateCompendium } from './src/systems/nimble/compendium-browser';
-import { openCompendiumSearch } from './src/systems/nimble/compendium-modal';
-import { openAddMonsterPicker } from './src/systems/nimble/compendium-pickers';
-import type { Segment } from './src/systems/nimble/compendium-entries';
-import { notesBody } from './src/systems/nimble/creature-notes';
+import { DiceKind, rollExplodingAttack } from './src/core/dice-attack';
+import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/core/dice-edge';
 import { registerEncounterBlocks } from './src/app/encounter-blocks';
-import { BuilderModal } from './src/systems/nimble/builder-modal';
 import { PartyModal } from './src/core/party';
 import { registerMapBlock } from './src/app/map-block';
-import { keywordPattern } from './src/core/markdown';
-import { openPopover } from './src/core/popover';
 import { CampaignStore } from './src/core/campaigns';
 import { registerBoxBlock } from './src/core/box-block';
 import { registerNpcCard } from './src/core/npc-card';
 import { registerNoteCard } from './src/core/note-card';
-import { saveFight } from './src/systems/nimble/saved-fight';
 import { NpcLinker } from './src/core/npc-links';
 import { npcLivePreview } from './src/core/npc-live-preview';
 import { SpotlightModal } from './src/app/spotlight';
 import { registerTables, styleTablesIn } from './src/core/tables';
 import { registerTooltips, watchTooltips } from './src/core/tooltips';
-import { monsterRole, shiftMonster } from './src/systems/nimble/rules';
-import { AddSeveralModal } from './src/systems/nimble/count-modal';
 import { canRoll3d, dice3dLastStats, dice3dSupported, diceForRoll, landedWithin, roll3d, warm3d } from './src/core/dice3d';
 import { dressDice, rollEvent, rollOptions } from './src/core/dice3d/looks';
 import type { Die3d } from './src/core/dice3d';
@@ -49,78 +31,28 @@ import { DiceWorkshopModal } from './src/core/dice-workshop';
 import { CAMPAIGN_VIEW_TYPE, CampaignBlock, CampaignView } from './src/core/campaign-view';
 import { CampaignPicker, NewCampaignModal } from './src/core/campaign-modals';
 import { newSceneAnywhere, promptCharacter, promptChapter, promptSectionNote } from './src/core/campaign-ui';
-import BESTIARY from './src/systems/nimble/data/bestiary.json';
-import { openCharacterView } from './src/systems/nimble/character-register';
 import { registerReadingMode } from './src/core/reading-mode';
-import { noteKind, safeName } from './src/core/campaign-model';
-import { creatureNote } from './src/core/campaign-templates';
+import { noteKind } from './src/core/campaign-model';
 import { registerBuilderCommands } from './src/core/builder/commands';
 import { ContentStore } from './src/core/content/store';
 import { ImportContentModal } from './src/core/content/import-modal';
-import { bundledCompendium, setCompendiumDrafts } from './src/systems/nimble/compendium-data';
 import type { GameSystem } from './src/systems/contract';
 import { createSystems } from './src/app/systems';
-import { NewCharacterModal } from './src/systems/nimble/character-modals';
 import { resolveEdition } from './src/systems/registry';
 
 const ROLL_LOG_LIMIT = 30;
 
-const MONSTER_TEMPLATE = `\`\`\`nimble
-name: Monster
-level: 1
-size: Medium
-type: Beast
-hp: 21
-armor: none
-movement: 6
-saves: STR+
-abilities:
-- Keen Senses: Advantage on Perception checks.
-attacks:
-- **Bite.** 1d8+2.
-\`\`\`
-`;
-
-const LEGENDARY_TEMPLATE = `\`\`\`nimble
-name: Legendary Monster
-level: 3
-role: legendary
-size: Large
-type: Owlbear
-hp: 40/hero
-armor: none
-movement: 6
-saves: STR+
-actionText: After each hero's turn, choose one:
-attacks:
-- **Beak.** Move 8. Attack for 2d6 damage.
-- **Rend & Tear.** Attack for 2d6+5 damage.
-bloodied: Gains Savage Screech: (1 use, Reach 12, AoE) 2d6 psychic damage. DC 11 WIL save or Frightened 1 round.
-lastStand: Regains 10 HP per hero and rolls d10s instead of d6s.
-\`\`\`
-`;
-
-const ENCOUNTER_TEMPLATE = `\`\`\`nimble-encounter
-name: Goblin ambush
-party: true
-monsters:
-- 2 Goblin
-- 4 Goblin Minion
-\`\`\`
-`;
-
 const INSERT_LINK = 'editor:insert-link';
 
 export default class EmberVaultPlugin extends Plugin {
-	settings: NimbleStatblocksSettings;
-	index: MonsterIndex;
-	encounters: EncounterStore;
+	settings: EmberVaultSettings;
 	hover: HoverPreview;
+	/** Each game system's live state, by id (`runtime('nimble')`), for tools and tests. Systems set it in register(). */
+	readonly runtimes = new Map<string, unknown>();
 	/** Plugin-wide events: 'roll-log-changed'. */
 	events = new Events();
 	/** Bumped whenever the monster index changes; Live Preview widgets watch it. */
 	indexVersion = 0;
-	private keywordCache: { key: string; re: RegExp | undefined } | null = null;
 	campaigns!: CampaignStore;
 	/** Inline references (`nimble:Goblin`, `5e:Goblin`): each system adds its prefix. */
 	readonly inlineRefs = new InlineRefs();
@@ -135,14 +67,11 @@ export default class EmberVaultPlugin extends Plugin {
 	private settingsTab?: NimbleSettingsTab;
 	/** data.json couldn't be read and couldn't be copied aside: nothing is saved, so the file isn't overwritten. */
 	private settingsReadOnly = false;
-	/** The bundled player compendium (classes, items, spells…). */
-	get compendium() { return bundledCompendium(); }
 
-	/** Hold a screen wake lock on mobile while the active encounter is in combat. */
+	/** Hold a screen wake lock on mobile while a fight is on (any game's: `inCombat`). */
 	syncWakeLock(): void {
-		const enc = this.encounters?.active;
 		const want = Platform.isMobile && this.settings.keepScreenOn && activeDocument.visibilityState === 'visible'
-			&& !!enc && !!enc.phase && enc.phase !== 'setup';
+			&& this.systems.all().some(s => s.inCombat?.(this));
 		const api = (navigator as Navigator & { wakeLock?: WakeLock }).wakeLock;
 		if (want && !this.wakeLock && !this.wakePending && api) {
 			this.wakePending = true;
@@ -175,6 +104,11 @@ export default class EmberVaultPlugin extends Plugin {
 		return here?.role !== 'player';
 	}
 
+	/** A game system's live state (its index, its fight…), for tools and tests. */
+	runtime<T = unknown>(id: string): T | undefined {
+		return this.runtimes.get(id) as T | undefined;
+	}
+
 	/** What references point at changed (an index was rebuilt): redraw every reference pill. */
 	refsChanged(): void {
 		this.indexVersion++;
@@ -201,11 +135,8 @@ export default class EmberVaultPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.index = new MonsterIndex(this.app);
 		this.campaigns = new CampaignStore(this);
-		this.encounters = new EncounterStore(() => this.settings, () => this.saveSettings(), () => this.campaigns.defaults());
 		this.hover = new HoverPreview(this);
-		this.loadBundledBestiary();
 
 		this.registerView(CAMPAIGN_VIEW_TYPE, (leaf) => new CampaignView(leaf, this));
 		this.addRibbonIcon('castle', 'Campaign', () => this.openCampaignView());
@@ -263,7 +194,8 @@ export default class EmberVaultPlugin extends Plugin {
 		this.addSettingTab(this.settingsTab);
 
 		// Phones and tablets: keep the screen awake while combat is running.
-		this.registerEvent(this.encounters.on('changed', () => this.syncWakeLock()));
+		// A game's fight started or ended (systems trigger 'combat-changed').
+		this.registerEvent(this.events.on('combat-changed', () => this.syncWakeLock()));
 		this.registerDomEvent(activeDocument, 'visibilitychange', () => { this.wakeLock = null; this.syncWakeLock(); });
 		this.register(() => { void this.wakeLock?.release().catch(() => undefined); this.wakeLock = null; });
 		this.app.workspace.onLayoutReady(() => this.syncWakeLock());
@@ -284,13 +216,6 @@ export default class EmberVaultPlugin extends Plugin {
 		this.hover?.hide();
 	}
 
-	/** (Re)load the bundled Nimble bestiary, or clear it when the setting is off. */
-	loadBundledBestiary(): void {
-		const entries = this.settings.bundledBestiary
-			? bestiaryEntries(BESTIARY as unknown as BestiaryEntry[], this.encounters.partySize())
-			: [];
-		this.index.setBundled(entries);
-	}
 
 	private registerCommands(): void {
 		// Spotlight: search and actions in one box. Any hotkey can be set for it; Cmd/Ctrl+K is shared with Insert link (see shareInsertLinkKey).
@@ -304,54 +229,8 @@ export default class EmberVaultPlugin extends Plugin {
 		};
 		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', checkCallback: gm(() => void this.openTracker()) });
 		this.addCommand({ id: 'open-bestiary', name: 'Open compendium', icon: 'book-open', callback: () => void this.openSystemCompendium() });
-		this.addCommand({ id: 'search-compendium', name: 'Search the compendium…', icon: 'library', callback: () => openCompendiumSearch(this) });
-		this.addCommand({ id: 'add-monster', name: 'Add monster to encounter…', checkCallback: gm(() => this.openAddMonsterModal()) });
-		this.addCommand({ id: 'build-encounter', name: 'Build an encounter…', checkCallback: gm(() => new BuilderModal(this).open()) });
 		this.addCommand({ id: 'edit-party', name: 'Edit party…', callback: () => this.openParty() });
-		this.addCommand({ id: 'open-settings', name: 'Open Nimble settings', callback: () => this.openSettings() });
-		const withActive = (fn: (encId: string) => void) => (checking: boolean) => {
-			const enc = this.encounters.active;
-			if (!enc || this.playerView()) return false;
-			if (!checking) fn(enc.id);
-			return true;
-		};
-		this.addCommand({ id: 'next-round', name: 'Next round', checkCallback: withActive(id => this.encounters.nextRound(id)) });
-		this.addCommand({ id: 'start-combat', name: 'Start combat (round 1, heroes first)', checkCallback: withActive(id => this.encounters.start(id)) });
-		this.addCommand({ id: 'end-combat', name: 'End combat', checkCallback: withActive(id => { this.encounters.end(id); }) });
-		this.addCommand({ id: 'resume-combat', name: 'Resume combat', checkCallback: (checking) => {
-			const enc = this.encounters.active;
-			if (!enc?.paused) return false;
-			if (!checking) this.encounters.resume(enc.id);
-			return true;
-		} });
-		this.addCommand({ id: 'save-fight', name: 'Save fight to a note', checkCallback: withActive(id => {
-			const enc = this.encounters.find(id);
-			if (enc) void saveFight(this, enc).then(f => { if (f) { this.rerenderNotes(); new Notice(`Fight saved to ${f.basename}`); } });
-		}) });
-		this.addCommand({
-			id: 'add-party',
-			name: 'Add the party to the encounter',
-			checkCallback: (checking) => {
-				if (this.playerView()) return false;
-				if (checking) return true;
-				if (!this.settings.party.length) { new Notice('Set up your party in the plugin settings first.'); return true; }
-				const n = this.encounters.addParty();
-				new Notice(n ? `Added ${n} hero${n === 1 ? '' : 'es'}` : 'The whole party is already in this encounter');
-				return true;
-			},
-		});
-		this.addCommand({
-			id: 'copy-summary',
-			name: 'Copy encounter summary',
-			checkCallback: withActive(id => {
-				void navigator.clipboard.writeText(this.encounters.summary(id));
-				new Notice('Encounter summary copied');
-			}),
-		});
-		this.addCommand({ id: 'insert-template', name: 'Insert monster template', editorCallback: (editor) => editor.replaceSelection(MONSTER_TEMPLATE) });
-		this.addCommand({ id: 'insert-legendary-template', name: 'Insert legendary monster template', editorCallback: (editor) => editor.replaceSelection(LEGENDARY_TEMPLATE) });
-		this.addCommand({ id: 'insert-encounter-template', name: 'Insert encounter block', editorCallback: (editor) => editor.replaceSelection(ENCOUNTER_TEMPLATE) });
-		this.addCommand({ id: 'insert-reference', name: 'Insert monster reference', editorCallback: (editor) => editor.replaceSelection('`nimble:') });
+		this.addCommand({ id: 'open-settings', name: 'Open settings', callback: () => this.openSettings() });
 		this.addCommand({ id: 'clear-roll-log', name: 'Clear roll log', callback: () => this.clearRollLog() });
 		this.addCommand({ id: 'dice-workshop', name: 'Open Dice Workshop', callback: () => this.openDiceWorkshop() });
 
@@ -464,19 +343,19 @@ export default class EmberVaultPlugin extends Plugin {
 	 * first); later on, the settings already in memory are kept.
 	 */
 	async loadSettings(): Promise<boolean> {
-		let next: NimbleStatblocksSettings;
+		let next: EmberVaultSettings;
 		let ok = true;
 		try {
 			const raw: unknown = await this.loadData();
 			// Obsidian hands back nothing for a file it can't parse, the same as for no file at all.
 			// Tell them apart, or the next save would quietly replace the damaged file with defaults.
 			if (raw == null && await this.settingsFileUnreadable()) throw new Error('data.json is not valid JSON');
-			next = migrateSettings(raw);
+			next = migrateSettings(raw, this.settingsParts());
 		} catch (e) {
 			console.error('Nimble: could not read settings', e);
 			if (this.settings) return false;
 			ok = false;
-			next = migrateSettings(null);
+			next = migrateSettings(null, this.settingsParts());
 			next.spotlightOffered = true; // one notice about the settings is enough
 			const copy = await this.keepBrokenSettings();
 			this.settingsReadOnly = !copy;
@@ -491,6 +370,11 @@ export default class EmberVaultPlugin extends Plugin {
 			Object.assign(live, next);
 		} else this.settings = next;
 		return ok;
+	}
+
+	/** Each game system's part of the settings (its fields' defaults and migration). */
+	private settingsParts(): SettingsPart[] {
+		return this.systems.all().flatMap(s => (s.settings ? [s.settings] : []));
 	}
 
 	private settingsPath(name = 'data.json'): string {
@@ -524,9 +408,8 @@ export default class EmberVaultPlugin extends Plugin {
 	/** data.json changed outside this window (sync from another device): take it in, so the next save doesn't undo it. */
 	async onExternalSettingsChange(): Promise<void> {
 		if (!(await this.loadSettings())) return;
-		this.loadBundledBestiary();
-		setCompendiumDrafts(this.settings.compendiumDrafts);
-		this.encounters.trigger('changed');
+		// Each game takes in its part of the settings.
+		this.events.trigger('settings-reloaded');
 		this.events.trigger('roll-log-changed');
 		this.campaigns.trigger('changed');
 		(this as unknown as { applyTableStyle?: () => void }).applyTableStyle?.();
@@ -535,104 +418,21 @@ export default class EmberVaultPlugin extends Plugin {
 	}
 
 	async saveSettings() {
-		invalidateCompendium(); // custom conditions, drafts…
+		// Games drop what they built from settings (Nimble's compendium: custom conditions, drafts…).
+		this.events.trigger('settings-saving');
 		if (this.settingsReadOnly) return;
 		await this.saveData(this.settings);
 	}
 
-	getAllConditions(): NimbleCondition[] {
-		return [...NIMBLE_CONDITIONS, ...(this.settings.customConditions || [])];
-	}
 
-	condition(name: string): NimbleCondition | undefined {
-		return this.getAllConditions().find(c => c.name.toLowerCase() === name.toLowerCase());
-	}
 
-	/** Matches condition names in rules text ("Grappled", "Prone", "Dazed"…). */
-	conditionKeywords(): RegExp | undefined {
-		const names = this.getAllConditions().filter(c => !c.auto).map(c => c.name);
-		const key = names.join('|');
-		if (this.keywordCache?.key !== key) this.keywordCache = { key, re: keywordPattern(names) };
-		return this.keywordCache.re;
-	}
 
-	/** A small popover with a condition's rules text. */
-	showConditionInfo(anchor: HTMLElement, name: string): void {
-		const cond = this.condition(name);
-		if (!cond) return;
-		openPopover(anchor, (el) => {
-			el.addClass('condition-info');
-			el.createDiv({ cls: 'popover-title', text: cond.name });
-			el.createDiv({ cls: 'popover-body', text: cond.description });
-		}, { width: 280 });
-	}
 
 	// ------------------------------------------------------------------------
 	// Rendering
 
-	renderStatblock(
-		container: HTMLElement,
-		monster: NimbleMonster,
-		sourcePath: string,
-		variant: 'block' | 'inline' | 'hover',
-		onAdd?: (ev: MouseEvent) => void,
-		extra: Partial<RenderOptions> = {},
-	): HTMLElement {
-		// A note's own stat block is always shown; looked-up monsters are lore cards for players.
-		const lore = extra.lore ?? (variant !== 'block' && this.hideStats(sourcePath));
-		const block = renderStatblock(container, monster, {
-			app: this.app,
-			sourcePath,
-			variant,
-			lore,
-			compact: this.settings.statblockStyle === 'compact',
-			onAdd,
-			onDice: this.settings.clickableDice ? (el, expr, label, kind) => this.wireDice(el, expr, label, kind) : undefined,
-			keywords: this.conditionKeywords(),
-			onKeyword: (el, word) => this.wireKeyword(el, word),
-			partySize: this.encounters.partySize(this.encounters.active),
-			// Lore cards list every book the creature is in, wherever they show.
-			sources: lore ? extra.sources ?? this.printingsOf(monster) : undefined,
-			...extra,
-		});
-		// …and your own notes on it, under the card (bestiary, hover preview, quick look alike).
-		if (lore) {
-			const note = this.creatureNote(baseCreatureName(monster.name));
-			if (note) void this.renderCreatureNotes(container, block, note);
-		}
-		return block;
-	}
 
-	/** Every book a bundled creature is printed in ("Monsters & More p.6", "GM Guide p.30"). */
-	printingsOf(monster: NimbleMonster): string[] | undefined {
-		if (!monster.bundledId) return undefined;
-		const base = baseCreatureName(monster.name).toLowerCase();
-		const all = this.index.all().filter(e => e.bundled && baseCreatureName(e.name).toLowerCase() === base);
-		return all.length > 1 ? [...new Set(all.map(e => bookOf(e).long))] : undefined;
-	}
 
-	/** "Your notes" under a lore card: the note's text (without its empty template parts) and a button to open it. */
-	private async renderCreatureNotes(container: HTMLElement, after: HTMLElement, file: TFile): Promise<void> {
-		const text = await this.app.vault.cachedRead(file);
-		if (!after.parentElement) return;
-		const body = notesBody(text);
-		const box = createDiv({ cls: 'nimble-creature-notes' });
-		after.after(box);
-		const head = box.createDiv({ cls: 'nimble-creature-notes-head' });
-		setIcon(head.createSpan({ cls: 'nimble-creature-notes-icon' }), 'notebook-pen');
-		head.createSpan({ cls: 'nimble-creature-notes-title', text: 'Your notes' });
-		const open = head.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Open your notes' } });
-		setIcon(open, 'external-link');
-		open.addEventListener('click', (ev) => { this.hover.hide(); void this.app.workspace.getLeaf(ev.metaKey || ev.ctrlKey).openFile(file); });
-		const md = box.createDiv({ cls: 'nimble-creature-notes-body markdown-rendered' });
-		if (!body) { md.createDiv({ cls: 'nimble-creature-notes-empty', text: 'Nothing written yet.' }); return; }
-		// Rendered once into a card that's thrown away; the component goes with it.
-		const owner = new Component();
-		owner.load();
-		await MarkdownRenderer.render(this.app, body, md, file.path, owner);
-		const gone = new MutationObserver(() => { if (!box.isConnected) { owner.unload(); gone.disconnect(); } });
-		gone.observe(box.ownerDocument.body, { childList: true, subtree: true });
-	}
 
 	/**
 	 * Is the active campaign one you play in? Pass a note path to ask about that
@@ -654,73 +454,8 @@ export default class EmberVaultPlugin extends Plugin {
 		return !(monsterPath && this.campaigns.of(monsterPath)?.role === 'player');
 	}
 
-	private wireKeyword(el: HTMLElement, word: string): void {
-		const cond = this.condition(word);
-		if (!cond) return;
-		el.addClass('nimble-condition-ref');
-		el.setAttr('role', 'button');
-		el.setAttr('tabindex', '0');
-		const show = (e: Event) => { e.preventDefault(); e.stopPropagation(); this.showConditionInfo(el, word); };
-		el.addEventListener('click', show);
-		el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') show(e); });
-	}
 
-	/** Buttons shown under a hover preview or bestiary stat block. */
-	monsterActions(entry: MonsterIndexEntry, opts: { inBestiary?: boolean; viewPath?: string } = {}): StatblockAction[] {
-		if (this.hideStats(entry.filePath, opts.viewPath)) {
-			// Players can't add monsters to a fight; they can look them up and open their own notes.
-			const out: StatblockAction[] = [];
-			if (entry.bundled && !opts.inBestiary) out.push({ label: 'Compendium', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
-			if (!entry.bundled && entry.filePath) out.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { this.hover.hide(); void this.app.workspace.openLinkText(entry.filePath, '', ev.metaKey || ev.ctrlKey); } });
-			const name = baseCreatureName(entry.name);
-			const noted = !!this.creatureNote(name);
-			out.push({ label: noted ? 'Open notes' : 'Add notes', icon: noted ? 'notebook-pen' : 'notebook', onClick: () => { this.hover.hide(); void this.openCreatureNote(name); } });
-			return out;
-		}
-		const actions: StatblockAction[] = [
-			{
-				label: 'Add', icon: 'plus', cls: 'mod-cta',
-				onClick: (ev) => void this.addToEncounter(entry.monster, entry.filePath || undefined, ev.shiftKey ? 2 : 1),
-				menu: (ev) => {
-					const m = new Menu();
-					const add = (title: string, icon: string, n: number, shift = 0) => m.addItem(i => i.setTitle(title).setIcon(icon)
-						.onClick(() => void this.addToEncounter(shiftMonster(entry.monster, shift), entry.filePath || undefined, n)));
-					m.addItem(i => i.setTitle('Add several…').setIcon('copy-plus').onClick(() => {
-						this.hover.hide();
-						new AddSeveralModal(this.app, this, entry.monster, entry.filePath || undefined).open();
-					}));
-					if (monsterRole(entry.monster) !== 'minion') {
-						m.addSeparator();
-						add('Add tougher (+1 level)', 'trending-up', 1, 1);
-						add('Add weaker (−1 level)', 'trending-down', 1, -1);
-					}
-					m.showAtMouseEvent(ev);
-				},
-			},
-		];
-		if (entry.bundled) {
-			if (!opts.inBestiary) actions.push({ label: 'Compendium', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
-			actions.push({ label: 'Copy to vault', icon: 'file-plus', onClick: () => { this.hover.hide(); void this.copyMonsterToVault(entry.monster); } });
-		} else if (entry.filePath) {
-			actions.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { this.hover.hide(); void this.app.workspace.openLinkText(entry.filePath, '', ev.metaKey || ev.ctrlKey); } });
-		}
-		return actions;
-	}
 
-	private wireDice(el: HTMLElement, expression: string, label: string, kind: DiceKind): void {
-		el.addClass('is-clickable');
-		el.setAttr('role', 'button');
-		el.setAttr('tabindex', '0');
-		el.setAttr('aria-label', `Roll ${expression}`);
-		el.setAttr('title', `Roll ${expression}`);
-		const roll = (e: Event) => {
-			e.preventDefault();
-			e.stopPropagation();
-			this.rollDice(expression, label, kind);
-		};
-		el.addEventListener('click', roll);
-		el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') roll(e); });
-	}
 
 	rollDice(expression: string, label: string, kind: DiceKind = 'effect', forced?: number[]): RollLogEntry | null {
 		const dice = parseDice(expression);
@@ -728,10 +463,11 @@ export default class EmberVaultPlugin extends Plugin {
 			new Notice(`Can't roll "${expression}"`);
 			return null;
 		}
-		const nimble = kind === 'attack' && this.settings.nimbleAttackRolls;
+		// Attacks roll the active game's way (Nimble's explode on a max and miss on a 1).
+		const nimble = kind === 'attack' && this.system().attackRolls?.(this) === 'exploding';
 		// `forced` feeds set values to the roller (the settings' "Test a crit" button).
 		const rng = forced ? (() => { let i = 0; return () => (forced[i++ % forced.length] - 0.5) / dice.sides; })() : undefined;
-		const result = nimble ? rollNimbleAttack(dice, rng) : rollPlain(dice, rng);
+		const result = nimble ? rollExplodingAttack(dice, rng) : rollPlain(dice, rng);
 		// The roll is decided here; 3D dice just show it, and the notice waits for them to land.
 		const landed = this.show3dDice(dice.sides, dice.count, result.rolls, nimble, result.outcome);
 		return this.logRoll({ label: label || result.expression, expression: result.expression, total: result.total, detail: result.detail, outcome: result.outcome }, landed);
@@ -805,7 +541,7 @@ export default class EmberVaultPlugin extends Plugin {
 		// the roller chains explosions one at a time after the throw lands.
 		const thrown = [...r.kept, ...r.dropped];
 		const all = [...thrown, ...r.explosions];
-		const nimble = input.attack && this.settings.nimbleAttackRolls;
+		const nimble = input.attack && this.system().attackRolls?.(this) === 'exploding';
 		// Class dice put into the roll (Judgment Dice) tumble with it, in their own colour.
 		const extra = r.extras.filter(x => !x.held).flatMap(x => x.rolls.map(value => ({ sides: x.sides, value })));
 		const landed = this.show3dDice(input.dice.sides, thrown.length, all, nimble, r.outcome, extra);
@@ -922,35 +658,8 @@ export default class EmberVaultPlugin extends Plugin {
 		});
 	}
 
-	/** Your notes on creatures, by lower-case creature name (notes with `nimble: creature`; the active campaign's win). */
-	creatureNotes(): Map<string, TFile> {
-		const active = this.settings.activeCampaign;
-		const out = new Map<string, TFile>();
-		for (const f of this.app.vault.getMarkdownFiles()) {
-			const fm = this.app.metadataCache.getFileCache(f)?.frontmatter;
-			if (!fm || String(fm.nimble ?? '').toLowerCase() !== 'creature') continue;
-			const k = String(fm.creature ?? f.basename).trim().toLowerCase();
-			if (!out.has(k) || (active && f.path.startsWith(`${active}/`))) out.set(k, f);
-		}
-		return out;
-	}
 
-	/** Your notes on one creature, if you've written any. */
-	creatureNote(name: string): TFile | null {
-		return this.creatureNotes().get(name.trim().toLowerCase()) ?? null;
-	}
 
-	/** Open your notes on a creature, making them (in the campaign's Bestiary folder) the first time. */
-	async openCreatureNote(name: string): Promise<void> {
-		let file = this.creatureNote(name);
-		if (!file) {
-			const c = this.campaigns.active;
-			const folder = normalizePath(c ? `${c.folder}/Bestiary` : 'Bestiary');
-			if (!this.app.vault.getFolderByPath(folder)) await this.app.vault.createFolder(folder).catch(() => undefined);
-			file = await this.app.vault.create(this.campaigns.available(`${folder}/${safeName(name)}.md`), creatureNote(name));
-		}
-		await this.app.workspace.getLeaf(false).openFile(file);
-	}
 
 	/** GM: the party editor. Player: your character (or a prompt to add one). */
 	openParty(): void {
@@ -993,7 +702,7 @@ export default class EmberVaultPlugin extends Plugin {
 		if (JSON.stringify(next) === JSON.stringify(this.settings.party)) return;
 		this.settings.party = next;
 		void this.saveSettings();
-		this.encounters.trigger('changed');
+		this.events.trigger('party-changed');
 		this.campaigns.trigger('changed');
 	}
 
@@ -1029,120 +738,46 @@ export default class EmberVaultPlugin extends Plugin {
 	// ------------------------------------------------------------------------
 	// Bestiary
 
-	/** Open the Compendium tab, showing a bundled monster when given one. */
-	async openBestiary(monsterId?: string): Promise<void> {
-		const view = await this.openCompendium();
-		if (monsterId) view?.select(`monster:${monsterId}`);
-	}
 
-	/** Open (or reveal) the Compendium tab, optionally on a tab and search. */
-	async openCompendium(segment?: Segment, query?: string): Promise<CompendiumView | null> {
-		let leaf: WorkspaceLeaf | null = this.app.workspace.getLeavesOfType(COMPENDIUM_VIEW_TYPE)[0] ?? null;
-		if (!leaf) {
-			leaf = this.app.workspace.getLeaf('tab');
-			await leaf.setViewState({ type: COMPENDIUM_VIEW_TYPE, active: true });
-		}
-		await this.app.workspace.revealLeaf(leaf);
-		const view = leaf.view instanceof CompendiumView ? leaf.view : null;
-		if (view && (segment || query !== undefined)) view.search(segment, query);
-		return view;
-	}
 
-	/** Open a monster wherever it lives: its note, or the bestiary for bundled ones. */
-	openMonster(entry: MonsterIndexEntry, sourcePath = '', newLeaf = false): void {
-		if (entry.bundled || !entry.filePath) void this.openBestiary(entry.monster.bundledId);
-		else void this.app.workspace.openLinkText(entry.filePath, sourcePath, newLeaf);
-	}
 
-	/** Write a monster to an editable note in the vault and open it. */
-	async copyMonsterToVault(monster: NimbleMonster): Promise<void> {
-		const folder = normalizePath('Bestiary');
-		if (!this.app.vault.getAbstractFileByPath(folder)) await this.app.vault.createFolder(folder);
-		const safe = monster.name.replace(/[\\/:*?"<>|#^[\]]/g, '').trim() || 'Monster';
-		let path = normalizePath(`${folder}/${safe}.md`);
-		for (let i = 2; this.app.vault.getAbstractFileByPath(path); i++) path = normalizePath(`${folder}/${safe} ${i}.md`);
-		const fm = ['---', 'nimble: monster', `level: "${monster.level ?? ''}"`, `role: ${monster.role ?? 'regular'}`];
-		if (monster.group) fm.push(`group: "${monster.group.replace(/"/g, '\'')}"`);
-		if (monster.source) fm.push(`source: "${monster.source}"`);
-		fm.push('---', '');
-		const body = `${fm.join('\n')}# ${monster.name}\n\n\`\`\`nimble\n${toStatblockSource(monster)}\n\`\`\`\n`;
-		const file = await this.app.vault.create(path, body);
-		await this.app.workspace.getLeaf('tab').openFile(file);
-		new Notice(`Created ${file.path}. Edits here replace the bestiary version everywhere.`);
-	}
 
 	// ------------------------------------------------------------------------
 	// Encounters
 
-	getEncounterView(): EncounterTrackerView | null {
-		const leaf = this.app.workspace.getLeavesOfType(ENCOUNTER_VIEW_TYPE)[0];
-		return leaf?.view instanceof EncounterTrackerView ? leaf.view : null;
-	}
 
-	/** New character: the active campaign's system's dialog (Nimble's outside campaigns). */
+	/** New character: the active campaign's system's dialog. */
 	newCharacter(): void {
 		const system = this.system();
-		if (system.id !== 'nimble' && system.characters) system.characters.promptNew(this, { mine: true });
-		else new NewCharacterModal(this).open();
+		if (system.characters) system.characters.promptNew(this, { mine: true });
+		else new Notice(`${system.name} has no characters yet.`);
 	}
 
-	/** Your character: Nimble's Character panel, or, for another system, your character note. */
+	/** Your character: the system's own view of it (Nimble's Character panel), else your character note. */
 	async openMyCharacter(): Promise<void> {
 		const system = this.system();
-		if (system.id === 'nimble') { await openCharacterView(this); return; }
+		if (system.openMyCharacter) { await system.openMyCharacter(this); return; }
 		const mine = this.campaigns.myCharacter();
 		if (!mine) { new Notice('No character of yours in this campaign yet: make one with "New character".'); return; }
 		await this.campaigns.open(mine.path);
 	}
 
-	/** The active campaign's compendium: its system's own, else Nimble's. */
+	/** The active campaign's compendium. */
 	async openSystemCompendium(): Promise<void> {
 		const system = this.system();
 		if (system.openCompendium) await system.openCompendium(this);
-		else await this.openBestiary();
+		else new Notice(`${system.name} has no compendium yet.`);
 	}
 
-	/** The active campaign's combat tracker: its system's own, else Nimble's. */
+	/** The active campaign's combat tracker. */
 	async openTracker(): Promise<void> {
 		const system = this.system();
 		if (system.openTracker) await system.openTracker(this);
-		else await this.activateEncounterView();
+		else new Notice(`${system.name} has no tracker yet.`);
 	}
 
-	async activateEncounterView(focus = true): Promise<WorkspaceLeaf | null> {
-		let leaf: WorkspaceLeaf | null = this.app.workspace.getLeavesOfType(ENCOUNTER_VIEW_TYPE)[0] ?? null;
-		if (!leaf) {
-			leaf = this.app.workspace.getRightLeaf(false);
-			if (!leaf) return null;
-			await leaf.setViewState({ type: ENCOUNTER_VIEW_TYPE, active: focus });
-		}
-		if (focus) await this.app.workspace.revealLeaf(leaf);
-		return leaf;
-	}
 
-	/** Make sure the tracker is visible (even in a collapsed sidebar) without stealing focus. */
-	async showTracker(): Promise<void> {
-		const leaf = this.app.workspace.getLeavesOfType(ENCOUNTER_VIEW_TYPE)[0] ?? await this.activateEncounterView(false);
-		if (leaf && !leaf.view.containerEl.isShown()) await this.app.workspace.revealLeaf(leaf);
-	}
 
-	async addToEncounter(monster: NimbleMonster, sourceFile?: string, count = 1): Promise<void> {
-		if (this.settings.multipleEncounters && !this.encounters.active) {
-			new Notice('Create or select an encounter first');
-			await this.activateEncounterView();
-			return;
-		}
-		const added = this.encounters.add(monster, sourceFile, count);
-		if (!added.length) return;
-		await this.showTracker();
-		new Notice(added.length === 1 && added[0].count !== undefined
-			? `${count} × ${monster.name} added (${added[0].alive} in the group)`
-			: `Added ${added.map(c => c.label).join(', ')}`);
-	}
 
-	openAddMonsterModal(): void {
-		openAddMonsterPicker(this);
-	}
 
-	/** Keep "open source note" links in the tracker working after a file move. */
 }

@@ -1,5 +1,5 @@
 // The encounter tracker sidebar. Nimble turn order: heroes act first in any
-// order, then the monsters. Every change goes through plugin.encounters.
+// order, then the monsters. Every change goes through nimble().encounters.
 
 import { App, ItemView, Menu, Modal, Notice, Setting, setIcon, WorkspaceLeaf } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
@@ -16,6 +16,7 @@ import { slideThumb } from '../../core/segmented';
 import { saveFight } from './saved-fight';
 import { openRecord } from './record-modal';
 import { attachMonsterHover } from './inline-ref';
+import { nimble } from './runtime';
 
 export const ENCOUNTER_VIEW_TYPE = 'nimble-encounter-tracker';
 
@@ -57,7 +58,7 @@ export class EncounterTrackerView extends ItemView {
 	getIcon(): string { return 'swords'; }
 
 	async onOpen(): Promise<void> {
-		this.registerEvent(this.plugin.encounters.on('changed', () => this.render()));
+		this.registerEvent(nimble().encounters.on('changed', () => this.render()));
 		this.registerEvent(this.plugin.events.on('roll-log-changed', () => this.renderRollLog()));
 		this.registerEvent(this.plugin.campaigns.on('changed', () => { if (this.plugin.playerView() !== this.playerShown) this.render(); }));
 		this.render();
@@ -70,7 +71,7 @@ export class EncounterTrackerView extends ItemView {
 		closePopover();
 	}
 
-	private get store() { return this.plugin.encounters; }
+	private get store() { return nimble().encounters; }
 	private get root() { return this.containerEl.children[1] as HTMLElement; }
 
 	render(): void {
@@ -172,8 +173,8 @@ export class EncounterTrackerView extends ItemView {
 				}));
 			}
 			menu.addItem(i => i.setTitle(this.plugin.settings.party.length ? 'Edit party…' : 'Set up your party…').setIcon('user-cog').onClick(() => this.plugin.openParty()));
-			menu.addItem(i => i.setTitle('Add monster…').setIcon('plus').onClick(() => this.plugin.openAddMonsterModal()));
-			menu.addItem(i => i.setTitle('Open compendium').setIcon('book-open').onClick(() => void this.plugin.openBestiary()));
+			menu.addItem(i => i.setTitle('Add monster…').setIcon('plus').onClick(() => nimble().openAddMonsterModal()));
+			menu.addItem(i => i.setTitle('Open compendium').setIcon('book-open').onClick(() => void nimble().openBestiary()));
 			menu.addSeparator();
 			menu.addItem(i => i.setTitle('Copy summary').setIcon('copy').onClick(() => {
 				void navigator.clipboard.writeText(this.store.summary(enc.id));
@@ -314,7 +315,7 @@ export class EncounterTrackerView extends ItemView {
 		const add = tools.createEl('button', { cls: 'tracker-add-monster' });
 		setIcon(add.createSpan(), 'plus');
 		add.createSpan({ text: 'Add monster' });
-		add.onclick = () => this.plugin.openAddMonsterModal();
+		add.onclick = () => nimble().openAddMonsterModal();
 		if (this.plugin.settings.party.length && !enc.creatures.some(isHero)) {
 			const party = tools.createEl('button', { cls: 'quick-add-party' });
 			setIcon(party.createSpan(), 'users');
@@ -385,10 +386,10 @@ export class EncounterTrackerView extends ItemView {
 				span.setAttr('title', `Roll ${expr}`);
 				span.onclick = (e) => { e.stopPropagation(); this.plugin.rollDice(expr, label, kind); };
 			} : undefined,
-			keywords: this.plugin.conditionKeywords(),
+			keywords: nimble().conditionKeywords(),
 			onKeyword: (span, word) => {
 				span.addClass('nimble-condition-ref');
-				span.onclick = (e) => { e.stopPropagation(); this.plugin.showConditionInfo(span, word); };
+				span.onclick = (e) => { e.stopPropagation(); nimble().showConditionInfo(span, word); };
 			},
 		});
 	}
@@ -602,7 +603,7 @@ export class EncounterTrackerView extends ItemView {
 		if (!isHero(c)) {
 			menu.addItem(i => i.setTitle('View stat block').setIcon('scroll').onClick(() => openRecord(this.plugin, { kind: 'combatant', encId: enc.id, creatureId: c.id })));
 			const entry = this.entryFor(c);
-			if (entry.bundled || c.sourceFile) menu.addItem(i => i.setTitle(entry.bundled ? 'Open in bestiary' : 'Open note').setIcon(entry.bundled ? 'book-open' : 'file-symlink').onClick(() => this.plugin.openMonster(entry)));
+			if (entry.bundled || c.sourceFile) menu.addItem(i => i.setTitle(entry.bundled ? 'Open in bestiary' : 'Open note').setIcon(entry.bundled ? 'book-open' : 'file-symlink').onClick(() => nimble().openMonster(entry)));
 			menu.addItem(i => i.setTitle(isMinionGroup(c) ? 'Add one more' : 'Duplicate').setIcon('copy-plus').onClick(() => this.store.duplicate(enc.id, c.id)));
 			if (!isMinionGroup(c)) {
 				menu.addItem(i => i.setTitle('Make tougher (+1 level)').setIcon('trending-up').onClick(() => this.store.shiftLevel(enc.id, c.id, 1)));
@@ -687,7 +688,7 @@ export class EncounterTrackerView extends ItemView {
 	}
 
 	private renderConditionChip(row: HTMLElement, enc: Encounter, c: EncounterCreature, applied: AppliedCondition): void {
-		const cond = this.plugin.condition(applied.name);
+		const cond = nimble().condition(applied.name);
 		const tag = row.createSpan({ cls: 'condition-tag', attr: { role: 'button', tabindex: '0' } });
 		if (cond?.minor) tag.addClass('is-minor');
 		tag.createSpan({ text: conditionLabel(applied) });
@@ -701,7 +702,7 @@ export class EncounterTrackerView extends ItemView {
 
 	private showConditionEditor(anchor: HTMLElement, enc: Encounter, c: EncounterCreature, applied: AppliedCondition): void {
 		if (isPopoverOpenFor(anchor)) { closePopover(); return; }
-		const cond = this.plugin.condition(applied.name);
+		const cond = nimble().condition(applied.name);
 		openPopover(anchor, (el, close) => {
 			el.addClass('condition-editor');
 			el.createDiv({ cls: 'popover-title', text: conditionLabel(applied) });
@@ -752,7 +753,7 @@ export class EncounterTrackerView extends ItemView {
 			const draw = () => {
 				grid.empty();
 				const q = search.value.trim().toLowerCase();
-				const all = this.plugin.getAllConditions().filter(x => !x.auto && (!q || x.name.toLowerCase().includes(q)));
+				const all = nimble().getAllConditions().filter(x => !x.auto && (!q || x.name.toLowerCase().includes(q)));
 				for (const cond of all) {
 					const has = c.conditions.some(x => x.name === cond.name);
 					const b = grid.createEl('button', { cls: `condition-option${has ? ' is-applied' : ''}${cond.minor ? ' is-minor' : ''}`, text: cond.name, attr: { title: cond.description, 'aria-pressed': String(has) } });

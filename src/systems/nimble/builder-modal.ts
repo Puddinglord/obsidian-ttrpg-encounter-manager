@@ -10,6 +10,7 @@ import { partyLevels, ratingChip, runEncounter } from './encounter-block';
 import { describeMonster } from './suggest';
 import { isTouch } from '../../core/touch';
 import { attachMonsterHover } from './inline-ref';
+import { nimble } from './runtime';
 
 export class BuilderModal extends Modal {
 	private def: EncounterDef;
@@ -97,7 +98,7 @@ export class BuilderModal extends Modal {
 		const el = this.resultsEl;
 		el.empty();
 		const words = this.query.toLowerCase().split(/\s+/).filter(Boolean);
-		const all = this.plugin.index.all().filter(e => words.every(w => e.name.toLowerCase().includes(w) || (e.monster.group || '').toLowerCase().includes(w)));
+		const all = nimble().index.all().filter(e => words.every(w => e.name.toLowerCase().includes(w) || (e.monster.group || '').toLowerCase().includes(w)));
 		const shown = all.sort((a, b) => (levelValue(a.monster.level) ?? 0) - (levelValue(b.monster.level) ?? 0) || a.name.localeCompare(b.name)).slice(0, 60);
 		for (const e of shown) {
 			const row = el.createDiv({ cls: 'builder-result', attr: { role: 'button', tabindex: '0' } });
@@ -130,7 +131,7 @@ export class BuilderModal extends Modal {
 			row.createSpan({ cls: 'builder-pick-count', text: String(m.count) });
 			const plus = row.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': `One more ${m.name}` } });
 			setIcon(plus, 'plus');
-			const entry = this.plugin.index.get(m.name);
+			const entry = nimble().index.get(m.name);
 			const name = row.createSpan({ cls: 'builder-pick-name', text: m.name });
 			if (!entry) name.addClass('is-missing');
 			else attachMonsterHover(this.plugin, name, entry);
@@ -144,7 +145,7 @@ export class BuilderModal extends Modal {
 		const el = this.ratingEl;
 		el.empty();
 		// Rated as they'll be run: a tougher or weaker monster counts as its shifted level.
-		const groups = this.def.monsters.map(m => { const e = this.plugin.index.get(m.name); return { monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })
+		const groups = this.def.monsters.map(m => { const e = nimble().index.get(m.name); return { monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })
 			.filter((g): g is { monster: NonNullable<typeof g.monster>; count: number } => !!g.monster);
 		const levels = partyLevels(this.plugin);
 		const r = rateEncounter(groups, levels);

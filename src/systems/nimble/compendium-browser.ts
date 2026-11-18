@@ -27,6 +27,7 @@ import {
 	BrowserAction as CoreBrowserAction, BrowserOptions as CoreBrowserOptions, BrowserSnapshot as CoreSnapshot, CompendiumBrowser as CoreBrowser, CompendiumSource,
 } from '../../core/compendium/browser';
 import type { StatblockAction } from './render';
+import { nimble } from './runtime';
 
 // ----------------------------------------------------------------------------
 // Entries, built once and rebuilt when the vault changes
@@ -38,13 +39,13 @@ export function invalidateCompendium(): void { cache = null; }
 
 /** Every compendium entry for the current side of the table. */
 export function compendiumEntries(plugin: EmberVaultPlugin, lore = plugin.hideStats()): Entry[] {
-	const noted = lore ? new Set(plugin.creatureNotes().keys()) : new Set<string>();
-	const conditions = plugin.getAllConditions();
-	const key = [lore, plugin.index.size, plugin.campaigns.npcs.length, conditions.length, plugin.settings.compendiumDrafts, [...noted].sort().join('|')].join('#');
+	const noted = lore ? new Set(nimble().creatureNotes().keys()) : new Set<string>();
+	const conditions = nimble().getAllConditions();
+	const key = [lore, nimble().index.size, plugin.campaigns.npcs.length, conditions.length, plugin.settings.compendiumDrafts, [...noted].sort().join('|')].join('#');
 	if (cache?.key === key) return cache.entries;
 	const campaignNames = new Map(plugin.campaigns.campaigns.map(c => [c.folder, c.name]));
 	const entries = buildEntries({
-		monsters: plugin.index.all(), npcs: plugin.campaigns.npcs, compendium: bundledCompendium(), conditions, lore, noted, campaignNames,
+		monsters: nimble().index.all(), npcs: plugin.campaigns.npcs, compendium: bundledCompendium(), conditions, lore, noted, campaignNames,
 	});
 	cache = { key, entries };
 	return entries;
@@ -90,9 +91,9 @@ export function renderEntryDetail(el: HTMLElement, e: Entry, ctx: DetailContext)
 	const { plugin } = ctx;
 	if (e.monster) {
 		const m = e.monster;
-		const actions = [...plugin.monsterActions(m, { inBestiary: true }), ...(ctx.monsterActions?.(e) ?? [])];
+		const actions = [...nimble().monsterActions(m, { inBestiary: true }), ...(ctx.monsterActions?.(e) ?? [])];
 		const sources = e.printings ? [...new Set(e.printings.map(x => bookOf(x).long))] : undefined;
-		const block = plugin.renderStatblock(el, m.monster, m.filePath, ctx.variant ?? 'inline', undefined, { actions, sources, lore: ctx.lore || undefined });
+		const block = nimble().renderStatblock(el, m.monster, m.filePath, ctx.variant ?? 'inline', undefined, { actions, sources, lore: ctx.lore || undefined });
 		addArtSlot(plugin, block, e);
 		return;
 	}

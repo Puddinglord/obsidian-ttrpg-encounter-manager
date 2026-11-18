@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('obsidian', () => ({
+vi.mock('obsidian', async () => ({
+	// The test stand-ins for the rest of the API (the Nimble runtime's imports), then these.
+	...(await import('./obsidian-stub')),
 	Modal: class {},
 	// compendium-art.ts (the quick look's art slot) builds on these.
 	FuzzySuggestModal: class {},

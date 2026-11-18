@@ -12,6 +12,7 @@ import { EncounterTemplate } from './encounters';
 import { renderBalance } from './balance-ui';
 import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover';
 import { renderBattleNotes } from './battle-notes';
+import { nimble } from './runtime';
 
 export function partyLevels(plugin: EmberVaultPlugin): number[] {
 	const party = plugin.settings.party;
@@ -30,7 +31,7 @@ export function resolveDef(plugin: EmberVaultPlugin, def: EncounterDef, from?: s
 	const found: EncounterTemplate['monsters'] = [];
 	const missing: string[] = [];
 	for (const m of def.monsters) {
-		const e = plugin.index.get(m.name, from);
+		const e = nimble().index.get(m.name, from);
 		if (e) found.push({ monster: shiftMonster(e.monster, m.shift ?? 0), count: m.count, sourceFile: e.filePath || undefined });
 		else missing.push(m.name);
 	}
@@ -42,9 +43,9 @@ export async function runEncounter(plugin: EmberVaultPlugin, def: EncounterDef, 
 	const { found, missing } = resolveDef(plugin, def, sourcePath);
 	if (!found.length) { new Notice('None of these monsters are in the bestiary or your notes yet.'); return false; }
 	if (!await confirmReplaceFight(plugin, def.name)) return false;
-	plugin.encounters.loadTemplate({ name: def.name, monsters: found, withParty: def.party && plugin.settings.party.length > 0 }, sourcePath);
-	await plugin.activateEncounterView(false);
-	await plugin.showTracker();
+	nimble().encounters.loadTemplate({ name: def.name, monsters: found, withParty: def.party && plugin.settings.party.length > 0 }, sourcePath);
+	await nimble().activateEncounterView(false);
+	await nimble().showTracker();
 	new Notice(`${def.name} is in the tracker${missing.length ? `. Not found: ${missing.join(', ')}` : ''}`);
 	return true;
 }
@@ -66,9 +67,9 @@ class EncounterBlockChild extends MarkdownRenderChild {
 	onload(): void {
 		this.render();
 		const again = debounce(() => this.render(), 150, true);
-		this.registerEvent(this.plugin.index.on('changed', again));
+		this.registerEvent(nimble().index.on('changed', again));
 		this.registerEvent(this.plugin.campaigns.on('changed', again));
-		this.registerEvent(this.plugin.encounters.on('changed', again));
+		this.registerEvent(nimble().encounters.on('changed', again));
 	}
 
 	private render(): void {
@@ -137,7 +138,7 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 
 	const list = card.createDiv({ cls: 'encounter-block-monsters' });
 	def.monsters.forEach((m, i) => {
-		const entry = plugin.index.get(m.name, ctx.sourcePath);
+		const entry = nimble().index.get(m.name, ctx.sourcePath);
 		const chip = list.createDiv({ cls: `encounter-chip role-${entry ? monsterRole(entry.monster) : 'unknown'}` });
 		// The count is a button: click it to change how many, make them tougher or weaker, or remove them.
 		const count = chip.createEl('button', { cls: 'encounter-count', attr: { 'aria-label': `${m.count} ${m.name}${m.shift ? `, ${shiftLabel(m.shift)} level` : ''}` } });
@@ -220,18 +221,18 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 	};
 	btn('Run', 'play', 'mod-cta', () => void runEncounter(plugin, def, ctx.sourcePath), 'Load this encounter into the tracker');
 	btn('Add to current', 'plus', '', () => void (async () => {
-		if (plugin.settings.multipleEncounters && !plugin.encounters.active) {
+		if (plugin.settings.multipleEncounters && !nimble().encounters.active) {
 			new Notice('Create or select an encounter first');
-			await plugin.activateEncounterView();
+			await nimble().activateEncounterView();
 			return;
 		}
 		let added = 0;
-		for (const f of found) added += plugin.encounters.add(f.monster, f.sourceFile, f.count).length;
+		for (const f of found) added += nimble().encounters.add(f.monster, f.sourceFile, f.count).length;
 		if (!added) {
 			new Notice(missing.length ? `Nothing added. Not found: ${missing.join(', ')}` : 'Nothing added: this encounter has no monsters yet.');
 			return;
 		}
-		await plugin.showTracker();
+		await nimble().showTracker();
 		new Notice(`Added ${def.name}'s monsters to the current encounter${missing.length ? `. Not found: ${missing.join(', ')}` : ''}`);
 	})(), 'Add these monsters to the encounter already in the tracker');
 	btn('Edit', 'pencil', '', () => new BuilderModal(plugin, def, save).open(), 'Edit monsters with the encounter builder');

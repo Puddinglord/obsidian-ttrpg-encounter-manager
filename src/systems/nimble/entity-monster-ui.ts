@@ -16,19 +16,20 @@ import {
 	arrowNudge, BuilderUI, bookTag, dicePad, field, folderPill, grid, homeFolder, iconButton, KindBuilder, meter, numberInput, Output, pill, registerKind,
 	removeButton, reviewNotesView, reviewRows, section, segmented, StepDef, suggestField, textArea, textButton, textInput, wordSuggestions,
 } from './entity-builder';
+import { nimble } from './runtime';
 
 const SIZES = ['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan'];
 
 function partyOf(plugin: EmberVaultPlugin): { level: number; size: number } {
 	const party = plugin.settings.party ?? [];
 	const level = party.length ? Math.round(party.reduce((a, p) => a + (p.level || 1), 0) / party.length) : 1;
-	return { level: Math.max(1, level), size: plugin.encounters.partySize() };
+	return { level: Math.max(1, level), size: nimble().encounters.partySize() };
 }
 
 /** How often each type, group or habitat is used across the monsters the note can see (the compendium's own facets). */
 function monsterWords(plugin: EmberVaultPlugin, from: string, key: 'type' | 'group' | 'habitat'): Map<string, number> {
 	const out = new Map<string, number>();
-	for (const e of plugin.index.all(from)) {
+	for (const e of nimble().index.all(from)) {
 		const m = e.monster;
 		// The compendium's Type filter is a monster's group and its type together (Goblins, Undead…).
 		const words = key === 'type' ? [m.group, m.type] : key === 'group' ? [m.group] : [m.habitat];
@@ -173,7 +174,7 @@ class MonsterBuilder implements KindBuilder {
 		}
 		suggestField<NimbleMonster>(f.control, {
 			placeholder: 'Blank, or search: goblin, ogre…', code: true, labelledBy: f.labelId, label: 'Copy a monster', onInput: () => { /* searching */ },
-			suggest: (q) => searchMonsters(this.plugin.index.all(ui.sourcePath), q, 6).map(e => ({ item: e.monster, label: e.name, meta: describeMonster(e) })),
+			suggest: (q) => searchMonsters(nimble().index.all(ui.sourcePath), q, 6).map(e => ({ item: e.monster, label: e.name, meta: describeMonster(e) })),
 			onPick: (s) => {
 				const party = { level: this.d.partyLevel, size: this.d.partySize };
 				const name = this.d.name;
@@ -479,7 +480,7 @@ class MonsterBuilder implements KindBuilder {
 
 	renderPreview(el: HTMLElement, ui: BuilderUI): void {
 		const m = toMonster(this.d);
-		this.plugin.renderStatblock(el, m, ui.sourcePath, 'inline', undefined, { lore: false });
+		nimble().renderStatblock(el, m, ui.sourcePath, 'inline', undefined, { lore: false });
 	}
 
 	checkChip(): { text: string; tone: 'ok' | 'high' | 'low' | 'none' } {

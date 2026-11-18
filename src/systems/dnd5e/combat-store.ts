@@ -38,6 +38,7 @@ export class FightStore extends Events {
 		this.data.fight = this.source = this.fight;
 		void this.plugin.saveSettings();
 		this.trigger('changed');
+		this.plugin.events.trigger('combat-changed');
 		return result;
 	}
 

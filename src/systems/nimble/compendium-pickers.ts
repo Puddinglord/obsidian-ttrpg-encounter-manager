@@ -10,10 +10,11 @@ import { entryReference } from './compendium-browser';
 import { openCompendiumModal } from './compendium-modal';
 import { isHero } from './encounters';
 import { toStatblockSource } from './parser';
+import { nimble } from './runtime';
 
 /** How many of this monster are in the current fight. */
 function inFight(plugin: EmberVaultPlugin, e: Entry): number {
-	const enc = plugin.encounters.active;
+	const enc = nimble().encounters.active;
 	if (!e.monster) return 0;
 	return (enc?.creatures ?? []).filter(c => !isHero(c) && c.monster.name === e.monster!.monster.name).reduce((n, c) => n + (c.count ?? 1), 0);
 }
@@ -24,7 +25,7 @@ function inFight(plugin: EmberVaultPlugin, e: Entry): number {
  * going, so a whole fight can be built in one go.
  */
 export function openAddMonsterPicker(plugin: EmberVaultPlugin, query = ''): void {
-	const add = (e: Entry, n: number) => plugin.addToEncounter(e.monster!.monster, e.monster!.filePath || undefined, n);
+	const add = (e: Entry, n: number) => nimble().addToEncounter(e.monster!.monster, e.monster!.filePath || undefined, n);
 	openCompendiumModal(plugin, {
 		title: 'Add to the encounter',
 		segment: 'adversaries',

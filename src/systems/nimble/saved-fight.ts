@@ -13,6 +13,7 @@ import { fightInProgress, isDown, isHero, isMinionGroup, sameFight } from './enc
 import { confirmAction } from '../../core/touch';
 import { conditionLabel } from './rules';
 import { fmText, safeName } from '../../core/campaign-model';
+import { nimble } from './runtime';
 
 export const FIGHT_BLOCK = 'nimble-fight';
 
@@ -88,7 +89,7 @@ export async function freeFightNotePath(plugin: EmberVaultPlugin, enc: Encounter
 export async function confirmReplaceFight(plugin: EmberVaultPlugin, incoming: string): Promise<boolean> {
 	// With several encounters, a new one is added next to the others; nothing is replaced.
 	if (plugin.settings.multipleEncounters) return true;
-	const active = plugin.encounters.active;
+	const active = nimble().encounters.active;
 	if (!active || !fightInProgress(active)) return true;
 	const round = active.paused?.round ?? active.round ?? 1;
 	const where = active.phase && active.phase !== 'setup' ? `in round ${round}` : active.paused ? `stopped at round ${round}` : 'already has damage on it';
@@ -165,8 +166,8 @@ export async function resumeSavedFight(plugin: EmberVaultPlugin, file: TFile, so
 	if (!snapshot) { new Notice(`${file.basename} has no saved fight in it`); return; }
 	if (!await confirmReplaceFight(plugin, snapshot.name)) return;
 	if (sourcePath) snapshot.sourcePath = sourcePath;
-	plugin.encounters.restore(snapshot);
-	await plugin.showTracker();
+	nimble().encounters.restore(snapshot);
+	await nimble().showTracker();
 	new Notice(`Resumed ${snapshot.name}, round ${snapshot.paused?.round ?? snapshot.round ?? 1}`);
 }
 
@@ -212,8 +213,8 @@ class FightCard extends MarkdownRenderChild {
 				if (!await confirmReplaceFight(this.plugin, enc.name)) return;
 				// The saved path goes stale when the source note moves; the fight note's own link follows it.
 				const source = this.sourceNote();
-				this.plugin.encounters.restore(source ? { ...enc, sourcePath: source } : enc);
-				await this.plugin.showTracker();
+				nimble().encounters.restore(source ? { ...enc, sourcePath: source } : enc);
+				await nimble().showTracker();
 				new Notice(`Resumed ${enc.name}`);
 			})();
 		});

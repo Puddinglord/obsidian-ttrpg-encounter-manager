@@ -13,6 +13,7 @@ import { NIMBLE_ATTRIBUTION, NIMBLE_STORE_URL, NIMBLE_SUPPORT_NOTICE } from './b
 import { ALL_SEGMENTS, BrowserSnapshot, CompendiumBrowser, copyReference, entryReference, insertReference, invalidateCompendium } from './compendium-browser';
 import type { Entry, Segment } from './compendium-entries';
 import { openEntry } from './compendium-modal';
+import { nimble } from './runtime';
 
 export const COMPENDIUM_VIEW_TYPE = 'nimble-bestiary';
 
@@ -65,7 +66,7 @@ export class CompendiumView extends ItemView {
 
 	async onOpen(): Promise<void> {
 		const refresh = debounce(() => { invalidateCompendium(); this.browser?.update(); }, 300, true);
-		this.registerEvent(this.plugin.index.on('changed', refresh));
+		this.registerEvent(nimble().index.on('changed', refresh));
 		// Your notes on a creature: its Notes pill and the notes under its lore follow edits.
 		this.registerEvent(this.app.metadataCache.on('changed', (_f, _d, cache) => { if (this.lore && String(cache.frontmatter?.nimble ?? '').toLowerCase() === 'creature') refresh(); }));
 		// Switching between a campaign you run and one you play in changes what's shown.
@@ -125,7 +126,7 @@ export class CompendiumView extends ItemView {
 			segment: prev ?? 'adversaries',
 			lore,
 			primary: (e) => {
-				if (e.monster && !lore) return { label: 'Add to encounter', run: (x, _ev, n) => void plugin.addToEncounter(x.monster!.monster, x.monster!.filePath || undefined, n) };
+				if (e.monster && !lore) return { label: 'Add to encounter', run: (x, _ev, n) => void nimble().addToEncounter(x.monster!.monster, x.monster!.filePath || undefined, n) };
 				if (entryReference(e)) return { label: 'Insert reference', run: (x) => insertReference(plugin, x) };
 				return { label: 'Quick look', run: (x) => openEntry(plugin, x) };
 			},
@@ -133,7 +134,7 @@ export class CompendiumView extends ItemView {
 				? { label: 'Insert reference', run: (x) => insertReference(plugin, x) }
 				: { label: 'Quick look', run: (x) => openEntry(plugin, x) }),
 			rowButton: (e) => {
-				if (e.monster && !lore) return { icon: 'plus', label: `Add ${e.name} to the encounter`, run: (ev) => void plugin.addToEncounter(e.monster!.monster, e.monster!.filePath || undefined, ev.shiftKey ? 2 : 1) };
+				if (e.monster && !lore) return { icon: 'plus', label: `Add ${e.name} to the encounter`, run: (ev) => void nimble().addToEncounter(e.monster!.monster, e.monster!.filePath || undefined, ev.shiftKey ? 2 : 1) };
 				if (entryReference(e)) return { icon: 'copy', label: `Copy a reference to ${e.name}`, run: () => copyReference(e) };
 				return undefined;
 			},

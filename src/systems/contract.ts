@@ -15,6 +15,7 @@ import type { EncounterDef } from '../core/encounter-def';
 import type { SlashCommand } from '../core/slash';
 import type { NoteKindExtensions } from '../core/note-kinds';
 import type { KindSpec } from '../core/content/spec';
+import type { SettingsPart } from '../core/settings';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
 export interface Attribution {
@@ -98,5 +99,13 @@ export interface GameSystem {
 	 * fields. Packs are checked against these; the system reads the packs a
 	 * campaign uses from `plugin.content.enabled(id, path)`.
 	 */
+	/** How attack rolls go in its campaigns: 'exploding' (a 1 on the primary die misses, its max explodes), else plain. */
+	attackRolls?(plugin: EmberVaultPlugin): 'exploding' | undefined;
+	/** Is one of its fights running (the screen stays awake on phones)? Trigger `plugin.events` 'combat-changed' when it changes. */
+	inCombat?(plugin: EmberVaultPlugin): boolean;
+	/** Your character, its own way (Nimble's Character panel); without it, your character note opens. */
+	openMyCharacter?(plugin: EmberVaultPlugin): Promise<void>;
+	/** Its fields in the plugin's settings: defaults and migration (declare the fields by augmenting EmberVaultSettings, core/settings.ts). */
+	readonly settings?: SettingsPart;
 	readonly content?: { readonly kinds: readonly KindSpec[] };
 }

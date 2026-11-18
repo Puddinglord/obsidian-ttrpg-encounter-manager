@@ -34,6 +34,7 @@ import { heldFaces, resourceRule, spendsOn, startsOn } from './resource-def';
 import { dieShape, inkOn, triangleMark } from '../../core/die-shape';
 import { iconStep, renderActionDots, renderMeter, renderWoundPips, VitalsMemory } from './vitals-ui';
 import { LevelUpWizard } from './level-up';
+import { nimble } from './runtime';
 
 export type SheetTab = 'actions' | 'features' | 'spells' | 'inventory' | 'notes';
 
@@ -676,7 +677,7 @@ export class CharacterSheetRenderer extends Component {
 		for (const c of s.conditions) {
 			const tag = conds.createSpan({ cls: 'ns-cond' });
 			const name = tag.createEl('button', { cls: 'ns-cond-name', text: c });
-			name.addEventListener('click', () => this.plugin.showConditionInfo(name, c));
+			name.addEventListener('click', () => nimble().showConditionInfo(name, c));
 			const x = iconStep(tag, 'x', { 'aria-label': `Remove ${c}` }, 'ns-cond-x');
 			x.addEventListener('click', () => void this.mutate(fm => removeCondition(fm, c)));
 		}
@@ -795,7 +796,7 @@ export class CharacterSheetRenderer extends Component {
 			const draw = () => {
 				grid.empty();
 				const q = search.value.trim().toLowerCase();
-				for (const cond of this.plugin.getAllConditions().filter(x => !x.auto && (!q || x.name.toLowerCase().includes(q)))) {
+				for (const cond of nimble().getAllConditions().filter(x => !x.auto && (!q || x.name.toLowerCase().includes(q)))) {
 					const has = s.conditions.some(x => x.toLowerCase() === cond.name.toLowerCase());
 					const b = grid.createEl('button', { cls: `condition-option${has ? ' is-applied' : ''}`, text: cond.name, attr: { title: cond.description, 'aria-pressed': String(has) } });
 					b.addEventListener('click', () => { close(); void this.mutate(fm => (has ? removeCondition(fm, cond.name) : addCondition(fm, cond.name))); });
@@ -933,10 +934,10 @@ export class CharacterSheetRenderer extends Component {
 				el.setAttr('tabindex', '0');
 				el.addEventListener('click', (e) => { e.stopPropagation(); this.roll(expr, el.closest('.ns-row')?.querySelector('.ns-row-name')?.textContent ?? 'Roll'); });
 			},
-			keywords: this.plugin.conditionKeywords(),
+			keywords: nimble().conditionKeywords(),
 			onKeyword: (el: HTMLElement, word: string) => {
 				el.addClass('nimble-condition-ref');
-				el.addEventListener('click', (e) => { e.stopPropagation(); this.plugin.showConditionInfo(el, word); });
+				el.addEventListener('click', (e) => { e.stopPropagation(); nimble().showConditionInfo(el, word); });
 			},
 		};
 	}
