@@ -2,6 +2,7 @@
 // order, then the monsters. Every change goes through nimble().encounters.
 
 import { App, ItemView, Menu, Modal, Notice, Setting, setIcon, WorkspaceLeaf } from 'obsidian';
+import { openGameSettings } from '../../core/settings-ui';
 import type EmberVaultPlugin from '../../../main';
 import { AppliedCondition, Encounter, EncounterCreature, MonsterIndexEntry } from './types';
 import { awaitingLastStand, EncounterStore, HpResult, isDown, isHero, isMinionGroup } from './encounters';
@@ -175,6 +176,7 @@ export class EncounterTrackerView extends ItemView {
 			menu.addItem(i => i.setTitle(this.plugin.settings.party.length ? 'Edit party…' : 'Set up your party…').setIcon('user-cog').onClick(() => this.plugin.openParty()));
 			menu.addItem(i => i.setTitle('Add monster…').setIcon('plus').onClick(() => nimble().openAddMonsterModal()));
 			menu.addItem(i => i.setTitle('Open compendium').setIcon('book-open').onClick(() => void nimble().openBestiary()));
+			menu.addItem(i => i.setTitle('Encounter settings…').setIcon('settings').onClick(() => { openGameSettings(this.plugin, enc.sourcePath, 'encounter'); }));
 			menu.addSeparator();
 			menu.addItem(i => i.setTitle('Copy summary').setIcon('copy').onClick(() => {
 				void navigator.clipboard.writeText(this.store.summary(enc.id));

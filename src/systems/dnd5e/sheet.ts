@@ -125,8 +125,8 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		if (s.hp === 0) {
 			const ds = root.createDiv({ cls: 'dnd5e-death' });
 			mark(ds.createSpan({ cls: 'dnd5e-death-label', text: 'Death saves' }), s.edition === '2014' ? 'Dropping to 0 Hit Points' : 'Death Saving Throw');
-			renderPipRow(ds, { name: 'Saves', label: true, count: s.deathSaves.success, max: 3, cls: 'is-success', set: v => this.edit(fm => setDeathSaves(fm, v, s.deathSaves.failure)) });
-			renderPipRow(ds, { name: 'Fails', label: true, count: s.deathSaves.failure, max: 3, cls: 'is-failure', set: v => this.edit(fm => setDeathSaves(fm, s.deathSaves.success, v)) });
+			renderPipRow(ds, { key: `death-ok:${this.ctx.sourcePath}`, name: 'Saves', label: true, count: s.deathSaves.success, max: 3, cls: 'is-success', set: v => this.edit(fm => setDeathSaves(fm, v, s.deathSaves.failure)) });
+			renderPipRow(ds, { key: `death-fail:${this.ctx.sourcePath}`, name: 'Fails', label: true, count: s.deathSaves.failure, max: 3, cls: 'is-failure', set: v => this.edit(fm => setDeathSaves(fm, s.deathSaves.success, v)) });
 			const r = ds.createEl('button', { text: 'Roll save' });
 			r.onclick = () => {
 				const n = this.roll('1d20', who('death save'));
@@ -192,7 +192,7 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 					g.createSpan({ cls: 'dnd5e-slot-level', text: String(sl.level) });
 					const left = sl.max - sl.used;
 					// A filled pip spends a slot, an empty one gets one back (core's pips).
-					renderPipRow(g, { name: `Level ${sl.level} slots`, count: left, max: sl.max, cls: 'is-slot', set: n => this.edit((fm, sh) => useSlot(fm, sh, sl.level, n < left ? 1 : -1)) });
+					renderPipRow(g, { key: `slots:${this.ctx.sourcePath}:${sl.level}`, name: `Level ${sl.level} slots`, count: left, max: sl.max, cls: 'is-slot', set: n => this.edit((fm, sh) => useSlot(fm, sh, sl.level, n < left ? 1 : -1)) });
 				}
 			}
 			const byLevel = [...s.spells].sort((a, b) => (a.spell?.level ?? 99) - (b.spell?.level ?? 99) || a.name.localeCompare(b.name));

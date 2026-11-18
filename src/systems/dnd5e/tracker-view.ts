@@ -5,6 +5,8 @@
 import { openHpPad } from '../../core/tracker/hp-pad';
 import { FuzzySuggestModal, ItemView, Menu, setIcon, WorkspaceLeaf } from 'obsidian';
 import { renderPipRow } from '../../core/pip-row';
+import { openGameSettings } from '../../core/settings-ui';
+import { startRolls5e } from './settings';
 import {
 	addCondition, addHero, addMonster, applyHp, Combatant5e, current, deathSave, end, Fight5e, isRunning, next, order, parseHp, previewHp,
 	previous, remove, removeCondition, rollInitiative, setDeathSaves5e, setInitiative, start, useLegendary,
@@ -61,7 +63,7 @@ export class Dnd5eTrackerView extends ItemView {
 			const roll = btn('Initiative', 'dices', () => this.change(x => rollInitiative(x)), 'dnd5e-tracker-side');
 			roll.setAttr('aria-label', 'Roll initiative');
 			roll.disabled = !f.combatants.some(c => c.side === 'monster');
-			const go = btn('Start combat', 'swords', () => this.change(x => start(x)), 'mod-cta dnd5e-tracker-primary');
+			const go = btn('Start combat', 'swords', () => this.change(x => start(x, Math.random, startRolls5e(this.rt.plugin))), 'mod-cta dnd5e-tracker-primary');
 			go.disabled = !f.combatants.length;
 		} else {
 			btn('Back', 'undo-2', () => this.change(x => previous(x)), 'dnd5e-tracker-side').setAttr('aria-label', 'Back a turn');
@@ -135,8 +137,8 @@ export class Dnd5eTrackerView extends ItemView {
 			if (c.stable) ds.createSpan({ cls: 'dnd5e-death-stable', text: 'Stable' });
 			else {
 				const s = c.deathSaves ?? { success: 0, failure: 0 };
-				renderPipRow(ds, { name: 'Saves', label: true, count: s.success, max: 3, cls: 'is-success', set: n => this.change(f => setDeathSaves5e(f, c.id, n, s.failure)) });
-				renderPipRow(ds, { name: 'Fails', label: true, count: s.failure, max: 3, cls: 'is-failure', set: n => this.change(f => setDeathSaves5e(f, c.id, s.success, n)) });
+				renderPipRow(ds, { key: `death-ok:${c.id}`, name: 'Saves', label: true, count: s.success, max: 3, cls: 'is-success', set: n => this.change(f => setDeathSaves5e(f, c.id, n, s.failure)) });
+				renderPipRow(ds, { key: `death-fail:${c.id}`, name: 'Fails', label: true, count: s.failure, max: 3, cls: 'is-failure', set: n => this.change(f => setDeathSaves5e(f, c.id, s.success, n)) });
 				const roll = ds.createEl('button', { cls: 'dnd5e-death-roll', text: 'Roll save' });
 				roll.onclick = () => this.rollDeathSave(c);
 			}
@@ -147,7 +149,7 @@ export class Dnd5eTrackerView extends ItemView {
 		if (c.legendary) {
 			const left = c.legendary.max - c.legendary.used;
 			renderPipRow(main.createDiv({ cls: 'dnd5e-legendary' }), {
-				name: 'Legendary', label: true, count: left, max: c.legendary.max, cls: 'is-legendary',
+				key: `legendary:${c.id}`, name: 'Legendary', label: true, count: left, max: c.legendary.max, cls: 'is-legendary',
 				set: n => this.change(f => useLegendary(f, c.id, left - n)),
 			});
 		}
@@ -207,6 +209,7 @@ export class Dnd5eTrackerView extends ItemView {
 		menu.addItem(i => i.setTitle('Add monster…').setIcon('plus').onClick(() => this.pickMonster()));
 		if (f.combatants.some(c => c.side === 'monster')) menu.addItem(i => i.setTitle('Roll initiative').setIcon('dices').onClick(() => this.change(x => rollInitiative(x))));
 		menu.addItem(i => i.setTitle('Open compendium').setIcon('book-open').onClick(() => void this.rt.openCompendium({ path: f.sourcePath })));
+		menu.addItem(i => i.setTitle('Encounter settings…').setIcon('settings').onClick(() => { openGameSettings(this.rt.plugin, f.sourcePath ?? this.rt.plugin.campaigns.active?.home.path, 'encounter'); }));
 		if (f.combatants.length) {
 			menu.addSeparator();
 			menu.addItem(i => i.setTitle('Clear the fight').setIcon('trash-2').onClick(() => this.rt.fights.reset('Encounter', f.edition)));

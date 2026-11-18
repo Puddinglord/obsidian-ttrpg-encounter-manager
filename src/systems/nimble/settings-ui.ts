@@ -42,7 +42,7 @@ export function nimbleSettingsSections(plugin: EmberVaultPlugin): SettingsSectio
 				render: toggle(() => s.nimbleAttackRolls, v => { s.nimbleAttackRolls = v; }, () => plugin.rerenderNotes()),
 			},
 		] },
-		{ heading: 'Nimble encounters', rows: [
+		{ heading: 'Nimble encounters', topic: 'encounter', rows: [
 			{
 				name: 'Multiple encounters',
 				render: toggle(() => s.multipleEncounters, v => { s.multipleEncounters = v; }, () => nimble().encounters.trigger('changed')),

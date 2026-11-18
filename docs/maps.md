@@ -12,7 +12,7 @@ pins:
 ```
 ````
 
-Pins link to notes or headings, with Obsidian's hover preview, and clicking a pin opens its note. **Add pin**, **Move pins** and right-click (long-press on touch) → **Edit** all save back into the block. A map shown inside another note (an embed or a hover preview) is view-only: open its own note to change pins. Scroll or pinch to zoom, drag to pan, double-tap to zoom in, and press `0` to fit. **Encounter tokens** shows the fight in the tracker as tokens you can drag onto the map, kept in plugin data rather than the note. In a 5e campaign it's the 5e fight, in initiative order once it starts. Pin kinds are place, area, encounter, npc, treasure, danger, note and secret.
+Pins link to notes or headings, with Obsidian's hover preview. Clicking a pin shows its note in a quick look over the map, so you don't lose your place; Cmd/Ctrl-click (or **Open note** in its menu) opens the page. Images and PDFs open as pages. **Add pin**, **Move pins** and right-click (long-press on touch) → **Edit** all save back into the block. A map shown inside another note (an embed or a hover preview) is view-only: open its own note to change pins. Scroll or pinch to zoom, drag to pan, double-tap to zoom in, and press `0` to fit. **Encounter tokens** shows the fight in the tracker as tokens you can drag onto the map, kept in plugin data rather than the note. In a 5e campaign it's the 5e fight, in initiative order once it starts. Pin kinds are place, area, encounter, npc, treasure, danger, note and secret.
 
 ## Adding a map
 

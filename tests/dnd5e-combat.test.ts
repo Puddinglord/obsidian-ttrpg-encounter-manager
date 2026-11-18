@@ -191,3 +191,30 @@ describe('saved fights', () => {
 		expect(f.combatants[0].tempHp).toBe(0);
 	});
 });
+
+describe('Start combat follows the encounter settings', async () => {
+	const { newFight, addMonster, addHero, start } = await import('../src/systems/dnd5e/combat');
+	const fight = () => {
+		const f = newFight('T', '2024');
+		addHero(f, { name: 'Mira', maxHp: 17, ac: 12 });
+		const m = { name: 'Goblin', ac: 15, hp: 7, cr: '1/4', abilities: [8, 14, 10, 10, 8, 8] } as never;
+		addMonster(f, m, 1);
+		return f;
+	};
+	it('rolls both by default', () => {
+		const f = fight();
+		start(f, () => 0.5);
+		expect(f.combatants.every(c => c.init !== undefined)).toBe(true);
+	});
+	it('leaves heroes blank for players to fill in', () => {
+		const f = fight();
+		start(f, () => 0.5, { monsters: true, heroes: false });
+		expect(f.combatants.find(c => c.side === 'hero')!.init).toBeUndefined();
+		expect(f.combatants.find(c => c.side === 'monster')!.init).toBeDefined();
+	});
+	it('leaves monsters blank too when asked', () => {
+		const f = fight();
+		start(f, () => 0.5, { monsters: false, heroes: false });
+		expect(f.combatants.every(c => c.init === undefined)).toBe(true);
+	});
+});

@@ -116,11 +116,14 @@ export function order(f: Fight5e): Combatant5e[] {
 }
 
 /** Roll initiative (d20 + bonus) for monsters (the GM's dice), or for everyone not yet rolled. */
-export function rollInitiative(f: Fight5e, rng: Rng = Math.random, who: 'monsters' | 'missing' = 'monsters'): void {
+export function rollInitiative(f: Fight5e, rng: Rng = Math.random, who: 'monsters' | 'missing' = 'monsters', sides: { monsters: boolean; heroes: boolean } = { monsters: true, heroes: true }): void {
 	for (const c of f.combatants) {
-		if (who === 'monsters' ? c.side === 'monster' : c.init === undefined) c.init = d20(rng) + c.initBonus;
+		if (who === 'monsters' ? c.side === 'monster' : c.init === undefined && (c.side === 'hero' ? sides.heroes : sides.monsters)) c.init = d20(rng) + c.initBonus;
 	}
 }
+
+/** What Start combat rolls for whoever has no initiative yet (the 5e encounter settings). */
+export interface StartRolls { monsters: boolean; heroes: boolean }
 
 export function setInitiative(f: Fight5e, id: string, init: number | undefined): void {
 	const c = find(f, id);
@@ -139,8 +142,8 @@ export function current(f: Fight5e): Combatant5e | undefined {
 const takesTurns = (c: Combatant5e) => !(c.side === 'monster' && c.hp <= 0) && !c.dead;
 
 /** Start combat: anyone without initiative rolls it, round 1, first in order. */
-export function start(f: Fight5e, rng: Rng = Math.random): Combatant5e | undefined {
-	rollInitiative(f, rng, 'missing');
+export function start(f: Fight5e, rng: Rng = Math.random, rolls: StartRolls = { monsters: true, heroes: true }): Combatant5e | undefined {
+	rollInitiative(f, rng, 'missing', rolls);
 	f.round = 1;
 	const first = order(f).find(takesTurns);
 	f.turnId = first?.id;

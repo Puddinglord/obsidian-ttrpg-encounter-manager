@@ -27,9 +27,14 @@ Ember Vault runs 5e campaigns as well as Nimble, on shared engines for slash com
 - Rules words are clickable. In 5e stat blocks, compendium pages and character sheets, AC, Str, Darkvision, Passive Perception, Common, Prone and the rules in a monster's actions open a card with the rule from the SRD, and **Open in compendium** goes to its page. See [Playing 5e](docs/5e.md#rules-words).
 - Nimble's conditions, stats (STR, DEX, INT, WIL), Concentration and languages open the same cards. See the [compendium guide](docs/compendium.md#rules-words).
 - The 2024 Rules tab has SRD 5.2's Rules Glossary, and both editions list the six abilities, the skills and the languages. See [Playing 5e](docs/5e.md#the-5e-compendium).
+- Encounter settings for each game, in the settings page and the tracker's **⋯** menu. 5e can leave heroes' initiative for players to type in, or monsters' too. See the [settings guide](docs/settings.md#5e).
 - Maps in a 5e campaign show the 5e fight as tokens, like Nimble's encounter in a Nimble campaign. See the [maps guide](docs/maps.md).
 
 ### Changed
+
+- Clicking a map pin shows its note in a quick look over the map instead of opening the page; Cmd/Ctrl-click still opens it. **Show pin labels** now shows labels on small maps too. See the [maps guide](docs/maps.md).
+- Pips work the same in both games: tap a filled pip to take one away, an empty one to add one, and the one that changed animates. 5e's legendary actions, death saves and spell slots use them. See [Playing 5e](docs/5e.md#the-5e-combat-tracker).
+- The 5e tracker's controls sit on one line, with Next turn the big button.
 
 - Under the hood, Nimble and 5e are separate modules that can't reach into each other (the build checks), so a change to one can't break the other. The plugin itself holds no game: Nimble plugs in the same way 5e does.
 - Settings are grouped: what every game shares first (General, Campaigns, Party, Content packs, Dice, Combat), then Nimble's own. See the [settings guide](docs/settings.md).

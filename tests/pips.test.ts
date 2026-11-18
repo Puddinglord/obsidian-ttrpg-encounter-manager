@@ -57,3 +57,19 @@ describe('5e death saves by hand', () => {
 		expect(f.combatants[0].dead).toBe(false);
 	});
 });
+
+describe('pips animate the one that changed', () => {
+	it('the pip that filled or emptied since the last draw, and only that one', async () => {
+		const { pipMoved } = await import('../src/core/pips');
+		expect([0, 1, 2].map(i => pipMoved(3, i, i < 2))).toEqual([undefined, undefined, 'off']);
+		expect([0, 1, 2].map(i => pipMoved(2, i, i < 3))).toEqual([undefined, undefined, 'on']);
+		expect(pipMoved(undefined, 0, true)).toBeUndefined();
+	});
+	it('a keyed row marks the pip that just changed', () => {
+		const host = document.createElement('div');
+		renderPipRow(host, { key: 't', name: 'T', count: 3, max: 3, set: () => {} });
+		host.empty();
+		renderPipRow(host, { key: 't', name: 'T', count: 2, max: 3, set: () => {} });
+		expect([...host.querySelectorAll('.ev-pip')].map(p => p.className)).toEqual(['ev-pip is-on', 'ev-pip is-on', 'ev-pip just-off']);
+	});
+});

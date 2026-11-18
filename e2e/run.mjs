@@ -5121,6 +5121,51 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 	}
 });
 
+test('encounter settings: the 5e tracker menu opens 5e\'s own settings; heroes left blank for players to fill in', async (o) => {
+	const C = 'Campaigns/Settings Coast';
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Settings Coast', level: 3, heroes: 1, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Fight.md`, '```nimble-encounter\nname: Test fight\nmonsters:\n- `5e:Goblin Warrior`\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Fight.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/Fight.md`, 'preview');
+		// The campaign is active now, so this is its party.
+		await o.eval((app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
+		await o.page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-encounter button', { hasText: 'Run' }).click();
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		await o.page.locator(`${T} button[aria-label="Add the party"]`).click();
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant`).count()) === 2, { what: 'two in the fight' });
+
+		await o.page.locator(`${T} .dnd5e-tracker-more`).click();
+		await o.page.locator('.menu-item', { hasText: 'Encounter settings…' }).click();
+		const dlg = o.page.locator('.modal.ev-settings-modal');
+		await dlg.waitFor();
+		assert.match(await dlg.locator('.modal-title').innerText(), /5e encounter settings/);
+		const heroes = dlg.locator('.setting-item', { hasText: 'Roll heroes\' initiative when combat starts' });
+		await heroes.locator('.checkbox-container').click();
+		await o.waitFor(() => o.eval((app, plugin) => plugin.settings.systemData?.dnd5e?.options?.rollHeroes === false), { what: 'setting saved' });
+		await o.page.keyboard.press('Escape');
+
+		await o.page.locator(`${T} button`, { hasText: 'Start combat' }).click();
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.round === 1), { what: 'combat started' });
+		const inits = await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => [c.side, c.init ?? null]));
+		assert.ok(inits.some(([side, init]) => side === 'monster' && init !== null), `monster rolled: ${JSON.stringify(inits)}`);
+		assert.ok(inits.some(([side, init]) => side === 'hero' && init === null), `hero left blank: ${JSON.stringify(inits)}`);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			if (plugin.settings.systemData?.dnd5e?.options) delete plugin.settings.systemData.dnd5e.options;
+			plugin.settings.party = [];
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			if (plugin.settings.activeCampaign) await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('map pins: a click shows the note in a quick look over the map; Cmd/Ctrl-click opens the page', async (o) => {
 	await resetEncounter(o);
 	const M = '.workspace-leaf.mod-active .markdown-reading-view';

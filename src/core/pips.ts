@@ -11,3 +11,13 @@
 export function pipStep(count: number, filled: boolean, max = Infinity): number {
 	return filled ? Math.max(0, count - 1) : Math.min(max, count + 1);
 }
+
+/**
+ * Which way a pip just moved, so it can animate: 'on' when it filled since the
+ * last draw, 'off' when it emptied, undefined when it didn't change (or there
+ * was no last draw).
+ */
+export function pipMoved(was: number | undefined, index: number, on: boolean): 'on' | 'off' | undefined {
+	if (was === undefined || (index < was) === on) return undefined;
+	return on ? 'on' : 'off';
+}

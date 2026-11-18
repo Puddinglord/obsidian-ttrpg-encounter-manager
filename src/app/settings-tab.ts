@@ -3,7 +3,7 @@ import type { SettingDefinition, SettingDefinitionGroup, SettingDefinitionItem }
 import { showSliderValue } from '../core/compat';
 import type EmberVaultPlugin from '../../main';
 import type { ConditionDef } from '../core/types';
-import { renderAttribution, SettingsRow as Row, SettingsSection as Section, settingToggle } from '../core/settings-ui';
+import { drawSections, renderAttribution, SettingsRow as Row, SettingsSection as Section, settingToggle } from '../core/settings-ui';
 import { renderPartyEditor } from '../core/party';
 import { diceAssignmentRows, diceMotionRows, renderDiceStudio } from '../core/dice-settings';
 import { confirmAction } from '../core/touch';
@@ -51,21 +51,8 @@ export class EmberVaultSettingsTab extends PluginSettingTab {
 
 	/** Draws every row into the settings page, for Obsidian before 1.13. */
 	private drawLegacy(): void {
-		const { containerEl } = this;
-		containerEl.empty();
-		for (const section of this.sections()) {
-			if (section.heading) new Setting(containerEl).setName(section.heading).setHeading();
-			const parent = section.cls ? containerEl.createDiv({ cls: section.cls }) : containerEl;
-			for (const row of section.rows) {
-				if (row.visible && !row.visible()) continue;
-				if (row.block) { row.block(parent); continue; }
-				const setting = new Setting(parent);
-				if (row.name) setting.setName(row.name);
-				if (row.desc) setting.setDesc(row.desc);
-				if (row.cls) setting.setClass(row.cls);
-				row.render?.(setting);
-			}
-		}
+		this.containerEl.empty();
+		drawSections(this.containerEl, this.sections());
 	}
 
 	/** Settings were re-read from disk (another device synced them): redraw the page if it's open. */

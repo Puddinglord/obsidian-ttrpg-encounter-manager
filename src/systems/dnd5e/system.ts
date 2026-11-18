@@ -20,6 +20,7 @@ import { KINDS_5E } from './content';
 import { NPC_FIELDS_5E } from './npc';
 import { drawNpc5e } from './npc-card';
 import { ruleTerms5e, termPage5e } from './rule-terms';
+import { settingsSections5e } from './settings';
 import { ruleTerms } from '../../core/rule-terms';
 
 export const dnd5eSystem: GameSystem = {
@@ -32,6 +33,7 @@ export const dnd5eSystem: GameSystem = {
 	content: { kinds: KINDS_5E },
 	slashCommands: dnd5eSlashCommands,
 	spotlight: dnd5eSpotlight,
+	settingsSections: settingsSections5e,
 	ruleTerms: (_plugin, path) => ruleTerms(ruleTerms5e(dnd5e().edition(path))),
 	ruleTermPage(_plugin, term, path) {
 		const rt = dnd5e();

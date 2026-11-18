@@ -142,6 +142,7 @@ body {
 .ev-pips { --pip: var(--interactive-accent); display: inline-flex; align-items: center; flex-wrap: wrap; gap: 3px; }
 .ev-pips-label { margin-right: 0.25rem; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
 .ev-pip {
+	position: relative;
 	width: 13px;
 	height: 13px;
 	padding: 0;
@@ -151,9 +152,16 @@ body {
 	background: transparent;
 	border: 1.5px solid var(--pip);
 	cursor: pointer;
+	transition: transform 0.12s;
 }
 span.ev-pip { display: inline-block; cursor: default; }
-.ev-pip.is-on { background: var(--pip); }
+/* The fill is its own layer, so it can grow in and shrink out (Nimble's sheet pips). */
+.ev-pip::before { content: ""; position: absolute; inset: -1.5px; border-radius: 50%; background: var(--pip); transform: scale(0); }
+.ev-pip.is-on::before { transform: scale(1); }
+.ev-pip:active { transform: scale(0.88); }
+.ev-pip.just-on::before { animation: ns-dot-fill 0.38s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.ev-pip.just-off::before { animation: ns-dot-empty 0.32s ease-in forwards; }
+.ev-pip.just-on { animation: ns-dot-bump 0.38s ease-out; }
 .ev-pip:hover { box-shadow: 0 0 0 2px color-mix(in srgb, var(--pip) 25%, transparent); }
 .ev-pips.is-legendary { --pip: var(--nimble-legendary); }
 .ev-pips.is-success { --pip: var(--color-green); }

@@ -23,7 +23,7 @@ Where the engines came from, and what's still each system's own: [prototypes/SYS
 | `vocabulary` | Words core shows for the system's ideas: `defense` ("DEF", "AC") | ✓ | ✓ |
 | `ruleTerms(plugin, path)`, `ruleTermPage` | Its rules words for a note's edition (`RuleTerm`: names, tag, text, `prose` when running text marks it too), and the compendium page each opens. Core underlines them (`appendWithTerms`, `markTerm` in `core/rule-term-ui.ts`) in stat blocks, cards and sheets; pass a `TermContext` to your renderers. Every term needs text and a page; test both the way `tests/dnd5e-rule-terms.test.ts` does | ✓ | ✓ |
 | `settings` | Its settings fields: defaults and migration (`SettingsPart`, `core/settings.ts`). Declare the fields by augmenting `EmberVaultSettings`; `data.json` stays one flat object, so never rename a field | ✓ | – (keeps state in `systemData.dnd5e`) |
-| `settingsSections(plugin)` | Its sections on the settings page, after the shared ones (`core/settings-ui.ts`) | ✓ | – |
+| `settingsSections(plugin)` | Its own settings, above the base plugin's: sections on the settings page after the shared ones (`core/settings-ui.ts`). Mark a section `topic: 'encounter'` and your tracker's **Encounter settings…** (`openGameSettings(plugin, path, 'encounter')`) shows it in a dialog. Keep 5e-style state in `systemData.<id>.options` | ✓ | ✓ |
 | `attackRolls(plugin)` | `'exploding'` when an attack's primary die misses on a 1 and explodes on its max; plain otherwise | ✓ (setting) | – |
 | `combatTokens(plugin)`, `inCombat(plugin)` | Its running fight as map tokens (`core/tracker/tokens.ts`), and whether one is running (the screen stays on). Trigger `plugin.events` `'combat-changed'` when the fight changes | ✓ | ✓ |
 

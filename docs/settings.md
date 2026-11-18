@@ -36,7 +36,7 @@ Your heroes: name, class, level, max HP, Defense and max Wounds. This is the par
 
 ## Nimble
 
-These only change Nimble campaigns.
+These only change Nimble campaigns. The encounter ones are also in the tracker's **⋯** menu, under **Encounter settings…**
 
 - **Include the Nimble bestiary:** the 525 bundled monsters. Turn it off if you only want your own. A note in your vault with the same name as a bundled monster always replaces it.
 - **Help with stat blocks you write:** a quiet line under a stat block when part of it couldn't be shown as written.
@@ -48,6 +48,13 @@ These only change Nimble campaigns.
 - **Ask before rolling:** attacks, spells, saves and checks open the [roll dialog](character-sheets.md#rolling) for advantage, a modifier and class dice. Off rolls straight away, with class dice that are on by default (like Judgment Dice) added.
 - **Include expansion drafts:** the draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells, marked as drafts wherever they show. A hero who already plays a draft class keeps their whole sheet when this is off.
 - **Compendium art folder:** where images you upload for compendium entries are saved.
+
+## 5e
+
+These only change 5e campaigns. They're also in the 5e tracker's **⋯** menu, under **Encounter settings…**
+
+- **Roll monsters' initiative when combat starts:** monsters with no initiative get one when you press **Start combat**.
+- **Roll heroes' initiative when combat starts:** turn it off to type in what your players roll. Heroes with no initiative go last until you do.
 
 ## Custom conditions
 
