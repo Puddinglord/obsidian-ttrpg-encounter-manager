@@ -16,6 +16,7 @@ import { IMAGE_EXTENSIONS, isRemote, NPC_ATTITUDES, NPC_STATUSES, npcFacts, pars
 import { appendRichText } from './markdown';
 import { wireWikiLinks } from './wiki-links';
 import { drawSystemExtras, extensionFor, extrasKey } from './note-card';
+import { applyLook } from './look';
 
 export function registerNpcCard(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-npc', (source, el, ctx) => {
@@ -106,6 +107,7 @@ class NpcCard extends MarkdownRenderChild {
 		el.empty();
 		// The card's narrow layout is a container query on this wrapper (see styles.css).
 		el.addClass('nimble-npc-wrap');
+		applyLook(el, this.plugin.system(this.path).id);
 		const fm = this.frontmatter();
 		const ext = extensionFor(this.plugin, this.path, 'npc');
 		if (ext?.replace && ext.card) {

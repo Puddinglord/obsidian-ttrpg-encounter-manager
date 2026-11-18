@@ -7,6 +7,7 @@ import { appendRichText, RichTextOptions } from '../../core/markdown';
 import { appendWithTerms, TermContext } from '../../core/rule-term-ui';
 import { wireWikiLinks } from '../../core/wiki-links';
 import { compendium5e, Hit5e, KIND5E } from './compendium';
+import { applyLook } from '../../core/look';
 
 export interface Card5eOptions {
 	app: App;
@@ -71,6 +72,7 @@ function field(parent: HTMLElement, label: string, value: string | number | unde
 
 export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTMLElement {
 	const card = el.createDiv({ cls: `dnd5e-card kind-${hit.kind}` });
+	applyLook(card, 'dnd5e');
 	const head = card.createDiv({ cls: 'dnd5e-card-head' });
 	setIcon(head.createSpan({ cls: 'dnd5e-card-icon' }), KIND5E[hit.kind].icon);
 	const titles = head.createDiv();

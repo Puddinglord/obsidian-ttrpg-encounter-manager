@@ -6,11 +6,14 @@ import { App, Component, MarkdownRenderer, Modal, TFile } from 'obsidian';
 import { portraitOf, renderAvatar } from './npc-card';
 import { closePopover } from './popover';
 import { pill } from './pill';
+import { applyLook } from './look';
 
 export interface NoteQuickLookTarget {
 	file: TFile;
 	sourcePath?: string;
 	subtitle?: string;
+	/** The game whose look the sheet takes (core/look.ts). */
+	system?: string;
 }
 
 export function openNoteQuickLook(app: App, target: NoteQuickLookTarget): Modal {
@@ -29,6 +32,7 @@ class NoteQuickLook extends Modal {
 
 	onOpen(): void {
 		this.modalEl.addClass('nimble-record-modal');
+		applyLook(this.modalEl, this.target.system);
 		this.component.load();
 		void this.render();
 	}

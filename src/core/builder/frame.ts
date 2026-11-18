@@ -12,6 +12,7 @@ import { App, Menu, Modal, normalizePath, Notice, setIcon, stringifyYaml, TFile 
 import type EmberVaultPlugin from '../../../main';
 import { confirmAction, isPhone, isTouch } from '../touch';
 import { fuzzyRank } from '../compendium/query';
+import { applyLook } from '../look';
 
 /** What a builder makes: "monster", "spell", "item"… (each system has its own). */
 export type EntityKind = string;
@@ -157,6 +158,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 
 	onOpen(): void {
 		this.modalEl.addClass('nimble-entity-builder');
+		applyLook(this.modalEl, this.system);
 		if (this.phone) this.modalEl.addClass('is-phone-layout');
 		this.titleEl.empty();
 		const { contentEl } = this;

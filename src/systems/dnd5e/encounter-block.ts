@@ -8,6 +8,7 @@ import type { EncounterDef } from '../../core/encounter-def';
 import { addHero, addMonster } from './combat';
 import type { Dnd5eRuntime } from './runtime';
 import { rateEncounter5e, xpOf } from './rules';
+import { applyLook } from '../../core/look';
 
 export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 	constructor(private rt: Dnd5eRuntime, el: HTMLElement, private def: EncounterDef, private ctx: MarkdownPostProcessorContext) {
@@ -27,6 +28,7 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		el.empty();
 		const path = this.ctx.sourcePath;
 		const card = el.createDiv({ cls: 'nimble-encounter-block dnd5e-encounter' });
+		applyLook(card, 'dnd5e');
 		const head = card.createDiv({ cls: 'dnd5e-encounter-head' });
 		head.createDiv({ cls: 'dnd5e-encounter-name', text: this.def.name });
 		const player = this.rt.plugin.playerView(path);

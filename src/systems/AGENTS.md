@@ -29,6 +29,14 @@ Where the engines came from, and what's still each system's own: [prototypes/SYS
 
 Missing optional members fall back to plain behaviour (plain attack rolls, no tokens, the character note) or a "not yet" notice. Add members from **real call sites**: when core or `src/app` needs to ask a system something, add it here, document it in the table above, implement it in every system, and extend the conformance suite in `tests/systems.test.ts`.
 
+## Each game's look
+
+Every game should feel like its own book, built from the same components. Everything drawn for a game carries `.ev-sys-<id>` (`applyLook(el, id)`, `core/look.ts`). Core stamps the surfaces it draws (the builder, NPC and note cards, note quick looks); stamp your own roots (sheet, tracker, stat blocks, cards, compendium tab, encounter block).
+
+The look itself is a handful of tokens in the GAME LOOKS section at the top of `styles.css`: `--ev-accent` (and `-hover`, `--ev-on-accent`, `--ev-accent-text`), `--ev-tint`, `--ev-paper` and `--ev-paper-edge`, `--ev-ornament`, `--ev-display-font`, `--ev-display-variant`, `--ev-display-weight`. Set them under `.ev-sys-<id>` (and `.theme-dark .ev-sys-<id>`), and add your class to the rule that points Obsidian's accent at yours, so buttons, toggles and links inside your surfaces follow. Your own components read the tokens rather than hard-coding colours, so a theme or a dark mode changes one place. A game that sets nothing follows the user's theme (Nimble does).
+
+Use the shared design language (Nimble's sheet and tracker are the benchmark): cards on the paper colour with one border, a hero header with the portrait, big tappable numbers, HP as a bar with the shared keypad, `renderPipRow` for pips, `pill()` for chips. Make it yours with colour, type and ornament, not with a second copy of a component.
+
 ## Engines a system uses (not contract members)
 
 - **Compendium** (`core/compendium/`). Give your entries the `CompendiumEntry` shape (id, kind, tabs, facets, numbers, flags, text), describe your words in a `QuerySchema` (tabs, facets, sorts per tab, kind names) and bind them with `createCompendiumQuery`. Your Compendium tab and pickers are core's `CompendiumBrowser` with a `CompendiumSource` (entries, a row's badge, pills and tags, the page). See `dnd5e/compendium-entries.ts` and `dnd5e/compendium-view.ts` for the whole thing in about 400 lines. Test your facets the way `tests/dnd5e-compendium-search.test.ts` does.

@@ -19,6 +19,67 @@ body {
 }
 
 /* ============================================
+   GAME LOOKS (core/look.ts)
+   Everything drawn for one game (its sheet, tracker, builder, cards, NPC card)
+   carries `.ev-sys-<id>`. These tokens are the shared design language; a game
+   sets them under its class, and its surfaces read them, so each game feels
+   like its own book without a second copy of any component. With nothing set,
+   a game follows the user's theme (Nimble does).
+
+   --ev-accent / -hover / --ev-on-accent   the game's colour, for buttons and highlights
+   --ev-accent-text                        that colour as text (headings, labels)
+   --ev-tint                               a wash of it, for chosen or active things
+   --ev-paper / --ev-paper-edge            the surface cards sit on, and its border
+   --ev-ornament                           a second colour for rules and flourishes
+   --ev-display-font / -variant / -weight  how names and headings are set
+   Inside a game's surfaces Obsidian's own accent follows the game, so its
+   buttons (mod-cta), toggles and links match without per-component rules.
+   ============================================ */
+body {
+	--ev-accent: var(--interactive-accent);
+	--ev-accent-hover: var(--interactive-accent-hover);
+	--ev-on-accent: var(--text-on-accent);
+	--ev-accent-text: var(--text-accent);
+	--ev-tint: color-mix(in srgb, var(--ev-accent) 12%, var(--background-primary));
+	--ev-paper: var(--background-secondary);
+	--ev-paper-edge: var(--background-modifier-border);
+	--ev-ornament: var(--background-modifier-border);
+	--ev-display-font: var(--font-interface);
+	--ev-display-variant: normal;
+	--ev-display-weight: 700;
+}
+/* A game that sets its own colour: Obsidian's accent follows it inside its surfaces. */
+.ev-sys-dnd5e {
+	--interactive-accent: var(--ev-accent);
+	--interactive-accent-hover: var(--ev-accent-hover);
+	--text-on-accent: var(--ev-on-accent);
+	--text-accent: var(--ev-accent-text);
+	--text-accent-hover: var(--ev-accent-hover);
+	--ev-tint: color-mix(in srgb, var(--ev-accent) 11%, var(--background-primary));
+}
+/* 5e: the SRD's book. Rubric red, warm paper, gold rules, small-caps serif names. */
+.ev-sys-dnd5e {
+	--ev-accent: #9c2b1b;
+	--ev-accent-hover: #852214;
+	--ev-on-accent: #fff;
+	--ev-accent-text: #9c2b1b;
+	--ev-paper: color-mix(in srgb, #efe3c6 32%, var(--background-primary));
+	--ev-paper-edge: color-mix(in srgb, #b08a4a 38%, var(--background-modifier-border));
+	--ev-ornament: #b08a4a;
+	--ev-display-font: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+	--ev-display-variant: small-caps;
+	--ev-display-weight: 700;
+}
+.theme-dark .ev-sys-dnd5e {
+	--ev-accent: #b9412e;
+	--ev-accent-hover: #cc513d;
+	--ev-accent-text: #e2806c;
+	--ev-paper: color-mix(in srgb, #3a2a1c 40%, var(--background-primary));
+	--ev-paper-edge: color-mix(in srgb, #b08a4a 30%, var(--background-modifier-border));
+	--ev-ornament: #a0824c;
+}
+
+/* ============================================
    STAT BLOCK
    ============================================ */
 

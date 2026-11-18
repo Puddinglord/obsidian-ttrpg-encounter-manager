@@ -19,6 +19,7 @@ import { formatMod } from './rules';
 import type { Dnd5eRuntime } from './runtime';
 import { SHEET_LANG } from './sheet';
 import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
+import { applyLook } from '../../core/look';
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 const short = (a: AbilityKey) => a.toUpperCase();
@@ -26,6 +27,7 @@ const short = (a: AbilityKey) => a.toUpperCase();
 /** The sheet in brief: what the new or levelled character will have. */
 function sheetSummary(el: HTMLElement, s: Sheet5e, title: string): void {
 	const card = el.createDiv({ cls: 'dnd5e-card dnd5e-wizard-summary' });
+	applyLook(card, 'dnd5e');
 	const head = card.createDiv({ cls: 'dnd5e-card-head' });
 	head.createDiv({ cls: 'dnd5e-card-name', text: s.name || 'New hero' });
 	head.createDiv({ cls: 'dnd5e-card-line', text: title });

@@ -17,6 +17,7 @@ import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
 import { markTerm, termContext } from '../../core/rule-term-ui';
 import { renderPipRow } from '../../core/pip-row';
 import { pill } from '../../core/pill';
+import { applyLook } from '../../core/look';
 
 export const SHEET_LANG = '5e-sheet';
 const SHORT: Record<AbilityKey, string> = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
@@ -71,6 +72,7 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		el.empty();
 		const s = this.sheet();
 		const root = el.createDiv({ cls: `dnd5e-sheet ed-${s.edition}` });
+		applyLook(root, 'dnd5e');
 		const who = (what: string) => `${s.name}: ${what}`;
 
 		// Header.

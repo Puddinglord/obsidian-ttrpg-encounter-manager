@@ -11,6 +11,7 @@ import { wireWikiLinks } from '../../core/wiki-links';
 import type { Dnd5eEdition } from './editions';
 import { abilityMod, formatMod, initiativeOf, pbForCr, saveOf, xpOf } from './rules';
 import { ABILITIES, AbilityKey, Dnd5eMonster, Feature5e } from './types';
+import { applyLook } from '../../core/look';
 
 export interface Statblock5eAction {
 	label: string;
@@ -45,6 +46,7 @@ const signedExpr = (mod: number) => (mod === 0 ? '1d20' : `1d20${mod > 0 ? '+' :
 export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render5eOptions): HTMLElement {
 	const edition = m.edition ?? opts.edition ?? '2024';
 	const block = el.createDiv({ cls: `dnd5e-statblock ed-${edition} ${opts.variant}` });
+	applyLook(block, 'dnd5e');
 	block.dataset.sourcePath = opts.sourcePath;
 	const roll = opts.onRoll;
 	const terms = opts.terms;

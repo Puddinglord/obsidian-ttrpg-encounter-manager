@@ -9,6 +9,7 @@ import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
 import type EmberVaultPlugin from '../../main';
 import { noteKind } from './campaign-model';
 import { fieldsKey, NoteKindExtension, noteStats, SHARED_NOTE_KINDS, SharedNoteKind } from './note-kinds';
+import { applyLook } from './look';
 
 /** The system's stats ("AC 15 · HP 22") and its own drawing, for a note of `kind`. */
 export function drawSystemExtras(plugin: EmberVaultPlugin, el: HTMLElement, ext: NoteKindExtension | undefined, path: string, fm: Record<string, unknown>): void {
@@ -77,6 +78,7 @@ class NoteCard extends MarkdownRenderChild {
 		const kind = noteKind(fm);
 		this.key = extrasKey(this.plugin, path, kind, fm);
 		const card = el.createDiv({ cls: `nimble-note-card kind-${kind}` });
+		applyLook(card, this.plugin.system(path).id);
 		drawSystemExtras(this.plugin, card, extensionFor(this.plugin, path, kind), path, fm);
 		if (!card.childElementCount) card.remove();
 	}

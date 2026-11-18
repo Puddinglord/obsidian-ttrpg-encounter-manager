@@ -12,6 +12,7 @@ import { buildEntries5e, Entry5e, entryPills5e, entryReference5e, QUERY_5E, Segm
 import type { Dnd5eEdition } from './editions';
 import type { Dnd5eRuntime } from './runtime';
 import { pill } from '../../core/pill';
+import { applyLook } from '../../core/look';
 
 export const DND5E_COMPENDIUM_VIEW = 'nimble-dnd5e-compendium';
 
@@ -152,6 +153,7 @@ export class Dnd5eCompendiumView extends ItemView {
 		const root = this.contentEl;
 		root.empty();
 		root.addClass('nimble-bestiary', 'nimble-compendium', 'dnd5e-compendium');
+		applyLook(root, 'dnd5e');
 		if (this.browser) { this.tab = this.browser.currentSegment; this.removeChild(this.browser); }
 		const plugin = this.rt.plugin;
 		const lore = this.lore = plugin.hideStats();

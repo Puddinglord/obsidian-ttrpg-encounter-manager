@@ -15,6 +15,7 @@ import {
 import type { Dnd5eRuntime } from './runtime';
 import type { Dnd5eEntry } from './types';
 import { formatMod } from './rules';
+import { applyLook } from '../../core/look';
 
 export const DND5E_TRACKER_VIEW = 'nimble-dnd5e-tracker';
 
@@ -39,6 +40,7 @@ export class Dnd5eTrackerView extends ItemView {
 		const root = this.contentEl;
 		root.empty();
 		root.addClass('dnd5e-tracker');
+		applyLook(root, 'dnd5e');
 		const f = this.fight;
 
 		// Header: the fight, where it's at, and a menu for the rest.

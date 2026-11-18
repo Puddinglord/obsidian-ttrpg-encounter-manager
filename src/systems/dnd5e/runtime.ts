@@ -32,6 +32,7 @@ import { addEditButton } from '../../core/builder/commands';
 import { renderCard5e, Card5eOptions } from './cards';
 import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-view';
 import { Dnd5eSheet, SHEET_LANG } from './sheet';
+import { applyLook } from '../../core/look';
 
 /** `5e:Goblin` → "Goblin". */
 export const REF_PREFIX = '5e:';
@@ -363,6 +364,7 @@ class Dnd5eQuickLook extends Modal {
 
 	onOpen(): void {
 		this.modalEl.addClass('nimble-record-modal', 'dnd5e-quick-look');
+		applyLook(this.modalEl, 'dnd5e');
 		const lore = this.rt.plugin.hideStats(this.entry.filePath, this.sourcePath || undefined);
 		const head = this.contentEl.createDiv({ cls: 'record-head' });
 		const titles = head.createDiv({ cls: 'record-titles' });

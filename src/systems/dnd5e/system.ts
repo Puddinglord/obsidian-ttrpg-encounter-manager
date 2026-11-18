@@ -45,7 +45,7 @@ export const dnd5eSystem: GameSystem = {
 	},
 	conditions: (edition?: string): readonly ConditionDef[] => conditionsFor(edition ?? DEFAULT_EDITION),
 	quickLook(plugin, target) {
-		return openNoteQuickLook(plugin.app, target);
+		return openNoteQuickLook(plugin.app, { ...target, system: 'dnd5e' });
 	},
 	characters: {
 		promptNew(_plugin, r) {
