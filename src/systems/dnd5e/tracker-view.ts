@@ -3,10 +3,13 @@
 // saves for heroes at 0 HP, legendary actions and resistances. Every change
 // goes through the store (rt.fights.change), which saves and redraws.
 //
-// One dense row per combatant: the initiative badge, the name in the book's
-// type with its conditions beside it, CR or level, then AC, the HP bar and the
-// HP button (the shared keypad) on the line below. Wide panes put it all on
-// one line. Defeated monsters fold away at the bottom.
+// One clean row per combatant: the initiative badge and the name in the book's
+// type, then AC in its shield, the HP bar and the HP button (the shared keypad)
+// on the line below. Conditions get a line of their own underneath, only when
+// there are any. The side shows in the row's colour edge; the stat block or
+// sheet (tap the name) has the rest. Drag a row, or Move up/down in its menu,
+// to change the order. Wide panes put the vitals beside the name. Defeated
+// monsters fold away at the bottom.
 
 import { openHpPad } from '../../core/tracker/hp-pad';
 import type { HpCommand } from '../../core/tracker/hp';
@@ -20,19 +23,28 @@ import { isSheetMember, type AppliedCondition, type PartyMember } from '../../co
 import { startRolls5e } from './settings';
 import {
 	addCondition, addHero, addMonster, applyHp, Combatant5e, concentrationDc, current, damageTaken, deathSave, end, Fight5e, hpState, isDefeated,
-	isRunning, next, order, previewHp, previous, remove, removeCondition, rollInitiative, setConcentration, setDeathSaves5e, setInitiative, start,
+	isRunning, moveCombatant, next, order, previewHp, previous, remove, removeCondition, rollInitiative, setConcentration, setDeathSaves5e, setInitiative, start,
 	updateCondition, useLegendary, useResistance,
 } from './combat';
 import type { Dnd5eRuntime } from './runtime';
 import type { Dnd5eEntry } from './types';
 import { formatMod } from './rules';
 import { applyLook } from '../../core/look';
+import { makeSortable } from '../../core/tracker/sortable';
 
 export const DND5E_TRACKER_VIEW = 'nimble-dnd5e-tracker';
 
-/** "1/4" → "¼": challenge ratings as the book prints them. */
-const CR_GLYPHS: Record<string, string> = { '1/8': '⅛', '1/4': '¼', '1/2': '½' };
-const crText = (cr: string) => `CR ${CR_GLYPHS[cr] ?? cr}`;
+/** In the turn order's list: everyone but the monsters that are down (they fold away under Defeated). */
+const isActiveRow = (c: Combatant5e) => !(c.side === 'monster' && isDefeated(c));
+
+/** AC in a heater shield: a tinted face, a rim and an inner rule in the ornament colour, the number in the face's middle. */
+function renderAc(parent: HTMLElement, ac: number): void {
+	const el = parent.createSpan({ cls: 'dnd5e-ac', attr: { 'aria-label': `AC ${ac}` } });
+	const svg = el.createSvg('svg', { cls: 'dnd5e-ac-shield', attr: { viewBox: '0 0 28 32', 'aria-hidden': 'true' } });
+	svg.createSvg('path', { cls: 'dnd5e-ac-face', attr: { d: 'M14 1.6 26.2 5.4V15c0 7.7-5.1 12.9-12.2 15.6C6.9 27.9 1.8 22.7 1.8 15V5.4Z' } });
+	svg.createSvg('path', { cls: 'dnd5e-ac-inner', attr: { d: 'M14 4.6 23.4 7.5V15c0 6-3.9 10.2-9.4 12.5C8.5 25.2 4.6 21 4.6 15V7.5Z' } });
+	el.createSpan({ cls: 'dnd5e-ac-value', text: String(ac) });
+}
 
 export class Dnd5eTrackerView extends ItemView {
 	/** Folded sections stay as they were across redraws. */
@@ -64,8 +76,8 @@ export class Dnd5eTrackerView extends ItemView {
 		const running = isRunning(f);
 		const cur = current(f);
 		const all = order(f);
-		const active = all.filter(c => !(c.side === 'monster' && isDefeated(c)));
-		const defeated = all.filter(c => c.side === 'monster' && isDefeated(c));
+		const active = all.filter(isActiveRow);
+		const defeated = all.filter(c => !isActiveRow(c));
 
 		this.renderHead(root, f, cur, active);
 		if (!f.combatants.length) { this.renderEmpty(root); return; }
@@ -73,7 +85,18 @@ export class Dnd5eTrackerView extends ItemView {
 
 		const list = root.createDiv({ cls: 'dnd5e-tracker-list' });
 		const upNext = running && cur ? this.nextAfter(active, cur) : undefined;
-		for (const c of active) this.renderRow(list, c, { isTurn: c.id === cur?.id, isNext: c.id === upNext?.id });
+		const sortable = active.length > 1;
+		for (const c of active) this.renderRow(list, c, { isTurn: c.id === cur?.id, isNext: c.id === upNext?.id, sortable });
+		if (sortable) {
+			makeSortable(list, {
+				items: '.dnd5e-combatant',
+				// A mouse drags the row from its name and empty space; the badges, buttons and chips keep their clicks.
+				ignore: 'button, input, a, .dnd5e-condition',
+				find: (id) => this.rowEl(id),
+				onStart: () => { this.rt.plugin.hover.hide(); closePopover(); },
+				onDrop: (id, to) => { this.change(x => moveCombatant(x, id, to, isActiveRow)); },
+			});
+		}
 
 		if (defeated.length) {
 			const box = root.createEl('details', { cls: 'dnd5e-tracker-defeated' });
@@ -174,7 +197,7 @@ export class Dnd5eTrackerView extends ItemView {
 	// ------------------------------------------------------------------------
 	// A combatant
 
-	private renderRow(list: HTMLElement, c: Combatant5e, o: { isTurn?: boolean; isNext?: boolean; compact?: boolean }): void {
+	private renderRow(list: HTMLElement, c: Combatant5e, o: { isTurn?: boolean; isNext?: boolean; compact?: boolean; sortable?: boolean }): void {
 		const state = hpState(c);
 		const row = list.createDiv({ cls: `dnd5e-combatant side-${c.side} hp-${state}` });
 		row.dataset.id = c.id;
@@ -185,10 +208,19 @@ export class Dnd5eTrackerView extends ItemView {
 		row.toggleClass('is-defeated', !!o.compact);
 		if (o.isTurn) row.createDiv({ cls: 'dnd5e-up-now', text: 'Up now' });
 		onLongPress(row, (e) => this.rowMenu(e, c));
+		// Drag to change the order: a mouse drags the row, a finger the grip. Alt+↑/↓ from the keyboard.
+		if (o.sortable) {
+			setIcon(row.createDiv({ cls: 'ev-sort-handle dnd5e-grip', attr: { 'aria-hidden': 'true' } }), 'grip-vertical');
+			row.addEventListener('keydown', (e) => {
+				if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+				e.preventDefault();
+				this.moveBy(c, e.key === 'ArrowUp' ? -1 : 1, true);
+			});
+		}
 
 		this.renderInit(row, c);
 
-		// The name, then what's on them: concentration and conditions, and a + for another.
+		// The name, and how they're doing when it's grave (Dead, Stable).
 		const head = row.createDiv({ cls: 'dnd5e-combatant-head' });
 		const entry = this.entryFor(c);
 		const name = head.createSpan({ cls: 'dnd5e-combatant-name', text: c.label, attr: { role: 'button', tabindex: '0' } });
@@ -198,21 +230,6 @@ export class Dnd5eTrackerView extends ItemView {
 		if (entry) this.rt.plugin.hover.attach(name, () => this.rt.hover(entry, this.fight.sourcePath ?? ''));
 		if (c.dead) head.createSpan({ cls: 'dnd5e-death-dead', text: 'Dead' });
 		else if (c.side === 'hero' && c.hp <= 0 && c.stable) head.createSpan({ cls: 'dnd5e-death-stable', text: 'Stable' });
-		if (!o.compact) {
-			if (c.concentrating) this.renderConcentration(head, c);
-			for (const x of c.conditions) this.renderCondition(head, c, x);
-			const add = head.createEl('button', { cls: 'dnd5e-condition-add', attr: { 'aria-label': 'Add a condition' } });
-			setIcon(add, 'plus');
-			add.onclick = (e) => { e.stopPropagation(); this.conditionPicker(add, c); };
-		}
-
-		// CR for monsters, class and level for heroes.
-		const meta = row.createDiv({ cls: 'dnd5e-combatant-meta' });
-		if (c.monster) meta.createSpan({ cls: 'dnd5e-cr', text: crText(c.monster.cr), attr: { 'aria-label': `Challenge ${c.monster.cr}` } });
-		else {
-			const hero = this.partyMember(c);
-			if (hero) meta.createSpan({ cls: 'dnd5e-level', text: [hero.className, hero.level ? `${hero.className ? '' : 'Lv '}${hero.level}` : ''].filter(Boolean).join(' ') });
-		}
 
 		const more = row.createEl('button', { cls: 'clickable-icon dnd5e-combatant-more', attr: { 'aria-label': `${c.label}: more` } });
 		setIcon(more, 'more-vertical');
@@ -220,11 +237,7 @@ export class Dnd5eTrackerView extends ItemView {
 
 		// AC, the HP bar (temp HP on the end of it) and the HP button, which opens the keypad.
 		const vitals = row.createDiv({ cls: 'dnd5e-combatant-vitals' });
-		if (c.ac !== undefined && !o.compact) {
-			const ac = vitals.createSpan({ cls: 'dnd5e-ac', attr: { 'aria-label': `AC ${c.ac}` } });
-			setIcon(ac.createSpan({ cls: 'dnd5e-ac-shield' }), 'shield');
-			ac.createSpan({ cls: 'dnd5e-ac-value', text: String(c.ac) });
-		}
+		if (c.ac !== undefined && !o.compact) renderAc(vitals, c.ac);
 		if (!o.compact) {
 			const bar = vitals.createDiv({ cls: 'dnd5e-hp-bar', attr: { 'aria-hidden': 'true' } });
 			const scale = Math.max(1, c.maxHp, c.hp + c.tempHp);
@@ -235,8 +248,10 @@ export class Dnd5eTrackerView extends ItemView {
 		if (c.tempHp) hp.createSpan({ cls: 'dnd5e-hp-temp-text', text: `+${c.tempHp}` });
 		hp.onclick = () => this.openHp(hp, c);
 
-		// Death saves for a hero at 0 HP; legendary actions and resistances for the monsters that have them.
 		if (o.compact) return;
+		this.renderConditions(row, head, c);
+
+		// Death saves for a hero at 0 HP; legendary actions and resistances for the monsters that have them.
 		const extra = createDiv({ cls: 'dnd5e-combatant-extra' });
 		if (c.side === 'hero' && c.hp <= 0 && !c.dead && !c.stable) {
 			const ds = extra.createDiv({ cls: 'dnd5e-death' });
@@ -262,6 +277,39 @@ export class Dnd5eTrackerView extends ItemView {
 			});
 		}
 		if (extra.childElementCount) { row.addClass('has-extra'); row.appendChild(extra); }
+	}
+
+	/**
+	 * What's on them: concentration and each condition, on a line of their own under the name (no line when
+	 * there are none). Adding one is the quiet + after the name: shown on hover, focus and their turn, always on touch.
+	 */
+	private renderConditions(row: HTMLElement, head: HTMLElement, c: Combatant5e): void {
+		const add = head.createEl('button', { cls: 'dnd5e-condition-add', attr: { 'aria-label': 'Add a condition' } });
+		setIcon(add, 'plus');
+		add.onclick = (e) => { e.stopPropagation(); this.conditionPicker(add, c); };
+		if (!c.concentrating && !c.conditions.length) return;
+		row.addClass('has-conditions');
+		const line = row.createDiv({ cls: 'dnd5e-combatant-conditions' });
+		if (c.concentrating) this.renderConcentration(line, c);
+		for (const x of c.conditions) this.renderCondition(line, c, x);
+	}
+
+	/** Move a combatant up or down the turn order by one place (the row menu, Alt+↑/↓). */
+	private moveBy(c: Combatant5e, by: number, refocus = false): void {
+		const ids = this.activeRows().map(x => x.id);
+		const at = ids.indexOf(c.id);
+		if (at < 0 || at + by < 0 || at + by >= ids.length) return;
+		this.change(f => moveCombatant(f, c.id, at + by, isActiveRow));
+		if (refocus) this.rowEl(c.id)?.querySelector<HTMLElement>('.dnd5e-combatant-name')?.focus();
+	}
+
+	/** The rows in the turn order (not the defeated): what a drag and Move up/down count in. */
+	private activeRows(): Combatant5e[] {
+		return order(this.fight).filter(isActiveRow);
+	}
+
+	private rowEl(id: string): HTMLElement | null {
+		return this.contentEl.querySelector<HTMLElement>(`.dnd5e-tracker-list > .dnd5e-combatant[data-id="${CSS.escape(id)}"]`);
 	}
 
 	/** The initiative badge: the roll, or the bonus while it hasn't been rolled. Tap to type it or roll it. */
@@ -351,8 +399,8 @@ export class Dnd5eTrackerView extends ItemView {
 	// ------------------------------------------------------------------------
 	// Conditions and concentration
 
-	private renderCondition(head: HTMLElement, c: Combatant5e, x: AppliedCondition): void {
-		const chip = head.createSpan({ cls: 'dnd5e-condition', attr: { role: 'button', tabindex: '0', 'aria-haspopup': 'dialog' } });
+	private renderCondition(parent: HTMLElement, c: Combatant5e, x: AppliedCondition): void {
+		const chip = parent.createSpan({ cls: 'dnd5e-condition', attr: { role: 'button', tabindex: '0', 'aria-haspopup': 'dialog' } });
 		chip.createSpan({ cls: 'dnd5e-condition-name', text: `${x.name}${x.value ? ` ${x.value}` : ''}` });
 		if (x.rounds !== undefined) chip.createSpan({ cls: 'dnd5e-condition-rounds', text: String(x.rounds), attr: { 'aria-label': `${x.rounds} round${x.rounds === 1 ? '' : 's'} left` } });
 		this.chipRemove(chip, `Remove ${x.name}`, () => this.change(f => removeCondition(f, c.id, x.name)));
@@ -364,8 +412,8 @@ export class Dnd5eTrackerView extends ItemView {
 		};
 	}
 
-	private renderConcentration(head: HTMLElement, c: Combatant5e): void {
-		const chip = head.createSpan({ cls: 'dnd5e-condition is-concentration', attr: { 'aria-label': 'Concentrating: damage calls for a Constitution save' } });
+	private renderConcentration(parent: HTMLElement, c: Combatant5e): void {
+		const chip = parent.createSpan({ cls: 'dnd5e-condition is-concentration', attr: { 'aria-label': 'Concentrating: damage calls for a Constitution save' } });
 		setIcon(chip.createSpan({ cls: 'dnd5e-condition-icon' }), 'brain');
 		chip.createSpan({ cls: 'dnd5e-condition-name', text: 'Concentrating' });
 		this.chipRemove(chip, 'Stop concentrating', () => this.change(f => setConcentration(f, c.id, false)));
@@ -477,6 +525,16 @@ export class Dnd5eTrackerView extends ItemView {
 			if (hero && isSheetMember(hero)) menu.addItem(i => i.setTitle('Open sheet').setIcon('file-symlink').onClick(() => void this.app.workspace.openLinkText(hero.id.slice('sheet:'.length), '', false)));
 		}
 		menu.addItem(i => i.setTitle('Roll initiative').setIcon('dices').onClick(() => this.rollInit(c)));
+		const rows = this.activeRows();
+		const at = rows.findIndex(x => x.id === c.id);
+		if (at > 0) menu.addItem(i => i.setTitle('Move up').setIcon('arrow-up').onClick(() => this.moveBy(c, -1)));
+		if (at >= 0 && at < rows.length - 1) menu.addItem(i => i.setTitle('Move down').setIcon('arrow-down').onClick(() => this.moveBy(c, 1)));
+		menu.addSeparator();
+		if (at >= 0) menu.addItem(i => i.setTitle('Add a condition…').setIcon('plus').onClick(() => {
+			const row = this.rowEl(c.id);
+			const anchor = row?.querySelector<HTMLElement>('.dnd5e-condition-add') ?? row;
+			if (anchor) this.conditionPicker(anchor, c);
+		}));
 		menu.addItem(i => i.setTitle('Concentrating').setIcon('brain').setChecked(!!c.concentrating).onClick(() => this.change(f => setConcentration(f, c.id, !c.concentrating))));
 		if (c.monster) {
 			const m = c.monster;

@@ -24,6 +24,8 @@ export interface Combatant5e {
 	sourceFile?: string;
 	/** Rolled or typed; undefined until then. */
 	init?: number;
+	/** Order among those on the same initiative, lowest first: set when the GM drags someone into place. */
+	tiebreak?: number;
 	initBonus: number;
 	hp: number;
 	maxHp: number;
@@ -121,18 +123,52 @@ export function addHero(f: Fight5e, h: { name: string; maxHp: number; ac?: numbe
 	return c;
 }
 
-/** Turn order: highest initiative first; ties go to the higher bonus, then heroes, then by name. Not yet rolled: last. */
+/** Turn order: highest initiative first; ties go to the order the GM dragged them into, then the higher bonus,
+ *  then heroes, then by name. Not yet rolled: last. */
 export function order(f: Fight5e): Combatant5e[] {
+	const tb = (c: Combatant5e) => c.tiebreak ?? Infinity;
 	return [...f.combatants].sort((a, b) => {
-		if (a.init === undefined || b.init === undefined) return a.init === undefined ? (b.init === undefined ? 0 : 1) : -1;
-		return b.init - a.init || b.initBonus - a.initBonus || (a.side === b.side ? 0 : a.side === 'hero' ? -1 : 1) || a.label.localeCompare(b.label, undefined, { numeric: true });
+		if (a.init === undefined || b.init === undefined) {
+			if (a.init !== b.init) return a.init === undefined ? 1 : -1;
+			return tb(a) === tb(b) ? 0 : tb(a) < tb(b) ? -1 : 1;
+		}
+		return b.init - a.init || (tb(a) === tb(b) ? 0 : tb(a) < tb(b) ? -1 : 1) || b.initBonus - a.initBonus || (a.side === b.side ? 0 : a.side === 'hero' ? -1 : 1) || a.label.localeCompare(b.label, undefined, { numeric: true });
 	});
+}
+
+/**
+ * Move a combatant to `toIndex` in the turn order, as a drag does. `among` picks the list the index counts in
+ * (the tracker's active rows; everyone by default). The moved one takes the initiative of whoever is now just
+ * above it (below it, at the top), and everyone on that initiative gets a tiebreak in the order they now stand,
+ * so later sorting keeps the drop. The current turn stays with the same creature. Returns whether anything moved.
+ */
+export function moveCombatant(f: Fight5e, id: string, toIndex: number, among: (c: Combatant5e) => boolean = () => true): boolean {
+	const c = find(f, id);
+	if (!c) return false;
+	const list = order(f).filter(x => x === c || among(x));
+	const from = list.indexOf(c);
+	const to = Math.max(0, Math.min(list.length - 1, Math.round(toIndex)));
+	if (from < 0 || from === to) return false;
+	list.splice(from, 1);
+	list.splice(to, 0, c);
+	const above = list[to - 1];
+	const below = list[to + 1];
+	// Where it lands among everyone (rows the list doesn't show keep their places): just after the one above, or just before the one below.
+	const all = order(f).filter(x => x !== c);
+	const at = above ? all.indexOf(above) + 1 : all.indexOf(below);
+	all.splice(at, 0, c);
+	const init = (above ?? below).init;
+	if (init === undefined) delete c.init; else c.init = init;
+	let n = 0;
+	for (const x of all) if (x.init === init) x.tiebreak = ++n;
+	log(f, above ? `${c.label} moves after ${above.label}` : `${c.label} moves to the top`);
+	return true;
 }
 
 /** Roll initiative (d20 + bonus) for monsters (the GM's dice), or for everyone not yet rolled. */
 export function rollInitiative(f: Fight5e, rng: Rng = Math.random, who: 'monsters' | 'missing' = 'monsters', sides: { monsters: boolean; heroes: boolean } = { monsters: true, heroes: true }): void {
 	for (const c of f.combatants) {
-		if (who === 'monsters' ? c.side === 'monster' : c.init === undefined && (c.side === 'hero' ? sides.heroes : sides.monsters)) c.init = d20(rng) + c.initBonus;
+		if (who === 'monsters' ? c.side === 'monster' : c.init === undefined && (c.side === 'hero' ? sides.heroes : sides.monsters)) { c.init = d20(rng) + c.initBonus; delete c.tiebreak; }
 	}
 }
 
@@ -141,7 +177,9 @@ export interface StartRolls { monsters: boolean; heroes: boolean }
 
 export function setInitiative(f: Fight5e, id: string, init: number | undefined): void {
 	const c = find(f, id);
-	if (c) c.init = init;
+	if (!c) return;
+	c.init = init;
+	delete c.tiebreak;
 }
 
 export function find(f: Fight5e, id: string): Combatant5e | undefined {
@@ -420,7 +458,7 @@ export function normalizeFight(raw: unknown): Fight5e | null {
 		id: f.id,
 		name: typeof f.name === 'string' ? f.name : 'Encounter',
 		edition: f.edition === '2014' ? '2014' : '2024',
-		combatants: Array.isArray(f.combatants) ? f.combatants.filter((c): c is Combatant5e => !!c && typeof c === 'object' && typeof c.id === 'string').map(c => ({ ...c, conditions: Array.isArray(c.conditions) ? c.conditions : [], tempHp: c.tempHp ?? 0 })) : [],
+		combatants: Array.isArray(f.combatants) ? f.combatants.filter((c): c is Combatant5e => !!c && typeof c === 'object' && typeof c.id === 'string').map(c => ({ ...c, conditions: Array.isArray(c.conditions) ? c.conditions : [], tempHp: c.tempHp ?? 0, tiebreak: typeof c.tiebreak === 'number' ? c.tiebreak : undefined })) : [],
 		round: typeof f.round === 'number' ? f.round : 0,
 		turnId: typeof f.turnId === 'string' ? f.turnId : undefined,
 		log: Array.isArray(f.log) ? f.log : [],

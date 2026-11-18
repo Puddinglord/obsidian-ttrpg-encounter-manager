@@ -46,7 +46,7 @@ Use the shared design language (Nimble's sheet and tracker are the benchmark): c
 
 - **Character wizards.** Use the builder: register `character` and `level-up` kinds with `hidden: true`, open them from `characters.promptNew` and your sheet's Level up (`openBuilder` with `apply` to write the sheet's properties). See `dnd5e/character-wizard.ts`, and test every class × origin × level the way `tests/dnd5e-character-wizard.test.ts` does.
 
-- **Tracker.** Your tracker is your own (turn order, rounds, what HP means), registered as a view and opened by `openTracker`. Take HP input with `parseHpCommand` (`core/tracker/hp.ts`) and give HP the shared keypad (`openHpPad`), so damage is typed the same way in every game.
+- **Tracker.** Your tracker is your own (turn order, rounds, what HP means), registered as a view and opened by `openTracker`. Take HP input with `parseHpCommand` (`core/tracker/hp.ts`) and give HP the shared keypad (`openHpPad`), so damage is typed the same way in every game. Let the GM drag rows to reorder with `makeSortable` (`core/tracker/sortable.ts`), and keep the dropped order in your model (5e: `moveCombatant` and a `tiebreak`).
 
 ## Adding a game system: checklist
 

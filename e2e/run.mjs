@@ -5406,6 +5406,42 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 		await o.page.locator(`${T} button`, { hasText: 'Next turn' }).click();
 		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).innerText()) !== first, { what: 'turn passed' });
 
+		// Drag the last row to the top: it takes the Ogre's initiative and goes first, the turn stays where it was,
+		// and Next turn keeps the order. A row isn't labelled with CR any more (the quick look has it).
+		const L = `${T} .dnd5e-tracker-list:not(.is-defeated) > .dnd5e-combatant`;
+		const names = () => o.page.locator(`${L} .dnd5e-combatant-name`).allInnerTexts();
+		const turnName = () => o.page.locator(`${T} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).innerText();
+		assert.equal(await o.page.locator(`${T} .dnd5e-cr, ${T} .dnd5e-combatant-meta`).count(), 0, 'no CR on the rows');
+		const before = await names();
+		const up = await turnName();
+		const moved = before.at(-1);
+		await o.page.locator(L).last().scrollIntoViewIfNeeded();
+		const grab = await o.page.locator(L).last().locator('.dnd5e-combatant-name').boundingBox();
+		const top = await o.page.locator(L).first().boundingBox();
+		await o.page.mouse.move(grab.x + 8, grab.y + grab.height / 2);
+		await o.page.mouse.down();
+		await o.page.mouse.move(grab.x + 10, grab.y - 20, { steps: 4 });
+		await o.waitFor(async () => (await o.page.locator(`${T} .ev-sort-slot`).count()) === 1, { what: 'drop slot while dragging' });
+		await o.page.mouse.move(grab.x + 10, top.y + 2, { steps: 14 });
+		await o.page.waitForTimeout(150);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-drag.png') });
+		await o.page.mouse.up();
+		await o.waitFor(async () => (await names())[0] === moved, { what: 'dragged to the top' });
+		assert.deepEqual(await names(), [moved, ...before.slice(0, -1)]);
+		const movedRow = o.page.locator(L, { has: o.page.locator('.dnd5e-combatant-name', { hasText: new RegExp(`^${moved}$`) }) });
+		assert.equal(await movedRow.locator('.dnd5e-init').innerText(), '30', 'took the Ogre\'s initiative');
+		assert.equal(await turnName(), up, 'the turn stayed put');
+		assert.equal(await o.page.locator(`${T} .ev-sort-slot, ${T} .ev-sort-lifted`).count(), 0, 'nothing left lifted');
+		await o.page.locator(`${T} button`, { hasText: 'Next turn' }).click();
+		await o.waitFor(async () => (await turnName()) !== up, { what: 'next turn after the drag' });
+		assert.deepEqual(await names(), [moved, ...before.slice(0, -1)], 'the dropped order survives Next turn');
+		assert.equal(await o.eval((app, plugin) => plugin.settings.systemData.dnd5e.fight.combatants.filter(c => c.tiebreak).length), 2, 'both on 30 have a tiebreak');
+		// Move down, from the row menu: back under the Ogre.
+		await movedRow.locator('.dnd5e-combatant-more').click();
+		await clickMenu(o, 'Move down');
+		await o.waitFor(async () => (await names())[1] === moved, { what: 'moved down one' });
+		assert.equal((await names())[0], 'Ogre');
+
 		// The party joins; a hero at 0 HP makes death saves.
 		await o.eval(async (app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
 		await o.page.locator(`${T} button[aria-label="Add the party"]`).click();

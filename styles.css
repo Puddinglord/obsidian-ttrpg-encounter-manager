@@ -234,6 +234,26 @@ span.ev-pip { display: inline-block; cursor: default; }
 body.is-tablet .ev-pip { padding: 0; }
 @media (pointer: coarse) { .ev-pip { width: 18px; height: 18px; } .ev-pips { gap: 6px; } }
 
+/* Sortable lists (core/tracker/sortable.ts), any game's: the dragged item lifts and follows the pointer, the
+   others slide apart, and a dashed slot shows where it lands. A finger drags from the handle only. */
+.ev-sort-handle { touch-action: none; cursor: grab; }
+.ev-sortable.is-sorting { position: relative; user-select: none; }
+.ev-sortable > .ev-sort-shifting { transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.ev-sortable > .ev-sort-lifted {
+	position: relative; z-index: 3; transition: none; cursor: grabbing;
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2), 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+.ev-sortable > .ev-sort-settling { position: relative; z-index: 2; }
+.ev-sort-slot {
+	position: absolute; left: 0; right: 0; box-sizing: border-box; pointer-events: none;
+	border: 2px dashed color-mix(in srgb, var(--ev-accent, var(--interactive-accent)) 55%, transparent);
+	border-radius: var(--radius-m);
+	background: color-mix(in srgb, var(--ev-accent, var(--interactive-accent)) 7%, transparent);
+	transition: top 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+body.ev-is-sorting { cursor: grabbing; }
+@media (prefers-reduced-motion: reduce) { .ev-sortable > .ev-sort-shifting, .ev-sort-slot { transition: none; } }
+
 /* Rules words a game makes clickable (core/rule-term-ui.ts): a quiet solid underline, unlike the dotted one on rolls. */
 .ev-term {
 	cursor: help;
@@ -4917,10 +4937,11 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .dnd5e-statblock .dnd5e-source { margin-top: 0.5rem; font-size: 0.75em; color: var(--text-faint); text-align: right; }
 
 /* 5e combat tracker (src/systems/dnd5e/tracker-view.ts)
-   One dense row per combatant on the game's paper: the initiative badge, the name in the book's type with
-   its conditions beside it, CR or level, then AC, the HP bar and the HP button below. Wide panes put each
-   combatant on one line. The current turn is tinted, edged and badged in the game's colour; heroes carry a
-   blue edge, monsters the game's red; defeated monsters fold away at the bottom. */
+   One clean row per combatant on the game's paper: the initiative badge and the name in the book's type,
+   then AC in its shield, the HP bar and the HP button below; conditions on a line of their own underneath,
+   only when there are any. Wide panes put the vitals beside the name. The current turn is tinted, edged and
+   badged in the game's colour; heroes carry a blue edge, monsters the game's red; drag a row (the grip, for
+   a finger) to change the order; defeated monsters fold away at the bottom. */
 .dnd5e-tracker { padding: 0.7rem 0.75rem 1rem; container-type: inline-size; }
 .dnd5e-tracker-head { display: flex; align-items: flex-start; gap: 0.25rem; padding-bottom: 0.55rem; position: relative; }
 .dnd5e-tracker-head::after {
@@ -4991,9 +5012,9 @@ body.is-tablet .dnd5e-tracker-combat .dnd5e-tracker-icon { padding: 0; }
 	--dnd5e-side: color-mix(in srgb, var(--ev-accent) 70%, var(--background-primary));
 	position: relative;
 	display: grid;
-	grid-template-columns: auto auto minmax(0, 1fr) auto;
-	grid-template-areas: "init head head more" "init meta vitals vitals";
-	gap: 0.3rem 0.5rem;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-areas: "init head more" "init vitals vitals";
+	gap: 0.3rem 0.55rem;
 	align-items: center;
 	padding: 0.45rem 0.4rem 0.5rem 0.55rem;
 	border: 1px solid var(--ev-paper-edge);
@@ -5002,7 +5023,25 @@ body.is-tablet .dnd5e-tracker-combat .dnd5e-tracker-icon { padding: 0; }
 	background: var(--ev-paper);
 	transition: background-color 0.15s ease, opacity 0.2s ease;
 }
-.dnd5e-combatant.has-extra { grid-template-areas: "init head head more" "init meta vitals vitals" "init extra extra extra"; }
+/* Conditions, then death saves and legendary pips, each on a line of their own under the name. */
+.dnd5e-combatant.has-conditions { grid-template-areas: "init head more" "init vitals vitals" ". conds conds"; }
+.dnd5e-combatant.has-extra { grid-template-areas: "init head more" "init vitals vitals" ". extra extra"; }
+.dnd5e-combatant.has-conditions.has-extra { grid-template-areas: "init head more" "init vitals vitals" ". conds conds" ". extra extra"; }
+/* The grip on the left edge: a finger drags from it; with a mouse it's a hint (the whole row drags). */
+.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant { padding-left: 0.95rem; }
+.dnd5e-grip {
+	position: absolute; left: 0; top: 0; bottom: 0; width: 0.95rem;
+	display: flex; align-items: center; justify-content: center;
+	color: var(--text-faint); opacity: 0; transition: opacity 0.15s ease;
+}
+.dnd5e-grip svg { width: 0.9rem; height: 0.9rem; flex: 0 0 auto; }
+.dnd5e-combatant:is(:hover, :focus-within) > .dnd5e-grip { opacity: 0.75; }
+.dnd5e-grip:hover { color: var(--text-muted); }
+.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant:not(.ev-sort-lifted) { cursor: grab; }
+.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant :is(button, input) { cursor: var(--cursor); }
+.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant :is(.dnd5e-combatant-name, .dnd5e-condition) { cursor: pointer; }
+.dnd5e-tracker-list > .dnd5e-combatant.ev-sort-lifted { border-color: color-mix(in srgb, var(--ev-accent) 45%, var(--ev-paper-edge)); }
+.dnd5e-tracker-list > .dnd5e-combatant.ev-sort-lifted > .dnd5e-grip { opacity: 1; color: var(--ev-accent-text); }
 .dnd5e-combatant.side-hero { --dnd5e-side: var(--color-blue); }
 .dnd5e-combatant.is-turn {
 	background: var(--ev-tint);
@@ -5034,10 +5073,10 @@ button.dnd5e-init:hover { border-color: var(--ev-accent); color: var(--ev-accent
 button.dnd5e-init.is-unset { border-style: dashed; color: var(--text-faint); font-size: 0.85rem; background: transparent; }
 .dnd5e-combatant.is-turn button.dnd5e-init { background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); }
 
-/* The name, with what's on them beside it. */
-.dnd5e-combatant-head { grid-area: head; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.3rem; min-width: 0; }
+/* The name, and Dead or Stable beside it when it comes to that. */
+.dnd5e-combatant-head { grid-area: head; display: flex; flex-wrap: nowrap; align-items: center; gap: 0.3rem; min-width: 0; }
 .dnd5e-combatant-name {
-	flex: 0 1 auto; min-width: 0; max-width: calc(100% - 2rem); margin-right: 0.15rem; cursor: pointer;
+	flex: 0 1 auto; min-width: 0; margin-right: 0.1rem; cursor: pointer;
 	font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight);
 	font-size: 1.02rem; line-height: 1.25; color: var(--text-normal);
 	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -5046,14 +5085,12 @@ button.dnd5e-init.is-unset { border-style: dashed; color: var(--text-faint); fon
 .dnd5e-combatant-name:focus-visible { outline: 2px solid var(--ev-accent); outline-offset: 1px; border-radius: 2px; }
 .dnd5e-combatant.is-dead .dnd5e-combatant-name,
 .dnd5e-combatant.is-defeated .dnd5e-combatant-name { text-decoration: line-through; }
-.dnd5e-combatant-meta { grid-area: meta; display: flex; min-width: 0; align-items: center; gap: 0.3rem; white-space: nowrap; }
-.dnd5e-cr,
-.dnd5e-level { font-size: 0.74rem; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.dnd5e-level { color: color-mix(in srgb, var(--color-blue) 75%, var(--text-muted)); }
-button.dnd5e-combatant-more { grid-area: more; align-self: start; padding: 2px; width: 1.5rem; height: 1.5rem; color: var(--text-faint); }
+.dnd5e-death-stable, .dnd5e-death-dead { flex: 0 0 auto; }
+button.dnd5e-combatant-more { grid-area: more; align-self: center; padding: 2px; width: 1.5rem; height: 1.5rem; color: var(--text-faint); }
 button.dnd5e-combatant-more:hover { color: var(--text-normal); }
 
-/* Conditions: chips beside the name; tap one for its rules and duration, × to end it. */
+/* Conditions: a line of chips under the name, only when there are any; tap one for its rules and duration, × to end it. */
+.dnd5e-combatant-conditions { grid-area: conds; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; min-width: 0; }
 .dnd5e-condition {
 	gap: 0.25rem; height: 1.3rem; padding: 0 0.15rem 0 0.45rem; border-radius: 999px; cursor: pointer;
 	font-size: 0.72rem; font-weight: 600; white-space: nowrap;
@@ -5084,15 +5121,26 @@ button.dnd5e-condition-add {
 	background: transparent; box-shadow: none; color: var(--text-faint); border: 1px dashed var(--background-modifier-border-hover);
 }
 button.dnd5e-condition-add svg { width: 0.75rem; height: 0.75rem; }
-@media (hover: hover) { .dnd5e-combatant:not(:hover, .is-turn) button.dnd5e-condition-add { opacity: 0.5; } }
-button.dnd5e-condition-add:hover { color: var(--ev-accent-text); border-color: var(--ev-accent); background: var(--ev-tint); }
+/* The + after the name stays out of sight until the row is hovered, focused or up (always on touch). */
+.dnd5e-combatant button.dnd5e-condition-add { flex: 0 0 auto; opacity: 0; transition: opacity 0.15s ease; }
+.dnd5e-combatant:is(:hover, :focus-within, .is-turn) button.dnd5e-condition-add { opacity: 0.7; }
+.dnd5e-combatant button.dnd5e-condition-add:is(:hover, :focus-visible) { opacity: 1; color: var(--ev-accent-text); border-color: var(--ev-accent); background: var(--ev-tint); }
+/* Mid-drag, the rows hold still: no hover marks. */
+body.ev-is-sorting .dnd5e-combatant button.dnd5e-condition-add:not(:focus-visible) { opacity: 0; }
+body.ev-is-sorting .dnd5e-combatant .dnd5e-combatant-name:hover { color: var(--text-normal); text-decoration: none; }
 
-/* AC, HP bar, HP button. */
-.dnd5e-combatant-vitals { grid-area: vitals; display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
-.dnd5e-ac { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.75rem; color: var(--text-muted); }
-.dnd5e-ac-shield { position: absolute; inset: 0; display: flex; }
-.dnd5e-ac-shield svg { width: 100%; height: 100%; stroke-width: 1.5; color: var(--ev-ornament); }
-.dnd5e-ac-value { position: relative; margin-top: -0.12rem; font-size: 0.7rem; font-weight: 800; color: var(--text-normal); font-variant-numeric: tabular-nums; }
+/* AC in a heater shield (drawn in tracker-view.ts), the number in the middle of its face; then the HP bar and button. */
+.dnd5e-combatant-vitals { grid-area: vitals; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.dnd5e-ac { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 2.15rem; }
+.dnd5e-ac-shield { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.dnd5e-ac-face { fill: color-mix(in srgb, var(--ev-ornament) 16%, var(--background-primary)); stroke: var(--ev-ornament); stroke-width: 1.5; stroke-linejoin: round; }
+.dnd5e-ac-inner { fill: none; stroke: color-mix(in srgb, var(--ev-ornament) 50%, transparent); stroke-width: 0.75; stroke-linejoin: round; }
+.dnd5e-ac-value {
+	position: relative; margin-top: -0.2rem;
+	font-family: var(--font-interface); font-size: 0.8rem; font-weight: 800; letter-spacing: -0.01em;
+	font-variant-numeric: lining-nums tabular-nums; color: var(--text-normal);
+}
+.theme-dark .dnd5e-ac-face { fill: color-mix(in srgb, var(--ev-ornament) 22%, var(--background-primary)); }
 .dnd5e-tracker .dnd5e-hp-bar { position: relative; display: flex; flex: 1 1 auto; min-width: 1.25rem; height: 7px; border-radius: 4px; background: var(--background-modifier-border); overflow: hidden; }
 .dnd5e-tracker .dnd5e-hp-fill { transition: width 0.3s ease, background-color 0.3s ease; }
 .dnd5e-hp-temp { height: 100%; background: var(--color-cyan); opacity: 0.85; transition: width 0.3s ease; }
@@ -5139,8 +5187,8 @@ button.dnd5e-death-roll { height: 1.5rem; padding: 0 0.55rem; font-size: 0.75rem
 .dnd5e-tracker-fold-count { font-variant-numeric: tabular-nums; color: var(--text-faint); }
 .dnd5e-tracker-list.is-defeated { margin-top: 0.35rem; gap: 0.25rem; }
 .dnd5e-combatant.is-defeated {
-	grid-template-columns: auto minmax(0, 1fr) auto auto auto;
-	grid-template-areas: "init head meta vitals more";
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+	grid-template-areas: "init head vitals more";
 	padding-top: 0.25rem; padding-bottom: 0.25rem; opacity: 0.6;
 	border-left-color: var(--background-modifier-border-hover); background: transparent;
 }
@@ -5148,25 +5196,27 @@ button.dnd5e-death-roll { height: 1.5rem; padding: 0 0.55rem; font-size: 0.75rem
 .dnd5e-combatant.is-defeated button.dnd5e-init { width: 1.8rem; height: 1.6rem; font-size: 0.85rem; }
 .dnd5e-combatant.is-defeated .dnd5e-combatant-name { font-size: 0.9rem; }
 .dnd5e-combatant.is-defeated button.dnd5e-hp-text { min-width: 0; height: 1.5rem; font-size: 0.8rem; }
-.dnd5e-combatant.is-defeated button.dnd5e-combatant-more { align-self: center; }
 .dnd5e-tracker-log-lines { display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.3rem; font-size: 0.8rem; color: var(--text-muted); }
 .dnd5e-tracker-log-line { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 0.4rem; }
 .dnd5e-tracker-log-round { color: var(--text-faint); font-variant-numeric: tabular-nums; }
 
 /* A very narrow sidebar: smaller badge and HP button so nothing spills. */
 @container (max-width: 290px) {
-	.dnd5e-combatant { gap: 0.3rem 0.4rem; padding-left: 0.4rem; }
+	.dnd5e-combatant { gap: 0.3rem 0.45rem; padding-left: 0.4rem; }
+	.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant { padding-left: 0.85rem; }
+	.dnd5e-grip { width: 0.85rem; }
 	button.dnd5e-init { width: 2.05rem; height: 2.05rem; font-size: 1rem; }
 	button.dnd5e-hp-text { min-width: 0; padding: 0 0.35rem; font-size: 0.84rem; }
-	.dnd5e-combatant-vitals { gap: 0.35rem; }
+	.dnd5e-combatant-vitals { gap: 0.4rem; }
 }
 
-/* Wide panes: one line per combatant, the vitals in a column of their own. */
+/* Wide panes: the vitals beside the name, in a column of their own; conditions still go underneath. */
 @container (min-width: 540px) {
-	.dnd5e-combatant { grid-template-columns: auto minmax(0, 1fr) auto minmax(13rem, 34%) auto; grid-template-areas: "init head meta vitals more"; padding-top: 0.4rem; padding-bottom: 0.4rem; }
-	.dnd5e-combatant.has-extra { grid-template-areas: "init head meta vitals more" "init extra extra extra extra"; }
-	.dnd5e-combatant-meta { min-width: 3rem; justify-content: flex-end; }
-	button.dnd5e-combatant-more { align-self: center; }
+	.dnd5e-combatant { grid-template-columns: auto minmax(0, 1fr) minmax(13rem, 40%) auto; grid-template-areas: "init head vitals more"; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+	.dnd5e-combatant.has-conditions { grid-template-areas: "init head vitals more" ". conds conds conds"; }
+	.dnd5e-combatant.has-extra { grid-template-areas: "init head vitals more" ". extra extra extra"; }
+	.dnd5e-combatant.has-conditions.has-extra { grid-template-areas: "init head vitals more" ". conds conds conds" ". extra extra extra"; }
+	.dnd5e-combatant.is-defeated { grid-template-columns: auto minmax(0, 1fr) auto auto; }
 }
 
 /* Popovers from the tracker: initiative, a condition's editor, the condition picker. */
@@ -5186,6 +5236,10 @@ button.dnd5e-death-roll { height: 1.5rem; padding: 0 0.55rem; font-size: 0.75rem
 	button.dnd5e-condition-add { width: 1.65rem; }
 	.dnd5e-condition-x { width: 1.35rem; height: 1.35rem; }
 	button.dnd5e-combatant-more { width: 2rem; height: 2rem; }
+	.dnd5e-combatant button.dnd5e-condition-add { opacity: 0.6; }
+	.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant { padding-left: 1.4rem; }
+	.dnd5e-grip { width: 1.4rem; opacity: 0.55; }
+	.dnd5e-grip svg { width: 1rem; height: 1rem; }
 }
 body.is-tablet .dnd5e-tracker button.dnd5e-init,
 body.is-tablet .dnd5e-tracker button.dnd5e-condition-add,

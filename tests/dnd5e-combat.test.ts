@@ -277,3 +277,88 @@ describe('5e concentration, Legendary Resistance and HP at a glance', () => {
 		expect(isDefeated(h)).toBe(true);
 	});
 });
+
+describe('dragging someone in the turn order', async () => {
+	const { moveCombatant } = await import('../src/systems/dnd5e/combat');
+	/** Goblin 20, Bo 15, Goblin 2 10, Ilse 5. */
+	const fight = () => {
+		const f = newFight();
+		const [g1, g2] = addMonster(f, goblin, 2);
+		const bo = addHero(f, { name: 'Bo', maxHp: 10 });
+		const ilse = addHero(f, { name: 'Ilse', maxHp: 12 });
+		setInitiative(f, g1.id, 20); setInitiative(f, bo.id, 15); setInitiative(f, g2.id, 10); setInitiative(f, ilse.id, 5);
+		return { f, g1, g2, bo, ilse };
+	};
+	const labels = (f: ReturnType<typeof newFight>) => order(f).map(c => c.label);
+
+	it('takes the initiative of the one now above it, and stays exactly where it was dropped', () => {
+		const { f, ilse } = fight();
+		expect(moveCombatant(f, ilse.id, 1)).toBe(true);
+		expect(labels(f)).toEqual(['Goblin', 'Ilse', 'Bo', 'Goblin 2']);
+		expect(ilse.init).toBe(20);
+		// Sorting again (as every redraw does) keeps the drop.
+		expect(labels(f)).toEqual(['Goblin', 'Ilse', 'Bo', 'Goblin 2']);
+	});
+	it('at the top, it takes the initiative of the one below and goes first', () => {
+		const { f, g2 } = fight();
+		moveCombatant(f, g2.id, 0);
+		expect(labels(f)).toEqual(['Goblin 2', 'Goblin', 'Bo', 'Ilse']);
+		expect(g2.init).toBe(20);
+		expect(g2.tiebreak).toBe(1);
+	});
+	it('moving down lands after the one it was dropped below, even against a higher bonus', () => {
+		const { f, g1, bo } = fight();
+		bo.initBonus = 5;
+		moveCombatant(f, g1.id, 2);
+		expect(labels(f)).toEqual(['Bo', 'Goblin 2', 'Goblin', 'Ilse']);
+		expect(g1.init).toBe(10);
+		moveCombatant(f, g1.id, 0);
+		expect(labels(f)).toEqual(['Goblin', 'Bo', 'Goblin 2', 'Ilse']);
+		expect(g1.init).toBe(15);
+	});
+	it('does nothing when dropped where it was, or for someone not in the fight', () => {
+		const { f, bo } = fight();
+		expect(moveCombatant(f, bo.id, 1)).toBe(false);
+		expect(moveCombatant(f, 'nobody', 0)).toBe(false);
+		expect(bo.tiebreak).toBeUndefined();
+	});
+	it('the current turn stays with the same creature, and Next turn follows the new order', () => {
+		const { f, g1, ilse } = fight();
+		start(f);
+		expect(current(f)?.id).toBe(g1.id);
+		moveCombatant(f, ilse.id, 1);
+		expect(current(f)?.id).toBe(g1.id);
+		expect(next(f)?.label).toBe('Ilse');
+		expect(next(f)?.label).toBe('Bo');
+		expect(labels(f)).toEqual(['Goblin', 'Ilse', 'Bo', 'Goblin 2']);
+	});
+	it('counts in the list it is given: rows the tracker folds away keep their places', () => {
+		const { f, g2, ilse } = fight();
+		applyHp(f, g2.id, { kind: 'damage', amount: 10 });
+		const active = (c: { side: string; hp: number }) => !(c.side === 'monster' && c.hp <= 0);
+		// The active rows are Goblin, Bo, Ilse: Ilse to the middle lands between Goblin and Bo.
+		moveCombatant(f, ilse.id, 1, active);
+		expect(labels(f).filter(l => l !== 'Goblin 2')).toEqual(['Goblin', 'Ilse', 'Bo']);
+		expect(ilse.init).toBe(20);
+	});
+	it('a new roll or a typed initiative drops the tiebreak', () => {
+		const { f, ilse } = fight();
+		moveCombatant(f, ilse.id, 0);
+		expect(ilse.tiebreak).toBe(1);
+		setInitiative(f, ilse.id, 3);
+		expect(ilse.tiebreak).toBeUndefined();
+		expect(labels(f).at(-1)).toBe('Ilse');
+	});
+	it('among those not yet rolled, keeps the dropped order', () => {
+		const f = newFight();
+		const [a, b, c] = addMonster(f, goblin, 3);
+		moveCombatant(f, c.id, 0);
+		expect(order(f).map(x => x.id)).toEqual([c.id, a.id, b.id]);
+		expect(c.init).toBeUndefined();
+	});
+	it('old saved fights without tiebreaks load and sort as before', () => {
+		const f = normalizeFight({ id: 'x', combatants: [{ id: 'a', label: 'A', side: 'monster', init: 10, initBonus: 0, conditions: [] }, { id: 'b', label: 'B', side: 'monster', init: 10, initBonus: 3, conditions: [], tiebreak: 'bad' }] })!;
+		expect(f.combatants[1].tiebreak).toBeUndefined();
+		expect(order(f).map(c => c.id)).toEqual(['b', 'a']);
+	});
+});

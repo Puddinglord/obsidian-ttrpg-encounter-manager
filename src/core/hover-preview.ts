@@ -84,7 +84,8 @@ export class HoverPreview {
 			this.cancelHide();
 			if (this.el && this.anchor === anchor) return;
 			if (this.showTimer) window.clearTimeout(this.showTimer);
-			this.showTimer = window.setTimeout(open, 350);
+			// Not while a row is being dragged past (core/tracker/sortable.ts).
+			this.showTimer = window.setTimeout(() => { if (!anchor.ownerDocument.body.classList.contains('ev-is-sorting')) open(); }, 350);
 		});
 		anchor.addEventListener('mouseleave', (e) => {
 			if (this.showTimer) { window.clearTimeout(this.showTimer); this.showTimer = null; }
