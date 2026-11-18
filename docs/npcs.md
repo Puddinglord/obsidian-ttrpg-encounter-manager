@@ -43,6 +43,8 @@ secret: He answered one of Vess's letters, the last one. He told her to stop wri
 - **Secret** rows (`secret:` or `gm:`) are blurred until you click them, which helps when your screen is shared.
 - **Name and role** come from the note's title and `role:` property. Put `name:` or `role:` lines in the block to override them.
 - Type `/npc-card` to insert a card anywhere. It works in scene notes too, for a minor character who doesn't need their own page.
+- **No block?** An NPC note without one still gets its card at the top in reading view: portrait, name, role, the quick facts and the game's stats. Add the block when you want rows of your own.
+- In reading view, the row of properties above the card leaves out what the card already shows.
 
 ## Portraits
 
