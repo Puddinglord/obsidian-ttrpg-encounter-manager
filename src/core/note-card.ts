@@ -5,7 +5,7 @@
 // in new notes, which this file renders. With no system card the block shows
 // the system's stats, or nothing.
 
-import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
+import { getAllTags, MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../main';
 import { noteKind } from './campaign-model';
 import { fieldsKey, NoteKindExtension, noteStats, SHARED_NOTE_KINDS, SharedNoteKind } from './note-kinds';
@@ -43,6 +43,39 @@ export function extrasKey(plugin: EmberVaultPlugin, path: string, kind: string, 
 export function registerNoteCard(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-note', (_source, el, ctx) => {
 		ctx.addChild(new NoteCard(plugin, el, ctx));
+	});
+	// A note of a kind the campaign's game draws a card for, written without the block, still gets its card.
+	cardWithoutBlock(plugin, 'nimble-note', (fm) => {
+		const kind = noteKind(fm);
+		return kind !== 'npc' && (SHARED_NOTE_KINDS as readonly string[]).includes(kind);
+	}, (holder, ctx) => {
+		ctx.addChild(new NoteCard(plugin, holder, ctx));
+	});
+}
+
+/**
+ * Draw a card at the top of a note's reading view when the note is the right kind (`is`) but
+ * has no ```<fence> block of its own: notes written by hand or by another tool, or before the
+ * block existed. The card goes in the properties' section, so it sits where the block would.
+ */
+export function cardWithoutBlock(
+	plugin: EmberVaultPlugin, fence: string,
+	is: (fm: Record<string, unknown>, tags: string[]) => boolean,
+	draw: (holder: HTMLElement, ctx: MarkdownPostProcessorContext, file: TFile) => void,
+): void {
+	const opening = new RegExp(`^\\s*(\`{3,}|~{3,})\\s*${fence}\\s*$`, 'm');
+	plugin.registerMarkdownPostProcessor((el, ctx) => {
+		if (!el.hasClass('mod-frontmatter')) return;
+		const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
+		if (!file) return;
+		const cache = plugin.app.metadataCache.getFileCache(file);
+		const fm = cache?.frontmatter ?? (ctx.frontmatter as Record<string, unknown> | undefined) ?? {};
+		if (!is(fm, (cache && getAllTags(cache)) ?? [])) return;
+		const holder = el.createDiv({ cls: 'nimble-auto-card' });
+		void plugin.app.vault.cachedRead(file).then((text) => {
+			if (opening.test(text)) holder.remove();
+			else draw(holder, ctx, file);
+		});
 	});
 }
 

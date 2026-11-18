@@ -15,12 +15,17 @@ import { onLongPress } from './touch';
 import { IMAGE_EXTENSIONS, isRemote, NPC_ATTITUDES, NPC_STATUSES, npcFacts, parseNpcCard, portraitLink, SECRET_KEYS } from './npc-card-def';
 import { appendRichText } from './markdown';
 import { wireWikiLinks } from './wiki-links';
-import { drawSystemExtras, extensionFor, extrasKey } from './note-card';
+import { cardWithoutBlock, drawSystemExtras, extensionFor, extrasKey } from './note-card';
+import { isNpc } from './campaigns';
 import { applyLook } from './look';
 
 export function registerNpcCard(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-npc', (source, el, ctx) => {
 		ctx.addChild(new NpcCard(plugin, el, source, ctx));
+	});
+	// An NPC note without the block (written by hand, or by another tool) still gets its card and portrait.
+	cardWithoutBlock(plugin, 'nimble-npc', isNpc, (holder, ctx) => {
+		ctx.addChild(new NpcCard(plugin, holder, '', ctx));
 	});
 }
 
@@ -128,7 +133,7 @@ class NpcCard extends MarkdownRenderChild {
 		this.renderFacts(head, fm);
 		drawSystemExtras(this.plugin, head, ext, this.path, fm);
 
-		if (!def.fields.length) return;
+		if (!def.fields.length) { card.addClass('is-brief'); return; }
 		const rows = card.createDiv({ cls: 'nimble-npc-fields' });
 		for (const f of def.fields) {
 			const secret = SECRET_KEYS.includes(f.key);

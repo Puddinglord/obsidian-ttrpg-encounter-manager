@@ -4,9 +4,10 @@
 // Obsidian's own edit toggle. Session logs are written at the table, so they
 // open however Obsidian would open them, and so does a note you just made.
 
-import { MarkdownView, TFile, WorkspaceLeaf } from 'obsidian';
+import { getAllTags, MarkdownView, TFile, WorkspaceLeaf } from 'obsidian';
 import type EmberVaultPlugin from '../../main';
 import { opensInReading } from './campaign-model';
+import { isNpc } from './campaigns';
 
 /** A note made this recently is being written, not read. */
 const FRESH_MS = 15_000;
@@ -23,8 +24,20 @@ function tagProperties(plugin: EmberVaultPlugin): void {
 		const inCampaign = !!view.file && !!plugin.campaigns.of(view.file.path);
 		const on = inCampaign && plugin.settings.tagProperties;
 		view.containerEl.toggleClass('nimble-props-tags', on);
-		watchEmptyProperties(view, on);
+		watchEmptyProperties(view, on, () => cardKeys(plugin, view));
 	}
+}
+
+/** What an NPC's card shows (its facts and the game's fields); the row of tags leaves them to the card. */
+const NPC_CARD_KEYS = ['role', 'ancestry', 'pronouns', 'age', 'faction', 'location', 'status', 'attitude', 'first_met'];
+
+function cardKeys(plugin: EmberVaultPlugin, view: MarkdownView): Set<string> {
+	const file = view.file;
+	if (!file) return new Set();
+	const cache = plugin.app.metadataCache.getFileCache(file);
+	if (!isNpc(cache?.frontmatter ?? {}, (cache && getAllTags(cache)) ?? [])) return new Set();
+	const fields = plugin.system(file.path).noteKinds?.npc?.fields ?? [];
+	return new Set([...NPC_CARD_KEYS, ...fields.map(f => f.key)]);
 }
 
 /** The reading views whose empty properties are being kept hidden. */
@@ -34,7 +47,7 @@ const watching = new WeakMap<MarkdownView, MutationObserver>();
  * A property left empty stays out of the row of tags. Obsidian draws the properties whenever
  * the page renders, so the reading view is watched and each empty one is marked for styles.css.
  */
-function watchEmptyProperties(view: MarkdownView, on: boolean): void {
+function watchEmptyProperties(view: MarkdownView, on: boolean, onCard: () => Set<string>): void {
 	const current = watching.get(view);
 	if (!on) {
 		current?.disconnect();
@@ -45,10 +58,17 @@ function watchEmptyProperties(view: MarkdownView, on: boolean): void {
 	const reading = view.containerEl.querySelector<HTMLElement>('.markdown-reading-view');
 	if (!reading) return;
 	const mark = () => {
+		const card = onCard();
 		reading.querySelectorAll<HTMLElement>('.metadata-property').forEach((el) => {
+			el.toggleClass('nimble-prop-on-card', card.has(el.dataset.propertyKey ?? ''));
 			const value = el.querySelector('.metadata-property-value');
 			const text = value?.querySelector('.metadata-input-longtext');
 			el.toggleClass('nimble-prop-empty', !!value && (!value.hasChildNodes() || (!!text && !text.hasChildNodes())));
+		});
+		// Nothing left to show: the row goes too, so the page doesn't open on a gap.
+		reading.querySelectorAll<HTMLElement>('.metadata-container').forEach((box) => {
+			const props = Array.from(box.querySelectorAll<HTMLElement>('.metadata-property'));
+			box.toggleClass('nimble-props-none', props.length > 0 && props.every(p => p.hasClass('nimble-prop-empty') || p.hasClass('nimble-prop-on-card') || window.getComputedStyle(p).display === 'none'));
 		});
 	};
 	// Only nodes coming and going are watched, so marking (a class change) doesn't wake it again.

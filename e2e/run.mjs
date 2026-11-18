@@ -4589,7 +4589,8 @@ test('campaign properties as tags: empty ones stay hidden, and show once filled 
 			const old = app.vault.getAbstractFileByPath('Campaigns/Tag Room');
 			if (old) await app.vault.delete(old, true);
 			await plugin.campaigns.createCampaign({ name: 'Tag Room', level: 1, heroes: 4, starter: false });
-			const f = await app.vault.create('Campaigns/Tag Room/Mira.md', '---\nnimble: npc\nstatus: alive\nrole: \n---\nA tinker.\n');
+			// A place: an NPC's card shows its status and role, so on an NPC the tags leave them out.
+			const f = await app.vault.create('Campaigns/Tag Room/Mira.md', '---\nnimble: location\nstatus: alive\nrole: \n---\nA tinker\'s yard.\n');
 			await app.workspace.getLeaf(false).openFile(f, { state: { mode: 'preview' } });
 		});
 		await o.waitFor(() => shown('status'), { what: 'status shows as a tag' });
@@ -5549,6 +5550,43 @@ test('5e slash commands: /monster, /spell, /encounter rated by 2024 XP, /statblo
 			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
 			plugin.settings.party = [];
 			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('NPC card without the block: a hand-written NPC note still shows its card, portrait slot and game stats; the tags leave them to the card', async (o) => {
+	const C = 'Campaigns/Bare Coast';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Bare Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.createFolder(`${C}/NPCs`).catch(() => {});
+			await app.vault.create(`${C}/NPCs/Sildar.md`, '---\nnimble: npc\nrole: Knight of the Order\nac: 16\nhp: 27\naliases: [Sir Sildar]\n---\nA veteran knight.\n');
+			await app.vault.create(`${C}/NPCs/Has Block.md`, '---\nnimble: npc\nrole: Clerk\n---\n\n```nimble-npc\nlook: Ink on her cuffs.\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/NPCs/Sildar.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/NPCs/Sildar.md`, 'preview');
+		const card = o.page.locator(`${R} .nimble-npc-card`);
+		await o.waitFor(async () => (await card.count()) === 1, { what: 'one card on a note with no block' });
+		assert.match(await card.locator('.nimble-npc-name').innerText(), /sildar/i);
+		assert.match(await card.locator('.nimble-npc-role').innerText(), /Knight of the Order/i);
+		assert.equal(await card.locator('.nimble-npc-portrait.is-empty').count(), 1, 'the portrait slot offers to add one');
+		assert.deepEqual((await card.locator('.nimble-note-stat').allInnerTexts()).map(x => x.replace(/\s+/g, '')), ['AC16', 'HP27']);
+		assert.ok(await card.evaluate(n => !!n.closest('.ev-sys-dnd5e')), 'the card takes 5e\'s look');
+		// The row of tags keeps what the card doesn't show (aliases) and leaves the rest to the card.
+		await o.waitFor(async () => (await o.page.locator(`${R} .metadata-property[data-property-key="role"]`).evaluate(n => getComputedStyle(n).display).catch(() => 'none')) === 'none', { what: 'role left to the card' });
+		assert.notEqual(await o.page.locator(`${R} .metadata-property[data-property-key="aliases"]`).evaluate(n => getComputedStyle(n).display), 'none');
+		// A note with its own block gets just the one card.
+		await o.openFile(`${C}/NPCs/Has Block.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .nimble-npc-card`).count()) >= 1, { what: 'the block card' });
+		await o.page.waitForTimeout(400);
+		assert.equal(await o.page.locator(`${R} .nimble-npc-card`).count(), 1);
+		assert.match(await o.page.locator(`${R} .nimble-npc-card`).innerText(), /Ink on her cuffs/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
 			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
 			await plugin.campaigns.setActive(null);
 		}, C);
