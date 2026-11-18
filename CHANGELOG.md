@@ -24,9 +24,13 @@ Ember Vault runs 5e campaigns as well as Nimble, on shared engines for slash com
 - Import a D&D Beyond character into a 5e campaign: **Import a D&D Beyond character…** turns a public character's data into a character note with a 5e sheet (class, level, species, background, ability scores, hit points, skills, spells, gear, gold and feats). Ember Vault never connects to D&D Beyond; you paste the data or choose the file. See the [import guide](docs/import.md).
 - Import a Fantasy Statblocks creature: **Import a Fantasy Statblocks creature…** turns a `statblock` block (or a JSON file of creatures) into a ```` ```5e ```` stat block. See the [import guide](docs/import.md).
 
+- Maps in a 5e campaign show the 5e fight as tokens, like Nimble's encounter in a Nimble campaign. See the [maps guide](docs/maps.md).
+
 ### Changed
 
-- Under the hood, Nimble and 5e are separate modules that can't reach into each other (the build checks), so a change to one can't break the other.
+- Under the hood, Nimble and 5e are separate modules that can't reach into each other (the build checks), so a change to one can't break the other. The plugin itself holds no game: Nimble plugs in the same way 5e does.
+- Settings are grouped: what every game shares first (General, Campaigns, Party, Content packs, Dice, Combat), then Nimble's own. See the [settings guide](docs/settings.md).
+- Nimble attack rolls (miss on a 1, explode on the max) only apply in Nimble campaigns; 5e attack rolls are plain d20s.
 
 ## [1.6.0] - 2026-11-17
 

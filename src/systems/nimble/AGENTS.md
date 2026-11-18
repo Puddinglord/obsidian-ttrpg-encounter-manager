@@ -2,7 +2,7 @@
 
 The first and default game system: a campaign with no `system:` (or `system: Nimble`) is Nimble. Nimble's creator allows the plugin to bundle all Nimble text, including the playtest drafts, as long as it's attributed and points readers to nimbleRPG.com (`bestiary.ts` has the wording).
 
-Nimble predates the system split, so much of its wiring still lives in `main.ts` rather than a `register()`. Its tools are the most complete in the plugin: when a shared engine is built (see [prototypes/SYSTEMLESS.md](../../../prototypes/SYSTEMLESS.md)), Nimble's version is usually the starting point. Port it onto the engine with the e2e suite as the safety net.
+Nimble plugs in like any other game: `register.ts` wires it in, `runtime.ts` (`nimble()`) holds its live state, and the plugin itself knows nothing about it. Its tools are the most complete in the plugin: when a shared engine is built (see [prototypes/SYSTEMLESS.md](../../../prototypes/SYSTEMLESS.md)), Nimble's version is usually the starting point. Port it onto the engine with the e2e suite as the safety net.
 
 ## Map
 
@@ -14,7 +14,7 @@ Nimble predates the system split, so much of its wiring still lives in `main.ts`
 | Compendium | `compendium.ts` + `data/compendium.json`, `compendium-data.ts` (with homebrew), `compendium-entries.ts`, `compendium-query.ts` (Nimble's words for core's search language), `filter-field.ts` (core's, with Nimble's words), `compendium-browser.ts` (Nimble's `CompendiumSource` for core's browser, and its page), `compendium-view.ts`, `compendium-modal.ts`, `compendium-pickers.ts`, `compendium-card.ts`, `compendium-art.ts` |
 | Encounters and the tracker | `encounters.ts` (the store), `tracker-view.ts`, `hp-pad.ts`, `vitals-ui.ts`, `record-modal.ts` (quick look), `encounter-block.ts`, `battle-notes.ts` (players), `builder-modal.ts`, `balance-ui.ts`, `count-modal.ts`, `saved-fight.ts` |
 | Characters | `character-def.ts` (frontmatter in, edits out; pure), `character-sheet.ts` (```nimble-sheet), `character-view.ts`, `character-modals.ts`, `level-up.ts`, `level-plan.ts`, `roll-dialog.ts`, `character-register.ts` |
-| Wiring | `register.ts` (its `register()`: views, the ```nimble block, `nimble:` references and autocomplete, builders, homebrew and saved-fight blocks, character features, the monster index kept current) |
+| Wiring | `runtime.ts` (`nimble()`: the monster index, the encounter store, and helpers like `renderStatblock`, `addToEncounter`, `openBestiary`), `settings.ts` + `settings-ui.ts` (its settings fields and sections), `map-tokens.ts`, `register.ts` (its `register()`: views, the ```nimble block, `nimble:` references and autocomplete, builders, homebrew and saved-fight blocks, character features, the monster index kept current) |
 | Builders | `entity-builder.ts` (Nimble's kinds for core's builder frame), `entity-monster*.ts`, `entity-homebrew*.ts`, `homebrew-def.ts`, `homebrew-block.ts`, `builder-register.ts` |
 | The system | `system.ts` |
 
@@ -27,6 +27,6 @@ Nimble predates the system split, so much of its wiring still lives in `main.ts`
 ## Pitfalls
 
 - **Fences and keys are Nimble's forever:** ```nimble, ```nimble-sheet, ```nimble-npc, ```nimble-spell, ```nimble-item, `nimble:` references, `nimble: monster|npc|character|creature` frontmatter. Core reuses some of these names (```nimble-encounter, ```nimble-map, ```nimble-campaign, `nimble: campaign`) for every system; that's historical, and they can't be renamed.
-- **`settings` is Nimble's type** (`NimbleStatblocksSettings` in `types.ts`) but holds plugin-wide settings too. Other systems keep their state under `settings.systemData.<id>`.
-- **`plugin.encounters`, `plugin.index` and `plugin.hover`'s Nimble helpers are Nimble's.** New core code must not depend on them.
+- **Nimble's settings fields sit at the top level of `data.json`** (they were there first), declared by augmenting `EmberVaultSettings` in `settings.ts`. `NimbleStatblocksSettings` and `DEFAULT_SETTINGS` in `types.ts` are old names kept for Nimble's own code. Other systems keep their state under `settings.systemData.<id>`.
+- **`nimble()` is Nimble's alone.** Core and `src/app` never call it; they ask through the contract. Tests and e2e reach it as `plugin.runtime('nimble')`.
 - **The player view** (`role: player`) shows lore cards instead of stat blocks (`plugin.hideStats`). Any new monster UI must respect it.

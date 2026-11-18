@@ -16,7 +16,7 @@ Core gets the plugin as a type (`import type EmberVaultPlugin from '../../main'`
 
 Core tells systems what happened through `plugin.events`: `party-changed` (the party was edited or swapped) and `active-campaign-changed`. Systems listen in their `register()`.
 
-Then it calls a contract member: `system.characters?.promptNew(…)`, `system.quickLook(…)`, `system.conditions(edition)`. If what you need isn't in the contract, add it there (see [src/systems/AGENTS.md](../systems/AGENTS.md)). Don't reach into `plugin.encounters` or other Nimble-typed members from new core code: they're Nimble's.
+Then it calls a contract member: `system.characters?.promptNew(…)`, `system.quickLook(…)`, `system.conditions(edition)`. If what you need isn't in the contract, add it there (see [src/systems/AGENTS.md](../systems/AGENTS.md)). Core never reaches into a game's state (`nimble()`, `dnd5e()`, `plugin.runtime(id)`); ask through the contract.
 
 ## The shared pieces
 
@@ -37,9 +37,11 @@ Then it calls a contract member: `system.characters?.promptNew(…)`, `system.qu
 | `builder/` | The builder: `frame.ts` (the dialog: steps, preview, check, fields; kinds registered per system with `registerKind(system, kind, …)`), `schema.ts` (a builder from a schema: steps of fields, formulas as hints and placeholders; `rebuilds` on a field others depend on, `max` on chips), and wizards too: a kind registered `hidden` opens only on purpose, and `apply` finishes some other way than a new note (a level up writes a sheet's properties), `commands.ts` (New monster/spell/item… for the note's system, the Edit pencil, `rewriteBlock`). Core's slash menu offers `/new-<kind>` for whatever the note's system registered |
 | `compendium/` | The compendium engine: `query.ts` (the search language, bound to a system's words by `createCompendiumQuery(schema)`), `filter-field.ts` (filters as chips), `browser.ts` (the browser: tabs, list, page, keys, fed by a system's `CompendiumSource`), `refs.ts` (copy or insert a reference) |
 | `content/` | Content packs: `spec.ts` (kinds as fields: checks entries with plain reasons, and writes the JSON Schema), `packs.ts` (reading a pack, `packs:` per campaign), `store.ts` (`plugin.content`: the packs in the content folder, kept current), `import-modal.ts` (Import content…, the report) |
-| `tracker/` | What every tracker shares: `hp.ts` (the HP command language: `7`, `7!`, `7v`, `7r`, `+7`, `=7`, `t7`; pure) and `hp-pad.ts` (the HP keypad, told its modes, crit and toggles, and a preview by the game). Turn order, rounds and the rest of a tracker stay each game's |
+| `tracker/` | What every tracker shares: `hp.ts` (the HP command language: `7`, `7!`, `7v`, `7r`, `+7`, `=7`, `t7`; pure) `hp-pad.ts` (the HP keypad, told its modes, crit and toggles, and a preview by the game) and `tokens.ts` (a fight's combatants as map tokens, `combatTokens`). Turn order, rounds and the rest of a tracker stay each game's |
 | `note-kinds.ts`, `note-card.ts` | The shared note kinds (NPC, location, quest, map) and what a system adds: properties new notes get (`fields`), stats on the card, its own drawing (`card`, or `replace` to draw the whole card). NPCs draw it in their ```nimble-npc card; other kinds in a ```nimble-note block that new notes get when the system has a `card` for them |
 | `types.ts` | Conditions (`ConditionDef`, `AppliedCondition`), party members, roll log, `uid()` |
+| `settings.ts`, `settings-ui.ts` | `EmberVaultSettings` (what every game shares; a system adds its fields by augmenting the interface and passing a `SettingsPart`), `migrateSettings(saved, parts)`; settings rows and sections for the settings page |
+| `dice-edge.ts`, `dice-attack.ts` | Rolls with stacked advantage and disadvantage, modifiers and extra dice; exploding attack rolls for a game whose `attackRolls` asks for them |
 | `popover.ts`, `touch.ts`, `segmented.ts`, `tooltips.ts`, `compat.ts`, `internals.ts` | UI helpers |
 
 ## Pitfalls

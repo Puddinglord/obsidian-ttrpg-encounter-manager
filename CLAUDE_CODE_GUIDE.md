@@ -15,13 +15,13 @@ Three layers, enforced by `npm run lint` (eslint `no-restricted-imports`, see es
 Core modules take the plugin type with `import type EmberVaultPlugin from '../../main'` (type only). New system-specific behaviour that core needs becomes a member of `GameSystem`, written from the real call site.
 
 ```
-main.ts                 The plugin (EmberVaultPlugin): what every game shares, then each system's register(); dice rolls, settings load/migration, system(path). Still holds Nimble's monster index, encounter store and helpers (see SYSTEMLESS.md, phase 9)
+main.ts                 The plugin (EmberVaultPlugin): what every game shares, then each system's register(); dice rolls, settings load/migration, system(path), runtime(id), events. Imports no game system
 src/systems/
   contract.ts           GameSystem: what core may ask a system for (attribution, conditions, characters, quick look…)
   registry.ts           SystemRegistry: register, resolve a campaign's `system:` (case-insensitive), fall back to the default (pure, tested)
 src/app/
   spotlight.ts          Cmd/Ctrl+K box: search adversaries/NPCs/notes, roll dice, run commands (spotlight-def.ts is the pure query parser)
-  settings-tab.ts       Settings UI (party, bestiary, rules, custom conditions)
+  settings-tab.ts       The settings page: shared rows (core/settings-ui.ts), then each system's settingsSections
   systems.ts            SHIPPED_SYSTEMS and createSystems(): every system the plugin ships, the first is the default
 src/core/
   content/              Content packs: spec.ts (fields → checks and JSON Schema), packs.ts (read a pack, packs: per campaign), store.ts (plugin.content), import-modal.ts
@@ -30,7 +30,7 @@ src/core/
   slash.ts              "/" menu engine and the commands every game shares (boxes, NPCs, quests, maps, party, roll, conditions); systems add theirs through `slashCommands`
   markdown.ts           Safe inline markdown (bold/italic/wikilinks/dice/keywords) built as DOM nodes
   encounter-def.ts      ```nimble-encounter format (pure); Nimble's encounter-block.ts renders it
-  map-def.ts            ```nimble-map format (pure); app/map-block.ts renders it (pins, encounter tokens)
+  map-def.ts            ```nimble-map format (pure); app/map-block.ts renders it (pins, and the campaign's game's fight as tokens through combatTokens)
   campaign-model.ts     Campaign structure from folders + frontmatter (pure, tested)
   campaigns.ts          CampaignStore: live index, active campaign, per-campaign party swap, note creation
   campaign-ui.ts        The outline (party line, Continue, chapters, sections) shared by panel and block
@@ -49,9 +49,16 @@ src/core/
   party.ts              Party editor (settings tab and the /party modal); cards on narrow screens
   dice.ts               Dice expression parsing and rolling
   types.ts              Shared types: conditions (AppliedCondition, ConditionDef), the party, the roll log, uid()
+  settings.ts           EmberVaultSettings (what every game shares), CORE_DEFAULTS, migrateSettings(saved, parts); systems augment the interface
+  settings-ui.ts        Settings rows and sections, for app/settings-tab.ts and each system's settingsSections
+  dice-edge.ts          Rolls with stacked advantage/disadvantage, modifiers and extra dice (pure, tested)
+  dice-attack.ts        Exploding attack rolls, for a game whose attackRolls says 'exploding' (pure, tested)
   wiki-links.ts         [[Wiki links]] inside rendered text: resolve, open, hover preview
 src/systems/nimble/
-  types.ts              Nimble monster and encounter types, settings (+ DEFAULT_SETTINGS, migrateSettings), Nimble 3.3 conditions
+  types.ts              Nimble monster and encounter types, Nimble 3.3 conditions
+  settings.ts           Nimble's settings fields (augmenting EmberVaultSettings), NIMBLE_DEFAULTS, its migration; settings-ui.ts its settings sections
+  runtime.ts            nimble(): Nimble's live state (monster index, encounter store) and helpers; register.ts wires it in at load
+  map-tokens.ts         The active encounter as map tokens (combatTokens)
   rules.ts              Nimble 3.3 / GMG 3.0 rules: armor, hero Wounds, minions, Last Stand, conditions, difficulty budget
   parser.ts             Stat block parsing (+ legacy fields), toStatblockSource(), finding ```nimble blocks
   bestiary.ts           Bundled bestiary conversion, attribution text
@@ -104,7 +111,7 @@ Rules that keep this healthy:
 - Core's `types.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, the registry, and Nimble's `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `attack-roll.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
-- Views don't mutate encounter data directly. Call `plugin.encounters.*`; it saves and fires `changed`, and every open tracker re-renders.
+- Views don't mutate encounter data directly. Call `nimble().encounters.*` (or 5e's `dnd5e().fights.change`); it saves and fires `changed`, and every open tracker re-renders.
 
 ## Commands
 
@@ -142,7 +149,7 @@ Copy `main.js`, `manifest.json` and `styles.css` to `<vault>/.obsidian/plugins/n
 - **New built-in condition:** add to `NIMBLE_CONDITIONS` in systems/nimble/types.ts.
 - **New game system:** a folder `src/systems/<id>/` with a `system.ts` that implements `GameSystem`, added to `SHIPPED_SYSTEMS` (src/app/systems.ts). The lint rules pick the folder up on their own, and the conformance suite in tests/systems.test.ts runs against it.
 - **Core needs something system-specific:** add a member to `GameSystem` (contract.ts), implement it in every system, and call it through `plugin.system(path)`. Never import a system from core.
-- **New setting:** add to `NimbleStatblocksSettings` + `DEFAULT_SETTINGS` (systems/nimble/types.ts), then a control in `app/settings-tab.ts`.
+- **New setting:** one every game shares goes in `EmberVaultSettings` + `CORE_DEFAULTS` (core/settings.ts) and a row in `app/settings-tab.ts`. A game's own: augment `EmberVaultSettings` in its `settings.ts` (as nimble/settings.ts does), give it a default in its `SettingsPart`, and a row in its `settingsSections`.
 - **New tracker action:** add a method to `EncounterStore`, a unit test in `tests/encounters.test.ts`, and the button in `tracker-view.ts`.
 
 ## Obsidian review checks

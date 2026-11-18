@@ -15,13 +15,17 @@ Where the engines came from, and what's still each system's own: [prototypes/SYS
 | `characters` | `promptNew`, `createFromPartyMember`, `partyMember` (the encounter party reads sheets) | ✓ | ✓ |
 | `register(plugin)` | Wire in its blocks, references, indexes, views, suggest, at load | ✓ (`nimble/register.ts`) | ✓ |
 | `encounterBlock` | Draw ```nimble-encounter in its campaigns (difficulty, Run) | ✓ | ✓ |
-| `openTracker`, `openCompendium` | Its tracker and compendium (Open… commands, ribbon) | (default) | ✓ |
+| `openTracker`, `openCompendium`, `openMyCharacter` | Its tracker, compendium and your character (Open… commands, ribbon) | ✓ | ✓ (character: the note) |
 | `slashCommands(plugin)` | Its "/" commands, added to core's (`core/slash.ts`). One with a base command's name or alias replaces it (5e's `/roll` adds advantage). Name shared commands as SLASH_ORDER does (`monster`, `spell`, `item`, `encounter`, `add`, `statblock`) so they sit in the same place in every game's menu. Look up runtime state when a command runs, not when the list is made | ✓ | ✓ |
 | `noteKinds` | What it adds to the shared note kinds: `npc`, `location`, `quest`, `map`. `fields` are properties new notes get and the card shows as stats (keys lowercase, not core's own; `gmOnly` keeps them out of players' notes). `card(el, ctx)` draws more below core's card; with `replace: true` it draws the whole card. Keep it light: most kinds need no drawing of their own | – | ✓ (NPC: AC, HP, CR, `statblock`, Add to fight) |
 | `content` | What it takes in content packs: `{ kinds }`, each a `KindSpec` of fields (`core/content/spec.ts`). Core reads and checks the packs; the system asks `plugin.content.enabled(id, path)` for the ones a campaign uses and puts them between the vault's notes and what it ships. Publish the JSON Schema (`packSchema`) and an example pack, and test both the way `tests/content-packs.test.ts` does | – | ✓ |
 | `vocabulary` | Words core shows for the system's ideas: `defense` ("DEF", "AC") | ✓ | ✓ |
+| `settings` | Its settings fields: defaults and migration (`SettingsPart`, `core/settings.ts`). Declare the fields by augmenting `EmberVaultSettings`; `data.json` stays one flat object, so never rename a field | ✓ | – (keeps state in `systemData.dnd5e`) |
+| `settingsSections(plugin)` | Its sections on the settings page, after the shared ones (`core/settings-ui.ts`) | ✓ | – |
+| `attackRolls(plugin)` | `'exploding'` when an attack's primary die misses on a 1 and explodes on its max; plain otherwise | ✓ (setting) | – |
+| `combatTokens(plugin)`, `inCombat(plugin)` | Its running fight as map tokens (`core/tracker/tokens.ts`), and whether one is running (the screen stays on). Trigger `plugin.events` `'combat-changed'` when the fight changes | ✓ | ✓ |
 
-Missing optional members fall back to Nimble's behaviour or a "not yet" notice. Add members from **real call sites**: when core or `src/app` needs to ask a system something, add it here, document it in the table above, implement it in every system, and extend the conformance suite in `tests/systems.test.ts`.
+Missing optional members fall back to plain behaviour (plain attack rolls, no tokens, the character note) or a "not yet" notice. Add members from **real call sites**: when core or `src/app` needs to ask a system something, add it here, document it in the table above, implement it in every system, and extend the conformance suite in `tests/systems.test.ts`.
 
 ## Engines a system uses (not contract members)
 
