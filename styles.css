@@ -886,10 +886,10 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 .nimble-map-pin-icon svg { width: 15px; height: 15px; color: #fff; transform: rotate(45deg); }
 .nimble-map-pin-label { order: -1; margin-bottom: 3px; padding: 0 0.35rem; border-radius: 4px; background: rgba(0,0,0,.72); color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .nimble-map .pin-label-short { display: none; }
-/* Zoomed out, labels shrink to their key (or hide) until you hover or focus the pin. */
+/* Zoomed out, numbered labels ("N5. Gate") shrink to their key until you hover or focus the pin.
+   Labels without a key stay whole: Show pin labels always shows something. */
 .nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key:not(:hover, :focus-visible) .pin-label-full { display: none; }
 .nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key:not(:hover, :focus-visible) .pin-label-short { display: inline; }
-.nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin:not(.has-key, :hover, :focus-visible) .nimble-map-pin-label { display: none; }
 .nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .nimble-map-pin-label { display: block; }
 .nimble-map-pin:is(:hover, :focus-visible) { z-index: 5; }
 .nimble-map.hide-labels .nimble-map-pin-label { display: none; }
@@ -4779,23 +4779,23 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .dnd5e-tracker-head { display: flex; align-items: center; gap: 0.5rem; }
 .dnd5e-tracker-title { flex: 1 1 auto; min-width: 0; font-weight: 700; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dnd5e-tracker-round { color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; }
-/* Controls as Nimble's tracker draws them: one big button for what's next, the rest beside it. */
-.dnd5e-tracker-combat, .dnd5e-tracker-tools { display: flex; gap: 0.4rem; }
-.dnd5e-tracker-combat { margin: 0.55rem 0 0.4rem; }
-.dnd5e-tracker-tools { margin-bottom: 0.7rem; }
-:is(.dnd5e-tracker-combat, .dnd5e-tracker-tools) button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; height: 2.1rem; padding: 0 0.8rem; white-space: nowrap; }
-.dnd5e-tracker-primary { flex: 1 1 auto; font-weight: 600; }
-.dnd5e-tracker-add { flex: 1 1 auto; }
-.dnd5e-tracker-icon .dnd5e-btn-text { display: none; }
-.dnd5e-tracker-icon { padding: 0 0.6rem; }
-:is(.dnd5e-tracker-combat, .dnd5e-tracker-tools) .dnd5e-btn-icon svg { width: 15px; height: 15px; }
-/* Narrow: the secondary buttons keep only their icons. */
-@container (max-width: 300px) {
-	.dnd5e-tracker-combat button:not(.dnd5e-tracker-primary) .dnd5e-btn-text { display: none; }
-	.dnd5e-tracker-combat button:not(.dnd5e-tracker-primary) { padding: 0 0.6rem; }
+/* The controls on one line: the big button (Start combat, Next turn) takes half, the side button
+   (Roll initiative, Back) a quarter, and the icons (End, Add monster, Add party) share the rest. */
+.dnd5e-tracker-combat { display: flex; gap: 0.35rem; margin: 0.55rem 0 0.7rem; }
+.dnd5e-tracker-combat button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; height: 2.1rem; min-width: 0; padding: 0 0.6rem; white-space: nowrap; overflow: hidden; }
+.dnd5e-tracker-primary { flex: 2 1 0; font-weight: 600; }
+.dnd5e-tracker-side { flex: 1 1 0; }
+.dnd5e-tracker-icon { flex: 0 0 2.3rem; padding: 0; }
+.dnd5e-tracker-combat .dnd5e-btn-text { overflow: hidden; text-overflow: ellipsis; }
+.dnd5e-tracker-combat .dnd5e-btn-icon svg { width: 15px; height: 15px; }
+/* Narrow: the side button keeps only its icon. */
+@container (max-width: 320px) {
+	.dnd5e-tracker-side .dnd5e-btn-text { display: none; }
+	.dnd5e-tracker-side { flex: 0 0 2.3rem; padding: 0; }
 }
-body.is-tablet :is(.dnd5e-tracker-combat, .dnd5e-tracker-tools) button { padding: 0 0.8rem; }
-@media (pointer: coarse) { :is(.dnd5e-tracker-combat, .dnd5e-tracker-tools) button { height: 2.5rem; } }
+body.is-tablet .dnd5e-tracker-combat button { padding: 0 0.6rem; }
+body.is-tablet .dnd5e-tracker-combat .dnd5e-tracker-icon { padding: 0; }
+@media (pointer: coarse) { .dnd5e-tracker-combat button { height: 2.5rem; } .dnd5e-tracker-icon { flex-basis: 2.6rem; } }
 .dnd5e-encounter-actions button { display: inline-flex; align-items: center; gap: 0.3rem; }
 .dnd5e-btn-icon { display: inline-flex; }
 .dnd5e-btn-icon svg { width: 14px; height: 14px; }

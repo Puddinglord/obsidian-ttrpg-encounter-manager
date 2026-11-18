@@ -46,30 +46,30 @@ export class Dnd5eTrackerView extends ItemView {
 		setIcon(more, 'more-horizontal');
 		more.onclick = (e) => this.fightMenu(e);
 
-		// The fight's controls, as Nimble's tracker has them: one big button for what comes next.
-		const combat = root.createDiv({ cls: 'dnd5e-tracker-combat' });
-		const btn = (parent: HTMLElement, label: string, icon: string, run: () => void, cls = '') => {
-			const b = parent.createEl('button', { cls });
+		// The fight's controls on one line: the big button is what comes next (Start combat, then
+		// Next turn); Back and Roll initiative beside it; End, Add monster and Add party as icons.
+		const running = isRunning(f);
+		const combat = root.createDiv({ cls: `dnd5e-tracker-combat${running ? ' is-running' : ''}` });
+		const btn = (label: string, icon: string, run: () => void, cls = '', iconOnly = false) => {
+			const b = combat.createEl('button', { cls, attr: iconOnly ? { 'aria-label': label } : {} });
 			setIcon(b.createSpan({ cls: 'dnd5e-btn-icon' }), icon);
-			b.createSpan({ cls: 'dnd5e-btn-text', text: label });
+			if (!iconOnly) b.createSpan({ cls: 'dnd5e-btn-text', text: label });
 			b.onclick = run;
 			return b;
 		};
-		if (!isRunning(f)) {
-			const go = btn(combat, 'Start combat', 'swords', () => this.change(x => start(x)), 'mod-cta dnd5e-tracker-primary');
+		if (!running) {
+			const roll = btn('Initiative', 'dices', () => this.change(x => rollInitiative(x)), 'dnd5e-tracker-side');
+			roll.setAttr('aria-label', 'Roll initiative');
+			roll.disabled = !f.combatants.some(c => c.side === 'monster');
+			const go = btn('Start combat', 'swords', () => this.change(x => start(x)), 'mod-cta dnd5e-tracker-primary');
 			go.disabled = !f.combatants.length;
-			if (f.combatants.some(c => c.side === 'monster')) btn(combat, 'Roll initiative', 'dices', () => this.change(x => rollInitiative(x)));
 		} else {
-			const back = btn(combat, 'Back', 'undo-2', () => this.change(x => previous(x)), 'dnd5e-tracker-icon');
-			back.setAttr('aria-label', 'Back a turn');
-			btn(combat, 'Next turn', 'skip-forward', () => this.change(x => next(x)), 'mod-cta dnd5e-tracker-primary');
-			btn(combat, 'End', 'square', () => this.change(x => end(x)));
+			btn('Back', 'undo-2', () => this.change(x => previous(x)), 'dnd5e-tracker-side').setAttr('aria-label', 'Back a turn');
+			btn('Next turn', 'skip-forward', () => this.change(x => next(x)), 'mod-cta dnd5e-tracker-primary');
+			btn('End combat', 'square', () => this.change(x => end(x)), 'dnd5e-tracker-icon', true);
 		}
-
-		// Adding people.
-		const tools = root.createDiv({ cls: 'dnd5e-tracker-tools' });
-		btn(tools, 'Add monster', 'plus', () => this.pickMonster(), 'dnd5e-tracker-add');
-		if (!f.combatants.some(c => c.side === 'hero')) btn(tools, 'Add party', 'users', () => this.addParty());
+		btn('Add monster', 'plus', () => this.pickMonster(), 'dnd5e-tracker-icon', true);
+		if (!f.combatants.some(c => c.side === 'hero')) btn('Add the party', 'users', () => this.addParty(), 'dnd5e-tracker-icon', true);
 
 		const list = root.createDiv({ cls: 'dnd5e-tracker-list' });
 		if (!f.combatants.length) {

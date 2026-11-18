@@ -5058,9 +5058,9 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 		assert.deepEqual((await o.page.locator(`${T} .dnd5e-combatant-name`).allInnerTexts()).sort(), ['Goblin Warrior', 'Goblin Warrior 2', 'Goblin Warrior 3', 'Goblin Warrior 4', 'Ogre']);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-setup.png') });
 
-		await o.page.locator(`${T} button`, { hasText: 'Roll initiative' }).click();
+		await o.page.locator(`${T} button[aria-label="Roll initiative"]`).click();
 		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-init`).evaluateAll(els => els.every(e => e.value !== ''))), { what: 'initiative rolled' });
-		await o.page.locator(`${T} button`, { hasText: 'Start' }).click();
+		await o.page.locator(`${T} button`, { hasText: 'Start combat' }).click();
 		await o.waitFor(async () => /Round 1/.test(await o.page.locator(`${T} .dnd5e-tracker-round`).innerText()), { what: 'round 1' });
 		assert.equal(await o.page.locator(`${T} .dnd5e-combatant.is-turn`).count(), 1);
 		const first = await o.page.locator(`${T} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).innerText();
@@ -5089,7 +5089,7 @@ test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiati
 
 		// The party joins; a hero at 0 HP makes death saves.
 		await o.eval(async (app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
-		await o.page.locator(`${T} button`, { hasText: 'Add party' }).click();
+		await o.page.locator(`${T} button[aria-label="Add the party"]`).click();
 		const ilse = o.page.locator(`${T} .dnd5e-combatant.side-hero`);
 		await o.waitFor(async () => (await ilse.count()) === 1, { what: 'hero added' });
 		assert.match(await ilse.locator('.dnd5e-ac').innerText(), /AC 16/);
@@ -5139,6 +5139,14 @@ test('map pins: a click shows the note in a quick look over the map; Cmd/Ctrl-cl
 		const pin = o.page.locator(`${M} .nimble-map-pin .nimble-map-pin-inner`).first();
 		await o.waitFor(() => o.page.evaluate((M) => { const img = document.querySelector(`${M} .nimble-map img`); return !!img && img.naturalWidth > 0; }, M), { what: 'the map image' });
 		await pin.waitFor({ state: 'visible', timeout: 10000 });
+		// Show pin labels shows them (a small image counts as zoomed out; a label without a key still shows), and hides them.
+		const label = o.page.locator(`${M} .nimble-map-pin .pin-label-full`).first();
+		const toggle = o.page.locator(`${M} .nimble-map-btn[aria-label="Show pin labels"]`);
+		assert.equal(await label.isVisible(), true, 'labels show by default');
+		await toggle.click();
+		await o.waitFor(async () => !(await label.isVisible()), { what: 'labels hidden' });
+		await toggle.click();
+		await o.waitFor(() => label.isVisible(), { what: 'labels back' });
 		await pin.click();
 		await o.waitFor(async () => (await o.page.locator('.modal-container .modal').count()) === 1, { what: 'a quick look' });
 		assert.match(await o.page.locator('.modal-container .modal').innerText(), /Pin NPC|ferries smugglers/);
