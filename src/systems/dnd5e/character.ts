@@ -96,6 +96,11 @@ export interface Sheet5e {
 	size: string;
 	/** Limited-use features' spent uses, by name (sheet-actions.ts works out the features). */
 	usesSpent: Record<string, number>;
+	/** Armor and weapons from the class; tools and languages from `tools:` and `languages:`; 2024's weapon masteries. */
+	proficiencies: string[];
+	tools: string[];
+	languages: string[];
+	masteries: string[];
 }
 
 const num = (v: unknown, d: number): number => {
@@ -107,6 +112,14 @@ const list = (v: unknown): string[] => (Array.isArray(v) ? v.map(text).filter(Bo
 /** Names match ignoring case, spaces and punctuation: "Half Plate Armor" is "Half-Plate Armor". */
 const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 const same = (a: string, b: string) => key(a) === key(b);
+
+/** "Fighting Style: Archery" → Fighting Style; "Pact of the Tome" → Pact Boon: a class's option (chosen, not had); null for a plain feature. */
+export function optionGroupOf(name: string, features: ClassFeature5e[]): string | null {
+	if (/^Pact of the /.test(name) && features.some(f => f.name === 'Pact Boon')) return 'Pact Boon';
+	const m = /^(.+?):\s/.exec(name);
+	if (!m) return null;
+	return features.some(f => f.name === m[1] || f.name === `${m[1]}s`) ? m[1] : null;
+}
 
 /** Proficiency bonus by character level. */
 export function pbForLevel(level: number): number {
@@ -222,10 +235,17 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 	const subclass = text(fm.subclass);
 	const sub = cls?.subclasses.find(s => same(s.name, subclass));
 	const species = text(fm.species) || text(fm.race);
-	const sp = c.species.find(s => same(s.name, species)) ?? c.species.flatMap(s => s.subspecies.map(x => ({ ...s, name: x.name, traits: [...s.traits, ...x.traits] }))).find(s => same(s.name, species));
+	const found = c.species.find(s => same(s.name, species)) ?? c.species.flatMap(s => s.subspecies.map(x => ({ ...s, name: x.name, traits: [...s.traits, ...x.traits] }))).find(s => same(s.name, species));
+	// 2024: a lineage or ancestry (`lineage: Elven Lineage: Drow`) adds its traits to the species'.
+	const lineage = found?.subspecies.find(x => same(x.name, text(fm.lineage)));
+	const sp = found && lineage ? { ...found, traits: [...found.traits, ...lineage.traits] } : found;
 	const background = text(fm.background);
 	const bg = c.backgrounds.find(b => same(b.name, background));
-	const fromClass = (fs: ClassFeature5e[], source: string): SheetFeature[] => fs.filter(f => f.level <= level).map(f => ({ name: f.name, desc: f.desc, source, level: f.level }));
+	// A class's options (2014's "Fighting Style: Archery", invocations, Pact of the Tome) only show once chosen (`choices:`).
+	const chosen = list(fm.choices);
+	const fromClass = (fs: ClassFeature5e[], source: string): SheetFeature[] => fs
+		.filter(f => f.level <= level && (!optionGroupOf(f.name, fs) || chosen.some(c => same(c, f.name))))
+		.map(f => ({ name: f.name, desc: f.desc, source, level: f.level }));
 	const own = Array.isArray(fm.features) ? (fm.features as unknown[]).map((f): SheetFeature | null => {
 		if (typeof f === 'string') return { name: f, desc: '', source: 'Yours' };
 		if (f && typeof f === 'object') { const o = f as Record<string, unknown>; return text(o.name) ? { name: text(o.name), desc: text(o.desc), source: 'Yours' } : null; }
@@ -276,6 +296,10 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		exhaustion: Math.max(0, Math.min(6, Math.floor(num(fm.exhaustion, 0)))),
 		size: sp?.size ?? '',
 		usesSpent: usesSpent(fm),
+		proficiencies: (cls?.proficiencies ?? []).filter(p => !/^(saving throw|skill|tool):/i.test(p)),
+		tools: list(fm.tools),
+		languages: list(fm.languages),
+		masteries: list(fm.masteries),
 	};
 }
 

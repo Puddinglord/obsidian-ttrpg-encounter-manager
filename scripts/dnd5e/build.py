@@ -351,6 +351,172 @@ def languages(ed):
         out.append(x)
     return out
 
+# ----------------------------------------------------------------------------
+# What a new character chooses (creation.json): starting equipment, tool, language,
+# skill and cantrip choices, spells known (2014) and prepared (2024), weapon masteries,
+# and the 2014 subraces' ability bonuses. Names and numbers only, no rules text.
+
+# 5e-srd-api copies the Cleric's Prepared Spells column for the Wizard; SRD 5.2.1's Wizard Features table (p. 77).
+PREPARED_FIX = {'2024': {'wizard': [4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 18, 19, 21, 22, 23, 24, 25]}}
+
+def _fix_sorcerer_2024(groups, cats):
+    """Its option A is "Spear, 2 Daggers…"; the data has Leather Armor for the Spear."""
+    for i in groups[0]['options'][0]['items']:
+        if i['name'] == 'Leather Armor': i['name'] = 'Spear'
+
+def _fix_bard_2024(groups, cats):
+    """Option A has "Musical Instrument of your choice", which the data leaves out."""
+    groups[0]['options'][0]['picks'].append({'label': 'Musical Instruments', 'count': 1, 'from': cats.get('musical-instruments', [])})
+
+def _fix_paladin_2014(groups, cats):
+    """"(b) any simple melee weapon": the data offers every simple weapon."""
+    for g in groups:
+        for o in g['options']:
+            for p in o['picks']:
+                if 'simple melee' in g['label'] and p['label'] == 'Simple Weapons':
+                    p['label'], p['from'] = 'Simple Melee Weapons', cats.get('simple-melee-weapons', [])
+
+EQUIPMENT_FIX = {('2024', 'Sorcerer'): _fix_sorcerer_2024, ('2024', 'Bard'): _fix_bard_2024, ('2014', 'Paladin'): _fix_paladin_2014}
+
+def _strip(name):
+    """"Skill: Insight" → Insight, "Tool: Dice" → Dice."""
+    return re.sub(r'^(Skill|Tool|Saving Throw):\s*', '', name)
+
+def _option_names(ed, opt_set, cats):
+    """Every name an option set offers: a list of references, nested choices, or an equipment category."""
+    if not opt_set: return []
+    t = opt_set.get('option_set_type')
+    if t == 'equipment_category':
+        return cats.get(opt_set['equipment_category']['index'], [])
+    if t == 'resource_list':
+        return []
+    out = []
+    for o in opt_set.get('options') or []:
+        if o.get('option_type') == 'reference': out.append(_strip(o['item']['name']))
+        elif o.get('option_type') == 'choice': out += _option_names(ed, o['choice'].get('from'), cats)
+        elif o.get('option_type') == 'ability_bonus': out.append(o['ability_score']['name'])
+    return out
+
+def _choice(ed, c, cats):
+    if not c: return None
+    names = _option_names(ed, c.get('from'), cats)
+    return {'count': c.get('choose', 1), 'from': names} if names or (c.get('from') or {}).get('option_set_type') == 'resource_list' else None
+
+def _equipment_option(o, cats, label):
+    """One option: items, picks from a category, gold."""
+    x = {'label': label, 'items': [], 'picks': [], 'gold': 0}
+    def add(o):
+        t = o.get('option_type')
+        if t == 'counted_reference' and o['of'].get('index') in cats:
+            # "Holy Symbol" in a 2024 list is the category: one of its kind.
+            x['picks'].append({'label': o['of']['name'], 'count': o.get('count', 1), 'from': cats[o['of']['index']]})
+        elif t == 'counted_reference': x['items'].append({'name': o['of']['name'], 'qty': o.get('count', 1)})
+        elif t == 'money': x['gold'] += o.get('count', 0)
+        elif t == 'multiple':
+            for i in o.get('items') or []: add(i)
+        elif t == 'choice':
+            ch = o['choice']
+            f = ch.get('from') or {}
+            names = cats.get(f['equipment_category']['index'], []) if f.get('option_set_type') == 'equipment_category' else _option_names('', f, cats)
+            what = (f.get('equipment_category') or {}).get('name') or ch.get('desc') or 'one'
+            x['picks'].append({'label': what, 'count': ch.get('choose', 1), 'from': names})
+    add(o)
+    return x
+
+def _equipment_groups(options, cats):
+    groups = []
+    for g in options or []:
+        desc = g.get('desc') or ''
+        f = g.get('from') or {}
+        if f.get('option_set_type') == 'equipment_category':
+            groups.append({'label': desc, 'options': [{'label': desc, 'items': [], 'picks': [{'label': f['equipment_category']['name'], 'count': g.get('choose', 1), 'from': cats.get(f['equipment_category']['index'], [])}], 'gold': 0}]})
+            continue
+        opts = f.get('options') or []
+        letters = 'ABCDEFGH'
+        groups.append({'label': desc, 'options': [_equipment_option(o, cats, letters[i]) for i, o in enumerate(opts)]})
+    return groups
+
+def creation(ed):
+    cats = {c['index']: [e['name'] for e in c.get('equipment') or []] for c in load(ed, 'Equipment-Categories')}
+    levels = load(ed, 'Levels')
+    out = {'classes': {}, 'species': {}, 'backgrounds': {}}
+    for c in load(ed, 'Classes'):
+        cid = c['index']
+        rows = sorted((l for l in levels if (l.get('class') or {}).get('index') == cid and not l.get('subclass')), key=lambda l: l['level'])
+        x = {}
+        given = [{'name': e['equipment']['name'], 'qty': e.get('quantity', 1)} for e in c.get('starting_equipment') or []]
+        if given: x['items'] = given
+        x['equipment'] = _equipment_groups(c.get('starting_equipment_options'), cats)
+        if (ed, c['name']) in EQUIPMENT_FIX: EQUIPMENT_FIX[(ed, c['name'])](x['equipment'], cats)
+        tools = [_choice(ed, p, cats) for p in (c.get('proficiency_choices') or [])[1:]]
+        tools = [t for t in tools if t]
+        if tools: x['tools'] = {'count': tools[0]['count'], 'from': tools[0]['from']}
+        known = [(l.get('spellcasting') or {}).get('spells_known') for l in rows]
+        if any(known): x['known'] = [k or 0 for k in known]
+        prepared = PREPARED_FIX.get(ed, {}).get(cid) or [(l.get('spellcasting') or {}).get('prepared_spells') for l in rows]
+        if any(prepared): x['prepared'] = [p or 0 for p in prepared]
+        mastery = [(l.get('class_specific') or {}).get('weapon_mastery') for l in rows]
+        if any(mastery): x['mastery'] = [m or 0 for m in mastery]
+        out['classes'][c['name']] = x
+    traits = load(ed, 'Traits')
+    def species_extra(name, kind):
+        x = {}
+        for t in traits:
+            owners = [r['name'] for r in (t.get('races') or t.get('species') or [])] + [r['name'] for r in (t.get('subraces') or t.get('subspecies') or [])]
+            if name not in owners: continue
+            for p in t.get('proficiencies') or []:
+                if p['name'].startswith('Skill: '): x.setdefault('skills', []).append(_strip(p['name']))
+            ch = _choice(ed, t.get('proficiency_choices'), cats)
+            if ch:
+                skills = [s for s in ch['from'] if s in SKILL_NAMES]
+                if skills: x['skillChoices'] = {'count': ch['count'], 'from': skills}
+                else: x['toolChoices'] = ch
+            lo = _choice(ed, t.get('language_options'), cats)
+            if lo: x['languageChoices'] = lo
+            so = ((t.get('trait_specific') or {}).get('spell_options'))
+            if so: x['cantripChoices'] = {'count': so.get('choose', 1), 'from': _option_names(ed, so.get('from'), cats)}
+            sub = ((t.get('trait_specific') or {}).get('subtrait_options'))
+            if sub: x['traitChoices'] = {'label': t['name'], 'count': sub.get('choose', 1), 'from': _option_names(ed, sub.get('from'), cats)}
+        return x
+    SKILL_NAMES = {s['name'] for s in load(ed, 'Skills')}
+    if ed == '2014':
+        subs = {s['index']: s for s in load(ed, 'Subraces')}
+        for r in load(ed, 'Races'):
+            x = species_extra(r['name'], 'race')
+            x['languages'] = [l['name'] for l in r.get('languages') or []]
+            lo = _choice(ed, r.get('language_options'), cats)
+            if lo: x['languageChoices'] = lo
+            ab = r.get('ability_bonus_options')
+            if ab: x['abilityChoices'] = {'count': ab.get('choose', 1), 'bonus': ((ab.get('from') or {}).get('options') or [{}])[0].get('bonus', 1), 'from': _option_names(ed, ab.get('from'), cats)}
+            out['species'][r['name']] = x
+            for s in r.get('subraces') or []:
+                sr = subs.get(s['index'])
+                if not sr: continue
+                y = species_extra(sr['name'], 'subrace')
+                y['abilityBonuses'] = ', '.join(f"{b['ability_score']['name']} +{b['bonus']}" for b in sr.get('ability_bonuses') or [])
+                lo = _choice(ed, sr.get('language_options'), cats)
+                if lo: y['languageChoices'] = lo
+                out['species'][sr['name']] = y
+    else:
+        for r in load(ed, 'Species'):
+            x = species_extra(r['name'], 'species')
+            if x: out['species'][r['name']] = x
+    for b in load(ed, 'Backgrounds'):
+        x = {}
+        given = [{'name': e['equipment']['name'], 'qty': e.get('quantity', 1)} for e in b.get('starting_equipment') or []]
+        if given: x['items'] = given
+        if b.get('starting_gold'): x['gold'] = b['starting_gold'].get('quantity', 0)
+        x['equipment'] = _equipment_groups(b.get('equipment_options') or b.get('starting_equipment_options'), cats)
+        tools = [p['name'] for p in (b.get('proficiencies') or b.get('starting_proficiencies') or []) if p['name'].startswith('Tool: ')]
+        if tools: x['tools'] = [_strip(t) for t in tools]
+        for p in b.get('proficiency_choices') or []:
+            ch = _choice(ed, p, cats)
+            if ch: x['toolChoices'] = ch
+        lo = _choice(ed, b.get('language_options'), cats)
+        if lo: x['languageChoices'] = lo
+        out['backgrounds'][b['name']] = x
+    return out
+
 def compendium():
     for ed in EDITIONS:
         eq, props = equipment(ed)
@@ -361,6 +527,7 @@ def compendium():
         })
 
 if __name__ == '__main__':
-    conditions()
-    monsters()
-    compendium()
+    # A step's name runs only that step: `build.py <raw dir> creation`.
+    steps = {'conditions': conditions, 'monsters': monsters, 'compendium': compendium,
+             'creation': lambda: write('creation.json', {ed: creation(ed) for ed in EDITIONS})}
+    for name in (sys.argv[2:] or list(steps)): steps[name]()

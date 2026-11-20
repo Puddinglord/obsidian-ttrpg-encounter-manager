@@ -6953,6 +6953,12 @@ button.dnd5e-pm:not(.is-prof, .is-expert):hover::before { box-shadow: inset 0 0 
 .dnd5e-sheet .dnd5e-sheet-feature-src { font: 600 13px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-text-2); white-space: nowrap; }
 .dnd5e-sheet .dnd5e-sheet-feature-text { padding: 0 2px 12px 21px; font: 400 14.5px/21px var(--x5-font-book); color: var(--ev-text); -webkit-user-select: text; user-select: text; }
 .dnd5e-sheet .dnd5e-sheet-feature-text p { margin: 0 0 8px; }
+/* Proficiencies: a label in small caps over what it covers, one row each. */
+.dnd5e-sheet .dnd5e-prof-list { display: grid; gap: 0; }
+.dnd5e-sheet .dnd5e-prof-row { display: grid; grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr); gap: 4px 14px; padding: 8px 2px; border-bottom: 1px solid var(--ev-line); }
+.dnd5e-sheet .dnd5e-prof-label { font: 600 14px/20px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.dnd5e-sheet .dnd5e-prof-values { font: 400 14.5px/20px var(--x5-font-book); color: var(--ev-text); }
+@container (max-width: 420px) { .dnd5e-sheet .dnd5e-prof-row { grid-template-columns: minmax(0, 1fr); } }
 
 /* Inventory: rows on a hairline; what's equipped is marked by its filled button and the word. */
 .dnd5e-sheet .dnd5e-sheet-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; min-height: 44px; padding: 4px 2px; border-bottom: 1px solid var(--ev-line); }

@@ -579,6 +579,18 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 				if (open && f.desc) renderText5e(row.createDiv({ cls: 'dnd5e-sheet-feature-text' }), f.desc, `${s.name}: ${f.name}`, card);
 			}
 		}
+		// What the character is trained in: the class's armor and weapons, tools, languages, and 2024's weapon masteries.
+		const profs: [string, string[]][] = [['Armor and weapons', s.proficiencies], ['Tools', s.tools], ['Languages', s.languages], ['Weapon Mastery', s.masteries]];
+		if (profs.some(([, v]) => v.length)) {
+			this.section(panel, 'Proficiencies');
+			const dl = panel.createDiv({ cls: 'dnd5e-prof-list' });
+			for (const [label, values] of profs) {
+				if (!values.length) continue;
+				const row = dl.createDiv({ cls: 'dnd5e-prof-row' });
+				row.createSpan({ cls: 'dnd5e-prof-label', text: label });
+				row.createSpan({ cls: 'dnd5e-prof-values', text: values.join(', ') });
+			}
+		}
 	}
 
 	private renderInventory(panel: HTMLElement, s: Sheet5e): void {
