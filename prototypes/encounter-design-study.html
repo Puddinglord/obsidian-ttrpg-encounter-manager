@@ -1076,7 +1076,6 @@ html[data-theme="dark"] .g-5e {
 .x5-iin .box.empty { color: var(--g-text-2); font-weight: 400; border-style: dashed; border-color: var(--g-line-strong); background: transparent; }
 .x5-iin .box.focus { border-style: solid; border-color: var(--g-accent); background: var(--g-surface); box-shadow: 0 0 0 3px color-mix(in srgb, var(--g-accent) 18%, transparent); }
 .x5-iin small { width: 30px; text-align: right; font: 500 12.5px/1 var(--g-font-ui); font-style: normal; font-variant-numeric: tabular-nums; }
-.x5-setup-note { margin: 12px 18px 0; font-size: 12.5px; color: var(--g-text-2); }
 
 /* Concept B: ribbon */
 .x5b-ribbon { display: flex; align-items: flex-start; gap: 10px; padding: 4px var(--g-pad) 14px; overflow: hidden; }
@@ -6646,14 +6645,13 @@ G5.setup = enc => {
 	return {
 		children: [
 			G5.head(enc, { setup: true }),
-			h('div.x5-setup-h', h('b', 'Party'), h('span', 'Players roll; type what they say')),
+			h('div.x5-setup-h', h('b', 'Party')),
 			h('div.x5-setup-group', party.map((c, i) => h('div.x5-irow', h('span', h('b', c.name), h('small', c.meta)), i === 0 ? pin('+3', '19') : i === 1 ? pin('+0', '', '.empty.focus') : pin('+4', '–', '.empty')))),
 			h('div.x5-setup-h', h('b', 'Monsters'), btn({ icon: 'dice', text: 'Roll all', size: 'sm', kind: 'quiet' })),
 			h('div.x5-setup-group',
 				h('div.x5-irow', h('span', h('b', 'Bog Hag'), h('small', 'Legendary · CR 5 · lair at 20')), pin('+1', '17')),
 				h('div.x5-irow', h('span', h('b', 'Goblin Boss'), h('small', 'CR 1')), pin('+2', '15')),
 				h('div.x5-irow', h('span', h('b', 'Goblins ×3'), h('small', 'CR ¼ · one roll for the group')), pin('+2', '12'))),
-			h('p.x5-setup-note', 'Ties go to the higher modifier; drag to settle the rest once the fight starts.'),
 		],
 		foot: h('div.ev-foot', btn({ icon: 'x', kind: 'icon', title: 'Cancel' }), btn({ icon: 'play', kind: 'primary', text: 'Start combat', sub: '· 2 to roll' })),
 	};
@@ -6800,7 +6798,6 @@ G5.parts = (enc, opts = {}) => {
 		: G5.row(e.c, o);
 	const out = [];
 	out.push(sec('Still to act', `${toAct.length + (lair && !lairDone && enc.turn.activeId !== 'lair' ? 1 : 0)} this round`));
-	out.push(h('div.ev-sec-hint', 'Tap anyone to make them active'));
 	const q = h('div.x5-q');
 	if (lair && !lairDone && enc.turn.activeId !== 'lair') q.append(G5.lairRow(false, true));
 	toAct.forEach((e, i) => q.append(draw(e, { next: i === 0 && !(lair && !lairDone) })));
@@ -7420,7 +7417,6 @@ GN.lists = (enc, opts = {}) => {
 	const heroBlock = [];
 	if (heroSide) {
 		heroBlock.push(sec('Heroes still to act', `${toGo.length} · any order`));
-		heroBlock.push(h('div.ev-sec-hint', 'Whoever speaks up: tap them'));
 		heroBlock.push(h('div.xn-list', toGo.length ? toGo.map((c, i) => GN.row(c, { next: i === 0 })) : h('div.xn-empty', 'Every hero has gone. Next: the monsters.')));
 	}
 	if (done.length) {
