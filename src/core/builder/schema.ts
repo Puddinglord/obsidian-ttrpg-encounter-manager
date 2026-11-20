@@ -15,6 +15,7 @@
 //     preview, missing, output })
 
 import { setIcon } from 'obsidian';
+import { gameIcon } from '../icons';
 import type EmberVaultPlugin from '../../../main';
 import { pill } from '../pill';
 import { BuilderUI, field, grid, iconButton, KindBuilder, KindFactory, numberInput, Output, section, segmented, StepDef, textArea, textButton, textInput } from './frame';
@@ -256,5 +257,5 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 
 /** A small icon before a hint ("= 22 HP"). */
 export function hintIcon(el: HTMLElement, icon: string): void {
-	setIcon(el.createSpan({ cls: 'eb-hint-icon' }), icon);
+	setIcon(el.createSpan({ cls: 'eb-hint-icon' }), gameIcon(icon));
 }

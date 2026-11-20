@@ -2,6 +2,7 @@
 // the cards they preview are the compendium's own.
 
 import { setIcon } from 'obsidian';
+import { gameIcon } from '../../core/icons';
 import type EmberVaultPlugin from '../../../main';
 import { Compendium, CompendiumHit, Item, itemDetail, Spell, spellDetail } from './compendium';
 import { pluginCardOptions, renderHitCard } from './compendium-card';
@@ -36,7 +37,7 @@ function startFrom(f: ReturnType<typeof field>, o: {
 }): void {
 	if (o.copied) {
 		const tpl = f.control.createDiv({ cls: 'eb-template' });
-		setIcon(tpl.createSpan({ cls: 'eb-template-icon' }), 'copy');
+		setIcon(tpl.createSpan({ cls: 'eb-template-icon' }), gameIcon('copy'));
 		tpl.createSpan({ cls: 'eb-template-name', text: o.copied });
 		tpl.createSpan({ cls: 'eb-template-meta' });
 		iconButton(tpl, 'x', 'Start blank instead', o.clear);
@@ -84,11 +85,11 @@ class SpellBuilder implements KindBuilder {
 	renderStep(id: string, panel: HTMLElement, ui: BuilderUI): void {
 		const d = this.d;
 		if (id === 'start') {
-			section(panel, 'What are you casting?', 'Pick a school and tier, then Create: damage, actions and range come from the Creator\'s Kit.');
+			section(panel, 'What are you casting?', 'Damage, actions and range come from the Creator\'s Kit.');
 			const top = grid(panel, 2);
 			const name = field(top, 'Name');
 			textInput(name.control, { value: d.name, placeholder: 'Ember Lash', words: true, labelledBy: name.labelId, label: 'Name', onInput: v => { d.name = v; ui.changed(); } });
-			const from = field(top, 'Start from', { help: this.copied ? undefined : 'Copy a spell and change what you like.' });
+			const from = field(top, 'Start from');
 			startFrom(from, {
 				kind: 'spell', copied: this.copied, placeholder: 'Blank, or search: ignite, frost…',
 				clear: () => { const n = this.d.name; this.d = { ...newSpellDraft(), name: n }; this.copied = undefined; this.otherSchool = false; ui.rebuild(); },
@@ -268,11 +269,11 @@ class ItemBuilder implements KindBuilder {
 	renderStep(id: string, panel: HTMLElement, ui: BuilderUI): void {
 		const d = this.d;
 		if (id === 'start') {
-			section(panel, 'What are you making?', 'Pick what it is and how rare, then Create.');
+			section(panel, 'What are you making?');
 			const top = grid(panel, 2);
 			const name = field(top, 'Name');
 			textInput(name.control, { value: d.name, placeholder: 'Lantern of Echoes', words: true, labelledBy: name.labelId, label: 'Name', onInput: v => { d.name = v; ui.changed(); } });
-			const from = field(top, 'Start from', { help: this.copied ? undefined : 'Copy an item and change what you like.' });
+			const from = field(top, 'Start from');
 			startFrom(from, {
 				kind: 'item', copied: this.copied, placeholder: 'Blank, or search: longsword, potion…',
 				clear: () => { const n = this.d.name; this.d = { ...newItemDraft(this.d.kind), name: n }; this.copied = undefined; ui.rebuild(); },

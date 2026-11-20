@@ -46,3 +46,22 @@ export function damageIcon(word: string | undefined): { icon: string; label: str
 	const key = DAMAGE[String(word ?? '').toLowerCase().replace(/[^a-z]/g, '')];
 	return key ? { icon: evIcon(`dmg-${key}` as EvIconName), label: `${DAMAGE_LABEL[key]} damage` } : null;
 }
+
+/** Lucide names our game surfaces were first written with, and the Phosphor Bold shape we draw for each. */
+const FROM_LUCIDE: Record<string, EvIconName> = {
+	'wand-2': 'wand', sparkles: 'sparkle', 'bar-chart-3': 'chart', 'chart-bar': 'chart', 'trash-2': 'trash', pencil: 'edit', 'pencil-line': 'edit',
+	sword: 'swords', 'flask-conical': 'flask', 'scroll-text': 'scroll', dices: 'dice', 'dice-5': 'dice', save: 'floppy', 'rotate-ccw': 'undo',
+	'circle-check': 'check-circle', 'check-circle-2': 'check-circle', 'triangle-alert': 'warning', 'alert-triangle': 'warning', 'file-symlink': 'open',
+	'external-link': 'open', maximize: 'fit', 'user-round': 'user', 'sticky-note': 'note', 'trending-up': 'trend-up', 'trending-down': 'trend-down',
+	'book-open': 'book', 'shield-half': 'shield', scale: 'scales', 'users-round': 'users', 'circle-plus': 'plus', 'plus-circle': 'plus',
+};
+
+/**
+ * The icon to draw on a game's surface for a Lucide name: ours (Phosphor Bold) when we have the shape, else the
+ * Lucide one. Lets a surface written with Lucide names (the builder's steps, a system's kinds) draw Phosphor.
+ */
+export function gameIcon(name: string): string {
+	if (name.startsWith('ev-')) return name;
+	const ours = FROM_LUCIDE[name] ?? (Object.prototype.hasOwnProperty.call(PHOSPHOR_BOLD, name) ? name as EvIconName : undefined);
+	return ours ? evIcon(ours) : name;
+}

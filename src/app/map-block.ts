@@ -9,9 +9,12 @@ import { MapDef, mapBlockSource, MapPin, parseMapBlock, PIN_KINDS, PinKind, repl
 import { confirmAction, isTouch, onLongPress } from '../core/touch';
 import { setWarningButton } from '../core/compat';
 import { closePopover, isPopoverOpenFor, openPopover } from '../core/popover';
+import { evIcon, gameIcon } from '../core/icons';
+import { applyLook } from '../core/look';
+import { pill } from '../core/pill';
 
 const PIN_ICON: Record<PinKind, string> = {
-	place: 'map-pin', area: 'flag', encounter: 'swords', npc: 'user', treasure: 'gem', danger: 'skull', note: 'sticky-note', secret: 'eye-off',
+	place: evIcon('map-pin'), area: evIcon('flag'), encounter: evIcon('swords'), npc: evIcon('user'), treasure: evIcon('treasure'), danger: evIcon('skull'), note: evIcon('note'), secret: evIcon('eye-off'),
 };
 
 type Mode = 'view' | 'add' | 'move';
@@ -73,6 +76,8 @@ class MapBlock extends MarkdownRenderChild {
 		const root = this.containerEl;
 		root.empty();
 		root.addClass('nimble-map');
+		// In the look of the campaign's game: its paper, its colour on pins and tokens, its type in the tray.
+		applyLook(root, this.plugin.system(this.ctx.sourcePath).id);
 
 		const src = this.resolveImage();
 		if (!src) {
@@ -84,9 +89,7 @@ class MapBlock extends MarkdownRenderChild {
 
 		const bar = root.createDiv({ cls: 'nimble-map-toolbar' });
 		const modeBtn = (mode: Mode, icon: string, label: string) => {
-			const b = bar.createEl('button', { cls: `nimble-map-btn${this.mode === mode ? ' is-active' : ''}`, attr: { 'aria-label': label, 'aria-pressed': String(this.mode === mode) } });
-			setIcon(b.createSpan(), icon);
-			b.createSpan({ text: label });
+			const b = pill(bar, { tag: 'button', icon: gameIcon(icon), text: label, cls: `nimble-map-btn${this.mode === mode ? ' is-active' : ''}`, attr: { 'aria-label': label, 'aria-pressed': String(this.mode === mode) } });
 			b.onclick = () => { this.mode = this.mode === mode ? 'view' : mode; this.build(); };
 		};
 		this.editable = this.canSave();
@@ -98,18 +101,15 @@ class MapBlock extends MarkdownRenderChild {
 		// Tokens come from the GM's tracker, so a map in a campaign you play in doesn't offer them.
 		if (this.plugin.playerView(this.ctx.sourcePath)) this.showTokens = false;
 		else {
-			const tokens = bar.createEl('button', { cls: `nimble-map-btn${this.showTokens ? ' is-active' : ''}`, attr: { 'aria-label': 'Show the current encounter as tokens', 'aria-pressed': String(this.showTokens) } });
-			setIcon(tokens.createSpan(), 'swords');
-			tokens.createSpan({ text: 'Encounter tokens' });
+			const tokens = pill(bar, { tag: 'button', icon: evIcon('swords'), text: 'Encounter tokens', cls: `nimble-map-btn${this.showTokens ? ' is-active' : ''}`, attr: { 'aria-label': 'Show the current encounter as tokens', 'aria-pressed': String(this.showTokens) } });
 			tokens.onclick = () => { this.showTokens = !this.showTokens; this.build(); };
 		}
-		const labels = bar.createEl('button', { cls: `nimble-map-btn${this.showLabels ? ' is-active' : ''}`, attr: { 'aria-label': 'Show pin labels', 'aria-pressed': String(this.showLabels) } });
-		setIcon(labels.createSpan(), 'tag');
-		labels.onclick = () => { this.showLabels = !this.showLabels; this.root?.toggleClass('hide-labels', !this.showLabels); labels.toggleClass('is-active', this.showLabels); };
+		const labels = pill(bar, { tag: 'button', icon: evIcon('tag'), cls: `nimble-map-btn${this.showLabels ? ' is-active' : ''}`, attr: { 'aria-label': 'Show pin labels', 'aria-pressed': String(this.showLabels) } });
+		labels.onclick = () => { this.showLabels = !this.showLabels; this.root?.toggleClass('hide-labels', !this.showLabels); labels.toggleClass('is-active', this.showLabels); labels.setAttr('aria-pressed', String(this.showLabels)); };
 		bar.createDiv({ cls: 'nimble-map-spacer' });
 		const zoom = (icon: string, label: string, fn: () => void) => {
-			const b = bar.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': label } });
-			setIcon(b, icon);
+			const b = bar.createEl('button', { cls: 'clickable-icon nimble-map-zoom', attr: { 'aria-label': label } });
+			setIcon(b, gameIcon(icon));
 			b.onclick = fn;
 		};
 		zoom('zoom-out', 'Zoom out', () => this.zoomAt(1 / 1.3));

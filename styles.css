@@ -1390,60 +1390,82 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
    GM MAP (```nimble-map)
    ============================================ */
 
-.nimble-map { margin: 0.75rem 0; border: 1px solid var(--background-modifier-border); border-radius: var(--nimble-radius); overflow: hidden; background: var(--background-secondary); }
-.nimble-map-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; padding: 0.35rem 0.45rem; border-bottom: 1px solid var(--background-modifier-border); }
-.nimble-map-btn { display: inline-flex; align-items: center; gap: 0.3rem; height: 1.7rem; padding: 0 0.55rem; font-size: 0.8rem; }
-.nimble-map-btn svg { width: 14px; height: 14px; }
-.nimble-map-btn.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
+/* In the look of the campaign's game (map-block.ts applies .ev-sys-<id>): the game's paper around the map, its
+   toolbar as compact pill buttons (the one pressed takes the game's colour, a full tint), pins and tokens in its
+   colours, the tray in its type. Nimble: charcoal markers, monsters as charcoal discs, heroes on parchment. 5e: the
+   book's oxblood with a gold ring. */
+.nimble-map { margin: 0.75rem 0; border: 1px solid var(--ev-line, var(--background-modifier-border)); border-radius: var(--ev-r-lg, var(--nimble-radius)); overflow: hidden; background: var(--ev-surface, var(--background-secondary)); color: var(--ev-text, var(--text-normal)); font-family: var(--ev-font-ui, var(--font-interface)); }
+.nimble-map-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--ev-line, var(--background-modifier-border)); }
+.nimble-map button.nimble-map-btn { height: 30px; padding: 0 11px; border-radius: var(--ev-r-md, 6px); border: 1px solid var(--ev-line-strong, var(--background-modifier-border)); background: var(--ev-surface, var(--interactive-normal)); box-shadow: none; color: var(--ev-text, var(--text-normal)); font: 600 13px/normal var(--ev-font-ui, var(--font-interface)); --ev-pill-icon: 15px; --ev-pill-gap: 6px; }
+.nimble-map button.nimble-map-btn:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); }
+.nimble-map button.nimble-map-btn.is-icon-only { width: 30px; padding: 0; }
+.nimble-map button.nimble-map-btn.is-active { border-color: var(--ev-accent, var(--interactive-accent)); background: var(--ev-accent, var(--interactive-accent)); color: var(--ev-on-accent, var(--text-on-accent)); }
+.nimble-map button.nimble-map-btn.is-active:hover { background: var(--ev-accent-hover, var(--interactive-accent-hover)); }
+.nimble-map button.nimble-map-zoom { color: var(--ev-text-2, var(--icon-color)); }
+.nimble-map button.nimble-map-zoom svg { width: 17px; height: 17px; }
 .nimble-map-spacer { flex: 1; }
-.nimble-map-hint { padding: 0.3rem 0.6rem; font-size: 0.78rem; color: var(--text-muted); background: var(--background-primary-alt); border-bottom: 1px solid var(--background-modifier-border); }
+.nimble-map-hint { padding: 5px 10px; font: 500 12.5px/18px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); background: var(--ev-surface-2, var(--background-primary-alt)); border-bottom: 1px solid var(--ev-line, var(--background-modifier-border)); }
 .nimble-map-body { display: flex; }
 .nimble-map-viewport { position: relative; flex: 1; height: 480px; overflow: hidden; background: #111; cursor: grab; touch-action: none; resize: vertical; outline: none; }
 .nimble-map-viewport:active { cursor: grabbing; }
 .nimble-map-viewport.mode-add { cursor: crosshair; }
-.nimble-map-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--interactive-accent); }
+.nimble-map-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--ev-accent, var(--interactive-accent)); }
 .nimble-map-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; --nimble-map-inv: 1; }
 .nimble-map .nimble-map-viewport .nimble-map-stage img { display: block; max-width: none; width: 100%; height: 100%; user-select: none; pointer-events: none; margin: 0; }
 .nimble-map-grid { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(to right, rgba(0,0,0,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.35) 1px, transparent 1px); }
 .nimble-map-layer { position: absolute; inset: 0; pointer-events: none; }
 .nimble-map-pin, .nimble-map-token { position: absolute; pointer-events: auto; }
 .nimble-map-pin { width: 0; height: 0; cursor: pointer; z-index: 2; }
+/* Pins: a marker in the game's colour, its kind's icon in it, a ring of the paper; the label a dark tag above. */
+.nimble-map { --pin: var(--ev-bar, var(--interactive-accent)); --pin-ring: var(--ev-surface, #fff); --pin-ink: var(--ev-on-bar, #fff); }
+.nimble-map.ev-sys-dnd5e { --pin: var(--ev-accent); --pin-ring: var(--x5-gold-hi); --pin-ink: var(--ev-on-accent); }
 .nimble-map-pin-inner { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%) scale(var(--nimble-map-inv)); transform-origin: 50% 100%; }
-.nimble-map-pin-icon { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--interactive-accent); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.45); }
-.nimble-map-pin-icon svg { width: 15px; height: 15px; color: #fff; transform: rotate(45deg); }
-.nimble-map-pin-label { order: -1; margin-bottom: 3px; padding: 0 0.35rem; border-radius: 4px; background: rgba(0,0,0,.72); color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.nimble-map-pin-icon { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--pin); border: 2px solid var(--pin-ring); box-shadow: 0 2px 6px rgba(0,0,0,.45); }
+.nimble-map-pin-icon svg { width: 15px; height: 15px; color: var(--pin-ink); transform: rotate(45deg); }
+.nimble-map-pin-label { order: -1; display: flex; align-items: center; height: 19px; margin-bottom: 3px; padding: 0 6px; border-radius: var(--ev-r-chip, 3px); background: rgb(20 18 16 / 0.82); color: #fff; font: 700 12px/normal var(--ev-font-ui, var(--font-interface)); white-space: nowrap; }
+.nimble-map.ev-sys-nimble .nimble-map-pin-label { font: 700 12.5px/normal var(--ev-font-display); letter-spacing: 0.02em; }
+.nimble-map.ev-sys-dnd5e .nimble-map-pin-label { background: rgb(42 10 6 / 0.86); font: 600 14px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.03em; }
 .nimble-map .pin-label-short { display: none; }
 /* Zoomed out, numbered labels ("N5. Gate") shrink to their key until you hover or focus the pin.
    Labels without a key stay whole: Show pin labels always shows something. */
 .nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key:not(:hover, :focus-visible) .pin-label-full { display: none; }
 .nimble-map.is-zoomed-out:not(.hide-labels) .nimble-map-pin.has-key:not(:hover, :focus-visible) .pin-label-short { display: inline; }
-.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .nimble-map-pin-label { display: block; }
+.nimble-map.is-zoomed-out .nimble-map-pin:is(:hover, :focus-visible) .nimble-map-pin-label { display: flex; }
 .nimble-map-pin:is(:hover, :focus-visible) { z-index: 5; }
 .nimble-map.hide-labels .nimble-map-pin-label { display: none; }
-.nimble-map.hide-labels .nimble-map-pin:hover .nimble-map-pin-label { display: block; }
+.nimble-map.hide-labels .nimble-map-pin:hover .nimble-map-pin-label { display: flex; }
 .nimble-map-pin:hover .nimble-map-pin-icon, .nimble-map-pin:focus-visible .nimble-map-pin-icon { filter: brightness(1.15); box-shadow: 0 0 0 3px rgba(255,255,255,.5); }
-.nimble-map-pin.is-unlinked .nimble-map-pin-icon { opacity: 0.8; border-style: dashed; }
+.nimble-map-pin.is-unlinked .nimble-map-pin-icon { opacity: 0.85; border-style: dashed; }
 .nimble-map-pin.is-dragging { cursor: grabbing; z-index: 5; }
-.nimble-map-pin.kind-area .nimble-map-pin-icon { background: #6d55c8; }
-.nimble-map-pin.kind-encounter .nimble-map-pin-icon { background: #c0504d; }
-.nimble-map-pin.kind-npc .nimble-map-pin-icon { background: #3f8f5a; }
-.nimble-map-pin.kind-treasure .nimble-map-pin-icon { background: #c89a2c; }
-.nimble-map-pin.kind-danger .nimble-map-pin-icon { background: #7a1f1f; }
-.nimble-map-pin.kind-note .nimble-map-pin-icon { background: #5a6270; }
-.nimble-map-pin.kind-secret .nimble-map-pin-icon { background: #333; }
+/* A kind's colour, from the game's own: danger and encounters red (Nimble's HP red, 5e's danger), treasure ochre or gold. */
+.nimble-map-pin:is(.kind-encounter, .kind-danger) { --pin: var(--ev-red, var(--ev-danger-text, #c0504d)); }
+.nimble-map-pin.kind-treasure { --pin: var(--ev-ochre, var(--ev-gold, #c89a2c)); }
+.nimble-map-pin.kind-secret { --pin: #2a2724; }
+.nimble-map.ev-sys-dnd5e .nimble-map-pin:is(.kind-encounter, .kind-danger) { --pin: var(--x5-banner-a); }
+.nimble-map.ev-sys-dnd5e .nimble-map-pin.kind-treasure { --pin: var(--ev-gold); }
+/* Tokens: monsters in the game's dark (Nimble's charcoal, 5e's oxblood) with light initials, heroes on its paper;
+   a legendary monster's ring in ochre or gold. Done: faded; down: grey. */
 .nimble-map-token { width: 0; height: 0; z-index: 3; cursor: grab; }
-.nimble-map-token .nimble-map-token-text, .nimble-map-token.in-tray .nimble-map-token-text { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; font-size: 11px; font-weight: 800; color: #111; background: var(--nimble-hp); border: 2px solid #111; box-shadow: 0 2px 5px rgba(0,0,0,.5); }
+.nimble-map-token .nimble-map-token-text, .nimble-map-token.in-tray .nimble-map-token-text { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; font: 700 12px/1 var(--ev-font-num, var(--font-interface)); letter-spacing: 0.02em; color: var(--ev-on-bar, #fff); background: var(--ev-bar, #4b4743); border: 2px solid var(--ev-surface, #fff); box-shadow: 0 2px 5px rgba(0,0,0,.5); }
+.nimble-map.ev-sys-dnd5e .nimble-map-token .nimble-map-token-text { font: 600 13px/1 var(--ev-font-display); color: var(--ev-on-accent); background: var(--ev-accent); border-color: var(--x5-gold-hi); }
 .nimble-map-tokens .nimble-map-token .nimble-map-token-text { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%) scale(var(--nimble-map-inv)); }
-.nimble-map-token.role-hero .nimble-map-token-text { background: var(--nimble-hero); }
-.nimble-map-token.role-minion .nimble-map-token-text { background: var(--nimble-minion); }
-.nimble-map-token.role-legendary .nimble-map-token-text { background: var(--nimble-legendary); border-color: #fff3c4; }
+.nimble-map .nimble-map-token.role-hero .nimble-map-token-text { background: var(--ev-surface, #fff); color: var(--ev-text, #111); border-color: var(--ev-bar, #4b4743); }
+.nimble-map.ev-sys-dnd5e .nimble-map-token.role-hero .nimble-map-token-text { background: var(--ev-surface); color: var(--ev-accent-text); border-color: var(--ev-accent); }
+.nimble-map .nimble-map-token.role-minion .nimble-map-token-text { width: 26px; height: 26px; font-size: 11px; }
+.nimble-map .nimble-map-token.role-legendary .nimble-map-token-text { border-color: var(--ev-ochre, var(--x5-gold, #c89a2c)); box-shadow: 0 0 0 2px rgb(0 0 0 / 0.35), 0 2px 5px rgba(0,0,0,.5); }
+.nimble-map.ev-sys-dnd5e .nimble-map-token.role-legendary .nimble-map-token-text { border-color: var(--x5-gold); }
 .nimble-map-token.is-done { opacity: 0.6; }
-.nimble-map-token.is-down { opacity: 0.3; filter: grayscale(1); }
-.nimble-map-tray { width: 150px; flex-shrink: 0; border-left: 1px solid var(--background-modifier-border); padding: 0.4rem; overflow: auto; max-height: 480px; display: flex; flex-direction: column; gap: 0.35rem; }
-.nimble-map-tray-title { font-size: 0.72rem; color: var(--text-muted); }
-.nimble-map-tray-empty { font-size: 0.78rem; color: var(--text-muted); }
-.nimble-map-token.in-tray { position: static; width: auto; height: auto; display: flex; align-items: center; gap: 0.4rem; cursor: grab; font-size: 0.8rem; touch-action: none; }
-.nimble-map-token-ghost { position: fixed; z-index: var(--layer-popover); transform: translate(-50%, -50%); pointer-events: none; padding: 0.15rem 0.5rem; border-radius: 999px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 0.8rem; font-weight: 600; }
+.nimble-map-token.is-down { opacity: 0.35; filter: grayscale(1); }
+.nimble-map-tray { width: 168px; flex-shrink: 0; border-left: 1px solid var(--ev-line, var(--background-modifier-border)); padding: 8px; overflow: auto; max-height: 480px; display: flex; flex-direction: column; gap: 6px; background: var(--ev-surface, var(--background-secondary)); }
+.nimble-map-tray-title { font: 600 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
+.nimble-map-tray-empty { font: 500 12.5px/18px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
+.nimble-map-token.in-tray { position: static; width: auto; height: auto; display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 2px 4px; border-radius: var(--ev-r-md, 6px); cursor: grab; touch-action: none; }
+.nimble-map-token.in-tray:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); }
+.nimble-map-token.in-tray .nimble-map-token-text { flex: none; }
+.nimble-map-token-name { min-width: 0; font: 600 13px/17px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text, var(--text-normal)); overflow-wrap: anywhere; }
+.nimble-map.ev-sys-nimble .nimble-map-token-name { font: italic 800 14px/17px var(--ev-font-name); }
+.nimble-map.ev-sys-dnd5e .nimble-map-token-name { font: 600 15px/17px var(--ev-font-display); font-variant: small-caps; color: var(--ev-accent-text); letter-spacing: 0.02em; }
+.nimble-map-token-ghost { position: fixed; z-index: var(--layer-popover); transform: translate(-50%, -50%); pointer-events: none; padding: 3px 10px; border-radius: 999px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 0.8rem; font-weight: 600; }
 
 /* ============================================
    INLINE MONSTER REFERENCES  (`nimble:Name`, `5e:Name`)
@@ -1615,6 +1637,23 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 .nimble-party-actions button { display: inline-flex; align-items: center; gap: 0.35rem; }
 .nimble-party-actions svg { width: 15px; height: 15px; }
 .nimble-party-modal { width: min(760px, 94vw); }
+
+/* The party editor as a game dialog (core/party.ts, PartyModal): column heads as the game's labels, the name in its
+   name type, numbers in its figures, Add hero and Level up as the dialog's buttons. */
+.modal.nimble-party-modal.ev-dialog { width: min(780px, 96vw); }
+.ev-dialog .nimble-party-head > div { font: 700 12px/normal var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2); }
+.ev-dialog.ev-sys-nimble .nimble-party-head > div { font: 700 12.5px/normal var(--ev-font-display); letter-spacing: 0.07em; }
+.ev-dialog.ev-sys-dnd5e .nimble-party-head > div { font: 600 15px/normal var(--ev-font-display); font-variant: small-caps; text-transform: none; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.ev-dialog .nimble-party-row input { height: 36px; border-radius: var(--ev-r-md); font: 500 14px/normal var(--ev-font-ui); }
+.ev-dialog .nimble-party-row input.nimble-party-num { font: 700 16px/normal var(--ev-font-num); font-variant-numeric: tabular-nums lining-nums; }
+.ev-dialog.ev-sys-nimble .nimble-party-row .field-name input { font: italic 800 15.5px/normal var(--ev-font-name); }
+.ev-dialog.ev-sys-dnd5e .nimble-party-row .field-name input { font: 600 16px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; }
+.ev-dialog .nimble-party-row button.nimble-party-del { color: var(--ev-text-2); }
+.ev-dialog .nimble-party-actions { gap: 8px; margin: 2px 0 0; }
+.ev-dialog .nimble-party-actions button.nimble-party-btn { height: 40px; padding: 0 14px; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line-strong); background: var(--ev-surface); box-shadow: none; color: var(--ev-text); font: 600 14px/normal var(--ev-font-ui); --ev-pill-icon: 17px; --ev-pill-gap: 7px; }
+.ev-dialog .nimble-party-actions button.nimble-party-btn:hover { background: var(--ev-surface-2); }
+.ev-dialog .nimble-party-actions button.nimble-party-btn.mod-cta { border-color: var(--ev-accent); background: var(--ev-accent); color: var(--ev-on-accent); }
+.ev-dialog .nimble-party-actions button.nimble-party-btn.mod-cta:hover { background: var(--ev-accent-hover); }
 .nimble-bestiary .bestiary-attribution { font-size: 0.74rem; color: var(--text-muted); border-top: 1px solid var(--background-modifier-border); padding-top: 0.4rem; display: grid; gap: 0.3rem; }
 .nimble-bestiary .bestiary-attribution summary { cursor: pointer; color: var(--text-faint); }
 .nimble-bestiary .bestiary-attribution a { color: var(--text-muted); }
@@ -5708,6 +5747,37 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .nimble-entity-builder.is-phone-layout button.eb-create.is-gone { display: none; }
 .nimble-entity-builder.is-phone-layout button.eb-next { min-width: 0; }
 .nimble-entity-builder.is-phone-layout button.eb-next .eb-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* The builder in each game's look (design pass, with the game dialogs): step headings and the check's value in the
+   game's name type (Nimble's heavy italic Vollkorn; 5e's Garamond small caps), field labels as the sheets set them,
+   the verdict and the edition as dark tags (the verdict's tone a dot), the check's bars in the game's colours, and
+   each meter's label beside its value. */
+.nimble-entity-builder.ev-sys-nimble .eb-step-title { font: italic 900 21px/26px var(--ev-font-name); letter-spacing: 0; }
+.nimble-entity-builder.ev-sys-nimble .eb-check-value { font: italic 900 22px/26px var(--ev-font-name); }
+.nimble-entity-builder.ev-sys-nimble .eb-check-kicker { font: 700 12px/16px var(--ev-font-display); letter-spacing: 0.07em; }
+.nimble-entity-builder.ev-sys-nimble .eb-label { font: 700 12.5px/normal var(--ev-font-display); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-label { font: 600 15px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-check-kicker { font: 600 14px/16px var(--ev-font-display); font-variant: small-caps; text-transform: none; letter-spacing: 0.05em; color: var(--ev-accent-text); }
+.nimble-entity-builder :is(.eb-pill.eb-verdict, .eb-check-tag) { gap: 6px; height: 24px; padding: 0 9px; border: 0; border-radius: var(--ev-r-chip, 3px); background: var(--ev-bar, var(--ev-accent)); color: var(--ev-on-bar, var(--ev-on-accent)); font: 700 12px/normal var(--ev-font-ui); }
+.nimble-entity-builder.ev-sys-dnd5e :is(.eb-pill.eb-verdict, .eb-check-tag) { background: var(--ev-accent); color: var(--ev-on-accent); }
+.nimble-entity-builder .eb-pill.eb-verdict::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--verdict-dot, currentColor); }
+.nimble-entity-builder .eb-pill.eb-verdict.tone-ok { --verdict-dot: #6cc48a; }
+.nimble-entity-builder .eb-pill.eb-verdict.tone-high { --verdict-dot: #ff7a6b; }
+.nimble-entity-builder .eb-pill.eb-verdict.tone-low { --verdict-dot: #8db4f0; }
+.nimble-entity-builder .eb-meter-top { justify-content: flex-start; align-items: baseline; gap: 8px; }
+.nimble-entity-builder .eb-meter-value { color: var(--ev-text, var(--text-normal)); }
+.nimble-entity-builder .eb-meter-bar { height: var(--ev-bar-h, 0.45rem); border-radius: var(--ev-bar-r, 999px); background: var(--ev-track-empty, var(--ev-paper-edge)); }
+.nimble-entity-builder.ev-sys-nimble .eb-meter-fill { border-radius: inherit; background: var(--ev-bar); }
+.nimble-entity-builder.ev-sys-nimble .eb-meter-fill.is-high { background: var(--ev-red); }
+.nimble-entity-builder.ev-sys-nimble .eb-meter-fill.is-low { background: var(--ev-mana); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-meter-fill { border-radius: inherit; background: var(--ev-accent); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-meter-fill.is-high { background: var(--ev-danger-text); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-meter-fill.is-low { background: var(--ev-temp); }
+.nimble-entity-builder .eb-meter-mark { background: var(--ev-text, var(--text-normal)); }
+.nimble-entity-builder.ev-sys-nimble .eb-meter.is-hp .eb-meter-fill { background: var(--ev-hp); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-meter.is-hp .eb-meter-fill { background: var(--ev-track); }
+.nimble-entity-builder.ev-sys-nimble input.eb-input[data-field="Name"] { font: italic 800 17px/normal var(--ev-font-name); }
+.nimble-entity-builder.ev-sys-dnd5e input.eb-input[data-field="Name"] { font: 600 18px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; }
 @media (max-width: 380px) {
 	.nimble-entity-builder.is-phone-layout .eb-foot { gap: 0.4rem; padding-left: 0.6rem; padding-right: 0.6rem; }
 	.nimble-entity-builder.is-phone-layout :is(button.eb-back, button.eb-create, button.eb-next) { min-width: 0; padding-left: 0.65rem; padding-right: 0.65rem; }

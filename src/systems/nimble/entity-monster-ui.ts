@@ -3,6 +3,7 @@
 // entity-monster.ts; this file only lays them out.
 
 import { setIcon } from 'obsidian';
+import { gameIcon } from '../../core/icons';
 import type EmberVaultPlugin from '../../../main';
 import { ArmorType, NimbleMonster } from './types';
 import { describeMonster, searchMonsters } from './suggest';
@@ -103,7 +104,7 @@ class MonsterBuilder implements KindBuilder {
 
 	private start(panel: HTMLElement, ui: BuilderUI): void {
 		const d = this.d;
-		section(panel, 'What are you making?', 'Pick a role and a level, then Create: anything you leave blank uses the GM Guide\'s numbers.');
+		section(panel, 'What are you making?', 'Anything you leave blank follows the GM Guide.');
 		const top = grid(panel, 2);
 		const name = field(top, 'Name');
 		textInput(name.control, { value: d.name, placeholder: d.template ? `${d.template.name} variant` : 'Cave bear', words: true, labelledBy: name.labelId, label: 'Name', onInput: v => { d.name = v; ui.changed(); } });
@@ -112,7 +113,7 @@ class MonsterBuilder implements KindBuilder {
 			const ed = field(top, 'Editing');
 			ed.control.createDiv({ cls: 'eb-template-meta', text: d.template ? `${d.template.name}, level ${levelLabel(d.template.level)}` : '' });
 		} else {
-			const from = field(top, 'Start from', { help: d.template ? undefined : 'Copy a monster and change what you like.' });
+			const from = field(top, 'Start from');
 			this.templatePicker(from, ui);
 		}
 
@@ -162,7 +163,7 @@ class MonsterBuilder implements KindBuilder {
 		const d = this.d;
 		if (d.template) {
 			const tpl = f.control.createDiv({ cls: 'eb-template' });
-			setIcon(tpl.createSpan({ cls: 'eb-template-icon' }), 'copy');
+			setIcon(tpl.createSpan({ cls: 'eb-template-icon' }), gameIcon('copy'));
 			tpl.createSpan({ cls: 'eb-template-name', text: d.template.name });
 			tpl.createSpan({ cls: 'eb-template-meta', text: `level ${levelLabel(d.template.level)}` });
 			iconButton(tpl, 'x', 'Start blank instead', () => {

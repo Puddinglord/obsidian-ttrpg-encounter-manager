@@ -9,6 +9,7 @@
 // quick build needs, and Create works from any step.
 
 import { App, Menu, Modal, normalizePath, Notice, setIcon, stringifyYaml, TFile } from 'obsidian';
+import { gameIcon } from '../icons';
 import type EmberVaultPlugin from '../../../main';
 import { confirmAction, isPhone, isTouch } from '../touch';
 import { fuzzyRank } from '../compendium/query';
@@ -177,7 +178,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		const sheetHead = side.createDiv({ cls: 'eb-sheet-head' });
 		sheetHead.createSpan({ text: 'Preview' });
 		const closeSheet = sheetHead.createEl('button', { cls: 'eb-sheet-close', attr: { 'aria-label': 'Close the preview' } });
-		setIcon(closeSheet, 'x');
+		setIcon(closeSheet, gameIcon('x'));
 		closeSheet.addEventListener('click', () => this.toggleSheet(false));
 		this.checkEl = side.createDiv({ cls: 'eb-check' });
 		this.previewEl = side.createDiv({ cls: 'eb-preview' });
@@ -187,7 +188,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		foot.createDiv({ cls: 'eb-foot-space' });
 		if (this.phone) {
 			this.previewBtn = foot.createEl('button', { cls: 'eb-preview-btn', attr: { 'aria-label': 'Preview' } });
-			setIcon(this.previewBtn, 'eye');
+			setIcon(this.previewBtn, gameIcon('eye'));
 			this.previewBtn.addEventListener('click', () => this.toggleSheet());
 		}
 		this.createBtn = foot.createEl('button', { cls: 'eb-create' });
@@ -288,7 +289,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		for (const { kind: k, label, icon } of kinds) {
 			const on = k === this.b.kind;
 			const btn = this.kindBar.createEl('button', { cls: `eb-kind${on ? ' is-active' : ''}`, attr: { role: 'radio', 'aria-checked': String(on) } });
-			setIcon(btn.createSpan({ cls: 'eb-kind-icon' }), icon);
+			setIcon(btn.createSpan({ cls: 'eb-kind-icon' }), gameIcon(icon));
 			btn.createSpan({ cls: 'eb-t', text: label });
 			// Phones show the icon only: then it needs a name (and gets a tooltip).
 			if (this.phone) btn.setAttr('aria-label', label);
@@ -384,23 +385,23 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		this.dots.empty();
 		this.steps.forEach((st, i) => {
 			const d = this.dots.createEl('button', { cls: `eb-dot${i === this.at ? ' is-active' : ''}${i < this.at ? ' is-done' : ''}`, attr: { role: 'tab', 'aria-selected': String(i === this.at) } });
-			setIcon(d.createSpan({ cls: 'eb-dot-icon' }), st.icon);
+			setIcon(d.createSpan({ cls: 'eb-dot-icon' }), gameIcon(st.icon));
 			d.createSpan({ cls: 'eb-dot-label eb-t', text: st.label });
 			d.addEventListener('click', () => this.go(st.id));
 		});
 		this.dots.querySelector('.is-active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
 		this.backBtn.empty();
 		if (this.at === 0) this.backBtn.createSpan({ cls: 'eb-t', text: 'Cancel' });
-		else { setIcon(this.backBtn.createSpan(), 'chevron-left'); this.backBtn.createSpan({ cls: 'eb-t', text: 'Back' }); }
+		else { setIcon(this.backBtn.createSpan(), gameIcon('chevron-left')); this.backBtn.createSpan({ cls: 'eb-t', text: 'Back' }); }
 		const last = this.at === this.steps.length - 1;
 		const verb = this.o.writeBack ? 'Save' : this.o.insert ? 'Insert' : this.o.apply ? 'Finish' : 'Create';
 		this.nextBtn.empty();
 		if (last) {
-			setIcon(this.nextBtn.createSpan(), 'check');
+			setIcon(this.nextBtn.createSpan(), gameIcon('check'));
 			this.nextBtn.createSpan({ cls: 'eb-t', text: `${verb} ${this.b.noun}` });
 		} else {
 			this.nextBtn.createSpan({ cls: 'eb-t', text: 'Next' });
-			setIcon(this.nextBtn.createSpan(), 'chevron-right');
+			setIcon(this.nextBtn.createSpan(), gameIcon('chevron-right'));
 		}
 		// Create from any step: the rest fills in from the book.
 		this.createBtn.toggleClass('is-gone', last);
@@ -597,11 +598,11 @@ export function numberInput(parent: HTMLElement, o: { get: () => number | undefi
 	const wrap = parent.createDiv({ cls: 'eb-num' });
 	const step = o.step ?? 1;
 	const minus = wrap.createEl('button', { cls: 'eb-num-btn', attr: { 'aria-label': `Subtract ${step}`, tabindex: '-1' } });
-	setIcon(minus, 'minus');
+	setIcon(minus, gameIcon('minus'));
 	const input = wrap.createEl('input', { cls: 'eb-num-input', attr: { type: 'text', inputmode: 'numeric', pattern: '[0-9]*', enterkeyhint: 'next', autocomplete: 'off' } });
 	name(input, wrap, o);
 	const plus = wrap.createEl('button', { cls: 'eb-num-btn', attr: { 'aria-label': `Add ${step}`, tabindex: '-1' } });
-	setIcon(plus, 'plus');
+	setIcon(plus, gameIcon('plus'));
 	const min = o.min ?? 0;
 	const max = o.max ?? 9999;
 	const clamp = (v: number) => Math.max(min, Math.min(max, v));
@@ -647,7 +648,7 @@ export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: 
 	const thumb = row.createDiv({ cls: 'eb-seg-thumb is-still', attr: { 'aria-hidden': 'true' } });
 	const buttons = options.map(opt => {
 		const b = row.createEl('button', { cls: `eb-seg-btn${opt.tone ? ` tone-${opt.tone}` : ''}`, attr: { role: 'radio' } });
-		if (opt.icon) setIcon(b.createSpan({ cls: 'eb-seg-icon' }), opt.icon);
+		if (opt.icon) setIcon(b.createSpan({ cls: 'eb-seg-icon' }), gameIcon(opt.icon));
 		b.createSpan({ cls: 'eb-t', text: opt.label });
 		if (opt.title) b.setAttr('title', opt.title);
 		b.addEventListener('click', () => { set(opt.value); o.ui.changed(); });
@@ -748,7 +749,8 @@ export function checkHead(parent: HTMLElement, o: { kicker: string; value: strin
 
 /** A meter: how a value compares with what the book expects (100% in the middle band). */
 export function meter(parent: HTMLElement, label: string, have: number, want: number, fmt: (n: number) => string = n => String(Math.round(n))): void {
-	const row = parent.createDiv({ cls: 'eb-meter' });
+	// HP takes the game's HP colour (Nimble's red, 5e's green).
+	const row = parent.createDiv({ cls: `eb-meter${/^HP\b|hit points/i.test(label) ? ' is-hp' : ''}` });
 	const top = row.createDiv({ cls: 'eb-meter-top' });
 	top.createSpan({ cls: 'eb-meter-label', text: label });
 	top.createSpan({ cls: 'eb-meter-value', text: `${fmt(have)} / ${fmt(want)}` });
@@ -762,14 +764,14 @@ export function meter(parent: HTMLElement, label: string, have: number, want: nu
 
 export function iconButton(parent: HTMLElement, icon: string, label: string, onClick: () => void, cls = ''): HTMLButtonElement {
 	const b = parent.createEl('button', { cls: `eb-icon-btn ${cls}`.trim(), attr: { 'aria-label': label } });
-	setIcon(b, icon);
+	setIcon(b, gameIcon(icon));
 	b.addEventListener('click', onClick);
 	return b;
 }
 
 export function textButton(parent: HTMLElement, icon: string, text: string, onClick: () => void, cls = ''): HTMLButtonElement {
 	const b = parent.createEl('button', { cls: `eb-text-btn ${cls}`.trim() });
-	setIcon(b.createSpan({ cls: 'eb-text-btn-icon' }), icon);
+	setIcon(b.createSpan({ cls: 'eb-text-btn-icon' }), gameIcon(icon));
 	b.createSpan({ cls: 'eb-t', text });
 	b.addEventListener('click', onClick);
 	return b;
@@ -860,11 +862,11 @@ export function folderPill(parent: HTMLElement, o: { app: App; get: () => string
 		const path = o.get() || '/';
 		const parts = path.split('/').filter(Boolean);
 		const btn = wrap.createEl('button', { cls: 'eb-folder-pill', attr: { 'aria-label': `Saved in ${path}. Change the folder` } });
-		setIcon(btn.createSpan({ cls: 'eb-folder-icon' }), 'save');
+		setIcon(btn.createSpan({ cls: 'eb-folder-icon' }), gameIcon('save'));
 		btn.createSpan({ cls: 'eb-folder-kicker eb-t', text: 'Saved in' });
 		btn.createSpan({ cls: 'eb-folder-name eb-t', text: parts[parts.length - 1] ?? 'the vault root' });
 		if (parts.length > 1) btn.createSpan({ cls: 'eb-folder-parent eb-t', text: parts.slice(0, -1).join(' / ') });
-		setIcon(btn.createSpan({ cls: 'eb-folder-edit' }), 'chevron-down');
+		setIcon(btn.createSpan({ cls: 'eb-folder-edit' }), gameIcon('chevron-down'));
 		btn.addEventListener('click', () => edit());
 	};
 	const edit = () => {
@@ -913,9 +915,9 @@ export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write
 		input.setAttr('aria-labelledby', hiddenLabel(seg, cls === 'is-count' ? 'Number of dice' : 'Bonus'));
 		const steps = seg.createDiv({ cls: 'eb-df-steps' });
 		const up = steps.createEl('button', { cls: 'eb-df-step', attr: { tabindex: '-1' } });
-		setIcon(up, 'chevron-up');
+		setIcon(up, gameIcon('chevron-up'));
 		const down = steps.createEl('button', { cls: 'eb-df-step', attr: { tabindex: '-1' } });
-		setIcon(down, 'chevron-down');
+		setIcon(down, gameIcon('chevron-down'));
 		const clamp = (n: number) => Math.max(min, Math.min(max, n));
 		const bump = (dir: number, mult = 1) => { const step = cls === 'is-bonus' && get() >= 20 ? 5 : 1; put(clamp(get() + dir * step * mult)); };
 		up.addEventListener('click', () => bump(1));
@@ -943,7 +945,7 @@ export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write
 	spin('is-count', () => parts().count, (n) => set({ ...parts(), count: n }), 1, 20, () => [`Add 1d${parts().sides}`, `Remove 1d${parts().sides}`]);
 	const die = box.createEl('button', { cls: 'eb-df-seg eb-df-die' });
 	const dieText = die.createSpan({ cls: 'eb-t' });
-	if (o.dieMenu) setIcon(die.createSpan({ cls: 'eb-die-caret' }), 'chevron-down');
+	if (o.dieMenu) setIcon(die.createSpan({ cls: 'eb-die-caret' }), gameIcon('chevron-down'));
 	else die.disabled = true;
 	die.addEventListener('click', (ev) => {
 		if (!o.dieMenu) return;
@@ -981,7 +983,7 @@ export function dicePad(parent: HTMLElement, o: { read: () => Dice | null; write
 			// Changed from the book's dice: the book's figure is the way back.
 			const b = avg.createEl('button', { cls: `eb-pill eb-dice-avg-want eb-book-reset ${tone}`, attr: { 'aria-label': 'Use the book\'s dice' } });
 			b.createSpan({ cls: 'eb-t', text: `book ${Math.round(want)}` });
-			setIcon(b.createSpan({ cls: 'eb-book-reset-icon' }), 'rotate-ccw');
+			setIcon(b.createSpan({ cls: 'eb-book-reset-icon' }), gameIcon('rotate-ccw'));
 			b.addEventListener('click', () => { o.reset!.run(); o.ui.changed(); });
 		} else pill(avg, `book ${Math.round(want)}`, `eb-dice-avg-want ${tone}`);
 	});
@@ -999,7 +1001,7 @@ export function reviewNotesView(parent: HTMLElement, ui: BuilderUI, notes: () =>
 		box.empty();
 		for (const n of notes()) {
 			const row = box.createDiv({ cls: `eb-note tone-${n.tone}` });
-			setIcon(row.createSpan({ cls: 'eb-note-icon' }), n.tone === 'ok' ? 'circle-check' : n.tone === 'warn' ? 'triangle-alert' : 'lightbulb');
+			setIcon(row.createSpan({ cls: 'eb-note-icon' }), gameIcon(n.tone === 'ok' ? 'circle-check' : n.tone === 'warn' ? 'triangle-alert' : 'lightbulb'));
 			const body = row.createDiv({ cls: 'eb-note-body' });
 			body.createDiv({ cls: 'eb-note-text', text: n.text });
 			if (!n.fixes.length) continue;
