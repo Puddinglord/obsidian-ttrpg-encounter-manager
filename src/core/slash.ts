@@ -17,6 +17,7 @@ import { parseDice } from './dice';
 import { insideCodeFence, placeBlock, slashQuery } from './markdown';
 import { NPC_CARD_BLOCK } from './npc-card-def';
 import { kindsOf, openBuilder } from './builder/frame';
+import { applyLook } from './look';
 
 /** One row in the menu. */
 export interface SlashItem {
@@ -164,9 +165,11 @@ export class SlashSuggest extends EditorSuggest<SlashItem> {
 
 	renderSuggestion(item: SlashItem, el: HTMLElement): void {
 		el.addClass('nimble-slash-item');
+		// Each row in the note's game look (its type, its accent on the chosen row); the menu itself stays Obsidian's.
+		applyLook(el, this.plugin.system(this.context?.file?.path).id);
 		setIcon(el.createDiv({ cls: 'nimble-slash-icon' }), item.icon);
 		const text = el.createDiv({ cls: 'nimble-slash-text' });
-		text.createDiv({ cls: 'nimble-slash-title', text: item.title });
+		text.createDiv({ cls: `nimble-slash-title${item.title.startsWith('/') ? ' is-command' : ''}`, text: item.title });
 		if (item.detail) text.createDiv({ cls: 'nimble-slash-detail', text: item.detail });
 		if (item.badge?.color) el.createDiv({ cls: 'nimble-slash-swatch', attr: { style: `background: ${item.badge.color}` } });
 		else if (item.badge) el.createDiv({ cls: `nimble-slash-badge ${item.badge.cls || ''}`, text: item.badge.text });

@@ -1663,14 +1663,22 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
    SLASH COMMANDS AND NIMBLE CALLOUTS
    ============================================ */
 
-.suggestion-container .suggestion-item.nimble-slash-item { display: flex; align-items: center; gap: 0.6rem; }
-.nimble-slash-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 1.9rem; height: 1.9rem; border-radius: 6px; background: var(--background-modifier-hover); color: var(--text-muted); }
+.suggestion-container .suggestion-item.nimble-slash-item { display: flex; align-items: center; gap: 10px; }
+/* The menu stays Obsidian's; each row carries the note's game look (core/slash.ts): its chip for the icon, its
+   accent on the chosen row, its type for names (commands stay in the interface face), its tags for badges. */
+.nimble-slash-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: var(--ev-r-sm, 6px); background: var(--ev-chip-bg, var(--background-modifier-hover)); color: var(--ev-text-2, var(--text-muted)); }
 .nimble-slash-icon svg { width: 16px; height: 16px; }
-.suggestion-item.is-selected .nimble-slash-icon { background: var(--interactive-accent); color: var(--text-on-accent); }
+.suggestion-item.is-selected .nimble-slash-icon { background: var(--ev-accent, var(--interactive-accent)); color: var(--ev-on-accent, var(--text-on-accent)); }
 .nimble-slash-text { flex: 1; min-width: 0; }
 .nimble-slash-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nimble-slash-detail { font-size: 0.78em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nimble-slash-badge { flex-shrink: 0; font-size: 0.7rem; font-weight: 700; padding: 0.05rem 0.45rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.nimble-slash-item.ev-sys-nimble .nimble-slash-title:not(.is-command) { font: 700 15.5px/20px var(--ev-font-display); }
+.nimble-slash-item.ev-sys-dnd5e .nimble-slash-title:not(.is-command) { font: 600 16.5px/20px var(--ev-font-display); letter-spacing: 0.01em; }
+.nimble-slash-detail { font-size: 0.78em; color: var(--ev-text-2, var(--text-muted)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A badge is a tag: dark, white text; a difficulty keeps its colour as a dot, as the encounter blocks show it. */
+.nimble-slash-badge { flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 7px; border-radius: var(--ev-r-chip, 4px); background: var(--ev-bar, var(--ev-accent)); color: var(--ev-on-bar, var(--ev-on-accent)); font: 700 10.5px/normal var(--ev-font-ui, var(--font-interface)); letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+.nimble-slash-item.ev-sys-dnd5e .nimble-slash-badge { background: var(--ev-accent); color: var(--ev-on-accent); }
+/* A muted badge says what a row is (Spell, SRD): quiet small capitals, as Spotlight's rows say it. */
+.suggestion-item .nimble-slash-badge.is-muted { padding: 0; background: transparent; color: var(--ev-text-2, var(--text-muted)); }
 
 .callout[data-callout="nimble-read"] { --callout-color: 91, 141, 239; --callout-icon: lucide-book-open-text; font-style: italic; }
 .callout[data-callout="nimble-read"] .callout-title { font-style: normal; }
@@ -1678,11 +1686,13 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 .callout[data-callout="nimble-trap"] { --callout-color: 217, 163, 60; --callout-icon: lucide-triangle-alert; }
 .callout[data-callout="nimble-npc"] { --callout-color: 63, 143, 90; --callout-icon: lucide-user-round; }
 .callout[data-callout="nimble-condition"] { --callout-color: 142, 91, 208; --callout-icon: lucide-activity; }
-.nimble-slash-badge.diff-easy { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
-.nimble-slash-badge.diff-medium { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
-.nimble-slash-badge.diff-hard { background: rgba(224, 138, 65, 0.2); color: #c9702a; }
-.nimble-slash-badge.diff-deadly { background: rgba(224, 93, 93, 0.2); color: #d24c4c; }
-.nimble-slash-badge.diff-very-deadly { background: rgba(208, 64, 138, 0.2); color: #c23a82; }
+.nimble-slash-badge[class*="diff-"]::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--diff-dot, currentColor); }
+.nimble-slash-badge:is(.diff-easy, .diff-low) { --diff-dot: #6cc48a; }
+.nimble-slash-badge:is(.diff-medium, .diff-moderate) { --diff-dot: #e3cd5a; }
+.nimble-slash-badge:is(.diff-hard, .diff-high) { --diff-dot: #f0a05a; }
+.nimble-slash-badge.diff-deadly { --diff-dot: #ff7a6b; }
+.nimble-slash-badge.diff-very-deadly { --diff-dot: #f06aac; }
+.nimble-slash-badge.diff-trivial { --diff-dot: var(--ev-line-strong, var(--background-modifier-border)); }
 
 /* ============================================
    ENCOUNTER CHIPS: one pill = [− 3× +] [lvl] [name]
@@ -3169,31 +3179,50 @@ body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 .nimble-portrait-popout { margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem; }
 .nimble-portrait-popout svg { width: 15px; height: 15px; }
 
-/* ---------- Spotlight (Cmd/Ctrl+K) ---------- */
+/* ---------- Spotlight (Cmd/Ctrl+K) ----------
+   The box wears the campaign's game look (app/spotlight.ts): its paper, its type for names, its chips. Rows are
+   the compendium's rows: a square (a monster's level as the compendium boxes it, or the kind's icon), the name and
+   a quiet line under it, what it is on the right; the chosen row is the tracker's "now". */
 .nimble-notice-title { font-weight: 700; margin-bottom: 0.2rem; }
 .nimble-notice-actions { display: flex; gap: 0.4rem; margin-top: 0.55rem; }
-.nimble-spotlight .nimble-spotlight-dice { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--background-modifier-border); }
+.prompt.nimble-spotlight[class*="ev-sys-"] { background: var(--ev-surface); color: var(--ev-text); }
+.prompt.nimble-spotlight.ev-sys-dnd5e { background-image: var(--x5-glow); }
+.nimble-spotlight .nimble-spotlight-dice { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--ev-line, var(--background-modifier-border)); }
 .nimble-spotlight .nimble-spotlight-die {
-	height: 1.7rem; padding: 0 0.6rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; font-variant-numeric: tabular-nums;
-	background: var(--background-secondary); box-shadow: none; border: 1px solid var(--background-modifier-border); color: var(--text-muted);
+	height: 28px; padding: 0 10px; border-radius: var(--ev-r-chip, 999px); font: 600 13px/normal var(--ev-font-num, var(--font-interface)); font-variant-numeric: lining-nums tabular-nums;
+	background: var(--ev-chip-bg, var(--background-secondary)); box-shadow: none; border: 0; color: var(--ev-chip-text, var(--text-muted));
 }
-.nimble-spotlight .nimble-spotlight-die:hover { color: var(--text-normal); border-color: var(--interactive-accent); }
-.nimble-spotlight .nimble-spotlight-result { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-normal); }
-.nimble-spotlight .nimble-spot-row { display: flex; align-items: center; gap: 0.7rem; }
-.nimble-spotlight .nimble-spot-icon { flex: 0 0 1.9rem; height: 1.9rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: var(--background-secondary); color: var(--text-muted); }
-.nimble-spotlight .nimble-spot-icon svg { width: 16px; height: 16px; }
-.nimble-spotlight .nimble-spot-level { font-size: 0.8rem; font-weight: 700; background: color-mix(in srgb, var(--nimble-hp, #c0392b) 14%, transparent); color: var(--text-normal); }
-.nimble-spotlight .nimble-spot-level.role-minion { background: color-mix(in srgb, var(--nimble-minion) 16%, transparent); color: var(--nimble-minion); }
-.nimble-spotlight .nimble-spot-level.role-legendary { background: color-mix(in srgb, var(--nimble-legendary) 18%, transparent); color: var(--nimble-legendary); }
-.nimble-spotlight .nimble-spot-avatar { width: 100%; height: 100%; border-radius: 7px; }
+.nimble-spotlight .nimble-spotlight-die:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); box-shadow: inset 0 0 0 1px var(--ev-line-strong, var(--interactive-accent)); color: var(--ev-text, var(--text-normal)); }
+.nimble-spotlight .nimble-spotlight-result { margin-left: auto; font: 700 14px/normal var(--ev-font-num, var(--font-interface)); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text, var(--text-normal)); }
+.nimble-spotlight[class*="ev-sys-"] .suggestion-item { border-radius: var(--ev-r-md); }
+.nimble-spotlight[class*="ev-sys-"] .suggestion-item.is-selected { background: var(--ev-now); box-shadow: inset 0 0 0 1.5px var(--ev-now-line); }
+.nimble-spotlight .nimble-spot-row { display: flex; align-items: center; gap: 12px; }
+.nimble-spotlight .nimble-spot-icon {
+	flex: 0 0 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+	border-radius: var(--ev-r-sm, 7px); background: var(--ev-chip-bg, var(--background-secondary)); color: var(--ev-text-2, var(--text-muted));
+	font: 700 14px/normal var(--ev-font-num, var(--font-interface)); font-variant-numeric: lining-nums tabular-nums;
+}
+.nimble-spotlight .nimble-spot-icon svg { width: 17px; height: 17px; }
+.nimble-spotlight .nimble-spot-avatar { width: 100%; height: 100%; border-radius: inherit; }
+.nimble-spotlight .nimble-spot-level { color: var(--ev-text, var(--text-normal)); }
+.nimble-spotlight.ev-sys-nimble .nimble-spot-level { background: var(--ev-surface); box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.nimble-spotlight.ev-sys-nimble .nimble-spot-level.role-legendary { background: var(--ev-bar); color: var(--ev-on-bar); box-shadow: none; }
+.nimble-spotlight.ev-sys-nimble .nimble-spot-level.role-minion { box-shadow: none; outline: 1.5px dashed var(--ev-bar); outline-offset: -1.5px; }
+.nimble-spotlight.ev-sys-nimble .nimble-spot-icon.cmp-spell { background: var(--ev-mana-soft); color: var(--ev-mana); }
+.nimble-spotlight.ev-sys-nimble .nimble-spot-icon:is(.cmp-feature, .cmp-class, .cmp-subclass, .cmp-boon) { background: var(--ev-ochre-soft); color: var(--ev-ochre); }
+.nimble-spotlight.ev-sys-dnd5e .nimble-spot-icon { background: var(--x5-cell); color: var(--x5-label); font: 600 15px/normal var(--ev-font-display); }
+.nimble-spotlight.ev-sys-dnd5e .nimble-spot-level { background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--x5-gold-soft); color: var(--ev-text); }
 .nimble-spotlight .nimble-spot-text { flex: 1; min-width: 0; }
 .nimble-spotlight .nimble-spot-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nimble-spotlight .nimble-spot-meta { font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-spotlight.ev-sys-nimble .nimble-spot-name { font: 700 16px/20px var(--ev-font-display); }
+.nimble-spotlight.ev-sys-dnd5e .nimble-spot-name { font: 600 17px/21px var(--ev-font-display); letter-spacing: 0.01em; }
+.nimble-spotlight .nimble-spot-meta { font: 500 12.5px/17px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-spotlight.ev-sys-dnd5e .nimble-spot-meta { font: 400 13.5px/18px var(--x5-font-book); }
 .nimble-spotlight .nimble-spot-meta.is-long { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-.nimble-spotlight .nimble-spot-tag { flex-shrink: 0; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-faint); }
+/* What a row is, on the right: quiet small capitals, not a tag (a column of them would shout). */
+.nimble-spotlight .nimble-spot-tag { flex-shrink: 0; font: 700 10.5px/normal var(--ev-font-ui, var(--font-interface)); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2, var(--text-faint)); }
 .nimble-spotlight .spot-hint .nimble-spot-name { font-weight: 500; }
-.nimble-spotlight .spot-roll .nimble-spot-icon { background: var(--interactive-accent); color: var(--text-on-accent); }
-
+.nimble-spotlight .spot-roll .nimble-spot-icon { background: var(--ev-accent, var(--interactive-accent)); color: var(--ev-on-accent, var(--text-on-accent)); }
 /* Sliding segmented-control thumb (see segmented.ts) */
 .has-thumb { position: relative; isolation: isolate; }
 .has-thumb > button { position: relative; z-index: 1; background: transparent; }
@@ -4379,10 +4408,6 @@ body:not(.is-phone) .modal.nimble-cmp-modal.ev-sys-nimble .nimble-cmp-head { pad
 .modal.nimble-cmp-modal.ev-sys-nimble button.nimble-cmp-back:hover { background: var(--ev-surface-2); }
 
 /* Spotlight: compendium rows and the picker's filter chips */
-.nimble-spotlight .nimble-spot-icon.cmp-item { color: #b8703a; background: color-mix(in srgb, #b8703a 14%, transparent); }
-.nimble-spotlight .nimble-spot-icon.cmp-spell { color: var(--ns-mana, #3d7fe0); background: color-mix(in srgb, #3d7fe0 14%, transparent); }
-.nimble-spotlight .nimble-spot-icon.cmp-feature, .nimble-spotlight .nimble-spot-icon.cmp-boon { color: #a35fd6; background: color-mix(in srgb, #a35fd6 14%, transparent); }
-.nimble-spotlight .nimble-spot-icon:is(.cmp-class, .cmp-subclass, .cmp-ancestry, .cmp-background) { color: #24a06b; background: color-mix(in srgb, #24a06b 14%, transparent); }
 .nimble-spotlight .nimble-spot-meta.is-text { font-size: 0.74rem; color: var(--text-faint); -webkit-line-clamp: 2; }
 .nimble-spotlight .suggestion-item.is-taken { opacity: 0.6; }
 .nimble-spotlight .nimble-spotlight-chips { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--background-modifier-border); }
@@ -5430,15 +5455,15 @@ body.is-mobile .nimble-art-slot.has-art .nimble-art-edit { opacity: 1; }
 .nimble-art-level.role-legendary { background: var(--ev-bar, var(--background-primary)); color: var(--ev-on-bar, var(--text-normal)); }
 .nimble-art-level.role-minion { box-shadow: 0 0 0 1.5px var(--ev-line-strong, var(--background-modifier-border)); }
 
-/* Spotlight: the compendium's chips in its box (filter-field.ts). */
+/* Spotlight: the compendium's chips in its box (filter-field.ts), as in the compendium. */
 .nimble-spotlight .prompt-input-container { display: flex; align-items: center; }
-.nimble-spotlight .nimble-spot-chips { flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; }
-.nimble-spotlight .nimble-spot-chips .nimble-cmpx-chip { --cmpx-accent: var(--interactive-accent); height: 1.6rem; font-size: 0.8rem; }
+.nimble-spotlight .nimble-spot-chips { flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.nimble-spotlight .nimble-spot-chips .nimble-cmpx-chip { height: 26px; }
 .nimble-spotlight .nimble-spot-chips > input.prompt-input { flex: 1; min-width: 8rem; }
-.nimble-spotlight .nimble-spot-chips.has-chips { padding-left: 0.75rem; }
-.nimble-spotlight .nimble-spot-chips.has-chips > input.prompt-input { padding-left: 0.25rem; }
-.nimble-spotlight .suggestion-item.is-filter .nimble-spot-name { font-family: var(--font-monospace); font-weight: 500; font-size: 0.88rem; }
-.nimble-spotlight .suggestion-item.is-filter .nimble-spot-icon { color: var(--text-accent); }
+.nimble-spotlight .nimble-spot-chips.has-chips { padding-left: 12px; }
+.nimble-spotlight .nimble-spot-chips.has-chips > input.prompt-input { padding-left: 4px; }
+.nimble-spotlight .suggestion-item.is-filter .nimble-spot-name { font: 500 14px/19px var(--font-monospace); }
+.nimble-spotlight .suggestion-item.is-filter .nimble-spot-icon { background: transparent; box-shadow: inset 0 0 0 1px var(--ev-line-strong, var(--background-modifier-border)); color: var(--ev-accent-text, var(--text-accent)); }
 
 /* ============================================
    BUILDER (entity-builder.ts): monsters, spells, items

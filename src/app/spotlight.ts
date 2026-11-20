@@ -21,7 +21,10 @@ import type EmberVaultPlugin from '../../main';
 import { KIND_ICON } from '../core/campaign-ui';
 import type { NoteRef } from '../core/campaign-model';
 import type { NpcInfo } from '../core/campaigns';
+import { suggestionIcon } from '../core/compendium/browser';
 import { FilterField } from '../core/compendium/filter-field';
+import { evIcon } from '../core/icons';
+import { applyLook } from '../core/look';
 import type { Suggestion } from '../core/compendium/query';
 import { chooseSelected, pluginCommands, runCommand, setSuggestSelection } from '../core/internals';
 import { portraitOf, renderAvatar } from '../core/npc-card';
@@ -63,6 +66,8 @@ export class SpotlightModal extends SuggestModal<Item> {
 	constructor(private plugin: EmberVaultPlugin, private onClosed?: () => void) {
 		super(plugin.app);
 		this.modalEl.addClass('nimble-spotlight');
+		// The rows are the campaign's game (its monsters, its compendium): Spotlight wears its look.
+		applyLook(this.modalEl, plugin.system().id);
 		this.source = plugin.system().spotlight?.(plugin);
 		const player = plugin.playerView();
 		this.setPlaceholder(player
@@ -219,9 +224,9 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const byId = new Map(this.commands('', 200).map(c => [c.kind === 'command' ? c.id.replace(/^.*:/, '') : '', c]));
 		const hints: Item[] = [
 			player
-				? { kind: 'hint', icon: 'book-open', title: 'Look something up', detail: 'Type a name: creatures, people and places from your notes, spells, items, classes and rules.', fill: '' }
-				: { kind: 'hint', icon: 'skull', title: 'Search adversaries', detail: 'Type a name. Enter for a quick look, or "3 goblin" to add three to the encounter.', fill: '' },
-			{ kind: 'hint', icon: 'dices', title: 'Roll dice', detail: 'Type 2d6+3 or d20 and press Enter.', fill: '2d6+3' },
+				? { kind: 'hint', icon: evIcon('statblock'), title: 'Look something up', detail: 'Type a name: creatures, people and places from your notes, spells, items, classes and rules.', fill: '' }
+				: { kind: 'hint', icon: evIcon('skull'), title: 'Search adversaries', detail: 'Type a name. Enter for a quick look, or "3 goblin" to add three to the encounter.', fill: '' },
+			{ kind: 'hint', icon: evIcon('dice'), title: 'Roll dice', detail: 'Type 2d6+3 or d20 and press Enter.', fill: '2d6+3' },
 		];
 		return [...hints, ...ids.map(id => byId.get(id)).filter((c): c is Item => !!c)];
 	}
@@ -275,7 +280,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const tag = (t: string) => el.createSpan({ cls: 'nimble-spot-tag', text: t });
 		switch (i.kind) {
 			case 'roll':
-				setIcon(icon, 'dices');
+				setIcon(icon, evIcon('dice'));
 				name.setText(`Roll ${i.expression}`);
 				meta(`Enter rolls it. ${MOD}+Enter rolls and keeps this open.`);
 				tag('Dice');
@@ -294,7 +299,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 			case 'npc': {
 				const portrait = portraitOf(this.app, i.npc.path);
 				if (portrait) renderAvatar(icon, portrait, 'nimble-spot-avatar');
-				else setIcon(icon, 'user-round');
+				else setIcon(icon, evIcon('user'));
 				name.setText(i.npc.name);
 				meta([i.npc.role, i.npc.aliases.length ? `aka ${i.npc.aliases.join(', ')}` : ''].filter(Boolean).join(' · '));
 				tag('NPC');
@@ -307,7 +312,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 				tag(i.note.kind === 'note' ? 'Note' : i.note.kind[0].toUpperCase() + i.note.kind.slice(1));
 				break;
 			case 'condition':
-				setIcon(icon, 'activity');
+				setIcon(icon, evIcon('condition'));
 				name.setText(i.condition.name);
 				text.createDiv({ cls: 'nimble-spot-meta is-long', text: i.condition.description });
 				tag('Condition');
@@ -319,7 +324,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 				break;
 			case 'filter': {
 				el.addClass('is-filter');
-				setIcon(icon, i.s.kind === 'sort' ? 'arrow-up-down' : i.s.kind === 'segment' ? 'panel-top' : i.s.kind === 'key' ? 'filter' : 'list-filter');
+				setIcon(icon, suggestionIcon(i.s));
 				const m = i.s.label.match(/^([-!]?[a-z]+:)(.*)$/i);
 				if (m) { name.createSpan({ cls: 'nimble-cmpx-token-key', text: m[1] }); name.createSpan({ text: m[2] }); } else name.setText(i.s.label);
 				meta(i.s.detail);
@@ -327,7 +332,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 				break;
 			}
 			case 'lookup':
-				setIcon(icon, 'library');
+				setIcon(icon, evIcon('books'));
 				name.setText(`Search the compendium for “${i.query.trim()}”`);
 				meta('Every monster, spell, item, feature and rule, with filters and sorting');
 				tag('Compendium');

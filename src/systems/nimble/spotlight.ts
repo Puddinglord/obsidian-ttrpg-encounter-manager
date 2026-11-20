@@ -7,7 +7,8 @@ import type EmberVaultPlugin from '../../../main';
 import { compendiumFilters, SpotlightRow, SpotlightSource } from '../../core/spotlight-source';
 import { CompendiumHit, KIND_LABEL } from './compendium';
 import { compendiumEntries } from './compendium-browser';
-import { CompendiumCardModal, compendiumIcon } from './compendium-card';
+import { CompendiumCardModal, compendiumGlyph, CONDITION_GLYPH } from './compendium-card';
+import { evIcon } from '../../core/icons';
 import { Entry, ENTRY_KIND_LABEL } from './compendium-entries';
 import { openCompendiumSearch, openEntry } from './compendium-modal';
 import { fuzzyRank, NIMBLE_QUERY, search } from './compendium-query';
@@ -27,7 +28,7 @@ export function nimbleSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
 		const look: SpotlightRow['look'] = plugin.hideStats(entry.filePath)
 			// Player view: what a hero could know, no level.
 			? {
-				kind: 'monster', icon: 'paw-print', title: entry.name, tag: 'Creature',
+				kind: 'monster', icon: evIcon('paw-print'), title: entry.name, tag: 'Creature',
 				meta: [m.group, [m.size !== 'Medium' ? m.size : '', m.type].filter(Boolean).join(' '), m.habitat].filter(Boolean).join(' · '),
 			}
 			: {
@@ -45,7 +46,7 @@ export function nimbleSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
 	};
 
 	const hitRow = (e: Entry, h: CompendiumHit): SpotlightRow => ({
-		look: { kind: 'compendium', iconClass: [`cmp-${h.kind}`], icon: compendiumIcon(h), title: h.name, draft: h.draft, meta: h.detail, tag: KIND_LABEL[h.kind] },
+		look: { kind: 'compendium', iconClass: [`cmp-${h.kind}`], icon: compendiumGlyph(h), title: h.name, draft: h.draft, meta: h.detail, tag: KIND_LABEL[h.kind] },
 		names: [e.name], others: [e.detail], order: 4,
 		open: () => {
 			const m = new CompendiumCardModal(plugin.app, plugin, h);
@@ -62,8 +63,8 @@ export function nimbleSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
 			look.badge = e.badge ?? '–';
 		} else if (e.hit) {
 			look.iconClass = [`cmp-${e.hit.kind}`];
-			look.icon = compendiumIcon(e.hit);
-		} else look.icon = e.monster ? 'paw-print' : e.npc ? 'user-round' : e.condition ? 'activity' : 'scale';
+			look.icon = compendiumGlyph(e.hit);
+		} else look.icon = e.monster ? evIcon('paw-print') : e.npc ? evIcon('user') : e.condition ? CONDITION_GLYPH : evIcon('scales');
 		return { look, names: [e.name], order: 4, open: () => openEntry(plugin, e) };
 	};
 

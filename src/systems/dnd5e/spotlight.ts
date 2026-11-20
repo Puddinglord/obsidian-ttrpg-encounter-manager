@@ -21,13 +21,13 @@ export function dnd5eSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
 
 	const monsterLook = (entry: Dnd5eEntry, kind: string, badge?: string): SpotlightLook => {
 		const m = entry.monster;
-		if (plugin.hideStats(entry.filePath)) return { kind, icon: 'paw-print', title: entry.name, meta: [m.size, m.type].filter(Boolean).join(' '), tag: 'Creature' };
+		if (plugin.hideStats(entry.filePath)) return { kind, icon: 'ev-paw-print', title: entry.name, meta: [m.size, m.type].filter(Boolean).join(' '), tag: 'Creature' };
 		return {
 			kind, iconClass: ['nimble-spot-level'], badge: badge ?? m.cr, title: entry.name, tag: 'Adversary',
 			meta: [`CR ${m.cr}`, [m.size, m.type].filter(Boolean).join(' '), entry.bundled ? m.source : 'your note'].filter(Boolean).join(' · '),
 		};
 	};
-	const hitLook = (hit: Hit5e, kind: string): SpotlightLook => ({ kind, icon: KIND5E[hit.kind].icon, title: hit.name, meta: hit.detail, tag: KIND5E[hit.kind].label });
+	const hitLook = (hit: Hit5e, kind: string): SpotlightLook => ({ kind, iconClass: [`cmp-${hit.kind}`], icon: KIND5E[hit.kind].glyph, title: hit.name, meta: hit.detail, tag: KIND5E[hit.kind].label });
 	const quickLook = (entry: Dnd5eEntry) => rt.quickLook(entry, path() ?? '');
 	const player = () => plugin.playerView(path());
 	const add = (entry: Dnd5eEntry, count = 1) => { void rt.addToFight(entry, count); };
