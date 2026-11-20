@@ -179,7 +179,8 @@ Running a campaign and playing in one show the same things; build each once and 
 - A game's sheet takes the page: `markSheetPage` (core/sheet-page.ts) hides the note's inline title and Properties box around any sheet, for notes with or without `cssclasses`; the sheet's own button shows the properties again.
 - Dice and marks: `dieShape` and `triangleMark` (die-shape.ts), styled globally (`.ns-die`, `.ns-tri-mark`), used by the sheet and the Camp dialog.
 - Dice rolled at the table: any die a hero holds can be typed in. Tap it to change it, tap an empty slot to add one; `renderFacePicker` (core/face-picker.ts) opens the strip of faces under the row. Nimble's class panel uses it for Fury and Judgment Dice.
-- Rolls: `rollWith` and `RollDialog` for every sheet roll.
+- Rolls: `rollWith` and `RollDialog` for every sheet roll; the result lands in core's toast (`rollToast`, core/roll-toast.ts).
+- Dialogs: `gameDialog`, `dialogLabel` and `dialogFoot` (core/dialog.ts) for any modal drawn for a game: its paper, its title type, labels beside their values, the HP keypad's footer. Builders and dialogs are archived in the design study's "Builders & dialogs" tab (`prototypes/design-study/src/78-tools.js`, shots by `node e2e/tools-shots.mjs`).
 - Pips, in every game: `renderPipRow` (core/pip-row.ts), the one pip spec. A filled pip takes one away and an empty one adds one, one step at a time, never jumping to the pip tapped (`pipStep`, core/pips.ts). The pip that just changed animates: its fill grows in with a bounce or shrinks out (pass a stable `key` so the row remembers its last count; reduced motion turns it off). No right-click-to-undo, no tap-to-spend-anywhere. Nimble's sheet and tracker pips predate it and follow the same spec (vitals-ui.ts, tracker-view.ts).
 
 ## Pills and compact buttons

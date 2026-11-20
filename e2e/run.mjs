@@ -5409,6 +5409,111 @@ test('game systems: a new campaign can be 5e (2014 rules), and Campaign settings
 	}
 });
 
+test('pills: builders and dialogs line up (Add several, encounter builder, party, entity builder, roll toast, maps in both games)', async (o) => {
+	const C = 'Campaigns/Tool Coast';
+	const MAP = 'Tool Map.md';
+	const bad = [];
+	await resetEncounter(o);
+	try {
+		await o.eval(async (app, plugin, [C, MAP]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, MAP]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+			const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+			c.getContext('2d').fillRect(0, 0, 400, 300);
+			const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+			if (!app.vault.getAbstractFileByPath('tool-map.png')) await app.vault.createBinary('tool-map.png', await blob.arrayBuffer());
+			await app.vault.create(MAP, '```nimble-map\nimage: [[tool-map.png]]\npins:\n- 30, 30 | Q1. Gate | [[Adventure]] | encounter\n- 60, 60 | Hoard | | treasure\n```\n');
+		}, [C, MAP]);
+
+		// Add several, from a reference's Add menu.
+		await o.openFile('Adventure.md');
+		await parkMouse(o);
+		await o.page.locator(`${R} .nimble-inline-name`, { hasText: /^Goblin$/ }).first().hover();
+		await o.page.waitForSelector(`${PREVIEW} .statblock-action-more`, { timeout: 3000 });
+		await o.page.locator(`${PREVIEW} .statblock-action-more`).click();
+		await clickMenu(o, 'Add several…');
+		await o.page.waitForSelector('.modal.nimble-count-modal');
+		await o.page.locator('.modal.nimble-count-modal .nimble-count-seg', { hasText: 'Tougher' }).click();
+		await o.page.waitForTimeout(350);
+		await measurePills(o, bad, 'Add several', '.modal.nimble-count-modal');
+		await o.page.keyboard.press('Escape');
+
+		// The encounter builder with two monsters in it, and its balance suggestions.
+		const B = '.modal.nimble-builder-modal';
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:build-encounter'));
+		await o.page.waitForSelector(B);
+		await o.page.locator(`${B} .builder-search`).fill('goblin');
+		await o.page.locator(`${B} .builder-result`).first().click();
+		await o.page.locator(`${B} .builder-result`).nth(1).click();
+		await o.page.waitForTimeout(350);
+		await measurePills(o, bad, 'encounter builder', B);
+		await o.page.keyboard.press('Escape');
+		await o.page.waitForSelector(B, { state: 'detached' });
+
+		// The party editor (outside a campaign it's a dialog).
+		const active = await o.eval(async (app, plugin) => {
+			document.querySelectorAll('.modal-container').forEach(n => n.remove());
+			await plugin.campaigns.setActive(null);
+			plugin.settings.party = [{ id: 'p1', name: 'Brakka', className: 'Berserker', level: 3, maxHp: 34, defense: 13, maxWounds: 6 }];
+			plugin.openParty();
+			return plugin.settings.activeCampaign ?? null;
+		});
+		assert.equal(active, null, 'no campaign active, so the party is a dialog');
+		await o.page.waitForSelector('.modal.nimble-party-modal');
+		await measurePills(o, bad, 'party editor', '.modal.nimble-party-modal');
+		await o.page.keyboard.press('Escape');
+
+		// New monster: the builder's step and kind chips, the verdict tag.
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
+		await o.page.waitForSelector('.nimble-entity-builder .eb-panel.is-active');
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, 'Nimble monster builder', '.modal.nimble-entity-builder');
+		await o.page.keyboard.press('Escape');
+		await o.page.waitForSelector('.modal.nimble-entity-builder', { state: 'detached' });
+
+		// A crit's toast: its CRIT tag.
+		await o.eval((app, plugin) => plugin.rollDice('1d6+2', 'Pill test', 'attack', [6, 6, 3]));
+		await o.page.waitForSelector('.notice .ev-roll-toast.is-crit');
+		await measurePills(o, bad, 'roll toast', '.notice .ev-roll-toast');
+
+		// A map with Nimble's encounter as tokens: the toolbar, pin labels, the tray.
+		await o.eval(async (app, plugin) => {
+			const nb = plugin.runtime('nimble');
+			await nb.addToEncounter(nb.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
+		});
+		await o.openFile(MAP, 'preview');
+		await o.page.locator(`${R} .nimble-map-btn[aria-label="Show the current encounter as tokens"]`).click();
+		await o.page.locator(`${R} .nimble-map-token.in-tray`).first().waitFor();
+		await measurePills(o, bad, 'Nimble map', `${R} .nimble-map`);
+
+		// 5e: the builder's edition tag, and a 5e campaign's map.
+		await o.eval(async (app, plugin, C) => {
+			await plugin.campaigns.createCampaign({ name: 'Tool Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Forge.md`, '# Forge\n');
+			await app.vault.create(`${C}/Coast Map.md`, '```nimble-map\nimage: [[tool-map.png]]\npins:\n- 40, 40 | The bridge | | encounter\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Forge.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/Forge.md`, 'preview');
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
+		await o.page.waitForSelector('.nimble-entity-builder.ev-sys-dnd5e .eb-panel.is-active');
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e monster builder', '.modal.nimble-entity-builder');
+		await o.page.keyboard.press('Escape');
+		await o.openFile(`${C}/Coast Map.md`, 'preview');
+		await o.page.locator(`${R} .nimble-map.ev-sys-dnd5e .nimble-map-btn`).first().waitFor();
+		await measurePills(o, bad, '5e map', `${R} .nimble-map`);
+	} finally {
+		await o.eval(async (app, plugin, [C, MAP]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, MAP]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+			plugin.settings.party = [];
+		}, [C, MAP]);
+	}
+	assert.deepEqual(bad, [], 'misaligned pills');
+});
+
 test('5e monsters: ```5e blocks in both layouts, 5e: references with CR, hover card, quick look, Copy to vault', async (o) => {
 	const C = 'Campaigns/Sword Coast';
 	const note = `${C}/Session 1.md`;
