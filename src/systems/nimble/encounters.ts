@@ -9,7 +9,7 @@ import {
 	DamageMod, HpCommand, heroDamage, lastStandEffect, minionDie, minionKills, monsterDamage, monsterRole, parseHpCommand, scaledHp,
 	shiftMonster,
 } from './rules';
-import { applyTiming, EffectBearer, EffectPrompt, retime, turnEvent, TurnEventResult } from '../../core/tracker/effects';
+import { applyTiming, EffectBearer, EffectPrompt, retime, turnEvent, TurnEventResult, undoTurnEvent } from '../../core/tracker/effects';
 import type { ConditionTiming, TurnBoundary } from '../../core/types';
 
 export type HpThreshold = 'bloodied' | 'last-stand' | 'recovered' | null;
@@ -98,6 +98,54 @@ export const awaitingLastStand = (c: EncounterCreature) =>
 	!isHero(c) && !isMinionGroup(c) && c.currentHp <= 0 && !!c.monster.lastStand && !c.lastStand && monsterRole(c.monster) === 'legendary';
 export const isDown = (c: EncounterCreature) =>
 	isMinionGroup(c) ? (c.alive ?? 0) <= 0 : isHero(c) ? (c.wounds ?? 0) >= (c.maxWounds ?? 6) : c.currentHp <= 0 && !awaitingLastStand(c);
+
+/** Whoever is on the card now (Encounter.acting), if they're still in the encounter. */
+export function actingCreature(enc: Encounter): EncounterCreature | undefined {
+	return enc.acting ? enc.creatures.find(c => c.id === enc.acting) : undefined;
+}
+
+/** The legendary monster still in the fight, if any (it acts after each hero's turn). */
+export function legendaryUp(enc: Encounter): EncounterCreature | undefined {
+	return enc.creatures.find(c => !isHero(c) && !isMinionGroup(c) && monsterRole(c.monster) === 'legendary' && !isDown(c));
+}
+
+/** The monsters' side's next: the first monster still to act, in the list's order (a legendary has no turn of its own there). */
+export function nextMonster(enc: Encounter, except?: string): EncounterCreature | undefined {
+	return enc.creatures.find(c => !isHero(c) && !c.done && !isDown(c) && c.id !== except && monsterRole(c.monster) !== 'legendary');
+}
+
+/** Heroes who haven't gone this round (and can). */
+export function heroesToAct(enc: Encounter): EncounterCreature[] {
+	return enc.creatures.filter(c => isHero(c) && !c.done && !isDown(c));
+}
+
+/** Nimble Initiative: 1–9 starts with one action, 10–19 with two, 20 or more with all three. */
+export function initiativeActions(roll: number): number {
+	return roll >= 20 ? 3 : roll >= 10 ? 2 : 1;
+}
+
+/**
+ * What the players said at the table when a hero is hit, as the keypad's quiet chips: Defend takes the
+ * Armor of whoever is hit off the damage (not on a crit); Interpose sends the hit to a friend. Each costs
+ * the one who does it an action off their next turn.
+ */
+export interface HeroReaction {
+	defend?: boolean;
+	/** The friend who steps in and takes it. */
+	interpose?: string;
+}
+
+/** Damage after a Defend: the defender's Armor off, nothing off a crit. */
+export function defendedDamage(amount: number, armor: number | undefined, crit: boolean): number {
+	return crit ? amount : Math.max(0, amount - Math.max(0, armor ?? 0));
+}
+
+/** One step of the turn flow, kept in memory so Back can undo it. */
+interface FlowStep {
+	encId: string;
+	prev: { round?: number; phase?: EncounterPhase; acting?: string; beat?: { after: string }; done: Record<string, boolean>; actions: Record<string, number | undefined> };
+	results: TurnEventResult[];
+}
 
 export interface HpResult {
 	crossed: HpThreshold;
@@ -198,6 +246,9 @@ export class EncounterStore extends Events {
 		enc.phase = 'setup';
 		enc.log = [];
 		delete enc.paused; // or the emptied encounter would still offer "Resume round N"
+		delete enc.acting;
+		delete enc.beat;
+		this.forgetSteps(enc.id);
 		this.commit();
 	}
 
@@ -330,6 +381,8 @@ export class EncounterStore extends Events {
 		const enc = this.find(encId);
 		if (!enc) return;
 		enc.creatures = enc.creatures.filter(c => c.id !== creatureId);
+		if (enc.acting === creatureId) { delete enc.acting; delete enc.beat; }
+		if (enc.beat?.after === creatureId) delete enc.beat;
 		this.commit();
 	}
 
@@ -458,6 +511,32 @@ export class EncounterStore extends Events {
 		return { crossed, breakdown, events };
 	}
 
+	/**
+	 * A hit on a hero with the players' answer (the keypad's Defend and Interpose chips): Interpose sends
+	 * it to the friend, Defend takes the Armor of whoever takes it off (not a crit), and each reaction costs
+	 * the one who made it an action off their next turn. Nothing is asked; the table already said it.
+	 */
+	heroHit(encId: string, creatureId: string, cmd: HpCommand, react: HeroReaction): HpResult {
+		const enc = this.find(encId);
+		const hit = enc?.creatures.find(x => x.id === creatureId);
+		if (!enc || !hit || cmd.kind !== 'damage') return this.applyHp(encId, creatureId, cmd);
+		const friend = react.interpose ? enc.creatures.find(x => x.id === react.interpose && isHero(x)) : undefined;
+		const target = friend ?? hit;
+		const spend = (c: EncounterCreature) => { c.actions = Math.max(0, (c.actions ?? 3) - 1); };
+		let amount = cmd.amount;
+		const said: string[] = [];
+		if (friend) { spend(friend); said.push(`${friend.label} interposes for ${hit.label}`); }
+		if (react.defend) {
+			amount = defendedDamage(amount, target.defense, !!cmd.crit);
+			spend(target);
+			said.push(cmd.crit ? `${target.label} defends (a crit: Armor doesn't help)` : `${target.label} defends (−${target.defense ?? 0})`);
+		}
+		for (const s of said) this.log(enc, s, false);
+		const r = this.applyHp(encId, target.id, { ...cmd, amount });
+		const working = react.defend && !cmd.crit ? `${cmd.amount} − ${target.defense ?? 0} Armor = ${amount}` : undefined;
+		return { ...r, breakdown: working ?? r.breakdown };
+	}
+
 	setAlive(encId: string, creatureId: string, alive: number): void {
 		const c = this.creature(encId, creatureId);
 		if (!c || !isMinionGroup(c)) return;
@@ -582,6 +661,7 @@ export class EncounterStore extends Events {
 			if (e.bearerId !== creatureId) this.log(enc, `${enc.creatures.find(c => c.id === e.bearerId)?.label ?? '?'}: ${e.condition.name} wore off`, false);
 		}
 		this.pendingEffects.push(...r.prompts);
+		this.recording?.push(r);
 		return r;
 	}
 
@@ -611,15 +691,198 @@ export class EncounterStore extends Events {
 	// ------------------------------------------------------------------------
 	// Turns and rounds (Nimble: heroes act first, in any order; then the monsters)
 
+	// The card and the queue: who's on the card, Done / Next, and Back.
+
+	private steps: FlowStep[] = [];
+	private recording: TurnEventResult[] | null = null;
+
+	/** Run a turn step, keeping what it changed so Back can put it back. */
+	private step(enc: Encounter, fn: () => void): void {
+		const prev: FlowStep['prev'] = {
+			round: enc.round, phase: enc.phase, acting: enc.acting, beat: enc.beat ? { ...enc.beat } : undefined,
+			done: Object.fromEntries(enc.creatures.map(c => [c.id, !!c.done])),
+			actions: Object.fromEntries(enc.creatures.map(c => [c.id, c.actions])),
+		};
+		const outer = this.recording;
+		const results: TurnEventResult[] = [];
+		this.recording = results;
+		try { fn(); } finally {
+			this.recording = outer;
+			if (outer) outer.push(...results);
+			else {
+				this.steps.push({ encId: enc.id, prev, results });
+				if (this.steps.length > 40) this.steps.shift();
+			}
+		}
+	}
+
+	/** Whether Back has a step to undo in this encounter. */
+	canGoBack(encId: string): boolean {
+		return this.steps.some(s => s.encId === encId);
+	}
+
+	/**
+	 * Back: undo the last turn step (Done, Next, a side or a round changing): who was on the card,
+	 * who had gone, heroes' actions, and what conditions did at those turn boundaries. HP stays.
+	 */
+	back(encId: string): boolean {
+		const enc = this.find(encId);
+		let i = -1;
+		for (let k = this.steps.length - 1; k >= 0; k--) if (this.steps[k].encId === encId) { i = k; break; }
+		if (!enc || i < 0) return false;
+		const [st] = this.steps.splice(i, 1);
+		enc.round = st.prev.round;
+		enc.phase = st.prev.phase;
+		if (st.prev.acting) enc.acting = st.prev.acting; else delete enc.acting;
+		if (st.prev.beat) enc.beat = st.prev.beat; else delete enc.beat;
+		for (const c of enc.creatures) {
+			if (c.id in st.prev.done) c.done = st.prev.done[c.id];
+			if (c.id in st.prev.actions) c.actions = st.prev.actions[c.id];
+		}
+		const bearers: EffectBearer[] = enc.creatures.map(c => ({ id: c.id, conditions: c.conditions }));
+		for (const r of [...st.results].reverse()) undoTurnEvent(bearers, r);
+		bearers.forEach((b, k) => { enc.creatures[k].conditions = b.conditions; });
+		this.log(enc, 'Back a step', false);
+		this.commit();
+		return true;
+	}
+
+	private forgetSteps(encId: string): void {
+		this.steps = this.steps.filter(s => s.encId !== encId);
+	}
+
+	/** Put someone on the card (a tap on their row). Nothing is enforced: any creature can act at any time. */
+	setActing(encId: string, creatureId: string | null): void {
+		const enc = this.find(encId);
+		if (!enc) return;
+		const c = creatureId ? enc.creatures.find(x => x.id === creatureId) : undefined;
+		if (c) enc.acting = c.id; else delete enc.acting;
+		delete enc.beat;
+		this.commit();
+	}
+
+	/**
+	 * Done / Next, the tracker's main button. The one on the card is done (their conditions count down,
+	 * a hero's actions come back), then: after a hero, a legendary monster's beat (if one is up and the
+	 * setting is on), else whoever speaks up next (nobody is assumed); after the beat, back to the heroes;
+	 * on the monsters' side, the next monster; after the last, the next round. With nobody on the card it
+	 * moves on to the monsters' side (or the next round).
+	 */
+	next(encId: string): void {
+		const enc = this.find(encId);
+		if (!enc || !enc.phase || enc.phase === 'setup') return;
+		this.step(enc, () => {
+			const cur = actingCreature(enc);
+			if (enc.beat) {
+				delete enc.beat;
+				delete enc.acting;
+				if (enc.phase === 'heroes' && !heroesToAct(enc).length) this.monstersStart(enc);
+				return;
+			}
+			if (cur && !cur.done) this.markDone(enc, cur);
+			if (enc.phase === 'heroes') {
+				if (cur && isHero(cur)) {
+					const boss = this.s.legendaryBeat !== false ? legendaryUp(enc) : undefined;
+					if (boss) {
+						enc.acting = boss.id;
+						enc.beat = { after: cur.id };
+						return;
+					}
+				}
+				delete enc.acting;
+				// Nobody was on the card: the GM is moving on to the monsters, heroes left or not.
+				if (!cur || !heroesToAct(enc).length) this.monstersStart(enc);
+				return;
+			}
+			const nxt = nextMonster(enc);
+			if (nxt) enc.acting = nxt.id;
+			else this.newRound(enc);
+		});
+		this.commitTurn(enc);
+	}
+
+	/** The legendary beat: the action the boss used (the next beat suggests the other). */
+	useBeatAction(encId: string, creatureId: string, action: string): void {
+		const enc = this.find(encId);
+		const c = enc?.creatures.find(x => x.id === creatureId);
+		if (!enc || !c) return;
+		c.lastAction = action;
+		const after = enc.beat ? enc.creatures.find(x => x.id === enc.beat?.after) : undefined;
+		this.log(enc, `${c.label}: ${action}${after ? ` after ${after.label}'s turn` : ''}`, false);
+		this.commit();
+	}
+
+	/** Initiative typed before the fight: it sets the hero's first-turn actions (Nimble: 1–9 one, 10–19 two, 20+ three). */
+	setInitiative(encId: string, creatureId: string, roll: number | null): void {
+		const c = this.creature(encId, creatureId);
+		if (!c || !isHero(c)) return;
+		if (roll === null || !Number.isFinite(roll)) { delete c.init; c.actions = 3; }
+		else { c.init = Math.round(roll); c.actions = initiativeActions(c.init); }
+		this.commit();
+	}
+
+	/** A turn ends: conditions count down, a hero's actions come back. */
+	private markDone(enc: Encounter, c: EncounterCreature): string[] {
+		c.done = true;
+		const expired = this.boundary(enc, c.id, 'end').expired.filter(e => e.bearerId === c.id).map(e => e.condition.name);
+		if (isHero(c)) c.actions = 3; // heroes regain all 3 actions at the end of their turn
+		this.log(enc, `${c.label} ${isMinionGroup(c) ? 'have' : 'has'} gone${expired.length ? `; ${expired.join(', ')} wore off` : ''}`, false);
+		return expired;
+	}
+
+	/** The monsters' side begins: their conditions' starts, and the first monster on the card. */
+	private monstersStart(enc: Encounter): void {
+		enc.phase = 'monsters';
+		delete enc.beat;
+		this.log(enc, `Round ${enc.round ?? 1}: monsters' turn`, false);
+		this.sideStarts(enc, 'monsters');
+		const first = nextMonster(enc);
+		if (first) enc.acting = first.id; else delete enc.acting;
+	}
+
+	/** A new round: whoever didn't mark their turn still ticks; everyone is ready again; heroes' side, nobody picked. */
+	private newRound(enc: Encounter): string[] {
+		const round = enc.round ?? 1;
+		const expiredAll: string[] = [];
+		for (const c of [...enc.creatures]) {
+			// Its turn ends with the round, marked or not (once a round either way).
+			if (!c.done) {
+				const r = this.boundary(enc, c.id, 'end');
+				expiredAll.push(...r.expired.filter(e => e.bearerId === c.id).map(e => `${c.label}: ${e.condition.name}`));
+			}
+		}
+		for (const c of enc.creatures) c.done = false;
+		enc.round = round + 1;
+		enc.phase = 'heroes';
+		delete enc.acting;
+		delete enc.beat;
+		this.log(enc, `Round ${enc.round} begins${expiredAll.length ? `; wore off: ${expiredAll.join(', ')}` : ''}`, false);
+		this.sideStarts(enc, 'heroes');
+		return expiredAll;
+	}
+
 	setPhase(encId: string, phase: EncounterPhase): void {
 		const enc = this.find(encId);
 		if (!enc || enc.phase === phase) return;
-		enc.phase = phase;
-		if (phase === 'heroes') this.log(enc, `Round ${enc.round ?? 1}: heroes' turn`, false);
-		if (phase === 'monsters') this.log(enc, `Round ${enc.round ?? 1}: monsters' turn`, false);
-		if (phase === 'heroes' || phase === 'monsters') this.sideStarts(enc, phase);
+		this.step(enc, () => {
+			enc.phase = phase;
+			delete enc.beat;
+			if (phase === 'heroes') {
+				this.log(enc, `Round ${enc.round ?? 1}: heroes' turn`, false);
+				this.sideStarts(enc, phase);
+				const cur = actingCreature(enc);
+				if (cur && !isHero(cur)) delete enc.acting;
+			}
+			if (phase === 'monsters') {
+				this.log(enc, `Round ${enc.round ?? 1}: monsters' turn`, false);
+				this.sideStarts(enc, phase);
+				const cur = actingCreature(enc);
+				if (!cur || isHero(cur) || cur.done) { const first = nextMonster(enc); if (first) enc.acting = first.id; else delete enc.acting; }
+			}
+		});
 		this.commitTurn(enc);
 	}
+
 
 	/** Pick an ended fight back up at the round and turn it stopped on. */
 	resume(encId: string): boolean {
@@ -628,6 +891,9 @@ export class EncounterStore extends Events {
 		enc.round = enc.paused.round;
 		enc.phase = enc.paused.phase;
 		delete enc.paused;
+		delete enc.acting;
+		delete enc.beat;
+		if (enc.phase === 'monsters') { const first = nextMonster(enc); if (first) enc.acting = first.id; }
 		this.log(enc, `Combat resumes. Round ${enc.round}: ${enc.phase === 'heroes' ? 'heroes\'' : 'monsters\''} turn`, false);
 		this.commit();
 		return true;
@@ -662,6 +928,9 @@ export class EncounterStore extends Events {
 		const enc = this.find(encId);
 		if (!enc) return;
 		delete enc.paused;
+		delete enc.acting;
+		delete enc.beat;
+		this.forgetSteps(enc.id);
 		enc.round = 1;
 		for (const c of enc.creatures) c.done = false;
 		enc.phase = 'heroes';
@@ -677,6 +946,9 @@ export class EncounterStore extends Events {
 		const rounds = enc.round ?? 1;
 		enc.paused = { round: rounds, phase: enc.phase };
 		enc.phase = 'setup';
+		delete enc.acting;
+		delete enc.beat;
+		this.forgetSteps(enc.id);
 		for (const c of enc.creatures) c.done = false;
 		this.log(enc, `Combat ends after ${rounds} round${rounds === 1 ? '' : 's'}`, false);
 		this.commit();
@@ -688,21 +960,17 @@ export class EncounterStore extends Events {
 		const enc = this.find(encId);
 		const c = enc?.creatures.find(x => x.id === creatureId);
 		if (!enc || !c) return [];
-		c.done = done;
 		let expired: string[] = [];
-		if (done) {
+		this.step(enc, () => {
+			if (!done) { c.done = false; return; }
 			// Marking a turn done is its end: conditions count down, and end-of-turn effects are asked.
-			expired = this.boundary(enc, c.id, 'end').expired.filter(e => e.bearerId === c.id).map(e => e.condition.name);
-			if (isHero(c)) c.actions = 3; // heroes regain all 3 actions at the end of their turn
-			this.log(enc, `${c.label} ${isMinionGroup(c) ? 'have' : 'has'} gone${expired.length ? `; ${expired.join(', ')} wore off` : ''}`, false);
+			expired = this.markDone(enc, c);
+			if (enc.acting === c.id) { delete enc.acting; delete enc.beat; }
 			// Once every hero has gone, it's the monsters' turn.
 			const heroes = enc.creatures.filter(isHero).filter(h => !isDown(h));
-			if (enc.phase === 'heroes' && heroes.length && heroes.every(h => h.done)) {
-				enc.phase = 'monsters';
-				this.log(enc, `Round ${enc.round ?? 1}: monsters' turn`, false);
-				this.sideStarts(enc, 'monsters');
-			}
-		}
+			if (enc.phase === 'heroes' && heroes.length && heroes.every(h => h.done)) this.monstersStart(enc);
+			else if (enc.phase === 'monsters' && !enc.acting) { const nxt = nextMonster(enc); if (nxt) enc.acting = nxt.id; }
+		});
 		this.commitTurn(enc);
 		return expired;
 	}
@@ -711,22 +979,10 @@ export class EncounterStore extends Events {
 	nextRound(encId: string): string[] {
 		const enc = this.find(encId);
 		if (!enc) return [];
-		const round = enc.round ?? 1;
-		const expiredAll: string[] = [];
-		for (const c of [...enc.creatures]) {
-			// Its turn ends with the round, marked or not (once a round either way).
-			if (!c.done) {
-				const r = this.boundary(enc, c.id, 'end');
-				expiredAll.push(...r.expired.filter(e => e.bearerId === c.id).map(e => `${c.label}: ${e.condition.name}`));
-			}
-		}
-		for (const c of enc.creatures) c.done = false;
-		enc.round = round + 1;
-		enc.phase = 'heroes';
-		this.log(enc, `Round ${enc.round} begins${expiredAll.length ? `; wore off: ${expiredAll.join(', ')}` : ''}`, false);
-		this.sideStarts(enc, 'heroes');
+		let expired: string[] = [];
+		this.step(enc, () => { expired = this.newRound(enc); });
 		this.commitTurn(enc);
-		return expiredAll;
+		return expired;
 	}
 
 	setRound(encId: string, round: number): void {

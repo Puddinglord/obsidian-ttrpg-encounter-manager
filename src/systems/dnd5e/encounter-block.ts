@@ -9,6 +9,7 @@ import { addHero, addMonster } from './combat';
 import type { Dnd5eRuntime } from './runtime';
 import { rateEncounter5e, xpOf } from './rules';
 import { applyLook } from '../../core/look';
+import { evIcon } from '../../core/icons';
 
 export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 	constructor(private rt: Dnd5eRuntime, el: HTMLElement, private def: EncounterDef, private ctx: MarkdownPostProcessorContext) {
@@ -30,7 +31,7 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		const card = el.createDiv({ cls: 'nimble-encounter-block dnd5e-encounter' });
 		applyLook(card, 'dnd5e');
 		const head = card.createDiv({ cls: 'dnd5e-encounter-head' });
-		setIcon(head.createSpan({ cls: 'dnd5e-encounter-icon' }), 'swords');
+		setIcon(head.createSpan({ cls: 'dnd5e-encounter-icon' }), evIcon('swords'));
 		head.createDiv({ cls: 'dnd5e-encounter-name', text: this.def.name });
 		const player = this.rt.plugin.playerView(path);
 		const groups = this.def.monsters.map(m => ({ m, entry: this.rt.get(m.name, path) }));
@@ -92,8 +93,8 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 			const b = pill(bar, { tag: 'button', cls: cta ? 'mod-cta' : '', icon, text: label });
 			b.onclick = run;
 		};
-		button('Run', 'play', () => void this.run(true), true);
-		button('Add to fight', 'plus', () => void this.run(false));
+		button('Run', evIcon('play'), () => void this.run(true), true);
+		button('Add to fight', evIcon('plus'), () => void this.run(false));
 	}
 
 	private run(fresh: boolean): Promise<void> {

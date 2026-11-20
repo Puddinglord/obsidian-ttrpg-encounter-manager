@@ -13,6 +13,9 @@ import { renderBalance } from './balance-ui';
 import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover';
 import { renderBattleNotes } from './battle-notes';
 import { nimble } from './runtime';
+import { applyLook } from '../../core/look';
+import { evIcon } from '../../core/icons';
+import { pill } from '../../core/pill';
 
 export function partyLevels(plugin: EmberVaultPlugin): number[] {
 	const party = plugin.settings.party;
@@ -114,8 +117,9 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 	// In a campaign you play in, the same block is your battle notes.
 	if (plugin.playerView(ctx.sourcePath)) { renderBattleNotes(plugin, el, def, ctx, save); return; }
 	const card = el.createDiv({ cls: 'nimble-encounter-block' });
+	applyLook(card, 'nimble');
 	const head = card.createDiv({ cls: 'encounter-block-head' });
-	setIcon(head.createSpan({ cls: 'encounter-block-icon' }), 'swords');
+	setIcon(head.createSpan({ cls: 'encounter-block-icon' }), evIcon('swords'));
 	head.createSpan({ cls: 'encounter-block-name', text: def.name });
 
 	const { found, missing } = resolveDef(plugin, def, ctx.sourcePath);
@@ -127,7 +131,7 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 			attr: { 'aria-label': 'Balance', title: 'Balance' },
 		});
 		chip.createSpan({ text: `${rating.label} · ${Math.round(rating.pct * 100)}%` });
-		setIcon(chip.createSpan({ cls: 'diff-chevron' }), 'sliders-horizontal');
+		setIcon(chip.createSpan({ cls: 'diff-chevron' }), evIcon('sliders'));
 		chip.addEventListener('click', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
@@ -213,14 +217,12 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 
 	const bar = card.createDiv({ cls: 'encounter-block-actions' });
 	const btn = (text: string, icon: string, cls: string, onClick: () => void, title?: string) => {
-		const b = bar.createEl('button', { cls, attr: { 'aria-label': title || text } });
-		setIcon(b.createSpan(), icon);
-		b.createSpan({ text });
+		const b = pill(bar, { tag: 'button', icon, text, cls: `encounter-block-btn ${cls}`, attr: { 'aria-label': title || text } });
 		b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); onClick(); });
 		return b;
 	};
-	btn('Run', 'play', 'mod-cta', () => void runEncounter(plugin, def, ctx.sourcePath), 'Load this encounter into the tracker');
-	btn('Add to current', 'plus', '', () => void (async () => {
+	btn('Run', evIcon('play'), 'mod-cta', () => void runEncounter(plugin, def, ctx.sourcePath), 'Load this encounter into the tracker');
+	btn('Add to current', evIcon('plus'), '', () => void (async () => {
 		if (plugin.settings.multipleEncounters && !nimble().encounters.active) {
 			new Notice('Create or select an encounter first');
 			await nimble().activateEncounterView();
@@ -235,11 +237,11 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 		await nimble().showTracker();
 		new Notice(`Added ${def.name}'s monsters to the current encounter${missing.length ? `. Not found: ${missing.join(', ')}` : ''}`);
 	})(), 'Add these monsters to the encounter already in the tracker');
-	btn('Edit', 'pencil', '', () => new BuilderModal(plugin, def, save).open(), 'Edit monsters with the encounter builder');
+	btn('Edit', evIcon('edit'), '', () => new BuilderModal(plugin, def, save).open(), 'Edit monsters with the encounter builder');
 	// A fight saved from this block can be picked up where it stopped.
 	const saved = savedFightsFor(plugin.app, ctx.sourcePath, def.name)[0];
 	if (saved) {
-		const b = btn(`Resume round ${saved.round}`, 'history', 'encounter-resume', () => void resumeSavedFight(plugin, saved.file, ctx.sourcePath), `Saved ${saved.saved.replace('T', ' ')}`);
+		const b = btn(`Resume round ${saved.round}`, evIcon('undo'), 'encounter-resume', () => void resumeSavedFight(plugin, saved.file, ctx.sourcePath), `Saved ${saved.saved.replace('T', ' ')}`);
 		b.addClass('mod-warning');
 	}
 }

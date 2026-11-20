@@ -618,6 +618,36 @@ body.ev-is-sorting { cursor: grabbing; }
 /* The condition editor (core/tracker/condition-editor.ts): the picker, then a condition's
    timing and effects. It wears the game's look (GAME LOOKS at the top). */
 .ev-cond-pop { background: var(--background-primary); }
+/* The picker (core/tracker/condition-editor.ts), as the study draws it: the bearer, a search field, then one row
+   per condition (an icon, its name, what it does in one line, a check when it's on); how long under the list. */
+.nimble-popover.ev-cond-pop { background: var(--ev-surface, var(--background-primary)); color: var(--ev-text, var(--text-normal)); font-family: var(--ev-font-ui, var(--font-interface)); }
+.nimble-popover.ev-cond-pop .popover-title { margin-bottom: 10px; font: var(--ev-display-weight, 700) 17px/22px var(--ev-font-display, var(--font-interface)); font-variant: var(--ev-display-variant, normal); }
+.nimble-popover.ev-cond-pop.ev-sys-nimble .popover-title { font: italic 900 18px/22px var(--ev-font-name); }
+.nimble-popover.ev-cond-pop.ev-sys-dnd5e .popover-title { font-size: 19px; color: var(--ev-accent-text); letter-spacing: 0.02em; }
+.ev-cond-pop .condition-search-box { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: var(--ev-r-md, 6px); background: var(--ev-surface-2, var(--background-secondary)); color: var(--ev-text-2, var(--text-muted)); }
+.ev-cond-pop .condition-search-icon { display: inline-flex; flex: none; }
+.ev-cond-pop .condition-search-icon svg { width: 16px; height: 16px; }
+.ev-cond-pop .condition-search-box input.condition-search { flex: 1; min-width: 0; width: auto; height: 36px; padding: 0; border: 0; background: transparent; box-shadow: none; font-size: 14px; color: var(--ev-text, var(--text-normal)); }
+.ev-cond-pop.condition-picker .condition-grid { display: flex; flex-direction: column; gap: 0; margin-top: 6px; max-height: 300px; overflow: auto; }
+.ev-cond-pop.condition-picker button.condition-option { flex: none; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; gap: 0 10px; align-items: center; width: 100%; height: auto; min-height: 0; padding: 9px 4px; border: 0; border-bottom: 1px solid var(--ev-line, var(--background-modifier-border)); border-radius: 0; background: transparent; box-shadow: none; text-align: left; white-space: normal; color: var(--ev-text, var(--text-normal)); font: inherit; }
+.ev-cond-pop.condition-picker button.condition-option:last-child { border-bottom: 0; }
+.ev-cond-pop.condition-picker button.condition-option:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); }
+.ev-cond-pop.condition-picker button.condition-option.is-applied { margin: 0 -4px; padding-left: 8px; padding-right: 8px; border-radius: var(--ev-r-sm, 4px); border-bottom-color: transparent; background: var(--ev-now, var(--background-modifier-hover)); color: var(--ev-text, var(--text-normal)); }
+.ev-cond-pop .condition-option-icon { display: grid; place-items: center; width: 22px; height: 22px; color: var(--ev-text-2, var(--text-muted)); }
+.ev-cond-pop .condition-option-icon svg { width: 18px; height: 18px; }
+.ev-cond-pop .condition-option.is-applied .condition-option-icon { color: var(--ev-accent-text, var(--text-accent)); }
+.ev-cond-pop .condition-option-text { display: grid; min-width: 0; }
+.ev-cond-pop .condition-option-text b { font-weight: 600; font-size: 14px; line-height: 19px; }
+.ev-cond-pop .condition-option-text small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; line-height: 17px; color: var(--ev-text-2, var(--text-muted)); }
+.ev-cond-pop .condition-option.is-minor .condition-option-text b { font-weight: 500; color: var(--ev-text-2, var(--text-muted)); }
+.ev-cond-pop .condition-option .ev-cond-mark { margin-left: 0; }
+.ev-cond-pop .condition-option-check { display: inline-flex; color: var(--ev-accent-text, var(--text-accent)); }
+.ev-cond-pop .condition-option-check svg { width: 18px; height: 18px; }
+.ev-cond-pop.ev-sys-dnd5e .condition-option-text b { font: 600 16px/20px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; }
+.ev-cond-pop.ev-sys-dnd5e .condition-option-icon { color: var(--x5-gold); }
+.ev-cond-pop.condition-picker > .popover-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ev-line, var(--background-modifier-border)); justify-content: space-between; }
+.ev-cond-pop.condition-picker > .popover-row.condition-value-row { border-top: 0; padding-top: 0; }
+.ev-cond-pop.condition-picker button.ev-cond-new { margin-top: 6px; }
 .condition-picker .condition-option.has-effects { gap: 0.3rem; }
 .ev-cond-mark { display: inline-flex; margin-left: auto; color: var(--ev-accent-text); opacity: 0.8; }
 .ev-cond-mark svg { width: 0.75rem; height: 0.75rem; }
@@ -699,326 +729,314 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 
 /* ============================================
    ENCOUNTER TRACKER
+   The design study's card and queue (prototypes/design-study: 20-shared, 22-flow, 27-cluster, and each
+   game's flow files). The tracker carries `.ev-tracker` and its game's look (`.ev-sys-<id>`), so every
+   colour, face and radius below is a game token (--ev-*). Shared parts first (the ticker, the card, rows,
+   turn marks, sections, moments, the footer); then each game's own (Nimble here, 5e in its section).
+   No coloured edge stripes: the card is outlined, the current row tinted, state is a mark or a word.
    ============================================ */
 
-.nimble-encounter-tracker { padding: 0.5rem 0.6rem 1.5rem; font-size: 0.9rem; }
-.nimble-encounter-tracker button { cursor: pointer; }
-.nimble-encounter-tracker button:focus-visible { box-shadow: 0 0 0 2px var(--interactive-accent); }
-
-.nimble-encounter-tracker .encounter-header { display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.4rem; }
-.nimble-encounter-tracker .encounter-title { flex: 1; margin: 0; font-size: 1.05rem; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nimble-encounter-tracker .encounter-title-input { flex: 1; font-weight: 600; }
-.nimble-encounter-tracker .encounter-picker { display: flex; gap: 0.3rem; margin-bottom: 0.5rem; }
-.nimble-encounter-tracker .encounter-select { flex: 1; min-width: 0; }
-
-/* Controls pinned to the top: combat button, round, whose turn, add buttons */
-.nimble-encounter-tracker { --tracker-bg: var(--background-secondary); }
-.workspace-split.mod-root .nimble-encounter-tracker { --tracker-bg: var(--background-primary); }
-.nimble-encounter-tracker .tracker-controls {
-	position: sticky;
-	/* Pin to the very top edge: cancel the view's own top padding (12px in Obsidian's
-	   default theme), or the rows scrolling underneath show through a thin strip. */
-	top: calc(-1 * var(--size-4-3, 0.75rem));
-	z-index: 5;
-	display: flex;
-	flex-direction: column;
-	gap: 0.4rem;
-	margin: 0 -0.6rem 0.3rem;
-	padding: 0.5rem 0.6rem 0.55rem;
-	background: var(--tracker-bg);
-	border-bottom: 1px solid var(--background-modifier-border);
+.workspace-leaf-content .view-content.ev-tracker { padding: 0; }
+.ev-tracker {
+	display: flex; flex-direction: column; min-height: 100%;
+	background: var(--ev-bg); color: var(--ev-text);
+	font-family: var(--ev-font-ui); font-size: 14px; line-height: 20px;
+	container-type: inline-size;
 }
-.nimble-encounter-tracker .tracker-combat-row { display: flex; gap: 0.4rem; }
-.nimble-encounter-tracker .round-action,
-.nimble-encounter-tracker .tracker-end,
-.nimble-encounter-tracker .tracker-tools button {
-	display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
-	height: 2.1rem; font-weight: 600;
-}
-.nimble-encounter-tracker .round-action { flex: 1; min-width: 0; }
-.nimble-encounter-tracker .round-action:disabled { opacity: 0.5; cursor: default; }
-.nimble-encounter-tracker .tracker-end { flex: 0 0 auto; padding: 0 0.75rem; color: var(--text-muted); }
-.nimble-encounter-tracker .tracker-end:hover { color: var(--text-error); }
-.nimble-encounter-tracker .tracker-new-fight:hover { color: var(--text-normal); }
-.nimble-encounter-tracker .tracker-save { flex: 0 0 auto; width: 2.4rem; height: 2.1rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); }
-.nimble-encounter-tracker .tracker-save:hover { color: var(--text-normal); }
-.nimble-encounter-tracker .tracker-save svg { width: 16px; height: 16px; }
-.nimble-encounter-tracker .round-action-sub { font-weight: 500; opacity: 0.8; font-size: 0.82em; }
-.nimble-encounter-tracker .round-action-icon, .nimble-encounter-tracker .tracker-tools button > span:first-child { display: inline-flex; }
-.nimble-encounter-tracker .round-action svg, .nimble-encounter-tracker .tracker-end svg, .nimble-encounter-tracker .tracker-tools svg { width: 15px; height: 15px; }
-.nimble-encounter-tracker .tracker-end:not(.tracker-new-fight) svg { width: 12px; height: 12px; fill: currentColor; }
+.ev-tracker button { cursor: pointer; }
+.ev-tracker .ev-tracker-body { flex: 1 0 auto; padding-bottom: 14px; }
+.ev-tracker :is(button, [role="button"], [data-flow-row]):focus-visible { outline: 2px solid var(--ev-accent); outline-offset: 1px; box-shadow: none; }
 
-.nimble-encounter-tracker .round-stepper {
-	display: flex; align-items: center; justify-content: space-between;
-	height: 2.1rem; border-radius: 8px;
-	background: var(--background-modifier-form-field, var(--background-primary));
-	border: 1px solid var(--background-modifier-border);
-}
-.nimble-encounter-tracker .round-stepper .round-btn {
-	height: 100%; width: 2.4rem; padding: 0; border-radius: 7px;
-	background: transparent; box-shadow: none; border: none; color: var(--text-muted);
-	display: inline-flex; align-items: center; justify-content: center;
-}
-.nimble-encounter-tracker .round-stepper .round-btn:hover:not(:disabled) { background: var(--background-modifier-hover); color: var(--text-normal); }
-.nimble-encounter-tracker .round-stepper .round-btn:disabled { opacity: 0.35; cursor: default; }
-.nimble-encounter-tracker .round-stepper .round-btn svg { width: 17px; height: 17px; }
-.nimble-encounter-tracker .round-label { font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+/* Head: the encounter's name, then Add, the party and More */
+.ev-tracker .ev-tracker-head { display: flex; align-items: center; gap: 2px; padding: 12px var(--ev-pad) 8px; }
+.ev-tracker .ev-tracker-head .encounter-title { flex: 1; min-width: 0; margin: 0; font: var(--ev-display-weight) 19px/24px var(--ev-font-name, var(--ev-font-display)); font-variant: var(--ev-display-variant); color: var(--ev-text); cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-sys-nimble.ev-tracker .ev-tracker-head .encounter-title { font: italic 900 19px/24px var(--ev-font-name); font-variant-numeric: lining-nums; }
+.ev-tracker .ev-tracker-head .clickable-icon { color: var(--ev-text-2); }
+.ev-tracker .ev-tracker-head .clickable-icon:hover { color: var(--ev-text); background: color-mix(in srgb, var(--ev-text) 6%, transparent); }
+.ev-tracker .encounter-title-input { flex: 1; font-weight: 600; }
+.ev-tracker .encounter-picker { display: flex; gap: 6px; margin: 0 var(--ev-pad) 8px; }
+.ev-tracker .encounter-select { flex: 1; min-width: 0; }
 
-.nimble-encounter-tracker .turn-segmented {
-	display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px;
-	border-radius: 9px; background: var(--background-modifier-border);
-}
-.nimble-encounter-tracker .phase-pill {
-	display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-	height: 2rem; padding: 0 0.4rem; border: none; border-radius: 7px; box-shadow: none;
-	background: transparent; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; min-width: 0;
-}
-.nimble-encounter-tracker .phase-pill:hover:not(.is-active) { background: var(--background-modifier-hover); color: var(--text-normal); }
-.nimble-encounter-tracker .phase-pill-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nimble-encounter-tracker .phase-pill-count { font-size: 0.7rem; font-weight: 500; opacity: 0.75; font-variant-numeric: tabular-nums; }
-.nimble-encounter-tracker .turn-segmented { --seg-pad: 3px; --seg-gap: 3px; --seg-color: var(--nimble-hero); }
-.nimble-encounter-tracker .turn-segmented[data-phase="monsters"] { --seg-color: var(--nimble-hp); }
-.nimble-encounter-tracker .phase-pill.is-active { color: #fff; }
+/* Ticker: the round and the turn, a muted strip above the card */
+.ev-tracker .ev-ticker { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 30px; margin: 0 var(--ev-pad) 10px; padding: 5px 10px; border-radius: var(--ev-r-md); background: color-mix(in srgb, var(--ev-text) 5%, var(--ev-bg)); font: 500 12.5px/18px var(--ev-font-ui); color: var(--ev-text-2); white-space: nowrap; overflow: hidden; }
+.ev-tracker .ev-ticker-round { flex: none; color: var(--ev-text); font-weight: 600; }
+.ev-tracker .ev-ticker-round b { font-weight: 700; font-variant-numeric: tabular-nums lining-nums; }
+.ev-tracker .ev-ticker-round + .ev-ticker-turn::before { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.7; margin: 0 8px 0 0; vertical-align: 0.25em; }
+.ev-tracker .ev-ticker-turn { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--ev-text); }
+.ev-tracker .ev-ticker-note { flex: none; margin-left: auto; font-variant-numeric: tabular-nums; }
 
-.nimble-encounter-tracker .tracker-tools { display: flex; gap: 0.4rem; margin: 0.15rem 0 0.35rem; }
-.nimble-encounter-tracker .tracker-tools button { flex: 1; min-width: 0; font-weight: 500; }
-.nimble-encounter-tracker .tracker-hint { font-size: 0.78rem; color: var(--text-muted); margin: -0.15rem 0 0.45rem; }
+/* The card: whoever acts now, at full size. Outlined, never edge-striped. */
+.ev-tracker .ev-card { position: relative; margin: 10px var(--ev-pad) 0; padding: 14px 14px 12px; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: 0 0 0 2px var(--ev-now-line), 0 8px 20px -12px rgb(0 0 0 / 0.35); }
+.ev-tracker .ev-card.is-empty { padding: 12px 14px; box-shadow: inset 0 0 0 1.5px var(--ev-line-strong); background: transparent; border: 0; }
+.ev-tracker .ev-card.is-empty .ev-card-kicker { margin: 0; color: var(--ev-text-2); }
+.ev-tracker .ev-card-kicker { display: flex; align-items: center; gap: 6px; margin: -2px 0 8px; font: 600 12.5px/16px var(--ev-font-ui); color: var(--ev-text-2); }
+.ev-tracker .ev-card-kicker-icon { display: inline-flex; flex: none; transform: translateY(var(--ev-icon-dy, 0em)); }
+.ev-tracker .ev-card-kicker-icon svg { width: 14px; height: 14px; }
+/* Damage | Heal joined and equal, Condition and the stat block on the right */
+.ev-tracker .ev-card-acts { margin-top: 14px; flex-wrap: nowrap; gap: 8px; }
+.ev-tracker .ev-card-pair { flex: 1 1 auto; }
+.ev-tracker :is(.ev-card-btn, .ev-card-icon) { height: 36px; border: 1px solid var(--ev-line-strong); background: var(--ev-surface); color: var(--ev-text); box-shadow: none; font: 600 14px/1 var(--ev-font-ui); }
+.ev-tracker .ev-card-btn { padding: 0 10px; --ev-pill-icon: 17px; --ev-pill-gap: 6px; }
+.ev-tracker .ev-card-btn:hover, .ev-tracker .ev-card-icon:hover { background: var(--ev-surface-2); }
+.ev-tracker .ev-card-damage .ev-pill-icon { color: var(--ev-hp, var(--ev-accent-text)); }
+.ev-tracker .ev-card-heal .ev-pill-icon { color: var(--ev-text-2); }
+.ev-tracker .ev-card-tools { flex: none; margin-left: auto; gap: 6px; }
+.ev-tracker .ev-card-icon { width: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--ev-r-md); color: var(--ev-text-2); }
+.ev-tracker .ev-card-icon svg { width: 18px; height: 18px; }
 
-.nimble-encounter-tracker .tracker-prompt { border-radius: var(--nimble-radius); padding: 0.45rem 0.6rem; margin-bottom: 0.45rem; border: 1px solid; font-size: 0.86rem; }
-.nimble-encounter-tracker .prompt-legendary { border-color: color-mix(in srgb, var(--nimble-legendary) 60%, transparent); background: color-mix(in srgb, var(--nimble-legendary) 12%, transparent); }
-.nimble-encounter-tracker .prompt-bloodied { border-color: color-mix(in srgb, var(--nimble-hp) 60%, transparent); background: var(--nimble-hp-bg); }
-.nimble-encounter-tracker .prompt-laststand { border-color: rgba(142, 91, 208, 0.6); background: rgba(142, 91, 208, 0.12); }
-.nimble-encounter-tracker .prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; }
-.nimble-encounter-tracker .prompt-title { font-weight: 700; }
-.nimble-encounter-tracker .prompt-lines { margin: 0.25rem 0 0; padding-left: 1.1rem; }
-.nimble-encounter-tracker .prompt-action { margin-top: 0.4rem; }
-.nimble-encounter-tracker .prompt-text { text-wrap: pretty; }
+/* Sections: Still to act / Acted, with a count; then the list */
+.ev-tracker .ev-sec { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 16px calc(var(--ev-pad) + 4px) 6px; font: 600 13px/18px var(--ev-font-ui); color: var(--ev-text); }
+.ev-tracker .ev-sec small { font-weight: 500; color: var(--ev-text-2); font-size: 12.5px; white-space: nowrap; }
+.ev-tracker .ev-sec.is-acted { color: var(--ev-text-2); }
+.ev-tracker .ev-sec-hint { font: 500 12px/16px var(--ev-font-ui); color: var(--ev-text-2); padding: 0 calc(var(--ev-pad) + 4px) 6px; margin-top: -2px; }
+.ev-tracker .ev-list { margin: 0 var(--ev-pad); border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); overflow: hidden; }
+.ev-tracker .ev-list.is-done-list { background: var(--ev-surface-2); }
+.ev-tracker .ev-list-empty { padding: 12px 14px; font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); }
 
+/* Rows: tap anywhere but a button to put them on the card; the keys move through them */
+.ev-tracker .ev-row { position: relative; cursor: pointer; transition: background var(--ev-dur) ease; }
+.ev-tracker .ev-row:hover { background: var(--ev-surface-2); }
+.ev-tracker .ev-row.is-acted { background: var(--ev-surface-2); }
+.ev-tracker .ev-row.is-acted :is(.creature-label, .creature-sub) { color: var(--ev-text-2); }
+.ev-tracker .ev-row.is-down { opacity: 0.5; }
+.ev-tracker .ev-row.is-down .creature-label { text-decoration: line-through; }
+.ev-tracker .ev-row.dragging { opacity: 0.4; }
+.ev-tracker .ev-row.drag-over { box-shadow: inset 0 2px 0 var(--ev-accent); }
 
+/* The turn mark: the same 20px mark at the left of every row, in every game */
+.ev-tracker .ev-mark { flex: none; display: grid; place-items: center; width: 20px; height: 20px; min-height: 0; padding: 0; border: 0; border-radius: 50%; background: transparent; box-shadow: inset 0 0 0 1.75px var(--ev-line-strong); color: var(--ev-surface); }
+.ev-tracker button.ev-mark:hover { box-shadow: inset 0 0 0 2px var(--ev-text-2); }
+.ev-tracker .ev-mark svg { width: 12px; height: 12px; }
+.ev-tracker .ev-mark.is-next { box-shadow: inset 0 0 0 2px var(--ev-accent-text); }
+.ev-tracker .ev-mark.is-acted { background: var(--ev-text-2); box-shadow: none; color: var(--ev-bg); }
+.ev-tracker .ev-mark.is-out { box-shadow: none; color: var(--ev-text-2); }
+.ev-tracker .ev-mark.is-moment { box-shadow: none; color: var(--ev-ochre, var(--ev-accent-text)); }
+.ev-tracker .ev-mark.is-moment svg { width: 14px; height: 14px; }
 
-.nimble-encounter-tracker .statblock-viewer { margin-bottom: 0.6rem; }
-.nimble-encounter-tracker .viewer-header { display: flex; align-items: center; gap: 0.2rem; margin-bottom: 0.3rem; }
-.nimble-encounter-tracker .viewer-title { flex: 1; font-weight: 700; }
+/* Moments: a reminder under the card (Bloodied, Last Stand, a legendary action). Quiet; never blocks Next. */
+.ev-tracker .ev-moment { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: start; gap: 4px 10px; margin: 8px var(--ev-pad) 0; padding: 9px 6px 9px 12px; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text); }
+.ev-tracker .ev-moment-icon { display: inline-flex; margin-top: 1px; color: var(--ev-ochre, var(--ev-accent-text)); }
+.ev-tracker .ev-moment-icon svg { width: 16px; height: 16px; }
+.ev-tracker .ev-moment-body { min-width: 0; }
+.ev-tracker .ev-moment .prompt-title { font-weight: 600; }
+.ev-tracker .ev-moment .prompt-text { color: var(--ev-text-2); text-wrap: pretty; }
+.ev-tracker .ev-moment .prompt-lines { margin: 4px 0 0; padding-left: 1.1rem; }
+.ev-tracker .ev-moment .prompt-action { margin-top: 6px; height: 28px; padding: 0 10px; font-size: 12.5px; }
+.ev-tracker .ev-moment-x { width: 24px; height: 24px; padding: 0; color: var(--ev-text-2); }
+.ev-tracker .ev-moment-x svg { width: 14px; height: 14px; }
+.ev-tracker .ev-moment.prompt-laststand, .ev-tracker .ev-moment.prompt-bloodied { background: color-mix(in srgb, var(--ev-danger-bg) 55%, var(--ev-surface)); }
 
-.nimble-encounter-tracker .side-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: baseline;
-	margin: 0.6rem 0.1rem 0.25rem;
-	font-size: 0.72rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.07em;
-	color: var(--text-muted);
-}
-.nimble-encounter-tracker .side-count { font-weight: 500; text-transform: none; letter-spacing: 0; }
-.nimble-encounter-tracker .creature-list { grid-template-columns: minmax(0, 1fr); list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+/* The turn control: Back and the main button, pinned to the bottom of the pane */
+.ev-tracker .ev-foot { position: sticky; bottom: 0; z-index: 4; display: flex; justify-content: flex-end; gap: 8px; margin-top: auto; padding: 10px var(--ev-pad) 12px; border-top: 1px solid var(--ev-line); background: var(--ev-bg); }
+.ev-tracker .ev-foot > button { height: 40px; border-radius: var(--ev-r-md); box-shadow: none; font: 600 14px/1 var(--ev-font-ui); }
+.ev-tracker .ev-foot-back { flex: none; width: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--ev-line-strong); background: var(--ev-surface); color: var(--ev-text); }
+.ev-tracker .ev-foot-back svg { width: 18px; height: 18px; }
+.ev-tracker .ev-foot-back:disabled { opacity: 0.45; cursor: default; }
+.ev-tracker .ev-foot-second { flex: none; padding: 0 12px; border: 1px solid var(--ev-line-strong); background: var(--ev-surface); color: var(--ev-text); --ev-pill-icon: 16px; }
+.ev-tracker .ev-foot-primary { flex: 1 1 auto; min-width: 0; padding: 0 12px; background: var(--ev-accent); border: 1px solid var(--ev-accent); color: var(--ev-on-accent); --ev-pill-icon: 17px; --ev-pill-gap: 8px; }
+.ev-tracker .ev-foot-primary:hover { background: var(--ev-accent-hover); border-color: var(--ev-accent-hover); }
+.ev-tracker .ev-foot-primary:disabled { opacity: 0.5; cursor: default; }
+.ev-tracker .ev-foot-primary.ev-pill:not(#nimble-pill) > .ev-pill-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.nimble-encounter-tracker .creature-item {
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-border);
-	border-left: 3px solid var(--nimble-hp);
-	border-radius: var(--nimble-radius);
-	padding: 0.35rem 0.45rem 0.4rem;
-	transition: opacity 0.15s, background 0.15s;
-}
-.nimble-encounter-tracker .creature-item.role-hero { border-left-color: var(--nimble-hero); }
-.nimble-encounter-tracker .creature-item.role-minion { border-left-color: var(--nimble-minion); }
-.nimble-encounter-tracker .creature-item.role-legendary { border-left-color: var(--nimble-legendary); border-left-width: 4px; }
-.nimble-encounter-tracker .creature-item.is-done { opacity: 0.62; }
-.nimble-encounter-tracker .creature-item.is-down { opacity: 0.42; }
-.nimble-encounter-tracker .creature-item.is-down .creature-label { text-decoration: line-through; }
-.nimble-encounter-tracker .creature-item.is-waiting { background: var(--background-primary); }
-.nimble-encounter-tracker .creature-item.dragging { opacity: 0.4; }
-.nimble-encounter-tracker .creature-item.drag-over { border-color: var(--interactive-accent); }
+/* Folds at the bottom: the log, recent rolls */
+.ev-tracker .ev-fold, .ev-tracker .roll-log { margin: 16px var(--ev-pad) 0; font-size: 12.5px; }
+.ev-tracker .ev-fold summary { display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--ev-text-2); font-weight: 600; }
+.ev-tracker .ev-fold-count { font-weight: 500; font-variant-numeric: tabular-nums; }
+.ev-tracker .combat-log ul { list-style: none; margin: 6px 0 0; padding: 0; max-height: 220px; overflow: auto; }
+.ev-tracker .combat-log li { padding: 4px 0; border-bottom: 1px solid var(--ev-line); }
+.ev-tracker .log-round { font-weight: 700; color: var(--ev-text-2); }
+.ev-tracker .roll-log-header { display: flex; align-items: center; justify-content: space-between; }
+.ev-tracker .roll-log-header h4 { margin: 0; font-size: 12.5px; color: var(--ev-text-2); }
+.ev-tracker .roll-log-list { list-style: none; margin: 4px 0 0; padding: 0; }
+.ev-tracker .roll-log-entry { padding: 4px 0; border-bottom: 1px solid var(--ev-line); }
+.ev-tracker .roll-log-top { display: flex; justify-content: space-between; gap: 8px; }
+.ev-tracker .roll-log-total { font-weight: 700; font-variant-numeric: tabular-nums; }
+.ev-tracker .roll-log-entry:first-child .roll-log-total { color: var(--ev-accent-text); }
+.ev-tracker .roll-log-entry.is-crit .roll-log-total { color: var(--ev-danger-text); }
+.ev-tracker .roll-log-entry.is-miss .roll-log-total { color: var(--ev-text-2); }
+.ev-tracker .roll-log-detail { color: var(--ev-text-2); font-size: 12px; }
 
-.nimble-encounter-tracker .creature-main { display: flex; align-items: flex-start; gap: 0.3rem; }
-.nimble-encounter-tracker .creature-main .turn-toggle, .nimble-encounter-tracker .creature-main .creature-more { margin-top: -0.1rem; }
-.nimble-encounter-tracker .turn-toggle {
-	flex-shrink: 0;
-	width: 1.75rem;
-	height: 1.75rem;
-	padding: 0;
-	border-radius: 50%;
-	box-shadow: none;
-	background: transparent;
-	color: var(--text-faint);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-.nimble-encounter-tracker .turn-toggle:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
-.nimble-encounter-tracker .turn-toggle.is-done { color: var(--nimble-ok); }
-.nimble-encounter-tracker .turn-toggle svg { width: 19px; height: 19px; }
-.nimble-encounter-tracker .creature-name-box { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.nimble-encounter-tracker .creature-label {
-	display: block;
-	max-width: 100%;
-	min-width: 0;
-	background: transparent;
-	box-shadow: none;
-	border: none;
-	padding: 0;
-	height: auto;
-	justify-content: flex-start;
-	font-weight: 600;
-	color: var(--text-normal);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	text-align: left;
-}
-.nimble-encounter-tracker .creature-label:hover { color: var(--text-accent); }
-.nimble-encounter-tracker .creature-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0.1rem 0.3rem; font-size: 0.72rem; color: var(--text-muted); min-width: 0; }
-.nimble-encounter-tracker .meta-sep { color: var(--text-faint); }
-.nimble-encounter-tracker .meta-icon { display: inline-flex; }
-.nimble-encounter-tracker .meta-icon svg { width: 11px; height: 11px; }
-.nimble-encounter-tracker .meta-defense { display: inline-flex; align-items: center; gap: 0.15rem; font-weight: 600; color: var(--text-normal); font-variant-numeric: tabular-nums; }
-.nimble-encounter-tracker .meta-defense .meta-icon { color: var(--nimble-hero); }
-.nimble-encounter-tracker .armor-chip { display: inline-flex; align-items: center; gap: 0.2rem; padding: 0 0.35rem; border-radius: 999px; font-weight: 600; line-height: 1.35; }
-.nimble-encounter-tracker .armor-chip.armor-none { color: var(--text-faint); padding: 0; font-weight: 500; }
-.nimble-encounter-tracker .armor-chip.armor-medium { background: color-mix(in srgb, #5b8bd6 18%, transparent); color: color-mix(in srgb, #5b8bd6 85%, var(--text-normal)); }
-.nimble-encounter-tracker .armor-chip.armor-heavy { background: color-mix(in srgb, #7a6ad0 22%, transparent); color: color-mix(in srgb, #7a6ad0 85%, var(--text-normal)); }
+/* Empty and player views */
+.ev-tracker .empty-message { text-align: center; color: var(--ev-text-2); padding: 18px 16px; }
+.ev-tracker .empty-hint { font-size: 12.5px; }
+.ev-tracker .ev-tracker-empty-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.ev-tracker .ev-tracker-empty-actions button { height: 34px; padding: 0 12px; --ev-pill-icon: 16px; }
+
+/* ---------- Nimble: the game sheet, sped up ---------- */
+.nimble-encounter-tracker .creature-label { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nimble-encounter-tracker .label-edit-input { width: 100%; }
-.nimble-encounter-tracker .hp-display {
-	flex-shrink: 0;
-	min-width: 5.2rem;
-	height: 1.9rem;
-	justify-content: center;
-	padding: 0 0.5rem;
-	font-weight: 700;
-	font-variant-numeric: tabular-nums;
-	background: var(--background-primary);
-	box-shadow: none;
-	border: 1px solid var(--background-modifier-border);
+
+/* The side switch: the sheet's charcoal bar */
+.nimble-encounter-tracker .nimble-sides { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3px; margin: 0 var(--ev-pad); padding: 3px; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); --seg-pad: 3px; --seg-gap: 3px; --seg-color: var(--ev-bar); }
+.nimble-encounter-tracker .phase-pill { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; height: 40px; padding: 0 10px 0 12px; border: 0; border-radius: 4px; background: transparent; box-shadow: none; font: italic 700 17px/1 var(--ev-font-display); color: var(--ev-text-2); }
+.nimble-encounter-tracker .phase-pill:hover:not(.is-active) { background: var(--ev-surface-2); }
+.nimble-encounter-tracker .phase-pill.is-active { color: var(--ev-on-bar); }
+.nimble-encounter-tracker .phase-pill-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-encounter-tracker .phase-pill-count { flex: none; font: 600 12.5px/1 var(--ev-font-num); letter-spacing: 0.02em; white-space: nowrap; }
+.nimble-encounter-tracker .phase-pill.is-active .phase-pill-count { opacity: 0.75; }
+.nimble-encounter-tracker .phase-pill-short { display: none; }
+.nimble-encounter-tracker .nimble-sides .seg-thumb { border-radius: 4px; }
+
+/* The card */
+.nimble-encounter-tracker .nimble-card.is-beat { box-shadow: 0 0 0 2px var(--ev-red), 0 8px 20px -12px rgb(0 0 0 / 0.35); }
+.nimble-encounter-tracker .ev-card-kicker.is-beat { color: var(--ev-danger-text); }
+.nimble-encounter-tracker .nimble-card-top { display: flex; align-items: flex-start; gap: 8px; }
+.nimble-encounter-tracker .nimble-card-name { flex: 1; min-width: 0; }
+.nimble-encounter-tracker .nimble-card-name h2 { margin: 0; font: italic 900 25px/30px var(--ev-font-name); font-variant-numeric: lining-nums; letter-spacing: 0; color: var(--ev-text); white-space: normal; overflow-wrap: anywhere; }
+.nimble-encounter-tracker .nimble-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; margin-top: 2px; font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-card-side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.nimble-encounter-tracker .nimble-card-side small { font: 600 12px/1 var(--ev-font-ui); color: var(--ev-text-2); white-space: nowrap; }
+.nimble-encounter-tracker .nimble-card .creature-more { flex: none; width: 28px; height: 28px; margin: -4px -6px 0 -2px; padding: 0; color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-card .creature-more svg { width: 18px; height: 18px; }
+.nimble-encounter-tracker .nimble-phase-chip { display: inline-block; padding: 5px 8px; border-radius: 3px; background: var(--ev-chip-bg); color: var(--ev-chip-text); font: italic 700 12.5px/1 var(--ev-font-display); cursor: pointer; }
+.nimble-encounter-tracker .nimble-phase-chip.is-on { background: var(--ev-danger-bg); color: var(--ev-danger-text); }
+.nimble-encounter-tracker .nimble-card-hp { position: relative; margin-top: 14px; }
+.nimble-encounter-tracker .nimble-card-hp-row { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 7px; }
+.nimble-encounter-tracker .nimble-heart { display: inline-flex; flex: none; color: var(--ev-red); }
+.nimble-encounter-tracker .nimble-heart svg { width: 20px; height: 20px; }
+.nimble-encounter-tracker .hp-display { display: inline-flex; align-items: baseline; gap: 4px; height: auto; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--ev-text); font-variant-numeric: tabular-nums lining-nums; border-radius: var(--ev-r-sm); }
+.nimble-encounter-tracker .hp-display:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.nimble-encounter-tracker .nimble-card-hp-num b { font: 700 30px/30px var(--ev-font-num); letter-spacing: -0.01em; }
+.nimble-encounter-tracker .nimble-card-hp-num small { font: 600 16px/1 var(--ev-font-num); color: var(--ev-text-2); }
+.nimble-encounter-tracker .hp-display .hp-temp { font: 600 13px/1 var(--ev-font-num); color: var(--ev-temp); }
+.nimble-encounter-tracker .nimble-card-hp-of { font: 600 13px/1 var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-encounter-tracker .ev-bar { position: relative; display: flex; height: var(--ev-bar-h, 6px); border-radius: var(--ev-bar-r, 99px); background: var(--ev-track-empty); overflow: hidden; }
+.nimble-encounter-tracker .ev-bar > i { display: block; height: 100%; background: var(--ev-track); transition: width 0.25s var(--ev-ease); }
+.nimble-encounter-tracker .ev-bar.is-low > i:first-child { background: var(--ev-track-low); }
+.nimble-encounter-tracker .ev-bar > i.is-temp { background: var(--ev-temp); }
+.nimble-encounter-tracker .nimble-phased { position: relative; }
+.nimble-encounter-tracker .nimble-phased .hp-half-mark { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--ev-surface); }
+.nimble-encounter-tracker .nimble-phased .hp-half-mark::after { content: ""; position: absolute; inset: 0 0 0 0; width: 2px; background: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-phase { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; font: 600 12px/16px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-phase .phase-chip { white-space: nowrap; }
+.nimble-encounter-tracker .nimble-card-dying { margin-top: 12px; padding: 9px 12px; border-radius: var(--ev-r-md); background: var(--ev-danger-bg); color: var(--ev-danger-text); font: 600 13px/18px var(--ev-font-ui); cursor: help; }
+.nimble-encounter-tracker .laststand-btn { margin-top: 10px; height: 32px; padding: 0 12px; font-size: 13px; --ev-pill-icon: 15px; }
+.nimble-encounter-tracker .nimble-row .creature-flash { margin-top: 1px; font-size: 12px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-encounter-tracker .creature-flash { margin-top: 8px; font: 600 12.5px/16px var(--ev-font-ui); color: var(--ev-text-2); font-variant-numeric: tabular-nums; }
+.nimble-encounter-tracker .creature-note { margin-top: 6px; font-size: 12.5px; color: var(--ev-text-2); font-style: italic; }
+
+/* Action cards: three you hold. Small in rows; on the card, big and tappable (one step a tap). */
+.nimble-encounter-tracker .nimble-acts { display: inline-flex; align-items: flex-end; gap: 4px; }
+.nimble-encounter-tracker .nimble-acts > * { display: block; flex: none; width: 12px; height: 16px; min-height: 0; padding: 0; border: 0; border-radius: 2.5px; background: transparent; box-shadow: inset 0 0 0 1.75px var(--ev-line-strong); }
+.nimble-encounter-tracker .nimble-acts > .is-on { background: var(--ev-text); box-shadow: none; }
+.nimble-encounter-tracker .nimble-acts > .is-blocked:not(.is-on) { opacity: 0.4; }
+.nimble-encounter-tracker .nimble-acts.is-lg { gap: 6px; }
+.nimble-encounter-tracker .nimble-acts.is-lg > * { width: 22px; height: 30px; border-radius: 4px; box-shadow: inset 0 0 0 2px var(--ev-line-strong); transition: transform var(--ev-dur) var(--ev-ease), background var(--ev-dur) ease; }
+.nimble-encounter-tracker .nimble-acts.is-lg > .is-on { box-shadow: 0 2px 0 rgb(0 0 0 / 0.12); transform: rotate(-4deg); }
+.nimble-encounter-tracker .nimble-acts.is-lg > .is-on:nth-child(2) { transform: none; }
+.nimble-encounter-tracker .nimble-acts.is-lg > .is-on:nth-child(3) { transform: rotate(4deg); }
+.nimble-encounter-tracker .nimble-acts > .is-in { animation: ev-pip-in 260ms var(--ev-ease); }
+.nimble-encounter-tracker .nimble-acts > .is-out { animation: ev-pip-out 220ms ease; }
+@keyframes ev-pip-in { from { transform: scale(0.4); } }
+@keyframes ev-pip-out { from { background: var(--ev-text); transform: scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .nimble-encounter-tracker :is(.is-in, .is-out) { animation: none; } }
+
+/* Wounds: linked pips ending in a skull */
+.nimble-encounter-tracker .nimble-wounds { display: flex; align-items: center; gap: 8px; margin-left: auto; font: 600 12.5px/1 var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-wound-row { position: relative; display: flex; align-items: center; gap: 4px; }
+.nimble-encounter-tracker .nimble-wound-row::before { content: ""; position: absolute; left: 4px; right: 4px; top: 50%; height: 1.5px; margin-top: -0.75px; background: var(--ev-line-strong); }
+.nimble-encounter-tracker .wound-pip { position: relative; display: grid; place-items: center; width: 10px; height: 10px; min-height: 0; padding: 0; border: 0; border-radius: 50%; background: var(--ev-surface); box-shadow: inset 0 0 0 1.5px var(--ev-line-strong); color: var(--ev-line-strong); }
+.nimble-encounter-tracker .wound-pip.is-on { background: var(--ev-red); box-shadow: inset 0 0 0 1.5px var(--ev-red); }
+.nimble-encounter-tracker .wound-pip.is-skull { width: 14px; height: 14px; border-radius: 0; background: var(--ev-surface); box-shadow: none; }
+.nimble-encounter-tracker .wound-pip.is-skull svg { width: 14px; height: 14px; }
+.nimble-encounter-tracker .wound-pip.is-skull.is-on { color: var(--ev-red); background: var(--ev-surface); box-shadow: none; }
+.nimble-encounter-tracker .wound-pip.is-in { animation: ev-pip-in 260ms var(--ev-ease); }
+
+/* Armor: the books' filled shield, the letter in heavy italic */
+.nimble-encounter-tracker .nimble-armor { position: relative; flex: none; display: inline-grid; place-items: center; width: 22px; height: 24px; color: var(--ev-text); --nimble-armor-fill: color-mix(in srgb, var(--ev-band) 70%, var(--ev-line-strong)); }
+.nimble-encounter-tracker .nimble-armor svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.nimble-encounter-tracker .nimble-armor svg path { fill: var(--nimble-armor-fill); }
+.nimble-encounter-tracker .nimble-armor.is-heavy { --nimble-armor-fill: var(--ev-bar); color: var(--ev-on-bar); }
+.nimble-encounter-tracker .nimble-armor.is-none svg path { fill: none; stroke: var(--ev-line-strong); stroke-width: 1.4; }
+.nimble-encounter-tracker .nimble-armor b { position: relative; top: -0.5px; display: block; height: 12px; font: italic 700 12px/12px var(--ev-font-num); }
+.nimble-encounter-tracker .nimble-armor.is-none b { color: var(--ev-text-2); font-style: normal; }
+
+/* A monster's actions on its card; the beat suggests the one it didn't use last */
+.nimble-encounter-tracker .nimble-card-menu { display: grid; gap: 6px; margin-top: 12px; }
+.nimble-encounter-tracker .nimble-card-menu-h { font: 600 12.5px/16px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-card-act { position: relative; padding: 8px 10px; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line-strong); font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-card-act strong { font: italic 700 15px/20px var(--ev-font-display); color: var(--ev-text); }
+.nimble-encounter-tracker .nimble-card-act .nimble-dice { font: 700 14px/20px var(--ev-font-num); color: var(--ev-text); }
+.nimble-encounter-tracker .nimble-card-act.is-pick { box-shadow: inset 0 0 0 2px var(--ev-text); }
+.nimble-encounter-tracker .nimble-card-act.is-used { opacity: 0.55; }
+.nimble-encounter-tracker .nimble-card-act[role="button"] { cursor: pointer; }
+.nimble-encounter-tracker .nimble-card-act-note { margin-left: 6px; font: 600 11.5px/1 var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-encounter-tracker .group-attack { justify-self: start; height: 34px; padding: 0 12px; border: 1px solid var(--ev-line-strong); background: var(--ev-surface); color: var(--ev-text); box-shadow: none; font: 600 13.5px/1 var(--ev-font-ui); --ev-pill-icon: 16px; }
+
+/* Conditions on the card: chips centred on their capitals, rounds after a hairline */
+.nimble-encounter-tracker .nimble-card-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+.nimble-encounter-tracker .condition-tag { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 3px 0 8px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 500 12.5px/normal var(--ev-font-ui); white-space: nowrap; cursor: pointer; }
+.nimble-encounter-tracker .condition-tag.is-acts { background: var(--ev-chip-acts-bg); color: var(--ev-chip-acts-text); }
+.nimble-encounter-tracker .condition-tag.is-minor { color: var(--ev-text-2); }
+.nimble-encounter-tracker .condition-tag.auto-condition { padding-right: 8px; background: var(--ev-danger-bg); color: var(--ev-danger-text); font-weight: 600; cursor: default; }
+.nimble-encounter-tracker .condition-mark, .nimble-encounter-tracker .condition-rounds-icon { display: inline-flex; }
+.nimble-encounter-tracker .condition-mark svg { width: 13px; height: 13px; }
+.nimble-encounter-tracker .condition-rounds { display: inline-flex; align-items: center; gap: 3px; height: 12px; padding-left: 5px; border-left: 1px solid var(--ev-line-strong); color: var(--ev-text-2); font-variant-numeric: tabular-nums; }
+.nimble-encounter-tracker .condition-rounds-icon svg { width: 11px; height: 11px; }
+.nimble-encounter-tracker .remove-condition { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 2px; color: var(--ev-text-2); opacity: 0.7; }
+.nimble-encounter-tracker .remove-condition svg { width: 12px; height: 12px; }
+.nimble-encounter-tracker .remove-condition:hover { opacity: 1; color: var(--ev-danger-text); }
+
+/* Rows: mark, name, the middle (actions, or level and armor), HP over a thin bar */
+.nimble-encounter-tracker .nimble-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto 64px; gap: 10px; align-items: center; min-height: var(--ev-row); padding: 6px 12px 6px 10px; border-top: 1px solid var(--ev-line); }
+.nimble-encounter-tracker .nimble-row:first-child { border-top: 0; }
+.nimble-encounter-tracker .nimble-row.is-acted { min-height: 40px; }
+.nimble-encounter-tracker .nimble-row .creature-name-box { min-width: 0; }
+.nimble-encounter-tracker .nimble-row .creature-label { font: 600 16px/20px var(--ev-font-display); color: var(--ev-text); }
+.nimble-encounter-tracker .creature-sub { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; font: 500 12.5px/16px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-encounter-tracker .creature-sub > * { flex: none; }
+.nimble-encounter-tracker .creature-sub > :last-child { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nimble-encounter-tracker .row-cond { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
+.nimble-encounter-tracker .row-cond > span { display: inline; }
+.nimble-encounter-tracker .row-cond > .row-cond-icon { display: inline-block; margin-right: 3px; vertical-align: -1px; }
+.nimble-encounter-tracker .row-cond.is-bad { color: var(--ev-danger-text); font-weight: 600; }
+.nimble-encounter-tracker .row-cond.is-acts { color: var(--ev-chip-acts-text); font-weight: 600; }
+.nimble-encounter-tracker .row-cond-icon { display: inline-flex; }
+.nimble-encounter-tracker .row-cond-icon svg { width: 12px; height: 12px; }
+.nimble-encounter-tracker .nimble-row-mid { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.nimble-encounter-tracker .nimble-lvl { font: 700 12px/1 var(--ev-font-num); color: var(--ev-text-2); white-space: nowrap; }
+.nimble-encounter-tracker .nimble-row-hp { display: grid; gap: 6px; justify-items: end; min-width: 0; }
+.nimble-encounter-tracker .nimble-row-hp .ev-bar { width: 100%; --ev-bar-h: 4px; }
+.nimble-encounter-tracker .nimble-row-hp-num { gap: 0; }
+.nimble-encounter-tracker .nimble-row-hp-num b { font: 700 16px/1 var(--ev-font-num); }
+.nimble-encounter-tracker .nimble-row-hp-num small { font: 600 12.5px/1 var(--ev-font-num); color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-row.is-low .nimble-row-hp-num b { color: var(--ev-danger-text); }
+.nimble-encounter-tracker .nimble-row.is-acted .nimble-row-hp-num { color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-row.is-acted .ev-bar { opacity: 0.6; }
+.nimble-encounter-tracker .nimble-minions { display: inline-flex; gap: 3px; }
+.nimble-encounter-tracker .nimble-minions > * { display: block; width: 10px; height: 10px; min-height: 0; padding: 0; border: 0; border-radius: 2px; background: transparent; box-shadow: inset 0 0 0 1.5px var(--ev-line-strong); }
+.nimble-encounter-tracker .nimble-minions > .is-on { background: var(--ev-text); box-shadow: none; }
+.nimble-encounter-tracker .nimble-minions.is-lg > * { width: 16px; height: 16px; border-radius: 3px; }
+.nimble-encounter-tracker .nimble-minions-text { display: none; }
+.nimble-encounter-tracker .creature-name-box .creature-note { margin-top: 2px; font-size: 12px; }
+
+/* Before the fight: Initiative */
+
+.nimble-encounter-tracker .nimble-init-row { grid-template-columns: 20px minmax(0, 1fr) auto 48px; }
+
+.nimble-encounter-tracker .nimble-init-die { display: inline-flex; color: var(--ev-text-2); }
+.nimble-encounter-tracker .nimble-init-die svg { width: 18px; height: 18px; }
+.nimble-encounter-tracker .nimble-init-input { width: 48px; height: 32px; padding: 0; text-align: center; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line-strong); background: var(--ev-surface); font: 700 16px/1 var(--ev-font-num); font-variant-numeric: tabular-nums; color: var(--ev-text); -moz-appearance: textfield; }
+.nimble-encounter-tracker .nimble-init-input::-webkit-inner-spin-button, .nimble-encounter-tracker .nimble-init-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.nimble-encounter-tracker .nimble-init-input:placeholder-shown { border-style: dashed; }
+.nimble-encounter-tracker .nimble-card-init { display: flex; align-items: center; gap: 10px; }
+
+/* Narrow sidebars (down to 260px): the row's middle goes, the card's buttons keep one line */
+@container (max-width: 300px) {
+	.nimble-encounter-tracker .nimble-row { grid-template-columns: 20px minmax(0, 1fr) 56px; gap: 8px; padding-right: 10px; }
+	.nimble-encounter-tracker .nimble-row .nimble-row-mid { display: none; }
+	.nimble-encounter-tracker .nimble-init-row { grid-template-columns: 20px minmax(0, 1fr) 48px; }
+	.ev-tracker .ev-card-btn { padding: 0 6px; --ev-pill-gap: 4px; font-size: 13px; }
+	.ev-tracker .ev-card-icon { width: 32px; }
+	.ev-tracker .ev-card-tools { gap: 4px; }
+	.nimble-encounter-tracker .nimble-card-hp-row { flex-wrap: wrap; row-gap: 6px; }
+	.nimble-encounter-tracker .phase-pill { padding: 0 8px 0 10px; font-size: 15px; }
+	.nimble-encounter-tracker .phase-pill-long { display: none; }
+	.nimble-encounter-tracker .phase-pill-short { display: inline; }
+	.ev-tracker .ev-card-btn.ev-pill:not(#nimble-pill) > .ev-pill-icon { display: none; }
+	.nimble-encounter-tracker .nimble-card-meta .meta-sep { display: none; }
+	.nimble-encounter-tracker .nimble-card-meta { gap: 2px 10px; }
 }
-.nimble-encounter-tracker .hp-display:hover, .nimble-encounter-tracker .hp-display[aria-expanded="true"] { border-color: var(--interactive-accent); }
-.nimble-encounter-tracker .creature-more { flex-shrink: 0; }
-
-.nimble-encounter-tracker .creature-hp-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem; }
-.nimble-encounter-tracker .creature-hp-row .minion-pips { flex: 1; min-width: 0; }
-.nimble-encounter-tracker .creature-hp-bar { position: relative; flex: 1; min-width: 0; height: 6px; background: var(--background-modifier-border); border-radius: 3px; overflow: hidden; }
-.nimble-encounter-tracker .creature-hp-fill { height: 100%; background: var(--nimble-ok); transition: width 0.25s; }
-.nimble-encounter-tracker .hp-wounded .creature-hp-fill { background: var(--nimble-warn); }
-.nimble-encounter-tracker .hp-critical .creature-hp-fill, .nimble-encounter-tracker .hp-dead .creature-hp-fill { background: var(--nimble-hp); }
-.nimble-encounter-tracker .role-hero .creature-hp-fill { background: var(--nimble-hero); }
-.nimble-encounter-tracker .hp-half-mark { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--text-faint); }
-
-.nimble-encounter-tracker .pips { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 3px; }
-.nimble-encounter-tracker .pips-label { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-right: 0.2rem; }
-.nimble-encounter-tracker .pips-icon { display: inline-flex; }
-.nimble-encounter-tracker .pips-icon svg { width: 13px; height: 13px; }
-.nimble-encounter-tracker .action-pips .pips-icon { color: var(--nimble-hero); }
-.nimble-encounter-tracker .wound-pips .pips-icon { color: var(--nimble-hp); }
-.nimble-encounter-tracker .pip {
-	width: 13px;
-	height: 13px;
-	padding: 0;
-	min-height: 0;
-	border-radius: 50%;
-	box-shadow: none;
-	background: transparent;
-	border: 1.5px solid var(--text-faint);
-}
-.nimble-encounter-tracker .action-pip { border-color: var(--nimble-hero); }
-.nimble-encounter-tracker .action-pip.is-on { background: var(--nimble-hero); }
-.nimble-encounter-tracker .action-pip.is-blocked { opacity: 0.35; }
-.nimble-encounter-tracker .wound-pip { border-radius: 2px; border-color: var(--nimble-hp); }
-.nimble-encounter-tracker .wound-pip.is-on { background: var(--nimble-hp); }
-.nimble-encounter-tracker .minion-pip { width: 11px; height: 11px; border-color: var(--nimble-minion); }
-.nimble-encounter-tracker .minion-pip.is-on { background: var(--nimble-minion); }
-.nimble-encounter-tracker .hero-row, .nimble-encounter-tracker .minion-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem 0.9rem; margin: 0.4rem 0 0.1rem; }
-.nimble-encounter-tracker .hero-row { justify-content: space-between; }
-.nimble-encounter-tracker .hero-row .pips { flex-wrap: nowrap; }
-/* Narrow cards: icons only, so actions and wounds still share a line */
-.nimble-encounter-tracker .creature-item { container-type: inline-size; }
-@container (max-width: 360px) {
-	.nimble-encounter-tracker .pips-label-text { display: none; }
-}
-.nimble-encounter-tracker .group-attack { margin-left: auto; display: inline-flex; align-items: center; gap: 0.25rem; height: 1.5rem; font-size: 0.75rem; padding: 0 0.5rem; }
-.nimble-encounter-tracker .group-attack svg { width: 13px; height: 13px; }
-
-.nimble-encounter-tracker .legendary-line { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; margin: 0.35rem 0 0; }
-.nimble-encounter-tracker .phase-chip { font-size: 0.7rem; padding: 0 0.4rem; border-radius: 999px; border: 1px solid var(--background-modifier-border); color: var(--text-muted); cursor: help; }
-.nimble-encounter-tracker .phase-chip.is-on { background: var(--nimble-hp); border-color: var(--nimble-hp); color: #fff; }
-.nimble-encounter-tracker .phase-chip.laststand.is-on { background: #8e5bd0; border-color: #8e5bd0; }
-.nimble-encounter-tracker .laststand-btn { height: 1.4rem; font-size: 0.74rem; padding: 0 0.5rem; }
-
-.nimble-encounter-tracker .creature-flash { margin: 0.3rem 0 0; font-size: 0.76rem; color: var(--text-accent); }
-.nimble-encounter-tracker .creature-note { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--text-muted); font-style: italic; }
-
-.nimble-encounter-tracker .conditions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; margin: 0.4rem 0 0; }
-.nimble-encounter-tracker .condition-tag {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.25rem;
-	padding: 0.05rem 0.25rem 0.05rem 0.5rem;
-	border-radius: 999px;
-	font-size: 0.74rem;
-	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-	color: var(--text-normal);
-	cursor: pointer;
-}
-.nimble-encounter-tracker .condition-tag:hover { background: color-mix(in srgb, var(--interactive-accent) 30%, transparent); }
-.nimble-encounter-tracker .condition-tag.is-minor { background: var(--background-modifier-hover); color: var(--text-muted); }
-.nimble-encounter-tracker .condition-tag.auto-condition { background: var(--nimble-hp-bg); color: var(--nimble-hp); padding-right: 0.5rem; cursor: help; }
-.nimble-encounter-tracker .condition-rounds {
-	font-size: 0.66rem;
-	font-weight: 700;
-	min-width: 1rem;
-	text-align: center;
-	border-radius: 999px;
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	padding: 0 0.25rem;
-}
-.nimble-encounter-tracker .condition-mark { display: inline-flex; opacity: 0.8; }
-.nimble-encounter-tracker .condition-mark svg { width: 0.7rem; height: 0.7rem; }
-.nimble-encounter-tracker .remove-condition { opacity: 0.55; padding: 0 0.15rem; }
-.nimble-encounter-tracker .remove-condition:hover { opacity: 1; color: var(--text-error); }
-.nimble-encounter-tracker .add-condition-btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.2rem;
-	height: 1.25rem;
-	padding: 0 0.4rem;
-	font-size: 0.72rem;
-	border-radius: 999px;
-	box-shadow: none;
-	background: transparent;
-	border: 1px dashed var(--background-modifier-border);
-	color: var(--text-muted);
-}
-.nimble-encounter-tracker .add-condition-btn svg { width: 12px; height: 12px; }
-.nimble-encounter-tracker .add-condition-btn:hover { color: var(--text-normal); border-color: var(--text-muted); }
-
-.nimble-encounter-tracker .creature-details { margin: 0.45rem 0 0 2rem; padding-top: 0.4rem; border-top: 1px dashed var(--background-modifier-border); font-size: 0.84rem; }
-.nimble-encounter-tracker .quick-hp { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.35rem; }
-.nimble-encounter-tracker .hp-btn { height: 1.5rem; padding: 0 0.5rem; font-size: 0.78rem; }
-.nimble-encounter-tracker .creature-actions { margin: 0.2rem 0; padding-left: 1.1rem; }
-.nimble-encounter-tracker .creature-abilities { color: var(--text-muted); display: grid; gap: 0.2rem; margin-bottom: 0.3rem; }
-.nimble-encounter-tracker .link-btn { background: transparent; box-shadow: none; border: none; padding: 0; height: auto; color: var(--text-accent); font-size: 0.8rem; }
-
-.nimble-encounter-tracker .empty-message { text-align: center; color: var(--text-muted); padding: 1rem 0.5rem; }
-.nimble-encounter-tracker .empty-hint { font-size: 0.82rem; }
-
-.nimble-encounter-tracker .combat-log { margin-top: 0.8rem; font-size: 0.8rem; }
-.nimble-encounter-tracker .combat-log summary { cursor: pointer; color: var(--text-muted); font-weight: 600; }
-.nimble-encounter-tracker .combat-log ul { list-style: none; margin: 0.3rem 0 0; padding: 0; max-height: 220px; overflow: auto; }
-.nimble-encounter-tracker .combat-log li { padding: 0.15rem 0; border-bottom: 1px solid var(--background-modifier-border); }
-.nimble-encounter-tracker .log-round { font-weight: 700; color: var(--text-faint); }
-
-.nimble-encounter-tracker .roll-log { margin-top: 0.8rem; }
-.nimble-encounter-tracker .roll-log-header { display: flex; align-items: center; justify-content: space-between; }
-.nimble-encounter-tracker .roll-log-header h4 { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-.nimble-encounter-tracker .roll-log-list { list-style: none; margin: 0.3rem 0 0; padding: 0; }
-.nimble-encounter-tracker .roll-log-entry { padding: 0.25rem 0; border-bottom: 1px solid var(--background-modifier-border); font-size: 0.8rem; }
-.nimble-encounter-tracker .roll-log-entry:first-child .roll-log-total { color: var(--text-accent); }
-.nimble-encounter-tracker .roll-log-top { display: flex; justify-content: space-between; gap: 0.5rem; }
-.nimble-encounter-tracker .roll-log-total { font-weight: 700; font-variant-numeric: tabular-nums; }
-.nimble-encounter-tracker .roll-log-entry.is-crit .roll-log-total { color: var(--nimble-legendary); }
-.nimble-encounter-tracker .roll-log-entry.is-miss .roll-log-total { color: var(--text-faint); }
-.nimble-encounter-tracker .roll-log-detail { color: var(--text-faint); font-size: 0.74rem; }
 
 /* ============================================
    BESTIARY
@@ -1074,28 +1092,54 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
    ENCOUNTER BLOCK AND BUILDER
    ============================================ */
 
+/* ```nimble-encounter in a Nimble campaign: a card on the game's paper (its look, .ev-sys-nimble). The name in the
+   book's heavy italic, the rating as a tag, the monsters as reference pills with their counts, Run and the rest
+   as one row of compact buttons. Every width from a phone column to a wide note. */
 .nimble-encounter-block {
-	border: 1px solid color-mix(in srgb, var(--nimble-hp) 40%, var(--background-modifier-border));
-	border-radius: var(--nimble-radius);
-	background: var(--background-secondary);
-	padding: 0.7rem 0.85rem;
-	margin: 0.75rem 0;
+	container-type: inline-size;
+	margin: 0.75rem 0; padding: 12px 14px 12px;
+	border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line);
+	color: var(--ev-text); font-family: var(--ev-font-ui); font-size: 14px; line-height: 20px;
 }
 /* Wraps: on a phone a long name and the difficulty pill don't fit on one line. */
-.nimble-encounter-block .encounter-block-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.5rem; font-size: 1.05rem; }
-.nimble-encounter-block .encounter-block-icon { color: var(--nimble-hp); display: inline-flex; }
-.nimble-encounter-block .encounter-block-name { font-weight: 700; flex: 1 1 9rem; min-width: 0; overflow-wrap: anywhere; }
-.nimble-encounter-block .encounter-block-monsters { display: flex; flex-wrap: wrap; gap: 0.35rem 0.8rem; margin: 0.5rem 0; }
+.nimble-encounter-block .encounter-block-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.nimble-encounter-block .encounter-block-icon { display: inline-flex; color: var(--ev-red); }
+.nimble-encounter-block .encounter-block-icon svg { width: 18px; height: 18px; }
+.nimble-encounter-block .encounter-block-name { flex: 1 1 9rem; min-width: 0; overflow-wrap: anywhere; font: italic 900 19px/24px var(--ev-font-name); color: var(--ev-text); }
+/* The rating as a tag (dark, white text), its colour as a dot: both games' encounter blocks. */
+.nimble-encounter-block .encounter-block-head .nimble-difficulty.nimble-difficulty, .dnd5e-encounter .dnd5e-encounter-head .nimble-difficulty.nimble-difficulty { gap: 6px; border: 0; background: var(--ev-bar, var(--ev-accent)); color: var(--ev-on-bar, var(--ev-on-accent)); }
+.dnd5e-encounter .dnd5e-encounter-head .nimble-difficulty.nimble-difficulty { background: var(--ev-accent); color: var(--ev-on-accent); }
+:is(.nimble-encounter-block .encounter-block-head, .dnd5e-encounter .dnd5e-encounter-head) .nimble-difficulty::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--diff-dot, currentColor); }
+:is(.nimble-encounter-block, .dnd5e-encounter) :is(.diff-easy, .diff-low) { --diff-dot: #6cc48a; }
+:is(.nimble-encounter-block, .dnd5e-encounter) :is(.diff-medium, .diff-moderate) { --diff-dot: #e3cd5a; }
+:is(.nimble-encounter-block, .dnd5e-encounter) :is(.diff-hard, .diff-high) { --diff-dot: #f0a05a; }
+:is(.nimble-encounter-block, .dnd5e-encounter) .diff-deadly { --diff-dot: #ff7a6b; }
+:is(.nimble-encounter-block, .dnd5e-encounter) .diff-very-deadly { --diff-dot: #f06aac; }
+:is(.nimble-encounter-block, .dnd5e-encounter) .diff-trivial { --diff-dot: var(--ev-line-strong); }
+/* A wide note doesn't stretch a block: the rating stays by the name, the stats by the monster. */
+.nimble-encounter-block, .dnd5e-encounter { max-width: 640px; }
+.nimble-encounter-block .encounter-block-monsters { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 8px; }
 .nimble-encounter-block .encounter-block-monster { display: inline-flex; align-items: center; gap: 0.3rem; }
-.nimble-encounter-block .encounter-block-count { font-weight: 700; color: var(--text-muted); }
-.nimble-encounter-block .encounter-block-meta, .nimble-encounter-block .encounter-block-notes { font-size: 0.8rem; color: var(--text-muted); }
-.nimble-encounter-block .encounter-block-notes { font-style: italic; margin-top: 0.25rem; white-space: pre-line; }
-.nimble-encounter-block .encounter-block-empty { color: var(--text-muted); font-size: 0.85rem; }
+.nimble-encounter-block .encounter-block-count { font-weight: 700; color: var(--ev-text-2); }
+.nimble-encounter-block .encounter-block-meta, .nimble-encounter-block .encounter-block-notes { font-size: 12.5px; line-height: 18px; color: var(--ev-text-2); }
+.nimble-encounter-block .encounter-party-link { color: var(--ev-text-2); text-decoration: underline; text-underline-offset: 3px; }
+.nimble-encounter-block .encounter-party-link:hover { color: var(--ev-text); }
+.nimble-encounter-block .encounter-block-notes { font-style: italic; margin-top: 4px; white-space: pre-line; }
+.nimble-encounter-block .encounter-block-empty { color: var(--ev-text-2); font-size: 13px; }
 .encounter-block-warning { font-size: 0.8rem; color: var(--nimble-warn); margin-top: 0.2rem; }
 .encounter-block-warning::before { content: "⚠ "; }
-.nimble-encounter-block .encounter-block-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
-.nimble-encounter-block .encounter-block-actions button { display: inline-flex; align-items: center; gap: 0.3rem; }
-.nimble-encounter-block .encounter-block-actions svg { width: 14px; height: 14px; }
+.nimble-encounter-block .encounter-block-warning { color: var(--ev-danger-text); font-size: 12.5px; }
+.nimble-encounter-block .encounter-block-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.nimble-encounter-block button.encounter-block-btn { height: 32px; padding: 0 12px; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line-strong); background: var(--ev-surface); color: var(--ev-text); box-shadow: none; font: 600 13.5px/normal var(--ev-font-ui); --ev-pill-icon: 16px; --ev-pill-gap: 6px; }
+.nimble-encounter-block button.encounter-block-btn:hover { background: var(--ev-surface-2); }
+.nimble-encounter-block button.encounter-block-btn.mod-cta { background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); }
+.nimble-encounter-block button.encounter-block-btn.mod-cta:hover { background: var(--ev-accent-hover); }
+.nimble-encounter-block button.encounter-block-btn.mod-warning { background: var(--ev-danger-bg); border-color: color-mix(in srgb, var(--ev-danger-text) 35%, transparent); color: var(--ev-danger-text); }
+/* A narrow column: Run takes the row, the rest share the next one. */
+@container (max-width: 360px) {
+	.nimble-encounter-block .encounter-block-actions > .mod-cta { flex: 1 1 100%; }
+	.nimble-encounter-block .encounter-block-actions > :not(.mod-cta) { flex: 1 1 0; min-width: 0; padding: 0 8px; }
+}
 
 .nimble-difficulty { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.1rem 0.5rem; border-radius: 4px; white-space: nowrap; }
 .diff-trivial { background: var(--background-modifier-hover); color: var(--text-muted); }
@@ -1664,83 +1708,94 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 
 /* Group attack: how many minions attack */
 .nimble-encounter-tracker .group-attack-all, .group-attack-all { width: 100%; margin-bottom: 0.4rem; }
-.nimble-encounter-tracker .phase-chip { cursor: pointer; }
 
 /* Map pin / token cards (touch) */
 .nimble-pin-card .pin-card-actions, .nimble-popover .pin-card-actions { display: flex; gap: 0.4rem; margin-top: 0.6rem; flex-wrap: wrap; }
 .nimble-popover .pin-card-actions button { flex: 1; }
 
-/* HP calculator (popover beside the HP button; a bottom sheet on phones) */
+/* HP keypad (core/tracker/hp-pad.ts): beside the button that opened it, a bottom sheet on phones. Drawn in the
+   game's look (.ev-sys-<id> on the popover): who and where it lands on the left, the amount on the right, the
+   modes, the players' quiet chips (Defend, Interpose), the keys, Cancel and Apply. */
 .nimble-popover.nimble-hp-pad {
-	--calc-color: var(--nimble-hp);
+	--calc-color: var(--ev-danger-text, var(--text-error));
 	box-sizing: border-box;
 	max-width: calc(100vw - 16px);
-	padding: 0.6rem;
-	display: flex; flex-direction: column; gap: 0.45rem;
+	padding: 10px 12px 12px;
+	display: flex; flex-direction: column; gap: 10px;
 	outline: none;
+	background: var(--ev-surface, var(--background-primary));
+	color: var(--ev-text, var(--text-normal));
+	font-family: var(--ev-font-ui, var(--font-interface));
 }
 /* As a phone bottom sheet it spans the full width (the cap above would leave a gap on the right). */
 .nimble-popover.nimble-hp-pad.is-sheet { max-width: none; }
-.nimble-hp-pad[data-mode="heal"] { --calc-color: var(--nimble-ok); }
-.nimble-hp-pad[data-mode="set"] { --calc-color: var(--interactive-accent); }
-.nimble-hp-pad[data-mode="temp"] { --calc-color: var(--nimble-hero); }
-.nimble-popover.nimble-hp-pad.nimble-mana-pad { --calc-color: #3d7fe0; }
-.nimble-popover.nimble-hp-pad.nimble-mana-pad[data-mode="regain"] { --calc-color: var(--nimble-ok); }
-.nimble-popover.nimble-hp-pad.nimble-mana-pad[data-mode="set"] { --calc-color: var(--interactive-accent); }
+.nimble-hp-pad[data-mode="heal"] { --calc-color: var(--ev-ok, var(--color-green)); }
+.nimble-hp-pad[data-mode="set"] { --calc-color: var(--ev-text, var(--text-normal)); }
+.nimble-hp-pad[data-mode="temp"] { --calc-color: var(--ev-temp, var(--color-blue)); }
+.nimble-popover.nimble-hp-pad.nimble-mana-pad { --calc-color: var(--ev-mana, var(--color-blue)); }
+.nimble-popover.nimble-hp-pad.nimble-mana-pad[data-mode="heal"] { --calc-color: var(--ev-ok, var(--color-green)); }
 .nimble-hp-pad.is-shake { animation: nimble-shake 0.25s; }
 @keyframes nimble-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-.nimble-hp-pad .hp-pad-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
-.nimble-hp-pad .hp-pad-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nimble-hp-pad .hp-pad-sub { color: var(--text-muted); font-size: 0.75rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.nimble-hp-pad .hp-pad-modes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 2px; border-radius: 8px; background: var(--background-modifier-border); }
-.nimble-hp-pad .hp-pad-mode { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; height: 1.85rem; padding: 0 0.2rem; border: none; border-radius: 6px; box-shadow: none; background: transparent; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
-.nimble-hp-pad .hp-pad-mode:hover:not(.is-active) { background: var(--background-modifier-hover); color: var(--text-normal); }
-.nimble-hp-pad .hp-pad-modes { --seg-pad: 2px; --seg-gap: 2px; --seg-color: var(--calc-color); }
-.nimble-hp-pad .hp-pad-mode.is-active { color: #fff; }
-.nimble-hp-pad .hp-pad-screen {
-	display: flex; align-items: center; gap: 0.3rem;
-	height: 3rem; padding: 0 0.3rem 0 0.7rem; border-radius: 9px;
-	background: var(--background-secondary);
-	border: 1px solid color-mix(in srgb, var(--calc-color) 45%, transparent);
-}
-.nimble-hp-pad .hp-pad-sign { font-size: 1.4rem; font-weight: 700; color: var(--calc-color); min-width: 1rem; }
-.nimble-hp-pad .hp-pad-display { flex: 1; text-align: right; font-size: 1.9rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
-.nimble-hp-pad .hp-pad-display.is-empty { color: var(--text-faint); }
-.nimble-hp-pad .hp-pad-back { color: var(--text-muted); }
-.nimble-hp-pad .hp-pad-toggles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0.3rem; }
+.nimble-hp-pad .hp-pad-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.nimble-hp-pad .hp-pad-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--ev-display-weight, 700) 18px/24px var(--ev-font-display, var(--font-interface)); font-variant: var(--ev-display-variant, normal); color: var(--ev-text, var(--text-normal)); }
+.ev-sys-nimble.nimble-hp-pad .hp-pad-name { font: italic 900 19px/24px var(--ev-font-name); }
+.ev-sys-dnd5e.nimble-hp-pad .hp-pad-name { font-size: 20px; color: var(--ev-accent-text); letter-spacing: 0.02em; }
+.nimble-hp-pad .hp-pad-close { flex: none; width: 28px; height: 28px; margin-right: -6px; padding: 0; color: var(--ev-text-2, var(--text-muted)); }
+.nimble-hp-pad .hp-pad-close svg { width: 16px; height: 16px; }
+.nimble-hp-pad .hp-pad-read { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 2px 2px 10px; border-bottom: 1px solid var(--ev-line, var(--background-modifier-border)); }
+.nimble-hp-pad .hp-pad-who { min-width: 0; display: grid; gap: 2px; }
+.nimble-hp-pad .hp-pad-sub { font-size: 12.5px; line-height: 16px; color: var(--ev-text-2, var(--text-muted)); font-variant-numeric: tabular-nums; }
+.nimble-hp-pad .hp-pad-preview { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--ev-text, var(--text-normal)); font-variant-numeric: tabular-nums; text-wrap: pretty; }
+.nimble-hp-pad .hp-pad-preview.is-hint { font-weight: 500; color: var(--ev-text-2, var(--text-faint)); }
+.nimble-hp-pad .hp-pad-screen { flex: none; display: flex; align-items: baseline; gap: 1px; color: var(--calc-color); font: 600 34px/1 var(--ev-font-num, var(--font-interface)); font-variant-numeric: tabular-nums lining-nums; }
+.ev-sys-dnd5e.nimble-hp-pad .hp-pad-screen { font: 600 40px/1 var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; }
+.nimble-hp-pad .hp-pad-display.is-empty { color: var(--ev-line-strong, var(--text-faint)); }
+.nimble-hp-pad .hp-pad-modes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; padding: 3px; border-radius: var(--ev-r-md, 8px); background: var(--ev-surface-2, var(--background-modifier-border)); --seg-pad: 3px; --seg-gap: 0px; --seg-color: var(--ev-surface, var(--background-primary)); }
+.nimble-hp-pad .hp-pad-modes .seg-thumb { border-radius: calc(var(--ev-r-md, 8px) - 2px); box-shadow: 0 1px 2px rgb(0 0 0 / 0.14); }
+.nimble-hp-pad .hp-pad-mode { position: relative; z-index: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; height: 30px; padding: 0 4px; border: none; border-radius: calc(var(--ev-r-md, 8px) - 2px); box-shadow: none; background: transparent; font: 500 13px/normal var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
+.nimble-hp-pad .hp-pad-mode:hover:not(.is-active) { color: var(--ev-text, var(--text-normal)); }
+.nimble-hp-pad .hp-pad-mode.is-active { color: var(--ev-text, var(--text-normal)); font-weight: 600; }
+/* The players' answers: present, not asking. Dashed until said, solid when picked. */
+.nimble-hp-pad .hp-pad-quick { display: grid; gap: 6px; }
+.nimble-hp-pad .hp-pad-quick.is-off { display: none; }
+.nimble-hp-pad .hp-pad-quick-label { font: 500 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
+.nimble-hp-pad .hp-pad-quick-row, .nimble-hp-pad .hp-pad-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.nimble-hp-pad .hp-pad-qa { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border-radius: 999px; border: 1px dashed var(--ev-line-strong, var(--background-modifier-border)); background: transparent; box-shadow: none; color: var(--ev-text, var(--text-normal)); font: 600 13px/normal var(--ev-font-ui, var(--font-interface)); white-space: nowrap; }
+.nimble-hp-pad .hp-pad-qa-text, .nimble-hp-pad .hp-pad-qa-sub { display: inline-flex; align-items: center; }
+.nimble-hp-pad .hp-pad-qa-sub { font-weight: 500; font-size: 12px; color: var(--ev-text-2, var(--text-muted)); font-variant-numeric: tabular-nums; }
+.nimble-hp-pad .hp-pad-qa:hover { border-style: solid; background: var(--ev-surface-2, var(--background-modifier-hover)); }
+.nimble-hp-pad .hp-pad-qa.is-active { border-style: solid; border-color: var(--ev-text, var(--text-normal)); background: var(--ev-surface-2, var(--background-modifier-hover)); }
+.ev-sys-nimble.nimble-hp-pad .hp-pad-qa-text { position: relative; top: 1px; font: italic 800 14px/normal var(--ev-font-name); }
+.ev-sys-dnd5e.nimble-hp-pad .hp-pad-qa { border-color: var(--x5-gold-soft); }
+.ev-sys-dnd5e.nimble-hp-pad .hp-pad-qa-text { font: 600 15px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; color: var(--ev-accent-text); }
+.nimble-hp-pad .hp-pad-choice { height: 28px; padding: 0 10px; border-radius: var(--ev-r-md, 6px); border: 1px solid var(--ev-line-strong, var(--background-modifier-border)); background: var(--ev-surface, var(--background-primary)); box-shadow: none; font: 500 13px/normal var(--ev-font-ui, var(--font-interface)); color: var(--ev-text, var(--text-normal)); }
+.nimble-hp-pad .hp-pad-choice.is-active { background: var(--ev-accent, var(--interactive-accent)); border-color: var(--ev-accent, var(--interactive-accent)); color: var(--ev-on-accent, var(--text-on-accent)); }
+.nimble-hp-pad .hp-pad-toggles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
 .nimble-hp-pad .hp-pad-toggles.is-off { visibility: hidden; }
-.nimble-hp-pad .hp-pad-toggles button { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; height: 1.8rem; padding: 0 0.2rem; font-size: 0.76rem; box-shadow: none; border: 1px solid var(--background-modifier-border); background: var(--background-primary); }
-.nimble-hp-pad .hp-pad-toggles button.is-active { background: var(--calc-color); border-color: var(--calc-color); color: #fff; }
-.nimble-hp-pad .hp-pad-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
-.nimble-hp-pad .hp-pad-keys button { height: 2.35rem; padding: 0; font-size: 1.1rem; font-weight: 600; font-variant-numeric: tabular-nums; box-shadow: none; background: var(--background-primary); border: 1px solid var(--background-modifier-border); }
-.nimble-hp-pad .hp-pad-keys button:hover { background: var(--background-modifier-hover); }
-.nimble-hp-pad .hp-pad-keys button.is-fn { font-size: 0.9rem; color: var(--text-muted); background: var(--background-secondary); }
-.nimble-hp-pad .hp-pad-keys .hp-pad-crit { font-weight: 700; letter-spacing: 0.02em; }
-.nimble-hp-pad .hp-pad-keys .hp-pad-crit.is-active { background: var(--calc-color); border-color: var(--calc-color); color: #fff; }
+.nimble-hp-pad .hp-pad-toggles button { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; height: 30px; padding: 0 4px; font: 500 12.5px/normal var(--ev-font-ui, var(--font-interface)); box-shadow: none; border-radius: var(--ev-r-md, 6px); border: 1px solid var(--ev-line, var(--background-modifier-border)); background: var(--ev-surface, var(--background-primary)); color: var(--ev-text, var(--text-normal)); }
+.nimble-hp-pad .hp-pad-toggles button.is-active { background: var(--calc-color); border-color: var(--calc-color); color: var(--ev-surface, #fff); }
+.nimble-hp-pad .hp-pad-keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.nimble-hp-pad .hp-pad-keys button { height: 44px; padding: 0; border: 0; border-radius: var(--ev-r-md, 6px); box-shadow: none; background: var(--ev-surface-2, var(--background-secondary)); color: var(--ev-text, var(--text-normal)); font: 500 20px/normal var(--ev-font-num, var(--font-interface)); font-variant-numeric: tabular-nums lining-nums; }
+.ev-sys-dnd5e.nimble-hp-pad .hp-pad-keys button { background: var(--ev-bg); box-shadow: inset 0 0 0 1px var(--ev-line), 0 1px 0 rgb(80 50 20 / 0.06); font: 500 22px/normal var(--ev-font-display); }
+.nimble-hp-pad .hp-pad-keys button:hover { background: color-mix(in srgb, var(--ev-text, #000) 8%, var(--ev-surface-2, var(--background-secondary))); }
+.nimble-hp-pad .hp-pad-keys button.is-fn { font: 500 14px/normal var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
+.nimble-hp-pad .hp-pad-keys .hp-pad-back { display: inline-flex; align-items: center; justify-content: center; }
+.nimble-hp-pad .hp-pad-keys .hp-pad-back svg { width: 20px; height: 20px; }
+.nimble-hp-pad .hp-pad-keys .hp-pad-crit.is-active { background: var(--calc-color); color: var(--ev-surface, #fff); }
 .nimble-hp-pad .hp-pad-keys .hp-pad-crit:disabled { opacity: 0.35; cursor: default; }
-.nimble-hp-pad .hp-pad-preview { min-height: 1.1rem; font-size: 0.76rem; color: var(--text-muted); text-align: center; font-variant-numeric: tabular-nums; }
-.nimble-hp-pad .hp-pad-apply { height: 2.4rem; font-weight: 700; background: var(--calc-color); border-color: var(--calc-color); color: #fff; }
-.nimble-hp-pad .hp-pad-apply:disabled { background: var(--background-modifier-hover); border-color: var(--background-modifier-border); color: var(--text-faint); cursor: default; }
-.nimble-hp-pad .hp-pad-preview.is-hint { color: var(--text-faint); }
+.nimble-hp-pad .hp-pad-go { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 8px; }
+.nimble-hp-pad .hp-pad-go button { height: 44px; border-radius: var(--ev-r-md, 6px); box-shadow: none; font: 600 14px/normal var(--ev-font-ui, var(--font-interface)); }
+.nimble-hp-pad .hp-pad-cancel { border: 1px solid var(--ev-line-strong, var(--background-modifier-border)); background: var(--ev-surface, var(--background-primary)); color: var(--ev-text, var(--text-normal)); }
+.nimble-hp-pad .hp-pad-apply { border: 1px solid var(--ev-accent, var(--interactive-accent)); background: var(--ev-accent, var(--interactive-accent)); color: var(--ev-on-accent, var(--text-on-accent)); }
+.nimble-hp-pad .hp-pad-apply:disabled { background: var(--ev-surface-2, var(--background-modifier-hover)); border-color: var(--ev-line, var(--background-modifier-border)); color: var(--ev-text-2, var(--text-faint)); cursor: default; }
 /* Phones: thumb-sized keys in the bottom sheet */
-.nimble-popover.is-sheet.nimble-hp-pad { padding: 0.5rem 0.9rem calc(0.9rem + env(safe-area-inset-bottom)); gap: 0.55rem; }
-.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-mode { height: 2.5rem; font-size: 0.9rem; }
-.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-screen { height: 3.6rem; }
-.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-display { font-size: 2.3rem; }
-.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-toggles button { height: 2.4rem; font-size: 0.88rem; }
-.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-keys { gap: 0.45rem; }
-.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-keys button { height: 3.1rem; font-size: 1.4rem; }
-.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-apply { height: 3rem; font-size: 1.05rem; }
+.nimble-popover.is-sheet.nimble-hp-pad { padding: 8px 14px calc(14px + env(safe-area-inset-bottom)); gap: 10px; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-mode { height: 38px; font-size: 14px; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-keys button { height: 50px; font-size: 22px; }
+.nimble-popover.is-sheet.nimble-hp-pad .hp-pad-go button { height: 48px; font-size: 15px; }
 @media (pointer: coarse) {
-	.nimble-hp-pad .hp-pad-keys button { height: 2.9rem; font-size: 1.25rem; }
-	.nimble-hp-pad .hp-pad-mode, .nimble-hp-pad .hp-pad-toggles button { height: 2.3rem; }
-	.nimble-hp-pad .hp-pad-apply { height: 2.8rem; }
-	.nimble-hp-pad .hp-pad-mode { font-size: 0.82rem; }
-	/* Icons only on touch: actions and wounds stay on one line with finger-sized pips */
-	.nimble-encounter-tracker .pips-label-text { display: none; }
-	.nimble-encounter-tracker .hero-row .pips { gap: 6px; }
-	.nimble-encounter-tracker .hero-row .pip { width: 20px; height: 20px; }
-	.nimble-encounter-tracker .pips-icon svg { width: 15px; height: 15px; }
+	.nimble-hp-pad .hp-pad-keys button { height: 48px; }
+	.nimble-hp-pad .hp-pad-mode, .nimble-hp-pad .hp-pad-toggles button, .nimble-hp-pad .hp-pad-qa { height: 36px; }
 }
 
 /* Add monster dialog */
@@ -1898,26 +1953,20 @@ body.is-phone .nimble-map-tray { width: auto; max-height: none; border-left: non
 	.nimble-statblock .statblock-action { padding: 0.45rem 0.8rem; font-size: 0.88rem; }
 	.nimble-inline-ref .nimble-inline-add-btn { min-width: 1.6em; }
 
-	/* Tracker */
-	.nimble-encounter-tracker .turn-toggle { width: 2.5rem; height: 2.5rem; }
-	.nimble-encounter-tracker .turn-toggle svg { width: 24px; height: 24px; }
-	.nimble-encounter-tracker .hp-display { height: 2.5rem; min-width: 4.8rem; font-size: 1rem; }
-	.nimble-encounter-tracker .creature-more { width: 2.5rem; height: 2.5rem; }
-	.nimble-encounter-tracker .pips { gap: 8px; }
-	.nimble-encounter-tracker .pip { width: 22px; height: 22px; border-width: 2px; }
-	.nimble-encounter-tracker .minion-pip { width: 20px; height: 20px; }
-	.nimble-encounter-tracker .group-attack { height: 2.2rem; padding: 0 0.75rem; font-size: 0.82rem; }
-	.nimble-encounter-tracker .phase-chip { padding: 0.25rem 0.65rem; font-size: 0.78rem; }
-	.nimble-encounter-tracker .condition-tag { padding-top: 0.25rem; padding-bottom: 0.25rem; font-size: 0.8rem; }
-	.nimble-encounter-tracker .remove-condition { opacity: 0.8; min-width: 1.8rem; min-height: 1.8rem; }
-	.nimble-encounter-tracker .add-condition-btn { height: 2rem; padding: 0 0.7rem; }
-	.nimble-encounter-tracker .add-condition-btn svg { width: 15px; height: 15px; }
-	.nimble-encounter-tracker .round-action, .nimble-encounter-tracker .tracker-end, .nimble-encounter-tracker .tracker-tools button { height: 2.6rem; font-size: 0.95rem; }
-	.nimble-encounter-tracker .tracker-save { height: 2.6rem; width: 2.8rem; }
-	.nimble-encounter-tracker .round-stepper { height: 2.6rem; }
-	.nimble-encounter-tracker .round-stepper .round-btn { width: 3rem; }
-	.nimble-encounter-tracker .phase-pill { height: 2.5rem; font-size: 0.88rem; }
-	.nimble-encounter-tracker .creature-label { padding: 0.35rem 0; }
+	/* Tracker: finger-sized marks, HP and chips */
+	.ev-tracker .ev-mark { width: 26px; height: 26px; }
+	.ev-tracker .ev-card-btn, .ev-tracker .ev-card-icon { height: 42px; }
+	.ev-tracker .ev-card-icon { width: 42px; }
+	.ev-tracker .ev-foot > button { height: 44px; }
+	.ev-tracker .ev-foot-back { width: 44px; }
+	.nimble-encounter-tracker .phase-pill { height: 44px; }
+	.nimble-encounter-tracker .condition-tag { height: 30px; }
+	.nimble-encounter-tracker .remove-condition { width: 26px; height: 26px; }
+	.nimble-encounter-tracker .wound-pip { width: 18px; height: 18px; }
+	.nimble-encounter-tracker .wound-pip.is-skull, .nimble-encounter-tracker .wound-pip.is-skull svg { width: 20px; height: 20px; }
+	.nimble-encounter-tracker .nimble-acts.is-lg > * { width: 26px; height: 34px; }
+	.nimble-encounter-tracker .nimble-minions.is-lg > * { width: 22px; height: 22px; }
+	.nimble-encounter-tracker .group-attack, .nimble-encounter-tracker .laststand-btn { height: 40px; }
 
 	/* Map */
 	.nimble-map-toolbar button { min-height: 2.3rem; }
@@ -1933,9 +1982,10 @@ body.is-phone .nimble-encounter-tracker input, body.is-phone .nimble-bestiary in
 
 /* Obsidian's tablet theme pads every button (.is-tablet button:not(.clickable-icon)),
    which outranks the compact controls above. Put their padding back. */
-body.is-tablet :is(.turn-toggle, .pip, .creature-label, .stepper-btn, .nimble-inline-add-btn, .link-btn, .hp-pad-keys button) { padding: 0; }
-body.is-tablet :is(.round-btn, .phase-pill, .group-attack, .laststand-btn, .hp-btn, .phase-chip, .add-condition-btn, .hp-display, .nimble-map-btn, .statblock-action, .bestiary-back, .nimble-difficulty.is-button) { padding-left: 0.6rem; padding-right: 0.6rem; }
-body.is-tablet .nimble-encounter-tracker .remove-condition { padding: 0 0.15rem; }
+body.is-tablet :is(.turn-toggle, .pip, .creature-label, .stepper-btn, .nimble-inline-add-btn, .link-btn, .hp-pad-keys button, .ev-mark, .ev-card-icon, .ev-foot-back, .wound-pip, .minion-pip, .action-pip, .hp-display, .hp-pad-close) { padding: 0; }
+body.is-tablet :is(.round-btn, .phase-pill, .group-attack, .laststand-btn, .hp-btn, .phase-chip, .nimble-map-btn, .statblock-action, .bestiary-back, .nimble-difficulty.is-button) { padding-left: 0.6rem; padding-right: 0.6rem; }
+body.is-tablet .nimble-encounter-tracker .remove-condition { padding: 0; }
+body.is-tablet :is(.ev-card-btn, .ev-foot-primary, .ev-foot-second, .hp-pad-qa, .hp-pad-choice, .hp-pad-mode, .hp-pad-cancel, .hp-pad-apply) { padding-left: 10px; padding-right: 10px; }
 body.is-tablet .nimble-segmented button { padding: 0.4rem 0.7rem; }
 body.is-tablet .condition-picker .condition-option { padding: 0.25rem 0.5rem; }
 body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: none; }
@@ -4640,13 +4690,13 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* The standard pill, core/pill.ts: [icon] [text] on one centre line, one gap, the icon at the text's size.
@@ -5758,52 +5808,271 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 :is(.dnd5e-statblock.hover, .dnd5e-quick-look .dnd5e-statblock) .dnd5e-ab24 > span { padding: 2px 3px; }
 :is(.dnd5e-statblock.hover, .dnd5e-quick-look .dnd5e-statblock) .dnd5e-ab24 > .dnd5e-ab24-name { font-size: 14px; }
 
-/* 5e combat tracker (src/systems/dnd5e/tracker-view.ts)
-   One clean row per combatant on the game's paper: the initiative badge and the name in the book's type,
-   then AC in its shield, the HP bar and the HP button below; conditions on a line of their own underneath,
-   only when there are any. Wide panes put the vitals beside the name. The current turn is tinted, edged and
-   badged in the game's colour; heroes carry a blue edge, monsters the game's red; drag a row (the grip, for
-   a finger) to change the order; defeated monsters fold away at the bottom. */
-.dnd5e-tracker { padding: 0.7rem 0.75rem 1rem; container-type: inline-size; }
-.dnd5e-tracker-head { display: flex; align-items: flex-start; gap: 0.25rem; padding-bottom: 0.55rem; position: relative; }
-.dnd5e-tracker-head::after {
-	content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 1px;
-	background: linear-gradient(90deg, var(--ev-accent), color-mix(in srgb, var(--ev-accent) 35%, transparent) 70%, transparent);
-}
-.dnd5e-tracker-heading { flex: 1 1 auto; min-width: 0; }
-.dnd5e-tracker-title {
-	font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight);
-	font-size: 1.3rem; line-height: 1.2; color: var(--ev-accent-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.dnd5e-tracker-status { display: flex; align-items: baseline; flex-wrap: nowrap; min-width: 0; gap: 0 0.45rem; margin-top: 0.1rem; font-size: 0.82rem; color: var(--text-muted); }
-.dnd5e-tracker-round { flex: 0 0 auto; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.72rem; color: var(--text-normal); }
-.dnd5e-tracker-turn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dnd5e-tracker-round + .dnd5e-tracker-turn::before { content: "·"; margin-right: 0.45rem; color: var(--text-faint); }
-.dnd5e-tracker-head .clickable-icon { flex: 0 0 auto; }
+/* 5e combat tracker (src/systems/dnd5e/tracker-view.ts): the book at the table, as the design study draws it.
+   The shared card and queue (ENCOUNTER TRACKER) in 5e's dress: parchment with a faint grain, the card framed
+   like a page with gold-leaf corners, EB Garamond small caps for names and the numbers that matter, an oxblood
+   rule, AC in a gold-rimmed shield, initiative in a faceted gem. No edge stripes: the card is the turn. */
+.dnd5e-tracker.ev-tracker { background-color: var(--ev-bg); background-image: var(--x5-paper); }
+.dnd5e-tracker .ev-tracker-head .encounter-title { font: 600 19px/22px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; }
+.dnd5e-tracker .ev-tracker-head { padding-top: 14px; padding-bottom: 10px; }
 
-/* The controls on one line: the big button (Start combat, Next turn) takes half, the side button
-   (Roll initiative, Back) a quarter, and the icons (End, Add monster, Add party) share the rest. */
-.dnd5e-tracker-combat { display: flex; gap: 0.35rem; margin: 0.7rem 0 0.75rem; }
-.dnd5e-tracker-combat button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; height: 2.25rem; min-width: 0; padding: 0 0.6rem; white-space: nowrap; overflow: hidden; border-radius: var(--radius-m); }
-.dnd5e-tracker-primary { flex: 2 1 0; font-weight: 700; font-size: 0.95rem; }
-.dnd5e-tracker-side { flex: 1 1 0; }
-.dnd5e-tracker-icon { flex: 0 0 2.3rem; padding: 0; }
-.dnd5e-tracker-combat .ev-pill-text { overflow: hidden; text-overflow: ellipsis; }
-/* Narrow: the side button keeps only its icon. */
-@container (max-width: 320px) {
-	.dnd5e-tracker-side .ev-pill-text { display: none; }
-	.dnd5e-tracker-side { flex: 0 0 2.3rem; padding: 0; }
+/* The ticker: small caps, a gold hairline, the edition as a tag */
+.dnd5e-tracker .ev-ticker { min-height: 32px; padding: 4px 10px 4px 12px; background: linear-gradient(180deg, color-mix(in srgb, var(--x5-gold) 12%, var(--ev-surface)), color-mix(in srgb, var(--x5-gold) 6%, var(--ev-surface))); box-shadow: inset 0 0 0 1px var(--x5-gold-soft); font: 500 13px/20px var(--ev-font-ui); }
+.dnd5e-tracker .ev-ticker-round { display: inline; font: 600 15px/20px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.dnd5e-tracker .ev-ticker-round b { font: 600 18px/20px var(--ev-font-display); font-variant: lining-nums tabular-nums; letter-spacing: 0; color: var(--ev-text); }
+.dnd5e-tracker .ev-ticker-round + .ev-ticker-turn::before { width: 5px; height: 5px; border-radius: 0; transform: rotate(45deg); background: var(--x5-gold); opacity: 1; margin-right: 9px; vertical-align: 0.2em; }
+.dnd5e-tracker .ev-ticker-note { font: 600 10.5px/1 var(--ev-font-ui); letter-spacing: 0.04em; color: var(--ev-text-2); padding: 3px 5px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--x5-gold-soft); }
+
+/* The card: a page from the book, gold-leaf corners and an inner rule */
+.dnd5e-tracker .ev-card.dnd5e-focus { margin: 0 12px; padding: 16px 16px 14px; background: var(--ev-surface) var(--x5-glow); border: 1px solid var(--x5-gold-soft); border-radius: var(--ev-r-lg); box-shadow: var(--x5-card-shadow); }
+.dnd5e-tracker .dnd5e-focus::after { content: ""; position: absolute; inset: 3px; border: 1px solid color-mix(in srgb, var(--x5-gold-soft) 70%, transparent); border-radius: 5px; pointer-events: none; }
+.dnd5e-tracker .dnd5e-focus::before {
+	content: ""; position: absolute; inset: 4px; pointer-events: none; z-index: 1; background: var(--x5-gold);
+	mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18'><path d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/><path d='M6.6 3.6l3 3-3 3-3-3z'/></svg>"),
+		url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18'><g transform='matrix(-1 0 0 1 18 0)'><path d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/><path d='M6.6 3.6l3 3-3 3-3-3z'/></g></svg>"),
+		url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18'><g transform='matrix(1 0 0 -1 0 18)'><path d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/><path d='M6.6 3.6l3 3-3 3-3-3z'/></g></svg>"),
+		url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18'><g transform='matrix(-1 0 0 -1 18 18)'><path d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/><path d='M6.6 3.6l3 3-3 3-3-3z'/></g></svg>");
+	mask-position: left top, right top, left bottom, right bottom;
+	mask-repeat: no-repeat; mask-size: 18px 18px;
 }
-/* Narrower still, with Add the party beside it: the big button drops its icon so "Next turn" fits. */
-@container (max-width: 360px) {
-	.dnd5e-tracker-combat .dnd5e-tracker-primary { padding: 0 0.4rem; }
-	.dnd5e-tracker-combat .dnd5e-tracker-primary:not(#nimble-pill) > .ev-pill-icon { display: none; }
+.dnd5e-tracker .dnd5e-focus > * { position: relative; z-index: 2; }
+.dnd5e-tracker .dnd5e-focus.is-dying { border-color: var(--ev-now-line); }
+.dnd5e-tracker .dnd5e-focus-top { display: flex; align-items: flex-start; gap: 10px; }
+.dnd5e-tracker .dnd5e-focus-name { flex: 1; min-width: 0; }
+.dnd5e-tracker .dnd5e-focus-name h2 { margin: 0; font: 600 26px/28px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--ev-accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.dnd5e-tracker .dnd5e-focus-name h2:hover { text-decoration: underline; text-underline-offset: 3px; }
+.dnd5e-tracker .dnd5e-focus-type { margin: 1px 0 0; font: italic 400 15px/19px var(--ev-font-display); color: var(--ev-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dnd5e-tracker .dnd5e-focus .dnd5e-combatant-more { flex: none; width: 28px; height: 28px; margin: -2px -6px 0 0; padding: 0; color: var(--ev-text-2); }
+.dnd5e-tracker .dnd5e-focus .dnd5e-combatant-more svg { width: 18px; height: 18px; }
+.dnd5e-tracker .dnd5e-rule { display: flex; align-items: center; gap: 2px; width: 100%; height: 9px; margin: 10px 0 12px; color: var(--ev-rule); }
+.dnd5e-tracker .dnd5e-rule svg { flex: none; display: block; }
+.dnd5e-tracker .dnd5e-rule svg:last-child { flex: 1; min-width: 0; height: 5px; }
+.dnd5e-tracker .dnd5e-rule-hole { fill: var(--ev-surface); }
+
+/* Initiative: a faceted gem with a gold rim (the card); a plain number in the book's figures (rows) */
+.dnd5e-tracker .dnd5e-gem { position: relative; flex: none; display: grid; place-items: center; width: 50px; height: 32px; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--ev-text); }
+.dnd5e-tracker .dnd5e-gem svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.dnd5e-tracker .dnd5e-gem .rim { fill: var(--ev-surface); stroke: var(--x5-gold); stroke-width: 1.3; }
+.dnd5e-tracker .dnd5e-gem .in { fill: color-mix(in srgb, var(--x5-gold) 7%, var(--ev-surface)); stroke: var(--x5-gold-soft); stroke-width: 0.9; }
+.dnd5e-tracker .dnd5e-gem .fac { fill: none; stroke: var(--x5-gold-soft); stroke-width: 0.6; opacity: 0.7; }
+.dnd5e-tracker .dnd5e-gem b { position: relative; font: 600 17px/1 var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text); }
+.dnd5e-tracker button.dnd5e-gem:hover .rim { stroke: var(--ev-accent); }
+
+/* AC: a gold-rimmed heater shield; the big one has a tinted chief with "AC" in it */
+.dnd5e-tracker .dnd5e-shield { position: relative; flex: none; display: inline-grid; place-items: center; color: var(--ev-text); }
+.dnd5e-tracker .dnd5e-shield svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.dnd5e-tracker .dnd5e-shield .rim { fill: var(--x5-gold); }
+.dnd5e-tracker .dnd5e-shield .face { fill: var(--ev-surface); }
+.dnd5e-tracker .dnd5e-shield .band { fill: color-mix(in srgb, var(--ev-accent) 9%, var(--ev-surface)); }
+.dnd5e-tracker .dnd5e-shield .edge { fill: none; stroke: var(--x5-gold-soft); stroke-width: 0.8; }
+.dnd5e-tracker .dnd5e-shield b { position: relative; font: 600 13.5px/1 var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; }
+.dnd5e-tracker .dnd5e-shield.is-lg b { font-size: 21px; margin-top: 9px; }
+.dnd5e-tracker .dnd5e-shield small { position: absolute; top: 11%; left: 0; right: 0; height: 9%; display: flex; align-items: center; justify-content: center; padding-left: 0.14em; font: 700 7px/normal var(--ev-font-ui); letter-spacing: 0.14em; color: var(--ev-accent-text); }
+
+/* HP: the number in book figures, Bloodied (or temp HP) as a ribbon, a framed bar */
+.dnd5e-tracker .dnd5e-vitals { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; }
+.dnd5e-tracker .dnd5e-focus-hp { min-width: 0; }
+.dnd5e-tracker .dnd5e-focus-hp-num { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; min-width: 0; }
+.dnd5e-tracker .dnd5e-focus-hp-num button.dnd5e-focus-hp-btn { display: inline-flex; align-items: baseline; gap: 6px; height: auto; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--ev-text); }
+.dnd5e-tracker .dnd5e-focus-hp-num button.dnd5e-focus-hp-btn b { font: 600 36px/30px var(--ev-font-display); letter-spacing: -0.01em; font-variant-numeric: lining-nums tabular-nums; }
+.dnd5e-tracker .dnd5e-focus-hp-num button.dnd5e-focus-hp-btn span { font: 500 16px/1 var(--ev-font-display); color: var(--ev-text-2); font-variant-numeric: lining-nums tabular-nums; }
+.dnd5e-tracker .dnd5e-focus-hp-num button.dnd5e-focus-hp-btn:hover b { text-decoration: underline; text-underline-offset: 4px; }
+.dnd5e-tracker .dnd5e-ribbon { position: relative; margin-left: auto; margin-right: 6px; padding: 4px 7px 4px 8px; border-radius: 2px 0 0 2px; background: var(--ev-track-low); color: var(--ev-on-accent); font: 600 12px/normal var(--ev-font-ui); font-style: normal; letter-spacing: 0.02em; white-space: nowrap; }
+.dnd5e-tracker .dnd5e-ribbon::after { content: ""; position: absolute; right: -6px; top: 0; bottom: 0; width: 6px; background: linear-gradient(to bottom right, var(--ev-track-low) 50%, transparent 50%) top / 100% 50% no-repeat, linear-gradient(to top right, var(--ev-track-low) 50%, transparent 50%) bottom / 100% 50% no-repeat; }
+.dnd5e-tracker .dnd5e-ribbon.is-temp { background: var(--ev-temp); }
+.dnd5e-tracker .dnd5e-ribbon.is-temp::after { background: linear-gradient(to bottom right, var(--ev-temp) 50%, transparent 50%) top / 100% 50% no-repeat, linear-gradient(to top right, var(--ev-temp) 50%, transparent 50%) bottom / 100% 50% no-repeat; }
+.dnd5e-tracker .ev-bar { position: relative; display: flex; height: var(--ev-bar-h, 6px); border-radius: 99px; background: var(--ev-track-empty); overflow: hidden; }
+.dnd5e-tracker .ev-bar > i { display: block; height: 100%; background: var(--ev-track); transition: width 0.3s var(--ev-ease); }
+.dnd5e-tracker .ev-bar.is-low > i:first-child { background: var(--ev-track-low); }
+.dnd5e-tracker .ev-bar > i.dnd5e-hp-temp { background: var(--ev-temp); opacity: 1; }
+.dnd5e-tracker .dnd5e-focus-hp .ev-bar { --ev-bar-h: 9px; padding: 1.5px; box-shadow: inset 0 0 0 1px var(--x5-gold-soft), inset 0 1px 2px rgb(0 0 0 / 0.15); }
+.dnd5e-tracker .dnd5e-focus-hp .ev-bar > i { border-radius: 99px; background-image: linear-gradient(rgb(255 255 255 / 0.22), transparent 60%); }
+
+/* A group's turn: the members, one at a time */
+.dnd5e-tracker .dnd5e-members { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; margin: 0 0 12px; padding: 3px; border-radius: var(--ev-r-md); background: var(--ev-surface-2); }
+.dnd5e-tracker .dnd5e-member { display: grid; gap: 1px; justify-items: center; height: auto; min-width: 0; padding: 5px 4px; border: 0; border-radius: calc(var(--ev-r-md) - 2px); background: transparent; box-shadow: none; font: 500 12.5px/16px var(--ev-font-ui); color: var(--ev-text-2); white-space: nowrap; }
+.dnd5e-tracker .dnd5e-member b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font: 600 13.5px/18px var(--ev-font-display); font-variant: small-caps; color: var(--ev-text); }
+.dnd5e-tracker .dnd5e-member span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.dnd5e-tracker .dnd5e-member.is-on { background: var(--ev-surface); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 0 0 1px var(--ev-now-line); }
+.dnd5e-tracker .dnd5e-member.is-on b { color: var(--ev-accent-text); }
+.dnd5e-tracker .dnd5e-member:disabled { opacity: 1; cursor: default; }
+.dnd5e-tracker .dnd5e-member.is-done { opacity: 0.6; }
+.dnd5e-tracker .dnd5e-member.is-out { opacity: 0.45; text-decoration: line-through; }
+
+/* Death saves */
+.dnd5e-tracker .dnd5e-dying { margin-top: 14px; padding: 12px; border-radius: var(--ev-r-md); background: var(--ev-danger-bg); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ev-danger-text) 25%, transparent); }
+.dnd5e-tracker .dnd5e-dying-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font: 600 15px/1 var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.03em; color: var(--ev-danger-text); }
+.dnd5e-tracker .dnd5e-ds { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 8px 14px; align-items: center; font-size: 13px; color: var(--ev-text-2); }
+.dnd5e-tracker button.dnd5e-death-roll { height: 30px; padding: 0 10px; font-size: 13px; --ev-pill-icon: 15px; }
+.dnd5e-tracker .dnd5e-focus-state { margin-top: 12px; }
+
+/* Legendary actions and resistance: diamonds on one quiet box */
+.dnd5e-tracker .dnd5e-res { display: grid; gap: 8px; margin-top: 14px; padding: 9px 10px; border-radius: var(--ev-r-md); background: color-mix(in srgb, var(--ev-surface-2) 70%, transparent); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.dnd5e-tracker .dnd5e-res-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 14px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; color: var(--ev-text); }
+.dnd5e-tracker .dnd5e-res-label { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.dnd5e-tracker .dnd5e-res-icon { display: inline-flex; color: var(--x5-gold); transform: translateY(2px); }
+.dnd5e-tracker .dnd5e-res-icon svg { width: 14px; height: 14px; }
+.dnd5e-tracker .ev-pips { display: inline-flex; align-items: center; gap: 5px; }
+.dnd5e-tracker .ev-pip { width: 11px; height: 11px; min-height: 0; padding: 0; border: 0; border-radius: 1.5px; transform: rotate(45deg) scale(0.86); background: transparent; box-shadow: inset 0 0 0 1.5px var(--x5-gold-soft); }
+.dnd5e-tracker .ev-pip.is-on { background: var(--ev-accent); box-shadow: inset 0 0 0 1.5px var(--ev-accent); }
+.dnd5e-tracker .ev-pips.is-success .ev-pip { width: 14px; height: 14px; }
+.dnd5e-tracker .ev-pips.is-failure .ev-pip { width: 14px; height: 14px; }
+.dnd5e-tracker .ev-pips.is-success .ev-pip.is-on { background: var(--ev-ok); box-shadow: inset 0 0 0 1.5px var(--ev-ok); }
+.dnd5e-tracker .ev-pips.is-failure .ev-pip.is-on { background: var(--ev-danger-text); box-shadow: inset 0 0 0 1.5px var(--ev-danger-text); }
+
+/* Conditions on the card: chips centred on their capitals; rounds after a hairline */
+.dnd5e-tracker .dnd5e-focus-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+.dnd5e-tracker .dnd5e-condition { gap: 5px; height: 24px; padding: 0 3px 0 8px; border: 0; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ev-line-strong) 70%, transparent); font: 500 12.5px/normal var(--ev-font-ui); white-space: nowrap; cursor: pointer; }
+.dnd5e-tracker .dnd5e-condition.is-acts { background: var(--ev-chip-acts-bg); color: var(--ev-chip-acts-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ev-accent) 30%, transparent); }
+.dnd5e-tracker .dnd5e-condition.is-concentration { cursor: default; }
+.dnd5e-tracker .dnd5e-condition :is(.dnd5e-condition-mark, .dnd5e-condition-icon, .dnd5e-condition-rounds-icon) svg { width: 13px; height: 13px; }
+.dnd5e-tracker .dnd5e-condition-rounds { display: inline-flex; align-items: center; gap: 3px; height: 12px; padding: 0 0 0 5px; border-radius: 0; background: none; border-left: 1px solid var(--ev-line-strong); color: var(--ev-text-2); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.dnd5e-tracker .dnd5e-condition-rounds-icon svg { width: 11px; height: 11px; }
+.dnd5e-tracker .dnd5e-condition-x { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 2px; opacity: 0.7; }
+.dnd5e-tracker .dnd5e-condition-x svg { width: 12px; height: 12px; }
+.dnd5e-tracker .dnd5e-condition-x:hover { opacity: 1; color: var(--ev-danger-text); }
+
+/* The card's buttons, in the book's dress */
+.dnd5e-tracker :is(.ev-card-btn, .ev-card-icon, .ev-foot-back, .ev-foot-second) { background: linear-gradient(var(--ev-surface), color-mix(in srgb, var(--ev-surface-2) 60%, var(--ev-surface))); border-color: color-mix(in srgb, var(--x5-gold-soft) 70%, var(--ev-line-strong)); box-shadow: 0 1px 0 rgb(80 50 20 / 0.06); }
+.dnd5e-tracker .ev-card-btn { font-size: 13.5px; }
+.dnd5e-tracker .ev-card-damage .ev-pill-icon { color: var(--ev-accent-text); }
+.dnd5e-tracker .ev-foot-primary { background: linear-gradient(color-mix(in srgb, var(--ev-accent) 88%, white), var(--ev-accent) 55%); border-color: var(--x5-ink-deep); box-shadow: inset 0 0 0 1px rgb(255 220 170 / 0.18), 0 1px 2px rgb(60 10 0 / 0.3); letter-spacing: 0.01em; }
+.dnd5e-tracker .ev-foot { background: color-mix(in srgb, var(--ev-bg) 92%, transparent); border-top-color: var(--x5-gold-soft); }
+
+/* A legendary action, after another creature's turn: a quiet strip in gold */
+.dnd5e-tracker .ev-moment { background: var(--ev-surface) var(--x5-glow); box-shadow: inset 0 0 0 1px var(--x5-gold), inset 0 0 0 3px var(--x5-gold-soft); margin: 10px 12px 0; }
+.dnd5e-tracker .ev-moment-icon { color: var(--x5-gold); }
+.dnd5e-tracker .ev-moment-title { font: 600 15px/19px var(--ev-font-display); }
+.dnd5e-tracker .ev-moment-body small { display: block; font: 400 12.5px/17px var(--ev-font-ui); color: var(--ev-text-2); }
+.dnd5e-tracker .ev-moment-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.dnd5e-tracker .ev-moment-btn { height: 28px; padding: 0 10px; font: 600 12.5px/normal var(--ev-font-ui); border-radius: var(--ev-r-md); }
+
+/* Sections: small caps on a gold hairline, a gold diamond first */
+.dnd5e-tracker .ev-sec { align-items: center; font: 600 14px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.dnd5e-tracker .ev-sec > .ev-sec-title { display: inline-flex; align-items: center; gap: 8px; flex: 1; }
+.dnd5e-tracker .ev-sec > .ev-sec-title::before { content: ""; flex: none; width: 5px; height: 5px; margin: 0 1px 1px; transform: rotate(45deg); background: var(--x5-gold); }
+.dnd5e-tracker .ev-sec > .ev-sec-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--x5-gold-soft) 60%, transparent); }
+.dnd5e-tracker .ev-sec small { font: 500 12px/1 var(--ev-font-ui); font-variant: normal; letter-spacing: 0; }
+.dnd5e-tracker .ev-sec.is-acted { color: var(--ev-text-2); }
+.dnd5e-tracker .ev-mark { box-shadow: inset 0 0 0 1.5px var(--x5-gold-soft); }
+.dnd5e-tracker .ev-mark.is-next { box-shadow: inset 0 0 0 2px var(--ev-accent), 0 0 0 3px color-mix(in srgb, var(--ev-accent) 14%, transparent); }
+.dnd5e-tracker .ev-mark.is-acted { background: color-mix(in srgb, var(--ev-text-2) 80%, transparent); box-shadow: none; }
+.dnd5e-tracker .ev-mark.is-out { box-shadow: none; }
+
+/* The queue: rows on the page, not in boxes; the next one lightly framed */
+.dnd5e-tracker .ev-list { margin: 0 8px; background: transparent; box-shadow: none; overflow: visible; }
+.dnd5e-tracker .ev-list.is-acted-list, .dnd5e-tracker .ev-list.is-defeated { background: transparent; }
+.dnd5e-tracker .dnd5e-row { display: grid; grid-template-columns: 20px 26px minmax(0, 1fr) 26px 60px; gap: 0 8px; align-items: center; min-height: var(--ev-row); padding: 5px 8px 5px 6px; border-radius: var(--ev-r-md); }
+.dnd5e-tracker .dnd5e-row + .dnd5e-row::before { content: ""; position: absolute; left: 64px; right: 8px; top: 0; height: 1px; background: linear-gradient(90deg, var(--ev-line), var(--ev-line) 80%, transparent); }
+.dnd5e-tracker .dnd5e-row:hover { background: color-mix(in srgb, var(--ev-surface) 80%, transparent); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.dnd5e-tracker .dnd5e-row:hover::before, .dnd5e-tracker .dnd5e-row:hover + .dnd5e-row::before { opacity: 0; }
+.dnd5e-tracker .dnd5e-row.is-next { background: color-mix(in srgb, var(--ev-surface) 70%, transparent); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.dnd5e-tracker .dnd5e-row.is-next::before, .dnd5e-tracker .dnd5e-row.is-next + .dnd5e-row::before { display: none; }
+.dnd5e-tracker .dnd5e-row.is-acted { min-height: 40px; background: transparent; }
+.dnd5e-tracker .dnd5e-row.is-acted .dnd5e-combatant-name { font-weight: 500; color: var(--ev-text-2); }
+.dnd5e-tracker .dnd5e-row.is-acted .dnd5e-shield { opacity: 0.6; }
+.dnd5e-tracker .dnd5e-row.is-acted .dnd5e-init { opacity: 0.7; }
+.dnd5e-tracker .dnd5e-row.is-down { opacity: 0.8; }
+.dnd5e-tracker .dnd5e-row.is-defeated { min-height: 36px; opacity: 0.55; grid-template-columns: 20px 26px minmax(0, 1fr) 0 60px; }
+.dnd5e-tracker .dnd5e-row.is-defeated .dnd5e-combatant-name { text-decoration: line-through; }
+.dnd5e-tracker button.dnd5e-init { width: 26px; height: 26px; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; font: 600 16px/1 var(--ev-font-display); color: var(--ev-text-2); text-align: right; justify-content: flex-end; font-variant-numeric: lining-nums tabular-nums; }
+.dnd5e-tracker button.dnd5e-init:hover { color: var(--ev-accent-text); }
+.dnd5e-tracker button.dnd5e-init.is-unset { color: color-mix(in srgb, var(--ev-text-2) 70%, transparent); }
+.dnd5e-tracker .dnd5e-row-name { min-width: 0; }
+.dnd5e-tracker .dnd5e-combatant-head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.dnd5e-tracker .dnd5e-row .dnd5e-combatant-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 14.5px/19px var(--ev-font-ui); color: var(--ev-text); }
+.dnd5e-tracker .dnd5e-row.is-next .dnd5e-combatant-name { color: var(--ev-accent-text); }
+.dnd5e-tracker .dnd5e-row-class { flex: none; font: italic 400 13.5px/1 var(--ev-font-display); color: var(--ev-text-2); }
+.dnd5e-tracker .dnd5e-row-sub { display: flex; gap: 8px; align-items: center; min-width: 0; margin-top: 2px; overflow: hidden; white-space: nowrap; font-size: 12.5px; line-height: 16px; color: var(--ev-text-2); }
+.dnd5e-tracker .dnd5e-row-sub > * { flex: none; }
+.dnd5e-tracker .dnd5e-row-sub > :last-child { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dnd5e-tracker .dnd5e-row-sub .is-acts { color: var(--ev-accent-text); }
+.dnd5e-tracker .dnd5e-row-sub .is-bad { color: var(--ev-danger-text); font-weight: 600; }
+.dnd5e-tracker .dnd5e-row-cond-icon { display: inline-block; margin-right: 3px; vertical-align: -1px; }
+.dnd5e-tracker .dnd5e-row-cond-icon svg { width: 12px; height: 12px; }
+.dnd5e-tracker .dnd5e-row button.dnd5e-hp-text { justify-self: end; display: inline-flex; align-items: baseline; gap: 0; min-width: 0; height: auto; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--ev-text); font: 600 15px/1 var(--ev-font-ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dnd5e-tracker .dnd5e-row button.dnd5e-hp-text small { color: var(--ev-text-2); font-size: 12px; font-weight: 400; }
+.dnd5e-tracker .dnd5e-row button.dnd5e-hp-text:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.dnd5e-tracker .dnd5e-row.hp-bloodied button.dnd5e-hp-text b, .dnd5e-tracker .dnd5e-row.hp-critical button.dnd5e-hp-text b { color: var(--ev-track-low); }
+.dnd5e-tracker .dnd5e-row.hp-down button.dnd5e-hp-text b { color: var(--ev-danger-text); }
+.dnd5e-tracker .dnd5e-ac-none { width: 26px; }
+.dnd5e-tracker .ev-list-empty.dnd5e-round-next { display: flex; align-items: center; gap: 10px; padding: 10px 8px 6px 40px; font: 600 13px/1 var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-text-2); }
+.dnd5e-tracker .ev-list-empty.dnd5e-round-next::after { content: ""; flex: 1; height: 1px; background: var(--x5-gold-soft); }
+
+/* Drag to change the order: the grip on the left (a finger drags from it; a mouse drags the row) */
+.dnd5e-tracker .dnd5e-grip { position: absolute; left: -9px; top: 0; bottom: 0; width: 12px; display: flex; align-items: center; justify-content: center; color: var(--ev-text-2); opacity: 0; transition: opacity 0.15s ease; }
+.dnd5e-tracker .dnd5e-grip svg { width: 13px; height: 13px; }
+.dnd5e-tracker .dnd5e-row:is(:hover, :focus-within) > .dnd5e-grip { opacity: 0.7; }
+.dnd5e-tracker .ev-sortable > .dnd5e-row:not(.ev-sort-lifted) { cursor: grab; }
+.dnd5e-tracker .ev-sortable > .dnd5e-row.ev-sort-lifted { background: var(--ev-surface); box-shadow: 0 14px 28px -10px rgb(0 0 0 / 0.35), 0 0 0 1px var(--ev-line-strong); }
+body.ev-is-sorting .dnd5e-tracker .dnd5e-row:hover { background: transparent; box-shadow: none; }
+
+/* Before the fight: the party types their rolls, the monsters roll (one roll for identical ones) */
+.dnd5e-tracker .dnd5e-setup-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px 6px; font: 600 14px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.dnd5e-tracker .dnd5e-setup-h-note { font: 500 12px/1 var(--ev-font-ui); font-variant: normal; letter-spacing: 0; color: var(--ev-text-2); }
+.dnd5e-tracker .dnd5e-roll-all { height: 28px; padding: 0 8px; border: 0; background: transparent; box-shadow: none; color: var(--ev-text-2); font: 500 13px/normal var(--ev-font-ui); font-variant: normal; letter-spacing: 0; --ev-pill-icon: 15px; }
+.dnd5e-tracker .dnd5e-roll-all:hover { color: var(--ev-text); }
+.dnd5e-tracker .ev-list.dnd5e-setup-list { margin: 2px 12px 6px; padding: 2px 10px; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.dnd5e-tracker .dnd5e-setup-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 52px; align-items: center; gap: 6px 8px; min-height: 50px; padding: 4px 2px; border-top: 1px solid var(--ev-line); }
+.dnd5e-tracker .dnd5e-setup-row:first-child { border-top: 0; }
+.dnd5e-tracker .dnd5e-setup-name { min-width: 0; display: grid; }
+.dnd5e-tracker .dnd5e-setup-row .dnd5e-combatant-name { font: 600 14.5px/19px var(--ev-font-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.dnd5e-tracker .dnd5e-setup-meta { font: italic 400 13.5px/18px var(--ev-font-display); color: var(--ev-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dnd5e-tracker .dnd5e-setup-bonus { font: 500 12.5px/1 var(--ev-font-ui); color: var(--ev-text-2); font-variant-numeric: tabular-nums; }
+.dnd5e-tracker .dnd5e-setup-row button.dnd5e-init { width: 52px; height: 36px; border-radius: var(--ev-r-md); border: 1px solid var(--x5-gold-soft); background: var(--ev-bg); color: var(--ev-text); font: 600 19px/1 var(--ev-font-display); justify-content: center; text-align: center; }
+.dnd5e-tracker .dnd5e-setup-row button.dnd5e-init.is-unset { border-style: dashed; border-color: var(--ev-line-strong); background: transparent; color: var(--ev-text-2); font-weight: 400; }
+.dnd5e-tracker .dnd5e-setup-note { margin: 12px 18px 0; font-size: 12.5px; color: var(--ev-text-2); }
+
+/* Folds: Defeated and the log */
+.dnd5e-tracker .ev-fold > summary { list-style: none; font: 600 13px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; }
+.dnd5e-tracker .ev-fold > summary::-webkit-details-marker { display: none; }
+.dnd5e-tracker .ev-fold > summary::before { content: "›"; display: inline-block; width: 0.6rem; transition: transform 0.15s ease; }
+.dnd5e-tracker .ev-fold[open] > summary::before { transform: rotate(90deg); }
+.dnd5e-tracker .ev-list.is-defeated { margin: 6px 0 0; }
+.dnd5e-tracker .dnd5e-tracker-log-lines { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; font-size: 12.5px; color: var(--ev-text-2); }
+.dnd5e-tracker .dnd5e-tracker-log-line { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 6px; }
+.dnd5e-tracker .dnd5e-tracker-log-round { color: var(--ev-text-2); opacity: 0.8; font-variant-numeric: tabular-nums; }
+.dnd5e-tracker .dnd5e-death-stable, .dnd5e-tracker .dnd5e-death-dead { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 3px; font: 700 10.5px/normal var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; }
+.dnd5e-tracker .dnd5e-death-stable { color: var(--ev-ok); background: color-mix(in srgb, var(--ev-ok) 14%, transparent); }
+.dnd5e-tracker .dnd5e-death-dead { color: var(--ev-danger-text); background: var(--ev-danger-bg); }
+
+/* Nobody yet: an invitation, not a blank panel. */
+.dnd5e-tracker-empty {
+	display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+	margin: 14px 12px 0; padding: 22px 16px 18px; border: 1px dashed var(--x5-gold-soft); border-radius: var(--ev-r-lg); background: var(--ev-surface);
 }
-body.is-tablet .dnd5e-tracker-combat button { padding: 0 0.6rem; }
-body.is-tablet .dnd5e-tracker-combat .dnd5e-tracker-icon { padding: 0; }
-@media (pointer: coarse) { .dnd5e-tracker-combat button { height: 2.6rem; } .dnd5e-tracker-icon { flex-basis: 2.7rem; } }
+.dnd5e-tracker-empty-icon { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: 4px; border-radius: 50%; background: var(--ev-now); color: var(--ev-accent-text); border: 1px solid var(--x5-gold-soft); }
+.dnd5e-tracker-empty-icon svg { width: 22px; height: 22px; }
+.dnd5e-tracker-empty-title { font: 600 18px/22px var(--ev-font-display); font-variant: small-caps; }
+.dnd5e-tracker-empty-hint { color: var(--ev-text-2); font-size: 13px; max-width: 22rem; }
+.dnd5e-tracker-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px; }
+.dnd5e-tracker-empty-actions button { height: 34px; padding: 0 12px; --ev-pill-icon: 16px; }
+
+.dnd5e-member-pop .dnd5e-member-pick { display: block; width: 100%; margin-top: 4px; text-align: left; }
+
+/* Narrow sidebars (down to 260px): the shield shrinks out of the rows, the card keeps one line of buttons */
+@container (max-width: 300px) {
+	.dnd5e-tracker .dnd5e-row { grid-template-columns: 20px 22px minmax(0, 1fr) 54px; padding-right: 6px; }
+	.dnd5e-tracker .dnd5e-row > .dnd5e-shield, .dnd5e-tracker .dnd5e-row > .dnd5e-ac-none { display: none; }
+	.dnd5e-tracker .dnd5e-row + .dnd5e-row::before { left: 58px; }
+	.dnd5e-tracker .dnd5e-row.is-defeated { grid-template-columns: 20px 22px minmax(0, 1fr) 54px; }
+	.dnd5e-tracker .ev-card.dnd5e-focus { margin: 0 8px; padding: 14px 12px 12px; }
+	.dnd5e-tracker .dnd5e-focus-name h2 { font-size: 22px; line-height: 26px; }
+	.dnd5e-tracker .dnd5e-vitals { gap: 10px; }
+	.dnd5e-tracker .dnd5e-focus-hp-num button.dnd5e-focus-hp-btn b { font-size: 30px; }
+	.dnd5e-tracker .dnd5e-setup-row { grid-template-columns: minmax(0, 1fr) 48px; }
+	.dnd5e-tracker .dnd5e-setup-bonus { display: none; }
+}
+@media (pointer: coarse) {
+	.dnd5e-tracker .dnd5e-grip { opacity: 0.55; }
+	.dnd5e-tracker .dnd5e-condition { height: 30px; }
+	.dnd5e-tracker .dnd5e-condition-x { width: 26px; height: 26px; }
+	.dnd5e-tracker button.dnd5e-init { height: 34px; }
+}
+body.is-tablet .dnd5e-tracker :is(button.dnd5e-init, button.dnd5e-gem, button.dnd5e-hp-text, button.dnd5e-member, button.dnd5e-combatant-more) { padding: 0; }
+@media (prefers-reduced-motion: reduce) { .dnd5e-tracker .ev-bar > i { transition: none; } }
+
 .dnd5e-encounter-actions button { display: inline-flex; align-items: center; gap: 0.3rem; }
-
 /* Shared with the 5e sheet (sheet.ts): the HP bar, the HP box and death saves. */
 .dnd5e-hp-bar { flex: 1 1 auto; height: 6px; border-radius: 3px; background: var(--background-modifier-border); overflow: hidden; min-width: 3rem; }
 .dnd5e-hp-fill { height: 100%; background: var(--color-green); }
@@ -5813,149 +6082,6 @@ body.is-tablet .dnd5e-tracker-combat .dnd5e-tracker-icon { padding: 0; }
 .dnd5e-legendary { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.3rem; font-size: 0.8rem; flex-wrap: wrap; }
 .dnd5e-death-label,
 .dnd5e-legendary-label { color: var(--text-muted); }
-
-/* Nobody yet: an invitation, not a blank panel. */
-.dnd5e-tracker-empty {
-	display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.35rem;
-	margin-top: 0.9rem; padding: 1.4rem 1rem 1.2rem; border: 1px dashed var(--ev-paper-edge); border-radius: var(--nimble-radius); background: var(--ev-paper);
-}
-.dnd5e-tracker-empty-icon {
-	display: flex; align-items: center; justify-content: center; width: 2.8rem; height: 2.8rem; margin-bottom: 0.2rem;
-	border-radius: 50%; background: var(--ev-tint); color: var(--ev-accent-text); border: 1px solid color-mix(in srgb, var(--ev-ornament) 55%, transparent);
-}
-.dnd5e-tracker-empty-icon svg { width: 1.35rem; height: 1.35rem; }
-.dnd5e-tracker-empty-title { font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight); font-size: 1.1rem; }
-.dnd5e-tracker-empty-hint { color: var(--text-muted); font-size: 0.85rem; max-width: 22rem; }
-.dnd5e-tracker-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; margin-top: 0.5rem; }
-
-/* The list. */
-.dnd5e-tracker-list { display: flex; flex-direction: column; gap: 0.4rem; }
-.dnd5e-combatant {
-	--dnd5e-side: color-mix(in srgb, var(--ev-accent) 70%, var(--background-primary));
-	position: relative;
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr) auto;
-	grid-template-areas: "init head more" "init vitals vitals";
-	gap: 0.3rem 0.55rem;
-	align-items: center;
-	padding: 0.45rem 0.4rem 0.5rem 0.55rem;
-	border: 1px solid var(--ev-paper-edge);
-	border-left: 3px solid var(--dnd5e-side);
-	border-radius: var(--nimble-radius);
-	background: var(--ev-paper);
-	transition: background-color 0.15s ease, opacity 0.2s ease;
-}
-/* Conditions, then death saves and legendary pips, each on a line of their own under the name. */
-.dnd5e-combatant.has-conditions { grid-template-areas: "init head more" "init vitals vitals" ". conds conds"; }
-.dnd5e-combatant.has-extra { grid-template-areas: "init head more" "init vitals vitals" ". extra extra"; }
-.dnd5e-combatant.has-conditions.has-extra { grid-template-areas: "init head more" "init vitals vitals" ". conds conds" ". extra extra"; }
-/* The grip on the left edge: a finger drags from it; with a mouse it's a hint (the whole row drags). */
-.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant { padding-left: 0.95rem; }
-.dnd5e-grip {
-	position: absolute; left: 0; top: 0; bottom: 0; width: 0.95rem;
-	display: flex; align-items: center; justify-content: center;
-	color: var(--text-faint); opacity: 0; transition: opacity 0.15s ease;
-}
-.dnd5e-grip svg { width: 0.9rem; height: 0.9rem; flex: 0 0 auto; }
-.dnd5e-combatant:is(:hover, :focus-within) > .dnd5e-grip { opacity: 0.75; }
-.dnd5e-grip:hover { color: var(--text-muted); }
-.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant:not(.ev-sort-lifted) { cursor: grab; }
-.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant :is(button, input) { cursor: var(--cursor); }
-.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant :is(.dnd5e-combatant-name, .dnd5e-condition) { cursor: pointer; }
-.dnd5e-tracker-list > .dnd5e-combatant.ev-sort-lifted { border-color: color-mix(in srgb, var(--ev-accent) 45%, var(--ev-paper-edge)); }
-.dnd5e-tracker-list > .dnd5e-combatant.ev-sort-lifted > .dnd5e-grip { opacity: 1; color: var(--ev-accent-text); }
-.dnd5e-combatant.side-hero { --dnd5e-side: var(--color-blue); }
-.dnd5e-combatant.is-turn {
-	background: var(--ev-tint);
-	border-color: color-mix(in srgb, var(--ev-accent) 55%, var(--ev-paper-edge));
-	border-left-color: var(--ev-accent);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--ev-accent) 45%, transparent), 0 2px 8px color-mix(in srgb, var(--ev-accent) 14%, transparent);
-	margin-top: 0.35rem;
-}
-.dnd5e-combatant.side-hero.is-turn { border-left-color: var(--color-blue); }
-.dnd5e-up-now {
-	position: absolute; top: -0.62rem; left: 0.5rem; padding: 0 0.45rem; border-radius: 3px;
-	background: var(--ev-accent); color: var(--ev-on-accent);
-	font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.1rem;
-	pointer-events: none;
-}
-.dnd5e-combatant.is-down:not(.is-turn) { opacity: 0.8; }
-.dnd5e-combatant.is-dead { opacity: 0.5; }
-
-/* Initiative: a strong badge. Unrolled, it shows the bonus in a dashed outline. */
-button.dnd5e-init {
-	grid-area: init; align-self: center;
-	width: 2.35rem; height: 2.35rem; padding: 0; border-radius: 8px;
-	display: inline-flex; align-items: center; justify-content: center;
-	font-family: var(--ev-display-font); font-size: 1.15rem; font-weight: 700; font-variant-numeric: lining-nums tabular-nums;
-	background: var(--background-primary); color: var(--text-normal);
-	border: 1px solid var(--ev-paper-edge); box-shadow: none;
-}
-button.dnd5e-init:hover { border-color: var(--ev-accent); color: var(--ev-accent-text); }
-button.dnd5e-init.is-unset { border-style: dashed; color: var(--text-faint); font-size: 0.85rem; background: transparent; }
-.dnd5e-combatant.is-turn button.dnd5e-init { background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); }
-
-/* The name, and Dead or Stable beside it when it comes to that. */
-.dnd5e-combatant-head { grid-area: head; display: flex; flex-wrap: nowrap; align-items: center; gap: 0.3rem; min-width: 0; }
-.dnd5e-combatant-name {
-	flex: 0 1 auto; min-width: 0; margin-right: 0.1rem; cursor: pointer;
-	font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight);
-	font-size: 1.02rem; line-height: 1.25; color: var(--text-normal);
-	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.dnd5e-combatant-name:hover { color: var(--ev-accent-text); text-decoration: underline; text-underline-offset: 2px; }
-.dnd5e-combatant-name:focus-visible { outline: 2px solid var(--ev-accent); outline-offset: 1px; border-radius: 2px; }
-.dnd5e-combatant.is-dead .dnd5e-combatant-name,
-.dnd5e-combatant.is-defeated .dnd5e-combatant-name { text-decoration: line-through; }
-.dnd5e-death-stable, .dnd5e-death-dead { flex: 0 0 auto; }
-button.dnd5e-combatant-more { grid-area: more; align-self: center; padding: 2px; width: 1.5rem; height: 1.5rem; color: var(--text-faint); }
-button.dnd5e-combatant-more:hover { color: var(--text-normal); }
-
-/* Conditions: a line of chips under the name, only when there are any; tap one for its rules and duration, × to end it. */
-.dnd5e-combatant-conditions { grid-area: conds; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; min-width: 0; }
-.dnd5e-condition {
-	gap: 0.25rem; height: 1.3rem; padding: 0 0.15rem 0 0.45rem; border-radius: 999px; cursor: pointer;
-	font-size: 0.72rem; font-weight: 600; white-space: nowrap;
-	color: color-mix(in srgb, var(--color-orange) 80%, var(--text-normal));
-	background: color-mix(in srgb, var(--color-orange) 15%, transparent);
-	border: 1px solid color-mix(in srgb, var(--color-orange) 35%, transparent);
-}
-.dnd5e-condition { max-width: 100%; min-width: 0; }
-.dnd5e-condition-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.dnd5e-condition:hover { background: color-mix(in srgb, var(--color-orange) 24%, transparent); }
-.dnd5e-condition.is-concentration {
-	padding-left: 0.35rem;
-	color: color-mix(in srgb, var(--color-purple) 80%, var(--text-normal));
-	background: color-mix(in srgb, var(--color-purple) 13%, transparent);
-	border-color: color-mix(in srgb, var(--color-purple) 35%, transparent);
-	cursor: default;
-}
-.dnd5e-condition-icon svg { width: 0.8rem; height: 0.8rem; }
-.dnd5e-condition-mark { display: inline-flex; opacity: 0.85; }
-.dnd5e-condition-mark svg { width: 0.7rem; height: 0.7rem; }
-.dnd5e-condition-mark.is-damage { color: color-mix(in srgb, var(--color-red) 80%, var(--text-normal)); }
-.dnd5e-condition-rounds {
-	justify-content: center; min-width: 1rem; height: 0.95rem; padding: 0 0.2rem; border-radius: 999px;
-	font-size: 0.64rem; font-variant-numeric: tabular-nums; background: color-mix(in srgb, currentColor 18%, transparent);
-}
-.dnd5e-condition-x { justify-content: center; width: 1rem; height: 1rem; border-radius: 50%; opacity: 0.6; cursor: pointer; }
-.dnd5e-condition-x svg { width: 0.7rem; height: 0.7rem; }
-.dnd5e-condition-x:hover { opacity: 1; background: color-mix(in srgb, currentColor 18%, transparent); }
-button.dnd5e-condition-add {
-	justify-content: center; width: 1.3rem; height: 1.3rem; padding: 0; border-radius: 50%;
-	background: transparent; box-shadow: none; color: var(--text-faint); border: 1px dashed var(--background-modifier-border-hover);
-}
-button.dnd5e-condition-add svg { width: 0.75rem; height: 0.75rem; }
-/* The + after the name stays out of sight until the row is hovered, focused or up (always on touch). */
-.dnd5e-combatant button.dnd5e-condition-add { flex: 0 0 auto; opacity: 0; transition: opacity 0.15s ease; }
-.dnd5e-combatant:is(:hover, :focus-within, .is-turn) button.dnd5e-condition-add { opacity: 0.7; }
-.dnd5e-combatant button.dnd5e-condition-add:is(:hover, :focus-visible) { opacity: 1; color: var(--ev-accent-text); border-color: var(--ev-accent); background: var(--ev-tint); }
-/* Mid-drag, the rows hold still: no hover marks. */
-body.ev-is-sorting .dnd5e-combatant button.dnd5e-condition-add:not(:focus-visible) { opacity: 0; }
-body.ev-is-sorting .dnd5e-combatant .dnd5e-combatant-name:hover { color: var(--text-normal); text-decoration: none; }
-
-/* AC in a heater shield (drawn in tracker-view.ts), the number in the middle of its face; then the HP bar and button. */
-.dnd5e-combatant-vitals { grid-area: vitals; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
 .dnd5e-ac { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 1.9rem; height: 2.15rem; }
 .dnd5e-ac-shield { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .dnd5e-ac-face { fill: color-mix(in srgb, var(--ev-ornament) 16%, var(--background-primary)); stroke: var(--ev-ornament); stroke-width: 1.5; stroke-linejoin: round; }
@@ -5966,84 +6092,6 @@ body.ev-is-sorting .dnd5e-combatant .dnd5e-combatant-name:hover { color: var(--t
 	font-variant-numeric: lining-nums tabular-nums; color: var(--text-normal);
 }
 .theme-dark .dnd5e-ac-face { fill: color-mix(in srgb, var(--ev-ornament) 22%, var(--background-primary)); }
-.dnd5e-tracker .dnd5e-hp-bar { position: relative; display: flex; flex: 1 1 auto; min-width: 1.25rem; height: 7px; border-radius: 4px; background: var(--background-modifier-border); overflow: hidden; }
-.dnd5e-tracker .dnd5e-hp-fill { transition: width 0.3s ease, background-color 0.3s ease; }
-.dnd5e-hp-temp { height: 100%; background: var(--color-cyan); opacity: 0.85; transition: width 0.3s ease; }
-.dnd5e-combatant.hp-bloodied .dnd5e-hp-fill { background: var(--color-yellow); }
-.dnd5e-combatant.hp-critical .dnd5e-hp-fill { background: var(--color-red); }
-button.dnd5e-hp-text {
-	flex: 0 0 auto; justify-content: center; gap: 0.2rem; min-width: 4.3rem; height: 1.8rem; padding: 0 0.5rem; border-radius: 6px;
-	font-size: 0.9rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
-	background: var(--background-primary); color: var(--text-normal); border: 1px solid var(--ev-paper-edge); box-shadow: none;
-}
-button.dnd5e-hp-text:hover { border-color: var(--ev-accent); }
-.dnd5e-hp-temp-text { font-size: 0.75rem; color: color-mix(in srgb, var(--color-cyan) 75%, var(--text-normal)); }
-.dnd5e-combatant.is-down button.dnd5e-hp-text { color: var(--color-red); }
-
-/* Death saves, legendary actions and resistances: core's pips. */
-.dnd5e-combatant-extra { grid-area: extra; display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.9rem; min-width: 0; }
-.dnd5e-tracker :is(.dnd5e-death, .dnd5e-legendary, .dnd5e-resist) { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem 0.7rem; margin: 0; font-size: 0.8rem; }
-.ev-pips.is-resist { --pip: var(--ev-ornament); }
-button.dnd5e-death-roll { height: 1.5rem; padding: 0 0.55rem; font-size: 0.75rem; border-radius: 999px; }
-.dnd5e-death-stable,
-.dnd5e-death-dead {
-	display: inline-flex; align-items: center; height: 1.3rem; padding: 0 0.45rem; border-radius: 999px;
-	font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-}
-.dnd5e-death-stable { color: var(--color-green); background: color-mix(in srgb, var(--color-green) 14%, transparent); }
-.dnd5e-death-dead { color: var(--color-red); background: color-mix(in srgb, var(--color-red) 14%, transparent); }
-
-/* Defeated monsters and the log fold away below the fight. */
-.dnd5e-tracker-defeated,
-.dnd5e-tracker-log { margin-top: 0.8rem; }
-.dnd5e-tracker-defeated > summary,
-.dnd5e-tracker-log > summary {
-	display: flex; align-items: center; gap: 0.4rem; cursor: pointer; list-style: none; padding: 0.2rem 0;
-	font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted);
-}
-.dnd5e-tracker-defeated > summary::-webkit-details-marker,
-.dnd5e-tracker-log > summary::-webkit-details-marker { display: none; }
-.dnd5e-tracker-defeated > summary::before,
-.dnd5e-tracker-log > summary::before { content: "›"; display: inline-block; width: 0.6rem; font-size: 0.95rem; transition: transform 0.15s ease; }
-.dnd5e-tracker-defeated[open] > summary::before,
-.dnd5e-tracker-log[open] > summary::before { transform: rotate(90deg); }
-.dnd5e-tracker-defeated > summary::after,
-.dnd5e-tracker-log > summary::after { content: ""; flex: 1 1 auto; height: 1px; background: var(--ev-paper-edge); }
-.dnd5e-tracker-fold-count { font-variant-numeric: tabular-nums; color: var(--text-faint); }
-.dnd5e-tracker-list.is-defeated { margin-top: 0.35rem; gap: 0.25rem; }
-.dnd5e-combatant.is-defeated {
-	grid-template-columns: auto minmax(0, 1fr) auto auto;
-	grid-template-areas: "init head vitals more";
-	padding-top: 0.25rem; padding-bottom: 0.25rem; opacity: 0.6;
-	border-left-color: var(--background-modifier-border-hover); background: transparent;
-}
-.dnd5e-combatant.is-defeated:hover { opacity: 0.9; }
-.dnd5e-combatant.is-defeated button.dnd5e-init { width: 1.8rem; height: 1.6rem; font-size: 0.85rem; }
-.dnd5e-combatant.is-defeated .dnd5e-combatant-name { font-size: 0.9rem; }
-.dnd5e-combatant.is-defeated button.dnd5e-hp-text { min-width: 0; height: 1.5rem; font-size: 0.8rem; }
-.dnd5e-tracker-log-lines { display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.3rem; font-size: 0.8rem; color: var(--text-muted); }
-.dnd5e-tracker-log-line { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 0.4rem; }
-.dnd5e-tracker-log-round { color: var(--text-faint); font-variant-numeric: tabular-nums; }
-
-/* A very narrow sidebar: smaller badge and HP button so nothing spills. */
-@container (max-width: 290px) {
-	.dnd5e-combatant { gap: 0.3rem 0.45rem; padding-left: 0.4rem; }
-	.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant { padding-left: 0.85rem; }
-	.dnd5e-grip { width: 0.85rem; }
-	button.dnd5e-init { width: 2.05rem; height: 2.05rem; font-size: 1rem; }
-	button.dnd5e-hp-text { min-width: 0; padding: 0 0.35rem; font-size: 0.84rem; }
-	.dnd5e-combatant-vitals { gap: 0.4rem; }
-}
-
-/* Wide panes: the vitals beside the name, in a column of their own; conditions still go underneath. */
-@container (min-width: 540px) {
-	.dnd5e-combatant { grid-template-columns: auto minmax(0, 1fr) minmax(13rem, 40%) auto; grid-template-areas: "init head vitals more"; padding-top: 0.4rem; padding-bottom: 0.4rem; }
-	.dnd5e-combatant.has-conditions { grid-template-areas: "init head vitals more" ". conds conds conds"; }
-	.dnd5e-combatant.has-extra { grid-template-areas: "init head vitals more" ". extra extra extra"; }
-	.dnd5e-combatant.has-conditions.has-extra { grid-template-areas: "init head vitals more" ". conds conds conds" ". extra extra extra"; }
-	.dnd5e-combatant.is-defeated { grid-template-columns: auto minmax(0, 1fr) auto auto; }
-}
-
 /* Popovers from the tracker: initiative, a condition's editor, the condition picker. */
 .dnd5e-init-pop-row { display: flex; gap: 0.35rem; margin-top: 0.45rem; }
 .dnd5e-init-pop input.dnd5e-init-input { flex: 1 1 auto; min-width: 0; font-size: 1.05rem; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
@@ -6051,26 +6099,6 @@ button.dnd5e-death-roll { height: 1.5rem; padding: 0 0.55rem; font-size: 0.75rem
 .dnd5e-condition-pop .dnd5e-condition-desc { white-space: pre-line; max-height: 12rem; overflow: auto; font-size: 0.82rem; }
 .dnd5e-condition-pop .condition-search { width: 100%; margin-top: 0.35rem; }
 .condition-picker .condition-option.dnd5e-cond-concentration { grid-column: 1 / -1; justify-content: flex-start; }
-
-/* Touch: bigger targets, and the controls hover hides stay visible. */
-@media (pointer: coarse) {
-	button.dnd5e-init { width: 2.7rem; height: 2.7rem; }
-	button.dnd5e-hp-text { height: 2.2rem; min-width: 4.8rem; }
-	button.dnd5e-condition-add,
-	.dnd5e-condition { height: 1.65rem; }
-	button.dnd5e-condition-add { width: 1.65rem; }
-	.dnd5e-condition-x { width: 1.35rem; height: 1.35rem; }
-	button.dnd5e-combatant-more { width: 2rem; height: 2rem; }
-	.dnd5e-combatant button.dnd5e-condition-add { opacity: 0.6; }
-	.dnd5e-tracker-list.ev-sortable > .dnd5e-combatant { padding-left: 1.4rem; }
-	.dnd5e-grip { width: 1.4rem; opacity: 0.55; }
-	.dnd5e-grip svg { width: 1rem; height: 1rem; }
-}
-body.is-tablet .dnd5e-tracker button.dnd5e-init,
-body.is-tablet .dnd5e-tracker button.dnd5e-condition-add,
-body.is-tablet .dnd5e-tracker button.dnd5e-combatant-more { padding: 0; }
-body.is-tablet .dnd5e-tracker button.dnd5e-hp-text { padding: 0 0.5rem; }
-@media (prefers-reduced-motion: reduce) { .dnd5e-tracker :is(.dnd5e-hp-fill, .dnd5e-hp-temp, .dnd5e-combatant) { transition: none; } }
 
 /* 5e encounter blocks (src/systems/dnd5e/encounter-block.ts): a page from the book. The name in its type
    over a tapered red rule, the roster with CR (in each reference), AC, HP and XP, the total against the
@@ -6088,7 +6116,7 @@ body.is-tablet .dnd5e-tracker button.dnd5e-hp-text { padding: 0 0.5rem; }
 .dnd5e-encounter-icon { display: flex; color: var(--ev-accent-text); }
 .dnd5e-encounter-icon svg { width: 1.05rem; height: 1.05rem; }
 .dnd5e-encounter-name {
-	flex: 1 1 auto; min-width: 0;
+	flex: 1 1 0; min-width: 9rem;
 	font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight);
 	font-size: 1.2rem; line-height: 1.25; color: var(--ev-accent-text);
 }

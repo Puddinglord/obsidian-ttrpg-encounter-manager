@@ -57,10 +57,13 @@ export interface Fight5e {
 	round: number;
 	/** The current combatant's id, while combat runs. */
 	turnId?: string;
+	/** Who has acted this round (so a creature tapped out of order doesn't reshuffle anyone). Missing in older
+	 *  saves: then everyone before the current turn has acted. */
+	acted?: string[];
 	log: FightLogEntry[];
 	sourcePath?: string;
-	/** What the last Next turn did to conditions, so Back can put them back (one step). */
-	undo?: { turnId?: string; round: number; result: TurnEventResult };
+	/** What the last turn step did, so Back can put it back (one step): conditions, and who was up before. */
+	undo?: { turnId?: string; round: number; result: TurnEventResult; prev?: { turnId?: string; round: number; acted: string[] } };
 }
 
 /** A turn change: who's up now, and what the conditions did (core/tracker/effects.ts). */
@@ -117,9 +120,18 @@ export function addMonster(f: Fight5e, m: Dnd5eMonster, count = 1, opts: { sourc
 		if (legendary) c.legendary = { max: legendary, used: 0 };
 		const resist = legendaryResistances(m);
 		if (resist) c.resistances = { max: resist, used: 0 };
-		if (isRunning(f)) c.init = d20(rng) + c.initBonus;
+		if (isRunning(f)) {
+			const same = f.combatants.find(x => x.side === 'monster' && x.name === m.name && x.init !== undefined);
+			c.init = same?.init ?? d20(rng) + c.initBonus;
+		}
 		f.combatants.push(c);
 		added.push(c);
+	}
+	if (isRunning(f) && Array.isArray(f.acted)) {
+		// Joining after its place in the order has passed: it waits for next round.
+		const cur = current(f);
+		const list = order(f);
+		for (const c of added) if (cur && list.indexOf(c) < list.indexOf(cur)) f.acted.push(c.id);
 	}
 	if (isRunning(f)) log(f, `${added.map(c => c.label).join(', ')} join${added.length === 1 ? 's' : ''} the fight`);
 	return added;
@@ -175,9 +187,48 @@ export function moveCombatant(f: Fight5e, id: string, toIndex: number, among: (c
 
 /** Roll initiative (d20 + bonus) for monsters (the GM's dice), or for everyone not yet rolled. */
 export function rollInitiative(f: Fight5e, rng: Rng = Math.random, who: 'monsters' | 'missing' = 'monsters', sides: { monsters: boolean; heroes: boolean } = { monsters: true, heroes: true }): void {
+	// Identical monsters share one roll (both editions): one row in the order, run one member at a time.
+	const shared = new Map<string, number>();
+	if (who === 'missing') for (const c of f.combatants) if (c.side === 'monster' && c.init !== undefined && !shared.has(c.name)) shared.set(c.name, c.init);
 	for (const c of f.combatants) {
-		if (who === 'monsters' ? c.side === 'monster' : c.init === undefined && (c.side === 'hero' ? sides.heroes : sides.monsters)) { c.init = d20(rng) + c.initBonus; delete c.tiebreak; }
+		if (!(who === 'monsters' ? c.side === 'monster' : c.init === undefined && (c.side === 'hero' ? sides.heroes : sides.monsters))) continue;
+		if (c.side === 'monster') {
+			let init = shared.get(c.name);
+			if (init === undefined) { init = d20(rng) + c.initBonus; shared.set(c.name, init); }
+			c.init = init;
+		} else c.init = d20(rng) + c.initBonus;
+		delete c.tiebreak;
 	}
+}
+
+/** Identical monsters on one initiative, next to each other in the order: one row in the queue, run one member at a time. */
+export function groupOf(f: Fight5e, id: string): Combatant5e[] {
+	const c = find(f, id);
+	if (!c || c.side !== 'monster' || c.init === undefined) return c ? [c] : [];
+	const list = order(f);
+	const i = list.indexOf(c);
+	const same = (x: Combatant5e | undefined) => !!x && x.side === 'monster' && x.name === c.name && x.init === c.init;
+	let a = i, b = i;
+	while (same(list[a - 1])) a--;
+	while (same(list[b + 1])) b++;
+	return list.slice(a, b + 1);
+}
+
+/** Who has acted this round: kept as the fight runs; for a fight saved before that, everyone before the current turn. */
+export function actedIds(f: Fight5e): Set<string> {
+	if (Array.isArray(f.acted)) return new Set(f.acted);
+	const cur = current(f);
+	if (!cur) return new Set();
+	const list = order(f);
+	const i = list.indexOf(cur);
+	return new Set(list.slice(0, Math.max(0, i)).map(c => c.id));
+}
+
+/** Who Next goes to: the first in the order who hasn't acted this round (not the current one); none: a new round. */
+export function upNext(f: Fight5e): Combatant5e | undefined {
+	if (!isRunning(f)) return undefined;
+	const acted = actedIds(f);
+	return order(f).filter(takesTurns).find(c => c.id !== f.turnId && !acted.has(c.id));
 }
 
 /** What Start combat rolls for whoever has no initiative yet (the 5e encounter settings). */
@@ -210,6 +261,7 @@ export function start(f: Fight5e, rng: Rng = Math.random, rolls: StartRolls = { 
 export function startCombat(f: Fight5e, rng: Rng = Math.random, rolls: StartRolls = { monsters: true, heroes: true }): TurnStep5e {
 	rollInitiative(f, rng, 'missing', rolls);
 	f.round = 1;
+	f.acted = [];
 	delete f.undo;
 	const first = order(f).find(takesTurns);
 	f.turnId = first?.id;
@@ -250,23 +302,38 @@ export function nextTurn(f: Fight5e): TurnStep5e {
 	const list = order(f).filter(takesTurns);
 	if (!list.length) return emptyResult();
 	const cur = current(f);
+	const acted = actedIds(f);
+	const prev = { turnId: f.turnId, round: f.round, acted: [...acted] };
 	const ending = cur ? boundary(f, cur.id, 'end') : emptyResult();
-	let i = cur ? list.findIndex(c => c.id === cur.id) : -1;
-	// The current one may have dropped out (killed on its own turn): find who came next.
-	if (cur && i < 0) {
-		const all = order(f);
-		const at = all.findIndex(c => c.id === cur.id);
-		i = list.findIndex(c => all.indexOf(c) > at) - 1;
-		if (i < -1) i = list.length - 1;
-	}
-	i++;
-	if (i >= list.length) { i = 0; f.round++; log(f, `Round ${f.round}`); }
-	const nxt = list[i];
+	if (cur) acted.add(cur.id);
+	// The first in the order still to act (a creature killed on its own turn simply drops out); none: a new round.
+	let nxt = list.find(c => !acted.has(c.id));
+	if (!nxt) { f.round++; acted.clear(); log(f, `Round ${f.round}`); nxt = list[0]; }
+	f.acted = [...acted];
 	f.turnId = nxt.id;
 	startTurn(f, nxt);
 	const result = mergeResults(ending, boundary(f, nxt.id, 'start'));
-	f.undo = { turnId: nxt.id, round: f.round, result };
+	f.undo = { turnId: nxt.id, round: f.round, result, prev };
 	return { who: nxt, ...result };
+}
+
+/**
+ * Tapped out of order: this creature acts now. Nothing reshuffles: whoever was up stays still to act, and
+ * Next goes back to the first in the order who hasn't acted. Back undoes it.
+ */
+export function activate(f: Fight5e, id: string): TurnStep5e {
+	const c = find(f, id);
+	if (!isRunning(f) || !c || f.turnId === id) return emptyResult();
+	const acted = actedIds(f);
+	const prev = { turnId: f.turnId, round: f.round, acted: [...acted] };
+	acted.delete(id);
+	f.acted = [...acted];
+	f.turnId = id;
+	startTurn(f, c);
+	log(f, `${c.label} acts now`);
+	const result = boundary(f, id, 'start');
+	f.undo = { turnId: id, round: f.round, result, prev };
+	return { who: c, ...result };
 }
 
 /**
@@ -280,6 +347,15 @@ export function previous(f: Fight5e): Combatant5e | undefined {
 		const bearers: EffectBearer[] = f.combatants.map(c => ({ id: c.id, conditions: c.conditions }));
 		undoTurnEvent(bearers, f.undo.result);
 		bearers.forEach((b, i) => { f.combatants[i].conditions = b.conditions; });
+		// The step knows who was up before it, and who had acted: put both back exactly.
+		const prev = f.undo.prev;
+		if (prev && prev.turnId && find(f, prev.turnId)) {
+			delete f.undo;
+			f.turnId = prev.turnId;
+			f.round = prev.round;
+			f.acted = [...prev.acted];
+			return current(f);
+		}
 	}
 	delete f.undo;
 	const list = order(f).filter(takesTurns);
@@ -292,6 +368,7 @@ export function previous(f: Fight5e): Combatant5e | undefined {
 		i = list.length - 1;
 	}
 	f.turnId = list[i]?.id;
+	if (Array.isArray(f.acted)) f.acted = list.slice(0, Math.max(0, i)).map(c => c.id);
 	return list[i];
 }
 
@@ -299,6 +376,7 @@ export function end(f: Fight5e): void {
 	log(f, 'Combat ends');
 	f.round = 0;
 	f.turnId = undefined;
+	delete f.acted;
 	delete f.undo;
 }
 
@@ -548,6 +626,7 @@ export function normalizeFight(raw: unknown): Fight5e | null {
 		combatants: Array.isArray(f.combatants) ? f.combatants.filter((c): c is Combatant5e => !!c && typeof c === 'object' && typeof c.id === 'string').map(c => ({ ...c, conditions: Array.isArray(c.conditions) ? c.conditions : [], tempHp: c.tempHp ?? 0, tiebreak: typeof c.tiebreak === 'number' ? c.tiebreak : undefined })) : [],
 		round: typeof f.round === 'number' ? f.round : 0,
 		turnId: typeof f.turnId === 'string' ? f.turnId : undefined,
+		...(Array.isArray(f.acted) ? { acted: f.acted.filter((x): x is string => typeof x === 'string') } : {}),
 		log: Array.isArray(f.log) ? f.log : [],
 		sourcePath: typeof f.sourcePath === 'string' ? f.sourcePath : undefined,
 		...(f.undo && typeof f.undo === 'object' && f.undo.result && typeof f.undo.round === 'number' ? { undo: f.undo } : {}),

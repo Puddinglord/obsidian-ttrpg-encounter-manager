@@ -32,6 +32,10 @@ export const PILL_SELECTORS = [
 	'.nimble-npc-stat:not(.is-armor)', '.nimble-npc-fight', '.nimble-npc-link', '.save-mark',
 	'.ev-cq-kicker', '.ev-cq-fact', '.ev-cq-who', '.ev-cq-stamp', '.ev-cq-change', '.ev-cq-loot-item', '.ev-cq-secret-label', '.ev-cq-read-label',
 	'.ev-cq-mons-label', '.campaign-quest', '.campaign-continue', '.campaign-switch-btn', '.campaign-search',
+	// The trackers (core/tracker/flow.ts and each game's view): the card's buttons, the turn control, the ticker,
+	// conditions on the card, the side switch, moments, the keypad's quiet chips, the encounter blocks' buttons.
+	'.ev-card-btn', '.ev-foot-primary', '.ev-foot-second', '.ev-ticker', '.condition-tag', '.phase-pill', '.nimble-phase-chip', '.group-attack',
+	'.laststand-btn', '.ev-moment-btn', '.hp-pad-qa', '.hp-pad-choice', '.dnd5e-ribbon', '.dnd5e-roll-all', '.encounter-block-btn', '.dnd5e-init-roll', '.dnd5e-init-set',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {
