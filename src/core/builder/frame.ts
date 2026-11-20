@@ -223,7 +223,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 	/** The kinds with something changed since they opened (the one on screen first). */
 	private changedKinds(): KindBuilder[] {
 		const all = [this.b, ...[...this.builders.values()].filter(b => b !== this.b)];
-		return all.filter(b => b && this.baselines.has(b.kind) && b.output().body !== this.baselines.get(b.kind));
+		return all.filter(b => b && this.baselines.has(b.kind) && made(b.output()) !== this.baselines.get(b.kind));
 	}
 
 	/**
@@ -269,7 +269,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		const b = this.builderFor(kind, seed);
 		if (!b) return;
 		this.b = b;
-		if (!this.baselines.has(kind)) this.baselines.set(kind, b.output().body);
+		if (!this.baselines.has(kind)) this.baselines.set(kind, made(b.output()));
 		this.modalEl.dataset.kind = kind;
 		this.renderKinds();
 		this.at = 0;
@@ -467,6 +467,11 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		const text = `${props}${block}\n${out.after ? `\n${out.after}\n` : ''}`;
 		return this.app.vault.create(path, text);
 	}
+}
+
+/** What a kind would make, to tell whether anything has changed: its block, and the properties of a note it writes (a character). */
+function made(out: Output): string {
+	return out.properties ? `${out.body}\n${JSON.stringify(out.properties)}` : out.body;
 }
 
 /** A fenced block, with a longer fence if the body itself has one. */

@@ -115,7 +115,7 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 				],
 			},
 			{
-				id: 'defenses', label: 'Defenses', icon: 'shield-half', title: 'Resistances and immunities',
+				id: 'defenses', label: 'Defenses', icon: 'shield-star', title: 'Resistances and immunities',
 				rows: [
 					{ type: 'chips', key: 'resist', label: 'Resistances', options: () => [...DAMAGE_TYPES] },
 					{ type: 'chips', key: 'immune', label: 'Damage immunities', options: () => [...DAMAGE_TYPES] },
@@ -149,7 +149,7 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 									{ type: 'text', key: 'name', label: 'Name', words: true, placeholder: 'Bite' },
 									usesField(),
 								],
-								{ type: 'choice', key: 'kind', label: 'Kind', options: () => [{ value: 'melee', label: 'Melee' }, { value: 'ranged', label: 'Ranged' }, { value: 'both', label: 'Melee or ranged' }, { value: 'save', label: 'Saving throw' }, { value: 'text', label: 'Other' }] },
+								{ type: 'choice', key: 'kind', label: 'Kind', options: () => [{ value: 'melee', label: 'Melee' }, { value: 'ranged', label: 'Ranged' }, { value: 'both', label: 'Both' }, { value: 'save', label: 'Save' }, { value: 'text', label: 'Other' }] },
 								[
 									{ type: 'choice', key: 'ability', label: 'Ability', show: attack, options: () => [...(['str', 'dex'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] })), { value: 'finesse', label: 'Better of Str/Dex' }, ...(['con', 'int', 'wis', 'cha'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] }))], dropdown: true, hint: () => `${formatMod(toHit(d, x))} to hit` },
 									{ type: 'number', key: 'reach', label: 'Reach (ft.)', min: 5, max: 30, step: 5, placeholder: () => '5', show: () => x.kind === 'melee' || x.kind === 'both' },

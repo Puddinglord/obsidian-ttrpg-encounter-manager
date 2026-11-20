@@ -4944,6 +4944,31 @@ test('phone: the 5e character sheet fits a phone, its HP opens the keypad as a s
 		await p.waitForTimeout(250);
 		await p.evaluate((R) => { document.querySelector(`${R} .markdown-preview-view`).scrollTop = 0; }, R);
 		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet-phone-dark.png') });
+
+		// The wizards fit the narrowest phone: New character's plaques, class choices and equipment cards, and Level up.
+		await setTheme(o, 'theme-light');
+		await p.setViewportSize({ width: 320, height: 700 });
+		await p.waitForTimeout(400);
+		const W = '.modal.nimble-entity-builder';
+		const spills = () => p.evaluate((W) => {
+			const m = document.querySelector(W);
+			const r = m.getBoundingClientRect();
+			return [...m.querySelectorAll('.eb-panel.is-active *')].filter(e => { const b = e.getBoundingClientRect(); return b.width && e.checkVisibility() && (b.right > r.right + 1 || b.left < r.left - 1); }).map(e => e.className).slice(0, 5);
+		}, W);
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		await p.locator(W).waitFor();
+		for (const step of ['Abilities', 'Class', 'Equipment']) {
+			await tap(p.locator(`${W} .eb-dot`, { hasText: step }));
+			await p.waitForTimeout(450);
+			assert.deepEqual(await spills(), [], `New character's ${step} step fits a phone`);
+			await p.screenshot({ path: join(ARTIFACTS, `dnd5e-wizard-phone-${step.toLowerCase()}.png`) });
+		}
+		await p.evaluate(() => document.querySelectorAll('.modal-container').forEach(n => n.remove()));
+		await tap(sheet.locator('.dnd5e-sheet-actions button', { hasText: 'Level up' }));
+		await p.locator(W).waitFor();
+		await p.waitForTimeout(450);
+		assert.deepEqual(await spills(), [], 'Level up fits a phone');
+		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-level-up-phone.png') });
 	} finally {
 		await setTheme(o, 'theme-light');
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
@@ -5732,7 +5757,33 @@ test('pills: builders and dialogs line up (Add several, encounter builder, party
 		await o.page.waitForSelector('.nimble-entity-builder.ev-sys-dnd5e .eb-panel.is-active');
 		await o.page.waitForTimeout(300);
 		await measurePills(o, bad, '5e monster builder', '.modal.nimble-entity-builder');
+		// Its saves step: chips with the bonus each would come to.
+		await o.page.locator('.modal.nimble-entity-builder .eb-dot', { hasText: 'Abilities' }).click();
+		await o.page.waitForTimeout(400);
+		await measurePills(o, bad, '5e monster builder: saves', '.modal.nimble-entity-builder');
 		await o.page.keyboard.press('Escape');
+		await o.page.locator('.modal.nimble-entity-builder').waitFor({ state: 'detached' });
+		// 5e's character wizard: the roll, the skill and language chips (given and to pick), the summary's chips with their diamonds.
+		const W = '.modal.nimble-entity-builder';
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		await o.page.waitForSelector(`${W}.ev-sys-dnd5e .eb-panel.is-active`);
+		await o.page.locator(`${W} .eb-dot`, { hasText: 'Abilities' }).click();
+		await o.page.locator(`${W} .eb-panel.is-active [data-key="method"] .eb-seg-btn`, { hasText: 'Roll' }).click();
+		await o.page.locator(`${W} .eb-panel.is-active .dnd5e-roll-btn`).waitFor();
+		await o.page.waitForTimeout(400);
+		await measurePills(o, bad, '5e character wizard: abilities', W);
+		await o.page.locator(`${W} .eb-dot`, { hasText: 'Skills' }).click();
+		await o.page.locator(`${W} .eb-panel.is-active [data-key="skills"] .eb-pick`).first().click();
+		await o.page.waitForTimeout(400);
+		await measurePills(o, bad, '5e character wizard: skills', W);
+		await o.page.locator(`${W} .eb-dot`, { hasText: 'Tools' }).click();
+		await o.page.waitForTimeout(400);
+		await measurePills(o, bad, '5e character wizard: tools and languages', W);
+		await o.page.keyboard.press('Escape');
+		const discard = o.page.locator('.modal-container button.mod-warning', { hasText: 'Discard' });
+		await discard.waitFor();
+		await discard.click();
+		await o.page.locator(W).waitFor({ state: 'detached' });
 		await o.openFile(`${C}/Coast Map.md`, 'preview');
 		await o.page.locator(`${R} .nimble-map.ev-sys-dnd5e .nimble-map-btn`).first().waitFor();
 		await measurePills(o, bad, '5e map', `${R} .nimble-map`);
@@ -6838,7 +6889,7 @@ test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reo
 		await o.page.locator(`${B} .eb-panel.is-active [data-key="actions"] .eb-list-add`).click();
 		const breath = o.page.locator(`${B} .eb-panel.is-active [data-key="actions"] .eb-list-item`).nth(1);
 		await breath.locator('input[data-field="Name"]').fill('Cinder Breath');
-		await breath.locator('[data-key="kind"] .eb-seg-btn', { hasText: 'Saving throw' }).click();
+		await breath.locator('[data-key="kind"] .eb-seg-btn', { hasText: 'Save' }).click();
 		await breath.locator('select[data-field="Uses"]').selectOption('Recharge 5–6');
 		await breath.locator('input[data-field="Who and where"]').fill('each creature in a 15-foot Cone');
 		await breath.locator('input[data-field="Dice"]').fill('4');

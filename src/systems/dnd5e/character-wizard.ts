@@ -284,7 +284,7 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 				{
 					id: 'hp', label: 'Hit points', icon: 'heart', title: `${d.name} reaches level ${d.level}`,
 					rows: [
-						{ type: 'choice', key: 'hp', label: 'Hit points', options: x => [{ value: 'average', label: `Take ${averageGain(x)}` }, { value: 'roll', label: `Roll 1d${x.hitDie}${x.conMod ? ` ${formatMod(x.conMod)}` : ''}` }, { value: 'manual', label: 'Rolled at the table' }] },
+						{ type: 'choice', key: 'hp', label: 'Hit points', options: x => [{ value: 'average', label: `Take ${averageGain(x)}` }, { value: 'roll', label: `Roll d${x.hitDie}` }, { value: 'manual', label: 'My roll' }] },
 						{ type: 'number', key: 'manual', label: `What the d${d.hitDie} showed`, min: 1, max: d.hitDie, placeholder: x => String(Math.floor(x.hitDie / 2) + 1), show: x => x.hp === 'manual', hint: x => `+${Math.max(1, (x.manual ?? Math.floor(x.hitDie / 2) + 1) + x.conMod)} HP` },
 					],
 				},

@@ -7336,7 +7336,7 @@ body .workspace-leaf-content .ev-sheet-page:not(.nimble-show-props) .metadata-co
 .dnd5e-eq-given { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 .dnd5e-eq-group { display: flex; flex-direction: column; gap: 6px; }
 .nimble-entity-builder button.dnd5e-eq-option {
-	display: flex; align-items: flex-start; gap: 10px; height: auto; min-height: 44px; padding: 9px 12px; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line);
+	display: flex; align-items: flex-start; justify-content: flex-start; gap: 10px; height: auto; min-height: 44px; padding: 9px 12px; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line);
 	background: var(--ev-surface); box-shadow: none; color: var(--ev-text); font: 400 14px/20px var(--ev-font-ui); text-align: left; white-space: normal; cursor: pointer;
 }
 .nimble-entity-builder button.dnd5e-eq-option:hover { border-color: var(--x5-gold); }
