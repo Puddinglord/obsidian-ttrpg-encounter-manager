@@ -16,7 +16,7 @@
 import { Menu, Modal, Notice, setIcon, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { Compendium, nameKey, ResolvedFeature, STATS, StatKey, Subclass } from './compendium';
-import { bundledCompendium, compendiumFor } from './compendium-data';
+import { heroCompendium } from './compendium-data';
 import { renderRulesText, renderSource } from './compendium-card';
 import {
 	assignStats, CharacterSheet, fmtMod, Frontmatter, isPlacementOf, keyStatsOf, keyStatsShort, levelOneFrontmatter, NewCharacterOptions,
@@ -46,9 +46,9 @@ interface Step { kind: StepKind; label: string; icon: EvIconName; group?: string
 const STAT_NAME: Record<StatKey, string> = { STR: 'Strength', DEX: 'Dexterity', INT: 'Intelligence', WIL: 'Will' };
 const HEROIC_MAX = 4;
 
-/** Make the subclass name readable as a title: "Path of the Red Mist" → small "Path of the", big "Red Mist". */
+/** A subclass's name as a title: "Path of the Red Mist" → small "Path of the", big "Red Mist" (any "X of (the)" lead). */
 function splitTitle(name: string): { lead: string; main: string } {
-	const m = name.match(/^((?:path|circle|way|oath|school|college|invoker|order|keeper|herald|luminary|domain|pact|tools|champion|coven|adept|workshop|husk|chosen|avatar|harbinger)\s+of(?:\s+the)?)\s+(.+)$/i);
+	const m = name.match(/^(\S+\s+of(?:\s+the)?)\s+(.+)$/i);
 	return m ? { lead: m[1], main: m[2] } : { lead: '', main: name };
 }
 
@@ -93,10 +93,14 @@ class CharacterWizard extends Modal {
 	private sub!: HTMLElement;
 	private stopShow: (() => void) | null = null;
 
-	constructor(protected plugin: EmberVaultPlugin, protected level: LevelTarget | null, protected make: NewTarget | null, initial: Partial<NewCharacterOptions> = {}) {
+	/**
+	 * `comp` is everything a hero can be made of (classes, subclasses, ancestries, backgrounds, option lists, spells,
+	 * rules), looked up once through heroCompendium: the bundled books today, homebrew and imports as they come.
+	 */
+	constructor(protected plugin: EmberVaultPlugin, protected level: LevelTarget | null, protected make: NewTarget | null, initial: Partial<NewCharacterOptions> = {}, comp?: Compendium) {
 		super(plugin.app);
 		Object.assign(this.hero, initial);
-		this.comp = level ? compendiumFor(level.s.className) : bundledCompendium();
+		this.comp = comp ?? heroCompendium({ path: make?.folder, className: level?.s.className });
 		this.replan();
 		// A hero made above level 1 takes the flat HP bonus unless the player rolls.
 		if (!level) this.hp.how = 'average';
@@ -128,7 +132,6 @@ class CharacterWizard extends Modal {
 
 	private replan(): void {
 		if (this.isNew) {
-			this.comp = compendiumFor(this.hero.className);
 			this.plans = heroPlans(this.hero, this.comp, this.choices.subclass);
 		} else {
 			const s = this.level!.s;
@@ -402,7 +405,7 @@ class CharacterWizard extends Modal {
 
 	private renderHero(panel: HTMLElement): void {
 		const h = this.hero;
-		const comp = bundledCompendium();
+		const comp = this.comp;
 		const form = panel.createDiv({ cls: 'lu-form' });
 		const field = (label: string, cls = '') => { const f = form.createDiv({ cls: `lu-field ${cls}`.trim() }); dialogLabel(f, label); return f; };
 
@@ -479,7 +482,7 @@ class CharacterWizard extends Modal {
 
 	/** A background's requirement ("Req. 0 or negative INT at character creation"), and whether the stats meet it. */
 	private backgroundNote(): { text: string; unmet: boolean } | null {
-		const bg = this.comp.background(this.hero.background) ?? bundledCompendium().background(this.hero.background);
+		const bg = this.comp.background(this.hero.background);
 		if (!bg?.requirement) return null;
 		const m = bg.requirement.match(/0 or negative (STR|DEX|INT|WIL)/i);
 		const unmet = !!m && this.placement()[m[1].toUpperCase() as StatKey] > 0;
@@ -1133,7 +1136,7 @@ class CharacterWizard extends Modal {
 			return;
 		}
 		try {
-			const file = await createCharacterNote(this.plugin, { ...h, stats: this.placement(), choices }, this.make?.folder);
+			const file = await createCharacterNote(this.plugin, { ...h, stats: this.placement(), choices }, this.make?.folder, this.comp);
 			this.close();
 			if (this.make?.onCreated) this.make.onCreated(file);
 			else await this.app.workspace.getLeaf(false).openFile(file);
@@ -1182,8 +1185,8 @@ class CharacterWizard extends Modal {
 
 /** Level up: one level, from the sheet's Camp (or the party editor). */
 export class LevelUpWizard extends CharacterWizard {
-	constructor(plugin: EmberVaultPlugin, s: CharacterSheet, mutate: LevelTarget['mutate'], fm: Frontmatter = {}) {
-		super(plugin, { s, fm, mutate }, null);
+	constructor(plugin: EmberVaultPlugin, s: CharacterSheet, mutate: LevelTarget['mutate'], fm: Frontmatter = {}, comp?: Compendium) {
+		super(plugin, { s, fm, mutate }, null, {}, comp);
 	}
 }
 

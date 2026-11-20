@@ -64,6 +64,17 @@ export function compendiumFor(className: unknown): Compendium {
 	return fullCompendium().classByName(name) ? fullCompendium() : comp;
 }
 
+/**
+ * The one place a hero's content comes from: the classes, subclasses, ancestries, backgrounds, option lists,
+ * spells and rules that New character, Level up and the sheet read, for a note (`path`, so a campaign can have
+ * its own) and a hero's class. Today it's the bundled books (compendiumFor: drafts as the setting says, a draft
+ * class kept for its heroes). Homebrew and imported classes, ancestries and options join here, and every
+ * screen that makes or levels a hero gets them; nothing past this asks for the bundled books by name.
+ */
+export function heroCompendium(o: { path?: string; className?: unknown } = {}): Compendium {
+	return compendiumFor(o.className);
+}
+
 /** The compendium for reading sheets in bulk (the GM party): drafts always included. */
 export const sheetCompendium = fullCompendium;
 

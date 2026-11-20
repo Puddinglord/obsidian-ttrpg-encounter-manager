@@ -9,7 +9,7 @@
 // bonus), +1 max Hit Die, 1 skill point (and you may move 1 point from one skill
 // to another), and the class's features for the level.
 
-import type { Boon, ClassOption, Compendium, OptionGroup, ResolvedFeature, Subclass } from './compendium';
+import type { Boon, ClassOption, Compendium, Feature, OptionGroup, ResolvedFeature, Subclass } from './compendium';
 import { nameKey, STATS, StatKey } from './compendium';
 import { addFeature, addSchools, addSpell, Frontmatter, hpAverage, levelUp, readCharacter, setSkill, setStat } from './character-def';
 
@@ -161,13 +161,19 @@ export function subclassSwaps(texts: string[], groups: OptionGroup[]): { lost: S
 	return { lost, instead };
 }
 
-export const SPELL_SCHOOLS = ['Fire', 'Ice', 'Lightning', 'Wind', 'Radiant', 'Necrotic'];
-const schoolNamed = (w: string): string | undefined => SPELL_SCHOOLS.find(x => x.toLowerCase() === w.toLowerCase());
+/** The spell schools any caster can learn: every school the compendium's own spells are in (not a class's list), in book order. */
+export function spellSchools(comp: Compendium): string[] {
+	const out: string[] = [];
+	for (const sp of comp.spells) if (sp.school && !sp.class && !sp.secret && !out.includes(sp.school)) out.push(sp.school);
+	return out;
+}
+
 const N = '(?:\\d+|a|an|one|another|a \\d+(?:st|nd|rd|th))';
 
 /** The spell schools and Utility Spells a feature has you choose, or gives outright. */
-export function spellChoices(f: { name: string; text: string }, level: number): { picks: SpellPick[]; grants: LevelPlan['spellGrants'] } {
+export function spellChoices(f: { name: string; text: string }, level: number, schools: string[]): { picks: SpellPick[]; grants: LevelPlan['spellGrants'] } {
 	const t = f.text;
+	const schoolNamed = (w: string): string | undefined => schools.find(x => x.toLowerCase() === w.toLowerCase());
 	const picks: SpellPick[] = [];
 	const grants: LevelPlan['spellGrants'] = [];
 	const add = (p: Omit<SpellPick, 'key' | 'level' | 'feature'>) => picks.push({ key: `${level}|${f.name}|${picks.length}`, level, feature: f.name, ...p });
@@ -265,6 +271,7 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 		const g = m && !/utility spells/i.test(m[1]) ? groupNamed(m[1], groups) : undefined;
 		if (g) knowAll.add(g.name);
 	}
+	const schoolList = spellSchools(comp);
 	const picks: OptionPick[] = [];
 	const stats: StatIncrease[] = [];
 	const spells: SpellPick[] = [];
@@ -285,7 +292,7 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 	const texts: { name: string; text: string; from?: string }[] = [...features];
 	if (level === 1 && o.background?.text) texts.push({ name: o.background.name, text: o.background.text });
 	for (const f of texts) {
-		const sp = spellChoices(f, level);
+		const sp = spellChoices(f, level, schoolList);
 		spells.push(...sp.picks);
 		spellGrants.push(...sp.grants);
 		if (/epic boon/i.test(`${f.name} ${f.text}`) && /\bchoose\b/i.test(f.text)) { boons = comp.boons.filter(b => /epic/i.test(b.kind ?? '')); continue; }
@@ -301,13 +308,13 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 			grants.push(...(given.options ?? []).filter(x => at(x) >= 0).sort((a, b) => at(a) - at(b)).map(x => x.name));
 			continue;
 		}
-		// "Choose another Combat Ability or gain +1 max Combat Dice" (Commander): an Order or a Tactic, or the die.
-		const either = f.text.match(/Choose another Combat Ability or gain (\+1 max [^.]+)/i);
-		if (either) {
-			const die = either[1].trim();
-			const lists = groups.filter(g => /order|tactic/i.test(g.name) && !swaps.lost.has(g.name));
-			const options: RepeatableOption[] = [...lists.flatMap(g => g.options ?? []), { name: die, text: `Gain ${die}.`, repeatable: true }];
-			picks.push({ feature: f.name, group: { name: 'Combat Abilities', options }, count: 1 });
+		// A feature that says which lists it picks from (its `choose`), and what's offered instead ("+1 max Combat Dice").
+		const hint = (f as { choose?: Feature['choose'] }).choose;
+		if (hint?.from?.length) {
+			const lists = hint.from.map(n => groups.find(g => nameKey(g.name) === nameKey(n))).filter((g): g is OptionGroup => !!g && !swaps.lost.has(g.name));
+			const instead: RepeatableOption[] = (hint.or ?? []).map(x => ({ name: x, text: `Gain ${x}.`, repeatable: true }));
+			const options = [...lists.flatMap(g => g.options ?? []), ...instead];
+			if (options.length) picks.push({ feature: f.name, group: { name: hint.name ?? lists.map(g => g.name).join(' or '), options }, count: Math.max(1, hint.count ?? 1) });
 			continue;
 		}
 		const gs = groupsFor(f, groups);
@@ -416,13 +423,14 @@ export const utilitySpells = (comp: Compendium, school: string): string[] =>
  */
 export function spellSlots(comp: Compendium, plans: LevelPlan[], known: string[], c: Pick<LevelChoices, 'spells'>): { slots: SpellSlot[]; granted: string[] } {
 	const schools = [...known];
+	const all = spellSchools(comp);
 	const taken = new Set<string>();
 	const slots: SpellSlot[] = [];
 	const granted: string[] = [];
 	const has = (x: string) => schools.some(k => nameKey(k) === nameKey(x));
 	for (const p of plans) {
 		for (const pick of p.spells) {
-			const from = pick.schools === 'known' ? [...schools] : pick.schools === 'new' ? SPELL_SCHOOLS.filter(x => !has(x)) : pick.schools === 'any' ? [...SPELL_SCHOOLS] : pick.schools;
+			const from = pick.schools === 'known' ? [...schools] : pick.schools === 'new' ? all.filter(x => !has(x)) : pick.schools === 'any' ? [...all] : pick.schools;
 			const base = { key: pick.key, level: p.level, feature: pick.feature, kind: pick.kind, count: pick.count };
 			if (pick.kind === 'school') {
 				slots.push({ ...base, options: from });

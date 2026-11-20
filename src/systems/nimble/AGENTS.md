@@ -24,6 +24,10 @@ Nimble plugs in like any other game: `register.ts` wires it in, `runtime.ts` (`n
 - Updating from a newer book version: diff the new PDF against what's in `raw/` and patch, rather than re-extracting (ask the maintainer for the source files).
 - `data/*.json` is imported directly, not lazily. Nimble is the default, so it's needed at startup anyway.
 
+## Where a hero's content comes from
+
+New character, Level up and the sheet read classes, subclasses, ancestries, backgrounds, option lists, spells and rules from one place: `heroCompendium({ path, className })` (compendium-data.ts), looked up once per dialog and passed down (`CharacterWizard`'s `comp`, `createCharacterNote`'s `comp`, the sheet's `comp`). Today it returns the bundled books; homebrew and imported content will join there. What each level asks for is worked out from the class's data in level-plan.ts (its levels, features, option groups, resources, subclasses, and a feature's optional `choose` hint), never from a class's name, so a class that isn't in the books levels up the same way (tests/new-character.test.ts has one).
+
 ## Pitfalls
 
 - **Fences and keys are Nimble's forever:** ```nimble, ```nimble-sheet, ```nimble-npc, ```nimble-spell, ```nimble-item, `nimble:` references, `nimble: monster|npc|character|creature` frontmatter. Core reuses some of these names (```nimble-encounter, ```nimble-map, ```nimble-campaign, `nimble: campaign`) for every system; that's historical, and they can't be renamed.

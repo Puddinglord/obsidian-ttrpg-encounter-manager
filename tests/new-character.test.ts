@@ -350,3 +350,42 @@ describe('stat increase wording', () => {
 		expect(statIncrease({ name: 'Mindmaster', text: '+1 to any 2 of your stats.' })?.options).toEqual(STATS);
 	});
 });
+
+describe('a class that isn’t in the books (homebrew, an import)', () => {
+	// Everything the wizard asks comes from the class's data: its key stats, saves, levels, lists and `choose` hints.
+	const homebrew = new Compendium({
+		...BUNDLED,
+		classes: [{
+			name: 'Tidecaller', source: 'Homebrew', keyStats: ['WIL', 'DEX'], saves: { adv: 'WIL', dis: 'STR' }, hitDie: 10, startingHp: 15,
+			startingGear: ['Staff'],
+			levels: [
+				{ level: 1, features: [{ name: 'Undertow', text: 'Pull a creature 2 spaces.' }] },
+				{ level: 2, features: [{ name: 'Currents', text: 'Choose 2 Currents.' }] },
+				{ level: 3, features: [{ name: 'Subclass', text: 'Choose a Tidecaller subclass.' }] },
+				{ level: 4, features: [{ name: 'Key Stat Increase', text: '+1 WIL or DEX.' }, { name: 'Deep Water', text: 'Gain a Tide or a Swell.', choose: { name: 'Tides and Swells', from: ['Currents'], or: ['+1 max Tide Dice'] } }] },
+			],
+			optionGroups: [{ name: 'Currents', options: [{ name: 'Riptide', text: 'A' }, { name: 'Eddy', text: 'B' }, { name: 'Surge', text: 'C' }] }],
+			subclasses: [{ name: 'Circle of the Reef', levels: [{ level: 3, features: [{ name: 'Coral Skin', text: '+1 Defense.' }] }] }],
+			resources: [{ name: 'Tide Dice', max: 'WIL', die: 'd6' }],
+		}],
+	});
+
+	it('places the array on its key stats and walks every level’s steps', () => {
+		expect(assignStats([3, 1, -1, -1], homebrew.classByName('Tidecaller'))).toEqual({ WIL: 3, DEX: 1, INT: -1, STR: -1 });
+		const plans = heroPlans({ className: 'Tidecaller', level: 4 }, homebrew, 'Circle of the Reef');
+		expect(plans.find(p => p.level === 3)?.subclasses.map(s => s.name)).toEqual(['Circle of the Reef']);
+		expect(pickGroups(plans).map(g => [g.name, g.count])).toEqual([['Currents', 2], ['Tides and Swells', 1]]);
+		const four = plans.find(p => p.level === 4)!;
+		const c: LevelChoices = {
+			...noChoices(), subclass: 'Circle of the Reef', picks: { Currents: ['Riptide', 'Eddy'], 'Tides and Swells': ['+1 max Tide Dice'] },
+			stats: { [increaseKey(4, four.stats[0])]: ['DEX'] },
+		};
+		const fm = newCharacterFrontmatter({ name: 'Marisol', className: 'Tidecaller', array: 'Min-Max', level: 4, choices: c }, homebrew);
+		expect(fm).toMatchObject({ class: 'Tidecaller', level: 4, hp_max: 15 + 3 * 5, subclass: 'Circle of the Reef', wil: 3, dex: 2, inventory: ['Staff'] });
+		expect(fm.features).toEqual(['Riptide', 'Eddy', { name: '+1 max Tide Dice', text: 'Gain +1 max Tide Dice.' }]);
+		const s = readCharacter(fm, homebrew);
+		expect(s.saves.WIL).toBe('adv');
+		expect(s.resources.find(r => r.name === 'Tide Dice')?.max).toBe(3 + 1);
+		expect(s.features.some(f => f.name === 'Coral Skin')).toBe(true);
+	});
+});

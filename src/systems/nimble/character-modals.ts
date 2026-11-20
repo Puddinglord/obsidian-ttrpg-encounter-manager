@@ -3,7 +3,8 @@
 
 import { App, Modal, normalizePath, Notice, Setting, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
-import { compendiumFor } from './compendium-data';
+import { heroCompendium } from './compendium-data';
+import type { Compendium } from './compendium';
 import { joinPath, safeName } from '../../core/campaign-model';
 import type { Frontmatter } from './character-def';
 import { newCharacterFrontmatter, NewHero } from './new-character';
@@ -17,9 +18,8 @@ export function defaultCharacterFolder(plugin: EmberVaultPlugin): string {
 }
 
 /** Write a character note (frontmatter + sheet block + Backstory and Notes headings) and return it. */
-export async function createCharacterNote(plugin: EmberVaultPlugin, o: NewHero, folder = defaultCharacterFolder(plugin)): Promise<TFile> {
+export async function createCharacterNote(plugin: EmberVaultPlugin, o: NewHero, folder = defaultCharacterFolder(plugin), comp: Compendium = heroCompendium({ path: folder, className: o.className })): Promise<TFile> {
 	const app = plugin.app;
-	const comp = compendiumFor(o.className);
 	const dir = folder ? normalizePath(folder) : '';
 	if (dir && !app.vault.getFolderByPath(dir)) await app.vault.createFolder(dir);
 	// Named the way every campaign note is (safeName), and never clashing with a note there, even by case.

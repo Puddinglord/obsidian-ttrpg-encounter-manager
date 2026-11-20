@@ -15,7 +15,16 @@ export interface Sourced {
 	draft?: boolean;
 }
 
-export interface Feature { name: string; text: string }
+export interface Feature {
+	name: string;
+	text: string;
+	/**
+	 * What the feature has you choose, when its words don't name the lists (the Commander's "another Combat
+	 * Ability"): the lists to pick from, how many, a name for them together, and choices offered instead that can be
+	 * taken more than once ("+1 max Combat Dice"). Homebrew and imported classes can set it on any feature.
+	 */
+	choose?: { name?: string; from: string[]; count?: number; or?: string[] };
+}
 export interface LevelFeatures { level: number; features: Feature[] }
 
 export interface ClassOption extends Sourced { cost?: string; text: string; requirement?: string }
@@ -314,7 +323,7 @@ export class Compendium {
 			for (const l of arr<LevelFeatures>(levels).slice().sort((a, b) => (a.level ?? 0) - (b.level ?? 0))) {
 				if ((l.level ?? 0) > level) continue;
 				for (const f of arr<Feature>(l.features)) {
-					out.push({ name: str(f.name), text: str(f.text), level: l.level, from, className: cls.name, subclass: sub, source: src.source ?? cls.source, page: src.page ?? cls.page, draft: src.draft ?? cls.draft });
+					out.push({ name: str(f.name), text: str(f.text), ...(f.choose ? { choose: f.choose } : {}), level: l.level, from, className: cls.name, subclass: sub, source: src.source ?? cls.source, page: src.page ?? cls.page, draft: src.draft ?? cls.draft });
 				}
 			}
 		};

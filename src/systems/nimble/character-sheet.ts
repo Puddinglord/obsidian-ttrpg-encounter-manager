@@ -15,7 +15,7 @@
 import { App, Component, MarkdownPostProcessorContext, MarkdownRenderChild, Modal, Notice, setIcon, setTooltip, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { Compendium, CompendiumHit, CompendiumKind, nameKey, STATS, StatKey, tierLabel, weaponDamage } from './compendium';
-import { compendiumFor } from './compendium-data';
+import { heroCompendium } from './compendium-data';
 import { renderHitBody, renderRulesText, renderSource } from './compendium-card';
 import {
 	addCondition, addFeature, addItem, addLanguage, addSpell, adjustResource, applyDamage, CharacterSheet, damageRoll, fieldRest, fmtMod, Frontmatter,
@@ -154,8 +154,8 @@ export class CharacterSheetRenderer extends Component {
 	}
 
 	private get app() { return this.plugin.app; }
-	/** The hero's compendium: drafts stay in for a hero who plays a draft class (compendiumFor). */
-	private get comp(): Compendium { return compendiumFor(this.fm.class); }
+	/** The hero's content (heroCompendium): drafts stay in for a hero who plays a draft class. */
+	private get comp(): Compendium { return heroCompendium({ path: this.file.path, className: this.fm.class }); }
 
 	onload(): void {
 		this.render();
@@ -464,7 +464,7 @@ export class CharacterSheetRenderer extends Component {
 
 	private levelUp(): void {
 		if (this.sheet.level >= 20) return;
-		new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn), this.fm).open();
+		new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn), this.fm, this.comp).open();
 	}
 
 	private renderDetailEditor(parent: HTMLElement): void {
@@ -1301,7 +1301,7 @@ export class CharacterSheetRenderer extends Component {
 			// Level up: where you'd get to.
 			const max = s.level >= 20;
 			const level = card('is-level', evIcon('arrow-up'), 'Level up',
-				() => new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn), this.fm).open(), max);
+				() => new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn), this.fm, this.comp).open(), max);
 			const big = level.createDiv({ cls: 'ns-camp-levels' });
 			big.createSpan({ cls: 'ns-camp-level-from', text: String(s.level) });
 			setIcon(big.createSpan({ cls: 'ns-camp-level-arrow' }), evIcon('arrow-right'));
