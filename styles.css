@@ -5779,6 +5779,11 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .nimble-entity-builder.ev-sys-dnd5e .eb-meter.is-hp .eb-meter-fill { background: var(--ev-track); }
 .nimble-entity-builder.ev-sys-nimble input.eb-input[data-field="Name"] { font: italic 800 17px/normal var(--ev-font-name); }
 .nimble-entity-builder.ev-sys-dnd5e input.eb-input[data-field="Name"] { font: 600 18px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; }
+/* What a field works out to ("PB +2 · 200 XP", "Book: 52") sits beside its label, not at the far edge. */
+.nimble-entity-builder .eb-label-row { justify-content: flex-start; flex-wrap: wrap; row-gap: 2px; }
+/* A schema's segments on a phone: even rows (--eb-cols, from how many options there are), never off the edge. */
+.nimble-entity-builder.is-phone-layout .eb-seg.is-schema { display: grid; grid-template-columns: repeat(var(--eb-cols, 3), minmax(0, 1fr)); width: 100%; border-radius: calc(var(--eb-h) / 2 + 2px); }
+.nimble-entity-builder.is-phone-layout .eb-seg.is-schema button.eb-seg-btn { min-width: 0; padding: 0 0.3rem; }
 @media (max-width: 380px) {
 	.nimble-entity-builder.is-phone-layout .eb-foot { gap: 0.4rem; padding-left: 0.6rem; padding-right: 0.6rem; }
 	.nimble-entity-builder.is-phone-layout :is(button.eb-back, button.eb-create, button.eb-next) { min-width: 0; padding-left: 0.65rem; padding-right: 0.65rem; }

@@ -174,7 +174,10 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 				sel.addEventListener('change', () => { set(sel.value); ui.changed(); });
 				return;
 			}
-			segmented<string>(parts.control, options, () => str(m[f.key]), v => set(v), { ...named, ui, cls: 'is-compact', key: `schema-${f.key}` });
+			const seg = segmented<string>(parts.control, options, () => str(m[f.key]), v => set(v), { ...named, ui, cls: 'is-compact is-schema', key: `schema-${f.key}` });
+			// On a phone the options sit in even rows (six sizes three by two) instead of running off the edge.
+			const n = options.length;
+			seg.setCssProps({ '--eb-cols': String(n <= 3 ? n : n === 4 ? 2 : n <= 6 ? 3 : 4) });
 			return;
 		}
 		case 'toggle':
