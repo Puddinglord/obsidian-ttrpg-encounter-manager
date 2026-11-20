@@ -118,7 +118,12 @@ export class AddSeveralModal extends Modal {
 		});
 		if (this.seg) slideThumb(this.seg, this.shift + 1, SHIFTS.length, fromShift !== undefined ? fromShift + 1 : undefined);
 		const which = this.shift > 0 ? 'tougher ' : this.shift < 0 ? 'weaker ' : '';
-		setPill(this.addBtn, { icon: evIcon('plus'), text: `Add ${this.count} ${which}`.trimEnd() });
+		// Only the label's text changes: redrawing the button as it's pressed (the field's blur runs this) would
+		// swallow the click.
+		const label = `Add ${this.count} ${which}`.trimEnd();
+		const text = this.addBtn.querySelector('.ev-pill-text');
+		if (text) text.setText(label);
+		else setPill(this.addBtn, { icon: evIcon('plus'), text: label });
 		// What you'd actually get: the level and HP after the shift, per monster and in total.
 		const m = shiftMonster(this.monster, this.shift);
 		const lvl = formatLevel(m.level);

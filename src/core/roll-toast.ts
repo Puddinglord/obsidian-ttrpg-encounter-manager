@@ -17,11 +17,12 @@ export function rollToast(entry: Pick<RollLogEntry, 'label' | 'expression' | 'de
 		body.createDiv({ cls: 'nimble-roll-notice-label', text: entry.label });
 		const line = body.createDiv({ cls: 'ev-roll-line' });
 		line.createSpan({ cls: 'nimble-roll-notice-detail', text: `${entry.expression}: ${entry.detail}` });
-		// A miss has no total worth showing: the tag stands where it would be.
+		// "= 17 CRIT" stays together when the line wraps. A miss has no total worth showing: the tag stands where it would be.
+		const result = line.createSpan({ cls: 'ev-roll-result' });
 		if (entry.outcome !== 'miss') {
-			line.createSpan({ cls: 'ev-roll-eq', text: '=' });
-			line.createSpan({ cls: 'nimble-roll-notice-total', text: String(entry.total) });
+			result.createSpan({ cls: 'ev-roll-eq', text: '=' });
+			result.createSpan({ cls: 'nimble-roll-notice-total', text: String(entry.total) });
 		}
-		if (entry.outcome) line.createSpan({ cls: 'ev-roll-tag', text: entry.outcome === 'miss' ? 'MISS' : 'CRIT' });
+		if (entry.outcome) result.createSpan({ cls: 'ev-roll-tag', text: entry.outcome === 'miss' ? 'MISS' : 'CRIT' });
 	});
 }

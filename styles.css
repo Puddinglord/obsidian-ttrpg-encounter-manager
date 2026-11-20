@@ -1160,7 +1160,7 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 .nimble-builder-modal button.builder-party { height: 36px; padding: 0 12px; border-radius: 999px; border: 1px dashed var(--ev-line-strong); background: transparent; color: var(--ev-text-2); font: 600 13px/normal var(--ev-font-ui); --ev-pill-icon: 15px; --ev-pill-gap: 6px; }
 .nimble-builder-modal button.builder-party:hover { border-style: solid; background: var(--ev-surface-2); }
 .nimble-builder-modal button.builder-party.is-on { border-style: solid; border-color: var(--ev-text); background: var(--ev-surface-2); color: var(--ev-text); }
-.nimble-builder-modal .builder-rating { container-type: inline-size; display: grid; gap: 10px; padding: 12px 14px; border-radius: var(--ev-r-lg); background: var(--ev-surface-2); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-builder-modal .builder-rating { container-type: inline-size; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; border-radius: var(--ev-r-lg); background: var(--ev-surface-2); box-shadow: inset 0 0 0 1px var(--ev-line); }
 .nimble-builder-modal .builder-rating-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
 .nimble-builder-modal .builder-rating-text { font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); font-variant-numeric: tabular-nums; }
 .nimble-builder-modal a.builder-party-link { color: var(--ev-text); text-decoration: none; border-bottom: 1px solid var(--ev-line-strong); }
@@ -1184,9 +1184,9 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 .nimble-builder-modal .nimble-meter-label.is-here { color: var(--ev-text); }
 /* Narrow: only the band it's in is named, so the names never run into each other. */
 @container (max-width: 560px) { .nimble-builder-modal .nimble-meter-label:not(.is-here) { display: none; } }
-.nimble-builder-modal .builder-balance { display: grid; gap: 8px; }
+.nimble-builder-modal .builder-balance { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .nimble-builder-modal .builder-balance .balance-targets { justify-self: start; width: min(100%, 380px); }
-.nimble-builder-modal .builder-balance .balance-list { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.nimble-builder-modal .builder-balance .balance-list { grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); }
 .nimble-builder-modal .builder-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 .nimble-builder-modal .builder-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .nimble-builder-modal .builder-search-field { position: relative; }
@@ -1200,16 +1200,16 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 .nimble-builder-modal .builder-level { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 22px; padding: 0 5px; border-radius: var(--ev-r-chip, 3px); background: var(--ev-bar); color: var(--ev-on-bar); font: 700 13px/normal var(--ev-font-num); font-variant-numeric: tabular-nums lining-nums; }
 .nimble-builder-modal .builder-level.role-minion { font: 700 11px/normal var(--ev-font-ui); letter-spacing: 0.03em; text-transform: uppercase; }
 .nimble-builder-modal .builder-result-text { flex: 1 1 auto; min-width: 0; }
-.nimble-builder-modal :is(.builder-result-name, .builder-pick-name) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: italic 800 15.5px/20px var(--ev-font-name); color: var(--ev-text); }
+.nimble-builder-modal :is(.builder-result-name, .builder-pick-name) { overflow-wrap: anywhere; font: italic 800 15.5px/20px var(--ev-font-name); color: var(--ev-text); }
 .nimble-builder-modal .builder-result-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 12px/16px var(--ev-font-ui); color: var(--ev-text-2); }
 .nimble-builder-modal .builder-result-add { flex: none; display: inline-flex; color: var(--ev-text-2); }
 .nimble-builder-modal .builder-result-add svg { width: 16px; height: 16px; display: block; }
 .nimble-builder-modal .builder-result:hover .builder-result-add { color: var(--ev-text); }
-.nimble-builder-modal .builder-pick { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px 12px 4px 8px; }
+.nimble-builder-modal .builder-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 48px; padding: 4px 12px 4px 8px; }
 .nimble-builder-modal .builder-pick-keys > button { width: 32px; height: 32px; }
 .nimble-builder-modal .builder-pick-keys > button svg { width: 14px; height: 14px; }
 .nimble-builder-modal .builder-pick-count { min-width: 24px; text-align: center; font: 700 18px/1 var(--ev-font-num); font-variant-numeric: tabular-nums lining-nums; }
-.nimble-builder-modal .builder-pick-name { flex: 1 1 auto; min-width: 0; }
+.nimble-builder-modal .builder-pick-name { flex: 1 1 8rem; min-width: 0; }
 .nimble-builder-modal .builder-pick-name.is-missing { color: var(--ev-danger-text); text-decoration: line-through; }
 .nimble-builder-modal .builder-pick-meta { flex: none; font: 600 12px/normal var(--ev-font-ui); color: var(--ev-text-2); }
 .nimble-builder-modal :is(.builder-more, .builder-empty) { padding: 12px; font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); }
@@ -1225,7 +1225,7 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 
 /* Balance (balance-ui.ts), in the builder and the encounter block's popover: the target as segments, each
    suggestion a card with the rating it lands on. */
-.nimble-balance { display: grid; gap: 8px; }
+.nimble-balance { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .nimble-balance .balance-title { font: italic 900 17px/22px var(--ev-font-name); color: var(--ev-text); }
 .nimble-balance .balance-targets { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding: 3px; border-radius: var(--ev-r-md); background: color-mix(in srgb, var(--ev-text) 7%, transparent); --seg-pad: 3px; --seg-gap: 0px; --seg-color: var(--ev-surface); }
 .nimble-balance .balance-targets > .seg-thumb { border-radius: calc(var(--ev-r-md) - 2px); box-shadow: 0 1px 2px rgb(0 0 0 / 0.16), 0 0 0 1px var(--ev-line); }
@@ -1233,9 +1233,9 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 .nimble-balance .balance-targets > button:hover:not(.is-active) { color: var(--ev-text); }
 .nimble-balance .balance-targets > button.is-active { color: var(--ev-text); font-weight: 650; }
 .nimble-balance .balance-list { display: grid; gap: 6px; }
-.nimble-balance button.balance-option { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: auto; min-height: 40px; padding: 8px 10px; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line-strong); background: var(--ev-surface); box-shadow: none; color: var(--ev-text); text-align: left; white-space: normal; font: 500 13px/18px var(--ev-font-ui); }
+.nimble-balance button.balance-option { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; height: auto; min-height: 40px; padding: 8px 10px; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line-strong); background: var(--ev-surface); box-shadow: none; color: var(--ev-text); text-align: left; white-space: normal; font: 500 13px/18px var(--ev-font-ui); }
 .nimble-balance button.balance-option:hover { background: var(--ev-surface-2); }
-.nimble-balance .balance-option-text { flex: 1 1 auto; min-width: 0; }
+.nimble-balance .balance-option-text { flex: 1 1 9rem; min-width: 0; }
 .nimble-balance .balance-empty { font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); }
 .nimble-popover.balance-popover { background: var(--ev-surface, var(--background-primary)); }
 @media (pointer: coarse) { .nimble-balance .balance-targets > button { height: 38px; } }
@@ -1375,6 +1375,7 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 .notice .ev-roll-toast .nimble-roll-notice-label { font-weight: 650; overflow-wrap: anywhere; }
 .notice .ev-roll-toast .ev-roll-line { grid-column: 2; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; }
 .notice .ev-roll-toast .nimble-roll-notice-detail { opacity: 0.75; font-variant-numeric: tabular-nums; }
+.notice .ev-roll-toast .ev-roll-result { display: inline-flex; align-items: baseline; gap: 8px; white-space: nowrap; }
 .notice .ev-roll-toast .ev-roll-eq { opacity: 0.6; }
 .notice .ev-roll-toast .nimble-roll-notice-total { font: 700 24px/26px var(--ev-font-num, var(--font-interface)); font-variant-numeric: tabular-nums lining-nums; }
 .notice .ev-roll-toast.ev-sys-dnd5e .nimble-roll-notice-total { font: 600 27px/26px var(--ev-font-display); }
@@ -4704,7 +4705,7 @@ body.is-tablet .nimble-count-modal button.nimble-count-seg { padding: 0 0.5rem; 
 /* The footer */
 .ev-dialog .ev-dialog-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 .ev-dialog .ev-dialog-foot .is-cancel { margin-right: auto; }
-.ev-dialog.is-compact .ev-dialog-foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+.ev-dialog.is-compact .ev-dialog-foot { display: grid; grid-template-columns: minmax(min-content, 1fr) minmax(0, 2fr); }
 .ev-dialog.is-compact .ev-dialog-foot .is-cancel { margin-right: 0; }
 .ev-dialog button.ev-dialog-btn { height: 40px; min-width: 0; padding: 0 16px; border-radius: var(--ev-r-md, 6px); font: 600 14px/normal var(--ev-font-ui, var(--font-interface)); --ev-pill-icon: 17px; --ev-pill-gap: 7px; }
 .ev-dialog.is-compact button.ev-dialog-btn { height: 44px; }
