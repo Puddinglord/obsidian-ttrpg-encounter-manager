@@ -90,8 +90,8 @@ const STAT_NAME: Record<StatKey, string> = { STR: 'Strength', DEX: 'Dexterity', 
 
 /** A save mark, as the official sheet draws it: a triangle on top of a stat's box (▲) or under it (▼). */
 const triangle = (dir: 'up' | 'down') => `<path d="${dir === 'down' ? 'M1 .75 11 9.25l10-8.5' : 'M1 9.25 11 .75l10 8.5'}"/>`;
-/** The Wounds box: its top dips for the label; a dark foot. Drawn at 190 × 77 and stretched to the box. */
-const WOUNDS_BOX = '<path class="bx" vector-effect="non-scaling-stroke" d="M2 9h30c4 0 4 9 8 9H150c4 0 4-9 8-9h30v66H2Z"/><path class="bd" d="M2 59H188v16H2Z"/>';
+/** The Wounds box: its top dips for the label; a dark foot. Drawn at 190 × 77 and stretched to the box; its painted edges run 9 → 77 like the other boxes'. */
+const WOUNDS_BOX = '<path class="bx" vector-effect="non-scaling-stroke" d="M2 10h30c4 0 4 9 8 9H150c4 0 4-9 8-9h30v66H2Z"/><path class="bd" d="M2 61H188v15H2Z"/>';
 /** HP's heart, filled, as the books draw it. */
 const HEART = '<path fill="currentColor" d="M12 21.2s-7.6-4.6-9.7-9.3C.8 8.5 2.9 4.4 6.7 4.4c2.2 0 3.7 1.2 5.3 3 1.6-1.8 3.1-3 5.3-3 3.8 0 5.9 4.1 4.4 7.5-2.1 4.7-9.7 9.3-9.7 9.3Z"/>';
 /** The rule under a card's name: two strokes and a diamond. */
