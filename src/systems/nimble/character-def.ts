@@ -169,6 +169,8 @@ export interface CharacterSheet {
 	slots: { used: number; max: number };
 	attacks: Attack[];
 	spells: KnownSpell[];
+	/** The spell schools the hero knows: the class's, and any the note adds (`schools`, chosen as they level). */
+	schools: string[];
 	features: SheetFeature[];
 	resources: Resource[];
 	/** Frontmatter keys present in the note (so the sheet can show what's overridden). */
@@ -480,10 +482,12 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 		spells.push({ name: sp?.name ?? name, spell: sp, granted, tier, school: sp?.school ?? '', cost: usesMana ? tier : 0 });
 	};
 	const usesMana = !!casting?.manaFormula || manaMax > 0;
+	// The class's schools, then any the note adds (a Songweaver's second school, a Stormshifter's Deepening Study).
+	const schoolsKnown = [...new Set([...(casting?.schools ?? []), ...list(fm.schools).map(text).filter(Boolean)])];
 	if (cls && casting) {
 		// What the class knows: its schools, its spell list, and spells printed for it — up to the tier it has unlocked.
 		// Utility spells are chosen (Elemental Mastery…), and GM secret spells are rewards, so neither comes automatically.
-		const schools = new Set((casting.schools ?? []).map(nameKey));
+		const schools = new Set(schoolsKnown.map(nameKey));
 		const listed = new Set((cls.spellList ?? []).map(nameKey));
 		for (const sp of comp.spells) {
 			if (sp.utility || sp.secret || (sp.tier ?? 0) > maxTier) continue;
@@ -582,7 +586,11 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 		if (!r?.name) continue;
 		const v = resValue(r.name);
 		const rule = resourceRule(r.name);
-		const max = v.max ?? (rule?.maxAt ? rule.maxAt(level, text(fm.subclass)) : evalFormula(r.max, vars));
+		// "+1 max Combat Dice", chosen instead of an ability (Commander's Fit for Any Battlefield), once per pick.
+		const extra = features.filter(f => new RegExp(`^\\+(\\d+) max ${r.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/s$/i, '')}s?\\b`, 'i').test(f.name))
+			.reduce((n, f) => n + Number(/^\+(\d+)/.exec(f.name)?.[1] ?? 0), 0);
+		const base = v.max ?? (rule?.maxAt ? rule.maxAt(level, text(fm.subclass)) : evalFormula(r.max, vars));
+		const max = base !== undefined && v.max === undefined ? base + extra : base;
 		// Dice that grow with level: "Your Fury Dice are now d6s."
 		let die = r.die;
 		for (const f of classFeatures) {
@@ -637,7 +645,7 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 		actions: Math.max(0, Math.min(9, Math.floor(num(fm.actions) ?? ACTIONS_PER_TURN))),
 		reactionsUsed: list(fm.reactions_used).map(text).filter(Boolean),
 		quarry: text(fm.quarry),
-		inventory, slots, attacks, spells, features, resources,
+		inventory, slots, attacks, spells, schools: schoolsKnown, features, resources,
 		set, cls, anc, bg,
 	};
 }
@@ -866,6 +874,13 @@ export function addSpell(fm: Frontmatter, name: string): void {
 	if (!l.some(v => nameKey(entryName(v)) === nameKey(name))) l.push(name);
 }
 
+/** Spell schools the hero learns as they level (`schools: [Fire]`), on top of the class's. */
+export function addSchools(fm: Frontmatter, names: string[]): void {
+	if (!names.length) return;
+	const l = nameList(fm, 'schools');
+	for (const n of names) if (!l.some(v => nameKey(text(v)) === nameKey(n))) l.push(n);
+}
+
 export function removeSpell(fm: Frontmatter, name: string): void {
 	const l = nameList(fm, 'spells').filter(v => nameKey(entryName(v)) !== nameKey(name));
 	if (l.length) fm.spells = l; else delete fm.spells;
@@ -996,8 +1011,14 @@ export interface NewCharacterOptions {
 	background?: string;
 	/** "Standard" [2, 2, 0, -1], "Balanced" [2, 1, 1, 0] or "Min-Max" [3, 1, -1, -1]. */
 	array?: string;
+	/** Where the array's numbers go, as the player placed them. Missing (or not the array's numbers): the class's suggestion. */
+	stats?: Partial<Record<StatKey, number>>;
+	/** Small or Medium, for an ancestry that can be either. */
+	size?: string;
+	/** 25 gp a level instead of the class's starting gear (Core Rules 3.3, Equipment & Money). */
+	gold?: boolean;
 	mine?: boolean;
-	/** Start above level 1 (a campaign that starts at level 5): HP rises by the Hit Die's average each level. */
+	/** Start above level 1 (a campaign that starts at level 5); new-character.ts levels the hero up to it. */
 	level?: number;
 }
 
@@ -1007,16 +1028,31 @@ export const STAT_ARRAYS: { name: string; values: number[] }[] = [
 	{ name: 'Min-Max', values: [3, 1, -1, -1] },
 ];
 
+/** The stat arrays (Core Rules 3.3, Basic Details & Stats), as the compendium prints them. */
+export function statArrays(comp?: Compendium): { name: string; values: number[] }[] {
+	return comp?.rules.statArrays?.length ? comp.rules.statArrays : STAT_ARRAYS;
+}
+
+/** An array by name ("min-max" finds Min-Max); the first when there's no such array. */
+export function statArray(comp: Compendium | undefined, name: string | undefined): { name: string; values: number[] } {
+	const arrays = statArrays(comp);
+	return arrays.find(a => nameKey(a.name) === nameKey(name ?? 'Standard')) ?? arrays[0] ?? STAT_ARRAYS[0];
+}
+
+/** A class's key stats, in the book's order ("DEX and INT"). */
+export function keyStatsOf(cls?: ClassEntry): StatKey[] {
+	return [...new Set((cls?.keyStats ?? []).map(k => statKey(k)).filter((k): k is StatKey => !!k))];
+}
+
 /**
- * Assign a stat array: highest values to the class's key stats (in order), the
- * lowest to its ▼ save stat, the rest in STR, DEX, INT, WIL order.
+ * The class's suggested placement of a stat array: the highest values to its key
+ * stats (in order), the lowest to its ▼ save stat, the rest in STR, DEX, INT, WIL order.
  */
 export function assignStats(values: number[], cls?: ClassEntry): Record<StatKey, number> {
 	const sorted = [...values].sort((a, b) => b - a);
 	while (sorted.length < 4) sorted.push(0);
 	const out = {} as Record<StatKey, number>;
-	const keys = (cls?.keyStats ?? []).map(k => statKey(k)).filter((k): k is StatKey => !!k);
-	const order: StatKey[] = [...new Set(keys)];
+	const order: StatKey[] = keyStatsOf(cls);
 	const dis = statKey(cls?.saves?.dis);
 	const rest = STATS.filter(s => !order.includes(s) && s !== dis);
 	order.push(...rest);
@@ -1026,14 +1062,49 @@ export function assignStats(values: number[], cls?: ClassEntry): Record<StatKey,
 	return out;
 }
 
-/** Frontmatter for a new level 1 hero: stats, HP and starting gear from the compendium. */
-export function newCharacterFrontmatter(o: NewCharacterOptions, comp: Compendium): Frontmatter {
+/** True when `stats` uses exactly the array's numbers (in any order). */
+export function isPlacementOf(stats: Partial<Record<StatKey, number>> | undefined, values: number[]): stats is Record<StatKey, number> {
+	if (!stats || STATS.some(k => typeof stats[k] !== 'number' || !Number.isFinite(stats[k]))) return false;
+	const a = STATS.map(k => stats[k] as number).sort((x, y) => x - y);
+	const b = [...values].sort((x, y) => x - y);
+	while (b.length < 4) b.unshift(0);
+	return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+/**
+ * Core Rules 3.3: "place the highest numbers in the KEY stats for your class". The
+ * stats that break it: each key stat holding less than some other stat does.
+ */
+export function keyStatsShort(stats: Record<StatKey, number>, cls?: ClassEntry): StatKey[] {
+	const keys = keyStatsOf(cls);
+	const others = STATS.filter(s => !keys.includes(s));
+	const best = others.length ? Math.max(...others.map(s => stats[s])) : -Infinity;
+	return keys.filter(k => stats[k] < best);
+}
+
+/** Two stats trade their numbers. */
+export function swapStats(stats: Record<StatKey, number>, a: StatKey, b: StatKey): Record<StatKey, number> {
+	return { ...stats, [a]: stats[b], [b]: stats[a] };
+}
+
+/** Where the numbers go for a new hero: the player's placement when it's the array's numbers, else the class's suggestion. */
+export function placedStats(o: Pick<NewCharacterOptions, 'array' | 'stats' | 'className'>, comp: Compendium): Record<StatKey, number> {
+	const values = statArray(comp, o.array).values;
+	return isPlacementOf(o.stats, values) ? { ...o.stats } : assignStats(values, comp.classByName(o.className));
+}
+
+/** Starting gold: 25 gp, times the starting level (Core Rules 3.3, Equipment & Money). */
+export const startingGold = (level = 1): number => 25 * Math.max(1, Math.floor(level));
+
+/**
+ * A new hero at level 1: stats as placed, HP from the class, its starting gear (or
+ * the gold instead). new-character.ts takes it on to a higher starting level.
+ */
+export function levelOneFrontmatter(o: NewCharacterOptions, comp: Compendium): Frontmatter {
 	const cls = comp.classByName(o.className);
 	const anc = comp.ancestry(o.ancestry);
 	const bg = comp.background(o.background);
-	const arrays = comp.rules.statArrays?.length ? comp.rules.statArrays : STAT_ARRAYS;
-	const array = arrays.find(a => nameKey(a.name) === nameKey(o.array ?? 'Standard')) ?? arrays[0] ?? STAT_ARRAYS[0];
-	const stats = assignStats(array.values, cls);
+	const stats = placedStats(o, comp);
 	const fm: Frontmatter = { nimble: 'character' };
 	if (o.name.trim()) fm.title = o.name.trim();
 	if (o.player) fm.player = o.player;
@@ -1042,13 +1113,16 @@ export function newCharacterFrontmatter(o: NewCharacterOptions, comp: Compendium
 	if (cls || o.className) fm.class = cls?.name ?? o.className;
 	fm.level = 1;
 	if (bg || o.background) fm.background = bg?.name ?? o.background;
-	if (anc?.size && !/ or /i.test(anc.size)) fm.size = anc.size;
+	const sizes = sizesOf(anc?.size);
+	const size = sizes.find(x => nameKey(x) === nameKey(o.size ?? '')) ?? (sizes.length === 1 ? sizes[0] : undefined);
+	if (size) fm.size = size;
 	for (const s of STATS) fm[s.toLowerCase()] = stats[s];
 	const hp = cls?.startingHp ?? 10;
 	fm.hp = hp;
 	fm.hp_max = hp;
 	const gear = (cls?.startingGear ?? []).filter(g => typeof g === 'string' && g.trim());
-	if (gear.length) {
+	if (o.gold) fm.gp = startingGold(o.level);
+	else if (gear.length) {
 		const inv: unknown[] = [];
 		for (const g of gear) {
 			const e = readInventoryEntry(g, 0)!;
@@ -1058,12 +1132,12 @@ export function newCharacterFrontmatter(o: NewCharacterOptions, comp: Compendium
 		fm.inventory = inv;
 	}
 	fm.cssclasses = ['nimble-sheet-note'];
-	const target = Math.max(1, Math.min(20, Math.floor(o.level ?? 1)));
-	for (let l = 1; l < target; l++) {
-		const s = readCharacter(fm, comp);
-		levelUp(fm, s, hpAverage(s.hitDie, comp));
-	}
 	return fm;
+}
+
+/** "Small or Medium" → Small, Medium. */
+export function sizesOf(size: string | undefined): string[] {
+	return String(size ?? '').split(/\s*(?:,|\bor\b|\/)\s*/i).map(x => x.trim()).filter(Boolean);
 }
 
 /** Feature options to pick from (Savage Arsenal…), for the sheet's Add button and the level-up wizard. */

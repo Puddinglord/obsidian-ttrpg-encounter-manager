@@ -4230,7 +4230,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		await lv.waitFor();
 		assert.match(await lv.locator('.lu-panel.is-active').innerText(), /Enduring Rage/, 'level 4 features listed');
 		const steps = await lv.locator('.lu-dot').allInnerTexts();
-		assert.deepEqual(steps.map(t => t.trim()), ['Overview', 'Hit points', 'Savage Arsenal', 'Stats', 'Skills', 'Review']);
+		assert.deepEqual(steps.map(t => t.trim()), ['Overview', 'Hit points', 'Savage Arsenal', 'Increases', 'Skills', 'Review']);
 		const next = () => lv.locator('.lu-next').click();
 		await next();
 		// Hit points have to be decided before moving on.
@@ -4253,7 +4253,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(await skill('Arcana').locator('.lu-step-btn').first().isDisabled(), true, 'no points of yours on Arcana to move');
 		await skill('Insight').locator('.lu-step-btn').first().click();
 		await skill('Stealth').locator('.lu-step-btn.is-plus').click();
-		assert.match(await skill('Stealth').innerText(), /\+2/);
+		assert.equal(await skill('Stealth').locator('.lu-stat-new').count(), 1, 'Stealth shows its new total');
 		// Going back keeps what was chosen.
 		await lv.locator('.lu-dot', { hasText: 'Savage Arsenal' }).click();
 		assert.equal(await lv.locator('.lu-panel.is-active .lu-option.is-chosen').count(), 1);
@@ -4344,20 +4344,40 @@ test('character sheet: Live Preview renders it too, and New character writes a n
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
 	const m = o.page.locator('.modal.nimble-newchar-modal');
 	await m.waitFor();
-	await m.locator('input[type="text"]').first().fill('Wren Ashdown');
-	const selects = m.locator('select');
-	await selects.nth(0).selectOption('Human');
-	await selects.nth(1).selectOption('Mage');
-	await selects.nth(2).selectOption('Min-Max');
-	assert.match(await m.locator('.nimble-newchar-preview').innerText(), /10 HP/);
+	await m.locator('input.lu-name-input').fill('Wren Ashdown');
+	await m.locator('select[data-k="ancestry"]').selectOption('Human');
+	await m.locator('select[data-k="class"]').selectOption('Mage');
+	assert.match(await m.locator('.lu-class').innerText(), /10/, 'the Mage starts with 10 HP');
+	assert.deepEqual((await m.locator('.lu-dot').allInnerTexts()).map(t => t.trim()), ['Hero', 'Stats', 'Skills', 'Review']);
+	await m.locator('.lu-next').click();
+	// Min-Max, as the class places it (INT 3, WIL 1), then INT and WIL swapped by tapping one and then the other.
+	await m.locator('.lu-panel.is-active .ev-seg button', { hasText: 'Min-Max' }).click();
+	const stat = (k) => m.locator('.lu-panel.is-active .lu-place', { hasText: k }).locator('.ns-stat-value');
+	assert.deepEqual(await Promise.all(['STR', 'DEX', 'INT', 'WIL'].map(k => stat(k).innerText())), ['−1', '−1', '3', '1']);
+	assert.equal(await m.locator('.lu-panel.is-active .lu-place.is-key').count(), 2, 'INT and WIL are the key stats');
+	assert.equal(await m.locator('.lu-panel.is-active .lu-place.is-adv .ns-tri.is-up.is-on').count(), 1, 'the ▲ save is marked');
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'INT' }).locator('.ns-stat-box').click();
+	assert.equal(await m.locator('.lu-panel.is-active .lu-place.is-picked').count(), 1);
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'WIL' }).locator('.ns-stat-box').click();
+	assert.deepEqual(await Promise.all(['INT', 'WIL'].map(k => stat(k).innerText())), ['1', '3']);
+	// A key stat left with less than STR is pointed out; the class's placement puts it back.
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'STR' }).locator('.ns-stat-box').click();
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'INT' }).locator('.ns-stat-box').click();
+	assert.match(await m.locator('.lu-panel.is-active .lu-warn').innerText(), /INT/);
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'STR' }).locator('.ns-stat-box').click();
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'INT' }).locator('.ns-stat-box').click();
+	assert.equal(await m.locator('.lu-panel.is-active .lu-warn').count(), 0);
 	await m.screenshot({ path: join(ARTIFACTS, 'sheet-new-character.png') });
-	await m.locator('button.mod-cta', { hasText: 'Create' }).click();
+	await m.locator('.lu-dot', { hasText: 'Review' }).click();
+	assert.match(await m.locator('.lu-panel.is-active .lu-review').innerText(), /INT 1 · WIL 3/);
+	await m.locator('.lu-next', { hasText: 'Create' }).click();
 	// It goes to the active campaign's Party folder, or the vault root when there's none (earlier tests may leave one active).
 	const WREN = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Wren Ashdown')?.path ?? null), { what: 'the new note' });
 	const made = await o.waitFor(() => o.eval((app, _p, p) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter ?? null, WREN), { what: 'its frontmatter' });
 	assert.equal(made.nimble, 'character');
 	assert.equal(made.class, 'Mage');
-	assert.equal(made.int, 3);
+	assert.equal(made.int, 1, 'INT where the player put it');
+	assert.equal(made.wil, 3, 'WIL where the player put it');
 	assert.equal(made.hp, 10);
 	assert.ok(made.inventory.some(i => (i.name ?? i) === 'Adventurer’s Garb'));
 	await o.openFile(WREN);
@@ -4374,6 +4394,97 @@ test('character sheet: Live Preview renders it too, and New character writes a n
 	assert.match(text, /```nimble-sheet\n```/);
 	assert.match(text, /## Backstory/);
 	await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f); }, WREN);
+});
+
+test('character sheet: New character starts a Berserker at level 4, taking each level’s steps (level)', async (o) => {
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+	const m = o.page.locator('.modal.nimble-newchar-modal');
+	await m.waitFor();
+	await m.locator('input.lu-name-input').fill('Brakka Four');
+	await m.locator('select[data-k="class"]').selectOption('Berserker');
+	for (let i = 0; i < 3; i++) await m.locator('[data-k="level-plus"]').click();
+	assert.equal(await m.locator('input.lu-level-input').inputValue(), '4');
+	const steps = (await m.locator('.lu-dot').allInnerTexts()).map(t => t.trim());
+	assert.deepEqual(steps, ['Hero', 'Stats', 'Hit points', 'Subclass', 'Savage Arsenal', 'Increases', 'Skills', 'Review']);
+	const step = async (name) => { await m.locator('.lu-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return m.locator('.lu-panel.is-active'); };
+	// Hit points: the flat bonus is taken unless they roll (d12: +6 a level).
+	assert.match(await (await step('Hit points')).locator('.lu-hp-new').innerText(), /^38$/);
+	const sub = await step('Subclass');
+	await sub.locator('.lu-sub-tab', { hasText: 'Red Mist' }).click();
+	await sub.locator('.lu-sub-band-choose').click();
+	assert.match(await m.locator('.lu-sub').innerText(), /Path of the Red Mist/);
+	await (await step('Savage Arsenal')).locator('.lu-option', { hasText: 'Whirlwind' }).click();
+	await (await step('Increases')).locator('.lu-stat', { hasText: 'DEX' }).click();
+	const skills = await step('Skills');
+	assert.match(await skills.locator('.lu-skill-budget').innerText(), /3 to place/);
+	const row = (name) => skills.locator('.lu-skill-row', { hasText: name });
+	await row('Might').locator('.lu-step-btn.is-plus').click();
+	await row('Might').locator('.lu-step-btn.is-plus').click();
+	await row('Stealth').locator('.lu-step-btn.is-plus').click();
+	assert.equal(await row('Lore').locator('.lu-step-btn.is-plus').isDisabled(), true, 'all three placed');
+	await m.screenshot({ path: join(ARTIFACTS, 'new-character-level-4.png') });
+	const review = await step('Review');
+	assert.equal(await review.locator('.lu-review-row.is-missing').count(), 0, 'every choice made');
+	await m.locator('.lu-next', { hasText: 'Create' }).click();
+	const path = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Brakka Four')?.path ?? null), { what: 'the new note' });
+	try {
+		const fm = await o.waitFor(() => o.eval((app, _p, p) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter ?? null, path), { what: 'its frontmatter' });
+		assert.equal(fm.level, 4);
+		assert.equal(fm.hp_max, 38);
+		assert.equal(fm.subclass, 'Path of the Red Mist');
+		assert.deepEqual(fm.features, ['Whirlwind']);
+		assert.deepEqual([fm.str, fm.dex], [2, 3], 'Standard array, +1 DEX at level 4');
+		assert.deepEqual(fm.skills, { might: 2, stealth: 1 });
+	} finally {
+		await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f); }, path);
+	}
+});
+
+test('character sheet: level up through the subclass choice, with a school and Utility Spells (level)', async (o) => {
+	const path = 'Characters/Orin Levels.md';
+	await o.eval(async (app, _p, path) => {
+		await app.vault.create(path, '---\nnimble: character\nclass: Songweaver\nlevel: 2\nstr: -1\ndex: 0\nint: 2\nwil: 2\nhp: 17\nhp_max: 17\nschools: [Fire]\ncssclasses: [nimble-sheet-note]\n---\n\n```nimble-sheet\n```\n');
+	}, path);
+	try {
+		await o.openFile(path, 'preview');
+		const sheet = o.page.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		await camp(o, sheet, 'Level up');
+		const lv = o.page.locator('.modal.nimble-levelup');
+		await lv.waitFor();
+		assert.deepEqual((await lv.locator('.lu-dot').allInnerTexts()).map(t => t.trim()), ['Overview', 'Hit points', 'Subclass', 'Spells', 'Skills', 'Review']);
+		const step = async (name) => { await lv.locator('.lu-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return lv.locator('.lu-panel.is-active'); };
+		await (await step('Hit points')).locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
+		// The subclass: Compare shows every one side by side; choosing one adds its features to the overview.
+		const sub = await step('Subclass');
+		await sub.locator('.lu-view-btn', { hasText: 'Compare' }).click();
+		assert.ok(await sub.locator('.lu-compare th').count() >= 5, 'every Herald side by side');
+		await sub.locator('.lu-compare-choose').first().click();
+		assert.equal(await lv.locator('.lu-panel.is-active .lu-compare-choose.is-chosen').count(), 1);
+		const chosen = (await lv.locator('.lu-panel.is-active .lu-compare-name').first().innerText()).trim();
+		// "Choose 1 Utility Spell from each spell school you know": Wind (the class's) and Fire (the note's).
+		const spells = await step('Spells');
+		const boxes = spells.locator('.lu-spell-box');
+		assert.equal(await boxes.count(), 2);
+		assert.match(await boxes.nth(0).innerText(), /Wind/);
+		assert.match(await boxes.nth(1).innerText(), /Fire/);
+		await boxes.nth(0).locator('.lu-option', { hasText: 'Feather Fall' }).click();
+		await boxes.nth(1).locator('.lu-option', { hasText: 'Kindle' }).click();
+		await (await step('Skills')).locator('.lu-skill-row', { hasText: 'Influence' }).locator('.lu-step-btn.is-plus').click();
+		const review = await step('Review');
+		assert.equal(await review.locator('.lu-review-row.is-missing').count(), 0);
+		await lv.screenshot({ path: join(ARTIFACTS, 'level-up-subclass-review.png') });
+		await lv.locator('.lu-next').click();
+		const fm = await o.waitFor(() => o.eval((app, _p, p) => { const f = app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter; return f?.level === 3 ? f : null; }, path), { what: 'level 3' });
+		assert.match(fm.subclass, new RegExp(chosen));
+		assert.equal(fm.hp_max, 21, 'd8: +4');
+		assert.deepEqual(fm.spells, ['Feather Fall', 'Kindle']);
+		assert.deepEqual(fm.schools, ['Fire'], 'the school kept as it was');
+		assert.equal(fm.skills.influence, 1);
+		await lv.locator('.lu-celebrate button').click();
+	} finally {
+		await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f); }, path);
+	}
 });
 
 test('character sheet: Judgment Dice typed in from the table or rolled, all on the next attack; Fury Dice stay while Raging', async (o) => {
@@ -4682,6 +4793,70 @@ test('phone: character sheet at phone width, HP pad as a sheet, sticky tabs', as
 	} finally {
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
 		await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400); // switching to and from phone mode reloads settings; don't let it read a half-written file
+		await o.eval((app) => app.emulateMobile(false));
+		await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+		await p.setViewportSize({ width: 1400, height: 900 });
+		await p.waitForTimeout(800);
+	}
+});
+
+test('phone: the character wizard fits a phone; two taps swap stats, the steps swipe', async (o) => {
+	const p = o.page;
+	const cdp = await p.context().newCDPSession(p);
+	const tap = async (loc) => {
+		const b = await loc.boundingBox();
+		assert.ok(b, 'tap target is visible');
+		const x = b.x + b.width / 2, y = b.y + b.height / 2;
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await p.waitForTimeout(250);
+	};
+	await p.setViewportSize({ width: 360, height: 780 });
+	await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+	await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400);
+	await o.eval((app) => app.emulateMobile(true));
+	await p.waitForTimeout(1200);
+	try {
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		const m = p.locator('.modal.nimble-newchar-modal');
+		await m.waitFor();
+		await m.locator('select[data-k="class"]').selectOption('Hunter');
+		for (let i = 0; i < 2; i++) await tap(m.locator('[data-k="level-plus"]'));
+		await tap(m.locator('.lu-next'));
+		await p.waitForTimeout(450);
+		const stat = (k) => m.locator('.lu-panel.is-active .lu-place', { hasText: k });
+		// Hunter: DEX and WIL are key. Standard puts 2 on both; swap DEX's 2 with STR's 0, and back.
+		assert.equal(await stat('DEX').locator('.ns-stat-value').innerText(), '2');
+		await tap(stat('DEX').locator('.ns-stat-box'));
+		await tap(stat('STR').locator('.ns-stat-box'));
+		assert.equal(await stat('STR').locator('.ns-stat-value').innerText(), '2');
+		assert.equal(await m.locator('.lu-panel.is-active .lu-warn').count(), 1, 'DEX is short now');
+		await m.screenshot({ path: join(ARTIFACTS, 'new-character-phone.png') });
+		// Nothing spills past the dialog, on any step.
+		const steps = await m.locator('.lu-dot').count();
+		for (let k = 0; k < steps; k++) {
+			await m.locator('.lu-dot').nth(k).click();
+			await p.waitForTimeout(450);
+			const spill = await p.evaluate(() => {
+				const panel = document.querySelector('.nimble-wizard .lu-panel.is-active');
+				const r = panel.getBoundingClientRect();
+				return [...panel.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > r.right + 1 || b.left < r.left - 1) && !e.closest('.lu-compare'); }).map(e => String(e.className)).slice(0, 5);
+			});
+			assert.deepEqual(spill, [], `step ${k} fits the phone`);
+		}
+		// A sideways swipe moves between steps.
+		await m.locator('.lu-dot').nth(2).click();
+		await p.waitForTimeout(450);
+		const before = await m.locator('.lu-dot.is-active').innerText();
+		const vp = await m.locator('.lu-viewport').boundingBox();
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: vp.x + vp.width - 30, y: vp.y + 200 }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: vp.x + 40, y: vp.y + 205 }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await p.waitForTimeout(500);
+		assert.notEqual(await m.locator('.lu-dot.is-active').innerText(), before, 'swiped to the next step');
+	} finally {
+		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
+		await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400);
 		await o.eval((app) => app.emulateMobile(false));
 		await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
 		await p.setViewportSize({ width: 1400, height: 900 });
@@ -5096,6 +5271,26 @@ test('pills: every icon and label sits on its pill centre line (within 1px)', as
 		}
 		await o.page.keyboard.press('Escape');
 	});
+	// New character, every step of a level 4 Songweaver (a school, Utility Spells, a subclass, the stat boxes).
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+	const m = o.page.locator('.modal.nimble-newchar-modal');
+	await m.waitFor();
+	await m.locator('input.lu-name-input').fill('Pill Check');
+	await m.locator('select[data-k="class"]').selectOption('Songweaver');
+	await m.locator('select[data-k="background"]').selectOption('Academy Dropout');
+	for (let i = 0; i < 3; i++) await m.locator('[data-k="level-plus"]').click();
+	const steps = await m.locator('.lu-dot').count();
+	for (let k = 0; k < steps; k++) {
+		await m.locator('.lu-dot').nth(k).click();
+		await o.page.waitForTimeout(450);
+		const panel = m.locator('.lu-panel.is-active');
+		if (await panel.locator('.lu-sub-band-choose').count()) await panel.locator('.lu-sub-band-choose').click();
+		if (await panel.locator('.lu-school').count()) await panel.locator('.lu-school').first().click();
+		if (await panel.locator('.lu-place').count()) await panel.locator('.lu-place .ns-stat-box').first().click();
+		await o.page.waitForTimeout(300);
+		bad.push(...(await measure('.modal.nimble-newchar-modal')).map(b => ({ step: k, ...b })));
+	}
+	await o.page.keyboard.press('Escape');
 	assert.deepEqual(bad, [], 'misaligned pills');
 });
 

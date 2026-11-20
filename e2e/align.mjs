@@ -15,7 +15,7 @@ export const PILL_SELECTORS = [
 	'.ns-btn', '.ns-state', '.ns-cond-name', '.ns-rc-cost', '.ns-turn-pair', '.ev-face', '.ev-face-remove',
 	'.nimble-npc-pill', '.campaign-role-pill', '.campaign-hero-you', '.lore-tag', '.battle-outcome', '.battle-fact',
 	'.lu-tag', '.lu-gain', '.lu-count', '.lu-dot', '.lu-back', '.lu-next', '.lu-sub-tab', '.lu-sub-band-choose', '.lu-skill-budget', '.lu-skill-move', '.lu-skill-reset',
-	'.lu-step-btn', '.lu-celebrate-chip', '.lu-view-toggle button', '.lu-badge',
+	'.lu-step-btn', '.lu-celebrate-chip', '.lu-view-toggle button', '.lu-badge', '.lu-chip', '.lu-key-tag', '.lu-level-tag', '.lu-reset', '.lu-view-btn', '.lu-compare-choose', '.lu-option-less',
 	'.nimble-spotlight-chip', '.nimble-difficulty', '.encounter-count', '.bestiary-tag', '.statblock-action', '.rd-seg-btn', '.rd-mode-btn',
 	'.nimble-cmpx-chip', '.nimble-cmpx-pill', '.nimble-cmpx-tag', '.nimble-cmpx-pill-tag', '.nimble-cmp-back', '.nimble-count-seg', '.ev-term-tag',
 	'.nimble-inline-ref', '.nimble-cmpx-seg', '.nimble-cmpx-row-badge', '.nimble-slash-badge', '.nimble-spot-tag', '.encounter-chip',

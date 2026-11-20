@@ -42,7 +42,8 @@ import { cluster } from '../../core/cluster';
 import { pill } from '../../core/pill';
 import { drawSvg } from '../../core/svg';
 import { ClassPanelHost, renderClassPanel } from './class-panel';
-import { LevelUpWizard } from './level-up';
+import { LevelUpWizard } from './character-wizard';
+import { plainMod, saveTriangle } from './sheet-marks';
 import { nimble } from './runtime';
 
 export type SheetTab = 'actions' | 'features' | 'spells' | 'inventory' | 'notes';
@@ -88,8 +89,6 @@ function stateFor(path: string): SheetState {
 
 const STAT_NAME: Record<StatKey, string> = { STR: 'Strength', DEX: 'Dexterity', INT: 'Intelligence', WIL: 'Will' };
 
-/** A save mark, as the official sheet draws it: a triangle on top of a stat's box (▲) or under it (▼). */
-const triangle = (dir: 'up' | 'down') => `<path d="${dir === 'down' ? 'M1 .75 11 9.25l10-8.5' : 'M1 9.25 11 .75l10 8.5'}"/>`;
 /** The Wounds box: its top dips for the label; a dark foot. Drawn at 190 × 77 and stretched to the box; its painted edges run 9 → 77 like the other boxes'. */
 const WOUNDS_BOX = '<path class="bx" vector-effect="non-scaling-stroke" d="M2 10h30c4 0 4 9 8 9H150c4 0 4-9 8-9h30v66H2Z"/><path class="bd" d="M2 61H188v15H2Z"/>';
 /** HP's heart, filled, as the books draw it. */
@@ -105,8 +104,6 @@ const REACTIONS: { name: string; icon: EvIconName; text: (string | { term: strin
 	{ name: 'Opportunity Attack', icon: 'attack', text: ['A melee attack with ', { term: 'disadvantage' }, ' on an adjacent creature that willingly moves away.'] },
 ];
 
-/** A stat as the official sheet prints it: 3, 0, −1 (no plus). */
-const plainMod = (n: number) => (n < 0 ? `−${Math.abs(n)}` : String(n));
 
 /** "2d6+3" → "2d6 + 3", as the books print a roll. */
 const spacedRoll = (e: string) => e.replace(/\s*([+-])\s*/g, ' $1 ').replace(/ - /g, ' − ').trim();
@@ -467,7 +464,7 @@ export class CharacterSheetRenderer extends Component {
 
 	private levelUp(): void {
 		if (this.sheet.level >= 20) return;
-		new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn)).open();
+		new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn), this.fm).open();
 	}
 
 	private renderDetailEditor(parent: HTMLElement): void {
@@ -530,10 +527,10 @@ export class CharacterSheetRenderer extends Component {
 				if (editing) {
 					// Which save is advantaged (▲) or disadvantaged (▼): tap the mark.
 					const t = box.createEl('button', { cls: `ns-tri is-${dir}${on ? ' is-on' : ''} is-editable`, attr: { type: 'button', 'aria-pressed': String(on), 'aria-label': `${on ? 'Clear' : 'Set'} ${stat} as the ${dir === 'up' ? 'advantaged' : 'disadvantaged'} save` } });
-					drawSvg(t, triangle(dir), 22, 10);
+					drawSvg(t, saveTriangle(dir), 22, 10);
 					t.addEventListener('click', () => void this.mutate(fm => setSave(fm, dir === 'up' ? 'adv' : 'dis', on ? 'none' : stat)));
 				} else {
-					drawSvg(box, triangle(dir), 22, 10, `ns-tri is-${dir}${on ? ' is-on' : ''}`);
+					drawSvg(box, saveTriangle(dir), 22, 10, `ns-tri is-${dir}${on ? ' is-on' : ''}`);
 				}
 			}
 			if (!editing) {
@@ -1304,7 +1301,7 @@ export class CharacterSheetRenderer extends Component {
 			// Level up: where you'd get to.
 			const max = s.level >= 20;
 			const level = card('is-level', evIcon('arrow-up'), 'Level up',
-				() => new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn)).open(), max);
+				() => new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn), this.fm).open(), max);
 			const big = level.createDiv({ cls: 'ns-camp-levels' });
 			big.createSpan({ cls: 'ns-camp-level-from', text: String(s.level) });
 			setIcon(big.createSpan({ cls: 'ns-camp-level-arrow' }), evIcon('arrow-right'));

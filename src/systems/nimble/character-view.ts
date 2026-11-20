@@ -6,7 +6,7 @@
 import { ItemView, Menu, setIcon, TFile, WorkspaceLeaf } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { CharacterSheetRenderer } from './character-sheet';
-import { NewCharacterModal } from './character-modals';
+import { NewCharacterModal } from './character-wizard';
 import { fmTrue } from '../../core/campaign-model';
 
 export const CHARACTER_VIEW_TYPE = 'nimble-character';

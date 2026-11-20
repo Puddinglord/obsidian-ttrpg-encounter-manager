@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { Compendium } from '../src/systems/nimble/compendium';
 import {
 	addCondition, addFeature, addItem, addLanguage, addSpell, adjustResource, applyDamage, assignStats, classOptions, damageRoll, evalFormula,
-	fieldRest, fmtMod, Frontmatter, heal, hitDiceHealing, hpAverage, levelUp, newCharacterFrontmatter, parseArmor, parseDamage, readCharacter,
+	fieldRest, fmtMod, Frontmatter, heal, hitDiceHealing, hpAverage, levelUp, parseArmor, parseDamage, readCharacter,
 	readInventoryEntry, regainMana, removeCondition, removeFeature, removeItem, removeLanguage, removeSpell, safeRest, setCoins,
 	setEquipped, setField, setHp, setMana, setOverride, setQty, setResource, setSave, setSkill, setStat, setTempHp, setWounds,
 	spendMana, traitBonuses,
 } from '../src/systems/nimble/character-def';
+import { newCharacterFrontmatter } from '../src/systems/nimble/new-character';
 import { FIXTURE } from './compendium-fixture';
 import BUNDLED from '../src/systems/nimble/data/compendium.json';
 

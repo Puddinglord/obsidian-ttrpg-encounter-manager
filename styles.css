@@ -4419,347 +4419,303 @@ body:not(.is-phone) .modal.nimble-cmp-modal.ev-sys-nimble .nimble-cmp-head { pad
 .nimble-spotlight .nimble-spotlight-chip:hover { color: var(--text-normal); border-color: var(--interactive-accent); }
 .nimble-spotlight .nimble-spotlight-chip.is-active { background: var(--interactive-accent); border-color: var(--interactive-accent); color: var(--text-on-accent); }
 
-/* New character dialog */
-.nimble-newchar-preview { margin: 0.4rem 0 0.2rem; padding: 0.7rem; border-radius: var(--radius-m); background: var(--background-secondary); }
-.nimble-newchar-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4rem; }
-.nimble-newchar-stat { display: flex; flex-direction: column; align-items: center; border: 2px solid var(--background-modifier-border-hover); border-radius: 4px; background: var(--background-primary); overflow: hidden; }
-.nimble-newchar-stat-value { font-size: 1.3rem; font-weight: 800; padding: 0.2rem 0; }
-.nimble-newchar-stat-label { align-self: stretch; text-align: center; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.05em; background: var(--background-modifier-border); }
-.nimble-newchar-stat.is-adv { border-color: var(--interactive-accent); }
-.nimble-newchar-line { margin-top: 0.45rem; font-size: 0.84rem; color: var(--text-muted); }
-
-/* ---------- Level-up wizard (level-up.ts): a carousel of steps ---------- */
-.modal.nimble-levelup { width: min(860px, 96vw); height: min(760px, 92vh); max-height: 92vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; --lu-accent: var(--interactive-accent); }
-.nimble-levelup .modal-header { display: none; }
-.nimble-levelup .modal-content { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; overflow: hidden; }
-.nimble-levelup .modal-close-button { z-index: 3; }
-.nimble-levelup .lu-head {
-	display: flex; align-items: center; gap: 0.9rem; padding: 1.1rem 1.3rem 0.5rem;
-	background: linear-gradient(135deg, color-mix(in srgb, var(--lu-accent) 22%, var(--background-primary)), var(--background-primary) 70%);
-}
-.nimble-levelup .lu-badge {
-	display: inline-grid; grid-template-columns: 1.5ch auto 1.5ch; align-items: center; justify-items: center; gap: 0.3rem; padding: 0.4rem 0.85rem; border-radius: 999px; flex: 0 0 auto;
-	background: var(--lu-accent); color: var(--text-on-accent); font-weight: 800; font-size: 1.25rem; line-height: 1; font-variant-numeric: tabular-nums;
-	box-shadow: 0 6px 18px color-mix(in srgb, var(--lu-accent) 40%, transparent);
-}
-.nimble-levelup .lu-badge-from, .nimble-levelup .lu-badge-to { display: block; line-height: 1; text-align: center; }
-.nimble-levelup .lu-badge-from { opacity: 0.7; }
-.nimble-levelup .lu-badge-arrow { display: flex; align-items: center; justify-content: center; opacity: 0.8; }
-.nimble-levelup .lu-badge-arrow svg { width: 15px; height: 15px; display: block; }
-.nimble-levelup .lu-titles { min-width: 0; }
-.nimble-levelup .lu-title { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
-.nimble-levelup .lu-sub { font-size: 0.85rem; color: var(--text-muted); }
+/* ---------- Nimble's character wizard (character-wizard.ts): New character and Level up ----------
+   A game dialog (core/dialog.ts) on Nimble's paper: step chips along the top, one decision a step in a carousel,
+   the sheet's own stat boxes and save triangles, names in Vollkorn, labels in the condensed capitals, tags dark
+   with white text. Colour has its jobs: red for HP, blue for spells, ochre for the class's own things (key stats,
+   the subclass chosen), charcoal for everything else. */
+.modal.ev-dialog.nimble-wizard { width: min(820px, 96vw); height: min(760px, 92vh); max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; }
+.nimble-wizard .modal-content { flex: 1 1 auto; min-height: 0; gap: 0; overflow: hidden; }
+.nimble-wizard .modal-title { padding-right: 30px; }
+.nimble-wizard .lu-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-height: 24px; margin: -4px 0 10px; color: var(--ev-text-2); font: 600 13.5px/normal var(--ev-font-ui); }
+.nimble-wizard .lu-badge { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: var(--ev-r-chip); background: var(--ev-bar); color: var(--ev-on-bar); font: 700 15px/normal var(--ev-font-num); font-variant-numeric: tabular-nums lining-nums; }
+.nimble-wizard .lu-badge-from { opacity: 0.7; }
+.nimble-wizard .lu-badge-arrow { display: inline-flex; }
+.nimble-wizard .lu-badge-arrow svg { display: block; width: 12px; height: 12px; }
+body.is-phone .nimble-wizard .lu-sub { justify-content: center; }
+.nimble-wizard .lu-level-tag { height: 22px; padding: 0 8px; border-radius: var(--ev-r-chip); background: var(--ev-bar); color: var(--ev-on-bar); font: 700 12px/normal var(--ev-font-display); letter-spacing: 0.06em; text-transform: uppercase; }
 
 /* Step chips: where you are, what's done */
-.nimble-levelup .lu-dots { display: flex; gap: 0.35rem; padding: 0.7rem 1.3rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--background-modifier-border); flex: 0 0 auto; }
-.nimble-levelup .lu-dots::-webkit-scrollbar { display: none; }
-.nimble-levelup .lu-dot {
-	display: inline-flex; align-items: center; gap: 0.35rem; flex: 0 0 auto; height: 1.9rem; padding: 0 0.7rem; border-radius: 999px; box-shadow: none;
-	border: 1px solid var(--background-modifier-border); background: var(--background-primary); color: var(--text-muted); font-size: 0.78rem; font-weight: 700; white-space: nowrap;
-}
-.nimble-levelup .lu-dot-icon { display: inline-flex; }
-.nimble-levelup .lu-dot-icon svg { width: 13px; height: 13px; }
-.nimble-levelup .lu-dot.is-done { color: var(--text-success); border-color: color-mix(in srgb, var(--text-success) 40%, var(--background-modifier-border)); }
-.nimble-levelup .lu-dot.is-active { background: var(--lu-accent); border-color: var(--lu-accent); color: var(--text-on-accent); }
+.nimble-wizard .lu-dots { display: flex; flex: 0 0 auto; gap: 6px; padding: 2px 1px 10px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--ev-line); }
+.nimble-wizard .lu-dots::-webkit-scrollbar { display: none; }
+.nimble-wizard button.lu-dot { flex: 0 0 auto; height: 30px; padding: 0 11px; border: 1px solid var(--ev-line-strong); border-radius: 999px; background: var(--ev-surface); box-shadow: none; color: var(--ev-text-2); font: 600 12.5px/normal var(--ev-font-ui); white-space: nowrap; cursor: pointer; --ev-pill-icon: 14px; --ev-pill-gap: 6px; }
+.nimble-wizard button.lu-dot:hover { color: var(--ev-text); }
+.nimble-wizard button.lu-dot.is-done { color: var(--ev-text); }
+.nimble-wizard button.lu-dot.is-done .ev-pill-icon { color: var(--ev-ok); }
+.nimble-wizard button.lu-dot.is-active { border-color: var(--ev-accent); background: var(--ev-accent); color: var(--ev-on-accent); }
+.nimble-wizard button.lu-dot.is-active .ev-pill-icon { color: inherit; }
 
-/* The carousel */
-/* Fixed height: the wizard never grows or shrinks between steps; a long step scrolls inside itself. */
-.nimble-levelup .lu-viewport { position: relative; overflow: hidden; flex: 1 1 auto; min-height: 0; }
-.nimble-levelup .lu-track { display: flex; align-items: stretch; height: 100%; transform: translateX(calc(var(--lu-at, 0) * -100%)); transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.nimble-levelup .lu-track.no-anim { transition: none; }
-.nimble-levelup .lu-panel { flex: 0 0 100%; min-width: 0; height: 100%; box-sizing: border-box; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 1.1rem 1.3rem 1.3rem; opacity: 0.2; transition: opacity 0.3s ease; }
-.nimble-levelup .lu-panel.is-active { opacity: 1; }
-.nimble-levelup .lu-panel.is-shake { animation: lu-shake 0.4s ease; }
+/* The carousel: the dialog keeps its height; a long step scrolls inside itself */
+.nimble-wizard .lu-viewport { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.nimble-wizard .lu-track { display: flex; align-items: stretch; height: 100%; transform: translateX(calc(var(--lu-at, 0) * -100%)); transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.nimble-wizard .lu-track.no-anim { transition: none; }
+.nimble-wizard .lu-panel { flex: 0 0 100%; min-width: 0; height: 100%; box-sizing: border-box; padding: 14px 2px 18px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; opacity: 0.25; transition: opacity 0.3s ease; container: lu / inline-size; }
+.nimble-wizard .lu-panel.is-active { opacity: 1; }
+.nimble-wizard .lu-panel.is-shake { animation: lu-shake 0.4s ease; }
 @keyframes lu-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
-@media (prefers-reduced-motion: reduce) {
-	.nimble-levelup .lu-track, .nimble-levelup .lu-panel { transition: none; }
-	.nimble-levelup .lu-panel.is-shake { animation: none; }
-}
+.nimble-wizard .ev-dialog-foot { flex: 0 0 auto; margin-top: 0; padding-top: 12px; border-top: 1px solid var(--ev-line); }
 
-.nimble-levelup .lu-step-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.7rem; margin-bottom: 1rem; }
-.nimble-levelup .lu-step-head .lu-step-title { flex: 1 1 auto; min-width: 0; }
-.nimble-levelup .lu-count { display: inline-flex; align-items: center; height: 1.8rem; padding: 0 0.7rem; border-radius: 999px; font-weight: 800; font-size: 0.82rem; font-variant-numeric: tabular-nums; border: 1px solid var(--lu-accent); background: color-mix(in srgb, var(--lu-accent) 12%, var(--background-primary)); color: var(--text-normal); }
-.nimble-levelup .lu-count.is-done { border-color: color-mix(in srgb, var(--text-success) 55%, transparent); background: color-mix(in srgb, var(--text-success) 12%, var(--background-primary)); color: var(--text-success); }
-.nimble-levelup .lu-stat-label { display: flex; align-items: center; gap: 0.5rem; }
-.nimble-levelup .lu-stat-label .lu-count { height: 1.4rem; font-size: 0.72rem; letter-spacing: 0; }
-.nimble-levelup .lu-step-title { font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
-.nimble-levelup .lu-section-label { margin: 1.1rem 0 0.5rem; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); }
-.nimble-levelup .lu-empty { color: var(--text-faint); font-size: 0.85rem; margin-top: 0.8rem; }
-.nimble-levelup .lu-tag { display: inline-flex; align-items: center; height: 1.25rem; padding: 0 0.45rem; border-radius: 999px; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: var(--background-modifier-hover); color: var(--text-muted); line-height: 1; flex: 0 0 auto; }
-.nimble-levelup .lu-tag.is-story { background: color-mix(in srgb, #d9a441 25%, transparent); color: #b07d16; }
-.nimble-levelup .lu-intro { margin-bottom: 0.8rem; font-size: 0.88rem; color: var(--text-muted); }
+/* Step heads, labels and tags */
+.nimble-wizard .lu-step-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 12px; }
+.nimble-wizard .lu-step-title { flex: 1 1 auto; min-width: 0; font: italic 800 21px/1.2 var(--ev-font-name); color: var(--ev-text); }
+.nimble-wizard .lu-count { height: 24px; padding: 0 9px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 700 14px/normal var(--ev-font-num); font-variant-numeric: tabular-nums lining-nums; --ev-pill-icon: 13px; --ev-pill-gap: 4px; }
+.nimble-wizard .lu-count.is-done { background: var(--ev-bar); color: var(--ev-on-bar); }
+.nimble-wizard .lu-section-label { margin: 16px 0 8px; }
+.nimble-wizard .lu-tag { height: 20px; padding: 0 7px; border-radius: var(--ev-r-chip); background: var(--ev-bar); color: var(--ev-on-bar); font: 700 11px/normal var(--ev-font-display); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; --ev-pill-icon: 11px; --ev-pill-gap: 4px; }
+.nimble-wizard .lu-tag.is-quiet { background: var(--ev-chip-bg); color: var(--ev-chip-text); }
+.nimble-wizard .lu-tag.is-light { background: rgb(255 255 255 / 0.18); color: #fff; }
+.nimble-wizard .lu-tag.is-count { background: var(--ev-ochre); color: #fff; }
+.nimble-wizard .lu-tag.is-school { background: var(--ev-mana); color: #fff; }
+.nimble-wizard :is(.lu-intro, .lu-from) { margin-bottom: 10px; font-size: 13.5px; line-height: 1.45; color: var(--ev-text-2); }
+.nimble-wizard .lu-empty { margin-top: 6px; font-size: 13.5px; font-style: italic; color: var(--ev-text-2); }
+.nimble-wizard .lu-warn { padding: 8px 10px; border-radius: var(--ev-r-md); background: var(--ev-danger-bg); color: var(--ev-danger-text); font: 600 13px/1.35 var(--ev-font-ui); }
+.nimble-wizard :is(button.lu-reset, button.lu-skill-reset, button.lu-option-less, button.lu-compare-choose, button.lu-view-btn) { height: 30px; padding: 0 11px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: none; color: var(--ev-text); font: 600 13px/normal var(--ev-font-ui); cursor: pointer; --ev-pill-icon: 14px; --ev-pill-gap: 6px; }
+.nimble-wizard :is(button.lu-reset, button.lu-skill-reset, button.lu-option-less, button.lu-compare-choose, button.lu-view-btn):hover { background: var(--ev-surface-2); }
 
-/* Overview */
-.nimble-levelup .lu-gains { display: flex; flex-wrap: wrap; gap: 0.45rem; }
-.nimble-levelup .lu-gain {
-	display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.1rem; padding: 0.25rem 0.8rem; border-radius: 999px;
-	border: 1px solid var(--background-modifier-border); background: var(--background-secondary); font-size: 0.86rem; font-weight: 700;
-}
-.nimble-levelup .lu-gain-icon { display: inline-flex; color: var(--lu-accent); }
-.nimble-levelup .lu-gain-icon svg { width: 15px; height: 15px; }
-.nimble-levelup .lu-gain.is-big { background: color-mix(in srgb, var(--lu-accent) 14%, var(--background-primary)); border-color: color-mix(in srgb, var(--lu-accent) 45%, transparent); }
-.nimble-levelup .lu-gain.is-hp .lu-gain-icon { color: var(--nimble-hp, #c0392b); }
-.nimble-levelup .lu-features { display: flex; flex-direction: column; gap: 0.45rem; }
-.nimble-levelup .lu-feature { border: 1px solid var(--background-modifier-border); border-left: 3px solid var(--lu-accent); border-radius: 8px; background: var(--background-secondary); padding: 0.6rem 0.85rem; }
-.nimble-levelup .lu-feature.is-subclass { border-left-color: #d9a441; }
-.nimble-levelup .lu-feature-top { display: flex; align-items: center; gap: 0.5rem; }
-.nimble-levelup .lu-feature-name { font-weight: 800; }
-.nimble-levelup .lu-feature-text { margin-top: 0.35rem; font-size: 0.88rem; line-height: 1.5; }
-.nimble-levelup .lu-feature-text .nimble-cmp-text { margin: 0; }
+/* Hero: the form, the class at a glance, the gear */
+.nimble-wizard .lu-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.nimble-wizard .lu-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.nimble-wizard .lu-field.is-wide { grid-column: 1 / -1; }
+.nimble-wizard :is(input.lu-input, select.lu-select) { width: 100%; height: 38px; border-radius: var(--ev-r-md); font: 500 14.5px/normal var(--ev-font-ui); }
+.nimble-wizard input.lu-name-input { height: 42px; font: italic 800 19px/normal var(--ev-font-name); }
+.nimble-wizard .lu-level-keys { display: flex; align-items: center; gap: 6px; }
+.nimble-wizard input.lu-level-input { width: 58px; height: 40px; padding: 0; border-radius: var(--ev-r-md); text-align: center; font: 700 19px/normal var(--ev-font-num); font-variant-numeric: tabular-nums lining-nums; }
+.nimble-wizard .lu-field-note { font-size: 12.5px; color: var(--ev-text-2); }
+.nimble-wizard .lu-field-note.is-warn { color: var(--ev-danger-text); font-weight: 600; }
+.nimble-wizard .lu-class { margin-top: 16px; padding: 12px 14px; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-wizard .lu-class-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-bottom: 10px; }
+.nimble-wizard .lu-class-name { font: italic 900 20px/1.15 var(--ev-font-name); }
+.nimble-wizard .lu-class-tagline { font-size: 13px; color: var(--ev-text-2); }
+.nimble-wizard .lu-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 12px; }
+.nimble-wizard .lu-fact { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.nimble-wizard .lu-fact.is-wide { grid-column: span 2; }
+.nimble-wizard .lu-fact-label { font: 700 11.5px/normal var(--ev-font-display); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
+.nimble-wizard .lu-fact-value { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 24px; font: 600 14px/1.35 var(--ev-font-ui); color: var(--ev-text); }
+.nimble-wizard .lu-fact-value .ns-die { width: 22px; height: 22px; color: var(--ev-bar-2); }
+.nimble-wizard .lu-fact-icon { display: inline-flex; }
+.nimble-wizard .lu-fact-icon svg { display: block; width: 16px; height: 16px; }
+.nimble-wizard .lu-fact-icon.is-hp { color: var(--ev-hp); }
+.nimble-wizard .lu-key-tag { height: 22px; padding: 0 7px; border-radius: var(--ev-r-chip); background: var(--ev-ochre); color: #fff; font: 700 13px/normal var(--ev-font-num); letter-spacing: 0.04em; }
+.nimble-wizard .lu-save { display: inline-flex; align-items: center; gap: 4px; font: 700 14px/normal var(--ev-font-num); }
+.nimble-wizard svg.lu-tri { display: block; width: 15px; height: 7px; overflow: visible; }
+.nimble-wizard svg.lu-tri path { fill: var(--ev-bar); stroke: var(--ev-bar); stroke-width: 1.5; stroke-linejoin: round; }
+.nimble-wizard .lu-gear { margin-top: 16px; }
+.nimble-wizard .lu-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.nimble-wizard .lu-chip { height: 28px; padding: 0 10px; border: 0; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); box-shadow: none; color: var(--ev-chip-text); font: 600 13px/normal var(--ev-font-ui); --ev-pill-icon: 14px; --ev-pill-gap: 6px; }
+.nimble-wizard button.lu-chip { cursor: pointer; }
+.nimble-wizard button.lu-chip:hover { background: color-mix(in srgb, var(--ev-text) 10%, var(--ev-chip-bg)); }
+.nimble-wizard button.lu-chip.is-on { background: var(--ev-mana); color: #fff; }
+.nimble-wizard .ev-seg.lu-seg > button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; height: auto; min-height: 36px; padding: 4px; }
+.nimble-wizard .lu-seg-label { line-height: normal; }
+.nimble-wizard .lu-seg-sub { font: 600 12px/normal var(--ev-font-num); letter-spacing: 0.1em; color: var(--ev-text-2); }
 
-/* Hit points */
-.nimble-levelup .lu-hp-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; }
-.nimble-levelup .lu-hp-option {
-	display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; min-height: 9rem; padding: 1rem 0.8rem;
-	border: 2px solid var(--background-modifier-border); border-radius: 14px; background: var(--background-primary); text-align: center; cursor: pointer;
-	transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
-}
-.nimble-levelup .lu-hp-option:hover { border-color: color-mix(in srgb, var(--lu-accent) 60%, transparent); transform: translateY(-2px); }
-.nimble-levelup .lu-hp-option:focus-visible { outline: 2px solid var(--lu-accent); outline-offset: 2px; }
-.nimble-levelup .lu-hp-option.is-picked { border-color: var(--lu-accent); background: color-mix(in srgb, var(--lu-accent) 10%, var(--background-primary)); box-shadow: 0 6px 18px color-mix(in srgb, var(--lu-accent) 22%, transparent); }
-.nimble-levelup .lu-hp-option.is-invalid { border-color: var(--text-error); }
-.nimble-levelup .lu-hp-option { position: relative; }
-.nimble-levelup .lu-hp-more { position: absolute; top: 0.4rem; right: 0.4rem; }
-.nimble-levelup .lu-hp-icon { display: inline-flex; color: var(--lu-accent); }
-.nimble-levelup .lu-hp-icon svg { width: 26px; height: 26px; }
-.nimble-levelup .lu-hp-title { font-weight: 800; }
-.nimble-levelup .lu-hp-value { font-size: 1.9rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--text-normal); }
-.nimble-levelup .lu-hp-input { width: 5.5rem; height: 2.4rem; text-align: center; font-size: 1.25rem; font-weight: 800; }
-.nimble-levelup .lu-dice { display: flex; gap: 0.4rem; }
-.nimble-levelup .lu-die {
-	display: inline-flex; align-items: center; justify-content: center; width: 2.2rem; height: 2.2rem; border-radius: 8px; font-weight: 800; line-height: 1;
-	border: 2px solid var(--background-modifier-border); color: var(--text-faint); text-decoration: line-through; animation: lu-pop 0.35s ease;
-}
-.nimble-levelup .lu-die.is-kept { border-color: var(--lu-accent); background: var(--lu-accent); color: var(--text-on-accent); text-decoration: none; }
-@keyframes lu-pop { from { transform: scale(0.6) rotate(-20deg); opacity: 0; } to { transform: none; opacity: 1; } }
-.nimble-levelup .lu-hp-result { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1.2rem; padding: 1rem 1.15rem 1.1rem; border-radius: 12px; background: var(--background-secondary); }
-.nimble-levelup .lu-hp-result-label { font-size: 0.7rem; font-weight: 800; line-height: 1; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); }
-.nimble-levelup .lu-hp-new.is-pending { color: var(--text-faint); font-weight: 600; }
-.nimble-levelup .lu-hp-result-nums { display: flex; align-items: center; gap: 0.6rem; min-height: 2.2rem; line-height: 1; font-variant-numeric: tabular-nums; }
-.nimble-levelup .lu-hp-old { font-size: 1.3rem; font-weight: 700; line-height: 1; color: var(--text-muted); }
-.nimble-levelup .lu-hp-new { font-size: 2rem; font-weight: 800; line-height: 1; }
-.nimble-levelup .lu-hp-result.is-set .lu-hp-new { color: var(--text-success); }
-.nimble-levelup .lu-hp-arrow { display: inline-flex; align-items: center; color: var(--text-faint); }
-.nimble-levelup .lu-hp-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--background-modifier-border); }
-.nimble-levelup .lu-hp-bar-old { width: var(--w); background: var(--nimble-hp, #c0392b); }
-.nimble-levelup .lu-hp-bar-new { width: var(--w); background: var(--text-success); transition: width 0.4s ease; }
+/* Stats: the array, then the sheet's boxes; tap two to swap them */
+.nimble-wizard .lu-field + .lu-field { margin-top: 16px; }
+.nimble-wizard .lu-place-label .ev-dialog-label-value { font-weight: 500; color: var(--ev-text-2); }
+.nimble-wizard .nimble-sheet.ns-sheet.lu-sheet { padding: 0; border-radius: 0; background: none; }
+.nimble-wizard .lu-sheet .ns-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 460px; }
+.nimble-wizard .lu-place { display: flex; flex-direction: column; gap: 4px; }
+.nimble-wizard .lu-place .ns-stat-box { transition: transform 0.15s var(--ev-ease); }
+.nimble-wizard .lu-place.is-picked .ns-stat-box { transform: translateY(-3px); }
+.nimble-wizard .lu-place.is-picked .ns-stat-face { box-shadow: 0 0 0 3px var(--ev-ochre); }
+.nimble-wizard .lu-place.is-swapped .ns-stat-value { animation: lu-swap 0.35s var(--ev-ease); }
+@keyframes lu-swap { from { transform: scale(0.55); opacity: 0.2; } to { transform: none; opacity: 1; } }
+.nimble-wizard .lu-key-mark { height: 16px; text-align: center; font: 700 11.5px/16px var(--ev-font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ev-ochre); }
+.nimble-wizard .lu-place-notes { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 10px; }
 
-/* Subclasses: name pills, then one subclass on show using the whole step (or a table to compare) */
-.nimble-levelup .lu-view-toggle { display: inline-flex; }
-.nimble-levelup .lu-view-toggle button { display: inline-flex; align-items: center; gap: 0.35rem; line-height: 1; }
-.nimble-levelup .lu-view-toggle svg { width: 14px; height: 14px; display: block; }
-.nimble-levelup .lu-sub-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.9rem; }
-.nimble-levelup .lu-sub-tab {
-	display: inline-flex; align-items: center; gap: 0.4rem; height: 2.1rem; padding: 0 0.85rem; border-radius: 999px; box-shadow: none; cursor: pointer; line-height: 1;
-	border: 1px solid var(--background-modifier-border); background: var(--background-primary); font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
-}
-.nimble-levelup .lu-sub-tab:hover { color: var(--text-normal); border-color: hsl(var(--lu-hue, 260) 55% 45%); }
-.nimble-levelup .lu-sub-tab.is-active { color: #fff; border-color: transparent; background: hsl(var(--lu-hue, 260) 55% 42%); }
-.nimble-levelup .lu-sub-tab-dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: hsl(var(--lu-hue, 260) 55% 45%); flex: 0 0 auto; }
-.nimble-levelup .lu-sub-tab.is-active .lu-sub-tab-dot { background: #fff; }
-.nimble-levelup .lu-sub-tab-check { display: flex; }
-.nimble-levelup .lu-sub-tab-check svg { width: 13px; height: 13px; stroke-width: 3; display: block; }
-.nimble-levelup .lu-sub-view { --lu-band: hsl(var(--lu-hue, 260) 55% 42%); border-radius: 16px; overflow: hidden; border: 1px solid var(--background-modifier-border); background: var(--background-primary); }
-.nimble-levelup .lu-sub-view.is-chosen { border-color: var(--lu-band); box-shadow: 0 0 0 2px var(--lu-band); }
-.nimble-levelup .lu-sub-band {
-	display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.4rem 1rem; padding: 1.1rem 1.2rem 1rem; color: #fff;
-	background: linear-gradient(130deg, var(--lu-band), hsl(calc(var(--lu-hue, 260) + 35) 60% 26%));
-}
-.nimble-levelup .lu-sub-lead { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.85; }
-.nimble-levelup .lu-sub-name { font-size: 1.7rem; font-weight: 900; line-height: 1.1; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25); }
-.nimble-levelup .lu-sub-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.5rem; }
-.nimble-levelup .lu-sub-band .lu-tag { background: rgba(255, 255, 255, 0.2); color: #fff; }
-.nimble-levelup .lu-sub-band-choose {
-	display: inline-flex; align-items: center; gap: 0.35rem; height: 2.2rem; padding: 0 0.95rem; border-radius: 999px; line-height: 1;
-	border: 1px solid rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.16); color: #fff; font-size: 0.85rem; font-weight: 800; box-shadow: none; cursor: pointer;
-}
-.nimble-levelup .lu-sub-band-choose:hover { background: rgba(255, 255, 255, 0.3); }
-.nimble-levelup .lu-sub-band-choose.is-chosen { background: #fff; border-color: #fff; color: var(--lu-band); }
-.nimble-levelup .lu-sub-band-choose > span { display: flex; }
-.nimble-levelup .lu-sub-band-choose svg { width: 14px; height: 14px; stroke-width: 3; display: block; }
-.nimble-levelup .lu-sub-flavor { grid-column: 1 / -1; font-style: italic; font-size: 0.92rem; line-height: 1.45; opacity: 0.92; }
-.nimble-levelup .lu-complexity { display: inline-flex; align-items: center; gap: 0.2rem; }
-.nimble-levelup .lu-complexity-label { margin-right: 0.25rem; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85; }
-.nimble-levelup .lu-pip { width: 0.55rem; height: 0.55rem; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0.55; }
-.nimble-levelup .lu-pip.is-on { background: currentColor; opacity: 1; }
-.nimble-levelup .lu-sub-body { display: flex; flex-direction: column; gap: 0.8rem; padding: 1rem 1.2rem 1.1rem; }
-.nimble-levelup .lu-sub-intro { font-size: 0.88rem; }
-.nimble-levelup .lu-sub-levels { display: flex; flex-direction: column; gap: 0.6rem; }
-.nimble-levelup .lu-sub-level { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.7rem 0.9rem; border-radius: 10px; border: 1px solid var(--background-modifier-border); border-left: 3px solid var(--background-modifier-border-hover); background: var(--background-secondary); }
-.nimble-levelup .lu-sub-level.is-now { border-left-color: var(--lu-band); }
-.nimble-levelup .lu-level-pill { background: var(--background-modifier-hover); color: var(--text-muted); }
-.nimble-levelup .lu-now-pill { background: var(--lu-band); color: #fff; }
-.nimble-levelup .lu-sub-level-head { display: flex; align-items: center; gap: 0.5rem; }
-.nimble-levelup .lu-sub-level-label { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); }
-.nimble-levelup .lu-tl-level {
-	display: inline-flex; align-items: center; justify-content: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; font-weight: 800; font-size: 0.78rem; line-height: 1;
-	background: var(--background-modifier-hover); color: var(--text-muted); flex: 0 0 auto;
-}
-.nimble-levelup .lu-sub-feat .lu-feature-text { margin-top: 0.15rem; font-size: 0.86rem; line-height: 1.45; }
-.nimble-levelup .lu-sub-body .nimble-cmp-source { font-size: 0.75rem; color: var(--text-faint); }
-.nimble-levelup .lu-compare { overflow: auto; max-height: 60vh; border: 1px solid var(--background-modifier-border); border-radius: 12px; }
-.nimble-levelup .lu-compare table { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 0.85rem; }
-.nimble-levelup .lu-compare th, .nimble-levelup .lu-compare td { padding: 0.55rem 0.65rem; vertical-align: top; border-bottom: 1px solid var(--background-modifier-border); text-align: left; min-width: 13rem; }
-.nimble-levelup .lu-compare td .lu-sub-feat + .lu-sub-feat { margin-top: 0.55rem; }
-.nimble-levelup .lu-compare thead th { position: sticky; top: 0; z-index: 1; color: #fff; background: linear-gradient(140deg, hsl(var(--lu-hue, 260) 55% 42%), hsl(calc(var(--lu-hue, 260) + 35) 60% 26%)); }
-.nimble-levelup .lu-compare thead th button { margin-top: 0.4rem; height: 1.8rem; font-size: 0.78rem; }
-.nimble-levelup .lu-compare .lu-compare-corner, .nimble-levelup .lu-compare .lu-compare-level { position: sticky; left: 0; z-index: 2; min-width: 3.2rem; width: 3.2rem; background: var(--background-secondary); color: var(--text-muted); font-weight: 800; }
-.nimble-levelup .lu-compare thead .lu-compare-corner { z-index: 3; }
-.nimble-levelup .lu-compare-name { font-weight: 800; font-size: 0.95rem; line-height: 1.2; }
-.nimble-levelup .lu-compare tr.is-now td, .nimble-levelup .lu-compare tr.is-now .lu-compare-level { background: color-mix(in srgb, var(--lu-accent) 9%, var(--background-primary)); }
-.nimble-levelup .lu-compare td.is-chosen { box-shadow: inset 3px 0 0 var(--lu-accent); }
+/* Overview and features */
+.nimble-wizard .lu-gains { display: flex; flex-wrap: wrap; gap: 6px; }
+.nimble-wizard .lu-gain { height: 30px; padding: 0 11px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 13.5px/normal var(--ev-font-ui); --ev-pill-icon: 15px; --ev-pill-gap: 6px; }
+.nimble-wizard .lu-gain.is-hp .ev-pill-icon { color: var(--ev-hp); }
+.nimble-wizard .lu-gain.is-big { background: var(--ev-bar); color: var(--ev-on-bar); }
+.nimble-wizard .lu-features { display: flex; flex-direction: column; gap: 8px; }
+.nimble-wizard .lu-feature { padding: 10px 12px; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-wizard .lu-feature-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.nimble-wizard .lu-feature-name { font: italic 800 16px/1.25 var(--ev-font-name); color: var(--ev-text); }
+.nimble-wizard .lu-feature-text { margin-top: 4px; font-size: 13.5px; line-height: 1.5; color: var(--ev-text); }
+.nimble-wizard .lu-feature-text .nimble-cmp-text { margin: 0; }
 
-/* Option picks and Epic Boons */
-.nimble-levelup .lu-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.6rem; }
-.nimble-levelup .lu-option {
-	display: flex; flex-direction: column; gap: 0.35rem; padding: 0.75rem 0.85rem; border-radius: 12px; cursor: pointer;
-	border: 2px solid var(--background-modifier-border); background: var(--background-primary); transition: border-color 0.15s, opacity 0.15s, transform 0.15s;
-}
-.nimble-levelup .lu-option:hover { border-color: color-mix(in srgb, var(--lu-accent) 55%, transparent); }
-.nimble-levelup .lu-option:focus-visible { outline: 2px solid var(--lu-accent); outline-offset: 2px; }
-.nimble-levelup .lu-option.is-chosen { border-color: var(--lu-accent); background: color-mix(in srgb, var(--lu-accent) 9%, var(--background-primary)); }
-.nimble-levelup .lu-option.is-dim { opacity: 0.55; }
-.nimble-levelup .lu-option.is-taken { opacity: 0.45; cursor: default; }
-.nimble-levelup .lu-option-top { display: flex; align-items: center; gap: 0.45rem; }
-.nimble-levelup .lu-option-name { font-weight: 800; flex: 1 1 auto; min-width: 0; }
-.nimble-levelup .lu-option-check { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--lu-accent); color: var(--text-on-accent); flex: 0 0 auto; }
-.nimble-levelup .lu-option-check svg { width: 13px; height: 13px; stroke-width: 3; }
-.nimble-levelup .lu-option-req { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
-.nimble-levelup .lu-option-text { font-size: 0.85rem; line-height: 1.45; }
-.nimble-levelup .lu-option-text .nimble-cmp-text { margin: 0; }
+/* Hit points: roll ▲, the flat bonus, or what you rolled at the table */
+.nimble-wizard .lu-hp-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.nimble-wizard .lu-hp-option { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 150px; padding: 14px 10px; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line-strong); text-align: center; cursor: pointer; transition: box-shadow var(--ev-dur) ease; }
+.nimble-wizard .lu-hp-option:hover { box-shadow: inset 0 0 0 1px var(--ev-text-2); }
+.nimble-wizard .lu-hp-option:focus-visible { outline: 2px solid var(--ev-ochre); outline-offset: 2px; }
+.nimble-wizard .lu-hp-option.is-picked { box-shadow: inset 0 0 0 2px var(--ev-accent); }
+.nimble-wizard .lu-hp-option.is-invalid { box-shadow: inset 0 0 0 2px var(--ev-danger-text); }
+.nimble-wizard .lu-hp-icon { display: inline-flex; color: var(--ev-text-2); }
+.nimble-wizard .lu-hp-icon svg { display: block; width: 22px; height: 22px; }
+.nimble-wizard .lu-hp-title { font: 700 14px/normal var(--ev-font-ui); }
+.nimble-wizard .lu-hp-value { font: 700 30px/1 var(--ev-font-num); font-variant-numeric: tabular-nums lining-nums; color: var(--ev-hp); }
+.nimble-wizard input.lu-hp-input { width: 92px; height: 40px; text-align: center; font: 700 20px/normal var(--ev-font-num); }
+.nimble-wizard .lu-hp-more { position: absolute; top: 6px; right: 6px; }
+.nimble-wizard .lu-dice { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; max-height: 120px; overflow-y: auto; }
+.nimble-wizard .lu-dice-pair { display: inline-flex; gap: 3px; }
+.nimble-wizard .lu-dice .ns-die { width: 32px; height: 32px; color: var(--ev-line-strong); --ns-class-dice-ink: var(--ev-text); }
+.nimble-wizard .lu-dice.is-many .ns-die { width: 26px; height: 26px; }
+.nimble-wizard .lu-dice .ns-die.is-kept { color: var(--ev-bar); --ns-class-dice-ink: var(--ev-on-bar); animation: lu-pop 0.35s ease; }
+.nimble-wizard .lu-dice .ns-die.is-dropped { opacity: 0.55; }
+.nimble-wizard .lu-dice .ns-die.is-blank .ns-die-body { fill: var(--ev-surface-2); stroke: var(--ev-line-strong); }
+.nimble-wizard .lu-dice .ns-die-num { font-size: 13px; }
+.nimble-wizard .lu-hp-result { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding: 12px 14px; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-wizard .lu-hp-result-nums { display: flex; align-items: center; gap: 10px; min-height: 34px; font-variant-numeric: tabular-nums lining-nums; }
+.nimble-wizard .lu-hp-old { font: 700 20px/1 var(--ev-font-num); color: var(--ev-text-2); }
+.nimble-wizard .lu-hp-new { font: 700 32px/1 var(--ev-font-num); color: var(--ev-text); }
+.nimble-wizard .lu-hp-result.is-set .lu-hp-new { color: var(--ev-hp); }
+.nimble-wizard .lu-hp-new.is-pending { color: var(--ev-text-2); }
+.nimble-wizard .lu-hp-arrow { display: inline-flex; color: var(--ev-text-2); }
+.nimble-wizard .lu-hp-arrow svg { display: block; width: 16px; height: 16px; }
+.nimble-wizard .lu-hp-bar { display: flex; height: var(--ev-bar-h, 8px); border-radius: var(--ev-bar-r, 2px); background: var(--ev-track-empty); overflow: hidden; }
+.nimble-wizard .lu-hp-bar-old { width: var(--w); background: var(--ev-hp); }
+.nimble-wizard .lu-hp-bar-new { width: var(--w); background: color-mix(in srgb, var(--ev-hp) 45%, var(--ev-surface)); transition: width 0.4s ease; }
 
-/* Stats and skills */
-.nimble-levelup .lu-stat-box + .lu-stat-box { margin-top: 0.6rem; }
-.nimble-levelup .lu-stats { display: flex; flex-wrap: wrap; gap: 0.6rem; }
-.nimble-levelup .lu-stat {
-	display: flex; flex-direction: column; align-items: center; gap: 0.3rem; height: auto; padding: 0.7rem 1rem; border-radius: 12px; box-shadow: none;
-	border: 2px solid var(--background-modifier-border); background: var(--background-primary);
-}
-.nimble-levelup .lu-stat { min-width: 7rem; }
-.nimble-levelup .lu-stat:hover { border-color: color-mix(in srgb, var(--lu-accent) 55%, transparent); }
-.nimble-levelup .lu-stat.is-chosen { border-color: var(--lu-accent); background: color-mix(in srgb, var(--lu-accent) 10%, var(--background-primary)); }
-.nimble-levelup .lu-stat-key { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.04em; }
-.nimble-levelup .lu-stat-nums { display: inline-flex; align-items: center; gap: 0.3rem; font-variant-numeric: tabular-nums; }
-.nimble-levelup .lu-stat-old { color: var(--text-muted); }
-.nimble-levelup .lu-stat-new { font-weight: 800; }
-.nimble-levelup .is-chosen .lu-stat-new { color: var(--text-success); }
-.nimble-levelup .lu-stat-arrow { display: inline-flex; color: var(--text-faint); }
-.nimble-levelup .lu-stat-arrow svg { width: 13px; height: 13px; }
+/* Subclass: a tab for each, one on show using the step (or every one side by side) */
+.nimble-wizard .lu-view-toggle { display: inline-flex; }
+.nimble-wizard .lu-view-toggle > button.lu-view-btn { border-radius: 0; }
+.nimble-wizard .lu-view-toggle > button.lu-view-btn:first-child { border-radius: var(--ev-r-md) 0 0 var(--ev-r-md); }
+.nimble-wizard .lu-view-toggle > button.lu-view-btn:last-child { margin-left: -1px; border-radius: 0 var(--ev-r-md) var(--ev-r-md) 0; }
+.nimble-wizard .lu-view-toggle > button.lu-view-btn.is-on { border-color: var(--ev-accent); background: var(--ev-accent); color: var(--ev-on-accent); }
+.nimble-wizard .lu-sub-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.nimble-wizard button.lu-sub-tab { height: 32px; padding: 0 12px; border: 1px solid var(--ev-line-strong); border-radius: 999px; background: var(--ev-surface); box-shadow: none; color: var(--ev-text-2); font: italic 800 14.5px/normal var(--ev-font-name); cursor: pointer; --ev-pill-icon: 14px; --ev-pill-gap: 5px; }
+.nimble-wizard button.lu-sub-tab > .ev-pill-text { position: relative; top: 1px; } /* Vollkorn's capitals sit high in its line box */
+.nimble-wizard button.lu-sub-tab:hover { color: var(--ev-text); }
+.nimble-wizard button.lu-sub-tab.is-chosen { border-color: var(--ev-ochre); color: var(--ev-text); }
+.nimble-wizard button.lu-sub-tab.is-chosen .ev-pill-icon { color: var(--ev-ochre); }
+.nimble-wizard button.lu-sub-tab.is-active { border-color: var(--ev-accent); background: var(--ev-accent); color: var(--ev-on-accent); }
+.nimble-wizard button.lu-sub-tab.is-active .ev-pill-icon { color: inherit; }
+.nimble-wizard .lu-sub-view { overflow: hidden; border: 1px solid var(--ev-line); border-radius: var(--ev-r-lg); background: var(--ev-surface); }
+.nimble-wizard .lu-sub-view.is-chosen { border-color: var(--ev-ochre); box-shadow: 0 0 0 1px var(--ev-ochre); }
+.nimble-wizard .lu-sub-band { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 6px 12px; padding: 14px 16px; background: var(--ev-bar); color: var(--ev-on-bar); }
+.nimble-wizard .lu-sub-lead { font: 700 11.5px/normal var(--ev-font-display); letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8; }
+.nimble-wizard .lu-sub-name { font: italic 900 26px/1.1 var(--ev-font-name); }
+.nimble-wizard .lu-sub-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.nimble-wizard button.lu-sub-band-choose { height: 34px; padding: 0 13px; border: 1px solid rgb(255 255 255 / 0.55); border-radius: var(--ev-r-md); background: rgb(255 255 255 / 0.12); box-shadow: none; color: #fff; font: 700 13.5px/normal var(--ev-font-ui); cursor: pointer; --ev-pill-icon: 15px; --ev-pill-gap: 6px; }
+.nimble-wizard button.lu-sub-band-choose:hover { background: rgb(255 255 255 / 0.22); }
+.nimble-wizard button.lu-sub-band-choose.is-chosen { border-color: var(--ev-ochre); background: var(--ev-ochre); }
+.nimble-wizard .lu-sub-flavor { grid-column: 1 / -1; font-size: 14px; font-style: italic; line-height: 1.45; opacity: 0.9; }
+.nimble-wizard .lu-complexity { display: inline-flex; align-items: center; gap: 3px; }
+.nimble-wizard .lu-complexity-label { margin-right: 3px; font: 700 11px/normal var(--ev-font-display); letter-spacing: 0.07em; text-transform: uppercase; opacity: 0.85; }
+.nimble-wizard .lu-pip { width: 8px; height: 8px; border: 1.5px solid currentColor; border-radius: 50%; opacity: 0.55; }
+.nimble-wizard .lu-pip.is-on { background: currentColor; opacity: 1; }
+.nimble-wizard .lu-sub-body { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px 14px; }
+.nimble-wizard .lu-sub-intro { font-size: 13.5px; line-height: 1.5; }
+.nimble-wizard .lu-sub-levels { display: flex; flex-direction: column; gap: 8px; }
+.nimble-wizard .lu-sub-level { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: var(--ev-r-md); background: var(--ev-surface-2); }
+.nimble-wizard .lu-sub-level.is-now { background: var(--ev-ochre-soft); }
+.nimble-wizard .lu-sub-level-head { display: flex; align-items: center; gap: 6px; }
+.nimble-wizard .lu-now-pill { background: var(--ev-ochre); }
+.nimble-wizard .lu-sub-feat .lu-feature-text { margin-top: 2px; }
+.nimble-wizard .lu-sub-body .nimble-cmp-source { font-size: 12px; color: var(--ev-text-2); }
+.nimble-wizard .lu-compare { overflow: auto; max-height: 100%; border-radius: var(--ev-r-lg); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-wizard .lu-compare table { min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.nimble-wizard .lu-compare :is(th, td) { min-width: 190px; padding: 8px 10px; border-bottom: 1px solid var(--ev-line); vertical-align: top; text-align: left; }
+.nimble-wizard .lu-compare thead th { position: sticky; top: 0; z-index: 1; background: var(--ev-surface); }
+.nimble-wizard .lu-compare .lu-compare-corner, .nimble-wizard .lu-compare .lu-compare-level { position: sticky; left: 0; z-index: 2; width: 44px; min-width: 44px; background: var(--ev-surface); font: 700 15px/normal var(--ev-font-num); }
+.nimble-wizard .lu-compare .lu-compare-corner { font: 700 11.5px/normal var(--ev-font-display); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
+.nimble-wizard .lu-compare tr.is-now :is(td, th) { background: var(--ev-ochre-soft); }
+.nimble-wizard .lu-compare td.is-chosen { background: color-mix(in srgb, var(--ev-ochre) 10%, var(--ev-surface)); }
+.nimble-wizard .lu-compare-name { font: italic 800 15px/1.2 var(--ev-font-name); }
+.nimble-wizard button.lu-compare-choose { margin-top: 6px; height: 28px; }
+.nimble-wizard button.lu-compare-choose.is-chosen { border-color: var(--ev-ochre); background: var(--ev-ochre); color: #fff; }
 
-.nimble-levelup .lu-skill-budget, .nimble-levelup .lu-skill-move {
-	display: inline-flex; align-items: center; gap: 0.35rem; height: 2rem; padding: 0 0.8rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; line-height: 1;
-	border: 1px solid var(--background-modifier-border); background: var(--background-secondary); color: var(--text-muted);
-}
-.nimble-levelup .lu-skill-budget-n { font-size: 0.95rem; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text-normal); }
-.nimble-levelup :is(.lu-skill-budget, .lu-skill-move, .lu-skill-reset) > span { display: flex; align-items: center; line-height: 1; }
-.nimble-levelup :is(.lu-skill-budget, .lu-skill-move, .lu-skill-reset) svg { display: block; }
-.nimble-levelup .lu-skill-budget.is-open { border-color: var(--lu-accent); background: color-mix(in srgb, var(--lu-accent) 12%, var(--background-primary)); color: var(--text-normal); }
-.nimble-levelup .lu-skill-budget.is-open .lu-skill-budget-n { color: var(--lu-accent); }
-.nimble-levelup .lu-skill-move svg { width: 13px; height: 13px; }
-.nimble-levelup .lu-skill-move.is-used { color: var(--text-faint); }
-.nimble-levelup .lu-skill-reset { display: inline-flex; align-items: center; gap: 0.3rem; height: 2rem; padding: 0 0.75rem; font-size: 0.8rem; line-height: 1; box-shadow: none; }
-.nimble-levelup .lu-skill-budget svg { width: 13px; height: 13px; stroke-width: 2.6; }
-.nimble-levelup .lu-dice.is-blank .lu-die { text-decoration: none; font-size: 0.72rem; color: var(--text-muted); border-style: dashed; animation: none; }
-.nimble-levelup .lu-skill-reset svg { width: 14px; height: 14px; }
-.nimble-levelup .lu-skill-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 1rem; }
-.nimble-levelup .lu-skill-row {
-	display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.6rem; min-height: 2.9rem; padding: 0.3rem 0.4rem 0.3rem 0.75rem;
-	border: 1px solid var(--background-modifier-border); border-radius: 10px; background: var(--background-primary); transition: border-color 0.15s, background 0.15s;
-}
-.nimble-levelup .lu-skill-row.is-up { border-color: color-mix(in srgb, var(--text-success) 55%, transparent); background: color-mix(in srgb, var(--text-success) 8%, var(--background-primary)); }
-.nimble-levelup .lu-skill-row.is-down { border-color: color-mix(in srgb, var(--text-error) 45%, transparent); background: color-mix(in srgb, var(--text-error) 6%, var(--background-primary)); }
-.nimble-levelup .lu-skill-label { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
-.nimble-levelup .lu-skill-stat { flex: 0 0 2.2rem; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.06em; line-height: 1; color: var(--text-faint); }
-.nimble-levelup .lu-skill-name { font-weight: 800; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nimble-levelup .lu-skill-row .lu-stat-nums { font-size: 0.95rem; min-width: 2rem; justify-content: flex-end; line-height: 1; }
-.nimble-levelup .lu-skill-row.is-down .lu-stat-new { color: var(--text-error); }
-.nimble-levelup .lu-skill-row.is-up .lu-stat-new { color: var(--text-success); }
-.nimble-levelup .lu-skill-step { display: inline-flex; align-items: center; gap: 0.25rem; }
-.nimble-levelup .lu-step-btn {
-	display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; padding: 0; border-radius: 50%; line-height: 0;
-	box-shadow: none; background: var(--background-modifier-hover); color: var(--text-muted);
-}
-.nimble-levelup .lu-step-btn svg { width: 14px; height: 14px; stroke-width: 2.6; display: block; }
-.nimble-levelup .lu-step-btn:hover:not(:disabled) { background: var(--lu-accent); color: var(--text-on-accent); }
-.nimble-levelup .lu-step-btn:disabled { opacity: 0.3; cursor: default; }
-.nimble-levelup .lu-skill-delta { min-width: 1.6rem; text-align: center; font-weight: 900; font-size: 0.85rem; font-variant-numeric: tabular-nums; color: var(--text-muted); }
-.nimble-levelup .is-up .lu-skill-delta { color: var(--text-success); }
-.nimble-levelup .is-down .lu-skill-delta { color: var(--text-error); }
+/* Picks, spells and the Epic Boon: a card each */
+.nimble-wizard .lu-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 8px; }
+.nimble-wizard .lu-options.is-compact { margin-top: 6px; }
+.nimble-wizard .lu-option { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line-strong); cursor: pointer; transition: box-shadow var(--ev-dur) ease; }
+.nimble-wizard .lu-option:hover { box-shadow: inset 0 0 0 1px var(--ev-text-2); }
+.nimble-wizard .lu-option:focus-visible { outline: 2px solid var(--ev-ochre); outline-offset: 2px; }
+.nimble-wizard .lu-option.is-chosen { box-shadow: inset 0 0 0 2px var(--ev-accent); }
+.nimble-wizard .lu-option.is-dim { opacity: 0.72; }
+.nimble-wizard .lu-option.is-taken { opacity: 0.55; cursor: default; }
+.nimble-wizard .lu-option-top { display: flex; align-items: center; gap: 6px; }
+.nimble-wizard .lu-option-name { flex: 1 1 auto; min-width: 0; font: italic 800 15.5px/1.25 var(--ev-font-name); }
+.nimble-wizard .lu-option-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.nimble-wizard .lu-option-check { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; background: var(--ev-accent); color: var(--ev-on-accent); }
+.nimble-wizard .lu-option-check svg { display: block; width: 12px; height: 12px; }
+.nimble-wizard .lu-option-req { font: 600 12px/normal var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-wizard .lu-option-text { font-size: 13px; line-height: 1.45; }
+.nimble-wizard .lu-option-text .nimble-cmp-text { margin: 0; }
+.nimble-wizard button.lu-option-less { align-self: flex-start; height: 26px; padding: 0 9px; font-size: 12px; --ev-pill-icon: 12px; --ev-pill-gap: 4px; }
+.nimble-wizard :is(.lu-spell-box, .lu-stat-box) { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.nimble-wizard .lu-spell-label .ev-dialog-label-value { font-variant-numeric: tabular-nums; }
+
+/* Stat increases */
+.nimble-wizard .lu-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.nimble-wizard button.lu-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; height: auto; padding: 10px 6px; border: 0; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line-strong); color: var(--ev-text); cursor: pointer; }
+.nimble-wizard button.lu-stat:hover { box-shadow: inset 0 0 0 1px var(--ev-text-2); }
+.nimble-wizard button.lu-stat.is-chosen { box-shadow: inset 0 0 0 2px var(--ev-accent); }
+.nimble-wizard .lu-stat-key { font: 700 14px/normal var(--ev-font-num); letter-spacing: 0.05em; }
+.nimble-wizard .lu-stat-nums { display: inline-flex; align-items: center; gap: 5px; font: 700 18px/normal var(--ev-font-num); font-variant-numeric: tabular-nums lining-nums; }
+.nimble-wizard .lu-stat-old { color: var(--ev-text-2); }
+.nimble-wizard .lu-stat-arrow { display: inline-flex; color: var(--ev-text-2); }
+.nimble-wizard .lu-stat-arrow svg { display: block; width: 13px; height: 13px; }
+
+/* Skills */
+.nimble-wizard .lu-skill-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.nimble-wizard :is(.lu-skill-budget, .lu-skill-move) { height: 26px; padding: 0 9px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 700 12.5px/normal var(--ev-font-ui); --ev-pill-icon: 13px; --ev-pill-gap: 5px; }
+.nimble-wizard .lu-skill-budget.is-open { background: var(--ev-bar); color: var(--ev-on-bar); }
+.nimble-wizard .lu-skill-move.is-used { opacity: 0.6; }
+.nimble-wizard button.lu-skill-reset { height: 26px; font-size: 12.5px; --ev-pill-icon: 13px; }
+.nimble-wizard .lu-heroic { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 10px; padding: 8px 10px; border-radius: var(--ev-r-md); background: var(--ev-surface-2); }
+.nimble-wizard .lu-heroic .ev-keys > button { width: 34px; height: 34px; }
+.nimble-wizard .lu-skill-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
+.nimble-wizard .lu-skill-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; min-height: 44px; padding: 4px 4px 4px 10px; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-wizard .lu-skill-row.is-up { box-shadow: inset 0 0 0 2px var(--ev-accent); }
+.nimble-wizard .lu-skill-row.is-down { background: var(--ev-surface-2); }
+.nimble-wizard .lu-skill-label { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.nimble-wizard .lu-skill-stat { font: 600 11px/normal var(--ev-font-num); letter-spacing: 0.06em; color: var(--ev-bar-2); }
+.nimble-wizard .lu-skill-name { overflow: hidden; font: 600 14px/normal var(--ev-font-ui); text-overflow: ellipsis; white-space: nowrap; }
+.nimble-wizard .lu-skill-row .lu-stat-nums { font-size: 16px; }
+.nimble-wizard .lu-skill-step { gap: 2px; }
+.nimble-wizard .lu-skill-step > button { width: 34px; height: 34px; }
 
 /* Review */
-.nimble-levelup .lu-review { display: flex; flex-direction: column; border: 1px solid var(--background-modifier-border); border-radius: 12px; overflow: hidden; }
-.nimble-levelup .lu-review-row {
-	display: grid; grid-template-columns: auto 9rem minmax(0, 1fr) auto; align-items: center; gap: 0.7rem; height: auto; min-height: 2.8rem; padding: 0.5rem 0.9rem;
-	border-radius: 0; box-shadow: none; background: var(--background-primary); text-align: left;
-}
-.nimble-levelup .lu-review-row + .lu-review-row { border-top: 1px solid var(--background-modifier-border); }
-.nimble-levelup .lu-review-row:hover { background: var(--background-secondary); }
-.nimble-levelup .lu-review-icon { display: inline-flex; color: var(--lu-accent); }
-.nimble-levelup .lu-review-icon svg { width: 16px; height: 16px; }
-.nimble-levelup .lu-review-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
-.nimble-levelup .lu-review-value { font-weight: 700; overflow-wrap: anywhere; white-space: normal; }
-.nimble-levelup .lu-review-row.is-missing .lu-review-value { color: var(--text-faint); font-weight: 500; }
-.nimble-levelup .lu-review-go { display: inline-flex; color: var(--text-faint); }
-.nimble-levelup .lu-review-go svg { width: 16px; height: 16px; }
-.nimble-levelup .lu-review-row:hover .lu-review-go { color: var(--lu-accent); }
+.nimble-wizard .lu-review { display: flex; flex-direction: column; gap: 6px; }
+.nimble-wizard button.lu-review-row { display: grid; grid-template-columns: auto minmax(0, 7.5rem) minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; height: auto; min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); color: var(--ev-text); font: inherit; text-align: left; white-space: normal; cursor: pointer; }
+.nimble-wizard button.lu-review-row:hover { box-shadow: inset 0 0 0 1px var(--ev-text-2); }
+.nimble-wizard button.lu-review-row.is-missing { background: var(--ev-ochre-soft); }
+.nimble-wizard :is(.lu-review-icon, .lu-review-go) { display: inline-flex; color: var(--ev-text-2); }
+.nimble-wizard button.lu-review-row.is-missing .lu-review-icon { color: var(--ev-ochre); }
+.nimble-wizard :is(.lu-review-icon, .lu-review-go) svg { display: block; width: 16px; height: 16px; }
+.nimble-wizard .lu-review-label { font: 700 12px/normal var(--ev-font-display); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
+.nimble-wizard .lu-review-value { font: 600 14px/1.35 var(--ev-font-ui); overflow-wrap: anywhere; }
 
-/* Footer */
-.nimble-levelup .lu-foot { display: flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.3rem; border-top: 1px solid var(--background-modifier-border); background: var(--background-primary); flex: 0 0 auto; }
-.nimble-levelup .lu-counter { flex: 1 1 auto; text-align: center; font-size: 0.78rem; color: var(--text-faint); font-variant-numeric: tabular-nums; }
-.nimble-levelup .lu-back, .nimble-levelup .lu-next { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 2.4rem; padding: 0 1rem; line-height: 1; font-weight: 700; }
-.nimble-levelup .lu-back { padding-left: 0.75rem; }
-.nimble-levelup .lu-next { padding-right: 0.8rem; }
-.nimble-levelup :is(.lu-back, .lu-next) > span { display: flex; align-items: center; line-height: 1; }
-.nimble-levelup :is(.lu-back, .lu-next) svg { width: 16px; height: 16px; display: block; }
+/* Level up's moment: the level pops in, confetti behind it */
+.nimble-wizard.is-celebrating .modal-title { display: none; }
+.nimble-wizard .lu-celebrate { position: relative; display: flex; flex: 1 1 auto; align-items: center; justify-content: center; min-height: 320px; }
+.nimble-wizard .lu-confetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.nimble-wizard .lu-celebrate-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px; text-align: center; }
+.nimble-wizard .lu-celebrate-level { display: grid; place-items: center; width: 96px; height: 96px; border-radius: 50%; background: var(--ev-bar); box-shadow: 0 0 0 4px var(--ev-ochre); color: var(--ev-on-bar); font: 700 48px/1 var(--ev-font-num); animation: lu-pop 0.6s var(--ev-ease); }
+@keyframes lu-pop { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.12); opacity: 1; } 100% { transform: none; } }
+.nimble-wizard .lu-celebrate-text { font: italic 900 24px/1.2 var(--ev-font-name); }
+.nimble-wizard .lu-celebrate-gains { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.nimble-wizard .lu-celebrate-chip { height: 30px; padding: 0 11px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 13.5px/normal var(--ev-font-ui); --ev-pill-icon: 15px; --ev-pill-gap: 6px; }
+.nimble-wizard button.lu-celebrate-ok { min-width: 200px; justify-content: center; }
 
-/* The moment you level up: the bubble pops in, confetti (celebrate.ts) bursts from behind it */
-.nimble-levelup .lu-celebrate { position: relative; display: flex; align-items: center; justify-content: center; flex: 1 1 auto; min-height: 0; overflow: hidden; }
-.nimble-levelup .lu-confetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-.nimble-levelup .lu-color-probe { position: absolute; visibility: hidden; color: var(--lu-probe); }
-.nimble-levelup .lu-celebrate-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem; text-align: center; }
-.nimble-levelup .lu-celebrate-level {
-	display: flex; align-items: center; justify-content: center; width: 8rem; height: 8rem; border-radius: 50%;
-	font-size: 4rem; font-weight: 900; line-height: 1; color: var(--text-on-accent);
-	background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--interactive-accent) 55%, #fff), var(--interactive-accent) 62%);
-	box-shadow: 0 14px 40px color-mix(in srgb, var(--interactive-accent) 40%, transparent);
-	animation: lu-bubble 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+/* Narrow (a phone, a small window): one column, the boxes and cards closer together */
+@container lu (max-width: 560px) {
+	.nimble-wizard .lu-form { grid-template-columns: minmax(0, 1fr); }
+	.nimble-wizard .lu-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.nimble-wizard .lu-hp-options { grid-template-columns: minmax(0, 1fr); }
+	.nimble-wizard .lu-hp-option { min-height: 0; padding: 12px 10px; }
+	.nimble-wizard .lu-skill-list { grid-template-columns: minmax(0, 1fr); }
+	.nimble-wizard .lu-sub-band { grid-template-columns: minmax(0, 1fr); }
+	.nimble-wizard button.lu-sub-band-choose { justify-self: start; }
+	.nimble-wizard button.lu-review-row { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: 2px; }
+	.nimble-wizard .lu-review-icon { grid-row: span 2; }
+	.nimble-wizard .lu-review-label, .nimble-wizard .lu-review-value { grid-column: 2; }
+	.nimble-wizard .lu-review-go { grid-column: 3; grid-row: 1 / span 2; }
 }
-.nimble-levelup .lu-celebrate-text { font-size: 1.5rem; font-weight: 900; line-height: 1.15; animation: lu-fade-up 0.4s ease 0.45s both; }
-.nimble-levelup .lu-celebrate-gains { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.45rem; max-width: 34rem; animation: lu-fade-up 0.4s ease 0.55s both; }
-.nimble-levelup .lu-celebrate-chip {
-	display: inline-flex; align-items: center; gap: 0.35rem; height: 2rem; padding: 0 0.85rem; border-radius: 999px; font-weight: 800; font-size: 0.85rem; line-height: 1;
-	background: color-mix(in srgb, var(--interactive-accent) 14%, var(--background-primary)); border: 1px solid color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+@container lu (max-width: 380px) {
+	.nimble-wizard .lu-sheet .ns-stats { gap: 7px; }
+	.nimble-wizard .lu-sub-name { font-size: 22px; }
 }
-.nimble-levelup .lu-celebrate-chip > span { display: flex; }
-.nimble-levelup .lu-celebrate-chip svg { width: 14px; height: 14px; display: block; color: var(--interactive-accent); }
-.nimble-levelup .lu-celebrate-ok { height: 2.5rem; padding: 0 1.3rem; font-weight: 800; animation: lu-fade-up 0.4s ease 0.65s both; }
-@keyframes lu-bubble { 0% { transform: scale(0.2); opacity: 0; } 70% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
-@keyframes lu-fade-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-	.nimble-levelup :is(.lu-celebrate-level, .lu-celebrate-text, .lu-celebrate-gains, .lu-celebrate-ok) { animation: none; }
+	.nimble-wizard :is(.lu-track, .lu-panel, .lu-place .ns-stat-box, .lu-hp-bar-new) { transition: none; }
+	.nimble-wizard :is(.lu-panel.is-shake, .lu-place.is-swapped .ns-stat-value, .ns-die.is-kept, .lu-celebrate-level) { animation: none; }
 }
-
-@media (max-width: 640px) {
-	.nimble-levelup .lu-hp-options { grid-template-columns: minmax(0, 1fr); }
-	.nimble-levelup .lu-hp-option { flex-direction: row; flex-wrap: wrap; min-height: 0; text-align: left; justify-content: flex-start; }
-	.nimble-levelup .lu-hp-value { margin-left: auto; }
-	.nimble-levelup .lu-skill-list { grid-template-columns: minmax(0, 1fr); }
-	.nimble-levelup .lu-skill-stat { flex-basis: 1.9rem; }
-	.nimble-levelup .lu-skill-row { gap: 0.4rem; padding-left: 0.6rem; }
-	.nimble-levelup .lu-skill-delta, .nimble-levelup .lu-skill-row .lu-stat-arrow, .nimble-levelup .lu-skill-row .lu-stat-old:not(:only-child) { display: none; }
-	.nimble-levelup .lu-step-btn { width: 1.85rem; height: 1.85rem; }
-	.nimble-levelup .lu-review-row { grid-template-columns: auto minmax(0, 1fr) auto; }
-	.nimble-levelup .lu-review-value { grid-column: 2; }
-	.nimble-levelup .lu-review-go { grid-column: 3; grid-row: 1 / span 2; }
-	.nimble-levelup .lu-counter { display: none; }
-	.nimble-levelup .lu-sub-band { grid-template-columns: minmax(0, 1fr); }
-	.nimble-levelup .lu-sub-band-choose { justify-self: start; }
-	.nimble-levelup .lu-next { flex: 1 1 auto; justify-content: center; }
-}
-body.is-tablet .nimble-levelup :is(.lu-dot, .lu-back, .lu-next, .lu-sub-band-choose, .lu-sub-tab, .lu-skill-reset) { padding-left: 0.8rem; padding-right: 0.8rem; }
-body.is-tablet .nimble-levelup .lu-stat { padding: 0.6rem 0.5rem; }
-body.is-tablet .nimble-levelup .lu-step-btn { padding: 0; }
-body.is-tablet .nimble-levelup .lu-review-row { padding: 0.5rem 0.9rem; }
+body.is-tablet .nimble-wizard :is(.lu-dot, .lu-chip, .lu-reset, .lu-view-btn, .lu-sub-tab, .lu-sub-band-choose, .lu-compare-choose, .lu-option-less, .lu-skill-reset) { padding-left: 11px; padding-right: 11px; }
+body.is-tablet .nimble-wizard :is(.lu-stat, .lu-review-row) { padding: 8px 10px; }
+body.is-tablet .nimble-wizard :is(.lu-step-btn, .lu-level-keys > button, .lu-heroic .ev-keys > button) { padding: 0; }
 
 /* Obsidian's tablet theme pads every button; the sheet's compact ones keep their own padding */
 body.is-tablet .nimble-sheet :is(.ns-meter-bar, .ns-pip, .ns-tri, .ns-step, .ns-tab, .ns-row-toggle, .ns-equip, .ns-cond-x, .ns-cond-name, .ns-chip-label, .ns-icon-btn) { padding: 0; }
@@ -4906,13 +4862,13 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* The standard pill, core/pill.ts: [icon] [text] on one centre line, one gap, the icon at the text's size.
