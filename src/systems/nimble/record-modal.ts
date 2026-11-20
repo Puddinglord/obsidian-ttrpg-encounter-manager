@@ -152,7 +152,7 @@ class RecordModal extends Modal {
 	}
 
 	private subtitle(c: EncounterCreature | undefined, src: { entry?: MonsterIndexEntry; file?: TFile; sourcePath?: string }): string {
-		if (c && isHero(c)) return [c.monster.type, c.defense !== undefined ? `Defense ${c.defense}` : ''].filter(Boolean).join(' · ');
+		if (c && isHero(c)) return [c.monster.type, c.defense !== undefined ? `Armor ${c.defense}` : ''].filter(Boolean).join(' · ');
 		if (this.target.kind === 'note') {
 			const fm = this.app.metadataCache.getFileCache(this.target.file)?.frontmatter;
 			return this.target.subtitle ?? (typeof fm?.role === 'string' ? fm.role : '');

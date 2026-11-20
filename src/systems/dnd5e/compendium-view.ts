@@ -78,7 +78,7 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 		tags(e, el) {
 			if (e.flags.includes('pack')) { el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-pack', text: e.facets.source?.[0] ?? 'Pack' }); return; }
 			if (!e.monster) {
-				if (e.flags.includes('mine')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-note', text: 'Note' });
+				if (e.flags.includes('mine')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-note', text: 'Homebrew' });
 				return;
 			}
 			el.createSpan({ cls: `nimble-cmpx-pill-tag bestiary-tag is-source is-${e.monster.bundled ? 'mm' : 'note'}`, text: e.monster.bundled ? 'SRD' : 'Note' });

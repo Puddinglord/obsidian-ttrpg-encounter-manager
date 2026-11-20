@@ -19,7 +19,7 @@ export const COUNT_MAX = 50;
 
 const SHIFTS: { shift: number; label: string; title: string }[] = [
 	{ shift: -1, label: 'Weaker', title: 'One level weaker' },
-	{ shift: 0, label: 'Normal', title: 'As written' },
+	{ shift: 0, label: 'As written', title: 'Its stat block as written' },
 	{ shift: 1, label: 'Tougher', title: 'One level tougher' },
 ];
 

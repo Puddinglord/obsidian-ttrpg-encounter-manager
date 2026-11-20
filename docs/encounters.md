@@ -55,7 +55,7 @@ The block wears your campaign's look. In a [5e campaign](5e.md#encounters) it ra
 
 ![Add several on a Quicksilver Hound: 3 of them, Tougher, Lvl 2 and 24 HP each, 72 HP in all](images/guide-add-several.png)
 
-**Add several…**, in the menu beside a monster's **Add** button (on its compendium page or hover card), asks how many to add and how tough: **Weaker**, **Normal** or **Tougher**, one level each way. What you'd get shows beside **Strength** ("Lvl 2 · 24 HP each"), with the total under it, and the button says what it'll do: **Add 3 tougher**.
+**Add several…**, in the menu beside a monster's **Add** button (on its compendium page or hover card), asks how many to add and how tough: **Weaker**, **As written** or **Tougher**, one level each way. What you'd get shows beside **Strength** ("Lvl 2 · 24 HP each"), with the total under it, and the button says what it'll do: **Add 3 tougher**.
 
 ## Quick fights without a block
 
