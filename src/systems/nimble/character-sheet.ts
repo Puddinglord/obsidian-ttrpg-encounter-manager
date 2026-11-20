@@ -24,6 +24,7 @@ import {
 	SheetFeature, spendMana, spendActions, setActions, endTurn, useReaction, ACTIONS_PER_TURN, Resource, setRolled, Attack,
 } from './character-def';
 import { openHpCalculator } from './hp-pad';
+import { defendedDamage } from './encounters';
 import { closePopover } from '../../core/popover';
 import { confirmAction, isTouch, onLongPress } from '../../core/touch';
 import { resolvePortrait } from '../../core/npc-card';
@@ -629,12 +630,20 @@ export class CharacterSheetRenderer extends Component {
 			// The pad only reads the monster's name and armor for heroes.
 			monster: { name: s.name, armor: 'none', hp: s.hpMax, movement: String(s.speed) },
 			currentHp: s.hp, maxHp: s.hpMax, tempHp: s.tempHp, wounds: s.wounds, maxWounds: s.woundsMax, conditions: [],
+			// Armor, for the keypad's Defend chip.
+			defense: s.armor,
 		};
-		openHpCalculator(anchor, c, false, (cmd) => {
+		openHpCalculator(anchor, c, false, (cmd, react) => {
 			void this.mutate((fm, cur) => {
 				if (cmd.kind === 'damage') {
-					const ev = applyDamage(fm, cur, cmd.amount, cmd.crit);
-					const said = ev.filter(e => !/absorbed/.test(e));
+					// Defend, when the player says so: their Armor comes off the hit (not a crit's), and it costs an action.
+					const amount = react.defend ? defendedDamage(cmd.amount, cur.armor, !!cmd.crit) : cmd.amount;
+					if (react.defend) useReaction(fm, cur, 'Defend');
+					const ev = applyDamage(fm, cur, amount, cmd.crit);
+					const said = [
+						...(react.defend ? [cmd.crit ? 'defends (a crit: Armor doesn\'t help)' : `defends (−${cur.armor})`] : []),
+						...ev.filter(e => !/absorbed/.test(e)),
+					];
 					if (said.length) new Notice(`${cur.name} ${said.join('; ')}`);
 				} else if (cmd.kind === 'heal') heal(fm, cur, cmd.amount);
 				else if (cmd.kind === 'set') setHp(fm, cur, cmd.amount);

@@ -4704,6 +4704,17 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 		await hp.screenshot({ path: join(ARTIFACTS, 'sheet-hp-damage-ghost.png') });
 		await p.waitForSelector(`${R} .ns-meter.is-hp .ns-meter-ghost`, { state: 'detached', timeout: 3000 });
 		await waitFmAt(o, ILSE, f => f.hp === 7 && f.temp_hp === 0, '7 damage through the calculator');
+		// Defend, when the player says so: their Armor comes off the hit, and it costs an action.
+		const armor = Number(await sheet.locator('.ns-box-armor .ns-box-value').textContent());
+		await hp.locator('.ns-meter-bar').click();
+		await pad.waitFor();
+		await p.keyboard.type('5');
+		await pad.locator('.qa-defend').click();
+		assert.equal(await pad.locator('.hp-pad-apply').textContent(), `Deal ${Math.max(0, 5 - armor)} damage`);
+		await pad.locator('.hp-pad-apply').click();
+		await waitFmAt(o, ILSE, f => f.hp === 7 - Math.max(0, 5 - armor) && f.actions === 2 && (f.reactions_used ?? []).includes('Defend'), 'Defend: Armor off the hit, an action spent');
+		await o.eval(async (app, _p, path) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (fm) => { fm.hp = 7; delete fm.actions; delete fm.reactions_used; }); }, ILSE);
+		await waitFmAt(o, ILSE, f => f.hp === 7 && f.actions === undefined, 'back to 7 HP and 3 actions');
 		// The mana calculator from its button: spend 4, then set 9.
 		await mana.locator('.ns-meter-calc').click();
 		const mp = p.locator('.nimble-mana-pad');
