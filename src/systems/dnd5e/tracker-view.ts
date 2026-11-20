@@ -237,7 +237,7 @@ export class Dnd5eTrackerView extends ItemView {
 			const seen = new Set<string>();
 			for (const c of monsters) {
 				if (seen.has(c.id)) continue;
-				const group = c.init !== undefined ? groupOf(f, c.id) : f.combatants.filter(x => x.side === 'monster' && x.name === c.name && x.init === undefined && isActiveRow(x));
+				const group = groupOf(f, c.id).filter(isActiveRow);
 				for (const g of group) seen.add(g.id);
 				this.renderSetupRow(list, group.length ? group : [c]);
 			}
@@ -377,7 +377,7 @@ export class Dnd5eTrackerView extends ItemView {
 		if (c.ac !== undefined) renderAc(vitals, c.ac, 46);
 		const hp = vitals.createDiv({ cls: 'dnd5e-focus-hp' });
 		const num = hp.createDiv({ cls: 'dnd5e-focus-hp-num' });
-		const hpBtn = num.createEl('button', { cls: 'dnd5e-hp-text', attr: { 'aria-label': `${c.label}: change HP`, 'aria-haspopup': 'dialog' } });
+		const hpBtn = num.createEl('button', { cls: 'dnd5e-focus-hp-btn', attr: { 'aria-label': `${c.label}: change HP`, 'aria-haspopup': 'dialog' } });
 		hpBtn.createEl('b', { text: String(c.hp) });
 		hpBtn.createSpan({ text: `/ ${c.maxHp}` });
 		hpBtn.onclick = () => this.openHp(hpBtn, c, 'damage');
@@ -495,7 +495,8 @@ export class Dnd5eTrackerView extends ItemView {
 		const nxt = upNext(f);
 		const next = () => this.turn(x => nextTurn(x));
 		const group = nxt ? groupOf(f, nxt.id) : [];
-		const label = !nxt ? `Round ${f.round + 1}` : cur && group.some(g => g.id === cur.id) ? `Next: ${nxt.label}` : group.length > 1 ? `Next: ${plural(nxt.name)}` : `Next: ${nxt.label}`;
+		// A group's first member: the group's name; once it's under way, the member who's next.
+		const label = !nxt ? `Round ${f.round + 1}` : group.length > 1 && group[0].id === nxt.id ? `Next: ${plural(nxt.name)}` : `Next: ${nxt.label}`;
 		trackerFoot(root, {
 			back: { run: () => this.change(x => previous(x)), label: 'Back a turn' },
 			primary: { text: label, icon: evIcon('next'), run: next, cls: 'dnd5e-tracker-primary dnd5e-next' },
@@ -611,10 +612,24 @@ export class Dnd5eTrackerView extends ItemView {
 
 	/** Move a combatant up or down the turn order by one place (the row menu, Alt+↑/↓). */
 	private moveBy(c: Combatant5e, by: number, refocus = false): void {
-		const ids = this.activeRows().map(x => x.id);
-		const at = ids.indexOf(c.id);
-		if (at < 0 || at + by < 0 || at + by >= ids.length) return;
-		this.change(f => moveCombatant(f, c.id, at + by, isActiveRow));
+		// One row up or down: a group (one initiative) moves as one, and is passed as one.
+		const f = this.fight;
+		const unit = groupOf(f, c.id).filter(isActiveRow);
+		const ids = new Set(unit.map(x => x.id));
+		const rest = this.activeRows().filter(x => !ids.has(x.id));
+		const at = this.activeRows().findIndex(x => x.id === unit[0]?.id);
+		const neighbour = by < 0 ? this.activeRows()[at - 1] : this.activeRows()[at + unit.length];
+		if (!unit.length || !neighbour) return;
+		const past = groupOf(f, neighbour.id).filter(isActiveRow);
+		const to = by < 0 ? rest.indexOf(past[0]) : rest.indexOf(past[past.length - 1]) + 1;
+		this.change(x => {
+			const others = new Set(unit.slice(1).map(m => m.id));
+			moveCombatant(x, unit[0].id, to, m => isActiveRow(m) && !others.has(m.id));
+			for (let k = 1; k < unit.length; k++) {
+				const rows = order(x).filter(m => isActiveRow(m) && m.id !== unit[k].id);
+				moveCombatant(x, unit[k].id, rows.findIndex(m => m.id === unit[k - 1].id) + 1, isActiveRow);
+			}
+		});
 		if (refocus) this.contentEl.querySelector<HTMLElement>(`[data-flow-row="${CSS.escape(c.id)}"]`)?.focus();
 	}
 
@@ -691,8 +706,7 @@ export class Dnd5eTrackerView extends ItemView {
 			crit: true, mods: { vulnerable: 'Vulnerable ×2', resisted: 'Resisted ½' },
 			preview: (mode, v, crit, mod) => {
 				const cmd = mode === 'damage' ? (v > 0 ? { kind: 'damage' as const, amount: v, crit, type: mod } : null) : mode === 'set' ? { kind: 'set' as const, amount: v } : v > 0 ? { kind: mode, amount: v } : null;
-				const where = cmd ? previewHp(this.fight, c.id, cmd) : '';
-				return where && c.concentrating && cmd?.kind === 'damage' ? `${where} · Constitution save DC ${concentrationDc(damageTaken(cmd), this.fight.edition)}` : where;
+				return cmd ? previewHp(this.fight, c.id, cmd) : '';
 			},
 			sideOf: this.containerEl,
 			apply: (cmd) => this.applyHp(c, cmd),
@@ -813,9 +827,10 @@ export class Dnd5eTrackerView extends ItemView {
 		}
 		menu.addItem(i => i.setTitle('Roll initiative').setIcon('dices').onClick(() => this.rollInit(c, groupOf(f, c.id))));
 		const rows = this.activeRows();
-		const at = rows.findIndex(x => x.id === c.id);
+		const unit = groupOf(f, c.id).filter(isActiveRow);
+		const at = rows.findIndex(x => x.id === (unit[0] ?? c).id);
 		if (at > 0) menu.addItem(i => i.setTitle('Move up').setIcon('arrow-up').onClick(() => this.moveBy(c, -1)));
-		if (at >= 0 && at < rows.length - 1) menu.addItem(i => i.setTitle('Move down').setIcon('arrow-down').onClick(() => this.moveBy(c, 1)));
+		if (at >= 0 && at + Math.max(1, unit.length) < rows.length) menu.addItem(i => i.setTitle('Move down').setIcon('arrow-down').onClick(() => this.moveBy(c, 1)));
 		menu.addSeparator();
 		if (at >= 0) menu.addItem(i => i.setTitle('Add a condition…').setIcon('plus').onClick(() => {
 			const anchor = this.contentEl.querySelector<HTMLElement>(`[data-flow-row="${CSS.escape(c.id)}"]`) ?? this.contentEl;

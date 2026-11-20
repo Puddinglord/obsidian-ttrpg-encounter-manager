@@ -17,6 +17,7 @@
 import { setIcon } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { applyLook } from '../look';
+import { evIcon, EvIconName } from '../icons';
 import { pill } from '../pill';
 import { closePopover, isPopoverOpenFor, openPopover } from '../popover';
 import { onLongPress } from '../touch';
@@ -66,6 +67,28 @@ export interface ConditionEditorOptions {
 
 const QUICK: readonly [string, number | undefined][] = [['Until removed', undefined], ['1 rd', 1], ['2', 2], ['3', 3], ['10', 10]];
 
+/** An icon for a condition in the picker (the study's: what it does at a glance); a tag for any other. */
+const CONDITION_ICONS: [RegExp, EvIconName][] = [
+	[/blind|invisib|frighten|dazzl/i, 'eye'], [/charm|daz|stun|confus/i, 'sparkle'], [/burn|smolder|fire|ablaze/i, 'flame'],
+	[/grappl|grab/i, 'hand'], [/restrain|paraly|petrif|held|bound/i, 'lock'], [/prone|hamper|slow/i, 'footprints'],
+	[/poison|sick/i, 'poison'], [/bleed/i, 'drop'], [/unconscious|asleep|sleep/i, 'moon'], [/exhaust|fatigu/i, 'bed'],
+	[/taunt|mark|target/i, 'target'], [/concentrat/i, 'concentration'], [/deaf|silenc/i, 'x'], [/incapacit/i, 'x'],
+	[/weaken|vulnerab/i, 'heart-crack'], [/empower|haste|bless|raging|rage/i, 'zap'], [/dying|dead/i, 'skull'],
+];
+export function conditionIcon(name: string): string {
+	return evIcon(CONDITION_ICONS.find(([re]) => re.test(name))?.[1] ?? 'tag');
+}
+
+/** A condition's rules in one line, for the picker: the first sentence, without markup. */
+function firstLine(text: string): string {
+	// Past the books' preambles ("While you have the Blinded condition, you experience the following effects.")
+	// and run-in labels ("**Can't See.**"), to what it does.
+	const body = text.replace(/^\s*while you have the [^.:]*?condition[^.:]*[.:]\s*/i, '').replace(/\*\*[^*]{1,40}\*\*\s*/, '');
+	const plain = body.replace(/\*\*|__|[*_]/g, '').replace(/\s+/g, ' ').trim();
+	const m = /^(.{1,140}?[.;])(\s|$)/.exec(plain);
+	return (m ? m[1] : plain).replace(/[.;]$/, '');
+}
+
 /**
  * Keep a condition of your own (settings.customConditions, offered in every
  * game's trackers, the "/" menu and Spotlight), with its timing as the default.
@@ -98,8 +121,10 @@ export function openConditionPicker(anchor: HTMLElement, o: ConditionEditorOptio
 		if (o.cls) el.addClasses(o.cls.split(/\s+/).filter(Boolean));
 		applyLook(el, o.system);
 		el.setAttr('role', 'dialog');
-		el.createDiv({ cls: 'popover-title', text: o.bearer.label });
-		const search = el.createEl('input', { type: 'search', cls: 'condition-search', attr: { placeholder: o.placeholder ?? 'Condition, or a new one…', 'aria-label': 'Find or name a condition' } });
+		el.createDiv({ cls: 'popover-title', text: `${o.bearer.label}: add a condition` });
+		const box = el.createDiv({ cls: 'condition-search-box' });
+		setIcon(box.createSpan({ cls: 'condition-search-icon', attr: { 'aria-hidden': 'true' } }), evIcon('search'));
+		const search = box.createEl('input', { type: 'search', cls: 'condition-search', attr: { placeholder: o.placeholder ?? 'Condition, or a new one…', 'aria-label': 'Find or name a condition' } });
 		const dur = el.createDiv({ cls: 'popover-row' });
 		dur.createSpan({ cls: 'popover-label', text: 'Lasts' });
 		const seg = dur.createDiv({ cls: 'nimble-segmented' });
@@ -111,6 +136,8 @@ export function openConditionPicker(anchor: HTMLElement, o: ConditionEditorOptio
 		const grid = el.createDiv({ cls: 'condition-grid' });
 		const valueRow = el.createDiv({ cls: 'popover-row condition-value-row' });
 		valueRow.hide();
+		// How long, under the list (the study's timing rows): set it, then tap a condition.
+		el.appendChild(dur);
 
 		const apply = (def: ConditionDef, value?: number) => {
 			const preset = presetTiming(def);
@@ -133,9 +160,15 @@ export function openConditionPicker(anchor: HTMLElement, o: ConditionEditorOptio
 				const timed = !!presetTiming(def);
 				const b = grid.createEl('button', {
 					cls: `condition-option${has ? ' is-applied' : ''}${def.minor ? ' is-minor' : ''}${timed ? ' has-effects' : ''}`,
-					text: def.name, attr: { 'aria-pressed': String(has), 'aria-label': def.name, title: def.description.replace(/\*\*/g, '') },
+					attr: { 'aria-pressed': String(has), 'aria-label': def.name },
 				});
-				if (timed) setIcon(b.createSpan({ cls: 'ev-cond-mark', attr: { 'aria-hidden': 'true' } }), 'zap');
+				// The study's row: what it is at a glance, its name, what it does in one line, a check when it's on.
+				setIcon(b.createSpan({ cls: 'condition-option-icon', attr: { 'aria-hidden': 'true' } }), conditionIcon(def.name));
+				const text = b.createSpan({ cls: 'condition-option-text' });
+				text.createEl('b', { cls: 'condition-option-name', text: def.name });
+				if (def.description) text.createEl('small', { text: firstLine(def.description) });
+				if (timed) setIcon(b.createSpan({ cls: 'ev-cond-mark', attr: { 'aria-hidden': 'true' } }), evIcon('zap'));
+				if (has) setIcon(b.createSpan({ cls: 'condition-option-check', attr: { 'aria-hidden': 'true' } }), evIcon('check'));
 				b.onclick = () => {
 					if (has) { o.remove(def.name); close(); return; }
 					if (def.hasValue && o.value?.ask) {
