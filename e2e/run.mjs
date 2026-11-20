@@ -1330,8 +1330,8 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 0, 'closes after applying');
 
 	// Crit toggle on a monster with armor shows the working.
-	const boss = (await creatures(o)).find(c => c.label.startsWith('Goblin Boss'));
-	await card(o, boss.label).locator('.hp-display').click();
+	// The only Goblin Boss and the only Krogg: shown without their numbers.
+	await card(o, 'Goblin Boss').locator('.hp-display').click();
 	await o.page.keyboard.type('8');
 	await pad.locator('.hp-pad-crit').click();
 	assert.match(await pad.locator('.hp-pad-preview').textContent(), /crit ignores armor/);
@@ -1362,7 +1362,7 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	// The card's stat block button opens their sheet over the tracker, with the fight's state.
 	const Q = '.modal.nimble-record-modal';
 	const krogg = (await creatures(o)).find(c => c.label.startsWith('Krogg'));
-	await (await onCard(o, krogg.label)).locator('.ev-card-sheet').click();
+	await (await onCard(o, 'Krogg, Goblin King')).locator('.ev-card-sheet').click();
 	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the quick look' });
 	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Krogg, Goblin King');
 	assert.match(await o.page.locator(`${Q} .record-sub`).textContent(), /Legendary|Solo/);
@@ -1373,7 +1373,7 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	assert.equal((await creatures(o)).find(c => c.label === krogg.label).hp, krogg.hp - 10, 'HP from the modal');
-	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-meter-cur`).textContent()) === String(krogg.hp - 10), { what: 'the strip stays live' });
+	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-meter-nums:not(.is-on-fill) .ns-meter-cur`).textContent()) === String(krogg.hp - 10), { what: 'the strip stays live' });
 	assert.equal(await o.page.locator(`${Q} .record-strip .ns-action-dot`).count(), 0, 'no action dots for a monster');
 	await o.page.locator(`${Q} .record-strip .ns-actions-end`).click();
 	assert.equal((await creatures(o)).find(c => c.label === krogg.label).done, true);
