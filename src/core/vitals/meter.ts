@@ -57,6 +57,14 @@ export interface MeterOptions {
 	 * (HP and temp HP), `soak` what's taken first (temp HP).
 	 */
 	taps: { floor: number; soak?: number; commit: (delta: number) => void };
+	/** Icons for − / + / the calculator, when a game draws its own (Obsidian icon ids; Lucide's by default). */
+	icons?: { minus?: string; plus?: string; calc?: string };
+	/**
+	 * Numbers in two colours, for a bar whose empty part is light: a copy of them rides
+	 * in the fill (`.ns-meter-nums.is-on-fill`), so they read on the fill in one colour and
+	 * on the track in another. The game's CSS sets both and clips the copy to the fill.
+	 */
+	twoTone?: boolean;
 }
 
 /** An HP or mana bar: label, − bar + calculator. Returns the meter (its header is `.ns-meter-head`). */
@@ -76,13 +84,21 @@ export function renderMeter(wrap: HTMLElement, o: MeterOptions, mem: VitalsMemor
 	fill.setCssProps({ '--ns-fill': pct(o.cur) });
 	animateBar(mem, o.key, o.cur, bar, fill, pct);
 	if (o.extra) bar.createDiv({ cls: 'ns-meter-extra-fill' }).setCssProps({ '--ns-from': pct(o.cur), '--ns-fill': pct(o.extra) });
-	const nums = bar.createSpan({ cls: 'ns-meter-nums' });
-	nums.createSpan({ cls: `${o.bar}-cur ns-meter-cur`, text: String(o.cur) });
-	nums.createSpan({ cls: 'ns-meter-slash', text: '/' });
-	nums.createSpan({ cls: `${o.bar}-max ns-meter-max`, text: String(o.max) });
-	if (o.extra) nums.createSpan({ cls: 'ns-meter-plus', text: `+${o.extra}` });
+	const numbers = (parent: HTMLElement, cls: string) => {
+		const nums = parent.createSpan({ cls });
+		nums.createSpan({ cls: `${o.bar}-cur ns-meter-cur`, text: String(o.cur) });
+		nums.createSpan({ cls: 'ns-meter-slash', text: '/' });
+		nums.createSpan({ cls: `${o.bar}-max ns-meter-max`, text: String(o.max) });
+		if (o.extra) nums.createSpan({ cls: 'ns-meter-plus', text: `+${o.extra}` });
+		return nums;
+	};
+	numbers(bar, 'ns-meter-nums');
+	if (o.twoTone) numbers(fill, 'ns-meter-nums is-on-fill').setAttr('aria-hidden', 'true');
 	const plus = iconStep(row, 'plus', { 'aria-label': o.plus }, 'ns-step ns-meter-step');
 	const calc = iconStep(row, 'calculator', { 'aria-label': o.calc }, 'ns-step ns-meter-calc');
+	if (o.icons?.minus) { minus.empty(); setIcon(minus, o.icons.minus); }
+	if (o.icons?.plus) { plus.empty(); setIcon(plus, o.icons.plus); }
+	if (o.icons?.calc) { calc.empty(); setIcon(calc, o.icons.calc); }
 	minus.disabled = o.minusOff;
 	plus.disabled = o.plusOff;
 	minus.addEventListener('click', () => tap(mem, o, -1, bar));
@@ -101,12 +117,14 @@ function tap(mem: VitalsMemory, o: MeterOptions, d: number, bar: HTMLElement): v
 	mem.pending.set(o.key, p);
 	// The running number: temp HP soaks damage first.
 	const soaked = p.delta < 0 ? Math.min(o.taps.soak ?? 0, -p.delta) : 0;
-	bar.querySelector('.ns-meter-cur')?.setText(String(Math.max(0, Math.min(o.max, o.cur + p.delta + soaked))));
-	let tag = bar.querySelector<HTMLElement>('.ns-meter-delta');
-	if (!tag) tag = bar.querySelector('.ns-meter-nums')?.createSpan({ cls: 'ns-meter-delta' }) ?? null;
-	tag?.setText(p.delta > 0 ? `+${p.delta}` : p.delta < 0 ? `−${-p.delta}` : '±0');
-	tag?.toggleClass('is-gain', p.delta > 0);
-	tag?.toggleClass('is-loss', p.delta < 0);
+	// Every copy of the numbers (one, or two for a two-tone bar) shows the running number and the change.
+	bar.querySelectorAll<HTMLElement>('.ns-meter-cur').forEach(el => el.setText(String(Math.max(0, Math.min(o.max, o.cur + p.delta + soaked)))));
+	bar.querySelectorAll<HTMLElement>('.ns-meter-nums').forEach(nums => {
+		const tag = nums.querySelector<HTMLElement>(':scope > .ns-meter-delta') ?? nums.createSpan({ cls: 'ns-meter-delta' });
+		tag.setText(p.delta > 0 ? `+${p.delta}` : p.delta < 0 ? `−${-p.delta}` : '±0');
+		tag.toggleClass('is-gain', p.delta > 0);
+		tag.toggleClass('is-loss', p.delta < 0);
+	});
 	p.timer = win.setTimeout(() => {
 		mem.pending.delete(o.key);
 		o.taps.commit(p.delta);
