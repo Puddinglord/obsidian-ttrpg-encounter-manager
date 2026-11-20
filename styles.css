@@ -6098,7 +6098,7 @@ button.dnd5e-pm:not(.is-prof, .is-expert):hover::before { box-shadow: inset 0 0 
 .dnd5e-sheet .dnd5e-sheet-death .ev-pips { gap: 8px; }
 .dnd5e-sheet .dnd5e-sheet-death .ev-pips-label { margin-right: 2px; font: 600 13px/normal var(--ev-font-ui); letter-spacing: 0; text-transform: none; color: var(--ev-danger-text); }
 .dnd5e-sheet button.dnd5e-sheet-death-roll {
-	margin-left: auto; height: 28px; padding: 0 12px; border-radius: var(--ev-r-md); border: 1px solid var(--x5-ink-deep);
+	height: 28px; padding: 0 12px; border-radius: var(--ev-r-md); border: 1px solid var(--x5-ink-deep);
 	background: linear-gradient(color-mix(in srgb, var(--ev-accent) 88%, white), var(--ev-accent) 55%); color: var(--ev-on-accent);
 	box-shadow: inset 0 0 0 1px rgb(255 220 170 / 0.18), 0 1px 2px rgb(60 10 0 / 0.3); font: 600 13px/normal var(--ev-font-ui);
 }
@@ -6180,6 +6180,7 @@ button.dnd5e-pm:not(.is-prof, .is-expert):hover::before { box-shadow: inset 0 0 
 .dnd5e-scroll-side .fil { fill: none; stroke: var(--x5-gold); stroke-width: var(--d5-sw, 1.1); stroke-linecap: round; }
 .dnd5e-scroll-side .m { fill: var(--x5-gold); color: var(--x5-gold); }
 .dnd5e-scroll-side .m .is-line { fill: none; stroke: currentColor; stroke-width: var(--d5-sw); stroke-linecap: round; }
+.dnd5e-scroll-side .m .is-halo { stroke: var(--d5-scroll-paper, var(--ev-bg)); stroke-width: 1.5; stroke-linejoin: round; paint-order: stroke; }
 .dnd5e-scroll-side .dnd5e-scroll-compact { display: none; }
 @container d5scroll (max-width: 440px) {
 	.dnd5e-scroll-full { display: none; }
@@ -6187,7 +6188,7 @@ button.dnd5e-pm:not(.is-prof, .is-expert):hover::before { box-shadow: inset 0 0 
 }
 
 /* Tabs: small caps on a gold hairline; the open one carries the oxblood bar and a diamond. They stay in reach as the note scrolls. */
-.dnd5e-sheet .dnd5e-tabs { position: sticky; top: 0; z-index: 3; display: flex; gap: 4px; margin: 20px 2px 0; border-bottom: 1px solid var(--x5-gold-soft); background-color: var(--ev-bg); }
+.dnd5e-sheet .dnd5e-tabs { position: sticky; top: 0; z-index: 3; display: flex; gap: 4px; margin: 20px 2px 0; border-bottom: 1px solid var(--x5-gold-soft); background-color: var(--ev-bg); background-image: var(--x5-paper); }
 .dnd5e-sheet button.dnd5e-tab {
 	position: relative; flex: 0 1 auto; min-width: 0; padding: 10px 14px 9px; margin-bottom: -1px; border-bottom: 2px solid transparent; border-radius: 0;
 	font: 600 17px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-text-2);
@@ -6289,19 +6290,18 @@ button.dnd5e-pm:not(.is-prof, .is-expert):hover::before { box-shadow: inset 0 0 
 	.dnd5e-sheet .dnd5e-facts { display: flex; flex-wrap: wrap; gap: 4px 18px; }
 	.dnd5e-sheet .dnd5e-fact { gap: 8px; padding: 2px 0; border-bottom: 0; }
 	.dnd5e-sheet button.dnd5e-insp { padding: 2px 0; }
+	.dnd5e-sheet .dnd5e-spell-list { grid-template-columns: minmax(0, max-content) auto minmax(0, 1fr) auto; }
+	.dnd5e-sheet .dnd5e-sheet-spell { row-gap: 0; }
+	.dnd5e-sheet .dnd5e-sheet-spell .dnd5e-row-meta { grid-column: 1 / -2; grid-row: 2; }
+	.dnd5e-sheet .dnd5e-spell-end { grid-column: -2 / -1; grid-row: 1; }
+}
+@container dnd5e-sheet (max-width: 480px) {
+	.dnd5e-sheet .dnd5e-sheet-page { --d5-dmg-w: 6.6rem; }
 	/* Actions: the name, its to-hit and its damage on one line; the notes under them. */
-	.dnd5e-sheet .dnd5e-act-grid { grid-template-columns: minmax(0, 1fr) 3.6rem var(--d5-dmg-w); }
 	.dnd5e-sheet .dnd5e-act-row { row-gap: 2px; }
 	.dnd5e-sheet .dnd5e-act-row.is-head { display: none; }
 	.dnd5e-sheet .dnd5e-act-note { grid-column: 1 / -1; grid-row: 2; }
 	.dnd5e-sheet .dnd5e-act-row > .dnd5e-sheet-attack-name { grid-row: 1; }
-	.dnd5e-sheet .dnd5e-spell-list { grid-template-columns: minmax(0, max-content) auto minmax(0, 1fr) auto; }
-	.dnd5e-sheet .dnd5e-sheet-spell { row-gap: 0; }
-	.dnd5e-sheet .dnd5e-sheet-spell .dnd5e-row-meta { grid-column: 1 / -2; grid-row: 2; }
-	.dnd5e-sheet .dnd5e-spell-end { grid-column: -2 / -1; grid-row: 1 / span 2; }
-}
-@container dnd5e-sheet (max-width: 480px) {
-	.dnd5e-sheet .dnd5e-sheet-page { --d5-dmg-w: 6.6rem; }
 	.dnd5e-sheet .dnd5e-abilities { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.dnd5e-sheet .dnd5e-banner { gap: 10px 14px; padding: 14px 14px 26px; }
 	.dnd5e-sheet .dnd5e-portrait { width: 64px; height: 64px; }
@@ -6375,6 +6375,8 @@ body.is-tablet .dnd5e-sheet button.dnd5e-tab { padding: 10px 14px 9px; }
 .dnd5e-npc-fold > .ev-pill-icon { color: var(--x5-gold); }
 .dnd5e-npc-src { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 7px; min-width: 0; }
 .dnd5e-npc-src small { font: italic 400 14px/18px var(--ev-font-display); color: var(--ev-text-2); }
+/* A reference lifts itself to sit on a sentence's line; in this row it centres like the rest. */
+.dnd5e-npc-src .nimble-inline-ref { top: 0; }
 .dnd5e-npc-changed { display: inline-flex; align-items: center; gap: 5px; }
 /* The NPC's own number (over the linked block's): a small oxblood diamond. */
 .dnd5e-npc-own { display: inline-block; flex: none; width: 6px; height: 6px; transform: rotate(45deg); background: var(--ev-accent); box-shadow: 0 0 0 1.5px var(--ev-surface); }
@@ -6430,6 +6432,8 @@ body.is-tablet .dnd5e-sheet button.dnd5e-tab { padding: 10px 14px 9px; }
 	box-shadow: inset 0 0 0 1px var(--x5-gold-soft); font: 400 13.5px/normal var(--x5-font-book); color: var(--ev-text);
 }
 .dnd5e-npc-stats button.dnd5e-npc-skill:hover { background: var(--ev-surface-2); }
+/* Alegreya Sans sits a pixel higher than Garamond in the same box: the skill's name comes down onto the line. */
+.dnd5e-npc-skill-n { position: relative; top: 1px; }
 .dnd5e-npc-skill small { font: 600 11.5px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.05em; color: var(--ev-text-2); }
 .dnd5e-npc-skill b { font: 600 14.5px/normal var(--ev-font-display); font-variant-numeric: lining-nums; }
 /* Actions: one grid for every group; each name opens the action's own words. */
@@ -6450,19 +6454,23 @@ body.is-tablet .dnd5e-sheet button.dnd5e-tab { padding: 10px 14px 9px; }
 .dnd5e-npc-stats.is-folded { padding-bottom: 10px; }
 .dnd5e-npc-stats.is-folded .dnd5e-npc-head { padding-bottom: 0; border-bottom: 0; }
 .dnd5e-npc-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 6px 0 0 24px; font: 400 14px/20px var(--x5-font-book); }
-.dnd5e-npc-sum-fact { display: inline-flex; align-items: baseline; gap: 5px; }
+.dnd5e-npc-sum-fact { display: inline-flex; align-items: center; gap: 5px; }
 .dnd5e-npc-sum-fact small { font: 600 13px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.05em; color: var(--ev-accent-text); }
 .dnd5e-npc-sum-fact b { font: 600 17px/normal var(--ev-font-display); font-variant-numeric: lining-nums; }
 .dnd5e-npc-sum-fact em { font-style: normal; color: var(--ev-text-2); }
 .dnd5e-npc-sum-acts { color: var(--ev-text-2); }
 /* A story NPC: one quiet line, its offer beside its words. */
+/* Its two offers are quiet: words, not buttons that compete with the card. */
+.dnd5e-npc-stats.is-empty button.dnd5e-npc-btn { border-color: transparent; background: none; box-shadow: none; }
+.dnd5e-npc-stats.is-empty button.dnd5e-npc-btn:hover { background: var(--ev-surface-2); }
 .dnd5e-npc-stats.is-empty { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; padding: 8px 10px 8px 14px; background: none; box-shadow: inset 0 0 0 1px var(--ev-line); }
 .dnd5e-npc-empty { --ev-pill-icon: 14px; --ev-pill-gap: 7px; font: italic 400 15px/normal var(--ev-font-display); color: var(--ev-text-2); }
 .dnd5e-npc-empty > .ev-pill-icon { color: var(--x5-gold); }
 @container d5npc (max-width: 600px) {
 	.dnd5e-npc-vitals { grid-template-columns: auto minmax(0, 1fr); }
 	.dnd5e-npc-facts { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-	.dnd5e-npc-acts { grid-template-columns: minmax(0, 1fr) 3.4rem var(--d5-dmg-w); }
+	/* Each action's buttons right after its name; the notes under them. */
+	.dnd5e-npc-acts { grid-template-columns: fit-content(11rem) 3.4rem var(--d5-dmg-w) minmax(0, 1fr); }
 	.dnd5e-npc-act-note { grid-column: 1 / -1; padding-left: 17px; }
 }
 @container d5npc (max-width: 520px) {

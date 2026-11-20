@@ -176,6 +176,14 @@ export function npcSkills5e(m: Dnd5eMonster): { name: string; ability: AbilityKe
 	}).sort((a, b) => SKILL_NAMES.indexOf(a.name) - SKILL_NAMES.indexOf(b.name));
 }
 
+/** Senses as the block words them, with Passive Perception added when the note's own senses leave it out. */
+export function npcSenses5e(m: Dnd5eMonster): string {
+	const senses = (m.senses ?? '').trim().replace(/\bpassive Perception\b/, 'Passive Perception');
+	if (/passive perception/i.test(senses)) return senses;
+	const pp = `Passive Perception ${10 + (m.skills?.Perception ?? abilityMod(m.abilities[ABILITIES.indexOf('wis')]))}`;
+	return senses ? `${senses.charAt(0).toUpperCase()}${senses.slice(1)} · ${pp}` : pp;
+}
+
 // ----------------------------------------------------------------------------
 // Actions as rows: a to-hit or a save DC, the damage, and the rest as a short note.
 

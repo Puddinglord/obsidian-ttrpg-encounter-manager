@@ -18,7 +18,7 @@ import { markTerm, termContext, TermContext } from '../../core/rule-term-ui';
 import { openHpPad, HP_PAD_MODES } from '../../core/tracker/hp-pad';
 import { renderMeter, VitalsMemory } from '../../core/vitals/meter';
 import { addMonster } from './combat';
-import { npcActions5e, npcSheet5e, NpcSheet5e, npcSkills5e, setHpNow, statblockName } from './npc';
+import { npcActions5e, npcSenses5e, npcSheet5e, NpcSheet5e, npcSkills5e, setHpNow, statblockName } from './npc';
 import { abilityMod, formatMod, initiativeOf, pbForCr } from './rules';
 import type { Dnd5eRuntime } from './runtime';
 import { acShield, corners, damageButton, profMark } from './sheet-parts';
@@ -262,7 +262,7 @@ class NpcStats5e {
 				b.addEventListener('click', (e) => { e.preventDefault(); this.roll(d20(k.bonus), k.name); });
 			}
 		}
-		if (m.senses) line('Senses', 'Senses').setText(m.senses.replace(/\bpassive Perception\b/, 'Passive Perception'));
+		line('Senses', 'Senses').setText(npcSenses5e(m));
 		if (m.languages) line('Languages', 'Languages').setText(m.languages);
 		if (!lines.childElementCount) lines.remove();
 	}

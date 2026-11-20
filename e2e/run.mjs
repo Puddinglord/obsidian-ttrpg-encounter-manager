@@ -5099,8 +5099,10 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 			].join('\n'));
 			await app.vault.create(`${C}/Ilse.md`, [
 				'---', 'title: Ilse', 'class: Wizard', 'level: 5', 'edition: "2024"', 'str: 8', 'dex: 14', 'con: 13', 'int: 17', 'wis: 12', 'cha: 10',
-				'skills: [Arcana, History]', 'spells: [Fire Bolt, Shield, Fireball, Hold Person]', 'conditions: [Prone]', 'exhaustion: 1', 'inventory:', '  - { name: Dagger, equipped: true }', '  - { name: Potion of Healing, qty: 2 }', 'gold: 12', '---', '', '```5e-sheet', '```', '',
+				'skills: [Arcana, History]', 'spells: [Fire Bolt, Sacred Flame, Shield, Hellish Rebuke, Fireball, Hold Person]', 'conditions: [Prone]', 'exhaustion: 1', 'inspiration: true', 'inventory:', '  - { name: Dagger, equipped: true }', '  - { name: Potion of Healing, qty: 2 }', 'gold: 12', '---', '', '```5e-sheet', '```', '',
 			].join('\n'));
+			// An NPC on the Priest's stats, with her own AC: the mini sheet under her card.
+			await app.vault.create(`${C}/Odile.md`, ['---', 'nimble: npc', 'role: Keeper of the chapel', 'statblock: Priest', 'ac: 15', 'hp: 30', 'cr: 2', '---', '', '```nimble-npc', 'Wants: The bell raised.', '```', ''].join('\n'));
 		}, C);
 		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
 
@@ -5161,11 +5163,19 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
 		await o.page.waitForTimeout(300);
 		await measurePills(o, bad, '5e sheet', `${R} .dnd5e-sheet`);
-		for (const t of ['spells', 'inventory']) {
+		for (const t of ['spells', 'features', 'inventory']) {
 			await o.page.locator(`${R} .dnd5e-tab[data-tab="${t}"]`).click();
 			await o.page.locator(`${R} .dnd5e-panel.is-${t}`).waitFor();
 			await measurePills(o, bad, `5e sheet (${t})`, `${R} .dnd5e-sheet`);
 		}
+		// The NPC's mini sheet: its buttons, skills, saves, actions (one opened to its words).
+		await o.openFile(`${C}/Odile.md`, 'preview');
+		await o.page.locator(`${R} .dnd5e-npc-stats .dnd5e-npc-act`).first().waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-npc-act-name`).first().click();
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e NPC stats', `${R} .dnd5e-npc-stats`);
+		await o.openFile(`${C}/Ilse.md`, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
 		await o.page.locator(`${R} .dnd5e-tab[data-tab="actions"]`).click();
 		const term = o.page.locator(`${R} .dnd5e-sheet .ev-term`).first();
 		if (await term.count()) {

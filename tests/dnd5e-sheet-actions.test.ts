@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { Frontmatter, longRest, readSheet5e } from '../src/systems/dnd5e/character';
 import { compendium5e } from '../src/systems/dnd5e/compendium';
 import { castGroup, formatDice, resources5e, restoreUses, setUsesLeft, sheetActions5e, slotFor, spellEffect } from '../src/systems/dnd5e/sheet-actions';
-import { npcAction5e, npcActions5e, npcMonster5e, npcSheet5e, npcSkills5e, setHpNow, NPC_FIELDS_5E } from '../src/systems/dnd5e/npc';
+import { npcAction5e, npcActions5e, npcMonster5e, npcSenses5e, npcSheet5e, npcSkills5e, setHpNow, NPC_FIELDS_5E } from '../src/systems/dnd5e/npc';
 import { fieldDefaults, fieldsKey } from '../src/core/note-kinds';
 import type { Dnd5eMonster } from '../src/systems/dnd5e/types';
 
@@ -116,6 +116,8 @@ describe('a 5e NPC’s mini sheet', () => {
 		const m = npcMonster5e('Hask', fm)!;
 		expect(m).toMatchObject({ ac: 13, hp: 19, hpFormula: '3d8 + 6', cr: '1/2', abilities: [15, 12, 14, 9, 11, 10], saves: { con: 4 }, skills: { Athletics: 4, Perception: 2 }, speed: '25 ft' });
 		expect(m.actions?.[0].name).toBe('Bell hammer');
+		expect(npcSenses5e(m)).toBe('Darkvision 60 ft · Passive Perception 12');
+		expect(npcSenses5e(priest)).toBe('Passive Perception 15');
 		expect(npcSkills5e(m)).toEqual([{ name: 'Athletics', ability: 'str', bonus: 4 }, { name: 'Perception', ability: 'wis', bonus: 2 }]);
 		expect(npcMonster5e('Hask', { ...fm, saves: 'Con +5, Wis +2', skills: 'Stealth +6' })).toMatchObject({ saves: { con: 5, wis: 2 }, skills: { Stealth: 6 } });
 		// Over a block: the note's Strength, the block's actions.

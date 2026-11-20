@@ -11,6 +11,8 @@ interface Shape {
 	evenodd?: boolean;
 	/** A line rather than a fill: its width. */
 	stroke?: number;
+	/** Stands clear of what's behind it in a hairline of the page's colour (the Paladin's sword before its shield). */
+	halo?: boolean;
 	cls?: 'ox' | 'gd' | 'fil';
 }
 interface Group { transform?: string; shapes: Shape[] }
@@ -61,12 +63,12 @@ const MOTIFS: Record<string, Group[]> = {
 		{ d: `M7.2 10.8h10.2v5.6c0 3.4-2.3 5.6-5.1 5.6s-5.1-2-5.1-4.6z${dot(12.3, 15.8, 2.1)}`, evenodd: true },
 		{ d: dot(12.3, 15.8, 0.9) },
 	] }],
-	// A longsword held upright before a heater shield: the oath. Drawn bolder than the
-	// study's first try so it reads at 22px: a broad blade and guard, a clear gap round them.
+	// A longsword held upright before a heater shield: the oath. Redrawn from the study's first try, which read as
+	// a notched shield at 22px: the sword now stands clear of the shield in a hairline of the page's own colour,
+	// its guard reaching past the shield's edges, so the cross reads at phone size.
 	Paladin: [{ shapes: [
-		{ d: 'M3.6 5.2C6.6 5.3 9.4 4.6 12 3.2c2.6 1.4 5.4 2.1 8.4 2v6.4c0 5.2-3.4 8.6-8.4 10.8-5-2.2-8.4-5.6-8.4-10.8zM9.6 1.6h4.8v11.6h4.4v5.2h-4.4v5.2H9.6v-5.2H5.2v-5.2h4.4z', evenodd: true },
-		{ d: 'M12 0.2l1.9 2.4v11.6h-3.8V2.6zM6.4 14.4h11.2v2.8H6.4zM11 17.2h2v3.6h-2z' },
-		{ d: dot(12, 22.2, 1.5) },
+		{ d: 'M4 5.2C7.2 5.4 9.6 4.6 12 3.4c2.4 1.2 4.8 2 8 1.8v6.6c0 5-3.4 8.2-8 10.2-4.6-2-8-5.2-8-10.2Z' },
+		{ d: `M12 .4l1.6 2.1V14.4h-3.2V2.5ZM3.4 14.4h17.2v2.5H3.4ZM11 16.9h2v3.6h-2Z${dot(12, 22, 1.6)}`, halo: true },
 	] }],
 	// A longbow, strung, an arrow nocked.
 	Ranger: [{ shapes: [
@@ -122,7 +124,7 @@ function drawShapes(parent: SVGElement, shapes: Shape[]): void {
 		const attr: Record<string, string> = { d: s.d };
 		if (s.evenodd) attr['fill-rule'] = 'evenodd';
 		// An oxblood shape with a stroke is rimmed in gold; a motif's stroke is a line in the motif's gold.
-		const cls = s.cls === 'ox' && s.stroke !== undefined ? 'ox is-rim' : s.cls ?? (s.stroke !== undefined ? 'is-line' : '');
+		const cls = s.cls === 'ox' && s.stroke !== undefined ? 'ox is-rim' : s.cls ?? (s.stroke !== undefined ? 'is-line' : s.halo ? 'is-halo' : '');
 		const p = parent.createSvg('path', { cls: cls ? cls.split(' ') : undefined, attr });
 		if (s.stroke !== undefined) p.setCssProps({ '--d5-sw': String(s.stroke) });
 	}
