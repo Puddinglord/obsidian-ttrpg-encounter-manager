@@ -111,6 +111,14 @@ const plainMod = (n: number) => (n < 0 ? `−${Math.abs(n)}` : String(n));
 /** "2d6+3" → "2d6 + 3", as the books print a roll. */
 const spacedRoll = (e: string) => e.replace(/\s*([+-])\s*/g, ' $1 ').replace(/ - /g, ' − ').trim();
 
+/** A round − / + / × button with Phosphor's icons (core's iconStep draws Lucide's). */
+function step(parent: HTMLElement, icon: 'minus' | 'plus' | 'x', attr: Record<string, string>, cls = 'ns-step'): HTMLButtonElement {
+	const b = iconStep(parent, icon, attr, cls);
+	b.empty();
+	setIcon(b, evIcon(icon));
+	return b;
+}
+
 /** The icon a condition chip shows, for the ones that have one. */
 function conditionIcon(name: string): string | undefined {
 	const k = name.toLowerCase();
@@ -824,10 +832,10 @@ export class CharacterSheetRenderer extends Component {
 			const w = cell.createSpan({ cls: 'ns-skill-w' });
 			w.createEl('small', { cls: 'ns-skill-stat', text: sk.stat });
 			if (editing) {
-				const step = w.createSpan({ cls: 'ns-skill-step' });
-				const minus = iconStep(step, 'minus', { 'aria-label': `${sk.name} −1 point` });
-				step.createSpan({ cls: 'ns-skill-points', text: String(sk.points) });
-				const plus = iconStep(step, 'plus', { 'aria-label': `${sk.name} +1 point` });
+				const stepper = w.createSpan({ cls: 'ns-skill-step' });
+				const minus = step(stepper, 'minus', { 'aria-label': `${sk.name} −1 point` });
+				stepper.createSpan({ cls: 'ns-skill-points', text: String(sk.points) });
+				const plus = step(stepper, 'plus', { 'aria-label': `${sk.name} +1 point` });
 				minus.addEventListener('click', () => void this.mutate(fm => setSkill(fm, sk.key, sk.points - 1)));
 				plus.addEventListener('click', () => void this.mutate(fm => setSkill(fm, sk.key, sk.points + 1)));
 			} else {
@@ -901,7 +909,7 @@ export class CharacterSheetRenderer extends Component {
 		if (o.detail) toggle.createDiv({ cls: 'ns-row-detail', text: o.detail });
 		if (o.body) {
 			const chev = main.createSpan({ cls: 'ns-row-chev', attr: { 'aria-hidden': 'true' } });
-			setIcon(chev, 'chevron-down');
+			setIcon(chev, evIcon('chevron-down'));
 		}
 		toggle.addEventListener('click', () => {
 			if (!o.body) return;
@@ -985,13 +993,9 @@ export class CharacterSheetRenderer extends Component {
 			by.get(g)!.push(f);
 		}
 		const top = panel.createDiv({ cls: 'ns-panel-actions' });
-		const add = top.createEl('button', { cls: 'ns-add is-big' });
-		setIcon(add.createSpan(), 'plus');
-		add.createSpan({ text: 'Add feature' });
+		const add = pill(top, { tag: 'button', cls: 'ns-add is-big', icon: evIcon('plus'), text: 'Add feature' });
 		add.addEventListener('click', () => this.addFeaturePicker());
-		const custom = top.createEl('button', { cls: 'ns-add' });
-		setIcon(custom.createSpan(), 'pen-line');
-		custom.createSpan({ text: 'Custom ability' });
+		const custom = pill(top, { tag: 'button', cls: 'ns-add', icon: evIcon('edit'), text: 'Custom ability' });
 		custom.addEventListener('click', () => new CustomFeatureModal(this.app, (f) => void this.mutate(fm => addFeature(fm, f))).open());
 		if (!groups.length) panel.createDiv({ cls: 'ns-none', text: 'Pick a class and ancestry (pencil above) to see their features here.' });
 		for (const [g, list] of groups) {
@@ -1038,9 +1042,7 @@ export class CharacterSheetRenderer extends Component {
 	private renderSpells(panel: HTMLElement): void {
 		const s = this.sheet;
 		const top = panel.createDiv({ cls: 'ns-panel-actions' });
-		const add = top.createEl('button', { cls: 'ns-add is-big' });
-		setIcon(add.createSpan(), 'plus');
-		add.createSpan({ text: 'Add spell' });
+		const add = pill(top, { tag: 'button', cls: 'ns-add is-big', icon: evIcon('plus'), text: 'Add spell' });
 		add.addEventListener('click', () => this.addFromCompendium(['spell']));
 		if (s.manaMax > 0) top.createSpan({ cls: 'ns-panel-note', text: `${s.mana} / ${s.manaMax} mana · tier ${s.maxTier} spells` });
 		else if (s.cls?.casting) top.createSpan({ cls: 'ns-panel-note', text: s.maxTier ? `Up to tier ${s.maxTier}` : 'Cantrips only for now' });
@@ -1132,9 +1134,7 @@ export class CharacterSheetRenderer extends Component {
 			c.addEventListener('click', () => this.promptCoins(coin));
 		}
 		const top = panel.createDiv({ cls: 'ns-panel-actions' });
-		const add = top.createEl('button', { cls: 'ns-add is-big' });
-		setIcon(add.createSpan(), 'plus');
-		add.createSpan({ text: 'Add item' });
+		const add = pill(top, { tag: 'button', cls: 'ns-add is-big', icon: evIcon('plus'), text: 'Add item' });
 		add.addEventListener('click', () => this.addFromCompendium(['item']));
 		const rows = panel.createDiv({ cls: 'ns-rows' });
 		if (!s.inventory.length) rows.createDiv({ cls: 'ns-none', text: 'Nothing carried.' });
@@ -1149,7 +1149,7 @@ export class CharacterSheetRenderer extends Component {
 				cls: `is-item${e.equipped ? ' is-equipped' : ''}`,
 				lead: wearable || e.equipped ? (el) => {
 					const eq = el.createEl('button', { cls: `ns-equip${e.equipped ? ' is-on' : ''}`, attr: { 'aria-pressed': String(e.equipped), 'aria-label': e.equipped ? `Unequip ${e.name}` : `Equip ${e.name}`, title: e.equipped ? 'Equipped' : 'Not equipped' } });
-					setIcon(eq, it?.category === 'shield' ? 'shield' : it?.category === 'weapon' ? 'sword' : 'shirt');
+					setIcon(eq, evIcon(it?.category === 'weapon' ? 'attack' : 'shield'));
 					eq.addEventListener('click', (ev) => { ev.stopPropagation(); void this.mutate(fm => setEquipped(fm, ref, !e.equipped)); });
 				} : (el) => el.createSpan({ cls: 'ns-equip-spacer' }),
 				body: (el) => {
@@ -1161,10 +1161,10 @@ export class CharacterSheetRenderer extends Component {
 					rm.addEventListener('click', () => void this.mutate(fm => removeItem(fm, ref)));
 				},
 				right: (el) => {
-					const step = el.createDiv({ cls: 'ns-qty' });
-					const minus = iconStep(step, 'minus', { 'aria-label': `One fewer ${e.name}` });
-					step.createSpan({ cls: 'ns-qty-n', text: String(e.qty) });
-					const plus = iconStep(step, 'plus', { 'aria-label': `One more ${e.name}` });
+					const qty = el.createDiv({ cls: 'ns-qty' });
+					const minus = step(qty, 'minus', { 'aria-label': `One fewer ${e.name}` });
+					qty.createSpan({ cls: 'ns-qty-n', text: String(e.qty) });
+					const plus = step(qty, 'plus', { 'aria-label': `One more ${e.name}` });
 					minus.addEventListener('click', (ev) => {
 						ev.stopPropagation();
 						void (async () => {
@@ -1209,11 +1209,11 @@ export class CharacterSheetRenderer extends Component {
 		for (const l of s.languages) {
 			const tag = chips.createSpan({ cls: 'ns-lang' });
 			nimble().markWord(tag.createSpan({ text: l }), l, this.file.path);
-			const x = iconStep(tag, 'x', { 'aria-label': `Remove ${l}` }, 'ns-cond-x');
+			const x = step(tag, 'x', { 'aria-label': `Remove ${l}` }, 'ns-cond-x');
 			x.addEventListener('click', () => void this.mutate((fm, cur) => removeLanguage(fm, cur, l)));
 		}
-		const add = chips.createEl('button', { cls: 'ns-cond-add', attr: { 'aria-label': 'Add a language' } });
-		setIcon(add, 'plus');
+		const add = pill(chips, { tag: 'button', cls: 'ns-cond-add', icon: evIcon('plus') });
+		add.setAttr('aria-label', 'Add a language');
 		add.addEventListener('click', () => this.promptLanguage());
 
 		const details = this.section(panel, 'Details');
@@ -1232,7 +1232,7 @@ export class CharacterSheetRenderer extends Component {
 		if (!headings.length) notes.createDiv({ cls: 'ns-none', text: 'Write your backstory and notes under headings in this note; they\'ll be listed here.' });
 		for (const h of headings) {
 			const b = notes.createEl('button', { cls: 'ns-jump' });
-			setIcon(b.createSpan(), 'hash');
+			setIcon(b.createSpan(), evIcon('list'));
 			b.createSpan({ text: h.heading });
 			b.addEventListener('click', (e) => void this.app.workspace.openLinkText(`${this.file.path}#${h.heading}`, '', e.metaKey || e.ctrlKey));
 		}
@@ -1277,7 +1277,7 @@ export class CharacterSheetRenderer extends Component {
 			};
 
 			// Field rest: the Hit Dice, spent ones as outlines.
-			const field = card('is-field', 'flame-kindling', 'Field rest', () => this.openFieldRest(), s.hitDice <= 0);
+			const field = card('is-field', evIcon('flame'), 'Field rest', () => this.openFieldRest(), s.hitDice <= 0);
 			const dice = field.createDiv({ cls: 'ns-camp-dice' });
 			const shown = Math.min(s.hitDiceMax, 8);
 			for (let i = 0; i < shown; i++) dieShape(dice, s.hitDie, { cls: i < s.hitDice ? '' : 'is-empty' });
@@ -1285,12 +1285,12 @@ export class CharacterSheetRenderer extends Component {
 			field.createDiv({ cls: 'ns-camp-line', text: s.hitDice ? `${s.hitDice} of ${s.hitDiceMax} d${s.hitDie} Hit Dice` : 'No Hit Dice left' });
 
 			// Safe rest: only what would change.
-			const safe = card('is-safe', 'bed-double', 'Safe rest', () => this.doSafeRest());
+			const safe = card('is-safe', evIcon('bed'), 'Safe rest', () => this.doSafeRest());
 			const changes: [string, string, string][] = [];
-			if (s.hp < s.hpMax) changes.push(['heart', 'HP', `${s.hp} → ${s.hpMax}`]);
-			if (s.manaMax > 0 && s.mana < s.manaMax) changes.push(['sparkles', 'Mana', `${s.mana} → ${s.manaMax}`]);
-			if (s.hitDice < s.hitDiceMax) changes.push(['dices', 'Hit Dice', `${s.hitDice} → ${s.hitDiceMax}`]);
-			if (s.wounds > 0) changes.push(['droplet', 'Wounds', `${s.wounds} → ${s.wounds - 1}`]);
+			if (s.hp < s.hpMax) changes.push([evIcon('heart'), 'HP', `${s.hp} → ${s.hpMax}`]);
+			if (s.manaMax > 0 && s.mana < s.manaMax) changes.push([evIcon('sparkle'), 'Mana', `${s.mana} → ${s.manaMax}`]);
+			if (s.hitDice < s.hitDiceMax) changes.push([evIcon('roll'), 'Hit Dice', `${s.hitDice} → ${s.hitDiceMax}`]);
+			if (s.wounds > 0) changes.push([evIcon('drop'), 'Wounds', `${s.wounds} → ${s.wounds - 1}`]);
 			if (changes.length) {
 				const list = safe.createDiv({ cls: 'ns-camp-changes' });
 				for (const [ic, label, value] of changes) {
@@ -1303,11 +1303,11 @@ export class CharacterSheetRenderer extends Component {
 
 			// Level up: where you'd get to.
 			const max = s.level >= 20;
-			const level = card('is-level', 'biceps-flexed', 'Level up',
+			const level = card('is-level', evIcon('arrow-up'), 'Level up',
 				() => new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn)).open(), max);
 			const big = level.createDiv({ cls: 'ns-camp-levels' });
 			big.createSpan({ cls: 'ns-camp-level-from', text: String(s.level) });
-			setIcon(big.createSpan({ cls: 'ns-camp-level-arrow' }), 'arrow-right');
+			setIcon(big.createSpan({ cls: 'ns-camp-level-arrow' }), evIcon('arrow-right'));
 			big.createSpan({ cls: 'ns-camp-level-to', text: max ? '—' : String(s.level + 1) });
 			level.createDiv({ cls: 'ns-camp-line', text: max ? 'Level 20 is the most' : `${s.className || 'Hero'} level ${s.level + 1}` });
 		}, 'ns-camp-dialog');
@@ -1322,7 +1322,7 @@ export class CharacterSheetRenderer extends Component {
 				const r = list.createDiv({ cls: `ns-rest-change${from === to ? ' is-same' : ''}` });
 				r.createSpan({ cls: 'ns-rest-label', text: label });
 				r.createSpan({ cls: 'ns-rest-from', text: from });
-				setIcon(r.createSpan({ cls: 'ns-rest-arrow' }), 'arrow-right');
+				setIcon(r.createSpan({ cls: 'ns-rest-arrow' }), evIcon('arrow-right'));
 				r.createSpan({ cls: 'ns-rest-to', text: to });
 			};
 			line('Hit points', `${s.hp}/${s.hpMax}`, `${s.hpMax}/${s.hpMax}`);
@@ -1350,9 +1350,9 @@ export class CharacterSheetRenderer extends Component {
 			el.addClass('ns-rest-pop');
 			el.createDiv({ cls: 'popover-body', text: `Spend Hit Dice to heal: each d${s.hitDie} ${s.stats.STR >= 0 ? '+' : '−'} ${Math.abs(s.stats.STR)} (STR). ${s.hitDice} of ${s.hitDiceMax} left.` });
 			const row = el.createDiv({ cls: 'popover-row ns-rest-row' });
-			const minus = iconStep(row, 'minus', { 'aria-label': 'One fewer die' });
+			const minus = step(row, 'minus', { 'aria-label': 'One fewer die' });
 			const count = row.createSpan({ cls: 'ns-rest-n' });
-			const plus = iconStep(row, 'plus', { 'aria-label': 'One more die' });
+			const plus = step(row, 'plus', { 'aria-label': 'One more die' });
 			const buttons = el.createDiv({ cls: 'popover-row ns-rest-actions' });
 			const roll = buttons.createEl('button', { cls: 'mod-cta' });
 			const camp = buttons.createEl('button', { attr: { title: 'At least 8 hours with food and sleep: each die counts as its max' } });
