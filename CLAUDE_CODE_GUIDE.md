@@ -86,7 +86,8 @@ src/systems/nimble/
   compendium.ts         Player compendium types, lookups, featuresFor, search (pure, tested); data/compendium.json, compendium-data.ts loads it
   compendium-card.ts    How a compendium entry looks: cards, full class pages, condition cards, the card modal
   character-def.ts      Character note frontmatter → sheet values, and every sheet change as a frontmatter edit (pure, tested)
-  character-sheet.ts    The ```nimble-sheet renderer (writes through processFrontMatter, rolls through plugin.rollDice)
+  character-sheet.ts    The ```nimble-sheet renderer (writes through processFrontMatter, rolls through plugin.rollDice), as the design study draws it
+  class-panel.ts        The sheet's class panel (class-panel-def.ts says what it holds, pure, tested); class-scroll.ts the class's scrollwork heading
   character-view.ts     Character side panel; character-modals.ts: new character, level up, custom ability
   roll-def.ts           Rolls with stacked advantage/disadvantage, modifiers and extra dice (pure, tested); roll-dialog.ts is the dialog
   resource-def.ts       How class dice behave (rolled when gained or spent, all/any/one per roll, kept or spent), from scripts/compendium/raw/resources.json (pure, tested)
@@ -177,6 +178,7 @@ Running a campaign and playing in one show the same things; build each once and 
 - Vitals: `renderMeter` (core/vitals/meter.ts, every game) draws an HP or mana bar with its damage and heal animations and batched − / + taps; wrap it in `.nimble-sheet` or `.ev-vitals` for its styles. 5e's sheet uses it. Nimble's `renderActionDots` and `renderWoundPips` (vitals-ui.ts) draw action dots and Wound pips, for the character sheet (writing to the note) and the tracker's quick look (writing to the fight; `.nimble-sheet.ns-embed`).
 - A game's sheet takes the page: `markSheetPage` (core/sheet-page.ts) hides the note's inline title and Properties box around any sheet, for notes with or without `cssclasses`; the sheet's own button shows the properties again.
 - Dice and marks: `dieShape` and `triangleMark` (die-shape.ts), styled globally (`.ns-die`, `.ns-tri-mark`), used by the sheet and the Camp dialog.
+- Dice rolled at the table: any die a hero holds can be typed in. Tap it to change it, tap an empty slot to add one; `renderFacePicker` (core/face-picker.ts) opens the strip of faces under the row. Nimble's class panel uses it for Fury and Judgment Dice.
 - Rolls: `rollWith` and `RollDialog` for every sheet roll.
 - Pips, in every game: `renderPipRow` (core/pip-row.ts), the one pip spec. A filled pip takes one away and an empty one adds one, one step at a time, never jumping to the pip tapped (`pipStep`, core/pips.ts). The pip that just changed animates: its fill grows in with a bounce or shrinks out (pass a stable `key` so the row remembers its last count; reduced motion turns it off). No right-click-to-undo, no tap-to-spend-anywhere. Nimble's sheet and tracker pips predate it and follow the same spec (vitals-ui.ts, tracker-view.ts).
 

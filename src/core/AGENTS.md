@@ -25,6 +25,8 @@ Then it calls a contract member: `system.characters?.promptNew(…)`, `system.qu
 | `campaign-model.ts`, `campaigns.ts` | Campaigns from folders and frontmatter (`system:`, `edition:`, `role:`), the active campaign, characters in a campaign |
 | `campaign-ui.ts`, `campaign-modals.ts`, `campaign-templates.ts` | The Campaign panel, New campaign and Campaign settings (with the Game system picker), starter notes |
 | `inline-refs.ts` | Finds `prefix:Name` inline code in Reading view and Live Preview; each system adds a provider (`plugin.inlineRefs.add`). `refPill()` draws the pill for every game: [icon or level | name], or [name | ?] |
+| `face-picker.ts` | `renderFacePicker(parent, { sides, current, label, pick, remove })`: a held die typed in from the table, its faces as buttons in even rows (`faceRows`). Any game's set-aside dice use it; the game writes the value |
+| `svg.ts` | `drawSvg(parent, markup, w, h, cls)`: our own drawings (sheet boxes, scrollwork, save marks) from constant markup, parsed, never set as HTML |
 | `pill.ts` | `pill(parent, { icon, text, tag, cls, title })`: every pill, chip and compact icon+label button. Build new ones with it, not hand-rolled icon+label markup; it's centred by `.ev-pill` in styles.css and measured by the `pills:` e2e tests (see CLAUDE_CODE_GUIDE.md, "Pills and compact buttons") |
 | `hover-preview.ts` | The one floating card; `plugin.hover.attach(anchor, () => content)` |
 | `block-index.ts` | A live vault index of fenced blocks (a system's stat blocks), scoped per campaign with `plugin.canSee` |
