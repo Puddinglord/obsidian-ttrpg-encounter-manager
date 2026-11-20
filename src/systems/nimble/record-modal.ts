@@ -126,7 +126,8 @@ class RecordModal extends Modal {
 
 		const body = contentEl.createDiv({ cls: 'record-body' });
 		if (src.entry && (!c || !isHero(c))) {
-			nimble().renderStatblock(body, src.entry.monster, src.sourcePath, 'block', undefined, { lore });
+			// The quick look shows the same block as the note, a size down.
+			nimble().renderStatblock(body, src.entry.monster, src.sourcePath, 'block', undefined, { lore, compact: true });
 		} else if (src.file) {
 			const text = await this.app.vault.cachedRead(src.file);
 			const md = text.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();

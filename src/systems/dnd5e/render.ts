@@ -43,6 +43,39 @@ const TO_HIT = /([+\-−]\s?\d+) to hit|Attack Roll:\s*([+\-−]\s?\d+)/;
 
 const signedExpr = (mod: number) => (mod === 0 ? '1d20' : `1d20${mod > 0 ? '+' : '-'}${Math.abs(mod)}`);
 
+/** The words the books set in italics inside an action: "Melee Attack Roll:", "Hit:", "Failure:"… */
+const BOOK_ITALICS = /\b(?:(?:Melee or Ranged|Melee|Ranged) (?:Weapon |Spell )?Attack(?: Roll)?|(?:Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) Saving Throw|Hit or Miss|Failure or Success|Hit|Miss|Failure|Success|Trigger|Response):/g;
+
+/** Set the book's italic words in `el`'s own text (rolls and rules words keep their elements). */
+export function italicizeBookWords(el: HTMLElement): void {
+	const doc = el.ownerDocument;
+	el.normalize(); // "Melee " and "Attack Roll: " can arrive as two text nodes
+	const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+	const nodes: Text[] = [];
+	while (walker.nextNode()) {
+		const n = walker.currentNode as Text;
+		if (n.parentElement === el) nodes.push(n);
+	}
+	for (const n of nodes) {
+		const text = n.textContent ?? '';
+		const hits = [...text.matchAll(BOOK_ITALICS)];
+		if (!hits.length) continue;
+		const frag = doc.createDocumentFragment();
+		let at = 0;
+		for (const h of hits) {
+			const i = h.index ?? 0;
+			if (i > at) frag.appendChild(doc.createTextNode(text.slice(at, i)));
+			const em = doc.createElement('em');
+			em.className = 'dnd5e-book-italic';
+			em.textContent = h[0];
+			frag.appendChild(em);
+			at = i + h[0].length;
+		}
+		if (at < text.length) frag.appendChild(doc.createTextNode(text.slice(at)));
+		n.replaceWith(frag);
+	}
+}
+
 export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render5eOptions): HTMLElement {
 	const edition = m.edition ?? opts.edition ?? '2024';
 	const block = el.createDiv({ cls: `dnd5e-statblock ed-${edition} ${opts.variant}` });
@@ -139,11 +172,16 @@ export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render
 		line(core, 'Hit Points', hpText);
 		if (m.speed) line(core, 'Speed', v => marked(v, m.speed!));
 	} else {
-		const top = line(core, 'AC', v => v.setText(String(m.ac)));
-		top.addClass('dnd5e-ac-init');
-		mark(top.createSpan({ cls: 'dnd5e-label dnd5e-init-label', text: 'Initiative' }), 'Initiative');
-		top.appendText(' ');
-		const iv = top.createSpan({ cls: 'dnd5e-value' });
+		// AC and Initiative share a line, each label kept with its value.
+		const top = core.createDiv({ cls: 'dnd5e-line dnd5e-ac-init' });
+		const ac = top.createSpan({ cls: 'dnd5e-pair' });
+		mark(ac.createSpan({ cls: 'dnd5e-label', text: 'AC' }), 'AC');
+		ac.appendText(' ');
+		ac.createSpan({ cls: 'dnd5e-value', text: String(m.ac) });
+		const ini = top.createSpan({ cls: 'dnd5e-pair' });
+		mark(ini.createSpan({ cls: 'dnd5e-label dnd5e-init-label', text: 'Initiative' }), 'Initiative');
+		ini.appendText(' ');
+		const iv = ini.createSpan({ cls: 'dnd5e-value' });
 		rollable(iv, formatMod(init), signedExpr(init), `${m.name}: initiative`);
 		iv.appendText(` (${10 + init})`);
 		line(core, 'HP', hpText);
@@ -190,9 +228,11 @@ export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render
 	const bonusList = (v: HTMLElement, entries: [string, number][], what: string) => {
 		entries.forEach(([name, n], i) => {
 			if (i) v.appendText(', ');
-			mark(v.createSpan({ text: name }), name);
-			v.appendText(' ');
-			rollable(v, formatMod(n), signedExpr(n), `${m.name}: ${name}${what}`);
+			// A skill and its bonus wrap together, never apart.
+			const pair = v.createSpan({ cls: 'dnd5e-bonus' });
+			mark(pair.createSpan({ text: name }), name);
+			pair.appendText(' ');
+			rollable(pair, formatMod(n), signedExpr(n), `${m.name}: ${name}${what}`);
 		});
 	};
 	if (edition === '2014') {
@@ -219,8 +259,8 @@ export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render
 	const xp = xpOf(m);
 	const pb = m.pb ?? pbForCr(m.cr);
 	if (edition === '2014') {
+		// The 2014 block ends its details at Challenge, as the SRD 5.1 prints it (no Proficiency Bonus line).
 		line(details, 'Challenge', v => v.setText(`${m.cr} (${xp.toLocaleString('en-US')} XP)`));
-		line(details, 'Proficiency Bonus', v => v.setText(formatMod(pb)));
 	} else {
 		const lair = m.xpLair ? `, or ${m.xpLair.toLocaleString('en-US')} in lair` : '';
 		line(details, 'CR', v => marked(v, `${m.cr} (XP ${xp.toLocaleString('en-US')}${lair}; PB ${formatMod(pb)})`));
@@ -241,6 +281,7 @@ export function renderStatblock5e(el: HTMLElement, m: Dnd5eMonster, opts: Render
 				if (i) p.createEl('br');
 				rich(p, para, f.name);
 			});
+			italicizeBookWords(p);
 		}
 	};
 	section(edition === '2014' ? null : 'Traits', m.traits);

@@ -315,90 +315,129 @@ body {
    STAT BLOCK
    ============================================ */
 
+/* Nimble's stat block, drawn like the GM's Guide (design study: #nimble/block): a box with cut corners,
+   the name in heavy italic small caps with its level beside it, icons on the right (HP in a red heart, the
+   armor shield with its letter, speed, saves as triangles), passives on a khaki ribbon that pokes out past
+   the box, and for legendaries the after-each-hero actions beside Bloodied and Last Stand, numbers in red.
+   The same block in notes, the compendium, hover cards and the tracker's quick look. The cut-corner frame
+   is an SVG border image (no clip-path), its colours the look's --ev-surface and a warm rule. */
 .nimble-statblock {
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--nimble-radius);
-	padding: 0.85rem 1rem;
+	position: relative;
+	container-type: inline-size;
 	margin: 1rem 0;
-	font-family: var(--font-text);
-	line-height: 1.45;
+	padding: 4px 6px 6px;
+	border: 10px solid transparent;
+	border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cpath d='M7 1h16l6 6v16l-6 6H7l-6-6V7Z' fill='%23FFFEFB' stroke='%23BDB5A4' stroke-width='1.5'/%3E%3C/svg%3E") 10 fill / 10px / 0 stretch;
+	color: var(--ev-text);
+	font: 500 14.5px/21px var(--ev-font-ui);
+}
+.theme-dark .nimble-statblock {
+	border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cpath d='M7 1h16l6 6v16l-6 6H7l-6-6V7Z' fill='%23211F1B' stroke='%23554F46' stroke-width='1.5'/%3E%3C/svg%3E");
 }
 .nimble-statblock.inline { margin: 0; }
-.nimble-statblock.role-legendary {
-	border: 2px solid color-mix(in srgb, var(--nimble-legendary) 65%, transparent);
-	background: linear-gradient(180deg, color-mix(in srgb, var(--nimble-legendary) 9%, var(--background-secondary)), var(--background-secondary) 120px);
+.nimble-statblock p { margin: 5px 0; }
+
+/* Head: the name (and level), the icons on the right; the icons wrap under the name when there's no room. */
+.nimble-statblock .monster-header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 4px 12px; padding-bottom: 6px; }
+.nimble-statblock .monster-title { flex: 1 1 auto; min-width: 0; }
+.nimble-statblock .monster-name { margin: 0; font: italic 900 25px/30px var(--ev-font-name); font-variant: small-caps; letter-spacing: 0.01em; color: var(--ev-text); overflow-wrap: anywhere; }
+.nimble-statblock .monster-title > .monster-kicker { margin-left: 6px; font: 600 13px/1 var(--ev-font-display); font-variant: small-caps; text-transform: lowercase; letter-spacing: 0.04em; color: var(--ev-text-2); white-space: nowrap; }
+.nimble-statblock.role-legendary .monster-title > .monster-kicker { display: block; margin: 0; font: 600 13px/18px var(--ev-font-display); font-variant: normal; text-transform: none; letter-spacing: 0; white-space: normal; }
+.nimble-statblock .monster-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-top: 4px; font: 700 15px/1 var(--ev-font-num); color: var(--ev-text); }
+.nimble-statblock .stat-badge { display: inline-flex; align-items: center; gap: 4px; }
+.nimble-statblock .hp-badge { color: var(--ev-hp); }
+.nimble-statblock .hp-badge .badge-value { color: var(--ev-text); font-style: italic; }
+.nimble-statblock .move-badge .badge-icon { display: inline-flex; color: var(--ev-text-2); }
+.nimble-statblock .move-badge .badge-icon svg { width: 15px; height: 15px; }
+.nimble-statblock .saves-badge { display: inline-flex; align-items: center; gap: 6px; font: 700 12.5px/1 var(--ev-font-display); color: var(--ev-text-2); }
+.nimble-statblock .save-mark { display: inline-flex; align-items: center; gap: 2px; }
+.nimble-statblock .nb-tri { width: 13px; height: 6px; }
+
+/* The book's glyphs (book-glyphs.ts): the filled heart, and the armor shield with its letter on its face. */
+.nb-heart { display: block; flex: none; }
+.nb-armor { --nb-armor-fill: #D3CBB8; position: relative; display: inline-grid; place-items: center; flex: none; width: 22px; height: 24px; color: var(--ev-text); }
+.nb-armor .nb-armor-shape { position: absolute; inset: 0; width: 100%; height: 100%; }
+.nb-armor .nb-armor-shape path { fill: var(--nb-armor-fill); }
+.nb-armor.is-heavy { --nb-armor-fill: var(--ev-bar); color: var(--ev-on-bar); }
+.nb-armor.is-none .nb-armor-shape path { fill: none; stroke: var(--ev-line-strong); stroke-width: 1.4; }
+.nb-armor > .badge-value { position: relative; display: block; height: 12px; font: italic 700 12px/12px var(--ev-font-num); }
+.nb-armor.is-none > .badge-value { font-style: normal; color: var(--ev-text-2); }
+.theme-dark .nb-armor { --nb-armor-fill: #5A544B; }
+.theme-dark .nb-armor.is-heavy { --nb-armor-fill: #E9E3D7; color: #1B1916; }
+
+/* Resistances, senses, languages: a quiet line each, damage types with their icon. */
+.nimble-statblock .monster-defenses { margin: 0 0 4px; font-size: 13.5px; line-height: 19px; }
+.nimble-statblock .monster-defenses p { margin: 2px 0; }
+.nimble-statblock .monster-defenses strong { margin-right: 2px; font: 700 12.5px/19px var(--ev-font-display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ev-text-2); }
+.nimble-statblock .monster-damage-type { white-space: nowrap; }
+.nimble-statblock .monster-damage-icon { display: inline-flex; margin-right: 3px; color: var(--ev-text-2); vertical-align: -0.15em; }
+.nimble-statblock .monster-damage-icon svg { width: 14px; height: 14px; }
+
+/* Passives: the khaki ribbon, pointed at both ends and poking out past the box. The points are one stretched
+   triangle per end (an SVG mask filled with the band colour), so they follow the ribbon's height. */
+.nimble-statblock .monster-abilities { display: grid; gap: 6px; margin: 8px -6px; }
+.nimble-statblock .ability-item { position: relative; z-index: 1; padding: 6px 12px; background: var(--ev-band); color: var(--ev-band-text); font-style: italic; }
+.nimble-statblock .ability-item::before, .nimble-statblock .ability-item::after {
+	content: ""; position: absolute; top: 0; bottom: 0; width: 14px; background: var(--ev-band);
+	-webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
 }
-.nimble-statblock.role-minion { border-style: dashed; }
-.nimble-statblock p { margin: 0.25rem 0; }
-
-.nimble-statblock .monster-kicker {
-	font-size: 0.72rem;
-	font-weight: 600;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: var(--text-muted);
+.nimble-statblock .ability-item::before {
+	right: calc(100% - 0.5px);
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='14,0 0,50 14,100' fill='black'/%3E%3C/svg%3E");
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='14,0 0,50 14,100' fill='black'/%3E%3C/svg%3E");
 }
-.nimble-statblock .monster-name {
-	font-size: 1.25rem;
-	font-weight: 700;
-	line-height: 1.2;
-	margin: 0.1rem 0 0.45rem;
-	color: var(--text-normal);
+.nimble-statblock .ability-item::after {
+	left: calc(100% - 0.5px);
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 14,50 0,100' fill='black'/%3E%3C/svg%3E");
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 14,50 0,100' fill='black'/%3E%3C/svg%3E");
 }
-.nimble-statblock h2.monster-name { font-size: 1.4rem; }
+.nimble-statblock .ability-name { font-style: italic; font-weight: 700; }
 
-.nimble-statblock .monster-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.55rem; }
-.nimble-statblock .stat-badge {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.3rem;
-	padding: 0.1rem 0.5rem;
-	border-radius: 4px;
-	font-size: 0.8rem;
-	font-weight: 700;
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
+/* Actions: a small heading ("Choose 1", or "Actions" and "after each hero's turn, choose one"), then the list. */
+.nimble-statblock .actions-intro { margin: 10px 0 2px; }
+.nimble-statblock .actions-head { font: 700 13.5px/20px var(--ev-font-display); letter-spacing: 0.06em; text-transform: uppercase; }
+.nimble-statblock .actions-sub { margin-left: 8px; font: italic 500 12.5px/20px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-statblock .multiattack { margin: 6px 0 2px; }
+.nimble-statblock .actions-list { margin: 4px 0; padding: 0; list-style: none; }
+.nimble-statblock .actions-list > li { margin: 5px 0; }
+.nimble-statblock .actions-list > li::before { content: "•"; margin-right: 0.35em; font-weight: 700; }
+.nimble-statblock .actions-list.is-choice { padding-left: 10px; }
+/* Alternatives, as the book prints them: an "or" between. */
+.nimble-statblock .actions-list.is-choice > li:not(:last-child)::after {
+	content: "or"; display: block; width: max-content; margin: 6px 0 -1px -10px; padding: 0 6px; border-radius: 99px;
+	background: var(--ev-surface-2); color: var(--ev-text-2); font: 700 11.5px/16px var(--ev-font-display); letter-spacing: 0.08em; text-transform: uppercase;
 }
-.nimble-statblock .stat-badge svg { flex-shrink: 0; }
-.nimble-statblock .hp-badge { background: var(--nimble-hp-bg); color: var(--nimble-hp); }
-.nimble-statblock .minion-badge { background: color-mix(in srgb, var(--nimble-minion) 16%, transparent); color: var(--nimble-minion); }
-.nimble-statblock .armor-badge { background: var(--nimble-armor-bg); color: var(--nimble-armor); }
-.nimble-statblock .move-badge { background: var(--nimble-move-bg); color: var(--nimble-move); }
-.nimble-statblock .saves-badge { background: var(--nimble-save-bg); color: var(--nimble-save); }
 
-.nimble-statblock .monster-defenses { font-size: 0.88em; color: var(--text-muted); margin-bottom: 0.35rem; }
-.nimble-statblock .monster-abilities {
-	background: var(--background-primary-alt);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	padding: 0.45rem 0.7rem;
-	margin: 0.4rem 0;
+/* Bloodied and Last Stand: book headings, the HP they trigger at in red. Beside the actions for a legendary. */
+.nimble-statblock .monster-body.is-split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
+.nimble-statblock .monster-body.is-split > .monster-phases { padding-top: 10px; }
+.nimble-statblock .monster-phases { margin-top: 4px; }
+.nimble-statblock .phase-section { padding: 6px 0; }
+.nimble-statblock .phase-section + .phase-section { border-top: 1px solid var(--ev-line); }
+.nimble-statblock .phase-label { display: block; font: 700 13.5px/20px var(--ev-font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text); }
+.nimble-statblock .phase-hp { font-style: normal; font-weight: 700; color: var(--ev-hp); }
+@container (max-width: 520px) {
+	.nimble-statblock .monster-body.is-split { grid-template-columns: minmax(0, 1fr); gap: 0; }
+	.nimble-statblock .monster-body.is-split > .monster-phases { padding-top: 0; }
 }
-.nimble-statblock .ability-item { margin: 0.3rem 0; }
-.nimble-statblock .ability-item:first-child { margin-top: 0; }
-.nimble-statblock .ability-item:last-child { margin-bottom: 0; }
 
-.nimble-statblock .monster-actions { margin: 0.45rem 0; }
-.nimble-statblock .actions-intro { margin-bottom: 0.25rem; }
-.nimble-statblock.role-legendary .actions-intro strong { color: var(--nimble-legendary); }
-.nimble-statblock .actions-list { margin: 0; padding-left: 1.2rem; }
-.nimble-statblock .actions-list li { margin: 0.2rem 0; }
+/* Rolls: every number a roll, in a box (the study's dice); rules words underlined. */
+.nimble-statblock .nimble-dice { padding: 0 3px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--ev-line-strong); background: var(--ev-surface); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nimble-statblock .nimble-dice.is-clickable { color: inherit; border-bottom: 0; }
+.nimble-statblock .nimble-dice.is-clickable:hover, .nimble-statblock .nimble-dice.is-clickable:focus-visible { background: var(--ev-surface-2); box-shadow: inset 0 0 0 1px var(--ev-text-2); }
+.nimble-statblock .ability-item .nimble-dice { font-style: normal; }
+.nimble-statblock :is(.ev-term, .nimble-condition-ref) { border-bottom: 1.5px dotted var(--ev-text-2); border-radius: 0; }
+.nimble-statblock :is(.ev-term, .nimble-condition-ref):hover { border-bottom-color: currentColor; background: none; }
 
-.nimble-statblock .phase-section { margin: 0.35rem 0; padding: 0.35rem 0.6rem; border-radius: 6px; border-left: 3px solid; }
-.nimble-statblock .bloodied-section { border-color: var(--nimble-hp); background: var(--nimble-hp-bg); }
-.nimble-statblock .laststand-section { border-color: #8e5bd0; background: rgba(142, 91, 208, 0.12); }
-.nimble-statblock .phase-label { letter-spacing: 0.03em; }
-
-.nimble-statblock .monster-description { font-style: italic; color: var(--text-muted); margin-top: 0.55rem; }
-.nimble-statblock .monster-tactics { margin-top: 0.4rem; font-size: 0.86em; display: grid; gap: 0.2rem; }
-.nimble-statblock .tactic-row { display: grid; grid-template-columns: auto 1fr; gap: 0.45rem; color: var(--text-muted); }
-.nimble-statblock .tactic-label { display: inline-flex; align-items: center; gap: 0.15rem; font-weight: 600; color: var(--text-faint); }
+.nimble-statblock .monster-description { margin-top: 10px; font-style: italic; color: var(--ev-text-2); }
+.nimble-statblock .monster-tactics { display: grid; gap: 2px; margin-top: 8px; font-size: 13px; line-height: 18px; }
+.nimble-statblock .tactic-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; color: var(--ev-text-2); }
+.nimble-statblock .tactic-label { display: inline-flex; align-items: center; gap: 2px; font: 700 12px/18px var(--ev-font-display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ev-text-2); }
 .nimble-statblock .tactic-label svg { width: 14px; height: 14px; }
-.nimble-statblock .monster-source { margin-top: 0.55rem; font-size: 0.75rem; color: var(--text-faint); }
-.nimble-statblock .monster-source a { color: var(--text-faint); text-decoration: underline; }
+.nimble-statblock .monster-source { margin-top: 10px; font-size: 12px; line-height: 16px; color: var(--ev-text-2); }
+.nimble-statblock .monster-source a { color: var(--ev-text-2); text-decoration: underline; }
 
-.nimble-statblock .add-btn { margin-top: 0.6rem; width: 100%; }
+.nimble-statblock .add-btn { width: 100%; margin-top: 10px; }
 :is(.nimble-statblock, .dnd5e-statblock) .statblock-actions {
 	display: flex;
 	flex-wrap: wrap;
@@ -409,8 +448,11 @@ body {
 }
 .statblock-action { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; padding: 0.2rem 0.6rem; height: auto; }
 
-.nimble-statblock.is-compact { padding: 0.55rem 0.7rem; font-size: 0.9em; }
-.nimble-statblock.is-compact .monster-name { font-size: 1.05rem; margin-bottom: 0.3rem; }
+/* Hover cards and the quick look: the same block, a size down, one column. */
+.nimble-statblock.is-compact { font-size: 13.5px; line-height: 19px; }
+.nimble-statblock.is-compact .monster-name { font-size: 22px; line-height: 26px; }
+.nimble-statblock.is-compact .monster-body.is-split { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.nimble-statblock.is-compact .monster-body.is-split > .monster-phases { padding-top: 0; }
 
 /* Clickable things inside rules text */
 .nimble-dice.is-clickable {
@@ -5356,89 +5398,103 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .nimble-entity-builder .is-hidden, .nimble-entity-builder button.is-hidden { display: none; }
 
 /* ---------------------------------------------------------------------------
-   5e stat blocks (src/systems/dnd5e/render.ts): the 2014 and 2024 layouts, on the game's look
-   (GAME LOOKS): the book's paper, red bars and rules, small-caps names, gold under the section heads. */
+   5e stat blocks (src/systems/dnd5e/render.ts), each edition in its own dress (design study: #5e/block).
+   2024 (SRD 5.2): a warm card with a double gold hairline, the name over an oxblood rule, AC and Initiative on
+   one line, the Mod/Save table as tinted cells (physical warm, mental cooler), small-caps section heads over a
+   rule. 2014 (SRD 5.1): the amber page between ochre bars, red tapers between the sections, "Challenge".
+   Every number rolls (a gold underline); rules words open their card. */
 .dnd5e-statblock {
-	background: var(--ev-paper);
-	border: 1px solid var(--ev-paper-edge);
-	border-top: 3px solid var(--ev-accent);
-	border-bottom: 3px solid var(--ev-accent);
-	border-radius: var(--nimble-radius);
-	padding: 0.8rem 1rem;
+	position: relative;
 	margin: 1rem 0;
-	line-height: 1.45;
-	font-size: var(--font-text-size);
+	color: var(--ev-text);
+	font: 400 15.5px/21px var(--x5-font-book);
 }
-.dnd5e-statblock.hover { margin: 0; border-top-width: 2px; border-bottom-width: 2px; }
-.dnd5e-statblock .dnd5e-name {
-	font-family: var(--ev-display-font);
-	font-size: 1.4rem;
-	font-weight: var(--ev-display-weight);
-	font-variant: var(--ev-display-variant);
-	letter-spacing: 0.01em;
-	color: var(--ev-accent-text);
-	line-height: 1.15;
+.dnd5e-statblock.inline { margin: 0; }
+.dnd5e-statblock .dnd5e-name { margin: 0; font: 600 30px/32px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--ev-accent-text); overflow-wrap: anywhere; }
+.dnd5e-statblock .dnd5e-meta { font: italic 400 16px/20px var(--ev-font-display); color: var(--ev-text-2); }
+.dnd5e-statblock .dnd5e-line { padding: 1px 0; }
+.dnd5e-statblock .dnd5e-label { font-weight: 700; color: var(--x5-label); }
+.dnd5e-statblock .dnd5e-value { color: var(--ev-text); }
+.dnd5e-statblock .dnd5e-feature { margin: 7px 0; }
+.dnd5e-statblock .dnd5e-feature-name { font-weight: 700; font-style: italic; }
+.dnd5e-statblock .dnd5e-intro { margin: 7px 0; color: var(--ev-text-2); }
+.dnd5e-statblock .dnd5e-section { margin: 14px 0 4px; padding-bottom: 2px; border-bottom: 1px solid var(--ev-rule); font: 600 21px/24px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; color: var(--ev-accent-text); }
+/* Every number a roll: a gold wash and underline; rules words a dotted gold line. */
+.dnd5e-statblock :is(.dnd5e-roll, .nimble-dice).is-clickable {
+	padding: 0 2px; border-radius: 2px; cursor: pointer; font-weight: 700; white-space: nowrap; color: inherit;
+	background: color-mix(in srgb, var(--x5-gold) 13%, transparent);
+	border-bottom: 1px solid color-mix(in srgb, var(--x5-gold) 70%, transparent);
 }
-.dnd5e-statblock .dnd5e-meta { font-style: italic; color: var(--text-muted); font-size: 0.9em; }
-.dnd5e-statblock .dnd5e-rule {
-	height: 2px;
-	margin: 0.45rem 0;
-	background: linear-gradient(90deg, var(--ev-accent), transparent);
+.dnd5e-statblock :is(.dnd5e-roll, .nimble-dice).is-clickable:hover,
+.dnd5e-statblock :is(.dnd5e-roll, .nimble-dice).is-clickable:focus-visible { background: color-mix(in srgb, var(--x5-gold) 26%, transparent); outline: none; }
+.dnd5e-statblock .ev-term { border-bottom: 1.5px dotted color-mix(in srgb, var(--x5-gold) 80%, var(--ev-text-2)); }
+.dnd5e-statblock .ev-term:hover { background: none; border-bottom-color: var(--x5-gold); }
+/* Labels and headings still open their rule, but stay plain until pointed at, as the book sets them. */
+.dnd5e-statblock :is(.dnd5e-label, .dnd5e-ab24-name, .dnd5e-ability-name, .dnd5e-section) .ev-term,
+.dnd5e-statblock .ev-term:is(.dnd5e-label, .dnd5e-ab24-name) { border-bottom-color: transparent; }
+.dnd5e-statblock :is(.dnd5e-label, .dnd5e-ab24-name, .dnd5e-ability-name, .dnd5e-section) .ev-term:hover,
+.dnd5e-statblock .ev-term:is(.dnd5e-label, .dnd5e-ab24-name):hover { border-bottom-color: var(--x5-gold); }
+.dnd5e-statblock .dnd5e-bonus { white-space: nowrap; }
+.dnd5e-statblock .dnd5e-book-italic { font-style: italic; }
+/* The book's names are bold italic; only the regular italic face is bundled, so the bold is drawn with a stroke. */
+.dnd5e-statblock .dnd5e-feature-name { -webkit-text-stroke: 0.45px currentColor; }
+.dnd5e-statblock .dnd5e-description { margin-top: 10px; color: var(--ev-text-2); }
+.dnd5e-statblock .dnd5e-description summary { cursor: pointer; font-weight: 600; }
+.dnd5e-statblock .dnd5e-lore { margin-top: 6px; }
+.dnd5e-statblock .dnd5e-lore.is-empty { color: var(--ev-text-2); font-style: italic; }
+.dnd5e-statblock .dnd5e-source { margin-top: 8px; font-size: 12px; line-height: 16px; color: var(--ev-text-2); text-align: right; }
+
+/* 2024 */
+.dnd5e-statblock.ed-2024 {
+	padding: 16px 20px 14px;
+	border-radius: 7px;
+	background: var(--ev-surface) var(--x5-glow);
+	box-shadow: inset 0 0 0 1px var(--x5-gold-soft), inset 0 0 0 4px var(--ev-surface), inset 0 0 0 5px color-mix(in srgb, var(--x5-gold-soft) 60%, transparent), var(--x5-card-shadow);
 }
-.dnd5e-statblock .dnd5e-line { color: var(--ev-accent-text); }
-.dnd5e-statblock .dnd5e-label { font-weight: 700; }
-.dnd5e-statblock .dnd5e-value { color: var(--text-normal); }
-.dnd5e-statblock .dnd5e-ac-init .dnd5e-init-label { margin-left: 1.25rem; }
-.dnd5e-statblock .dnd5e-details .dnd5e-line { margin: 0.05rem 0; }
-.dnd5e-statblock .dnd5e-abilities {
-	display: grid;
-	grid-template-columns: repeat(6, minmax(0, 1fr));
-	text-align: center;
-	color: var(--ev-accent-text);
-	gap: 0.25rem;
-}
-.dnd5e-statblock .dnd5e-ability-name { font-weight: 700; font-size: 0.85em; }
-.dnd5e-statblock .dnd5e-ability-score { color: var(--text-normal); white-space: nowrap; }
-.dnd5e-statblock .dnd5e-ab24-wrap { container: dnd5e-ab / inline-size; }
+.dnd5e-statblock.ed-2024 .dnd5e-name { padding-bottom: 2px; border-bottom: 1.5px solid var(--ev-rule); }
+.dnd5e-statblock.ed-2024 .dnd5e-meta { margin: 3px 0 8px; }
+.dnd5e-statblock.ed-2024 .dnd5e-rule { display: none; }
+.dnd5e-statblock.ed-2024 :is(.dnd5e-core, .dnd5e-details) { margin: 4px 0 8px; }
+/* AC | Initiative: two columns, each label beside its value (it wraps as pairs, never stretched apart). */
+.dnd5e-statblock .dnd5e-ac-init { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 0 12px; }
+.dnd5e-statblock .dnd5e-pair { min-width: 0; }
+.dnd5e-statblock .dnd5e-ab24-wrap { container: dnd5e-ab / inline-size; margin: 6px 0 10px; }
 .dnd5e-statblock .dnd5e-abilities-2024 {
-	/* Each group keeps its own width (name, score, then MOD and SAVE the same size, as the book sets them);
+	/* Each group keeps its own width (name, score, then Mod and Save the same size, as the book sets them);
 	   spare width goes only into the spacer columns between groups, so the numbers stay evenly spaced
 	   however wide the block is. Groups: columns 1–4, 6–9 and 11–14. */
-	--ab-group: auto minmax(1.5em, auto) minmax(2.6em, 3.1em) minmax(2.6em, 3.1em);
-	--ab-space: minmax(0.6rem, 1fr);
+	--ab-group: minmax(2.4em, auto) minmax(1.6em, auto) minmax(2.6em, 1fr) minmax(2.6em, 1fr);
+	--ab-space: 6px;
 	display: grid;
 	grid-template-columns: var(--ab-group) var(--ab-space) var(--ab-group) var(--ab-space) var(--ab-group);
-	gap: 0.2rem 0;
-	font-size: 0.95em;
-	font-variant-numeric: tabular-nums;
+	gap: 2px 0;
+	font: 500 14.5px/20px var(--x5-font-book);
+	font-variant-numeric: lining-nums tabular-nums;
 }
 .dnd5e-statblock .dnd5e-ab24 {
 	grid-column: 1 / span 4;
 	display: grid;
 	grid-template-columns: subgrid;
 	align-items: stretch;
-	border-radius: 4px;
+	border-radius: 2px;
 	overflow: hidden;
-	background: color-mix(in srgb, var(--ev-accent-text) 7%, transparent);
+	background: var(--x5-cell);
 }
 .dnd5e-statblock .dnd5e-ab24.is-head:nth-child(2), .dnd5e-statblock .dnd5e-ab24:is(.ab-dex, .ab-wis) { grid-column: 6 / span 4; }
 .dnd5e-statblock .dnd5e-ab24.is-head:nth-child(3), .dnd5e-statblock .dnd5e-ab24:is(.ab-con, .ab-cha) { grid-column: 11 / span 4; }
-.dnd5e-statblock .dnd5e-ab24 > span { display: flex; align-items: center; padding: 0.1rem 0.3rem; }
-/* MOD and SAVE on a slightly stronger tint than the name and score, like the book's shaded columns. */
-.dnd5e-statblock .dnd5e-ab24:not(.is-head) > :is(.dnd5e-ab24-mod, .dnd5e-ab24-save) { background: color-mix(in srgb, var(--ev-accent-text) 9%, transparent); }
-.dnd5e-statblock .dnd5e-ab24.is-head {
-	background: none;
-	white-space: nowrap;
-	font-size: 0.7em;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: var(--text-muted);
-}
-.dnd5e-statblock .dnd5e-ab24.is-head > span { justify-content: center; padding-block: 0; }
-.dnd5e-statblock .dnd5e-ab24 > .dnd5e-ab24-name { justify-self: start; margin-left: 0.3rem; padding-inline: 0; font-weight: 700; color: var(--ev-accent-text); }
-.dnd5e-statblock .dnd5e-ab24-score { justify-content: flex-end; }
+.dnd5e-statblock .dnd5e-ab24 > span { display: flex; align-items: center; justify-content: center; padding: 3px 4px; }
+/* Mod and Save on the book's darker cells; the mental abilities a cooler shade. */
+.dnd5e-statblock .dnd5e-ab24:not(.is-head) > :is(.dnd5e-ab24-mod, .dnd5e-ab24-save) { background: var(--x5-cell-2); }
+.dnd5e-statblock .dnd5e-ab24:is(.ab-int, .ab-wis, .ab-cha) { background: color-mix(in srgb, var(--x5-cell) 82%, var(--x5-cool)); }
+.dnd5e-statblock .dnd5e-ab24:is(.ab-int, .ab-wis, .ab-cha) > :is(.dnd5e-ab24-mod, .dnd5e-ab24-save) { background: color-mix(in srgb, var(--x5-cell-2) 82%, var(--x5-cool)); }
+.dnd5e-statblock .dnd5e-ab24.is-head { background: none; white-space: nowrap; }
+.dnd5e-statblock .dnd5e-ab24.is-head > span { padding-block: 0; font: 600 10.5px/14px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.1em; color: var(--ev-text-2); }
+.dnd5e-statblock .dnd5e-ab24 > .dnd5e-ab24-name { justify-content: flex-start; font: 600 15.5px/20px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.03em; color: var(--x5-label); }
 .dnd5e-statblock .dnd5e-ab24-mod,
-.dnd5e-statblock .dnd5e-ab24-save { justify-content: center; white-space: nowrap; }
+.dnd5e-statblock .dnd5e-ab24-save { white-space: nowrap; }
+/* In the table the cells already say "roll": the numbers go plain, the gold line shows on hover. */
+.dnd5e-statblock .dnd5e-ab24 .dnd5e-roll.is-clickable { background: none; border-bottom-color: transparent; }
+.dnd5e-statblock .dnd5e-ab24 .dnd5e-roll.is-clickable:hover { border-bottom-color: var(--x5-gold); }
 /* Narrow blocks: two groups a row (Str Dex / Con Int / Wis Cha), then one. */
 @container dnd5e-ab (max-width: 470px) {
 	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: var(--ab-group) var(--ab-space) var(--ab-group); }
@@ -5447,38 +5503,50 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 	.dnd5e-statblock .dnd5e-ab24:is(.ab-dex, .ab-int, .ab-cha) { grid-column: 6 / span 4; }
 }
 @container dnd5e-ab (max-width: 360px) {
-	.dnd5e-statblock .dnd5e-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 0.4rem; }
+	.dnd5e-statblock .dnd5e-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 6px; }
 }
-@container dnd5e-ab (max-width: 260px) {
-	/* One group: the name takes the spare width, so the score stays beside MOD. */
-	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: 1fr minmax(1.5em, auto) minmax(2.6em, 3.1em) minmax(2.6em, 3.1em); }
+@container dnd5e-ab (max-width: 240px) {
+	/* One group: the name takes the spare width, so the score stays beside Mod. */
+	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: 1fr minmax(1.6em, auto) minmax(2.6em, 3.1em) minmax(2.6em, 3.1em); }
 	.dnd5e-statblock .dnd5e-ab24.is-head:nth-child(2) { display: none; }
 	.dnd5e-statblock .dnd5e-ab24:not(.is-head) { grid-column: 1 / span 4; }
 }
-.dnd5e-statblock .dnd5e-section {
-	margin-top: 0.7rem;
-	font-family: var(--ev-display-font);
-	font-size: 1.1rem;
-	font-weight: var(--ev-display-weight);
-	font-variant: var(--ev-display-variant);
-	color: var(--ev-accent-text);
-	border-bottom: 1px solid var(--ev-ornament);
+
+/* 2014: the amber page between ochre bars, red tapers between the sections. */
+.dnd5e-statblock.ed-2014 {
+	padding: 0 16px;
+	background: var(--x5-sb14-bg) var(--x5-paper);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--x5-sb14-bar-edge) 30%, transparent), 0 4px 14px -4px rgb(60 30 0 / 0.35);
 }
-.dnd5e-statblock .dnd5e-feature { margin: 0.35rem 0; }
-.dnd5e-statblock .dnd5e-feature-name { font-weight: 700; font-style: italic; }
-.dnd5e-statblock .dnd5e-intro { margin: 0.35rem 0; color: var(--text-muted); }
-.dnd5e-statblock .dnd5e-roll.is-clickable,
-.dnd5e-statblock .nimble-dice.is-clickable {
-	cursor: pointer;
-	border-bottom: 1px dotted currentColor;
+.dnd5e-statblock.ed-2014::before, .dnd5e-statblock.ed-2014::after {
+	content: ""; display: block; height: 6px; margin: 0 -18px 8px;
+	background: linear-gradient(var(--x5-sb14-bar), color-mix(in srgb, var(--x5-sb14-bar) 75%, var(--x5-sb14-bar-edge)));
+	box-shadow: inset 0 0 0 1px var(--x5-sb14-bar-edge);
 }
-.dnd5e-statblock .dnd5e-roll.is-clickable:hover,
-.dnd5e-statblock .nimble-dice.is-clickable:hover { color: var(--ev-accent-text); }
-.dnd5e-statblock .dnd5e-description { margin-top: 0.6rem; color: var(--text-muted); }
-.dnd5e-statblock .dnd5e-description summary { cursor: pointer; font-weight: 600; }
-.dnd5e-statblock .dnd5e-lore { margin-top: 0.4rem; }
-.dnd5e-statblock .dnd5e-lore.is-empty { color: var(--text-faint); font-style: italic; }
-.dnd5e-statblock .dnd5e-source { margin-top: 0.5rem; font-size: 0.75em; color: var(--text-faint); text-align: right; }
+.dnd5e-statblock.ed-2014::after { margin: 10px -18px 0; }
+.dnd5e-statblock.ed-2014 .dnd5e-name { margin-top: 6px; font-size: 29px; color: var(--x5-sb14-name); }
+.dnd5e-statblock.ed-2014 .dnd5e-meta { font-size: 15.5px; color: var(--ev-text); }
+.dnd5e-statblock.ed-2014 .dnd5e-label { color: var(--x5-sb14-rule); }
+.dnd5e-statblock.ed-2014 .dnd5e-rule {
+	height: 5px; margin: 7px 0; background: var(--x5-sb14-rule);
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0.3 L400 2.5 L0 4.7 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0.3 L400 2.5 L0 4.7 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+}
+.dnd5e-statblock .dnd5e-abilities { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; text-align: center; font: 400 14.5px/20px var(--x5-font-book); }
+.dnd5e-statblock .dnd5e-ability-name { display: block; font: 700 14px/18px var(--x5-font-book); letter-spacing: 0.03em; color: var(--x5-sb14-rule); }
+.dnd5e-statblock .dnd5e-ability-score { white-space: nowrap; }
+.dnd5e-statblock .dnd5e-ability-score .dnd5e-roll.is-clickable { padding: 0; background: none; border-bottom-color: transparent; }
+.dnd5e-statblock .dnd5e-ability-score .dnd5e-roll.is-clickable:hover { border-bottom-color: var(--x5-gold); }
+.dnd5e-statblock.ed-2014 .dnd5e-section { margin: 12px 0 6px; padding-bottom: 1px; border-bottom-color: var(--x5-sb14-name); font-size: 23px; line-height: 26px; font-weight: 500; color: var(--x5-sb14-name); }
+
+/* Hover cards and the quick look: the same block, a size down. */
+.dnd5e-statblock.hover, .dnd5e-quick-look .dnd5e-statblock { margin: 0; font-size: 14px; line-height: 19px; }
+:is(.dnd5e-statblock.hover, .dnd5e-quick-look .dnd5e-statblock) .dnd5e-name { font-size: 24px; line-height: 28px; }
+:is(.dnd5e-statblock.hover, .dnd5e-quick-look .dnd5e-statblock) .dnd5e-section { font-size: 18px; line-height: 22px; margin-top: 10px; }
+.dnd5e-statblock.ed-2024.hover, .dnd5e-quick-look .dnd5e-statblock.ed-2024 { padding: 12px 14px 10px; box-shadow: inset 0 0 0 1px var(--x5-gold-soft); }
+:is(.dnd5e-statblock.hover, .dnd5e-quick-look .dnd5e-statblock) .dnd5e-abilities-2024 { font-size: 13px; }
+:is(.dnd5e-statblock.hover, .dnd5e-quick-look .dnd5e-statblock) .dnd5e-ab24 > span { padding: 2px 3px; }
+:is(.dnd5e-statblock.hover, .dnd5e-quick-look .dnd5e-statblock) .dnd5e-ab24 > .dnd5e-ab24-name { font-size: 14px; }
 
 /* 5e combat tracker (src/systems/dnd5e/tracker-view.ts)
    One clean row per combatant on the game's paper: the initiative badge and the name in the book's type,

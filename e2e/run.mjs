@@ -119,19 +119,32 @@ test('regular stat block renders kicker, badges, abilities and attacks', async (
 	const info = await o.page.evaluate((R) => {
 		const b = document.querySelector(`${R} .nimble-statblock`);
 		return {
+			look: b.classList.contains('ev-sys-nimble'),
 			kicker: b.querySelector('.monster-kicker')?.textContent,
 			name: b.querySelector('.monster-name')?.textContent,
-			badges: [...b.querySelectorAll('.monster-badges .stat-badge .badge-value')].map(x => x.textContent),
+			badges: [...b.querySelectorAll('.monster-badges .badge-value')].map(x => x.textContent),
+			saves: b.querySelector('.saves-badge')?.getAttribute('aria-label'),
+			triangles: [...b.querySelectorAll('.saves-badge .save-mark')].map(s => `${s.textContent}${'▲'.repeat(s.querySelectorAll('.nb-tri.is-up').length)}${'▼'.repeat(s.querySelectorAll('.nb-tri.is-down').length)}`),
 			armorTitle: b.querySelector('.armor-badge')?.getAttribute('aria-label'),
 			ability: b.querySelector('.ability-item')?.textContent,
 			multi: b.querySelector('.multiattack')?.textContent,
 			attacks: [...b.querySelectorAll('.actions-list li')].map(li => li.textContent),
+			damage: [...b.querySelectorAll('.actions-list .monster-damage-type')].map(d => d.getAttribute('aria-label')),
 			hasAdd: !!b.querySelector('.add-btn'),
+			// The GM's Guide's box: cut corners drawn by a border image, never a clip-path.
+			frame: getComputedStyle(b).borderImageSource.startsWith('url('),
 		};
 	}, R);
+	assert.ok(info.look, 'the block wears Nimble\'s look');
 	assert.equal(info.name, 'Goblin Boss');
-	assert.equal(info.kicker, 'Lvl 2 · Small · Humanoid');
-	assert.deepEqual(info.badges, ['36', 'M', 'STR+ DEX++ WIL−']);
+	// Name and level inline, as the book prints a regular monster ("Lvl 2, small humanoid" in small caps).
+	assert.equal(info.kicker, 'Lvl 2, Small Humanoid');
+	// HP in the heart, the armor letter on its shield; speed 6 is the default, so it's left off.
+	assert.deepEqual(info.badges, ['36', 'M']);
+	assert.equal(info.saves, 'Saves: STR+ DEX++ WIL−');
+	assert.deepEqual(info.triangles, ['STR▲', 'DEX▲▲', 'WIL▼']);
+	assert.deepEqual(info.damage, ['Slashing damage', 'Piercing damage']);
+	assert.ok(info.frame);
 	assert.equal(info.armorTitle, 'Medium armor');
 	assert.match(info.ability, /^Redirect Attack\. When missed/);
 	assert.equal(info.multi, 'Makes two scimitar attacks');
@@ -154,17 +167,23 @@ test('legendary stat block renders header, senses and phases', async (o) => {
 			lastStand: b.querySelector('.phase-section.laststand-section')?.textContent,
 			abilities: [...b.querySelectorAll('.ability-item .ability-name')].map(x => x.textContent),
 			frightened: b.querySelector('.nimble-condition-ref')?.textContent,
+			fireIcon: b.querySelector('.monster-defenses .monster-damage-type')?.getAttribute('aria-label'),
+			// The after-each-hero actions beside Bloodied and Last Stand, at a note's width.
+			split: getComputedStyle(b.querySelector('.monster-body')).gridTemplateColumns.split(' ').length,
 		};
 	}, R);
 	assert.ok(info.role);
-	assert.equal(info.kicker, 'Lvl 7 · Solo · Large · Dragon');
+	assert.equal(info.kicker, 'Level 7 Solo · Large · Dragon');
 	assert.equal(info.name, 'Young Dragon');
-	assert.deepEqual(info.badges, ['120', 'H', '8, fly 16', 'STR++ DEX+ WIL++']);
-	assert.match(info.defenses, /Resistant: Fire/);
-	assert.match(info.defenses, /Senses: Blindsight 6 spaces/);
-	assert.match(info.intro, /^SOLO: After each hero's turn, choose one:/);
-	assert.match(info.bloodied, /^BLOODIED: Fire Breath recharges/);
-	assert.match(info.lastStand, /^LAST STAND: The dragon lashes out/);
+	assert.deepEqual(info.badges, ['120', 'H', '8, fly 16']);
+	assert.match(info.defenses, /Resistant Fire/);
+	assert.equal(info.fireIcon, 'Fire damage');
+	assert.match(info.defenses, /Senses Blindsight 6 spaces/);
+	// The book's words: "Actions: after each hero's turn, choose one", never "Solo:" or "Legendary:".
+	assert.match(info.intro, /^Actionsafter each hero's turn, choose one$/);
+	assert.match(info.bloodied, /^BloodiedFire Breath recharges/);
+	assert.match(info.lastStand, /^Last StandThe dragon lashes out/);
+	assert.equal(info.split, 2);
 	assert.deepEqual(info.abilities, ['Frightful Presence.', 'Wing Attack.']);
 	assert.equal(info.frightened, 'Frightened');
 	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-solo.png') });
@@ -587,10 +606,13 @@ test('bundled reference: Krogg resolves, previews with an action bar, and goes a
 			actions: [...el.querySelectorAll('.statblock-actions .statblock-action:not(.statblock-action-more)')].map(b => b.textContent),
 			more: el.querySelectorAll('.statblock-actions .statblock-action-more').length,
 			source: el.querySelector('.monster-source')?.textContent,
+			// The note's block, a size down, in Nimble's look.
+			block: [...(el.querySelector('.nimble-statblock')?.classList ?? [])].filter(c => c === 'is-compact' || c === 'ev-sys-nimble').sort(),
 		};
 	}, PREVIEW);
+	assert.deepEqual(p.block, ['ev-sys-nimble', 'is-compact']);
 	assert.equal(p.name, 'Krogg, Goblin King');
-	assert.match(p.kicker, /Lvl 2 · Solo/);
+	assert.match(p.kicker, /^Level 2 Solo/);
 	assert.deepEqual(p.actions, ['Add', 'Compendium', 'Copy to vault']);
 	assert.equal(p.more, 1, 'Add has a menu (Add several…, tougher, weaker)');
 	assert.match(p.source, /Monsters & More p\.7/);
