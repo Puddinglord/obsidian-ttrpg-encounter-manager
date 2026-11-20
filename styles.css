@@ -4397,6 +4397,8 @@ button.nimble-cmp-back:hover { background: var(--background-modifier-active-hove
 	.nimble-cmp-card .nimble-art-slot { width: 56px; height: 56px; }
 	.nimble-cmp-card .nimble-cmp-scroll .ns-scroll-title { font-size: 22px; line-height: 28px; }
 }
+/* A homebrew block frames the card itself (the note's card, homebrew-block.ts): the card inside drops its own frame. */
+.nimble-homebrew.ev-sys-nimble > .nimble-cmp-card { padding: 0; border-radius: 0; background: none; box-shadow: none; }
 /* In a hover preview the card is the page: a little tighter. */
 .nimble-hover-preview .nimble-cmp-card.ev-sys-nimble { padding: 14px 16px 12px; }
 .nimble-hover-preview .nimble-cmp-card .nimble-cmp-name { font-size: 24px; }
