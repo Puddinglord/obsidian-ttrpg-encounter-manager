@@ -5991,7 +5991,10 @@ test('NPC card without the block: a hand-written NPC note still shows its card, 
 		assert.match(await card.locator('.nimble-npc-name').innerText(), /sildar/i);
 		assert.match(await card.locator('.nimble-npc-role').innerText(), /Knight of the Order/i);
 		assert.equal(await card.locator('.nimble-npc-portrait.is-empty').count(), 1, 'the portrait slot offers to add one');
-		assert.deepEqual((await card.locator('.nimble-note-stat').allInnerTexts()).map(x => x.replace(/\s+/g, '')), ['AC16', 'HP27']);
+		// 5e draws its stats as the mini sheet under the card: AC on its shield, HP on the meter.
+		await o.waitFor(async () => (await card.locator('.dnd5e-npc-stats .dnd5e-npc-ac b').innerText().catch(() => '')) === '16', { what: 'AC 16 on the mini sheet' });
+		assert.equal(await card.locator('.dnd5e-npc-stats .dnd5e-npc-hp-bar-max').innerText(), '27');
+		assert.match(await card.locator('.dnd5e-npc-src').innerText(), /Typed in this note/);
 		assert.ok(await card.evaluate(n => !!n.closest('.ev-sys-dnd5e')), 'the card takes 5e\'s look');
 		// The row of tags keeps what the card doesn't show (aliases) and leaves the rest to the card.
 		await o.waitFor(async () => (await o.page.locator(`${R} .metadata-property[data-property-key="role"]`).evaluate(n => getComputedStyle(n).display).catch(() => 'none')) === 'none', { what: 'role left to the card' });
