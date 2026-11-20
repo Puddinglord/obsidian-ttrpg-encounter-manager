@@ -1,0 +1,65 @@
+/* PF2e main tab: the turn ribbon in initiative tabs, the book's steps */
+.xp-steps { padding: 12px 14px; font: 500 14px/19px var(--g-font-ui); --rib-cut: var(--g-bg); --glyph-cut: var(--g-bg); }
+.xp-steps .xp-rib { margin-bottom: 4px; }
+.xp-steps-l { margin: 0 0 14px; }
+.xp-step { display: flex; gap: 10px; align-items: center; padding: 7px 4px; border-bottom: 1px solid var(--g-line-strong); }
+.xp-step .n { position: relative; isolation: isolate; flex: none; width: 20px; height: 20px; display: grid; place-items: center; color: var(--g-on-trait); font: 700 11.5px/1 var(--g-font-cap); }
+.xp-step .n::before { content: ""; position: absolute; inset: 3px; transform: rotate(45deg); background: var(--g-trait); z-index: -1; }
+.xp-step.done { color: var(--g-text-2); }
+.xp-step.done .n::before { background: var(--g-line-strong); }
+.xp-step .xp-tag { vertical-align: 1px; box-shadow: 0 0 0 2px var(--g-trait-edge); margin: 0 2px; }
+.mt .xp-list { margin: 0 12px; }
+.g-pf .rib { gap: 4px; border-bottom: 1px solid var(--g-line-strong); }
+.g-pf .rib-i { border-radius: 3px; background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line-strong); padding: 0 0 6px; gap: 4px; overflow: hidden; }
+.g-pf .rib-i > * { margin: 0 8px; }
+.g-pf .rib-i .o { margin: 0; padding: 4px 8px; background: var(--g-surface-2); font: 700 12px/1 var(--g-font-cap); letter-spacing: .06em; color: var(--g-text-2); }
+.g-pf .rib-i b { font: 700 14px/17px var(--g-font-cap); text-transform: uppercase; letter-spacing: .02em; }
+.g-pf .rib-i .rx { color: var(--g-accent-text); display: inline-flex; }
+.g-pf .rib-i.now { box-shadow: inset 0 0 0 2px var(--g-accent); background: var(--g-now); }
+.g-pf .rib-i.now .o { background: linear-gradient(var(--pf-rib-hi), var(--pf-rib)); color: var(--pf-rib-text); }
+.g-pf .rib-i.now .o span { color: var(--pf-rib-text); }
+.g-pf .rib-sep span { font: 700 11px/1 var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; }
+.g-pf .mt-top, .g-pf .mt-foot { border-color: var(--g-line-strong); }
+.g-pf .mt-foot .keys { font-family: var(--g-font-ui); }
+.g-pf .gl-now { border-radius: 3px; box-shadow: inset 0 0 0 1px var(--g-line-strong); border-top: 4px solid var(--g-accent); background: var(--g-surface); }
+.g-pf .gl-now .k { font: 700 11.5px/14px var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; }
+.g-pf .gl-now .n { font: 700 20px/24px var(--g-font-cap); text-transform: uppercase; letter-spacing: .02em; padding-bottom: 3px; border-bottom: 1.5px solid var(--g-text); }
+.g-pf .gl-h b, .g-pf .gl-open { font-family: var(--g-font-cap); text-transform: uppercase; letter-spacing: .05em; }
+.g-pf .gl-r { border-bottom-color: var(--g-line-strong); }
+.g-pf .ev-sec span { font-family: var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; }
+.g-pf .set-modal { border-radius: 4px; border-top: 4px solid var(--g-accent); }
+.g-pf .set-modal h3 { font: 400 21px/26px var(--g-font-display); letter-spacing: .02em; }
+.g-pf .set-sec { font: 700 12px/16px var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; color: var(--g-accent-text); }
+.g-pf .set-row { border-top-color: var(--g-line-strong); }
+
+.xc-side { padding: 12px 14px; }
+.xc-side .xc-band { border: 1.5px solid var(--g-line-strong); border-radius: 5px 5px 0 0; }
+.xc-side .xc-band .t { font-size: 17px; }
+.xc-side-in { padding: 10px 12px 12px; margin-bottom: 14px; border: 1.5px solid var(--g-line-strong); border-top: 0; border-radius: 0 0 5px 5px; background: var(--g-surface); }
+.xc-def { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--g-line); font: 500 15.5px/20px var(--g-font-ui); }
+.xc-def:first-child { border-top: 0; }
+.mt .xc-entry { padding-left: 12px; }
+.g-coc .rib { gap: 4px; border-bottom: 1.5px solid var(--g-line-strong); }
+.g-coc .rib-i { border-radius: 4px; background: var(--g-surface); box-shadow: inset 0 0 0 1.5px var(--g-line-strong); padding: 0 0 6px; gap: 4px; overflow: hidden; }
+.g-coc .rib-i > * { margin: 0 8px; }
+.g-coc .rib-i .o { margin: 0; padding: 3px 8px; background: var(--g-surface-2); border-bottom: 1px solid var(--g-line-strong); font: 700 13px/1 var(--g-font-num); color: var(--g-text); }
+.g-coc .rib-i b { font: 600 14.5px/18px var(--g-font-ui); }
+.g-coc .rib-i.now { box-shadow: inset 0 0 0 2px var(--g-accent); background: var(--g-now); }
+.g-coc .rib-i.now .o { background: var(--g-accent); color: var(--g-on-accent); border-color: var(--g-accent); }
+.g-coc .rib-i.now .o span { color: var(--g-on-accent); }
+.g-coc .rib-sep span { font: italic 400 13px/1 var(--g-font-ui); }
+.g-coc .mt-top, .g-coc .mt-foot { border-color: var(--g-line-strong); }
+.g-coc .gl-now { border-radius: 4px; box-shadow: inset 0 0 0 1.5px var(--g-line-strong); border-top: 4px solid var(--g-accent); background: var(--g-surface); }
+.g-coc .gl-now .k { font: 600 13px/16px var(--g-font-ui); font-variant: small-caps; letter-spacing: .06em; }
+.g-coc .gl-now .n { font: 600 21px/26px var(--g-font-ui); }
+.g-coc .gl-r { font: 500 15px/20px var(--g-font-ui); border-bottom-color: var(--g-line-strong); }
+.g-coc .gl-r em { font-family: var(--g-font-num); }
+.g-coc .gl-h b { font: 400 16px/20px var(--g-font-display); }
+.g-coc .ev-sec span { font: 600 14px/18px var(--g-font-ui); font-variant: small-caps; letter-spacing: .05em; }
+.g-coc .set-modal { border-radius: 4px; box-shadow: 0 0 0 1.5px var(--g-line-strong), 0 0 0 4px var(--g-surface), 0 0 0 5px var(--g-line-strong), 0 30px 60px -20px rgb(0 0 0 / 0.4); }
+.g-coc .set-modal h3 { font: 400 22px/26px var(--g-font-display); }
+.g-coc .set-sec { margin: 8px 0 0; padding: 4px 22px; background: var(--coc-band) repeating-linear-gradient(-45deg, transparent 0 3px, var(--coc-hatch) 3px 4px); border-top: 1px solid var(--g-line-strong); border-bottom: 1px solid var(--g-line-strong); font: 400 16px/20px var(--g-font-display); color: var(--g-text); }
+.g-coc .set-row { border-top-color: var(--g-line); font-family: var(--g-font-ui); }
+.g-coc .set-sec + .set-row { border-top: 0; }
+.g-coc .set-row b { font-size: 16px; }
+.g-coc .set-row small { font-size: 14.5px; }

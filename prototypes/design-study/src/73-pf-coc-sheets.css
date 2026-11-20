@@ -1,0 +1,48 @@
+/* PF2e: character sheet, creature block, NPC card */
+/* The sheet itself lives in 73p-pf-sheet.css. */
+
+/* The creature block */
+.xpb { color: var(--g-text); font: 400 15px/21px var(--g-font-ui); --glyph-cut: var(--g-bg); }
+.xpb .xp-tline { font-size: 22px; line-height: 26px; }
+.xpb > .xp-tags { margin: 5px 0 4px; }
+.xpb p { margin: 0; padding-left: 14px; text-indent: -14px; }
+.xpb p b { font-weight: 700; }
+.xpb-r { font-weight: 600; color: var(--g-accent-text); text-decoration: underline dotted; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
+.xpb-rule { height: 1px; background: var(--g-text); margin: 5px 0; }
+.xpb-tr { color: var(--g-text); }
+.xpb .xp-glyph { color: var(--g-text); }
+.xpb.compact { font-size: 14px; line-height: 19px; }
+.xpb.compact .xp-tline { font-size: 19px; line-height: 22px; }
+.hc.g-pf { background: var(--g-bg); box-shadow: 0 0 0 1px var(--g-line-strong), 0 24px 50px -16px rgb(0 0 0 / 0.45); border-top: 4px solid var(--g-accent); border-radius: 4px; }
+
+/* The NPC card in PF2e's voice */
+.g-pf .npc { background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line-strong); border-radius: 4px; border-top: 4px solid var(--g-accent); }
+.g-pf .npc-name { font: 400 28px/32px var(--g-font-display); letter-spacing: .02em; }
+.g-pf .npc-role { font: 700 13px/18px var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; color: var(--g-accent-text); }
+.g-pf .npc-pill { border-radius: 2px; font: 700 12px/1 var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; }
+.g-pf .npc-row .k { font: 700 12px/21px var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; }
+.g-pf .npc-row { border-top-color: var(--g-line-strong); }
+.g-pf .sh-portrait { box-shadow: inset 0 0 0 2px var(--pf-gold), 0 4px 14px -6px rgb(0 0 0 / 0.3); font-family: var(--g-font-display); color: var(--g-accent-text); }
+.g-pf .npc.is-player { background: var(--g-bg); border-top-color: var(--g-line-strong); }
+.xpn { display: grid; gap: 6px; border-top: 0; padding-top: 4px; --glyph-cut: var(--g-surface); }
+.xpn .xp-tline { font-size: 16px; }
+.xpn-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.xpn-c { display: inline-flex; align-items: baseline; gap: 6px; padding: 5px 9px; border-radius: 3px; background: var(--pf-box); box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.xpn-c b { font: 700 15px/1 var(--g-font-num); }
+.xpn .npc-ref { margin-left: auto; border-radius: 3px; font: 700 12px/1 var(--g-font-cap); text-transform: uppercase; letter-spacing: .05em; }
+
+/* Delay tray and player-safe */
+.sh-roll.is-on { border-color: var(--g-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--g-accent) 22%, transparent); }
+.xp-tray { display: flex; align-items: center; gap: 10px; margin: 0 var(--g-pad) 8px; padding: 8px 10px 8px 12px; background: var(--g-surface); border: 1px dashed var(--g-accent); border-radius: var(--g-r-md); font: 500 13.5px/18px var(--g-font-ui); }
+.xp-tray > svg { color: var(--g-accent-text); flex: none; }
+.xp-tray > span { flex: 1; }
+.xp-tray > span b { font: 700 13px/1 var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; color: var(--g-accent-text); margin-right: 4px; }
+.xp-ps { padding: 22px 28px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; zoom: 1.15; --glyph-cut: var(--g-surface); }
+.xp-ps-c { display: grid; gap: 6px; align-content: start; padding: 0 0 12px; border-radius: 4px; background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line-strong); overflow: hidden; }
+.xp-ps-c > * { margin: 0 12px; }
+.xp-ps-c .o { margin: 0; padding: 6px 12px; background: var(--g-surface-2); font: 700 13px/1 var(--g-font-cap); letter-spacing: .08em; text-transform: uppercase; color: var(--g-text-2); }
+.xp-ps-c > b { font: 700 20px/24px var(--g-font-cap); text-transform: uppercase; letter-spacing: .02em; }
+.xp-ps-c .ps-hp { justify-self: start; border-radius: 2px; font-family: var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; }
+.xp-ps-c.now { box-shadow: inset 0 0 0 2px var(--g-accent); background: var(--g-now); }
+.xp-ps-c.now .o { background: linear-gradient(var(--pf-rib-hi), var(--pf-rib)); color: var(--pf-rib-text); }
+.xp-ps-c.is-acted { opacity: .5; }

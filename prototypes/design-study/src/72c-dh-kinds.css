@@ -1,0 +1,134 @@
+/* ============================================================================
+   Daggerheart kinds and blocks (pass 4). Paper in both themes.
+   Kind colours (each 5.9:1 or better with white text):
+     adversary #A8262A crimson · environment #2F6B3A green · NPC #8A5A0E gold-brown
+   ========================================================================== */
+.xdk-tag { --k: #A8262A; display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 7px; border-radius: 4px; background: var(--k); color: #fff; font: 900 10.5px/1 var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; vertical-align: middle; }
+.xdk-tag svg { flex: none; }
+.xdk-tag b { display: inline-grid; place-items: center; min-width: 16px; height: 16px; margin-left: 2px; border-radius: 3px; background: rgb(255 255 255 / 0.22); font: 900 10px/1 var(--g-font-num); letter-spacing: 0; }
+.k-adversary { --k: var(--xd-k-adv, #A8262A); --k-tint: #F5DCDB; }
+.k-environment { --k: var(--xd-k-env, #2F6B3A); --k-tint: #DDEBDD; }
+.k-npc { --k: var(--xd-k-npc, #8A5A0E); --k-tint: #F6ECCD; }
+.xdk-tag.dim { background: transparent; color: var(--k); box-shadow: inset 0 0 0 1.25px var(--k); }
+
+/* ---------- Block ---------- */
+.xdk { position: relative; overflow: hidden; color: var(--xd-ink); font: 400 14px/21px var(--g-font-ui); box-shadow: 0 18px 36px -24px rgb(0 0 0 / 0.6); }
+.xdk-head { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 30px 14px 12px 16px; background: linear-gradient(105deg, #33296F, #1B1640 70%); border-bottom: 2px solid #F2C167; }
+.xdk-head h2 { margin: 0; font: 900 23px/26px var(--g-font-display); letter-spacing: .02em; text-transform: uppercase; color: #FBF6EA; }
+.xdk-head .ty { margin-top: 2px; font: italic 800 13.5px/18px var(--g-font-ui); letter-spacing: .02em; color: #F7D58C; }
+.xdk-tag.corner { position: absolute; left: 0; top: 0; height: 22px; border-radius: 0 0 6px 0; padding: 0 10px 0 16px; }
+.xdk-tier { display: block; line-height: 0; margin: -22px 0 -8px; }
+.xdk-tier svg { width: 62px; height: 65px; overflow: visible; }
+.xdk-tier .p { fill: #F7D58C; stroke: #F2C167; stroke-width: 1.6; stroke-linejoin: round; }
+.xdk-tier .pi { fill: #FBF3DC; stroke: #C8922E; stroke-width: 1; }
+.xdk-tier .t { fill: #1D1842; font: 900 21px var(--g-font-num); text-anchor: middle; }
+.xdk-tier .ban { fill: #0F0C24; stroke: #F2C167; stroke-width: 1.2; stroke-linejoin: round; }
+.xdk-tier .lab { fill: #FBF6EA; font: 900 7.4px var(--g-font-display); letter-spacing: .14em; text-anchor: middle; }
+.xdk-body { padding: 10px 16px 14px; }
+.xdk p { margin: 6px 0; }
+.xdk .desc { font-style: italic; color: var(--xd-ink-2); }
+.xdk .mot b { font-weight: 900; }
+/* The inset box, as the book's: cream, a gold rule on top */
+.xdk-box { margin: 10px -16px 8px; padding: 10px 16px 9px; background: #FFFDF6; border-top: 2px solid #C8922E; border-bottom: 1px solid #DCCDA9; }
+.xdk-r1 { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; }
+.xdk-cells { display: flex; flex-wrap: wrap; gap: 8px 20px; min-width: 0; }
+.xdk-c { display: grid; gap: 4px; align-content: start; }
+.xdk-c.wide { flex: 1 1 100%; }
+.xdk small, .xdk-c small { font: 900 10.5px/12px var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; color: #4F4A68; }
+.xdk-th { display: inline-flex; align-items: center; gap: 4px; }
+.xdk-th b { display: inline-grid; place-items: center; min-width: 28px; height: 22px; padding: 0 5px; border-radius: 4px; background: #2C2660; color: #FBF6EA; font: 900 13px/1 var(--g-font-num); box-shadow: inset 0 0 0 1px rgb(242 193 103 / 0.55); }
+.xdk-th i { font-style: normal; font-weight: 900; color: #9A6A1C; }
+.xdk-none { font: italic 700 13px/22px var(--g-font-ui); color: var(--xd-ink-2); }
+.xdk-c .xd-slots { height: 22px; align-items: center; }
+.xdk-half { position: relative; }
+.xdk-half::after { content: ""; position: absolute; right: -3px; top: -4px; bottom: -4px; width: 2px; border-radius: 1px; background: #C8922E; }
+.xdk-atk { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 10px; font-size: 13.5px; }
+.xdk-exp { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 8px; padding-top: 7px; border-top: 1.5px dotted #C8B48A; font: 600 13.5px/18px var(--g-font-ui); }
+.xdk-exp b { font-weight: 900; }
+.xdk-pot { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.xdk-ref { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border-radius: 999px; background: #F6F1E5; box-shadow: inset 0 0 0 1.25px #C8922E; color: #1D1842; font: 700 12.5px/1 var(--g-font-ui); text-decoration: underline; text-decoration-color: #C8B48A; text-underline-offset: 2px; }
+.xdk-ref svg { color: #A8262A; }
+/* FEATURES: the book's heading (left, caps), a gold rule, and the key */
+.xdk-fh { display: flex; align-items: center; gap: 10px; margin: 12px 0 6px; font: 900 13px/16px var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; color: #1D1842; }
+.xdk-fh::after { content: ""; order: 1; flex: 1; height: 1.5px; background: linear-gradient(90deg, #C8922E, transparent); }
+.xdk-key { order: 2; display: inline-flex; gap: 10px; font: 700 11px/14px var(--g-font-ui); letter-spacing: 0; text-transform: none; color: #4F4A68; }
+.xdk-key > span { display: inline-flex; align-items: center; gap: 3px; }
+/* A feature: mark, name, type label, text */
+.xdk-f { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 0 6px; padding: 5px 0 5px; border-top: 1px solid #EFE6D2; }
+.xdk-fh + .xdk-f { border-top: 0; }
+.xdk-f > .mk { grid-row: span 2; display: grid; place-items: start center; padding-top: 4px; }
+.xdk-f p { margin: 0; font-size: 14px; line-height: 21px; }
+.xdk-f .nm { font-weight: 900; }
+.xdk-ft { display: inline-flex; align-items: center; height: 19px; margin-left: 6px; padding: 0 7px; border-radius: 4px; font: 800 10.5px/1 var(--g-font-ui); letter-spacing: .06em; text-transform: uppercase; vertical-align: 1px; }
+/* Passive: always on. A hollow ring, an outlined label. */
+.xdk-f.is-passive .mk svg, .xdk-key .is-passive svg { fill: none; stroke: #5E5878; }
+.xdk-f.is-passive .xdk-ft { color: #4F4A68; box-shadow: inset 0 0 0 1.25px #8A84A3; }
+/* Action: needs the spotlight. A solid navy play mark and label. */
+.xdk-f.is-action .mk svg, .xdk-key .is-action svg { fill: #1D1842; stroke: #1D1842; }
+.xdk-f.is-action .xdk-ft { background: #1D1842; color: #FFFFFF; }
+/* Reaction: waits for a trigger. An amber turning arrow and label. */
+.xdk-f.is-reaction .mk svg, .xdk-key .is-reaction svg { fill: #B9781F; stroke: #B9781F; }
+.xdk-f.is-reaction .mk svg path:first-child, .xdk-key .is-reaction svg path:first-child { fill: none; }
+.xdk-f.is-reaction .xdk-ft { background: #F2C167; color: #3B2606; box-shadow: inset 0 0 0 1px #B9781F; }
+.xdk-f.is-action { }
+.xdk-f.is-reaction { }
+.xdk-f.is-passive { }
+.xdk .cost { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 4px; background: #F6DEDC; color: #8E1C24; font-weight: 800; }
+.xdk .cost.fear { background: #3A2A8A; color: #FFFFFF; }
+.xdk-q { grid-column: 2; margin-top: 3px; position: relative; padding-left: 22px; font: italic 600 13.5px/19px var(--g-font-ui); color: #4F4A68; }
+.xdk-cd { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 4px; background: #1C1745; color: #FBF6EA; font: 800 12px/1 var(--g-font-ui); vertical-align: 1px; }
+.xdk-cd svg { color: #F2C167; }
+.xdk-cd .d { display: inline-flex; gap: 3px; margin-left: 2px; }
+.xdk-cd .d i { width: 7px; height: 7px; transform: rotate(45deg); background: #F2C167; }
+.xdk-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #E2D6BC; font: 700 13px/1 var(--g-font-ui); }
+.xdk.compact { font-size: 13.5px; line-height: 19px; box-shadow: none; }
+.xdk.compact .xdk-head h2 { font-size: 19px; line-height: 22px; }
+.xdk.compact .xdk-body { padding: 8px 12px 12px; }
+.xdk.compact .xdk-box { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
+.xdk.compact .xdk-key { display: none; }
+.xdk.compact .xdk-f p { font-size: 13.5px; line-height: 19px; }
+.g-dh.hc .xdk { border: 0; border-radius: 0; }
+.g-dh .sh-ql .xdk { margin: 0 -2px; }
+@container (max-width: 400px) { .xdk-key { display: none; } }
+
+/* ---------- The chooser and the index ---------- */
+.xdk-stage { padding: 20px; border-radius: 14px; background: var(--g-bg); }
+.xdk-grid { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.xdk-choose { padding: 16px 18px 18px; }
+.xdk-choose-h { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.xdk-choose-h h3 { margin: 0; font: 900 18px/22px var(--g-font-display); letter-spacing: .04em; text-transform: uppercase; }
+.xdk-seg { display: inline-flex; border-radius: 999px; box-shadow: inset 0 0 0 1.5px #C8922E; overflow: hidden; }
+.xdk-seg span { padding: 6px 14px; font: 900 11.5px/16px var(--g-font-display); letter-spacing: .06em; text-transform: uppercase; color: #1D1842; }
+.xdk-seg span.on { background: #1C1745; color: #F7D58C; }
+.xdk-cols { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.xdk-col-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding-bottom: 6px; border-bottom: 2px solid var(--k); }
+.xdk-col-h b { font: 900 13px/16px var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--k); }
+.xdk-col-h small { font: italic 600 12px/16px var(--g-font-ui); color: #4F4A68; }
+.xdk-col-n { margin: 8px 0 10px; font: 500 13px/18px var(--g-font-ui); color: #3A3556; }
+.xdk-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.xdk-tile { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 1px 8px; align-items: center; padding: 8px 9px 9px; border-radius: 8px; background: #FFFDF6; box-shadow: inset 0 0 0 1px #E2D6BC; }
+.xdk-tile .xdk-tgl { grid-row: span 2; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; background: var(--k); color: #fff; }
+.xdk-tile b { font: 900 12.5px/16px var(--g-font-display); letter-spacing: .05em; text-transform: uppercase; color: #1D1842; }
+.xdk-tile .bp { justify-self: end; padding: 2px 6px; border-radius: 4px; background: #2C2660; color: #FBF6EA; font: 800 10.5px/14px var(--g-font-num); }
+.xdk-tile small { grid-column: 2 / -1; font: 500 12px/16px var(--g-font-ui); color: #4F4A68; }
+.xdk-tile.on { box-shadow: inset 0 0 0 2px #C8922E, 0 0 0 3px rgb(242 193 103 / 0.25); background: #FFF8E6; }
+.xdk-index { padding: 14px 16px 6px; }
+.xdk-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.xdk-filters > span:not(.xdk-tag) { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px #C8922E; font: 900 11.5px/1 var(--g-font-display); letter-spacing: .06em; text-transform: uppercase; color: #1D1842; }
+.xdk-filters > span.on { background: #1C1745; color: #F7D58C; box-shadow: none; }
+.xdk-filters > span b { font: 800 11px/1 var(--g-font-num); opacity: .8; }
+.xdk-filters.sub { margin-top: 8px; padding-bottom: 12px; border-bottom: 1px solid #E2D6BC; }
+.xdk-rows { display: grid; }
+.xdk-row { display: grid; grid-template-columns: 128px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 9px 2px; border-bottom: 1px solid #EFE6D2; font: 500 13px/18px var(--g-font-ui); color: #4F4A68; }
+.xdk-row b { font: 800 14px/18px var(--g-font-ui); color: #1D1842; }
+.xdk-row .r { font-weight: 800; color: #1D1842; min-width: 110px; text-align: right; }
+.xdk-row:last-child { border-bottom: 0; }
+/* The NPC card's classification line */
+.xdk-npcclass { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 10px; }
+.xdk-arrow { font: italic 600 12.5px/16px var(--g-font-ui); color: #4F4A68; }
+.xdk-choose-s { font: italic 600 13px/18px var(--g-font-ui); color: #4F4A68; }
+.xdk-npcstats { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.xdk-npcstats .xdk-npcclass { margin: 0; }
+.npc-pills .xdk-tag { height: 24px; }
+
+.xdk-q::before { content: "?"; position: absolute; left: 0; top: 1px; width: 15px; height: 15px; border-radius: 50%; background: #C8922E; color: #fff; font: 800 10.5px/15px var(--g-font-ui); font-style: normal; text-align: center; }

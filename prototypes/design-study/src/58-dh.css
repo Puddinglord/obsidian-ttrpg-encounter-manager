@@ -1,0 +1,344 @@
+/* ============================================================================
+   Daggerheart: "A table, not a queue", dressed as the game.
+   Night indigo ground, gold trim, cream paper panels, navy ribbons with
+   chevron ends, crests with banner labels. Dark-first; light is parchment.
+   No clip-path: ribbons are rotated squares, crests are inline SVG.
+   ========================================================================== */
+.g-dh {
+	/* --- Parchment (light) --- */
+	--g-bg: #ECE4D1; --g-surface: #FBF8F0; --g-surface-2: #F2ECDD; --g-line: #DDCFAF; --g-line-strong: #B0915A;
+	--g-text: #1D1842; --g-text-2: #595370; --g-accent: #1D1842; --g-accent-hover: #2B2466; --g-on-accent: #FBF6EA;
+	--g-accent-text: #8A5A0E; --g-now: #FFF4D6; --g-now-line: #C8922E;
+	--g-danger-text: #A3222C; --g-danger-bg: #F6DEDC; --g-ok: #2F6B3A;
+	--g-hope: #E7AE45; --g-hope-edge: #A87420; --g-hope-text: #8A5A0E; --g-fear: #5A3CC8; --g-fear-text: #4B2FB6;
+	--g-hp: #B8333C; --g-stress: #2B2466; --g-gold: #C8922E;
+	--g-track: #1D1842; --g-track-low: #B8333C; --g-track-empty: #E3D9C2; --g-temp: #5A3CC8;
+	--g-chip-bg: #EDE4CF; --g-chip-text: #2A2440; --g-chip-acts-bg: #F6DEDC; --g-chip-acts-text: #A3222C;
+	--g-banner: #1D1842; --g-on-banner: #FBF6EA;
+	--g-font-display: "DH Dot", "Overpass", "Avenir Next", -apple-system, sans-serif; --g-display-variant: normal; --g-display-weight: 900;
+	--g-font-ui: "DH Dot", "Overpass", "Avenir Next", -apple-system, sans-serif; --g-font-num: "DH Dot", "Overpass", "Avenir Next", sans-serif;
+	--g-r-sm: 3px; --g-r-md: 8px; --g-r-lg: 12px; --g-r-chip: 999px; --g-pad: 12px; --g-row: 52px;
+	--g-icon-sw: 1.9; --g-dur: 220ms; --g-ease: cubic-bezier(.2, .8, .2, 1); --g-cut: 9px;
+
+	/* --- Daggerheart's own: gold, navy, paper, the two dice --- */
+	--xd-gold: #A87420; --xd-gold-hi: #EBC06A; --xd-gold-lo: #9A6A1C; --xd-amber: #C9742A; --xd-trim: #B9832A;
+	--xd-navy: #1C1745; --xd-navy-2: #2B2466; --xd-royal: #3D3196; --xd-on-navy: #FBF6EA; --xd-plate: #2C2660; --xd-plate-edge: rgb(242 193 103 / 0.55); --xd-box: #FFFDF6; --xd-box-line: #C8922E;
+	--xd-band-a: #2F2667; --xd-band-b: #1B1640; --xd-band-gold: #F2C167; --xd-band-sub: #E3C690;
+	--xd-paper: #FBF8F0; --xd-paper-2: #F0EADD; --xd-paper-line: #E2D6BC; --xd-ink: #1D1842; --xd-ink-2: #595370; --xd-paper-gold: #8A5A0E;
+	--xd-paper-edge: #C8922E;
+	--xd-card: #FBF8F0; --xd-card-line: #DCCDA9; --xd-foe: #F4EFE4; --xd-foe-line: #CFC3A6;
+	--xd-hp: #B8333C; --xd-fear: #5A3CC8; --xd-fear-hi: #C3B4FF; --xd-stress: #2B2466;
+	--xd-slot-line: #BBA273; --xd-gap: var(--g-bg);
+	--xd-k-adv: #A8262A; --xd-k-env: #2F6B3A; --xd-k-npc: #8A5A0E; --xd-fear-plate: #E3DAFF; --xd-fear-ink: #241A5E;
+	--xd-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 6px 16px -10px rgb(29 24 66 / 0.35);
+}
+html[data-theme="dark"] .g-dh {
+	/* --- Night (dark, the identity) --- */
+	--g-bg: #14102B; --g-surface: #211A49; --g-surface-2: #2A2259; --g-line: #312868; --g-line-strong: #574B98;
+	--g-text: #F4EFE3; --g-text-2: #B4ACD6; --g-accent: #F2C167; --g-accent-hover: #F7D28A; --g-on-accent: #1B1640;
+	--g-accent-text: #F2C167; --g-now: #2B2358; --g-now-line: #F2C167;
+	--g-danger-text: #FF8C93; --g-danger-bg: #3E1A33;
+	--g-hope: #F2C167; --g-hope-edge: #F2C167; --g-hope-text: #F2C167; --g-fear: #A58BFF; --g-fear-text: #BBA8FF;
+	--g-hp: #F0606A; --g-stress: #C9C1EC; --g-gold: #F2C167;
+	--g-track: #F4EFE3; --g-track-low: #F0606A; --g-track-empty: #2C2560;
+	--g-chip-bg: #2E2662; --g-chip-text: #EDE7F8; --g-chip-acts-bg: #3E1A33; --g-chip-acts-text: #FFA0A6;
+	--g-banner: #0F0C24; --g-on-banner: #FBF6EA;
+	--xd-gold: #F2C167; --xd-gold-hi: #FFE2A0; --xd-gold-lo: #C88A2E; --xd-amber: #E38B3C; --xd-trim: rgb(242 193 103 / 0.42);
+	--xd-navy: #0F0C24; --xd-navy-2: #221B4C; --xd-royal: #3D3196;
+	--xd-paper-edge: #F2C167;
+	--xd-card: #231C50; --xd-card-line: rgb(242 193 103 / 0.34); --xd-foe: #1B1640; --xd-foe-line: #40367E;
+	--xd-hp: #F0606A; --xd-fear: #A58BFF; --xd-stress: #C9C1EC;
+	--xd-slot-line: #5E52A2;
+	--xd-fear-plate: #3A2B88; --xd-fear-ink: #FFFFFF;
+	--xd-shadow: 0 10px 24px -14px rgb(0 0 0 / 0.7);
+}
+.g-dh .ev-num { font-variant-numeric: tabular-nums; }
+
+/* Paper: the cream panel. Inside it every token reads as ink on cream, in both themes. */
+.xd-paper, .g-dh .ev-sheet, .g-dh .sh-modal {
+	--g-bg: #F6F1E5; --g-surface: #FBF8F0; --g-surface-2: #EFE8D9; --g-line: #E2D6BC; --g-line-strong: #BBA273;
+	--g-text: #1D1842; --g-text-2: #595370; --g-accent: #1D1842; --g-accent-hover: #2B2466; --g-on-accent: #FBF6EA; --g-accent-text: #8A5A0E;
+	--g-hope: #E7AE45; --g-hope-edge: #A87420; --g-hope-text: #8A5A0E; --g-fear: #5A3CC8; --g-fear-text: #4B2FB6;
+	--g-hp: #B8333C; --g-stress: #2B2466; --g-danger-text: #A3222C; --g-danger-bg: #F6DEDC;
+	--g-chip-bg: #EDE4CF; --g-chip-text: #2A2440; --g-chip-acts-bg: #F6DEDC; --g-chip-acts-text: #A3222C;
+	--xd-hp: #B8333C; --xd-fear: #5A3CC8; --xd-stress: #2B2466; --xd-slot-line: #BBA273; --xd-gap: #FBF8F0;
+	--xd-navy: #1C1745; --xd-paper-gold: #8A5A0E; --xd-gold: #B9832A;
+	background: var(--xd-paper); color: var(--xd-ink);
+}
+.xd-paper { border: 1.5px solid var(--xd-paper-edge); border-radius: 10px; }
+.g-dh .ev-sheet { border-top: 2px solid #F2C167; }
+.g-dh .sh-modal { box-shadow: 0 0 0 1.5px #F2C167, 0 30px 60px -20px rgb(0 0 0 / 0.6); }
+
+/* ---------- Ribbon: navy plaque, gold edges, pointed ends, an amber chevron outside each ---------- */
+.xd-rib, .xd-banner > span:first-child {
+	position: relative; display: inline-flex; align-items: center; height: 24px; padding: 0 14px; margin: 0 13px;
+	background: var(--xd-navy); color: var(--xd-on-navy);
+	border-top: 1.5px solid var(--xd-gold); border-bottom: 1.5px solid var(--xd-gold);
+	font: 900 12px/1 var(--g-font-display); letter-spacing: .07em; text-transform: uppercase; white-space: nowrap;
+}
+.xd-rib::before, .xd-rib::after, .xd-banner > span:first-child::before, .xd-banner > span:first-child::after {
+	content: ""; position: absolute; top: 2px; width: 17px; height: 17px; box-sizing: border-box; transform: rotate(45deg);
+}
+.xd-rib::before, .xd-banner > span:first-child::before {
+	left: -8.5px; border-left: 1.5px solid var(--xd-gold); border-bottom: 1.5px solid var(--xd-gold);
+	background: linear-gradient(45deg, var(--xd-navy) 50%, transparent 50%);
+	box-shadow: -2px 2px 0 0 var(--xd-gap), -4.5px 4.5px 0 0 var(--xd-amber);
+}
+.xd-rib::after, .xd-banner > span:first-child::after {
+	right: -8.5px; border-top: 1.5px solid var(--xd-gold); border-right: 1.5px solid var(--xd-gold);
+	background: linear-gradient(225deg, var(--xd-navy) 50%, transparent 50%);
+	box-shadow: 2px -2px 0 0 var(--xd-gap), 4.5px -4.5px 0 0 var(--xd-amber);
+}
+.xd-rib.lg { height: 30px; font-size: 15px; padding: 0 18px; margin: 0 16px; }
+.xd-rib.lg::before, .xd-rib.lg::after { top: 2.4px; width: 21.2px; height: 21.2px; }
+.xd-rib.lg::before { left: -10.6px; box-shadow: -2.5px 2.5px 0 0 var(--xd-gap), -5.5px 5.5px 0 0 var(--xd-amber); }
+.xd-rib.lg::after { right: -10.6px; box-shadow: 2.5px -2.5px 0 0 var(--xd-gap), 5.5px -5.5px 0 0 var(--xd-amber); }
+.xd-rib.sm { height: 20px; font-size: 10.5px; padding: 0 10px; margin: 0 10px; }
+.xd-rib.sm::before, .xd-rib.sm::after { top: 1.4px; width: 14.1px; height: 14.1px; }
+.xd-rib.sm::before { left: -7px; box-shadow: -1.5px 1.5px 0 0 var(--xd-gap), -3.5px 3.5px 0 0 var(--xd-amber); }
+.xd-rib.sm::after { right: -7px; box-shadow: 1.5px -1.5px 0 0 var(--xd-gap), 3.5px -3.5px 0 0 var(--xd-amber); }
+.xd-rib.fear { color: var(--xd-fear-hi); }
+.xd-rib .ic { display: inline-flex; margin-right: 6px; color: var(--xd-gold); }
+
+/* A section header: the ribbon, then a gold rule to the edge, then a note. */
+.xd-banner { display: flex; align-items: center; gap: 0; margin: 16px var(--g-pad) 10px; }
+.xd-banner::after { content: ""; order: 1; flex: 1; height: 1.5px; margin-left: 4px; background: linear-gradient(90deg, var(--xd-gold), transparent); opacity: .8; }
+.xd-banner > small { order: 2; margin-left: 8px; font: italic 600 12px/16px var(--g-font-ui); color: var(--g-text-2); white-space: nowrap; }
+.xd-banner > .ev-btn, .xd-banner > .xds-prof { order: 2; margin-left: 8px; }
+
+/* The same ribbon centred on a panel's top edge */
+.xd-panel { position: relative; padding: 22px 14px 14px; margin-top: 14px; }
+.xd-panel > .xd-rib:first-child { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); margin: 0; }
+.xd-panel > .xd-rib.lg:first-child { top: -16px; }
+
+/* ---------- Head ---------- */
+.xd-head { display: flex; align-items: flex-start; gap: 4px; padding: 14px var(--g-pad) 10px; }
+.xd-head-t { flex: 1; min-width: 0; }
+.xd-title { margin: 0; font: 900 19px/24px var(--g-font-display); letter-spacing: .01em; text-transform: uppercase; }
+.xd-sub { font: italic 600 13px/18px var(--g-font-ui); color: var(--g-text-2); }
+.xd-sub b { color: var(--g-hope-text); font-weight: 800; }
+.xd-sub b.gm { color: var(--g-fear-text); }
+
+/* ---------- The GM's Fear: a violet pool that reads on its own ground ----------
+   Pass 4: the old pool was #251C5C on #14102B, with #5A48B8 empty gems: everything sank.
+   Now: dark theme, a mid-violet plate with a lavender rim and light gems; light theme,
+   lavender vellum with deep violet ink. Every mark inside is 3:1 or better on its plate. */
+.xd-fear { margin: 0 var(--g-pad); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px 10px 10px;
+	--fear-bg: linear-gradient(135deg, #EEE8FF, #E3DAFF); --fear-rim: #7A5CE0; --fear-ink: #241A5E; --fear-ink-2: #4E3FA0; --fear-gem-a: #8A6CFF; --fear-gem-b: #4B2FB6; --fear-gem-rim: #2E1F80; --fear-num: #FFFFFF;
+	--fear-empty: #8E78E6; --fear-on-a: #6E4FF0; --fear-on-b: #4B2FB6; --fear-glow: rgb(90 60 200 / 0.35);
+	background: var(--fear-bg); border: 1.5px solid var(--fear-rim); border-radius: 10px; color: var(--fear-ink);
+	--g-text: var(--fear-ink); --g-text-2: var(--fear-ink-2); --g-line-strong: var(--fear-rim); }
+html[data-theme="dark"] .g-dh .xd-fear {
+	--fear-bg: linear-gradient(135deg, #43329A, #2E2276); --fear-rim: #B9A6FF; --fear-ink: #FFFFFF; --fear-ink-2: #DCD3FF; --fear-gem-a: #B49BFF; --fear-gem-b: #6A48E8; --fear-gem-rim: #EDE7FF; --fear-num: #FFFFFF;
+	--fear-empty: #A893FF; --fear-on-a: #F4F0FF; --fear-on-b: #C3B4FF; --fear-glow: rgb(214 202 255 / 0.65); }
+.xd-fear .n { display: grid; place-items: center; width: 46px; height: 50px; position: relative; font: 900 26px/1 var(--g-font-num); color: var(--fear-num); font-variant-numeric: tabular-nums; z-index: 0; isolation: isolate; text-shadow: 0 1px 0 rgb(0 0 0 / 0.25); }
+.xd-fear .n::before { content: ""; position: absolute; inset: 3px 3px; border-radius: 50% 50% 8px 8px / 42% 42% 8px 8px; background: radial-gradient(75% 65% at 50% 32%, var(--fear-gem-a), var(--fear-gem-b)); box-shadow: 0 0 0 1.5px var(--fear-gem-rim), 0 6px 14px -6px var(--fear-glow); z-index: -1; }
+.xd-fear .l { font: 900 13px/16px var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--fear-ink); }
+.xd-fear .l small { display: block; font: italic 600 12px/16px var(--g-font-ui); letter-spacing: 0; text-transform: none; color: var(--fear-ink-2); }
+.xd-tokens { display: grid; grid-template-columns: repeat(6, 13px); gap: 6px 5px; justify-content: end; }
+.xd-tokens i { width: 13px; height: 13px; transform: rotate(45deg) scale(.82); border-radius: 2px; box-shadow: inset 0 0 0 1.75px var(--fear-empty); }
+.xd-tokens i.on { background: linear-gradient(135deg, var(--fear-on-a), var(--fear-on-b)); box-shadow: 0 0 6px -1px var(--fear-glow); }
+.g-dh .xd-fear .ev-btn { background: rgb(255 255 255 / 0.10); border-color: var(--fear-rim); color: var(--fear-ink); }
+.g-dh .xd-fear .ev-btn svg { color: var(--fear-ink); }
+html:not([data-theme="dark"]) .g-dh .xd-fear .ev-btn { background: #FFFFFF; }
+/* "Coming later": the flag and dashed outline sit outside the plate, in the ground's own colours. */
+.g-dh .xd-fear.later-slot { outline: 1.5px dashed var(--fear-rim); outline-offset: 3px; }
+.g-dh .xd-fear .later-flag { background: var(--fear-rim); color: #FFFFFF; box-shadow: none; font-weight: 800; }
+html[data-theme="dark"] .g-dh .xd-fear .later-flag { color: #1B1545; }
+
+/* ---------- Countdowns: a navy plaque with ticks ---------- */
+.xd-counts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px var(--g-pad) 0; }
+.xd-count { padding: 8px 10px 9px; border-radius: 8px; background: var(--xd-navy); border: 1px solid var(--xd-trim); color: var(--xd-on-navy); }
+.xd-count b { display: block; font: 800 11.5px/14px var(--g-font-display); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-count .boxes { display: flex; gap: 4px; margin-top: 7px; align-items: center; }
+.xd-count .boxes i { width: 10px; height: 10px; transform: rotate(45deg) scale(.85); box-shadow: inset 0 0 0 1.5px #6A5FA5; }
+.xd-count .boxes i.on { background: #F2C167; box-shadow: none; }
+.xd-count .boxes span { margin-left: auto; display: grid; place-items: center; min-width: 22px; height: 20px; padding: 0 5px; border-radius: 4px; background: #F2C167; color: #1B1640; font: 900 13px/1 var(--g-font-num); }
+
+/* ---------- Slots and tokens ---------- */
+.xd-hope { display: inline-flex; gap: 6px; align-items: center; }
+.xd-hope i { width: 9px; height: 9px; transform: rotate(45deg); box-shadow: inset 0 0 0 1.5px var(--xd-slot-line); border-radius: 1px; }
+.xd-hope i.on { background: linear-gradient(135deg, var(--xd-gold-hi), var(--g-hope) 55%, var(--xd-amber)); box-shadow: inset 0 0 0 1px var(--g-hope-edge); }
+/* The sheet's Hope bar: a long navy hexagon with six diamonds */
+.xd-hope.lg { position: relative; height: 22px; padding: 0 5px; gap: 0; margin: 0 9px; background: var(--xd-plate); box-shadow: inset 0 1px 0 var(--xd-plate-edge), inset 0 -1px 0 var(--xd-plate-edge); }
+.xd-hope.lg::before, .xd-hope.lg::after { content: ""; position: absolute; top: 0; border-top: 11px solid transparent; border-bottom: 11px solid transparent; }
+.xd-hope.lg::before { left: -9px; border-right: 9px solid var(--xd-plate); }
+.xd-hope.lg::after { right: -9px; border-left: 9px solid var(--xd-plate); }
+.xd-hope.lg i { width: 11px; height: 11px; margin: 0 7px; background: transparent; box-shadow: inset 0 0 0 1.5px rgb(242 193 103 / 0.62); position: relative; }
+.xd-hope.lg i.on { background: linear-gradient(135deg, #FFE2A0, #F2C167 55%, #E38B3C); box-shadow: 0 0 7px -1px rgb(242 193 103 / 0.9); }
+
+.xd-slots { --g-slot-gap: 3px; --slot-line: var(--xd-slot-line); }
+.xd-slots.hp { --slot-on: var(--xd-hp); }
+.xd-slots.stress { --slot-on: var(--xd-stress); }
+.xd-slots > i { width: 13px; height: 9px; border-radius: 3px; }
+.xd-slots.lg > i { width: 18px; height: 12px; border-radius: 4px; }
+.xd-armor { display: inline-flex; gap: 3px; color: var(--xd-slot-line); }
+.xd-armor svg path { fill: none; stroke: currentColor; }
+.xd-armor svg.on { color: var(--g-hope-edge); }
+.xd-armor svg.on path { fill: var(--g-hope); }
+
+/* ---------- Crests: Evasion arch, Armor shield, Level, traits, Difficulty ---------- */
+.xc { position: relative; display: inline-block; flex: none; line-height: 0; }
+.xc svg { display: block; overflow: visible; }
+.xc .face { fill: #FBF7EC; }
+.xc .rim { fill: none; stroke: var(--xd-gold); stroke-width: 2.4; stroke-linejoin: round; }
+.xc .inner { fill: none; stroke: #D9C08A; stroke-width: 1; }
+.xc .notch { fill: var(--xd-navy); stroke: var(--xd-gold); stroke-width: 1; }
+.xc .ban { fill: var(--xd-navy); stroke: var(--xd-gold); stroke-width: 1.4; stroke-linejoin: round; }
+.xc .lab { fill: #FBF6EA; font: 900 8.6px var(--g-font-display); letter-spacing: .07em; text-anchor: middle; text-transform: uppercase; }
+.xc .num { fill: #1D1842; font: 900 24px var(--g-font-num); text-anchor: middle; font-variant-numeric: tabular-nums; }
+.xc .dot { fill: #FBF6EA; stroke: var(--xd-gold); stroke-width: 1.8; }
+.xc .dot.on { fill: var(--xd-gold); }
+.xc.is-foe .face { fill: #1F1850; }
+.xc.is-foe .inner { stroke: #5546A8; }
+.xc.is-foe .num { fill: #F2C167; }
+html[data-theme="dark"] .g-dh .xc.is-foe .face { fill: #2A2163; }
+
+/* ---------- Buttons: caps, pills, navy and gold ---------- */
+.g-dh .ev-btn { border-radius: 999px; border: 1.5px solid var(--xd-gold); background: var(--xd-navy); color: var(--xd-on-navy); font: 800 12.5px/1 var(--g-font-display); letter-spacing: .05em; text-transform: uppercase; }
+.g-dh .ev-btn:hover { background: var(--xd-navy-2); }
+.g-dh .ev-btn svg { color: var(--xd-gold); }
+.g-dh .ev-btn.is-primary { background: linear-gradient(180deg, #F7D58C, #E9B04F 55%, #D9902F); border-color: #B9781F; color: #1B1640; font-weight: 900; box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset, 0 6px 14px -8px rgb(217 144 47 / 0.8); }
+.g-dh .ev-btn.is-primary svg { color: #1B1640; }
+.g-dh .ev-btn.is-primary:hover { background: linear-gradient(180deg, #FADFA2, #EDB85E 55%, #DD9838); }
+.g-dh .ev-btn.is-quiet { background: transparent; border-color: transparent; color: var(--g-text-2); }
+.g-dh .ev-btn.is-quiet svg { color: currentColor; }
+.g-dh .ev-btn.is-quiet:hover { background: var(--g-surface-2); color: var(--g-text); }
+.g-dh .ev-btn .ev-btn-sub { text-transform: none; letter-spacing: 0; font-weight: 700; opacity: .75; }
+.g-dh .ev-foot { background: var(--xd-navy); border-top: 1.5px solid var(--xd-gold); }
+.g-dh .ev-foot .ev-btn.is-second { background: transparent; color: var(--xd-on-navy); }
+
+/* Quiet chips: what the player says at the table (Hope, Armor). Gold dashes, never caps. */
+.g-dh .ev-qa-b { gap: 5px; padding: 0 9px; border: 1.5px dashed var(--xd-gold); color: var(--g-text); font: 700 12.5px/27px var(--g-font-ui); }
+.g-dh .ev-qa-b small { color: var(--g-hope-text); font-weight: 700; }
+.g-dh .ev-qa-b:hover { border-style: solid; background: var(--g-now); }
+.g-dh .ev-qa-l { font: italic 600 12px/16px var(--g-font-ui); }
+
+/* Conditions */
+.g-dh .ev-chip { background: var(--g-chip-bg); color: var(--g-chip-text); font-weight: 700; box-shadow: inset 0 0 0 1px var(--xd-trim); }
+.g-dh .ev-chip.is-bad { box-shadow: inset 0 0 0 1px currentColor; }
+
+/* ---------- The character in the spotlight: a paper card in a gold frame ---------- */
+.xd-spot { margin: 18px var(--g-pad) 0; padding: 3px; border-radius: 13px; background: linear-gradient(160deg, #F7D58C, #D9902F 45%, #F2C167 70%, #B9781F); box-shadow: 0 14px 30px -16px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(0 0 0 / 0.15); position: relative; }
+.xd-spot > .xd-spot-in { border: 0; border-radius: 10px; padding: 22px 14px 14px; position: relative; box-shadow: inset 0 0 0 1px #E2C383; }
+.xd-spot-flag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); z-index: 2; margin: 0; }
+.xd-spot-top { display: flex; align-items: flex-start; gap: 10px; }
+.xd-spot-top .nm { flex: 1; min-width: 0; padding-top: 2px; }
+.xd-spot-top h2 { margin: 0; font: 900 26px/28px var(--g-font-display); letter-spacing: .01em; text-transform: uppercase; color: var(--xd-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-spot-top p { margin: 3px 0 0; font: italic 800 12.5px/16px var(--g-font-ui); color: var(--xd-paper-gold); text-transform: uppercase; letter-spacing: .03em; display: flex; flex-wrap: wrap; gap: 2px 8px; }
+.xd-spot-top p .sub2 { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--xd-ink-2); }
+.xd-spot-top .crests { display: flex; gap: 4px; margin-top: -4px; }
+.xd-tracks { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 9px 8px; align-items: center; margin-top: 14px; }
+.xd-tracks > span:nth-child(3n+1) { font: 900 11px/1 var(--g-font-display); letter-spacing: .07em; text-transform: uppercase; color: var(--g-text); }
+.xd-tracks b { font: 800 13px/1 var(--g-font-num); color: var(--g-text); text-align: right; font-variant-numeric: tabular-nums; }
+.xd-tracks .xd-hope.lg { justify-self: start; }
+
+/* The damage strip, as the sheet draws it: MINOR ▸ n ▸ MAJOR ▸ n ▸ SEVERE */
+.xd-thresh { display: flex; align-items: stretch; margin-top: 14px; font: 900 10.5px/12px var(--g-font-display); letter-spacing: .06em; text-transform: uppercase; }
+.xd-thresh span { flex: 1; position: relative; display: grid; place-items: center; align-content: center; text-align: center; padding: 6px 2px; background: var(--xd-plate); color: var(--xd-on-navy); border-radius: 3px; box-shadow: inset 0 0 0 1px var(--xd-plate-edge); }
+.xd-thresh span small { display: block; font: italic 600 10.5px/12px var(--g-font-ui); letter-spacing: 0; text-transform: none; color: #E3D6B4; }
+.xd-thresh span:not(:last-child)::after { content: ""; position: absolute; right: -7px; top: 50%; margin-top: -7px; border-left: 7px solid var(--xd-plate); border-top: 7px solid transparent; border-bottom: 7px solid transparent; z-index: 1; }
+.xd-thresh b { flex: none; display: grid; place-items: center; min-width: 30px; margin: 3px 4px 3px 10px; padding: 0 5px; border-radius: 4px; background: var(--xd-box); box-shadow: inset 0 0 0 1.5px var(--xd-box-line); font: 900 15px/1 var(--g-font-num); color: #1D1842; letter-spacing: 0; }
+.xd-spot-btns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.xd-spot-btns .ev-btn { height: 34px; padding: 0 6px; gap: 4px; font-size: 11.5px; letter-spacing: .03em; }
+.xd-spot-btns .ev-btn svg { width: 13px; height: 13px; }
+.g-dh .ev-foot .ev-btn.is-icon, .g-dh .mt-foot .ev-btn.is-icon { flex: none; }
+.xd-spot .ev-qa { margin-top: 12px; margin-bottom: 0; }
+
+/* ---------- The rest of the party ---------- */
+.xd-party { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px var(--g-pad) 0; }
+.xd-pc { position: relative; padding: 9px 9px 8px; min-width: 0; border-radius: 9px; background: var(--xd-card); border: 1px solid var(--xd-card-line); box-shadow: var(--xd-shadow); }
+.xd-pc h4 { margin: 0; padding-right: 40px; font: 900 13.5px/17px var(--g-font-display); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-pc .cl { font: italic 700 11.5px/15px var(--g-font-ui); color: var(--g-hope-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-pc .rows { display: grid; gap: 5px; margin-top: 8px; }
+.xd-pc .xd-slots > i { width: 9px; height: 7px; border-radius: 2px; }
+.xd-pc .xd-slots { --g-slot-gap: 2px; }
+.xd-pc .xd-hope i { width: 7px; height: 7px; }
+.xd-pc .xd-hope { gap: 4px; padding-left: 1px; }
+.xd-pc .ev { display: flex; justify-content: space-between; align-items: center; gap: 4px; margin-top: 6px; min-height: 24px; font: 700 11.5px/14px var(--g-font-ui); color: var(--g-text-2); }
+.xd-pc .ev > span:first-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-evb { flex: none; display: grid; place-items: center; min-width: 26px; height: 25px; padding: 3px 3px 0; border-radius: 13px 13px 3px 3px; background: #FBF7EC; border: 1.5px solid var(--xd-gold); color: #1D1842; font: 900 12.5px/1 var(--g-font-num); box-shadow: 0 2px 0 -0.5px var(--xd-navy); }
+.xd-pc.is-low h4 { color: var(--g-danger-text); }
+.xd-pc .xd-flag { font: 700 11.5px/14px var(--g-font-ui); color: var(--g-text); }
+.xd-pc .xd-flag.bad { color: var(--g-danger-text); font-weight: 800; }
+.xd-pc-mark { position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 5px; }
+.xd-pc-mark .ev-mark { width: 16px; height: 16px; }
+.g-dh .ev-mark { box-shadow: inset 0 0 0 1.75px var(--xd-slot-line); }
+.g-dh .ev-mark.is-next { box-shadow: inset 0 0 0 2px var(--xd-gold), 0 0 0 3px rgb(242 193 103 / 0.18); }
+.g-dh .ev-mark.is-acted { background: var(--xd-gold); }
+.g-dh .ev-mark.is-acted svg { color: #1B1640; }
+.xd-count-n { font: 900 12px/1 var(--g-font-num); color: var(--g-hope-text); }
+.xd-pc.is-acted { background: transparent; box-shadow: none; border-style: dashed; }
+.xd-pc.is-acted h4, .xd-pc.is-acted .rows { opacity: .62; }
+
+/* ---------- Adversaries: deep navy rows with a dark Difficulty crest ---------- */
+.xd-adv { margin: 0 var(--g-pad) 6px; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 9px 12px 10px 9px; position: relative; border-radius: 9px; background: var(--xd-foe); border: 1px solid var(--xd-foe-line); }
+.xd-adv .xd-diff { grid-row: span 2; align-self: start; }
+.xd-adv .bars { grid-column: 2 / -1; display: flex; gap: 14px; align-items: center; font: 900 10px/14px var(--g-font-display); letter-spacing: .07em; text-transform: uppercase; color: var(--g-text-2); }
+.xd-adv .bars > span { display: inline-flex; gap: 6px; align-items: center; }
+.xd-diff { display: block; }
+.xd-adv h4 { margin: 0; font: 900 14px/18px var(--g-font-display); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-adv h4 small { font: 700 12px/16px var(--g-font-ui); letter-spacing: 0; text-transform: none; color: var(--g-text-2); margin-left: 5px; }
+.xd-adv .ty { font: italic 600 12px/16px var(--g-font-ui); color: var(--g-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-adv .th { display: inline-flex; align-items: center; gap: 3px; font: 900 12.5px/1 var(--g-font-num); color: var(--g-text); }
+.xd-adv .th i { font-style: normal; color: var(--xd-gold); font-weight: 900; }
+.xd-adv .th b { display: inline-grid; place-items: center; min-width: 22px; height: 20px; padding: 0 4px; border-radius: 4px; background: var(--xd-navy); color: #FBF6EA; border: 1px solid var(--xd-gold); }
+.xd-adv .th.min { font: 800 11px/1 var(--g-font-ui); color: var(--g-text-2); text-transform: uppercase; letter-spacing: .05em; }
+.xd-adv-wrap.is-spot { margin: 0 var(--g-pad) 6px; padding: 2px; border-radius: 11px; background: linear-gradient(160deg, #F7D58C, #D9902F 50%, #F2C167); }
+.xd-adv-wrap.is-spot .xd-adv { margin: 0; border-color: transparent; }
+.xd-adv .chips { grid-column: 2 / -1; }
+.xd-mins { display: inline-flex; gap: 4px; }
+.xd-mins i { width: 9px; height: 9px; transform: rotate(45deg) scale(.85); background: var(--xd-hp); }
+.xd-mins i.off { background: transparent; box-shadow: inset 0 0 0 1.5px var(--xd-slot-line); }
+.xd-adv.is-hovered { background: var(--g-surface-2); }
+.xd-adv.is-out { opacity: .5; }
+.xd-adv.is-out h4 { text-decoration: line-through; }
+.xd-adv.is-selected { box-shadow: 0 0 0 2px var(--xd-gold); }
+.xd-adv .grip { position: absolute; left: -2px; color: var(--g-text-2); }
+.xd-adv-cost { margin-left: auto; display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 999px; background: #2A1F6A; color: #D9CFFF; font: 800 10.5px/1 var(--g-font-ui); letter-spacing: .04em; text-transform: uppercase; }
+
+/* ---------- Damage keypad: the strip on top, Armor as a quiet chip ---------- */
+.xd-pad-th { margin: 0 0 12px; }
+.xd-pad-th .strip { display: flex; align-items: stretch; font: 900 11px/13px var(--g-font-display); letter-spacing: .06em; text-transform: uppercase; }
+.xd-pad-th .strip span { flex: 1; position: relative; padding: 7px 4px 6px; text-align: center; background: var(--g-surface-2); color: var(--g-text-2); border-radius: 3px; }
+.xd-pad-th .strip span small { display: block; font: italic 600 11px/13px var(--g-font-ui); letter-spacing: 0; text-transform: none; }
+.xd-pad-th .strip span.on { background: var(--xd-plate); color: #FBF6EA; box-shadow: 0 0 0 2px var(--xd-gold); }
+.xd-pad-th .strip b { flex: none; display: grid; place-items: center; padding: 0 9px; font: 900 15px/1 var(--g-font-num); color: var(--g-text); }
+.g-dh .ev-sheet-head h3 { font: 900 17px/22px var(--g-font-display); letter-spacing: .03em; text-transform: uppercase; }
+.g-dh .ev-pad-keys span { height: 42px; border-radius: 8px; font-weight: 800; }
+.g-dh .ev-pad-read .amt { font-weight: 900; }
+
+/* Setup */
+.xd-setup-row { margin: 0 var(--g-pad) 6px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 500 13.5px/18px var(--g-font-ui); }
+.xd-setup-row b { font-weight: 700; }
+.xd-note { margin: 10px calc(var(--g-pad) + 2px) 0; font: italic 600 12.5px/18px var(--g-font-ui); color: var(--g-text-2); }
+
+/* Overpass draws the middle dot hard against the next word; borrow the dot from a system face. */
+@font-face { font-family: "DH Dot"; src: local("Avenir Next"), local("Segoe UI"), local("Helvetica Neue"), local("Arial"); unicode-range: U+00B7; }
+.xd-banner + .xd-spot { margin-top: 24px; }
+.xd-party .xd-pc h4 { padding-right: 34px; }
+
+/* ---------- Pass 4: clusters, paper buttons, Passed / Failed ----------
+   Buttons that belong together share one outline (Damage | Heal); each cluster keeps its
+   width and the row never wraps. On paper the buttons are paper too (cream, gold edge, ink),
+   so the spotlit card isn't cream with heavy navy slabs on it; the gold primary stays. */
+.g-dh .xd-spot-acts { margin-top: 12px; gap: 8px; flex-wrap: nowrap; }
+.g-dh .ev-cluster > .ev-btn { height: 34px; padding: 0 12px; gap: 5px; font-size: 11.5px; letter-spacing: .04em; }
+.g-dh .ev-cluster > .ev-btn svg { width: 14px; height: 14px; flex: none; }
+.g-dh .ev-cluster.is-joined > .ev-btn + .ev-btn { margin-left: -1.5px; }
+.g-dh .ev-cluster.is-joined > .ev-btn:first-of-type { border-radius: 999px 0 0 999px; }
+.g-dh .ev-cluster.is-joined > .ev-btn:last-of-type { border-radius: 0 999px 999px 0; }
+.g-dh .xd-spot-acts.three { gap: 6px; }
+.g-dh .xd-spot-acts.three .ev-cluster > .ev-btn { padding: 0 9px; font-size: 11px; letter-spacing: .03em; }
+.xd-paper .ev-btn:not(.is-primary):not(.is-quiet), .g-dh .ev-sheet .ev-btn:not(.is-primary):not(.is-quiet), .g-dh .sh-modal .ev-btn:not(.is-primary):not(.is-quiet), .g-dh .xd-paper .sh-roll:not(.dmg) { background: #FFFDF6; color: #1D1842; border-color: #C8922E; }
+.xd-paper .ev-btn:not(.is-primary):not(.is-quiet) svg, .g-dh .ev-sheet .ev-btn:not(.is-primary):not(.is-quiet) svg, .g-dh .sh-modal .ev-btn:not(.is-primary):not(.is-quiet) svg { color: #9A6A1C; }
+.xd-paper .ev-btn:not(.is-primary):not(.is-quiet):hover { background: #FFF4D6; }
+.xd-ps .xd-spot-acts { display: none; }
+/* Passed / Failed: a roll made at the table, marked by hand */
+.g-dh .ev-btn.is-pass:not(.on) svg { color: #2F6B3A; }
+.g-dh .ev-btn.is-fail:not(.on) svg { color: #A3222C; }
+.g-dh .ev-btn.is-pass.on { background: #2F6B3A; border-color: #2F6B3A; color: #fff; position: relative; z-index: 1; }
+.g-dh .ev-btn.is-fail.on { background: #A3222C; border-color: #A3222C; color: #fff; position: relative; z-index: 1; }
+.g-dh .ev-btn.on svg { color: #fff; }
+/* Number boxes on paper: cream, gold-edged (they were pure white with a royal ring) */
+

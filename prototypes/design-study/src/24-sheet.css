@@ -1,0 +1,56 @@
+/* ============================================================================
+   Shared sheet parts. Each game's sheet reads the same --g-* tokens.
+   Layout follows the sheet's own width (container queries), not the device.
+   ========================================================================== */
+.sh-note { display: block; overflow: hidden; flex: 1; min-height: 0; position: relative; }
+.sh-note-in { width: 100%; max-width: 920px; margin: 0 auto; padding: 22px 28px 40px; container-type: inline-size; }
+.sh-note-phone .sh-note-in { padding: 12px 12px 30px; }
+.dev-crumbs { flex: none; height: 36px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--ob-line); background: var(--ob-bg); color: var(--ob-icon); font: 500 12.5px/1 var(--p-ui); }
+.dev-crumbs > span:first-of-type { flex: 1; text-align: center; color: var(--p-text-2); }
+
+.sh-portrait { flex: none; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(120% 120% at 30% 20%, var(--g-surface) 0%, var(--g-surface-2) 70%); box-shadow: inset 0 0 0 2px var(--g-now-line), 0 4px 14px -6px rgb(0 0 0 / 0.3); color: var(--g-accent-text); font-family: var(--g-font-display); font-variant: var(--g-display-variant); font-weight: var(--g-display-weight); }
+.sh-portrait.tall { border-radius: 10px; }
+.sh-portrait.square { border-radius: 8px; }
+
+.sh-meter { display: grid; gap: 8px; }
+.sh-meter-h { display: flex; align-items: center; gap: 10px; font: 600 13px/16px var(--g-font-ui); color: var(--g-text-2); }
+.sh-meter-h > span:first-child { display: inline-flex; align-items: center; gap: 6px; }
+.sh-meter-h > span:first-child svg { color: var(--g-danger-text); }
+.sh-temp { font-weight: 600; color: var(--g-temp); padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--g-temp) 14%, transparent); }
+.sh-meter-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px 30px; gap: 8px; align-items: center; }
+.sh-meter-bar { position: relative; height: 34px; border-radius: 999px; background: var(--g-track-empty); overflow: hidden; display: grid; place-items: center; }
+.sh-meter-bar > i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--g-track); }
+.sh-meter-bar.is-low > i:first-child { background: var(--g-track-low); }
+.sh-meter-bar > i.t { background: var(--g-temp); opacity: .8; }
+.sh-meter-bar b { position: relative; font: 700 17px/1 var(--g-font-num); color: var(--g-meter-text, #fff); text-shadow: var(--g-meter-shadow, 0 1px 2px rgb(0 0 0 / 0.35)); }
+.sh-meter-bar b small { font-weight: 600; font-size: 13px; opacity: .9; }
+
+.sh-roll { appearance: none; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: var(--g-r-md); border: 1px solid var(--g-line-strong); background: var(--g-surface); color: var(--g-text); font: 500 13px/1 var(--g-font-ui); cursor: pointer; white-space: nowrap; }
+.sh-roll svg { color: var(--g-text-2); }
+.sh-roll b { font-weight: 700; font-variant-numeric: tabular-nums; }
+/* Damage rolls: one width per sheet, the dice on the left and the damage type's icon on the right. */
+.sh-dmg { width: var(--sh-dmg-w, 116px); justify-content: space-between; }
+.sh-dmg .sh-dmg-t { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex: none; }
+.sh-dmg .sh-dmg-t svg { width: 15px; height: 15px; color: var(--g-text-2); }
+.sh-roll:hover { background: var(--g-surface-2); }
+.sh-term { text-decoration: underline dotted var(--g-text-2); text-underline-offset: 3px; text-decoration-thickness: 1.5px; cursor: help; }
+.sh-toast { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 9; display: grid; grid-template-columns: auto auto; gap: 2px 10px; align-items: center; padding: 10px 16px; border-radius: 14px; background: var(--g-text); color: var(--g-bg); font: 500 14px/18px var(--g-font-ui); box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.5); white-space: nowrap; }
+.sh-toast .d { opacity: .75; font-variant-numeric: tabular-nums; }
+.sh-toast .big { font-size: 20px; }
+.sh-toast small { grid-column: 2; opacity: .75; font-size: 12.5px; }
+
+.sh-sec { margin-top: 16px; }
+.sh-sec-h { display: flex; align-items: baseline; justify-content: space-between; margin: 0 2px 8px; font: 600 13px/18px var(--g-font-ui); color: var(--g-text-2); }
+
+.hc { position: absolute; z-index: 6; top: 150px; left: 330px; width: 420px; max-height: 560px; overflow: hidden; border-radius: 12px; background: var(--g-surface); box-shadow: 0 0 0 1px var(--g-line-strong), 0 24px 50px -16px rgb(0 0 0 / 0.45); }
+.hc-in { width: 100%; padding: 14px 16px 16px; color: var(--g-text); font-family: var(--g-font-ui); container-type: inline-size; }
+.sh-prose { font: 400 16px/1.65 var(--p-ui); color: var(--g-text); }
+.sh-prose h1 { font: 700 28px/1.2 var(--p-ui); margin: 6px 0 14px; }
+.sh-prose p { margin: 0 0 14px; color: var(--g-text); }
+.sh-prose .sh-link { color: var(--g-accent-text); text-decoration: underline; text-underline-offset: 3px; background: var(--g-now); border-radius: 4px; padding: 1px 3px; }
+.sh-ql { max-height: 82%; }
+.sh-pair { display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; }
+
+html[data-theme="dark"] .g-nimble { --g-meter-text: #111113; --g-meter-shadow: none; }
+.xns-res.mana .sh-meter-bar b { color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / 0.35); }
+html[data-theme="dark"] .g-pf { --g-meter-text: #111318; --g-meter-shadow: none; }

@@ -1,0 +1,171 @@
+/* ============================================================================
+   Nimble: "The game sheet, sped up"
+   ========================================================================== */
+.g-nimble {
+	/* Light: the book's parchment, warmed only a touch; the sheet's charcoal (#545454), not black. */
+	--g-bg: #EEEBE4; --g-surface: #FFFEFB; --g-surface-2: #F6F3EC; --g-line: #E2DDD2; --g-line-strong: #C9C2B4;
+	--g-text: #24211D; --g-text-2: #625C53; --g-accent: #46423D; --g-accent-hover: #2F2C28; --g-on-accent: #FFFFFF;
+	--g-accent-text: #24211D; --g-now: #FFFEFB; --g-now-line: #46423D;
+	--g-danger-text: #B0281B; --g-danger-bg: #F8E7E2; --g-red: #C8321E; --g-ok: #3D7A3A;
+	--g-track: #C8321E; --g-track-low: #9C2213; --g-track-empty: #E7E2D7; --g-temp: #7C8B9C;
+	--g-chip-bg: #E8E3D7; --g-chip-text: #2B2823; --g-chip-acts-bg: #F8E7E2; --g-chip-acts-text: #A6261A;
+	--g-bar: #4B4743; --g-on-bar: #FFFFFF; --g-bar-2: #8F8981;
+	/* Nimble's own: the book's khaki banners, HP red, mana blue, the Heroes book's ochre for class things */
+	--g-band: #DDD6C4; --g-band-text: #3A352E; --g-hp: #C8321E; --g-hp-soft: #F6E3DE;
+	--g-mana: #2F64AE; --g-mana-soft: #E2EAF5; --g-ochre: #9A6A1E; --g-ochre-soft: #F3E8D2;
+	--g-font-display: "Avenir Next Condensed", "Barlow Condensed", "Roboto Condensed", sans-serif; --g-display-variant: normal; --g-display-weight: 700;
+	--g-font-name: "Vollkorn", "Avenir Next Condensed", Georgia, serif;
+	--g-font-ui: "Avenir Next", "Nunito Sans", -apple-system, sans-serif; --g-font-num: "Avenir Next Condensed", "Barlow Condensed", sans-serif;
+	--g-r-sm: 3px; --g-r-md: 6px; --g-r-lg: 10px; --g-r-chip: 3px; --g-pad: 12px; --g-row: 48px;
+	--g-icon-sw: 2.1; --g-dur: 120ms; --g-ease: cubic-bezier(.3, 1.4, .5, 1); --g-bar-h: 8px; --g-bar-r: 2px;
+}
+html[data-theme="dark"] .g-nimble {
+	--g-bg: #171512; --g-surface: #211F1B; --g-surface-2: #2A2723; --g-line: #35312B; --g-line-strong: #4D4840;
+	--g-text: #F2EEE7; --g-text-2: #AEA699; --g-accent: #E9E3D7; --g-accent-hover: #FFFFFF; --g-on-accent: #1B1916;
+	--g-accent-text: #F2EEE7; --g-now: #211F1B; --g-now-line: #E9E3D7;
+	--g-danger-text: #FF8C70; --g-danger-bg: #3E2019; --g-red: #EE5A40; --g-ok: #86C47F;
+	--g-track: #E5533B; --g-track-low: #FF7A5C; --g-track-empty: #312D27; --g-temp: #9FB0C4;
+	--g-chip-bg: #2E2B26; --g-chip-text: #E6E1D8; --g-chip-acts-bg: #3E2019; --g-chip-acts-text: #FF9D85;
+	--g-bar: #736C62; --g-on-bar: #FAF7F1; --g-bar-2: #8F8981;
+	--g-band: #3A352D; --g-band-text: #E9E3D7; --g-hp: #F0634A; --g-hp-soft: #3E2019;
+	--g-mana: #7FAEF0; --g-mana-soft: #1D2A3D; --g-ochre: #E0AE5C; --g-ochre-soft: #352B1C;
+}
+.g-nimble .ev-num, .g-nimble .xn-num { font-variant-numeric: tabular-nums; }
+/* Avenir Next sits its capitals ~1.8px above the box's centre in a button: move the label and its icon down together. */
+.g-nimble .ev-btn:not(.is-icon) > * { position: relative; top: 1.5px; }
+/* Damage's drop is blood: HP red */
+.g-nimble .ev-btn > .ev-i[data-icon="damage"] { color: var(--g-hp); }
+
+.xn-head { display: flex; align-items: center; gap: 4px; padding: 12px var(--g-pad) 10px; }
+.xn-head-t { flex: 1; min-width: 0; }
+.xn-title { margin: 0; font: italic 900 19px/24px var(--g-font-name); letter-spacing: 0; }
+.xn-sub { font: 500 13px/18px var(--g-font-ui); color: var(--g-text-2); }
+
+/* The side switch: the sheet's charcoal bar */
+.xn-sides { display: grid; grid-template-columns: 1fr 1fr; margin: 0 var(--g-pad); border-radius: var(--g-r-md); background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line); padding: 3px; gap: 3px; }
+.xn-side { display: flex; align-items: center; justify-content: space-between; gap: 6px; height: 40px; padding: 0 12px; border-radius: 4px; font: italic 700 17px/1 var(--g-font-display); color: var(--g-text-2); }
+.xn-side small { font: 600 12.5px/1 var(--g-font-num); font-style: normal; letter-spacing: .02em; }
+.xn-side.on { background: var(--g-bar); color: var(--g-on-bar); }
+.xn-side.on small { color: var(--g-on-bar); opacity: .75; }
+
+.xn-label { display: flex; align-items: baseline; justify-content: space-between; padding: 16px calc(var(--g-pad) + 2px) 6px; font: 600 13px/18px var(--g-font-ui); color: var(--g-text-2); }
+.xn-label b { color: var(--g-text); font-weight: 700; }
+
+/* Action marks: three cards you hold */
+.xn-acts { display: inline-flex; gap: 4px; align-items: flex-end; }
+.xn-acts i { display: block; width: 12px; height: 16px; border-radius: 2.5px; box-shadow: inset 0 0 0 1.75px var(--g-line-strong); }
+.xn-acts i.on { background: var(--g-text); box-shadow: none; }
+.xn-acts i.lost { box-shadow: inset 0 0 0 1.75px var(--g-line); opacity: .45; }
+.xn-acts.lg { gap: 6px; }
+.xn-acts.lg i { width: 22px; height: 30px; border-radius: 4px; box-shadow: inset 0 0 0 2px var(--g-line-strong); }
+.xn-acts.lg i.on { background: var(--g-text); box-shadow: 0 2px 0 rgb(0 0 0 / 0.12); transform: rotate(-4deg); }
+.xn-acts.lg i.on:nth-child(2) { transform: rotate(0); }
+.xn-acts.lg i.on:nth-child(3) { transform: rotate(4deg); }
+
+/* Wounds: linked circles ending in a skull */
+.xn-wounds { display: inline-flex; align-items: center; color: var(--g-line-strong); }
+.xn-wounds svg { display: block; }
+
+/* Armor: the books' filled shield, letter in heavy italic */
+.xn-armor { display: inline-grid; place-items: center; width: 22px; height: 24px; position: relative; flex: none; color: var(--g-text); --xn-armor-fill: #D3CBB8; }
+.xn-armor svg { position: absolute; inset: 0; }
+.xn-armor svg path { fill: var(--xn-armor-fill); }
+.xn-armor.is-heavy { --xn-armor-fill: var(--g-bar); color: var(--g-on-bar); }
+.xn-armor.is-none svg path { fill: none; stroke: var(--g-line-strong); stroke-width: 1.4; }
+.xn-armor b { position: relative; top: -0.5px; font: italic 700 12px/12px var(--g-font-num); height: 12px; display: block; }
+.xn-armor.is-none b { color: var(--g-text-2); font-style: normal; }
+html[data-theme="dark"] .g-nimble .xn-armor { --xn-armor-fill: #5A544B; }
+html[data-theme="dark"] .g-nimble .xn-armor.is-heavy { --xn-armor-fill: #E9E3D7; color: #1B1916; }
+.xn-heart { display: block; }
+
+/* The acting hero */
+.xn-focus { margin: 10px var(--g-pad) 0; background: var(--g-surface); border-radius: var(--g-r-lg); box-shadow: 0 0 0 2px var(--g-now-line), 0 8px 20px -12px rgb(0 0 0 / 0.35); padding: 14px 14px 12px; }
+.xn-f-top { display: flex; align-items: flex-start; gap: 10px; }
+.xn-f-top .nm { flex: 1; min-width: 0; }
+.xn-f-top h2 { margin: 0; font: italic 900 25px/30px var(--g-font-name); letter-spacing: 0; }
+.xn-f-top p { margin: 2px 0 0; font: 500 13px/18px var(--g-font-ui); color: var(--g-text-2); display: flex; gap: 8px; align-items: center; }
+.xn-f-top .acts { text-align: right; }
+.xn-f-top .acts small { display: block; margin-top: 6px; font: 600 12px/1 var(--g-font-ui); color: var(--g-text-2); }
+.xn-hp { margin-top: 14px; }
+.xn-hp-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 7px; }
+.xn-hp-row .heart { color: var(--g-red); align-self: center; display: flex; }
+.xn-hp-row b { font: 700 30px/30px var(--g-font-num); letter-spacing: -0.01em; }
+.xn-hp-row span { font: 600 16px/1 var(--g-font-num); color: var(--g-text-2); }
+.xn-hp-row .w { margin-left: auto; display: flex; align-items: center; gap: 8px; font: 600 12.5px/1 var(--g-font-ui); color: var(--g-text-2); }
+.xn-f-chips { margin-top: 12px; }
+.xn-f-btns { margin-top: 14px; }
+.xn-f-btns .ev-clusters { flex-wrap: nowrap; }
+/* Damage and Heal share their width equally; condition and the sheet or stat block sit at the right edge. */
+.xn-f-btns .ev-cluster.is-joined { flex: 1 1 0; }
+.xn-f-btns .ev-cluster.is-joined > .ev-btn { flex: 1 1 0; }
+.xn-f-btns .ev-cluster.is-fixed { flex: none; margin-left: auto; gap: 6px; }
+.xn-f-btns .ev-btn { height: 36px; font-weight: 600; }
+.xn-f-btns .ev-btn.done { background: var(--g-surface); box-shadow: inset 0 0 0 2px var(--g-accent); border-color: transparent; }
+.xn-dying { margin-top: 12px; padding: 10px 12px; border-radius: var(--g-r-md); background: var(--g-danger-bg); color: var(--g-danger-text); font: 600 13px/18px var(--g-font-ui); }
+.xn-dying span { display: block; font-weight: 500; color: var(--g-text); margin-top: 2px; }
+
+/* Bar with phase marks (legendary) */
+.xn-phased { position: relative; }
+.xn-phased .mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--g-surface); }
+.xn-phased .mark::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--g-text-2); }
+.xn-phase { display: flex; justify-content: space-between; margin-top: 6px; font: 600 12px/16px var(--g-font-ui); color: var(--g-text-2); }
+.xn-phase .on { color: var(--g-danger-text); }
+
+/* Rows */
+.xn-list { margin: 0 var(--g-pad); background: var(--g-surface); border-radius: var(--g-r-lg); box-shadow: inset 0 0 0 1px var(--g-line); overflow: hidden; }
+.xn-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto 64px; gap: 10px; align-items: center; min-height: var(--g-row); padding: 6px 12px 6px 10px; border-top: 1px solid var(--g-line); position: relative; }
+.xn-row:first-child { border-top: 0; }
+.xn-row .nm b { display: block; font: 600 16px/20px var(--g-font-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xn-row .nm small { display: flex; gap: 6px; align-items: center; font: 500 12.5px/16px var(--g-font-ui); color: var(--g-text-2); white-space: nowrap; overflow: hidden; }
+.xn-row .nm small .acts-t { color: var(--g-chip-acts-text); font-weight: 600; display: inline-flex; gap: 3px; align-items: center; }
+.xn-row .hp { text-align: right; font: 700 16px/1 var(--g-font-num); }
+.xn-row .hp small { font: 600 12.5px/1 var(--g-font-num); color: var(--g-text-2); }
+.xn-row .hp .ev-bar { margin-top: 6px; --g-bar-h: 4px; }
+.xn-row.is-low .hp b { color: var(--g-danger-text); }
+.xn-row .tick { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1.75px var(--g-line-strong); display: grid; place-items: center; color: var(--g-on-accent); }
+.xn-row.is-done .tick { background: var(--g-text-2); box-shadow: none; }
+.xn-row.is-done .nm b, .xn-row.is-done .hp { color: var(--g-text-2); }
+.xn-row.is-done { background: var(--g-surface-2); }
+.xn-row.is-out { opacity: .5; }
+.xn-row.is-out .nm b { text-decoration: line-through; }
+.xn-row.is-hovered, .xn-row:hover { background: var(--g-surface-2); }
+.xn-row.is-selected { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--g-accent) 55%, transparent); background: var(--g-surface-2); }
+.xn-row .lvl { font: 700 12px/1 var(--g-font-num); color: var(--g-text-2); text-align: center; }
+.xn-row .grip { position: absolute; left: 2px; color: var(--g-text-2); }
+.xn-minions { display: inline-flex; gap: 3px; }
+.xn-minions i { width: 10px; height: 10px; border-radius: 2px; background: var(--g-text); }
+.xn-minions i.off { background: transparent; box-shadow: inset 0 0 0 1.5px var(--g-line-strong); }
+.xn-legend { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px dashed var(--g-line-strong); font: 600 13px/18px var(--g-font-ui); color: var(--g-text); background: var(--g-surface-2); }
+.xn-legend svg { color: var(--g-ochre); flex: none; }
+.xn-legend small { color: var(--g-text-2); font-weight: 500; margin-left: auto; }
+
+/* Setup */
+.xn-init { display: flex; align-items: center; gap: 8px; }
+.xn-init .roll { width: 44px; height: 32px; display: grid; place-items: center; border-radius: var(--g-r-md); box-shadow: inset 0 0 0 1px var(--g-line-strong); font: 700 16px/1 var(--g-font-num); background: var(--g-surface); }
+.xn-init .roll.empty { color: var(--g-text-2); font-weight: 500; box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.xn-note { margin: 10px calc(var(--g-pad) + 2px) 0; font: 500 12.5px/18px var(--g-font-ui); color: var(--g-text-2); }
+
+/* Concept B: board */
+.xnb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 var(--g-pad); }
+.xnb-tile { background: var(--g-surface); border-radius: var(--g-r-lg); box-shadow: inset 0 0 0 1px var(--g-line); padding: 10px 11px 10px; min-width: 0; position: relative; }
+.xnb-tile h4 { margin: 0; font: italic 700 17px/20px var(--g-font-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xnb-tile .m { font: 500 12px/16px var(--g-font-ui); color: var(--g-text-2); }
+.xnb-tile .hp { display: flex; align-items: baseline; gap: 4px; margin: 10px 0 6px; font: 700 22px/1 var(--g-font-num); }
+.xnb-tile .hp small { font: 600 13px/1 var(--g-font-num); color: var(--g-text-2); }
+.xnb-tile .hp .xn-acts { margin-left: auto; align-self: center; }
+.xnb-tile .ft { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; min-height: 16px; }
+.xnb-tile.on { box-shadow: 0 0 0 2px var(--g-now-line); }
+.xnb-tile.done { background: var(--g-surface-2); box-shadow: none; }
+.xnb-tile.done h4, .xnb-tile.done .hp { color: var(--g-text-2); }
+.xnb-tile .ck { position: absolute; top: 9px; right: 9px; width: 18px; height: 18px; border-radius: 50%; background: var(--g-text-2); color: var(--g-surface); display: grid; place-items: center; }
+.xnb-tile.wide { grid-column: span 2; }
+.xnb-mon { padding: 8px 10px; }
+.xnb-mon h4 { font-size: 15px; font-style: normal; font-weight: 600; }
+.xnb-mon .hp { font-size: 18px; margin: 6px 0 5px; }
+
+/* Wide */
+.xn-wide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: start; }
+.xn-wide > div + div .xn-label:first-child { padding-top: 10px; }
+.xn-wide > div + div .xn-list { margin-left: 0; }
+.xn-wide > div:first-child .xn-focus { margin-right: 6px; }
+.xn-row .nm small .bad { color: var(--g-danger-text); font-weight: 600; }

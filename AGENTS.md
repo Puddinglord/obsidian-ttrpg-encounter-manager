@@ -9,6 +9,7 @@ An Obsidian plugin (TypeScript, esbuild) for running and playing tabletop RPG ca
 | Nimble | [src/systems/nimble/AGENTS.md](src/systems/nimble/AGENTS.md) |
 | 5e | [src/systems/dnd5e/AGENTS.md](src/systems/dnd5e/AGENTS.md) |
 | File-by-file map, test harness, Obsidian review rules | [CLAUDE_CODE_GUIDE.md](CLAUDE_CODE_GUIDE.md) |
+| How anything the user sees should look (every game, every surface) | [prototypes/design-study/README.md](prototypes/design-study/README.md): the design study, our living design archive, and its rules |
 | Where the architecture is going | [prototypes/SYSTEMLESS.md](prototypes/SYSTEMLESS.md), then [prototypes/MULTI-SYSTEM.md](prototypes/MULTI-SYSTEM.md) for how we got here |
 
 ## The shape of the code
@@ -43,6 +44,8 @@ node e2e/run.mjs "5e"  # only e2e tests whose name contains "5e"
 Before calling a change done: `npm test`, `npm run lint`, `npm run build`, and the e2e tests for what you touched. Run the full e2e suite before a commit that touches shared code. The e2e Obsidian runs hidden; don't run it in the foreground (the maintainer works while it runs).
 
 ## Rules that don't bend
+
+- **The design study is the reference for UI.** Build screens from [prototypes/encounter-design-study.html](prototypes/encounter-design-study.html), check them against it, and change the study in the same PR when a design changes. Its rules (prototypes/design-study/README.md) hold everywhere; above all, every pill, tag and compact button is centred on its capitals within 1px and measured by the `pills:` e2e tests.
 
 - **Never break a saved format.** Fence names (```` ```nimble ````, ```` ```5e ````, ```` ```nimble-encounter ````…), reference prefixes (`nimble:`, `5e:`), frontmatter keys and `data.json` fields are read from users' vaults forever. Add, don't rename. Missing means the old meaning: no `system:` is Nimble.
 - **Never put note text into `innerHTML`.** Use `appendRichText()` (core/markdown.ts) or `createEl({ text })`. A stat block pasted from anywhere must not run script.

@@ -1,0 +1,29 @@
+/* The shared NPC card: one frame, each game's tokens */
+.npc { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; padding: 18px; border-radius: var(--g-r-lg); background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line); color: var(--g-text); font-family: var(--g-font-ui); }
+.npc-art .sh-portrait { font-size: 46px; }
+.npc-name { margin: 0; font: var(--g-display-weight) 26px/30px var(--g-font-display); font-variant: var(--g-display-variant); letter-spacing: -0.005em; }
+.npc-role { margin-top: 2px; font: 600 13px/18px var(--g-font-ui); color: var(--g-accent-text); letter-spacing: .02em; }
+.npc-facts { margin-top: 2px; font: 400 13.5px/20px var(--g-font-ui); color: var(--g-text-2); }
+.npc-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font: 500 13px/18px var(--g-font-ui); }
+.npc-links span { display: inline-flex; align-items: center; gap: 5px; }
+.npc-links svg { color: var(--g-text-2); }
+.npc-links small { color: var(--g-text-2); font-size: 12.5px; }
+.npc-pills { display: flex; gap: 6px; margin-top: 10px; }
+.npc-pill { font: 600 12.5px/1 var(--g-font-ui); padding: 6px 10px; border-radius: 999px; background: var(--g-surface-2); color: var(--g-text); box-shadow: inset 0 0 0 1px var(--g-line); }
+.npc-pill.at-hostile, .npc-pill.st-dead { color: var(--g-danger-text); background: var(--g-danger-bg); box-shadow: none; }
+.npc-pill.at-friendly { color: var(--g-ok, var(--g-text)); }
+.npc-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--g-line); }
+.npc-stat { display: inline-flex; align-items: baseline; gap: 5px; font: 500 12.5px/1 var(--g-font-ui); color: var(--g-text-2); padding: 6px 9px; border-radius: var(--g-r-md); background: var(--g-surface-2); }
+.npc-stat b { font: 700 15px/1 var(--g-font-num); color: var(--g-text); font-variant-numeric: tabular-nums; }
+.npc-ref { display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--g-font-ui); color: var(--g-accent-text); padding: 6px 10px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.npc-rows { margin-top: 12px; display: grid; gap: 0; }
+.npc-rows-h { display: flex; align-items: center; gap: 6px; font: 600 12.5px/16px var(--g-font-ui); color: var(--g-text-2); padding-bottom: 6px; }
+.npc-row { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 12px; padding: 8px 0; border-top: 1px solid var(--g-line); font: 400 14px/21px var(--g-font-ui); }
+.npc-row .k { font: 600 12.5px/21px var(--g-font-ui); color: var(--g-text-2); display: inline-flex; gap: 5px; align-items: center; }
+.npc-row.secret .v { filter: blur(4px); }
+.npc.is-player { background: var(--g-bg); box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.npc.is-compact { grid-template-columns: auto minmax(0, 1fr); gap: 14px; padding: 14px; }
+.npc.is-compact .npc-name { font-size: 20px; line-height: 24px; }
+@container (max-width: 560px) {
+	.npc { grid-template-columns: 1fr; }
+}

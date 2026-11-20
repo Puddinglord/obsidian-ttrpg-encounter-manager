@@ -33,3 +33,6 @@ Ember-Vault-Sample-Adventure.zip
 # Built landing page (scripts/build-site.mjs)
 _site
 /listing-screenshots/
+
+# Screenshots of other products, for the design study's research boards: looked at locally, never published
+prototypes/refs/

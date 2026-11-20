@@ -1,0 +1,403 @@
+/* Nimble sheet and blocks: the official sheet's shapes, in warm charcoal, with HP red and mana blue */
+.xns { position: relative; padding-bottom: 40px; font-family: var(--g-font-ui); color: var(--g-text); }
+.xns-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; }
+.xns-id h1 { margin: 0; font: italic 900 36px/40px var(--g-font-name); letter-spacing: 0; }
+.xns-id .l { font: 700 15px/20px var(--g-font-display); color: var(--g-text); margin-top: 2px; }
+.xns-id .s { font: 500 13px/18px var(--g-font-ui); color: var(--g-text-2); }
+.xns-acts { display: flex; gap: 6px; }
+
+/* Clusters (the shared .ev-cluster): ours never stretch in the header or on a feature row */
+.xns-acts .ev-cluster, .xns-feat .ev-cluster { flex: none; }
+.xns-cluster-fill > .ev-btn { flex: 1; }
+
+/* The band */
+.xns-band { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 16px; margin-top: 20px; padding: 0 2px; }
+.xns-stats { display: flex; gap: 6px; }
+.xns-stat { appearance: none; position: relative; flex: none; width: var(--xns-stat-w, 70px); height: 86px; padding: 0; border: 0; background: none; color: var(--g-text); cursor: pointer; font: inherit; }
+.xns-stat .face { position: absolute; left: 0; right: 0; top: 9px; height: 68px; display: grid; grid-template-rows: 40px 24px; border: 2px solid var(--g-bar); border-radius: 2px; background: var(--g-bar); }
+.xns-stat .v { display: flex; align-items: center; justify-content: center; padding: 2px 0 0 2px; font-variant-numeric: lining-nums proportional-nums; background: radial-gradient(circle at 0 100%, var(--g-bar) 7.5px, transparent 8px), radial-gradient(circle at 100% 100%, var(--g-bar) 7.5px, transparent 8px), var(--g-surface); font: 700 27px/normal var(--g-font-num); }
+.xns-stat .k { display: flex; align-items: center; justify-content: center; font: 700 15px/normal var(--g-font-num); letter-spacing: .04em; color: var(--g-on-bar); }
+.xns-stat .tri { position: absolute; left: 50%; margin-left: -11px; overflow: visible; }
+.xns-stat .tri.up { top: 0; }
+.xns-stat .tri.dn { bottom: 0; }
+.g-nimble svg.tri { overflow: visible; }
+.g-nimble svg.tri path { fill: var(--g-surface); stroke: var(--g-bar); stroke-width: 1.5; stroke-linejoin: round; }
+.g-nimble svg.tri path.on { fill: var(--g-bar); }
+.xns-stat:hover .v { background: radial-gradient(circle at 0 100%, var(--g-bar) 7.5px, transparent 8px), radial-gradient(circle at 100% 100%, var(--g-bar) 7.5px, transparent 8px), var(--g-surface-2); }
+.xns-hp { appearance: none; position: relative; width: 104px; height: 122px; padding: 0; border: 0; background: none; color: var(--g-text); cursor: pointer; font: inherit; flex: none; }
+.xns-hp-bg { position: absolute; inset: 0; overflow: visible; }
+.xns-hp-bg .bx { fill: var(--g-surface); stroke: var(--g-bar); stroke-width: 2; stroke-linejoin: round; }
+.xns-hp-bg .bd { fill: var(--g-bar); }
+.xns-hp-bg .dv { stroke: var(--g-bar); stroke-width: 1.5; }
+.xns-hp-bg .tr { fill: var(--g-track-empty); }
+.xns-hp-bg .fl { fill: var(--g-hp); }
+.xns-hp-bg .ht { fill: var(--g-hp); stroke: var(--g-surface); stroke-width: 2.4; paint-order: stroke; }
+.xns-hp .l { position: absolute; left: 0; right: 0; top: 15px; height: 14px; display: flex; align-items: center; justify-content: center; font: 700 11.5px/normal var(--g-font-num); letter-spacing: .05em; text-transform: uppercase; color: var(--g-text-2); }
+.xns-hp .n { position: absolute; left: 6px; right: 6px; top: 30px; height: 26px; padding-top: 2px; display: flex; align-items: center; justify-content: center; gap: 3px; }
+.xns-hp .n b { font: 700 28px/normal var(--g-font-num); color: var(--g-hp); }
+.xns-hp .n i { width: 1.5px; height: 22px; background: var(--g-line-strong); transform: skewX(-16deg); margin: 0 3px; }
+.xns-hp .n span { font: 700 17px/normal var(--g-font-num); color: var(--g-text-2); align-self: flex-end; margin-bottom: 1px; }
+.xns-hp .t { position: absolute; left: 0; right: 0; top: 67px; height: 27px; padding-top: 2px; display: flex; align-items: center; justify-content: center; gap: 5px; font: 700 11.5px/normal var(--g-font-num); letter-spacing: .05em; text-transform: uppercase; color: var(--g-text-2); }
+.xns-hp .t svg { color: var(--g-text-2); position: relative; top: -1px; }
+.xns-hp .t b { font: 700 16px/normal var(--g-font-num); letter-spacing: 0; color: var(--g-text); }
+.xns-hp .t b.none { color: var(--g-text-2); font-weight: 600; }
+.xns-hp.is-zero .n b { color: var(--g-danger-text); }
+.xns-hp:hover .bx { fill: var(--g-surface-2); }
+
+.xns-ai { display: flex; gap: 6px; }
+.xns-wcol { display: grid; gap: 8px; justify-items: stretch; }
+.xns-dh { display: flex; }
+.xns-dh > .ev-btn { flex: 1 1 0; justify-content: center; }
+.xns-box { appearance: none; position: relative; display: grid; grid-template-rows: 18px 34px 12px; width: var(--xns-box-w, 70px); padding: 0; border: 0; border-radius: 2px; background: var(--g-surface); box-shadow: inset 0 0 0 2px var(--g-bar); color: var(--g-text); font: inherit; overflow: hidden; }
+.xns-box .l { display: flex; align-items: flex-end; justify-content: center; font: 700 11px/normal var(--g-font-num); letter-spacing: .04em; text-transform: uppercase; color: var(--g-text-2); }
+.xns-box b { display: flex; align-items: center; justify-content: center; padding: 2px 0 0 1px; font: 700 25px/normal var(--g-font-num); font-variant-numeric: lining-nums proportional-nums; }
+.xns-box .f { display: flex; align-items: center; justify-content: center; background: var(--g-bar); color: var(--g-on-bar); }
+.xns-box.is-roll { cursor: pointer; grid-template-rows: 18px 30px 16px; }
+.xns-box.is-roll:hover { background: var(--g-surface-2); }
+
+.xns-wbox { position: relative; width: var(--xns-wbox-w, 190px); height: 77px; flex: none; }
+.xns-wbox-bg { position: absolute; left: 0; top: 0; width: 100%; height: 77px; }
+.xns-wbox-bg .bx { fill: var(--g-surface); stroke: var(--g-bar); stroke-width: 2; stroke-linejoin: round; }
+.xns-wbox-bg .bd { fill: var(--g-bar); }
+.xns-wbox .l { position: absolute; left: 40px; right: 40px; top: 0; height: 16px; display: flex; align-items: center; justify-content: center; gap: 4px; font: 700 11.5px/normal var(--g-font-num); letter-spacing: .05em; text-transform: uppercase; color: var(--g-text-2); }
+.xns-wbox .l svg { color: var(--g-hp); }
+.xns-wbox .c { position: absolute; left: 0; right: 0; top: 22px; height: 34px; display: flex; align-items: center; justify-content: center; color: var(--g-bar-2); }
+.xns-wbox .f { position: absolute; left: 0; right: 0; top: 59px; height: 16px; display: flex; align-items: center; justify-content: center; gap: 3px; font: 600 11.5px/normal var(--g-font-num); color: var(--g-on-bar); }
+.xns-wbox .f b { font-weight: 700; }
+/* Extra Wounds: under the dark foot, a raised tab like the sheet's, then dashed circles; only when a hero has them */
+.xns-wbox.has-extra { height: 101px; }
+.xns-wbox .x { position: absolute; left: 50%; top: 75px; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; padding: 4px 10px 5px; border-radius: 0 0 10px 10px; box-shadow: inset 0 0 0 2px var(--g-bar); border-top: 0; background: var(--g-surface); }
+.xns-wx-c { display: block; overflow: visible; }
+.xns-wx-c circle { fill: none; stroke: var(--g-bar-2); stroke-width: 1.4; stroke-dasharray: 2.2 2.2; }
+.xns-wx-c circle.on { fill: var(--g-hp); stroke: var(--g-hp); stroke-dasharray: none; }
+
+.xns-dying { display: flex; gap: 10px; align-items: baseline; margin-top: 10px; padding: 10px 14px; border-radius: var(--g-r-md); background: var(--g-danger-bg); font: 500 13.5px/19px var(--g-font-ui); }
+.xns-dying b { color: var(--g-danger-text); font: italic 900 16px/1 var(--g-font-name); }
+
+/* Skills: one band, notched end caps, bites between the cells */
+.xns-skills { display: flex; align-items: center; margin-top: 12px; }
+.xns-skills .cap { flex: none; width: 18px; align-self: stretch; margin: 9px 0; }
+.xns-skills .cap.l { background: radial-gradient(circle at 0 0, transparent 7px, var(--g-bar) 7.5px) left top / 100% 51% no-repeat, radial-gradient(circle at 0 100%, transparent 7px, var(--g-bar) 7.5px) left bottom / 100% 51% no-repeat; }
+.xns-skills .cap.r { background: radial-gradient(circle at 100% 0, transparent 7px, var(--g-bar) 7.5px) right top / 100% 51% no-repeat, radial-gradient(circle at 100% 100%, transparent 7px, var(--g-bar) 7.5px) right bottom / 100% 51% no-repeat; }
+.xns-sk-row { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 2px; padding: 2px; background: var(--g-bar); border-radius: 2px; }
+.xns-sk { appearance: none; display: grid; grid-template-rows: 48px 20px; padding: 0; border: 0; background: transparent; color: var(--g-text); cursor: pointer; font: inherit; min-width: 0; }
+.xns-sk .w { display: grid; grid-template-rows: 16px 28px; align-content: center; justify-items: center; background: radial-gradient(circle at 0 100%, var(--g-bar) 5.5px, transparent 6px), radial-gradient(circle at 100% 100%, var(--g-bar) 5.5px, transparent 6px), var(--g-surface); }
+.xns-sk small { display: flex; align-items: flex-end; font: 600 10.5px/normal var(--g-font-num); letter-spacing: .05em; color: var(--g-bar-2); }
+.xns-sk b { display: flex; align-items: center; font: 700 21px/normal var(--g-font-num); }
+.xns-sk .n { display: flex; align-items: center; justify-content: center; min-width: 0; padding: 0 2px; font: 700 11px/normal var(--g-font-num); letter-spacing: .03em; text-transform: uppercase; color: var(--g-on-bar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xns-sk:hover .w { background: radial-gradient(circle at 0 100%, var(--g-bar) 5.5px, transparent 6px), radial-gradient(circle at 100% 100%, var(--g-bar) 5.5px, transparent 6px), var(--g-surface-2); }
+
+/* Actions bar */
+.xns-turn { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; padding: 9px 16px; border-radius: var(--g-r-lg); background: var(--g-band); color: var(--g-band-text); }
+.xns-turn .l { font: italic 900 16px/1 var(--g-font-name); }
+.xns-turn .xn-acts.lg i { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--g-bar) 40%, transparent); }
+.xns-turn .xn-acts.lg i.on { background: var(--g-band-text); box-shadow: 0 2px 0 rgb(0 0 0 / 0.12); }
+.xns-turn small { font: 600 12.5px/1 var(--g-font-ui); opacity: .85; }
+.xns-turn .ev-btn { background: color-mix(in srgb, var(--g-surface) 70%, transparent); color: var(--g-band-text); border-color: color-mix(in srgb, var(--g-bar) 30%, transparent); }
+.xns-turn .sep { flex: 1; }
+.xns-turn .hd { display: inline-flex; align-items: center; gap: 6px; }
+.xns-turn .hd b { font: 700 17px/normal var(--g-font-num); padding-top: 2px; }
+.xns-turn .hd i { width: 1.5px; height: 16px; background: color-mix(in srgb, var(--g-bar) 45%, transparent); transform: skewX(-16deg); }
+.xns-turn .hd .l { margin-right: 4px; }
+
+/* The class panel: Fury dice's frame, for every class's own things */
+.xns-class { margin-top: 12px; padding: 4px 16px 6px; border-radius: var(--g-r-lg); background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line); }
+.xns-class-h { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px 0 4px; color: var(--g-ochre); }
+.xns-class-h b { font: italic 900 15px/20px var(--g-font-name); font-variant: small-caps; letter-spacing: .03em; color: var(--g-text); }
+.xns-class-h .orn { display: flex; }
+.xns-feat { display: grid; grid-template-columns: 170px minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; padding: 10px 0; border-top: 1px solid var(--g-line); }
+.xns-class-h + .xns-feat { border-top: 0; }
+.xns-feat .lb { display: grid; }
+.xns-feat .lb b { font: italic 900 15px/20px var(--g-font-name); }
+.xns-feat .lb small { font: 500 12px/16px var(--g-font-ui); color: var(--g-text-2); }
+.xns-feat .o { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.xns-feat .o .c { font: 600 12.5px/1 var(--g-font-num); color: var(--g-text-2); }
+.xns-feat .o.wide > .sh-meter { flex: 1; min-width: 0; }
+.xns-feat .hint { grid-column: 2 / -1; font: 500 12.5px/16px var(--g-font-ui); color: var(--g-text-2); }
+.xns-feat.is-pool .o .sh-meter-h { display: none; }
+.xns-feat.is-mana .sh-meter-bar > i:first-child { background: var(--g-mana); }
+.xns-feat.is-mana .sh-meter-bar { background: var(--g-mana-soft); }
+.xns-feat.is-mana .sh-meter-row > .ev-btn svg { color: var(--g-mana); }
+.xns-feat.is-mana .lb b { color: var(--g-mana); }
+.xns-die { position: relative; width: 30px; height: 28px; flex: none; color: var(--g-text); }
+.xns-die svg { position: absolute; inset: 0; }
+.xns-die svg path, .xns-die svg rect { fill: var(--g-ochre-soft); stroke: var(--g-text); stroke-width: 1.8; stroke-linejoin: round; }
+.xns-die b { position: absolute; left: 0; right: 0; bottom: 3px; height: 14px; display: flex; align-items: center; justify-content: center; font: 700 13.5px/normal var(--g-font-num); }
+.xns-die.d6 b, .xns-die.d8 b { top: 0; bottom: 0; height: auto; }
+.xns-die.is-empty svg path, .xns-die.is-empty svg rect { fill: none; stroke: var(--g-line-strong); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.xns-pips { --g-pip: 14px; --pip-on: var(--g-ochre); gap: 6px; }
+.xns-state { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--g-r-md); font: 700 13.5px/normal var(--g-font-num); color: var(--g-text-2); box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.xns-state.on { background: var(--g-ochre-soft); color: var(--g-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--g-ochre) 45%, transparent); }
+.xns-state.on svg { color: var(--g-ochre); }
+.xns-pool { display: inline-flex; align-items: baseline; gap: 4px; }
+.xns-pool b { font: 700 24px/normal var(--g-font-num); }
+.xns-pool small { font: 600 13px/1 var(--g-font-num); color: var(--g-text-2); }
+
+.xns-conds { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 8px 16px; border-radius: var(--g-r-lg); background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line); }
+.xns-conds .l { font: 600 13px/1 var(--g-font-ui); color: var(--g-text-2); }
+.xns-tabs span.on { color: var(--g-text); border-bottom-color: var(--g-text); }
+.xns-tabs span { font-family: var(--g-font-display); font-size: 15px; }
+.xns-grp { display: flex; align-items: baseline; gap: 10px; margin: 16px 2px 6px; font: italic 900 17px/22px var(--g-font-name); }
+.xns-grp small { font: 500 12.5px/1 var(--g-font-ui); font-style: normal; color: var(--g-text-2); }
+.xns-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.xns-chips span { display: grid; padding: 7px 11px; border-radius: var(--g-r-md); background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line); }
+.xns-chips b { font: 700 14px/18px var(--g-font-display); }
+.xns-chips small { font-size: 12px; color: var(--g-text-2); }
+.xns-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto 190px; gap: 10px; align-items: center; padding: 9px 2px; border-bottom: 1px solid var(--g-line); font-size: 14px; }
+.xns-row b { font: 700 16px/20px var(--g-font-display); }
+.xns-row small { color: var(--g-text-2); font-size: 12.5px; }
+.xns-row small.x { text-align: right; }
+.xns-row.just { background: var(--g-now); border-radius: var(--g-r-sm, 4px); padding-left: 10px; }
+@container (max-width: 785px) {
+	.xns-band { --xns-stat-w: 64px; --xns-box-w: 66px; --xns-wbox-w: 176px; }
+}
+@container (max-width: 860px) {
+	.xns-hero { grid-template-columns: auto minmax(0, 1fr); }
+	.xns-acts { grid-column: 1 / -1; }
+	.xns-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 2px; }
+	.xns-row > b { grid-row: 1; }
+	.xns-row > .sh-roll, .xns-row > .ev-btn { grid-column: 2; grid-row: 1 / span 2; }
+	.xns-row small { grid-column: 1; }
+	.xns-row small.x { text-align: left; }
+	.xns-row small.x:empty { display: none; }
+}
+@container (max-width: 700px) {
+	.xns-sk-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+	.xns-feat { grid-template-columns: minmax(0, 1fr) auto; }
+	.xns-feat .lb { grid-column: 1 / -1; }
+	.xns-feat .hint { grid-column: 1 / -1; }
+}
+@container (max-width: 480px) {
+	.xns-band { justify-content: center; gap: 14px 10px; --xns-box-w: 72px; --xns-wbox-w: 100%; }
+	.xns-stats { width: 100%; }
+	.xns-stats .xns-stat { flex: 1; width: auto; }
+	.xns-wcol { width: 100%; grid-template-columns: minmax(0, 1fr); }
+	.xns-id h1 { font-size: 30px; line-height: 34px; }
+	.xns-turn .sep { flex-basis: 100%; height: 0; }
+	.xns-skills .cap { width: 10px; }
+}
+
+/* Monster blocks: the GM's Guide's box (cut corners), names in heavy italic small caps, khaki ribbons */
+.xnb { position: relative; color: var(--g-text); font: 500 14.5px/21px var(--g-font-ui); border: 10px solid transparent; border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cpath d='M7 1h16l6 6v16l-6 6H7l-6-6V7Z' fill='%23FFFEFB' stroke='%23BDB5A4' stroke-width='1.5'/%3E%3C/svg%3E") 10 fill / 10px / 0 stretch; padding: 4px 6px 6px; }
+html[data-theme="dark"] .xnb { border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cpath d='M7 1h16l6 6v16l-6 6H7l-6-6V7Z' fill='%23211F1B' stroke='%23554F46' stroke-width='1.5'/%3E%3C/svg%3E"); }
+.xnb-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 6px; }
+.xnb h2 { margin: 0; font: italic 900 25px/30px var(--g-font-name); font-variant: small-caps; letter-spacing: .01em; }
+.xnb h2 small { margin-left: 6px; font: 600 13px/1 var(--g-font-display); font-variant: small-caps; text-transform: lowercase; letter-spacing: .04em; color: var(--g-text-2); font-style: normal; }
+.xnb .k { font: 600 13px/18px var(--g-font-display); color: var(--g-text-2); }
+.xnb-ic { display: flex; gap: 10px; align-items: center; padding-top: 4px; font: 700 15px/1 var(--g-font-num); }
+.xnb-ic > span:not(.xn-armor) { display: inline-flex; gap: 4px; align-items: center; }
+.xnb-ic .hp { color: var(--g-hp); }
+.xnb-ic .hp b { color: var(--g-text); font-style: italic; }
+.xnb-ic .sp svg { color: var(--g-text-2); }
+.xnb-ic .sv { gap: 2px; font: 700 12.5px/1 var(--g-font-display); color: var(--g-text-2); }
+.xnb-ic .sv .tri { width: 13px; height: 6px; }
+/* The ribbon: khaki, pointed at both ends, poking out past the box */
+.xnb-banner { position: relative; margin: 8px -6px 8px; padding: 6px 12px; background: var(--g-band); color: var(--g-band-text); font-style: italic; }
+/* Pointed ends that follow the ribbon's height (one line or three): one stretched triangle per end,
+   an SVG mask filled with the band colour, so there's no seam and it works in light and dark. */
+.xnb-banner { z-index: 1; }
+.xnb-banner::before, .xnb-banner::after { content: ""; position: absolute; top: 0; bottom: 0; width: 14px; background: var(--g-band);
+	-webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+.xnb-banner::before { right: calc(100% - 0.5px);
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='14,0 0,50 14,100' fill='black'/%3E%3C/svg%3E");
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='14,0 0,50 14,100' fill='black'/%3E%3C/svg%3E"); }
+.xnb-banner::after { left: calc(100% - 0.5px);
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 14,50 0,100' fill='black'/%3E%3C/svg%3E");
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 14,50 0,100' fill='black'/%3E%3C/svg%3E"); }
+.xnb-banner b { font-style: italic; font-weight: 700; }
+.xnb p { margin: 5px 0; }
+.xnb-or { margin: 6px 0; padding-left: 10px; }
+.xnb-or > small { display: inline-block; margin: 2px 0; padding: 0 6px; border-radius: 99px; background: var(--g-surface-2); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 10.5px; color: var(--g-text-2); }
+.xnb-or small { font: 700 11.5px/1 var(--g-font-display); color: var(--g-text-2); letter-spacing: .08em; text-transform: uppercase; }
+.xnb-sec { margin: 10px 0 2px; font: 700 13.5px/20px var(--g-font-display); letter-spacing: .06em; text-transform: uppercase; }
+.xnb-sec small { font: italic 500 12.5px/1 var(--g-font-ui); letter-spacing: 0; text-transform: none; color: var(--g-text-2); margin-left: 8px; }
+.xnb-cols { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
+.xnb-phases { padding-top: 10px; }
+.xnb-phase { padding: 6px 0; }
+.xnb-phase + .xnb-phase { border-top: 1px solid var(--g-line); }
+.xnb-phase b { display: block; font: 700 13.5px/20px var(--g-font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--g-text); }
+.xnb-phase em { font-style: normal; font-weight: 700; color: var(--g-hp); }
+.xnb-note { margin-top: 10px; font: 500 12.5px/17px var(--g-font-ui); color: var(--g-text-2); }
+.xnb.compact { font-size: 13.5px; line-height: 19px; }
+.xnb.compact h2 { font-size: 22px; line-height: 26px; }
+.xnb.compact .xnb-cols { grid-template-columns: minmax(0, 1fr); gap: 0; }
+@container (max-width: 520px) { .xnb-cols { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+
+/* The class gallery (design study only) */
+.xns-gallery { padding: 0; }
+.xns-gallery .xns-class + .xns-class { margin-top: 10px; }
+
+/* Alignment pass: the block's heart up to its number */
+.xnb-ic .hp .xn-heart { position: relative; top: -1.4px; }
+.g-nimble .npc-stat .xn-heart { position: relative; top: 1.6px; }
+.g-nimble .sh-roll { --g-icon-dy: 0.8px; }
+
+/* The band: the boxes pack above, Hit points is a wide bar along the bottom. A grid, so Wounds sits under
+   Armor and Initiative's column and HP under the stats when they share a row.
+   Wide: stats | Armor Initiative | Wounds, then HP across. Medium: the six boxes, then HP | Wounds.
+   Phone: the stats, then Armor Initiative | Wounds, then HP across. */
+.xns-band { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 2fr) minmax(184px, 2.6fr); grid-template-areas: "stats ai wounds" "hp hp hp"; align-items: center; gap: 14px 12px; }
+.xns-band > .xns-stats { grid-area: stats; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; --xns-stat-w: auto; }
+.xns-band > .xns-ai { grid-area: ai; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; --xns-box-w: auto; }
+.xns-band > .xns-wbox { grid-area: wounds; width: 100%; }
+.xns-band > .xns-hpw { grid-area: hp; }
+@container (max-width: 660px) {
+	.xns-band { grid-template-columns: minmax(0, 4fr) minmax(0, 2fr); grid-template-areas: "stats ai" "hp wounds"; }
+}
+@container (max-width: 440px) {
+	.xns-band { grid-template-columns: minmax(0, 1fr) minmax(176px, 1.25fr); grid-template-areas: "stats stats" "ai wounds" "hp hp"; gap: 12px 8px; }
+}
+
+/* Hit points, wide: label on top under the heart, the bar row, Temp in the dark foot. Same height and foot as Wounds. */
+.xns-hpw { position: relative; display: grid; grid-template-rows: 20px 1fr 16px; height: 77px; border-radius: 2px; background: var(--g-surface); box-shadow: inset 0 0 0 2px var(--g-bar); overflow: visible; }
+.xns-hpw .ht { position: absolute; left: 50%; top: -9px; margin-left: -9px; display: flex; color: var(--g-hp); }
+.xns-hpw .ht svg path { stroke: var(--g-surface); stroke-width: 2.6; paint-order: stroke; }
+.xns-hpw .l { display: flex; align-items: flex-end; justify-content: center; font: 700 11.5px/normal var(--g-font-num); letter-spacing: .05em; text-transform: uppercase; color: var(--g-text-2); }
+.xns-hpw .r { display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px 30px; gap: 6px; align-items: center; padding: 0 10px; }
+.xns-hpw .r .ev-btn { width: 30px; height: 30px; padding: 0; justify-content: center; }
+.xns-hpw .bar { appearance: none; position: relative; height: 28px; padding: 0; border: 0; border-radius: 999px; background: var(--g-track-empty); overflow: hidden; display: grid; place-items: center; cursor: pointer; font: inherit; }
+.xns-hpw .bar > i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--g-hp); }
+.xns-hpw .bar > i.t { background: var(--g-temp, #7aa0c8); opacity: .85; }
+.xns-hpw .bar b { position: relative; padding-top: 2px; font: 700 18px/1 var(--g-font-num); color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / 0.4); }
+.xns-hpw .bar b small { font-size: 13px; font-weight: 600; opacity: .92; }
+.xns-hpw.is-zero .bar b { color: var(--g-danger-text); text-shadow: none; }
+.xns-hpw .f { display: flex; align-items: center; justify-content: center; gap: 4px; background: var(--g-bar); color: var(--g-on-bar); font: 700 11px/normal var(--g-font-num); letter-spacing: .05em; text-transform: uppercase; }
+.xns-hpw .f b { font-size: 12.5px; letter-spacing: 0; }
+.xns-hpw .f b.none { opacity: .75; font-weight: 600; }
+
+/* Armor and Initiative: one foot height (Wounds' 16px), a d20 on Initiative's */
+.xns-box, .xns-box.is-roll { grid-template-rows: 18px 30px 16px; }
+.xns-d20 { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linejoin: round; }
+/* One top and bottom line per row: a stat's face, Armor and Initiative, Wounds' shoulders and the HP box all run 9px → 77px */
+.xns-band { align-items: start; }
+.xns-band .xns-box { height: 68px; margin-top: 9px; grid-template-rows: 18px 34px 16px; }
+.xns-band .xns-box.is-roll { grid-template-rows: 18px 34px 16px; }
+.xns-hpw { height: 68px; margin-top: 9px; grid-template-rows: 18px 1fr 16px; }
+.xns-hpw .l { padding-top: 2px; }
+.xns-hpw .l { gap: 4px; }
+.xns-hpw .l svg { color: var(--g-hp); position: relative; top: -1px; }
+/* Breathing room above the foot: smaller buttons and bar, the row nudged up */
+.xns-hpw .r { grid-template-columns: 26px minmax(0, 1fr) 26px 26px; padding-bottom: 3px; }
+.xns-hpw .r .ev-btn { width: 26px; height: 26px; }
+.xns-hpw .r .ev-btn svg { width: 14px; height: 14px; }
+.xns-hpw .bar { height: 22px; }
+.xns-hpw .bar b { font-size: 15.5px; padding-top: 1px; }
+.xns-hpw .bar b small { font-size: 11.5px; }
+/* With no formula line under it, a feature's name sits beside its dice, bar or pips until a phone */
+@container (max-width: 700px) {
+	.xns-feat { grid-template-columns: 136px minmax(0, 1fr) auto; }
+	.xns-feat .lb { grid-column: auto; }
+}
+@container (max-width: 480px) {
+	.xns-feat { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
+	.xns-feat .lb { grid-column: 1 / -1; }
+}
+
+/* A feature's name opens its rules: the chevron turns, the book's text drops in under the row */
+.xns-feat button.lb { appearance: none; display: flex; align-items: center; gap: 6px; justify-self: start; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.xns-feat button.lb svg { flex: none; color: var(--g-text-2); transition: transform .15s ease; }
+.xns-feat button.lb:hover svg, .xns-feat button.lb:focus-visible svg { color: var(--g-text); }
+.xns-feat.is-open button.lb svg { transform: rotate(180deg); }
+.xns-rule { display: none; grid-column: 1 / -1; padding: 9px 12px 10px; border-radius: var(--g-r-md); background: var(--g-surface-2); box-shadow: inset 0 0 0 1px var(--g-line); }
+.xns-feat.is-open .xns-rule { display: block; }
+.xns-rule p { margin: 0; font: 500 13.5px/20px var(--g-font-ui); color: var(--g-text); text-wrap: pretty; }
+.xns-rule p + p { margin-top: 6px; }
+.xns-rule b { font: italic 800 14px/20px var(--g-font-name); }
+.xns-feat { row-gap: 8px; }
+@media (prefers-reduced-motion: reduce) { .xns-feat button.lb svg { transition: none; } }
+/* Vollkorn's heavy italic sits 2px high beside the UI font: bring the name's capitals onto the row's centre line */
+.xns-feat .lb b { position: relative; top: 2px; }
+
+/* Reactions as playing cards: portrait (5:7 at least), charcoal frame, emblem and name on top, the rule, the cost in a
+   dark foot. Four across when each card gets 150px, else two by two; a card never gets wider than 200px. */
+.xns-rcards { display: grid; grid-template-columns: repeat(4, minmax(0, 200px)); gap: 10px; justify-content: start; }
+.xns-rcard { display: grid; grid-template-rows: auto auto 1fr auto; justify-items: center; aspect-ratio: 5 / 7; min-width: 0; border-radius: 6px; background: var(--g-surface); box-shadow: inset 0 0 0 2px var(--g-bar); overflow: hidden; }
+.xns-rcard .rc-top { display: grid; justify-items: center; gap: 6px; padding: 14px 10px 0; text-align: center; }
+.xns-rcard .rc-em { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--g-ochre-soft); color: var(--g-ochre); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--g-ochre) 45%, transparent); }
+.xns-rcard .rc-top b { font: italic 900 16px/19px var(--g-font-name); color: var(--g-text); text-wrap: balance; }
+.xns-rcard .rc-orn { display: flex; margin: 6px 0 2px; color: var(--g-text-2); opacity: .7; }
+.xns-rcard p { align-self: start; margin: 0; padding: 4px 12px 12px; font: 500 12.5px/17px var(--g-font-ui); color: var(--g-text-2); text-align: center; text-wrap: pretty; }
+.xns-rcard p .sh-term { color: var(--g-text); }
+.xns-rcard .rc-foot { justify-self: stretch; display: flex; justify-content: center; align-items: center; height: 26px; background: var(--g-bar); }
+/* The cost, on the dark foot */
+.xns-cost { display: inline-flex; align-items: center; gap: 5px; color: var(--g-on-bar); font: 700 11.5px/normal var(--g-font-num); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+.xns-cost i { width: 8px; height: 10px; border-radius: 2px; background: var(--g-on-bar); }
+@container (max-width: 660px) { .xns-rcards { grid-template-columns: repeat(2, minmax(0, 200px)); } }
+/* The chevron follows the name's last word, even when the name wraps */
+.xns-feat button.lb { display: block; }
+.xns-feat button.lb b { display: inline; }
+.xns-feat button.lb svg { display: inline-block; vertical-align: middle; margin: -2px 0 0 6px; position: relative; top: 2px; }
+.xns-feat button.lb .nw { white-space: nowrap; }
+.xns-feat button.lb b svg { top: 0; }
+/* A marked target's name stays on one line; if it can't fit it ends in "…" (the full name is its tooltip) */
+.xns-state.is-target { min-width: 0; max-width: 100%; white-space: nowrap; }
+.xns-state.is-target svg { flex: none; }
+.xns-state.is-target .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* The name column fits the panel's longest name (up to 45% of the panel), so names only wrap when space is
+   really short. The panel holds the columns and every feature row shares them (subgrid), so the dice, pips
+   and bars of every row still start on one line. */
+.xns-class { display: grid; grid-template-columns: fit-content(45%) minmax(0, 1fr) auto; column-gap: 14px; }
+.xns-class > * { grid-column: 1 / -1; min-width: 0; }
+.xns-class > .xns-feat { grid-template-columns: subgrid; }
+@container (max-width: 700px) {
+	.xns-class > .xns-feat { grid-template-columns: subgrid; }
+}
+@container (max-width: 480px) {
+	.xns-class { grid-template-columns: minmax(0, 1fr); }
+	.xns-class > .xns-feat { grid-template-columns: minmax(0, 1fr) auto; }
+}
+.xns-class > .xns-feat > .ev-cluster { justify-self: end; }
+/* A pool has no buttons of its own: its bar runs to the panel's right edge */
+.xns-class > .xns-feat.is-pool > span:empty { display: none; }
+.xns-class > .xns-feat.is-pool > .o { grid-column: 2 / -1; }
+@container (max-width: 480px) { .xns-class > .xns-feat.is-pool > .o { grid-column: 1 / -1; } }
+
+/* Held dice are buttons: tap one to change it, tap an empty slot to add a die rolled at the table */
+button.xns-die { appearance: none; padding: 0; border: 0; background: none; font: inherit; cursor: pointer; border-radius: 6px; }
+button.xns-die:hover svg path, button.xns-die:hover svg rect { stroke: var(--g-ochre); }
+button.xns-die:focus-visible, .xns-die.is-picking { outline: 2px solid var(--g-ochre); outline-offset: 3px; }
+.xns-die .plus { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: center; color: var(--g-text-2); }
+.xns-die.d6 .plus, .xns-die.d8 .plus { top: 0; bottom: 0; align-items: center; }
+/* The face picker opens under the row, like the rules */
+.xns-pick { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 10px; border-radius: var(--g-r-md); background: var(--g-surface-2); box-shadow: inset 0 0 0 1px var(--g-line); }
+.xns-pick .l { font: 600 13px/18px var(--g-font-ui); color: var(--g-text-2); }
+.xns-pick .faces { display: flex; flex-wrap: wrap; gap: 6px; }
+.xns-pick .face { appearance: none; width: 36px; height: 34px; padding: 0; border: 0; border-radius: var(--g-r-sm, 6px); background: var(--g-surface); box-shadow: inset 0 0 0 1px var(--g-line-strong); color: var(--g-text); cursor: pointer; display: grid; place-items: center; }
+.xns-pick .face b { font: 700 15px/normal var(--g-font-num); padding-top: 1px; }
+.xns-pick .face:hover { background: var(--g-ochre-soft); }
+.xns-pick .face.on { background: var(--g-ochre-soft); box-shadow: inset 0 0 0 2px var(--g-ochre); }
+.xns-pick .rm { margin-left: auto; }
+/* d8 and up: the faces fill the strip as a grid */
+.xns-pick.is-many .faces { flex: 1 1 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); }
+.xns-pick.is-many .faces { grid-template-columns: repeat(var(--faces), minmax(0, 1fr)); }
+.xns-pick.is-many .face { width: auto; }
+@container (max-width: 480px) { .xns-pick.is-many .faces { grid-template-columns: repeat(var(--faces-narrow), minmax(0, 1fr)); } }
+/* Four across whenever each card gets about 120px; the type, emblem and name scale with the width (cqi is the
+   note's width), so smaller notes get smaller cards rather than fewer per row. A card grows if its rule needs it,
+   so nothing is clipped. Two by two on a phone. */
+.xns-rcards { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(6px, 1.2cqi, 12px); }
+.xns-rcard { overflow: visible; }
+.xns-rcard .rc-foot { border-radius: 0 0 6px 6px; height: clamp(22px, 2.6cqi, 26px); }
+.xns-rcard .rc-top { gap: clamp(4px, .8cqi, 7px); padding: clamp(10px, 1.6cqi, 16px) 8px 0; }
+.xns-rcard .rc-em { width: clamp(30px, 4.6cqi, 44px); height: clamp(30px, 4.6cqi, 44px); }
+.xns-rcard .rc-em svg { width: clamp(15px, 2.2cqi, 21px); height: clamp(15px, 2.2cqi, 21px); }
+.xns-rcard .rc-top b { font-size: clamp(13px, calc(1cqi + 7.5px), 17px); line-height: 1.18; }
+.xns-rcard .rc-orn svg { width: clamp(48px, 7cqi, 70px); height: auto; }
+.xns-rcard p { font-size: clamp(11px, calc(.85cqi + 6.2px), 13.5px); line-height: 1.38; padding: 4px clamp(7px, 1.3cqi, 14px) clamp(8px, 1.4cqi, 14px); }
+.xns-cost { font-size: clamp(10px, calc(.5cqi + 7px), 11.5px); }
+@container (max-width: 660px) { .xns-rcards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@container (max-width: 500px) {
+	.xns-rcards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+	.xns-rcard .rc-top b { font-size: 15px; }
+	.xns-rcard p { font-size: 12.5px; padding: 4px 10px 10px; }
+	.xns-rcard .rc-em { width: 36px; height: 36px; }
+	.xns-rcard .rc-em svg { width: 18px; height: 18px; }
+}
+@container (max-width: 500px) { .xns-rcards { grid-template-columns: repeat(2, minmax(0, 200px)); justify-content: center; } }
+
+/* Portrait without aspect-ratio (which stops a row stretching to its tallest card): a minimum height of 1.32 × the
+   card's width, worked out from the note's width, and every card in a row stretches to match. */
+.xns-rcards { align-items: stretch; }
+.xns-rcard { aspect-ratio: auto; min-height: calc((100cqi - 3 * clamp(6px, 1.2cqi, 12px)) / 4 * 1.32); }
+@container (max-width: 500px) { .xns-rcard { min-height: calc((min(100cqi, 408px) - 8px) / 2 * 1.32); } }

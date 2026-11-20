@@ -1,0 +1,53 @@
+/* ============================================================================
+   Call of Cthulhu: every box the same construction, measured.
+   A figure (Courier Prime) or a printed label (Crimson Pro small caps) is a
+   grid cell with a fixed height, centred, line-height 1. Each face sits a
+   little off its em box (Courier's figures ride high, Crimson's small caps
+   sit low), so one nudge per face puts the ink on the cell's centre line.
+   Measured in headless Chrome with /tmp/ev-t04/tools/measure.mjs.
+   ========================================================================== */
+.g-coc { --coc-fig: .07em; --coc-sc: .09em; }
+
+/* The construction */
+.xc-slot > i, .xc-slot > b, .xc-dex > i, .xc-dex > b, .xc-sbox small, .xc-sbox b, .xc-cb > b, .xc-cb .hf i,
+.xcn-g > i, .xcn-g > b, .xcs-chars .k, .xcs-round, .xc-cell > i, .xc-cell > b, .xc-cell > small {
+	display: grid; place-items: center; line-height: 1; box-sizing: border-box; }
+/* Figures ride high: push them down by the face's offset */
+.xc-slot > b, .xc-dex > b, .xc-sbox b, .xc-cb > b, .xc-cb .hf i, .xcn-g > b, .xcs-round, .xc-cell > b, .xc-cell > small { padding-top: calc(var(--coc-fig) * 2); padding-bottom: 0; }
+/* Small caps sit low: lift them */
+.xc-slot > i, .xc-dex > i, .xc-sbox small, .xcn-g > i, .xc-cell > i { padding-top: 0; padding-bottom: calc(var(--coc-sc) * 2); }
+
+/* Sizes: the same everywhere a box appears */
+.xc-slot { height: 26px; }
+.xc-slot > i, .xc-slot > b { height: 24px; }
+.xc-slot > b { display: grid; }
+.xc-slot > b > span { display: block; line-height: 1; white-space: nowrap; }
+.xc-slot > b small { font: 400 11.5px/1 var(--g-font-num); color: var(--g-text-2); margin-left: 1px; }
+
+.xc-dex { grid-template-rows: 16px 30px auto; }
+.xc-dex > i { height: 16px; padding-left: 0; padding-right: 0; line-height: 1; }
+.xc-dex > b { height: 30px; font-size: 20px; line-height: 1; }
+.xc-dex > small { height: 16px; padding: 0; line-height: 1; }
+
+.xc-sbox small { height: 18px; padding-left: 6px; padding-right: 6px; font-size: 12px; line-height: 1; }
+.xc-sbox b { height: 32px; padding-left: 10px; padding-right: 10px; line-height: 1; }
+
+.xc-cb { height: 34px; grid-template-rows: 100%; }
+.xc-cb > b { height: 100%; width: 42px; min-width: 0; padding-left: 0; padding-right: 0; }
+.xc-cb .hf { grid-template-rows: 15.5px 15.5px; width: 28px; }
+.xc-cb .hf i { height: 100%; min-width: 0; padding-left: 0; padding-right: 0; font-size: 12px; }
+.xc-cb.lg { height: 44px; }
+.xc-cb.lg > b { width: 52px; font-size: 24px; }
+.xc-cb.lg .hf { grid-template-rows: 20.5px 20.5px; width: 32px; }
+.xc-cb.lg .hf i { font-size: 13px; padding: calc(var(--coc-fig) * 2) 0 0; }
+.xc-cb.empty > b { color: var(--g-text-2); }
+
+.xc-cell { height: 24px; }
+.xc-cell > i, .xc-cell > b, .xc-cell > small { height: 22px; }
+/* A figure with its small "/max" sits on one baseline; the pair lifts as one */
+.xc-slot > b.of { padding-top: 1px; padding-bottom: 0; }
+
+/* The name's capitals start level with the DEX box's top edge (and the rows under it follow).
+   The line box adds ~0.37em above the caps in Crimson Pro at these line heights; measured, not guessed. */
+.xc-entry .xc-name { margin-top: -6.7px; }
+.xc-entry.is-current .xc-name { margin-top: -7.6px; }

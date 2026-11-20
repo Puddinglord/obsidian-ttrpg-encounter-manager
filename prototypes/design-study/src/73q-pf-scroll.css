@@ -1,0 +1,54 @@
+/* PF2e class scrollwork: gold scrolls either side of a class heading, a crimson lozenge with the class motif */
+.g-pf { --pfs-motif: #F7E4B2; --pfs-gilt: #A47B2A; }
+html[data-theme="dark"] .g-pf { --pfs-motif: #F3DA9C; --pfs-gilt: #C9A65A; }
+
+.pfs-ct { display: flex; align-items: center; justify-content: center; gap: 16px; min-width: 0; color: var(--g-text); }
+.pfs-ct-t { min-width: 0; font: 700 20px/1 var(--g-font-cap); letter-spacing: .18em; padding-left: .18em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The halves sit on the capitals' centre line, not the font box's (the shared --g-icon-dy for Barlow) */
+.pfs-sw { flex: none; display: block; color: var(--pfs-gilt); transform: translateY(var(--g-icon-dy, 0em)); }
+.pfs-sw.r { transform: translateY(var(--g-icon-dy, 0em)) scaleX(-1); }
+.pfs-sw > span, .pfs-sw svg { display: block; }
+.pfs-ct.is-full .c, .pfs-ct.is-auto .c { display: none; }
+.pfs-ct.is-compact { gap: 8px; }
+.pfs-ct.is-compact .pfs-ct-t { font-size: 15px; letter-spacing: .14em; padding-left: .14em; }
+
+.pfs-sw .sd, .pfs-sw .st { fill: currentColor; }
+.pfs-sw .sc { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+.pfs-sw .sc.t { stroke-width: 1.15; }
+.pfs-sw .lz { fill: var(--pf-rib); stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
+.pfs-sw .lzi { fill: none; stroke: currentColor; stroke-width: .8; stroke-opacity: .75; }
+.pfs-sw .mo { fill: var(--pfs-motif); }
+.pfs-sw .mk { fill: var(--pf-rib); }
+.pfs-sw .c .sc { stroke-width: 1.35; }
+
+@container (max-width: 480px) {
+	.pfs-ct.is-auto { gap: 8px; }
+	.pfs-ct.is-auto .f { display: none; }
+	.pfs-ct.is-auto .c { display: block; }
+	.pfs-ct.is-auto .pfs-ct-t { font-size: 15px; letter-spacing: .14em; padding-left: .14em; }
+}
+
+/* On the sheet: the class line under the banner */
+.pfs-classline { margin: 16px 0 6px; }
+
+/* The gallery */
+.pfs-gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(580px, 1fr)); gap: 10px; }
+.pfs-gal-t { display: grid; gap: 14px; justify-items: center; padding: 24px 16px 16px; border-radius: 6px; background: var(--g-bg); box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.pfs-gal-t small { font: 500 12.5px/16px var(--g-font-ui); color: var(--g-text-2); }
+.pfs-gal-ctx { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 20px; }
+.pfs-gal-ctx > div { display: grid; gap: 8px; }
+.pfs-gal-ctx > div > small { font: 500 13px/18px var(--p-ui, sans-serif); color: var(--p-text-2, #666); }
+
+/* Level-up dialog and class page, as the scrollwork's homes */
+.pfs-lu { width: 420px; border: 1.5px solid var(--pfs-ink); border-radius: 4px; background: radial-gradient(120% 90% at 50% 30%, var(--pfs-page) 55%, var(--pfs-page-edge) 100%); box-shadow: 0 20px 40px -20px rgb(40 10 0 / 0.5); padding: 18px 18px 16px; --glyph-cut: var(--pfs-page); }
+.pfs-lu-sub { margin: 6px 0 12px; text-align: center; font: 700 12.5px/16px var(--g-font-cap); text-transform: uppercase; letter-spacing: .1em; color: var(--g-accent-text); }
+.pfs-lu-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 36px; border-bottom: 1px solid var(--g-line-strong); font: 500 14.5px/18px var(--g-font-ui); }
+.pfs-lu-row b { font: 700 14px/18px var(--g-font-cap); text-transform: uppercase; letter-spacing: .05em; }
+.pfs-lu .ev-clusters { margin-top: 14px; }
+.pfs-cp { width: 640px; padding: 22px 26px; background: var(--g-surface); border-radius: 4px; box-shadow: inset 0 0 0 1px var(--g-line-strong); --glyph-cut: var(--g-surface); }
+.pfs-cp .pfs-ct-t { font-size: 30px; font-family: var(--g-font-display); font-weight: 400; letter-spacing: .08em; padding-left: .08em; }
+.pfs-cp-sub { display: flex; justify-content: center; gap: 18px; margin: 10px 0 12px; font: 500 14px/18px var(--g-font-ui); color: var(--g-text-2); }
+.pfs-cp-sub b { font: 700 12.5px/18px var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; color: var(--g-text); margin-right: 4px; }
+.pfs-cp .xp-tags { display: flex; justify-content: center; width: max-content; margin: 0 auto 12px; }
+.pfs-cp p { margin: 0; font: 400 15px/22px var(--g-font-ui); }
+.pfs-cp .pfs-sw { --g-icon-dy: 0em; } /* Marcellus sets its capitals higher than Barlow */

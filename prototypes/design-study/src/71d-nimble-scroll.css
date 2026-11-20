@@ -1,0 +1,69 @@
+/* ============================================================================
+   Nimble: class scrollwork (71d-nimble-scroll.js).
+   ========================================================================== */
+.g-nimble { --xsc-ink: #4B4743; }
+html[data-theme="dark"] .g-nimble { --xsc-ink: #A39B8F; }
+
+.xsc-h { container: xsc / inline-size; display: flex; align-items: center; justify-content: center; gap: 14px; }
+.xsc-h .xsc-t { flex: none; white-space: nowrap; position: relative; top: var(--xsc-dy, 2px); }
+/* Each side takes half the spare width; the reach grows outward, the ornament stays by the title. */
+.xsc-side { flex: 1 1 0; min-width: 0; display: flex; justify-content: flex-end; align-items: center; color: var(--xsc-ink); }
+.xsc-side.is-r { transform: scaleX(-1); }
+.xsc-full { display: flex; align-items: center; flex: 0 1 258px; min-width: 0; }
+.xsc-side svg { display: block; overflow: visible; flex: none; }
+.xsc-full .xsc-reach { flex: 1 1 auto; min-width: 12px; width: 150px; height: 28px; }
+.xsc-side .ink { fill: currentColor; }
+.xsc-side .curl { fill: none; stroke: currentColor; stroke-linecap: round; }
+.xsc-side .m, .xsc-motifs .m { fill: var(--g-ochre); color: var(--g-ochre); }
+.xsc-side .xsc-compact { display: none; }
+@container xsc (max-width: 430px) {
+	.xsc-full { display: none; }
+	.xsc-side .xsc-compact { display: block; }
+	.xsc-h { gap: 10px; }
+}
+/* Bigger, for a page title (compendium, level up): the same drawing at 1.3×. */
+.xsc-h.is-big { gap: 18px; }
+.xsc-h.is-big .xsc-cap { width: 13px; height: 36px; }
+.xsc-h.is-big .xsc-reach { height: 36px; }
+.xsc-h.is-big .xsc-orn { width: 123.5px; height: 36px; }
+.xsc-h.is-big .xsc-full { flex-basis: 330px; }
+.xsc-h.is-big .xsc-side .xsc-compact { width: 68px; height: 36px; }
+.xsc-h.is-big .xsc-t { font: italic 900 22px/28px var(--g-font-name); font-variant: small-caps; letter-spacing: .03em; color: var(--g-text); top: var(--xsc-dy-big, 2.5px); }
+@container xsc (max-width: 530px) {
+	.xsc-h.is-big .xsc-full { display: none; }
+	.xsc-h.is-big .xsc-compact { display: block; }
+	.xsc-h.is-big { gap: 12px; }
+}
+
+/* ---------- Design system gallery ---------- */
+html .g-nimble.xsc-light { --g-bg: #EEEBE4; --g-surface: #FFFEFB; --g-line: #E2DDD2; --g-text: #24211D; --g-text-2: #625C53; --g-ochre: #9A6A1E; --xsc-ink: #4B4743; }
+html .g-nimble.xsc-dark { --g-bg: #171512; --g-surface: #211F1B; --g-line: #35312B; --g-text: #F2EEE7; --g-text-2: #AEA699; --g-ochre: #E0AE5C; --xsc-ink: #A39B8F; }
+.xsc-pair { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.xsc-stage { background: var(--g-surface); color: var(--g-text); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--g-line); padding: 10px 16px 14px; font-family: var(--g-font-ui); }
+.xsc-stage .xsc-h { padding: 7px 0; color: var(--g-ochre); }
+.xsc-stage .xsc-h + .xsc-h { border-top: 1px solid var(--g-line); }
+.xsc-stage .xsc-h b { font: italic 900 15px/20px var(--g-font-name); font-variant: small-caps; letter-spacing: .03em; color: var(--g-text); }
+.xsc-stage-k { font: 600 11px/16px var(--p-ui, sans-serif); letter-spacing: .06em; text-transform: uppercase; color: var(--g-text-2); padding-bottom: 4px; }
+.xsc-h5 { margin: 28px 0 10px; font: 600 14px/20px var(--p-ui, sans-serif); color: var(--p-text, inherit); }
+.xsc-motifs { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; background: var(--g-surface); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--g-line); padding: 14px; color: var(--g-text); }
+.xsc-mt { display: flex; align-items: center; gap: 10px; }
+.xsc-mt .xsc-m2 { width: 48px; height: 48px; flex: none; }
+.xsc-mt .xsc-m1 { width: 22px; height: 22px; flex: none; }
+.xsc-mt b { display: block; font: 600 13px/18px var(--g-font-ui); }
+.xsc-mt small { display: block; font: 12px/16px var(--g-font-ui); color: var(--g-text-2); }
+.xsc-places { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.xsc-places figure { margin: 0; }
+.xsc-places figcaption { margin-top: 8px; font-size: 12.5px; color: var(--p-text-2, inherit); max-width: 420px; }
+.xsc-dlg, .xsc-comp { width: 580px; background: var(--g-surface); color: var(--g-text); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--g-line), 0 12px 30px -16px rgb(0 0 0 / 0.35); padding: 14px 18px 18px; font-family: var(--g-font-ui); }
+.xsc-dlg .xsc-h, .xsc-comp .xsc-h { padding: 6px 0 2px; }
+.xsc-dlg-k, .xsc-comp-k { font: 600 11px/16px var(--g-font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--g-text-2); text-align: center; }
+.xsc-dlg-sub { text-align: center; font: 600 13px/18px var(--g-font-ui); color: var(--g-text-2); }
+.xsc-dlg-l { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.xsc-dlg-l li { padding: 8px 12px; border-radius: 6px; background: var(--g-surface-2, var(--g-bg)); font: 600 14px/20px var(--g-font-ui); }
+.xsc-comp p { text-align: center; margin: 6px 0 12px; font: 14px/20px var(--g-font-ui); color: var(--g-text-2); }
+.xsc-facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; }
+.xsc-facts span { display: inline-flex; align-items: baseline; gap: 6px; }
+.xsc-facts small { font: 600 11px/16px var(--g-font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--g-text-2); }
+.xsc-facts b { font: 700 15px/20px var(--g-font-num); }
+.xsc-sheetbox { width: 560px; background: var(--g-bg); padding: 4px 14px 14px; border-radius: 12px; }
+.xsc-log { max-width: 900px; }

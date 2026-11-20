@@ -1,0 +1,44 @@
+/* Obsidian chrome: sidebars, panes, drawers (neutral, not the game's) */
+.ob-win .dev-body { position: relative; }
+.ob-bar { height: 30px; align-items: center; }
+.ob-left { flex: none; width: 300px; display: flex; flex-direction: column; gap: 4px; padding: 0 10px; border-right: 1px solid var(--ob-line); background: var(--ob-bg-2); font: 500 13px/18px var(--p-ui); color: var(--p-text); overflow: hidden; }
+.ob-top { display: flex; gap: 4px; height: 38px; align-items: center; color: var(--ob-icon); }
+.ob-top span { width: 28px; height: 26px; display: grid; place-items: center; }
+.ob-camp { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--ob-line); background: var(--ob-bg); }
+.ob-camp b { flex: 1; font-weight: 600; }
+.ob-camp small { font: 700 10.5px/1 var(--p-ui); padding: 3px 5px; border-radius: 4px; background: var(--ob-active); color: var(--p-text-2); }
+.ob-camp svg { color: #8a5cf6; }
+.ob-search { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding: 7px 10px; border-radius: 8px; background: var(--ob-bg); box-shadow: inset 0 0 0 1px var(--ob-line); color: var(--p-text-3); }
+.ob-cont { margin-top: 4px; padding: 8px 10px; border-radius: 8px; background: #8a5cf6; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.ob-h { margin: 10px 4px 2px; font: 700 11px/14px var(--p-ui); color: var(--p-text-2); text-transform: uppercase; letter-spacing: .06em; }
+.ob-li { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; color: var(--p-text); }
+.ob-li svg { color: var(--ob-icon); }
+.ob-li span { flex: 1; }
+.ob-li small { color: var(--p-text-3); }
+.ob-li.on { background: var(--ob-active); }
+.ob-panes { flex: 1; min-width: 0; display: flex; }
+.ob-pane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ob-pane + .ob-pane { border-left: 1px solid var(--ob-line); }
+.ob-pane > .ev-view { flex: 1; min-height: 0; }
+.ob-tabs { flex: none; height: 34px; display: flex; align-items: flex-end; gap: 2px; padding: 0 8px; background: var(--ob-bg-2); border-bottom: 1px solid var(--ob-line); }
+.ob-tab { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 6px 6px 0 0; font: 500 12px/1 var(--p-ui); color: var(--p-text-2); white-space: nowrap; overflow: hidden; max-width: 180px; }
+.ob-tab.on { background: var(--ob-bg); color: var(--p-text); box-shadow: 0 0 0 1px var(--ob-line); }
+.ob-right { flex: none; width: 340px; display: flex; flex-direction: column; border-left: 1px solid var(--ob-line); background: var(--ob-bg-2); }
+.ob-right > .ev-ob { height: 34px; }
+.ob-right > .ev-view { flex: 1; min-height: 0; }
+.ob-outline { padding: 14px; font: 500 13px/24px var(--p-ui); color: var(--p-text-2); }
+.ob-outline b { display: block; color: var(--p-text); }
+.ob-scrim { position: absolute; inset: 24px 0 0; background: rgb(0 0 0 / 0.28); z-index: 5; }
+.ob-drawer { position: absolute; top: 24px; bottom: 0; z-index: 6; display: flex; box-shadow: 0 0 40px rgb(0 0 0 / 0.35); }
+.ob-drawer.l { left: 0; }
+.ob-drawer.r { right: 0; }
+.ob-drawer.l .ob-left { width: 300px; }
+/* The width matrix */
+.wm { width: 100%; border-collapse: collapse; }
+.wm th, .wm td { border-bottom: 1px solid var(--p-line); padding: 12px 10px 14px 0; text-align: left; vertical-align: top; font-size: 13px; }
+.wm th { color: var(--p-text-2); font-weight: 500; }
+.wm td:first-child { font-weight: 600; width: 150px; }
+.wm .w { font: 600 15px/1 var(--p-mono); }
+.wm .lay { display: block; margin: 4px 0 8px; color: var(--p-text-2); }
+.wm .lay.three { color: var(--p-good); }
+.wm .thumb { zoom: .2; pointer-events: none; }

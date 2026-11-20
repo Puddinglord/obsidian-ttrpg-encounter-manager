@@ -1,0 +1,100 @@
+/* Daggerheart flow: the adversary's actions, the main tab's hero band, the Fear band, player-safe. */
+.xd-acts { display: grid; gap: 6px; margin-top: 12px; }
+.xd-act { appearance: none; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1px 10px; align-items: baseline; text-align: left; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--g-line-strong); background: var(--g-surface); color: var(--g-text); font-family: var(--g-font-ui); cursor: pointer; }
+.xd-act kbd { grid-row: span 2; align-self: center; font: 600 11px/1 var(--p-mono); color: var(--g-text-2); padding: 3px 5px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.xd-act b { font: 900 12.5px/16px var(--g-font-display); letter-spacing: .05em; text-transform: uppercase; }
+.xd-act span { grid-column: 2; font: italic 600 12.5px/17px var(--g-font-ui); color: var(--g-text-2); }
+.xd-act em { grid-row: 1; grid-column: 3; display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 999px; font: 800 10.5px/1 var(--g-font-ui); letter-spacing: .04em; text-transform: uppercase; font-style: normal; color: var(--g-text-2); box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.xd-act em.fear { background: #2A1F6A; color: #E4DCFF; box-shadow: none; }
+
+/* GM's spotlight flag in violet */
+.xd-rib.fear .ic { color: #C3B4FF; }
+
+/* Main tab: the top is a hero band, as on the sheet */
+.g-dh .mt-top.xd-mtop, .g-dh.mt .mt-top { position: relative; border-bottom: 1.5px solid var(--xd-gold); background: linear-gradient(100deg, var(--xd-band-a) 0%, var(--xd-band-b) 62%, var(--xd-band-b) 100%); color: #FBF6EA; }
+.g-dh .mt-top .xd-title { color: #FBF6EA; letter-spacing: .02em; }
+.g-dh .mt-top .xd-sub { color: var(--xd-band-sub); }
+.g-dh .mt-top .xd-sub b { color: #F2C167; }
+.g-dh .mt-top .xd-sub b.gm { color: #C3B4FF; }
+.g-dh .mt-top .ev-toggle { color: #E3C690; }
+.g-dh .mt-top .ev-btn.is-icon { background: transparent; }
+.g-dh .ev-toggle i { background: #4A4185; }
+.g-dh .ev-toggle.on i { background: var(--xd-royal); box-shadow: inset 0 0 0 1.5px #F2C167; }
+.g-dh .mt-foot { background: var(--xd-navy); border-top: 1.5px solid var(--xd-gold); }
+.g-dh .mt-foot .keys { color: #B4ACD6; }
+.g-dh .mt-foot .keys kbd { color: #FBF6EA; box-shadow: inset 0 0 0 1px #574B98; }
+.g-dh .mt-foot .ev-btn:not(.is-primary) { background: transparent; color: #FBF6EA; }
+
+.xd-band { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 10px; align-items: stretch; padding: 16px 20px 14px; border-bottom: 1px solid var(--g-line); background: radial-gradient(120% 140% at 20% 0%, rgb(90 60 200 / 0.10), transparent 60%); }
+.xd-band .xd-fear { margin: 0; height: 100%; }
+.xd-band .xd-counts { margin: 0; }
+.xd-band .xd-count { display: grid; align-content: center; }
+.xd-advgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; }
+.xd-advgrid .xd-adv { margin: 0 6px 6px 12px; }
+.mt .xd-party { margin: 0 12px; }
+.mt .xd-spot { margin: 22px 12px 0; }
+.mt .ev-sec { padding-left: 16px; }
+
+/* The flow's small section heads: a gold diamond, caps, a rule */
+.g-dh .ev-sec { align-items: center; padding: 14px calc(var(--g-pad) + 2px) 7px; font: 900 11px/14px var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--g-text); }
+.g-dh .ev-sec > span:first-child { display: inline-flex; align-items: center; gap: 7px; }
+.g-dh .ev-sec > span:first-child::before { content: ""; width: 7px; height: 7px; transform: rotate(45deg); background: var(--xd-gold); }
+.g-dh .ev-sec.is-acted > span:first-child::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--xd-gold); }
+.g-dh .ev-sec small { font: 900 11px/14px var(--g-font-num); letter-spacing: 0; color: var(--g-hope-text); }
+.g-dh .ev-sec-hint { font: italic 600 12px/16px var(--g-font-ui); }
+
+/* Player-safe */
+.xd-ps { display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 28px; padding: 28px 28px 24px; zoom: 1.18; }
+.xd-ps .xd-spot-top h2 { font-size: 40px; line-height: 44px; }
+.xd-ps .xd-spot { margin: 14px 0 0; }
+.xd-ps .xd-pc h4 { font-size: 17px; line-height: 22px; }
+.xd-ps-foes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.g-dh .xd-cut { background: var(--xd-card); border: 1px solid var(--xd-card-line); border-radius: 9px; }
+.xd-ps-foe { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; }
+.g-dh .xd-ps-foe { background: var(--xd-foe); border-color: var(--xd-foe-line); }
+.xd-ps-foe b { font: 900 16px/22px var(--g-font-display); letter-spacing: .03em; text-transform: uppercase; }
+.g-dh .xd-ps-r .xd-banner { margin-left: 0; margin-right: 0; }
+.g-dh .xd-fear-ps { background: linear-gradient(135deg, #251C5C, #140F33); border: 1.5px solid #6E57D6; color: #F1ECFF; --g-text-2: #B9AEE6; }
+.g-dh .xd-fear-ps b { color: #C3B4FF; font-weight: 900; }
+.g-dh .ps .ps-hp { font: 800 12px/1 var(--g-font-ui); letter-spacing: .04em; text-transform: uppercase; background: var(--xd-navy); color: #FBF6EA; box-shadow: inset 0 0 0 1px var(--xd-gold); }
+.g-dh .ps .ps-hp.low { background: #5A1A26; color: #FFD0D3; box-shadow: inset 0 0 0 1px #F0606A; }
+.g-dh .ps-badge { background: var(--xd-royal); box-shadow: inset 0 0 0 1px #F2C167; }
+
+/* The sidebar glance while the main tab runs the fight */
+.g-dh .gl-h > b { font: 900 11px/14px var(--g-font-display); letter-spacing: .07em; text-transform: uppercase; }
+.g-dh .gl-now { background: var(--xd-paper); color: var(--xd-ink); box-shadow: 0 0 0 1.5px var(--xd-paper-edge), 0 0 0 4px rgb(242 193 103 / 0.18); --xd-slot-line: #BBA273; --xd-hp: #B8333C; --xd-stress: #2B2466; --g-hope-edge: #A87420; }
+.g-dh .gl-now .k { font: italic 800 11.5px/14px var(--g-font-ui); color: #8A5A0E; text-transform: uppercase; letter-spacing: .04em; }
+.g-dh .gl-now .n { font: 900 22px/26px var(--g-font-display); text-transform: uppercase; color: #1D1842; }
+.g-dh .gl-r { font-weight: 700; }
+.g-dh .gl-open { font-style: italic; font-weight: 700; }
+
+/* Encounter settings */
+.set-modal.g-dh { background: var(--g-surface); box-shadow: 0 0 0 1.5px var(--xd-gold), 0 30px 60px -20px rgb(0 0 0 / 0.5); }
+.set-modal.g-dh h3 { font: 900 18px/24px var(--g-font-display); letter-spacing: .04em; text-transform: uppercase; }
+.set-modal.g-dh .set-head { background: linear-gradient(100deg, var(--xd-band-a), var(--xd-band-b)); color: #FBF6EA; padding-bottom: 14px; border-bottom: 1.5px solid var(--xd-gold); margin-bottom: 10px; }
+.set-modal.g-dh .set-head .ev-btn { background: transparent; border-color: transparent; color: #FBF6EA; }
+.set-modal.g-dh .set-sec { display: flex; align-items: center; gap: 8px; font: 900 11px/14px var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--g-hope-text); }
+.set-modal.g-dh .set-sec::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--xd-gold), transparent); }
+.set-modal.g-dh .set-row b { font-weight: 800; }
+.set-modal.g-dh .ev-segs span.on { background: var(--xd-navy); color: #FBF6EA; }
+/* Pass 4: the ticker above the card, the type glyph on rows, a reaction roll on the GM's card */
+.g-dh .xd-tick { margin: 0 var(--g-pad); border: 0; border-radius: 8px; background: var(--xd-navy); color: #E3D6B4; box-shadow: inset 0 0 0 1px var(--xd-trim); }
+.g-dh .xd-tick .ev-ticker-round, .g-dh .xd-tick .ev-ticker-round b { color: #F7D58C; font-weight: 800; }
+.g-dh .xd-tick + .xd-spot { margin-top: 22px; }
+.xd-tyg { display: inline-grid; place-items: center; width: 17px; height: 17px; margin-right: 5px; border-radius: 3px; background: var(--k); color: #fff; vertical-align: -3px; }
+.xd-react { margin-top: 12px; padding: 10px 10px 8px; border-radius: 8px; background: #FFFDF6; box-shadow: inset 0 0 0 1px #DCCDA9; }
+.xd-react-h { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 8px; align-items: center; margin-bottom: 6px; }
+.xd-react-h b { font: 900 12.5px/16px var(--g-font-display); letter-spacing: .05em; text-transform: uppercase; }
+.xd-react-h span { grid-column: 1; font: italic 600 12px/16px var(--g-font-ui); color: #4F4A68; }
+.xd-react-h em { grid-row: 1 / span 2; grid-column: 2; font: 800 10.5px/1 var(--g-font-ui); font-style: normal; letter-spacing: .04em; text-transform: uppercase; padding: 4px 7px; border-radius: 999px; background: #3A2A8A; color: #fff; }
+.xd-react-r { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 5px 0; border-top: 1px solid #EFE6D2; }
+.xd-react-r .who { display: grid; min-width: 0; }
+.xd-react-r b { font: 900 12.5px/16px var(--g-font-display); letter-spacing: .04em; text-transform: uppercase; }
+.xd-react-r .res { font: 700 12px/16px var(--g-font-ui); color: #8E1C24; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xd-react-r .res.dim { color: #4F4A68; font-style: italic; font-weight: 600; }
+.g-dh .xd-react-r .ev-cluster > .ev-btn { height: 30px; padding: 0 9px; font-size: 10.5px; }
+.xd-react-n { margin: 6px 0 0; font: italic 600 11.5px/16px var(--g-font-ui); color: #4F4A68; }
+.xd-paper .ev-btn.on svg, .g-dh .xd-paper .ev-btn.on svg { color: #fff; }
+/* The footer stays in reach when the stacked layout runs longer than the screen (iPad portrait):
+   Back and Next on the right, pinned to the bottom edge. */
+.g-dh.mt > .mt-foot { position: sticky; bottom: 0; z-index: 5; }
