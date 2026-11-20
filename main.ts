@@ -12,6 +12,7 @@ import { DiceKind, rollExplodingAttack } from './src/core/dice-attack';
 import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/core/dice-edge';
 import { registerEncounterBlocks } from './src/app/encounter-blocks';
 import { PartyModal } from './src/core/party';
+import { rollToast } from './src/core/roll-toast';
 import { registerMapBlock } from './src/app/map-block';
 import { CampaignStore } from './src/core/campaigns';
 import { registerBoxBlock } from './src/core/box-block';
@@ -606,16 +607,8 @@ export default class EmberVaultPlugin extends Plugin {
 		this.events.trigger('roll-log-changed');
 
 		// Classes go on our own wrapper rather than the notice element, which
-		// moved (noticeEl → messageEl) in Obsidian 1.8.7.
-		const frag = createFragment(f => {
-			const body = f.createDiv({ cls: entry.outcome ? ['nimble-roll-notice', `is-${entry.outcome}`] : 'nimble-roll-notice' });
-			body.createDiv({ cls: 'nimble-roll-notice-label', text: entry.label });
-			body.createDiv({
-				cls: 'nimble-roll-notice-total',
-				text: entry.outcome === 'miss' ? 'MISS' : entry.outcome === 'crit' ? `${entry.total} CRIT!` : String(entry.total),
-			});
-			body.createDiv({ cls: 'nimble-roll-notice-detail', text: `${entry.expression}: ${entry.detail}` });
-		});
+		// moved (noticeEl → messageEl) in Obsidian 1.8.7. In the look of the game being played.
+		const frag = rollToast(entry, this.system(this.app.workspace.getActiveFile()?.path).id);
 		const show = () => { new Notice(frag, 6000); };
 		if (wait) void wait.then(show); else show();
 		return entry;

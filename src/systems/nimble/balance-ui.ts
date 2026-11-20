@@ -6,6 +6,8 @@ import { EncounterDef } from '../../core/encounter-def';
 import { BALANCE_TARGETS, BalanceGroup, BalanceTarget, balanceEncounter, describeChange, monsterRole, rateEncounter, shiftMonster } from './rules';
 import { partyLevels } from './encounter-block';
 import { nimble } from './runtime';
+import { applyLook } from '../../core/look';
+import { slideThumb } from '../../core/segmented';
 
 const TARGETS = Object.keys(BALANCE_TARGETS) as BalanceTarget[];
 
@@ -28,19 +30,22 @@ export function renderBalance(el: HTMLElement, plugin: EmberVaultPlugin, def: En
 	const current = rateEncounter(groups, levels);
 	let target: BalanceTarget = opts.initial ?? (current.label === 'Hard' ? 'Medium' : 'Hard');
 
+	// In Nimble's look wherever it opens (the builder, the encounter block's popover).
 	el.addClass('nimble-balance');
+	applyLook(el, 'nimble');
 	const head = el.createDiv({ cls: 'balance-head' });
 	if (opts.hideTitle) head.hide();
 	head.createSpan({ cls: 'balance-title', text: `Balance for ${levels.length} level-${Math.round(levels.reduce((a, b) => a + b, 0) / levels.length)} heroes` });
-	const seg = el.createDiv({ cls: 'nimble-segmented balance-targets', attr: { role: 'radiogroup', 'aria-label': 'Target difficulty' } });
+	const seg = el.createDiv({ cls: 'balance-targets', attr: { role: 'radiogroup', 'aria-label': 'Target difficulty' } });
 	const list = el.createDiv({ cls: 'balance-list' });
 
-	const draw = () => {
+	const draw = (from?: number) => {
 		seg.querySelectorAll('button').forEach(b => {
 			const on = b.dataset.target === target;
 			b.toggleClass('is-active', on);
 			b.setAttr('aria-checked', String(on));
 		});
+		slideThumb(seg, TARGETS.indexOf(target), TARGETS.length, from);
 		list.empty();
 		if (!groups.length) { list.createDiv({ cls: 'balance-empty', text: 'Add some monsters first.' }); return; }
 		if (current.label === target) { list.createDiv({ cls: 'balance-empty', text: `Already ${target} (${Math.round(current.pct * 100)}%).` }); return; }
@@ -64,7 +69,7 @@ export function renderBalance(el: HTMLElement, plugin: EmberVaultPlugin, def: En
 	};
 	for (const t of TARGETS) {
 		const b = seg.createEl('button', { text: t, attr: { role: 'radio', 'data-target': t } });
-		b.addEventListener('click', () => { target = t; opts.onTarget?.(t); draw(); });
+		b.addEventListener('click', () => { const from = TARGETS.indexOf(target); target = t; opts.onTarget?.(t); draw(from); });
 	}
 	draw();
 }

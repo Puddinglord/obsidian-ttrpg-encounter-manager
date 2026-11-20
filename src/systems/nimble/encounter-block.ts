@@ -136,7 +136,7 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 			e.preventDefault();
 			e.stopPropagation();
 			if (isPopoverOpenFor(chip)) { closePopover(); return; }
-			openPopover(chip, (pop, close) => renderBalance(pop, plugin, def, (next) => { close(); save(next); }), { width: 340, cls: 'balance-popover' });
+			openPopover(chip, (pop, close) => renderBalance(pop, plugin, def, (next) => { close(); save(next); }), { width: 340, cls: 'balance-popover ev-sys-nimble' });
 		});
 	}
 

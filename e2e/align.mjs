@@ -36,6 +36,10 @@ export const PILL_SELECTORS = [
 	// conditions on the card, the side switch, moments, the keypad's quiet chips, the encounter blocks' buttons.
 	'.ev-card-btn', '.ev-foot-primary', '.ev-foot-second', '.ev-ticker', '.condition-tag', '.phase-pill', '.nimble-phase-chip', '.group-attack',
 	'.laststand-btn', '.ev-moment-btn', '.hp-pad-qa', '.hp-pad-choice', '.dnd5e-ribbon', '.dnd5e-roll-all', '.encounter-block-btn', '.dnd5e-init-roll', '.dnd5e-init-set',
+	// Builders and dialogs (design pass): the game dialog's buttons, the roll dialog, Add several, the encounter builder and its
+	// balance, the party editor's buttons, the map's toolbar, pin labels and tokens, the Edit pencil, the roll toast's tag.
+	'.ev-dialog-btn', '.rd-mode-btn', '.builder-party', '.builder-level', '.builder-pick-meta', '.balance-targets > button', '.nimble-party-btn',
+	'.nimble-map-btn', '.nimble-map-pin-label', '.ev-roll-tag', '.eb-verdict', '.eb-check-tag',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {

@@ -1,11 +1,17 @@
 // The roll dialog: before an attack, a spell, a save or a check, set how much
-// advantage or disadvantage you have (a slider, −3 to +3), any situational
-// bonus (+/−), and whether to spend dice like Judgment Dice on it. Then roll.
+// advantage or disadvantage you have (−3 to +3), any situational bonus (+/−),
+// and whether to spend dice like Judgment Dice on it. Then roll. Drawn as a
+// game dialog (core/dialog.ts) in Nimble's look: the dice on a screen, labels
+// over their controls, Cancel | Roll as the keypad's footer.
 
 import { App, Modal, setIcon } from 'obsidian';
 import type { DiceExpression } from '../../core/dice';
 import { edgeLabel, ExtraDice, poolText, Spendable, spendCount } from './roll-def';
 import { triangleMark } from '../../core/die-shape';
+import { dialogFoot, dialogLabel, gameDialog } from '../../core/dialog';
+import { damageIcon, evIcon } from '../../core/icons';
+import { pill } from '../../core/pill';
+import { slideThumb } from '../../core/segmented';
 
 export type { Spendable };
 export { spendCount };
@@ -54,41 +60,46 @@ export class RollDialog extends Modal {
 	}
 
 	onOpen(): void {
-		this.modalEl.addClass('nimble-roll-dialog');
+		gameDialog(this, 'nimble', { cls: 'nimble-roll-dialog', compact: true });
 		this.titleEl.setText(this.mode?.title ?? this.r.title);
 		this.scope.register([], 'Enter', () => { this.roll(); return false; });
 		this.render();
 	}
 
-	private render(): void {
+	/** Draw it. `prevEdge` and `prevMode` are where the thumbs were, so they slide from there. */
+	private render(prevEdge?: number, prevMode?: number): void {
 		const c = this.contentEl;
 		c.empty();
-		// Check or Save (a stat): picking one sets the title and the advantage it starts with.
-		if (this.r.modes?.length) {
+		// Check or Save (a stat): picking one sets the title and the advantage it starts with. Two halves, 50/50.
+		const modes = this.r.modes ?? [];
+		if (modes.length) {
 			const seg = c.createDiv({ cls: 'rd-mode', attr: { role: 'radiogroup', 'aria-label': 'Kind of roll' } });
-			for (const m of this.r.modes) {
+			for (const m of modes) {
 				const on = m === this.mode;
 				const b = seg.createEl('button', { cls: `rd-mode-btn${on ? ' is-on' : ''}`, attr: { role: 'radio', 'aria-checked': String(on) } });
-				b.createSpan({ text: m.label });
+				b.createSpan({ cls: 'rd-mode-text', text: m.label });
 				if (m.mark) triangleMark(b.createSpan({ cls: `rd-mode-mark ${m.edge > 0 ? 'is-adv' : m.edge < 0 ? 'is-dis' : ''}` }), m.edge < 0 ? 'down' : 'up');
 				b.addEventListener('click', () => {
+					if (m === this.mode) return;
+					const from = this.mode ? modes.indexOf(this.mode) : 0;
+					const edgeFrom = this.edge;
 					this.mode = m;
 					this.edge = m.edge;
 					this.titleEl.setText(m.title);
-					this.render();
+					this.render(edgeFrom, from);
 				});
 			}
+			slideThumb(seg, Math.max(0, this.mode ? modes.indexOf(this.mode) : 0), modes.length, prevMode);
 		}
+
+		// The screen: the dice as they'll be rolled, and what the roll costs.
 		const head = c.createDiv({ cls: 'rd-head' });
 		head.createSpan({ cls: 'rd-expr', text: this.preview() });
-		if (this.r.cost) head.createSpan({ cls: 'rd-cost', text: this.r.cost });
+		if (this.r.cost) pill(head, { cls: 'rd-cost', text: this.r.cost });
 
-		// Advantage: one slider from Disadvantage 3 to Advantage 3.
+		// Advantage: one control from Disadvantage 3 to Advantage 3, its value beside its label.
 		const adv = c.createDiv({ cls: `rd-edge ${this.edge > 0 ? 'is-adv' : this.edge < 0 ? 'is-dis' : ''}` });
-		const top = adv.createDiv({ cls: 'rd-edge-top' });
-		top.createSpan({ cls: 'rd-label', text: 'Advantage' });
-		top.createSpan({ cls: 'rd-edge-value', text: edgeLabel(this.edge) });
-		// A segmented control: Disadvantage 3 … Normal … Advantage 3. Arrow keys step through it.
+		dialogLabel(adv, 'Advantage', edgeLabel(this.edge), 'rd-edge-value');
 		const seg = adv.createDiv({ cls: 'rd-seg', attr: { role: 'radiogroup', 'aria-label': 'Advantage or disadvantage' } });
 		for (let v = -MAX_EDGE; v <= MAX_EDGE; v++) {
 			const on = v === this.edge;
@@ -97,67 +108,68 @@ export class RollDialog extends Modal {
 				text: v === 0 ? '0' : v > 0 ? `+${v}` : `−${-v}`,
 				attr: { role: 'radio', 'aria-checked': String(on), 'aria-label': edgeLabel(v), tabindex: on ? '0' : '-1' },
 			});
-			b.addEventListener('click', () => { this.edge = v; this.render(); });
+			b.addEventListener('click', () => { const from = this.edge; this.edge = v; this.render(from); });
 		}
+		slideThumb(seg, this.edge + MAX_EDGE, MAX_EDGE * 2 + 1, prevEdge !== undefined ? prevEdge + MAX_EDGE : undefined);
 		seg.addEventListener('keydown', (e) => {
 			const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
 			if (!d) return;
 			e.preventDefault();
+			const from = this.edge;
 			this.edge = Math.max(-MAX_EDGE, Math.min(MAX_EDGE, this.edge + d));
-			this.render();
+			this.render(from);
 			this.contentEl.querySelector<HTMLElement>('.rd-seg-btn.is-on')?.focus();
 		});
 		// A fixed note for rolls without a Check/Save choice ("Opportunity Attacks have disadvantage"). With the
 		// choice, Save and its ▲ / ▼ already say it, and a line that comes and goes would shift the dialog.
-		if (!this.r.modes?.length && this.r.edgeReason) adv.createDiv({ cls: 'rd-reason', text: this.r.edgeReason });
+		if (!modes.length && this.r.edgeReason) adv.createDiv({ cls: 'rd-reason', text: this.r.edgeReason });
 
-		// Situational bonus.
-		const mods = c.createDiv({ cls: 'rd-row' });
-		mods.createSpan({ cls: 'rd-label', text: 'Modifier' });
-		const step = mods.createDiv({ cls: 'rd-step' });
-		const minus = step.createEl('button', { cls: 'rd-step-btn', attr: { 'aria-label': 'Modifier −1' } });
-		setIcon(minus, 'minus');
-		step.createSpan({ cls: 'rd-step-value', text: this.bonus > 0 ? `+${this.bonus}` : this.bonus < 0 ? `−${-this.bonus}` : '0' });
-		const plus = step.createEl('button', { cls: 'rd-step-btn', attr: { 'aria-label': 'Modifier +1' } });
-		setIcon(plus, 'plus');
-		minus.addEventListener('click', () => { this.bonus--; this.render(); });
-		plus.addEventListener('click', () => { this.bonus++; this.render(); });
+		// Situational bonus: a label over its stepper.
+		const mods = c.createDiv({ cls: 'rd-mod' });
+		dialogLabel(mods, 'Modifier');
+		this.stepper(mods, this.bonus > 0 ? `+${this.bonus}` : this.bonus < 0 ? `−${-this.bonus}` : '0', 'Modifier', () => { this.bonus--; this.render(); }, () => { this.bonus++; this.render(); });
 
-		// Dice to spend on it.
+		// Dice to spend on it: each pool a tile you tap to put it in (a full outline and a tick when it's in).
 		for (const sp of this.r.spendables ?? []) {
 			if (sp.available <= 0) continue;
 			const n = this.use.get(sp.key) ?? 0;
-			const row = c.createDiv({ cls: `rd-row rd-spend${n ? ' is-on' : ''}` });
+			const row = c.createDiv({ cls: `rd-spend${n ? ' is-on' : ''}`, attr: { role: 'switch', 'aria-checked': String(!!n), 'aria-label': `Add ${sp.label}`, tabindex: '0' } });
+			const check = row.createSpan({ cls: 'rd-spend-check', attr: { 'aria-hidden': 'true' } });
+			setIcon(check, evIcon('check'));
 			const label = row.createDiv({ cls: 'rd-spend-label' });
-			label.createSpan({ cls: 'rd-label', text: sp.label });
+			const name = label.createDiv({ cls: 'rd-spend-name' });
+			name.createSpan({ cls: 'rd-spend-title', text: sp.label });
+			const dmg = damageIcon(sp.damageType);
+			if (dmg) setIcon(name.createSpan({ cls: 'rd-spend-dmg', attr: { 'aria-label': dmg.label } }), dmg.icon);
 			const shown = sp.amount === 'any' ? sp.available : spendCount(sp);
 			const have = [poolText(sp, shown), sp.damageType, sp.amount === 'all' && !sp.keep && sp.available > 1 ? 'all of them' : '', sp.keep ? 'kept' : '', sp.note].filter(Boolean).join(' · ');
 			label.createSpan({ cls: 'rd-spend-have', text: have });
-			const ctl = row.createDiv({ cls: 'rd-spend-ctl' });
 			if (sp.amount === 'any') {
-				const s2 = ctl.createDiv({ cls: 'rd-step' });
-				const m2 = s2.createEl('button', { cls: 'rd-step-btn', attr: { 'aria-label': `One fewer ${sp.label}` } });
-				setIcon(m2, 'minus');
-				s2.createSpan({ cls: 'rd-step-value', text: n ? `${n}d${sp.sides}` : '0' });
-				const p2 = s2.createEl('button', { cls: 'rd-step-btn', attr: { 'aria-label': `One more ${sp.label}` } });
-				setIcon(p2, 'plus');
-				m2.disabled = n <= 0;
-				p2.disabled = n >= sp.available;
-				m2.addEventListener('click', () => { this.use.set(sp.key, Math.max(0, n - 1)); this.render(); });
-				p2.addEventListener('click', () => { this.use.set(sp.key, Math.min(sp.available, n + 1)); this.render(); });
+				const s2 = this.stepper(row, n ? `${n}d${sp.sides}` : '0', sp.label, () => { this.use.set(sp.key, Math.max(0, n - 1)); this.render(); }, () => { this.use.set(sp.key, Math.min(sp.available, n + 1)); this.render(); });
+				s2.minus.disabled = n <= 0;
+				s2.plus.disabled = n >= sp.available;
+				s2.el.addEventListener('click', (e) => e.stopPropagation());
 			}
-			const sw = ctl.createDiv({ cls: `checkbox-container${n ? ' is-enabled' : ''}`, attr: { role: 'switch', 'aria-checked': String(!!n), 'aria-label': `Add ${sp.label}`, tabindex: '0' } });
 			const toggle = () => { this.use.set(sp.key, n ? 0 : spendCount(sp)); this.render(); };
-			sw.addEventListener('click', toggle);
-			sw.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+			row.addEventListener('click', toggle);
+			row.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); toggle(); } });
 		}
 
-		const foot = c.createDiv({ cls: 'modal-button-container' });
-		foot.createEl('button', { text: 'Cancel' }).addEventListener('click', () => this.close());
-		const go = foot.createEl('button', { cls: 'mod-cta rd-roll' });
-		setIcon(go.createSpan(), 'dices');
-		go.createSpan({ text: 'Roll' });
-		go.addEventListener('click', () => this.roll());
+		// Roll: a d20 on the button for a d20 roll (the dice themselves are on the screen above).
+		dialogFoot(c, { cancel: () => this.close(), main: { text: 'Roll', icon: evIcon(this.r.dice.sides === 20 ? 'd20' : 'dice'), cls: 'rd-roll', onClick: () => this.roll() } });
+	}
+
+	/** − value +, the keypad's keys. */
+	private stepper(parent: HTMLElement, value: string, what: string, down: () => void, up: () => void): { el: HTMLElement; minus: HTMLButtonElement; plus: HTMLButtonElement } {
+		const el = parent.createDiv({ cls: 'rd-step' });
+		const minus = el.createEl('button', { cls: 'rd-step-btn', attr: { 'aria-label': `${what} −1` } });
+		setIcon(minus, evIcon('minus'));
+		el.createSpan({ cls: 'rd-step-value', text: value });
+		const plus = el.createEl('button', { cls: 'rd-step-btn', attr: { 'aria-label': `${what} +1` } });
+		setIcon(plus, evIcon('plus'));
+		minus.addEventListener('click', down);
+		plus.addEventListener('click', up);
+		return { el, minus, plus };
 	}
 
 	/** "2d10 keep 1 + 3 + 2d6" for the header. */
