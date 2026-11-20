@@ -13,6 +13,9 @@
 .x5sc-side .gd { fill: var(--x5-gold); }
 .x5sc-side .fil { fill: none; stroke: var(--x5-gold); stroke-width: 1.1; stroke-linecap: round; }
 .x5sc-side .m, .x5sc-motifs .m { fill: var(--x5-gold); color: var(--x5-gold); }
+/* A shape that stands clear of what's behind it (the Paladin's sword): a hairline of the paper it sits on. */
+.x5sc-side .m .halo, .x5sc-motifs .m .halo { stroke: var(--x5sc-paper, var(--g-bg)); stroke-width: 1.5; stroke-linejoin: round; paint-order: stroke; }
+.x5sc-stage, .x5sc-motifs, .x5sc-dlg, .x5sc-comp { --x5sc-paper: var(--g-surface); }
 .x5sc-side .x5sc-compact { display: none; }
 @container x5sc (max-width: 440px) {
 	.x5sc-full { display: none; }

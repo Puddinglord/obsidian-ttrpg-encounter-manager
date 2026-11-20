@@ -34,8 +34,9 @@ X5SC.MOTIFS = {
 	Fighter: (() => { const s = `<path d="M12 1.2l1.6 2.4V15h-3.2V3.6zM7.4 15h9.2v2H7.4zM11.1 17h1.8v3.9h-1.8z${X5SC.dot(12, 21.9, 1.3)}"/>`; return `<g transform="rotate(42 12 12)">${s}</g><g transform="rotate(-42 12 12)">${s}</g>`; })(),
 	// An open hand, a ki spiral in the palm.
 	Monk: `<path d="M8.3 12V5.4M11 12V3.8M13.7 12V4.6M16.3 12V6.8M7.4 17.2 3.8 11.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path fill-rule="evenodd" d="M7.2 10.8h10.2v5.6c0 3.4-2.3 5.6-5.1 5.6s-5.1-2-5.1-4.6z${X5SC.dot(12.3, 15.8, 2.1)}"/><path d="${X5SC.dot(12.3, 15.8, .9)}"/>`,
-	// A longsword held upright before a shield: the oath.
-	Paladin: '<path fill-rule="evenodd" d="M12 3.4c2.8 1 5.4 1.4 7.8 1.2v6.8c0 5-3.4 8.4-7.8 10.4-4.4-2-7.8-5.4-7.8-10.4V4.6c2.4.2 5-.2 7.8-1.2zM9.8 1.6h4.4v13.4h3.8v4.6h-3.8v4h-4.4v-4H6v-4.6h3.8z"/><path d="M12 .2l1.5 2.2v13.4h-3V2.4zM6.8 15.8h10.4v2H6.8zM11.2 17.8h1.6v3.4h-1.6z"/><path d="M10.6 22.4a1.4 1.4 0 1 0 2.8 0 1.4 1.4 0 1 0-2.8 0z"/>',
+	// A longsword held upright before a heater shield: the oath. The sword stands clear of the shield in a hairline
+	// of the page's colour (.halo), its guard past the shield's edges, so the cross reads at 22px (pass 3).
+	Paladin: `<path d="M4 5.2C7.2 5.4 9.6 4.6 12 3.4c2.4 1.2 4.8 2 8 1.8v6.6c0 5-3.4 8.2-8 10.2-4.6-2-8-5.2-8-10.2Z"/><path class="halo" d="M12 .4l1.6 2.1V14.4h-3.2V2.5ZM3.4 14.4h17.2v2.5H3.4ZM11 16.9h2v3.6h-2Z${X5SC.dot(12, 22, 1.6)}"/>`,
 	// A longbow, strung, an arrow nocked.
 	Ranger: '<path d="M7.2 2C13.4 5.6 13.4 18.4 7.2 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M7.2 2v20" stroke="currentColor" stroke-width=".9"/><path d="M3 11.1h15.4v1.8H3zM17.8 9.4l5.6 2.6-5.6 2.6zM3.4 12 1 9.4h2.6L6 12l-2.4 2.6H1z"/>',
 	// A domino mask with its ties.
@@ -121,6 +122,7 @@ X5SC.LOG = [
 	'<b>Scaling:</b> each side is a gold diamond, the oxblood taper and the ornament; the taper stretches into the spare width (up to 150px), so it stays a taper at any length. Under 440px the tendrils and rule drop and the compact scroll (taper, diamond, motif) takes over, 10px clear of the title. Level-up and the compendium use the same drawing at 1.3×.',
 	'<b>Pass 1 (gallery, light and dark):</b> leaves on the tendrils beside the taper’s point read as an arrow’s fletching; the triple engraved rule read as a menu icon; the Paladin’s sword cut into a shield read as a cross. Fixed: counter-curls and a gold bead in place of the leaves, one fine rule with a bead, and the Paladin as a longsword held upright in front of the shield, its blade and pommel past the shield’s edges.',
 	'<b>Pass 2 (breathing room, actual size):</b> 6px of air each side of the motif box, 14px from the tip to the title (10px compact). Fighter blades, the Ranger’s bow and shaft thickened: at 22px the 1.3px blades broke up.',
+	'<b>Pass 3 (built in the plugin, phone size):</b> the Paladin still read as a notched shield in the compact scroll: the cut round the blade was half a unit, under a pixel at 22px. Redrawn: a plain heater shield, and the sword over it in a 1.5-unit hairline of the page’s colour (<code>.halo</code>, <code>--x5sc-paper</code>), its guard reaching past the shield’s edges. Now a sword before a shield at 22px, light and dark.',
 	'<b>Alignment (measured, every heading, both themes):</b> the scroll’s centre line against the middle of the title’s capitals, not its line box: 0.11px at sheet size, 0.18px at 1.3×. The title sits on the centre to 0.01px.',
 ];
 

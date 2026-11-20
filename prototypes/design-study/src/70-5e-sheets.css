@@ -276,3 +276,8 @@ html[data-theme="dark"] .g-5e { --x5-cool: #10161C; --x5-sb14-bg: #2A2016; --x5-
 
 /* Damage buttons fill the Damage column, so every row's is the same width. */
 .x5s-row > .sh-dmg { justify-self: stretch; width: auto; }
+
+/* Built in the plugin: six plaques a row only once every skill's name fits (a 1000px sheet); three below that. */
+@container (min-width: 481px) and (max-width: 999px) {
+	.x5s-abil { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
