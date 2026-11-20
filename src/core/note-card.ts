@@ -10,6 +10,7 @@ import type EmberVaultPlugin from '../../main';
 import { noteKind } from './campaign-model';
 import { fieldsKey, NoteKindExtension, noteStats, SHARED_NOTE_KINDS, SharedNoteKind } from './note-kinds';
 import { applyLook } from './look';
+import { drawCampaignCard, isCardKind, registerCardSections } from './campaign-cards';
 
 /** The system's stats ("AC 15 · HP 22") and its own drawing, for a note of `kind`. */
 export function drawSystemExtras(plugin: EmberVaultPlugin, el: HTMLElement, ext: NoteKindExtension | undefined, path: string, fm: Record<string, unknown>): void {
@@ -44,13 +45,15 @@ export function registerNoteCard(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-note', (_source, el, ctx) => {
 		ctx.addChild(new NoteCard(plugin, el, ctx));
 	});
-	// A note of a kind the campaign's game draws a card for, written without the block, still gets its card.
+	// A quest, place or session note, or a note of a kind the campaign's game draws a card for, written
+	// without the block, still gets its card.
 	cardWithoutBlock(plugin, 'nimble-note', (fm) => {
 		const kind = noteKind(fm);
-		return kind !== 'npc' && (SHARED_NOTE_KINDS as readonly string[]).includes(kind);
+		return kind !== 'npc' && (isCardKind(kind) || (SHARED_NOTE_KINDS as readonly string[]).includes(kind));
 	}, (holder, ctx) => {
 		ctx.addChild(new NoteCard(plugin, holder, ctx));
 	});
+	registerCardSections(plugin);
 }
 
 /**
@@ -100,19 +103,48 @@ class NoteCard extends MarkdownRenderChild {
 
 	private refresh(): void {
 		const fm = this.fm();
-		if (extrasKey(this.plugin, this.ctx.sourcePath, noteKind(fm), fm) !== this.key) this.render();
+		const kind = noteKind(fm);
+		// A quest, place or session card shows the note's own sections and other notes (who's here): always redraw.
+		if (isCardKind(kind) || extrasKey(this.plugin, this.ctx.sourcePath, kind, fm) !== this.key) this.render();
 	}
 
+	onunload(): void {
+		this.host?.removeClass('ev-cq-host');
+	}
+
+	/** The reading view the card sits in: its sections the card shows are left out (campaign-cards.ts). */
+	private host: HTMLElement | null = null;
+
 	private render(): void {
-		const el = this.containerEl;
-		el.empty();
 		const path = this.ctx.sourcePath;
 		const fm = this.fm();
 		const kind = noteKind(fm);
 		this.key = extrasKey(this.plugin, path, kind, fm);
+		const ext = extensionFor(this.plugin, path, kind);
+		// A game that draws the whole card for this kind (`replace`) draws it alone.
+		if (isCardKind(kind) && !(ext?.replace && ext.card)) {
+			const file = this.plugin.app.vault.getFileByPath(path);
+			const seq = ++this.seq;
+			void (file ? this.plugin.app.vault.cachedRead(file) : Promise.resolve('')).then((text) => {
+				if (seq !== this.seq) return;
+				const el = this.containerEl;
+				el.empty();
+				const wrap = el.createDiv({ cls: `nimble-note-card kind-${kind}` });
+				applyLook(wrap, this.plugin.system(path).id);
+				const player = this.plugin.playerView(path);
+				drawCampaignCard(wrap, kind, { plugin: this.plugin, path, fm, text, player, extras: (at) => drawSystemExtras(this.plugin, at, ext, path, fm) });
+				this.host = el.closest<HTMLElement>('.markdown-preview-view');
+				this.host?.addClass('ev-cq-host');
+			});
+			return;
+		}
+		const el = this.containerEl;
+		el.empty();
 		const card = el.createDiv({ cls: `nimble-note-card kind-${kind}` });
 		applyLook(card, this.plugin.system(path).id);
-		drawSystemExtras(this.plugin, card, extensionFor(this.plugin, path, kind), path, fm);
+		drawSystemExtras(this.plugin, card, ext, path, fm);
 		if (!card.childElementCount) card.remove();
 	}
+
+	private seq = 0;
 }

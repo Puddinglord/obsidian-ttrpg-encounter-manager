@@ -10,7 +10,8 @@
 import { Menu, Notice, setIcon, TFile, TFolder } from 'obsidian';
 import { portraitOf, renderAvatar } from './npc-card';
 import type EmberVaultPlugin from '../../main';
-import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, KIND_ICON, NoteRef, questOrder, questState, Section } from './campaign-model';
+import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, KIND_ICON, NoteRef, questOrder, questsIn, questState, Section } from './campaign-model';
+import { evIcon } from './icons';
 import { CharacterInfo, SECTION_FOR } from './campaigns';
 import { CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles, ROLE_INFO } from './campaign-modals';
 import { STARTERS, StarterKind } from './campaign-templates';
@@ -304,8 +305,9 @@ export function renderOutline(el: HTMLElement, plugin: EmberVaultPlugin, c: Camp
 		const first = c.chapters[0]?.scenes[0]?.path;
 		const target = last ?? first;
 		if (target) {
+			// In the game's accent: the one thing to press when the players sit down.
 			const go = el.createEl('button', { cls: 'campaign-continue mod-cta' });
-			setIcon(go.createSpan(), 'play');
+			setIcon(go.createSpan({ cls: 'campaign-continue-icon' }), evIcon('play'));
 			const name = target.replace(/^.*\//, '').replace(/\.md$/, '');
 			go.createSpan({ cls: 'campaign-continue-label', text: last ? 'Continue' : 'Start' });
 			go.createSpan({ cls: 'campaign-continue-name', text: name });
@@ -325,6 +327,8 @@ export function renderOutline(el: HTMLElement, plugin: EmberVaultPlugin, c: Camp
 		empty.appendText('.');
 	}
 	for (const ch of c.chapters) renderChapter(el, plugin, c, ch, opts);
+
+	renderOpenQuests(el, plugin, c, opts);
 
 	// Everything else: always shown, so there's somewhere to add the first NPC or folder.
 	const h = el.createDiv({ cls: 'campaign-heading campaign-heading-folders' });
@@ -352,6 +356,34 @@ export function renderOutline(el: HTMLElement, plugin: EmberVaultPlugin, c: Camp
 function orderedSections(c: Campaign): Section[] {
 	const rank = (s: Section) => ({ Sessions: 0, Quests: 1, NPCs: 2, Locations: 3, Party: 4 } as Record<string, number>)[s.name] ?? (isFileFolder(s) ? 6 : 5);
 	return [...c.sections].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, undefined, { numeric: true }));
+}
+
+/**
+ * The quests still to do, wherever they're kept, each with a status dot (filled: active; a ring: available
+ * or waiting). One tap opens the quest. The Quests folder below keeps every quest, finished ones too.
+ */
+function renderOpenQuests(el: HTMLElement, plugin: EmberVaultPlugin, c: Campaign, opts: OutlineOptions): void {
+	const open = questsIn(c).filter(n => questState(n.status) === 'open');
+	if (!open.length) return;
+	const h = el.createDiv({ cls: 'campaign-heading campaign-heading-quests' });
+	h.createSpan({ text: 'Quests' });
+	h.createSpan({ cls: 'campaign-heading-note', text: `${open.length} open` });
+	const list = el.createDiv({ cls: 'campaign-quests' });
+	for (const n of open) {
+		const status = (n.status ?? '').trim().toLowerCase();
+		const row = list.createEl('a', { cls: 'campaign-quest', href: '#', attr: { 'data-quest': n.path } });
+		if (n.path === opts.current) row.addClass('is-current');
+		row.createSpan({ cls: `campaign-quest-dot is-${status === 'active' ? 'active' : 'open'}`, attr: { 'aria-label': status ? status[0].toUpperCase() + status.slice(1) : 'Open' } });
+		row.createSpan({ cls: 'campaign-quest-title', text: n.title });
+		row.addEventListener('click', (e) => {
+			e.preventDefault();
+			void plugin.app.workspace.openLinkText(n.path, '', e.metaKey || e.ctrlKey);
+		});
+		row.addEventListener('mouseover', (e) => {
+			plugin.app.workspace.trigger('hover-link', { event: e, source: 'nimble-gm', hoverParent: list, targetEl: row, linktext: n.path, sourcePath: '' });
+		});
+		onLongPress(row, (e) => itemMenu(plugin, c, n.path, e));
+	}
 }
 
 function renderChapter(el: HTMLElement, plugin: EmberVaultPlugin, c: Campaign, ch: Chapter, opts: OutlineOptions): void {

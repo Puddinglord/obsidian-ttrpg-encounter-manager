@@ -6096,7 +6096,7 @@ test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its c
 		// A system that draws locations its own way: new locations get a ```nimble-note block for it.
 		const loc = await o.eval(async (app, plugin, C) => {
 			const sys = plugin.systems.resolve('5e');
-			sys.noteKinds.location = { fields: [{ key: 'danger', label: 'Danger' }], card: (el, ctx) => { el.createDiv({ cls: 'e2e-location-card', text: `Spooky ${ctx.fm.title ?? ''}`.trim() }); } };
+			window.__e2eLocation = sys.noteKinds.location; sys.noteKinds.location = { fields: [{ key: 'danger', label: 'Danger' }], card: (el, ctx) => { el.createDiv({ cls: 'e2e-location-card', text: `Spooky ${ctx.fm.title ?? ''}`.trim() }); } };
 			const camp = plugin.campaigns.campaigns.find(c => c.folder === C);
 			const f = await plugin.campaigns.createInSection(camp, 'location', 'Old Mill');
 			await app.fileManager.processFrontMatter(f, (fm) => { fm.danger = 'high'; });
@@ -6110,7 +6110,7 @@ test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its c
 		assert.match(await lc.locator('.nimble-note-stat').innerText(), /Danger\s*high/i);
 	} finally {
 		await o.eval(async (app, plugin, C) => {
-			delete plugin.systems.resolve('5e').noteKinds.location;
+			plugin.systems.resolve('5e').noteKinds.location = window.__e2eLocation;
 			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
 			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
 			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
@@ -6176,6 +6176,128 @@ test('NPC card in Nimble: level, the armor letter, HP in a heart, its monster bl
 			for (const d of dirs) { const f = app.vault.getAbstractFileByPath(d); if (f) await app.vault.delete(f, true); }
 			await plugin.campaigns.setActive(null);
 		}, [C, P]);
+		await resetEncounter(o);
+	}
+});
+
+test('campaign cards: quests, places and sessions open on a card in the game\'s look; the panel wears it too; nothing shows twice', async (o) => {
+	const C = 'Campaigns/Card Vaults';
+	const F = 'Campaigns/Card Coast';
+	await resetEncounter(o);
+	try {
+		const made = await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const d of [C, F]) { const old = app.vault.getAbstractFileByPath(d); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Card Vaults', level: 3, heroes: 4, starter: false });
+			let camp;
+			for (let i = 0; i < 50 && !(camp = plugin.campaigns.campaigns.find(c => c.folder === C)); i++) await new Promise(r => setTimeout(r, 100));
+			await plugin.campaigns.setActive(C);
+			plugin.settings.party = [{ id: 'a', name: 'Brakka', level: 3, maxHp: 28 }, { id: 'b', name: 'Wren', level: 3, maxHp: 20 }];
+			const quest = await plugin.campaigns.createInSection(camp, 'quest', 'The missing assayer');
+			const place = await plugin.campaigns.createInSection(camp, 'location', 'The Lower Gate');
+			const session = await plugin.campaigns.createInSection(camp, 'session', 'Session 7');
+			const texts = { quest: await app.vault.read(quest), place: await app.vault.read(place), session: await app.vault.read(session) };
+			await app.vault.createFolder(`${C}/NPCs`).catch(() => {});
+			await app.vault.create(`${C}/NPCs/Ollo.md`, '---\nnimble: npc\nrole: Gatekeeper\nlocation: "[[The Lower Gate]]"\n---\n');
+			await app.vault.modify(quest, texts.quest.replace('## Objectives\n- [ ] ', '## Objectives\n- [x] Get past the gate\n- [ ] Find Dunn').replace("*What's really going on, that the heroes don't know yet.*", "*What's really going on, that the heroes don't know yet.*\nDunn is hiding from Krenn."));
+			await app.fileManager.processFrontMatter(quest, (fm) => { fm.status = 'active'; fm.giver = '[[Ollo]]'; fm.location = '[[The Lower Gate]]'; fm.reward = '60 gp'; });
+			await app.fileManager.processFrontMatter(place, (fm) => { fm.region = 'Below the gate'; fm.monsters = ['Goblin Boss']; fm.secret = 'The golem obeys the whistle.'; });
+			const st = await app.vault.read(session);
+			await app.vault.modify(session, st.replace('*What happened, for next time.*', '- Talked Ollo into opening the gate.'));
+			await app.fileManager.processFrontMatter(session, (fm) => { fm.quests = ['[[The missing assayer]] advanced']; fm.loot = ['40 gp']; fm.next = 'Down to the pits.'; });
+			// A 5e place opens on its read-aloud.
+			await plugin.campaigns.createCampaign({ name: 'Card Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			let coast;
+			for (let i = 0; i < 50 && !(coast = plugin.campaigns.campaigns.find(c => c.folder === F && c.system)); i++) await new Promise(r => setTimeout(r, 100));
+			const light = await plugin.campaigns.createInSection(coast, 'location', 'Gullhaven Lighthouse');
+			const lightText = await app.vault.read(light);
+			await app.fileManager.processFrontMatter(light, (fm) => { fm.read_aloud = 'Salt has eaten the door to a lace of rust.'; });
+			return { quest: quest.path, place: place.path, session: session.path, light: light.path, texts, lightText };
+		}, [C, F]);
+		// New quests, places and sessions start with the card's block; a session knows who's at the table.
+		for (const t of [made.texts.quest, made.texts.place, made.texts.session]) assert.match(t, /\n---\n\n```nimble-note\n```\n/);
+		assert.match(made.texts.session, /party: \n {2}- "Brakka"\n {2}- "Wren"\nquests: \[\]\nloot: \[\]\nnext: ""/);
+		assert.match(made.texts.place, /monsters: ""/, 'Nimble places get a list of monsters to use');
+		assert.match(made.lightText, /read_aloud: ""/, '5e places get a read-aloud');
+
+		// The quest: kicker, title, stamp; who, where, reward; objectives to tick; the GM's secret. Its own
+		// Objectives and The truth sections, now on the card, leave the page; so does the inline title.
+		await o.openFile(made.quest, 'preview');
+		const q = o.page.locator(`${R} .ev-cq.kind-quest`);
+		await o.waitFor(async () => (await q.count()) === 1, { what: 'the quest card' });
+		assert.ok(await q.evaluate(n => !!n.closest('.ev-sys-nimble')));
+		assert.equal(await q.locator('.ev-cq-title').innerText(), 'The missing assayer');
+		assert.match(await q.locator('.ev-cq-kicker').innerText(), /side quest/i);
+		assert.match(await q.locator('.ev-cq-stamp.is-active').innerText(), /active/i);
+		assert.match(await q.locator('.ev-cq-facts').innerText(), /Given by[\s\S]*Ollo[\s\S]*Where[\s\S]*The Lower Gate[\s\S]*Reward[\s\S]*60 gp/i);
+		assert.deepEqual(await q.locator('.ev-cq-objs li').allInnerTexts(), ['Get past the gate', 'Find Dunn']);
+		assert.match(await q.locator('.ev-cq-sec').first().innerText(), /1 of 2/);
+		assert.match(await q.locator('.ev-cq-secret').innerText(), /Dunn is hiding from Krenn/);
+		await o.waitFor(async () => (await o.page.locator(`${R} .markdown-preview-sizer > .ev-on-card`).count()) >= 2, { what: 'the sections the card shows to be marked' });
+		const shown = await o.page.evaluate((R) => [...document.querySelectorAll(`.workspace-leaf.mod-active ${R} .markdown-preview-sizer > div`)].filter(d => getComputedStyle(d).display !== 'none' && !d.querySelector('.ev-cq')).map(d => d.innerText).join('\n'), R);
+		assert.doesNotMatch(shown, /Find Dunn|Dunn is hiding/, 'the objectives and the truth show once, on the card');
+		assert.match(shown, /Stakes/, 'the rest of the note is still there');
+		assert.equal(await o.page.locator(`.workspace-leaf.mod-active ${R} .inline-title`).evaluate(n => getComputedStyle(n).display), 'none');
+		await q.screenshot({ path: join(ARTIFACTS, 'campaign-card-quest.png') });
+		// The pills, chips and facts on the cards and in the panel sit on their centre lines.
+		const bad = [];
+		await measurePills(o, bad, 'Quest card', `.workspace-leaf.mod-active ${R} .ev-cq`);
+		// Ticking an objective on the card ticks it in the note.
+		await q.locator('.ev-cq-objs li', { hasText: 'Find Dunn' }).locator('.ev-cq-box').click();
+		await o.waitFor(async () => /- \[x\] Find Dunn/.test(await read(o, made.quest)), { what: 'the objective ticked in the note' });
+
+		// The place: who's here (NPCs whose location is it), the monsters to use, the secret.
+		await o.openFile(made.place, 'preview');
+		const p = o.page.locator(`${R} .ev-cq.kind-location`);
+		await o.waitFor(async () => (await p.locator('.ev-cq-who').count()) === 1, { what: 'who\'s here' });
+		assert.match(await p.locator('.ev-cq-whos').innerText(), /Ollo/);
+		assert.equal(await p.locator('.ev-cq-mons .nimble-inline-ref[data-nimble-ref="Goblin Boss"]').count(), 1);
+		assert.match(await p.locator('.ev-cq-facts').innerText(), /Region\s*Below the gate/i);
+		assert.match(await p.locator('.ev-cq-secret').innerText(), /golem/);
+		await p.screenshot({ path: join(ARTIFACTS, 'campaign-card-location.png') });
+
+		// The session repeats nothing: the date over "Session 7", who was there, what happened (the Recap leaves
+		// the page), the quests it moved, the loot, next time.
+		await o.openFile(made.session, 'preview');
+		const s = o.page.locator(`${R} .ev-cq.kind-session`);
+		await o.waitFor(async () => (await s.count()) === 1, { what: 'the session card' });
+		assert.equal(await s.locator('.ev-cq-title').innerText(), 'Session 7');
+		assert.doesNotMatch(await s.locator('.ev-cq-kicker').innerText(), /session 7/i);
+		assert.deepEqual((await s.locator('.ev-cq-who').allInnerTexts()).map(t => t.replace(/^\S+\s+/, '').trim()), ['Brakka', 'Wren']);
+		assert.match(await s.locator('.ev-cq-recap').innerText(), /Talked Ollo/);
+		assert.match(await s.locator('.ev-cq-thread').innerText(), /The missing assayer\s*Advanced/i);
+		assert.match(await s.locator('.ev-cq-loot').innerText(), /40 gp/);
+		assert.match(await s.locator('.ev-cq-next').innerText(), /Down to the pits/);
+		await s.screenshot({ path: join(ARTIFACTS, 'campaign-card-session.png') });
+		await measurePills(o, bad, 'Session card', `.workspace-leaf.mod-active ${R} .ev-cq`);
+
+		// The Campaign panel wears the campaign's game; open quests sit in their own list with a status dot.
+		await o.eval(async (app, plugin, C) => { await plugin.campaigns.setActive(C); await plugin.openCampaignView(); }, C);
+		const panel = o.page.locator('.nimble-campaign-view');
+		await o.waitFor(async () => (await panel.locator('.campaign-quest').count()) === 1, { what: 'the open quest in the panel' });
+		assert.ok(await panel.evaluate(n => n.classList.contains('ev-sys-nimble')));
+		assert.match(await panel.locator('.campaign-heading-quests').innerText(), /Quests\s*1 open/i);
+		assert.equal(await panel.locator('.campaign-quest .campaign-quest-dot.is-active').count(), 1);
+		await panel.screenshot({ path: join(ARTIFACTS, 'campaign-panel-nimble.png') });
+		await measurePills(o, bad, 'Campaign panel', '.nimble-campaign-view');
+
+		// 5e: the place opens on its read-aloud, and the panel turns 5e's.
+		await o.openFile(made.light, 'preview');
+		const l = o.page.locator(`${R} .ev-cq.kind-location`);
+		await o.waitFor(async () => (await l.locator('.ev-cq-read').count()) === 1, { what: 'the read-aloud' });
+		assert.ok(await l.evaluate(n => !!n.closest('.ev-sys-dnd5e')));
+		assert.match(await l.locator('.ev-cq-read').innerText(), /Read aloud[\s\S]*lace of rust/i);
+		await o.eval(async (app, plugin, F) => { await plugin.campaigns.setActive(F); }, F);
+		await o.waitFor(async () => panel.evaluate(n => n.classList.contains('ev-sys-dnd5e')), { what: 'the panel in 5e\'s look' });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, 'Campaign panel (5e)', '.nimble-campaign-view');
+		assert.deepEqual(bad, [], 'misaligned pills');
+	} finally {
+		await o.eval(async (app, plugin, dirs) => {
+			for (const d of dirs) { const f = app.vault.getAbstractFileByPath(d); if (f) await app.vault.delete(f, true); }
+			plugin.settings.party = [];
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
 		await resetEncounter(o);
 	}
 });

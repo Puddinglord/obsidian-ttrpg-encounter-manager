@@ -2056,6 +2056,51 @@ body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: non
 .campaign-file .campaign-note-title { color: var(--text-muted); }
 .campaign-empty .campaign-add-inline { padding: 0; }
 
+/* Open quests, each with a status dot: filled when active, a ring when it's waiting to be taken up. */
+.campaign-heading-note { font-weight: 600; text-transform: none; letter-spacing: 0; }
+.campaign-quests { display: grid; gap: 1px; }
+.campaign-quest {
+	display: flex; align-items: center; gap: 8px; min-height: 1.75rem; padding: 0.22rem 0.5rem; border-radius: 6px;
+	color: var(--text-normal); text-decoration: none;
+}
+.campaign-quest:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.campaign-quest-dot { flex: none; width: 8px; height: 8px; margin: 0 3px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ev-accent-text, var(--text-accent)); }
+.campaign-quest-dot.is-active { background: var(--ev-accent-text, var(--text-accent)); }
+.campaign-quest-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (pointer: coarse) { .campaign-quest { min-height: 2.6rem; padding: 0.4rem 0.5rem; } }
+
+/* The panel (and the home note's dashboard) in the active campaign's game look (design study: #nimble/campaign,
+   #5e/campaign): the game's paper, the campaign's name in its type, Continue in its accent, rows on its tokens. */
+.nimble-campaign-view[class*="ev-sys-"] { background: var(--ev-bg); font-family: var(--ev-font-ui); }
+.nimble-campaign-block[class*="ev-sys-"] { background: var(--ev-bg); border-color: var(--ev-line); font-family: var(--ev-font-ui); }
+[class*="ev-sys-"]:is(.nimble-campaign-view, .nimble-campaign-block) { color: var(--ev-text); }
+.nimble-campaign-view[class*="ev-sys-"] :is(.campaign-switch-btn, .campaign-search) { border: none; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-campaign-view[class*="ev-sys-"] :is(.campaign-switch-btn, .campaign-search):hover { box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+.nimble-campaign-view[class*="ev-sys-"] .campaign-switch-btn { padding: 9px 10px; }
+.nimble-campaign-view[class*="ev-sys-"] .campaign-switch-icon { color: var(--ev-accent-text); }
+.nimble-campaign-view[class*="ev-sys-"] .campaign-switch-name { font: var(--ev-display-weight) 15px/normal var(--ev-font-display); font-variant: var(--ev-display-variant); color: var(--ev-text); }
+.nimble-campaign-view.ev-sys-nimble .campaign-switch-name { font: italic 900 16px/normal var(--ev-font-name); font-variant: normal; position: relative; top: 1px; } /* Vollkorn's capitals sit 1.4px high in its box (measured) */
+.nimble-campaign-view.ev-sys-dnd5e .campaign-switch-name { font: 700 17px/normal var(--ev-font-display); font-variant: small-caps; color: var(--x5-sb14-name); }
+.nimble-campaign-view[class*="ev-sys-"] .campaign-search { padding: 7px 10px; color: var(--ev-text-2); }
+/* The GM / Player tag: dark, white text. */
+[class*="ev-sys-"] .campaign-role-pill, [class*="ev-sys-"] .campaign-role-pill.role-player { padding: 3px 6px; border-radius: 4px; background: var(--ev-accent); color: var(--ev-on-accent); font: 700 10.5px/1 var(--ev-font-ui); letter-spacing: 0.04em; }
+[class*="ev-sys-"] .campaign-continue { margin: 10px 0 2px; padding: 9px 12px; gap: 6px; border-radius: var(--ev-r-md); font: 600 13.5px/18px var(--ev-font-ui); }
+[class*="ev-sys-"] .campaign-continue-icon { display: inline-flex; }
+[class*="ev-sys-"] .campaign-continue-label { font-weight: 500; opacity: 0.85; }
+[class*="ev-sys-"] .campaign-continue-name { font-weight: 700; opacity: 1; }
+[class*="ev-sys-"] .campaign-heading { margin: 14px 4px 2px; padding: 0; font: 700 11px/14px var(--ev-font-ui); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
+[class*="ev-sys-"] .campaign-heading-note { font: 600 11px/14px var(--ev-font-ui); }
+[class*="ev-sys-"] :is(.campaign-note, .campaign-quest, .campaign-group-head) { border-radius: 6px; }
+[class*="ev-sys-"] :is(.campaign-note, .campaign-quest):hover, [class*="ev-sys-"] .campaign-group-head:hover { background: color-mix(in srgb, var(--ev-text) 6%, transparent); }
+[class*="ev-sys-"] :is(.campaign-note, .campaign-quest).is-current { background: var(--ev-now); box-shadow: inset 0 0 0 1px var(--ev-now-line); font-weight: 500; }
+[class*="ev-sys-"] :is(.campaign-note-icon, .campaign-section-icon, .campaign-chevron, .campaign-count) { color: var(--ev-text-2); }
+[class*="ev-sys-"] .campaign-note.is-current .campaign-note-icon, [class*="ev-sys-"] .campaign-note.kind-quest .campaign-note-icon { color: var(--ev-accent-text); }
+[class*="ev-sys-"] .campaign-note.is-quest-done .campaign-note-icon { color: var(--ev-ok); }
+[class*="ev-sys-"] .campaign-chapter-label { color: var(--ev-accent-text); }
+[class*="ev-sys-"] .campaign-chapter-name { color: var(--ev-text); }
+[class*="ev-sys-"] .campaign-group-body { border-left-color: var(--ev-line); }
+[class*="ev-sys-"] .campaign-note-area { background: var(--ev-chip-bg); color: var(--ev-chip-text); }
+
 /* Drag and drop: the row being dragged, and the chapter or folder it would land in */
 .campaign-note.is-dragging { opacity: 0.45; }
 .campaign-group.is-drop-target > .campaign-group-head,
@@ -2064,6 +2109,139 @@ body.is-mobile .nimble-bestiary .bestiary-level-input { width: 4.5rem; flex: non
 	box-shadow: inset 0 0 0 1px var(--interactive-accent); border-radius: 5px;
 }
 .campaign-group.is-drop-target > .campaign-group-body { border-left-color: var(--interactive-accent); }
+
+/* Campaign notes: the cards at the top of quests, locations and sessions (core/campaign-cards.ts; design study:
+   #nimble/campaign, #5e/campaign). One anatomy in every game; the game's tokens give colour, paper and type, and
+   each game adds what its books add (5e's read-aloud box, Nimble's monsters). Sections a card shows are left out
+   of the note's reading view (.ev-on-card), so nothing shows twice. */
+.markdown-preview-view.ev-cq-host > .markdown-preview-sizer > .ev-on-card { display: none; }
+/* The card carries the title: the reading view's inline title steps aside (editing keeps it, to rename the note). */
+.markdown-preview-view.ev-cq-host .inline-title { display: none; }
+.nimble-note-card:is(.kind-quest, .kind-location, .kind-session) { margin: 0.25rem 0 1.2rem; }
+.ev-cq {
+	position: relative; display: grid; gap: 10px; padding: 18px 20px;
+	border-radius: var(--ev-r-lg, 12px); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line);
+	color: var(--ev-text); font: 500 14.5px/20px var(--ev-font-ui); container-type: inline-size;
+}
+.ev-cq p { margin: 0; }
+.ev-cq-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: start; }
+.ev-cq-kicker { grid-column: 1; display: flex; align-items: center; gap: 6px; min-width: 0; font: 700 11.5px/16px var(--ev-font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ev-accent-text); }
+.ev-cq-kicker-icon { display: inline-flex; flex: none; }
+.ev-cq-kicker-icon svg { width: 13px; height: 13px; }
+.ev-cq-title { grid-column: 1; margin: 0; font: 700 30px/1.15 var(--ev-font-name, var(--ev-font-display)); color: var(--ev-text); text-wrap: balance; overflow-wrap: anywhere; }
+.ev-cq-stamp { grid-column: 2; grid-row: 1 / span 2; align-self: center; padding: 5px 12px; border-radius: 999px; background: var(--ev-accent); color: var(--ev-on-accent); font: 700 12px/16px var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.ev-cq-stamp.is-open { background: var(--ev-surface-2); color: var(--ev-text); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+.ev-cq-stamp.is-done { background: var(--ev-text-2); color: var(--ev-surface); }
+.ev-cq-stamp.is-failed { background: var(--ev-danger-text); color: #FFFFFF; }
+/* Facts: icon, small label, value; each label stays with its value as the row wraps. */
+.ev-cq-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; }
+.ev-cq-fact { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.ev-cq-fact-icon { display: inline-flex; flex: none; color: var(--ev-text-2); }
+.ev-cq-fact-icon svg { width: 14px; height: 14px; }
+.ev-cq-fact-label { flex: none; font: 700 11px/14px var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2); }
+.ev-cq-fact-value { min-width: 0; font: 600 14.5px/20px var(--ev-font-ui); }
+.ev-cq a.internal-link { color: var(--ev-accent-text); }
+.ev-cq a.internal-link.is-unresolved { color: var(--ev-accent-text); opacity: 0.75; }
+/* People: a portrait (or initials) and the name. */
+.ev-cq-who { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font: 600 14.5px/20px var(--ev-font-ui); }
+.ev-cq-avatar { flex: none; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ev-now-line); }
+.ev-cq-avatar.is-initials { display: inline-flex; align-items: center; justify-content: center; background: radial-gradient(120% 120% at 30% 20%, var(--ev-surface) 0%, var(--ev-surface-2) 70%); color: var(--ev-accent-text); font: var(--ev-display-weight) 9.5px/1 var(--ev-font-display); font-variant: var(--ev-display-variant); letter-spacing: 0.02em; }
+.ev-cq-whos .ev-cq-avatar { width: 26px; height: 26px; }
+.ev-cq-whos { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+/* Section heads inside a card; the game styles them (Nimble's khaki ribbon, 5e's red small caps over gold). */
+.ev-cq-sec { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 6px; padding-bottom: 5px; border-bottom: 1px solid var(--ev-line); font: 700 12px/16px var(--ev-font-ui); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
+.ev-cq-sec-note { font-weight: 600; text-transform: none; letter-spacing: 0; }
+/* Objectives: tick them here, and they're ticked in the note. */
+.ev-cq ul.ev-cq-objs { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.ev-cq ul.ev-cq-objs > li::marker { content: none; }
+.ev-cq ul.ev-cq-objs > li { margin: 0; padding: 0; display: flex; align-items: flex-start; gap: 10px; font: 500 15px/21px var(--ev-font-ui); }
+button.ev-cq-box { flex: none; display: grid; place-items: center; width: 18px; height: 18px; margin-top: 1.5px; padding: 0; border: none; border-radius: 4px; background: var(--ev-surface); box-shadow: inset 0 0 0 1.5px var(--ev-line-strong); color: var(--ev-on-accent); cursor: pointer; }
+button.ev-cq-box svg { width: 12px; height: 12px; }
+.ev-cq ul.ev-cq-objs > li.is-done button.ev-cq-box { background: var(--ev-accent); box-shadow: none; }
+.ev-cq ul.ev-cq-objs > li.is-done .ev-cq-obj-text { color: var(--ev-text-2); text-decoration: line-through; }
+body.is-tablet button.ev-cq-box { padding: 0; }
+.ev-cq-secret { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; padding: 10px 12px; border-radius: var(--ev-r-md, 8px); background: var(--ev-surface-2); box-shadow: inset 0 0 0 1px var(--ev-line); font: 500 14px/20px var(--ev-font-ui); }
+.ev-cq-secret-label { display: inline-flex; align-items: center; gap: 5px; font: 700 11.5px/20px var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2); }
+.ev-cq-secret-icon { display: inline-flex; }
+.ev-cq-secret-icon svg { width: 13px; height: 13px; }
+.ev-cq-secret-text { display: grid; gap: 6px; }
+/* A place: its banner (its image, or contour lines in the game's tint) and emblem; who's here; where it leads. */
+.ev-cq-banner { position: relative; height: 92px; margin: -18px -20px 4px; overflow: hidden; border-radius: var(--ev-r-lg, 12px) var(--ev-r-lg, 12px) 0 0; background: color-mix(in srgb, var(--ev-accent) 9%, var(--ev-surface-2)); color: color-mix(in srgb, var(--ev-accent) 34%, transparent); }
+.ev-cq-banner.has-image { height: 140px; }
+.ev-cq-banner-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ev-cq-contours { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ev-cq-emblem { position: absolute; left: 20px; bottom: 12px; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--ev-surface); color: var(--ev-accent-text); box-shadow: inset 0 0 0 1.5px var(--ev-line-strong), 0 2px 6px rgb(0 0 0 / 0.08); }
+.ev-cq-emblem svg { width: 22px; height: 22px; }
+.ev-cq-leads { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 600 14.5px/20px var(--ev-font-ui); }
+/* What a game adds: 5e's read-aloud, Nimble's monsters. */
+.ev-cq-read { display: grid; gap: 4px; padding: 12px 16px; border-radius: 4px; background: color-mix(in srgb, var(--ev-gold, var(--ev-accent)) 14%, var(--ev-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ev-gold, var(--ev-accent)) 45%, transparent), 0 1px 2px rgb(88 24 13 / 0.08); }
+.ev-cq-read-label { display: inline-flex; align-items: center; gap: 5px; font: 700 11px/14px var(--ev-font-ui); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
+.ev-cq-read-icon { display: inline-flex; }
+.ev-cq-read-icon svg { width: 13px; height: 13px; }
+.ev-cq-read-text { margin: 0; font: italic 400 17px/1.5 var(--ev-font-display); }
+.ev-cq .nimble-note-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ev-cq ul.ev-cq-recap > li { margin: 0; }
+.ev-cq-mons { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.ev-cq-mons-label { margin-right: 4px; font: 700 11px/14px var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2); }
+/* A session: who was at the table, what happened, quests moved (tags), the loot, next time. */
+.ev-cq-at { display: grid; gap: 6px; }
+.ev-cq-at-label { font: 700 11px/14px var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2); }
+.ev-cq ul.ev-cq-recap { display: grid; gap: 4px; margin: 0; padding-left: 20px; font: 500 15px/21px var(--ev-font-ui); }
+.ev-cq-threads { display: grid; gap: 6px; }
+.ev-cq-thread { display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 600 14.5px/20px var(--ev-font-ui); }
+.ev-cq-thread-name { min-width: 0; }
+.ev-cq-change { flex: none; padding: 3px 9px; border-radius: 999px; background: var(--ev-accent); color: var(--ev-on-accent); font: 700 11.5px/16px var(--ev-font-ui); letter-spacing: 0.05em; text-transform: uppercase; }
+.ev-cq-change.is-new { background: var(--ev-text); color: var(--ev-surface); }
+.ev-cq-change.is-done { background: var(--ev-text-2); color: var(--ev-surface); }
+.ev-cq-change.is-failed { background: var(--ev-danger-text); color: #FFFFFF; }
+.ev-cq-loot { display: flex; flex-wrap: wrap; gap: 6px; }
+.ev-cq-loot-item { padding: 4px 10px; border-radius: 999px; background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 13px/18px var(--ev-font-ui); }
+.ev-cq-next { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 10px 12px; border-radius: var(--ev-r-md, 8px); background: var(--ev-now); box-shadow: inset 0 0 0 1px var(--ev-now-line); font: 500 14.5px/20px var(--ev-font-ui); }
+.ev-cq-next-label { font-weight: 700; color: var(--ev-accent-text); }
+@container (max-width: 460px) {
+	.ev-cq-title { font-size: 25px; }
+	.ev-cq-head { grid-template-columns: minmax(0, 1fr); }
+	.ev-cq-stamp { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 6px; }
+	.ev-cq-banner { height: 78px; }
+	.ev-cq-thread { flex-wrap: wrap; }
+}
+@container (max-width: 360px) {
+	.ev-cq-secret { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+
+/* Nimble: the sheet's charcoal frame, Vollkorn, khaki ribbons for headings, charcoal stamps. */
+.ev-sys-nimble .ev-cq { border-radius: 4px; box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.ev-sys-nimble .ev-cq-title { font: italic 900 30px/1.12 var(--ev-font-name); }
+.ev-sys-nimble .ev-cq-sec { padding: 5px 10px 4px; border: 0; border-radius: 2px; background: var(--ev-band); color: var(--ev-band-text); font: italic 900 15px/19px var(--ev-font-name); text-transform: none; letter-spacing: 0; }
+.ev-sys-nimble .ev-cq-sec-note { font: 600 12.5px/19px var(--ev-font-ui); }
+.ev-sys-nimble .ev-cq-stamp { border-radius: 2px; background: var(--ev-bar); color: var(--ev-on-bar); }
+.ev-sys-nimble .ev-cq-stamp.is-open { background: var(--ev-surface); color: var(--ev-text); box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.ev-sys-nimble .ev-cq-stamp.is-done { background: var(--ev-text-2); color: #FFFFFF; }
+.ev-sys-nimble .ev-cq-stamp.is-failed { background: var(--ev-danger-text); color: #FFFFFF; }
+.ev-sys-nimble .ev-cq-banner { border-radius: 4px 4px 0 0; background: var(--ev-band); color: rgb(75 71 67 / 0.3); box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.ev-sys-nimble .ev-cq-emblem { box-shadow: inset 0 0 0 2px var(--ev-bar); color: var(--ev-text); }
+.ev-sys-nimble button.ev-cq-box { border-radius: 2px; box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.ev-sys-nimble .ev-cq ul.ev-cq-objs > li.is-done button.ev-cq-box { background: var(--ev-bar); color: var(--ev-on-bar); }
+.ev-sys-nimble .ev-cq-change { border-radius: 2px; background: var(--ev-bar); color: var(--ev-on-bar); }
+.ev-sys-nimble .ev-cq-change.is-done { background: var(--ev-text-2); color: #FFFFFF; }
+.ev-sys-nimble .ev-cq-change.is-failed { background: var(--ev-danger-text); color: #FFFFFF; }
+.theme-dark .ev-sys-nimble .ev-cq-banner { color: rgb(233 227 215 / 0.25); }
+
+/* 5e: the book's red and gold, Garamond small caps, a tapered red rule under the title, a boxed read-aloud. */
+.ev-sys-dnd5e .ev-cq-title { font: 700 32px/1.1 var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--x5-sb14-name); }
+.ev-sys-dnd5e .ev-cq-head { padding-bottom: 10px; background: linear-gradient(90deg, var(--x5-sb14-rule), color-mix(in srgb, var(--x5-sb14-rule) 0%, transparent)) bottom left / 100% 3px no-repeat; }
+.ev-sys-dnd5e .ev-cq-sec { border-bottom: 1.5px solid var(--x5-gold-soft); font: 700 16px/20px var(--ev-font-display); font-variant: small-caps; text-transform: none; letter-spacing: 0.02em; color: var(--x5-sb14-name); }
+.ev-sys-dnd5e .ev-cq-stamp { background: transparent; color: var(--x5-sb14-rule); box-shadow: inset 0 0 0 1.5px var(--x5-sb14-rule); font: 700 15px/18px var(--ev-font-display); font-variant: small-caps; text-transform: none; letter-spacing: 0.04em; }
+.ev-sys-dnd5e .ev-cq-stamp.is-done { color: var(--ev-text-2); box-shadow: inset 0 0 0 1.5px var(--ev-line-strong); }
+.ev-sys-dnd5e .ev-cq-read { background: #F1E6CF; box-shadow: inset 0 0 0 1px #D5BE95, 0 1px 2px rgb(88 24 13 / 0.08); }
+.theme-dark .ev-sys-dnd5e .ev-cq-read { background: #2C2218; box-shadow: inset 0 0 0 1px #5E4A2E; }
+.ev-sys-dnd5e .ev-cq-banner { background: #EFE0C2; color: rgb(146 38 16 / 0.28); }
+.theme-dark .ev-sys-dnd5e .ev-cq-banner { background: #2C2218; color: rgb(224 122 94 / 0.3); }
+.ev-sys-dnd5e .ev-cq-emblem { box-shadow: inset 0 0 0 1.5px var(--x5-gold-soft), 0 2px 6px rgb(0 0 0 / 0.08); }
+@container (max-width: 460px) {
+	.ev-sys-nimble .ev-cq-title { font-size: 25px; }
+	.ev-sys-dnd5e .ev-cq-title { font-size: 26px; }
+}
 
 /* New note: pick a starter, then name it */
 .nimble-new-note .nimble-starter-grid {
@@ -2833,9 +3011,9 @@ body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 /* The shared pill centring (see "one centring rule" under Character sheet & compendium), for the card's chips and
    facts and the stat block's icons: a flex row, icons as blocks, labels at line-height normal. Measured by
    e2e/align.mjs (PILL_SELECTORS). */
-:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark):not(#nimble-pill) { display: inline-flex; align-items: center; line-height: normal; }
-:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark):not(#nimble-pill) > :is(span, div) { display: inline-flex; align-items: center; line-height: normal; }
-:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark):not(#nimble-pill) svg { display: block; flex: 0 0 auto; }
+:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark, .ev-cq-kicker, .ev-cq-stamp, .ev-cq-change, .ev-cq-loot-item, .ev-cq-secret-label, .ev-cq-read-label, .ev-cq-mons-label, .campaign-quest):not(#nimble-pill) { display: inline-flex; align-items: center; line-height: normal; }
+:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark, .ev-cq-kicker, .ev-cq-stamp, .ev-cq-change, .ev-cq-loot-item, .ev-cq-secret-label, .ev-cq-read-label, .ev-cq-mons-label, .campaign-quest):not(#nimble-pill) > :is(span, div) { display: inline-flex; align-items: center; line-height: normal; }
+:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark, .ev-cq-kicker, .ev-cq-stamp, .ev-cq-change, .ev-cq-loot-item, .ev-cq-secret-label, .ev-cq-read-label, .ev-cq-mons-label, .campaign-quest):not(#nimble-pill) svg { display: block; flex: 0 0 auto; }
 
 /* 5e: the card's gold hairline and gold-leaf corners, the portrait in gold rims, Garamond small caps. */
 .ev-sys-dnd5e .nimble-npc-card { background: var(--ev-surface) var(--x5-glow); box-shadow: inset 0 0 0 1px var(--x5-gold-soft), var(--x5-card-shadow); padding: 20px; }

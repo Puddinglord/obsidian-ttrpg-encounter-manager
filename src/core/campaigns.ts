@@ -389,7 +389,8 @@ export class CampaignStore extends Events {
 		const side = c?.role ?? this.role();
 		// What the campaign's game system adds to this kind of note.
 		const ext = (SHARED_NOTE_KINDS as readonly string[]).includes(kind) ? this.plugin.system(path).noteKinds?.[kind as SharedNoteKind] : undefined;
-		const x = { fields: fieldDefaults(ext?.fields, side), card: !!ext?.card && kind !== 'npc' };
+		// Quests, places and sessions always open on core's card; other kinds when the game draws one.
+		const x = { fields: fieldDefaults(ext?.fields, side), card: kind !== 'npc' && (kind === 'quest' || kind === 'location' || kind === 'session' || !!ext?.card) };
 		let body: string;
 		switch (kind) {
 			case 'scene': body = sceneNote(name, nextOrder(ch?.scenes ?? [])); break;
@@ -401,7 +402,12 @@ export class CampaignStore extends Events {
 			case 'character': body = characterNote(name, { level: c?.level, mine: opts.mine }); break;
 			case 'session': {
 				const last = c && this.lastScene(c);
-				body = sessionNote(name, new Date().toISOString().slice(0, 10), last?.replace(/^.*\//, '').replace(/\.md$/, ''), side);
+				// Who was at the table: the party's sheets as links, else the party as typed in.
+				const sheets = c ? this.characters(c) : [];
+				const party = sheets.length
+					? sheets.map(h => `[[${h.path.replace(/^.*\//, '').replace(/\.md$/i, '')}]]`)
+					: (c && this.active === c ? this.plugin.settings.party.map(p => p.name).filter(Boolean) : []);
+				body = sessionNote(name, new Date().toISOString().slice(0, 10), last?.replace(/^.*\//, '').replace(/\.md$/, ''), side, { ...x, party });
 				break;
 			}
 			case 'map': {

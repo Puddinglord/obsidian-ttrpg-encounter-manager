@@ -269,9 +269,19 @@ How the heroes hear about it, who asks, and what they're offered.
 `;
 }
 
-export function sessionNote(name: string, date: string, lastScene?: string, side: NoteSide = 'gm'): string {
+/**
+ * A session log. Its card (```nimble-note) shows who was at the table (`party:`, filled in with the party),
+ * what happened (the Recap), which quests moved (`quests:`, "[[The Missing Caravan]] advanced"), the loot
+ * and next time (`loot:`, `next:`, or those sections).
+ */
+export function sessionNote(name: string, date: string, lastScene?: string, side: NoteSide = 'gm', x: SystemExtras & { party?: string[] } = {}): string {
+	const props = fm({
+		nimble: 'session', title: titleOf(name), date,
+		...(x.party ? { party: x.party.length ? `\n${x.party.map(p => `  - ${JSON.stringify(p)}`).join('\n')}` : '[]', quests: '[]', loot: '[]', next: '""' } : {}),
+		...x.fields,
+	}) + (x.card ? `\n${NOTE_CARD}` : '');
 	if (side === 'player') {
-		return fm({ nimble: 'session', title: titleOf(name), date }) + `
+		return props + `
 
 ## Recap
 *What happened, in a few lines.*
@@ -289,7 +299,7 @@ export function sessionNote(name: string, date: string, lastScene?: string, side
 - [ ]
 `;
 	}
-	return fm({ nimble: 'session', title: titleOf(name), date }) + `
+	return props + `
 
 ## Prep
 - [ ] Start at ${lastScene ? `[[${lastScene}]]` : 'the next scene'}

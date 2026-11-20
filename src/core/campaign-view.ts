@@ -5,6 +5,8 @@ import { ItemView, MarkdownPostProcessorContext, MarkdownRenderChild, Platform, 
 import type EmberVaultPlugin from '../../main';
 import { campaignMenu, renderOutline, renderPartyLine } from './campaign-ui';
 import { ROLE_INFO } from './campaign-modals';
+import { applyLook } from './look';
+import { evIcon } from './icons';
 
 export const CAMPAIGN_VIEW_TYPE = 'nimble-campaign';
 
@@ -29,6 +31,7 @@ export class CampaignView extends ItemView {
 	private markCurrent(): void {
 		const cur = this.app.workspace.getActiveFile()?.path;
 		this.contentEl.querySelectorAll<HTMLElement>('.campaign-note').forEach(r => r.toggleClass('is-current', r.dataset.path === cur));
+		this.contentEl.querySelectorAll<HTMLElement>('.campaign-quest').forEach(r => r.toggleClass('is-current', r.dataset.quest === cur));
 	}
 
 	private render(): void {
@@ -38,10 +41,12 @@ export class CampaignView extends ItemView {
 		root.addClass('nimble-campaign-view');
 		const store = this.plugin.campaigns;
 		const c = store.active;
+		// The panel wears the active campaign's game: its paper, its type for the name, Continue in its accent.
+		applyLook(root, c ? this.plugin.system(c.home.path).id : undefined);
 
 		const bar = root.createDiv({ cls: 'campaign-switcher' });
 		const pick = bar.createEl('button', { cls: 'campaign-switch-btn', attr: { 'aria-label': 'Switch campaign or view' } });
-		setIcon(pick.createSpan({ cls: 'campaign-switch-icon' }), c ? ROLE_INFO[c.role].icon : 'castle');
+		setIcon(pick.createSpan({ cls: 'campaign-switch-icon' }), c ? evIcon(c.role === 'player' ? 'shield' : 'crown') : 'castle');
 		pick.createSpan({ cls: 'campaign-switch-name', text: c?.name ?? (store.campaigns.length ? 'Choose a campaign' : 'No campaigns yet') });
 		if (c) pick.createSpan({ cls: `campaign-role-pill role-${c.role}`, text: ROLE_INFO[c.role].short });
 		root.toggleClass('is-player', c?.role === 'player');
@@ -107,6 +112,7 @@ export class CampaignBlock extends MarkdownRenderChild {
 		el.empty();
 		el.addClass('nimble-campaign-block');
 		const c = this.plugin.campaigns.of(this.ctx.sourcePath);
+		applyLook(el, c ? this.plugin.system(c.home.path).id : undefined);
 		if (!c) {
 			el.createDiv({ cls: 'campaign-empty', text: 'This block shows a campaign\'s chapters and scenes. Put it on a note with "nimble: campaign" in its properties.' });
 			return;

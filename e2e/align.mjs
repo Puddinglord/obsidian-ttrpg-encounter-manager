@@ -30,6 +30,8 @@ export const PILL_SELECTORS = [
 	'.dnd5e-npc-roll', '.dnd5e-npc-act-name', '.dnd5e-npc-skill', '.dnd5e-npc-empty', '.dnd5e-npc-save', '.dnd5e-plate-n', '.dnd5e-npc-ab-m',
 	// NPC cards, campaign notes and the Campaign panel (the armor chip's letter sits on its shield: measured on its own).
 	'.nimble-npc-stat:not(.is-armor)', '.nimble-npc-fight', '.nimble-npc-link', '.save-mark',
+	'.ev-cq-kicker', '.ev-cq-fact', '.ev-cq-who', '.ev-cq-stamp', '.ev-cq-change', '.ev-cq-loot-item', '.ev-cq-secret-label', '.ev-cq-read-label',
+	'.ev-cq-mons-label', '.campaign-quest', '.campaign-continue', '.campaign-switch-btn', '.campaign-search',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {

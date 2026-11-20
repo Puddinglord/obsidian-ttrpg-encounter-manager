@@ -1,12 +1,12 @@
-// The campaign note kinds every game shares (NPC, location, quest, map) and
+// The campaign note kinds every game shares (NPC, location, quest, map, session) and
 // what a game system may add to them. Core writes the notes and draws them; a
 // system adds fields (a 5e NPC has AC and HP, like a small monster) and, if it
 // wants, draws a kind its own way (Call of Cthulhu might show a location's
 // sanity threats). Pure: no Obsidian imports.
 
 /** The kinds a system may extend. */
-export type SharedNoteKind = 'npc' | 'location' | 'quest' | 'map';
-export const SHARED_NOTE_KINDS: readonly SharedNoteKind[] = ['npc', 'location', 'quest', 'map'];
+export type SharedNoteKind = 'npc' | 'location' | 'quest' | 'map' | 'session';
+export const SHARED_NOTE_KINDS: readonly SharedNoteKind[] = ['npc', 'location', 'quest', 'map', 'session'];
 
 /** A property a system adds to a kind of note. */
 export interface NoteField {

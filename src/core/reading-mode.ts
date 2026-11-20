@@ -6,7 +6,8 @@
 
 import { getAllTags, MarkdownView, TFile, WorkspaceLeaf } from 'obsidian';
 import type EmberVaultPlugin from '../../main';
-import { opensInReading } from './campaign-model';
+import { noteKind, opensInReading } from './campaign-model';
+import type { SharedNoteKind } from './note-kinds';
 import { isNpc } from './campaigns';
 
 /** A note made this recently is being written, not read. */
@@ -34,13 +35,23 @@ const BOOKKEEPING = ['nimble', 'portrait', 'portrait-position', 'cssclasses', 't
 /** What an NPC's card shows (its facts and the game's fields); the row of tags leaves them to the card. */
 const NPC_CARD_KEYS = ['role', 'ancestry', 'pronouns', 'age', 'faction', 'location', 'status', 'attitude', 'first_met'];
 
+/** What the cards on quests, places and sessions show (campaign-cards.ts); the row of tags leaves them to the card. */
+const CARD_KEYS: Record<string, string[]> = {
+	quest: ['status', 'type', 'giver', 'location', 'reward', 'level', 'secret'],
+	location: ['type', 'region', 'image', 'banner', 'leads', 'secret'],
+	session: ['date', 'party', 'quests', 'loot', 'next'],
+};
+
 function cardKeys(plugin: EmberVaultPlugin, view: MarkdownView): Set<string> {
 	const file = view.file;
 	if (!file) return new Set();
 	const cache = plugin.app.metadataCache.getFileCache(file);
-	if (!isNpc(cache?.frontmatter ?? {}, (cache && getAllTags(cache)) ?? [])) return new Set();
-	const fields = plugin.system(file.path).noteKinds?.npc?.fields ?? [];
-	return new Set([...NPC_CARD_KEYS, ...fields.map(f => f.key)]);
+	const fm = cache?.frontmatter ?? {};
+	const kind = noteKind(fm);
+	const ext = (k: string) => (plugin.system(file.path).noteKinds?.[k as SharedNoteKind]?.fields ?? []).map(f => f.key);
+	if (CARD_KEYS[kind]) return new Set([...CARD_KEYS[kind], ...ext(kind)]);
+	if (!isNpc(fm, (cache && getAllTags(cache)) ?? [])) return new Set();
+	return new Set([...NPC_CARD_KEYS, ...ext('npc')]);
 }
 
 /** The reading views whose empty properties are being kept hidden. */

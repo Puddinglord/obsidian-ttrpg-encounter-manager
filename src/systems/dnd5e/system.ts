@@ -23,6 +23,7 @@ import { ruleTerms5e, termPage5e } from './rule-terms';
 import { settingsSections5e } from './settings';
 import { ruleTerms } from '../../core/rule-terms';
 import { DND5E_TRACKER_VIEW } from './tracker-view';
+import { drawLocation5e, LOCATION_FIELDS_5E } from './location-card';
 
 export const dnd5eSystem: GameSystem = {
 	id: 'dnd5e',
@@ -43,6 +44,8 @@ export const dnd5eSystem: GameSystem = {
 	},
 	noteKinds: {
 		npc: { fields: NPC_FIELDS_5E, card: (el, ctx) => drawNpc5e(dnd5e(), el, ctx) },
+		// A place opens on its boxed read-aloud, as 5e adventures key their areas.
+		location: { fields: LOCATION_FIELDS_5E, card: drawLocation5e },
 	},
 	conditions: (edition?: string): readonly ConditionDef[] => trackerConditionsFor(edition ?? DEFAULT_EDITION),
 	quickLook(plugin, target) {
