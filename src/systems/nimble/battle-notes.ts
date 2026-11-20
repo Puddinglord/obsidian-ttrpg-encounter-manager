@@ -12,29 +12,37 @@ import { appendRichText } from '../../core/markdown';
 import { wireWikiLinks } from '../../core/wiki-links';
 import { searchMonsters } from './suggest';
 import { nimble } from './runtime';
+import { applyLook } from '../../core/look';
+import { EvIconName, evIcon } from '../../core/icons';
+import { pill } from '../../core/pill';
+import { dialogFoot, gameDialog } from '../../core/dialog';
 
-const OUTCOME_INFO: Record<Outcome, { label: string; icon: string }> = {
-	won: { label: 'Won', icon: 'trophy' },
-	fled: { label: 'Fled', icon: 'footprints' },
-	lost: { label: 'Lost', icon: 'skull' },
-	parley: { label: 'Parley', icon: 'handshake' },
-	ongoing: { label: 'Ongoing', icon: 'hourglass' },
+/** Each outcome: its word, its Lucide icon for Obsidian's menu, and its Phosphor glyph on the card. */
+const OUTCOME_INFO: Record<Outcome, { label: string; icon: string; glyph: EvIconName }> = {
+	won: { label: 'Won', icon: 'trophy', glyph: 'medal' },
+	fled: { label: 'Fled', icon: 'footprints', glyph: 'footprints' },
+	lost: { label: 'Lost', icon: 'skull', glyph: 'skull' },
+	parley: { label: 'Parley', icon: 'handshake', glyph: 'hand' },
+	ongoing: { label: 'Ongoing', icon: 'hourglass', glyph: 'hourglass' },
 };
 
 export function renderBattleNotes(plugin: EmberVaultPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, save: (next: EncounterDef) => void): void {
+	// The GM's encounter block on Nimble's paper (its look), with what a player keeps instead of the numbers.
 	const card = el.createDiv({ cls: 'nimble-encounter-block nimble-battle-notes' });
+	applyLook(card, 'nimble');
 	const head = card.createDiv({ cls: 'encounter-block-head' });
-	setIcon(head.createSpan({ cls: 'encounter-block-icon' }), 'swords');
+	setIcon(head.createSpan({ cls: 'encounter-block-icon' }), evIcon('swords'));
 	head.createSpan({ cls: 'encounter-block-name', text: def.name });
 
 	const raw = battleField(def, 'outcome');
 	const outcome = outcomeOf(raw);
-	const chip = head.createEl('button', {
+	const chip = pill(head, {
+		tag: 'button',
 		cls: `battle-outcome ${outcome ? `outcome-${outcome}` : raw ? 'outcome-other' : 'outcome-unset'}`,
+		icon: outcome ? evIcon(OUTCOME_INFO[outcome].glyph) : undefined,
+		text: outcome ? OUTCOME_INFO[outcome].label : raw || 'How did it go?',
 		attr: { 'aria-label': 'How it went' },
 	});
-	if (outcome) setIcon(chip.createSpan({ cls: 'battle-outcome-icon' }), OUTCOME_INFO[outcome].icon);
-	chip.createSpan({ text: outcome ? OUTCOME_INFO[outcome].label : raw || 'How did it go?' });
 	chip.addEventListener('click', (e) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -56,13 +64,13 @@ export function renderBattleNotes(plugin: EmberVaultPlugin, el: HTMLElement, def
 	}
 	if (!def.monsters.length) list.createDiv({ cls: 'encounter-block-empty', text: 'No foes yet' });
 
-	const facts: [string, string, string][] = [['map-pin', 'Where', battleField(def, 'where')], ['calendar-days', 'When', battleField(def, 'when')], ['gem', 'Loot', battleField(def, 'loot')]];
+	const facts: [EvIconName, string, string][] = [['map-pin', 'Where', battleField(def, 'where')], ['clock', 'When', battleField(def, 'when')], ['gem', 'Loot', battleField(def, 'loot')]];
 	const shown = facts.filter(([, , v]) => v);
 	if (shown.length) {
 		const meta = card.createDiv({ cls: 'battle-facts' });
 		for (const [icon, label, value] of shown) {
 			const f = meta.createDiv({ cls: 'battle-fact', attr: { 'aria-label': label } });
-			setIcon(f.createSpan({ cls: 'battle-fact-icon' }), icon);
+			setIcon(f.createSpan({ cls: 'battle-fact-icon' }), evIcon(icon));
 			appendRichText(f.createSpan({ cls: 'battle-fact-text' }), value);
 		}
 		wireWikiLinks(meta, plugin.app, ctx.sourcePath);
@@ -74,9 +82,7 @@ export function renderBattleNotes(plugin: EmberVaultPlugin, el: HTMLElement, def
 	}
 
 	const bar = card.createDiv({ cls: 'encounter-block-actions' });
-	const edit = bar.createEl('button', { attr: { 'aria-label': 'Edit these battle notes' } });
-	setIcon(edit.createSpan(), 'pencil');
-	edit.createSpan({ text: 'Edit' });
+	const edit = pill(bar, { tag: 'button', cls: 'encounter-block-btn', icon: evIcon('edit'), text: 'Edit', attr: { 'aria-label': 'Edit these battle notes' } });
 	edit.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); new BattleNotesModal(plugin, def, save).open(); });
 }
 
@@ -112,7 +118,7 @@ export class BattleNotesModal extends Modal {
 
 	onOpen(): void {
 		this.titleEl.setText('Battle notes');
-		this.modalEl.addClass('nimble-battle-modal');
+		gameDialog(this, 'nimble', { cls: 'nimble-battle-modal' });
 		this.render();
 	}
 
@@ -127,9 +133,9 @@ export class BattleNotesModal extends Modal {
 		const foes = c.createDiv({ cls: 'battle-modal-foes' });
 		d.monsters.forEach((m, i) => {
 			const row = foes.createDiv({ cls: 'battle-modal-foe' });
-			const step = (icon: string, label: string, delta: number) => {
+			const step = (icon: 'minus' | 'plus', label: string, delta: number) => {
 				const b = row.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': label } });
-				setIcon(b, icon);
+				setIcon(b, evIcon(icon));
 				b.addEventListener('click', () => {
 					m.count += delta;
 					if (m.count <= 0) d.monsters.splice(i, 1);
@@ -141,7 +147,7 @@ export class BattleNotesModal extends Modal {
 			step('plus', `One more ${m.name}`, 1);
 			row.createSpan({ cls: 'battle-modal-name', text: m.name });
 			const x = row.createEl('button', { cls: 'clickable-icon battle-modal-remove', attr: { 'aria-label': `Remove ${m.name}` } });
-			setIcon(x, 'x');
+			setIcon(x, evIcon('x'));
 			x.addEventListener('click', () => { d.monsters.splice(i, 1); this.render(); });
 		});
 		const add = c.createEl('input', { type: 'text', cls: 'battle-modal-add', attr: { placeholder: 'Add a foe: type a name (bestiary or your own)', 'aria-label': 'Add a foe' } });
@@ -173,17 +179,21 @@ export class BattleNotesModal extends Modal {
 		new Setting(c).setName('Notes').setClass('battle-modal-notes').addTextArea(t => t.setPlaceholder('What happened, who did what, what we learned')
 			.setValue(d.notes ?? '').onChange(v => { this.draft.notes = v.trim() || undefined; }));
 
-		new Setting(c)
-			.addButton(b => b.setButtonText('Cancel').onClick(() => this.close()))
-			.addButton(b => b.setButtonText('Save').setCta().onClick(() => {
-				const typed = this.contentEl.querySelector<HTMLInputElement>('.battle-modal-add')?.value.trim();
-				if (typed) {
-					const ex = this.draft.monsters.find(m => m.name.toLowerCase() === typed.toLowerCase());
-					if (ex) ex.count += 1; else this.draft.monsters.push({ name: typed, count: 1 });
-				}
-				this.close();
-				this.onSave(this.draft);
-			}));
+		dialogFoot(c, {
+			cancel: () => this.close(),
+			main: {
+				text: 'Save', icon: evIcon('check'), cls: 'battle-modal-save',
+				onClick: () => {
+					const typed = this.contentEl.querySelector<HTMLInputElement>('.battle-modal-add')?.value.trim();
+					if (typed) {
+						const ex = this.draft.monsters.find(m => m.name.toLowerCase() === typed.toLowerCase());
+						if (ex) ex.count += 1; else this.draft.monsters.push({ name: typed, count: 1 });
+					}
+					this.close();
+					this.onSave(this.draft);
+				},
+			},
+		});
 		if (!d.monsters.length) window.setTimeout(() => add.focus(), 0);
 	}
 
