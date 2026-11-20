@@ -442,7 +442,9 @@ export function buildEntries(input: BuildInput): Entry[] {
 			id: `npc:${n.path}`,
 			kind: 'npc', segments: ['npcs'], name: n.name,
 			detail: [n.role, n.aliases.length ? `aka ${n.aliases.join(', ')}` : '', campaign].filter(Boolean).join(' · ') || 'NPC',
-			facets: { kind: ['NPC'], role: n.role ? [n.role] : [], campaign: campaign ? [campaign] : [] },
+			// An NPC's role is a line of prose ("Master assayer of the Alchemists' Guild"), not a facet: it's found by
+			// searching, never offered as a role: filter beside Minion and Legendary.
+			facets: { kind: ['NPC'], campaign: campaign ? [campaign] : [] },
 			nums: {}, flags: ['mine'],
 			text: [n.role, ...n.aliases, campaign].filter(Boolean).join(' ').toLowerCase(),
 			npc: n,

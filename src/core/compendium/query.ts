@@ -695,6 +695,9 @@ export function createCompendiumQuery<E extends CompendiumEntry, S extends strin
 			for (const f of facets) {
 				if (f.numeric || f.key === 'tag' || f.key === 'source' && segment !== 'all') continue;
 				for (const v of facetCounts(pool, f.key)) {
+					// Filters are for short, enumerable values ("Undead", "Workshop of the Alchemist"); a line of
+					// prose someone typed into a property is found by searching, not offered as a filter.
+					if (v.value.length > 32 || v.value.trim().split(/\s+/).length > 4) continue;
 					if (!valueMatches(v.value, word, f.key)) continue;
 					values.push({ kind: 'value', token: `${neg}${f.key}:${quoteValue(v.value)}`, label: `${neg}${f.key}:${v.value}`, detail: noun(v.count), count: v.count });
 				}

@@ -5472,7 +5472,7 @@ body.is-mobile .nimble-art-slot.has-art .nimble-art-edit { opacity: 1; }
 .nimble-spotlight .nimble-spot-chips > input.prompt-input { flex: 1; min-width: 8rem; }
 .nimble-spotlight .nimble-spot-chips.has-chips { padding-left: 12px; }
 .nimble-spotlight .nimble-spot-chips.has-chips > input.prompt-input { padding-left: 4px; }
-.nimble-spotlight .suggestion-item.is-filter .nimble-spot-name { font: 500 14px/19px var(--font-monospace); }
+.nimble-spotlight .suggestion-item.is-filter .nimble-spot-name { font: 600 14.5px/19px var(--ev-font-ui, var(--font-interface)); }
 .nimble-spotlight .suggestion-item.is-filter .nimble-spot-icon { background: transparent; box-shadow: inset 0 0 0 1px var(--ev-line-strong, var(--background-modifier-border)); color: var(--ev-accent-text, var(--text-accent)); }
 
 /* ============================================

@@ -208,6 +208,25 @@ describe('suggestions', () => {
 		expect(suggest('spell', all, 'all').map(x => x.token)).toContain('in:spells');
 	});
 
+	it("never offers an NPC's role, or any line of prose, as a filter", () => {
+		const npcs = buildEntries({
+			monsters: [], compendium: comp, conditions: [],
+			npcs: [
+				{ path: 'Q/NPCs/Tobren.md', name: 'Tobren Kask', aliases: [], role: "Master assayer of the Alchemists' Guild", campaign: 'Q' },
+				{ path: 'Q/NPCs/Vess.md', name: 'Magistrix Vess', aliases: ['The Alchemist'], role: 'The Alchemist, half flesh and half mercury', campaign: 'Q' },
+			],
+		});
+		expect(npcs.filter(e => e.kind === 'npc').every(e => !e.facets.role)).toBe(true);
+		expect(suggest('alchemist', npcs, 'all').map(x => x.token).filter(t => t.startsWith('role:'))).toEqual([]);
+		// Still found by searching for it.
+		expect(search(npcs, 'assayer', { segment: 'all' }).entries.map(e => e.name)).toContain('Tobren Kask');
+		// A long value typed into any property isn't offered from a bare word either; short ones are.
+		const prose = { ...vault, name: 'Odd Thing', monster: { ...vault.monster, name: 'Odd Thing', type: 'A twisted thing that was once a miller' } };
+		const odd = buildEntries({ monsters: [prose, vault], compendium: comp, conditions: [] });
+		expect(suggest('twisted', odd, 'all').map(x => x.token)).not.toContain('type:"A twisted thing that was once a miller"');
+		expect(suggest('companion', odd, 'all').map(x => x.token)).toContain('type:Companion');
+	});
+
 	it('does not offer a filter that is already applied', () => {
 		expect(suggest('type:gob', mons, 'adversaries', { applied: ['type:Goblins'] }).map(x => x.token)).not.toContain('type:Goblins');
 		expect(suggest('necrotic', spells, 'spells', { applied: ['school:necrotic'] }).map(x => x.token)).not.toContain('school:Necrotic');
