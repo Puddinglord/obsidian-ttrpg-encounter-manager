@@ -989,7 +989,8 @@ export class EncounterTrackerView extends ItemView {
 		const after = this.store.creature(enc.id, c.id);
 		if (r.breakdown) {
 			this.flash.set(c.id, r.breakdown);
-			window.setTimeout(() => { this.flash.delete(c.id); if (this.flash.size === 0) this.render(); }, 5000);
+			// The working fades after a while; not under a name being typed (the next redraw drops it).
+			window.setTimeout(() => { this.flash.delete(c.id); if (this.flash.size === 0 && !this.root.querySelector('.label-edit-input')) this.render(); }, 5000);
 			this.render();
 		}
 		if (!after) return;
