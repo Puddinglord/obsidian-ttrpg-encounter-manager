@@ -6577,6 +6577,8 @@ body.is-tablet .dnd5e-tracker :is(button.dnd5e-init, button.dnd5e-gem, button.dn
 	.dnd5e-entry .dnd5e-card-scroll .dnd5e-scroll-title { font-size: 24px; line-height: 28px; }
 }
 .dnd5e-entry.ed-2024 :is(.dnd5e-table-wrap, .dnd5e-card-facts) + .dnd5e-source { margin-top: 12px; }
+/* The card is the book's page wherever it's drawn (a builder's preview too): its own frame, not a second one around it. */
+.eb-preview > .dnd5e-card.dnd5e-entry { border: 0; }
 /* The card's own dialog: the game's paper around the page. */
 .modal.dnd5e-card-modal.ev-sys-dnd5e { background: var(--ev-bg) var(--x5-paper); }
 /* The compendium page: the page, then its buttons. */
