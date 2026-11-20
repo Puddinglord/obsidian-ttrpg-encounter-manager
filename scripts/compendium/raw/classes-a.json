@@ -2121,7 +2121,7 @@
           "Ice",
           "Lightning"
         ],
-        "notes": "You know the Fire, Ice, and Lightning spell schools and can cast cantrips from them. Learn the Utility Spells from 1 spell school you know."
+        "notes": "You know the Fire, Ice, and Lightning spell schools and can cast cantrips from them (level 1). Learn the Utility Spells from 1 spell school you know (level 3; a 2nd at level 6 and a 3rd at level 14)."
       },
       "levels": [
         {

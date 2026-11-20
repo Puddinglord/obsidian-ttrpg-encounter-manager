@@ -392,6 +392,7 @@
       "subclasses": [
         {
           "name": "Oath of Vengeance",
+          "page": 8,
           "flavor": "Empower your Judgement Dice and strike down your enemies with explosive retribution.",
           "complexity": 2,
           "story": false,
@@ -436,6 +437,7 @@
         },
         {
           "name": "Oath of Refuge",
+          "page": 9,
           "flavor": "Raise your shield to protect your allies, and interpose with greater strength and purpose.",
           "complexity": 2,
           "story": false,
@@ -480,6 +482,7 @@
         },
         {
           "name": "Oath of Valor",
+          "page": 10,
           "flavor": "The Valorsworn is a knight with a selfless heart, courageous hand, and an unyielding will in the face of danger.",
           "complexity": 2,
           "story": false,
@@ -524,6 +527,7 @@
         },
         {
           "name": "Oath of Roaring Thunder",
+          "page": 11,
           "flavor": "With the power of thunder smash your foes across the battlefield, and with the swiftness of lightning you dash after them to strike them dead.",
           "complexity": 2,
           "story": false,
@@ -568,6 +572,7 @@
         },
         {
           "name": "Oathbreaker",
+          "page": 13,
           "flavor": "Fallen, seeking redemption.",
           "complexity": 3,
           "story": true,
@@ -1087,6 +1092,7 @@
       "subclasses": [
         {
           "name": "Pact of the Red Dragon",
+          "page": 10,
           "flavor": "The Great Dragon’s flames are yours. Its wrath is yours. Soon, even its flesh will be too.",
           "complexity": 2,
           "story": false,
@@ -1131,6 +1137,7 @@
         },
         {
           "name": "Pact of the Abyssal Depths",
+          "page": 11,
           "flavor": "Icy tendrils reach out from the abyss, and drag your foes into absolute cold and darkness.",
           "complexity": 3,
           "story": false,
@@ -1175,6 +1182,7 @@
         },
         {
           "name": "Pact of the Void",
+          "page": 13,
           "flavor": "Your cosmic master gazes from beyond the stars. Time and space are mere playthings to you.",
           "complexity": 3,
           "story": false,
@@ -1231,6 +1239,7 @@
         },
         {
           "name": "Pact of the Endless Swarm",
+          "page": 14,
           "flavor": "Pests and vermin… Even the weakest grow strong in numbers. The denizens of your swarm are infinite and unyielding.",
           "complexity": 3,
           "story": false,
@@ -1279,6 +1288,7 @@
         },
         {
           "name": "Pact of the High Celestial",
+          "page": 15,
           "flavor": "Be not afraid! Your radiant spirits empower, bless, and protect those that you deem worthy.",
           "complexity": 2,
           "story": false,
@@ -1327,6 +1337,7 @@
         },
         {
           "name": "Reaver",
+          "page": 17,
           "flavor": "Cast aside, born anew.",
           "story": true,
           "intro": "Hollow One. Cut off from your Patron, you can no longer cast Shadow Blast, nor can you cast tiered spells using Pilfered Power. However, as a parting token, you have stolen a secret from your Patron: the magical Bonescythe, a weapon of sinew and bone, infused with shadowy magic.",
@@ -1820,6 +1831,7 @@
       "subclasses": [
         {
           "name": "Luminary of Malice",
+          "page": 8,
           "flavor": "With death as your companion, you can unleash dark powers on your foes.",
           "complexity": 2,
           "story": false,
@@ -1868,6 +1880,7 @@
         },
         {
           "name": "Luminary of Mercy",
+          "page": 10,
           "flavor": "Save the dying, wield the light, embody your virtue. Your compassion makes you a worthy vessel for radiant energy.",
           "complexity": 2,
           "story": false,
@@ -1916,6 +1929,7 @@
         },
         {
           "name": "Luminary of Protection",
+          "page": 11,
           "flavor": "“An ounce of prevention is worth a pound of cure. Why wait for your friends to get hurt to heal them when you could prevent them from being hurt in the first place?”",
           "complexity": 1,
           "story": false,
@@ -1960,6 +1974,7 @@
         },
         {
           "name": "Luminary of the Forge",
+          "page": 12,
           "flavor": "“Your Lifebinding Spirit is the furnace’s flame incarnate.”",
           "complexity": 2,
           "story": true,
@@ -2786,6 +2801,7 @@
       "subclasses": [
         {
           "name": "Herald of Snark",
+          "page": 8,
           "flavor": "Nothing wrong with a little lighthearted jest now and again! Distract and discourage your enemies with tricks of the mind.",
           "complexity": 2,
           "story": false,
@@ -2830,6 +2846,7 @@
         },
         {
           "name": "Herald of Courage",
+          "page": 9,
           "flavor": "“Brave heroes! Lend your ears to my epic tale…” Be heartened, and your friends will never falter.",
           "complexity": 2,
           "story": false,
@@ -2874,6 +2891,7 @@
         },
         {
           "name": "Herald of Singing Steel",
+          "page": 10,
           "flavor": "Your blade cuts as deeply as your wit. Choose this subclass if you want to blend musical mastery with deadly bladework.",
           "complexity": 2,
           "story": false,
@@ -2922,6 +2940,7 @@
         },
         {
           "name": "Herald of Torment",
+          "page": 11,
           "flavor": "Songweavers are often thought of as musicians that play uplifting songs and tell hopeful stories, but a Herald of Torment uses that same ability to poison the minds of their foes.",
           "complexity": 3,
           "story": false,
@@ -2966,6 +2985,7 @@
         },
         {
           "name": "Herald of Legends",
+          "page": 12,
           "flavor": "Gained the ability to channel a legendary creature’s power to supplement your own.",
           "complexity": 4,
           "story": true,
@@ -3069,6 +3089,12 @@
     "Songweaver level 5 'A “People” Person': the text layer has mismatched quotes (“People“); normalized to “People” to match the section heading.",
     "Typos kept as printed: Oathsworn FAQ 'Can I used Judgment Dice on spells?'; Oath of Vengeance 'Judgement Dice'; Shepherd FAQ 'It has no HP of its own HP' and 'untill dismissed'.",
     "Herald of Singing Steel and Herald of Torment label their pips 'Class Complexity' rather than 'Subclass Complexity'; recorded as the subclass complexity.",
-    "Resource `max` values are as printed in the features: Judgment Dice '2' (2d6, die size rises with level), Lay on Hands '5×LVL', Pilfered Power 'DEX', Shadows 'INT' (Shadow Limit), Mend 'WIL', Songweaver’s Inspiration '2×WIL'."
+    "Resource `max` values are as printed in the features: Judgment Dice '2' (2d6, die size rises with level), Lay on Hands '5×LVL', Pilfered Power 'DEX', Shadows 'INT' (Shadow Limit), Mend 'WIL', Songweaver’s Inspiration '2×WIL'.",
+    "Checked against Oathsworn 3.0, Shadowmancer 3.1, Shepherd 3.1 and Songweaver 3.1 (page images and text layer): every feature, option, subclass, spell, sidebar and FAQ text matches as printed.",
+    "Shadowmancer 3.1 prints 'Shadowmastery. Choose 1 Necrotic Utility Spell.' at the top of printed page 5, one line above the LEVEL 7 label: it is level 6's second feature, pushed over the page break by the new Skilled Hero line (3.0 prints it under LEVEL 6). It stays at level 6.",
+    "Shadowmancer chooses its subclass (Pact) at level 3 through 'THE PACT IS SEALED. Choose a Shadowmancer subclass and 1 Lesser Shadow Invocation.'; every subclass has level 3 features.",
+    "Shepherd 3.1 also reprints the Fire spells (printed page 16) for Luminary of the Forge. They are left out of Shepherd's `spells` on purpose: merge.py puts every class spell in the class's `spellList`, and the sheet grants those to every Shepherd. Core has them.",
+    "Shepherd 3.1's Unspeakable Word has a boxed 'D66 with advantage' note (also printed in Core 3.3); it is kept out of the spell text, matching spells.json, which has it under magicRules.",
+    "Subclass `page` is the printed page of the subclass's level list (the right-hand page for Oathbreaker, Pact of the Void and Reaver, whose left page is art)."
   ]
 }
