@@ -10,6 +10,7 @@
 //   /roll 2d6+3       → rolls and writes the result
 
 import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, Notice, setIcon, TFile } from 'obsidian';
+import { gameIcon } from './icons';
 import type EmberVaultPlugin from '../../main';
 import { BOX_PRESETS, boxColor, newBox } from './box-def';
 import { Campaign, fmText, homeFolderFor, NoteRef, questsIn, questState, safeName } from './campaign-model';
@@ -167,7 +168,7 @@ export class SlashSuggest extends EditorSuggest<SlashItem> {
 		el.addClass('nimble-slash-item');
 		// Each row in the note's game look (its type, its accent on the chosen row); the menu itself stays Obsidian's.
 		applyLook(el, this.plugin.system(this.context?.file?.path).id);
-		setIcon(el.createDiv({ cls: 'nimble-slash-icon' }), item.icon);
+		setIcon(el.createDiv({ cls: 'nimble-slash-icon' }), gameIcon(item.icon));
 		const text = el.createDiv({ cls: 'nimble-slash-text' });
 		text.createDiv({ cls: `nimble-slash-title${item.title.startsWith('/') ? ' is-command' : ''}`, text: item.title });
 		if (item.detail) text.createDiv({ cls: 'nimble-slash-detail', text: item.detail });

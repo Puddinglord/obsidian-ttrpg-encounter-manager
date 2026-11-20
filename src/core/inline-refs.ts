@@ -7,6 +7,7 @@ import { syntaxTree } from '@codemirror/language';
 import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
+import { gameIcon } from './icons';
 import { applyLook } from './look';
 
 export interface RefPillOptions {
@@ -45,7 +46,7 @@ export function refPill(o: RefPillOptions): { el: HTMLElement; name: HTMLElement
 	el.addClass('nimble-inline-found');
 	if (o.icon) {
 		const icon = el.createSpan({ cls: 'nimble-inline-kind', attr: { 'aria-hidden': 'true', ...(o.icon.label ? { title: o.icon.label } : {}) } });
-		setIcon(icon, o.icon.name);
+		setIcon(icon, gameIcon(o.icon.name));
 	}
 	if (o.badge) el.createSpan({ cls: 'nimble-inline-level', text: o.badge.text, attr: o.badge.title ? { title: o.badge.title } : {} });
 	const name = el.createEl('a', { text: o.name, cls: 'nimble-inline-name', attr: { href: '#', role: 'link', ...o.nameAttr } });
