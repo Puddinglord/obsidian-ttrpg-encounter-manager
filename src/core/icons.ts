@@ -18,7 +18,11 @@ const D20 = '<path d="M8 1.3 14.2 4.9v6.2L8 14.7 1.8 11.1V4.9Z"/><path d="M8 1.3
 
 /** Register every icon with Obsidian. Called once at load. Obsidian draws icons on a 100 × 100 grid. */
 export function registerIcons(): void {
-	for (const [name, paths] of Object.entries(PHOSPHOR_BOLD)) {
+	const data: Record<string, string> = PHOSPHOR_BOLD;
+	for (const name of Object.keys(data)) {
+		// Some names are aliases ("@first-aid"): our word for an icon that's drawn under another name.
+		let paths = data[name], hops = 0;
+		while (paths.startsWith('@') && hops++ < 4) paths = data[paths.slice(1)] ?? '';
 		// Phosphor's shapes are filled; Obsidian's icon CSS strokes and doesn't fill, so the group says otherwise.
 		addIcon(evIcon(name as EvIconName), `<g fill="currentColor" stroke="none" transform="scale(0.390625)">${paths}</g>`);
 	}
