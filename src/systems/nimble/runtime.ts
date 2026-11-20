@@ -20,7 +20,7 @@ import { COMPENDIUM_VIEW_TYPE, CompendiumView } from './compendium-view';
 import { AddSeveralModal } from './count-modal';
 import { notesBody } from './creature-notes';
 import BESTIARY from './data/bestiary.json';
-import { EncounterStore } from './encounters';
+import { EncounterStore, shownLabel } from './encounters';
 import { MonsterIndex } from './monster-index';
 import { toStatblockSource } from './parser';
 import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './render';
@@ -324,7 +324,7 @@ export class NimbleRuntime {
 		await this.showTracker();
 		new Notice(added.length === 1 && added[0].count !== undefined
 			? `${count} × ${monster.name} added (${added[0].alive} in the group)`
-			: `Added ${added.map(c => c.label).join(', ')}`);
+			: `Added ${added.map(c => shownLabel(c, this.encounters.active?.creatures ?? added)).join(', ')}`);
 	}
 
 	openAddMonsterModal(): void {

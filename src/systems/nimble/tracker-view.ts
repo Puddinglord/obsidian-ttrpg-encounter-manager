@@ -10,7 +10,7 @@ import { openGameSettings } from '../../core/settings-ui';
 import type EmberVaultPlugin from '../../../main';
 import { AppliedCondition, Encounter, EncounterCreature, MonsterIndexEntry } from './types';
 import {
-	actingCreature, awaitingLastStand, heroesToAct, HpResult, isDown, isHero, isMinionGroup, legendaryUp, nextMonster,
+	actingCreature, awaitingLastStand, heroesToAct, HpResult, isDown, isHero, isMinionGroup, legendaryUp, nextMonster, shownLabel,
 } from './encounters';
 import { conditionLabel, formatLevel, groupAttack, lastStandEffect, minionDie, monsterRole, parseHpCommand, pipStep } from './rules';
 import { appendRichText } from '../../core/markdown';
@@ -334,12 +334,12 @@ export class EncounterTrackerView extends ItemView {
 	private renderInitRow(list: HTMLElement, enc: Encounter, c: EncounterCreature): void {
 		const row = list.createDiv({ cls: 'creature-item ev-row nimble-row nimble-init-row role-hero' });
 		row.dataset.creatureId = c.id;
-		selectableRow(row, c.id, `${c.label}: put on the card`, () => this.store.setActing(enc.id, c.id));
+		selectableRow(row, c.id, `${this.nm(enc, c)}: put on the card`, () => this.store.setActing(enc.id, c.id));
 		onLongPress(row, (e) => this.creatureMenu(e, enc, c));
 		const die = row.createSpan({ cls: 'nimble-init-die', attr: { 'aria-hidden': 'true' } });
 		setIcon(die, evIcon('d20'));
 		const name = row.createDiv({ cls: 'creature-name-box' });
-		name.createSpan({ cls: 'creature-label', text: c.label });
+		name.createSpan({ cls: 'creature-label', text: this.nm(enc, c) });
 		if (c.monster.type) name.createSpan({ cls: 'creature-sub', text: `${c.monster.type}${c.monster.level ? ` ${String(c.monster.level)}` : ''}` });
 		const mid = row.createDiv({ cls: 'nimble-row-mid' });
 		if (c.init !== undefined) this.actionCards(mid, c.actions ?? 3, 3);
@@ -349,7 +349,7 @@ export class EncounterTrackerView extends ItemView {
 
 	/** The Initiative box: what they rolled; Enter or leaving it sets their first-turn actions. */
 	private initInput(parent: HTMLElement, enc: Encounter, c: EncounterCreature): void {
-		const box = parent.createEl('input', { type: 'number', cls: 'nimble-init-input', attr: { 'aria-label': `${c.label}: Initiative`, inputmode: 'numeric', placeholder: '–' } });
+		const box = parent.createEl('input', { type: 'number', cls: 'nimble-init-input', attr: { 'aria-label': `${this.nm(enc, c)}: Initiative`, inputmode: 'numeric', placeholder: '–' } });
 		if (c.init !== undefined) box.value = String(c.init);
 		box.addEventListener('change', () => {
 			const n = parseInt(box.value, 10);
@@ -369,7 +369,7 @@ export class EncounterTrackerView extends ItemView {
 		const heroSide = enc.phase !== 'monsters';
 		renderTicker(body, {
 			round,
-			turn: beat ? `After ${after?.label ?? 'a hero'}'s turn` : cur ? `${cur.label}'s turn` : heroSide ? "Heroes' side" : "Monsters' side",
+			turn: beat ? `After ${after ? this.nm(enc, after) : 'a hero'}'s turn` : cur ? `${this.nm(enc, cur)}'s turn` : heroSide ? "Heroes' side" : "Monsters' side",
 			note: heroSide ? 'heroes' : 'monsters',
 		});
 		this.renderSides(body, enc);
@@ -482,7 +482,8 @@ export class EncounterTrackerView extends ItemView {
 		card.dataset.creatureId = c.id;
 		card.dataset.flowRow = c.id;
 		card.setAttr('tabindex', '0');
-		card.setAttr('aria-label', `${c.label}, acting now`);
+		const shown = this.nm(enc, c);
+		card.setAttr('aria-label', `${shown}, acting now`);
 		if (!hero && !isMinionGroup(c)) card.addClass(hpClass(c.currentHp, c.maxHp));
 		if (isDown(c)) card.addClass('is-down');
 		if (c.done) card.addClass('is-done');
@@ -491,13 +492,13 @@ export class EncounterTrackerView extends ItemView {
 		if (o.beat) {
 			const k = card.createDiv({ cls: 'ev-card-kicker is-beat' });
 			setIcon(k.createSpan({ cls: 'ev-card-kicker-icon' }), evIcon('crown'));
-			k.createSpan({ text: `After ${o.after?.label ?? 'the hero'}'s turn` });
+			k.createSpan({ text: `After ${o.after ? this.nm(enc, o.after) : 'the hero'}'s turn` });
 		}
 
 		// Name and what they are; a hero's actions (or a legendary's phase) on the right.
 		const top = card.createDiv({ cls: 'nimble-card-top' });
 		const nm = top.createDiv({ cls: 'nimble-card-name creature-name-box' });
-		const name = nm.createEl('h2', { cls: 'creature-label', text: c.label });
+		const name = nm.createEl('h2', { cls: 'creature-label', text: shown });
 		if (!hero) attachMonsterHover(this.plugin, name, () => this.entryFor(c));
 		const meta = nm.createDiv({ cls: 'nimble-card-meta creature-meta' });
 		const part = (text: string) => { if (meta.childElementCount) meta.createSpan({ cls: 'meta-sep', text: '·' }); return meta.createSpan({ text }); };
@@ -526,10 +527,10 @@ export class EncounterTrackerView extends ItemView {
 			const bloodied = c.currentHp <= c.maxHp / 2;
 			const chip = meta.createSpan({ cls: `nimble-phase-chip phase-chip${bloodied || c.lastStand ? ' is-on' : ''}`, text: c.lastStand ? 'Last Stand' : bloodied ? 'Bloodied' : 'Normal' });
 			const rules = c.lastStand ? c.monster.lastStand : c.monster.bloodied;
-			if (rules) this.ruleChip(chip, c.lastStand ? 'Last Stand' : 'Bloodied', rules, c.label);
+			if (rules) this.ruleChip(chip, c.lastStand ? 'Last Stand' : 'Bloodied', rules, shown);
 		}
 		if (!right.childElementCount) right.remove();
-		const more = top.createEl('button', { cls: 'clickable-icon creature-more', attr: { 'aria-label': `${c.label}: more` } });
+		const more = top.createEl('button', { cls: 'clickable-icon creature-more', attr: { 'aria-label': `${shown}: more` } });
 		setIcon(more, evIcon('more'));
 		more.onclick = (e) => this.creatureMenu(e, enc, c);
 
@@ -601,8 +602,9 @@ export class EncounterTrackerView extends ItemView {
 		if (!list.length && !m.multiattack) return;
 		const menu = card.createDiv({ cls: 'nimble-card-menu' });
 		const intro = role === 'legendary' ? (m.actionText || "After each hero's turn, choose one:") : m.actionText;
-		if (intro) this.rich(menu.createDiv({ cls: 'nimble-card-menu-h' }), intro, c.label);
-		if (m.multiattack) this.rich(menu.createDiv({ cls: 'nimble-card-menu-h' }), m.multiattack, c.label);
+		const who = this.nm(enc, c);
+		if (intro) this.rich(menu.createDiv({ cls: 'nimble-card-menu-h' }), intro, who);
+		if (m.multiattack) this.rich(menu.createDiv({ cls: 'nimble-card-menu-h' }), m.multiattack, who);
 		const names = list.map(a => actionName(a.raw));
 		const usedLast = role === 'legendary' ? c.lastAction : undefined;
 		for (const [i, atk] of list.entries()) {
@@ -613,7 +615,7 @@ export class EncounterTrackerView extends ItemView {
 			const mark = () => { if (role === 'legendary') this.store.useBeatAction(enc.id, c.id, name); };
 			// The action's name in the book's face: bold already ("**Bite.** 2d6"), or the words before its dice.
 			const raw = !/^\s*\*\*/.test(atk.raw) && name && atk.raw.startsWith(name) ? `**${name}**${atk.raw.slice(name.length)}` : atk.raw;
-			this.rich(row, raw, c.label, 'attack', role === 'legendary' ? mark : undefined);
+			this.rich(row, raw, who, 'attack', role === 'legendary' ? mark : undefined);
 			if (used) row.createSpan({ cls: 'nimble-card-act-note', text: 'used last' });
 			if (role === 'legendary') {
 				row.setAttr('aria-label', `${name}: use it`);
@@ -702,7 +704,7 @@ export class EncounterTrackerView extends ItemView {
 	/** The HP number as a button: tap it for the keypad. Its text reads "12/20". */
 	private hpButton(parent: HTMLElement, enc: Encounter, c: EncounterCreature, cls: string): HTMLButtonElement {
 		const minions = isMinionGroup(c);
-		const b = parent.createEl('button', { cls: `hp-display ${cls}`, attr: { 'data-hp-for': c.id, 'aria-haspopup': 'dialog', 'aria-label': `${c.label}: HP` } });
+		const b = parent.createEl('button', { cls: `hp-display ${cls}`, attr: { 'data-hp-for': c.id, 'aria-haspopup': 'dialog', 'aria-label': `${this.nm(enc, c)}: HP` } });
 		b.createEl('b', { text: minions ? String(c.alive ?? 0) : c.maxHp > 0 ? String(c.currentHp) : '—' });
 		if (minions || c.maxHp > 0) b.createEl('small', { text: `/${minions ? c.count : c.maxHp}` });
 		if (c.tempHp) b.createSpan({ cls: 'hp-temp', text: ` +${c.tempHp}` });
@@ -725,7 +727,8 @@ export class EncounterTrackerView extends ItemView {
 		if (c.maxHp > 0 && c.currentHp > 0 && c.currentHp <= c.maxHp / 2 && !isMinionGroup(c)) row.addClass('is-low');
 		const waiting = (enc.phase === 'heroes' && !hero) || (enc.phase === 'monsters' && hero);
 		if (waiting && !c.done) row.addClass('is-waiting');
-		selectableRow(row, c.id, `${c.label}: put on the card`, () => this.store.setActing(enc.id, c.id));
+		const shown = this.nm(enc, c);
+		selectableRow(row, c.id, `${shown}: put on the card`, () => this.store.setActing(enc.id, c.id));
 		onLongPress(row, (e) => this.creatureMenu(e, enc, c));
 		this.makeDraggable(row, list, enc, c);
 
@@ -736,7 +739,7 @@ export class EncounterTrackerView extends ItemView {
 		});
 
 		const nameBox = row.createDiv({ cls: 'creature-name-box' });
-		const label = nameBox.createSpan({ cls: 'creature-label', text: c.label });
+		const label = nameBox.createSpan({ cls: 'creature-label', text: shown });
 		if (!hero) attachMonsterHover(this.plugin, label, () => this.entryFor(c));
 		const sub = nameBox.createDiv({ cls: 'creature-sub conditions-row' });
 		if (hero && c.monster.type) sub.createSpan({ cls: 'creature-class', text: `${c.monster.type}${c.monster.level !== undefined ? ` ${String(c.monster.level)}` : ''}` });
@@ -769,7 +772,7 @@ export class EncounterTrackerView extends ItemView {
 		const btn = this.hpButton(hp, enc, c, 'nimble-row-hp-num');
 		if (isMinionGroup(c)) {
 			btn.empty();
-			btn.setAttr('aria-label', `${c.label}: ${c.alive} of ${c.count} standing`);
+			btn.setAttr('aria-label', `${this.nm(enc, c)}: ${c.alive} of ${c.count} standing`);
 			btn.createSpan({ cls: 'nimble-minions-text', text: `${c.alive}/${c.count}` });
 			const sq = btn.createSpan({ cls: 'nimble-minions', attr: { 'aria-hidden': 'true' } });
 			for (let i = 0; i < (c.count ?? 0); i++) sq.createEl('i', { cls: i < (c.alive ?? 0) ? 'is-on' : '' });
@@ -798,7 +801,7 @@ export class EncounterTrackerView extends ItemView {
 		const inCombat = !!enc.phase && enc.phase !== 'setup';
 		if (inCombat && enc.acting === c.id && !c.done) { this.store.next(enc.id); return; }
 		const expired = this.store.setDone(enc.id, c.id, !c.done);
-		if (expired.length) new Notice(`${c.label}: ${expired.join(', ')} wore off`);
+		if (expired.length) new Notice(`${this.nm(enc, c)}: ${expired.join(', ')} wore off`);
 	}
 
 	// ------------------------------------------------------------------------
@@ -827,12 +830,12 @@ export class EncounterTrackerView extends ItemView {
 		if (enc.phase !== 'monsters') {
 			const boss = this.plugin.settings.legendaryBeat !== false ? legendaryUp(enc) : undefined;
 			if (enc.beat && cur) primary = heroesToAct(enc).length ? { text: 'Back to heroes', icon: evIcon('arrow-right'), run: next } : { text: "Monsters' turn", icon: evIcon('next'), run: next };
-			else if (cur && isHero(cur)) primary = { text: boss && boss.id !== cur.id ? `Done · ${shortName(boss.label)} acts` : 'Done', icon: evIcon('check'), run: next };
+			else if (cur && isHero(cur)) primary = { text: boss && boss.id !== cur.id ? `Done · ${shortName(this.nm(enc, boss))} acts` : 'Done', icon: evIcon('check'), run: next };
 			else if (cur) primary = { text: 'Done', icon: evIcon('check'), run: next };
 			else primary = { text: "Monsters' turn", icon: evIcon('next'), run: next };
 		} else {
 			const nxt = nextMonster(enc, cur?.id);
-			primary = cur && nxt ? { text: `Next: ${nxt.label}`, icon: evIcon('next'), run: next } : { text: `Round ${round + 1}`, icon: evIcon('next'), run: () => cur ? next() : this.nextRound(enc) };
+			primary = cur && nxt ? { text: `Next: ${this.nm(enc, nxt)}`, icon: evIcon('next'), run: next } : { text: `Round ${round + 1}`, icon: evIcon('next'), run: () => cur ? next() : this.nextRound(enc) };
 		}
 		trackerFoot(container, { back, primary: { ...primary, cls: 'round-action' } });
 		this.primaryRun = primary.run;
@@ -884,7 +887,7 @@ export class EncounterTrackerView extends ItemView {
 			setIcon(x, evIcon('x'));
 			x.onclick = () => { this.prompts = this.prompts.filter(q => q !== p); this.render(); };
 			const creature = p.creatureId ? enc.creatures.find(c => c.id === p.creatureId) : undefined;
-			const name = creature?.label || p.monsterName || '';
+			const name = (creature ? this.nm(enc, creature) : '') || p.monsterName || '';
 			if (p.text) this.rich(main.createDiv({ cls: 'prompt-text' }), p.text, name);
 			if (p.lines?.length) {
 				const ul = main.createEl('ul', { cls: 'prompt-lines' });
@@ -910,6 +913,11 @@ export class EncounterTrackerView extends ItemView {
 			keywords: nimble().conditionKeywords(),
 			onKeyword: (span, word) => nimble().markWord(span, word),
 		});
+	}
+
+	/** The name as shown: a lone monster without its number ("Goblin", not "Goblin-1"). */
+	private nm(enc: Encounter, c: EncounterCreature): string {
+		return shownLabel(c, enc.creatures);
 	}
 
 	private entryFor(c: EncounterCreature): MonsterIndexEntry {
@@ -955,7 +963,7 @@ export class EncounterTrackerView extends ItemView {
 		if (at > 0) menu.addItem(i => i.setTitle('Move up').setIcon('arrow-up').onClick(() => this.store.reorder(enc.id, c.id, side[at - 1].id)));
 		if (at < side.length - 1) menu.addItem(i => i.setTitle('Move down').setIcon('arrow-down').onClick(() => this.store.reorder(enc.id, c.id, side[at + 1].id)));
 		menu.addItem(i => i.setTitle(c.note ? 'Edit note' : 'Add note').setIcon('sticky-note').onClick(() => {
-			new NoteModal(this.app, c.label, c.note || '', (note) => this.store.setNote(enc.id, c.id, note)).open();
+			new NoteModal(this.app, this.nm(enc, c), c.note || '', (note) => this.store.setNote(enc.id, c.id, note)).open();
 		}));
 		menu.addSeparator();
 		menu.addItem(i => i.setTitle('Remove').setIcon('trash-2').onClick(() => {
@@ -987,12 +995,12 @@ export class EncounterTrackerView extends ItemView {
 		if (!after) return;
 		const m = after.monster;
 		if (r.crossed === 'bloodied' && m.bloodied) {
-			this.pushPrompt({ id: `blood-${c.id}`, kind: 'bloodied', creatureId: c.id, title: `${after.label} is Bloodied`, text: m.bloodied });
+			this.pushPrompt({ id: `blood-${c.id}`, kind: 'bloodied', creatureId: c.id, title: `${this.nm(enc, after)} is Bloodied`, text: m.bloodied });
 			this.render();
 		} else if (r.crossed === 'last-stand' && m.lastStand && !after.lastStand) {
 			const effect = lastStandEffect(m.lastStand, this.store.partySize(enc));
 			this.pushPrompt({
-				id: `last-${c.id}`, kind: 'laststand', creatureId: c.id, title: `${after.label}: Last Stand!`, text: m.lastStand,
+				id: `last-${c.id}`, kind: 'laststand', creatureId: c.id, title: `${this.nm(enc, after)}: Last Stand!`, text: m.lastStand,
 				action: { label: effect ? (effect.kind === 'regain' ? `Apply: regain ${effect.hp} HP` : `Apply: ${effect.hp} more damage to finish`) : 'Mark Last Stand', run: () => { this.store.applyLastStand(enc.id, c.id); } },
 			});
 			this.render();
@@ -1003,7 +1011,7 @@ export class EncounterTrackerView extends ItemView {
 	private openHp(anchor: HTMLElement, enc: Encounter, c: EncounterCreature, start: 'damage' | 'heal'): void {
 		if (isPopoverOpenFor(anchor)) { closePopover(); return; }
 		const friends = isHero(c) ? enc.creatures.filter(x => isHero(x) && x.id !== c.id && !isDown(x)) : [];
-		openHpCalculator(anchor, c, this.plugin.settings.autoArmor, (cmd, react) => this.applyCmd(enc, c, cmd, react), { start, friends });
+		openHpCalculator(anchor, c, this.plugin.settings.autoArmor, (cmd, react) => this.applyCmd(enc, c, cmd, react), { start, friends, label: this.nm(enc, c) });
 	}
 
 	// ------------------------------------------------------------------------
@@ -1045,11 +1053,11 @@ export class EncounterTrackerView extends ItemView {
 		const words = { save: 'save' };
 		return {
 			system: 'nimble',
-			bearer: { id: c.id, label: c.label },
+			bearer: { id: c.id, label: this.nm(enc, c) },
 			defs: nimble().getAllConditions(),
 			customNames: this.plugin.settings.customConditions.map(d => d.name),
 			applied: c.conditions,
-			others: enc.creatures.filter(x => x.id !== c.id).map(x => ({ id: x.id, label: x.label })),
+			others: enc.creatures.filter(x => x.id !== c.id).map(x => ({ id: x.id, label: this.nm(enc, x) })),
 			abilities: ['STR', 'DEX', 'INT', 'WIL'],
 			words,
 			value: { label: 'X =', ask: true },
@@ -1067,7 +1075,7 @@ export class EncounterTrackerView extends ItemView {
 	}
 
 	private showConditionPicker(anchor: HTMLElement, enc: Encounter, c: EncounterCreature): void {
-		openConditionPicker(anchor, { ...this.conditionOptions(enc, c), placeholder: `Condition for ${c.label}…` });
+		openConditionPicker(anchor, { ...this.conditionOptions(enc, c), placeholder: `Condition for ${this.nm(enc, c)}…` });
 	}
 
 	// ------------------------------------------------------------------------
@@ -1075,12 +1083,14 @@ export class EncounterTrackerView extends ItemView {
 	private startRename(enc: Encounter, c: EncounterCreature): void {
 		const label = this.root.querySelector<HTMLElement>(`[data-creature-id="${c.id}"] .creature-label`);
 		if (!label) return;
-		const input = createEl('input', { type: 'text', cls: 'label-edit-input', value: c.label });
+		// The name as it's shown; it's only saved if it changes.
+		const shown = this.nm(enc, c);
+		const input = createEl('input', { type: 'text', cls: 'label-edit-input', value: shown });
 		let done = false;
 		const finish = (save: boolean) => {
 			if (done) return;
 			done = true;
-			if (save && input.value.trim() && input.value.trim() !== c.label) this.store.renameCreature(enc.id, c.id, input.value);
+			if (save && input.value.trim() && input.value.trim() !== shown) this.store.renameCreature(enc.id, c.id, input.value);
 			else this.render();
 		};
 		input.onblur = () => finish(true);

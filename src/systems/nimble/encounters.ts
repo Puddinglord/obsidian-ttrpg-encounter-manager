@@ -93,6 +93,18 @@ export function sameFight(a: Encounter, b: Encounter): boolean {
 
 export const isMinionGroup = (c: EncounterCreature) => c.count !== undefined;
 export const isHero = (c: EncounterCreature) => c.side === 'hero';
+
+/**
+ * A creature's name as it's shown. Monsters are saved numbered ("Goblin-1", nextLabel), but the number only
+ * shows while two or more of that monster are in the fight: a lone one reads "Goblin". Heroes, minion groups
+ * and monsters the GM renamed show their label as it is. Saved labels never change.
+ */
+export function shownLabel(c: EncounterCreature, creatures: readonly EncounterCreature[]): string {
+	if (isHero(c) || isMinionGroup(c)) return c.label;
+	const name = c.monster.name;
+	if (!c.label.startsWith(`${name}-`) || !/^\d+$/.test(c.label.slice(name.length + 1))) return c.label;
+	return creatures.some(o => o.id !== c.id && !isHero(o) && o.monster.name === name) ? c.label : name;
+}
 /** A legendary monster at 0 HP whose Last Stand hasn't been played yet is still in the fight. */
 export const awaitingLastStand = (c: EncounterCreature) =>
 	!isHero(c) && !isMinionGroup(c) && c.currentHp <= 0 && !!c.monster.lastStand && !c.lastStand && monsterRole(c.monster) === 'legendary';
@@ -313,7 +325,7 @@ export class EncounterStore extends Events {
 				enc.creatures.push(c);
 				added.push(c);
 			}
-			if (enc.phase && enc.phase !== 'setup') this.log(enc, `${added.map(c => c.label).join(', ')} join${added.length === 1 ? 's' : ''} the fight`, false);
+			if (enc.phase && enc.phase !== 'setup') this.log(enc, `${added.map(c => shownLabel(c, enc.creatures)).join(', ')} join${added.length === 1 ? 's' : ''} the fight`, false);
 		}
 		this.commit();
 		return added;
@@ -407,7 +419,7 @@ export class EncounterStore extends Events {
 		const enc = this.find(encId);
 		c.maxHp = c.monster.hpPerHero ? scaledHp(c.monster, this.partySize(enc)) : c.monster.hp;
 		c.currentHp = Math.max(0, Math.round(c.currentHp * (c.maxHp / before)));
-		if (enc) this.log(enc, `${c.label} is now ${delta > 0 ? 'tougher' : 'weaker'} (level ${c.monster.level})`, false);
+		if (enc) this.log(enc, `${shownLabel(c, enc.creatures)} is now ${delta > 0 ? 'tougher' : 'weaker'} (level ${c.monster.level})`, false);
 		this.commit();
 	}
 
@@ -471,12 +483,12 @@ export class EncounterStore extends Events {
 				const r = heroDamage(c.currentHp, c.wounds ?? 0, c.maxWounds ?? 6, amount, !!cmd.crit);
 				c.currentHp = r.hp;
 				c.wounds = r.wounds;
-				events.push(...r.events.map(e => `${c.label} ${e}`));
-				if (!r.events.length) events.push(`${c.label} takes ${amount}${cmd.crit ? ' (crit)' : ''} → ${c.currentHp}/${c.maxHp}`);
+				events.push(...r.events.map(e => `${shownLabel(c, enc.creatures)} ${e}`));
+				if (!r.events.length) events.push(`${shownLabel(c, enc.creatures)} takes ${amount}${cmd.crit ? ' (crit)' : ''} → ${c.currentHp}/${c.maxHp}`);
 			} else if (cmd.kind === 'heal') {
 				const was = c.currentHp;
 				c.currentHp = Math.min(c.maxHp, c.currentHp + cmd.amount);
-				events.push(`${c.label} heals ${c.currentHp - was}${was === 0 && c.currentHp > 0 ? ' and is no longer Dying' : ''}`);
+				events.push(`${shownLabel(c, enc.creatures)} heals ${c.currentHp - was}${was === 0 && c.currentHp > 0 ? ' and is no longer Dying' : ''}`);
 			} else if (cmd.kind === 'set') {
 				c.currentHp = Math.max(0, Math.min(c.maxHp, cmd.amount));
 			} else if (cmd.kind === 'temp') {
@@ -489,13 +501,13 @@ export class EncounterStore extends Events {
 				if (c.tempHp) c.tempHp -= r.absorbed;
 				c.currentHp = r.hp;
 				breakdown = r.breakdown !== String(r.applied) ? r.breakdown : undefined;
-				events.push(`${c.label} takes ${amount}${cmd.crit ? ' (crit)' : ''}${breakdown ? ` [${breakdown}]` : ''} → ${c.currentHp}/${c.maxHp}`);
+				events.push(`${shownLabel(c, enc.creatures)} takes ${amount}${cmd.crit ? ' (crit)' : ''}${breakdown ? ` [${breakdown}]` : ''} → ${c.currentHp}/${c.maxHp}`);
 				if (c.currentHp === 0 && before > 0 && !(monsterRole(c.monster) === 'legendary' && c.monster.lastStand && !c.lastStand)) {
-					events.push(`${c.label} is defeated`);
+					events.push(`${shownLabel(c, enc.creatures)} is defeated`);
 				}
 			} else if (cmd.kind === 'heal') {
 				c.currentHp = Math.min(c.maxHp, c.currentHp + cmd.amount);
-				events.push(`${c.label} regains ${cmd.amount} → ${c.currentHp}/${c.maxHp}`);
+				events.push(`${shownLabel(c, enc.creatures)} regains ${cmd.amount} → ${c.currentHp}/${c.maxHp}`);
 			} else if (cmd.kind === 'set') {
 				c.currentHp = Math.max(0, Math.min(c.maxHp, cmd.amount));
 			} else if (cmd.kind === 'temp') {
@@ -505,8 +517,8 @@ export class EncounterStore extends Events {
 
 		for (const e of events) this.log(enc, e, false);
 		const crossed = isMinionGroup(c) || isHero(c) ? null : crossedThreshold(before, c.currentHp, c.maxHp);
-		if (crossed === 'bloodied') this.log(enc, `${c.label} is Bloodied`, false);
-		if (crossed === 'last-stand' && c.monster.lastStand && !c.lastStand) this.log(enc, `${c.label} reaches 0 HP: Last Stand`, false);
+		if (crossed === 'bloodied') this.log(enc, `${shownLabel(c, enc.creatures)} is Bloodied`, false);
+		if (crossed === 'last-stand' && c.monster.lastStand && !c.lastStand) this.log(enc, `${shownLabel(c, enc.creatures)} reaches 0 HP: Last Stand`, false);
 		this.commit();
 		return { crossed, breakdown, events };
 	}
@@ -552,7 +564,7 @@ export class EncounterStore extends Events {
 		if (!enc || !c || c.lastStand) return null; // a Last Stand happens once
 		const effect = lastStandEffect(c.monster.lastStand, this.partySize(enc));
 		c.lastStand = true;
-		let msg = `${c.label} makes a Last Stand`;
+		let msg = `${shownLabel(c, enc.creatures)} makes a Last Stand`;
 		if (effect) {
 			c.currentHp = effect.hp;
 			c.maxHp = Math.max(c.maxHp, effect.hp);
@@ -604,11 +616,11 @@ export class EncounterStore extends Events {
 		const timing: ConditionTiming = { ...opts.timing };
 		if (opts.rounds && opts.rounds > 0) timing.rounds = opts.rounds;
 		// Nimble's sides have no one current turn, so nothing is skipped: "1 round" ends when its turn is marked done.
-		const applied: AppliedCondition = applyTiming(name, timing, { bearerId: c.id, value: opts.value, source: src ? { id: src.id, label: src.label } : undefined });
+		const applied: AppliedCondition = applyTiming(name, timing, { bearerId: c.id, value: opts.value, source: src ? { id: src.id, label: shownLabel(src, enc.creatures) } : undefined });
 		const i = c.conditions.findIndex(x => x.name === name);
 		if (i === -1) c.conditions.push(applied);
 		else c.conditions[i] = applied;
-		this.log(enc, `${c.label} is ${name}${opts.value !== undefined ? ` ${opts.value}` : ''}${applied.rounds ? ` (${applied.rounds} round${applied.rounds === 1 ? '' : 's'})` : ''}`, false);
+		this.log(enc, `${shownLabel(c, enc.creatures)} is ${name}${opts.value !== undefined ? ` ${opts.value}` : ''}${applied.rounds ? ` (${applied.rounds} round${applied.rounds === 1 ? '' : 's'})` : ''}`, false);
 		this.commit();
 	}
 
@@ -617,7 +629,7 @@ export class EncounterStore extends Events {
 		const c = enc?.creatures.find(x => x.id === creatureId);
 		if (!enc || !c || !c.conditions.some(x => x.name === name)) return;
 		c.conditions = c.conditions.filter(x => x.name !== name);
-		this.log(enc, `${c.label} is no longer ${name}`, false);
+		this.log(enc, `${shownLabel(c, enc.creatures)} is no longer ${name}`, false);
 		this.commit();
 	}
 
@@ -643,7 +655,7 @@ export class EncounterStore extends Events {
 		const cond = enc?.creatures.find(x => x.id === creatureId)?.conditions.find(x => x.name === name);
 		if (!enc || !cond) return;
 		const src = sourceId ? enc.creatures.find(x => x.id === sourceId) : undefined;
-		retime(cond, timing, { bearerId: creatureId, source: src ? { id: src.id, label: src.label } : undefined });
+		retime(cond, timing, { bearerId: creatureId, source: src ? { id: src.id, label: shownLabel(src, enc.creatures) } : undefined });
 		this.commit();
 	}
 
@@ -658,7 +670,9 @@ export class EncounterStore extends Events {
 		bearers.forEach((b, i) => { enc.creatures[i].conditions = b.conditions; });
 		// What ran out on someone else (counting on this creature's turn) goes in the log.
 		for (const e of r.expired) {
-			if (e.bearerId !== creatureId) this.log(enc, `${enc.creatures.find(c => c.id === e.bearerId)?.label ?? '?'}: ${e.condition.name} wore off`, false);
+			if (e.bearerId === creatureId) continue;
+			const bearer = enc.creatures.find(c => c.id === e.bearerId);
+			this.log(enc, `${bearer ? shownLabel(bearer, enc.creatures) : '?'}: ${e.condition.name} wore off`, false);
 		}
 		this.pendingEffects.push(...r.prompts);
 		this.recording?.push(r);
@@ -808,7 +822,7 @@ export class EncounterStore extends Events {
 		if (!enc || !c) return;
 		c.lastAction = action;
 		const after = enc.beat ? enc.creatures.find(x => x.id === enc.beat?.after) : undefined;
-		this.log(enc, `${c.label}: ${action}${after ? ` after ${after.label}'s turn` : ''}`, false);
+		this.log(enc, `${shownLabel(c, enc.creatures)}: ${action}${after ? ` after ${after.label}'s turn` : ''}`, false);
 		this.commit();
 	}
 
@@ -826,7 +840,7 @@ export class EncounterStore extends Events {
 		c.done = true;
 		const expired = this.boundary(enc, c.id, 'end').expired.filter(e => e.bearerId === c.id).map(e => e.condition.name);
 		if (isHero(c)) c.actions = 3; // heroes regain all 3 actions at the end of their turn
-		this.log(enc, `${c.label} ${isMinionGroup(c) ? 'have' : 'has'} gone${expired.length ? `; ${expired.join(', ')} wore off` : ''}`, false);
+		this.log(enc, `${shownLabel(c, enc.creatures)} ${isMinionGroup(c) ? 'have' : 'has'} gone${expired.length ? `; ${expired.join(', ')} wore off` : ''}`, false);
 		return expired;
 	}
 
@@ -848,7 +862,7 @@ export class EncounterStore extends Events {
 			// Its turn ends with the round, marked or not (once a round either way).
 			if (!c.done) {
 				const r = this.boundary(enc, c.id, 'end');
-				expiredAll.push(...r.expired.filter(e => e.bearerId === c.id).map(e => `${c.label}: ${e.condition.name}`));
+				expiredAll.push(...r.expired.filter(e => e.bearerId === c.id).map(e => `${shownLabel(c, enc.creatures)}: ${e.condition.name}`));
 			}
 		}
 		for (const c of enc.creatures) c.done = false;
@@ -1023,8 +1037,8 @@ export class EncounterStore extends Events {
 				const dead = (c.count ?? 0) - (c.alive ?? 0);
 				if (dead) down.push(`${dead} ${c.monster.name}${dead === 1 ? '' : 's'}`);
 				if (c.alive) standing.push(`${c.alive} ${c.monster.name}${c.alive === 1 ? '' : 's'}`);
-			} else if (c.currentHp <= 0) down.push(c.label);
-			else standing.push(`${c.label} (${c.currentHp}/${c.maxHp})`);
+			} else if (c.currentHp <= 0) down.push(shownLabel(c, enc.creatures));
+			else standing.push(`${shownLabel(c, enc.creatures)} (${c.currentHp}/${c.maxHp})`);
 		}
 		const heroes = enc.creatures.filter(isHero).filter(h => (h.wounds ?? 0) > 0).map(h => `${h.label} ${h.wounds} Wound${h.wounds === 1 ? '' : 's'}`);
 		const parts = [`**${enc.name}**: ${enc.round ?? 1} round${(enc.round ?? 1) === 1 ? '' : 's'}.`];

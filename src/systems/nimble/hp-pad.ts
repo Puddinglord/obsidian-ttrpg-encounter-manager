@@ -29,8 +29,10 @@ export function openHpCalculator(
 	c: EncounterCreature,
 	autoArmor: boolean,
 	apply: (cmd: HpCommand, react: HeroReaction) => void,
-	opts: { start?: 'damage' | 'heal'; friends?: EncounterCreature[] } = {},
+	opts: { start?: 'damage' | 'heal'; friends?: EncounterCreature[]; label?: string } = {},
 ): void {
+	// The name as the tracker shows it (a lone monster without its number).
+	const name = opts.label ?? c.label;
 	const minions = isMinionGroup(c);
 	const hero = isHero(c);
 	const modes: Partial<Record<Mode, HpPadModeInfo>> = minions
@@ -53,7 +55,7 @@ export function openHpCalculator(
 
 	openHpPad(anchor, {
 		id: c.id,
-		label: c.label,
+		label: name,
 		system: 'nimble',
 		start: opts.start,
 		sub: minions
@@ -63,7 +65,7 @@ export function openHpCalculator(
 		// Minions can't crit; heroes and minions have no vulnerable/resisted (armor is a monster's).
 		crit: !minions,
 		mods: !minions && !hero ? { vulnerable: 'Vulnerable +10', resisted: 'Resisted −10' } : null,
-		quick: quick.length ? { label: `If ${c.label} says so at the table`, items: quick } : null,
+		quick: quick.length ? { label: `If ${name} says so at the table`, items: quick } : null,
 		command: (mode, v, crit, mod) => {
 			if (mode === 'damage') return minions ? { kind: 'damage', amount: Math.max(1, v), crit: false } : v > 0 ? { kind: 'damage', amount: v, crit, type: mod } : null;
 			if (mode === 'heal') return v > 0 || minions ? { kind: 'heal', amount: Math.max(1, v) } : null;

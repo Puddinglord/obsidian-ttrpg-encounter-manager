@@ -989,7 +989,8 @@ test('compendium: search, role filter, add to the tracker', async (o) => {
 	const list = await creatures(o);
 	assert.deepEqual(list.map(c => [c.label, c.count]), [['Krogg, Goblin King-1', undefined], ['Goblin Minion', 2]]);
 	assert.equal(list[0].max, 90);
-	assert.equal(await card(o, 'Krogg, Goblin King-1').count(), 1);
+	// Saved as Krogg, Goblin King-1; a lone monster shows without its number.
+	assert.equal(await card(o, 'Krogg, Goblin King').count(), 1);
 
 	// Enter adds the selected monster, Shift+Enter two.
 	await o.page.locator(`${CMP} .nimble-cmpx-chip-x`).click();
@@ -1133,13 +1134,14 @@ test('add to encounter: button, shift-click, inline +, unique labels', async (o)
 	assert.equal(await o.page.locator(`${T} .creature-item`).count(), 4);
 	assert.deepEqual(await o.page.locator(`${T} .ev-sec > .ev-sec-title`).allTextContents(), ['Monsters']);
 	assert.equal(await o.page.locator(`${T} .ev-sec > small`).textContent(), '4');
-	assert.deepEqual(await o.page.locator(`${T} .creature-label`).allTextContents(), ['Goblin-2', 'Goblin-3', 'Goblin Boss-1', 'Goblin-4']);
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.hp-display').textContent(), '36/36');
+	// Numbers show only where there are two or more of a monster: the lone boss reads "Goblin Boss".
+	assert.deepEqual(await o.page.locator(`${T} .creature-label`).allTextContents(), ['Goblin-2', 'Goblin-3', 'Goblin Boss', 'Goblin-4']);
+	assert.equal(await card(o, 'Goblin Boss').locator('.hp-display').textContent(), '36/36');
 	// The row: its level, and its armor as the books draw it (the letter in a filled shield).
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.nimble-lvl').textContent(), 'L2');
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.nimble-armor.is-medium').textContent(), 'M');
+	assert.equal(await card(o, 'Goblin Boss').locator('.nimble-lvl').textContent(), 'L2');
+	assert.equal(await card(o, 'Goblin Boss').locator('.nimble-armor.is-medium').textContent(), 'M');
 	// On the card: "Level 2" and the armor.
-	const boss = await onCard(o, 'Goblin Boss-1');
+	const boss = await onCard(o, 'Goblin Boss');
 	assert.match(await boss.locator('.creature-meta').textContent(), /Level 2/);
 	assert.equal(await boss.locator('.armor-chip.armor-medium').count(), 1, 'armor shows as a badge');
 });
@@ -1446,12 +1448,12 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 test('typed damage, healing and set; invalid input is flagged', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster, 'Bestiary/Goblin.md'));
-	const row = card(o, 'Goblin-1');
-	await typeHp(o, 'Goblin-1', '5');
+	const row = card(o, 'Goblin');
+	await typeHp(o, 'Goblin', '5');
 	assert.equal((await creatures(o))[0].hp, 7);
-	await typeHp(o, 'Goblin-1', '+3');
+	await typeHp(o, 'Goblin', '+3');
 	assert.equal((await creatures(o))[0].hp, 10);
-	await typeHp(o, 'Goblin-1', '=2');
+	await typeHp(o, 'Goblin', '=2');
 	assert.equal((await creatures(o))[0].hp, 2);
 	assert.ok(await row.evaluate(el => el.classList.contains('hp-critical')));
 	assert.equal(await row.locator('.hp-display').textContent(), '2/12');
@@ -1466,11 +1468,11 @@ test('typed damage, healing and set; invalid input is flagged', async (o) => {
 	assert.equal(await row.locator('.hp-display').textContent(), '2/12', 'the HP button never changes size or swaps out');
 
 	// Down at 0 HP, and back up.
-	await typeHp(o, 'Goblin-1', '5');
+	await typeHp(o, 'Goblin', '5');
 	assert.equal((await creatures(o))[0].hp, 0);
 	assert.ok(await row.evaluate(el => el.classList.contains('is-down')));
 	assert.match(await row.locator('.conditions-row').textContent(), /Defeated/);
-	await typeHp(o, 'Goblin-1', '+5');
+	await typeHp(o, 'Goblin', '+5');
 	assert.equal((await creatures(o))[0].hp, 5);
 });
 
@@ -1484,21 +1486,21 @@ test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
 	await o.page.waitForTimeout(150);
 
 	// Medium armor takes 10 off a normal hit, with the working shown.
-	await typeHp(o, 'Goblin Boss-1', '15');
+	await typeHp(o, 'Goblin Boss', '15');
 	let boss = (await creatures(o)).find(c => c.label === 'Goblin Boss-1');
 	assert.equal(boss.hp, 31);
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.creature-flash').textContent(), '15 − 10 (Medium armor) = 5');
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.hp-display').textContent(), '31/36');
+	assert.equal(await card(o, 'Goblin Boss').locator('.creature-flash').textContent(), '15 − 10 (Medium armor) = 5');
+	assert.equal(await card(o, 'Goblin Boss').locator('.hp-display').textContent(), '31/36');
 	// A crit ignores armor.
-	await typeHp(o, 'Goblin Boss-1', '15!');
+	await typeHp(o, 'Goblin Boss', '15!');
 	boss = (await creatures(o)).find(c => c.label === 'Goblin Boss-1');
 	assert.equal(boss.hp, 16);
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.creature-flash').textContent(), '15 (crit ignores armor) = 15');
+	assert.equal(await card(o, 'Goblin Boss').locator('.creature-flash').textContent(), '15 (crit ignores armor) = 15');
 	// A hit smaller than the armor does nothing.
-	await typeHp(o, 'Goblin Boss-1', '8');
+	await typeHp(o, 'Goblin Boss', '8');
 	assert.equal((await creatures(o)).find(c => c.label === 'Goblin Boss-1').hp, 16);
 	// Vulnerable adds 10 on top.
-	await typeHp(o, 'Goblin Boss-1', '10v');
+	await typeHp(o, 'Goblin Boss', '10v');
 	assert.equal((await creatures(o)).find(c => c.label === 'Goblin Boss-1').hp, 6);
 
 	// Any hit drops one minion.
@@ -1543,7 +1545,7 @@ test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
 test('conditions: add from picker, Escape closes it, remove with ×', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
-	const row = await onCard(o, 'Goblin-1');
+	const row = await onCard(o, 'Goblin');
 	await row.locator('.add-condition-btn').click();
 	await pickOption(o, 'Prone').click();
 	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Prone' }]);
@@ -1566,7 +1568,7 @@ test('conditions: add from picker, Escape closes it, remove with ×', async (o) 
 test('conditions: durations count down at end of turn, X values, chip editor', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
-	let row = await onCard(o, 'Goblin-1');
+	let row = await onCard(o, 'Goblin');
 
 	// Dazed for 1 round.
 	await row.locator('.add-condition-btn').click();
@@ -1577,13 +1579,13 @@ test('conditions: durations count down at end of turn, X values, chip editor', a
 	const dazed = row.locator('.condition-tag', { hasText: 'Dazed' });
 	assert.equal(await dazed.locator('.condition-rounds').textContent(), '1');
 	// Ending the goblin's turn wears it off.
-	await creatureMenu(o, 'Goblin-1', 'Mark turn done');
+	await creatureMenu(o, 'Goblin', 'Mark turn done');
 	assert.deepEqual((await creatures(o))[0].conditions, []);
 	assert.equal(await row.locator('.condition-tag:not(.auto-condition)').count(), 0);
-	assert.ok((await notices(o)).some(n => /Goblin-1: Dazed wore off/.test(n)));
+	assert.ok((await notices(o)).some(n => /^Goblin: Dazed wore off/.test(n)));
 
 	// Empowered asks for X.
-	row = await onCard(o, 'Goblin-1');
+	row = await onCard(o, 'Goblin');
 	await row.locator('.add-condition-btn').click();
 	await pickOption(o, 'Empowered').click();
 	assert.equal(await o.page.locator('.condition-picker .condition-value-row').isVisible(), true);
@@ -1624,7 +1626,9 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 		plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Krogg, Goblin King').monster);
 	});
 	await o.page.waitForTimeout(150);
-	const label = 'Krogg, Goblin King-1';
+	// Saved as Krogg, Goblin King-1, shown without the number while he's the only one.
+	const saved = 'Krogg, Goblin King-1';
+	const label = 'Krogg, Goblin King';
 	const row = await onCard(o, label);
 	assert.equal(await row.locator('.hp-display').textContent(), '90/90');
 	assert.match(await row.locator('.legendary-line').textContent(), /Bloodied at 45/);
@@ -1649,7 +1653,7 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 	assert.ok(!(await row.evaluate(el => el.classList.contains('is-down'))));
 	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-tracker-solo.png') });
 	await last.locator('.prompt-action', { hasText: 'Apply: 20 more damage to finish' }).click();
-	let krogg = (await creatures(o)).find(c => c.label === label);
+	let krogg = (await creatures(o)).find(c => c.label === saved);
 	assert.equal(krogg.hp, 20);
 	assert.equal(krogg.armor, 'medium');
 	assert.equal(krogg.lastStand, true);
@@ -1659,7 +1663,7 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 	assert.equal(await row.locator('.creature-meta .armor-chip.armor-medium').count(), 1);
 	// His new armor applies.
 	await typeHp(o, label, '15');
-	krogg = (await creatures(o)).find(c => c.label === label);
+	krogg = (await creatures(o)).find(c => c.label === saved);
 	assert.equal(krogg.hp, 15);
 
 });
@@ -1667,7 +1671,7 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 test('rename, round counter, clear all', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
-	await creatureMenu(o, 'Goblin-1', 'Rename');
+	await creatureMenu(o, 'Goblin', 'Rename');
 	await o.page.locator(`${T} .label-edit-input`).waitFor({ timeout: 2000 });
 	await o.page.keyboard.press('Meta+A');
 	await o.page.keyboard.type('Sneaky Pete');
@@ -1698,15 +1702,18 @@ test('rename, round counter, clear all', async (o) => {
 test('creature menu: view stat block, duplicate, add note', async (o) => {
 	await resetEncounter(o);
 	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md'));
-	await creatureMenu(o, 'Goblin Boss-1', 'View stat block');
+	await creatureMenu(o, 'Goblin Boss', 'View stat block');
 	const Q = '.modal.nimble-record-modal';
-	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss-1');
+	// The only Goblin Boss: shown without its number.
+	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss');
 	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Goblin Boss');
 	await o.page.keyboard.press('Escape');
 	assert.equal(await o.page.locator(Q).count(), 0);
 
-	await creatureMenu(o, 'Goblin Boss-1', 'Duplicate');
+	await creatureMenu(o, 'Goblin Boss', 'Duplicate');
 	assert.deepEqual((await creatures(o)).map(c => c.label), ['Goblin Boss-1', 'Goblin Boss-2']);
+	// Two of them now: both numbered.
+	assert.equal(await card(o, 'Goblin Boss-1').count(), 1);
 
 	// A real Obsidian modal (window.prompt doesn't exist in Electron).
 	await creatureMenu(o, 'Goblin Boss-2', 'Add note');
@@ -5335,7 +5342,7 @@ test('pills: Nimble references, stat block buttons, compendium, Spotlight and th
 	await measurePills(o, bad, 'Nimble tracker (a hero acting)', T);
 	await mainButton(o).click();
 	await o.page.locator(`${T} .ev-card.is-beat`).waitFor({ timeout: 2000 });
-	await typeHp(o, 'Krogg, Goblin King-1', '50');
+	await typeHp(o, 'Krogg, Goblin King', '50');
 	await o.page.locator(`${T} .ev-moment`).first().waitFor({ timeout: 2000 });
 	await measurePills(o, bad, 'Nimble tracker (the legendary beat)', T);
 	await card(o, 'Bram').locator('.hp-display').click();

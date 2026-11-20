@@ -17,6 +17,7 @@ import { registerHomebrewBlocks } from './homebrew-block';
 import { nimbleRefProvider } from './inline-ref';
 import { readStatblock } from './parser';
 import { registerFightBlock, saveFight } from './saved-fight';
+import { shownLabel } from './encounters';
 import { renderStatblockIssues } from './statblock-issues';
 import { createNimbleRuntime, NimbleRuntime } from './runtime';
 import { BuilderModal } from './builder-modal';
@@ -43,7 +44,7 @@ export function registerNimble(plugin: EmberVaultPlugin): void {
 		showEffectPrompts(plugin, prompts, {
 			system: 'nimble',
 			words: { save: 'save' },
-			label: (id) => who(id)?.label ?? '?',
+			label: (id) => { const c = who(id); const enc = store.find(encId); return c ? (enc ? shownLabel(c, enc.creatures) : c.label) : '?'; },
 			// The same as typing the number in its HP box: Nimble's armor, Wounds and minions.
 			damage: (id, amount) => store.applyHp(encId, id, { kind: 'damage', amount }).events.join('; ') || undefined,
 			endCondition: (id, name) => store.removeCondition(encId, id, name),

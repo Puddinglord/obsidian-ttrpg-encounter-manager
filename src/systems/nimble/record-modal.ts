@@ -9,7 +9,7 @@ import { App, Component, EventRef, MarkdownRenderer, Modal, Notice, setIcon, TFi
 import { baseCreatureName } from './compendium-entries';
 import type EmberVaultPlugin from '../../../main';
 import { EncounterCreature, MonsterIndexEntry } from './types';
-import { isDown, isHero, isMinionGroup } from './encounters';
+import { isDown, isHero, isMinionGroup, shownLabel } from './encounters';
 import { conditionLabel, formatLevel, HpCommand, monsterRole } from './rules';
 import { renderActionDots, renderMeter, renderWoundPips, VitalsMemory } from './vitals-ui';
 import { openHpCalculator } from './hp-pad';
@@ -76,6 +76,13 @@ class RecordModal extends Modal {
 		return t.kind === 'combatant' ? nimble().encounters.creature(t.encId, t.creatureId) : undefined;
 	}
 
+	/** The combatant's name as the tracker shows it (a lone monster without its number). */
+	private shown(c: EncounterCreature): string {
+		const t = this.target;
+		const enc = t.kind === 'combatant' ? nimble().encounters.find(t.encId) : undefined;
+		return enc ? shownLabel(c, enc.creatures) : c.label;
+	}
+
 	/** The monster entry or note behind the target, if any. */
 	private source(): { entry?: MonsterIndexEntry; file?: TFile; sourcePath: string } {
 		const t = this.target;
@@ -106,7 +113,7 @@ class RecordModal extends Modal {
 		const portrait = portraitFile ? portraitOf(this.app, portraitFile.path) : null;
 		if (portrait) renderAvatar(head, portrait, 'record-avatar');
 		const titles = head.createDiv({ cls: 'record-titles' });
-		titles.createDiv({ cls: 'record-title', text: c?.label ?? src.entry?.name ?? src.file?.basename ?? '' });
+		titles.createDiv({ cls: 'record-title', text: (c ? this.shown(c) : undefined) ?? src.entry?.name ?? src.file?.basename ?? '' });
 		const sub = this.subtitle(c, src);
 		if (sub) titles.createDiv({ cls: 'record-sub', text: sub });
 		const actions = head.createDiv({ cls: 'record-actions' });
@@ -140,7 +147,7 @@ class RecordModal extends Modal {
 			const md = text.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();
 			await MarkdownRenderer.render(this.app, md || '*This page is empty.*', body.createDiv({ cls: 'record-note markdown-rendered' }), src.file.path, this.component);
 		} else if (c && isHero(c)) {
-			body.createDiv({ cls: 'record-empty', text: `${c.label} has no page in this vault. Make a note named "${c.monster.name}" to see it here.` });
+			body.createDiv({ cls: 'record-empty', text: `${this.shown(c)} has no page in this vault. Make a note named "${c.monster.name}" to see it here.` });
 		}
 	}
 
@@ -190,7 +197,7 @@ class RecordModal extends Modal {
 				key: 'alive', cls: 'is-hp', icon: evIcon('users'), label: 'Standing', cur: alive, max: count,
 				bar: 'ns-hp', minus: 'Drop one', plus: 'Bring one back', calc: `${alive} of ${count} standing. Hit, bring back or set`,
 				minusOff: alive <= 0, plusOff: alive >= count, icons: METER_ICONS, twoTone: true,
-				onCalc: (a) => openHpCalculator(a, c, this.plugin.settings.autoArmor, hpCmd),
+				onCalc: (a) => openHpCalculator(a, c, this.plugin.settings.autoArmor, hpCmd, { label: this.shown(c) }),
 				taps: { floor: -alive, commit: (d) => { if (d) store.setAlive(enc, c.id, alive + d); else this.renderStrip(c); } },
 			}, this.vitals);
 		} else if (c.maxHp > 0) {
@@ -200,7 +207,7 @@ class RecordModal extends Modal {
 				state: isDown(c) ? (isHero(c) ? 'Dead' : 'Down') : undefined,
 				bar: 'ns-hp', minus: 'Take 1 damage', plus: 'Heal 1', calc: `Hit points ${c.currentHp} of ${c.maxHp}${temp ? `, ${temp} temp` : ''}. Damage, heal, set or temp HP`,
 				minusOff: false, plusOff: c.currentHp >= c.maxHp, icons: METER_ICONS, twoTone: true,
-				onCalc: (a) => openHpCalculator(a, c, this.plugin.settings.autoArmor, hpCmd),
+				onCalc: (a) => openHpCalculator(a, c, this.plugin.settings.autoArmor, hpCmd, { label: this.shown(c) }),
 				taps: {
 					floor: -(c.currentHp + temp), soak: temp,
 					commit: (d) => {
@@ -222,7 +229,7 @@ class RecordModal extends Modal {
 		const done = pill(card, { tag: 'button', cls: `ns-actions-end${c.done ? ' is-done' : ''}`, icon: evIcon(c.done ? 'check-circle' : 'check'), text: c.done ? 'Has gone' : 'Mark turn done', attr: { 'aria-pressed': String(!!c.done) } });
 		done.onclick = () => {
 			const expired = store.setDone(enc, c.id, !c.done);
-			if (expired.length) new Notice(`${c.label}: ${expired.join(', ')} wore off`);
+			if (expired.length) new Notice(`${this.shown(c)}: ${expired.join(', ')} wore off`);
 		};
 
 		// Conditions, as on the sheet.

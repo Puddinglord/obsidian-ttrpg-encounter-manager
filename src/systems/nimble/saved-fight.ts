@@ -9,7 +9,7 @@
 import { App, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, normalizePath, setIcon, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { Encounter, EncounterCreature } from './types';
-import { fightInProgress, isDown, isHero, isMinionGroup, sameFight } from './encounters';
+import { fightInProgress, isDown, isHero, isMinionGroup, sameFight, shownLabel } from './encounters';
 import { confirmAction } from '../../core/touch';
 import { conditionLabel } from './rules';
 import { fmText, safeName } from '../../core/campaign-model';
@@ -42,7 +42,7 @@ export function fightDigest(enc: Encounter, when: Date): string {
 			...c.conditions.map(conditionLabel),
 			...(isDown(c) ? ['down'] : []),
 		];
-		return `| ${c.label.replace(/\|/g, '/')} | ${hpText(c)} | ${notes.join(', ') || '—'} |`;
+		return `| ${shownLabel(c, enc.creatures).replace(/\|/g, '/')} | ${hpText(c)} | ${notes.join(', ') || '—'} |`;
 	});
 	const log = (enc.log ?? []).slice(0, 15).map(l => `- Round ${l.round}: ${l.text}`);
 	return [
@@ -221,7 +221,7 @@ class FightCard extends MarkdownRenderChild {
 		const list = card.createDiv({ cls: 'nimble-fight-list' });
 		for (const c of enc.creatures) {
 			const row = list.createDiv({ cls: `nimble-fight-row side-${isHero(c) ? 'hero' : 'monster'}${isDown(c) ? ' is-down' : ''}` });
-			row.createSpan({ cls: 'nimble-fight-name', text: c.label });
+			row.createSpan({ cls: 'nimble-fight-name', text: shownLabel(c, enc.creatures) });
 			if (c.conditions.length) row.createSpan({ cls: 'nimble-fight-conds', text: c.conditions.map(conditionLabel).join(', ') });
 			row.createSpan({ cls: 'nimble-fight-hp', text: hpText(c) });
 		}
