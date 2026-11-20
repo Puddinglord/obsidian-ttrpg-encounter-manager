@@ -1,26 +1,29 @@
-// The interactive Nimble character sheet. It reads a character note's
+// The interactive Nimble character sheet, as the design study draws it
+// (prototypes/design-study, 71-nimble-sheets). It reads a character note's
 // frontmatter (character-def.ts does the rules) and draws the official sheet's
-// pieces: stat shields with ▲▼ saves, the HP shield, Armor and Initiative, the
-// Wounds track with its skull, the ten-skill strip; then tabs for Actions,
-// Features, Spells, Inventory and Notes, and a Rest & Level bar.
+// band: notched stat boxes with their save marks, Armor and Initiative, the
+// Wounds chain ending in a skull, Hit points as a wide red bar; the skills band;
+// the Actions bar; the class panel (class-panel.ts); conditions; then tabs for
+// Actions, Features, Spells, Inventory and Notes. It wears Nimble's look
+// (.ev-sys-nimble) and Phosphor icons.
 //
 // Every change goes through app.fileManager.processFrontMatter, so the note
 // stays the source of truth; the sheet redraws when the note's metadata
 // changes. Every roll goes through plugin.rollDice (3D dice, roll log).
 // Note text is only ever set with createEl/setText or appendRichText.
 
-import { App, Component, MarkdownPostProcessorContext, MarkdownRenderChild, Modal, Notice, setIcon, TFile } from 'obsidian';
+import { App, Component, MarkdownPostProcessorContext, MarkdownRenderChild, Modal, Notice, setIcon, setTooltip, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { Compendium, CompendiumHit, CompendiumKind, nameKey, STATS, StatKey, tierLabel, weaponDamage } from './compendium';
 import { compendiumFor } from './compendium-data';
 import { renderHitBody, renderRulesText, renderSource } from './compendium-card';
 import {
 	addCondition, addFeature, addItem, addLanguage, addSpell, adjustResource, applyDamage, CharacterSheet, damageRoll, fieldRest, fmtMod, Frontmatter,
-	heal, hitDiceHealing, KnownSpell, readCharacter, regainMana, removeCondition, removeFeature, removeItem, removeLanguage, removeSpell,
-	safeRest, setCoins, setEquipped, setField, setHp, setMana, setOverride, setQty, setSave, setSkill, setStat, setTempHp, setWounds,
-	SheetFeature, spendMana, spendActions, setActions, endTurn, useReaction, ACTIONS_PER_TURN, Resource, setRolled,
+	heal, hitDiceHealing, KnownSpell, readCharacter, removeCondition, removeFeature, removeItem, removeLanguage, removeSpell,
+	safeRest, setCoins, setEquipped, setField, setHp, setOverride, setQty, setSave, setSkill, setStat, setTempHp, setWounds,
+	SheetFeature, spendMana, spendActions, setActions, endTurn, useReaction, ACTIONS_PER_TURN, Resource, setRolled, Attack,
 } from './character-def';
-import { openHpCalculator, openManaCalculator } from './hp-pad';
+import { openHpCalculator } from './hp-pad';
 import { closePopover } from '../../core/popover';
 import { confirmAction, isTouch, onLongPress } from '../../core/touch';
 import { resolvePortrait } from '../../core/npc-card';
@@ -31,8 +34,14 @@ import { RollDialog, RollRequest, Spendable, spendCount } from './roll-dialog';
 import { actionCost, EdgeRollResult, ExtraDice } from './roll-def';
 import { parseDice } from '../../core/dice';
 import { heldFaces, resourceRule, spendsOn, startsOn } from './resource-def';
-import { dieShape, inkOn, triangleMark } from '../../core/die-shape';
-import { iconStep, renderActionDots, renderMeter, renderWoundPips, VitalsMemory } from './vitals-ui';
+import { dieShape, inkOn } from '../../core/die-shape';
+import { iconStep, renderActionDots, renderMeter, renderWoundChain, VitalsMemory } from './vitals-ui';
+import { applyLook } from '../../core/look';
+import { damageIcon, evIcon, EvIconName } from '../../core/icons';
+import { cluster } from '../../core/cluster';
+import { pill } from '../../core/pill';
+import { drawSvg } from '../../core/svg';
+import { ClassPanelHost, renderClassPanel } from './class-panel';
 import { LevelUpWizard } from './level-up';
 import { nimble } from './runtime';
 
@@ -65,6 +74,8 @@ interface SheetState {
 	editing: boolean;
 	open: Set<string>;
 	propsShown: boolean;
+	/** The held die being typed in (class panel): its row and slot. */
+	picking?: { key: string; slot: number };
 }
 
 /** Per-note UI state, kept across redraws (a frontmatter change can re-create the block). */
@@ -76,6 +87,39 @@ function stateFor(path: string): SheetState {
 }
 
 const STAT_NAME: Record<StatKey, string> = { STR: 'Strength', DEX: 'Dexterity', INT: 'Intelligence', WIL: 'Will' };
+
+/** A save mark, as the official sheet draws it: a triangle on top of a stat's box (▲) or under it (▼). */
+const triangle = (dir: 'up' | 'down') => `<path d="${dir === 'down' ? 'M1 .75 11 9.25l10-8.5' : 'M1 9.25 11 .75l10 8.5'}"/>`;
+/** The Wounds box: its top dips for the label; a dark foot. Drawn at 190 × 77 and stretched to the box. */
+const WOUNDS_BOX = '<path class="bx" vector-effect="non-scaling-stroke" d="M2 9h30c4 0 4 9 8 9H150c4 0 4-9 8-9h30v66H2Z"/><path class="bd" d="M2 59H188v16H2Z"/>';
+/** HP's heart, filled, as the books draw it. */
+const HEART = '<path fill="currentColor" d="M12 21.2s-7.6-4.6-9.7-9.3C.8 8.5 2.9 4.4 6.7 4.4c2.2 0 3.7 1.2 5.3 3 1.6-1.8 3.1-3 5.3-3 3.8 0 5.9 4.1 4.4 7.5-2.1 4.7-9.7 9.3-9.7 9.3Z"/>';
+/** The rule under a card's name: two strokes and a diamond. */
+const ORNAMENT = '<path d="M0 5h22M48 5h22" stroke="currentColor" stroke-width="1"/><path d="M35 0l5 5-5 5-5-5Z" fill="currentColor"/>';
+
+/** The heroic reactions (Core Rules 3.3 p.15), in the book's words, trimmed. A `term` is a rules word with its card. */
+const REACTIONS: { name: string; icon: EvIconName; text: (string | { term: string })[] }[] = [
+	{ name: 'Defend', icon: 'shield', text: ['Reduce damage from one attack by your ', { term: 'Defense' }, '. Crits ignore Defense, as may psychic damage and some areas.'] },
+	{ name: 'Interpose', icon: 'users', text: ['When a creature within Reach 2 would be hit, take its place and become the target. It moves to a space beside you.'] },
+	{ name: 'Help', icon: 'hand', text: ['Let an ally reroll if you can explain how you help. The GM may ask for a check. One Help per roll.'] },
+	{ name: 'Opportunity Attack', icon: 'attack', text: ['A melee attack with ', { term: 'disadvantage' }, ' on an adjacent creature that willingly moves away.'] },
+];
+
+/** A stat as the official sheet prints it: 3, 0, −1 (no plus). */
+const plainMod = (n: number) => (n < 0 ? `−${Math.abs(n)}` : String(n));
+
+/** "2d6+3" → "2d6 + 3", as the books print a roll. */
+const spacedRoll = (e: string) => e.replace(/\s*([+-])\s*/g, ' $1 ').replace(/ - /g, ' − ').trim();
+
+/** The icon a condition chip shows, for the ones that have one. */
+function conditionIcon(name: string): string | undefined {
+	const k = name.toLowerCase();
+	if (/^rag(e|ing)$/.test(k)) return evIcon('flame');
+	if (/^concentrat/.test(k)) return evIcon('concentration');
+	if (/^poison/.test(k)) return evIcon('poison');
+	if (/^dying$/.test(k)) return evIcon('heart-crack');
+	return undefined;
+}
 
 /** Character notes the sheet can show: `nimble: character` in the frontmatter. */
 export function isCharacterNote(plugin: EmberVaultPlugin, file: TFile): boolean {
@@ -214,7 +258,8 @@ export class CharacterSheetRenderer extends Component {
 			return [{
 				key: r.name, label: r.name, sides: Number(r.die.replace(/^d/i, '')) || 6, available: r.current,
 				on: startsOn(rule, s.conditions), amount: rule.amount, keep: rule.keep, damageType: rule.damageType, note: rule.note,
-				faces: rule.rolledWhen === 'gained' ? heldFaces(r.current, r.rolled) : undefined,
+				// Faces set aside (rolled as gained, or typed in from the table); any not rolled yet are rolled with the attack.
+				faces: rule.rolledWhen === 'gained' || r.rolled?.some(n => n > 0) ? heldFaces(r.current, r.rolled) : undefined,
 			}];
 		});
 	}
@@ -226,7 +271,7 @@ export class CharacterSheetRenderer extends Component {
 			for (const x of spent) {
 				// Dice held by their faces go in first to last, so the ones left are the rest.
 				const r = cur.resources.find(y => y.name === x.key);
-				if (r?.rolled?.length && resourceRule(r.name)?.rolledWhen === 'gained') setRolled(fm, r.name, heldFaces(r.current, r.rolled).slice(x.count));
+				if (r?.rolled?.length) setRolled(fm, r.name, heldFaces(r.current, r.rolled).slice(x.count));
 				else adjustResource(fm, cur, x.key, -x.count);
 			}
 			if (mana) spendMana(fm, cur, mana);
@@ -303,7 +348,8 @@ export class CharacterSheetRenderer extends Component {
 		const st = this.state;
 		const root = this.root;
 		root.empty();
-		root.addClass('nimble-sheet');
+		root.addClass('nimble-sheet', 'ns-sheet');
+		applyLook(root, 'nimble');
 		root.toggleClass('is-editing', st.editing);
 		root.toggleClass('is-dying', s.dying);
 		root.toggleClass('is-dead', s.dead);
@@ -314,24 +360,22 @@ export class CharacterSheetRenderer extends Component {
 		// A block is drawn before it's attached to the note; apply again once it is.
 		window.requestAnimationFrame(() => this.applyProps());
 
-		// The hero card: who they are, with Armor, Initiative and Speed beside.
-		const hero = root.createDiv({ cls: 'ns-hero' });
-		this.renderHeader(hero.createDiv({ cls: 'ns-head' }));
-		// Beside the name: the buttons (Camp, properties, edit) over Armor, Initiative and Speed.
-		const side = hero.createDiv({ cls: 'ns-hero-side' });
-		const buttons = hero.querySelector('.ns-head-actions');
-		if (buttons) side.appendChild(buttons);
-		this.renderBoxes(side);
-		// Hit points (with Wounds) and mana.
-		this.renderMeters(root.createDiv({ cls: 'ns-meters' }));
-		// Stats and skills: everything you roll a d20 for.
-		const abilities = root.createDiv({ cls: 'ns-abilities' });
-		this.renderStats(abilities.createDiv({ cls: 'ns-stats' }));
-		this.renderSkills(abilities.createDiv({ cls: 'ns-skills' }));
-		// This turn: actions left, Hit Dice and class dice; then conditions.
-		const turn = root.createDiv({ cls: 'ns-turn' });
-		this.renderActionsCard(turn.createDiv({ cls: 'ns-actions-card' }));
-		this.renderStrip(turn.createDiv({ cls: 'ns-strip' }));
+		// Who they are: portrait, name, Camp and Level up.
+		this.renderHeader(root.createDiv({ cls: 'ns-hero' }));
+		// The official sheet's band: the four stats, Armor and Initiative, Wounds, then Hit points.
+		const band = root.createDiv({ cls: 'ns-band' });
+		this.renderStats(band.createDiv({ cls: 'ns-stats' }));
+		this.renderBoxes(band.createDiv({ cls: 'ns-ai' }));
+		this.renderWounds(band);
+		this.renderHp(band);
+		if (s.dying || s.dead) this.renderDying(root.createDiv({ cls: 'ns-dying' }));
+		this.renderSkills(root.createDiv({ cls: 'ns-skills' }));
+		if (st.editing) this.renderOverrides(root.createDiv({ cls: 'ns-overrides' }));
+		// This turn: actions left, End turn; Speed and Hit Dice.
+		this.renderTurn(root.createDiv({ cls: 'ns-turn' }));
+		// The class's own things: dice, mana, uses, a state, a target.
+		renderClassPanel(root, this.panelHost());
+		this.renderConditions(root.createDiv({ cls: 'ns-conds-row' }));
 		if (this.comp.isEmpty) root.createDiv({ cls: 'ns-empty-note', text: 'The compendium is empty, so classes, items and spells show as plain names.' });
 		this.renderTabs(root);
 	}
@@ -347,6 +391,18 @@ export class CharacterSheetRenderer extends Component {
 		setIcon(b, icon);
 		b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); onClick(e); });
 		return b;
+	}
+
+	/** What the class panel (class-panel.ts) needs from the sheet. */
+	private panelHost(): ClassPanelHost {
+		return {
+			sheet: this.sheet, comp: this.comp, path: this.file.path, vitals: this.vitals, ui: this.state,
+			mutate: (fn) => this.mutate(fn),
+			render: () => this.render(),
+			gainDice: (res, n) => this.gainDice(res, n),
+			promptNumber: (label, value, done) => this.promptNumber(label, value, done),
+			promptText: (label, value, done) => this.promptText(label, value, done),
+		};
 	}
 
 	// Header -------------------------------------------------------------------
@@ -370,35 +426,40 @@ export class CharacterSheetRenderer extends Component {
 				name.setAttr('tabindex', '0');
 				name.addEventListener('click', (e) => void this.app.workspace.openLinkText(this.file.path, '', e.metaKey || e.ctrlKey));
 			}
-			const line = titles.createDiv({ cls: 'ns-line' });
-			const bits = [s.ancestry, s.className, `Level ${s.level}`].filter(Boolean);
-			line.setText(bits.join(' · '));
+			titles.createDiv({ cls: 'ns-line', text: [s.ancestry, s.className, `Level ${s.level}`].filter(Boolean).join(' · ') });
 			const sub = [s.subclass, s.background].filter(Boolean).join(' · ');
 			if (sub) titles.createDiv({ cls: 'ns-sub', text: sub });
-			const meta = [s.player ? `Played by ${s.player}` : '', s.size, s.height, s.weight].filter(Boolean).join(' · ');
-			if (meta) titles.createDiv({ cls: 'ns-meta', text: meta });
 		}
 
 		const actions = head.createDiv({ cls: 'ns-head-actions' });
-		// Camp: Field rest, Safe rest and Level up, in one place.
+		// Camp (Field rest, Safe rest, Level up) and Level up, one control.
 		if (!st.editing) {
-			const camp = actions.createEl('button', { cls: 'ns-camp', attr: { 'aria-label': 'Camp: rest or level up' } });
-			setIcon(camp.createSpan({ cls: 'ns-camp-icon' }), 'tent');
-			camp.createSpan({ cls: 'ns-camp-label', text: 'Camp' });
+			const c = cluster(actions, { joined: true, cls: 'ns-head-cluster', label: 'Rest and level up' });
+			const camp = pill(c, { tag: 'button', cls: 'ns-btn ns-camp', icon: evIcon('moon'), text: 'Camp', title: 'Camp: rest or level up' });
 			camp.addEventListener('click', (e) => { e.stopPropagation(); this.openCamp(); });
+			const top = s.level >= 20;
+			const up = pill(c, { tag: 'button', cls: 'ns-btn ns-level', icon: evIcon('arrow-up'), text: 'Level up', title: top ? 'Level 20 is the most' : `Level up to ${s.level + 1}` });
+			up.toggleAttribute('disabled', top);
+			up.addEventListener('click', (e) => { e.stopPropagation(); this.levelUp(); });
 		}
+		const tools = actions.createDiv({ cls: 'ns-head-tools' });
 		if (!this.opts.inPanel) {
-			this.iconButton(actions, st.propsShown ? 'eye-off' : 'list', st.propsShown ? 'Hide properties' : 'Show properties', () => {
+			this.iconButton(tools, evIcon('list'), st.propsShown ? 'Hide properties' : 'Show properties', () => {
 				st.propsShown = !st.propsShown;
 				this.render();
 			}, st.propsShown ? 'is-active' : '');
 		}
-		this.iconButton(actions, st.editing ? 'check' : 'pencil', st.editing ? 'Done editing' : 'Edit details and stats', () => {
+		this.iconButton(tools, evIcon(st.editing ? 'check' : 'edit'), st.editing ? 'Done editing' : 'Edit details and stats', () => {
 			st.editing = !st.editing;
 			this.render();
 		}, st.editing ? 'is-active mod-cta' : '');
 		// Touch: long-press the header to edit.
 		onLongPress(titles, () => { st.editing = !st.editing; this.render(); });
+	}
+
+	private levelUp(): void {
+		if (this.sheet.level >= 20) return;
+		new LevelUpWizard(this.plugin, readCharacter(this.fm, this.comp, this.file.basename), (fn) => this.mutate(fn)).open();
 	}
 
 	private renderDetailEditor(parent: HTMLElement): void {
@@ -433,52 +494,103 @@ export class CharacterSheetRenderer extends Component {
 		field('Portrait', 'portrait', s.portrait, { wide: true, placeholder: '[[image.png]]' });
 	}
 
-	// Stats ---------------------------------------------------------------------
+	// The band ------------------------------------------------------------------
 
+	/**
+	 * STR, DEX, INT, WIL as the official sheet draws them: a value over a dark
+	 * band with the stat's name, notched corners, and the save marks built in (a
+	 * filled triangle above for the advantaged save, below for the disadvantaged one).
+	 */
 	private renderStats(row: HTMLElement): void {
 		const s = this.sheet;
+		const editing = this.state.editing;
 		for (const stat of STATS) {
 			const save = s.saves[stat];
 			const v = s.stats[stat];
 			const cell = row.createDiv({ cls: `ns-stat${save ? ` is-${save}` : ''}` });
-			const box = cell.createEl(this.state.editing ? 'div' : 'button', { cls: 'ns-stat-box' });
-			const statLabel = box.createSpan({ cls: 'ns-stat-label', text: stat });
-			const label = save === 'adv' ? 'with advantage' : save === 'dis' ? 'with disadvantage' : '';
-			if (this.state.editing) {
-				const input = box.createEl('input', { cls: 'ns-stat-input', type: 'number', value: String(v), attr: { 'aria-label': STAT_NAME[stat] } });
+			const box = cell.createEl(editing ? 'div' : 'button', { cls: 'ns-stat-box' });
+			const face = box.createSpan({ cls: 'ns-stat-face' });
+			if (editing) {
+				const input = face.createEl('input', { cls: 'ns-stat-input', type: 'number', value: String(v), attr: { 'aria-label': STAT_NAME[stat] } });
 				input.addEventListener('change', () => void this.mutate(fm => setStat(fm, stat, Number(input.value) || 0)));
-				// Which save is advantaged (▲) or disadvantaged (▼).
-				const tris = box.createDiv({ cls: 'ns-stat-tris' });
-				for (const dir of ['up', 'down'] as const) {
-					const on = dir === 'up' ? save === 'adv' : save === 'dis';
-					const t = tris.createEl('button', { cls: `ns-tri is-${dir}${on ? ' is-on' : ''} is-editable`, text: dir === 'up' ? '▲' : '▼', attr: { 'aria-pressed': String(on), 'aria-label': `${on ? 'Clear' : 'Set'} ${stat} as the ${dir === 'up' ? 'advantaged' : 'disadvantaged'} save` } });
-					t.addEventListener('click', () => void this.mutate(fm => setSave(fm, dir === 'up' ? 'adv' : 'dis', on ? 'none' : stat)));
-				}
 			} else {
-				box.createSpan({ cls: 'ns-stat-value', text: fmtMod(v).replace('+0', '0') });
+				face.createSpan({ cls: 'ns-stat-value', text: plainMod(v) });
+			}
+			face.createSpan({ cls: 'ns-stat-label', text: stat });
+			for (const dir of ['up', 'down'] as const) {
+				const on = dir === 'up' ? save === 'adv' : save === 'dis';
+				if (editing) {
+					// Which save is advantaged (▲) or disadvantaged (▼): tap the mark.
+					const t = box.createEl('button', { cls: `ns-tri is-${dir}${on ? ' is-on' : ''} is-editable`, attr: { type: 'button', 'aria-pressed': String(on), 'aria-label': `${on ? 'Clear' : 'Set'} ${stat} as the ${dir === 'up' ? 'advantaged' : 'disadvantaged'} save` } });
+					drawSvg(t, triangle(dir), 22, 10);
+					t.addEventListener('click', () => void this.mutate(fm => setSave(fm, dir === 'up' ? 'adv' : 'dis', on ? 'none' : stat)));
+				} else {
+					drawSvg(box, triangle(dir), 22, 10, `ns-tri is-${dir}${on ? ' is-on' : ''}`);
+				}
+			}
+			if (!editing) {
+				const label = save === 'adv' ? 'with advantage' : save === 'dis' ? 'with disadvantage' : '';
 				box.setAttr('aria-label', `${STAT_NAME[stat]} ${fmtMod(v)}. Roll a ${stat} check or save${label ? ` (saves ${label})` : ''}`);
 				box.addEventListener('click', () => this.rollStat(stat));
-				// ▲ / ▼ marks the advantaged and disadvantaged saves: in the tile's corner, or beside the name on thin sheets.
-				if (save) triangleMark(statLabel.createSpan({ cls: 'ns-stat-save', attr: { 'aria-hidden': 'true' } }), save === 'adv' ? 'up' : 'down');
 			}
 		}
 	}
 
-	// HP and mana bars ------------------------------------------------------------
+	/** Armor and Initiative: boxes with the sheet's dark foot; Initiative's shows a d20 and rolls. */
+	private renderBoxes(ai: HTMLElement): void {
+		const s = this.sheet;
+		const editing = this.state.editing;
+		const box = (key: string, label: string, value: string, title: string, roll?: () => void) => {
+			const el = ai.createEl(roll && !editing ? 'button' : 'div', { cls: `ns-box ns-box-${key}${roll ? ' is-roll' : ''}` });
+			el.createSpan({ cls: 'ns-box-label', text: label });
+			if (editing) {
+				const input = el.createEl('input', { cls: 'ns-box-input', type: 'number', value: s.set.has(key) ? String(this.fm[key]) : '', attr: { placeholder: value.replace('+', ''), 'aria-label': `${label} (blank: worked out)` } });
+				input.addEventListener('change', () => void this.mutate(fm => setOverride(fm, key, input.value.trim() === '' ? undefined : Number(input.value))));
+			} else {
+				el.createEl('b', { cls: 'ns-box-value', text: value });
+				el.setAttr('aria-label', title);
+				if (roll) el.addEventListener('click', roll);
+			}
+			const foot = el.createSpan({ cls: 'ns-box-foot' });
+			if (roll) setIcon(foot, evIcon('d20'));
+		};
+		box('armor', 'Armor', String(s.armor), `Armor ${s.armor}`);
+		box('initiative', 'Initiative', fmtMod(s.initiative), `Initiative ${fmtMod(s.initiative)}. Roll initiative`, () => this.rollD20(s.initiative, 'Initiative', null));
+	}
+
+	/** Wounds: the chain of circles ending in a skull, in a box whose top dips for its label; dashed circles under it for extra Wounds. */
+	private renderWounds(band: HTMLElement): void {
+		const s = this.sheet;
+		const extra = Math.max(0, s.woundsMax - 6);
+		const box = band.createDiv({ cls: `ns-wbox${extra ? ' has-extra' : ''}` });
+		drawSvg(box, WOUNDS_BOX, 190, 77, 'ns-wbox-bg').setAttribute('preserveAspectRatio', 'none');
+		const label = box.createSpan({ cls: 'ns-wbox-label' });
+		setIcon(label.createSpan({ cls: 'ns-wbox-drop' }), evIcon('drop'));
+		label.createSpan({ text: 'Wounds' });
+		const chain = box.createDiv({ cls: 'ns-wbox-chain' });
+		const foot = box.createSpan({ cls: 'ns-wbox-foot' });
+		foot.createEl('b', { text: String(s.wounds) });
+		foot.appendText(` of ${s.woundsMax}`);
+		const more = extra ? box.createDiv({ cls: 'ns-wbox-extra', attr: { 'aria-label': `${extra} extra Wound${extra === 1 ? '' : 's'}` } }) : null;
+		renderWoundChain(chain, more, { wounds: s.wounds, max: s.woundsMax, set: (n) => void this.mutate((fm, cur) => setWounds(fm, cur, Math.min(cur.woundsMax, n))) }, this.vitals);
+	}
 
 	/**
-	 * Hit points and mana as two big bars, each with − and + either side and a
-	 * calculator. Tapping the bar opens the calculator too: damage, heal, set or
-	 * temp HP; spend, regain or set mana.
+	 * Hit points, wide: the heart beside its label, − (Damage) / the bar / + (Heal) /
+	 * the keypad, and Temp in the dark foot. The bar or the keypad opens the HP pad.
 	 */
-	private renderMeters(wrap: HTMLElement): void {
+	private renderHp(band: HTMLElement): void {
 		const s = this.sheet;
-		const hpPct = s.hpMax ? s.hp / s.hpMax : 0;
-		const hp = renderMeter(wrap, {
-			key: 'hp', cls: 'is-hp', icon: 'heart', label: 'Hit points', cur: s.hp, max: s.hpMax, extra: s.tempHp, extraLabel: `${s.tempHp} temp`,
+		const box = band.createDiv({ cls: `ns-hpw${s.hp <= 0 ? ' is-zero' : s.hp <= s.hpMax / 2 ? ' is-low' : ''}` });
+		const label = box.createSpan({ cls: 'ns-hpw-label' });
+		drawSvg(label, HEART, 24, 24, 'ns-heart');
+		label.createSpan({ text: 'Hit points' });
+		renderMeter(box, {
+			key: 'hp', cls: 'is-hp', icon: evIcon('heart'), label: 'Hit points', cur: s.hp, max: s.hpMax, extra: s.tempHp, extraLabel: `${s.tempHp} temp`,
 			state: s.dying ? (s.dead ? 'Dead' : 'Dying') : undefined,
 			bar: 'ns-hp', minus: 'Take 1 damage', plus: 'Heal 1', calc: `Hit points ${s.hp} of ${s.hpMax}${s.tempHp ? `, ${s.tempHp} temp` : ''}. Damage, heal or temp HP`,
 			minusOff: s.dead, plusOff: s.hp >= s.hpMax,
+			icons: { minus: evIcon('minus'), plus: evIcon('plus'), calc: evIcon('keypad') }, twoTone: true,
 			onCalc: (a) => this.openHpPad(a),
 			// Damage from − works like the calculator: temp HP first, Wounds at 0.
 			taps: {
@@ -493,28 +605,16 @@ export class CharacterSheetRenderer extends Component {
 				},
 			},
 		}, this.vitals);
-		hp.toggleClass('is-low', hpPct > 0 && hpPct <= 0.25);
-		// Wounds: top right of the Hit points card, or under the bar when it's narrow.
-		this.renderWounds(hp);
-		if (s.manaMax > 0) {
-			renderMeter(wrap, {
-				key: 'mana', cls: 'is-mana', icon: 'sparkles', label: 'Mana', cur: s.mana, max: s.manaMax,
-				bar: 'ns-mana', minus: 'Spend 1 mana', plus: 'Regain 1 mana', calc: `Mana ${s.mana} of ${s.manaMax}. Spend, regain or set`,
-				minusOff: s.mana <= 0, plusOff: s.mana >= s.manaMax,
-				onCalc: (a) => openManaCalculator(a, { name: s.name, mana: s.mana, max: s.manaMax }, (cmd) => void this.mutate((fm, cur) => {
-					if (cmd.kind === 'spend') spendMana(fm, cur, cmd.amount);
-					else if (cmd.kind === 'regain') regainMana(fm, cur, cmd.amount);
-					else setMana(fm, cur, cmd.amount);
-				})),
-				taps: {
-					floor: -s.mana,
-					commit: (delta) => {
-						if (!delta) { this.render(); return; }
-						void this.mutate((fm, now) => { if (delta < 0) spendMana(fm, now, -delta); else regainMana(fm, now, delta); });
-					},
-				},
-			}, this.vitals);
-		}
+		const foot = box.createSpan({ cls: 'ns-hpw-foot' });
+		setIcon(foot.createSpan({ cls: 'ns-hpw-temp-icon' }), evIcon('first-aid'));
+		foot.createSpan({ cls: 'ns-hpw-temp-label', text: 'Temp' });
+		foot.createEl('b', { cls: s.tempHp ? '' : 'is-none', text: String(s.tempHp) });
+	}
+
+	private renderDying(el: HTMLElement): void {
+		const s = this.sheet;
+		el.createEl('b', { text: s.dead ? 'Dead' : 'Dying' });
+		el.createSpan({ text: s.dead ? `${s.woundsMax} Wounds: ${s.name} has died.` : '1 action at most. Attacking costs a Wound unless you pass a DC 10 STR save; damage adds 2 Wounds, 3 on a crit.' });
 	}
 
 	private openHpPad(anchor: HTMLElement): void {
@@ -538,241 +638,110 @@ export class CharacterSheetRenderer extends Component {
 		});
 	}
 
-	// Armor, Initiative -----------------------------------------------------------
-
-	private renderBoxes(parent: HTMLElement): void {
+	/** Edit mode: the numbers the sheet works out, set by hand (blank: worked out). */
+	private renderOverrides(strip: HTMLElement): void {
 		const s = this.sheet;
-		const boxes = parent.createDiv({ cls: 'ns-boxes' });
-		const box = (label: string, value: string, key: string, onClick?: () => void, title?: string, icon?: string) => {
-			const el = boxes.createEl(onClick && !this.state.editing ? 'button' : 'div', { cls: `ns-box ns-box-${key}` });
-			const head = el.createDiv({ cls: 'ns-box-label' });
-			if (icon) setIcon(head.createSpan({ cls: 'ns-box-icon' }), icon);
-			// "Initiative" doesn't fit a narrow tile: "Init" plus the rest, which narrow sheets hide.
-			const short = label === 'Initiative' ? 'Init' : label;
-			const name = head.createSpan({ text: short });
-			if (short !== label) name.createSpan({ cls: 'ns-box-long', text: label.slice(short.length) });
-			if (this.state.editing) {
-				const input = el.createEl('input', { cls: 'ns-box-input', type: 'number', value: s.set.has(key) ? String(this.fm[key]) : '', attr: { placeholder: value.replace('+', ''), 'aria-label': `${label} (blank: worked out)` } });
-				input.addEventListener('change', () => void this.mutate(fm => setOverride(fm, key, input.value.trim() === '' ? undefined : Number(input.value))));
-			} else {
-				el.createDiv({ cls: 'ns-box-value', text: value });
-				if (title) el.setAttr('aria-label', title);
-				if (onClick) el.addEventListener('click', onClick);
-			}
+		const edit = (label: string, key: string, current: number) => {
+			const el = strip.createEl('label', { cls: 'ns-chip is-edit' });
+			el.createSpan({ cls: 'ns-chip-label', text: label });
+			const input = el.createEl('input', { type: 'number', value: s.set.has(key) ? String(this.fm[key]) : '', attr: { placeholder: String(current), 'aria-label': `${label} (blank: worked out)` } });
+			input.addEventListener('change', () => void this.mutate(fm => setOverride(fm, key, input.value.trim() === '' ? undefined : Number(input.value))));
 		};
-		box('Armor', String(s.armor), 'armor', undefined, `Armor ${s.armor}`, 'shield');
-		box('Initiative', fmtMod(s.initiative), 'initiative', () => this.rollD20(s.initiative, 'Initiative', null), `Initiative ${fmtMod(s.initiative)}. Roll initiative`, 'zap');
-		box('Speed', String(s.speed), 'speed', undefined, `Speed ${s.speed}`, 'footprints');
+		edit('Max HP', 'hp_max', s.hpMax);
+		edit('Max Wounds', 'wounds_max', s.woundsMax);
+		edit('Speed', 'speed', s.speed);
+		edit('Hit die d', 'hit_die', s.hitDie);
+		edit('Max hit dice', 'hit_dice_max', s.hitDiceMax);
+		edit('Max mana', 'mana_max', s.manaMax);
 	}
 
-	// Wounds ----------------------------------------------------------------------
-
-	/** Wounds as a row of pips (the last is a skull) in the Hit points header. Tap one to set them. */
-	private renderWounds(parent: HTMLElement): void {
-		const s = this.sheet;
-		const w = renderWoundPips(parent, {
-			wounds: s.wounds, max: s.woundsMax, count: !this.state.editing,
-			set: (n) => void this.mutate((fm, cur) => setWounds(fm, cur, Math.min(cur.woundsMax, n))),
-		}, this.vitals);
-		if (this.state.editing) {
-			const input = w.createEl('input', { cls: 'ns-wounds-max', type: 'number', value: s.set.has('wounds_max') ? String(this.fm.wounds_max) : '', attr: { placeholder: `Max ${s.woundsMax}`, 'aria-label': 'Max Wounds (blank: worked out)' } });
-			input.addEventListener('change', () => void this.mutate(fm => setOverride(fm, 'wounds_max', input.value.trim() === '' ? undefined : Number(input.value))));
-		}
-	}
-
-	// Actions: three a turn ----------------------------------------------------------------
+	// This turn ------------------------------------------------------------------
 
 	/**
-	 * Three big dots: the actions left this turn. Tap one to set how many are
-	 * left (a fix when something went wrong); attacks, spells and reactions
-	 * spend them; End turn fills them back up for the next turn.
+	 * The Actions bar: three actions a turn (tap one to fix the count; attacks,
+	 * spells and reactions spend them), End turn, then Speed and Hit Dice.
 	 */
-	private renderActionsCard(card: HTMLElement): void {
+	private renderTurn(turn: HTMLElement): void {
 		const s = this.sheet;
-		card.createSpan({ cls: 'ns-chip-label ns-actions-label', text: 'Actions' });
-		renderActionDots(card, { count: s.actions, perTurn: ACTIONS_PER_TURN, set: (n) => void this.mutate(fm => setActions(fm, n)) }, this.vitals);
+		turn.createSpan({ cls: 'ns-turn-label', text: 'Actions' });
+		renderActionDots(turn, { count: s.actions, perTurn: ACTIONS_PER_TURN, set: (n) => void this.mutate(fm => setActions(fm, n)) }, this.vitals);
+		turn.createEl('small', { cls: 'ns-turn-left', text: s.dying ? '1 while Dying' : `${s.actions} left this turn` });
 		if (s.reactionsUsed.length) {
-			const used = card.createDiv({ cls: 'ns-reactions-used' });
+			const used = turn.createDiv({ cls: 'ns-reactions-used' });
 			for (const r of s.reactionsUsed) used.createSpan({ cls: 'ns-reaction-used', text: r });
 		}
-		const end = card.createEl('button', { cls: 'ns-actions-end', attr: { 'aria-label': `End turn: back to ${ACTIONS_PER_TURN} actions and reactions` } });
-		setIcon(end.createSpan({ cls: 'ns-actions-end-icon' }), 'refresh-ccw');
-		// "End turn"; thin sheets show just "End" so it fits beside the dots.
-		end.createSpan({ text: 'End' }).createSpan({ cls: 'ns-actions-end-long', text: '\u00a0turn' });
+		const end = pill(turn, { tag: 'button', cls: 'ns-btn ns-actions-end', icon: evIcon('undo'), text: 'End turn' });
+		end.setAttr('aria-label', `End turn: back to ${ACTIONS_PER_TURN} actions and reactions`);
 		end.addEventListener('click', () => void this.mutate(fm => endTurn(fm)));
+		turn.createSpan({ cls: 'ns-turn-sep' });
+		const pairs = turn.createDiv({ cls: 'ns-turn-pairs' });
+		const speed = pairs.createSpan({ cls: 'ns-turn-pair ns-speed', attr: { 'aria-label': `Speed ${s.speed}` } });
+		speed.createSpan({ cls: 'ns-turn-label', text: 'Speed' });
+		speed.createEl('b', { text: String(s.speed) });
+		const hd = pairs.createEl('button', { cls: 'ns-turn-pair ns-hitdice', attr: { type: 'button', 'aria-label': `Hit dice ${s.hitDice} of ${s.hitDiceMax}, d${s.hitDie}. Field rest` } });
+		hd.createSpan({ cls: 'ns-turn-label', text: 'Hit dice' });
+		hd.createEl('b', { text: String(s.hitDice) });
+		hd.createEl('i');
+		hd.createEl('b', { text: `${s.hitDiceMax}d${s.hitDie}` });
+		hd.addEventListener('click', () => this.openFieldRest());
 	}
 
-	/** Heroic reactions (Core Rules p.15): each costs 1 action, once a round. */
+	/** Heroic reactions (Core Rules 3.3 p.15) as playing cards: each costs 1 action, taken from your next turn, once a round. */
 	private renderReactions(panel: HTMLElement): void {
 		const s = this.sheet;
-		const sec = this.section(panel, 'Reactions');
-		const grid = sec.createDiv({ cls: 'ns-reactions' });
+		const sec = this.section(panel, 'Reactions', undefined, 'on someone else’s turn · each 1/round');
+		const grid = sec.createDiv({ cls: 'ns-rcards' });
 		const melee = s.attacks.find(a => !a.ranged);
-		const list: { name: string; icon: string; effect: string; run?: () => void }[] = [
-			{ name: 'Defend', icon: 'shield', effect: s.armor > 0 ? `−${s.armor} damage from one attack. Crits ignore it.` : `Your armor (0) takes nothing off; wear some to block damage.` },
-			{ name: 'Interpose', icon: 'shield-plus', effect: 'Step in and take the hit for a creature within Reach 2.' },
-			{ name: 'Opportunity Attack', icon: 'swords', effect: melee ? `${melee.name} with disadvantage as an enemy moves away.` : 'A melee attack with disadvantage as an enemy moves away.',
-				run: melee ? () => this.attack(melee.name, melee.expression, { edge: -1, edgeReason: 'Opportunity Attacks have disadvantage', title: `${s.name} · Opportunity Attack (${melee.name})`, actions: 0 }) : undefined },
-			{ name: 'Help', icon: 'hand-helping', effect: 'An ally rerolls, if you can explain how you help.' },
-		];
-		for (const r of list) {
+		const runs: Record<string, (() => void) | undefined> = {
+			'Opportunity Attack': melee ? () => this.attack(melee.name, melee.expression, { edge: -1, edgeReason: 'Opportunity Attacks have disadvantage', title: `${s.name} · Opportunity Attack (${melee.name})`, actions: 0 }) : undefined,
+		};
+		for (const r of REACTIONS) {
 			const used = s.reactionsUsed.some(x => x.toLowerCase() === r.name.toLowerCase());
-			const card = grid.createEl('button', { cls: `ns-reaction${used ? ' is-used' : ''}`, attr: { 'aria-label': `${r.name}: 1 action. ${r.effect}` } });
-			const top = card.createDiv({ cls: 'ns-reaction-top' });
-			setIcon(top.createSpan({ cls: 'ns-reaction-icon' }), r.icon);
-			top.createSpan({ cls: 'ns-reaction-name', text: r.name });
-			card.createDiv({ cls: 'ns-reaction-effect', text: r.effect });
-			card.createSpan({ cls: 'ns-reaction-cost', text: used ? 'Used' : '1 action' });
-			card.disabled = used || s.actions < 1;
-			card.addEventListener('click', () => {
+			const card = grid.createDiv({ cls: `ns-rcard${used ? ' is-used' : ''}`, attr: { 'data-reaction': r.name } });
+			const top = card.createDiv({ cls: 'ns-rc-top' });
+			setIcon(top.createSpan({ cls: 'ns-rc-em' }), evIcon(r.icon));
+			top.createEl('b', { cls: 'ns-rc-name', text: r.name });
+			drawSvg(card.createSpan({ cls: 'ns-rc-orn' }), ORNAMENT, 70, 10);
+			const p = card.createEl('p', { cls: 'ns-rc-text' });
+			for (const part of r.text) {
+				if (typeof part === 'string') p.appendText(part);
+				else nimble().markWord(p.createSpan({ text: part.term }), part.term, this.file.path);
+			}
+			const foot = card.createEl('button', { cls: 'ns-rc-foot', attr: { type: 'button', 'aria-label': used ? `${r.name}: used this round` : `Use ${r.name}: 1 action, taken from your next turn` } });
+			const cost = foot.createSpan({ cls: 'ns-rc-cost' });
+			cost.createEl('i', { attr: { 'aria-hidden': 'true' } });
+			cost.createSpan({ text: used ? 'Used' : '1 action' });
+			foot.disabled = used || s.actions < 1;
+			foot.addEventListener('click', () => {
 				// Only once the reaction is actually taken (not used yet this round, an action to spend, the note saved).
-				let used = false;
-				void this.mutate((fm, cur) => { used = useReaction(fm, cur, r.name); }).then(() => {
-					if (!used) return;
+				let took = false;
+				void this.mutate((fm, cur) => { took = useReaction(fm, cur, r.name); }).then(() => {
+					if (!took) return;
 					new Notice(`${s.name} uses ${r.name}.`);
-					r.run?.();
+					runs[r.name]?.();
 				});
 			});
 		}
 	}
 
-	// Speed, hit dice, mana, resources, conditions ---------------------------------------
+	// Conditions ------------------------------------------------------------------
 
-	private renderStrip(strip: HTMLElement): void {
+	private renderConditions(row: HTMLElement): void {
 		const s = this.sheet;
-		const chip = (cls: string, label: string, value: string, onClick?: (el: HTMLElement) => void, aria?: string) => {
-			const el = strip.createEl(onClick ? 'button' : 'div', { cls: `ns-chip ${cls}` });
-			el.createSpan({ cls: 'ns-chip-label', text: label });
-			el.createSpan({ cls: 'ns-chip-value', text: value });
-			if (aria) el.setAttr('aria-label', aria);
-			if (onClick) el.addEventListener('click', () => onClick(el));
-			return el;
-		};
-		if (this.state.editing) {
-			const edit = (label: string, key: string, current: number) => {
-				const el = strip.createEl('label', { cls: 'ns-chip is-edit' });
-				el.createSpan({ cls: 'ns-chip-label', text: label });
-				const input = el.createEl('input', { type: 'number', value: s.set.has(key) ? String(this.fm[key]) : '', attr: { placeholder: String(current), 'aria-label': `${label} (blank: worked out)` } });
-				input.addEventListener('change', () => void this.mutate(fm => setOverride(fm, key, input.value.trim() === '' ? undefined : Number(input.value))));
-			};
-			edit('Max HP', 'hp_max', s.hpMax);
-			edit('Hit die d', 'hit_die', s.hitDie);
-			edit('Max hit dice', 'hit_dice_max', s.hitDiceMax);
-			edit('Max mana', 'mana_max', s.manaMax);
-			return;
-		}
-		chip('ns-hitdice', 'Hit dice', `${s.hitDice}/${s.hitDiceMax} d${s.hitDie}`, () => this.openFieldRest(), `Hit dice ${s.hitDice} of ${s.hitDiceMax}, d${s.hitDie}. Field rest`);
-		for (const r of s.resources) {
-			if (r.die && resourceRule(r.name)) this.renderHeldDice(strip, r);
-			else this.renderResource(strip, r.name, r.current, r.max, r.die);
-		}
-		// Conditions get their own row: a tag cloud under the numbers, labelled, so they never get lost among them.
-		const host = strip.closest<HTMLElement>('.ns-turn') ?? strip;
-		host.parentElement?.querySelector(':scope > .ns-conds-row')?.remove();
-		const row = createDiv({ cls: 'ns-conds-row' });
 		row.toggleClass('has-conds', s.conditions.length > 0);
-		host.after(row);
-		row.createSpan({ cls: 'ns-chip-label ns-conds-label', text: 'Conditions' });
+		row.createSpan({ cls: 'ns-conds-label', text: 'Conditions' });
 		const conds = row.createDiv({ cls: 'ns-conds' });
 		for (const c of s.conditions) {
 			const tag = conds.createSpan({ cls: 'ns-cond' });
-			const name = tag.createEl('button', { cls: 'ns-cond-name', text: c });
+			const name = pill(tag, { tag: 'button', cls: 'ns-cond-name', icon: conditionIcon(c), text: c });
 			name.addEventListener('click', () => nimble().showConditionInfo(name, c));
-			const x = iconStep(tag, 'x', { 'aria-label': `Remove ${c}` }, 'ns-cond-x');
+			const x = tag.createEl('button', { cls: 'ns-cond-x', attr: { type: 'button', 'aria-label': `Remove ${c}` } });
+			setIcon(x, evIcon('x'));
 			x.addEventListener('click', () => void this.mutate(fm => removeCondition(fm, c)));
 		}
-		if (!s.conditions.length) conds.createSpan({ cls: 'ns-conds-none', text: 'None' });
-		const add = conds.createEl('button', { cls: 'ns-cond-add', attr: { 'aria-label': 'Add a condition' } });
-		setIcon(add, 'plus');
-		add.createSpan({ text: 'Add' });
+		const add = pill(conds, { tag: 'button', cls: 'ns-cond-add', icon: evIcon('plus'), text: 'Add' });
+		add.setAttr('aria-label', 'Add a condition');
 		add.addEventListener('click', () => this.openConditionPicker());
-	}
-
-	private renderResource(strip: HTMLElement, name: string, current: number, max: number | undefined, die?: string): void {
-		const r = strip.createDiv({ cls: 'ns-res' });
-		const label = r.createEl(die ? 'button' : 'span', { cls: 'ns-chip-label', text: die ? `${name} ${die}` : name });
-		if (die) {
-			label.setAttr('aria-label', `Roll a ${name.replace(/s$/, '')} (${die})`);
-			label.addEventListener('click', () => this.roll(`1${die}`, name.replace(/ice$/, 'ie')));
-		}
-		const minus = iconStep(r, 'minus', { 'aria-label': `${name} −1` });
-		if (max !== undefined && max > 0 && max <= 8) {
-			const pips = r.createSpan({ cls: 'ns-res-pips' });
-			for (let i = 0; i < max; i++) pips.createSpan({ cls: `ns-res-pip${i < current ? ' is-on' : ''}` });
-		} else r.createSpan({ cls: 'ns-res-value', text: max !== undefined ? `${current}/${max}` : String(current) });
-		const plus = iconStep(r, 'plus', { 'aria-label': `${name} +1` });
-		minus.disabled = current <= 0;
-		plus.disabled = max !== undefined && current >= max;
-		minus.addEventListener('click', () => void this.mutate((fm, cur) => adjustResource(fm, cur, name, -1)));
-		plus.addEventListener('click', () => void this.mutate((fm, cur) => adjustResource(fm, cur, name, 1)));
-	}
-
-	/**
-	 * A pool of class dice, drawn as dice of their size in the class dice colour.
-	 * Judgment Dice are a count (rolled with the attack they go into): + and −.
-	 * Fury Dice are rolled as you gain them, so they show their faces: + rolls one,
-	 * and tapping one changes its face.
-	 */
-	private renderHeldDice(strip: HTMLElement, res: Resource): void {
-		const rule = resourceRule(res.name)!;
-		const sides = Number(res.die!.replace(/^d/i, '')) || 6;
-		const rolledNow = rule.rolledWhen === 'gained';
-		const faces = rolledNow ? heldFaces(res.current, res.rolled) : Array.from({ length: res.current }, () => 0);
-		const box = strip.createDiv({ cls: 'ns-res ns-held' });
-		box.createSpan({ cls: 'ns-chip-label', text: `${res.name} ${res.die}` });
-		const minus = iconStep(box, 'minus', { 'aria-label': `${res.name} −1` });
-		const dice = box.createSpan({ cls: 'ns-held-dice' });
-		faces.forEach((f, i) => {
-			const d = dieShape(dice, sides, { value: f || undefined, cls: rolledNow ? 'is-rolled' : '' });
-			if (!rolledNow) {
-				// Like any pip: tapping a filled die takes one away.
-				d.addClass('is-clickable');
-				d.setAttr('role', 'button');
-				d.setAttr('tabindex', '0');
-				d.setAttr('aria-label', `Remove a ${res.name.replace(/ice$/, 'ie')} (${faces.length} held)`);
-				const drop = () => void this.mutate((fm, cur) => adjustResource(fm, cur, res.name, -1));
-				d.addEventListener('click', drop);
-				d.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); drop(); } });
-				return;
-			}
-			d.addClass('is-clickable');
-			d.setAttr('role', 'button');
-			d.setAttr('tabindex', '0');
-			d.setAttr('aria-label', `${res.name}: ${f || 'not rolled'}. Change the face`);
-			const edit = () => this.promptNumber(`${res.name} face (1–${sides})`, f || sides, (n) => void this.mutate((fm, cur) => {
-				const now = cur.resources.find(y => y.name === res.name);
-				const held = heldFaces(now?.current ?? 0, now?.rolled);
-				held[i] = Math.max(1, Math.min(sides, Math.round(n)));
-				setRolled(fm, res.name, held);
-			}));
-			d.addEventListener('click', edit);
-			d.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); edit(); } });
-		});
-		// Room left in a capped pool (Combat Dice up to STR): faint outlines.
-		if (res.max !== undefined && res.max <= 10) {
-			for (let i = faces.length; i < res.max; i++) {
-				// Like any pip: tapping an outline adds one (rolled, for dice you roll as you gain them).
-				const d = dieShape(dice, sides, { cls: 'is-empty is-clickable' });
-				d.setAttr('role', 'button');
-				d.setAttr('tabindex', '0');
-				d.setAttr('aria-label', rolledNow ? `Roll a ${res.name.replace(/ice$/, 'ie')}` : `Add a ${res.name.replace(/ice$/, 'ie')} (${faces.length} held)`);
-				const add = () => { if (rolledNow) this.gainDice(res, 1); else void this.mutate((fm, cur) => adjustResource(fm, cur, res.name, 1)); };
-				d.addEventListener('click', add);
-				d.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); add(); } });
-			}
-		}
-		if (!faces.length && (res.max === undefined || res.max > 10)) dice.createSpan({ cls: 'ns-held-none', text: 'None' });
-		const plus = iconStep(box, 'plus', { 'aria-label': rolledNow ? `Roll 1 more ${res.name.replace(/ice$/, 'ie')}` : `${res.name} +1` });
-		minus.disabled = !faces.length;
-		plus.disabled = res.max !== undefined && faces.length >= res.max;
-		minus.addEventListener('click', () => void this.mutate((fm, cur) => {
-			if (rolledNow) setRolled(fm, res.name, faces.slice(0, -1));
-			else adjustResource(fm, cur, res.name, -1);
-		}));
-		plus.addEventListener('click', () => {
-			if (rolledNow) this.gainDice(res, 1);
-			else void this.mutate((fm, cur) => adjustResource(fm, cur, res.name, 1));
-		});
 	}
 
 	/** Roll `n` dice of a held pool and set them aside. */
@@ -828,27 +797,47 @@ export class CharacterSheetRenderer extends Component {
 		}, 'ns-small-dialog');
 	}
 
+	/** A small text editor (the Hunter's Quarry); empty clears it. */
+	private promptText(label: string, value: string, done: (v: string) => void): void {
+		dialog(this.app, label, (el, close) => {
+			el.addClass('ns-number-pop');
+			const row = el.createDiv({ cls: 'popover-row' });
+			const input = row.createEl('input', { type: 'text', value, attr: { placeholder: 'Name' } });
+			const ok = row.createEl('button', { cls: 'mod-cta', text: 'Set' });
+			const go = () => { close(); done(input.value); };
+			ok.addEventListener('click', go);
+			input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+			window.setTimeout(() => { input.focus(); input.select(); }, 0);
+		}, 'ns-small-dialog');
+	}
+
 	// Skills -----------------------------------------------------------------------
 
-	private renderSkills(row: HTMLElement): void {
+	/** The ten skills: one band with notched end caps, each skill's stat over its number, its name on the band. */
+	private renderSkills(wrap: HTMLElement): void {
 		const s = this.sheet;
+		const editing = this.state.editing;
+		wrap.createSpan({ cls: 'ns-sk-cap is-l' });
+		const row = wrap.createDiv({ cls: 'ns-sk-row' });
 		for (const sk of s.skills) {
-			const cell = row.createEl(this.state.editing ? 'div' : 'button', { cls: 'ns-skill' });
-			cell.createSpan({ cls: 'ns-skill-stat', text: sk.stat });
-			if (this.state.editing) {
-				const step = cell.createDiv({ cls: 'ns-skill-step' });
+			const cell = row.createEl(editing ? 'div' : 'button', { cls: 'ns-skill' });
+			const w = cell.createSpan({ cls: 'ns-skill-w' });
+			w.createEl('small', { cls: 'ns-skill-stat', text: sk.stat });
+			if (editing) {
+				const step = w.createSpan({ cls: 'ns-skill-step' });
 				const minus = iconStep(step, 'minus', { 'aria-label': `${sk.name} −1 point` });
 				step.createSpan({ cls: 'ns-skill-points', text: String(sk.points) });
 				const plus = iconStep(step, 'plus', { 'aria-label': `${sk.name} +1 point` });
 				minus.addEventListener('click', () => void this.mutate(fm => setSkill(fm, sk.key, sk.points - 1)));
 				plus.addEventListener('click', () => void this.mutate(fm => setSkill(fm, sk.key, sk.points + 1)));
 			} else {
-				cell.createSpan({ cls: 'ns-skill-total', text: fmtMod(sk.total) });
+				w.createEl('b', { cls: 'ns-skill-total', text: fmtMod(sk.total) });
 				cell.setAttr('aria-label', `${sk.name} ${fmtMod(sk.total)} (${sk.stat}${sk.points ? ` + ${sk.points}` : ''}). Roll a check`);
 				cell.addEventListener('click', () => this.rollD20(sk.total, `${sk.name} check`, null));
 			}
 			cell.createSpan({ cls: 'ns-skill-name', text: sk.name });
 		}
+		wrap.createSpan({ cls: 'ns-sk-cap is-r' });
 	}
 
 	// Tabs -------------------------------------------------------------------------
@@ -856,18 +845,17 @@ export class CharacterSheetRenderer extends Component {
 	private renderTabs(root: HTMLElement): void {
 		const s = this.sheet;
 		const st = this.state;
-		const tabs: { id: SheetTab; label: string; icon: string; count?: number }[] = [
-			{ id: 'actions', label: 'Actions', icon: 'swords' },
-			{ id: 'features', label: 'Features', icon: 'sparkles', count: s.features.length },
-			...(s.caster || s.spells.length ? [{ id: 'spells' as const, label: 'Spells', icon: 'wand-2', count: s.spells.length }] : []),
-			{ id: 'inventory', label: 'Inventory', icon: 'backpack' },
-			{ id: 'notes', label: 'Notes', icon: 'notebook-pen' },
+		const tabs: { id: SheetTab; label: string }[] = [
+			{ id: 'actions', label: 'Actions' },
+			{ id: 'features', label: 'Features' },
+			...(s.caster || s.spells.length ? [{ id: 'spells' as const, label: 'Spells' }] : []),
+			{ id: 'inventory', label: 'Inventory' },
+			{ id: 'notes', label: 'Notes' },
 		];
 		if (!tabs.some(t => t.id === st.tab)) st.tab = 'actions';
 		const bar = root.createDiv({ cls: 'ns-tabs', attr: { role: 'tablist' } });
 		for (const t of tabs) {
 			const b = bar.createEl('button', { cls: `ns-tab${t.id === st.tab ? ' is-active' : ''}`, attr: { role: 'tab', 'aria-selected': String(t.id === st.tab), 'data-tab': t.id } });
-			setIcon(b.createSpan({ cls: 'ns-tab-icon' }), t.icon);
 			b.createSpan({ cls: 'ns-tab-label', text: t.label });
 			if (t.id === 'inventory') b.createSpan({ cls: `ns-tab-count${s.slots.used > s.slots.max ? ' is-over' : ''}`, text: `${s.slots.used}/${s.slots.max}` });
 			b.addEventListener('click', () => { st.tab = t.id; this.render(); });
@@ -882,14 +870,13 @@ export class CharacterSheetRenderer extends Component {
 		}
 	}
 
-	private section(panel: HTMLElement, title: string, add?: { label: string; run: () => void }): HTMLElement {
+	private section(panel: HTMLElement, title: string, add?: { label: string; run: () => void }, note?: string): HTMLElement {
 		const sec = panel.createDiv({ cls: 'ns-section' });
 		const head = sec.createDiv({ cls: 'ns-section-head' });
-		head.createSpan({ cls: 'ns-section-title', text: title });
+		const t = head.createSpan({ cls: 'ns-section-title', text: title });
+		if (note) t.createEl('small', { cls: 'ns-section-note', text: note });
 		if (add) {
-			const b = head.createEl('button', { cls: 'ns-add' });
-			setIcon(b.createSpan(), 'plus');
-			b.createSpan({ text: add.label });
+			const b = pill(head, { tag: 'button', cls: 'ns-add', icon: evIcon('plus'), text: add.label });
 			b.addEventListener('click', add.run);
 		}
 		return sec.createDiv({ cls: 'ns-rows' });
@@ -939,11 +926,20 @@ export class CharacterSheetRenderer extends Component {
 		};
 	}
 
-	private rollButton(parent: HTMLElement, label: string, aria: string, run: () => void, cls = ''): HTMLButtonElement {
-		const b = parent.createEl('button', { cls: `ns-roll ${cls}`.trim(), attr: { 'aria-label': aria, title: aria } });
-		setIcon(b.createSpan({ cls: 'ns-roll-icon' }), 'dices');
-		b.createSpan({ text: label });
+	private rollButton(parent: HTMLElement, label: string, aria: string, run: () => void, cls = '', icon = evIcon('roll')): HTMLElement {
+		const b = pill(parent, { tag: 'button', cls: `ns-roll ${cls}`.trim(), icon, text: label, title: aria });
 		b.addEventListener('click', (e) => { e.stopPropagation(); run(); });
+		return b;
+	}
+
+	/** A weapon's damage roll: the dice, and its damage type as an icon (the word is the tooltip). No die icon: the dice say it. */
+	private damageButton(parent: HTMLElement, a: Attack): HTMLElement {
+		const type = damageIcon(a.damageType);
+		const b = parent.createEl('button', { cls: 'ns-roll ns-dmg', attr: { type: 'button' } });
+		b.createSpan({ cls: 'ns-dmg-n', text: spacedRoll(a.expression) });
+		if (type) setIcon(b.createSpan({ cls: 'ns-dmg-t' }), type.icon);
+		setTooltip(b, `Attack with ${a.name}: ${a.expression}${type ? `, ${type.label.toLowerCase()}` : ''}`, { delay: 350 });
+		b.addEventListener('click', (e) => { e.stopPropagation(); this.attack(a.name, a.expression, { ranged: a.ranged }); });
 		return b;
 	}
 
@@ -957,9 +953,9 @@ export class CharacterSheetRenderer extends Component {
 		for (const a of s.attacks) {
 			const e = s.inventory.find(x => x.index === a.inventoryIndex);
 			this.row(weapons, `w:${a.inventoryIndex}:${a.name}`, {
-				name: a.name, detail: a.detail, cls: 'is-weapon',
+				name: a.name, detail: a.props ?? a.detail, cls: 'is-weapon',
 				body: e?.item ? (el) => renderHitBody(el, this.hitFor('item', e.item!.name) ?? fakeHit('item', a.name), this.richOpts()) : undefined,
-				right: (el) => this.rollButton(el, a.expression, `Attack with ${a.name}: ${a.expression}`, () => this.attack(a.name, a.expression, { ranged: a.ranged }), 'is-attack'),
+				right: (el) => this.damageButton(el, a),
 			});
 		}
 
@@ -1080,7 +1076,7 @@ export class CharacterSheetRenderer extends Component {
 			},
 			right: (el) => {
 				const can = sp.cost <= s.mana;
-				const b = this.rollButton(el, spell?.damage ? 'Cast' : 'Cast', `Cast ${sp.name}${sp.cost ? ` (${sp.cost} mana)` : ''}`, () => this.cast(sp), 'is-cast');
+				const b = this.rollButton(el, 'Cast', `Cast ${sp.name}${sp.cost ? ` (${sp.cost} mana)` : ''}`, () => this.cast(sp), 'is-cast', evIcon('spell'));
 				b.toggleClass('is-short', !can);
 				if (!can) b.setAttr('title', `Needs ${sp.cost} mana (you have ${s.mana})`);
 			},

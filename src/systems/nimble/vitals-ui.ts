@@ -8,6 +8,7 @@ import { setIcon } from 'obsidian';
 import { reducedMotion } from '../../core/celebrate';
 import type { VitalsMemory } from '../../core/vitals/meter';
 import { pipStep } from './rules';
+import { evIcon } from '../../core/icons';
 
 // The bar itself is core's, shared with every game.
 export { iconStep, renderMeter, VitalsMemory } from '../../core/vitals/meter';
@@ -46,6 +47,31 @@ export function renderWoundPips(parent: HTMLElement, o: { key?: string; wounds: 
 	}
 	if (o.count !== false) w.createSpan({ cls: 'ns-wounds-count', text: `${o.wounds}/${o.max}` });
 	return w;
+}
+
+/**
+ * The Wounds as the official sheet draws them: five linked circles ending in a
+ * skull, in `chain`, and dashed circles for Wounds a feature adds, in `extra`
+ * (only when there are any). The chain fills first, then the extras; the skull is
+ * always the last Wound. Taps move one step (pipStep), and the pip that changed animates.
+ */
+export function renderWoundChain(chain: HTMLElement, extra: HTMLElement | null, o: { key?: string; wounds: number; max: number; set: (n: number) => void }, mem: VitalsMemory): void {
+	const key = o.key ?? 'wounds';
+	const was = mem.counts.get(key);
+	mem.counts.set(key, o.wounds);
+	const linked = Math.max(0, Math.min(5, o.max - 1));
+	const pip = (parent: HTMLElement, i: number, cls: string) => {
+		const on = i < o.wounds;
+		const last = i === o.max - 1;
+		const b = parent.createEl('button', { cls: `ns-pip ${cls}${on ? ' is-on' : ''}${moved(was, i, on)}`, attr: { 'aria-pressed': String(on), 'aria-label': `${on ? 'Heal a Wound' : 'Add a Wound'} (${o.wounds} of ${o.max}${last ? '; the last is death' : ''})` } });
+		b.addEventListener('click', (e) => { e.stopPropagation(); o.set(pipStep(o.wounds, on, o.max)); });
+		return b;
+	};
+	chain.setAttr('role', 'group');
+	chain.setAttr('aria-label', `Wounds ${o.wounds} of ${o.max}`);
+	for (let i = 0; i < linked; i++) pip(chain, i, 'is-link');
+	if (extra) for (let i = linked; i < o.max - 1; i++) pip(extra, i, 'is-extra');
+	setIcon(pip(chain, o.max - 1, 'is-skull'), evIcon('skull'));
 }
 
 /** " just-on" / " just-off" for a pip that changed since the last draw (it animates). */

@@ -67,6 +67,10 @@ export interface Attack {
 	/** A ranged weapon (Range 12): not a Reach attack. */
 	ranged?: boolean;
 	inventoryIndex: number;
+	/** "slashing": shown as an icon on the damage button. */
+	damageType?: string;
+	/** What else the sheet says about it: its properties and stat ("2-handed · STR"), without the damage type. */
+	props?: string;
 }
 
 export interface KnownSpell {
@@ -106,6 +110,10 @@ export interface Resource {
 	reset?: string;
 	/** Dice rolled as you gain them (Judgment Dice): the faces set aside, one per die held (0 = not rolled). */
 	rolled?: number[];
+	/** How the max is worked out, as the book writes it ("KEY", "5×LVL"): the name's tooltip on the sheet. */
+	formula?: string;
+	/** Uses of a feature ("(1/Safe Rest)"): the feature they belong to. */
+	feature?: string;
 }
 
 export interface CharacterSheet {
@@ -155,6 +163,8 @@ export interface CharacterSheet {
 	actions: number;
 	/** Heroic reactions already used this round (each is 1/round). */
 	reactionsUsed: string[];
+	/** The Hunter's marked Quarry (`quarry:`), or ''. */
+	quarry: string;
 	inventory: InventoryEntry[];
 	slots: { used: number; max: number };
 	attacks: Attack[];
@@ -327,6 +337,15 @@ function signedMod(n: number): string {
 }
 
 /** "+2", "0", "−1" for display. */
+/**
+ * A feature you use a few times between Safe Rests: "(1/Safe Rest)", "(WIL/Safe Rest)",
+ * "(2×WIL times/Safe Rest)" anywhere in its text. The formula as written, or null.
+ */
+export function featureUses(text: string | undefined): { formula: string } | null {
+	const m = String(text ?? '').match(/\(\s*(\d+|(?:\d+\s*[×x*]\s*)?(?:STR|DEX|INT|WIL|KEY|LVL))(?:\s+times?)?\s*\/\s*Safe Rest\s*\)/i);
+	return m ? { formula: m[1].replace(/\s+/g, '').replace(/^(\d+)[x*]/i, '$1×').toUpperCase() } : null;
+}
+
 export function fmtMod(n: number): string {
 	return n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : '+0';
 }
@@ -519,6 +538,8 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 			stat: best,
 			ranged: (it.properties ?? []).some(p => /^range\b/i.test(p)),
 			inventoryIndex: e.index,
+			damageType: d.type || it.damageType || undefined,
+			props: [...(it.properties ?? []), best ?? ''].filter(Boolean).join(' · '),
 		});
 	}
 
@@ -571,7 +592,17 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 		die = dieAt(resourceRule(r.name), level) ?? die;
 		const startsEmpty = (/ends?\b/i.test(r.reset ?? '') && !/rest/i.test(r.reset ?? '')) || rule?.rolledWhen === 'gained' || !!rule?.clearsOnRest;
 		const current = Math.max(0, Math.min(max ?? Infinity, v.current ?? (startsEmpty ? 0 : max ?? 0)));
-		resources.push({ name: r.name, current, max: max !== undefined ? Math.max(0, max) : undefined, die, reset: r.reset, rolled: v.rolled?.slice(0, current) });
+		resources.push({ name: r.name, current, max: max !== undefined ? Math.max(0, max) : undefined, die, reset: r.reset, rolled: v.rolled?.slice(0, current), formula: r.max !== undefined ? String(r.max) : undefined });
+	}
+	// Class features you can use a few times between Safe Rests ("(1/Safe Rest)", "(WIL/Safe Rest)"): uses, kept like a resource.
+	for (const f of features) {
+		if (f.group !== 'Class' && f.group !== 'Subclass' && f.group !== 'Chosen') continue;
+		const u = featureUses(f.text);
+		if (!u || resources.some(r => nameKey(r.name) === nameKey(f.name))) continue;
+		const max = Math.max(0, evalFormula(u.formula, vars) ?? 0);
+		if (!max) continue;
+		const v = resValue(f.name);
+		resources.push({ name: f.name, current: Math.max(0, Math.min(max, v.current ?? max)), max, reset: 'Safe Rest', formula: u.formula, feature: f.name });
 	}
 	for (const [k, v] of Object.entries(fmRes)) {
 		if (resources.some(r => nameKey(r.name) === nameKey(k))) continue;
@@ -605,6 +636,7 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 		conditions: list(fm.conditions).map(text).filter(Boolean),
 		actions: Math.max(0, Math.min(9, Math.floor(num(fm.actions) ?? ACTIONS_PER_TURN))),
 		reactionsUsed: list(fm.reactions_used).map(text).filter(Boolean),
+		quarry: text(fm.quarry),
 		inventory, slots, attacks, spells, features, resources,
 		set, cls, anc, bg,
 	};
@@ -925,6 +957,13 @@ export function useReaction(fm: Frontmatter, s: Pick<CharacterSheet, 'actions' |
 export function endTurn(fm: Frontmatter): void {
 	setActions(fm, ACTIONS_PER_TURN);
 	delete fm.reactions_used;
+}
+
+/** Mark the Hunter's Quarry (empty clears it). */
+export function setQuarry(fm: Frontmatter, name: string): void {
+	const v = name.trim();
+	if (v) fm.quarry = v;
+	else delete fm.quarry;
 }
 
 export function removeCondition(fm: Frontmatter, name: string): void {

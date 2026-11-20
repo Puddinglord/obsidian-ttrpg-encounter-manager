@@ -3039,50 +3039,11 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet button:disabled { cursor: default; opacity: 0.4; }
 .nimble-sheet input[type="number"], .nimble-sheet input[type="text"] { font: inherit; }
 
-/* The top of the sheet: four cards. The hero (portrait, name, Armor/Initiative/Speed), hit points and
-   mana, stats and skills, and this turn (actions, Hit Dice, class dice). Cards share one look. */
+/* Cards the tracker's quick look (.ns-embed) draws its vitals in: hit points and mana, this turn. */
 .nimble-sheet { --ns-card: var(--background-secondary); --ns-tile: var(--background-primary); --ns-card-line: var(--background-modifier-border); }
 .theme-dark .nimble-sheet { --ns-card: color-mix(in srgb, var(--background-secondary) 70%, var(--background-primary)); --ns-tile: color-mix(in srgb, var(--background-primary) 55%, #000); }
-.nimble-sheet :is(.ns-hero, .ns-meters, .ns-abilities, .ns-turn) { border: 1px solid var(--ns-card-line); border-radius: 16px; background: var(--ns-card); margin-bottom: 0.75rem; }
+.nimble-sheet :is(.ns-meters, .ns-turn) { border: 1px solid var(--ns-card-line); border-radius: 16px; background: var(--ns-card); margin-bottom: 0.75rem; }
 
-/* Hero card */
-.nimble-sheet .ns-hero {
-	position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.2rem; padding: 1rem 1.1rem; overflow: hidden;
-	background:
-		radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--ns-accent) 16%, transparent), transparent 60%),
-		var(--ns-card);
-}
-.nimble-sheet .ns-head { flex: 1 1 18rem; min-width: 0; display: flex; align-items: center; gap: 0.95rem; }
-.nimble-sheet .ns-portrait {
-	flex: 0 0 auto; width: 4.4rem; height: 4.4rem; border-radius: 50%; overflow: hidden;
-	display: flex; align-items: center; justify-content: center;
-	box-shadow: 0 0 0 3px var(--ns-card), 0 0 0 5px color-mix(in srgb, var(--ns-accent) 70%, transparent), 0 6px 16px rgba(0, 0, 0, 0.18);
-	background: radial-gradient(circle at 30% 25%, #e8743b, #8a2b1d);
-}
-.nimble-sheet .ns-portrait img { width: 100%; height: 100%; object-fit: cover; }
-.nimble-sheet .ns-initials { font-weight: 800; font-size: 1.45rem; letter-spacing: 0.03em; color: #fff; }
-.nimble-sheet .ns-titles { flex: 1; min-width: 0; }
-/* Beside the name: the buttons over the Armor/Initiative/Speed tiles. Narrow: the buttons are a row at
-   the top of the card and the tiles a row under the name. */
-.nimble-sheet .ns-hero-side { flex: 0 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: 0.55rem; }
-@container nimble-sheet (max-width: 520px) {
-	.nimble-sheet .ns-hero { padding-top: 2.7rem; }
-	.nimble-sheet .ns-hero-side { flex: 1 1 100%; }
-	.nimble-sheet .ns-head-actions { position: absolute; top: 0.5rem; right: 0.5rem; }
-	.nimble-sheet .ns-head { flex: 1 1 100%; }
-}
-.nimble-sheet .ns-name { font-size: 1.7rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.015em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nimble-sheet .ns-name.is-link { cursor: pointer; }
-.nimble-sheet .ns-name.is-link:hover { color: var(--text-accent); }
-.nimble-sheet .ns-line { margin-top: 0.25rem; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-accent); }
-.nimble-sheet .ns-sub { font-size: 0.86rem; color: var(--text-normal); margin-top: 0.15rem; }
-.nimble-sheet .ns-meta { font-size: 0.76rem; color: var(--text-faint); margin-top: 0.1rem; }
-.nimble-sheet .ns-head-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.15rem; }
-.nimble-sheet .ns-icon-btn { width: 1.9rem; height: 1.9rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--text-muted); }
-.nimble-sheet .ns-icon-btn:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
-.nimble-sheet .ns-icon-btn.is-active { color: var(--text-accent); }
-.nimble-sheet .ns-icon-btn.mod-cta { background: var(--interactive-accent); color: var(--text-on-accent); box-shadow: none; padding: 0; height: 1.9rem; }
-.nimble-sheet .ns-icon-btn svg { width: 16px; height: 16px; }
 
 /* Edit mode: details */
 .nimble-sheet .ns-edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 0.6rem; }
@@ -3090,38 +3051,385 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet .ns-field.is-wide { grid-column: 1 / -1; }
 .nimble-sheet .ns-field-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
 .nimble-sheet .ns-field input { width: 100%; min-width: 0; }
-.nimble-sheet.is-editing :is(.ns-hero, .ns-abilities) { border-style: dashed; border-color: color-mix(in srgb, var(--ns-accent) 55%, transparent); }
 
-/* Stats and skills card: stat tiles beside the ten skills (stacked on phones) */
-.nimble-sheet .ns-abilities { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.8rem; padding: 0.8rem; }
-@container nimble-sheet (min-width: 760px) { .nimble-sheet .ns-abilities { grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); align-items: stretch; } }
-.nimble-sheet .ns-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; }
-.nimble-sheet .ns-stat { display: flex; min-width: 0; }
-.nimble-sheet .ns-stat-box {
-	position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem;
-	padding: 0.7rem 0.3rem; border-radius: 12px; background: var(--ns-tile); border: 1px solid var(--ns-card-line); transition: border-color 0.12s, transform 0.12s;
-}
-.nimble-sheet button.ns-stat-box { border: 1px solid var(--ns-card-line); border-radius: 12px; background: var(--ns-tile); padding: 0.7rem 0.3rem; }
-.nimble-sheet button.ns-stat-box:hover { border-color: var(--ns-accent); }
-.nimble-sheet button.ns-stat-box:active { transform: scale(0.97); }
-.nimble-sheet .ns-stat-label { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; color: var(--text-muted); }
-.nimble-sheet .ns-stat-value { font-size: 2rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.nimble-sheet .ns-stat-save {
-	position: absolute; top: 0.4rem; right: 0.4rem; display: inline-grid; place-items: center;
-	width: 1.15rem; height: 1.15rem; border-radius: 50%; line-height: 0; color: var(--text-faint);
-}
 /* ▲ / ▼ drawn so the triangle's centroid sits on the badge's centre (see triangleMark). */
 .ns-tri-mark { display: block; width: 100%; height: 100%; overflow: visible; }
 .ns-tri-mark polygon { fill: currentColor; stroke: currentColor; stroke-width: 0.7; stroke-linejoin: round; }
-.nimble-sheet .ns-stat.is-adv .ns-stat-save { background: color-mix(in srgb, var(--ns-temp) 16%, transparent); color: var(--ns-temp); }
-.nimble-sheet .ns-stat.is-dis .ns-stat-save { background: color-mix(in srgb, var(--ns-wound) 14%, transparent); color: var(--ns-wound); }
-.nimble-sheet .ns-stat.is-adv .ns-stat-box { box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--ns-temp) 70%, transparent); }
-.nimble-sheet .ns-stat.is-dis .ns-stat-box { box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--ns-wound) 60%, transparent); }
-.nimble-sheet .ns-stat-input { width: 80%; text-align: center; font-size: 1.3rem; font-weight: 800; }
-.nimble-sheet .ns-stat-tris { display: flex; gap: 0.25rem; }
-.nimble-sheet button.ns-tri { width: 1.7rem; height: 1.4rem; border-radius: 6px; font-size: 0.7rem; color: var(--text-faint); background: var(--background-modifier-hover); }
-.nimble-sheet button.ns-tri.is-up.is-on { background: var(--ns-temp); color: #fff; }
-.nimble-sheet button.ns-tri.is-down.is-on { background: var(--ns-wound); color: #fff; }
+
+/* ---------- The sheet, as the design study draws it (71-nimble-sheets, 71d-nimble-scroll) ----------
+   The official sheet's shapes in Nimble's look (.ev-sys-nimble's tokens): notched stat boxes with their save
+   marks, Armor and Initiative with a dark foot, the Wounds chain, Hit points as a wide red bar; the skills band;
+   the Actions bar; the class panel; reactions as cards. Red is HP, blue is mana, ochre is a class's own things,
+   charcoal on parchment for the rest. Scoped to .ns-sheet: the tracker's quick look (.ns-embed) keeps its own. */
+.nimble-sheet.ns-sheet { padding: 16px 18px 22px; border-radius: var(--ev-r-lg); background: var(--ev-bg); font-family: var(--ev-font-ui); color: var(--ev-text); line-height: normal; }
+.nimble-sheet.ns-sheet.in-panel { padding: 12px 10px 16px; }
+.nimble-sheet.ns-sheet :where(button):not(.mod-cta):focus-visible { outline: 2px solid var(--ev-ochre); outline-offset: 2px; }
+
+/* The hero: portrait, name, Camp | Level up */
+.nimble-sheet.ns-sheet .ns-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px 16px; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; overflow: visible; }
+.nimble-sheet.ns-sheet .ns-portrait { width: 78px; height: 78px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: radial-gradient(120% 120% at 30% 20%, var(--ev-surface) 0%, var(--ev-surface-2) 70%); box-shadow: 0 0 0 2px var(--ev-now-line), 0 4px 14px -6px rgb(0 0 0 / 0.3); }
+.nimble-sheet.ns-sheet .ns-initials { font: var(--ev-display-weight) 28px/1 var(--ev-font-display); letter-spacing: 0; color: var(--ev-accent-text); }
+.nimble-sheet.ns-sheet .ns-name { font: italic 900 36px/40px var(--ev-font-name); letter-spacing: 0; white-space: normal; overflow-wrap: anywhere; color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-line { margin-top: 2px; font: 700 15px/20px var(--ev-font-display); text-transform: none; letter-spacing: 0; color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-sub { margin-top: 0; font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-head-actions { display: flex; align-items: center; gap: 6px; }
+.nimble-sheet.ns-sheet .ns-head-tools { display: flex; align-items: center; gap: 2px; }
+.nimble-sheet.ns-sheet .ns-icon-btn { width: 30px; height: 30px; border-radius: var(--ev-r-md); color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-icon-btn svg { width: 16px; height: 16px; }
+.nimble-sheet.ns-sheet .ns-icon-btn.mod-cta { background: var(--ev-accent); color: var(--ev-on-accent); height: 30px; }
+@container nimble-sheet (max-width: 860px) {
+	.nimble-sheet.ns-sheet .ns-hero { grid-template-columns: auto minmax(0, 1fr); }
+	.nimble-sheet.ns-sheet .ns-head-actions { grid-column: 1 / -1; }
+	.nimble-sheet.ns-sheet .ns-head-tools { margin-left: auto; }
+}
+@container nimble-sheet (max-width: 480px) {
+	.nimble-sheet.ns-sheet .ns-portrait { width: 60px; height: 60px; }
+	.nimble-sheet.ns-sheet .ns-initials { font-size: 22px; }
+	.nimble-sheet.ns-sheet .ns-name { font-size: 30px; line-height: 34px; }
+}
+
+/* Compact buttons (pill()): the study's small button. Avenir Next sits its capitals high, so label and icon move down together. */
+.nimble-sheet.ns-sheet .ns-btn { --ev-pill-icon: 16px; --ev-pill-gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); font: 500 13px/normal var(--ev-font-ui); white-space: nowrap; cursor: pointer; }
+.nimble-sheet.ns-sheet .ns-btn:hover:not(:disabled) { background: var(--ev-surface-2); }
+.nimble-sheet.ns-sheet .ns-btn:disabled { opacity: 0.45; cursor: default; }
+.nimble-sheet.ns-sheet .ns-btn.is-icon-only { width: 30px; padding: 0; }
+.nimble-sheet.ns-sheet .ns-btn:not(.is-icon-only) > * { position: relative; top: var(--ns-btn-dy, 1.5px); }
+.nimble-sheet.ns-sheet .ns-cluster-gap { flex: none; }
+
+/* The band: the boxes pack above, Hit points along the bottom. Wide: stats | Armor Initiative | Wounds, then HP
+   across. ≤660px: the six boxes, then HP | Wounds (Wounds under Armor and Initiative). ≤440px: the stats, then
+   Armor Initiative | Wounds, then HP across. Every box in a row runs 9px → 77px (a stat's face, Armor and
+   Initiative, Wounds' shoulders, the HP box). */
+.nimble-sheet.ns-sheet .ns-band { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 2fr) minmax(184px, 2.6fr); grid-template-areas: "stats ai wounds" "hp hp hp"; align-items: start; gap: 14px 12px; margin-top: 20px; padding: 0 2px; }
+.nimble-sheet.ns-sheet .ns-band > .ns-stats { grid-area: stats; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.nimble-sheet.ns-sheet .ns-band > .ns-ai { grid-area: ai; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.nimble-sheet.ns-sheet .ns-band > .ns-wbox { grid-area: wounds; }
+.nimble-sheet.ns-sheet .ns-band > .ns-hpw { grid-area: hp; }
+@container nimble-sheet (max-width: 660px) {
+	.nimble-sheet.ns-sheet .ns-band { grid-template-columns: minmax(0, 4fr) minmax(0, 2fr); grid-template-areas: "stats ai" "hp wounds"; }
+}
+@container nimble-sheet (max-width: 440px) {
+	.nimble-sheet.ns-sheet .ns-band { grid-template-columns: minmax(0, 1fr) minmax(176px, 1.25fr); grid-template-areas: "stats stats" "ai wounds" "hp hp"; gap: 12px 8px; }
+}
+
+/* STR, DEX, INT, WIL: a notched box over a dark band, the save marks as triangles above (▲) and below (▼) */
+.nimble-sheet.ns-sheet .ns-stat { display: block; min-width: 0; }
+.nimble-sheet.ns-sheet .ns-stat-box { position: relative; display: block; width: 100%; height: 86px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--ev-text); font: inherit; cursor: pointer; }
+.nimble-sheet.ns-sheet div.ns-stat-box { cursor: default; }
+.nimble-sheet.ns-sheet .ns-stat-face { position: absolute; left: 0; right: 0; top: 9px; height: 68px; display: grid; grid-template-rows: 40px 24px; border: 2px solid var(--ev-bar); border-radius: 2px; background: var(--ev-bar); }
+.nimble-sheet.ns-sheet .ns-stat-value, .nimble-sheet.ns-sheet .ns-stat-face > .ns-stat-input { background: radial-gradient(circle at 0 100%, var(--ev-bar) 7.5px, transparent 8px), radial-gradient(circle at 100% 100%, var(--ev-bar) 7.5px, transparent 8px), var(--ev-surface); }
+.nimble-sheet.ns-sheet .ns-stat-value { display: flex; align-items: center; justify-content: center; padding: 2px 0 0 2px; font: 700 27px/normal var(--ev-font-num); font-variant-numeric: lining-nums proportional-nums; letter-spacing: 0; color: var(--ev-text); }
+.nimble-sheet.ns-sheet button.ns-stat-box:hover .ns-stat-value { background: radial-gradient(circle at 0 100%, var(--ev-bar) 7.5px, transparent 8px), radial-gradient(circle at 100% 100%, var(--ev-bar) 7.5px, transparent 8px), var(--ev-surface-2); }
+.nimble-sheet.ns-sheet .ns-stat-label { display: flex; align-items: center; justify-content: center; font: 700 15px/normal var(--ev-font-num); letter-spacing: 0.04em; color: var(--ev-on-bar); }
+.nimble-sheet.ns-sheet .ns-stat-face > .ns-stat-input { width: 100%; min-width: 0; height: 100%; margin: 0; padding: 2px 0 0; border: 0; border-radius: 0; text-align: center; font: 700 22px/normal var(--ev-font-num); color: var(--ev-text); box-shadow: none; }
+.nimble-sheet.ns-sheet .ns-tri { position: absolute; left: 50%; width: 22px; height: 10px; margin-left: -11px; padding: 0; border: 0; background: none; overflow: visible; }
+.nimble-sheet.ns-sheet .ns-tri.is-up { top: 0; }
+.nimble-sheet.ns-sheet .ns-tri.is-down { bottom: 0; }
+.nimble-sheet.ns-sheet .ns-tri svg, .nimble-sheet.ns-sheet svg.ns-tri { display: block; overflow: visible; }
+.nimble-sheet.ns-sheet .ns-tri path { fill: var(--ev-surface); stroke: var(--ev-bar); stroke-width: 1.5; stroke-linejoin: round; }
+.nimble-sheet.ns-sheet .ns-tri.is-on path { fill: var(--ev-bar); }
+.nimble-sheet.ns-sheet button.ns-tri { cursor: pointer; }
+.nimble-sheet.ns-sheet button.ns-tri::after { content: ""; position: absolute; inset: -6px -8px; }
+.nimble-sheet.ns-sheet button.ns-tri:hover path { stroke: var(--ev-ochre); }
+
+/* Armor and Initiative: boxes with the sheet's dark foot; Initiative's shows a d20 */
+.nimble-sheet.ns-sheet .ns-box { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 18px 34px 16px; height: 68px; margin-top: 9px; min-width: 0; padding: 0; gap: 0; border: 0; border-radius: 2px; background: var(--ev-surface); box-shadow: inset 0 0 0 2px var(--ev-bar); color: var(--ev-text); font: inherit; overflow: hidden; }
+.nimble-sheet.ns-sheet button.ns-box { cursor: pointer; }
+.nimble-sheet.ns-sheet button.ns-box:hover { background: var(--ev-surface-2); }
+.nimble-sheet.ns-sheet .ns-box-label { display: flex; align-items: flex-end; justify-content: center; gap: 0; font: 700 11px/normal var(--ev-font-num); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ev-text-2); white-space: nowrap; }
+.nimble-sheet.ns-sheet .ns-box-value { display: flex; align-items: center; justify-content: center; padding: 2px 0 0 1px; font: 700 25px/normal var(--ev-font-num); font-variant-numeric: lining-nums proportional-nums; letter-spacing: 0; }
+.nimble-sheet.ns-sheet .ns-box-foot { display: flex; align-items: center; justify-content: center; background: var(--ev-bar); color: var(--ev-on-bar); }
+.nimble-sheet.ns-sheet .ns-box-foot svg { width: 13px; height: 13px; }
+.nimble-sheet.ns-sheet .ns-box-input { width: auto; min-width: 0; height: 30px; margin: 2px 6px 0; padding: 0; text-align: center; font: 700 18px/normal var(--ev-font-num); }
+
+/* Wounds: the chain of circles ending in a skull, in a box whose top dips for its label; extra Wounds as dashed
+   circles in a tab under the foot, only when a hero has them. The circles are pips (tap: one step). */
+.nimble-sheet.ns-sheet .ns-wbox { position: relative; height: 77px; min-width: 0; }
+.nimble-sheet.ns-sheet .ns-wbox.has-extra { height: 101px; }
+.nimble-sheet.ns-sheet .ns-wbox-bg { position: absolute; left: 0; top: 0; width: 100%; height: 77px; overflow: visible; }
+.nimble-sheet.ns-sheet .ns-wbox-bg .bx { fill: var(--ev-surface); stroke: var(--ev-bar); stroke-width: 2; stroke-linejoin: round; }
+.nimble-sheet.ns-sheet .ns-wbox-bg .bd { fill: var(--ev-bar); }
+.nimble-sheet.ns-sheet .ns-wbox-label { position: absolute; left: 40px; right: 40px; top: 0; height: 16px; display: flex; align-items: center; justify-content: center; gap: 4px; font: 700 11.5px/normal var(--ev-font-num); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-wbox-drop { display: flex; color: var(--ev-hp); }
+.nimble-sheet.ns-sheet .ns-wbox-drop svg { width: 12px; height: 12px; }
+.nimble-sheet.ns-sheet .ns-wbox-chain { position: absolute; left: 0; right: 0; top: 22px; height: 34px; display: flex; align-items: center; justify-content: center; }
+.nimble-sheet.ns-sheet .ns-wbox-foot { position: absolute; left: 0; right: 0; top: 59px; height: 16px; display: flex; align-items: center; justify-content: center; gap: 3px; font: 600 11.5px/normal var(--ev-font-num); color: var(--ev-on-bar); }
+.nimble-sheet.ns-sheet .ns-wbox-foot b { font-weight: 700; }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip { position: relative; flex: none; width: 13px; height: 13px; padding: 0; border: 2px solid var(--ev-bar-2); border-radius: 50%; background: var(--ev-surface); box-shadow: none; }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip:not(.is-skull)::before { inset: -2px; background: var(--ev-hp); }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip.is-on:not(.is-skull) { border-color: var(--ev-hp); }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip:hover { border-color: var(--ev-hp); }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip.is-link { margin-right: 6px; }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip.is-link::after { content: ""; position: absolute; left: 100%; top: 50%; width: 8px; height: 2px; margin: -1px 0 0 1px; background: var(--ev-bar-2); }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip.is-skull { width: 19px; height: 19px; margin-left: -1px; border: 0; background: none; color: var(--ev-bar-2); }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip.is-skull svg { width: 19px; height: 19px; display: block; }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip.is-skull.is-on { color: var(--ev-hp); }
+.nimble-sheet.ns-sheet .ns-wbox-extra { position: absolute; left: 50%; top: 75px; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 10px 5px; border-radius: 0 0 10px 10px; background: var(--ev-surface); box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip.is-extra { border: 1.5px dashed var(--ev-bar-2); }
+.nimble-sheet.ns-sheet .ns-wbox button.ns-pip.is-extra.is-on { border-style: solid; }
+
+/* Hit points, wide: the heart beside its label, − / the bar / + / the keypad, Temp in the dark foot */
+.nimble-sheet.ns-sheet .ns-hpw { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 18px minmax(0, 1fr) 16px; height: 68px; margin-top: 9px; min-width: 0; border-radius: 2px; background: var(--ev-surface); box-shadow: inset 0 0 0 2px var(--ev-bar); overflow: hidden; }
+.nimble-sheet.ns-sheet .ns-hpw-label { display: flex; align-items: flex-end; justify-content: center; gap: 4px; padding-top: 2px; font: 700 11.5px/normal var(--ev-font-num); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-hpw-label .ns-heart { position: relative; top: -1px; width: 13px; height: 13px; flex: none; color: var(--ev-hp); }
+.nimble-sheet.ns-sheet .ns-hpw > .ns-meter { display: block; align-self: center; min-width: 0; }
+.nimble-sheet.ns-sheet .ns-hpw .ns-meter-head { display: none; }
+.nimble-sheet.ns-sheet .ns-hpw .ns-meter-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) 26px 26px; align-items: center; gap: 6px; padding: 0 10px 3px; }
+.nimble-sheet.ns-sheet .ns-hpw-foot { display: flex; align-items: center; justify-content: center; gap: 4px; background: var(--ev-bar); color: var(--ev-on-bar); font: 700 11px/normal var(--ev-font-num); letter-spacing: 0.05em; text-transform: uppercase; }
+.nimble-sheet.ns-sheet .ns-hpw-temp-icon { display: flex; }
+.nimble-sheet.ns-sheet .ns-hpw-temp-icon svg { width: 12px; height: 12px; }
+.nimble-sheet.ns-sheet .ns-hpw-foot b { font-size: 12.5px; letter-spacing: 0; }
+.nimble-sheet.ns-sheet .ns-hpw-foot b.is-none { opacity: 0.75; font-weight: 600; }
+
+/* The study's meter, for HP and mana: square − / + / keypad, a rounded bar on a light track, its numbers
+   white on the fill and dark on the track (two-tone: core's meter puts a copy in the fill, clipped to it). */
+.nimble-sheet.ns-sheet .ns-meter-step.ns-step, .nimble-sheet.ns-sheet .ns-meter-calc.ns-step { display: grid; place-items: center; width: 100%; height: 26px; padding: 0; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-meter-step.ns-step:hover:not(:disabled), .nimble-sheet.ns-sheet .ns-meter-calc.ns-step:hover { background: var(--ev-surface-2); color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-meter-step.ns-step svg, .nimble-sheet.ns-sheet .ns-meter-calc.ns-step svg { width: 14px; height: 14px; }
+.nimble-sheet.ns-sheet button.ns-meter-bar { --ns-c: var(--ev-hp); container-type: inline-size; display: block; height: 22px; padding: 0; border: 0; border-radius: 999px; background: var(--ev-track-empty); }
+.nimble-sheet.ns-sheet button.ns-meter-bar:hover { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ns-c) 45%, transparent); }
+.nimble-sheet.ns-sheet button.ns-meter-bar.ns-mana { --ns-c: var(--ev-mana); background: var(--ev-mana-soft); }
+.nimble-sheet.ns-sheet .ns-meter-fill { z-index: 1; overflow: hidden; background: var(--ns-c); }
+.nimble-sheet.ns-sheet .ns-meter-extra-fill { background: var(--ev-temp); opacity: 0.85; }
+.nimble-sheet.ns-sheet .ns-meter-nums { position: absolute; inset: 0 auto 0 0; z-index: 0; width: 100cqw; display: flex; align-items: center; justify-content: center; gap: 2px; padding-top: 1px; font: 700 15.5px/1 var(--ev-font-num); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text); text-shadow: none; }
+.nimble-sheet.ns-sheet .ns-meter-nums.is-on-fill { color: var(--ev-meter-text, #fff); text-shadow: var(--ev-meter-shadow, 0 1px 2px rgb(0 0 0 / 0.4)); }
+.theme-dark .nimble-sheet.ns-sheet .ns-meter-nums:not(.is-on-fill) { color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-meter-cur { font-size: 15.5px; font-weight: 700; }
+.nimble-sheet.ns-sheet .ns-meter-slash, .nimble-sheet.ns-sheet .ns-meter-max { font-size: 11.5px; font-weight: 600; color: inherit; opacity: 0.92; }
+.nimble-sheet.ns-sheet .ns-meter-slash { margin: 0 1px; }
+.nimble-sheet.ns-sheet .ns-hpw .ns-meter-plus { display: none; }
+.nimble-sheet.ns-sheet .ns-meter-delta { font-family: var(--ev-font-ui); font-size: 11px; }
+.nimble-sheet.ns-sheet .ns-hpw.is-zero .ns-meter-nums { color: var(--ev-danger-text); }
+
+/* Dying: the rules that change at 0 HP, on the danger tint */
+.nimble-sheet.ns-sheet .ns-dying { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 10px; padding: 10px 14px; border-radius: var(--ev-r-md); background: var(--ev-danger-bg); font: 500 13.5px/19px var(--ev-font-ui); color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-dying b { font: italic 900 16px/1 var(--ev-font-name); color: var(--ev-danger-text); }
+
+/* Skills: one band with notched end caps, round bites where the cells meet; each skill's stat over its number */
+.nimble-sheet.ns-sheet .ns-skills { display: flex; align-items: center; margin-top: 12px; gap: 0; }
+.nimble-sheet.ns-sheet .ns-sk-cap { flex: none; width: 18px; align-self: stretch; margin: 9px 0; }
+.nimble-sheet.ns-sheet .ns-sk-cap.is-l { background: radial-gradient(circle at 0 0, transparent 7px, var(--ev-bar) 7.5px) left top / 100% 51% no-repeat, radial-gradient(circle at 0 100%, transparent 7px, var(--ev-bar) 7.5px) left bottom / 100% 51% no-repeat; }
+.nimble-sheet.ns-sheet .ns-sk-cap.is-r { background: radial-gradient(circle at 100% 0, transparent 7px, var(--ev-bar) 7.5px) right top / 100% 51% no-repeat, radial-gradient(circle at 100% 100%, transparent 7px, var(--ev-bar) 7.5px) right bottom / 100% 51% no-repeat; }
+.nimble-sheet.ns-sheet .ns-sk-row { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 2px; padding: 2px; border-radius: 2px; background: var(--ev-bar); }
+.nimble-sheet.ns-sheet .ns-skill { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 48px 20px; width: 100%; min-width: 0; padding: 0; gap: 0; border: 0; border-radius: 0; background: transparent; color: var(--ev-text); font: inherit; }
+.nimble-sheet.ns-sheet button.ns-skill { cursor: pointer; }
+.nimble-sheet.ns-sheet .ns-skill-w { display: grid; grid-template-rows: 16px 28px; align-content: center; justify-items: center; background: radial-gradient(circle at 0 100%, var(--ev-bar) 5.5px, transparent 6px), radial-gradient(circle at 100% 100%, var(--ev-bar) 5.5px, transparent 6px), var(--ev-surface); }
+.nimble-sheet.ns-sheet button.ns-skill:hover .ns-skill-w { background: radial-gradient(circle at 0 100%, var(--ev-bar) 5.5px, transparent 6px), radial-gradient(circle at 100% 100%, var(--ev-bar) 5.5px, transparent 6px), var(--ev-surface-2); }
+.nimble-sheet.ns-sheet .ns-skill-stat { display: flex; align-items: flex-end; font: 600 10.5px/normal var(--ev-font-num); letter-spacing: 0.05em; color: var(--ev-bar-2); }
+.nimble-sheet.ns-sheet .ns-skill-total { display: flex; align-items: center; font: 700 21px/normal var(--ev-font-num); font-variant-numeric: lining-nums proportional-nums; letter-spacing: 0; }
+.nimble-sheet.ns-sheet .ns-skill-name { display: flex; align-items: center; justify-content: center; min-width: 0; max-width: none; padding: 0 2px; font: 700 11px/normal var(--ev-font-num); letter-spacing: 0.03em; text-transform: uppercase; color: var(--ev-on-bar); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nimble-sheet.ns-sheet .ns-skill-step { display: flex; align-items: center; gap: 2px; padding: 0; }
+.nimble-sheet.ns-sheet .ns-skill-step .ns-step { width: 18px; height: 18px; }
+.nimble-sheet.ns-sheet .ns-skill-points { min-width: 12px; font: 700 16px/normal var(--ev-font-num); }
+@container nimble-sheet (max-width: 700px) { .nimble-sheet.ns-sheet .ns-sk-row { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@container nimble-sheet (max-width: 480px) { .nimble-sheet.ns-sheet .ns-sk-cap { width: 10px; } }
+
+/* Edit mode: the numbers the sheet works out, set by hand */
+.nimble-sheet.ns-sheet .ns-overrides { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.nimble-sheet.ns-sheet .ns-overrides .ns-chip { gap: 6px; min-height: 30px; padding: 0 4px 0 10px; border: 1px dashed var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.nimble-sheet.ns-sheet .ns-overrides input { width: 4rem; height: 24px; }
+
+/* The Actions bar: on the books' khaki banner. Three action cards, End turn, then Speed and Hit dice */
+.nimble-sheet.ns-sheet .ns-turn { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin: 12px 0 0; padding: 9px 16px; border: 0; border-radius: var(--ev-r-lg); background: var(--ev-band); color: var(--ev-band-text); }
+.nimble-sheet.ns-sheet .ns-turn-label { font: italic 900 16px/1 var(--ev-font-name); padding-top: 2px; }
+.nimble-sheet.ns-sheet .ns-turn .ns-action-dots { gap: 6px; }
+.nimble-sheet.ns-sheet .ns-turn button.ns-action-dot { width: 22px; height: 30px; padding: 0; border: 0; border-radius: 4px; background: transparent; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ev-bar) 40%, transparent); }
+.nimble-sheet.ns-sheet .ns-turn button.ns-action-dot::before { inset: 0; border-radius: 4px; background: var(--ev-band-text); }
+.nimble-sheet.ns-sheet .ns-turn button.ns-action-dot.is-on { box-shadow: 0 2px 0 rgb(0 0 0 / 0.12); transform: rotate(-4deg); }
+.nimble-sheet.ns-sheet .ns-turn button.ns-action-dot.is-on:nth-child(2) { transform: none; }
+.nimble-sheet.ns-sheet .ns-turn button.ns-action-dot.is-on:nth-child(3) { transform: rotate(4deg); }
+.nimble-sheet.ns-sheet .ns-turn-left { font: 600 12.5px/1 var(--ev-font-ui); opacity: 0.85; }
+.nimble-sheet.ns-sheet .ns-turn .ns-btn { background: color-mix(in srgb, var(--ev-surface) 70%, transparent); color: var(--ev-band-text); border-color: color-mix(in srgb, var(--ev-bar) 30%, transparent); }
+.nimble-sheet.ns-sheet .ns-turn button.ns-actions-end { margin-left: 0; height: 30px; padding: 0 10px; font: 500 13px/normal var(--ev-font-ui); box-shadow: none; }
+.nimble-sheet.ns-sheet .ns-turn-sep { flex: 1; }
+.nimble-sheet.ns-sheet .ns-turn-pairs { display: flex; align-items: center; gap: 18px; }
+.nimble-sheet.ns-sheet .ns-turn-pair { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: inherit; font: inherit; }
+.nimble-sheet.ns-sheet button.ns-turn-pair { cursor: pointer; border-radius: var(--ev-r-sm); }
+.nimble-sheet.ns-sheet button.ns-turn-pair:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.nimble-sheet.ns-sheet .ns-turn-pair .ns-turn-label { margin-right: 4px; }
+.nimble-sheet.ns-sheet .ns-turn-pair b { padding-top: 2px; font: 700 17px/normal var(--ev-font-num); font-variant-numeric: lining-nums; }
+.nimble-sheet.ns-sheet .ns-turn-pair i { width: 1.5px; height: 16px; background: color-mix(in srgb, var(--ev-bar) 45%, transparent); transform: skewX(-16deg); }
+.nimble-sheet.ns-sheet .ns-reaction-used { height: 22px; padding: 0 8px; border-radius: var(--ev-r-chip); background: color-mix(in srgb, var(--ev-surface) 60%, transparent); color: var(--ev-band-text); font: 600 12px/normal var(--ev-font-ui); }
+@container nimble-sheet (max-width: 480px) { .nimble-sheet.ns-sheet .ns-turn-sep { flex-basis: 100%; height: 0; } }
+
+/* The class panel: the class's scrollwork, then one frame for every class's own things. The name column fits the
+   longest name (up to 45%), every row shares the columns (subgrid), names don't wrap while there's room. */
+.nimble-sheet.ns-sheet .ns-class { display: grid; grid-template-columns: fit-content(45%) minmax(0, 1fr) auto; gap: 0 14px; margin-top: 12px; padding: 4px 16px 6px; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-sheet.ns-sheet .ns-class > * { grid-column: 1 / -1; min-width: 0; }
+.nimble-sheet.ns-sheet .ns-feat { display: grid; grid-template-columns: subgrid; align-items: center; gap: 8px 14px; padding: 10px 0; border-top: 1px solid var(--ev-line); }
+.nimble-sheet.ns-sheet .ns-class-head + .ns-feat { border-top: 0; }
+.nimble-sheet.ns-sheet .ns-feat-name { display: block; justify-self: start; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+.nimble-sheet.ns-sheet button.ns-feat-name { cursor: pointer; }
+/* Vollkorn's heavy italic sits 2px high beside the UI font: the name's capitals come down onto the row's centre line. */
+.nimble-sheet.ns-sheet .ns-feat-name b { position: relative; top: 2px; display: inline; font: italic 900 15px/20px var(--ev-font-name); color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-feat.is-mana .ns-feat-name b { color: var(--ev-mana); }
+.nimble-sheet.ns-sheet .ns-feat-nw { white-space: nowrap; }
+.nimble-sheet.ns-sheet .ns-feat-chev { display: inline-flex; vertical-align: middle; margin: -2px 0 0 6px; color: var(--ev-text-2); transition: transform 0.15s ease; }
+.nimble-sheet.ns-sheet .ns-feat-chev svg { width: 12px; height: 12px; }
+.nimble-sheet.ns-sheet button.ns-feat-name:hover .ns-feat-chev, .nimble-sheet.ns-sheet button.ns-feat-name:focus-visible .ns-feat-chev { color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-feat.is-open .ns-feat-chev { transform: rotate(180deg); }
+.nimble-sheet.ns-sheet .ns-feat-o { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.nimble-sheet.ns-sheet .ns-feat-acts { justify-self: end; flex: none; }
+.nimble-sheet.ns-sheet .ns-feat-acts.is-none { display: none; }
+.nimble-sheet.ns-sheet .ns-feat.is-pool > .ns-feat-o { grid-column: 2 / -1; }
+.nimble-sheet.ns-sheet .ns-feat.is-pool .ns-feat-o > .ns-meter { display: block; flex: 1; min-width: 0; }
+.nimble-sheet.ns-sheet .ns-feat .ns-meter-head { display: none; }
+.nimble-sheet.ns-sheet .ns-feat .ns-meter-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px 30px; align-items: center; gap: 8px; }
+.nimble-sheet.ns-sheet .ns-feat .ns-meter-step.ns-step, .nimble-sheet.ns-sheet .ns-feat .ns-meter-calc.ns-step { height: 30px; }
+.nimble-sheet.ns-sheet .ns-feat button.ns-meter-bar { height: 34px; }
+.nimble-sheet.ns-sheet .ns-feat .ns-meter-nums { font-size: 17px; }
+.nimble-sheet.ns-sheet .ns-feat .ns-meter-cur { font-size: 17px; }
+.nimble-sheet.ns-sheet .ns-feat .ns-meter-slash, .nimble-sheet.ns-sheet .ns-feat .ns-meter-max { font-size: 13px; }
+.nimble-sheet.ns-sheet .ns-feat-rule { display: none; grid-column: 1 / -1; padding: 9px 12px 10px; border-radius: var(--ev-r-md); background: var(--ev-surface-2); box-shadow: inset 0 0 0 1px var(--ev-line); -webkit-user-select: text; user-select: text; }
+.nimble-sheet.ns-sheet .ns-feat.is-open .ns-feat-rule { display: block; }
+.nimble-sheet.ns-sheet .ns-feat-rule p { margin: 0; font: 500 13.5px/20px var(--ev-font-ui); color: var(--ev-text); text-wrap: pretty; }
+.nimble-sheet.ns-sheet .ns-feat-rule p + p { margin-top: 6px; }
+.nimble-sheet.ns-sheet .ns-feat-rule b { font: italic 800 14px/20px var(--ev-font-name); }
+.nimble-sheet.ns-sheet .ns-feat-count { font: 600 12.5px/1 var(--ev-font-num); color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-feat-num { display: inline-flex; align-items: baseline; gap: 4px; padding: 0; border: 0; background: none; color: var(--ev-text); font: inherit; }
+.nimble-sheet.ns-sheet button.ns-feat-num { cursor: pointer; }
+.nimble-sheet.ns-sheet .ns-feat-num b { font: 700 24px/normal var(--ev-font-num); font-variant-numeric: lining-nums; }
+.nimble-sheet.ns-sheet .ns-feat-num small { font: 600 13px/1 var(--ev-font-num); color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-feat-step { flex: none; }
+.nimble-sheet.ns-sheet .ns-uses { --pip: var(--ev-ochre); gap: 6px; }
+.nimble-sheet.ns-sheet .ns-uses .ev-pip { width: 14px; height: 14px; }
+.nimble-sheet.ns-sheet .ns-state { --ev-pill-icon: 14px; --ev-pill-gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--ev-r-md); font: 700 13.5px/normal var(--ev-font-num); color: var(--ev-text-2); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+.nimble-sheet.ns-sheet .ns-state > * { position: relative; top: 1px; }
+.nimble-sheet.ns-sheet .ns-state.is-on { background: var(--ev-ochre-soft); color: var(--ev-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ev-ochre) 45%, transparent); }
+.nimble-sheet.ns-sheet .ns-state.is-on .ev-pill-icon { color: var(--ev-ochre); }
+.nimble-sheet.ns-sheet .ns-state.is-target { min-width: 0; max-width: 100%; }
+.nimble-sheet.ns-sheet .ns-state.is-target .ev-pill-text { display: block; overflow: hidden; text-overflow: ellipsis; }
+/* Held dice: buttons in the class dice colour (Settings), the face up; tap one to change it, an empty slot to add one */
+.nimble-sheet.ns-sheet .ns-held-die { position: relative; display: grid; place-items: center; flex: none; width: 30px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; }
+.nimble-sheet.ns-sheet .ns-held-die > * { grid-area: 1 / 1; }
+.nimble-sheet.ns-sheet .ns-held-die .ns-die { width: 30px; height: 28px; color: var(--ns-class-dice, var(--ev-ochre)); }
+.nimble-sheet.ns-sheet .ns-held-die .ns-die-body { fill: color-mix(in srgb, var(--ns-class-dice, var(--ev-ochre)) 24%, var(--ev-surface)); stroke: var(--ev-text); stroke-width: 1.45; }
+.nimble-sheet.ns-sheet .ns-held-die .ns-die-num { font: 700 13.5px/normal var(--ev-font-num); color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-held-die .ns-die.is-d4 .ns-die-num { padding-top: 9px; font-size: 13px; }
+.nimble-sheet.ns-sheet .ns-held-die .ns-die.is-empty .ns-die-body { fill: none; stroke: var(--ev-line-strong); stroke-width: 1.25; stroke-dasharray: 2.5 2.5; }
+.nimble-sheet.ns-sheet .ns-held-die:hover .ns-die-body { stroke: var(--ev-ochre); }
+.nimble-sheet.ns-sheet .ns-held-die.is-picking, .nimble-sheet.ns-sheet .ns-held-die:focus-visible { outline: 2px solid var(--ev-ochre); outline-offset: 3px; }
+.nimble-sheet.ns-sheet .ns-held-plus { display: flex; color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-held-plus svg { width: 11px; height: 11px; }
+.nimble-sheet.ns-sheet .ns-held-die.is-d4 .ns-held-plus { padding-top: 8px; }
+@container nimble-sheet (max-width: 480px) {
+	.nimble-sheet.ns-sheet .ns-class { grid-template-columns: minmax(0, 1fr); }
+	.nimble-sheet.ns-sheet .ns-class > .ns-feat { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
+	.nimble-sheet.ns-sheet .ns-feat-name { grid-column: 1 / -1; }
+	.nimble-sheet.ns-sheet .ns-feat.is-pool > .ns-feat-o { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .nimble-sheet.ns-sheet .ns-feat-chev { transition: none; } }
+
+/* The class's scrollwork: notched cap, a reach into the spare width, the volutes cradling the class's motif
+   (ochre), a bar and a diamond tip; the right scroll mirrors the left. Compact (cap, short bar, motif) under 430px. */
+.nimble-sheet.ns-sheet .ns-scroll { container: ns-scroll / inline-size; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0 4px; color: var(--ev-ochre); }
+.nimble-sheet.ns-sheet .ns-scroll-title { flex: none; position: relative; top: 2px; font: italic 900 15px/20px var(--ev-font-name); font-variant: small-caps; letter-spacing: 0.03em; color: var(--ev-text); white-space: nowrap; }
+.nimble-sheet.ns-sheet .ns-scroll-side { flex: 1 1 0; min-width: 0; display: flex; justify-content: flex-end; align-items: center; color: var(--xsc-ink); }
+.nimble-sheet.ns-sheet .ns-scroll-side.is-r { transform: scaleX(-1); }
+.nimble-sheet.ns-sheet .ns-scroll-full { display: flex; align-items: center; flex: 0 1 258px; min-width: 0; }
+.nimble-sheet.ns-sheet .ns-scroll-side svg { display: block; flex: none; overflow: visible; }
+.nimble-sheet.ns-sheet .ns-scroll-full svg.ns-scroll-reach { flex: 1 1 auto; min-width: 12px; width: 150px; height: 28px; }
+.nimble-sheet.ns-sheet .ns-scroll-side .ink { fill: currentColor; }
+.nimble-sheet.ns-sheet .ns-scroll-side .curl { fill: none; stroke: currentColor; stroke-linecap: round; }
+.nimble-sheet.ns-sheet .ns-scroll-side .m { fill: var(--ev-ochre); color: var(--ev-ochre); }
+.nimble-sheet.ns-sheet .ns-scroll-side svg.ns-scroll-compact { display: none; }
+@container ns-scroll (max-width: 430px) {
+	.nimble-sheet.ns-sheet .ns-scroll-full { display: none; }
+	.nimble-sheet.ns-sheet .ns-scroll-side svg.ns-scroll-compact { display: block; }
+	.nimble-sheet.ns-sheet .ns-scroll { gap: 10px; }
+}
+
+/* Conditions: the shared chips, one row under the class panel */
+.nimble-sheet.ns-sheet .ns-conds-row, .nimble-sheet.ns-sheet .ns-conds-row.has-conds { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 0; padding: 8px 16px; border: 0; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.nimble-sheet.ns-sheet .ns-conds-label { font: 600 13px/normal var(--ev-font-ui); text-transform: none; letter-spacing: 0; color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-conds { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.nimble-sheet.ns-sheet .ns-cond { gap: 0; height: 24px; padding: 0 0 0 8px; border: 0; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 500 12.5px/normal var(--ev-font-ui); }
+.nimble-sheet.ns-sheet .ns-cond-name { --ev-pill-icon: 13px; --ev-pill-gap: 5px; height: 24px; }
+.nimble-sheet.ns-sheet .ns-cond-x { width: 22px; height: 24px; border-radius: 0 var(--ev-r-chip) var(--ev-r-chip) 0; color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-cond-x svg { width: 11px; height: 11px; }
+.nimble-sheet.ns-sheet button.ns-cond-add { --ev-pill-icon: 13px; --ev-pill-gap: 5px; height: 24px; padding: 0 7px; border: 0; border-radius: var(--ev-r-chip); box-shadow: inset 0 0 0 1px var(--ev-line-strong); color: var(--ev-text-2); font: 500 12.5px/normal var(--ev-font-ui); }
+.nimble-sheet.ns-sheet button.ns-cond-add:hover { color: var(--ev-text); box-shadow: inset 0 0 0 1px var(--ev-text-2); }
+
+/* Tabs: words in the display face, the chosen one underlined */
+.nimble-sheet.ns-sheet .ns-tabs { gap: 2px; margin-top: 18px; background: var(--ev-bg); border-bottom: 1px solid var(--ev-line-strong); }
+.nimble-sheet.ns-sheet .ns-tab { flex: 0 1 auto; flex-direction: row; gap: 6px; padding: 10px 14px; border-bottom: 2px solid transparent; color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet button.ns-tab { padding: 10px 14px; }
+.nimble-sheet.ns-sheet button.ns-tab.is-active { color: var(--ev-text); border-bottom-color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-tab-label { font: 600 15px/normal var(--ev-font-display); letter-spacing: 0; }
+.nimble-sheet.ns-sheet .ns-tab-count { font: 600 13px/normal var(--ev-font-display); color: inherit; }
+@container nimble-sheet (max-width: 480px) {
+	.nimble-sheet.ns-sheet .ns-tab { flex: 1 1 auto; justify-content: center; padding: 10px 6px; }
+	.nimble-sheet.ns-sheet button.ns-tab { padding: 10px 6px; }
+}
+
+/* Sections and rows under the tabs: Vollkorn headings, rows on hairlines, damage buttons with their type's icon */
+.nimble-sheet.ns-sheet .ns-section { margin-top: 16px; }
+.nimble-sheet.ns-sheet .ns-section-head { padding: 0 2px 6px; border-bottom: 0; }
+.nimble-sheet.ns-sheet .ns-section-title { display: flex; align-items: baseline; gap: 10px; font: italic 900 17px/22px var(--ev-font-name); text-transform: none; letter-spacing: 0; color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-section-note { font: 500 12.5px/1 var(--ev-font-ui); font-style: normal; color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-row ~ .ns-row, .nimble-sheet.ns-sheet .ns-row { border-bottom: 1px solid var(--ev-line); border-top: 0; }
+.nimble-sheet.ns-sheet .ns-row-name { font: 700 16px/20px var(--ev-font-display); }
+.nimble-sheet.ns-sheet .ns-row-detail { font: 500 12.5px/16px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-tag { border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); }
+.nimble-sheet.ns-sheet .ns-roll { --ev-pill-icon: 13px; --ev-pill-gap: 6px; height: 30px; padding: 0 10px; border-radius: var(--ev-r-md); font: 500 13px/normal var(--ev-font-ui); color: var(--ev-text); }
+.nimble-sheet.ns-sheet button.ns-roll { padding: 0 10px; border: 1px solid var(--ev-line-strong); background: var(--ev-surface); }
+.nimble-sheet.ns-sheet button.ns-roll:hover { background: var(--ev-surface-2); color: var(--ev-text); }
+.nimble-sheet.ns-sheet button.ns-roll.is-cast { color: var(--ev-mana); background: var(--ev-surface); border-color: color-mix(in srgb, var(--ev-mana) 40%, var(--ev-line-strong)); }
+.nimble-sheet.ns-sheet button.ns-roll.is-cast:hover { background: var(--ev-mana-soft); color: var(--ev-mana); }
+.nimble-sheet.ns-sheet .ns-roll .ev-pill-icon svg { color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-roll > * { position: relative; top: var(--ns-btn-dy, 1.5px); }
+.nimble-sheet.ns-sheet button.ns-dmg { justify-content: space-between; gap: 8px; min-width: 96px; }
+.nimble-sheet.ns-sheet .ns-dmg-n { font: 700 15px/normal var(--ev-font-num); font-variant-numeric: lining-nums tabular-nums; }
+.nimble-sheet.ns-sheet .ns-dmg-t { width: 15px; height: 15px; justify-content: center; color: var(--ev-text-2); }
+.nimble-sheet.ns-sheet .ns-dmg-t svg { width: 15px; height: 15px; }
+.nimble-sheet.ns-sheet button.ns-add { --ev-pill-icon: 13px; --ev-pill-gap: 5px; height: 28px; padding: 0 10px; border-radius: var(--ev-r-md); background: var(--ev-surface); border: 1px solid var(--ev-line-strong); color: var(--ev-text); font: 500 13px/normal var(--ev-font-ui); }
+.nimble-sheet.ns-sheet button.ns-add:hover { background: var(--ev-surface-2); }
+.nimble-sheet.ns-sheet button.ns-add.is-big { height: 30px; background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); }
+
+/* Reactions as playing cards: portrait, the sheet's charcoal frame, an emblem and the name on top, the rule in the
+   middle, the cost in a dark foot like the stat boxes' (the foot uses it). Four across while each card gets about
+   120px (type, emblem and name scale with the width), two by two under 500px; every card in a row the same height,
+   at least 1.32 × its width, and nothing clipped. */
+.nimble-sheet.ns-sheet .ns-rcards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; gap: clamp(6px, 1.2cqi, 12px); padding-top: 4px; }
+.nimble-sheet.ns-sheet .ns-rcard { display: grid; grid-template-rows: auto auto 1fr auto; justify-items: center; min-width: 0; min-height: calc((100cqi - 3 * clamp(6px, 1.2cqi, 12px)) / 4 * 1.32); border-radius: 6px; background: var(--ev-surface); box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.nimble-sheet.ns-sheet .ns-rcard.is-used { opacity: 0.6; }
+.nimble-sheet.ns-sheet .ns-rc-top { display: grid; justify-items: center; gap: clamp(4px, 0.8cqi, 7px); padding: clamp(10px, 1.6cqi, 16px) 8px 0; text-align: center; }
+.nimble-sheet.ns-sheet .ns-rc-em { display: grid; place-items: center; width: clamp(30px, 4.6cqi, 44px); height: clamp(30px, 4.6cqi, 44px); border-radius: 50%; background: var(--ev-ochre-soft); color: var(--ev-ochre); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ev-ochre) 45%, transparent); }
+.nimble-sheet.ns-sheet .ns-rc-em svg { width: clamp(15px, 2.2cqi, 21px); height: clamp(15px, 2.2cqi, 21px); }
+.nimble-sheet.ns-sheet .ns-rc-name { font: italic 900 clamp(13px, calc(1cqi + 7.5px), 17px)/1.18 var(--ev-font-name); color: var(--ev-text); text-wrap: balance; }
+.nimble-sheet.ns-sheet .ns-rc-orn { display: flex; margin: 6px 0 2px; color: var(--ev-text-2); opacity: 0.7; }
+.nimble-sheet.ns-sheet .ns-rc-orn svg { width: clamp(48px, 7cqi, 70px); height: auto; }
+.nimble-sheet.ns-sheet .ns-rc-text { align-self: start; margin: 0; padding: 4px clamp(7px, 1.3cqi, 14px) clamp(8px, 1.4cqi, 14px); font: 500 clamp(11px, calc(0.85cqi + 6.2px), 13.5px)/1.38 var(--ev-font-ui); color: var(--ev-text-2); text-align: center; text-wrap: pretty; -webkit-user-select: text; user-select: text; }
+.nimble-sheet.ns-sheet .ns-rc-text .ev-term { color: var(--ev-text); }
+.nimble-sheet.ns-sheet button.ns-rc-foot { justify-self: stretch; display: flex; align-items: center; justify-content: center; height: clamp(22px, 2.6cqi, 26px); padding: 0; border: 0; border-radius: 0 0 6px 6px; background: var(--ev-bar); color: var(--ev-on-bar); cursor: pointer; }
+.nimble-sheet.ns-sheet button.ns-rc-foot:hover:not(:disabled) { background: color-mix(in srgb, var(--ev-bar) 85%, var(--ev-text)); }
+.nimble-sheet.ns-sheet button.ns-rc-foot:disabled { opacity: 1; cursor: default; }
+.nimble-sheet.ns-sheet .ns-rc-cost { display: inline-flex; align-items: center; gap: 5px; color: var(--ev-on-bar); font: 700 clamp(10px, calc(0.5cqi + 7px), 11.5px)/normal var(--ev-font-num); letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+.nimble-sheet.ns-sheet .ns-rc-cost i { display: block; width: 8px; height: 10px; border-radius: 2px; background: var(--ev-on-bar); }
+@container nimble-sheet (max-width: 500px) {
+	.nimble-sheet.ns-sheet .ns-rcards { grid-template-columns: repeat(2, minmax(0, 200px)); justify-content: center; gap: 8px; }
+	.nimble-sheet.ns-sheet .ns-rcard { min-height: calc((min(100cqi, 408px) - 8px) / 2 * 1.32); }
+	.nimble-sheet.ns-sheet .ns-rc-name { font-size: 15px; }
+	.nimble-sheet.ns-sheet .ns-rc-text { padding: 4px 10px 10px; font-size: 12.5px; }
+	.nimble-sheet.ns-sheet .ns-rc-em { width: 36px; height: 36px; }
+	.nimble-sheet.ns-sheet .ns-rc-em svg { width: 18px; height: 18px; }
+}
+
+/* Entering a die rolled at the table (core/face-picker.ts, any game): the die's faces as buttons in even rows, the
+   current face pressed, Remove when changing one. It opens under the row it belongs to. */
+.ev-face-pick { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 10px; border-radius: var(--ev-r-md, 6px); background: var(--ev-surface-2, var(--background-secondary)); box-shadow: inset 0 0 0 1px var(--ev-line, var(--background-modifier-border)); }
+.ev-face-pick-label { font: 600 13px/18px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
+.ev-face-pick-faces { display: flex; flex-wrap: wrap; gap: 6px; }
+.ev-face-pick button.ev-face { display: grid; place-items: center; width: 36px; height: 34px; padding: 0; border: 0; border-radius: var(--ev-r-sm, 4px); background: var(--ev-surface, var(--background-primary)); box-shadow: inset 0 0 0 1px var(--ev-line-strong, var(--background-modifier-border-hover)); color: var(--ev-text, var(--text-normal)); cursor: pointer; }
+.ev-face-pick .ev-face-n { padding-top: 1px; font: 700 15px/normal var(--ev-font-num, var(--font-interface)); font-variant-numeric: lining-nums tabular-nums; }
+.ev-face-pick button.ev-face:hover { background: var(--ev-ochre-soft, var(--background-modifier-hover)); }
+.ev-face-pick button.ev-face.is-on { background: var(--ev-ochre-soft, var(--background-modifier-hover)); box-shadow: inset 0 0 0 2px var(--ev-ochre, var(--interactive-accent)); }
+.ev-face-pick button.ev-face-remove { margin-left: auto; height: 30px; padding: 0 10px; border: 1px solid var(--ev-line-strong, var(--background-modifier-border)); border-radius: var(--ev-r-md, 6px); background: var(--ev-surface, var(--background-primary)); color: var(--ev-text, var(--text-normal)); font: 500 13px/normal var(--ev-font-ui, var(--font-interface)); cursor: pointer; }
+.ev-face-pick button.ev-face-remove > span { position: relative; top: var(--ns-btn-dy, 0); }
+.ev-face-pick.is-many .ev-face-pick-faces { flex: 1 1 100%; display: grid; grid-template-columns: repeat(var(--ev-faces), minmax(0, 1fr)); }
+.ev-face-pick.is-many button.ev-face { width: auto; }
+@container (max-width: 480px) { .ev-face-pick.is-many .ev-face-pick-faces { grid-template-columns: repeat(var(--ev-faces-narrow), minmax(0, 1fr)); } }
+
 
 /* Hit points and mana: big bars with − and + either side, and a calculator. White numbers on every part
    of the bar: the fills are shaded so white reads at 4.5:1 or better (more shade in dark mode, whose
@@ -3195,20 +3503,6 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 	:is(.nimble-sheet, .ev-vitals) .ns-meter-step.ns-step, :is(.nimble-sheet, .ev-vitals) .ns-meter-calc.ns-step { width: 2.5rem; height: 2.5rem; }
 }
 
-/* Armor, Initiative, Speed: tiles in the hero card */
-.nimble-sheet .ns-boxes { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, minmax(4.6rem, 1fr)); gap: 0.5rem; }
-.nimble-sheet .ns-box {
-	display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; min-width: 0; padding: 0.55rem 0.5rem;
-	border: 1px solid var(--ns-card-line); border-radius: 12px; background: var(--ns-tile);
-}
-.nimble-sheet button.ns-box { border: 1px solid var(--ns-card-line); border-radius: 12px; background: var(--ns-tile); padding: 0.55rem 0.5rem; }
-.nimble-sheet button.ns-box:hover { border-color: var(--ns-accent); }
-.nimble-sheet .ns-box-label { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); white-space: nowrap; }
-.nimble-sheet .ns-box-icon { display: inline-flex; color: var(--text-faint); }
-.nimble-sheet .ns-box-icon svg { width: 12px; height: 12px; }
-.nimble-sheet .ns-box-value { font-size: 1.6rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
-.nimble-sheet .ns-box-input { width: 4rem; text-align: center; font-size: 1.1rem; font-weight: 800; }
-@container nimble-sheet (max-width: 520px) { .nimble-sheet .ns-boxes { flex: 1 1 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* Wounds: a row of pips in the Hit points header */
 .nimble-sheet .ns-wounds { display: inline-flex; align-items: center; gap: 0.45rem; margin-left: auto; }
@@ -3229,8 +3523,7 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet .ns-wounds-max { width: 5.5rem; text-align: center; }
 @media (pointer: coarse) { .nimble-sheet .ns-pip { width: 1.35rem; height: 1.35rem; } }
 
-/* Strip: speed, hit dice, mana, class resources, conditions */
-.nimble-sheet .ns-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 0.55rem; margin: 1.1rem 0 0.7rem; }
+/* Conditions, chips and steppers (the sheet and the tracker's quick look) */
 .nimble-sheet .ns-conds-row {
 	display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.7rem; margin-bottom: 0.75rem; padding: 0.55rem 0.8rem;
 	border: 1px solid var(--ns-card-line); border-radius: 16px; background: var(--ns-card);
@@ -3238,7 +3531,7 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet .ns-conds-row.has-conds { border-color: color-mix(in srgb, var(--ns-wound) 35%, var(--ns-card-line)); background: color-mix(in srgb, var(--ns-wound) 5%, var(--ns-card)); }
 .nimble-sheet .ns-conds-label { flex: 0 0 auto; }
 .nimble-sheet .ns-conds-none { font-size: 0.82rem; color: var(--text-faint); }
-.nimble-sheet .ns-chip, .nimble-sheet .ns-res {
+.nimble-sheet .ns-chip {
 	display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2rem; padding: 0.2rem 0.7rem;
 	border: 1px solid var(--background-modifier-border); border-radius: 999px; background: var(--ns-soft);
 }
@@ -3258,13 +3551,7 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet .ns-cond-name { display: inline-flex; align-items: center; line-height: 1; }
 :is(.nimble-sheet, .ev-vitals) button.ns-step { background: var(--background-modifier-hover); }
 :is(.nimble-sheet, .ev-vitals) button.ns-step:hover:not(:disabled) { background: var(--ns-accent); color: var(--text-on-accent); }
-.nimble-sheet .ns-res-pips { display: inline-flex; gap: 0.2rem; }
-.nimble-sheet .ns-res-pip { width: 0.62rem; height: 0.62rem; border-radius: 50%; border: 2px solid var(--ns-line); }
-.nimble-sheet .ns-res-pip.is-on { background: var(--ns-gold); border-color: var(--ns-gold); }
-.nimble-sheet .ns-res-value { font-weight: 800; font-variant-numeric: tabular-nums; }
 /* Die shapes (die-shape.ts), wherever they show: the sheet's class dice in the class dice colour (Settings), Camp's Hit Dice. */
-.nimble-sheet .ns-held { padding-right: 0.3rem; }
-.nimble-sheet .ns-held-dice { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0.2rem; }
 .ns-die { display: inline-grid; place-items: center; width: 1.65rem; height: 1.65rem; color: var(--ns-class-dice, #d4a72c); }
 .ns-die > * { grid-area: 1 / 1; }
 .ns-die-svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -3278,7 +3565,6 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .ns-die.is-clickable { cursor: pointer; border-radius: 4px; }
 .ns-die.is-clickable:hover { filter: brightness(1.1); }
 .ns-die.is-clickable:focus-visible { outline: 2px solid var(--background-modifier-border-focus); }
-.nimble-sheet .ns-held-none { font-size: 0.8rem; color: var(--text-faint); }
 .nimble-sheet .ns-conds, .nimble-sheet .ns-langs { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
 .nimble-sheet .ns-cond, .nimble-sheet .ns-lang {
 	display: inline-flex; align-items: center; gap: 0.1rem; height: 1.9rem; padding: 0 0.25rem 0 0.65rem; border-radius: 999px;
@@ -3294,23 +3580,6 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet button.ns-cond-add:hover { color: var(--text-accent); border-color: var(--ns-accent); }
 .nimble-sheet .ns-cond-add svg { width: 14px; height: 14px; }
 
-/* Skills: ten tiles, five across */
-.nimble-sheet .ns-skills { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.4rem; }
-.nimble-sheet .ns-skill {
-	display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; padding: 0.35rem 0.2rem;
-	border-radius: 10px; background: var(--ns-tile); border: 1px solid var(--ns-card-line); transition: border-color 0.12s;
-}
-.nimble-sheet button.ns-skill { border: 1px solid var(--ns-card-line); border-radius: 10px; background: var(--ns-tile); padding: 0.35rem 0.2rem; }
-.nimble-sheet button.ns-skill:hover { border-color: var(--ns-accent); }
-.nimble-sheet .ns-skill-stat { font-size: 0.56rem; font-weight: 700; letter-spacing: 0.06em; color: var(--text-faint); }
-.nimble-sheet .ns-skill-total { font-size: 1.2rem; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.nimble-sheet .ns-skill-name {
-	max-width: 100%; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted);
-	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.nimble-sheet .ns-skill-step { display: flex; align-items: center; gap: 0.2rem; padding: 0.15rem 0; }
-.nimble-sheet .ns-skill-step .ns-step { width: 1.3rem; height: 1.3rem; font-size: 0.85rem; }
-.nimble-sheet .ns-skill-points { min-width: 1rem; text-align: center; font-weight: 800; }
 
 .nimble-sheet .ns-empty-note { margin-top: 0.6rem; font-size: 0.8rem; color: var(--text-muted); }
 
@@ -3420,13 +3689,6 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 
 /* Rest & level bar */
 /* Camp: a button in the hero card; a dialog with Field rest, Safe rest and Level up */
-.nimble-sheet button.ns-camp {
-	display: inline-flex; align-items: center; gap: 0.3rem; height: 1.9rem; padding: 0 0.7rem 0 0.55rem; border-radius: 999px; line-height: normal;
-	font-size: 0.8rem; font-weight: 700; color: var(--text-normal); background: var(--ns-tile); border: 1px solid var(--ns-card-line);
-}
-.nimble-sheet button.ns-camp:hover { border-color: var(--ns-accent); color: var(--text-accent); }
-.nimble-sheet .ns-camp-icon { display: inline-flex; color: var(--ns-gold); }
-.nimble-sheet .ns-camp-icon svg { width: 15px; height: 15px; display: block; }
 .ns-camp-dialog.modal { width: min(46rem, calc(100vw - 2rem)); }
 .ns-camp-dialog .modal-content { padding-top: 0.25rem; }
 .ns-camp-dialog .ns-camp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
@@ -3523,16 +3785,6 @@ body .workspace-leaf-content .nimble-sheet-note:not(.nimble-show-props) .metadat
 	.nimble-sheet .ns-row-main { min-height: 3.2rem; }
 	.nimble-sheet .ns-equip, .nimble-sheet .ns-equip-spacer { width: 2.3rem; height: 2.3rem; }
 	.nimble-sheet .ns-cond-x { width: 1.8rem; height: 1.8rem; }
-}
-@container nimble-sheet (max-width: 400px) {
-	.nimble-sheet .ns-head { gap: 0.6rem; align-items: flex-start; }
-	.nimble-sheet .ns-name { font-size: 1.3rem; white-space: normal; overflow-wrap: anywhere; }
-	.nimble-sheet .ns-line { font-size: 0.72rem; letter-spacing: 0.02em; }
-	.nimble-sheet .ns-skill-name { font-size: 0.5rem; letter-spacing: 0; }
-	.nimble-sheet .ns-tab-label { font-size: 0.7rem; }
-	.nimble-sheet .ns-stat-value { font-size: 1.6rem; }
-	.nimble-sheet .ns-box-value { font-size: 1.35rem; }
-	.nimble-sheet .ns-portrait { width: 3.4rem; height: 3.4rem; }
 }
 
 /* Character panel */
@@ -4053,21 +4305,6 @@ body.is-tablet .nimble-count-modal button.nimble-count-seg { padding: 0 0.5rem; 
 .nimble-sheet .ns-actions-end svg { width: 15px; height: 15px; }
 @media (pointer: coarse) { .nimble-sheet button.ns-action-dot { width: 2.4rem; height: 2.4rem; } }
 
-/* Heroic reactions: four cards in a row (two on a phone) */
-.nimble-sheet .ns-reactions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; padding-top: 0.6rem; }
-.nimble-sheet button.ns-reaction {
-	display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; height: auto; min-height: 5.2rem; padding: 0.6rem 0.7rem; text-align: left; white-space: normal;
-	border: 1px solid var(--background-modifier-border); border-radius: 10px; background: var(--background-primary); box-shadow: none; cursor: pointer;
-}
-.nimble-sheet button.ns-reaction:hover:not(:disabled) { border-color: var(--ns-accent); }
-.nimble-sheet button.ns-reaction:disabled { opacity: 0.5; cursor: default; }
-.nimble-sheet .ns-reaction-top { display: flex; align-items: flex-start; gap: 0.35rem; }
-.nimble-sheet .ns-reaction-icon { display: flex; margin-top: 0.1rem; color: var(--ns-accent); }
-.nimble-sheet .ns-reaction-icon svg { width: 15px; height: 15px; display: block; }
-.nimble-sheet .ns-reaction-name { font-weight: 800; font-size: 0.85rem; line-height: 1.2; flex: 1 1 auto; min-width: 0; word-break: normal; overflow-wrap: normal; }
-.nimble-sheet .ns-reaction-cost { align-self: flex-start; margin-top: auto; height: 1.3rem; padding: 0 0.45rem; border-radius: 999px; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: var(--background-modifier-hover); color: var(--text-muted); flex: 0 0 auto; }
-.nimble-sheet .ns-reaction-effect { font-size: 0.78rem; line-height: 1.35; color: var(--text-muted); word-break: normal; overflow-wrap: normal; }
-@container nimble-sheet (max-width: 600px) { .nimble-sheet .ns-reactions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* The roll dialog (roll-dialog.ts): advantage slider, modifier, dice to spend */
 .nimble-roll-dialog { width: min(440px, 94vw); }
@@ -4171,31 +4408,8 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
 	.nimble-npc-portrait-edit) { display: none; }
 }
 
-/* Narrow sheets (the Character panel, phones) ----------------------------------------------------- */
+/* Narrow quick looks and sheets (the Character panel, phones) ----------------------------------------------------- */
 @container nimble-sheet (max-width: 440px) {
-	/* Saves: just ▲ / ▼. */
-	.nimble-sheet .ns-stat-label { display: inline-flex; align-items: center; gap: 0.15rem; }
-	.nimble-sheet .ns-stat-save { position: static; width: 0.85rem; height: 0.85rem; }
-	/* Armor / Initiative / Speed: short labels, no icons. */
-	.nimble-sheet .ns-box-label { font-size: 0.58rem; letter-spacing: 0.04em; }
-	.nimble-sheet .ns-box-icon { display: none; }
-	.nimble-sheet .ns-box { padding: 0.5rem 0.25rem; }
-	.nimble-sheet .ns-box-long { display: none; }
-	/* Skills: a two-column list, "Arcana · INT  −1", instead of tiles too small for their names. */
-	.nimble-sheet .ns-skills { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.3rem; }
-	.nimble-sheet .ns-skill, .nimble-sheet button.ns-skill {
-		display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name total" "stat total";
-		align-items: center; justify-items: start; gap: 0 0.4rem; padding: 0.35rem 0.6rem;
-	}
-	.nimble-sheet .ns-skill-name { grid-area: name; max-width: 100%; font-size: 0.74rem; font-weight: 700; text-transform: none; letter-spacing: 0; color: var(--text-normal); }
-	.nimble-sheet .ns-skill-stat { grid-area: stat; font-size: 0.56rem; }
-	.nimble-sheet .ns-skill-total, .nimble-sheet .ns-skill-step { grid-area: total; justify-self: end; }
-	.nimble-sheet .ns-skill-total { font-size: 1.1rem; }
-	/* Class dice: the name on its own line, the dice between − and + under it. */
-	.nimble-sheet .ns-turn .ns-strip > * { flex: 1 1 100%; justify-content: space-between; }
-	.nimble-sheet .ns-held { flex-wrap: wrap; row-gap: 0.3rem; border-radius: 14px; padding: 0.45rem 0.6rem; }
-	.nimble-sheet .ns-held > .ns-chip-label { flex: 1 1 100%; }
-	.nimble-sheet .ns-held-dice { flex: 1 1 auto; flex-wrap: nowrap; justify-content: center; }
 	/* Actions: the dots and a short "End" pill share one row. */
 	.nimble-sheet .ns-actions-card { gap: 0.5rem 0.6rem; }
 	.nimble-sheet .ns-action-dots { gap: 0.4rem; }
@@ -4205,12 +4419,6 @@ body.is-tablet .nimble-roll-dialog button.rd-seg-btn, body.is-tablet .nimble-she
 	/* Weapons, items, spells: names and details wrap rather than cut off. */
 	.nimble-sheet .ns-row-name, .nimble-sheet .ns-row-detail { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.25; }
 	.nimble-sheet .ns-row-name { font-size: 0.9rem; }
-}
-
-/* Very narrow (a slim Character panel): one skill per row, so every name fits. */
-@container nimble-sheet (max-width: 290px) {
-	.nimble-sheet .ns-skills { grid-template-columns: minmax(0, 1fr); }
-	.nimble-sheet .ns-skill, .nimble-sheet button.ns-skill { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "name stat total"; padding: 0.3rem 0.6rem; }
 }
 
 /* ============================================

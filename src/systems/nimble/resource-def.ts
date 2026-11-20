@@ -34,6 +34,8 @@ export interface ResourceRule {
 	clearsOnRest?: boolean;
 	/** The die by level ("d6 from level 1, d8 from 3…"), from the class tables. */
 	dieByLevel?: Record<number, string>;
+	/** The class features whose words explain these dice, shown under the name on the sheet. */
+	rules?: string[];
 }
 
 const RULES: ResourceRule[] = [
@@ -42,13 +44,13 @@ const RULES: ResourceRule[] = [
 	{ match: /^judgment dice$/i, rolledWhen: 'spent', on: ['attack', 'spell'], amount: 'any', autoOn: true, damageType: 'radiant', reachOnly: true, clearsOnRest: true,
 		// Radiant Judgment: 2 dice; Aura of Zeal (Oath of Vengeance, level 3) and Radiant Judgment (6) (level 14) roll 1 more each.
 		maxAt: (level, subclass) => 2 + (/vengeance/i.test(subclass) && level >= 3 ? 1 : 0) + (level >= 14 ? 1 : 0),
-		dieByLevel: { 1: 'd6', 3: 'd8', 5: 'd10', 8: 'd12', 10: 'd20' } },
+		dieByLevel: { 1: 'd6', 3: 'd8', 5: 'd10', 8: 'd12', 10: 'd20' }, rules: ['Radiant Judgment'] },
 	// Berserker p.4: Rage: roll a Fury Die and set it aside; add it to every STR attack you make (kept, not spent).
 	{ match: /^fury dice$/i, rolledWhen: 'gained', on: ['attack'], amount: 'all', keep: true, autoOn: /rag(e|ing)/i, note: 'while Raging',
-		gain: { count: 1, label: 'Rage' }, dieByLevel: { 1: 'd4', 6: 'd6', 9: 'd8', 13: 'd10', 17: 'd12' } },
+		gain: { count: 1, label: 'Rage' }, dieByLevel: { 1: 'd4', 6: 'd6', 9: 'd8', 13: 'd10', 17: 'd12' }, rules: ['That all you got?!'] },
 	// Commander: roll and expend 1 Combat Die per attack, through a Combat Tactic.
 	{ match: /^combat dice$/i, rolledWhen: 'spent', on: ['attack'], amount: 'one', autoOn: false,
-		dieByLevel: { 2: 'd6', 5: 'd8', 9: 'd10', 13: 'd12', 17: 'd20' } },
+		dieByLevel: { 2: 'd6', 5: 'd8', 9: 'd10', 13: 'd12', 17: 'd20' }, rules: ['Fit for Any Battlefield'] },
 	// Shadowmancer (Endless Swarm): expend any of them to increase an attack's damage.
 	{ match: /^swarm dice$/i, rolledWhen: 'gained', on: ['attack', 'spell'], amount: 'any', autoOn: false, gain: { count: 1, label: 'Swarm' },
 		dieByLevel: { 3: 'd4', 15: 'd8' } },

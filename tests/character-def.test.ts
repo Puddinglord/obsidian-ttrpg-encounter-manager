@@ -132,7 +132,7 @@ describe('reading a character', () => {
 	});
 
 	it('tracks class resources with their max and growing die', () => {
-		expect(read(thorga()).resources).toEqual([{ name: 'Fury Dice', current: 2, max: 2, die: 'd4', reset: 'Rage ends' }]);
+		expect(read(thorga()).resources).toEqual([{ name: 'Fury Dice', current: 2, max: 2, die: 'd4', reset: 'Rage ends', formula: 'KEY' }]);
 		const lvl6 = read({ ...thorga(), level: 6, resources: {} });
 		expect(lvl6.resources[0]).toMatchObject({ current: 0, die: 'd6' });
 		const extra = read({ resources: { Luck: { current: 1, max: 3 } } });
