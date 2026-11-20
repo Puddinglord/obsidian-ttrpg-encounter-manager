@@ -132,9 +132,9 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 							type: 'choice', rebuilds: true, key: 'method', label: 'Scores',
 							options: () => [{ value: 'array', label: 'Standard array' }, { value: 'pointbuy', label: 'Point buy' }, { value: 'roll', label: 'Roll' }, { value: 'manual', label: 'Your own' }],
 						},
-						{ type: 'custom', key: 'points', label: 'Points', show: x => x.method === 'pointbuy', draw: (el, x, ui) => pointBudget(el, x, ui) },
-						{ type: 'custom', key: 'rolls', label: 'Rolls', show: x => x.method === 'roll', draw: (el, x, ui) => rollRow(el, x, ui, v => assignByClass(x, v)) },
-						{ type: 'custom', key: 'abilities', label: 'Abilities', draw: (el, x, ui) => abilityCards(el, x, ui, settle) },
+						{ type: 'custom', wide: true, key: 'points', label: 'Points', show: x => x.method === 'pointbuy', draw: (el, x, ui) => pointBudget(el, x, ui) },
+						{ type: 'custom', wide: true, key: 'rolls', label: 'Rolls', show: x => x.method === 'roll', draw: (el, x, ui) => rollRow(el, x, ui, v => assignByClass(x, v)) },
+						{ type: 'custom', wide: true, key: 'abilities', label: 'Abilities', draw: (el, x, ui) => abilityCards(el, x, ui, settle) },
 						...(d.edition === '2024' ? [
 							{ type: 'choice' as const, rebuilds: true, key: 'spread', label: 'Background increases', options: () => [{ value: '21', label: '+2 and +1' }, { value: '111', label: '+1 to three' }], hint: (x: Character5eDraft) => (backgroundOf(x)?.abilityScores ?? []).join(', ') },
 							...(d.spread !== '111' ? [[
@@ -173,14 +173,14 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 					id: 'proficiencies', label: 'Tools', icon: 'book-open', title: 'Tools and languages',
 					rows: [
 						...(toolChoices(d).length || givenTools(d).length ? [{
-							type: 'custom' as const, key: 'tools', label: 'Tools',
+							type: 'custom' as const, wide: true, key: 'tools', label: 'Tools',
 							draw: (el: HTMLElement, x: Character5eDraft, ui: Parameters<typeof groupChips>[4]) => groupChips(el, x, 'tools', [
 								...(givenTools(x).length ? [{ label: 'Yours', count: 0, from: [], given: givenTools(x) }] : []),
 								...toolChoices(x).map(g => ({ label: g.label, count: g.count, from: g.from.filter(t => !givenTools(x).includes(t)) })),
 							], ui),
 						}] : []),
 						{
-							type: 'custom', key: 'languages', label: 'Languages',
+							type: 'custom', wide: true, key: 'languages', label: 'Languages',
 							draw: (el, x, ui) => groupChips(el, x, 'languages', [{ label: languageChoice(x).count ? `Choose ${languageChoice(x).count}` : 'Known', count: languageChoice(x).count, from: languageChoice(x).from, given: givenLanguages(x) }], ui),
 						},
 					],
@@ -190,7 +190,7 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 					rows: [
 						{ type: 'choice', rebuilds: true, key: 'subclass', label: 'Subclass', dropdown: true, show: x => lv(x) >= subclassLevel(cls(x)) && (cls(x)?.subclasses.length ?? 0) > 0, options: x => [{ value: '', label: 'Choose later' }, ...(cls(x)?.subclasses ?? []).map(s => ({ value: s.name, label: s.name }))] },
 						...(options.length ? [{
-							type: 'custom' as const, key: 'choices', label: 'Features',
+							type: 'custom' as const, wide: true, key: 'choices', label: 'Features',
 							draw: (el: HTMLElement, x: Character5eDraft, ui: Parameters<typeof groupChips>[4]) => groupChips(el, x, 'choices', options.map(g => ({ label: g.group, count: g.count, from: g.from, name: optionName })), ui),
 						}] : []),
 						...(fightingStyleAt(d.edition, k, lv(d)) ? [{ type: 'choice' as const, key: 'styleFeat', label: 'Fighting Style', dropdown: true, options: () => [{ value: '', label: 'Choose' }, ...featsOfType(d.edition, 'fighting-style').map(f => ({ value: f, label: f }))] }] : []),
@@ -217,12 +217,12 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 				},
 				...(increaseLevels(d).length ? [{
 					id: 'increases', label: 'Increases', icon: 'trending-up', title: 'Ability score increases',
-					rows: [{ type: 'custom' as const, key: 'increases', label: 'Levels', draw: (el: HTMLElement, x: Character5eDraft, ui: Parameters<typeof groupChips>[4]) => increaseCards(el, x, ui, l => featsAt(x.edition, l)) }],
+					rows: [{ type: 'custom' as const, wide: true, key: 'increases', label: 'Levels', draw: (el: HTMLElement, x: Character5eDraft, ui: Parameters<typeof groupChips>[4]) => increaseCards(el, x, ui, l => featsAt(x.edition, l)) }],
 				}] : []),
 				{
 					id: 'equipment', label: 'Equipment', icon: 'backpack', title: 'Starting equipment',
 					rows: [{
-						type: 'custom', key: 'equipment', label: 'Equipment', hint: x => `${startingEquipment(x).gold} gp`,
+						type: 'custom', wide: true, key: 'equipment', label: 'Gold', hint: x => `${startingEquipment(x).gold} gp`,
 						draw: (el, x, ui) => {
 							const c = classCreation(x.edition, x.className), b = backgroundCreation(x.edition, x.background);
 							equipmentGroups(el, x, ui, x.className, 'c', c?.equipment ?? [], c?.items ?? []);
@@ -273,7 +273,7 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 			const featUps = d.asi === 'feat' ? featIncrease(d.edition, d.feat) : [];
 			const choiceRows: (FieldDef<LevelUp5eDraft> | FieldDef<LevelUp5eDraft>[])[] = [
 				...(options.length ? [{
-					type: 'custom' as const, key: 'choices', label: 'Features',
+					type: 'custom' as const, wide: true, key: 'choices', label: 'Features',
 					draw: (el: HTMLElement, x: LevelUp5eDraft, ui: Parameters<typeof groupChips>[4]) => groupChips(el, x, 'choices', options.map(g => ({ label: g.group, count: g.count, from: g.from, name: optionName })), ui),
 				}] : []),
 				...(fightingStyleAt(d.edition, cls(d), d.level, d.level - 1) ? [{ type: 'choice' as const, key: 'styleFeat', label: 'Fighting Style', dropdown: true, options: () => [{ value: '', label: 'Choose' }, ...featsOfType(d.edition, 'fighting-style').map(f => ({ value: f, label: f }))] }] : []),

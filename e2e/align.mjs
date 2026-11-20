@@ -22,7 +22,7 @@ export const PILL_SELECTORS = [
 	'.dnd5e-death-stable', '.dnd5e-death-dead', '.dnd5e-condition', '.dnd5e-condition-add', '.dnd5e-hp-text', '.dnd5e-death-roll', '.dnd5e-tracker-combat button',
 	'.dnd5e-encounter-actions button', '.dnd5e-sheet-actions button', '.dnd5e-sheet-roll', '.dnd5e-sheet-tag', '.dnd5e-cmp-badge', '.dnd5e-sheet-add',
 	'.dnd5e-sheet-toggle', '.dnd5e-cmp-editions button', '.dnd5e-npc-fight', '.record-btn', '.stat-badge', '.add-btn',
-	'.eb-pick', '.eb-pick-given', '.dnd5e-brief-chip',
+	'.eb-pick', '.eb-pick-given', '.dnd5e-brief-chip', '.dnd5e-roll-btn',
 	'.dnd5e-tab', '.dnd5e-sheet-condition', '.dnd5e-sheet-condition-add', '.dnd5e-sheet-death-roll', '.dnd5e-turn-action', '.dnd5e-sheet-gold', '.dnd5e-qty',
 	'.ev-cond-add-trigger', '.ev-cond-apply', '.ev-cond-new', '.ev-effect-actions button', '.ev-effect-done',
 	// 5e's sheet and NPC mini sheet (design pass): damage rolls, Cast, save DCs, Inspiration, feature and action names, the NPC's buttons.

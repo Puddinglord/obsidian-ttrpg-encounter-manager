@@ -169,6 +169,7 @@ export function levelUpBrief(el: HTMLElement, d: LevelUp5eDraft, o: { gained: st
 
 /** Point buy's budget: 27 points, as a bar that fills, and what's left. */
 export function pointBudget(parent: HTMLElement, d: Character5eDraft, ui: BuilderUI): void {
+	parent.addClass('is-stack');
 	const box = parent.createDiv({ cls: 'dnd5e-budget' });
 	const top = box.createDiv({ cls: 'dnd5e-budget-top' });
 	const left = top.createSpan({ cls: 'dnd5e-budget-left' });
@@ -187,6 +188,7 @@ export function pointBudget(parent: HTMLElement, d: Character5eDraft, ui: Builde
 
 /** The roll: six scores (4d6, the lowest die dropped), set out for the class; Roll again replaces them. */
 export function rollRow(parent: HTMLElement, d: Character5eDraft, ui: BuilderUI, assign: (values: number[]) => void): void {
+	parent.addClass('is-stack');
 	const box = parent.createDiv({ cls: 'dnd5e-roll-row' });
 	const values = box.createDiv({ cls: 'dnd5e-roll-values' });
 	const btn = pill(box, { tag: 'button', icon: evIcon('dice'), text: d.rolled?.length ? 'Roll again' : 'Roll 4d6', cls: 'dnd5e-roll-btn mod-cta' });
@@ -207,6 +209,7 @@ export function rollRow(parent: HTMLElement, d: Character5eDraft, ui: BuilderUI,
  * array and rolls, a stepper for point buy and your own), and what it comes to: the bonus, the final score and its modifier.
  */
 export function abilityCards(parent: HTMLElement, d: Character5eDraft, ui: BuilderUI, settle: (d: Character5eDraft) => Character5eDraft): void {
+	parent.addClass('is-stack');
 	const grid = parent.createDiv({ cls: 'dnd5e-ab-cards' });
 	const buy = d.method === 'pointbuy';
 	const swaps = d.method === 'array' || d.method === 'roll';
@@ -258,6 +261,7 @@ export interface ChipGroup { label: string; count: number; from: string[]; given
 
 /** Chips under headings, all writing one list on the draft; each group stops at its own count. */
 export function groupChips(parent: HTMLElement, d: Record<string, unknown>, key: string, groups: ChipGroup[], ui: BuilderUI): void {
+	parent.addClass('is-stack');
 	const list = () => (Array.isArray(d[key]) ? d[key] as string[] : (d[key] = [] as string[]));
 	const box = parent.createDiv({ cls: 'eb-picks is-grouped', attr: { role: 'group' } });
 	for (const g of groups) {
@@ -293,6 +297,7 @@ export function groupChips(parent: HTMLElement, d: Record<string, unknown>, key:
 
 /** One card per Ability Score Improvement: +2 to one, +1 to two, or a feat. */
 export function increaseCards(parent: HTMLElement, d: Character5eDraft, ui: BuilderUI, feats: (level: number) => string[]): void {
+	parent.addClass('is-stack');
 	const box = parent.createDiv({ cls: 'dnd5e-asi-list' });
 	for (const inc of d.increases ?? []) {
 		const card = box.createDiv({ cls: 'dnd5e-asi-card' });
@@ -329,6 +334,7 @@ function optionText(o: EquipGroup5e['options'][number]): string {
 }
 
 export function equipmentGroups(parent: HTMLElement, d: Character5eDraft, ui: BuilderUI, title: string, prefix: string, groups: EquipGroup5e[], given: { name: string; qty: number }[]): void {
+	parent.addClass('is-stack');
 	if (!groups.length && !given.length) return;
 	const sec = parent.createDiv({ cls: 'dnd5e-eq' });
 	sec.createDiv({ cls: 'dnd5e-eq-title', text: title });

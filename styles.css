@@ -5954,6 +5954,20 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .nimble-entity-builder.ev-sys-dnd5e .eb-meter.is-hp .eb-meter-fill { background: var(--ev-track); }
 .nimble-entity-builder.ev-sys-nimble input.eb-input[data-field="Name"] { font: italic 800 17px/normal var(--ev-font-name); }
 .nimble-entity-builder.ev-sys-dnd5e input.eb-input[data-field="Name"] { font: 600 18px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; }
+/* 5e's check sits on the sheet's oxblood banner (a gold rule at its foot), the numbers on gold-edged plaques under it. */
+.nimble-entity-builder.ev-sys-dnd5e .eb-check-head {
+	margin: -0.9rem -1rem 0; padding: 12px 16px 15px; color: var(--x5-on-banner);
+	background-color: var(--x5-banner-b); background-image: var(--x5-paper), radial-gradient(120% 140% at 15% 0%, var(--x5-banner-a), var(--x5-banner-b) 70%);
+	box-shadow: inset 0 -2px 0 var(--x5-gold), inset 0 -4px 0 var(--x5-banner-b), inset 0 -5px 0 color-mix(in srgb, var(--x5-gold) 55%, transparent);
+}
+.nimble-entity-builder.ev-sys-dnd5e .eb-check-head .eb-check-kicker { color: var(--x5-on-banner-2); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-check-head .eb-check-value { font: 600 24px/28px var(--ev-font-display); font-variant: small-caps; color: var(--x5-on-banner); text-shadow: 0 1px 0 rgb(0 0 0 / 0.35); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-check-head .eb-check-tag { border: 1px solid color-mix(in srgb, var(--x5-gold) 60%, transparent); background: rgb(255 240 210 / 0.08); color: var(--x5-on-banner); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-tiles .eb-tile { border-color: var(--x5-gold-soft); border-radius: var(--ev-r-lg); background: var(--ev-surface); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-tiles .eb-tile-label { font: 600 13px/16px var(--ev-font-display); font-variant: small-caps; text-transform: none; letter-spacing: 0.06em; color: var(--ev-accent-text); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-tiles .eb-tile-value { font: 600 24px/28px var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-tiles .eb-tile.is-lead { border-color: var(--x5-gold); background: var(--ev-tint); }
+.nimble-entity-builder.ev-sys-dnd5e .eb-step-title { font: 600 21px/26px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; color: var(--ev-accent-text); }
 /* What a field works out to ("PB +2 · 200 XP", "Book: 52") sits beside its label, not at the far edge. */
 .nimble-entity-builder .eb-label-row { justify-content: flex-start; flex-wrap: wrap; row-gap: 2px; }
 /* A schema's segments on a phone: even rows (--eb-cols, from how many options there are), never off the edge. */
@@ -7221,69 +7235,116 @@ body .workspace-leaf-content .ev-sheet-page:not(.nimble-show-props) .metadata-co
 .nimble-pack-row.is-error .nimble-pack-summary { color: var(--text-error); }
 .nimble-cmpx-pill-tag.bestiary-tag.is-pack { background: color-mix(in srgb, var(--interactive-accent) 16%, transparent); color: var(--text-accent); }
 
-/* 5e character wizards (src/systems/dnd5e/wizard-ui.ts): the sheet in brief beside every step, the
-   level up's summary, and the ability scores step. A page of the book: the name in red small capitals,
-   the numbers as tiles, six ability tiles, then skills, spells and features as chips under gold rules. */
-.dnd5e-wizard-summary { display: flex; flex-direction: column; gap: 0.7rem; }
-.dnd5e-wizard-summary .dnd5e-card-head { margin-bottom: 0; }
-.dnd5e-wizard-summary .dnd5e-card-name { font-size: 1.45rem; }
-.dnd5e-brief-titles { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+/* 5e character wizards (src/systems/dnd5e/wizard-ui.ts), dressed like the redesigned sheet: the hero on an oxblood
+   banner with a gold rule at its foot, the numbers as tiles, six ability plaques (the modifier large in Garamond, the
+   score in a gold lozenge, the save with its proficiency diamond), then skills, spells, features, proficiencies and
+   equipment as chips under gold rules. */
+.dnd5e-wizard-summary { display: flex; flex-direction: column; gap: 0.75rem; }
+.dnd5e-brief-banner {
+	display: flex; align-items: center; gap: 12px; margin: -2px -2px 0; padding: 12px 16px 16px; border-radius: 8px 8px 3px 3px; color: var(--x5-on-banner);
+	background-color: var(--x5-banner-b); background-image: var(--x5-paper), radial-gradient(120% 140% at 15% 0%, var(--x5-banner-a), var(--x5-banner-b) 70%);
+	box-shadow: inset 0 -2px 0 var(--x5-gold), inset 0 -4px 0 var(--x5-banner-b), inset 0 -5px 0 color-mix(in srgb, var(--x5-gold) 55%, transparent);
+}
+.dnd5e-brief-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dnd5e-brief-name { font: 600 24px/28px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--x5-on-banner); text-shadow: 0 1px 0 rgb(0 0 0 / 0.35); overflow-wrap: anywhere; }
+.dnd5e-brief-line { font: 600 14px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--x5-on-banner-2); }
 .dnd5e-brief-tiles.eb-tiles { grid-template-columns: repeat(auto-fit, minmax(3.6rem, 1fr)); }
-.dnd5e-brief-abilities { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.35rem; }
-.dnd5e-brief-ability { display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 0.35rem 0.15rem 0.3rem; border: 1px solid var(--ev-paper-edge); border-radius: var(--radius-m); background: var(--background-primary); }
-.dnd5e-brief-ab-name { font-size: 0.66rem; font-weight: 750; letter-spacing: 0.07em; color: var(--text-muted); }
-.dnd5e-brief-ab-mod { font-family: var(--ev-display-font); font-size: 1.3rem; font-weight: var(--ev-heading-weight); line-height: 1.15; font-variant-numeric: lining-nums tabular-nums; }
-.dnd5e-brief-ab-score { min-width: 2rem; margin-top: 0.1rem; padding: 0 0.35rem; border: 1px solid var(--ev-paper-edge); border-radius: 999px; font-size: 0.75rem; font-weight: 650; text-align: center; font-variant-numeric: tabular-nums; color: var(--text-muted); }
-.dnd5e-brief-ab-save { margin-top: 0.25rem; font-size: 0.66rem; color: var(--text-faint); white-space: nowrap; }
-.dnd5e-brief-ability.is-prof { border-color: color-mix(in srgb, var(--ev-accent) 40%, var(--ev-paper-edge)); }
-.dnd5e-brief-ability.is-prof .dnd5e-brief-ab-save { color: var(--ev-accent-text); font-weight: 700; }
+.dnd5e-brief-abilities { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.dnd5e-brief-ability {
+	position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 6px 2px 7px; border-radius: var(--ev-r-lg);
+	border: 1px solid var(--x5-gold-soft); background: var(--ev-surface); box-shadow: 0 6px 14px -12px rgb(70 30 10 / 0.4);
+}
+.dnd5e-brief-ability > .dnd5e-corners { inset: 2px; mask-size: 9px 9px; opacity: 0.85; }
+.dnd5e-brief-ab-name { font: 600 12px/14px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.06em; color: var(--ev-accent-text); }
+.dnd5e-brief-ab-mod { font: 600 22px/24px var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text); }
+.dnd5e-brief-ab-score { min-width: 28px; padding: 1px 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--x5-gold); font: 600 12px/14px var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; text-align: center; color: var(--ev-text-2); }
+.dnd5e-brief-ab-save { display: flex; align-items: center; gap: 4px; margin-top: 5px; font: 600 12px/14px var(--ev-font-display); font-variant-numeric: lining-nums; color: var(--ev-text-2); white-space: nowrap; }
+.dnd5e-brief-ability.is-prof .dnd5e-brief-ab-save { color: var(--ev-accent-text); }
 .dnd5e-brief-part { display: flex; flex-direction: column; gap: 0.35rem; }
-.dnd5e-brief-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.15rem 0.6rem; padding-bottom: 0.1rem; border-bottom: 1px solid var(--ev-ornament); }
-.dnd5e-brief-title { font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight); font-size: 1.05rem; color: var(--ev-accent-text); }
-.dnd5e-brief-note { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); }
+.dnd5e-brief-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.15rem 0.6rem; padding-bottom: 2px; border-bottom: 1px solid var(--x5-gold-soft); }
+.dnd5e-brief-title { font: 600 17px/22px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.dnd5e-brief-note { margin-left: auto; font-size: 0.75rem; color: var(--ev-text-2); }
 .dnd5e-brief-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 .dnd5e-brief-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; width: 100%; }
-.dnd5e-brief-row-label { flex: 0 0 100%; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+.dnd5e-brief-row-label { flex: 0 0 100%; font: 600 13px/16px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.05em; color: var(--ev-text-2); }
 .dnd5e-brief-row + .dnd5e-brief-row { margin-top: 0.15rem; }
-.dnd5e-brief-chip { --ev-pill-icon: 0.95em; --ev-pill-gap: 0.3em; height: 1.55rem; padding: 0 0.55rem; border: 1px solid var(--ev-paper-edge); border-radius: 999px; background: var(--background-primary); font-size: 0.78rem; font-weight: 600; color: var(--text-normal); }
+.dnd5e-brief-chip { --ev-pill-icon: 0.95em; --ev-pill-gap: 0.3em; height: 1.55rem; padding: 0 0.55rem; border: 1px solid var(--ev-line); border-radius: 999px; background: var(--ev-surface); font-size: 0.78rem; font-weight: 600; color: var(--ev-text); }
 .dnd5e-brief-chip .ev-pill-icon { color: var(--ev-accent-text); }
+.dnd5e-brief-chip > .dnd5e-pm { width: 8px; height: 12px; }
+.dnd5e-brief-chip > .dnd5e-pm::before { width: 6px; height: 6px; }
 .dnd5e-brief-bonus { margin-left: 0.35em; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--ev-accent-text); }
-.dnd5e-brief-chip.is-on { border-color: color-mix(in srgb, var(--ev-accent) 45%, var(--ev-paper-edge)); background: var(--ev-tint); }
-.dnd5e-brief-chip.is-faint { color: var(--text-muted); font-style: italic; }
-.dnd5e-brief-empty { font-size: 0.8rem; font-style: italic; color: var(--text-faint); }
-.dnd5e-brief-foot { padding-top: 0.4rem; border-top: 1px solid var(--ev-paper-edge); font-size: 0.78rem; color: var(--text-muted); }
+.dnd5e-brief-chip.is-on { border-color: color-mix(in srgb, var(--ev-accent) 45%, var(--ev-line)); background: var(--ev-tint); }
+.dnd5e-brief-chip.is-faint { color: var(--ev-text-2); font-style: italic; }
+.dnd5e-brief-empty { font-size: 0.8rem; font-style: italic; color: var(--ev-text-2); }
+.dnd5e-brief-slots { font: 600 14px/20px var(--ev-font-display); font-variant-numeric: lining-nums; color: var(--ev-text); }
+.dnd5e-brief-foot { padding-top: 0.4rem; border-top: 1px solid var(--x5-gold-soft); font: 600 13px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-text-2); }
 /* Narrow previews (a phone's sheet, a small window): three abilities a row. */
 .eb-preview { container-type: inline-size; }
 @container (max-width: 330px) { .dnd5e-brief-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
-/* Ability scores: point buy's budget, and a card per score */
+/* Ability scores: point buy's budget, the roll, and a plaque per score */
 .dnd5e-budget { display: flex; flex-direction: column; gap: 0.3rem; width: 100%; }
 .dnd5e-budget-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; }
-.dnd5e-budget-left { font-family: var(--ev-display-font); font-size: 1.15rem; font-weight: var(--ev-heading-weight); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-accent-text); }
-.dnd5e-budget-spent { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.dnd5e-budget-bar { height: 0.45rem; border-radius: 999px; background: var(--ev-paper-edge); overflow: hidden; }
+.dnd5e-budget-left { font: 600 19px/22px var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-accent-text); }
+.dnd5e-budget-spent { font-size: 0.78rem; font-weight: 600; color: var(--ev-text-2); font-variant-numeric: tabular-nums; }
+.dnd5e-budget-bar { height: 0.45rem; border-radius: 999px; background: var(--ev-line); overflow: hidden; }
 .dnd5e-budget-fill { width: var(--fill, 0%); height: 100%; border-radius: 999px; background: var(--ev-accent); transition: width 0.2s ease; }
 .dnd5e-budget.is-done .dnd5e-budget-left { color: var(--color-green); }
 .dnd5e-budget.is-done .dnd5e-budget-fill { background: var(--color-green); }
 .dnd5e-budget.is-over .dnd5e-budget-left { color: var(--text-error); }
 .dnd5e-budget.is-over .dnd5e-budget-fill { background: var(--text-error); }
 @media (prefers-reduced-motion: reduce) { .dnd5e-budget-fill { transition: none; } }
-.dnd5e-ab-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; width: 100%; }
-.dnd5e-ab-card { display: flex; flex-direction: column; gap: 0.45rem; min-width: 0; padding: 0.55rem 0.65rem 0.5rem; border: 1px solid var(--ev-paper-edge); border-radius: var(--radius-m); background: var(--ev-paper); }
+.dnd5e-roll-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; width: 100%; }
+.dnd5e-roll-values { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
+.dnd5e-roll-value { display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 4px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--x5-gold); background: var(--ev-surface); font: 600 16px/1 var(--ev-font-display); font-variant-numeric: lining-nums; color: var(--ev-text); }
+.nimble-entity-builder button.dnd5e-roll-btn { height: 32px; padding: 0 12px; margin-left: auto; }
+.dnd5e-ab-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: 100%; }
+.dnd5e-ab-card {
+	position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 8px 10px 9px; border-radius: var(--ev-r-lg);
+	border: 1px solid var(--x5-gold-soft); background: var(--ev-surface); box-shadow: 0 1px 0 rgb(80 50 20 / 0.05), 0 6px 14px -12px rgb(70 30 10 / 0.4);
+}
+.dnd5e-ab-card > .dnd5e-corners { inset: 3px; mask-size: 11px 11px; opacity: 0.85; }
+.dnd5e-ab-card > :not(.dnd5e-corners) { position: relative; z-index: 2; }
 .dnd5e-ab-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.4rem; }
-.dnd5e-ab-card-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--font-ui-small); font-weight: 650; }
-.dnd5e-ab-card-cost { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dnd5e-ab-card-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 15px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.05em; color: var(--ev-accent-text); }
+.dnd5e-ab-card-cost { font-size: 0.72rem; font-weight: 600; color: var(--ev-text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .dnd5e-ab-card-control { display: flex; align-items: center; }
 .dnd5e-ab-card-control .eb-num { width: 100%; }
 .dnd5e-ab-card-control .eb-num input.eb-num-input { flex: 1 1 auto; width: auto; min-width: 0; }
-.dnd5e-ab-card-base { display: flex; align-items: center; justify-content: center; width: 100%; height: var(--eb-h, 2.25rem); border: 1px dashed var(--ev-paper-edge); border-radius: var(--input-radius, 6px); font-size: var(--font-ui-medium); font-weight: 650; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+.dnd5e-ab-card-control select.dnd5e-ab-card-swap { width: 100%; font: 600 16px/normal var(--ev-font-display); font-variant-numeric: lining-nums; }
 .dnd5e-ab-card-result { display: flex; align-items: center; justify-content: flex-end; gap: 0.4rem; min-height: 1.6rem; }
 .dnd5e-ab-card-plus { margin-right: auto; padding: 0 0.4rem; border-radius: 999px; background: var(--ev-tint); font-size: 0.72rem; font-weight: 700; color: var(--ev-accent-text); }
 .dnd5e-ab-card-plus.is-hidden { display: none; }
-.dnd5e-ab-card-final { font-family: var(--ev-display-font); font-size: 1.35rem; font-weight: var(--ev-heading-weight); line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
-.dnd5e-ab-card-mod { min-width: 2.2rem; padding: 0.1rem 0.4rem; border-radius: 999px; background: var(--ev-accent); color: var(--ev-on-accent); font-size: 0.8rem; font-weight: 750; text-align: center; font-variant-numeric: tabular-nums; }
+.dnd5e-ab-card-final { font: 600 26px/1 var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text); }
+.dnd5e-ab-card-mod { min-width: 2.2rem; padding: 2px 7px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--x5-gold); background: var(--ev-surface); color: var(--ev-text); font: 600 14px/16px var(--ev-font-display); text-align: center; font-variant-numeric: lining-nums tabular-nums; }
 @media (max-width: 760px) { .dnd5e-ab-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .nimble-entity-builder.is-phone-layout .dnd5e-ab-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* Increases for the levels a new character starts past: a card per level, its pick and what it comes to. */
+.dnd5e-asi-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: 10px; width: 100%; }
+.dnd5e-asi-card { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 10px 12px; border-radius: var(--ev-r-lg); border: 1px solid var(--x5-gold-soft); background: var(--ev-surface); }
+.dnd5e-asi-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.dnd5e-asi-level { font: 600 16px/20px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.dnd5e-asi-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 14px/18px var(--ev-font-display); font-variant-numeric: lining-nums; color: var(--ev-text-2); }
+.dnd5e-asi-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: 6px; }
+.dnd5e-asi-fields select { width: 100%; }
+
+/* Starting equipment: each choice's options as cards (A, B…), what to pick from a list under the chosen one. */
+.dnd5e-eq { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.dnd5e-eq + .dnd5e-eq { margin-top: 14px; }
+.dnd5e-eq-title { padding-bottom: 2px; border-bottom: 1px solid var(--x5-gold-soft); font: 600 17px/22px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.dnd5e-eq-given { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.dnd5e-eq-group { display: flex; flex-direction: column; gap: 6px; }
+.nimble-entity-builder button.dnd5e-eq-option {
+	display: flex; align-items: flex-start; gap: 10px; height: auto; min-height: 44px; padding: 9px 12px; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line);
+	background: var(--ev-surface); box-shadow: none; color: var(--ev-text); font: 400 14px/20px var(--ev-font-ui); text-align: left; white-space: normal; cursor: pointer;
+}
+.nimble-entity-builder button.dnd5e-eq-option:hover { border-color: var(--x5-gold); }
+.nimble-entity-builder button.dnd5e-eq-option.is-active { border-color: var(--ev-accent); background: var(--ev-tint); box-shadow: inset 0 0 0 1px var(--ev-accent); }
+.dnd5e-eq-letter { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--x5-gold); font: 600 14px/1 var(--ev-font-display); font-variant: small-caps; color: var(--ev-accent-text); }
+.dnd5e-eq-option.is-active .dnd5e-eq-letter { background: var(--ev-accent); box-shadow: none; color: var(--ev-on-accent); }
+.dnd5e-eq-text { min-width: 0; padding-top: 1px; }
+.dnd5e-eq-group select.dnd5e-eq-pick { width: 100%; }
 .dnd5e-import .dnd5e-import-link { width: 100%; margin-bottom: 0.4rem; }
 .dnd5e-import .dnd5e-import-url { display: flex; flex-direction: column; gap: 0.15rem; margin-bottom: 0.6rem; font-size: 0.85rem; color: var(--text-muted); }
 .dnd5e-import .dnd5e-import-url-text { font-family: var(--font-monospace); font-size: 0.75rem; word-break: break-all; }

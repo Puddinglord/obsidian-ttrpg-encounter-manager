@@ -6818,19 +6818,40 @@ test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reo
 		await o.page.keyboard.type('/new-monster', { delay: 20 });
 		await o.page.keyboard.press('Enter');
 		await o.page.locator(B).waitFor();
-		assert.deepEqual(await o.page.locator(`${B} .eb-kind`).allInnerTexts(), ['Monster', 'Spell', 'Magic item']);
+		assert.deepEqual(await o.page.locator(`${B} .eb-kind`).allInnerTexts(), ['Monster', 'Spell', 'Item']);
+		assert.deepEqual(await o.page.locator(`${B} .eb-dot`).allInnerTexts(), ['Basics', 'Armor', 'Abilities', 'Skills', 'Defenses', 'Actions', 'Spells', 'Reactions', 'Legendary']);
 		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).fill('Ember Hound');
 		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Challenge"]`).selectOption('5');
 		assert.match(await o.page.locator(`${B} .eb-panel.is-active [data-key="cr"] .eb-aside`).innerText(), /PB \+3 · 1,800 XP/);
+		// Armor: studded leather and a shield make the AC, and 2024 lists them in its gear.
 		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Armor"]`).selectOption('Studded Leather Armor');
+		await o.page.locator(`${B} .eb-panel.is-active [data-key="shield"] .eb-seg-btn`, { hasText: 'Yes' }).click();
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Abilities' }).click();
 		await o.page.locator(`${B} .eb-panel.is-active input[data-field="CON"]`).fill('16');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="DEX"]`).fill('14');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Armor' }).click();
 		await o.waitFor(async () => /4d8 \+ 12/.test(await o.page.locator(`${B} .eb-panel.is-active [data-key="hp"] .eb-aside`).innerText()), { what: 'HP formula hint' });
-		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ember Hound[\s\S]*30 \(4d8 \+ 12\)/);
+		assert.equal(await o.page.locator(`${B} .eb-panel.is-active input[data-field="AC"]`).getAttribute('placeholder'), '16');
+		// An action that's a saving throw: its DC comes from Con (8 + PB 3 + 3).
+		await o.page.locator(`${B} .eb-dot`, { hasText: /^Actions$/ }).click();
+		await o.page.locator(`${B} .eb-panel.is-active [data-key="actions"] .eb-list-add`).click();
+		const breath = o.page.locator(`${B} .eb-panel.is-active [data-key="actions"] .eb-list-item`).nth(1);
+		await breath.locator('input[data-field="Name"]').fill('Cinder Breath');
+		await breath.locator('[data-key="kind"] .eb-seg-btn', { hasText: 'Saving throw' }).click();
+		await breath.locator('select[data-field="Uses"]').selectOption('Recharge 5–6');
+		await breath.locator('input[data-field="Who and where"]').fill('each creature in a 15-foot Cone');
+		await breath.locator('input[data-field="Dice"]').fill('4');
+		await breath.locator('select[data-field="Die"]').selectOption('6');
+		await breath.locator('select[data-field="Damage"]').selectOption('Fire');
+		await o.waitFor(async () => /Cinder Breath \(Recharge 5–6\)[\s\S]*Dexterity Saving Throw: DC 14, each creature in a 15-foot Cone\. Failure: 14 \(4d6\) Fire damage\. Success: Half damage\./.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the breath in the preview' });
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ember Hound[\s\S]*AC\s*16[\s\S]*30 \(4d8 \+ 12\)/);
+		assert.match(await o.page.locator(`${B} .eb-check .eb-check-head`).innerText(), /CR 5/);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-builder-monster.png') });
 		await create();
 		await o.page.locator(B).waitFor({ state: 'detached' });
 		const text = await o.eval((app) => app.workspace.activeEditor.editor.getValue());
-		assert.match(text, /```5e\nname: Ember Hound\nedition: 2024\nsize: Medium\ntype: humanoid\n[\s\S]*hp: 30 \(4d8 \+ 12\)[\s\S]*cr: 5\n[\s\S]*- Strike: Melee Attack Roll: \+3, reach 5 ft\. Hit: 3 \(1d6\) Slashing damage\.\n```/);
+		assert.match(text, /```5e\nname: Ember Hound\nedition: 2024\nsize: Medium\ntype: humanoid\n[\s\S]*ac: 16\n[\s\S]*hp: 30 \(4d8 \+ 12\)[\s\S]*gear: Shield, Studded Leather Armor\n[\s\S]*cr: 5\n[\s\S]*- Strike: Melee Attack Roll: \+3, reach 5 ft\. Hit: 3 \(1d6\) Slashing damage\.\n- Cinder Breath \(Recharge 5–6\): Dexterity Saving Throw: DC 14/);
 
 		// Edit on the block: the builder opens on it; Save writes it back.
 		await o.openFile(note, 'preview');
@@ -6840,7 +6861,9 @@ test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reo
 		await block.locator('.nimble-block-edit').click();
 		await o.page.locator(B).waitFor();
 		assert.equal(await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).inputValue(), 'Ember Hound');
-		await o.page.locator(`${B} .eb-dot`, { hasText: 'Stats' }).click();
+		// The block opens as fields again: the armor, and the breath as a saving throw.
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Armor' }).click();
+		assert.equal(await o.page.locator(`${B} .eb-panel.is-active select[data-field="Armor"]`).inputValue(), 'Studded Leather Armor');
 		await o.page.locator(`${B} .eb-panel.is-active input[data-field="AC"]`).fill('15');
 		await create();
 		await o.page.locator(B).waitFor({ state: 'detached' });
@@ -6856,10 +6879,17 @@ test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reo
 		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).fill('Ember Lash');
 		await o.page.locator(`${B} .eb-panel.is-active .eb-pick[data-value="Wizard"]`).click();
 		await o.page.locator(`${B} .eb-dot`, { hasText: 'Effect' }).click();
-		await o.page.locator(`${B} .eb-panel.is-active textarea[data-field="Text"]`).fill('A whip of fire deals 2d6 Fire damage.');
+		// A ranged spell attack for 2d6 Fire, a die more per slot level: the SRD's sentences are written for it.
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Attack or save"]`).selectOption('ranged');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Dice"]`).fill('2');
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Die"]`).selectOption('6');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Dice per slot level"]`).fill('1');
+		await o.page.locator(`${B} .eb-panel.is-active textarea[data-field="Text"]`).fill('A whip of fire lashes out.');
+		await o.waitFor(async () => /lashes out\. Make a ranged spell attack against the target\. On a hit, the target takes 2d6 Fire damage\.[\s\S]*The damage increases by 1d6 for each spell slot level above 1\./.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the worded spell' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-builder-spell.png') });
 		await create();
 		await o.page.locator(B).waitFor({ state: 'detached' });
-		await o.waitFor(async () => /```5e-spell\nname: Ember Lash\nlevel: 1\nschool: Evocation\n[\s\S]*classes: Wizard\n\nA whip of fire deals 2d6 Fire damage\.\n```/.test(await o.eval((app) => app.workspace.activeEditor.editor.getValue())), { what: 'the spell block' });
+		await o.waitFor(async () => /```5e-spell\nname: Ember Lash\nlevel: 1\nschool: Evocation\n[\s\S]*classes: Wizard\n\nA whip of fire lashes out\. Make a ranged spell attack against the target\. On a hit, the target takes 2d6 Fire damage\.\n\nUsing a Higher-Level Spell Slot: The damage increases by 1d6 for each spell slot level above 1\.\n```/.test(await o.eval((app) => app.workspace.activeEditor.editor.getValue())), { what: 'the spell block' });
 		await o.eval(async (app, _p, C) => { await app.vault.create(`${C}/Lash.md`, 'She casts `5e:spell:Ember Lash`.\n'); }, C);
 		await o.openFile(`${C}/Lash.md`, 'preview');
 		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.kind-spell`).count()) === 1, { what: 'the homebrew spell reference' });
@@ -6867,12 +6897,25 @@ test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reo
 		await o.waitFor(async () => /A whip of fire/.test(await o.page.locator('.nimble-hover-preview .dnd5e-card').innerText().catch(() => '')), { what: 'homebrew card on hover' });
 		await o.page.keyboard.press('Escape');
 
-		// New item… in a 5e campaign is 5e's item builder.
+		// New item… in a 5e campaign is 5e's item builder: a weapon with its damage, properties and mastery.
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-item'); });
 		await o.page.locator(B).waitFor();
-		assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Magic item');
-		await o.page.keyboard.press('Escape');
+		assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Item');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).fill('Ember Pike');
+		await o.page.locator(`${B} .eb-panel.is-active [data-key="kind"] .eb-seg-btn`, { hasText: 'Weapon' }).click();
+		await o.waitFor(async () => (await o.page.locator(`${B} .eb-dot`).allInnerTexts()).join() === 'Item,Weapon', { what: 'the weapon step' });
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Cost"]`).fill('20 gp');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Weapon' }).click();
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Die"]`).selectOption('10');
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Damage"]`).selectOption('Piercing');
+		for (const p of ['Heavy', 'Reach', 'Two-Handed']) await o.page.locator(`${B} .eb-panel.is-active [data-key="properties"] .eb-pick[data-value="${p}"]`).click();
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Mastery"]`).selectOption('Cleave');
+		await o.waitFor(async () => /Ember Pike[\s\S]*1d10 piercing[\s\S]*Cleave/i.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the weapon card' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-builder-item.png') });
+		await create();
 		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => !!(await o.eval((app, _p, C) => !!app.vault.getAbstractFileByPath(`${C}/Homebrew/Ember Pike.md`), C)), { what: 'the weapon note' });
+		assert.match(await read(o, `${C}/Homebrew/Ember Pike.md`), /```5e-item\nname: Ember Pike\ncategory: Martial Melee Weapon\ndamage: 1d10 piercing\nproperties: Heavy, Reach, Two-Handed\nmastery: Cleave\ncost: 20 gp\n```/);
 	} finally {
 		await o.eval(async (app, plugin, C) => {
 			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
@@ -7136,26 +7179,47 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.page.locator(`${panel} input[data-field="Name"]`).fill('Ilse Vane');
 		await o.page.locator(`${panel} select[data-field="Class"]`).selectOption('Wizard');
 		await o.page.locator(`${panel} input[data-field="Level"]`).fill('3');
+		await o.waitFor(async () => (await o.page.locator(`${B} .eb-dot`).allInnerTexts()).join() === 'Who,Abilities,Skills,Tools,Class,Equipment', { what: 'the wizard\'s steps' });
+		// The standard array set out for a wizard (Int, then Con and Dex); a score's dropdown swaps it with another ability.
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Abilities' }).click();
+		assert.equal(await o.page.locator(`${panel} .dnd5e-ab-card.is-int select`).inputValue(), 'int');
+		assert.equal(await o.page.locator(`${panel} .dnd5e-ab-card.is-int .dnd5e-ab-card-final`).innerText(), '17');
 		await o.page.locator(`${B} .eb-dot`, { hasText: 'Skills' }).click();
 		for (const sk of ['Arcana', 'History']) await o.page.locator(`${panel} .eb-pick[data-value="${sk}"]`).click();
 		// Wizards pick two: the rest wait until one is taken off.
 		assert.equal(await o.page.locator(`${panel} .eb-pick.is-active`).count(), 2);
 		assert.equal(await o.page.locator(`${panel} .eb-pick[data-value="Investigation"]`).isDisabled(), true);
+		// Common and two standard languages.
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Tools' }).click();
+		for (const l of ['Elvish', 'Draconic']) await o.page.locator(`${panel} [data-key="languages"] .eb-pick[data-value="${l}"]`).click();
+		assert.equal(await o.page.locator(`${panel} [data-key="languages"] .eb-pick[data-value="Dwarvish"]`).isDisabled(), true);
 		await o.page.locator(`${B} .eb-dot`, { hasText: 'Class' }).click();
 		await o.page.locator(`${panel} select[data-field="Subclass"]`).selectOption({ index: 1 });
 		for (const sp of ['Fire Bolt', 'Light']) await o.page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="${sp}"]`).click();
 		await o.page.locator(`${panel} [data-key="spells"] .eb-pick[data-value="Shield"]`).click();
-		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane[\s\S]*Level 3[\s\S]*Wizard[\s\S]*HP\s*17/);
+		// A level 3 wizard's spellbook holds ten.
+		assert.match(await o.page.locator(`${panel} [data-key="spells"] .eb-aside`).innerText(), /1 of 10/);
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane[\s\S]*Level 3[\s\S]*Wizard[\s\S]*HP\s*20/);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-new-character.png') });
+		// Equipment: the Wizard's pack (A) or 55 GP (B), and the Acolyte's.
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Equipment' }).click();
+		assert.equal(await o.page.locator(`${panel} .dnd5e-eq-option.is-active`).count(), 2);
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Equipment[\s\S]*Spellbook/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-new-character-equipment.png') });
 		await o.page.locator(`${B} .eb-next`).click();
 		await o.page.locator(B).waitFor({ state: 'detached' });
 		await o.waitFor(async () => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), note), { what: 'character note' });
 		await o.waitFor(async () => (await fm()).class === 'Wizard', { what: 'frontmatter indexed' });
 		const f0 = await fm();
 		// The standard array set out for a wizard, then the Acolyte's +2 Int and +1 Wis.
-		assert.deepEqual([f0.level, f0.int, f0.wis, f0.con, f0.dex, f0.str, f0.cha, f0.hp_max, f0.edition], [3, 17, 15, 13, 12, 10, 8, 17, '2024']);
+		assert.deepEqual([f0.level, f0.int, f0.wis, f0.con, f0.dex, f0.str, f0.cha, f0.hp_max, f0.edition], [3, 17, 11, 14, 13, 12, 8, 20, '2024']);
 		assert.deepEqual([...f0.skills].sort(), ['Arcana', 'History', 'Insight', 'Religion']);
 		assert.deepEqual(f0.spells, ['Fire Bolt', 'Light', 'Shield']);
+		assert.deepEqual(f0.languages, ['Common', 'Elvish', 'Draconic']);
+		assert.deepEqual(f0.tools, ["Calligrapher's Supplies"]);
+		// The Wizard's option A and the Acolyte's: daggers and the quarterstaff in hand, 5 + 8 GP.
+		assert.deepEqual(f0.inventory.slice(0, 3), [{ name: 'Dagger', qty: 2, equipped: true }, { name: 'Quarterstaff', equipped: true }, { name: 'Robe', qty: 2 }]);
+		assert.equal(f0.gold, 13);
 		assert.ok(f0.subclass);
 		assert.match(await read(o, note), /```5e-sheet\n```/);
 
@@ -7194,12 +7258,12 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.page.locator(`${S} .ns-meter-calc`).click();
 		await o.page.locator('.nimble-hp-pad').waitFor();
 		await o.page.keyboard.type('5');
-		assert.match(await o.page.locator('.nimble-hp-pad .hp-pad-preview').innerText(), /→ 12\/17/);
+		assert.match(await o.page.locator('.nimble-hp-pad .hp-pad-preview').innerText(), /→ 15\/20/);
 		await o.page.keyboard.press('Enter');
-		await o.waitFor(async () => (await fm()).hp === 12, { what: 'HP 12' });
-		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-hp-cur`).innerText()) === '12', { what: 'bar shows 12' });
+		await o.waitFor(async () => (await fm()).hp === 15, { what: 'HP 15' });
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-hp-cur`).innerText()) === '15', { what: 'bar shows 15' });
 		for (const step of ['Take 1 damage', 'Take 1 damage', 'Heal 1']) await o.page.locator(`${S} .ns-meter-step[aria-label="${step}"]`).click();
-		await o.waitFor(async () => (await fm()).hp === 11, { what: 'HP 11 from the steps' });
+		await o.waitFor(async () => (await fm()).hp === 14, { what: 'HP 14 from the steps' });
 		// Hit dice: a filled pip spends one.
 		await o.page.locator(`${S} .ev-pips.is-hit-dice .ev-pip.is-on`).first().click();
 		await o.waitFor(async () => (await fm()).hit_dice_used === 1, { what: 'a hit die spent' });
@@ -7218,10 +7282,10 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-item`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff carried' });
 		await tab('actions');
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff attack' });
-		const staff = o.page.locator(`${S} .dnd5e-sheet-attack`).first();
-		assert.match(await staff.innerText(), /Quarterstaff[\s\S]*Versatile[\s\S]*\+2\s*1d6/);
+		const staff = o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Quarterstaff' });
+		assert.match(await staff.innerText(), /Quarterstaff[\s\S]*Versatile[\s\S]*\+3\s*1d6 \+ 1/);
 		// The damage type is the button's icon; its name is in the tooltip.
-		assert.match(await staff.locator('.dnd5e-dmg').getAttribute('aria-label'), /1d6 Bludgeoning damage/);
+		assert.match(await staff.locator('.dnd5e-dmg').getAttribute('aria-label'), /1d6 \+ 1 Bludgeoning damage/);
 		assert.equal(await staff.locator('.dnd5e-dmg .ev-pill-icon svg').count(), 1);
 		// Shield is a reaction: Cast spends a level 1 slot.
 		const shield = o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Shield' });
@@ -7247,19 +7311,27 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await tab('spells');
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet.png') });
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Long rest' }).click();
-		await o.waitFor(async () => { const f = await fm(); return f.hp === 17 && f.slots_used === undefined && f.hit_dice_used === undefined && f.uses_spent === undefined; }, { what: 'long rest' });
+		await o.waitFor(async () => { const f = await fm(); return f.hp === 20 && f.slots_used === undefined && f.hit_dice_used === undefined && f.uses_spent === undefined; }, { what: 'long rest' });
+		// The Features tab ends with what the character is trained in.
+		await tab('features');
+		assert.match(await o.page.locator(`${S} .dnd5e-prof-list`).innerText(), /Tools\s*Calligrapher's Supplies[\s\S]*Languages\s*Common, Elvish, Draconic/);
 
-		// Level up in the wizard: d6 average (4) + Con (1), and level 4's increase (+2 Int, the best score).
+		// Level up in the wizard: d6 average (4) + Con (2), level 4's increase (+2 Int, the best score), a cantrip and two spells.
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();
 		await o.page.locator(B).waitFor({ timeout: 3000 });
 		assert.deepEqual(await o.page.locator(`${B} .eb-dot`).allInnerTexts(), ['Hit points', 'Increase', 'Spells']);
-		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane[\s\S]*level 3 → 4[\s\S]*HP\s*\+5\s*max 22/);
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane[\s\S]*level 3 → 4[\s\S]*HP\s*\+6\s*max 26/);
 		await o.page.locator(`${B} .eb-dot`, { hasText: 'Spells' }).click();
+		assert.match(await o.page.locator(`${panel} [data-key="cantrips"] .eb-aside`).innerText(), /0 of 1/);
+		assert.match(await o.page.locator(`${panel} [data-key="spells"] .eb-aside`).innerText(), /0 of 2/);
+		await o.page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="Mage Hand"]`).click();
 		await o.page.locator(`${panel} .eb-pick[data-value="Misty Step"]`).click();
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-level-up.png') });
 		await o.page.locator(`${B} .eb-next`).click();
 		await o.page.locator(B).waitFor({ state: 'detached' });
-		await o.waitFor(async () => { const f = await fm(); return f.level === 4 && f.hp_max === 22 && f.int === 19; }, { what: 'level 4' });
+		await o.waitFor(async () => { const f = await fm(); return f.level === 4 && f.hp_max === 26 && f.int === 19; }, { what: 'level 4' });
 		assert.ok((await fm()).spells.includes('Misty Step'));
+		assert.ok((await fm()).spells.includes('Mage Hand'));
 
 		// Another note in the same tab has its title and properties back.
 		await o.eval(async (app, _p, C) => { await app.vault.create(`${C}/Plain note.md`, '---\ntags: [x]\n---\nJust a note.\n'); }, C);
@@ -7272,7 +7344,7 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 
 		// The encounter party reads the sheet: level and AC.
 		await o.eval((app, plugin) => plugin.syncPartyFromSheets());
-		await o.waitFor(async () => (await o.eval((app, plugin) => JSON.stringify(plugin.settings.party.map(p => [p.name, p.level, p.maxHp, p.defense])))) === JSON.stringify([['Ilse Vane', 4, 22, 11]]), { what: 'party from the sheet' });
+		await o.waitFor(async () => (await o.eval((app, plugin) => JSON.stringify(plugin.settings.party.map(p => [p.name, p.level, p.maxHp, p.defense])))) === JSON.stringify([['Ilse Vane', 4, 26, 11]]), { what: 'party from the sheet' });
 	} finally {
 		await o.eval(async (app, plugin, C) => {
 			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());

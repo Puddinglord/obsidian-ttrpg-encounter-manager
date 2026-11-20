@@ -151,7 +151,7 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 								],
 								{ type: 'choice', key: 'kind', label: 'Kind', options: () => [{ value: 'melee', label: 'Melee' }, { value: 'ranged', label: 'Ranged' }, { value: 'both', label: 'Melee or ranged' }, { value: 'save', label: 'Saving throw' }, { value: 'text', label: 'Other' }] },
 								[
-									{ type: 'choice', key: 'ability', label: 'Uses', show: attack, options: () => [...(['str', 'dex'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] })), { value: 'finesse', label: 'Better of Str/Dex' }, ...(['con', 'int', 'wis', 'cha'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] }))], dropdown: true, hint: () => `${formatMod(toHit(d, x))} to hit` },
+									{ type: 'choice', key: 'ability', label: 'Ability', show: attack, options: () => [...(['str', 'dex'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] })), { value: 'finesse', label: 'Better of Str/Dex' }, ...(['con', 'int', 'wis', 'cha'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] }))], dropdown: true, hint: () => `${formatMod(toHit(d, x))} to hit` },
 									{ type: 'number', key: 'reach', label: 'Reach (ft.)', min: 5, max: 30, step: 5, placeholder: () => '5', show: () => x.kind === 'melee' || x.kind === 'both' },
 									{ type: 'text', key: 'range', label: 'Range (ft.)', placeholder: x.kind === 'both' ? '20/60' : '80/320', show: () => x.kind === 'ranged' || x.kind === 'both' },
 								],
