@@ -24,6 +24,10 @@ export const PILL_SELECTORS = [
 	'.eb-pick', '.eb-pick-given', '.dnd5e-brief-chip',
 	'.dnd5e-tab', '.dnd5e-sheet-condition', '.dnd5e-sheet-condition-add', '.dnd5e-sheet-death-roll', '.dnd5e-turn-action', '.dnd5e-sheet-gold', '.dnd5e-qty',
 	'.ev-cond-add-trigger', '.ev-cond-apply', '.ev-cond-new', '.ev-effect-actions button', '.ev-effect-done',
+	// The trackers (core/tracker/flow.ts and each game's view): the card's buttons, the turn control, the ticker,
+	// conditions on the card, the side switch, moments, the keypad's quiet chips, the encounter blocks' buttons.
+	'.ev-card-btn', '.ev-foot-primary', '.ev-foot-second', '.ev-ticker', '.condition-tag', '.phase-pill', '.nimble-phase-chip', '.group-attack',
+	'.laststand-btn', '.ev-moment-btn', '.hp-pad-qa', '.hp-pad-choice', '.dnd5e-ribbon', '.dnd5e-roll-all', '.encounter-block-btn', '.dnd5e-init-roll', '.dnd5e-init-set',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {
