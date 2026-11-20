@@ -350,7 +350,7 @@ body {
 .nimble-statblock .move-badge .badge-icon { display: inline-flex; color: var(--ev-text-2); }
 .nimble-statblock .move-badge .badge-icon svg { width: 15px; height: 15px; }
 .nimble-statblock .saves-badge { display: inline-flex; align-items: center; gap: 6px; font: 700 12.5px/1 var(--ev-font-display); color: var(--ev-text-2); }
-.nimble-statblock .save-mark { display: inline-flex; align-items: center; gap: 2px; }
+.nimble-statblock .save-mark { display: inline-flex; align-items: center; gap: 3px; }
 .nimble-statblock .nb-tri { width: 13px; height: 6px; }
 
 /* The book's glyphs (book-glyphs.ts): the filled heart, and the armor shield with its letter on its face. */
@@ -373,23 +373,17 @@ body {
 .nimble-statblock .monster-damage-icon { display: inline-flex; margin-right: 3px; color: var(--ev-text-2); vertical-align: -0.15em; }
 .nimble-statblock .monster-damage-icon svg { width: 14px; height: 14px; }
 
-/* Passives: the khaki ribbon, pointed at both ends and poking out past the box. The points are one stretched
-   triangle per end (an SVG mask filled with the band colour), so they follow the ribbon's height. */
+/* Passives: the khaki ribbon, pointed at both ends and poking out past the box. The ribbon is a border image
+   whose ends (14px each, stretched to the ribbon's height) sit outside its box (border-image-outset), so the points
+   follow one line or three, and poke out without making anything scroll. */
 .nimble-statblock .monster-abilities { display: grid; gap: 6px; margin: 8px -6px; }
-.nimble-statblock .ability-item { position: relative; z-index: 1; padding: 6px 12px; background: var(--ev-band); color: var(--ev-band-text); font-style: italic; }
-.nimble-statblock .ability-item::before, .nimble-statblock .ability-item::after {
-	content: ""; position: absolute; top: 0; bottom: 0; width: 14px; background: var(--ev-band);
-	-webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+.nimble-statblock .ability-item {
+	position: relative; z-index: 1; padding: 6px 12px; color: var(--ev-band-text); font-style: italic;
+	border: 0 solid transparent;
+	border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='100' viewBox='0 0 128 100' preserveAspectRatio='none'%3E%3Cpath d='M14 0H114L128 50 114 100H14L0 50Z' fill='%23DDD6C4'/%3E%3C/svg%3E") 0 14 fill / 0 14px / 0 14px stretch;
 }
-.nimble-statblock .ability-item::before {
-	right: calc(100% - 0.5px);
-	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='14,0 0,50 14,100' fill='black'/%3E%3C/svg%3E");
-	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='14,0 0,50 14,100' fill='black'/%3E%3C/svg%3E");
-}
-.nimble-statblock .ability-item::after {
-	left: calc(100% - 0.5px);
-	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 14,50 0,100' fill='black'/%3E%3C/svg%3E");
-	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 14,50 0,100' fill='black'/%3E%3C/svg%3E");
+.theme-dark .nimble-statblock .ability-item {
+	border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='100' viewBox='0 0 128 100' preserveAspectRatio='none'%3E%3Cpath d='M14 0H114L128 50 114 100H14L0 50Z' fill='%233A352D'/%3E%3C/svg%3E");
 }
 .nimble-statblock .ability-name { font-style: italic; font-weight: 700; }
 
@@ -2981,6 +2975,7 @@ body.is-tablet button.nimble-npc-pill { padding: 6px 10px; }
 .nimble-note-stat-label { color: var(--ev-text-2); }
 .nimble-npc-stat.is-armor { padding-left: 5px; }
 .nimble-npc-stat.is-hp { color: var(--ev-hp); }
+:is(.nimble-npc-stats, .ev-cq-mons) > .nimble-inline-ref { top: 0; } /* in a row of chips, centred like them (not lifted to a sentence) */
 button.nimble-npc-fight { height: 30px; padding: 0 12px; border-radius: var(--ev-r-md); font: 600 13px/1 var(--ev-font-ui); }
 body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 .nimble-note-card { margin: 0.25rem 0 0.75rem; }
@@ -5720,9 +5715,6 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 	.dnd5e-statblock .dnd5e-ab24:is(.ab-str, .ab-con, .ab-wis) { grid-column: 1 / span 4; }
 	.dnd5e-statblock .dnd5e-ab24:is(.ab-dex, .ab-int, .ab-cha) { grid-column: 6 / span 4; }
 }
-@container dnd5e-ab (max-width: 360px) {
-	.dnd5e-statblock .dnd5e-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 6px; }
-}
 @container dnd5e-ab (max-width: 240px) {
 	/* One group: the name takes the spare width, so the score stays beside Mod. */
 	.dnd5e-statblock .dnd5e-abilities-2024 { grid-template-columns: 1fr minmax(1.6em, auto) minmax(2.6em, 3.1em) minmax(2.6em, 3.1em); }
@@ -5751,6 +5743,7 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0.3 L400 2.5 L0 4.7 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
 .dnd5e-statblock .dnd5e-abilities { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; text-align: center; font: 400 14.5px/20px var(--x5-font-book); }
+@container dnd5e-ab (max-width: 300px) { .dnd5e-statblock .dnd5e-abilities { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 6px; } }
 .dnd5e-statblock .dnd5e-ability-name { display: block; font: 700 14px/18px var(--x5-font-book); letter-spacing: 0.03em; color: var(--x5-sb14-rule); }
 .dnd5e-statblock .dnd5e-ability-score { white-space: nowrap; }
 .dnd5e-statblock .dnd5e-ability-score .dnd5e-roll.is-clickable { padding: 0; background: none; border-bottom-color: transparent; }

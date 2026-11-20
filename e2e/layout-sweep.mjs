@@ -43,6 +43,9 @@ const scan = (rootSel) => o.page.evaluate((rootSel) => {
 			seen.add(e);
 			const cs = getComputedStyle(e);
 			if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed' || cs.display === 'inline' || cs.display === 'contents') continue;
+			// Inside something hidden on purpose (a property the card shows, a section on the card): no boxes at all,
+			// which isn't the same as a box squeezed to nothing.
+			if (!e.getClientRects().length) continue;
 			const r = e.getBoundingClientRect();
 			const own = [...e.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ').trim();
 			if (!r.width && !r.height) { if (own.length >= 2) out.set(`ZERO ${sig(e)}`, own.slice(0, 30)); continue; }
