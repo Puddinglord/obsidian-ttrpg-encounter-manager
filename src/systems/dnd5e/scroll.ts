@@ -149,12 +149,12 @@ function side(parent: HTMLElement, motif: Group[], right: boolean): void {
 	drawMotif(compact, motif, 34);
 }
 
-/** The class's heading: its name between two scrolls. */
-export function classScroll(parent: HTMLElement, className: string, cls = ''): HTMLElement {
+/** The class's heading: its name (or `title`, a subclass's) between two scrolls with the class's motif. */
+export function classScroll(parent: HTMLElement, className: string, cls = '', title = className): HTMLElement {
 	const motif = classMotif(className);
 	const el = parent.createDiv({ cls: `dnd5e-scroll ${cls}`.trim() });
 	side(el, motif, false);
-	el.createSpan({ cls: 'dnd5e-scroll-title', text: className });
+	el.createSpan({ cls: 'dnd5e-scroll-title', text: title });
 	side(el, motif, true);
 	return el;
 }

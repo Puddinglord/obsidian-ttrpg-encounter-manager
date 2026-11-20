@@ -10,6 +10,7 @@ import { BrowserOptions, CompendiumBrowser, insertReference, renderEntryDetail }
 import type { Entry, Segment } from './compendium-entries';
 import { CompendiumCardModal } from './compendium-card';
 import { openRecord } from './record-modal';
+import { applyLook } from '../../core/look';
 
 export interface PickOptions {
 	/** Heading over the search: "Add to the encounter", "Insert a spell". */
@@ -46,6 +47,7 @@ export class CompendiumModal extends Modal {
 
 	onOpen(): void {
 		this.modalEl.addClass('nimble-cmpx-modal');
+		applyLook(this.modalEl, 'nimble');
 		this.titleEl.setText(this.o.title);
 		const o = this.o;
 		const lore = this.plugin.hideStats();
@@ -118,6 +120,7 @@ class EntryModal extends Modal {
 
 	onOpen(): void {
 		this.modalEl.addClass('nimble-cmp-modal');
+		applyLook(this.modalEl, 'nimble');
 		this.component.load();
 		renderEntryDetail(this.contentEl, this.entry, { plugin: this.plugin, component: this.component, lore: this.plugin.hideStats() });
 	}

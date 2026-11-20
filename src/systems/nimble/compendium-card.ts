@@ -6,6 +6,8 @@
 // Rules text goes through appendRichText, never innerHTML.
 
 import { App, EventRef, Modal, setIcon } from 'obsidian';
+import { evIcon } from '../../core/icons';
+import { applyLook } from '../../core/look';
 import type EmberVaultPlugin from '../../../main';
 import {
 	Ancestry, Background, Boon, ClassEntry, ClassOption, CompendiumHit, CompendiumKind, Feature, Item, KIND_LABEL, LevelFeatures,
@@ -16,6 +18,7 @@ import { resolveCompendiumRef } from './compendium-ref';
 import { appendRichText } from '../../core/markdown';
 import { renderArtSlot } from './compendium-art';
 import { hitArtKey } from './compendium-entries';
+import { renderClassScroll } from './class-scroll';
 import { nimble } from './runtime';
 
 export interface CardOptions {
@@ -45,7 +48,7 @@ const KIND_ICON_CMP: Record<CompendiumKind, string> = {
 /** Icon for conditions (cards and inline references). */
 export const CONDITION_ICON = 'alert-circle';
 
-/** Icon for a compendium entry (items by category). */
+/** Icon for a compendium entry (items by category), for the editor's chrome: inline references. */
 export function compendiumIcon(h: CompendiumHit): string {
 	if (h.kind === 'item') {
 		const c = (h.entry as Item).category;
@@ -53,6 +56,23 @@ export function compendiumIcon(h: CompendiumHit): string {
 	}
 	return KIND_ICON_CMP[h.kind];
 }
+
+const KIND_GLYPH: Record<CompendiumKind, Parameters<typeof evIcon>[0]> = {
+	item: 'backpack', spell: 'spell', feature: 'sparkle', class: 'shield-star', subclass: 'path',
+	ancestry: 'users-three', background: 'scroll', boon: 'diamond',
+};
+
+/** The same, in the game's own icons (Phosphor Bold): cards, the compendium's rows, Spotlight. */
+export function compendiumGlyph(h: CompendiumHit): string {
+	if (h.kind === 'item') {
+		const c = (h.entry as Item).category;
+		return evIcon(c === 'weapon' ? 'sword' : c === 'armor' || c === 'shield' ? 'shield' : c === 'consumable' ? 'flask' : c === 'magic' ? 'sparkle' : c === 'scroll' ? 'scroll' : c === 'wand' ? 'wand' : 'backpack');
+	}
+	return evIcon(KIND_GLYPH[h.kind]);
+}
+
+/** A condition's icon on the game's own surfaces. */
+export const CONDITION_GLYPH = 'ev-condition';
 
 /**
  * An entry by kind and name (and owning class or subclass), from the bundled
@@ -100,9 +120,9 @@ function hitLink(parent: HTMLElement, text: string, target: CompendiumHit | unde
 /** The row of small label/value facts at the top of a card. */
 function factRow(parent: HTMLElement) {
 	const facts = parent.createDiv({ cls: 'nimble-cmp-facts' });
-	const fact = (label: string, value: string | number | undefined, link?: CompendiumHit, o: CardOptions = {}) => {
+	const fact = (label: string, value: string | number | undefined, link?: CompendiumHit, o: CardOptions = {}, cls = '') => {
 		if (value === undefined || value === '') return;
-		const f = facts.createSpan({ cls: 'nimble-cmp-fact' });
+		const f = facts.createSpan({ cls: `nimble-cmp-fact ${cls}`.trim() });
 		f.createSpan({ cls: 'nimble-cmp-fact-label', text: label });
 		hitLink(f, String(value), link, o, 'nimble-cmp-fact-value');
 	};
@@ -131,7 +151,7 @@ export function renderHitBody(parent: HTMLElement, hit: CompendiumHit, o: CardOp
 			const s = hit.entry as Spell;
 			fact('School', s.school);
 			fact('Tier', s.utility ? `Utility ${tierLabel(s.tier).toLowerCase()}` : tierLabel(s.tier));
-			fact('Cost', s.tier ? `${s.tier} mana` : undefined);
+			fact('Cost', s.tier ? `${s.tier} mana` : undefined, undefined, {}, 'is-mana');
 			fact('Cast', s.actions);
 			fact('Range', s.range);
 			fact('Area', s.aoe);
@@ -372,28 +392,36 @@ export function renderClassPage(parent: HTMLElement, c: ClassEntry, o: CardOptio
 	}
 }
 
-/** A whole card: kind, name, detail line, body. */
+/**
+ * A whole card, in the sheet's language (.ev-sys-nimble): the kind, the name in Vollkorn, the body. A class or
+ * subclass page carries its name between the class's scrollwork, as the sheet's class panel does. The detail line
+ * only shows when the body has no facts to say the same thing.
+ */
 export function renderHitCard(parent: HTMLElement, hit: CompendiumHit, o: CardOptions = {}): HTMLElement {
 	const page = hit.kind === 'class' || hit.kind === 'subclass';
 	const card = parent.createDiv({ cls: `nimble-cmp-card kind-${hit.kind}${page ? ' is-page' : ''}` });
+	applyLook(card, 'nimble');
 	const head = card.createDiv({ cls: 'nimble-cmp-head' });
 	const kind = head.createDiv({ cls: 'nimble-cmp-kind' });
-	setIcon(kind.createSpan({ cls: 'nimble-cmp-kind-icon' }), compendiumIcon(hit));
+	setIcon(kind.createSpan({ cls: 'nimble-cmp-kind-icon' }), compendiumGlyph(hit));
 	kind.createSpan({ text: KIND_LABEL[hit.kind] });
-	head.createDiv({ cls: 'nimble-cmp-name', text: hit.name });
-	// A class's detail line is its tagline, which the page leads with anyway.
+	if (page) renderClassScroll(head, hit.name, 'nimble-cmp-name nimble-cmp-scroll', hit.kind === 'subclass' ? hit.className : undefined);
+	else head.createDiv({ cls: 'nimble-cmp-name', text: hit.name });
+	const body = card.createDiv({ cls: 'nimble-cmp-body' });
+	renderHitBody(body, hit, o);
+	// A class's detail line is its tagline, which the page leads with anyway; facts say the rest.
 	const tagline = hit.kind === 'class' && (hit.entry as ClassEntry).tagline;
-	if (hit.detail && !tagline) head.createDiv({ cls: 'nimble-cmp-detail', text: hit.detail });
-	renderHitBody(card.createDiv({ cls: 'nimble-cmp-body' }), hit, o);
+	if (hit.detail && !tagline && !body.querySelector('.nimble-cmp-facts')) head.createDiv({ cls: 'nimble-cmp-detail', text: hit.detail });
 	return card;
 }
 
 /** A condition as a card: name and rules text (keywords and dice work as in any card). */
 export function renderConditionCard(parent: HTMLElement, condition: ConditionInfo, o: CardOptions = {}): HTMLElement {
 	const card = parent.createDiv({ cls: 'nimble-cmp-card kind-condition' });
+	applyLook(card, 'nimble');
 	const head = card.createDiv({ cls: 'nimble-cmp-head' });
 	const kind = head.createDiv({ cls: 'nimble-cmp-kind' });
-	setIcon(kind.createSpan({ cls: 'nimble-cmp-kind-icon' }), CONDITION_ICON);
+	setIcon(kind.createSpan({ cls: 'nimble-cmp-kind-icon' }), CONDITION_GLYPH);
 	kind.createSpan({ text: 'Condition' });
 	head.createDiv({ cls: 'nimble-cmp-name', text: condition.name });
 	const body = card.createDiv({ cls: 'nimble-cmp-body' });
@@ -441,6 +469,7 @@ export class CompendiumCardModal extends Modal {
 
 	onOpen(): void {
 		this.modalEl.addClass('nimble-cmp-modal');
+		applyLook(this.modalEl, 'nimble');
 		this.artRef = this.plugin.events.on('compendium-art-changed', () => this.render());
 		this.render();
 	}
@@ -468,7 +497,7 @@ export class CompendiumCardModal extends Modal {
 			// A bar above the card (it stays put while a long page scrolls), clear of the close button.
 			const nav = this.contentEl.createDiv({ cls: 'nimble-cmp-nav' });
 			const b = nav.createEl('button', { cls: 'nimble-cmp-back', attr: { 'aria-label': `Back to ${prev.name}` } });
-			setIcon(b.createSpan({ cls: 'nimble-cmp-back-icon' }), 'arrow-left');
+			setIcon(b.createSpan({ cls: 'nimble-cmp-back-icon' }), evIcon('arrow-left'));
 			b.createSpan({ cls: 'nimble-cmp-back-label', text: prev.name });
 			b.addEventListener('click', () => this.back());
 		}

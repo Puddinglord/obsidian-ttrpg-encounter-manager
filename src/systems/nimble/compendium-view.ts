@@ -14,6 +14,8 @@ import { ALL_SEGMENTS, BrowserSnapshot, CompendiumBrowser, copyReference, entryR
 import type { Entry, Segment } from './compendium-entries';
 import { openEntry } from './compendium-modal';
 import { nimble } from './runtime';
+import { evIcon } from '../../core/icons';
+import { applyLook } from '../../core/look';
 
 export const COMPENDIUM_VIEW_TYPE = 'nimble-bestiary';
 
@@ -113,6 +115,7 @@ export class CompendiumView extends ItemView {
 		const root = this.containerEl.children[1] as HTMLElement;
 		root.empty();
 		root.addClass('nimble-bestiary', 'nimble-compendium');
+		applyLook(root, 'nimble');
 		const prev = this.browser?.currentSegment;
 		if (this.browser) this.removeChild(this.browser);
 		this.lore = this.plugin.hideStats();
@@ -134,8 +137,8 @@ export class CompendiumView extends ItemView {
 				? { label: 'Insert reference', run: (x) => insertReference(plugin, x) }
 				: { label: 'Quick look', run: (x) => openEntry(plugin, x) }),
 			rowButton: (e) => {
-				if (e.monster && !lore) return { icon: 'plus', label: `Add ${e.name} to the encounter`, run: (ev) => void nimble().addToEncounter(e.monster!.monster, e.monster!.filePath || undefined, ev.shiftKey ? 2 : 1) };
-				if (entryReference(e)) return { icon: 'copy', label: `Copy a reference to ${e.name}`, run: () => copyReference(e) };
+				if (e.monster && !lore) return { icon: evIcon('plus'), label: `Add ${e.name} to the encounter`, run: (ev) => void nimble().addToEncounter(e.monster!.monster, e.monster!.filePath || undefined, ev.shiftKey ? 2 : 1) };
+				if (entryReference(e)) return { icon: evIcon('copy'), label: `Copy a reference to ${e.name}`, run: () => copyReference(e) };
 				return undefined;
 			},
 			onNew: (seg) => {

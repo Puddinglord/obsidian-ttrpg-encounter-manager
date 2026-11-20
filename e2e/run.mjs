@@ -384,7 +384,7 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	// Focus moves on the next tick, after the field shows.
 	await o.waitFor(async () => (await o.page.evaluate(() => document.activeElement?.getAttribute('data-field'))) === 'School name', { what: 'the school name field focused', timeout: 3000 });
 	await schoolName.fill('Shadow');
-	assert.match(await o.page.locator(`${B} .eb-preview .nimble-cmp-detail`).textContent(), /^Shadow · /);
+	assert.match(await o.page.locator(`${B} .eb-preview .nimble-cmp-facts`).textContent(), /School\s*Shadow/);
 	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Ice' }).click();
 	assert.equal(await schoolName.isVisible(), false);
 	await o.page.locator(`${B} .eb-create`).click();
@@ -5185,6 +5185,22 @@ test('pills: Nimble references, stat block buttons, compendium, Spotlight and th
 	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-chip`).count()) === 1, { what: 'a filter chip' });
 	await o.page.waitForTimeout(300);
 	await measurePills(o, bad, 'Nimble compendium', CMP);
+	// The filter and sort panels, then a spell's card and a class's page (its facts, level boxes, folding rows).
+	await o.page.locator(`${CMP} .nimble-cmpx-filter`).click();
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble compendium (filters)', CMP);
+	await o.page.locator(`${CMP} .nimble-cmpx-sort`).click();
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble compendium (sorting)', CMP);
+	await o.page.locator(`${CMP} .nimble-cmpx-sort`).click();
+	await o.eval((app) => { const leaf = app.workspace.getLeavesOfType('nimble-bestiary')[0]; app.workspace.revealLeaf(leaf); leaf?.view.select('spell:pyroclasm'); });
+	await o.page.locator(`${CMP} .nimble-cmpx-detail .nimble-cmp-card.kind-spell`).waitFor({ timeout: 3000 });
+	await measurePills(o, bad, 'Nimble compendium (a spell)', `${CMP} .nimble-cmpx-detail`);
+	await o.eval((app) => { const leaf = app.workspace.getLeavesOfType('nimble-bestiary')[0]; app.workspace.revealLeaf(leaf); leaf?.view.select('class:oathsworn'); });
+	await o.page.locator(`${CMP} .nimble-cmpx-detail .nimble-cmp-card.kind-class`).waitFor({ timeout: 3000 });
+	await o.page.locator(`${CMP} .nimble-cmpx-detail .nimble-cmp-summary`).first().click();
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble compendium (a class)', `${CMP} .nimble-cmpx-detail`);
 	// Spotlight with a typed filter.
 	await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
 	const SP = '.modal-container .prompt.nimble-spotlight';
@@ -5285,6 +5301,10 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-row.is-selected`).count()) === 1, { what: 'a monster selected' });
 		await o.page.waitForTimeout(300);
 		await measurePills(o, bad, '5e compendium (monsters)', V);
+		// By challenge, under their CR headings.
+		await input.fill('');
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-group`).count()) > 0, { what: 'CR headings' });
+		await measurePills(o, bad, '5e compendium (by challenge)', V);
 
 		// The tracker before the fight (Roll all, the boxes), then mid-fight: the Ogre's card with a condition, the queue.
 		await o.openFile(note, 'preview');

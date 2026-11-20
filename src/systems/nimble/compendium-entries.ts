@@ -16,22 +16,23 @@ export interface SegmentDef {
 	label: string;
 	/** Players look creatures up; they don't fight them. */
 	playerLabel?: string;
+	/** Its tab's icon: one of ours (core/icons.ts), as `ev-<name>`. */
 	icon: string;
 	/** Typed as `in:<word>` (any of these). */
 	words: string[];
 }
 
 export const SEGMENTS: SegmentDef[] = [
-	{ id: 'all', label: 'All', icon: 'library', words: ['all', 'everything'] },
-	{ id: 'adversaries', label: 'Adversaries', playerLabel: 'Creatures', icon: 'skull', words: ['adversaries', 'monsters', 'creatures', 'bestiary', 'foes'] },
-	{ id: 'npcs', label: 'NPCs', icon: 'user-round', words: ['npcs', 'people', 'characters'] },
-	{ id: 'companions', label: 'Companions', icon: 'paw-print', words: ['companions', 'pets', 'allies'] },
-	{ id: 'spells', label: 'Spells', icon: 'wand-2', words: ['spells', 'magic'] },
-	{ id: 'items', label: 'Items', icon: 'backpack', words: ['items', 'gear', 'equipment', 'weapons', 'armor'] },
-	{ id: 'features', label: 'Features', icon: 'sparkles', words: ['features', 'abilities', 'options', 'boons'] },
-	{ id: 'classes', label: 'Classes', icon: 'graduation-cap', words: ['classes', 'subclasses'] },
-	{ id: 'origins', label: 'Origins', icon: 'users', words: ['origins', 'ancestries', 'backgrounds'] },
-	{ id: 'rules', label: 'Rules', icon: 'scale', words: ['rules', 'conditions'] },
+	{ id: 'all', label: 'All', icon: 'ev-books', words: ['all', 'everything'] },
+	{ id: 'adversaries', label: 'Adversaries', playerLabel: 'Creatures', icon: 'ev-skull', words: ['adversaries', 'monsters', 'creatures', 'bestiary', 'foes'] },
+	{ id: 'npcs', label: 'NPCs', icon: 'ev-user', words: ['npcs', 'people', 'characters'] },
+	{ id: 'companions', label: 'Companions', icon: 'ev-paw-print', words: ['companions', 'pets', 'allies'] },
+	{ id: 'spells', label: 'Spells', icon: 'ev-spell', words: ['spells', 'magic'] },
+	{ id: 'items', label: 'Items', icon: 'ev-backpack', words: ['items', 'gear', 'equipment', 'weapons', 'armor'] },
+	{ id: 'features', label: 'Features', icon: 'ev-sparkle', words: ['features', 'abilities', 'options', 'boons'] },
+	{ id: 'classes', label: 'Classes', icon: 'ev-shield-star', words: ['classes', 'subclasses'] },
+	{ id: 'origins', label: 'Origins', icon: 'ev-users-three', words: ['origins', 'ancestries', 'backgrounds'] },
+	{ id: 'rules', label: 'Rules', icon: 'ev-scales', words: ['rules', 'conditions'] },
 ];
 
 export function segmentDef(id: Segment): SegmentDef {

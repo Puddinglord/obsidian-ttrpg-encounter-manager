@@ -13,6 +13,7 @@ import type { Dnd5eEdition } from './editions';
 import type { Dnd5eRuntime } from './runtime';
 import { pill } from '../../core/pill';
 import { applyLook } from '../../core/look';
+import { evIcon } from '../../core/icons';
 
 export const DND5E_COMPENDIUM_VIEW = 'nimble-dnd5e-compendium';
 
@@ -51,6 +52,7 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 		}
 	};
 	return {
+		system: 'dnd5e',
 		query: QUERY_5E,
 		entries(lore) {
 			const ed = edition();
@@ -66,9 +68,10 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 		placeholder: seg => PLACEHOLDER[seg],
 		drawBadge(badge, e, lore) {
 			if (e.monster && !lore) { badge.addClass('is-level'); badge.setText(e.badge ?? '–'); return; }
-			if (e.monster) { setIcon(badge, 'paw-print'); return; }
+			if (e.monster) { setIcon(badge, evIcon('paw-print')); return; }
 			if (e.hit?.kind === 'spell') { badge.addClass('is-tier', `school-${(e.facets.school?.[0] ?? '').toLowerCase()}`); badge.setText(e.badge ?? ''); return; }
-			setIcon(badge, KIND5E[e.hit!.kind].icon);
+			badge.addClass(`cmp-${e.hit!.kind}`);
+			setIcon(badge, KIND5E[e.hit!.kind].glyph);
 		},
 		pills: entryPills5e,
 		maxPills: e => (e.monster ? 4 : 5),
@@ -185,8 +188,8 @@ export class Dnd5eCompendiumView extends ItemView {
 				: { label: 'Insert reference', run: (x) => insert(x) }),
 			secondary: (e) => (e.monster && !lore ? { label: 'Insert reference', run: (x) => insert(x) } : undefined),
 			rowButton: (e) => (e.monster && !lore
-				? { icon: 'plus', label: `Add ${e.name} to the fight`, run: (ev) => fight(e, ev.shiftKey ? 2 : 1) }
-				: { icon: 'copy', label: `Copy a reference to ${e.name}`, run: () => copyReference(entryReference5e(e), e.name) }),
+				? { icon: evIcon('plus'), label: `Add ${e.name} to the fight`, run: (ev) => fight(e, ev.shiftKey ? 2 : 1) }
+				: { icon: evIcon('copy'), label: `Copy a reference to ${e.name}`, run: () => copyReference(entryReference5e(e), e.name) }),
 			detail: {},
 			onNarrowShow: (d) => {
 				layout.toggleClass('show-detail', d && this.narrow);

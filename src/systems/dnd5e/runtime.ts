@@ -367,6 +367,7 @@ class Card5eModal extends Modal {
 
 	onOpen(): void {
 		this.modalEl.addClass('dnd5e-card-modal');
+		applyLook(this.modalEl, 'dnd5e');
 		renderCard5e(this.contentEl, this.hit, this.rt.cardOptions(this.sourcePath));
 	}
 

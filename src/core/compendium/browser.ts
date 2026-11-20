@@ -17,6 +17,9 @@
 //   ⌥ ← → / ⌥ 1-0  switch tabs
 
 import { Component, Platform, setIcon } from 'obsidian';
+import { evIcon } from '../icons';
+import { applyLook } from '../look';
+import { pill } from '../pill';
 import { slideThumb } from '../segmented';
 import { isTouch } from '../touch';
 import { FilterField } from './filter-field';
@@ -38,8 +41,16 @@ export interface DetailContext<E extends CompendiumEntry, D> {
 	open: (e: E) => void;
 }
 
+/**
+ * A fact on a row: a chip, with an icon when the kind of thing reads faster as one (a spell's school). `tag`: a
+ * tag instead (dark, white text), led with the row's other tags (Legendary, Draft).
+ */
+export interface RowPill { text: string; tone?: string; icon?: string; tag?: boolean }
+
 /** A game system's compendium, as the browser sees it. */
 export interface CompendiumSource<E extends CompendiumEntry, S extends string = string, D = unknown> {
+	/** The game it belongs to: the browser takes that game's look (`.ev-sys-<id>`). */
+	system?: string;
 	/** Its search language. */
 	query: CompendiumQuery<E, S>;
 	/** Every entry for this side of the table (players see creatures as lore). */
@@ -56,7 +67,7 @@ export interface CompendiumSource<E extends CompendiumEntry, S extends string = 
 	/** The square left of a row's name: a level, an icon, your art. */
 	drawBadge(badge: HTMLElement, e: E, lore: boolean): void;
 	/** The facts on a row, as pills. */
-	pills(e: E, lore: boolean): { text: string; tone?: string }[];
+	pills(e: E, lore: boolean): RowPill[];
 	maxPills?(e: E): number;
 	/** A line of the entry's own words under the pills. */
 	snippet?(e: E, lore: boolean): string | undefined;
@@ -176,6 +187,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 		this.q = source.query;
 		this.segment = o.segment;
 		this.root = parent.createDiv({ cls: 'nimble-cmpx' });
+		applyLook(this.root, source.system);
 		if (o.detail) this.root.addClass('has-detail');
 	}
 
@@ -280,7 +292,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 
 		const bar = side.createDiv({ cls: 'nimble-cmpx-searchbar' });
 		const field = bar.createDiv({ cls: 'nimble-cmpx-field' });
-		setIcon(field.createSpan({ cls: 'nimble-cmpx-search-icon' }), 'search');
+		setIcon(field.createSpan({ cls: 'nimble-cmpx-search-icon' }), evIcon('search'));
 		this.chipsEl = field.createDiv({ cls: 'nimble-cmpx-chips' });
 		this.input = this.chipsEl.createEl('input', {
 			type: 'text', cls: 'nimble-cmpx-input',
@@ -309,11 +321,11 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 		this.sortBtn = bar.createEl('button', { cls: 'clickable-icon nimble-cmpx-sort', attr: { 'aria-label': 'Sort', 'aria-expanded': 'false' } });
 		this.sortBtn.addEventListener('click', () => { this.sortOpen = !this.sortOpen; if (this.sortOpen) this.panelOpen = false; this.drawPanel(); this.drawSortPanel(); });
 		this.filterBtn = bar.createEl('button', { cls: 'clickable-icon nimble-cmpx-filter', attr: { 'aria-label': 'Filters', 'aria-expanded': 'false' } });
-		setIcon(this.filterBtn, 'sliders-horizontal');
+		setIcon(this.filterBtn, evIcon('sliders'));
 		this.filterBtn.addEventListener('click', () => { this.panelOpen = !this.panelOpen; if (this.panelOpen) this.sortOpen = false; this.drawSortPanel(); this.drawPanel(); this.input.focus(); });
 		if (this.o.onNew) {
 			const nb = bar.createEl('button', { cls: 'clickable-icon nimble-cmpx-new', attr: { 'aria-label': this.o.newLabel ?? 'New' } });
-			setIcon(nb, 'plus');
+			setIcon(nb, evIcon('plus'));
 			nb.addEventListener('click', () => this.o.onNew!(this.segment));
 		}
 
@@ -467,7 +479,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 	private drawSortButton(): void {
 		const r = this.result;
 		this.sortBtn.empty();
-		setIcon(this.sortBtn, r?.desc ? 'arrow-down-wide-narrow' : 'arrow-up-narrow-wide');
+		setIcon(this.sortBtn, evIcon(r?.desc ? 'sort-descending' : 'sort-ascending'));
 		this.sortBtn.toggleClass('has-active', this.sorts.length > 0);
 		this.sortBtn.setAttr('aria-expanded', String(this.sortOpen));
 		const chain = r?.chain.map(c => `${c.def.label}${c.desc ? ' ↓' : ''}`).join(', then ') ?? 'Best match';
@@ -504,14 +516,14 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 			const def = this.q.sortByKey(spec.key);
 			if (def?.value) {
 				const dir = row.createEl('button', { cls: 'nimble-cmpx-sort-dir', attr: { 'aria-label': spec.desc ? 'Descending: click for ascending' : 'Ascending: click for descending' } });
-				setIcon(dir.createSpan(), spec.desc ? 'arrow-down-wide-narrow' : 'arrow-up-narrow-wide');
+				setIcon(dir.createSpan(), evIcon(spec.desc ? 'sort-descending' : 'sort-ascending'));
 				dir.createSpan({ text: spec.desc ? 'High → low' : 'Low → high' });
 				dir.addEventListener('mousedown', keep);
 				dir.addEventListener('click', () => set(current.map((x, j) => (j === i ? { ...x, desc: !x.desc } : x))));
 			}
 			if (current.length > 1) {
 				const x = row.createEl('button', { cls: 'clickable-icon nimble-cmpx-sort-x', attr: { 'aria-label': 'Remove this sort' } });
-				setIcon(x, 'x');
+				setIcon(x, evIcon('x'));
 				x.addEventListener('mousedown', keep);
 				x.addEventListener('click', () => set(current.filter((_, j) => j !== i)));
 			}
@@ -520,7 +532,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 		const unused = offered.filter(d => d.key !== 'relevance' && d.value && !current.some(x => x.key === d.key));
 		if (unused.length) {
 			const add = foot.createEl('button', { cls: 'nimble-cmpx-sort-add' });
-			setIcon(add.createSpan(), 'plus');
+			setIcon(add.createSpan(), evIcon('plus'));
 			add.createSpan({ text: 'Then by…' });
 			add.addEventListener('mousedown', keep);
 			add.addEventListener('click', () => set([...current, { key: unused[0].key, desc: false }]));
@@ -605,7 +617,8 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 				if (i === firstEntry && firstEntry > 0) list.createDiv({ cls: 'nimble-cmpx-divider' });
 				if (row.type === 'entry' && r?.grouped && r.sort.group) {
 					const g = r.sort.group(row.e);
-					if (g !== lastGroup) { list.createDiv({ cls: 'nimble-cmpx-group', text: g }); lastGroup = g; }
+					// The heading's words in a span, so a game whose face sits high or low can nudge them onto the centre line.
+					if (g !== lastGroup) { list.createDiv({ cls: 'nimble-cmpx-group' }).createSpan({ cls: 'nimble-cmpx-group-text', text: g }); lastGroup = g; }
 				}
 				this.rowEls[i] = row.type === 'suggestion' ? this.suggestionRow(list, row.s, i) : row.type === 'custom' ? this.customRow(list, row.text, i) : this.entryRow(list, row.e, i);
 			}
@@ -624,7 +637,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 
 	private suggestionRow(list: HTMLElement, s: Suggestion, i: number): HTMLElement {
 		const el = list.createDiv({ cls: `nimble-cmpx-row is-suggestion kind-${s.kind}`, attr: { role: 'option', 'data-index': String(i) } });
-		setIcon(el.createSpan({ cls: 'nimble-cmpx-row-badge' }), s.kind === 'sort' ? 'arrow-up-down' : s.kind === 'segment' ? 'panel-top' : s.kind === 'key' ? 'filter' : 'list-filter');
+		setIcon(el.createSpan({ cls: 'nimble-cmpx-row-badge' }), suggestionIcon(s));
 		const text = el.createDiv({ cls: 'nimble-cmpx-row-text' });
 		const m = s.label.match(/^([-!]?[a-z]+:)(.*)$/i);
 		const name = text.createDiv({ cls: 'nimble-cmpx-row-name' });
@@ -639,7 +652,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 
 	private customRow(list: HTMLElement, text: string, i: number): HTMLElement {
 		const el = list.createDiv({ cls: 'nimble-cmpx-row is-custom', attr: { role: 'option', 'data-index': String(i) } });
-		setIcon(el.createSpan({ cls: 'nimble-cmpx-row-badge' }), 'pen-line');
+		setIcon(el.createSpan({ cls: 'nimble-cmpx-row-badge' }), evIcon('edit'));
 		const t = el.createDiv({ cls: 'nimble-cmpx-row-text' });
 		t.createDiv({ cls: 'nimble-cmpx-row-name', text: this.o.custom!.label(text) });
 		t.createDiv({ cls: 'nimble-cmpx-row-meta', text: 'Not in the compendium: added by name.' });
@@ -658,15 +671,21 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 		const head = body.createDiv({ cls: 'nimble-cmpx-row-head' });
 		const name = head.createDiv({ cls: 'nimble-cmpx-row-name' });
 		name.createSpan({ text: e.name });
-		// The facts as pills (the kind first in All), then where it's from; then a line of the entry's own words.
+		// The tags lead as one strip (what it is on All, a role or Draft, where it's from), then the facts as chips;
+		// then a line of the entry's own words.
 		const pillLine = body.createDiv({ cls: 'nimble-cmpx-row-pills' });
-		// Facts clip as a group (a pill that doesn't fit drops out whole); the source pills after them always show.
-		const pillRow = pillLine.createDiv({ cls: 'nimble-cmpx-row-facts' });
-		if (this.segment === 'all') pillRow.createSpan({ cls: `nimble-cmpx-pill-tag is-kind kind-${e.kind}`, text: this.q.schema.kindLabel(e.kind) });
-		const pills = this.source.pills(e, this.o.lore).slice(0, this.source.maxPills?.(e) ?? 5);
-		for (const p of pills) pillRow.createSpan({ cls: `nimble-cmpx-pill-tag${p.tone ? ` tone-${p.tone}` : ''}`, text: p.text });
-		if (!pills.length && e.detail) pillRow.createSpan({ cls: 'nimble-cmpx-pill-tag', text: e.detail });
 		const tags = pillLine.createDiv({ cls: 'nimble-cmpx-row-src' });
+		// Facts clip as a group at the end of the line (a chip that doesn't fit drops out whole); the tags always show.
+		const pillRow = pillLine.createDiv({ cls: 'nimble-cmpx-row-facts' });
+		if (this.segment === 'all') tags.createSpan({ cls: `nimble-cmpx-pill-tag is-kind kind-${e.kind}`, text: this.q.schema.kindLabel(e.kind) });
+		const pills = this.source.pills(e, this.o.lore).slice(0, this.source.maxPills?.(e) ?? 5);
+		for (const p of pills) {
+			const cls = `nimble-cmpx-pill-tag${p.tone ? ` tone-${p.tone}` : ''}`;
+			const into = p.tag ? tags : pillRow;
+			if (p.icon) pill(into, { icon: p.icon, text: p.text, cls });
+			else into.createSpan({ cls, text: p.text });
+		}
+		if (!pills.length && e.detail) pillRow.createSpan({ cls: 'nimble-cmpx-pill-tag', text: e.detail });
 		const snippet = this.source.snippet?.(e, this.o.lore);
 		if (snippet) body.createDiv({ cls: 'nimble-cmpx-row-snippet', text: snippet });
 		this.source.tags?.(e, tags, this.o.lore);
@@ -741,7 +760,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 		d.empty();
 		if (this.o.onNarrowShow) {
 			const back = d.createEl('button', { cls: 'bestiary-back' });
-			setIcon(back.createSpan(), 'chevron-left');
+			setIcon(back.createSpan(), evIcon('chevron-left'));
 			back.appendText('Back to the list');
 			back.addEventListener('click', () => this.o.onNarrowShow?.(false));
 		}
@@ -857,3 +876,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 	}
 }
 
+/** A filter suggestion's icon: a sort, a tab, a filter's name, or one of its values. */
+export function suggestionIcon(s: Suggestion): string {
+	return evIcon(s.kind === 'sort' ? 'arrows-down-up' : s.kind === 'segment' ? 'tabs' : s.kind === 'key' ? 'funnel' : 'tag');
+}

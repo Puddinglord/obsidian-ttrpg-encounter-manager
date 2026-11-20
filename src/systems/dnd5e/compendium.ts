@@ -95,17 +95,18 @@ export function compendium5e(edition: Dnd5eEdition): Compendium5e {
 export type Kind5e = 'spell' | 'item' | 'equipment' | 'class' | 'subclass' | 'species' | 'background' | 'feat' | 'rule' | 'condition';
 
 /** What `5e:<kind>:Name` may say, and each kind's words. */
-export const KIND5E: Record<Kind5e, { label: string; plural: string; icon: string; words: string[] }> = {
-	spell: { label: 'Spell', plural: 'Spells', icon: 'wand-2', words: ['spell', 'spells'] },
-	item: { label: 'Magic item', plural: 'Magic items', icon: 'gem', words: ['item', 'items', 'magic'] },
-	equipment: { label: 'Equipment', plural: 'Equipment', icon: 'sword', words: ['equipment', 'gear', 'weapon', 'armor', 'armour'] },
-	class: { label: 'Class', plural: 'Classes', icon: 'graduation-cap', words: ['class', 'classes'] },
-	subclass: { label: 'Subclass', plural: 'Subclasses', icon: 'git-branch', words: ['subclass', 'subclasses'] },
-	species: { label: 'Species', plural: 'Species', icon: 'users', words: ['species', 'race', 'races', 'ancestry'] },
-	background: { label: 'Background', plural: 'Backgrounds', icon: 'scroll', words: ['background', 'backgrounds'] },
-	feat: { label: 'Feat', plural: 'Feats', icon: 'award', words: ['feat', 'feats'] },
-	rule: { label: 'Rule', plural: 'Rules', icon: 'scale', words: ['rule', 'rules'] },
-	condition: { label: 'Condition', plural: 'Conditions', icon: 'activity', words: ['condition', 'conditions'] },
+/** Each kind's words; `icon` for the editor's chrome (references, the slash menu), `glyph` for the game's own surfaces (the compendium, Spotlight). */
+export const KIND5E: Record<Kind5e, { label: string; plural: string; icon: string; glyph: string; words: string[] }> = {
+	spell: { label: 'Spell', plural: 'Spells', icon: 'wand-2', glyph: 'ev-spell', words: ['spell', 'spells'] },
+	item: { label: 'Magic item', plural: 'Magic items', icon: 'gem', glyph: 'ev-diamond', words: ['item', 'items', 'magic'] },
+	equipment: { label: 'Equipment', plural: 'Equipment', icon: 'sword', glyph: 'ev-sword', words: ['equipment', 'gear', 'weapon', 'armor', 'armour'] },
+	class: { label: 'Class', plural: 'Classes', icon: 'graduation-cap', glyph: 'ev-shield-star', words: ['class', 'classes'] },
+	subclass: { label: 'Subclass', plural: 'Subclasses', icon: 'git-branch', glyph: 'ev-path', words: ['subclass', 'subclasses'] },
+	species: { label: 'Species', plural: 'Species', icon: 'users', glyph: 'ev-users-three', words: ['species', 'race', 'races', 'ancestry'] },
+	background: { label: 'Background', plural: 'Backgrounds', icon: 'scroll', glyph: 'ev-scroll', words: ['background', 'backgrounds'] },
+	feat: { label: 'Feat', plural: 'Feats', icon: 'award', glyph: 'ev-medal', words: ['feat', 'feats'] },
+	rule: { label: 'Rule', plural: 'Rules', icon: 'scale', glyph: 'ev-scales', words: ['rule', 'rules'] },
+	condition: { label: 'Condition', plural: 'Conditions', icon: 'activity', glyph: 'ev-condition', words: ['condition', 'conditions'] },
 };
 
 /** "spell" → 'spell', "race" → 'species'… */

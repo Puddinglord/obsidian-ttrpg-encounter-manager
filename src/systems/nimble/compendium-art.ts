@@ -6,6 +6,7 @@
 // Always shown cropped to fill a rounded square.
 
 import { FuzzySuggestModal, Menu, normalizePath, Notice, setIcon, TFile } from 'obsidian';
+import { evIcon } from '../../core/icons';
 import type EmberVaultPlugin from '../../../main';
 import { safeName } from '../../core/campaign-model';
 
@@ -101,9 +102,9 @@ export function renderArtSlot(plugin: EmberVaultPlugin, header: HTMLElement, key
 	const src = artSrc(plugin, key);
 	const slot = header.createDiv({ cls: `nimble-art-slot${src ? ' has-art' : ''}`, attr: { role: 'button', tabindex: '0', 'aria-label': src ? `Change the art for ${title}` : `Add art for ${title}` } });
 	if (src) slot.createEl('img', { attr: { src, alt: '' } });
-	else setIcon(slot.createSpan({ cls: 'nimble-art-add' }), 'image-plus');
+	else setIcon(slot.createSpan({ cls: 'nimble-art-add' }), evIcon('image'));
 	const edit = slot.createSpan({ cls: 'nimble-art-edit' });
-	setIcon(edit, 'pencil');
+	setIcon(edit, evIcon('edit'));
 	slot.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); artMenu(plugin, key, title, ev); });
 	slot.addEventListener('keydown', (ev) => {
 		if (ev.key !== 'Enter' && ev.key !== ' ') return;

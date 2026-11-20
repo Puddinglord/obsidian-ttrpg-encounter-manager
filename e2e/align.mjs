@@ -40,6 +40,11 @@ export const PILL_SELECTORS = [
 	// balance, the party editor's buttons, the map's toolbar, pin labels and tokens, the Edit pencil, the roll toast's tag.
 	'.ev-dialog-btn', '.rd-mode-btn', '.builder-party', '.builder-level', '.builder-pick-meta', '.balance-targets > button', '.nimble-party-btn',
 	'.nimble-map-btn', '.nimble-map-pin-label', '.ev-roll-tag', '.eb-verdict', '.eb-check-tag',
+	// The compendiums (design pass): a card's kind, facts, tags and level boxes; Spotlight's and the slash menu's
+	// squares; the browser's keys, sort buttons, art level chip, group headings and a card's folding rows.
+	'.nimble-cmp-kind', '.nimble-cmp-fact', '.nimble-cmp-tag', '.nimble-cmp-draft', '.nimble-cmp-count', '.nimble-cmp-level-badge', '.nimble-cmp-summary',
+	'.nimble-spot-icon', '.nimble-slash-icon', '.nimble-spotlight-die', '.nimble-cmpx-kbd', '.nimble-cmpx-sort-dir', '.nimble-cmpx-sort-add', '.nimble-cmpx-sort-reset',
+	'.nimble-art-level', '.nimble-cmpx-group',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {

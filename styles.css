@@ -3697,21 +3697,21 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 
 /* The class's scrollwork: notched cap, a reach into the spare width, the volutes cradling the class's motif
    (ochre), a bar and a diamond tip; the right scroll mirrors the left. Compact (cap, short bar, motif) under 430px. */
-.nimble-sheet.ns-sheet .ns-scroll { container: ns-scroll / inline-size; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0 4px; color: var(--ev-ochre); }
-.nimble-sheet.ns-sheet .ns-scroll-title { flex: none; position: relative; top: 2px; font: italic 900 15px/20px var(--ev-font-name); font-variant: small-caps; letter-spacing: 0.03em; color: var(--ev-text); white-space: nowrap; }
-.nimble-sheet.ns-sheet .ns-scroll-side { flex: 1 1 0; min-width: 0; display: flex; justify-content: flex-end; align-items: center; color: var(--xsc-ink); }
-.nimble-sheet.ns-sheet .ns-scroll-side.is-r { transform: scaleX(-1); }
-.nimble-sheet.ns-sheet .ns-scroll-full { display: flex; align-items: center; flex: 0 1 258px; min-width: 0; }
-.nimble-sheet.ns-sheet .ns-scroll-side svg { display: block; flex: none; overflow: visible; }
-.nimble-sheet.ns-sheet .ns-scroll-full svg.ns-scroll-reach { flex: 1 1 auto; min-width: 12px; width: 150px; height: 28px; }
-.nimble-sheet.ns-sheet .ns-scroll-side .ink { fill: currentColor; }
-.nimble-sheet.ns-sheet .ns-scroll-side .curl { fill: none; stroke: currentColor; stroke-linecap: round; }
-.nimble-sheet.ns-sheet .ns-scroll-side .m { fill: var(--ev-ochre); color: var(--ev-ochre); }
-.nimble-sheet.ns-sheet .ns-scroll-side svg.ns-scroll-compact { display: none; }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll { container: ns-scroll / inline-size; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0 4px; color: var(--ev-ochre); }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-title { flex: none; position: relative; top: 2px; font: italic 900 15px/20px var(--ev-font-name); font-variant: small-caps; letter-spacing: 0.03em; color: var(--ev-text); white-space: nowrap; }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-side { flex: 1 1 0; min-width: 0; display: flex; justify-content: flex-end; align-items: center; color: var(--xsc-ink); }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-side.is-r { transform: scaleX(-1); }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-full { display: flex; align-items: center; flex: 0 1 258px; min-width: 0; }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-side svg { display: block; flex: none; overflow: visible; }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-full svg.ns-scroll-reach { flex: 1 1 auto; min-width: 12px; width: 150px; height: 28px; }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-side .ink { fill: currentColor; }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-side .curl { fill: none; stroke: currentColor; stroke-linecap: round; }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-side .m { fill: var(--ev-ochre); color: var(--ev-ochre); }
+:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-side svg.ns-scroll-compact { display: none; }
 @container ns-scroll (max-width: 430px) {
-	.nimble-sheet.ns-sheet .ns-scroll-full { display: none; }
-	.nimble-sheet.ns-sheet .ns-scroll-side svg.ns-scroll-compact { display: block; }
-	.nimble-sheet.ns-sheet .ns-scroll { gap: 10px; }
+	:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-full { display: none; }
+	:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll-side svg.ns-scroll-compact { display: block; }
+	:is(.nimble-sheet.ns-sheet, .nimble-cmp-card) .ns-scroll { gap: 10px; }
 }
 
 /* Conditions: the shared chips, one row under the class panel */
@@ -4285,6 +4285,99 @@ button.nimble-cmp-back:hover { background: var(--background-modifier-active-hove
 .nimble-hover-preview.is-compendium .nimble-cmp-name { font-size: 1.25rem; }
 .nimble-hover-preview.is-compendium :is(.nimble-cmp-body, .nimble-cmp-page) { gap: 0.7rem; }
 
+/* The card, as Nimble's books and sheet set it (design study: #nimble/compendium): a page framed in the sheet's
+   charcoal like the campaign cards, the kind over the name in Vollkorn heavy italic, the detail line in the
+   condensed face, facts as the sheet's chips (each label kept with its value), rules text as the stat block sets
+   it (boxed dice, dotted rules words), run-in names in Vollkorn, khaki ribbons over a class page's sections and
+   charcoal level boxes. A class or subclass page carries its name between the class's scrollwork. Scoped to the
+   card: the sheet's rows and the level-up dialog show the same body in their own dress. */
+.nimble-cmp-card.ev-sys-nimble, .ev-sys-nimble .nimble-cmpx-page.nimble-cmp-card {
+	gap: 14px;
+	padding: 18px 20px 16px;
+	border-radius: 4px;
+	background: var(--ev-surface);
+	box-shadow: inset 0 0 0 2px var(--ev-bar);
+	color: var(--ev-text);
+	font: 500 14.5px/21px var(--ev-font-ui);
+	container-type: inline-size;
+}
+.nimble-cmp-card .nimble-cmp-head { gap: 2px; padding: 0; border: 0; }
+.nimble-cmp-card .nimble-cmp-kind { gap: 6px; margin: 0 0 2px; font: 700 11.5px/16px var(--ev-font-ui); letter-spacing: 0.08em; color: var(--ev-text-2); }
+.nimble-cmp-card .nimble-cmp-kind-icon svg { width: 14px; height: 14px; }
+.nimble-cmp-card.kind-condition .nimble-cmp-kind, .theme-dark .nimble-cmp-card.kind-condition .nimble-cmp-kind { color: var(--ev-text-2); }
+.nimble-cmp-card .nimble-cmp-name { font: italic 900 30px/1.12 var(--ev-font-name); letter-spacing: 0; color: var(--ev-text); text-wrap: balance; }
+.nimble-cmp-card .nimble-cmp-detail { margin-top: 2px; font: 700 15px/20px var(--ev-font-display); color: var(--ev-text); }
+.nimble-cmp-card :is(.nimble-cmp-body, .nimble-cmp-page) { gap: 12px; }
+/* The class's scrollwork carries the page's name (the sheet's class panel heading, a size up). */
+.nimble-cmp-card .nimble-cmp-name.ns-scroll { margin: 2px 0 0; padding: 4px 0 0; }
+.nimble-cmp-card .nimble-cmp-scroll .ns-scroll-title { top: 1px; flex: 0 1 auto; min-width: 0; font: italic 900 28px/34px var(--ev-font-name); font-variant: small-caps; letter-spacing: 0.02em; white-space: normal; text-align: center; text-wrap: balance; }
+.nimble-cmp-card .nimble-cmp-tagline { font: 700 15px/20px var(--ev-font-display); text-align: center; }
+/* Facts: the sheet's chips, each label kept with its value; a spell's mana in blue, links underlined quietly. */
+.nimble-cmp-card .nimble-cmp-facts { gap: 6px; margin: 0; }
+.nimble-cmp-card .nimble-cmp-fact { align-items: center; gap: 7px; min-height: 28px; padding: 4px 9px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); }
+.nimble-cmp-card .nimble-cmp-fact-label { font: 700 11px/normal var(--ev-font-ui); letter-spacing: 0.06em; color: var(--ev-text-2); }
+.nimble-cmp-card .nimble-cmp-fact-value { font: 600 13.5px/18px var(--ev-font-ui); }
+.nimble-cmp-card .nimble-cmp-fact.is-mana .nimble-cmp-fact-value { color: var(--ev-mana); }
+.nimble-cmp-card .nimble-cmp-link, .nimble-cmp-card .nimble-cmp-fact .nimble-cmp-link.nimble-cmp-fact-value { color: var(--ev-text); text-decoration: none; box-shadow: inset 0 -1.5px 0 var(--ev-line-strong); }
+.nimble-cmp-card .nimble-cmp-link:hover { box-shadow: inset 0 -1.5px 0 currentColor; }
+/* Rules text: the stat block's measure, rolls boxed, rules words dotted, a run-in name in Vollkorn. */
+.nimble-cmp-card .nimble-cmp-text { line-height: 21px; }
+.nimble-cmp-card .nimble-cmp-text > strong:first-child { font: italic 900 15px/21px var(--ev-font-name); }
+.nimble-cmp-card .nimble-cmp-list { padding-left: 20px; line-height: 21px; }
+.nimble-cmp-card .nimble-dice { padding: 0 3px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--ev-line-strong); background: var(--ev-surface); color: inherit; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nimble-cmp-card .nimble-dice.is-clickable { border-bottom: 0; color: inherit; }
+.nimble-cmp-card .nimble-dice.is-clickable:hover, .nimble-cmp-card .nimble-dice.is-clickable:focus-visible { background: var(--ev-surface-2); box-shadow: inset 0 0 0 1px var(--ev-text-2); }
+.nimble-cmp-card :is(.ev-term, .nimble-condition-ref) { border-bottom: 1.5px dotted var(--ev-text-2); border-radius: 0; }
+.nimble-cmp-card :is(.ev-term, .nimble-condition-ref):hover { border-bottom-color: currentColor; background: none; }
+/* Where it's from, and a playtest draft as a tag (dark, white text). */
+.nimble-cmp-card .nimble-cmp-source { gap: 8px; margin-top: 0; font: 500 12px/16px var(--ev-font-ui); color: var(--ev-text-2); }
+:is(.nimble-cmp-card, .nimble-spotlight) .nimble-cmp-draft { display: inline-flex; align-items: center; height: 18px; margin-left: 6px; padding: 0 6px; border-radius: var(--ev-r-chip, 3px); background: var(--ev-bar, var(--ev-accent)); color: var(--ev-on-bar, var(--ev-on-accent)); font: 700 10.5px/normal var(--ev-font-ui, var(--font-interface)); letter-spacing: 0.05em; text-transform: uppercase; }
+.nimble-cmp-card .nimble-cmp-source .nimble-cmp-draft { margin-left: 0; }
+/* A class page: khaki ribbons over its sections, a charcoal box for each level, feature names in Vollkorn. */
+.nimble-cmp-card .nimble-cmp-section-title { margin: 6px 0 0; padding: 5px 10px 4px; border: 0; border-radius: 2px; background: var(--ev-band); color: var(--ev-band-text); font: italic 900 15px/19px var(--ev-font-name); letter-spacing: 0; text-transform: none; }
+.nimble-cmp-card .nimble-cmp-level { grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--ev-line); }
+.nimble-cmp-card .nimble-cmp-level:first-child { padding-top: 4px; }
+.nimble-cmp-card .nimble-cmp-level-badge { width: 30px; height: 30px; border-radius: var(--ev-r-sm); background: var(--ev-bar); color: var(--ev-on-bar); font: 700 16px/normal var(--ev-font-num); font-variant-numeric: lining-nums tabular-nums; }
+.nimble-cmp-card .nimble-cmp-level-features { gap: 10px; padding-top: 4px; }
+.nimble-cmp-card .nimble-cmp-feature-head { gap: 6px; line-height: 21px; }
+.nimble-cmp-card .nimble-cmp-feature-name { font: italic 900 15.5px/21px var(--ev-font-name); }
+.nimble-cmp-card .nimble-cmp-feature.is-placeholder .nimble-cmp-feature-name { font-weight: 700; color: var(--ev-text-2); }
+.nimble-cmp-card .nimble-cmp-feature.is-placeholder .nimble-cmp-text { color: var(--ev-text-2); }
+.nimble-cmp-card .nimble-cmp-tag { height: 20px; padding: 0 6px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 11.5px/normal var(--ev-font-ui); }
+.nimble-cmp-card .nimble-cmp-tag.is-req { background: transparent; box-shadow: inset 0 0 0 1px var(--ev-line-strong); color: var(--ev-text-2); }
+.nimble-cmp-card .nimble-cmp-summary .nimble-cmp-tag { background: var(--ev-bar); color: var(--ev-on-bar); font-weight: 700; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; }
+.nimble-cmp-card .nimble-cmp-highlights { margin: 0; }
+/* Collapsible sections (option groups, subclasses, the spell list, FAQ): a framed row that opens downward. */
+.nimble-cmp-card .nimble-cmp-details { border: 0; border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+.nimble-cmp-card .nimble-cmp-details + .nimble-cmp-details { margin-top: 0; }
+.nimble-cmp-card .nimble-cmp-summary { gap: 8px; min-height: 40px; padding: 8px 12px 8px 10px; }
+.nimble-cmp-card .nimble-cmp-summary:hover { background: var(--ev-surface-2); }
+.nimble-cmp-card .nimble-cmp-summary:focus-visible { outline: 2px solid var(--ev-accent); }
+.nimble-cmp-card .nimble-cmp-details[open] > .nimble-cmp-summary { border-bottom: 1px solid var(--ev-line); }
+.nimble-cmp-card .nimble-cmp-summary-chev { color: var(--ev-text-2); }
+.nimble-cmp-card .nimble-cmp-summary-chev svg { width: 14px; height: 14px; }
+.nimble-cmp-card .nimble-cmp-summary-title { position: relative; top: 1px; font: italic 900 15px/20px var(--ev-font-name); } /* Vollkorn's capitals sit 1.1px high in a centred box (measured) */
+.nimble-cmp-card .nimble-cmp-count { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 12px/normal var(--ev-font-ui); }
+.nimble-cmp-card .nimble-cmp-details-body { gap: 10px; padding: 12px 14px 14px; }
+.nimble-cmp-card .nimble-cmp-group .nimble-cmp-feature { padding-top: 10px; border-top: 1px solid var(--ev-line); }
+.nimble-cmp-card .nimble-cmp-subclass-flavor { color: var(--ev-text-2); }
+.nimble-cmp-card .nimble-cmp-faq-item + .nimble-cmp-faq-item { border-top: 1px solid var(--ev-line); }
+.nimble-cmp-card .nimble-cmp-faq-q { font: italic 900 15px/21px var(--ev-font-name); }
+@container (max-width: 420px) {
+	.nimble-cmp-card .nimble-cmp-name { font-size: 25px; }
+	.nimble-cmp-card .nimble-cmp-scroll .ns-scroll-title { font-size: 22px; line-height: 28px; }
+}
+/* In a hover preview the card is the page: a little tighter. */
+.nimble-hover-preview .nimble-cmp-card.ev-sys-nimble { padding: 14px 16px 12px; }
+.nimble-hover-preview .nimble-cmp-card .nimble-cmp-name { font-size: 24px; }
+/* The card's dialog: on the game's paper, the card framed on it. */
+.modal.nimble-cmp-modal.ev-sys-nimble { background: var(--ev-bg); }
+body:not(.is-phone) .modal.nimble-cmp-modal.ev-sys-nimble .modal-content { padding: 1.25rem; }
+body:not(.is-phone) .modal.nimble-cmp-modal.ev-sys-nimble .nimble-cmp-nav { top: -1.25rem; margin: -1.25rem -1.25rem 1rem; background: var(--ev-bg); border-bottom-color: var(--ev-line); }
+body:not(.is-phone) .modal.nimble-cmp-modal.ev-sys-nimble .nimble-cmp-head { padding-right: 2rem; }
+.modal.nimble-cmp-modal.ev-sys-nimble button.nimble-cmp-back { border-radius: var(--ev-r-md); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line-strong); color: var(--ev-text); font: 500 13px/normal var(--ev-font-ui); }
+.modal.nimble-cmp-modal.ev-sys-nimble button.nimble-cmp-back:hover { background: var(--ev-surface-2); }
+
 /* Spotlight: compendium rows and the picker's filter chips */
 .nimble-spotlight .nimble-spot-icon.cmp-item { color: #b8703a; background: color-mix(in srgb, #b8703a 14%, transparent); }
 .nimble-spotlight .nimble-spot-icon.cmp-spell { color: var(--ns-mana, #3d7fe0); background: color-mix(in srgb, #3d7fe0 14%, transparent); }
@@ -4785,13 +4878,13 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) > :is(span, div) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* The standard pill, core/pill.ts: [icon] [text] on one centre line, one gap, the icon at the text's size.
@@ -4848,374 +4941,411 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
 }
 
 /* ============================================
-   COMPENDIUM (compendium-browser.ts): the tab and every pre-filtered dialog
+   COMPENDIUM (core/compendium/browser.ts): the tab and every pre-filtered dialog, in every game
+   The browser wears its game's look (.ev-sys-<id>, named by the system's CompendiumSource), so its paper, type and
+   accent are that game's tokens (design study: #nimble/compendium, #5e/compendium). The tabs are the sheet's tabs:
+   a word each on a hairline, the chosen one underlined by a bar that slides to it. The search box is the Campaign
+   panel's; filter chips are the game's chips. Rows sit on hairlines on the game's paper, the chosen one is the
+   tracker's "now" (a full tint and outline, never an edge stripe). Facts on a row are the game's chips; what kind
+   of thing it is, and where it's from, are tags (dark, white text).
    ============================================ */
 
 .workspace-leaf-content .view-content.nimble-compendium { padding: 0; }
+.workspace-leaf-content .view-content.nimble-compendium[class*="ev-sys-"] { background: var(--ev-bg); }
 .nimble-cmpx-layout { height: 100%; }
 .nimble-cmpx {
-	--cmpx-accent: var(--interactive-accent);
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
 	grid-template-rows: minmax(0, 1fr);
 	height: 100%;
 	min-height: 0;
+	container: nimble-cmpx / inline-size;
 }
+.nimble-cmpx[class*="ev-sys-"] { background: var(--ev-bg); color: var(--ev-text); font-family: var(--ev-font-ui); }
+.nimble-cmpx.ev-sys-dnd5e, .workspace-leaf-content .view-content.nimble-compendium.ev-sys-dnd5e { background-image: var(--x5-paper); }
 .nimble-cmpx.has-segments { grid-template-rows: auto minmax(0, 1fr); }
 .nimble-cmpx.has-detail { grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); }
-.nimble-cmpx-segments { grid-column: 1 / -1; }
-.nimble-cmpx-side { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; min-height: 0; padding: 0.75rem; }
-.nimble-cmpx.has-detail .nimble-cmpx-side { border-right: 1px solid var(--background-modifier-border); }
-.nimble-cmpx-detail { min-width: 0; overflow: auto; padding: 1rem 1.5rem 2rem; }
-.nimble-cmpx-detail .nimble-statblock, .nimble-cmpx-detail .nimble-cmpx-page { max-width: 760px; }
+.nimble-cmpx-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; padding: 12px; }
+.nimble-cmpx.has-detail .nimble-cmpx-side { border-right: 1px solid var(--ev-line, var(--background-modifier-border)); }
+.nimble-cmpx-detail { min-width: 0; overflow: auto; padding: 16px 24px 32px; }
+.nimble-cmpx-detail :is(.nimble-statblock, .nimble-cmpx-page, .dnd5e-statblock, .dnd5e-cmp-page) { max-width: 760px; }
 
-/* Tabs: a segmented control with a sliding thumb; icons only when narrow. */
+/* Tabs: the sheet's tabs. A word each in the game's display face on a hairline; the chosen one underlined by the
+   segmented control's thumb, drawn as a bar that slides to it (core/segmented.ts). Crowded and narrow: icons. */
 .nimble-cmpx-segments {
-	--seg-pad: 3px;
-	--seg-gap: 2px;
+	--seg-pad: 0px;
+	--seg-gap: 0px;
+	grid-column: 1 / -1;
 	display: grid;
 	grid-auto-flow: column;
 	grid-auto-columns: minmax(0, 1fr);
-	gap: var(--seg-gap);
-	margin: 0.75rem 0.75rem 0;
-	padding: var(--seg-pad);
-	border-radius: 9px;
-	background: var(--background-modifier-hover);
+	margin: 6px 12px 0;
+	padding: 0;
+	border-bottom: 1px solid var(--ev-line-strong, var(--background-modifier-border));
 }
-.nimble-cmpx-segments > .seg-thumb { background: var(--background-primary); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--background-modifier-border); }
+.nimble-cmpx-segments.has-thumb > .seg-thumb { top: auto; bottom: -1px; height: 2px; border-radius: 0; background: var(--ev-text, var(--text-normal)); box-shadow: none; }
 .nimble-cmpx-segments > button.nimble-cmpx-seg {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 0.35rem;
+	gap: 6px;
 	min-width: 0;
-	height: 2rem;
-	padding: 0 0.4rem;
+	height: 40px;
+	padding: 0 4px;
 	border: none;
-	border-radius: 6px;
+	border-radius: 0;
 	box-shadow: none;
-	color: var(--text-muted);
-	font-size: 0.8rem;
-	font-weight: 600;
+	color: var(--ev-text-2, var(--text-muted));
+	font: 600 15px/normal var(--ev-font-display, var(--font-interface));
 	cursor: pointer;
 	transition: color 0.2s;
 }
-.nimble-cmpx-segments > button.nimble-cmpx-seg:hover { color: var(--text-normal); }
-.nimble-cmpx-segments > button.nimble-cmpx-seg.is-active { color: var(--text-normal); }
+.nimble-cmpx-segments > button.nimble-cmpx-seg:hover, .nimble-cmpx-segments > button.nimble-cmpx-seg.is-active { color: var(--ev-text, var(--text-normal)); }
+.nimble-cmpx-segments > button.nimble-cmpx-seg:focus-visible { outline: 2px solid var(--ev-accent); outline-offset: -2px; }
 .nimble-cmpx-seg-icon { display: flex; flex-shrink: 0; }
-.nimble-cmpx-seg-icon svg { width: 15px; height: 15px; }
-.nimble-cmpx-seg.is-active .nimble-cmpx-seg-icon { color: var(--cmpx-accent); }
+.nimble-cmpx-seg-icon svg { width: 16px; height: 16px; }
 .nimble-cmpx-seg-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: normal; }
+/* 5e: small caps on a gold hairline; the open tab carries the oxblood bar and its diamond, as the sheet's do. */
+.ev-sys-dnd5e .nimble-cmpx-segments { border-bottom-color: var(--x5-gold-soft); }
+.ev-sys-dnd5e .nimble-cmpx-segments > button.nimble-cmpx-seg { font: 600 17px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; }
+.ev-sys-dnd5e .nimble-cmpx-segments > button.nimble-cmpx-seg.is-active { color: var(--ev-accent-text); }
+.ev-sys-dnd5e .nimble-cmpx-segments.has-thumb > .seg-thumb { background: var(--ev-accent); }
+.ev-sys-dnd5e .nimble-cmpx-segments.has-thumb > .seg-thumb::after { content: ""; position: absolute; left: 50%; top: -2.5px; width: 7px; height: 7px; margin-left: -3.5px; background: var(--ev-accent); transform: rotate(45deg); box-shadow: 0 0 0 2px var(--ev-bg); }
 /* Room for labels but not icons too: labels; tighter still: icons. */
 @container nimble-cmpx (max-width: 1180px) {
-	.nimble-cmpx-segments > button.nimble-cmpx-seg { font-size: 0.76rem; padding: 0 0.2rem; }
 	.nimble-cmpx-segments.is-crowded .nimble-cmpx-seg-icon { display: none; }
+	.nimble-cmpx-segments > button.nimble-cmpx-seg { font-size: 14px; }
+	.ev-sys-dnd5e .nimble-cmpx-segments > button.nimble-cmpx-seg { font-size: 16px; letter-spacing: 0.02em; }
 }
-@container nimble-cmpx (max-width: 760px) {
+@container nimble-cmpx (max-width: 820px) {
 	.nimble-cmpx-segments.is-crowded .nimble-cmpx-seg-icon { display: flex; }
 	.nimble-cmpx-segments.is-crowded .nimble-cmpx-seg-label { display: none; }
 }
-.nimble-cmpx { container: nimble-cmpx / inline-size; }
 
-/* The search field: chips for filters, then the text. */
-.nimble-cmpx-searchbar { display: flex; align-items: center; gap: 0.25rem; }
+/* The search field: the Campaign panel's box, chips for filters, then the text. */
+.nimble-cmpx-searchbar { display: flex; align-items: center; gap: 2px; }
 .nimble-cmpx-field {
 	flex: 1;
 	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: 0.4rem;
-	min-height: 2.3rem;
-	padding: 0.2rem 0.5rem;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 8px;
-	background: var(--background-primary);
+	gap: 8px;
+	min-height: 38px;
+	padding: 3px 10px;
+	border-radius: var(--ev-r-md, 8px);
+	background: var(--ev-surface, var(--background-primary));
+	box-shadow: inset 0 0 0 1px var(--ev-line, var(--background-modifier-border));
 	cursor: text;
-	transition: border-color 0.15s, box-shadow 0.15s;
+	transition: box-shadow 0.15s;
 }
-.nimble-cmpx-field:focus-within { border-color: var(--cmpx-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--cmpx-accent) 25%, transparent); }
-.nimble-cmpx-search-icon { display: flex; color: var(--text-faint); flex-shrink: 0; }
-.nimble-cmpx-search-icon svg { width: 15px; height: 15px; }
-.nimble-cmpx-chips { flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem; }
+.nimble-cmpx-field:hover { box-shadow: inset 0 0 0 1px var(--ev-line-strong, var(--background-modifier-border-hover)); }
+.nimble-cmpx-field:focus-within { box-shadow: inset 0 0 0 1.5px var(--ev-accent), 0 0 0 3px color-mix(in srgb, var(--ev-accent) 14%, transparent); }
+.nimble-cmpx-search-icon { display: flex; flex-shrink: 0; color: var(--ev-text-2, var(--text-faint)); }
+.nimble-cmpx-search-icon svg { width: 16px; height: 16px; }
+.nimble-cmpx-chips { flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
 .nimble-cmpx-field input.nimble-cmpx-input {
 	flex: 1;
 	min-width: 6rem;
-	height: 1.8rem;
+	height: 30px;
 	padding: 0;
 	border: none;
 	background: transparent;
 	box-shadow: none;
-	font-size: var(--font-ui-medium);
+	color: var(--ev-text, var(--text-normal));
+	font: 500 15px/normal var(--ev-font-ui, var(--font-interface));
 }
+.nimble-cmpx-field input.nimble-cmpx-input::placeholder { color: var(--ev-text-2, var(--text-faint)); opacity: 0.85; }
 .nimble-cmpx-field input.nimble-cmpx-input:focus { box-shadow: none; }
+/* A filter chip: the game's chip, its name quiet and its value bold. */
 .nimble-cmpx-chip {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.25rem;
-	height: 1.5rem;
-	padding: 0 0.15rem 0 0.5rem;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--cmpx-accent) 16%, transparent);
-	color: var(--text-normal);
-	font-size: 0.76rem;
+	gap: 4px;
+	height: 26px;
+	padding: 0 3px 0 8px;
+	border-radius: var(--ev-r-chip, 999px);
+	background: var(--ev-chip-bg, var(--background-modifier-hover));
+	color: var(--ev-chip-text, var(--text-normal));
+	font: 500 13px/normal var(--ev-font-ui, var(--font-interface));
 	white-space: nowrap;
 }
 .nimble-cmpx-chip.is-new { animation: nimble-cmpx-pop 0.16s ease-out; }
 /* A filter named but not yet given a value: the value is what's typed right after it. */
-.nimble-cmpx-chip.is-pending { background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cmpx-accent) 60%, transparent); padding-right: 0.15rem; }
-.nimble-cmpx-chip.is-pending .nimble-cmpx-chip-key { color: var(--text-accent); font-weight: 600; }
+.nimble-cmpx-chip.is-pending { background: transparent; box-shadow: inset 0 0 0 1px var(--ev-line-strong, var(--background-modifier-border)); padding-right: 3px; }
+.nimble-cmpx-chip.is-pending .nimble-cmpx-chip-key { color: var(--ev-text, var(--text-normal)); font-weight: 700; }
 .nimble-cmpx-chip.is-pending + .nimble-cmpx-input { min-width: 4rem; }
 /* Plain words kept aside when a filter was started after them. */
-.nimble-cmpx-chip.is-words { background: color-mix(in srgb, var(--text-normal) 8%, transparent); }
+.nimble-cmpx-chip.is-words { background: color-mix(in srgb, var(--ev-text, var(--text-normal)) 6%, transparent); }
 .nimble-cmpx-chip.is-words .nimble-cmpx-chip-value { font-weight: 500; font-style: italic; }
-.nimble-cmpx-chip.is-negated { background: color-mix(in srgb, var(--color-red) 14%, transparent); }
-.nimble-cmpx-chip.is-negated .nimble-cmpx-chip-key { color: var(--color-red); }
-.nimble-cmpx-chip-key { color: var(--text-muted); font-weight: 500; }
+.nimble-cmpx-chip.is-negated { background: var(--ev-danger-bg, color-mix(in srgb, var(--color-red) 14%, transparent)); }
+.nimble-cmpx-chip.is-negated .nimble-cmpx-chip-key { color: var(--ev-danger-text, var(--color-red)); }
+.nimble-cmpx-chip-key { color: var(--ev-text-2, var(--text-muted)); font-weight: 500; }
 .nimble-cmpx-chip-value { font-weight: 700; }
 .nimble-cmpx-chip button.nimble-cmpx-chip-x {
-	width: 1.15rem;
-	height: 1.15rem;
+	width: 20px;
+	height: 20px;
 	padding: 0;
-	border-radius: 50%;
+	border-radius: var(--ev-r-sm, 50%);
 	background: transparent;
 	box-shadow: none;
-	color: var(--text-muted);
+	color: var(--ev-text-2, var(--text-muted));
 	cursor: pointer;
 }
-.nimble-cmpx-chip button.nimble-cmpx-chip-x:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.nimble-cmpx-chip button.nimble-cmpx-chip-x:hover { background: color-mix(in srgb, var(--ev-text, var(--text-normal)) 10%, transparent); color: var(--ev-text, var(--text-normal)); }
 .nimble-cmpx-chip button.nimble-cmpx-chip-x svg { width: 11px; height: 11px; }
 @keyframes nimble-cmpx-pop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.nimble-cmpx-searchbar .clickable-icon { position: relative; flex-shrink: 0; }
-.nimble-cmpx-searchbar .clickable-icon.has-active { color: var(--cmpx-accent); }
-.nimble-cmpx-filter.has-active::after { content: ""; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--cmpx-accent); }
+.ev-sys-dnd5e .nimble-cmpx-chip { box-shadow: inset 0 0 0 1px var(--x5-gold-soft); }
+.ev-sys-dnd5e .nimble-cmpx-chip.is-pending { box-shadow: inset 0 0 0 1px var(--ev-accent); }
+.ev-sys-dnd5e .nimble-cmpx-chip.is-negated { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ev-danger-text) 45%, transparent); }
+.nimble-cmpx-searchbar .clickable-icon { position: relative; flex-shrink: 0; color: var(--ev-text-2, var(--icon-color)); }
+.nimble-cmpx-searchbar .clickable-icon:hover { color: var(--ev-text, var(--icon-color-hover)); background: color-mix(in srgb, var(--ev-text, var(--text-normal)) 7%, transparent); }
+.nimble-cmpx-searchbar .clickable-icon svg { width: 18px; height: 18px; }
+.nimble-cmpx-searchbar .clickable-icon.has-active { color: var(--ev-accent-text, var(--text-accent)); }
+.nimble-cmpx-filter.has-active::after { content: ""; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--ev-accent); box-shadow: 0 0 0 1.5px var(--ev-bg, var(--background-primary)); }
 
-/* Filter panel: the tab's common values as pills. */
-.nimble-cmpx-panel { display: none; }
-.nimble-cmpx.panel-open .nimble-cmpx-panel {
+/* Filter and sort panels: a card on the paper; labels small and quiet, beside their values. */
+.nimble-cmpx-panel, .nimble-cmpx-sortpanel { display: none; }
+.nimble-cmpx.panel-open .nimble-cmpx-panel, .nimble-cmpx.sort-open .nimble-cmpx-sortpanel {
 	display: grid;
-	gap: 0.45rem;
-	max-height: 40%;
-	overflow: auto;
-	padding: 0.6rem;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 8px;
-	background: var(--background-secondary);
+	gap: 8px;
+	padding: 10px 12px;
+	border-radius: var(--ev-r-lg, 8px);
+	background: var(--ev-surface, var(--background-secondary));
+	box-shadow: inset 0 0 0 1px var(--ev-line, var(--background-modifier-border));
 }
-.nimble-cmpx-panel-row { display: grid; grid-template-columns: 5rem minmax(0, 1fr); align-items: start; gap: 0.4rem; }
-.nimble-cmpx-panel-label { padding-top: 0.2rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
-.nimble-cmpx-pills { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.nimble-cmpx.panel-open .nimble-cmpx-panel { max-height: 40%; overflow: auto; }
+.nimble-cmpx-panel-row { display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); align-items: start; gap: 6px; }
+.nimble-cmpx-panel-label, .nimble-cmpx-sort-label { padding-top: 5px; font: 700 11px/16px var(--ev-font-ui, var(--font-interface)); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2, var(--text-muted)); }
+.nimble-cmpx-pills { display: flex; flex-wrap: wrap; gap: 4px; }
 button.nimble-cmpx-pill {
-	height: 1.55rem;
-	padding: 0 0.55rem;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 999px;
-	background: var(--background-primary);
+	height: 26px;
+	padding: 0 9px;
+	border: 1px solid var(--ev-line-strong, var(--background-modifier-border));
+	border-radius: var(--ev-r-chip, 999px);
+	background: var(--ev-surface, var(--background-primary));
 	box-shadow: none;
-	color: var(--text-muted);
-	font-size: 0.74rem;
-	font-weight: 600;
+	color: var(--ev-text, var(--text-muted));
+	font: 500 12.5px/normal var(--ev-font-ui, var(--font-interface));
 	cursor: pointer;
 }
-button.nimble-cmpx-pill:hover { color: var(--text-normal); border-color: var(--cmpx-accent); }
-button.nimble-cmpx-pill.is-active { background: var(--cmpx-accent); border-color: var(--cmpx-accent); color: var(--text-on-accent); }
+button.nimble-cmpx-pill:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); }
+button.nimble-cmpx-pill.is-active { background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); font-weight: 600; }
 button.nimble-cmpx-pill.is-empty { opacity: 0.45; }
-.nimble-cmpx-panel-tip { font-size: 0.72rem; color: var(--text-faint); }
-
-/* Sort panel: a chain of keys, each with a direction. */
-.nimble-cmpx-sortpanel { display: none; }
-.nimble-cmpx.sort-open .nimble-cmpx-sortpanel {
-	display: grid;
-	gap: 0.4rem;
-	padding: 0.6rem;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 8px;
-	background: var(--background-secondary);
+.ev-sys-dnd5e button.nimble-cmpx-pill:not(.is-active) { border-color: var(--x5-gold-soft); }
+.nimble-cmpx-panel-tip { font: 500 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-faint)); }
+.nimble-cmpx-sort-row { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr) auto auto; align-items: center; gap: 6px; }
+.nimble-cmpx-sort-label { padding-top: 0; }
+.nimble-cmpx-sort-row select.nimble-cmpx-sort-key { min-width: 0; height: 30px; font-size: 13px; }
+.nimble-cmpx-sortpanel button:is(.nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset) {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	height: 30px;
+	padding: 0 10px;
+	border: 1px solid var(--ev-line-strong, var(--background-modifier-border));
+	border-radius: var(--ev-r-md, 6px);
+	background: var(--ev-surface, var(--background-primary));
+	box-shadow: none;
+	color: var(--ev-text, var(--text-normal));
+	font: 500 13px/normal var(--ev-font-ui, var(--font-interface));
+	white-space: nowrap;
 }
-.nimble-cmpx-sort-row { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr) auto auto; align-items: center; gap: 0.4rem; }
-.nimble-cmpx-sort-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
-.nimble-cmpx-sort-row select.nimble-cmpx-sort-key { min-width: 0; height: 1.9rem; font-size: 0.8rem; }
-.nimble-cmpx-sort-row button.nimble-cmpx-sort-dir { display: inline-flex; align-items: center; gap: 0.3rem; height: 1.9rem; padding: 0 0.55rem; font-size: 0.75rem; white-space: nowrap; box-shadow: none; }
+.nimble-cmpx-sortpanel button:is(.nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset):hover { background: var(--ev-surface-2, var(--background-modifier-hover)); }
 .nimble-cmpx-sort-dir svg, .nimble-cmpx-sort-add svg { width: 14px; height: 14px; }
-.nimble-cmpx-sort-foot { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.6rem; }
-.nimble-cmpx-sort-foot button { display: inline-flex; align-items: center; gap: 0.25rem; height: 1.75rem; padding: 0 0.6rem; font-size: 0.76rem; box-shadow: none; }
+.nimble-cmpx-sort-foot { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; }
 .nimble-cmpx-sort-foot .nimble-cmpx-panel-tip { flex: 1 1 100%; }
 
-.nimble-cmpx-count { font-size: 0.76rem; color: var(--text-muted); }
-.nimble-cmpx-count-sort { color: var(--text-faint); }
+.nimble-cmpx-count { font: 500 12.5px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
+.nimble-cmpx-count-sort { color: var(--ev-text-2, var(--text-faint)); opacity: 0.85; }
 
-/* Results: hover is a faint wash; the selected row is a tinted card with an accent edge set inside its padding. */
-.nimble-cmpx-list { flex: 1; min-height: 120px; overflow: auto; margin: 0 -0.35rem; padding: 0.1rem 0.35rem; scroll-padding: 2rem 0; }
+/* Results: rows on hairlines on the game's paper. Hover lifts a row a little; the chosen one is the tracker's
+   "now" (its tint, outlined all round). The hairline steps aside next to either. */
+.nimble-cmpx-list { flex: 1; min-height: 120px; overflow: auto; margin: 0 -6px; padding: 2px 6px 8px; scroll-padding: 44px 0 8px; }
 .nimble-cmpx-row {
-	--row-badge-h: 1.85rem;
+	--row-badge-h: 34px;
 	position: relative;
 	display: flex;
 	align-items: center;
-	gap: 0.7rem;
-	margin: 1px 0;
-	padding: 0.4rem 0.55rem 0.4rem 0.7rem;
-	border: 1px solid transparent;
-	border-radius: 9px;
+	gap: 12px;
+	padding: 8px 10px;
+	border-radius: var(--ev-r-md, 8px);
 	cursor: pointer;
-	transition: background-color 0.1s, border-color 0.1s;
+	transition: background-color 0.1s, box-shadow 0.1s;
 }
-.nimble-cmpx-row::before {
-	content: "";
-	position: absolute;
-	left: 0.22rem;
-	/* As tall as the icon and centred like it, so the two always line up. */
-	top: calc(50% - var(--row-badge-h) / 2);
-	height: var(--row-badge-h);
-	width: 3px;
-	border-radius: 3px;
-	background: var(--cmpx-accent);
-	opacity: 0;
-	transform: scaleY(0.4);
-	transition: opacity 0.12s, transform 0.12s;
-}
-.nimble-cmpx-row:hover { background: color-mix(in srgb, var(--text-normal) 4%, transparent); }
-.nimble-cmpx-row.is-selected {
-	background: color-mix(in srgb, var(--cmpx-accent) 13%, var(--background-primary));
-	border-color: color-mix(in srgb, var(--cmpx-accent) 38%, transparent);
-	box-shadow: 0 1px 4px color-mix(in srgb, var(--cmpx-accent) 14%, transparent);
-}
-.nimble-cmpx-row.is-selected::before { opacity: 1; transform: scaleY(1); }
-.nimble-cmpx-row.is-selected .nimble-cmpx-row-name { color: var(--text-normal); }
-.nimble-cmpx-row.is-taken .nimble-cmpx-row-name { color: var(--text-muted); }
-.nimble-cmpx-row.is-added { background: color-mix(in srgb, var(--nimble-ok) 18%, transparent); }
+.nimble-cmpx-row + .nimble-cmpx-row::before { content: ""; position: absolute; left: 10px; right: 10px; top: 0; height: 1px; background: var(--ev-line, var(--background-modifier-border)); }
+.nimble-cmpx-row:is(:hover, .is-selected)::before, .nimble-cmpx-row:is(:hover, .is-selected) + .nimble-cmpx-row::before { opacity: 0; }
+.nimble-cmpx-row:hover { background: color-mix(in srgb, var(--ev-surface, var(--background-primary)) 65%, transparent); }
+.nimble-cmpx-row.is-selected { background: var(--ev-now, var(--background-modifier-hover)); box-shadow: inset 0 0 0 1.5px var(--ev-now-line, var(--interactive-accent)), 0 3px 10px -7px rgb(0 0 0 / 0.3); }
+.nimble-cmpx-row.is-taken .nimble-cmpx-row-name { color: var(--ev-text-2, var(--text-muted)); }
+.nimble-cmpx-row.is-added { background: color-mix(in srgb, var(--ev-ok, var(--nimble-ok)) 16%, transparent); }
+/* The square at the left: a level, an icon or your art, centred on the row. */
 .nimble-cmpx-row-badge {
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 2.2rem;
-	height: var(--row-badge-h, 1.85rem);
-	border-radius: 7px;
-	background: var(--background-modifier-hover);
-	color: var(--text-muted);
-	font-size: 0.74rem;
-	font-weight: 800;
-	font-variant-numeric: tabular-nums;
+	width: 34px;
+	height: var(--row-badge-h, 34px);
+	border-radius: var(--ev-r-sm, 7px);
+	background: var(--ev-chip-bg, var(--background-modifier-hover));
+	color: var(--ev-text-2, var(--text-muted));
+	font: 700 15px/normal var(--ev-font-num, var(--font-interface));
+	font-variant-numeric: lining-nums tabular-nums;
 }
-.nimble-cmpx-row-badge svg { width: 15px; height: 15px; }
-.nimble-cmpx-row-badge.is-level { color: var(--text-normal); }
-.nimble-cmpx-row-badge.role-legendary { background: color-mix(in srgb, var(--nimble-legendary) 28%, transparent); }
-.nimble-cmpx-row-badge.role-minion { background: color-mix(in srgb, var(--nimble-minion) 24%, transparent); }
-.nimble-cmpx-row-badge.is-tier { color: var(--text-normal); }
-.nimble-cmpx-row-badge.school-fire { background: color-mix(in srgb, #e0603a 24%, transparent); }
-.nimble-cmpx-row-badge.school-ice { background: color-mix(in srgb, #4fa6d8 24%, transparent); }
-.nimble-cmpx-row-badge.school-lightning { background: color-mix(in srgb, #d8b43a 26%, transparent); }
-.nimble-cmpx-row-badge.school-radiant { background: color-mix(in srgb, #e8c86a 30%, transparent); }
-.nimble-cmpx-row-badge.school-necrotic { background: color-mix(in srgb, #7a5aa8 26%, transparent); }
-.nimble-cmpx-row-badge.school-wind { background: color-mix(in srgb, #5bb39a 24%, transparent); }
+.nimble-cmpx-row-badge svg { width: 17px; height: 17px; }
+.nimble-cmpx-row-badge.is-level, .nimble-cmpx-row-badge.is-tier { color: var(--ev-text, var(--text-normal)); }
+/* Nimble: a monster's level in a box with the sheet's charcoal frame; a legendary's box is charcoal, a minion's
+   frame dashed. A spell's tier in mana blue (casting is mana); a class's own things in ochre. */
+.ev-sys-nimble .nimble-cmpx-row-badge.is-level { background: var(--ev-surface); box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.ev-sys-nimble .nimble-cmpx-row-badge.is-level.role-legendary { background: var(--ev-bar); color: var(--ev-on-bar); box-shadow: none; }
+.ev-sys-nimble .nimble-cmpx-row-badge.is-level.role-minion { box-shadow: none; outline: 1.5px dashed var(--ev-bar); outline-offset: -1.5px; }
+.ev-sys-nimble .nimble-cmpx-row-badge.is-tier { background: var(--ev-mana-soft); color: var(--ev-mana); }
+.ev-sys-nimble .nimble-cmpx-row-badge:is(.cmp-feature, .cmp-class, .cmp-subclass, .cmp-boon) { background: var(--ev-ochre-soft); color: var(--ev-ochre); }
+/* 5e: the stat block's cells; a CR on the page, framed in gold; numbers in Garamond, icons in the book's red. */
+.ev-sys-dnd5e .nimble-cmpx-row-badge { background: var(--x5-cell); color: var(--x5-label); font: 600 16px/normal var(--ev-font-display); }
+.ev-sys-dnd5e .nimble-cmpx-row-badge.is-level { background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--x5-gold-soft); color: var(--ev-text); }
 .nimble-cmpx-row-text { flex: 1; min-width: 0; }
-.nimble-cmpx-row-name { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nimble-cmpx-row-name > span:first-child { overflow: hidden; text-overflow: ellipsis; }
-.nimble-cmpx-row-line { display: flex; align-items: center; gap: 0.4rem; min-width: 0; }
-.nimble-cmpx-row-meta { flex: 1; min-width: 0; margin-top: 1px; font-size: 0.74rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nimble-cmpx-tags { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
-/* Result cards: name (and book tags), a few soft pills, a line of the entry's own words. */
-.nimble-cmpx-row.is-card { --row-badge-h: 2.4rem; padding-top: 0.55rem; padding-bottom: 0.55rem; }
-.nimble-cmpx-row.is-card .nimble-cmpx-row-badge { width: 2.4rem; height: var(--row-badge-h); }
-.nimble-cmpx-row-head { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.nimble-cmpx-row-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .nimble-cmpx-row-head .nimble-cmpx-row-name { flex: 1; min-width: 0; }
-.nimble-cmpx-row-pills { display: flex; align-items: center; gap: 0.25rem; margin-top: 0.3rem; min-width: 0; }
-.nimble-cmpx-row-facts { flex: 0 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 0.25rem; max-height: 1.25rem; overflow: hidden; }
-.nimble-cmpx-row-src { flex: 0 0 auto; display: flex; gap: 0.25rem; }
+.nimble-cmpx-row-name { display: flex; align-items: center; gap: 6px; font: 700 16px/20px var(--ev-font-display, var(--font-interface)); color: var(--ev-text, var(--text-normal)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-cmpx-row-name > span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.ev-sys-dnd5e .nimble-cmpx-row-name { font: 600 17px/21px var(--ev-font-display); letter-spacing: 0.01em; }
+.ev-sys-dnd5e .nimble-cmpx-row.kind-spell .nimble-cmpx-row-name { font-style: italic; font-weight: 500; }
+.nimble-cmpx-row-line { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.nimble-cmpx-row-meta { flex: 1; min-width: 0; margin-top: 1px; font: 500 12.5px/17px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-cmpx-tags { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+/* A result: name, then its facts as chips and where it's from as tags, then a line of its own words. */
+.nimble-cmpx-row.is-card { --row-badge-h: 38px; padding-top: 9px; padding-bottom: 9px; }
+.nimble-cmpx-row.is-card .nimble-cmpx-row-badge { width: 38px; height: var(--row-badge-h); }
+.nimble-cmpx-row-pills { display: flex; align-items: center; gap: 4px; margin-top: 4px; min-width: 0; overflow: hidden; }
+.nimble-cmpx-row-facts { flex: 0 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px; max-height: 20px; overflow: hidden; }
+/* An empty first item holds the line, so even the first chip wraps out of sight (whole) when it doesn't fit. */
+.nimble-cmpx-row-facts::before { content: ""; flex: none; width: 0; height: 20px; margin-right: -4px; }
+.nimble-cmpx-row-src { flex: 0 0 auto; display: flex; gap: 4px; }
 .nimble-cmpx-row-facts:empty, .nimble-cmpx-row-src:empty { display: none; }
 .nimble-cmpx-row-pills.is-empty { display: none; }
 .nimble-cmpx-pill-tag {
 	display: inline-flex;
 	align-items: center;
-	height: 1.25rem;
-	/* 1px more below than above: the text sits ~0.6px low in its line box; this centres it in the pill. */
-	padding: 0 0.45rem 1px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--text-normal) 7%, transparent);
-	color: var(--text-muted);
-	font-size: 0.7rem;
-	font-weight: 600;
-	line-height: normal;
+	height: 20px;
+	padding: 0 6px;
+	border-radius: var(--ev-r-chip, 999px);
+	background: var(--ev-chip-bg, var(--background-modifier-hover));
+	color: var(--ev-chip-text, var(--text-muted));
+	font: 500 12px/normal var(--ev-font-ui, var(--font-interface));
 	white-space: nowrap;
 }
-.nimble-cmpx-pill-tag.is-kind { background: transparent; box-shadow: inset 0 0 0 1px var(--background-modifier-border); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.62rem; }
-.nimble-cmpx .nimble-cmpx-pill-tag.bestiary-tag { padding: 0 0.45rem 1px; font-size: 0.66rem; font-weight: 700; }
-.nimble-cmpx-pill-tag.tone-legendary { background: color-mix(in srgb, var(--nimble-legendary) 20%, transparent); color: color-mix(in srgb, var(--nimble-legendary) 75%, var(--text-normal)); }
-.nimble-cmpx-pill-tag.tone-minion { background: color-mix(in srgb, var(--nimble-minion) 20%, transparent); color: color-mix(in srgb, var(--nimble-minion) 75%, var(--text-normal)); }
-.nimble-cmpx-pill-tag.tone-draft { background: color-mix(in srgb, #e08a1e 18%, transparent); color: #c06f0a; }
-.theme-dark .nimble-cmpx-pill-tag.tone-draft { color: #f0a640; }
-.nimble-cmpx-pill-tag.tone-school-fire { background: color-mix(in srgb, #e0603a 20%, transparent); color: color-mix(in srgb, #e0603a 70%, var(--text-normal)); }
-.nimble-cmpx-pill-tag.tone-school-ice { background: color-mix(in srgb, #4fa6d8 20%, transparent); color: color-mix(in srgb, #4fa6d8 70%, var(--text-normal)); }
-.nimble-cmpx-pill-tag.tone-school-lightning { background: color-mix(in srgb, #d8b43a 22%, transparent); color: color-mix(in srgb, #c09a20 75%, var(--text-normal)); }
-.nimble-cmpx-pill-tag.tone-school-radiant { background: color-mix(in srgb, #e8c86a 26%, transparent); color: color-mix(in srgb, #b8942a 75%, var(--text-normal)); }
-.nimble-cmpx-pill-tag.tone-school-necrotic { background: color-mix(in srgb, #7a5aa8 22%, transparent); color: color-mix(in srgb, #8a6ac0 75%, var(--text-normal)); }
-.nimble-cmpx-pill-tag.tone-school-wind { background: color-mix(in srgb, #5bb39a 20%, transparent); color: color-mix(in srgb, #3f9a80 75%, var(--text-normal)); }
-.nimble-cmpx-row-snippet { margin-top: 0.3rem; font-size: 0.76rem; line-height: 1.35; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nimble-cmpx-row.is-selected .nimble-cmpx-row-snippet { color: var(--text-muted); }
-.nimble-cmpx-tag { font-size: 0.64rem; font-weight: 700; padding: 0.05rem 0.4rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-muted); white-space: nowrap; }
-.nimble-cmpx-tag.is-taken { background: color-mix(in srgb, var(--nimble-ok) 18%, transparent); color: var(--nimble-ok); }
-.nimble-cmpx-infight { font-size: 0.7rem; font-weight: 600; color: var(--text-accent); }
+.nimble-cmpx-pill-tag.ev-pill { --ev-pill-icon: 13px; --ev-pill-gap: 4px; }
+.nimble-cmpx-pill-tag .ev-pill-icon { color: var(--ev-text-2, var(--text-muted)); }
+/* Tags: what kind of thing it is (on All), a role worth seeing (Legendary, Minion), a playtest Draft, the book. */
+.nimble-cmpx .nimble-cmpx-row-src .nimble-cmpx-pill-tag,
+.nimble-cmpx .nimble-cmpx-tag {
+	padding: 0 6px;
+	border-radius: var(--ev-r-chip, 4px);
+	background: var(--ev-bar, var(--ev-accent));
+	box-shadow: none;
+	color: var(--ev-on-bar, var(--ev-on-accent));
+	font: 700 10.5px/normal var(--ev-font-ui, var(--font-interface));
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+.nimble-cmpx .nimble-cmpx-tag { display: inline-flex; align-items: center; height: 20px; white-space: nowrap; }
+.nimble-cmpx .nimble-cmpx-tag.is-taken { background: var(--ev-ok, var(--nimble-ok)); color: #FFFFFF; }
+.ev-sys-dnd5e .nimble-cmpx-pill-tag { border-radius: 2px; background: transparent; box-shadow: inset 0 0 0 1px var(--x5-gold-soft); color: var(--ev-text-2); }
+.ev-sys-dnd5e.nimble-cmpx .nimble-cmpx-row-src .nimble-cmpx-pill-tag, .ev-sys-dnd5e.nimble-cmpx .nimble-cmpx-tag { border-radius: 2px; background: var(--ev-accent); color: var(--ev-on-accent); }
+.nimble-cmpx-row-snippet { margin-top: 4px; font: 400 13px/18px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-faint)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-sys-dnd5e .nimble-cmpx-row-snippet { font: 400 14px/19px var(--x5-font-book); }
+.nimble-cmpx-infight { font: 600 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-accent-text, var(--text-accent)); }
 .nimble-cmpx-infight:empty { display: none; }
-.nimble-cmpx-row-btn { flex-shrink: 0; opacity: 0; }
+.nimble-cmpx-row-btn { flex-shrink: 0; opacity: 0; color: var(--ev-text-2, var(--icon-color)); }
+.nimble-cmpx-row-btn svg { width: 18px; height: 18px; }
 .nimble-cmpx-row:is(:hover, .is-selected) .nimble-cmpx-row-btn { opacity: 1; }
 body.is-mobile .nimble-cmpx-row-btn { opacity: 1; }
-.nimble-cmpx-row.is-suggestion .nimble-cmpx-row-badge { background: color-mix(in srgb, var(--cmpx-accent) 12%, transparent); color: var(--cmpx-accent); }
-.nimble-cmpx-row.is-suggestion { padding-top: 0.28rem; padding-bottom: 0.28rem; }
-.nimble-cmpx-row.is-suggestion .nimble-cmpx-row-name { font-family: var(--font-monospace); font-weight: 500; font-size: 0.86rem; }
-.nimble-cmpx-token-key { color: var(--cmpx-accent); }
+/* A filter suggestion: the typed form in a monospace, its icon in the game's colour. */
+.nimble-cmpx-row.is-suggestion { --row-badge-h: 30px; padding-top: 6px; padding-bottom: 6px; }
+.nimble-cmpx-row.is-suggestion .nimble-cmpx-row-badge { width: 30px; background: transparent; box-shadow: inset 0 0 0 1px var(--ev-line-strong, var(--background-modifier-border)); color: var(--ev-accent-text, var(--text-accent)); }
+.nimble-cmpx-row.is-suggestion .nimble-cmpx-row-name { font: 500 14px/19px var(--font-monospace); }
+.nimble-cmpx-token-key { color: var(--ev-text-2, var(--text-accent)); }
 .nimble-cmpx-kbd {
 	flex-shrink: 0;
-	padding: 0 0.35rem;
-	border: 1px solid var(--background-modifier-border);
-	border-bottom-width: 2px;
+	padding: 0 5px;
 	border-radius: 4px;
-	background: var(--background-primary);
-	color: var(--text-muted);
-	font-size: 0.66rem;
-	font-weight: 600;
-	line-height: 1.4;
+	background: var(--ev-surface, var(--background-primary));
+	box-shadow: inset 0 0 0 1px var(--ev-line-strong, var(--background-modifier-border)), inset 0 -1.5px 0 var(--ev-line-strong, var(--background-modifier-border));
+	color: var(--ev-text-2, var(--text-muted));
+	font: 600 11px/18px var(--ev-font-ui, var(--font-interface));
 }
-.nimble-cmpx-divider { height: 1px; margin: 0.4rem 0.5rem; background: var(--background-modifier-border); }
+.nimble-cmpx-divider { height: 1px; margin: 6px 10px; background: var(--ev-line-strong, var(--background-modifier-border)); }
+/* Group headings ("Tier 3", "CR 1/4") stay put while their rows scroll: Nimble's khaki ribbon, 5e's red small
+   caps over its rule. */
 .nimble-cmpx-group {
 	position: sticky;
 	top: 0;
-	z-index: 1;
-	margin: 0 -0.35rem;
-	padding: 0.6rem 0.9rem 0.25rem;
-	background: var(--background-primary);
-	color: var(--text-muted);
-	font-size: 0.7rem;
-	font-weight: 800;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
+	z-index: 2;
+	margin: 8px 0 4px;
+	padding: 4px 10px 3px;
+	border-radius: 2px;
+	background: var(--ev-band, var(--background-primary));
+	color: var(--ev-band-text, var(--text-muted));
+	font: italic 900 14px/19px var(--ev-font-name, var(--font-interface));
 }
-.nimble-cmpx-empty { padding: 1.25rem; color: var(--text-muted); text-align: center; }
-.nimble-cmpx-hints { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; font-size: 0.72rem; color: var(--text-faint); }
-.nimble-cmpx-hint { display: inline-flex; align-items: center; gap: 0.3rem; }
+.nimble-cmpx-group-text { position: relative; }
+.ev-sys-nimble .nimble-cmpx-group-text { top: 1px; } /* Vollkorn's capitals sit 1.3px high in their line (measured) */
+.ev-sys-dnd5e .nimble-cmpx-group { margin: 6px 0 2px; padding: 8px 10px 2px; border-radius: 0; border-bottom: 1px solid var(--d5-rule); background: var(--ev-bg) var(--x5-paper); color: var(--ev-accent-text); font: 600 17px/21px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.03em; }
+.nimble-cmpx-empty { padding: 20px; color: var(--ev-text-2, var(--text-muted)); text-align: center; }
+.nimble-cmpx-hints { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 500 12px/18px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-faint)); }
+.nimble-cmpx-hint { display: inline-flex; align-items: center; gap: 5px; }
 body.is-mobile .nimble-cmpx-hints { display: none; }
 
-/* A page that isn't a stat block: NPC notes and rules. */
-.nimble-cmpx-note { margin-top: 0.75rem; }
-.nimble-cmpx-page .statblock-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 1rem; padding-top: 0.6rem; border-top: 1px solid var(--background-modifier-border); }
-.nimble-cmpx-page .statblock-action { display: inline-flex; align-items: center; gap: 0.35rem; height: 2rem; padding: 0 0.8rem; font-size: 0.84rem; border-radius: 7px; }
+/* A page that isn't a stat block (a card, an NPC's notes) and its buttons under a rule. */
+.nimble-cmpx-note { margin-top: 12px; }
+.nimble-cmpx-page > .nimble-cmp-head { margin-bottom: 4px; }
+:is(.nimble-cmpx-page, .nimble-cmpx-detail) > .statblock-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ev-line, var(--background-modifier-border)); }
+:is(.nimble-cmpx-page, .nimble-cmpx-detail) > .statblock-actions .statblock-action {
+	--ev-pill-icon: 15px;
+	--ev-pill-gap: 6px;
+	height: 30px;
+	padding: 0 10px;
+	border: 1px solid var(--ev-line-strong, var(--background-modifier-border));
+	border-radius: var(--ev-r-md, 7px);
+	background: var(--ev-surface, var(--background-primary));
+	box-shadow: none;
+	color: var(--ev-text, var(--text-normal));
+	font: 500 13px/normal var(--ev-font-ui, var(--font-interface));
+}
+:is(.nimble-cmpx-page, .nimble-cmpx-detail) > .statblock-actions .statblock-action:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); }
+:is(.nimble-cmpx-page, .nimble-cmpx-detail) > .statblock-actions .statblock-action.mod-cta { background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); }
+:is(.nimble-cmpx-page, .nimble-cmpx-detail) > .statblock-actions .statblock-action .ev-pill-icon { color: var(--ev-text-2, var(--icon-color)); }
+:is(.nimble-cmpx-page, .nimble-cmpx-detail) > .statblock-actions .statblock-action.mod-cta .ev-pill-icon { color: inherit; }
+.ev-sys-dnd5e :is(.nimble-cmpx-page, .nimble-cmpx-detail) > .statblock-actions .statblock-action { border-color: var(--x5-gold-soft); }
+
+/* Numbers in the list stand on the line (levels, CRs, tiers), whatever the face's default figures. */
+.nimble-cmpx :is(.nimble-cmpx-group, .nimble-cmpx-row-badge, .nimble-art-level) { font-variant-numeric: lining-nums tabular-nums; }
 
 /* The tab: list beside the page; narrow, one or the other. */
 .nimble-compendium .nimble-cmpx .bestiary-back { display: none; }
 .nimble-cmpx-layout.is-narrow .nimble-cmpx.has-detail { grid-template-columns: minmax(0, 1fr); }
-.nimble-cmpx-layout.is-narrow .nimble-cmpx-detail { display: none; padding: 0.75rem; }
+.nimble-cmpx-layout.is-narrow .nimble-cmpx-detail { display: none; padding: 12px; }
 .nimble-cmpx-layout.is-narrow.show-detail .nimble-cmpx-detail { display: block; grid-row: 2; }
 .nimble-cmpx-layout.is-narrow.show-detail .nimble-cmpx-side { display: none; }
 .nimble-cmpx-layout.is-narrow .nimble-cmpx-side { border-right: none; }
-.nimble-cmpx-layout.is-narrow .nimble-compendium .bestiary-back, .nimble-cmpx-layout.is-narrow .nimble-cmpx-detail .bestiary-back { display: inline-flex; align-items: center; gap: 0.2rem; margin-bottom: 0.5rem; }
+.nimble-cmpx-layout.is-narrow .nimble-compendium .bestiary-back, .nimble-cmpx-layout.is-narrow .nimble-cmpx-detail .bestiary-back { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; color: var(--ev-text-2); }
+.nimble-cmpx-detail .bestiary-back svg { width: 15px; height: 15px; }
 body.is-phone .nimble-cmpx-side, body.is-phone .nimble-cmpx-detail { padding-bottom: 5.5rem; }
+/* The attribution under the list (Nimble's tab). */
+.nimble-cmpx .bestiary-attribution { font: 500 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); border-top-color: var(--ev-line, var(--background-modifier-border)); }
+.nimble-cmpx .bestiary-attribution :is(summary, a) { color: var(--ev-text-2, var(--text-muted)); }
 
-/* The dialog: wide, the list and a preview of the selected entry. */
-.modal.nimble-cmpx-modal { width: min(1080px, 94vw); height: min(760px, 86vh); max-height: 86vh; display: flex; flex-direction: column; padding-bottom: 0.75rem; }
+/* The dialog: wide, the list and a preview of the selected entry, on the game's paper. */
+.modal.nimble-cmpx-modal { width: min(1080px, 94vw); height: min(760px, 86vh); max-height: 86vh; display: flex; flex-direction: column; padding-bottom: 12px; }
+.modal.nimble-cmpx-modal[class*="ev-sys-"] { background: var(--ev-bg); color: var(--ev-text); }
 .modal.nimble-cmpx-modal .modal-title { font-size: var(--font-ui-medium); color: var(--text-muted); }
+.modal.nimble-cmpx-modal.ev-sys-nimble .modal-title { font: italic 900 19px/24px var(--ev-font-name); color: var(--ev-text); }
 .modal.nimble-cmpx-modal .modal-content { flex: 1; min-height: 0; }
-.nimble-cmpx-modal .nimble-cmpx-side { padding: 0.5rem 0.25rem 0; }
-.nimble-cmpx-modal .nimble-cmpx-segments { margin: 0.25rem 0.25rem 0; }
+.nimble-cmpx-modal .nimble-cmpx-side { padding: 8px 4px 0; }
+.nimble-cmpx-modal .nimble-cmpx-segments { margin: 4px 4px 0; }
 .nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(300px, 420px) minmax(0, 1fr); }
-.nimble-cmpx-modal .nimble-cmpx-detail { padding: 0.5rem 0.25rem 1rem 1rem; }
+.nimble-cmpx-modal .nimble-cmpx-detail { padding: 8px 4px 16px 16px; }
 .nimble-cmpx-modal .nimble-cmpx-detail .bestiary-back { display: none; }
 @media (max-width: 780px) {
 	.nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(0, 1fr); }
@@ -5225,11 +5355,12 @@ body.is-phone .modal.nimble-cmpx-modal { width: 100vw; height: 100%; max-height:
 body.is-phone .nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(0, 1fr); }
 body.is-phone .nimble-cmpx-modal .nimble-cmpx-detail { display: none; }
 
-/* ---------- Compendium art (compendium-art.ts): a portrait beside a page's title, and the list icon ---------- */
+/* ---------- Compendium art (compendium-art.ts): a portrait beside a page's title, and the list icon ----------
+   Framed as the game frames a portrait: Nimble's charcoal, 5e's gold. Empty, a dashed square to drop art on. */
 /* Title lines in one column, centred beside the square. */
-.has-art-slot { display: flex; flex-direction: row; align-items: center; gap: 1rem; }
+.has-art-slot { display: flex; flex-direction: row; align-items: center; gap: 16px; }
 .nimble-art-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: inherit; }
-.nimble-cmp-head.has-art-slot .nimble-art-titles { gap: 0.3rem; }
+.nimble-cmp-head.has-art-slot .nimble-art-titles { gap: 2px; }
 .nimble-art-slot {
 	flex-shrink: 0;
 	position: relative;
@@ -5238,16 +5369,18 @@ body.is-phone .nimble-cmpx-modal .nimble-cmpx-detail { display: none; }
 	justify-content: center;
 	width: 76px;
 	height: 76px;
-	border-radius: 16px;
+	border-radius: var(--ev-r-md, 16px);
 	overflow: hidden;
 	cursor: pointer;
-	background: var(--background-modifier-hover);
+	background: var(--ev-surface-2, var(--background-modifier-hover));
 	transition: box-shadow 0.15s, opacity 0.15s;
 }
-.nimble-art-slot.has-art { box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--background-modifier-border); }
+.nimble-art-slot.has-art { box-shadow: 0 1px 4px rgb(0 0 0 / 0.25), 0 0 0 1px var(--ev-line, var(--background-modifier-border)); }
+.ev-sys-nimble .nimble-art-slot.has-art { box-shadow: 0 0 0 2px var(--ev-bar), 0 4px 12px -6px rgb(0 0 0 / 0.35); }
+.ev-sys-dnd5e .nimble-art-slot.has-art { box-shadow: 0 0 0 1.5px var(--x5-gold), 0 4px 12px -6px rgb(70 30 10 / 0.4); }
 .nimble-art-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.nimble-art-slot:not(.has-art) { background: transparent; border: 1.5px dashed var(--background-modifier-border); color: var(--text-faint); opacity: 0.7; }
-.nimble-art-slot:not(.has-art):hover, .nimble-art-slot:focus-visible { opacity: 1; border-color: var(--interactive-accent); color: var(--text-accent); }
+.nimble-art-slot:not(.has-art) { background: transparent; border: 1.5px dashed var(--ev-line-strong, var(--background-modifier-border)); color: var(--ev-text-2, var(--text-faint)); opacity: 0.75; }
+.nimble-art-slot:not(.has-art):hover, .nimble-art-slot:focus-visible { opacity: 1; border-color: var(--ev-text-2, var(--interactive-accent)); color: var(--ev-text, var(--text-accent)); }
 .nimble-art-add { display: flex; align-items: center; justify-content: center; }
 .nimble-art-add svg { display: block; width: 22px; height: 22px; }
 .nimble-art-edit {
@@ -5260,38 +5393,42 @@ body.is-phone .nimble-cmpx-modal .nimble-cmpx-detail { display: none; }
 	width: 22px;
 	height: 22px;
 	border-radius: 50%;
-	background: rgba(0, 0, 0, 0.6);
-	color: #fff;
+	background: rgb(0 0 0 / 0.6);
+	color: #FFFFFF;
 	opacity: 0;
 	transition: opacity 0.15s;
 }
 .nimble-art-edit svg { width: 12px; height: 12px; }
 .nimble-art-slot.has-art:is(:hover, :focus-visible) .nimble-art-edit { opacity: 1; }
 .nimble-art-slot:not(.has-art) .nimble-art-edit { display: none; }
-.nimble-art-slot.is-drop { box-shadow: 0 0 0 2px var(--interactive-accent); opacity: 1; }
+.nimble-art-slot.is-drop { box-shadow: 0 0 0 2px var(--ev-accent, var(--interactive-accent)); opacity: 1; }
 body.is-mobile .nimble-art-slot.has-art .nimble-art-edit { opacity: 1; }
-.nimble-hover-preview .nimble-art-slot { width: 60px; height: 60px; border-radius: 13px; }
+.nimble-hover-preview .nimble-art-slot { width: 60px; height: 60px; }
 
-/* Art as the list icon: cropped to the badge's rounded square; a monster's level rides on a chip. */
-.nimble-cmpx-row-badge.has-art { position: relative; padding: 0; overflow: visible; background: none; }
-.nimble-cmpx-row-badge.has-art .nimble-art-img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; box-shadow: 0 0 0 1px var(--background-modifier-border); }
+/* Art as the list icon: cropped to the badge's square; a monster's level rides on a chip in the badge's look. */
+.nimble-cmpx-row-badge.has-art { position: relative; padding: 0; overflow: visible; background: none; box-shadow: none; }
+.nimble-cmpx-row-badge.has-art .nimble-art-img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; box-shadow: 0 0 0 1px var(--ev-line-strong, var(--background-modifier-border)); }
+.ev-sys-nimble .nimble-cmpx-row-badge.has-art .nimble-art-img { box-shadow: 0 0 0 1.5px var(--ev-bar); }
+.ev-sys-dnd5e .nimble-cmpx-row-badge.has-art .nimble-art-img { box-shadow: 0 0 0 1px var(--x5-gold); }
 .nimble-art-level {
 	position: absolute;
-	right: -5px;
-	bottom: -4px;
-	min-width: 1.2rem;
-	padding: 0 0.25rem;
-	border-radius: 5px;
-	background: var(--background-primary);
-	box-shadow: 0 0 0 1px var(--background-modifier-border);
-	color: var(--text-normal);
-	font-size: 0.6rem;
-	font-weight: 800;
-	line-height: 1.5;
-	text-align: center;
+	right: -6px;
+	bottom: -5px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 16px;
+	padding: 0 3px;
+	border-radius: var(--ev-r-sm, 5px);
+	background: var(--ev-surface, var(--background-primary));
+	box-shadow: 0 0 0 1.5px var(--ev-bar, var(--background-modifier-border));
+	color: var(--ev-text, var(--text-normal));
+	font: 700 11px/normal var(--ev-font-num, var(--font-interface));
+	font-variant-numeric: lining-nums tabular-nums;
 }
-.nimble-art-level.role-legendary { background: color-mix(in srgb, var(--nimble-legendary) 35%, var(--background-primary)); }
-.nimble-art-level.role-minion { background: color-mix(in srgb, var(--nimble-minion) 35%, var(--background-primary)); }
+.nimble-art-level.role-legendary { background: var(--ev-bar, var(--background-primary)); color: var(--ev-on-bar, var(--text-normal)); }
+.nimble-art-level.role-minion { box-shadow: 0 0 0 1.5px var(--ev-line-strong, var(--background-modifier-border)); }
 
 /* Spotlight: the compendium's chips in its box (filter-field.ts). */
 .nimble-spotlight .prompt-input-container { display: flex; align-items: center; }
@@ -6323,17 +6460,99 @@ body.is-tablet .dnd5e-tracker :is(button.dnd5e-init, button.dnd5e-gem, button.dn
 /* In the builder's preview, a card is a page of the book: paper, red bars. */
 .eb-preview > .dnd5e-card { padding: 0.8rem 1rem; border: 1px solid var(--ev-paper-edge); border-top: 3px solid var(--ev-accent); border-bottom: 3px solid var(--ev-accent); border-radius: var(--nimble-radius); background: var(--ev-paper); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06); }
 
-/* 5e compendium tab (src/systems/dnd5e/compendium-view.ts): core's browser, with the rules edition above it */
+/* 5e compendium tab (src/systems/dnd5e/compendium-view.ts): core's browser in 5e's look, the rules edition above it
+   as a small joined switch (oxblood when chosen, small caps). */
 .workspace-leaf-content .view-content.dnd5e-compendium { display: flex; flex-direction: column; }
-.dnd5e-cmp-top { display: flex; gap: 0.5rem; align-items: center; padding: 0.5rem 0.75rem 0; }
-.dnd5e-cmp-editions { display: inline-flex; border: 1px solid var(--background-modifier-border); border-radius: 6px; overflow: hidden; }
-.dnd5e-cmp-editions button { border-radius: 0; box-shadow: none; font-size: 0.8rem; height: auto; padding: 0.2rem 0.65rem; }
-.dnd5e-cmp-editions button.is-active { background: var(--interactive-accent); color: var(--text-on-accent); }
+.dnd5e-cmp-top { display: flex; gap: 8px; align-items: center; padding: 10px 12px 0; }
+.dnd5e-cmp-editions { display: inline-flex; border-radius: var(--ev-r-md, 6px); box-shadow: inset 0 0 0 1px var(--x5-gold-soft, var(--background-modifier-border)); overflow: hidden; }
+.dnd5e-cmp-editions button { height: 28px; padding: 0 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--ev-text-2); font: 600 15px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; cursor: pointer; }
+.dnd5e-cmp-editions button:hover { color: var(--ev-text); background: color-mix(in srgb, var(--x5-gold) 10%, transparent); }
+.dnd5e-cmp-editions button.is-active { background: var(--ev-accent); color: var(--ev-on-accent); }
 .dnd5e-compendium > .nimble-cmpx-layout { flex: 1 1 auto; min-height: 0; height: auto; }
-.dnd5e-cmp-page + .statblock-actions { margin-top: 0.75rem; }
 /* The spell level badge on a sheet's spell rows. */
 .dnd5e-cmp-badge { min-width: 2.1rem; height: 1.6rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; background: var(--background-secondary); font-size: 0.75rem; font-weight: 700; }
 .dnd5e-card .dnd5e-source { margin-top: 0.6rem; font-size: 0.75em; color: var(--text-faint); text-align: right; }
+
+/* A compendium entry as the SRD sets it (cards.ts; design study: #5e/compendium), in the stat block's dress for its
+   edition: 2024 a warm card with the double gold hairline, the name over an oxblood rule; 2014 the amber page
+   between ochre bars with a red taper under the head. Garamond small caps for the name and headings, the italic
+   line under the name, Alegreya Sans for the text, labels in the book's red, run-in headings in bold italic, every
+   roll a gold wash. A class or subclass page carries its name between the class's scrollwork. */
+.dnd5e-card.dnd5e-entry { position: relative; color: var(--ev-text); font: 400 15.5px/21px var(--x5-font-book); line-height: 21px; container-type: inline-size; }
+.dnd5e-entry.ed-2024 {
+	--d5-scroll-paper: var(--ev-surface);
+	padding: 16px 20px 14px;
+	border-radius: 7px;
+	background: var(--ev-surface) var(--x5-glow);
+	box-shadow: inset 0 0 0 1px var(--x5-gold-soft), inset 0 0 0 4px var(--ev-surface), inset 0 0 0 5px color-mix(in srgb, var(--x5-gold-soft) 60%, transparent), var(--x5-card-shadow);
+}
+.dnd5e-entry.ed-2014 {
+	--d5-scroll-paper: var(--x5-sb14-bg);
+	padding: 0 16px;
+	background: var(--x5-sb14-bg) var(--x5-paper);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--x5-sb14-bar-edge) 30%, transparent), 0 4px 14px -4px rgb(60 30 0 / 0.35);
+}
+.dnd5e-entry.ed-2014::before, .dnd5e-entry.ed-2014::after {
+	content: ""; display: block; height: 6px; margin: 0 -16px 10px;
+	background: linear-gradient(var(--x5-sb14-bar), color-mix(in srgb, var(--x5-sb14-bar) 75%, var(--x5-sb14-bar-edge)));
+	box-shadow: inset 0 0 0 1px var(--x5-sb14-bar-edge);
+}
+.dnd5e-entry.ed-2014::after { margin: 12px -16px 0; }
+.dnd5e-entry .dnd5e-card-head { display: block; margin: 0 0 8px; padding: 0; }
+.dnd5e-entry .dnd5e-card-head::after { content: none; }
+.dnd5e-entry .dnd5e-card-name { margin: 0; font: 600 30px/32px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--ev-accent-text); overflow-wrap: anywhere; }
+.dnd5e-entry.ed-2024 .dnd5e-card-name:not(.dnd5e-scroll) { padding-bottom: 2px; border-bottom: 1.5px solid var(--ev-rule); }
+.dnd5e-entry.ed-2014 .dnd5e-card-name { margin-top: 2px; font-size: 29px; color: var(--x5-sb14-name); }
+.dnd5e-entry .dnd5e-card-line { margin: 3px 0 0; font: italic 400 16px/20px var(--ev-font-display); color: var(--ev-text-2); }
+.dnd5e-entry.ed-2014 .dnd5e-card-line { font-size: 15.5px; color: var(--ev-text); }
+.dnd5e-entry.ed-2014 .dnd5e-card-head::after {
+	content: ""; position: static; display: block; height: 5px; margin: 8px 0 0; background: var(--x5-sb14-rule);
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0.3 L400 2.5 L0 4.7 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0.3 L400 2.5 L0 4.7 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+}
+/* The class's scrollwork carries a class page's name. */
+.dnd5e-entry .dnd5e-card-name.dnd5e-scroll { margin: 4px 0 0; color: var(--x5-gold); }
+.dnd5e-entry .dnd5e-card-scroll .dnd5e-scroll-title { flex: 0 1 auto; min-width: 0; font: 600 30px/34px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.03em; white-space: normal; text-align: center; text-wrap: balance; }
+.dnd5e-entry.ed-2014 .dnd5e-card-scroll .dnd5e-scroll-title { color: var(--x5-sb14-name); }
+.dnd5e-entry .dnd5e-card-scroll + .dnd5e-card-line { text-align: center; }
+.dnd5e-entry .dnd5e-card-facts { margin: 6px 0 8px; }
+.dnd5e-entry .dnd5e-card-field { margin: 1px 0; }
+.dnd5e-entry .dnd5e-card-label { font-weight: 700; color: var(--x5-label); }
+.dnd5e-entry.ed-2014 .dnd5e-card-label { color: var(--x5-sb14-rule); }
+.dnd5e-entry p { margin: 6px 0; }
+.dnd5e-entry ul { margin: 6px 0; padding-left: 20px; }
+.dnd5e-entry .dnd5e-card-lead { font-weight: 700; font-style: italic; }
+.dnd5e-entry .dnd5e-card-sub { margin: 12px 0 2px; font: 700 17px/21px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; color: var(--ev-accent-text); }
+.dnd5e-entry .dnd5e-card-level { margin: 16px 0 4px; padding-bottom: 2px; border-bottom: 1px solid var(--ev-rule); font: 600 21px/24px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; color: var(--ev-accent-text); }
+.dnd5e-entry.ed-2014 :is(.dnd5e-card-sub, .dnd5e-card-level) { color: var(--x5-sb14-name); }
+.dnd5e-entry.ed-2014 .dnd5e-card-level { border-bottom-color: var(--x5-sb14-rule); }
+/* Tables as the book sets them: small-caps heads over a gold rule, rows in alternating cells; wide ones scroll. */
+.dnd5e-entry .dnd5e-table-wrap { margin: 8px 0; overflow-x: auto; }
+.dnd5e-entry .dnd5e-card-table { width: 100%; margin: 0; border-collapse: collapse; font: 400 14px/19px var(--x5-font-book); font-variant-numeric: lining-nums tabular-nums; }
+.dnd5e-entry .dnd5e-card-table :is(th, td) { padding: 3px 7px; border: 0; text-align: left; }
+.dnd5e-entry .dnd5e-card-table th { border-bottom: 1px solid var(--x5-gold-soft); background: none; font: 600 14px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-text-2); white-space: nowrap; }
+.dnd5e-entry .dnd5e-card-table tr td { background: none; }
+.dnd5e-entry .dnd5e-card-table tr:nth-child(even) td { background: var(--x5-cell); }
+.dnd5e-entry .dnd5e-level-table :is(td, th):nth-child(n+4) { text-align: center; }
+/* Every roll a gold wash and underline; rules words a dotted gold line (the stat block's). */
+.dnd5e-entry :is(.dnd5e-roll, .nimble-dice).is-clickable {
+	padding: 0 2px; border-radius: 2px; cursor: pointer; font-weight: 700; white-space: nowrap; color: inherit;
+	background: color-mix(in srgb, var(--x5-gold) 13%, transparent);
+	border-bottom: 1px solid color-mix(in srgb, var(--x5-gold) 70%, transparent);
+}
+.dnd5e-entry :is(.dnd5e-roll, .nimble-dice).is-clickable:hover, .dnd5e-entry :is(.dnd5e-roll, .nimble-dice).is-clickable:focus-visible { background: color-mix(in srgb, var(--x5-gold) 26%, transparent); outline: none; }
+.dnd5e-entry .ev-term { border-bottom: 1.5px dotted color-mix(in srgb, var(--x5-gold) 80%, var(--ev-text-2)); }
+.dnd5e-entry .ev-term:hover { background: none; border-bottom-color: var(--x5-gold); }
+.dnd5e-entry .dnd5e-source { margin-top: 10px; font: 400 12px/16px var(--x5-font-book); color: var(--ev-text-2); text-align: right; }
+@container (max-width: 420px) {
+	.dnd5e-entry .dnd5e-card-name { font-size: 25px; line-height: 28px; }
+	.dnd5e-entry .dnd5e-card-scroll .dnd5e-scroll-title { font-size: 24px; line-height: 28px; }
+}
+.dnd5e-entry.ed-2024 :is(.dnd5e-table-wrap, .dnd5e-card-facts) + .dnd5e-source { margin-top: 12px; }
+/* The card's own dialog: the game's paper around the page. */
+.modal.dnd5e-card-modal.ev-sys-dnd5e { background: var(--ev-bg) var(--x5-paper); }
+/* The compendium page: the page, then its buttons. */
+.dnd5e-cmp-page + .statblock-actions { margin-top: 14px; }
 
 /* 5e character sheets (src/systems/dnd5e/sheet.ts), as the design study draws them (70-5e-sheets, 70d-5e-scroll):
    an oxblood banner with the portrait in a gold medallion and AC on a gold-rimmed shield; a framed vitals band

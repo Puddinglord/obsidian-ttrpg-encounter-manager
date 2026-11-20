@@ -20,7 +20,7 @@ import { bundledCompendium } from './compendium-data';
 import { artKey, buildEntries, Entry, entryPills, entrySnippet, Segment, SEGMENTS, bookOf, baseCreatureName } from './compendium-entries';
 import { renderArtSlot, renderBadgeArt } from './compendium-art';
 import { NIMBLE_QUERY, valueMatches } from './compendium-query';
-import { compendiumIcon, pluginCardOptions, renderCard, renderRulesText, renderSource } from './compendium-card';
+import { compendiumGlyph, CONDITION_GLYPH, pluginCardOptions, renderCard, renderRulesText, renderSource } from './compendium-card';
 import { refForHit } from './compendium-ref';
 import { monsterRole } from './rules';
 import {
@@ -29,6 +29,7 @@ import {
 import type { StatblockAction } from './render';
 import { nimble } from './runtime';
 import { pill } from '../../core/pill';
+import { damageIcon, evIcon } from '../../core/icons';
 
 // ----------------------------------------------------------------------------
 // Entries, built once and rebuilt when the vault changes
@@ -102,7 +103,7 @@ export function renderEntryDetail(el: HTMLElement, e: Entry, ctx: DetailContext)
 	if (e.npc) {
 		const file = plugin.app.vault.getAbstractFileByPath(e.npc.path);
 		const head = card.createDiv({ cls: 'nimble-cmp-head' });
-		head.createDiv({ cls: 'nimble-cmp-kind', text: 'NPC' });
+		kicker(head, 'user', 'NPC');
 		head.createDiv({ cls: 'nimble-cmp-name', text: e.name });
 		if (e.detail && e.detail !== 'NPC') head.createDiv({ cls: 'nimble-cmp-detail', text: e.detail });
 		const body = card.createDiv({ cls: 'nimble-cmpx-note markdown-rendered' });
@@ -114,8 +115,9 @@ export function renderEntryDetail(el: HTMLElement, e: Entry, ctx: DetailContext)
 			});
 		}
 	} else if (e.rule) {
+		card.addClass('nimble-cmp-card', 'kind-rule');
 		const head = card.createDiv({ cls: 'nimble-cmp-head' });
-		head.createDiv({ cls: 'nimble-cmp-kind', text: e.rule.topic });
+		kicker(head, 'scales', e.rule.topic);
 		head.createDiv({ cls: 'nimble-cmp-name', text: e.name });
 		const body = card.createDiv({ cls: 'nimble-cmp-body' });
 		renderRulesText(body, e.rule.text, pluginCardOptions(plugin, e.name));
@@ -136,6 +138,20 @@ export function renderEntryDetail(el: HTMLElement, e: Entry, ctx: DetailContext)
 			b.addEventListener('click', (ev) => { ev.preventDefault(); a.run(); });
 		}
 	}
+}
+
+/** A page's kind over its name: the icon and the word. */
+function kicker(head: HTMLElement, icon: Parameters<typeof evIcon>[0], text: string): void {
+	const k = head.createDiv({ cls: 'nimble-cmp-kind' });
+	setIcon(k.createSpan({ cls: 'nimble-cmp-kind-icon' }), evIcon(icon));
+	k.createSpan({ text });
+}
+
+/** A Nimble spell school as an icon (its damage type's; Wind has its own). */
+function schoolIcon(school: string): string | undefined {
+	const s = school.toLowerCase();
+	if (s === 'wind') return evIcon('wind');
+	return damageIcon(s === 'ice' ? 'cold' : s)?.icon;
 }
 
 /** Your art beside the page's title: a portrait you can change (NPCs have their own portraits). */
@@ -171,6 +187,7 @@ const PANEL: Record<Segment, string[]> = {
 /** Nimble's compendium, for core's browser. */
 export function nimbleSource(plugin: EmberVaultPlugin): CompendiumSource<Entry, Segment, NimbleDetailOptions> {
 	return {
+		system: 'nimble',
 		query: NIMBLE_QUERY,
 		entries: lore => compendiumEntries(plugin, lore),
 		panel: (seg, lore) => PANEL[seg].filter(k => !(lore && ['level', 'role', 'armor'].includes(k))),
@@ -200,18 +217,21 @@ export function nimbleSource(plugin: EmberVaultPlugin): CompendiumSource<Entry, 
 				badge.addClass('is-level', `role-${monsterRole(e.monster.monster)}`);
 				badge.setText(e.badge ?? '–');
 			} else if (e.monster) {
-				setIcon(badge, 'paw-print');
+				setIcon(badge, evIcon('paw-print'));
 			} else if (e.hit?.kind === 'spell') {
 				badge.addClass('is-tier', `school-${(e.facets.school?.[0] ?? '').toLowerCase()}`);
 				badge.setText(e.badge ?? '');
 			} else if (e.hit) {
 				badge.addClass(`cmp-${e.hit.kind}`);
-				setIcon(badge, compendiumIcon(e.hit));
+				setIcon(badge, compendiumGlyph(e.hit));
 			} else {
-				setIcon(badge, e.npc ? 'user-round' : e.condition ? 'activity' : 'scale');
+				if (e.condition) badge.addClass('cmp-condition');
+				setIcon(badge, e.npc ? evIcon('user') : e.condition ? CONDITION_GLYPH : evIcon('scales'));
 			}
 		},
-		pills: (e, lore) => entryPills(e, lore),
+		// A spell's school reads faster as its icon beside the word; a role worth seeing and Draft are tags.
+		pills: (e, lore) => entryPills(e, lore).map(p => (p.tone?.startsWith('school-') ? { ...p, icon: schoolIcon(p.text) }
+			: p.tone === 'legendary' || p.tone === 'minion' || p.tone === 'draft' ? { ...p, tag: true } : p)),
 		maxPills: e => (e.monster ? 4 : 5),
 		snippet: (e, lore) => entrySnippet(e, lore),
 		tags(e, tags) {

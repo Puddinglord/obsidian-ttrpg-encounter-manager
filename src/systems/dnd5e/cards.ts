@@ -1,13 +1,18 @@
 // How a 5e compendium entry looks: a spell, a magic item, a piece of equipment,
 // a class page, a species, a background, a feat, a rule or a condition. Used
-// by the compendium view, hover cards, the card modal and Spotlight.
+// by the compendium view, hover cards, the card modal and Spotlight. Drawn as
+// the SRD sets them, in the stat block's dress for the edition (design study:
+// #5e/compendium): the name in Garamond small caps, the italic line under it,
+// labels in the book's red, run-in headings ("Using a Higher-Level Spell Slot.")
+// in bold italic, and a class page under the class's scrollwork.
 
-import { App, setIcon } from 'obsidian';
+import { App } from 'obsidian';
 import { appendRichText, RichTextOptions } from '../../core/markdown';
 import { appendWithTerms, TermContext } from '../../core/rule-term-ui';
 import { wireWikiLinks } from '../../core/wiki-links';
-import { compendium5e, Hit5e, KIND5E } from './compendium';
+import { compendium5e, Hit5e } from './compendium';
 import { applyLook } from '../../core/look';
+import { classScroll } from './scroll';
 
 export interface Card5eOptions {
 	app: App;
@@ -46,7 +51,7 @@ export function renderText5e(parent: HTMLElement, text: string, label: string, o
 			continue;
 		}
 		if (line.startsWith('|')) {
-			const table = parent.createEl('table', { cls: 'dnd5e-card-table' });
+			const table = parent.createDiv({ cls: 'dnd5e-table-wrap' }).createEl('table', { cls: 'dnd5e-card-table' });
 			let first = true;
 			for (; i < lines.length && lines[i].trim().startsWith('|'); i++) {
 				const cells = lines[i].trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
@@ -71,15 +76,29 @@ function field(parent: HTMLElement, label: string, value: string | number | unde
 }
 
 export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTMLElement {
-	const card = el.createDiv({ cls: `dnd5e-card kind-${hit.kind}` });
+	const card = el.createDiv({ cls: `dnd5e-card dnd5e-entry kind-${hit.kind} ed-${hit.edition}` });
 	applyLook(card, 'dnd5e');
 	const head = card.createDiv({ cls: 'dnd5e-card-head' });
-	setIcon(head.createSpan({ cls: 'dnd5e-card-icon' }), KIND5E[hit.kind].icon);
-	const titles = head.createDiv();
-	titles.createDiv({ cls: 'dnd5e-card-name', text: hit.name });
-	titles.createDiv({ cls: 'dnd5e-card-line', text: hit.detail });
+	// A class or subclass page: its name between the class's scrollwork, as the sheet heads its class.
+	if (hit.kind === 'class') classScroll(head, hit.name, 'dnd5e-card-name dnd5e-card-scroll');
+	else if (hit.kind === 'subclass') classScroll(head, hit.cls.name, 'dnd5e-card-name dnd5e-card-scroll', hit.name);
+	else head.createDiv({ cls: 'dnd5e-card-name', text: hit.name });
+	// 2024 names a spell's classes in its italic line, as the book does: "Level 3 Evocation (Sorcerer, Wizard)".
+	const classesInLine = hit.kind === 'spell' && hit.edition === '2024' && hit.spell.classes.length > 0;
+	const line = classesInLine ? `${hit.detail} (${hit.spell.classes.join(', ')})` : hit.detail;
+	if (line) head.createDiv({ cls: 'dnd5e-card-line', text: line });
 	const body = card.createDiv({ cls: 'dnd5e-card-body' });
 	const text = (t: string | undefined, label = hit.name) => { if (t) renderText5e(body, t, label, o); };
+	// A run-in heading, as the book sets one: "***Darkvision.*** You can see…"
+	const lead = (name: string, t: string | undefined) => {
+		if (!t) return;
+		const at = body.childElementCount;
+		renderText5e(body, t, name, o);
+		const first = body.children[at];
+		const strong = createEl('strong', { cls: 'dnd5e-card-lead', text: `${name.replace(/\.$/, '')}. ` });
+		if (first?.tagName === 'P') first.prepend(strong);
+		else body.insertBefore(createDiv({ cls: 'dnd5e-card-sub', text: name }), first ?? null);
+	};
 
 	switch (hit.kind) {
 		case 'spell': {
@@ -90,11 +109,8 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			field(facts, 'Components', s.components);
 			field(facts, 'Duration', `${s.concentration && !/concentration/i.test(s.duration) ? 'Concentration, ' : ''}${s.duration}`);
 			text(s.desc);
-			if (s.higherLevel) {
-				body.createDiv({ cls: 'dnd5e-card-sub', text: hit.edition === '2014' ? 'At Higher Levels' : 'Using a Higher-Level Spell Slot' });
-				text(s.higherLevel);
-			}
-			if (s.classes.length) field(body, 'Classes', s.classes.join(', '));
+			lead(hit.edition === '2014' ? 'At Higher Levels' : 'Using a Higher-Level Spell Slot', s.higherLevel);
+			if (s.classes.length && !classesInLine) field(body, 'Classes', s.classes.join(', '));
 			break;
 		}
 		case 'item':
@@ -114,7 +130,7 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			if (e.properties?.length) {
 				field(facts, 'Properties', e.properties.join(', '));
 				const props = compendium5e(hit.edition).weaponProperties;
-				for (const p of e.properties) if (props[p]) { body.createDiv({ cls: 'dnd5e-card-sub', text: p }); text(props[p], p); }
+				for (const p of e.properties) lead(p, props[p]);
 			}
 			text(e.desc);
 			break;
@@ -130,7 +146,7 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			field(facts, 'Spellcasting', c.spellcasting);
 			// The level table: proficiency bonus, features, spell slots.
 			const slots = c.levels.some(l => l.slots);
-			const table = body.createEl('table', { cls: 'dnd5e-card-table dnd5e-level-table' });
+			const table = body.createDiv({ cls: 'dnd5e-table-wrap' }).createEl('table', { cls: 'dnd5e-card-table dnd5e-level-table' });
 			const hr = table.createEl('tr');
 			for (const h of ['Lvl', 'PB', 'Features', ...(slots ? ['1', '2', '3', '4', '5', '6', '7', '8', '9'] : [])]) hr.createEl('th', { text: h });
 			for (const l of c.levels) {
@@ -152,7 +168,7 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 		case 'subclass': {
 			text(hit.subclass.desc);
 			for (const f of hit.subclass.features) {
-				body.createDiv({ cls: 'dnd5e-card-sub', text: `${f.name} (level ${f.level})` });
+				body.createDiv({ cls: 'dnd5e-card-sub', text: hit.edition === '2014' ? `${f.name} (level ${f.level})` : `Level ${f.level}: ${f.name}` });
 				text(f.desc, f.name);
 			}
 			break;
@@ -165,11 +181,11 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			field(facts, 'Speed', `${s.speed} feet`);
 			field(facts, 'Ability Scores', s.abilityBonuses);
 			text(s.desc);
-			for (const t of s.traits) { body.createDiv({ cls: 'dnd5e-card-sub', text: t.name }); text(t.desc, t.name); }
+			for (const t of s.traits) lead(t.name, t.desc);
 			for (const sub of s.subspecies) {
 				body.createDiv({ cls: 'dnd5e-card-level', text: sub.name });
 				text(sub.desc);
-				for (const t of sub.traits) { body.createDiv({ cls: 'dnd5e-card-sub', text: t.name }); text(t.desc, t.name); }
+				for (const t of sub.traits) lead(t.name, t.desc);
 			}
 			break;
 		}
@@ -180,7 +196,7 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			field(facts, 'Feat', b.feat);
 			field(facts, 'Proficiencies', b.proficiencies.join(', '));
 			field(facts, 'Equipment', b.equipment);
-			if (b.feature) { body.createDiv({ cls: 'dnd5e-card-sub', text: b.feature.name }); text(b.feature.desc, b.feature.name); }
+			if (b.feature) lead(b.feature.name, b.feature.desc);
 			break;
 		}
 		case 'feat':

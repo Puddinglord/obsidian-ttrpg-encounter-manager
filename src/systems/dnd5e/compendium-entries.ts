@@ -23,15 +23,15 @@ export interface Entry5e extends CompendiumEntry {
 }
 
 export const SEGMENTS_5E: SegmentDef<Segment5e>[] = [
-	{ id: 'all', label: 'All', icon: 'library', words: ['all', 'everything'] },
-	{ id: 'monsters', label: 'Monsters', playerLabel: 'Creatures', icon: 'skull', words: ['monsters', 'creatures', 'bestiary', 'foes'] },
-	{ id: 'spells', label: 'Spells', icon: 'wand-2', words: ['spells', 'magic'] },
-	{ id: 'items', label: 'Magic items', icon: 'gem', words: ['items', 'magic-items', 'treasure'] },
-	{ id: 'equipment', label: 'Equipment', icon: 'sword', words: ['equipment', 'gear', 'weapons', 'armor', 'armour', 'tools'] },
-	{ id: 'classes', label: 'Classes', icon: 'graduation-cap', words: ['classes', 'subclasses'] },
-	{ id: 'origins', label: 'Origins', icon: 'users', words: ['origins', 'species', 'races', 'backgrounds'] },
-	{ id: 'feats', label: 'Feats', icon: 'award', words: ['feats'] },
-	{ id: 'rules', label: 'Rules', icon: 'scale', words: ['rules', 'conditions'] },
+	{ id: 'all', label: 'All', icon: 'ev-books', words: ['all', 'everything'] },
+	{ id: 'monsters', label: 'Monsters', playerLabel: 'Creatures', icon: 'ev-skull', words: ['monsters', 'creatures', 'bestiary', 'foes'] },
+	{ id: 'spells', label: 'Spells', icon: 'ev-spell', words: ['spells', 'magic'] },
+	{ id: 'items', label: 'Magic items', icon: 'ev-diamond', words: ['items', 'magic-items', 'treasure'] },
+	{ id: 'equipment', label: 'Equipment', icon: 'ev-sword', words: ['equipment', 'gear', 'weapons', 'armor', 'armour', 'tools'] },
+	{ id: 'classes', label: 'Classes', icon: 'ev-shield-star', words: ['classes', 'subclasses'] },
+	{ id: 'origins', label: 'Origins', icon: 'ev-users-three', words: ['origins', 'species', 'races', 'backgrounds'] },
+	{ id: 'feats', label: 'Feats', icon: 'ev-medal', words: ['feats'] },
+	{ id: 'rules', label: 'Rules', icon: 'ev-scales', words: ['rules', 'conditions'] },
 ];
 
 const SEGMENT_OF: Record<EntryKind5e, Segment5e> = {

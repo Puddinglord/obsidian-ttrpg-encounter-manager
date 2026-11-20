@@ -53,10 +53,10 @@ function side(parent: HTMLElement, m: string, right: boolean): void {
 	drawSvg(el, `${COMPACT}<g class="m" transform="translate(28 2)">${m}</g>`, CW, H, 'ns-scroll-compact');
 }
 
-/** The heading: scroll, the class's name, scroll. */
-export function renderClassScroll(parent: HTMLElement, className: string, cls = ''): HTMLElement {
+/** The heading: scroll, the class's name, scroll. `motifOf` draws another class's motif (a subclass page: its class's). */
+export function renderClassScroll(parent: HTMLElement, className: string, cls = '', motifOf?: string): HTMLElement {
 	const head = parent.createDiv({ cls: `ns-scroll${cls ? ` ${cls}` : ''}` });
-	const m = motif(className);
+	const m = motif(motifOf ?? className);
 	side(head, m, false);
 	head.createEl('b', { cls: 'ns-scroll-title', text: className });
 	side(head, m, true);
