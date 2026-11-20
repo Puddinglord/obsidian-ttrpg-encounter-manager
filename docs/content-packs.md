@@ -57,6 +57,7 @@ A pack is one JSON object: its name, the game, and a list of entries. Each entry
 - **`edition`** (optional): `"2024"` or `"2014"` keeps the pack to campaigns on those rules. Leave it out for both.
 - **Kinds:** `monster`, `spell`, `item` (magic items), `equipment`, `feat`, `background`, `species`, `class`, `subclass`.
 - **Monsters** can be written field by field, or as `"statblock"`: the text of a ```` ```5e ```` block (see [Playing 5e](5e.md)), which is often easier.
+- **Classes** work in **New character**, **Level up** and the sheet from their own level table: each row's `features` (an `Ability Score Improvement` or `Expertise` there asks for one), `slots` and `cantrips`, and `prepared` for how many spells the class knows or prepares at that level. Its subclass comes at its first feature's level. `"spellList": "Paladin"` casts from another class's list. A row's `extra` holds the class's own numbers; one named `…_uses` is a limited-use feature with pips on the sheet: `"extra": { "blood_maledict_uses": 2 }`. Features named `Group: Option` under a feature named `Group` are a choice ("Ward Stance: Ember" under "Ward Stance").
 - **Subclasses** name their class: `"class": "Barbarian"`.
 
 The full example is [5e-hearth-and-cinder.json](content/examples/5e-hearth-and-cinder.json): a subclass, a spell, a magic item, a feat and a monster.

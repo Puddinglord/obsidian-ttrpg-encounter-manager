@@ -895,6 +895,13 @@
 									"number"
 								]
 							},
+							"spellList": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The class whose spell list it casts from, when it isn't its own: \"Paladin\"."
+							},
 							"features": {
 								"type": "array",
 								"items": {
@@ -953,6 +960,18 @@
 										},
 										"cantrips": {
 											"type": "integer"
+										},
+										"prepared": {
+											"type": "integer",
+											"minimum": 0,
+											"description": "Spells known or prepared at this level (its table's column)."
+										},
+										"extra": {
+											"type": "object",
+											"additionalProperties": {
+												"type": "number"
+											},
+											"description": "The class's own numbers at this level. A name ending in _uses is a limited-use feature: { \"blood_maledict_uses\": 2 }."
 										}
 									},
 									"required": [

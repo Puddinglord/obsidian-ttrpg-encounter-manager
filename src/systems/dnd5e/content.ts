@@ -82,9 +82,13 @@ export const KINDS_5E: KindSpec[] = [
 		kind: 'class', label: 'Class', description: 'A whole class, with its features and level table.',
 		fields: named({
 			hitDie: { type: 'number', integer: true, min: 4, max: 12, required: true }, primary: text(), saves: { type: 'strings', required: true },
-			proficiencies: { type: 'strings' }, skillChoice: text(), spellcasting: text(),
+			proficiencies: { type: 'strings' }, skillChoice: text(), spellcasting: text(), spellList: text('The class whose spell list it casts from, when it isn\'t its own: "Paladin".'),
 			features: { type: 'list', of: levelFeature, required: true },
-			levels: { type: 'list', of: { level: { type: 'number', integer: true, min: 1, max: 20, required: true }, pb: { type: 'number', integer: true, required: true }, features: { type: 'strings' }, slots: { type: 'numbers' }, cantrips: { type: 'number', integer: true } } },
+			levels: { type: 'list', of: {
+				level: { type: 'number', integer: true, min: 1, max: 20, required: true }, pb: { type: 'number', integer: true, required: true }, features: { type: 'strings' }, slots: { type: 'numbers' },
+				cantrips: { type: 'number', integer: true }, prepared: { type: 'number', integer: true, min: 0, description: 'Spells known or prepared at this level (its table\'s column).' },
+				extra: { type: 'map', description: 'The class\'s own numbers at this level. A name ending in _uses is a limited-use feature: { "blood_maledict_uses": 2 }.' },
+			} },
 			subclasses: { type: 'list', of: { name: text(undefined, true), flavor: text(), desc: text(), features: { type: 'list', of: levelFeature } } },
 		}),
 	},

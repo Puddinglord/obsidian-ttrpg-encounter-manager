@@ -15,7 +15,7 @@ import { Frontmatter, newCharacterFm, optionGroupOf, readSheet5e, SKILLS, STANDA
 export { optionGroupOf };
 import type { Dnd5eEdition } from './editions';
 import { abilityMod } from './rules';
-import { ABILITIES, AbilityKey } from './types';
+import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
 
 export const ABILITY_OF: Record<string, AbilityKey> = { STR: 'str', DEX: 'dex', CON: 'con', INT: 'int', WIS: 'wis', CHA: 'cha' };
 const same = (a: string, b: string) => a.toLowerCase().replace(/[^a-z0-9]/g, '') === b.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -99,19 +99,27 @@ export function spellsAt(cls: Class5e | undefined, level: number): { cantrips: n
  */
 export function spellCount(edition: Dnd5eEdition, cls: Class5e | undefined, level: number, scores: Partial<Record<AbilityKey, number>>): { count: number; kind: 'known' | 'prepared' | 'spellbook' } | null {
 	if (!cls || !spellsAt(cls, level).maxLevel) return null;
-	if (same(cls.name, 'Wizard')) return { count: 6 + 2 * (level - 1), kind: 'spellbook' };
+	// A class that keeps a spellbook (its level 1 features say so): six spells, and two more each level.
+	if (cls.features.some(f => f.level === 1 && /spellbook/i.test(f.desc))) return { count: 6 + 2 * (level - 1), kind: 'spellbook' };
+	// The class table's own column (a content pack's), then the SRD's (creation.json).
+	const own = cls.levels.find(l => l.level === level)?.prepared;
+	if (typeof own === 'number' && own > 0) return { count: own, kind: 'prepared' };
 	const c = classCreation(edition, cls.name);
 	if (c?.prepared?.[level - 1]) return { count: c.prepared[level - 1], kind: 'prepared' };
 	if (c?.known?.[level - 1]) return { count: c.known[level - 1], kind: 'known' };
+	// 2014's prepared casters: the spellcasting modifier plus the caster's level (half a level for a half caster,
+	// whose table stops at 5th-level slots; a third for a third caster's 4th).
 	const ab = ABILITY_OF[(cls.spellcasting ?? '').toUpperCase()];
 	const mod = ab ? abilityMod(scores[ab] ?? 10) : 0;
-	const lv = same(cls.name, 'Paladin') ? Math.floor(level / 2) : level;
+	const top = spellsAt(cls, 20).maxLevel;
+	const lv = top <= 4 ? Math.floor(level / 3) : top <= 5 ? Math.floor(level / 2) : level;
 	return { count: Math.max(1, mod + lv), kind: 'prepared' };
 }
 
-/** The class's spells up to a level (0: cantrips only). */
+/** The class's spells up to a level (0: cantrips only), from its own list or the one it borrows (`spellList`). */
 export function classSpells(edition: Dnd5eEdition, cls: string, upTo: number, cantrips: boolean): string[] {
-	return compendium5e(edition).spells.filter(s => s.classes.some(c => same(c, cls)) && (cantrips ? s.level === 0 : s.level >= 1 && s.level <= upTo)).map(s => s.name).sort();
+	const list = classOf(edition, cls)?.spellList || cls;
+	return compendium5e(edition).spells.filter(s => s.classes.some(c => same(c, list)) && (cantrips ? s.level === 0 : s.level >= 1 && s.level <= upTo)).map(s => s.name).sort();
 }
 
 /** Expertise picks a class grants at exactly this level (its table): two for each Expertise, one for 2024's Deft Explorer. */
@@ -123,15 +131,23 @@ export function expertiseAt(cls: Class5e | undefined, level: number): number {
 /** 2024: how many kinds of weapons a class masters at a level (0 without Weapon Mastery). */
 export function masteryCount(edition: Dnd5eEdition, cls: Class5e | undefined, level: number): number {
 	if (edition !== '2024' || !cls?.features.some(f => f.name === 'Weapon Mastery' && f.level <= level)) return 0;
-	return classCreation(edition, cls.name)?.mastery?.[level - 1] ?? 2;
+	const own = cls.levels.find(l => l.level === level)?.extra?.weapon_mastery;
+	return typeof own === 'number' ? own : classCreation(edition, cls.name)?.mastery?.[level - 1] ?? 2;
 }
 
-/** 2024: the weapons a class can master (each with a mastery property; Rogues' are finesse or light, Barbarians' melee). */
+/**
+ * 2024: the weapons a class can master: each with a mastery property, among the weapons the class is proficient with
+ * (Simple, Martial, or named ones such as Rapiers), melee only when its Weapon Mastery says "Melee weapons".
+ */
 export function masteryWeapons(edition: Dnd5eEdition, cls: string): string[] {
+	const k = classOf(edition, cls);
+	const profs = (k?.proficiencies ?? []).map(p => p.toLowerCase());
+	const melee = /martial melee weapons|melee weapons of your choice/i.test(k?.features.find(f => f.name === 'Weapon Mastery')?.desc ?? '');
 	return compendium5e(edition).equipment.filter(e => e.mastery && e.damage).filter(e => {
-		if (same(cls, 'Rogue')) return (e.properties ?? []).some(p => /finesse|light/i.test(p));
-		if (same(cls, 'Barbarian')) return /melee/i.test(`${e.category} ${(e.tags ?? []).join(' ')}`);
-		return true;
+		const cat = `${e.category} ${(e.tags ?? []).join(' ')}`;
+		const named = profs.some(p => same(p.replace(/s$/, ''), e.name));
+		const ok = !k || named || (/simple/i.test(cat) && profs.some(p => /simple weapons/.test(p))) || (/martial/i.test(cat) && profs.some(p => /martial weapons/.test(p)));
+		return ok && (!melee || /melee/i.test(cat));
 	}).map(e => e.name).sort();
 }
 
@@ -256,11 +272,16 @@ const CLASS_PRIORITY: Record<string, AbilityKey[]> = {
 	paladin: ['str', 'cha', 'con'], ranger: ['dex', 'wis', 'con'], rogue: ['dex', 'con', 'wis'], sorcerer: ['cha', 'con', 'dex'], warlock: ['cha', 'con', 'dex'], wizard: ['int', 'con', 'dex'],
 };
 
-/** The class's priorities (another class's: its saves first), then Con, Dex, Str, Wis, Int, Cha. */
+/**
+ * The class's priorities, then Con, Dex, Str, Wis, Int, Cha. Any other class (a content pack's): its primary ability
+ * ("Strength or Dexterity"), its spellcasting ability, then its saves.
+ */
 function priority(d: Character5eDraft): AbilityKey[] {
 	const known = CLASS_PRIORITY[d.className.toLowerCase()];
-	const saves = classOf(d.edition, d.className)?.saves.map(s => ABILITY_OF[s.toUpperCase()]).filter(Boolean) ?? [];
-	return uniq([...(known ?? saves), 'con', 'dex', 'str', 'wis', 'int', 'cha'] as AbilityKey[]);
+	const cls = classOf(d.edition, d.className);
+	const named = (text: string | undefined) => ABILITIES.filter(a => new RegExp(`\\b(${a}|${ABILITY_NAME[a]})\\b`, 'i').test(text ?? ''));
+	const fromData = [...named(cls?.primary), ...named(cls?.spellcasting), ...(cls?.saves.map(s => ABILITY_OF[s.toUpperCase()]).filter(Boolean) ?? [])];
+	return uniq([...(known ?? fromData), 'con', 'dex', 'str', 'wis', 'int', 'cha'] as AbilityKey[]);
 }
 
 /** Scores (the standard array, or rolls) set out for the class: highest in its saves, then Con. */

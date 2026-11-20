@@ -29,7 +29,7 @@
 import { abilityMod } from './rules';
 import { Class5e, ClassFeature5e, compendium5e, Equipment5e, Item5e, Spell5e } from './compendium';
 import type { Dnd5eEdition } from './editions';
-import { ABILITIES, AbilityKey, Feature5e } from './types';
+import { ABILITIES, ABILITY_NAME, AbilityKey, Feature5e } from './types';
 
 export type Frontmatter = Record<string, unknown>;
 
@@ -196,6 +196,11 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		return { ...x, index, equipment: own ?? magic.base, item, bonus: magic.bonus };
 	});
 
+	// Unarmored Defense, from the feature's own words: 10 + Dex + the other ability it names, a shield allowed unless it says not.
+	const ud = (cls?.features ?? []).find(f => f.level <= level && /^Unarmored Defense/i.test(f.name));
+	const udAbility = ud ? ABILITIES.find(a => a !== 'dex' && new RegExp(`\\b${ABILITY_NAME[a]} modifiers?\\b|\\band ${ABILITY_NAME[a]}\\b`).test(ud.desc)) : undefined;
+	const unarmored = ud && udAbility ? { ability: udAbility, shield: !/(not|n't)\s[^.]*wielding a shield/i.test(ud.desc) } : undefined;
+
 	// AC: set by hand, else the armor worn (+ Dex as it allows) and a shield, else unarmored.
 	const isShield = (i: (typeof inventory)[number]) => /shield/i.test(i.equipment?.name ?? '') || i.equipment?.armorCategory === 'Shield' || /\bshield\b/i.test(i.name);
 	const worn = inventory.find(i => i.equipped && i.equipment?.ac && !isShield(i));
@@ -209,8 +214,7 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		const dex = a.dex ? (a.max !== undefined ? Math.min(a.max, mods.dex) : mods.dex) : 0;
 		ac = a.base + dex + shield + worn.bonus;
 		acFrom = `${worn.name}${a.dex ? ' + Dex' : ''}${shield ? ' + Shield' : ''}`;
-	} else if (cls?.name === 'Barbarian') { ac = 10 + mods.dex + mods.con + shield; acFrom = `Unarmored Defense${shield ? ' + Shield' : ''}`; }
-	else if (cls?.name === 'Monk' && !shield) { ac = 10 + mods.dex + mods.wis; acFrom = 'Unarmored Defense'; }
+	} else if (unarmored && (!shield || unarmored.shield)) { ac = 10 + mods.dex + mods[unarmored.ability] + shield; acFrom = `Unarmored Defense${shield ? ' + Shield' : ''}`; }
 	else { ac = 10 + mods.dex + shield; acFrom = `Unarmored${shield ? ' + Shield' : ''}`; }
 
 	// Spellcasting, from the class.

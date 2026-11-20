@@ -22,10 +22,13 @@ export interface Equipment5e {
 	armorCategory?: string; ac?: { base: number; dex: boolean; max?: number }; strMin?: number; stealthDisadvantage?: boolean; desc?: string;
 }
 export interface ClassFeature5e { level: number; name: string; desc: string }
-export interface ClassLevel5e { level: number; pb: number; features: string[]; slots?: number[]; cantrips?: number; extra?: Record<string, unknown> }
+/** A class table's row. `prepared`: spells known or prepared (a pack's column; the SRD's come from creation.json). `extra`: the class's own numbers. */
+export interface ClassLevel5e { level: number; pb: number; features: string[]; slots?: number[]; cantrips?: number; prepared?: number; extra?: Record<string, unknown> }
 export interface Subclass5e { name: string; flavor: string; desc: string; features: ClassFeature5e[] }
 export interface Class5e {
 	name: string; hitDie: number; primary?: string; saves: string[]; proficiencies: string[]; skillChoice: string; spellcasting?: string;
+	/** Casts from another class's spell list ("Paladin"); else its own name's. */
+	spellList?: string;
 	features: ClassFeature5e[]; levels: ClassLevel5e[]; subclasses: Subclass5e[];
 }
 export interface Species5e { name: string; size: string; speed: number; type?: string; abilityBonuses?: string; desc?: string; traits: Feature5e[]; subspecies: { name: string; desc?: string; traits: Feature5e[] }[] }

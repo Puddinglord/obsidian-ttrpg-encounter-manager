@@ -18,7 +18,9 @@ import {
 	swapScores, toolChoices, languageChoice, withArray,
 } from '../src/systems/dnd5e/character-draft';
 import { characterSchema, levelUpSchema, settle } from '../src/systems/dnd5e/character-wizard';
-import { compendium5e } from '../src/systems/dnd5e/compendium';
+import { Class5e, compendium5e, setContentLayer5e } from '../src/systems/dnd5e/compendium';
+import { featuresGained } from '../src/systems/dnd5e/character-draft';
+import { resources5e } from '../src/systems/dnd5e/sheet-actions';
 import type { Dnd5eEdition } from '../src/systems/dnd5e/editions';
 import type { Dnd5eRuntime } from '../src/systems/dnd5e/runtime';
 import { ABILITIES } from '../src/systems/dnd5e/types';
@@ -499,4 +501,89 @@ describe.each(EDITIONS)('the wizards drawn by the schema engine (%s)', (ed) => {
 		expect(preview.textContent).toContain(`max ${Number(fm.hp_max) + averageGain(newLevelUp5e(fm, ed, 'Vex'))}`);
 		expect((at4.output() as { data?: unknown }).data).toBe(at4.draft);
 	});
+});
+
+// ----------------------------------------------------------------------------
+// A class that isn't in the SRD (a content pack's, a class builder's later) goes through every step like an SRD class.
+
+describe('a content pack\'s own class, made and levelled like the SRD\'s', () => {
+	// A homebrew half caster: Paladin spells from level 2 by its own Prepared column and half-caster slots, a subclass at 3,
+	// increases at 4 and 8, expertise at 6, a counted feature of its own that comes back on a short rest, and a choice
+	// among its own options at 1.
+	const halfSlots = (l: number) => (l < 2 ? undefined : [l >= 3 ? 3 : 2, l >= 5 ? 2 : 0, l >= 9 ? 2 : 0, 0, 0, 0, 0, 0, 0]);
+	const table: Record<number, string[]> = { 1: ['Cinder Mark', 'Ward Stance'], 2: ['Spellcasting'], 3: ['Warden Order'], 4: ['Ability Score Improvement'], 6: ['Expertise'], 7: ['Warden Order feature'], 8: ['Ability Score Improvement'] };
+	const ash: Class5e = {
+		name: 'Ash Warden', hitDie: 10, primary: 'Strength or Charisma', saves: ['STR', 'CHA'], proficiencies: ['Light Armor', 'Medium Armor', 'Shields', 'Simple Weapons', 'Martial Weapons'],
+		skillChoice: 'Choose 2: Athletics, Insight, Intimidation, Persuasion, or Survival', spellcasting: 'CHA', spellList: 'Paladin',
+		features: [
+			{ level: 1, name: 'Cinder Mark', desc: 'You mark a creature you can see. You regain all expended uses when you finish a Short or Long Rest.' },
+			{ level: 1, name: 'Ward Stance', desc: 'Choose one of the following options.' },
+			{ level: 1, name: 'Ward Stance: Ember', desc: 'Your marked foes burn.' },
+			{ level: 1, name: 'Ward Stance: Ash', desc: 'Your marked foes choke.' },
+			{ level: 2, name: 'Spellcasting', desc: 'You cast Paladin spells, using Charisma.' },
+			{ level: 3, name: 'Warden Order', desc: 'Choose an order.' },
+			{ level: 4, name: 'Ability Score Improvement', desc: 'Increase one score by 2, or two by 1.' },
+			{ level: 6, name: 'Expertise', desc: 'Choose two of your skill proficiencies.' },
+			{ level: 8, name: 'Ability Score Improvement', desc: 'Increase one score by 2, or two by 1.' },
+		],
+		levels: Array.from({ length: 20 }, (_, i) => {
+			const l = i + 1;
+			return { level: l, pb: 2 + Math.floor(i / 4), features: table[l] ?? [], slots: halfSlots(l), prepared: l < 2 ? undefined : Math.floor(l / 2) + 1, extra: { cinder_mark_uses: l < 5 ? 2 : 3 } };
+		}),
+		subclasses: [{ name: 'Order of Embers', flavor: 'Warden Order', desc: '', features: [{ level: 3, name: 'Kindle', desc: 'Your mark sets fires.' }, { level: 7, name: 'Bonfire', desc: 'Your fires spread.' }] }],
+	};
+	const withPack = (fn: () => void) => {
+		setContentLayer5e(() => ({ compendium: { classes: [ash] }, subclasses: [], monsters: [] }));
+		try { fn(); } finally { setContentLayer5e(null); }
+	};
+
+	it('New character at 1: its skills, its own option, its counted feature, no spells yet; at 5: subclass, increase, prepared spells and slots from its table', () => withPack(() => {
+		const d = filled('2024', 'Ash Warden');
+		// Set out by its primary abilities: Strength, then Charisma.
+		expect([d.str, d.cha]).toEqual([15, 14]);
+		expect(optionGroups(classOf('2024', 'Ash Warden'), '', 1)).toEqual([{ group: 'Ward Stance', count: 1, from: ['Ward Stance: Ember', 'Ward Stance: Ash'] }]);
+		const s = sheetOf(d);
+		expect(s.hpMax).toBe(10 + s.mods.con);
+		expect(s.saves.str.proficient && s.saves.cha.proficient).toBe(true);
+		expect(s.skills.filter(k => k.proficient).map(k => k.name)).toEqual(expect.arrayContaining(['Athletics', 'Insight']));
+		expect(s.features.filter(f => f.source === 'Ash Warden').map(f => f.name)).toEqual(['Cinder Mark', 'Ward Stance', 'Ward Stance: Ember']);
+		expect(spellCount('2024', classOf('2024', 'Ash Warden'), 1, s.scores)).toBeNull();
+		expect(resources5e(s).map(r => [r.name, r.max, r.per])).toEqual([['Cinder Mark', 2, 'short']]);
+
+		const five = filled('2024', 'Ash Warden', { level: 5 });
+		expect(five.subclass).toBe('Order of Embers');
+		expect(five.increases!.map(i => i.level)).toEqual([4]);
+		const k = classOf('2024', 'Ash Warden')!;
+		expect(spellCount('2024', k, 5, finalScores(five))).toEqual({ count: 3, kind: 'prepared' });
+		// Its spells come from the Paladin's list, up to 2nd level.
+		expect(five.spells.every(n => compendium5e('2024').spells.find(x => x.name === n)!.classes.includes('Paladin'))).toBe(true);
+		const s5 = sheetOf(five);
+		expect(s5.spells.length).toBe(3);
+		expect(s5.slots.map(x => [x.level, x.max])).toEqual([[1, 3], [2, 2]]);
+		expect(s5.spellcasting).toEqual({ ability: 'cha', dc: 8 + 3 + s5.mods.cha, attack: 3 + s5.mods.cha });
+		expect(s5.features.map(f => f.name)).toContain('Kindle');
+		expect(resources5e(s5).find(r => r.name === 'Cinder Mark')!.max).toBe(3);
+	}));
+
+	it('Level up 1 → 8: spells by its Prepared column, its subclass at 3, increases at 4 and 8, expertise at 6, the subclass\'s feature at 7', () => withPack(() => {
+		const fm = characterFm(filled('2024', 'Ash Warden'));
+		const seen: Record<number, string[]> = {};
+		for (let l = 2; l <= 8; l++) {
+			const d = newLevelUp5e(fm, '2024', 'Ash');
+			seen[l] = new SchemaBuilder(plugin, levelUpSchema(rt('2024')), { fm, edition: '2024', name: 'Ash' }).steps().map(x => x.id);
+			if (needsSubclass(d)) d.subclass = 'Order of Embers';
+			if (l === 7) expect(featuresGained(d)).toEqual(['Bonfire']);
+			d.spells = compendium5e('2024').spells.filter(x => x.classes.includes('Paladin') && x.level >= 1 && x.level <= spellsAt(classOf('2024', 'Ash Warden'), l).maxLevel && !d.known.includes(x.name)).slice(0, newSpellCount(d)).map(x => x.name);
+			d.expertise = d.skillsNow.slice(0, expertiseAt(classOf('2024', 'Ash Warden'), l));
+			applyLevelUp5e(fm, d);
+		}
+		expect(seen).toEqual({
+			2: ['hp', 'spells'], 3: ['hp', 'subclass'], 4: ['hp', 'asi', 'spells'], 5: ['hp'], 6: ['hp', 'features', 'spells'], 7: ['hp'], 8: ['hp', 'asi', 'spells'],
+		});
+		const s = readSheet5e(fm, '2024', 'Ash');
+		// Five prepared at 8 by its column, and the Acolyte's Magic Initiate cantrips and spell.
+		expect([s.level, s.subclass, s.spells.length, (fm.expertise as string[]).length]).toEqual([8, 'Order of Embers', 5 + 3, 2]);
+		expect(s.hpMax).toBe(10 + s.mods.con + 7 * (6 + s.mods.con));
+		expect(s.features.map(f => f.name)).toEqual(expect.arrayContaining(['Kindle', 'Bonfire']));
+	}));
 });

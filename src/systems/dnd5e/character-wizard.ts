@@ -305,12 +305,12 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 					],
 				}] : []),
 				...(choiceRows.length ? [{ id: 'features', label: 'Features', icon: 'sparkles', title: 'New choices', rows: choiceRows }] : []),
-				...(newSpellLevel(d) > 0 || newCantrips(d) > 0 ? [{
+				...((newSpellLevel(d) > 0 && newSpellCount(d) > 0) || newCantrips(d) > 0 ? [{
 					id: 'spells', label: 'Spells', icon: 'wand-2', title: 'New spells',
 					rows: [
 						...(newCantrips(d) ? [{ type: 'chips' as const, key: 'cantrips', label: 'Cantrips', options: (x: LevelUp5eDraft) => classSpells(x.edition, x.className, 0, true).filter(n => !x.known.some(k => same(k, n))), max: () => newCantrips(d), hint: (x: LevelUp5eDraft) => `${x.cantrips.length} of ${newCantrips(d)}` }] : []),
-						...(newSpellLevel(d) > 0 ? [{
-							type: 'chips' as const, key: 'spells', label: spellWord(spellCount(d.edition, cls(d), d.level, d.scores)?.kind), max: () => newSpellCount(d) || 99,
+						...(newSpellLevel(d) > 0 && newSpellCount(d) > 0 ? [{
+							type: 'chips' as const, key: 'spells', label: spellWord(spellCount(d.edition, cls(d), d.level, d.scores)?.kind), max: () => newSpellCount(d),
 							hint: (x: LevelUp5eDraft) => (newSpellCount(x) ? `${x.spells.length} of ${newSpellCount(x)}` : `${x.spells.length} picked`),
 							options: (x: LevelUp5eDraft) => classSpells(x.edition, x.className, newSpellLevel(x), false).filter(n => !x.known.some(k => same(k, n))),
 							groups: (x: LevelUp5eDraft) => spellGroups(x.edition, x.className, newSpellLevel(x), x.known),

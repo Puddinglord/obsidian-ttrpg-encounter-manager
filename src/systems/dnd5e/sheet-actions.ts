@@ -155,9 +155,20 @@ export function resources5e(s: Sheet5e, spent: Record<string, number> = s.usesSp
 	add('Indomitable', n('indomitable_uses'), 'long');
 	if (cls.name === 'Bard' && s.level >= 1) add('Bardic Inspiration', Math.max(1, s.mods.cha), s.level >= 5 ? 'short' : 'long');
 	const have = new Set(list.map(r => key(r.name)));
+	const sub = cls.subclasses.find(x => key(x.name) === key(s.subclass));
+	// Any other class's own counted feature (a content pack's): a number in its table named <feature>_uses, back on the
+	// rest the feature's words name ("…when you finish a Short or Long Rest"), else a long rest.
+	for (const [k, v] of Object.entries(extra)) {
+		if (!/_uses$/.test(k) || typeof v !== 'number') continue;
+		const words = k.replace(/_uses$/, '').replace(/_/g, ' ');
+		const f = [...cls.features, ...(sub?.features ?? [])].find(x => key(baseName(x.name)) === key(words));
+		const name = f ? baseName(f.name) : words.replace(/\b\w/g, c => c.toUpperCase());
+		if (have.has(key(name))) continue;
+		add(name, v, /short (or long )?rest/i.test(f?.desc ?? '') ? 'short' : 'long');
+		have.add(key(name));
+	}
 	// Once-per-rest features, from their own words.
 	const once = /once you use this (feature|benefit)[^.]*until you finish a (short or long|long) rest|must finish a (short or long|long) rest before you can use it again|once per day when you finish a short rest/i;
-	const sub = cls.subclasses.find(x => key(x.name) === key(s.subclass));
 	for (const f of [...cls.features, ...(sub?.features ?? [])]) {
 		if (f.level > s.level) continue;
 		const name = baseName(f.name);
