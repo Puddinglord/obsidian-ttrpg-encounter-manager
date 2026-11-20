@@ -77,7 +77,7 @@ GNS.extraWounds = (n, on) => {
 GNS.woundsBox = (on, W = 190, extra = 0) => {
 	const total = 6 + extra, dead = on >= total;
 	return h('div.xns-wbox' + (extra ? '.has-extra' : ''), { title: `${on} of ${total} Wounds${extra ? ` (${extra} extra from a feature)` : ''}` },
-		(() => { const el = svg(`<path class="bx" vector-effect="non-scaling-stroke" d="M2 9h30c4 0 4 9 8 9H${W - 40}c4 0 4-9 8-9h30v66H2Z"/><path class="bd" d="M2 59H${W - 2}v16H2Z"/>`, W, 77, 'xns-wbox-bg'); el.setAttribute('preserveAspectRatio', 'none'); return el; })(),
+		(() => { const el = svg(`<path class="bx" vector-effect="non-scaling-stroke" d="M2 10h30c4 0 4 9 8 9H${W - 40}c4 0 4-9 8-9h30v66H2Z"/><path class="bd" d="M2 61H${W - 2}v15H2Z"/>`, W, 77, 'xns-wbox-bg'); el.setAttribute('preserveAspectRatio', 'none'); return el; })(),
 		h('span.l', icon('drop', 12), 'Wounds'), h('span.c', GN.wounds(dead ? 6 : Math.min(on, 5), 1.45)), h('span.f', h('b.ev-num', String(on)), ` of ${total}`),
 		extra ? h('span.x', { title: `${extra} extra Wounds` }, GNS.extraWounds(extra, dead ? extra : Math.max(0, on - 5))) : null);
 };
@@ -165,7 +165,7 @@ GNS.sheet = (c, state = 'full', opts = {}) => {
 		state === 'dying' ? h('div.xns-dying', h('b', 'Dying'), h('span', '1 action at most. Attacking costs a Wound unless you pass a DC 10 STR save; damage adds 2 Wounds, 3 on a crit.')) : null,
 		GNS.skills(c.skills),
 		h('div.xns-turn', h('span.l', 'Actions'), GN.acts(3, c.actions, true), h('small', state === 'dying' ? '1 while Dying' : `${c.actions} left this turn`), btn({ size: 'sm', icon: 'undo', text: 'End turn' }), h('span.sep'),
-			h('span.hd', h('span.l', 'Hit dice'), h('b.ev-num', `${c.hd.left}`), h('i'), h('b.ev-num', `${c.hd.max}${c.hd.die}`))),
+			h('span.hds', h('span.hd', h('span.l', 'Speed'), h('b.ev-num', String(c.speed))), h('span.hd', h('span.l', 'Hit dice'), h('b.ev-num', `${c.hd.left}`), h('i'), h('b.ev-num', `${c.hd.max}${c.hd.die}`)))),
 		GNS.classPanel(c),
 		h('div.xns-conds', h('span.l', 'Conditions'), h('div.ev-chips', state === 'mana' ? chip({ name: 'Concentrating', icon: 'concentration' }) : chip({ name: 'Raging', icon: 'flame' }), h('span.ev-chip.is-add', icon('plus', 13), 'Add'))),
 		h('div.x5s-tabs.xns-tabs', ['Actions', 'Abilities', 'Spells', 'Inventory 6/13', 'Notes'].map(t => h('span' + (t === (state === 'mana' ? 'Spells' : 'Actions') ? '.on' : ''), t))),

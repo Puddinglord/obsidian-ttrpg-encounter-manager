@@ -401,3 +401,37 @@ button.xns-die:focus-visible, .xns-die.is-picking { outline: 2px solid var(--g-o
 .xns-rcards { align-items: stretch; }
 .xns-rcard { aspect-ratio: auto; min-height: calc((100cqi - 3 * clamp(6px, 1.2cqi, 12px)) / 4 * 1.32); }
 @container (max-width: 500px) { .xns-rcard { min-height: calc((min(100cqi, 408px) - 8px) / 2 * 1.32); } }
+
+/* Built in the plugin (measured there in a hidden Obsidian, 250–900px), brought back here:
+   - Wounds' painted edges run 9 → 77 like every other box in its row (the path drew 8 → 76).
+   - Speed sits beside Hit dice in the Actions bar: the numbers a turn and a rest use.
+   - Skill names scale down only where they'd be cut off (10 across just over 700px, 5 across on a slim panel).
+   - Under 480px a feature's buttons move under its dice as one cluster when both don't fit.
+   - Under 270px (a slim Character panel) the band stacks: stats, Armor Initiative, Wounds, HP.
+   - The plugin's bundled Vollkorn needs no 2px nudge to meet the row's centre line (this page's web font does). */
+.xns-wbox .l { top: 1px; }
+.xns-wbox .c { top: 23px; }
+.xns-wbox .f { top: 61px; }
+.xns-turn .hds { display: inline-flex; align-items: center; gap: 18px; }
+.xns-sk .n { font-size: clamp(9px, calc((100cqi - 98px) / 59.7), 11px); }
+@container (max-width: 700px) { .xns-sk .n { font-size: 11px; } }
+@container (max-width: 400px) {
+	.xns-skills .cap { width: 7px; }
+	.xns-sk-row { gap: 1px; padding: 1px; }
+	.xns-sk .n { padding: 0 1px; font-size: clamp(7.5px, calc((100cqi - 30px) / 28.5), 11px); letter-spacing: 0; }
+}
+@container (max-width: 440px) { .xns-band { grid-template-columns: minmax(0, 1fr) minmax(150px, 1.25fr); } }
+@container (max-width: 270px) { .xns-band { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stats" "ai" "wounds" "hp"; gap: 10px; } }
+@container (max-width: 480px) {
+	.xns-class > .xns-feat { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+	.xns-feat > * { flex: 1 1 100%; }
+	.xns-feat > .o { flex: 1 1 auto; }
+	.xns-feat > .ev-cluster { flex: 0 0 auto; margin-left: auto; }
+	.xns-feat.is-pool > .o { flex: 1 1 100%; }
+}
+
+/* The tabs share a phone's width rather than running off it. */
+@container (max-width: 480px) {
+	.xns-tabs { gap: 0; }
+	.xns-tabs span { flex: 1 1 auto; padding: 10px 2px; text-align: center; white-space: nowrap; font-size: clamp(11.5px, calc(3.6cqi + 1px), 15px); }
+}
