@@ -64,7 +64,7 @@ export const dnd5eSystem: GameSystem = {
 		},
 		partyMember(plugin, fm, file) {
 			const edition = fm.edition !== undefined ? asEdition(fm.edition as string) : dnd5e().edition(file.path);
-			const s = readSheet5e(fm, edition, file.basename);
+			const s = readSheet5e(fm, edition, file.basename, dnd5e().homebrew.library(file.path));
 			return { id: `sheet:${file.path}`, name: s.name, level: s.level, maxHp: s.hpMax, defense: s.ac, ...(s.className ? { className: s.className } : {}) };
 		},
 	},

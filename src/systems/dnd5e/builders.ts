@@ -1,27 +1,39 @@
-// 5e's builders: a monster, a spell and a magic item, as schemas for core's
-// builder (core/builder/schema.ts). The numbers come from builder-model.ts;
-// the previews are the stat block and the compendium cards themselves.
+// 5e's builders: a monster, a spell and an item, as schemas for core's builder
+// (core/builder/schema.ts). The numbers and the wording come from
+// builder-model.ts (monsters) and homebrew-draft.ts (spells and items); the
+// previews are the stat block and the compendium cards themselves.
 
 import { checkHead, homeFolder, registerKind, statTiles } from '../../core/builder/frame';
 import { EntitySchema, FieldDef, schemaKind } from '../../core/builder/schema';
 import {
-	ABILITY_SHORT, Action5eDraft, attackAbility, CREATURE_TYPES, CRS, DAMAGE_TYPES, damageText, Feature5eDraft, fromMonster5e, hpOf, HIT_DIE, modOf, Monster5eDraft,
-	newAction5e, newFeature5e, newMonster5e, passivePerception, pbOf, saveBonus, SIZES, SKILL_ABILITY, skillBonus, toHit, toMonster5e, xpOfDraft,
+	ABILITY_SHORT, acNoteOf, acOf, Action5eDraft, ALIGNMENTS, ARMOR_5E, CONDITIONS_5E, CREATURE_TYPES, CRS, DAMAGE_TYPES, damageText, dcOf, Feature5eDraft, fromMonster5e, hpOf, HIT_DIE,
+	initiativeOfDraft, modOf, Monster5eDraft, newAction5e, newFeature5e, newMonster5e, passivePerception, pbOf, saveBonus, SIZES, SKILL_ABILITY, skillBonus, toHit, toMonster5e, USES_5E, xpOfDraft,
 } from './builder-model';
 import { renderCard5e } from './cards';
-import { Item5e, Spell5e, spellLine } from './compendium';
-import type { Dnd5eEdition } from './editions';
-import { ITEM_LANG, ITEM_TYPES_5E, itemLine5e, itemSource5e, RARITIES_5E, SCHOOLS_5E, SPELL_CLASSES_5E, SPELL_LANG, spellSource5e } from './homebrew';
+import { Equipment5e, equipmentLine, Item5e, Spell5e, spellLine } from './compendium';
+import { equipmentSource5e, ITEM_LANG, ITEM_TYPES_5E, itemSource5e, RARITIES_5E, SCHOOLS_5E, SPELL_CLASSES_5E, SPELL_LANG, spellSource5e } from './homebrew';
+import {
+	ARMOR_CATEGORIES_5E, BONUS_RARITY, CASTING_TIMES, fromEquipment5e, fromItem5e, fromSpell5e, Item5eDraft, MASTERIES_5E, newItem5e, newSpell5e, rulesSentence, Spell5eDraft,
+	SPELL_AREAS, SPELL_DURATIONS, toEquipment5e, toItem5e, toSpell5e, upcastSentence, weaponProperties5e,
+} from './homebrew-draft';
 import { toStatblockSource5e } from './parser';
-import { formatMod } from './rules';
+import { formatMod, xpForCr } from './rules';
 import type { Dnd5eRuntime } from './runtime';
-import { ABILITIES, AbilityKey, Dnd5eMonster } from './types';
+import { ABILITIES, ABILITY_NAME, AbilityKey, Dnd5eMonster } from './types';
+
+export { fromItem5e, fromSpell5e, newItem5e, newSpell5e, toItem5e, toSpell5e };
+export type { Item5eDraft, Spell5eDraft };
 
 const opts = (xs: readonly string[]) => () => xs.map(x => ({ value: x, label: x }));
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const DICE = ['4', '6', '8', '10', '12', '20'];
+const dieOpts = (none?: string) => () => [...(none !== undefined ? [{ value: '', label: none }] : []), ...DICE.map(s => ({ value: s, label: `d${s}` }))];
+const abilityOpts = () => ABILITIES.map(a => ({ value: a, label: ABILITY_NAME[a] }));
+const usesField = (): FieldDef => ({ type: 'choice', key: 'uses', label: 'Uses', dropdown: true, options: () => [{ value: '', label: 'Any time' }, ...USES_5E.map(u => ({ value: u, label: u }))] });
 const features = (key: string, label: string, add: string): FieldDef<Monster5eDraft> => ({
 	type: 'list', key, label, add, blank: newFeature5e,
-	title: (f, i) => (f as Feature5eDraft).name || `${label} ${i + 1}`,
-	item: () => [{ type: 'text', key: 'name', label: 'Name', words: true }, { type: 'textarea', key: 'desc', label: 'Text', rows: 2 }],
+	title: (f, i) => { const x = f as Feature5eDraft; return `${x.name || `${label} ${i + 1}`}${x.uses ? ` (${x.uses})` : ''}`; },
+	item: () => [[{ type: 'text', key: 'name', label: 'Name', words: true }, usesField()], { type: 'textarea', key: 'desc', label: 'Text', rows: 2 }],
 });
 
 // ----------------------------------------------------------------------------
@@ -31,6 +43,8 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 	const ability = (a: AbilityKey): FieldDef<Monster5eDraft> => ({
 		type: 'number', key: a, label: ABILITY_SHORT[a].toUpperCase(), min: 1, max: 30, placeholder: () => '10', hint: d => formatMod(modOf(d, a)),
 	});
+	const speed = (key: 'walk' | 'burrow' | 'climb' | 'fly' | 'swim', label: string): FieldDef<Monster5eDraft> => ({ type: 'number', key, label, min: 0, max: 300, step: 5, placeholder: () => (key === 'walk' ? '30' : '—') });
+	const sense = (key: 'blindsight' | 'darkvision' | 'tremorsense' | 'truesight', label: string): FieldDef<Monster5eDraft> => ({ type: 'number', key, label, min: 0, max: 500, step: 10, placeholder: () => '—' });
 	return {
 		kind: 'monster', noun: 'monster', icon: 'skull',
 		blank: (_p, path) => newMonster5e(rt.edition(path)),
@@ -40,53 +54,76 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 		},
 		steps: d => [
 			{
-				id: 'basics', label: 'Basics', icon: 'sparkles', title: 'What is it?', sub: 'Pick a size, type and challenge rating; proficiency, XP, hit points and attacks follow from them.',
+				id: 'basics', label: 'Basics', icon: 'sparkles', title: 'What is it?',
 				rows: [
 					{ type: 'text', key: 'name', label: 'Name', words: true, placeholder: 'Ember Hound' },
-					[{ type: 'choice', key: 'size', label: 'Size', options: opts(SIZES) }],
+					{ type: 'choice', key: 'size', label: 'Size', options: opts(SIZES), hint: x => `d${HIT_DIE[x.size] ?? 8} hit dice` },
 					[
-						{ type: 'choice', key: 'type', label: 'Type', options: opts(CREATURE_TYPES), dropdown: true },
+						{ type: 'choice', key: 'type', label: 'Type', options: x => [...new Set([...CREATURE_TYPES, x.type])].map(t => ({ value: t, label: t })), dropdown: true },
 						{ type: 'text', key: 'tags', label: 'Tags', placeholder: '(goblinoid)' },
 					],
 					[
 						{ type: 'choice', key: 'cr', label: 'Challenge', options: () => CRS.map(c => ({ value: c, label: `CR ${c}` })), dropdown: true, hint: x => `PB ${formatMod(pbOf(x))} · ${xpOfDraft(x).toLocaleString('en-US')} XP` },
-						{ type: 'text', key: 'alignment', label: 'Alignment', placeholder: 'Neutral' },
+						{ type: 'choice', key: 'alignment', label: 'Alignment', dropdown: true, options: x => [...new Set([...ALIGNMENTS, x.alignment].filter(Boolean))].map(a => ({ value: a, label: cap(a) })) },
 					],
+					...(d.edition === '2024' ? [{ type: 'toggle' as const, key: 'lair', label: 'Has a lair', hint: (x: Monster5eDraft) => (x.lair ? `${xpForCr(CRS[Math.min(CRS.length - 1, CRS.indexOf(x.cr) + 1)]).toLocaleString('en-US')} XP in its lair` : '') }] : []),
 				],
 			},
 			{
-				id: 'stats', label: 'Stats', icon: 'bar-chart-3', title: 'Abilities, armor and hit points',
+				id: 'defense', label: 'Armor', icon: 'shield', title: 'Armor, hit points and speed',
+				rows: [
+					[
+						{ type: 'choice', key: 'armor', label: 'Armor', dropdown: true, options: () => [{ value: '', label: 'None' }, { value: 'natural', label: 'Natural armor' }, ...Object.keys(ARMOR_5E).map(a => ({ value: a, label: a }))] },
+						{ type: 'toggle', key: 'shield', label: 'Shield' },
+					],
+					[
+						{ type: 'number', key: 'ac', label: 'AC', min: 1, max: 30, placeholder: x => String(acOf({ ...x, ac: undefined })) },
+						{ type: 'text', key: 'acNote', label: 'AC note', placeholder: d.edition === '2014' ? 'natural armor' : 'mage armor', show: x => x.edition === '2014' || x.armor === 'natural' || !!x.acNote, hint: x => (x.acNote ? '' : acNoteOf(x)) },
+					],
+					[
+						{ type: 'number', key: 'hitDice', label: 'Hit dice', min: 1, max: 99, placeholder: () => '1', hint: x => `d${HIT_DIE[x.size] ?? 8}` },
+						{ type: 'number', key: 'hp', label: 'HP', min: 1, max: 9999, placeholder: x => String(hpOf({ ...x, hp: undefined }).hp), hint: x => hpOf(x).formula ?? 'typed' },
+					],
+					[speed('walk', 'Speed'), speed('fly', 'Fly'), { type: 'toggle', key: 'hover', label: 'Hover', show: x => !!x.fly }],
+					[speed('climb', 'Climb'), speed('swim', 'Swim'), speed('burrow', 'Burrow')],
+					{ type: 'text', key: 'speed', label: 'Other speed', placeholder: '30 ft. in wolf form' },
+				],
+			},
+			{
+				id: 'abilities', label: 'Abilities', icon: 'bar-chart-3', title: 'Abilities and saving throws',
 				rows: [
 					[ability('str'), ability('dex'), ability('con')],
 					[ability('int'), ability('wis'), ability('cha')],
-					[
-						{ type: 'number', key: 'ac', label: 'AC', min: 1, max: 30, placeholder: x => String(10 + modOf(x, 'dex')) },
-						{ type: 'text', key: 'acNote', label: 'Armor', placeholder: 'natural armor' },
-					],
-					[
-						{ type: 'number', key: 'hitDice', label: 'Hit dice', min: 1, max: 99, placeholder: () => '1', hint: x => `d${HIT_DIE[x.size] ?? 8} each` },
-						{ type: 'number', key: 'hp', label: 'HP', min: 1, max: 9999, placeholder: x => String(hpOf({ ...x, hp: undefined }).hp), hint: x => hpOf(x).formula ?? 'typed' },
-					],
-					{ type: 'text', key: 'speed', label: 'Speed', placeholder: '30 ft., fly 60 ft.' },
+					{ type: 'chips', key: 'saves', label: 'Saving throw proficiencies', options: () => ABILITIES.map(a => ABILITY_SHORT[a]), meta: (s, x) => formatMod(saveBonus({ ...x, saves: [...new Set([...x.saves, s])] }, ABILITIES.find(a => ABILITY_SHORT[a] === s)!)) },
+					...(d.edition === '2024' ? [[
+						{ type: 'choice' as const, key: 'initProf', label: 'Initiative', numeric: true, options: () => ['Dex', 'Proficient', 'Expertise'].map((label, n) => ({ value: String(n), label })), hint: (x: Monster5eDraft) => `${formatMod(initiativeOfDraft(x))} (${10 + initiativeOfDraft(x)})` },
+						{ type: 'number' as const, key: 'init', label: 'Typed', min: -10, max: 30, placeholder: (x: Monster5eDraft) => String(initiativeOfDraft({ ...x, init: undefined })) },
+					]] : []),
 				],
 			},
 			{
-				id: 'proficiencies', label: 'Skills', icon: 'target', title: 'Saves, skills and senses',
+				id: 'senses', label: 'Skills', icon: 'target', title: 'Skills, senses and languages',
 				rows: [
-					{ type: 'chips', key: 'saves', label: 'Saving throws', options: () => ABILITIES.map(a => ABILITY_SHORT[a]), hint: x => x.saves.map(s => `${s} ${formatMod(saveBonus(x, ABILITIES.find(a => ABILITY_SHORT[a] === s)!))}`).join(', ') },
-					{ type: 'chips', key: 'skills', label: 'Skills', options: () => Object.keys(SKILL_ABILITY), hint: x => x.skills.map(s => `${s} ${formatMod(skillBonus(x, s))}`).join(', ') },
-					{ type: 'chips', key: 'expertise', label: 'Expertise', help: 'Double proficiency.', options: () => Object.keys(SKILL_ABILITY), show: x => x.skills.length > 0 },
+					{ type: 'chips', key: 'skills', label: 'Skills', options: () => Object.keys(SKILL_ABILITY), meta: (s, x) => formatMod(skillBonus({ ...x, skills: [...new Set([...x.skills, s])] }, s)) },
+					{ type: 'chips', key: 'expertise', label: 'Expertise', options: x => x.skills, show: x => x.skills.length > 0, meta: (s, x) => formatMod(skillBonus({ ...x, expertise: [...new Set([...x.expertise, s])] }, s)) },
+					[sense('darkvision', 'Darkvision'), sense('blindsight', 'Blindsight'), { type: 'toggle', key: 'blind', label: 'Blind beyond it', show: x => !!x.blindsight }],
+					[sense('tremorsense', 'Tremorsense'), sense('truesight', 'Truesight')],
 					[
-						{ type: 'text', key: 'senses', label: 'Senses', placeholder: 'Darkvision 60 ft.', hint: x => `Passive Perception ${passivePerception(x)}` },
-						{ type: 'text', key: 'languages', label: 'Languages', placeholder: 'Common' },
+						{ type: 'text', key: 'senses', label: 'Other senses', placeholder: 'unimpeded by magical darkness', hint: x => `Passive Perception ${passivePerception(x)}` },
+						{ type: 'text', key: 'languages', label: 'Languages', placeholder: 'Common, Draconic' },
 					],
+				],
+			},
+			{
+				id: 'defenses', label: 'Defenses', icon: 'shield-half', title: 'Resistances and immunities',
+				rows: [
+					{ type: 'chips', key: 'resist', label: 'Resistances', options: () => [...DAMAGE_TYPES] },
+					{ type: 'chips', key: 'immune', label: 'Damage immunities', options: () => [...DAMAGE_TYPES] },
+					{ type: 'chips', key: 'vulnerable', label: 'Vulnerabilities', options: () => [...DAMAGE_TYPES] },
+					{ type: 'chips', key: 'condImmune', label: 'Condition immunities', options: () => [...CONDITIONS_5E] },
 					[
-						{ type: 'text', key: 'resistances', label: 'Resistances', placeholder: 'Fire, Poison' },
-						{ type: 'text', key: 'immunities', label: 'Immunities', placeholder: 'Poison' },
-					],
-					[
-						{ type: 'text', key: 'vulnerabilities', label: 'Vulnerabilities', placeholder: 'Cold' },
-						{ type: 'text', key: 'conditionImmunities', label: 'Condition immunities', placeholder: 'Poisoned' },
+						{ type: 'text', key: 'resistances', label: 'Other resistances', placeholder: d.edition === '2014' ? 'bludgeoning from nonmagical attacks' : '' },
+						{ type: 'text', key: 'immunities', label: 'Other immunities', placeholder: '' },
 					],
 					{ type: 'text', key: 'gear', label: 'Gear', placeholder: 'Scimitar, Shortbow', show: x => x.edition === '2024' },
 				],
@@ -99,37 +136,73 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 						type: 'list', key: 'actions', label: 'Actions', add: 'Add an action', blank: () => newAction5e(),
 						title: (a, i) => {
 							const x = a as Action5eDraft;
-							if (x.kind === 'text') return x.name || `Action ${i + 1}`;
-							return `${x.name || `Attack ${i + 1}`} · ${formatMod(toHit(d, x))} · ${damageText(d, x)} ${x.damageType}`;
+							const name = `${x.name || `Action ${i + 1}`}${x.uses ? ` (${x.uses})` : ''}`;
+							if (x.kind === 'text') return name;
+							if (x.kind === 'save') return `${name} · DC ${dcOf(d, x.dcAbility ?? 'con')} ${ABILITY_SHORT[x.save ?? 'dex']}`;
+							return `${name} · ${formatMod(toHit(d, x))} · ${damageText(d, x)} ${x.damageType}`;
 						},
 						item: (a) => {
 							const x = a as Action5eDraft;
+							const attack = () => x.kind === 'melee' || x.kind === 'ranged' || x.kind === 'both';
 							return [
 								[
 									{ type: 'text', key: 'name', label: 'Name', words: true, placeholder: 'Bite' },
-									{ type: 'choice', key: 'kind', label: 'Kind', options: () => [{ value: 'melee', label: 'Melee' }, { value: 'ranged', label: 'Ranged' }, { value: 'text', label: 'Other' }] },
+									usesField(),
+								],
+								{ type: 'choice', key: 'kind', label: 'Kind', options: () => [{ value: 'melee', label: 'Melee' }, { value: 'ranged', label: 'Ranged' }, { value: 'both', label: 'Melee or ranged' }, { value: 'save', label: 'Saving throw' }, { value: 'text', label: 'Other' }] },
+								[
+									{ type: 'choice', key: 'ability', label: 'Uses', show: attack, options: () => [...(['str', 'dex'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] })), { value: 'finesse', label: 'Better of Str/Dex' }, ...(['con', 'int', 'wis', 'cha'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] }))], dropdown: true, hint: () => `${formatMod(toHit(d, x))} to hit` },
+									{ type: 'number', key: 'reach', label: 'Reach (ft.)', min: 5, max: 30, step: 5, placeholder: () => '5', show: () => x.kind === 'melee' || x.kind === 'both' },
+									{ type: 'text', key: 'range', label: 'Range (ft.)', placeholder: x.kind === 'both' ? '20/60' : '80/320', show: () => x.kind === 'ranged' || x.kind === 'both' },
 								],
 								[
-									{ type: 'choice', key: 'ability', label: 'Uses', show: () => x.kind !== 'text', options: () => [...(['str', 'dex'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] })), { value: 'finesse', label: 'Better of Str/Dex' }, ...(['con', 'int', 'wis', 'cha'] as AbilityKey[]).map(k => ({ value: k, label: ABILITY_SHORT[k] }))], dropdown: true, hint: () => `${ABILITY_SHORT[attackAbility(d, x)]} ${formatMod(toHit(d, x))} to hit` },
-									{ type: 'number', key: 'reach', label: 'Reach (ft.)', min: 5, max: 30, step: 5, placeholder: () => '5', show: () => x.kind === 'melee' },
-									{ type: 'text', key: 'range', label: 'Range (ft.)', placeholder: '80/320', show: () => x.kind === 'ranged' },
+									{ type: 'choice', key: 'save', label: 'Save', dropdown: true, show: () => x.kind === 'save', options: abilityOpts },
+									{ type: 'choice', key: 'dcAbility', label: 'DC from', dropdown: true, show: () => x.kind === 'save', options: abilityOpts, hint: () => `DC ${dcOf(d, x.dcAbility ?? 'con')}` },
 								],
+								{ type: 'text', key: 'area', label: d.edition === '2014' ? 'Who saves' : 'Who and where', show: () => x.kind === 'save', placeholder: d.edition === '2014' ? 'each creature in a 60-foot cone' : 'each creature in a 60-foot Cone' },
 								[
-									{ type: 'number', key: 'count', label: 'Dice', min: 1, max: 40, placeholder: () => '1', show: () => x.kind !== 'text' },
-									{ type: 'choice', key: 'sides', label: 'Die', dropdown: true, show: () => x.kind !== 'text', options: () => ['4', '6', '8', '10', '12', '20'].map(s => ({ value: s, label: `d${s}` })) },
+									{ type: 'number', key: 'count', label: 'Dice', min: 0, max: 40, placeholder: () => '1', show: () => x.kind !== 'text' },
+									{ type: 'choice', key: 'sides', label: 'Die', dropdown: true, show: () => x.kind !== 'text', options: dieOpts(x.kind === 'save' ? 'None' : undefined) },
 									{ type: 'choice', key: 'damageType', label: 'Damage', show: () => x.kind !== 'text', options: opts(DAMAGE_TYPES), dropdown: true, hint: () => damageText(d, x) },
 								],
-								{ type: 'text', key: 'extra', label: 'And then', placeholder: 'If the target is a creature, it has the Prone condition.', show: () => x.kind !== 'text' },
-								{ type: 'textarea', key: 'desc', label: 'Text', rows: 2, show: () => x.kind === 'text' },
+								{ type: 'toggle', key: 'half', label: 'Half damage on a success', show: () => x.kind === 'save' },
+								{ type: 'toggle', key: 'spell', label: 'Spell attack', show: () => attack() && d.edition === '2014' },
+								[
+									{ type: 'number', key: 'plusCount', label: 'Extra dice', min: 1, max: 40, placeholder: () => '1', show: attack },
+									{ type: 'choice', key: 'plusSides', label: 'Extra die', dropdown: true, show: attack, options: dieOpts('None') },
+									{ type: 'choice', key: 'plusType', label: 'Extra damage', dropdown: true, show: () => attack() && !!x.plusSides, options: opts(DAMAGE_TYPES) },
+								],
+								{ type: 'text', key: 'plusWhen', label: 'Extra damage when', placeholder: 'if the attack roll had Advantage', show: () => attack() && !!x.plusSides },
+								{ type: 'text', key: 'extra', label: 'And then', placeholder: 'If the target is a creature, it has the Prone condition.', show: attack },
+								{ type: 'text', key: 'effect', label: 'On a failure', show: () => x.kind === 'save', placeholder: d.edition === '2014' ? 'become frightened for 1 minute' : 'The target has the Frightened condition until the end of its next turn.' },
+								{ type: 'textarea', key: 'desc', label: 'Text', rows: 2, show: () => x.kind === 'text', placeholder: 'The dragon makes three Rend attacks.' },
 							];
 						},
 					},
+				],
+			},
+			{
+				id: 'spells', label: 'Spells', icon: 'wand-2', title: 'Spellcasting',
+				rows: [
+					[
+						{ type: 'choice', key: 'spellAbility', label: 'Spellcasting ability', dropdown: true, options: () => [{ value: '', label: 'None' }, ...(['int', 'wis', 'cha'] as AbilityKey[]).map(a => ({ value: a, label: ABILITY_NAME[a] }))], hint: x => { const a = ABILITIES.find(k => k === x.spellAbility); return a ? `DC ${dcOf(x, a)} · ${formatMod(pbOf(x) + modOf(x, a))} to hit` : ''; } },
+						{ type: 'toggle', key: 'noMaterial', label: 'No material components', show: x => !!x.spellAbility },
+					],
+					{ type: 'text', key: 'atWill', label: 'At will', placeholder: 'Detect Magic, Mage Hand', show: x => !!x.spellAbility },
+					{ type: 'text', key: 'day3', label: '3/Day each', placeholder: 'Misty Step', show: x => !!x.spellAbility },
+					{ type: 'text', key: 'day2', label: '2/Day each', placeholder: '', show: x => !!x.spellAbility },
+					{ type: 'text', key: 'day1', label: '1/Day each', placeholder: 'Fireball', show: x => !!x.spellAbility },
+				],
+			},
+			{
+				id: 'reactions', label: 'Reactions', icon: 'zap', title: 'Bonus actions and reactions',
+				rows: [
 					features('bonusActions', 'Bonus actions', 'Add a bonus action'),
 					features('reactions', 'Reactions', 'Add a reaction'),
 				],
 			},
 			{
-				id: 'legendary', label: 'Legendary', icon: 'crown', title: 'Legendary actions', sub: 'Leave empty for an ordinary monster.',
+				id: 'legendary', label: 'Legendary', icon: 'crown', title: 'Legendary actions',
 				rows: [
 					{ type: 'number', key: 'legendaryUses', label: 'Uses per round', min: 1, max: 5, placeholder: () => '3', show: x => x.legendary.length > 0 },
 					features('legendary', 'Legendary actions', 'Add a legendary action'),
@@ -143,9 +216,10 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 			const m = toMonster5e(d);
 			checkHead(el, { kicker: 'Challenge', value: `CR ${d.cr}`, tag: `${d.edition} rules` });
 			statTiles(el, [
-				{ label: 'XP', value: xpOfDraft(d).toLocaleString('en-US'), lead: true },
+				{ label: 'XP', value: xpOfDraft(d).toLocaleString('en-US'), lead: true, sub: m.xpLair ? `${m.xpLair.toLocaleString('en-US')} in lair` : undefined },
 				{ label: 'AC', value: String(m.ac), sub: m.acNote || undefined },
 				{ label: 'HP', value: String(m.hp), sub: m.hpFormula || undefined },
+				...(d.edition === '2024' ? [{ label: 'Init', value: formatMod(initiativeOfDraft(d)) }] : []),
 				{ label: 'PB', value: formatMod(pbOf(d)) },
 			]);
 		},
@@ -158,55 +232,7 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 // ----------------------------------------------------------------------------
 // Spells
 
-export interface Spell5eDraft extends Record<string, unknown> {
-	edition: Dnd5eEdition;
-	name: string;
-	level?: number;
-	school: string;
-	castingTime: string;
-	range: string;
-	components: string[];
-	material: string;
-	duration: string;
-	concentration: boolean;
-	ritual: boolean;
-	classes: string[];
-	desc: string;
-	higherLevel: string;
-}
-
-const CASTING = ['Action', 'Bonus Action', 'Reaction', '1 minute', '10 minutes', '1 hour'];
-
-export function newSpell5e(edition: Dnd5eEdition): Spell5eDraft {
-	return {
-		edition, name: '', level: 1, school: 'Evocation', castingTime: edition === '2014' ? '1 action' : 'Action', range: '60 feet', components: ['V', 'S'], material: '',
-		duration: 'Instantaneous', concentration: false, ritual: false, classes: [], desc: '', higherLevel: '',
-	};
-}
-
-/** The draft as a spell. 2014 writes "1 action" and "Concentration, up to 1 minute"; so does this. */
-export function toSpell5e(d: Spell5eDraft): Spell5e {
-	const comps = ['V', 'S', 'M'].filter(c => d.components.includes(c)).map(c => (c === 'M' && d.material.trim() ? `M (${d.material.trim()})` : c)).join(', ') || 'V';
-	const casting = d.edition === '2014' && /^(action|bonus action|reaction)$/i.test(d.castingTime) ? `1 ${d.castingTime.toLowerCase()}` : d.castingTime;
-	const duration = d.concentration && !/^concentration/i.test(d.duration) ? `Concentration, up to ${d.duration.replace(/^up to\s+/i, '')}` : d.duration;
-	const s: Spell5e = {
-		name: d.name.trim() || 'Spell', level: d.level ?? 1, school: d.school, castingTime: casting, range: d.range.trim() || 'Self', components: comps,
-		duration: duration.trim() || 'Instantaneous', desc: d.desc.trim(), classes: SPELL_CLASSES_5E.filter(c => d.classes.includes(c)),
-	};
-	if (d.higherLevel.trim()) s.higherLevel = d.higherLevel.trim();
-	if (d.concentration || /^concentration/i.test(duration)) s.concentration = true;
-	if (d.ritual) s.ritual = true;
-	return s;
-}
-
-export function fromSpell5e(s: Spell5e, edition: Dnd5eEdition): Spell5eDraft {
-	const m = /\bM\s*\(([^)]*)\)/.exec(s.components);
-	return {
-		...newSpell5e(edition), name: s.name, level: s.level, school: s.school, castingTime: s.castingTime.replace(/^1 (action|bonus action|reaction)$/i, (_x, w: string) => w.replace(/\b\w/g, c => c.toUpperCase())),
-		range: s.range, components: ['V', 'S', 'M'].filter(c => new RegExp(`\\b${c}\\b`).test(s.components)), material: m?.[1] ?? '',
-		duration: s.duration.replace(/^concentration,\s*up to\s+/i, ''), concentration: !!s.concentration, ritual: !!s.ritual, classes: [...s.classes], desc: s.desc, higherLevel: s.higherLevel ?? '',
-	};
-}
+const ORD = ['Cantrip', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th'];
 
 export function spellSchema(rt: Dnd5eRuntime): EntitySchema<Spell5eDraft> {
 	return {
@@ -216,13 +242,13 @@ export function spellSchema(rt: Dnd5eRuntime): EntitySchema<Spell5eDraft> {
 			const s = (seed as { spell?: Spell5e } | undefined)?.spell;
 			return s ? fromSpell5e(s, rt.edition(path)) : undefined;
 		},
-		steps: () => [
+		steps: d => [
 			{
 				id: 'basics', label: 'Basics', icon: 'sparkles', title: 'What are you casting?',
 				rows: [
 					{ type: 'text', key: 'name', label: 'Name', words: true, placeholder: 'Ember Lash' },
 					[
-						{ type: 'number', key: 'level', label: 'Level', min: 0, max: 9, placeholder: () => '1', hint: d => (d.level === 0 ? 'Cantrip' : `Level ${d.level ?? 1}`) },
+						{ type: 'choice', key: 'level', label: 'Level', dropdown: true, numeric: true, rebuilds: true, options: x => ORD.map((o, i) => ({ value: String(i), label: i === 0 ? 'Cantrip' : x.edition === '2014' ? `${o} level` : `Level ${i}` })) },
 						{ type: 'choice', key: 'school', label: 'School', options: opts(SCHOOLS_5E), dropdown: true },
 					],
 					{ type: 'chips', key: 'classes', label: 'Classes', options: () => [...SPELL_CLASSES_5E] },
@@ -232,23 +258,45 @@ export function spellSchema(rt: Dnd5eRuntime): EntitySchema<Spell5eDraft> {
 				id: 'casting', label: 'Casting', icon: 'hand', title: 'Casting',
 				rows: [
 					[
-						{ type: 'choice', key: 'castingTime', label: 'Casting time', options: d => [...new Set([...CASTING, d.castingTime])].map(c => ({ value: c, label: c })), dropdown: true },
-						{ type: 'text', key: 'range', label: 'Range', placeholder: '60 feet' },
+						{ type: 'choice', key: 'castingTime', label: 'Casting time', options: x => [...new Set([...CASTING_TIMES, x.castingTime])].map(c => ({ value: c, label: c })), dropdown: true },
+						{ type: 'toggle', key: 'ritual', label: 'Ritual' },
+					],
+					{ type: 'text', key: 'trigger', label: 'Taken when', placeholder: 'you are hit by an attack roll', show: x => /reaction|bonus action/i.test(x.castingTime) },
+					[
+						{ type: 'choice', key: 'rangeKind', label: 'Range', dropdown: true, show: x => !x.range, options: () => [{ value: 'self', label: 'Self' }, { value: 'touch', label: 'Touch' }, { value: 'feet', label: 'Feet' }, { value: 'miles', label: 'Miles' }, { value: 'sight', label: 'Sight' }, { value: 'unlimited', label: 'Unlimited' }, { value: 'special', label: 'Special' }] },
+						{ type: 'number', key: 'distance', label: 'How far', min: 0, max: 5000, step: 5, placeholder: () => '60', show: x => !x.range && (x.rangeKind === 'feet' || x.rangeKind === 'miles') },
+					],
+					{ type: 'text', key: 'range', label: 'Range as written', show: x => !!x.range, placeholder: '60 feet' },
+					[
+						{ type: 'choice', key: 'area', label: 'Area', dropdown: true, options: () => [{ value: '', label: 'None' }, ...SPELL_AREAS.map(a => ({ value: a, label: cap(a) }))] },
+						{ type: 'number', key: 'areaSize', label: 'Size (ft.)', min: 5, max: 500, step: 5, placeholder: () => '20', show: x => !!x.area },
 					],
 					{ type: 'chips', key: 'components', label: 'Components', options: () => ['V', 'S', 'M'] },
-					{ type: 'text', key: 'material', label: 'Material', placeholder: 'a pinch of ash', show: d => d.components.includes('M') },
+					{ type: 'text', key: 'material', label: 'Material', placeholder: 'a pinch of ash', show: x => x.components.includes('M') },
 					[
-						{ type: 'text', key: 'duration', label: 'Duration', placeholder: 'Instantaneous, 1 minute…' },
+						{ type: 'choice', key: 'duration', label: 'Duration', dropdown: true, options: x => [...new Set([...SPELL_DURATIONS, x.duration])].map(v => ({ value: v, label: v })) },
 						{ type: 'toggle', key: 'concentration', label: 'Concentration' },
-						{ type: 'toggle', key: 'ritual', label: 'Ritual' },
 					],
 				],
 			},
 			{
 				id: 'effect', label: 'Effect', icon: 'flame', title: 'What it does',
 				rows: [
-					{ type: 'textarea', key: 'desc', label: 'Text', rows: 6, placeholder: 'Each creature in a 20-foot-radius Sphere makes a Dexterity saving throw, taking 8d6 Fire damage on a failed save…' },
-					{ type: 'textarea', key: 'higherLevel', label: 'At higher levels', rows: 2, placeholder: 'The damage increases by 1d6 for each spell slot level above 3.' },
+					[
+						{ type: 'choice', key: 'attack', label: 'Attack or save', dropdown: true, options: () => [{ value: '', label: 'Neither' }, { value: 'melee', label: 'Melee spell attack' }, { value: 'ranged', label: 'Ranged spell attack' }, { value: 'save', label: 'Saving throw' }] },
+						{ type: 'choice', key: 'save', label: 'Save', dropdown: true, show: x => x.attack === 'save', options: abilityOpts },
+					],
+					[
+						{ type: 'number', key: 'dmgCount', label: 'Dice', min: 1, max: 40, placeholder: () => '1', show: x => !!x.attack },
+						{ type: 'choice', key: 'dmgSides', label: 'Die', dropdown: true, show: x => !!x.attack, options: dieOpts('No damage') },
+						{ type: 'choice', key: 'dmgType', label: 'Damage', dropdown: true, show: x => !!x.attack && !!x.dmgSides, options: opts(DAMAGE_TYPES) },
+					],
+					[
+						{ type: 'toggle', key: 'half', label: 'Half on a success', show: x => x.attack === 'save' && !!x.dmgSides },
+						{ type: 'number', key: 'upcast', label: d.level === 0 ? 'Dice at 5, 11, 17' : 'Dice per slot level', min: 0, max: 10, placeholder: () => '0', show: x => !!x.attack && !!x.dmgSides },
+					],
+					{ type: 'textarea', key: 'desc', label: 'Text', rows: 5, placeholder: d.attack ? 'A whip of fire lashes out at a creature you can see within range.' : 'Each creature in a 20-foot-radius Sphere makes a Dexterity saving throw, taking 8d6 Fire damage on a failed save…', hint: x => (rulesSentence(x) ? 'Worded for you' : '') },
+					{ type: 'textarea', key: 'higherLevel', label: d.level === 0 ? 'Cantrip upgrade' : d.edition === '2014' ? 'At higher levels' : 'Using a higher-level spell slot', rows: 2, placeholder: upcastSentence(d) || (d.level === 0 ? 'The damage increases by 1d10 when you reach levels 5 (2d10), 11 (3d10), and 17 (4d10).' : 'The damage increases by 1d6 for each spell slot level above 3.') },
 				],
 			},
 		],
@@ -264,78 +312,108 @@ export function spellSchema(rt: Dnd5eRuntime): EntitySchema<Spell5eDraft> {
 }
 
 // ----------------------------------------------------------------------------
-// Magic items
-
-export interface Item5eDraft extends Record<string, unknown> {
-	edition: Dnd5eEdition;
-	name: string;
-	type: string;
-	/** "(Longsword)", "(any heavy armor)". */
-	subtype: string;
-	rarity: string;
-	attunement: boolean;
-	attunedBy: string;
-	desc: string;
-}
-
-export function newItem5e(edition: Dnd5eEdition): Item5eDraft {
-	return { edition, name: '', type: 'Wondrous item', subtype: '', rarity: 'Uncommon', attunement: false, attunedBy: '', desc: '' };
-}
-
-export function itemTypeText(d: Item5eDraft): string {
-	const sub = d.subtype.trim();
-	return sub ? `${d.type} ${/^\(.*\)$/.test(sub) ? sub : `(${sub})`}` : d.type;
-}
-
-export function toItem5e(d: Item5eDraft): Item5e {
-	const att = { on: d.attunement, by: d.attunedBy.trim() || undefined };
-	const item: Item5e = { name: d.name.trim() || 'Item', type: itemTypeText(d), rarity: d.rarity, desc: d.desc.trim(), line: itemLine5e(itemTypeText(d), d.rarity, att, d.edition) };
-	if (d.attunement) item.attunement = true;
-	return item;
-}
-
-export function fromItem5e(i: Item5e, edition: Dnd5eEdition): Item5eDraft {
-	const m = /^(.*?)\s*(\(.*\))?$/.exec(i.type.trim());
-	const by = /requires attunement by ([^)]*)\)/i.exec(i.line ?? '')?.[1];
-	return {
-		...newItem5e(edition), name: i.name, type: ITEM_TYPES_5E.find(t => t.toLowerCase() === (m?.[1] ?? '').toLowerCase().replace(/s$/, '')) ?? (m?.[1] || 'Wondrous item'),
-		subtype: m?.[2] ?? '', rarity: RARITIES_5E.find(r => r.toLowerCase() === i.rarity.toLowerCase()) ?? i.rarity, attunement: !!i.attunement, attunedBy: by ?? '', desc: i.desc,
-	};
-}
+// Items: magic items, weapons, armor and gear
 
 export function itemSchema(rt: Dnd5eRuntime): EntitySchema<Item5eDraft> {
+	const magic = (x: Item5eDraft) => x.kind === 'magic';
+	const bonusable = (x: Item5eDraft) => magic(x) && ['Weapon', 'Armor', 'Ammunition'].includes(x.type);
 	return {
 		kind: 'item', noun: 'item', icon: 'gem',
 		blank: (_p, path) => newItem5e(rt.edition(path)),
 		seed: (seed, _p, path) => {
-			const i = (seed as { item?: Item5e } | undefined)?.item;
-			return i ? fromItem5e(i, rt.edition(path)) : undefined;
+			const s = seed as { item?: Item5e; equipment?: Equipment5e } | undefined;
+			return s?.item ? fromItem5e(s.item, rt.edition(path)) : s?.equipment ? fromEquipment5e(s.equipment, rt.edition(path)) : undefined;
 		},
-		steps: () => [
+		steps: d => [
 			{
 				id: 'basics', label: 'Item', icon: 'gem', title: 'What is it?',
 				rows: [
-					{ type: 'text', key: 'name', label: 'Name', words: true, placeholder: 'Ember Blade' },
-					[
-						{ type: 'choice', key: 'type', label: 'Type', options: opts(ITEM_TYPES_5E), dropdown: true },
-						{ type: 'text', key: 'subtype', label: 'Which', placeholder: 'Longsword, any heavy armor…' },
-					],
-					{ type: 'choice', key: 'rarity', label: 'Rarity', options: opts(RARITIES_5E) },
-					[
-						{ type: 'toggle', key: 'attunement', label: 'Attunement' },
-						{ type: 'text', key: 'attunedBy', label: 'By', placeholder: 'a Paladin', show: d => d.attunement },
-					],
-					{ type: 'textarea', key: 'desc', label: 'Text', rows: 6, placeholder: 'You gain a +1 bonus to attack and damage rolls made with this magic weapon…' },
+					{ type: 'text', key: 'name', label: 'Name', words: true, placeholder: magic(d) ? 'Ember Blade' : 'Ember Pike' },
+					{ type: 'choice', key: 'kind', label: 'Kind', rebuilds: true, options: () => [{ value: 'magic', label: 'Magic item' }, { value: 'weapon', label: 'Weapon' }, { value: 'armor', label: 'Armor' }, { value: 'gear', label: 'Gear' }] },
+					...(magic(d) ? [
+						[
+							{ type: 'choice' as const, key: 'type', label: 'Type', options: opts(ITEM_TYPES_5E), dropdown: true },
+							{ type: 'text' as const, key: 'subtype', label: 'Which', placeholder: 'Longsword, any heavy armor…' },
+						],
+						{ type: 'choice' as const, key: 'rarity', label: 'Rarity', options: opts(RARITIES_5E), hint: (x: Item5eDraft) => { const b = BONUS_RARITY[/shield/i.test(x.subtype) ? 'Shield' : x.type]; return bonusable(x) && x.bonus && b ? `+${x.bonus}: ${b[x.bonus - 1]} in the book` : ''; } },
+						[
+							{ type: 'toggle' as const, key: 'attunement', label: 'Attunement' },
+							{ type: 'text' as const, key: 'attunedBy', label: 'By', placeholder: 'a Paladin', show: (x: Item5eDraft) => x.attunement },
+						],
+					] : [
+						[
+							{ type: 'text' as const, key: 'cost', label: 'Cost', placeholder: '15 gp' },
+							{ type: 'number' as const, key: 'weight', label: 'Weight (lb.)', min: 0, max: 2000, placeholder: () => '—' },
+						],
+					]),
 				],
 			},
+			...(magic(d) ? [{
+				id: 'magic', label: 'Magic', icon: 'sparkles', title: 'What it does',
+				rows: [
+					[
+						{ type: 'choice' as const, key: 'bonus', label: 'Bonus', show: bonusable, numeric: true, options: () => [0, 1, 2, 3].map(n => ({ value: String(n), label: n ? `+${n}` : 'None' })) },
+						{ type: 'number' as const, key: 'charges', label: 'Charges', min: 0, max: 50, placeholder: () => '—' },
+						{ type: 'text' as const, key: 'regain', label: 'Regains at dawn', placeholder: '1d6 + 1', show: (x: Item5eDraft) => !!x.charges },
+					],
+					{ type: 'textarea' as const, key: 'desc', label: 'Text', rows: 7, placeholder: 'While you hold this blade, it sheds Bright Light in a 10-foot radius…' },
+				],
+			}] : []),
+			...(d.kind === 'weapon' ? [{
+				id: 'weapon', label: 'Weapon', icon: 'sword', title: 'The weapon',
+				rows: [
+					[
+						{ type: 'choice' as const, key: 'weaponCategory', label: 'Category', options: () => [{ value: 'Simple', label: 'Simple' }, { value: 'Martial', label: 'Martial' }] },
+						{ type: 'toggle' as const, key: 'ranged', label: 'Ranged' },
+					],
+					[
+						{ type: 'number' as const, key: 'dmgCount', label: 'Dice', min: 1, max: 6, placeholder: () => '1' },
+						{ type: 'choice' as const, key: 'dmgSides', label: 'Die', dropdown: true, options: dieOpts() },
+						{ type: 'choice' as const, key: 'dmgType', label: 'Damage', dropdown: true, options: () => ['Bludgeoning', 'Piercing', 'Slashing'].map(v => ({ value: v, label: v })) },
+					],
+					{ type: 'chips' as const, key: 'properties', label: 'Properties', options: (x: Item5eDraft) => weaponProperties5e(x.edition) },
+					[
+						{ type: 'text' as const, key: 'versatile', label: 'Two-handed damage', placeholder: '1d10', show: (x: Item5eDraft) => x.properties.includes('Versatile') },
+						{ type: 'number' as const, key: 'rangeNormal', label: 'Range (ft.)', min: 5, max: 1000, step: 5, placeholder: () => '20', show: (x: Item5eDraft) => x.ranged || x.properties.some(p => ['Thrown', 'Ammunition', 'Range'].includes(p)) },
+						{ type: 'number' as const, key: 'rangeLong', label: 'Long range', min: 5, max: 2000, step: 5, placeholder: () => '60', show: (x: Item5eDraft) => x.ranged || x.properties.some(p => ['Thrown', 'Ammunition', 'Range'].includes(p)) },
+					],
+					...(d.edition === '2024' ? [{ type: 'choice' as const, key: 'mastery', label: 'Mastery', dropdown: true, options: () => [{ value: '', label: 'None' }, ...MASTERIES_5E.map(m => ({ value: m, label: m }))] }] : []),
+					{ type: 'textarea' as const, key: 'desc', label: 'Text', rows: 3, placeholder: '' },
+				],
+			}] : []),
+			...(d.kind === 'armor' ? [{
+				id: 'armor', label: 'Armor', icon: 'shield', title: 'The armor',
+				rows: [
+					{ type: 'choice' as const, key: 'armorCategory', label: 'Category', options: opts(ARMOR_CATEGORIES_5E) },
+					[
+						{ type: 'number' as const, key: 'acBase', label: 'AC', min: 1, max: 30, placeholder: (x: Item5eDraft) => (x.armorCategory === 'Shield' ? '2' : x.armorCategory === 'Heavy' ? '16' : x.armorCategory === 'Medium' ? '14' : '11'), hint: (x: Item5eDraft) => (x.armorCategory === 'Shield' ? 'added to AC' : x.armorCategory === 'Heavy' ? '' : x.armorCategory === 'Medium' ? '+ Dex (max 2)' : '+ Dex') },
+						{ type: 'number' as const, key: 'strMin', label: 'Strength', min: 0, max: 20, placeholder: () => '—', show: (x: Item5eDraft) => x.armorCategory !== 'Shield' },
+						{ type: 'toggle' as const, key: 'stealth', label: 'Stealth disadvantage', show: (x: Item5eDraft) => x.armorCategory !== 'Shield' },
+					],
+					{ type: 'textarea' as const, key: 'desc', label: 'Text', rows: 3, placeholder: '' },
+				],
+			}] : []),
+			...(d.kind === 'gear' ? [{
+				id: 'gear', label: 'Gear', icon: 'backpack', title: 'What it does',
+				rows: [{ type: 'textarea' as const, key: 'desc', label: 'Text', rows: 6, placeholder: 'A rope of braided ember-silk, 50 feet long…' }],
+			}] : []),
 		],
 		preview(el, d) {
-			const item = Object.assign(toItem5e(d), { source: 'Homebrew' });
-			renderCard5e(el, { kind: 'item', name: item.name, edition: d.edition, detail: item.line ?? '', item }, rt.cardOptions(''));
+			if (d.kind === 'magic') {
+				const item = Object.assign(toItem5e(d), { source: 'Homebrew' });
+				renderCard5e(el, { kind: 'item', name: item.name, edition: d.edition, detail: item.line ?? '', item }, rt.cardOptions(''));
+				return;
+			}
+			const equipment = Object.assign(toEquipment5e(d), { source: 'Homebrew' });
+			renderCard5e(el, { kind: 'equipment', name: equipment.name, edition: d.edition, detail: equipmentLine(equipment), equipment }, rt.cardOptions(''));
 		},
-		chip: d => ({ text: d.rarity, tone: 'none' }),
+		chip: d => ({ text: d.kind === 'magic' ? d.rarity : cap(d.kind), tone: 'none' }),
 		missing: d => (d.name.trim() ? null : 'Name the item first.'),
-		output: d => ({ lang: ITEM_LANG, body: itemSource5e({ ...toItem5e(d), attunement: d.attunement ? (d.attunedBy.trim() || true) : false }), name: d.name.trim(), frontmatter: {}, folder: homeFolder(rt.plugin, 'Homebrew', 'Homebrew') }),
+		output: d => ({
+			lang: ITEM_LANG,
+			body: d.kind === 'magic' ? itemSource5e({ ...toItem5e(d), attunement: d.attunement ? (d.attunedBy.trim() || true) : false }) : equipmentSource5e(toEquipment5e(d)),
+			name: d.name.trim(), frontmatter: {}, folder: homeFolder(rt.plugin, 'Homebrew', 'Homebrew'),
+		}),
 	};
 }
 
@@ -343,5 +421,5 @@ export function itemSchema(rt: Dnd5eRuntime): EntitySchema<Item5eDraft> {
 export function registerBuilders5e(rt: Dnd5eRuntime): void {
 	registerKind('dnd5e', 'monster', { label: 'Monster', icon: 'skull' }, schemaKind(monsterSchema(rt)));
 	registerKind('dnd5e', 'spell', { label: 'Spell', icon: 'wand-2' }, schemaKind(spellSchema(rt)));
-	registerKind('dnd5e', 'item', { label: 'Magic item', icon: 'gem' }, schemaKind(itemSchema(rt)));
+	registerKind('dnd5e', 'item', { label: 'Item', icon: 'gem' }, schemaKind(itemSchema(rt)));
 }

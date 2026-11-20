@@ -28,7 +28,7 @@
 // line is the text. A note's spell or item replaces the SRD's of the same name.
 // Pure: no Obsidian imports.
 
-import type { Item5e, Spell5e } from './compendium';
+import type { Equipment5e, Item5e, Spell5e } from './compendium';
 import type { Dnd5eEdition } from './editions';
 
 export const SPELL_LANG = '5e-spell';
@@ -113,7 +113,8 @@ function attunementOf(v: string | undefined): { on: boolean; by?: string } {
 export function parseItem5e(source: string, edition: Dnd5eEdition = '2024'): Item5e | null {
 	const { props, text } = split(source);
 	const name = props.get('name');
-	if (!name) return null;
+	// A weapon, armor or gear has a category instead of a rarity: equipment, not a magic item.
+	if (!name || props.has('category')) return null;
 	const type = props.get('type') ?? 'Wondrous item';
 	const rarity = props.get('rarity') ?? 'Uncommon';
 	const att = attunementOf(props.get('attunement'));
@@ -134,6 +135,71 @@ export function itemSource5e(i: { name: string; type: string; rarity: string; at
 	const lines = [`name: ${i.name}`, `type: ${i.type}`, `rarity: ${i.rarity}`];
 	if (i.attunement) lines.push(`attunement: ${i.attunement === true ? 'yes' : `by ${String(i.attunement).replace(/^by\s+/i, '')}`}`);
 	return `${lines.join('\n')}\n\n${i.desc.trim()}`.trim();
+}
+
+// Weapons, armor and gear: a ```5e-item block with a category, and the numbers the SRD's equipment has.
+//
+//   ```5e-item
+//   name: Ember Pike
+//   category: Martial Melee Weapon
+//   damage: 1d10 piercing
+//   properties: Heavy, Reach, Two-Handed
+//   mastery: Cleave
+//   cost: 20 gp
+//   weight: 18 lb.
+//   ```
+
+/** "14 + Dex (max 2)", "11 + Dex", "16", "+2" (a shield). */
+export function acText(ac: NonNullable<Equipment5e['ac']>, shield: boolean): string {
+	if (shield) return `+${ac.base}`;
+	return ac.dex ? `${ac.base} + Dex${ac.max !== undefined ? ` (max ${ac.max})` : ''}` : String(ac.base);
+}
+
+export function parseEquipment5e(source: string): Equipment5e | null {
+	const { props, text } = split(source);
+	const name = props.get('name');
+	const category = props.get('category');
+	if (!name || !category) return null;
+	const e: Equipment5e = { name, category };
+	const weapon = /weapon/i.exec(category);
+	if (weapon) {
+		e.weaponCategory = /martial/i.test(category) ? 'Martial' : 'Simple';
+		e.weaponRange = /ranged/i.test(category) ? 'Ranged' : 'Melee';
+	}
+	const armor = /^(light|medium|heavy)\s+armor$|^shields?$/i.exec(category.trim());
+	if (armor) e.armorCategory = armor[1] ? armor[1].charAt(0).toUpperCase() + armor[1].slice(1).toLowerCase() : 'Shield';
+	if (props.get('damage')) e.damage = props.get('damage');
+	if (props.get('versatile')) e.versatile = props.get('versatile');
+	if (props.get('properties')) e.properties = list(props.get('properties'));
+	if (props.get('range')) e.range = props.get('range')!.replace(/\s*ft\.?$/i, '');
+	if (props.get('mastery')) e.mastery = props.get('mastery');
+	const ac = /^\+?(\d+)\s*(\+\s*dex(?:terity)?(?:\s*modifier)?)?\s*(?:\(max\s*(\d+)\))?/i.exec(props.get('ac') ?? '');
+	if (ac) e.ac = { base: Number(ac[1]), dex: !!ac[2], ...(ac[3] ? { max: Number(ac[3]) } : {}) };
+	const str = /(\d+)/.exec(props.get('strength') ?? '');
+	if (str) e.strMin = Number(str[1]);
+	if (yes(props.get('stealth')) && !/^no/i.test(props.get('stealth') ?? '')) e.stealthDisadvantage = true;
+	if (props.get('cost')) e.cost = props.get('cost');
+	const w = /([\d.]+)/.exec(props.get('weight') ?? '');
+	if (w) e.weight = Number(w[1]);
+	if (text) e.desc = text;
+	return e;
+}
+
+/** Equipment as ```5e-item block text (the body). */
+export function equipmentSource5e(e: Equipment5e): string {
+	const lines = [`name: ${e.name}`, `category: ${e.category}`];
+	const add = (k: string, v: string | number | undefined) => { if (v !== undefined && v !== '') lines.push(`${k}: ${v}`); };
+	add('damage', e.damage);
+	add('versatile', e.versatile);
+	add('properties', e.properties?.join(', '));
+	add('range', e.range);
+	add('mastery', e.mastery);
+	if (e.ac) add('ac', acText(e.ac, e.armorCategory === 'Shield' || /shield/i.test(e.category)));
+	add('strength', e.strMin);
+	if (e.stealthDisadvantage) add('stealth', 'disadvantage');
+	add('cost', e.cost);
+	if (e.weight !== undefined) add('weight', `${e.weight} lb.`);
+	return `${lines.join('\n')}${e.desc?.trim() ? `\n\n${e.desc.trim()}` : ''}`;
 }
 
 /** One of yours, marked as homebrew: its card says Homebrew where the SRD's say SRD 5.1 or 5.2. */

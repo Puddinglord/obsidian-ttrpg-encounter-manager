@@ -62,7 +62,10 @@ describe('5e monster builder: the numbers', () => {
 		expect(m.skills).toEqual({ Perception: 3 + 8, Stealth: 1 + 4 });
 		expect(passivePerception(d)).toBe(21);
 		expect(m.senses).toBe('Passive Perception 21');
-		expect(toMonster5e({ ...d, senses: 'Darkvision 60 ft.' }).senses).toBe('Darkvision 60 ft., Passive Perception 21');
+		// 2024 sets Passive Perception off with a semicolon; 2014 writes senses in lower case.
+		expect(toMonster5e({ ...d, darkvision: 60, blindsight: 30, blind: true }).senses).toBe('Blindsight 30 ft. (blind beyond this radius), Darkvision 60 ft.; Passive Perception 21');
+		expect(toMonster5e({ ...d, edition: '2014', darkvision: 60 }).senses).toBe('darkvision 60 ft., passive Perception 21');
+		expect(toMonster5e({ ...d, senses: 'unimpeded by magical darkness' }).senses).toBe('unimpeded by magical darkness; Passive Perception 21');
 	});
 	it('a blank monster still makes a valid stat block', () => {
 		for (const ed of EDITIONS) {
@@ -142,7 +145,7 @@ describe('5e monster builder: every permutation reads back', () => {
 	});
 	it('a monster read back into the builder writes the same stat block', () => {
 		sweep(EDITIONS, (ed) => {
-			const d: Monster5eDraft = { ...newMonster5e(ed), name: 'Ember Hound', size: 'Large', type: 'Elemental', cr: '4', str: 18, dex: 14, con: 16, wis: 13, ac: 15, acNote: 'natural armor', hitDice: 8, saves: ['Dex'], skills: ['Perception'], senses: 'Darkvision 60 ft.', resistances: 'Fire', actions: [{ ...newAction5e('melee'), name: 'Bite', count: 2, sides: '8', damageType: 'Fire' }] };
+			const d: Monster5eDraft = { ...newMonster5e(ed), name: 'Ember Hound', size: 'Large', type: 'Elemental', cr: '4', str: 18, dex: 14, con: 16, wis: 13, ac: 15, acNote: 'natural armor', hitDice: 8, saves: ['Dex'], skills: ['Perception'], darkvision: 60, resist: ['Fire'], actions: [{ ...newAction5e('melee'), name: 'Bite', count: 2, sides: '8', damageType: 'Fire' }] };
 			const m = toMonster5e(d);
 			expect(toMonster5e(fromMonster5e(m, ed))).toEqual(m);
 		});

@@ -43,7 +43,7 @@ export type FieldDef<M = Draft> =
 	/** A number; `placeholder` is what a blank field means (the formula's value). */
 	| FieldBase<M> & { type: 'number'; placeholder?: (m: M) => string; min?: number; max?: number; step?: number }
 	/** One of a few (buttons), or of many (a dropdown). */
-	| FieldBase<M> & { type: 'choice'; options: (m: M) => { value: string; label: string; icon?: string }[]; dropdown?: boolean }
+	| FieldBase<M> & { type: 'choice'; options: (m: M) => { value: string; label: string; icon?: string }[]; dropdown?: boolean; /** The draft holds the value as a number (a level, a bonus). */ numeric?: boolean }
 	/**
 	 * Any of these (the draft holds a string[]). `groups` sorts long lists under headings (spells by level);
 	 * `fixed` are already theirs from elsewhere (a background's skills), shown first and not pickable;
@@ -167,14 +167,15 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 		}
 		case 'choice': {
 			const options = f.options(m);
+			const value = (v: string) => (f.numeric ? Number(v) : v);
 			if (f.dropdown || options.length > 8) {
 				const sel = parts.control.createEl('select', { cls: 'dropdown eb-select', attr: { 'aria-labelledby': parts.labelId } });
 				sel.dataset.field = f.label;
-				for (const o of options) sel.createEl('option', { value: o.value, text: o.label }).selected = o.value === m[f.key];
-				sel.addEventListener('change', () => { set(sel.value); ui.changed(); });
+				for (const o of options) sel.createEl('option', { value: o.value, text: o.label }).selected = o.value === str(m[f.key]);
+				sel.addEventListener('change', () => { set(value(sel.value)); ui.changed(); });
 				return;
 			}
-			const seg = segmented<string>(parts.control, options, () => str(m[f.key]), v => set(v), { ...named, ui, cls: 'is-compact is-schema', key: `schema-${f.key}` });
+			const seg = segmented<string>(parts.control, options, () => str(m[f.key] ?? (f.numeric ? 0 : '')), v => set(value(v)), { ...named, ui, cls: 'is-compact is-schema', key: `schema-${f.key}` });
 			// On a phone the options sit in even rows (six sizes three by two) instead of running off the edge.
 			const n = options.length;
 			seg.setCssProps({ '--eb-cols': String(n <= 3 ? n : n === 4 ? 2 : n <= 6 ? 3 : 4) });
@@ -189,8 +190,8 @@ export function drawField(parent: HTMLElement, f: FieldDef, m: Draft, ui: Builde
 			const { max, meta, groups, fixed } = f;
 			const chip = (into: HTMLElement, opt: string) => {
 				const b = pill(into, { tag: 'button', text: opt, cls: 'eb-pick', attr: { type: 'button', 'aria-pressed': 'false' } }) as HTMLButtonElement;
-				const word = meta?.(opt, m);
-				if (word) b.createSpan({ cls: 'eb-pick-meta', text: word });
+				// The word follows the draft (a save's bonus moves with its ability).
+				if (meta?.(opt, m)) { const w = b.createSpan({ cls: 'eb-pick-meta' }); ui.live(() => w.setText(meta(opt, m))); }
 				b.dataset.value = opt;
 				b.addEventListener('click', () => {
 					const now = list();

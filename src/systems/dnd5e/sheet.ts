@@ -77,7 +77,7 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 	private sheet(): Sheet5e {
 		const fm = this.fm;
 		const edition = fm.edition !== undefined ? asEdition(fm.edition as string) : this.rt.edition(this.path);
-		return readSheet5e(fm, edition, this.file?.basename ?? 'Hero');
+		return readSheet5e(fm, edition, this.file?.basename ?? 'Hero', this.rt.homebrew.library(this.path));
 	}
 
 	onload(): void {

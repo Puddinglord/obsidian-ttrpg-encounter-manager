@@ -19,12 +19,12 @@ import { FightStore } from './combat-store';
 import { DND5E_TRACKER_VIEW, Dnd5eTrackerView } from './tracker-view';
 import { Dnd5eEncounterBlock } from './encounter-block';
 import type { EncounterDef } from '../../core/encounter-def';
-import { Hit5e, KIND5E, Kind5e, kindFromWord, spellLine } from './compendium';
+import { equipmentLine, Hit5e, KIND5E, Kind5e, kindFromWord, spellLine } from './compendium';
 import { findIn, Homebrew5e, mergeHits } from './homebrew-index';
 import { setContentLayer5e } from './compendium';
 import { content5e } from './content';
 import type { LoadedPack } from '../../core/content/packs';
-import { homebrewSource, ITEM_LANG, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
+import { homebrewSource, ITEM_LANG, parseEquipment5e, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
 import { registerBuilders5e } from './builders';
 import { registerWizards5e } from './character-wizard';
 import { registerImports5e } from './import-ui';
@@ -95,13 +95,16 @@ export class Dnd5eRuntime {
 			const edition = this.edition(ctx.sourcePath);
 			const spell = kind === 'spell' ? parseSpell5e(source) : null;
 			const item = kind === 'item' ? parseItem5e(source, edition) : null;
+			// An item block with a category is a weapon, armor or gear.
+			const equipment = kind === 'item' && !item ? parseEquipment5e(source) : null;
 			// Yours, so the card says Homebrew where the book's say SRD 5.2.
 			const hit: Hit5e | null = spell ? { kind: 'spell', name: spell.name, edition, detail: spellLine(spell, edition), spell: homebrewSource(spell) }
-				: item ? { kind: 'item', name: item.name, edition, detail: item.line ?? '', item: homebrewSource(item) } : null;
+				: item ? { kind: 'item', name: item.name, edition, detail: item.line ?? '', item: homebrewSource(item) }
+					: equipment ? { kind: 'equipment', name: equipment.name, edition, detail: equipmentLine(equipment), equipment: homebrewSource(equipment) } : null;
 			if (!hit) { el.createDiv({ cls: 'dnd5e-empty', text: `A ${kind} block starts with a name line, like "name: ${kind === 'spell' ? 'Ember Lash' : 'Ember Blade'}".` }); return; }
 			el.addClass('dnd5e-homebrew');
 			renderCard5e(el, hit, this.cardOptions(ctx.sourcePath));
-			if (!plugin.playerView(ctx.sourcePath)) addEditButton(plugin, el, ctx, { system: 'dnd5e', kind, lang, source, seed: spell ? { spell } : { item } });
+			if (!plugin.playerView(ctx.sourcePath)) addEditButton(plugin, el, ctx, { system: 'dnd5e', kind, lang, source, seed: spell ? { spell } : item ? { item } : { equipment } });
 		});
 		homebrew(SPELL_LANG, 'spell');
 		homebrew(ITEM_LANG, 'item');

@@ -67,15 +67,17 @@ describe.each(['2024', '2014'] as const)('5e builders drawn by the schema engine
 		cr.dispatchEvent(new Event('change'));
 		expect(d.cr).toBe('5');
 		expect(h.panel.querySelector('[data-key="cr"] .eb-aside')!.textContent).toBe('PB +3 · 1,800 XP');
-		h.draw('stats');
+		h.draw('abilities');
 		type(input(h.panel, 'con') as HTMLInputElement, '16');
 		expect(d.con).toBe(16);
 		expect(h.panel.querySelector('[data-key="con"] .eb-aside')!.textContent).toBe('+3');
-		expect(h.panel.querySelector('[data-key="hp"] .eb-aside')!.textContent).toBe(ed === '2014' ? '4d8 + 12' : '4d8 + 12');
-		h.draw('proficiencies');
 		h.panel.querySelector<HTMLButtonElement>('[data-key="saves"] .eb-pick[data-value="Con"]')!.click();
 		expect(d.saves).toEqual(['Con']);
-		expect(h.panel.querySelector('[data-key="saves"] .eb-aside')!.textContent).toBe('Con +6');
+		// Each save shows what it would come to.
+		expect(h.panel.querySelector('[data-key="saves"] .eb-pick[data-value="Con"] .eb-pick-meta')!.textContent).toBe('+6');
+		h.draw('defense');
+		expect(h.panel.querySelector('[data-key="hp"] .eb-aside')!.textContent).toBe('4d8 + 12');
+		h.draw('senses');
 		// Expertise shows once there's a skill.
 		expect(h.panel.querySelector('[data-key="expertise"]')!.classList.contains('is-hidden')).toBe(true);
 		h.panel.querySelector<HTMLButtonElement>('[data-key="skills"] .eb-pick[data-value="Perception"]')!.click();

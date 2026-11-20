@@ -141,8 +141,23 @@ function inventoryOf(fm: Frontmatter): { name: string; qty: number; equipped: bo
 	}).filter((x): x is { name: string; qty: number; equipped: boolean } => !!x);
 }
 
-export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName = 'Hero'): Sheet5e {
+/** Your own equipment, magic items and spells (```5e-item and ```5e-spell blocks): a sheet finds them before the SRD's. */
+export interface Library5e { equipment?: Equipment5e[]; items?: Item5e[]; spells?: Spell5e[] }
+
+/** A magic weapon or armor's base ("Weapon (Longsword)" → Longsword) and its +N from its text. */
+function magicBase(item: Item5e | undefined, equipment: Equipment5e[]): { base?: Equipment5e; bonus: number } {
+	if (!item) return { bonus: 0 };
+	const sub = /\(([^)]*)\)/.exec(item.type)?.[1] ?? '';
+	const base = sub ? equipment.find(e => same(e.name, sub) || same(e.name, `${sub} Armor`)) : undefined;
+	const bonus = Number(/\+(\d) bonus to (?:attack|Armor Class)/i.exec(item.desc)?.[1] ?? /^\+(\d)\b/.exec(item.name)?.[1] ?? /,\s*\+(\d)\b/.exec(item.name)?.[1] ?? 0);
+	return { base, bonus };
+}
+
+export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName = 'Hero', library: Library5e = {}): Sheet5e {
 	const c = compendium5e(edition);
+	const equipmentList = [...(library.equipment ?? []), ...c.equipment];
+	const itemList = [...(library.items ?? []), ...c.items];
+	const spellList = [...(library.spells ?? []), ...c.spells];
 	const className = text(fm.class);
 	const cls = c.classes.find(x => same(x.name, className));
 	const level = Math.max(1, Math.min(20, Math.floor(num(fm.level, 1))));
@@ -160,22 +175,26 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 	});
 
 	// Inventory, resolved against the compendium: equipment (weapons, armor) and magic items.
-	const inventory = inventoryOf(fm).map((x, index): SheetItem => ({
-		...x, index,
-		equipment: c.equipment.find(e => same(e.name, x.name)),
-		item: c.items.find(i => same(i.name, x.name)),
-	}));
+	// A magic weapon or armor (Ember Blade, "Weapon (Longsword)") fights as its base, with its bonus.
+	const inventory = inventoryOf(fm).map((x, index): SheetItem & { bonus: number } => {
+		const item = itemList.find(i => same(i.name, x.name));
+		const own = equipmentList.find(e => same(e.name, x.name));
+		const magic = own ? { bonus: 0 } : magicBase(item, equipmentList);
+		return { ...x, index, equipment: own ?? magic.base, item, bonus: magic.bonus };
+	});
 
 	// AC: set by hand, else the armor worn (+ Dex as it allows) and a shield, else unarmored.
-	const worn = inventory.find(i => i.equipped && i.equipment?.ac && !/shield/i.test(i.equipment.name));
-	const shield = inventory.some(i => i.equipped && /shield/i.test(i.name)) ? 2 : 0;
+	const isShield = (i: (typeof inventory)[number]) => /shield/i.test(i.equipment?.name ?? '') || i.equipment?.armorCategory === 'Shield' || /\bshield\b/i.test(i.name);
+	const worn = inventory.find(i => i.equipped && i.equipment?.ac && !isShield(i));
+	const held = inventory.find(i => i.equipped && isShield(i));
+	const shield = held ? (held.equipment?.ac?.base ?? 2) + held.bonus : 0;
 	let ac: number;
 	let acFrom: string;
 	if (fm.ac !== undefined && fm.ac !== null && fm.ac !== '') { ac = num(fm.ac, 10); acFrom = 'set by hand'; }
 	else if (worn?.equipment?.ac) {
 		const a = worn.equipment.ac;
 		const dex = a.dex ? (a.max !== undefined ? Math.min(a.max, mods.dex) : mods.dex) : 0;
-		ac = a.base + dex + shield;
+		ac = a.base + dex + shield + worn.bonus;
 		acFrom = `${worn.name}${a.dex ? ' + Dex' : ''}${shield ? ' + Shield' : ''}`;
 	} else if (cls?.name === 'Barbarian') { ac = 10 + mods.dex + mods.con + shield; acFrom = `Unarmored Defense${shield ? ' + Shield' : ''}`; }
 	else if (cls?.name === 'Monk' && !shield) { ac = 10 + mods.dex + mods.wis; acFrom = 'Unarmored Defense'; }
@@ -194,7 +213,7 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		const props = e.properties ?? [];
 		const ranged = /ranged/i.test(`${e.weaponRange ?? ''} ${e.category}`);
 		const finesse = props.some(p => /finesse/i.test(p));
-		const mod = ranged ? mods.dex : finesse ? Math.max(mods.str, mods.dex) : mods.str;
+		const mod = (ranged ? mods.dex : finesse ? Math.max(mods.str, mods.dex) : mods.str) + i.bonus;
 		const [dice, ...type] = (e.damage ?? '').split(' ');
 		return { name: i.name, toHit: mod + pb, damage: `${dice}${mod ? (mod > 0 ? `+${mod}` : `${mod}`) : ''}`, damageType: type.join(' '), properties: props, range: e.range };
 	});
@@ -248,7 +267,7 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		deathSaves: { success: Math.min(3, num(ds[0], 0)), failure: Math.min(3, num(ds[1], 0)) },
 		spellcasting,
 		slots,
-		spells: list(fm.spells).map(name => ({ name, spell: c.spells.find(s => same(s.name, name)) })),
+		spells: list(fm.spells).map(name => ({ name, spell: spellList.find(s => same(s.name, name)) })),
 		attacks,
 		inventory,
 		features,
