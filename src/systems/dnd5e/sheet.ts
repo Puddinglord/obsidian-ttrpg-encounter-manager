@@ -3,13 +3,17 @@
 // every change is a frontmatter edit, so the note stays the source of truth and
 // the sheet redraws when it changes.
 //
-// The layout follows the shared sheet language (Nimble's is the benchmark) in
-// 5e's book: a hero card (portrait, name, the numbers you look up most, rests),
-// hit points as core's meter with the shared keypad, conditions, the six
-// abilities each with its save and skills (as the 2024 sheet groups them), then
-// tabs for actions, spells, features and inventory.
+// The layout is the design study's (prototypes/design-study, 70-5e-sheets), one
+// layout for 2014 and 2024: an oxblood banner (portrait in a gold medallion, the
+// name in Garamond small caps, AC in a gold-rimmed shield, Initiative, Speed and
+// Proficiency on gold plates, the rests), a framed vitals band overlapping its
+// foot (core's HP meter, hit dice or death saves, Passive Perception, size,
+// Heroic Inspiration), conditions, six ability plaques with their saves and
+// skills, the class's scrollwork heading, then tabs: actions grouped as the book
+// groups them, spells by level with their slots, features that open to their
+// own words, and the inventory.
 
-import { FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Notice, setIcon, TFile } from 'obsidian';
+import { FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Notice, setIcon, setTooltip, TFile } from 'obsidian';
 import {
 	addItem, addListEntry, changeHp, cycleSkill, Frontmatter, longRest, readSheet5e, removeListEntry, setDeathSaves, setExhaustion, setHitDiceLeft, setItem, Sheet5e, SheetItem, SheetSkill, shortRest, useSlot,
 } from './character';
@@ -19,33 +23,37 @@ import { asEdition } from './editions';
 import { formatMod } from './rules';
 import type { Dnd5eRuntime } from './runtime';
 import { openLevelUp5e } from './character-wizard';
-import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
-import { appendWithTerms, markTerm, termContext, TermContext } from '../../core/rule-term-ui';
+import { ABILITIES, ABILITY_NAME } from './types';
+import { ABILITY_SHORT, ACTION_GROUPS, formatDice, Resource5e, resources5e, restoreUses, setUsesLeft, SheetAction5e, sheetActions5e, slotFor, spellEffect } from './sheet-actions';
+import { acShield, corners, damageButton, plateFrame, profMark } from './sheet-parts';
+import { classScroll } from './scroll';
+import { renderText5e } from './cards';
+import { markTerm, termContext, TermContext } from '../../core/rule-term-ui';
 import { renderPipRow } from '../../core/pip-row';
 import { pill } from '../../core/pill';
 import { applyLook } from '../../core/look';
+import { evIcon } from '../../core/icons';
 import { resolvePortrait } from '../../core/npc-card';
-import { dieShape } from '../../core/die-shape';
 import { openHpPad } from '../../core/tracker/hp-pad';
 import type { HpCommand } from '../../core/tracker/hp';
 import { renderMeter, VitalsMemory } from '../../core/vitals/meter';
 import { markSheetPage, unmarkSheetPage } from '../../core/sheet-page';
+import { onLongPress } from '../../core/touch';
 
 export const SHEET_LANG = '5e-sheet';
-const SHORT: Record<AbilityKey, string> = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
 const d20 = (mod: number) => (mod === 0 ? '1d20' : `1d20${mod > 0 ? '+' : '-'}${Math.abs(mod)}`);
 const ordinal = (n: number) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
+/** "Ilse Vane" → "IV". */
+const initials = (name: string) => name.trim().split(/\s+/).map(w => w[0] ?? '').join('').slice(0, 2).toUpperCase() || '?';
+/** A five-pointed star (Heroic Inspiration), drawn on a 16 × 15 grid. */
+const STAR = 'M8 0l1.9 5.6H16l-4.9 3.6 1.9 5.8L8 11.4 3 15l1.9-5.8L0 5.6h6.1z';
 
 type Tab = 'actions' | 'spells' | 'features' | 'inventory';
 /** Each note's open tab and whether its properties show, kept across redraws (and the block being drawn again). */
 const tabOf = new Map<string, Tab>();
 const propsShownOf = new Map<string, boolean>();
-
-/** The things anyone can do on their turn, as the edition's rules name them (each opens its rule). */
-const TURN_ACTIONS: Record<'2014' | '2024', string[]> = {
-	'2024': ['Attack', 'Dash', 'Disengage', 'Dodge', 'Help', 'Hide', 'Influence', 'Magic', 'Ready', 'Search', 'Study', 'Utilize'],
-	'2014': ['Attack', 'Cast a Spell', 'Dash', 'Disengage', 'Dodge', 'Help', 'Hide', 'Ready', 'Search', 'Use an Object'],
-};
+/** Features opened to their text, per note. */
+const openFeatures = new Map<string, Set<string>>();
 
 export class Dnd5eSheet extends MarkdownRenderChild {
 	private vitals = new VitalsMemory();
@@ -95,7 +103,8 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 
 	/** A number that rolls when clicked. */
 	private rollable(parent: HTMLElement, text: string, expression: string, label: string, cls = ''): HTMLButtonElement {
-		const b = parent.createEl('button', { cls: `dnd5e-sheet-roll ${cls}`.trim(), text, attr: { 'aria-label': `Roll ${label}` } });
+		const b = parent.createEl('button', { cls: `dnd5e-sheet-roll ${cls}`.trim(), attr: { 'aria-label': `Roll ${label}` } });
+		b.createSpan({ text });
 		b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); this.roll(expression, label); };
 		return b;
 	}
@@ -109,39 +118,41 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		const el = this.containerEl;
 		el.empty();
 		const s = this.sheet();
-		const root = el.createDiv({ cls: `dnd5e-sheet ed-${s.edition}` });
-		applyLook(root, 'dnd5e');
-		root.toggleClass('is-down', s.hp === 0);
+		const sheet = el.createDiv({ cls: `dnd5e-sheet ed-${s.edition}` });
+		applyLook(sheet, 'dnd5e');
+		sheet.toggleClass('is-down', s.hp === 0);
+		// The sheet is the width container; the page inside it (paper, padding) follows its width.
+		const root = sheet.createDiv({ cls: 'dnd5e-sheet-page' });
 		this.markPage();
 		// A block is drawn before it's attached to the note; mark the page again once it is.
 		window.requestAnimationFrame(() => this.markPage());
 		const terms = termContext(this.rt.plugin, this.path);
 
-		this.renderHero(root.createDiv({ cls: 'dnd5e-card dnd5e-hero' }), s, terms);
-		this.renderVitals(root.createDiv({ cls: 'dnd5e-card dnd5e-vitals ev-vitals' }), s, terms);
+		this.renderBanner(root.createDiv({ cls: 'dnd5e-banner' }), s, terms);
+		this.renderBand(root.createDiv({ cls: 'dnd5e-band ev-vitals' }), s, terms);
 		this.renderConditions(root.createDiv({ cls: 'dnd5e-conditions-row' }), s, terms);
-		this.renderAbilities(root.createDiv({ cls: 'dnd5e-card dnd5e-abilities' }), s, terms);
+		this.renderAbilities(root.createDiv({ cls: 'dnd5e-abilities' }), s, terms);
+		if (s.className) classScroll(root, s.cls?.name ?? s.className, 'is-in-sheet');
 		this.renderTabs(root, s, terms);
 	}
 
-	// Hero ---------------------------------------------------------------------
+	// Banner ---------------------------------------------------------------------
 
-	private renderHero(card: HTMLElement, s: Sheet5e, terms: TermContext): void {
-		const mark = <T extends HTMLElement>(el: T, word: string): T => { markTerm(el, terms, word); return el; };
-		const top = card.createDiv({ cls: 'dnd5e-hero-top' });
-		const pic = top.createDiv({ cls: 'dnd5e-portrait' });
+	private renderBanner(banner: HTMLElement, s: Sheet5e, terms: TermContext): void {
+		const port = banner.createDiv({ cls: 'dnd5e-port' });
+		const pic = port.createDiv({ cls: 'dnd5e-portrait' });
 		const portrait = resolvePortrait(this.rt.plugin.app, this.fm, this.path);
 		if (portrait) {
 			const img = pic.createEl('img', { attr: { src: portrait.src, alt: '', draggable: 'false' } });
 			const pos = this.fm['portrait-position'];
 			if (typeof pos === 'string' && pos.trim()) img.setCssProps({ '--nimble-portrait-position': pos });
 		}
-		else pic.createSpan({ cls: 'dnd5e-portrait-initial', text: (s.name.trim()[0] ?? '?').toUpperCase() });
+		else pic.createSpan({ cls: 'dnd5e-portrait-initial', text: initials(s.name) });
 
-		const titles = top.createDiv({ cls: 'dnd5e-hero-titles' });
-		titles.createDiv({ cls: 'dnd5e-sheet-name', text: s.name });
+		const id = banner.createDiv({ cls: 'dnd5e-id' });
+		id.createDiv({ cls: 'dnd5e-sheet-name', text: s.name });
 		// "Level 5 Elf Wizard (Evoker)": each name opens its compendium card.
-		const sub = titles.createDiv({ cls: 'dnd5e-sheet-sub' });
+		const sub = id.createDiv({ cls: 'dnd5e-sheet-sub' });
 		sub.appendText(`Level ${s.level}`);
 		const part = (text: string, kind: 'species' | 'class' | 'subclass') => {
 			if (!text) return;
@@ -153,51 +164,44 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		part(s.className || 'No class', 'class');
 		part(s.subclass, 'subclass');
 		if (s.background) {
-			const bg = titles.createDiv({ cls: 'dnd5e-hero-meta' });
+			const bg = id.createDiv({ cls: 'dnd5e-hero-meta' });
 			this.linkCard(bg.createSpan({ text: s.background }), s.background, 'background');
 			bg.appendText(' background');
 		}
 
-		const tools = top.createDiv({ cls: 'dnd5e-hero-tools' });
-		const acts = tools.createDiv({ cls: 'dnd5e-sheet-actions' });
+		const acts = banner.createDiv({ cls: 'dnd5e-sheet-actions' });
 		const act = (label: string, icon: string, run: () => void, title: string) => {
-			const b = pill(acts, { tag: 'button', icon, text: label, cls: 'dnd5e-rest-btn', attr: { 'aria-label': title } });
+			const b = pill(acts, { tag: 'button', icon, text: label, cls: 'dnd5e-rest-btn', title });
 			b.onclick = (e) => { e.preventDefault(); run(); };
 		};
-		act('Short rest', 'coffee', () => this.shortRest(s), `Short rest: spend a hit die (${s.hitDiceLeft} left)`);
-		act('Long rest', 'bed', () => { this.edit(longRest); new Notice(`${s.name} takes a long rest.`); }, 'Long rest: hit points, slots and hit dice back');
-		if (s.level < 20) act('Level up', 'trending-up', () => this.levelUp(s), `Level up to ${s.level + 1}`);
+		act('Short rest', evIcon('moon'), () => this.shortRest(s), s.hitDiceLeft ? `Spend a hit die (${s.hitDiceLeft} left)` : 'No hit dice left');
+		act('Long rest', evIcon('bed'), () => { this.edit(longRest); new Notice(`${s.name} takes a long rest.`); }, 'Hit points, slots, uses and hit dice back');
+		if (s.level < 20) act('Level up', evIcon('arrow-up'), () => this.levelUp(s), `Level ${s.level + 1}`);
 		const shown = propsShownOf.get(this.path) ?? false;
-		const eye = tools.createEl('button', { cls: `clickable-icon dnd5e-props-btn${shown ? ' is-active' : ''}`, attr: { 'aria-label': shown ? 'Hide properties' : 'Show properties' } });
-		setIcon(eye, shown ? 'eye-off' : 'list');
+		const eye = acts.createEl('button', { cls: `dnd5e-props-btn${shown ? ' is-active' : ''}` });
+		setIcon(eye, evIcon(shown ? 'eye' : 'list'));
+		setTooltip(eye, shown ? 'Hide properties' : 'Show properties', { delay: 350 });
 		eye.onclick = (e) => { e.preventDefault(); propsShownOf.set(this.path, !shown); this.render(); };
 
-		// The numbers you look up most, as tiles under a gold rule.
-		const stats = card.createDiv({ cls: 'dnd5e-stats' });
-		const tile = (key: string, short: string, long: string, rule: string, title?: string) => {
-			const t = stats.createDiv({ cls: `dnd5e-sheet-box is-${key}`, attr: title ? { 'aria-label': title } : {} });
-			const label = t.createDiv({ cls: 'dnd5e-sheet-box-label' });
-			const word = mark(label.createSpan({ text: short }), rule);
-			if (long) word.createSpan({ cls: 'dnd5e-box-long', text: long });
-			return t;
+		// The numbers you look up most: AC on its shield, then gold plates.
+		const crest = banner.createDiv({ cls: 'dnd5e-crest' });
+		const ac = crest.createDiv({ cls: 'dnd5e-sheet-box is-ac' });
+		acShield(ac, s.ac, 58, `Armor Class ${s.ac} (${s.acFrom})`);
+		markTerm(ac.createEl('small', { cls: 'dnd5e-sheet-box-label', text: s.acFrom === 'set by hand' ? 'Armor Class' : s.acFrom }), terms, 'Armor Class');
+		// A plate: the gold frame, its number over it (a button when it rolls), its label under it.
+		const plate = (key: string, label: string, rule: string, value: string, roll?: () => void, title?: string): HTMLElement => {
+			const box = crest.createDiv({ cls: `dnd5e-sheet-box dnd5e-plate is-${key}` });
+			const v = box.createSpan({ cls: 'dnd5e-plate-v' });
+			plateFrame(v);
+			const n = roll ? v.createEl('button', { cls: 'dnd5e-plate-n is-roll', attr: { 'aria-label': title ?? label } }) : v.createSpan({ cls: 'dnd5e-plate-n' });
+			n.createSpan({ text: value });
+			if (roll) n.onclick = (e) => { e.preventDefault(); roll(); };
+			markTerm(box.createEl('small', { cls: 'dnd5e-sheet-box-label', text: label }), terms, rule);
+			return box;
 		};
-		// Armor Class on a shield.
-		const ac = tile('ac', 'AC', '', 'Armor Class', `Armor Class ${s.ac} (${s.acFrom})`);
-		const shield = ac.createDiv({ cls: 'dnd5e-sheet-box-value dnd5e-ac-shield' });
-		const svg = shield.createSvg('svg', { cls: 'dnd5e-ac-svg', attr: { viewBox: '0 0 40 46', 'aria-hidden': 'true' } });
-		svg.createSvg('path', { attr: { d: 'M20 2.5 L36 8 V21 C36 32 29 39.5 20 43.5 C11 39.5 4 32 4 21 V8 Z' } });
-		shield.createSpan({ cls: 'dnd5e-ac-num', text: String(s.ac) });
-		ac.createDiv({ cls: 'dnd5e-box-note', text: s.acFrom === 'set by hand' ? 'Set by hand' : s.acFrom });
-		this.rollable(tile('init', 'Init', 'iative', 'Initiative').createDiv({ cls: 'dnd5e-sheet-box-value' }), formatMod(s.initiative), d20(s.initiative), this.who(s, 'initiative'), 'is-big');
-		const speed = tile('speed', 'Speed', '', 'Speed').createDiv({ cls: 'dnd5e-sheet-box-value' });
-		speed.appendText(String(s.speed));
-		speed.createSpan({ cls: 'dnd5e-unit', text: 'ft.' });
-		tile('prof', 'Prof', 'iciency', s.edition === '2014' ? 'Proficiency Bonus' : 'Proficiency').createDiv({ cls: 'dnd5e-sheet-box-value', text: formatMod(s.pb) });
-		const insp = tile('insp', 'Insp', 'iration', 'Heroic Inspiration');
-		insp.toggleClass('is-on', s.inspiration);
-		const t = insp.createEl('button', { cls: `dnd5e-sheet-box-value dnd5e-sheet-toggle${s.inspiration ? ' is-on' : ''}`, attr: { 'aria-pressed': String(s.inspiration), 'aria-label': s.inspiration ? 'Use Heroic Inspiration' : 'Gain Heroic Inspiration' } });
-		setIcon(t.createSpan({ cls: 'dnd5e-insp-icon' }), 'sparkles');
-		t.onclick = (e) => { e.preventDefault(); this.edit(fm => { if (s.inspiration) delete fm.inspiration; else fm.inspiration = true; }); };
+		plate('init', 'Initiative', 'Initiative', formatMod(s.initiative), () => this.roll(d20(s.initiative), this.who(s, 'initiative')), `Roll ${this.who(s, 'initiative')}`);
+		plate('speed', 'Speed', 'Speed', `${s.speed} ft`);
+		plate('prof', 'Proficiency', s.edition === '2014' ? 'Proficiency Bonus' : 'Proficiency', formatMod(s.pb));
 	}
 
 	/** Hover for a compendium card, click to open it (a name the compendium doesn't know stays plain). */
@@ -216,18 +220,21 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 
 	private who(s: Sheet5e, what: string): string { return `${s.name}: ${what}`; }
 
-	// Hit points ----------------------------------------------------------------
+	// Vitals band ----------------------------------------------------------------
 
-	private renderVitals(card: HTMLElement, s: Sheet5e, terms: TermContext): void {
+	private renderBand(band: HTMLElement, s: Sheet5e, terms: TermContext): void {
+		corners(band);
+		const hp = band.createDiv({ cls: 'dnd5e-band-hp' });
 		const dead = s.deathSaves.failure >= 3;
 		const stable = s.hp === 0 && !dead && s.deathSaves.success >= 3;
-		const meter = renderMeter(card, {
-			key: 'hp', cls: 'is-hp', icon: 'heart', label: 'Hit points', cur: s.hp, max: s.hpMax,
+		const meter = renderMeter(hp, {
+			key: 'hp', cls: 'is-hp', icon: evIcon('heart'), label: 'Hit points', cur: s.hp, max: s.hpMax,
 			extra: s.tempHp, extraLabel: `${s.tempHp} temp`,
 			state: s.hp > 0 ? undefined : dead ? 'Dead' : stable ? 'Stable' : 'Dying',
 			bar: 'dnd5e-sheet-hp', minus: 'Take 1 damage', plus: 'Heal 1',
 			calc: `Hit points ${s.hp} of ${s.hpMax}${s.tempHp ? `, ${s.tempHp} temp` : ''}. Damage, heal or temp HP`,
 			minusOff: s.hp === 0 && !s.tempHp, plusOff: s.hp >= s.hpMax,
+			icons: { minus: evIcon('minus'), plus: evIcon('plus'), calc: evIcon('keypad') },
 			onCalc: (a) => this.openHpPad(a, s),
 			taps: {
 				floor: -(s.hp + s.tempHp), soak: s.tempHp,
@@ -238,27 +245,18 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 			},
 		}, this.vitals);
 		const pct = s.hpMax ? s.hp / s.hpMax : 0;
-		meter.toggleClass('is-low', pct > 0 && pct <= 0.25);
+		meter.toggleClass('is-low', pct > 0 && pct <= 0.5);
 		const label = meter.querySelector<HTMLElement>('.ns-meter-label span:last-child');
 		if (label) markTerm(label, terms, 'Hit Points');
 
-		const foot = card.createDiv({ cls: 'dnd5e-vitals-foot' });
-		// Hit dice: a filled pip spends one, an empty one gets one back. Short rest rolls one.
-		const hd = foot.createDiv({ cls: 'dnd5e-hit-dice' });
-		const hdLabel = hd.createSpan({ cls: 'dnd5e-foot-label', text: 'Hit dice' });
-		markTerm(hdLabel, terms, s.edition === '2014' ? 'Hit Points' : 'Hit Point Dice');
-		dieShape(hd, s.hitDie, { cls: 'dnd5e-hit-die' }).setAttr('aria-label', `d${s.hitDie}`);
-		renderPipRow(hd, { key: `hit-dice:${this.path}`, name: 'Hit dice', count: s.hitDiceLeft, max: s.level, cls: 'is-hit-dice', set: n => this.edit((fm, now) => setHitDiceLeft(fm, now, n)) });
-		hd.createSpan({ cls: 'dnd5e-foot-count', text: `${s.hitDiceLeft}/${s.level}` });
-
-		// At 0 hit points: death saves.
 		if (s.hp === 0) {
-			const ds = foot.createDiv({ cls: 'dnd5e-sheet-death' });
+			// At 0 hit points death saves take the hit dice's place.
+			const ds = hp.createDiv({ cls: 'dnd5e-sheet-death' });
 			markTerm(ds.createSpan({ cls: 'dnd5e-foot-label', text: 'Death saves' }), terms, s.edition === '2014' ? 'Dropping to 0 Hit Points' : 'Death Saving Throw');
-			renderPipRow(ds, { key: `death-ok:${this.path}`, name: 'Saves', label: true, count: s.deathSaves.success, max: 3, cls: 'is-success', set: v => this.edit(fm => setDeathSaves(fm, v, s.deathSaves.failure)) });
-			renderPipRow(ds, { key: `death-fail:${this.path}`, name: 'Fails', label: true, count: s.deathSaves.failure, max: 3, cls: 'is-failure', set: v => this.edit(fm => setDeathSaves(fm, s.deathSaves.success, v)) });
+			renderPipRow(ds, { key: `death-ok:${this.path}`, name: 'Successes', label: true, count: s.deathSaves.success, max: 3, cls: 'is-success', set: v => this.edit(fm => setDeathSaves(fm, v, s.deathSaves.failure)) });
+			renderPipRow(ds, { key: `death-fail:${this.path}`, name: 'Failures', label: true, count: s.deathSaves.failure, max: 3, cls: 'is-failure', set: v => this.edit(fm => setDeathSaves(fm, s.deathSaves.success, v)) });
 			if (!dead && !stable) {
-				const r = pill(ds, { tag: 'button', icon: 'dices', text: 'Roll save', cls: 'dnd5e-sheet-death-roll' });
+				const r = pill(ds, { tag: 'button', icon: evIcon('d20'), text: 'Roll save', cls: 'dnd5e-sheet-death-roll' });
 				r.onclick = (e) => {
 					e.preventDefault();
 					const n = this.roll('1d20', this.who(s, 'death save'));
@@ -267,7 +265,32 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 					else this.edit(fm => setDeathSaves(fm, s.deathSaves.success + (n >= 10 ? 1 : 0), s.deathSaves.failure + (n === 1 ? 2 : n < 10 ? 1 : 0)));
 				};
 			}
+		} else {
+			// Hit dice: a filled pip spends one, an empty one gets one back. Short rest rolls one.
+			const hd = hp.createDiv({ cls: 'dnd5e-hit-dice' });
+			markTerm(hd.createSpan({ cls: 'dnd5e-foot-label', text: 'Hit dice' }), terms, s.edition === '2014' ? 'Hit Points' : 'Hit Point Dice');
+			renderPipRow(hd, { key: `hit-dice:${this.path}`, name: 'Hit dice', count: s.hitDiceLeft, max: s.level, cls: 'is-hit-dice', set: n => this.edit((fm, now) => setHitDiceLeft(fm, now, n)) });
+			const count = hd.createSpan({ cls: 'dnd5e-foot-count' });
+			count.createEl('b', { text: `${s.hitDiceLeft} of ${s.level}` });
+			count.createSpan({ cls: 'dnd5e-foot-die', text: ` d${s.hitDie}` });
 		}
+
+		// Facts a GM asks for without a roll.
+		const facts = band.createDiv({ cls: 'dnd5e-facts' });
+		const fact = (label: string, value: string, rule?: string) => {
+			const f = facts.createDiv({ cls: 'dnd5e-fact' });
+			const l = f.createSpan({ cls: 'dnd5e-fact-label', text: label });
+			if (rule) markTerm(l, terms, rule);
+			f.createEl('b', { text: value });
+		};
+		fact('Passive Perception', String(s.passivePerception), 'Passive Perception');
+		if (s.size) fact('Size', s.size, 'Size');
+		const insp = pill(facts, { tag: 'button', text: 'Heroic Inspiration', cls: `dnd5e-insp${s.inspiration ? ' is-on' : ''}`, title: s.inspiration ? 'Use Heroic Inspiration' : 'Gain Heroic Inspiration', attr: { 'aria-pressed': String(s.inspiration) } });
+		// A five-pointed star, hollow until it's earned (no icon set has the book's).
+		const icon = createSpan({ cls: 'ev-pill-icon dnd5e-insp-icon', attr: { 'aria-hidden': 'true' } });
+		icon.createSvg('svg', { cls: 'dnd5e-insp-star', attr: { viewBox: '-0.7 -0.7 17.4 16.4' } }).createSvg('path', { attr: { d: STAR } });
+		insp.prepend(icon);
+		insp.onclick = (e) => { e.preventDefault(); this.edit(fm => { if (s.inspiration) delete fm.inspiration; else fm.inspiration = true; }); };
 	}
 
 	/** The shared HP keypad: damage (temp HP first; vulnerable doubles, resisted halves), heal, set, temp HP. */
@@ -299,12 +322,11 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 	private renderConditions(row: HTMLElement, s: Sheet5e, terms: TermContext): void {
 		markTerm(row.createSpan({ cls: 'dnd5e-row-label', text: 'Conditions' }), terms, 'Conditions');
 		const list = row.createDiv({ cls: 'dnd5e-condition-list' });
-		if (!s.conditions.length && !s.exhaustion) list.createSpan({ cls: 'dnd5e-none', text: 'None' });
 		for (const c of s.conditions) {
 			const chip = list.createSpan({ cls: 'dnd5e-sheet-condition' });
 			markTerm(chip.createSpan({ cls: 'dnd5e-sheet-condition-name', text: c }), terms, c);
 			const x = chip.createEl('button', { cls: 'dnd5e-sheet-condition-x', attr: { 'aria-label': `End ${c}` } });
-			setIcon(x, 'x');
+			setIcon(x, evIcon('x'));
 			x.onclick = (e) => { e.preventDefault(); this.edit(fm => removeListEntry(fm, 'conditions', c)); };
 		}
 		if (s.exhaustion) {
@@ -312,7 +334,7 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 			markTerm(chip.createSpan({ cls: 'dnd5e-sheet-condition-name', text: 'Exhaustion' }), terms, 'Exhaustion');
 			renderPipRow(chip, { key: `exhaustion:${this.path}`, name: 'Exhaustion', count: s.exhaustion, max: 6, cls: 'is-exhaustion', set: n => this.edit(fm => setExhaustion(fm, n)) });
 		}
-		const add = pill(list, { tag: 'button', icon: 'plus', text: 'Add', cls: 'dnd5e-sheet-condition-add', attr: { 'aria-label': 'Add a condition' } });
+		const add = pill(list, { tag: 'button', icon: evIcon('plus'), text: 'Add', cls: 'dnd5e-sheet-condition-add', attr: { 'aria-label': 'Add a condition' } });
 		add.onclick = (e) => {
 			e.preventDefault();
 			const m = new Menu();
@@ -330,47 +352,32 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 
 	// Abilities, saves and skills -----------------------------------------------
 
-	/** Six cards, each the ability's modifier and score, then its save and its skills (the 2024 sheet's grouping). */
-	private renderAbilities(card: HTMLElement, s: Sheet5e, terms: TermContext): void {
-		const grid = card.createDiv({ cls: 'dnd5e-ability-grid' });
+	/** Six plaques: the name, the modifier large (it rolls a check), the score in a lozenge; then the save and the skills. */
+	private renderAbilities(grid: HTMLElement, s: Sheet5e, terms: TermContext): void {
 		for (const a of ABILITIES) {
 			const box = grid.createDiv({ cls: `dnd5e-sheet-ability is-${a}` });
-			const head = box.createDiv({ cls: 'dnd5e-ability-head' });
-			this.rollable(head, formatMod(s.mods[a]), d20(s.mods[a]), this.who(s, `${ABILITY_NAME[a]} check`), 'is-mod');
-			const names = head.createDiv({ cls: 'dnd5e-ability-names' });
-			const name = names.createDiv({ cls: 'dnd5e-sheet-ability-name' });
-			// The full name, or STR on narrow sheets.
-			const word = name.createSpan();
-			word.createSpan({ cls: 'dnd5e-ability-long', text: ABILITY_NAME[a] });
-			word.createSpan({ cls: 'dnd5e-ability-short', text: SHORT[a] });
-			markTerm(word, terms, SHORT[a]);
-			names.createDiv({ cls: 'dnd5e-sheet-ability-score', text: String(s.scores[a]), attr: { 'aria-label': `${ABILITY_NAME[a]} score ${s.scores[a]}` } });
+			corners(box);
+			const top = box.createDiv({ cls: 'dnd5e-ability-top' });
+			const name = top.createSpan({ cls: 'dnd5e-sheet-ability-name', text: ABILITY_NAME[a] });
+			markTerm(name, terms, ABILITY_SHORT[a].toUpperCase());
+			this.rollable(top, formatMod(s.mods[a]), d20(s.mods[a]), this.who(s, `${ABILITY_NAME[a]} check`), 'is-mod');
+			top.createSpan({ cls: 'dnd5e-sheet-ability-score', text: String(s.scores[a]), attr: { 'aria-label': `${ABILITY_NAME[a]} score ${s.scores[a]}` } });
 
 			const rows = box.createDiv({ cls: 'dnd5e-ability-rows' });
 			const save = rows.createDiv({ cls: `dnd5e-sheet-save${s.saves[a].proficient ? ' is-prof' : ''}` });
-			save.createSpan({ cls: `dnd5e-prof-mark${s.saves[a].proficient ? ' is-prof' : ''}`, attr: { 'aria-label': s.saves[a].proficient ? 'Proficient' : 'Not proficient' } });
-			markTerm(save.createSpan({ cls: 'dnd5e-row-name', text: 'Saving throw' }), terms, 'Saving Throw');
+			profMark(save, s.saves[a].proficient ? 1 : 0);
+			markTerm(save.createSpan({ cls: 'dnd5e-row-name', text: 'Save' }), terms, 'Saving Throw');
 			this.rollable(save, formatMod(s.saves[a].bonus), d20(s.saves[a].bonus), this.who(s, `${ABILITY_NAME[a]} save`), 'is-bonus');
 			for (const k of s.skills.filter(x => x.ability === a)) this.renderSkill(rows, s, k, terms);
 		}
-		// Passive scores: what the GM checks without a roll.
-		const passives = card.createDiv({ cls: 'dnd5e-passives' });
-		const passive = (name: string, value: number, rule?: string) => {
-			const p = passives.createDiv({ cls: 'dnd5e-sheet-passive' });
-			p.createSpan({ cls: 'dnd5e-passive-value', text: String(value) });
-			const label = p.createSpan({ cls: 'dnd5e-passive-name', text: `Passive ${name}` });
-			if (rule) markTerm(label, terms, rule);
-		};
-		passive('Perception', s.passivePerception, 'Passive Perception');
-		passive('Insight', s.passiveInsight);
-		passive('Investigation', s.passiveInvestigation);
 	}
 
 	/** A skill: the mark cycles proficiency (none, proficient, expertise), the name says what it is, the bonus rolls. */
 	private renderSkill(parent: HTMLElement, s: Sheet5e, k: SheetSkill, terms: TermContext): void {
 		const state = k.expertise ? 'expertise' : k.proficient ? 'proficient' : 'not proficient';
 		const row = parent.createDiv({ cls: `dnd5e-sheet-skill${k.proficient ? ' is-prof' : ''}${k.expertise ? ' is-expert' : ''}` });
-		const dot = row.createEl('button', { cls: `dnd5e-skill-dot dnd5e-prof-mark${k.expertise ? ' is-expert' : k.proficient ? ' is-prof' : ''}`, attr: { 'aria-label': `${k.name}: ${state}. Change` } });
+		const dot = profMark(row, k.expertise ? 2 : k.proficient ? 1 : 0, 'button', `${k.name}: ${state}. Change`);
+		dot.addClass('dnd5e-skill-dot');
 		dot.onclick = (e) => { e.preventDefault(); this.edit(fm => cycleSkill(fm, k.name)); };
 		markTerm(row.createSpan({ cls: 'dnd5e-row-name dnd5e-skill-name', text: k.name }), terms, k.name);
 		this.rollable(row, formatMod(k.bonus), d20(k.bonus), this.who(s, k.name), 'is-bonus');
@@ -380,83 +387,109 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 
 	private renderTabs(root: HTMLElement, s: Sheet5e, terms: TermContext): void {
 		const caster = !!s.spellcasting || s.spells.length > 0;
-		const tabs: { id: Tab; label: string; icon: string; count?: number }[] = [
-			{ id: 'actions', label: 'Actions', icon: 'swords' },
-			...(caster ? [{ id: 'spells' as const, label: 'Spells', icon: 'sparkles', count: s.spells.length }] : []),
-			{ id: 'features', label: 'Features', icon: 'scroll-text', count: s.features.length },
-			{ id: 'inventory', label: 'Inventory', icon: 'backpack', count: s.inventory.length },
+		const tabs: { id: Tab; label: string }[] = [
+			{ id: 'actions', label: 'Actions' },
+			...(caster ? [{ id: 'spells' as const, label: 'Spells' }] : []),
+			{ id: 'features', label: 'Features' },
+			{ id: 'inventory', label: 'Inventory' },
 		];
 		let current = tabOf.get(this.path) ?? 'actions';
 		if (!tabs.some(t => t.id === current)) current = 'actions';
 		const bar = root.createDiv({ cls: 'dnd5e-tabs', attr: { role: 'tablist' } });
 		for (const t of tabs) {
-			const b = pill(bar, { tag: 'button', icon: t.icon, text: t.label, cls: `dnd5e-tab${t.id === current ? ' is-active' : ''}`, attr: { role: 'tab', 'aria-selected': String(t.id === current), 'data-tab': t.id } });
-			if (t.count) b.createSpan({ cls: 'dnd5e-tab-count', text: String(t.count) });
+			const b = pill(bar, { tag: 'button', text: t.label, cls: `dnd5e-tab${t.id === current ? ' is-active' : ''}`, attr: { role: 'tab', 'aria-selected': String(t.id === current), 'data-tab': t.id } });
 			b.onclick = (e) => { e.preventDefault(); tabOf.set(this.path, t.id); this.render(); };
 		}
 		const panel = root.createDiv({ cls: `dnd5e-panel is-${current}`, attr: { role: 'tabpanel' } });
 		if (current === 'actions') this.renderActions(panel, s, terms);
 		else if (current === 'spells') this.renderSpells(panel, s, terms);
-		else if (current === 'features') this.renderFeatures(panel, s, terms);
+		else if (current === 'features') this.renderFeatures(panel, s);
 		else this.renderInventory(panel, s);
 	}
 
-	/** A section heading with the gold rule after it, and room on the right for its controls. */
+	/** A group's heading: small caps over an oxblood rule, with room on the right for its controls. */
 	private section(parent: HTMLElement, title: string, terms?: TermContext, rule?: string): { head: HTMLElement; end: HTMLElement } {
 		const head = parent.createDiv({ cls: 'dnd5e-sheet-section' });
 		const t = head.createSpan({ cls: 'dnd5e-section-title', text: title });
 		if (terms && rule) markTerm(t, terms, rule);
-		head.createSpan({ cls: 'dnd5e-section-rule' });
 		return { head, end: head.createSpan({ cls: 'dnd5e-section-end' }) };
 	}
 
 	private renderActions(panel: HTMLElement, s: Sheet5e, terms: TermContext): void {
-		this.section(panel, 'Attacks', terms, 'Attack');
-		const list = panel.createDiv({ cls: 'dnd5e-attacks' });
-		if (!s.attacks.length) list.createDiv({ cls: 'dnd5e-sheet-empty', text: 'Equip a weapon in the inventory to see it here.' });
-		for (const a of s.attacks) {
-			const row = list.createDiv({ cls: 'dnd5e-sheet-attack' });
-			const who = row.createDiv({ cls: 'dnd5e-attack-who' });
-			const name = who.createSpan({ cls: 'dnd5e-sheet-attack-name', text: a.name });
-			this.linkCard(name, a.name, 'equipment');
-			const meta = [a.range ? `${a.range} ft.` : '', ...a.properties].filter(Boolean).join(' · ');
-			if (meta) who.createDiv({ cls: 'dnd5e-row-meta', text: meta });
-			const hit = this.rollable(row, formatMod(a.toHit), d20(a.toHit), this.who(s, `${a.name} (attack)`), 'is-hit');
-			hit.setAttr('title', 'To hit');
-			const dmg = this.rollable(row, '', a.damage, this.who(s, `${a.name} damage`), 'is-damage');
-			dmg.createSpan({ cls: 'dnd5e-dmg-dice', text: a.damage });
-			if (a.damageType) { dmg.appendText(' '); dmg.createSpan({ cls: 'dnd5e-dmg-type', text: a.damageType }); }
+		const rows = sheetActions5e(s);
+		// One grid for every group, so the columns line up down the tab.
+		const grid = panel.createDiv({ cls: 'dnd5e-act-grid' });
+		if (!rows.some(r => r.group !== 'limited')) {
+			this.section(grid, 'Actions', terms, 'Action');
+			grid.createDiv({ cls: 'dnd5e-sheet-empty', text: 'Equip a weapon in the inventory to see it here.' });
+		} else {
+			const head = grid.createDiv({ cls: 'dnd5e-act-row is-head', attr: { 'aria-hidden': 'true' } });
+			for (const h of ['Name', 'Range, notes', 'Hit / DC', 'Damage']) head.createSpan({ text: h });
 		}
-		if (s.spellcasting) {
-			const row = list.createDiv({ cls: 'dnd5e-sheet-attack is-spell' });
-			const who = row.createDiv({ cls: 'dnd5e-attack-who' });
-			who.createSpan({ cls: 'dnd5e-sheet-attack-name', text: 'Spell attack' });
-			who.createDiv({ cls: 'dnd5e-row-meta', text: `${ABILITY_NAME[s.spellcasting.ability]} · save DC ${s.spellcasting.dc}` });
-			this.rollable(row, formatMod(s.spellcasting.attack), d20(s.spellcasting.attack), this.who(s, 'spell attack'), 'is-hit');
-			row.createSpan({ cls: 'dnd5e-attack-spacer' });
+		for (const g of ACTION_GROUPS) {
+			const here = rows.filter(r => r.group === g.id);
+			if (!here.length) continue;
+			this.section(grid, g.label, terms, g.id === 'action' ? 'Action' : g.id === 'bonus' ? 'Bonus Action' : g.id === 'reaction' ? 'Reaction' : undefined);
+			for (const r of here) this.renderAction(grid, s, r);
 		}
+	}
 
-		// What anyone can do on a turn: each opens its rule.
-		const known = TURN_ACTIONS[s.edition].filter(a => terms.terms.get(a));
-		if (known.length) {
-			this.section(panel, 'On your turn', terms, 'Action');
-			const chips = panel.createDiv({ cls: 'dnd5e-turn-actions' });
-			for (const a of known) markTerm(chips.createSpan({ cls: 'dnd5e-turn-action', text: a }), terms, a);
+	/** One row: its name, range and notes, then its to-hit (or save DC), then its damage, Cast, or uses. */
+	private renderAction(list: HTMLElement, s: Sheet5e, r: SheetAction5e): void {
+		const row = list.createDiv({ cls: `dnd5e-sheet-attack dnd5e-act-row is-${r.kind}` });
+		const name = row.createSpan({ cls: 'dnd5e-sheet-attack-name', text: r.name });
+		if (r.kind === 'weapon') this.linkCard(name, r.name, 'equipment');
+		else if (r.kind === 'spell') this.linkCard(name, r.name, 'spell');
+		const note = row.createDiv({ cls: 'dnd5e-act-note' });
+		note.createSpan({ cls: 'dnd5e-row-meta', text: r.note });
+		const hit = row.createDiv({ cls: 'dnd5e-act-hit' });
+		const end = row.createDiv({ cls: 'dnd5e-act-end' });
+		// A leveled spell that also deals damage (a reaction's Hellish Rebuke): Cast first, its roll or DC in the notes.
+		const castFirst = !!(r.damage && r.slotLevel);
+		if (castFirst) {
+			this.castButton(hit, s, r.slotLevel!, r.name);
+			const meta = note.querySelector('.dnd5e-row-meta');
+			if (r.hit !== undefined) meta?.appendText(` · ${formatMod(r.hit)} to hit`);
+			else if (r.save) meta?.setText(r.note.replace(`${ABILITY_SHORT[r.save.ability]} save`, `DC ${r.save.dc} ${ABILITY_SHORT[r.save.ability]} save`));
 		}
+		else if (r.hit !== undefined) this.rollable(hit, formatMod(r.hit), d20(r.hit), this.who(s, `${r.name} (attack)`), 'is-hit');
+		else if (r.save) pill(hit, { text: `DC ${r.save.dc}`, cls: 'dnd5e-dc', title: `${ABILITY_NAME[r.save.ability]} save, DC ${r.save.dc}` });
+		if (r.damage) damageButton(end, r.damage, r.damageType, () => this.roll(r.damage!, this.who(s, `${r.name} damage`)));
+		else if (r.slotLevel) this.castButton(end, s, r.slotLevel, r.name);
+		else if (r.resource) this.usePips(end, r.resource);
+	}
+
+	/** Cast: spends the lowest slot at or above the spell's level. */
+	private castButton(parent: HTMLElement, s: Sheet5e, level: number, name: string): HTMLElement {
+		const slot = slotFor(s, level);
+		const b = pill(parent, { tag: 'button', text: 'Cast', cls: 'dnd5e-cast-btn', title: slot === undefined ? 'No slots left' : slot === level ? `Spend a level ${slot} slot` : `Spend a level ${slot} slot (none left at ${level})` });
+		if (slot === undefined) b.setAttr('disabled', 'true');
+		b.addEventListener('click', (e) => {
+			e.preventDefault();
+			if (slot === undefined) return;
+			this.edit((fm, now) => useSlot(fm, now, slot, 1));
+			new Notice(`${s.name} casts ${name}.`);
+		});
+		return b;
+	}
+
+	private usePips(parent: HTMLElement, r: Resource5e): void {
+		renderPipRow(parent, { key: `uses:${this.path}:${r.name}`, name: r.name, count: r.max - r.used, max: r.max, cls: 'is-uses', set: n => this.edit(fm => setUsesLeft(fm, r, n)) });
 	}
 
 	private renderSpells(panel: HTMLElement, s: Sheet5e, terms: TermContext): void {
 		if (s.spellcasting) {
 			const sc = s.spellcasting;
 			const cast = panel.createDiv({ cls: 'dnd5e-sheet-cast' });
-			const fact = (label: string, fill: (v: HTMLElement) => void) => {
+			const fact = (label: string, rule: string | undefined, fill: (v: HTMLElement) => void) => {
 				const f = cast.createDiv({ cls: 'dnd5e-cast-fact' });
-				fill(f.createDiv({ cls: 'dnd5e-cast-value' }));
-				f.createDiv({ cls: 'dnd5e-cast-label', text: label });
+				const l = f.createSpan({ cls: 'dnd5e-cast-label', text: label });
+				if (rule) markTerm(l, terms, rule);
+				fill(f);
 			};
-			fact('Spellcasting', v => markTerm(v.createSpan({ text: ABILITY_NAME[sc.ability] }), terms, SHORT[sc.ability]));
-			fact('Save DC', v => v.setText(String(sc.dc)));
-			fact('Attack', v => this.rollable(v, formatMod(sc.attack), d20(sc.attack), this.who(s, 'spell attack'), 'is-big'));
+			fact('Spellcasting', undefined, v => markTerm(v.createEl('b', { cls: 'dnd5e-cast-value', text: ABILITY_NAME[sc.ability] }), terms, ABILITY_SHORT[sc.ability].toUpperCase()));
+			fact('Save DC', undefined, v => { v.createEl('b', { cls: 'dnd5e-cast-value', text: String(sc.dc) }); });
+			fact('Spell attack', 'Attack Roll', v => { this.rollable(v, formatMod(sc.attack), d20(sc.attack), this.who(s, 'spell attack'), 'is-hit'); });
 		}
 
 		// Spells by level, each level with its slots. A homebrew spell is found through the runtime.
@@ -466,88 +499,108 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		});
 		const levels = new Set<number>([...spells.filter(x => x.spell).map(x => x.spell!.level), ...s.slots.map(x => x.level)]);
 		for (const level of [...levels].sort((a, b) => a - b)) {
-			const { end } = this.section(panel, level === 0 ? 'Cantrips' : `${ordinal(level)} level`, terms, level === 0 ? 'Cantrip' : undefined);
+			const lv = panel.createDiv({ cls: 'dnd5e-spell-level' });
+			const { end } = this.section(lv, level === 0 ? 'Cantrips' : `Level ${level}`, terms, level === 0 ? 'Cantrip' : undefined);
 			const sl = s.slots.find(x => x.level === level);
 			if (sl) {
 				const left = sl.max - sl.used;
 				const g = end.createDiv({ cls: 'dnd5e-slot-group' });
 				// A filled pip spends a slot, an empty one gets one back (core's pips).
 				renderPipRow(g, { key: `slots:${this.path}:${sl.level}`, name: `${ordinal(sl.level)} level slots`, count: left, max: sl.max, cls: 'is-slot', set: n => this.edit((fm, sh) => useSlot(fm, sh, sl.level, n < left ? 1 : -1)) });
-				g.createSpan({ cls: 'dnd5e-slot-count', text: `${left}/${sl.max}` });
+				g.createSpan({ cls: 'dnd5e-slot-count', text: `${left} of ${sl.max} left` });
 			}
-			const list = panel.createDiv({ cls: 'dnd5e-spell-list' });
+			const list = lv.createDiv({ cls: 'dnd5e-spell-list' });
 			const here = spells.filter(x => x.spell?.level === level).sort((a, b) => a.name.localeCompare(b.name));
 			if (!here.length) list.createDiv({ cls: 'dnd5e-sheet-empty', text: 'No spells of this level.' });
-			for (const sp of here) this.renderSpell(list, sp.name, sp.spell);
+			for (const sp of here) this.renderSpell(list, s, sp.name, sp.spell);
 		}
 		const unknown = spells.filter(x => !x.spell);
 		if (unknown.length) {
 			this.section(panel, 'Not in the compendium');
 			const list = panel.createDiv({ cls: 'dnd5e-spell-list' });
-			for (const sp of unknown) this.renderSpell(list, sp.name, undefined);
+			for (const sp of unknown) this.renderSpell(list, s, sp.name, undefined);
 		}
 		if (!s.spells.length && !s.slots.length) panel.createDiv({ cls: 'dnd5e-sheet-empty', text: 'No spells yet.' });
-		const add = pill(panel, { tag: 'button', icon: 'plus', text: 'Add spell', cls: 'dnd5e-sheet-add' });
+		const add = pill(panel, { tag: 'button', icon: evIcon('plus'), text: 'Add spell', cls: 'dnd5e-sheet-add' });
 		add.onclick = (e) => { e.preventDefault(); this.pick('spell', s, (hit) => this.edit(fm => addListEntry(fm, 'spells', hit.name))); };
 	}
 
-	private renderSpell(list: HTMLElement, name: string, spell: Spell5e | undefined): void {
+	/** A spell: its name (the card on hover), Concentration and Ritual marks, what it does, and Cast for a slot. */
+	private renderSpell(list: HTMLElement, s: Sheet5e, name: string, spell: Spell5e | undefined): void {
 		const row = list.createDiv({ cls: 'dnd5e-sheet-spell' });
-		const who = row.createDiv({ cls: 'dnd5e-spell-who' });
-		const link = who.createSpan({ cls: 'dnd5e-sheet-spell-name', text: name });
+		const link = row.createSpan({ cls: 'dnd5e-sheet-spell-name', text: name });
 		if (!this.linkCard(link, name, 'spell')) link.addClass('is-unresolved');
-		if (spell) who.createDiv({ cls: 'dnd5e-row-meta', text: [spell.school, spell.castingTime.split(',')[0], spell.range].filter(Boolean).join(' · ') });
-		const tags = row.createDiv({ cls: 'dnd5e-spell-tags' });
-		if (spell?.concentration) tags.createSpan({ cls: 'dnd5e-sheet-tag', text: 'C', attr: { 'aria-label': 'Concentration' } });
-		if (spell?.ritual) tags.createSpan({ cls: 'dnd5e-sheet-tag', text: 'R', attr: { 'aria-label': 'Ritual' } });
-		const x = row.createEl('button', { cls: 'clickable-icon dnd5e-sheet-x', attr: { 'aria-label': `Remove ${name}` } });
-		setIcon(x, 'x');
+		const tags = row.createSpan({ cls: 'dnd5e-spell-tags' });
+		if (spell?.concentration) setTooltip(tags.createSpan({ cls: 'dnd5e-sheet-tag', text: 'C' }), 'Concentration', { delay: 350 });
+		if (spell?.ritual) setTooltip(tags.createSpan({ cls: 'dnd5e-sheet-tag', text: 'R' }), 'Ritual', { delay: 350 });
+		const note: string[] = [];
+		if (spell) {
+			const fx = spellEffect(spell, s.level);
+			note.push(spell.range.replace(/(\d+)\s*feet\b/gi, '$1 ft'));
+			if (fx.save && s.spellcasting) note.push(`DC ${s.spellcasting.dc} ${ABILITY_SHORT[fx.save]}`);
+			else if (fx.attack && s.spellcasting) note.push(`${formatMod(s.spellcasting.attack)} to hit`);
+			if (fx.damage) note.push(`${formatDice(fx.damage)} ${fx.damageType ?? ''}`.trim());
+		}
+		row.createSpan({ cls: 'dnd5e-row-meta', text: note.join(' · ') });
+		const end = row.createDiv({ cls: 'dnd5e-spell-end' });
+		if (spell && spell.level > 0 && s.slots.length) this.castButton(end, s, spell.level, name);
+		const x = end.createEl('button', { cls: 'dnd5e-sheet-x', attr: { 'aria-label': `Remove ${name}` } });
+		setIcon(x, evIcon('x'));
 		x.onclick = (e) => { e.preventDefault(); this.edit(fm => removeListEntry(fm, 'spells', name)); };
 	}
 
-	private renderFeatures(panel: HTMLElement, s: Sheet5e, terms: TermContext): void {
+	/** Features grouped by where they come from; each name opens its row to the feature's own words. */
+	private renderFeatures(panel: HTMLElement, s: Sheet5e): void {
 		if (!s.cls) panel.createDiv({ cls: 'dnd5e-sheet-empty', text: `No ${s.edition} class called "${s.className}": set class: in the note's properties.` });
-		// Grouped by where they come from: the class, the subclass, the species, the background, feats, your own.
+		const uses = new Map(resources5e(s).map(r => [r.name.toLowerCase(), r]));
+		const opened = openFeatures.get(this.path) ?? new Set<string>();
+		openFeatures.set(this.path, opened);
 		const groups = new Map<string, typeof s.features>();
 		for (const f of s.features) groups.set(f.source, [...(groups.get(f.source) ?? []), f]);
+		const card = this.rt.cardOptions(this.path);
 		for (const [source, list] of groups) {
 			this.section(panel, source === 'Yours' ? 'Your own' : source === 'Feat' ? 'Feats' : source);
 			const wrap = panel.createDiv({ cls: 'dnd5e-feature-list' });
 			for (const f of list) {
-				const d = wrap.createEl('details', { cls: 'dnd5e-sheet-feature' });
-				const sum = d.createEl('summary');
-				sum.createSpan({ cls: 'dnd5e-sheet-feature-name', text: f.name });
-				if (f.level) sum.createSpan({ cls: 'dnd5e-sheet-feature-src', text: `Level ${f.level}` });
-				if (f.desc) {
-					const body = d.createDiv({ cls: 'dnd5e-sheet-feature-text' });
-					for (const para of f.desc.split(/\n{2,}/)) appendWithTerms(body.createDiv({ cls: 'dnd5e-feature-para' }), para, terms, { prose: true });
-				}
+				const id = `${source}:${f.name}`;
+				const open = opened.has(id);
+				const row = wrap.createDiv({ cls: `dnd5e-sheet-feature${open ? ' is-open' : ''}` });
+				const head = row.createDiv({ cls: 'dnd5e-feature-head' });
+				const toggle = pill(head, { tag: 'button', icon: evIcon('chevron-right'), text: f.name, cls: 'dnd5e-feature-toggle', attr: { 'aria-expanded': String(open) } });
+				if (!f.desc) toggle.setAttr('disabled', 'true');
+				const r = uses.get(f.name.replace(/\s*\(\d+\s+uses?\)\s*$/i, '').toLowerCase());
+				if (r) this.usePips(head, r);
+				if (f.level) head.createSpan({ cls: 'dnd5e-sheet-feature-src', text: `Level ${f.level}` });
+				toggle.onclick = (e) => {
+					e.preventDefault();
+					if (opened.has(id)) opened.delete(id); else opened.add(id);
+					this.render();
+				};
+				if (open && f.desc) renderText5e(row.createDiv({ cls: 'dnd5e-sheet-feature-text' }), f.desc, `${s.name}: ${f.name}`, card);
 			}
 		}
 	}
 
 	private renderInventory(panel: HTMLElement, s: Sheet5e): void {
 		const { end } = this.section(panel, 'Equipment');
-		const gold = end.createSpan({ cls: 'dnd5e-sheet-gold', attr: { 'aria-label': `${s.gold} gold pieces` } });
-		setIcon(gold.createSpan({ cls: 'dnd5e-gold-icon' }), 'coins');
-		gold.createSpan({ text: `${s.gold} gp` });
+		pill(end, { text: `${s.gold} gp`, cls: 'dnd5e-sheet-gold', attr: { 'aria-label': `${s.gold} gold pieces` } });
 		const list = panel.createDiv({ cls: 'dnd5e-item-list' });
 		if (!s.inventory.length) list.createDiv({ cls: 'dnd5e-sheet-empty', text: 'Nothing carried yet.' });
 		for (const it of s.inventory) this.renderItem(list, it);
-		const add = pill(panel, { tag: 'button', icon: 'plus', text: 'Add item', cls: 'dnd5e-sheet-add' });
+		const add = pill(panel, { tag: 'button', icon: evIcon('plus'), text: 'Add item', cls: 'dnd5e-sheet-add' });
 		add.onclick = (e) => { e.preventDefault(); this.pick('item', s, (hit) => this.edit(fm => addItem(fm, hit.name, { equipped: hit.kind === 'equipment' && !!(hit.equipment.damage || hit.equipment.ac) }))); };
 	}
 
 	private renderItem(list: HTMLElement, it: SheetItem): void {
 		const row = list.createDiv({ cls: `dnd5e-sheet-item${it.equipped ? ' is-equipped' : ''}` });
 		const eq = row.createEl('button', { cls: `dnd5e-equip${it.equipped ? ' is-on' : ''}`, attr: { 'aria-pressed': String(it.equipped), 'aria-label': it.equipped ? `Unequip ${it.name}` : `Equip ${it.name}` } });
-		setIcon(eq, it.equipment?.damage ? 'sword' : it.equipment?.ac ? 'shield' : it.item ? 'gem' : 'package');
+		setIcon(eq, evIcon(it.equipment?.damage ? 'swords' : it.equipment?.ac ? 'shield' : it.item ? 'sparkle' : 'tag'));
 		eq.onclick = (e) => { e.preventDefault(); this.edit(fm => setItem(fm, it.index, { equipped: !it.equipped })); };
 		const who = row.createDiv({ cls: 'dnd5e-item-who' });
 		const name = who.createSpan({ cls: 'dnd5e-sheet-item-name', text: it.name });
 		this.linkCard(name, it.name, it.item ? 'item' : 'equipment');
 		const meta = it.equipment
-			? [it.equipment.damage, it.equipment.ac ? `AC ${it.equipment.ac.base}${it.equipment.ac.dex ? ' + Dex' : ''}` : '', it.equipment.weight ? `${it.equipment.weight} lb.` : ''].filter(Boolean).join(' · ')
+			? [it.equipment.damage ?? '', it.equipment.ac ? `AC ${it.equipment.ac.base}${it.equipment.ac.dex ? ' + Dex' : ''}` : '', it.equipment.weight ? `${it.equipment.weight} lb.` : ''].filter(Boolean).join(' · ')
 			: it.item ? [it.item.type, it.item.rarity].filter(Boolean).join(' · ') : '';
 		if (meta || it.equipped) {
 			const m = who.createDiv({ cls: 'dnd5e-row-meta' });
@@ -555,9 +608,9 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 			if (meta) m.appendText(it.equipped ? ` · ${meta}` : meta);
 		}
 		if (it.qty !== 1) row.createSpan({ cls: 'dnd5e-qty', text: `×${it.qty}` });
-		const more = row.createEl('button', { cls: 'clickable-icon dnd5e-item-more', attr: { 'aria-label': `${it.name}: more` } });
-		setIcon(more, 'more-horizontal');
-		more.onclick = (e) => {
+		const more = row.createEl('button', { cls: 'dnd5e-item-more', attr: { 'aria-label': `${it.name}: more` } });
+		setIcon(more, evIcon('more'));
+		const menu = (e: MouseEvent | PointerEvent) => {
 			e.preventDefault();
 			const m = new Menu();
 			m.addItem(i => i.setTitle(it.equipped ? 'Unequip' : 'Equip').setIcon(it.equipped ? 'circle' : 'check-circle').onClick(() => this.edit(fm => setItem(fm, it.index, { equipped: !it.equipped }))));
@@ -565,15 +618,23 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 			m.addItem(i => i.setTitle(it.qty > 1 ? 'One fewer' : 'Remove').setIcon(it.qty > 1 ? 'minus' : 'trash-2').onClick(() => this.edit(fm => setItem(fm, it.index, { qty: it.qty - 1 }))));
 			m.showAtMouseEvent(e);
 		};
+		more.onclick = menu;
+		row.addEventListener('contextmenu', menu);
+		onLongPress(row, menu);
 	}
 
-	/** Spend hit dice: one die per click of the prompt, each healing a roll + Con. */
+	/** A short rest: spend a hit die (healing a roll + Con), and the uses a short rest brings back come back. */
 	private shortRest(s: Sheet5e): void {
-		if (!s.hitDiceLeft) { new Notice(`${s.name} has no hit dice left.`); return; }
+		const backUses = resources5e(s).some(r => r.used && (r.per === 'short' || r.shortOne));
+		if (!s.hitDiceLeft) {
+			if (backUses) this.edit((fm, sh) => restoreUses(fm, sh, 'short'));
+			new Notice(`${s.name} has no hit dice left.`);
+			return;
+		}
 		const mod = s.mods.con;
 		const total = this.roll(`1d${s.hitDie}${mod ? (mod > 0 ? `+${mod}` : `${mod}`) : ''}`, `${s.name}: hit die`);
 		if (total === undefined) return;
-		this.edit((fm, sh) => shortRest(fm, sh, 1, Math.max(0, total)));
+		this.edit((fm, sh) => { shortRest(fm, sh, 1, Math.max(0, total)); restoreUses(fm, sh, 'short'); });
 	}
 
 	/** The level-up wizard: hit points, a subclass when it's time, an increase or a feat, new spells. */

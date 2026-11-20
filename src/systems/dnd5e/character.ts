@@ -24,6 +24,7 @@
 //   gold: 10
 //   conditions: [Poisoned]  (the rules' conditions on you now)
 //   exhaustion: 1           (levels of Exhaustion, 1–6)
+//   uses_spent: { Rage: 1 } (limited-use features' spent uses; a rest brings them back)
 
 import { abilityMod } from './rules';
 import { Class5e, ClassFeature5e, compendium5e, Equipment5e, Item5e, Spell5e } from './compendium';
@@ -91,6 +92,10 @@ export interface Sheet5e {
 	/** Passive Insight and Investigation, beside Perception. */
 	passiveInsight: number;
 	passiveInvestigation: number;
+	/** The species' size ("Medium"), when the compendium knows the species. */
+	size: string;
+	/** Limited-use features' spent uses, by name (sheet-actions.ts works out the features). */
+	usesSpent: Record<string, number>;
 }
 
 const num = (v: unknown, d: number): number => {
@@ -106,6 +111,18 @@ const same = (a: string, b: string) => key(a) === key(b);
 /** Proficiency bonus by character level. */
 export function pbForLevel(level: number): number {
 	return 2 + Math.floor((Math.max(1, Math.min(20, level)) - 1) / 4);
+}
+
+/** Uses spent so far, from `uses_spent: { Rage: 1 }`. */
+export function usesSpent(fm: Frontmatter): Record<string, number> {
+	const raw = fm.uses_spent;
+	if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+	const out: Record<string, number> = {};
+	for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+		const n = num(v, 0);
+		if (n > 0) out[k] = Math.floor(n);
+	}
+	return out;
 }
 
 const ABILITY_OF: Record<string, AbilityKey> = { STR: 'str', DEX: 'dex', CON: 'con', INT: 'int', WIS: 'wis', CHA: 'cha', Strength: 'str', Dexterity: 'dex', Constitution: 'con', Intelligence: 'int', Wisdom: 'wis', Charisma: 'cha' };
@@ -238,6 +255,8 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		gold: num(fm.gold, 0),
 		conditions: list(fm.conditions).filter(c => !/^exhaustion\b/i.test(c)),
 		exhaustion: Math.max(0, Math.min(6, Math.floor(num(fm.exhaustion, 0)))),
+		size: sp?.size ?? '',
+		usesSpent: usesSpent(fm),
 	};
 }
 
@@ -291,8 +310,8 @@ export function cycleSkill(fm: Frontmatter, skill: string): void {
 }
 
 /**
- * A long rest: full HP, no temp HP, every slot back, death saves cleared, one
- * level of Exhaustion gone, and hit dice back: all of them (2024), or half your
+ * A long rest: full HP, no temp HP, every slot and limited use back, death saves
+ * cleared, one level of Exhaustion gone, and hit dice back: all of them (2024), or half your
  * level, at least one (2014).
  */
 export function longRest(fm: Frontmatter, s: Sheet5e): void {
@@ -301,6 +320,7 @@ export function longRest(fm: Frontmatter, s: Sheet5e): void {
 	delete fm.temp_hp;
 	delete fm.slots_used;
 	delete fm.death_saves;
+	delete fm.uses_spent;
 	const back = s.edition === '2024' ? s.level : Math.max(1, Math.floor(s.level / 2));
 	const used = Math.max(0, s.level - s.hitDiceLeft - back);
 	if (used) fm.hit_dice_used = used; else delete fm.hit_dice_used;

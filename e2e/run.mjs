@@ -4617,6 +4617,9 @@ test('phone: the 5e character sheet fits a phone, its HP opens the keypad as a s
 			return [...s.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > r.right + 1 || b.left < r.left - 1); }).map(e => e.className).slice(0, 5);
 		}, R);
 		assert.deepEqual(spill, [], 'nothing wider than the sheet');
+		// Every damage button on the sheet is one width.
+		const dmgWidths = await p.evaluate((R) => [...document.querySelectorAll(`${R} .dnd5e-sheet .dnd5e-dmg`)].map(b => Math.round(b.getBoundingClientRect().width)), R);
+		assert.ok(dmgWidths.length >= 2 && new Set(dmgWidths).size === 1, `damage buttons one width: ${dmgWidths}`);
 		const clipped = await p.evaluate((R) => [...document.querySelectorAll(`${R} .dnd5e-sheet :is(.dnd5e-sheet-box-label, .dnd5e-row-name, .dnd5e-sheet-ability-name, .dnd5e-tab .ev-pill-text)`)]
 			.filter(e => e.checkVisibility() && e.scrollWidth > e.clientWidth + 1).map(e => e.textContent), R);
 		assert.deepEqual(clipped, [], 'labels cut off on a phone');
@@ -6017,10 +6020,20 @@ test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its c
 		}, npc.path);
 		await o.openFile(npc.path, 'preview');
 		const card = o.page.locator(`${R} .nimble-npc-card`);
-		await o.waitFor(async () => (await card.locator('.nimble-note-stat').count()) === 2, { what: 'AC and HP on the card' });
-		assert.deepEqual((await card.locator('.nimble-note-stat').allInnerTexts()).map(x => x.replace(/\s+/g, '')), ['AC15', 'HP30(4d8+12)']);
-		assert.match(await card.locator('.dnd5e-npc-row').innerText(), /Stats[\s\S]*Bandit Captain/i);
+		// A mini character sheet under the card: AC in its shield, HP as the meter, the Bandit Captain's abilities and actions.
+		const stats = card.locator('.dnd5e-npc-stats');
+		await o.waitFor(async () => (await stats.locator('.dnd5e-npc-ac b').innerText().catch(() => '')) === '15', { what: 'AC 15 on the card' });
+		assert.equal(await card.locator('.nimble-note-stat').count(), 0, 'no stat chips beside the mini sheet');
+		assert.match(await stats.locator('.dnd5e-npc-src').innerText(), /From[\s\S]*Bandit Captain[\s\S]*HP is their own/i);
+		assert.equal(await stats.locator('.dnd5e-npc-hp-bar-cur').innerText(), '30');
+		assert.match(await stats.locator('.dnd5e-npc-hpd').innerText(), /4d8 \+ 12/);
+		assert.equal(await stats.locator('.dnd5e-npc-ab').count(), 6);
+		assert.ok(await stats.locator('.dnd5e-npc-act .dnd5e-dmg').count() >= 1, 'actions with damage buttons');
 		await card.screenshot({ path: join(ARTIFACTS, 'note-kinds-5e-npc.png') });
+		// Taking a hit in the note: the meter writes what's left, and the fight starts from it.
+		await stats.locator('.ns-meter-step[aria-label="Take 1 damage"]').click();
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter?.hp_now, npc.path)) === 29, { what: 'hp_now 29' });
+		await o.waitFor(async () => (await card.locator('.dnd5e-npc-hp-bar-cur').innerText().catch(() => '')) === '29', { what: 'the meter redrawn' });
 
 		// Add to fight: the NPC under her own name, AC and HP, with the Bandit Captain's actions.
 		await card.locator('button.dnd5e-npc-fight').click();
@@ -6028,9 +6041,22 @@ test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its c
 		const row = o.page.locator(`${T} .dnd5e-combatant`);
 		await o.waitFor(async () => (await row.count()) === 1, { what: 'Marta in the tracker' });
 		assert.match(await row.locator('.dnd5e-combatant-name').innerText(), /^Marta Hale$/);
-		assert.match(await row.locator('.dnd5e-hp-text').innerText(), /^30\/30$/);
+		assert.match(await row.locator('.dnd5e-hp-text').innerText(), /^29\/30$/);
 		assert.equal(await row.locator('.dnd5e-ac').getAttribute('aria-label'), 'AC 15');
 		assert.ok((await o.eval((app, plugin) => plugin.settings.systemData.dnd5e.fight.combatants[0].monster.actions.length)) > 0);
+
+		// A story NPC (no stats yet): one quiet line; Type them in writes a starting set into the note.
+		const story = await o.eval(async (app, plugin, C) => {
+			const camp = plugin.campaigns.campaigns.find(c => c.folder === C);
+			return (await plugin.campaigns.createInSection(camp, 'npc', 'Mother Sel')).path;
+		}, C);
+		await o.openFile(story, 'preview');
+		const quiet = o.page.locator(`${R} .nimble-npc-card .dnd5e-npc-stats.is-empty`);
+		await quiet.waitFor({ timeout: 5000 });
+		assert.match(await quiet.innerText(), /A story NPC: no stats[\s\S]*From a stat block[\s\S]*Type them in/);
+		await quiet.locator('button', { hasText: 'Type them in' }).click();
+		await o.waitFor(async () => /Typed in this note/.test(await o.page.locator(`${R} .nimble-npc-card .dnd5e-npc-src`).innerText().catch(() => '')), { what: 'typed-in stats' });
+		assert.deepEqual(await o.eval((app, _p, p) => { const f = app.metadataCache.getCache(p).frontmatter; return [f.ac, f.hp, f.str]; }, story), [10, '4 (1d8)', 10]);
 
 		// A system that draws locations its own way: new locations get a ```nimble-note block for it.
 		const loc = await o.eval(async (app, plugin, C) => {
@@ -6441,9 +6467,11 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		assert.match(await o.page.locator(`${S} .dnd5e-sheet-sub`).innerText(), /Level 3[\s\S]*Wizard/i);
 		assert.match(await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'AC' }).innerText(), /11/);
 		await tab('spells');
-		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Intelligence[\s\S]*13\s*Save DC[\s\S]*\+5\s*Attack/i);
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Spellcasting\s*Intelligence[\s\S]*Save DC\s*13[\s\S]*Spell attack\s*\+5/i);
+		// The class's scrollwork heads the tabs.
+		assert.equal(await o.page.locator(`${S} .dnd5e-scroll .dnd5e-scroll-title`).innerText(), 'Wizard');
 		assert.deepEqual(await o.page.locator(`${S} .dnd5e-slot-group`).evaluateAll(gs => gs.map(g => g.querySelectorAll('.ev-pip').length)), [4, 2]);
-		await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'Initiative' }).locator('.dnd5e-sheet-roll').click();
+		await o.page.locator(`${S} .dnd5e-plate.is-init button.dnd5e-plate-n`).click();
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse Vane: initiative', { what: 'initiative rolled' });
 
 		// Skills: the dot takes Nature from untrained (+3) to proficient (+5).
@@ -6481,7 +6509,15 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-item`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff carried' });
 		await tab('actions');
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff attack' });
-		assert.match(await o.page.locator(`${S} .dnd5e-sheet-attack`).first().innerText(), /Quarterstaff[\s\S]*\+2\s*1d6 bludgeoning/);
+		const staff = o.page.locator(`${S} .dnd5e-sheet-attack`).first();
+		assert.match(await staff.innerText(), /Quarterstaff[\s\S]*Versatile[\s\S]*\+2\s*1d6/);
+		// The damage type is the button's icon; its name is in the tooltip.
+		assert.match(await staff.locator('.dnd5e-dmg').getAttribute('aria-label'), /1d6 Bludgeoning damage/);
+		assert.equal(await staff.locator('.dnd5e-dmg .ev-pill-icon svg').count(), 1);
+		// Shield is a reaction: Cast spends a level 1 slot.
+		const shield = o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Shield' });
+		await shield.locator('.dnd5e-cast-btn').click();
+		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[1]', { what: 'Shield cast' });
 		await tab('spells');
 		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add spell' }).click();
 		await o.page.locator('.prompt-input').fill('Magic Missile');
@@ -6489,11 +6525,20 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-spell`, { hasText: 'Magic Missile' }).count()) === 1, { what: 'Magic Missile listed' });
 
 		// Spend a slot, then a long rest brings everything back.
-		await o.page.locator(`${S} .dnd5e-slot-group`).first().locator('.ev-pip').first().click();
-		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[1]', { what: 'slot spent' });
+		await o.page.locator(`${S} .dnd5e-slot-group`).first().locator('.ev-pip.is-on').first().click();
+		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[2]', { what: 'slot spent' });
+		// Arcane Recovery is once per Long Rest: its pip spends it.
+		await tab('features');
+		const recovery = o.page.locator(`${S} .dnd5e-sheet-feature`, { hasText: 'Arcane Recovery' });
+		await recovery.locator('.ev-pip.is-on').click();
+		await o.waitFor(async () => JSON.stringify((await fm()).uses_spent) === '{"Arcane Recovery":1}', { what: 'Arcane Recovery used' });
+		// Its name opens its own words.
+		await recovery.locator('.dnd5e-feature-toggle').click();
+		await o.waitFor(async () => /spell slots/i.test(await o.page.locator(`${S} .dnd5e-sheet-feature`, { hasText: 'Arcane Recovery' }).locator('.dnd5e-sheet-feature-text').innerText().catch(() => '')), { what: 'Arcane Recovery text' });
+		await tab('spells');
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet.png') });
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Long rest' }).click();
-		await o.waitFor(async () => { const f = await fm(); return f.hp === 17 && f.slots_used === undefined && f.hit_dice_used === undefined; }, { what: 'long rest' });
+		await o.waitFor(async () => { const f = await fm(); return f.hp === 17 && f.slots_used === undefined && f.hit_dice_used === undefined && f.uses_spent === undefined; }, { what: 'long rest' });
 
 		// Level up in the wizard: d6 average (4) + Con (1), and level 4's increase (+2 Int, the best score).
 		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();

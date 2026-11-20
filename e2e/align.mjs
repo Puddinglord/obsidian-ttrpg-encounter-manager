@@ -25,6 +25,9 @@ export const PILL_SELECTORS = [
 	'.eb-pick', '.eb-pick-given', '.dnd5e-brief-chip',
 	'.dnd5e-tab', '.dnd5e-sheet-condition', '.dnd5e-sheet-condition-add', '.dnd5e-sheet-death-roll', '.dnd5e-turn-action', '.dnd5e-sheet-gold', '.dnd5e-qty',
 	'.ev-cond-add-trigger', '.ev-cond-apply', '.ev-cond-new', '.ev-effect-actions button', '.ev-effect-done',
+	// 5e's sheet and NPC mini sheet (design pass): damage rolls, Cast, save DCs, Inspiration, feature and action names, the NPC's buttons.
+	'.dnd5e-dmg', '.dnd5e-cast-btn', '.dnd5e-dc', '.dnd5e-insp', '.dnd5e-feature-toggle', '.dnd5e-rest-btn', '.dnd5e-npc-btn', '.dnd5e-npc-fold',
+	'.dnd5e-npc-roll', '.dnd5e-npc-act-name', '.dnd5e-npc-skill', '.dnd5e-npc-empty', '.dnd5e-npc-save', '.dnd5e-plate-n', '.dnd5e-npc-ab-m',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {

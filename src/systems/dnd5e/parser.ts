@@ -71,7 +71,7 @@ function parseHp(v: string): { hp?: number; formula?: string } {
 }
 
 /** "Dex +4, Con +2" → { dex: 4, con: 2 }. */
-function parseSaves(v: string): Partial<Record<AbilityKey, number>> {
+export function parseSaves(v: string): Partial<Record<AbilityKey, number>> {
 	const out: Partial<Record<AbilityKey, number>> = {};
 	for (const part of v.split(/[,;]/)) {
 		const m = /([a-z]+)\s*([+\-−]\s*\d+)/i.exec(part.trim());
@@ -82,7 +82,7 @@ function parseSaves(v: string): Partial<Record<AbilityKey, number>> {
 }
 
 /** "Stealth +6, Perception +2" → { Stealth: 6, Perception: 2 }. */
-function parseSkills(v: string): Record<string, number> {
+export function parseSkills(v: string): Record<string, number> {
 	const out: Record<string, number> = {};
 	for (const part of v.split(/[,;]/)) {
 		const m = /^\s*([A-Za-z][A-Za-z ]*?)\s*([+\-−]\s*\d+)\s*$/.exec(part);
@@ -95,7 +95,7 @@ function parseSkills(v: string): Record<string, number> {
 const list = (v: string) => v.split(v.includes(';') ? ';' : ',').map(s => s.trim()).filter(Boolean);
 
 /** "- Name: text", "- **Name.** text", "- Name. text" → a feature. */
-function parseFeature(line: string): Feature5e {
+export function parseFeature(line: string): Feature5e {
 	const body = line.replace(/^\s*[-*]\s*/, '');
 	const bold = /^\*\*(.+?)\*\*\s*(.*)$/.exec(body);
 	if (bold) return { name: bold[1].replace(/[.:]\s*$/, '').trim(), desc: bold[2].trim() };
