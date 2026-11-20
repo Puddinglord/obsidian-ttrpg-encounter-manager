@@ -6120,6 +6120,66 @@ test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its c
 	}
 });
 
+test('NPC card in Nimble: level, the armor letter, HP in a heart, its monster block and Add to fight; players see their notes, never stats or secrets', async (o) => {
+	const C = 'Campaigns/Copper Card';
+	const P = 'Campaigns/Copper Notes';
+	await resetEncounter(o);
+	try {
+		const npc = await o.eval(async (app, plugin, [C, P]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const d of [C, P]) { const old = app.vault.getAbstractFileByPath(d); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Copper Card', level: 3, heroes: 4, starter: false });
+			let camp;
+			for (let i = 0; i < 50 && !(camp = plugin.campaigns.campaigns.find(c => c.folder === C)); i++) await new Promise(r => setTimeout(r, 100));
+			const f = await plugin.campaigns.createInSection(camp, 'npc', 'Ysolde Krenn');
+			const text = await app.vault.read(f);
+			await app.vault.modify(f, text.replace('```nimble-npc\n', '```nimble-npc\ntactics: Holds the door.\n').replace('secret: ', 'secret: She skims the ingots.'));
+			await app.fileManager.processFrontMatter(f, (fm) => { fm.role = 'Captain of the vault guard'; fm.faction = 'The Assayers'; fm.attitude = 'hostile'; fm.level = 3; fm.armor = 'M'; fm.hp = 33; fm.statblock = 'Goblin Boss'; });
+			// A player's own note on her: their notes, and a secret they shouldn't see even if one was pasted in.
+			await plugin.campaigns.createCampaign({ name: 'Copper Notes', level: 3, heroes: 4, starter: false, role: 'player', character: 'Pip' });
+			await app.vault.createFolder(`${P}/NPCs`).catch(() => {});
+			await app.vault.create(`${P}/NPCs/Ysolde.md`, '---\nnimble: npc\nrole: Captain\nlevel: 3\nhp: 33\nstatblock: Goblin Boss\n---\n```nimble-npc\nsaid: Nobody leaves with copper.\nsecret: She skims the ingots.\n```\n');
+			return { path: f.path, text };
+		}, [C, P]);
+		// A new Nimble NPC gets the book's numbers as properties.
+		assert.match(npc.text, /attitude: neutral\nlevel: ""\narmor: ""\nhp: ""\nstatblock: ""\n---/);
+		await o.openFile(npc.path, 'preview');
+		const card = o.page.locator(`${R} .nimble-npc-card`);
+		await o.waitFor(async () => (await card.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 3, { what: 'Nimble stats on the card' });
+		assert.ok(await card.evaluate(n => !!n.closest('.ev-sys-nimble')), 'the card wears Nimble\'s look');
+		assert.deepEqual((await card.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '33']);
+		assert.equal(await card.locator('.nimble-npc-stat.is-armor .nb-armor').getAttribute('aria-label'), 'Medium armor');
+		assert.equal(await card.locator('.nimble-npc-stat.is-hp .nb-heart').count(), 1);
+		assert.equal(await card.locator('.nimble-npc-stats .nimble-inline-ref[data-nimble-ref="Goblin Boss"]').count(), 1, 'a reference to her block');
+		// Each fact keeps its label beside its value.
+		assert.match(await card.locator('.nimble-npc-link').first().innerText(), /Faction\s*The Assayers/);
+		assert.deepEqual(await card.locator('.nimble-npc-pill').allInnerTexts(), ['Alive', 'Hostile']);
+		await card.screenshot({ path: join(ARTIFACTS, 'npc-card-nimble.png') });
+		// Add to fight: under her own name, with her HP and the block's actions.
+		await card.locator('button.nimble-npc-fight').click();
+		await o.waitFor(async () => (await creatures(o)).length === 1, { what: 'Ysolde in the encounter' });
+		const [c] = await creatures(o);
+		assert.match(c.label, /^Ysolde Krenn/);
+		assert.equal(c.max, 33);
+		assert.equal(c.armor, 'medium');
+		// The player's card: their notes under "What we know", no numbers, no secret (not even blurred).
+		await o.openFile(`${P}/NPCs/Ysolde.md`, 'preview');
+		const mine = o.page.locator(`${R} .nimble-npc-card`);
+		await o.waitFor(async () => (await mine.count()) === 1, { what: 'the player\'s card' });
+		assert.ok(await mine.evaluate(n => n.classList.contains('is-player')));
+		assert.match(await mine.locator('.nimble-npc-fields-head').innerText(), /What we know/);
+		assert.equal(await mine.locator('.nimble-npc-stats, .nimble-npc-stat, .nimble-npc-fight').count(), 0);
+		assert.equal(await mine.locator('.nimble-npc-field.is-secret').count(), 0);
+		assert.doesNotMatch(await mine.innerText(), /skims/);
+	} finally {
+		await o.eval(async (app, plugin, dirs) => {
+			for (const d of dirs) { const f = app.vault.getAbstractFileByPath(d); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, [C, P]);
+		await resetEncounter(o);
+	}
+});
+
 test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reopens it, /new-spell makes a homebrew spell that 5e:spell: and /spell find, New item… is 5e\'s', async (o) => {
 	const C = 'Campaigns/Forge Coast';
 	const note = `${C}/Forge.md`;

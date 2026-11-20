@@ -5,6 +5,8 @@ import { SHIPPED_SYSTEMS } from '../src/app/systems';
 import { locationNote, mapNote, npcNote, questNote } from '../src/core/campaign-templates';
 import { npcMonster5e, readHp, statblockName } from '../src/systems/dnd5e/npc';
 import { bundledMonsters } from '../src/systems/dnd5e/bestiary';
+import { npcMonster as nimbleNpcMonster, readArmor, statblockName as nimbleStatblockName } from '../src/systems/nimble/npc';
+import type { NimbleMonster } from '../src/systems/nimble/types';
 
 const F: NoteField[] = [
 	{ key: 'ac', label: 'AC', type: 'number', gmOnly: true },
@@ -56,13 +58,21 @@ describe('note templates with a system\'s extras', () => {
 });
 
 describe.each(SHIPPED_SYSTEMS.map(s => [s.id, s] as const))('%s note kinds', (_id, system) => {
-	it('extends only the shared kinds, with lowercase keys core doesn\'t already use', () => {
-		const core = ['nimble', 'title', 'role', 'portrait', 'aliases', 'ancestry', 'pronouns', 'age', 'faction', 'location', 'status', 'attitude', 'first_met', 'type', 'region', 'image', 'giver', 'reward', 'level'];
+	it('extends only the shared kinds, with lowercase keys core doesn\'t already use for that kind', () => {
+		// What core's own notes of each kind already hold (a quest's `level` is the quest's, so an NPC may have its own).
+		const shared = ['nimble', 'title', 'status', 'secret'];
+		const core: Record<string, string[]> = {
+			npc: [...shared, 'role', 'portrait', 'aliases', 'ancestry', 'pronouns', 'age', 'faction', 'location', 'attitude', 'first_met'],
+			location: [...shared, 'type', 'region', 'image', 'leads'],
+			quest: [...shared, 'type', 'giver', 'location', 'reward', 'level'],
+			session: [...shared, 'date', 'party', 'quests', 'loot', 'next'],
+			map: [...shared],
+		};
 		for (const [kind, ext] of Object.entries(system.noteKinds ?? {})) {
 			expect(SHARED_NOTE_KINDS).toContain(kind);
 			for (const f of ext?.fields ?? []) {
 				expect(f.key).toMatch(/^[a-z][a-z0-9_]*$/);
-				expect(core).not.toContain(f.key);
+				expect(core[kind]).not.toContain(f.key);
 			}
 		}
 	});
@@ -91,5 +101,30 @@ describe('5e NPCs', () => {
 		expect(npcMonster5e('Innkeeper', { ac: 10, hp: '4 (1d8)' })).toMatchObject({ name: 'Innkeeper', ac: 10, hp: 4, hpFormula: '1d8', cr: '0', abilities: [10, 10, 10, 10, 10, 10] });
 		expect(npcMonster5e('Innkeeper', { ac: 10 })).toBeUndefined();
 		expect(npcMonster5e('Innkeeper', {})).toBeUndefined();
+	});
+});
+
+describe('Nimble NPCs', () => {
+	it('reads armor however it\'s written', () => {
+		for (const v of ['M', 'm', 'medium', 'Medium armor']) expect(readArmor(v)).toBe('medium');
+		for (const v of ['H', 'heavy', 'Heavy Armour']) expect(readArmor(v)).toBe('heavy');
+		for (const v of ['none', '-', '–']) expect(readArmor(v)).toBe('none');
+		expect(readArmor('')).toBeUndefined();
+		expect(readArmor('plate')).toBeUndefined();
+	});
+	it('reads the monster block a property names, however it\'s written', () => {
+		for (const v of ['Vault Captain', '[[Vault Captain]]', '[[Vault Captain|the captain]]', '`nimble:Vault Captain`', 'nimble:Vault Captain']) expect(nimbleStatblockName(v)).toBe('Vault Captain');
+	});
+	it('fights with its block under its own name, level, armor and HP', () => {
+		const base: NimbleMonster = { name: 'Goblin Boss', level: 2, armor: 'medium', hp: 36, movement: '6', attacks: [{ raw: 'Scimitar 1d6+2' }] };
+		expect(nimbleNpcMonster('Krogg', { level: 3, armor: 'H', hp: 40 }, base)).toMatchObject({ name: 'Krogg', level: '3', armor: 'heavy', hp: 40, attacks: [{ raw: 'Scimitar 1d6+2' }] });
+		expect(nimbleNpcMonster('Krogg', {}, base)).toMatchObject({ name: 'Krogg', level: 2, armor: 'medium', hp: 36 });
+		const solo = nimbleNpcMonster('Grell', { hp: 90 }, { name: 'Matron', armor: 'none', hp: 120, hpPerHero: 30, movement: '6' })!;
+		expect(solo.hp).toBe(90);
+		expect(solo.hpPerHero).toBeUndefined();
+	});
+	it('fights with plain numbers from HP alone, and not at all without', () => {
+		expect(nimbleNpcMonster('Ollo', { hp: 12, armor: 'M', level: 1 })).toMatchObject({ name: 'Ollo', hp: 12, armor: 'medium', level: '1', movement: '6' });
+		expect(nimbleNpcMonster('Ollo', { armor: 'M' })).toBeUndefined();
 	});
 });

@@ -2714,33 +2714,42 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 }
 
 /* ---------- NPC cards (```nimble-npc) ---------- */
+/* One frame for every game (design study: #nimble/npc, #5e/npc): the portrait, the name in the game's display
+   type, the role, facts, links (each label beside its value), status and attitude pills, what the game adds
+   (Nimble: level, armor, HP, its block, Add to fight), then the GM's rows and secret. Players see their own
+   notes, never stats or secrets. The game's tokens give the colour, paper and type. */
 .nimble-hidden { display: none; }
 /* The block Obsidian hands us is the query container; the card inside it adapts.
    (A container can't restyle itself, so the card can't be its own container.) */
 .nimble-npc-wrap { container-type: inline-size; }
 .nimble-npc-card {
-	--npc-color: #22a35a;
 	/* Portrait down the left; name, then the rows, beside it. */
-	display: grid; grid-template-columns: clamp(120px, 32%, 220px) minmax(0, 1fr); grid-template-rows: auto 1fr;
-	gap: 0 1rem; align-items: start;
-	margin: 0.9rem 0; padding: 0.85rem;
-	border-radius: 12px;
-	background: color-mix(in srgb, var(--npc-color) 6%, var(--background-primary));
-	border: 1px solid color-mix(in srgb, var(--npc-color) 24%, var(--background-modifier-border));
+	position: relative;
+	display: grid; grid-template-columns: clamp(110px, 28%, 150px) minmax(0, 1fr); grid-template-rows: auto 1fr;
+	gap: 0 20px; align-items: start;
+	margin: 0.9rem 0; padding: 18px;
+	border-radius: var(--ev-r-lg);
+	background: var(--ev-surface);
+	box-shadow: inset 0 0 0 1px var(--ev-line);
+	color: var(--ev-text);
+	font: 400 14px/21px var(--ev-font-ui);
 }
+.nimble-npc-card.is-player { background: var(--ev-bg); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
 .nimble-npc-portrait {
 	position: relative; grid-row: 1 / span 2;
-	width: 100%; aspect-ratio: 3 / 4;
-	border-radius: 9px; overflow: hidden; cursor: zoom-in;
-	background: var(--background-secondary);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--npc-color) 35%, transparent), 0 6px 18px rgba(0, 0, 0, 0.18);
+	width: 100%; aspect-ratio: 1 / 1.3;
+	border-radius: 10px; overflow: hidden; cursor: zoom-in;
+	background: radial-gradient(120% 120% at 30% 20%, var(--ev-surface) 0%, var(--ev-surface-2) 70%);
+	box-shadow: 0 4px 14px -6px rgb(0 0 0 / 0.3);
 }
+/* The frame sits over the picture, so it shows on art and on the empty slot alike. */
+.nimble-npc-portrait::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 2px var(--ev-now-line); pointer-events: none; }
 .nimble-npc-portrait img {
 	display: block; width: 100%; height: 100%;
 	object-fit: cover; object-position: var(--nimble-portrait-position, center 25%);
 }
 .nimble-npc-portrait-edit {
-	position: absolute; top: 6px; right: 6px; padding: 4px; border-radius: 6px;
+	position: absolute; top: 6px; right: 6px; z-index: 1; padding: 4px; border-radius: 6px;
 	background: rgba(0, 0, 0, 0.55); color: #fff; opacity: 0; transition: opacity 0.12s;
 }
 .nimble-npc-portrait:hover .nimble-npc-portrait-edit, .nimble-npc-portrait-edit:focus-visible { opacity: 1; }
@@ -2751,95 +2760,126 @@ body.is-tablet .nimble-hover-preview .hover-preview-open { padding: 0 0.8rem; }
 .nimble-npc-portrait.is-empty {
 	display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
 	cursor: pointer; box-shadow: none; padding: 0.5rem; text-align: center;
-	border: 2px dashed color-mix(in srgb, var(--npc-color) 40%, var(--background-modifier-border));
-	color: var(--text-muted);
+	border: 2px dashed var(--ev-line-strong);
+	background: var(--ev-surface-2);
+	color: var(--ev-text-2);
 	transition: background 0.12s, border-color 0.12s;
 }
-.nimble-npc-portrait.is-empty:hover, .nimble-npc-portrait.is-drop-target {
-	background: color-mix(in srgb, var(--npc-color) 10%, var(--background-secondary));
-	border-color: var(--npc-color); color: var(--text-normal);
-}
-.nimble-npc-portrait.is-drop-target { box-shadow: 0 0 0 3px color-mix(in srgb, var(--npc-color) 35%, transparent); }
-.nimble-npc-portrait-icon svg { width: 34px; height: 34px; stroke-width: 1.6; color: color-mix(in srgb, var(--npc-color) 70%, var(--text-muted)); }
-.nimble-npc-portrait-hint { font-size: 0.78rem; line-height: 1.25; }
+.nimble-npc-portrait.is-empty::after { display: none; }
+.nimble-npc-portrait.is-empty:hover, .nimble-npc-portrait.is-drop-target { background: var(--ev-now); border-color: var(--ev-now-line); color: var(--ev-text); }
+.nimble-npc-portrait.is-drop-target { box-shadow: 0 0 0 3px color-mix(in srgb, var(--ev-now-line) 35%, transparent); }
+.nimble-npc-portrait-icon svg { width: 34px; height: 34px; stroke-width: 1.6; color: var(--ev-text-2); }
+.nimble-npc-portrait-hint { font-size: 12.5px; line-height: 16px; }
 .nimble-npc-head { grid-column: 2; min-width: 0; }
-.nimble-npc-name { font-family: var(--font-text-theme, var(--font-text)); font-size: 1.35rem; font-weight: 700; line-height: 1.2; color: var(--text-normal); }
-.nimble-npc-role {
-	margin-top: 0.15rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-	color: color-mix(in srgb, var(--npc-color) 80%, var(--text-normal));
-}
-.nimble-npc-details { margin-top: 0.25rem; font-size: 0.85rem; color: var(--text-muted); }
-.nimble-npc-links { display: flex; flex-wrap: wrap; gap: 0.15rem 0.8rem; margin-top: 0.3rem; font-size: 0.82rem; color: var(--text-muted); }
-.nimble-npc-link { display: inline-flex; align-items: center; gap: 0.3rem; min-width: 0; }
-.nimble-npc-link-icon { display: inline-flex; color: var(--text-faint); }
+.nimble-npc-name { margin: 0; font: var(--ev-display-weight) 26px/30px var(--ev-font-display); font-variant: var(--ev-display-variant); letter-spacing: -0.005em; color: var(--ev-text); }
+.nimble-npc-role { margin-top: 2px; font: 600 13px/18px var(--ev-font-ui); letter-spacing: 0.02em; color: var(--ev-accent-text); }
+.nimble-npc-details { margin-top: 2px; font: 400 13.5px/20px var(--ev-font-ui); color: var(--ev-text-2); }
+/* Faction, Found at, First met: the icon and label stay beside their value; the row wraps between facts. */
+.nimble-npc-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text); }
+.nimble-npc-link { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+.nimble-npc-link-icon { display: inline-flex; color: var(--ev-text-2); }
 .nimble-npc-link-icon svg { width: 13px; height: 13px; }
-.nimble-npc-pills { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
-/* What the campaign's game system adds to a note's card (core/note-card.ts): stats such as AC 15 · HP 22. */
-.nimble-note-stats { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.4rem; }
-.nimble-note-stat {
-	display: inline-flex; align-items: baseline; gap: 0.3rem; padding: 0.15rem 0.5rem; border-radius: var(--radius-s);
-	background: var(--background-modifier-hover); font-size: 0.8rem; line-height: 1.3;
-}
-.nimble-note-stat-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
-.nimble-note-stat-value { font-weight: 600; color: var(--text-normal); font-variant-numeric: tabular-nums; }
-.nimble-note-card { margin: 0.25rem 0 0.75rem; }
+.nimble-npc-link-label { color: var(--ev-text-2); font-size: 12.5px; white-space: nowrap; }
+.nimble-npc-link-value { min-width: 0; }
+.nimble-npc-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 /* button.… so Obsidian's own button look (white, shadow) never wins over the pill's */
 button.nimble-npc-pill {
-	display: inline-flex; align-items: center; gap: 0.25rem; height: 1.45rem; padding: 0 0.55rem; border-radius: 999px; box-shadow: none; border: none;
-	font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: var(--background-modifier-hover); color: var(--text-muted);
+	height: auto; padding: 6px 10px; border: none; border-radius: 999px;
+	background: var(--ev-surface-2); color: var(--ev-text); box-shadow: inset 0 0 0 1px var(--ev-line);
+	font: 600 12.5px/1 var(--ev-font-ui);
 }
-button.nimble-npc-pill:hover { background: var(--background-modifier-active-hover); }
-.nimble-npc-pill svg { width: 12px; height: 12px; }
-button.nimble-npc-pill.is-alive, button.nimble-npc-pill.is-friendly { background: rgba(76, 175, 109, 0.18); color: #3f9d5d; }
-button.nimble-npc-pill.is-dead, button.nimble-npc-pill.is-hostile { background: rgba(224, 93, 93, 0.2); color: #d24c4c; }
-button.nimble-npc-pill.is-missing { background: rgba(201, 182, 72, 0.2); color: #a8922a; }
-body.is-tablet button.nimble-npc-pill { padding: 0 0.6rem; }
-.nimble-npc-fields { grid-column: 2; margin-top: 0.65rem; display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr); gap: 0.4rem 0.8rem; }
-.nimble-npc-field { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; gap: inherit; }
-@supports not (grid-template-columns: subgrid) { .nimble-npc-field { grid-template-columns: fit-content(40%) minmax(0, 1fr); } }
-.nimble-npc-label {
-	display: inline-flex; align-items: center; align-self: start; gap: 0.3rem; padding-top: 0.22rem; line-height: 1.2;
-	font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint);
+button.nimble-npc-pill:hover { background: var(--ev-now); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+button.nimble-npc-pill:is(.is-hostile, .is-dead) { background: var(--ev-danger-bg); color: var(--ev-danger-text); box-shadow: none; }
+button.nimble-npc-pill.is-friendly { color: var(--ev-ok); }
+button.nimble-npc-pill:is(.is-missing, .is-unknown) { color: var(--ev-text-2); }
+body.is-tablet button.nimble-npc-pill { padding: 6px 10px; }
+/* What the game adds, under a rule: Nimble's level, armor, HP, its block and Add to fight; a game's stats (core/note-card.ts). */
+.nimble-npc-stats, .nimble-npc-head > .nimble-note-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ev-line); }
+.nimble-npc-stat, .nimble-note-stat {
+	display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 9px; box-sizing: border-box; border-radius: var(--ev-r-md);
+	background: var(--ev-surface-2); color: var(--ev-text-2); font: 500 12.5px/1 var(--ev-font-ui);
 }
-.nimble-npc-label-icon svg { width: 12px; height: 12px; }
-.nimble-npc-value { min-width: 0; font-size: 0.95em; }
+.nimble-npc-stat-value, .nimble-note-stat-value { font: 700 15px/1 var(--ev-font-num); color: var(--ev-text); font-variant-numeric: tabular-nums; }
+.nimble-note-stat-label { color: var(--ev-text-2); }
+.nimble-npc-stat.is-armor { padding-left: 5px; }
+.nimble-npc-stat.is-hp { color: var(--ev-hp); }
+button.nimble-npc-fight { height: 30px; padding: 0 12px; border-radius: var(--ev-r-md); font: 600 13px/1 var(--ev-font-ui); }
+body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
+.nimble-note-card { margin: 0.25rem 0 0.75rem; }
+/* The rows: label | value, the label column as wide as the longest label. */
+.nimble-npc-fields { grid-column: 2; margin-top: 12px; display: grid; grid-template-columns: minmax(82px, max-content) minmax(0, 1fr); gap: 0 12px; }
+.nimble-npc-fields-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; padding-bottom: 6px; font: 600 12.5px/16px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-npc-fields-icon { display: inline-flex; }
+.nimble-npc-fields-icon svg { width: 13px; height: 13px; }
+.nimble-npc-field { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; gap: inherit; padding: 8px 0; border-top: 1px solid var(--ev-line); }
+@supports not (grid-template-columns: subgrid) { .nimble-npc-field { grid-template-columns: minmax(82px, max-content) minmax(0, 1fr); } }
+.nimble-npc-label { display: inline-flex; align-items: center; align-self: start; gap: 5px; font: 600 12.5px/21px var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-npc-label-icon { display: inline-flex; }
+.nimble-npc-label-icon svg { width: 13px; height: 13px; }
+.nimble-npc-value { min-width: 0; font: 400 14px/21px var(--ev-font-ui); color: var(--ev-text); }
 .nimble-npc-value > :first-child { margin-top: 0; }
 .nimble-npc-value > :last-child { margin-bottom: 0; }
-.nimble-npc-value.is-empty { color: var(--text-faint); }
-.nimble-npc-field.is-secret .nimble-npc-label { color: color-mix(in srgb, #64748b 85%, var(--text-normal)); }
-.nimble-npc-field.is-secret .nimble-npc-value {
-	cursor: pointer; border-radius: 6px; padding: 0 0.3rem; margin: 0 -0.3rem;
-	background: color-mix(in srgb, #64748b 12%, transparent);
-	filter: blur(5px); transition: filter 0.15s;
-}
+.nimble-npc-value.is-empty { color: var(--ev-text-2); }
+/* The GM's secret stays blurred (handy when the screen is shared) until clicked. */
+.nimble-npc-field.is-secret .nimble-npc-value { cursor: pointer; filter: blur(4px); transition: filter 0.15s; }
 .nimble-npc-field.is-secret:not(.is-revealed) .nimble-npc-value:hover { filter: blur(3px); }
 .nimble-npc-field.is-secret.is-revealed .nimble-npc-value { filter: none; cursor: auto; }
 /* A card with no rows (an NPC note written without the block): a smaller portrait, so the card stays compact. */
-.nimble-npc-card.is-brief { grid-template-columns: clamp(96px, 22%, 160px) minmax(0, 1fr); }
+.nimble-npc-card.is-brief { grid-template-columns: clamp(96px, 22%, 130px) minmax(0, 1fr); }
 .nimble-auto-card { margin-top: 0.5rem; }
-/* The NPC card in a game with its own look: its paper and ornament, the name in its display type. */
-.ev-sys-dnd5e .nimble-npc-card {
-	--npc-color: var(--ev-accent);
-	background: var(--ev-paper);
-	border-color: var(--ev-paper-edge);
-	border-top: 3px solid var(--ev-accent);
+
+/* Nimble: the heart in HP red. */
+.ev-sys-nimble .nimble-npc-stat .nb-heart { color: var(--ev-hp); }
+/* The shared pill centring (see "one centring rule" under Character sheet & compendium), for the card's chips and
+   facts and the stat block's icons: a flex row, icons as blocks, labels at line-height normal. Measured by
+   e2e/align.mjs (PILL_SELECTORS). */
+:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark):not(#nimble-pill) { display: inline-flex; align-items: center; line-height: normal; }
+:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark):not(#nimble-pill) > :is(span, div) { display: inline-flex; align-items: center; line-height: normal; }
+:is(.nimble-npc-stat, .nimble-npc-link, .nimble-statblock .stat-badge, .nimble-statblock .save-mark):not(#nimble-pill) svg { display: block; flex: 0 0 auto; }
+
+/* 5e: the card's gold hairline and gold-leaf corners, the portrait in gold rims, Garamond small caps. */
+.ev-sys-dnd5e .nimble-npc-card { background: var(--ev-surface) var(--x5-glow); box-shadow: inset 0 0 0 1px var(--x5-gold-soft), var(--x5-card-shadow); padding: 20px; }
+.ev-sys-dnd5e .nimble-npc-card::after { content: ""; position: absolute; inset: 3px; border: 1px solid color-mix(in srgb, var(--x5-gold-soft) 60%, transparent); border-radius: 5px; pointer-events: none; }
+.ev-sys-dnd5e .nimble-npc-card::before {
+	content: ""; position: absolute; inset: 4px; pointer-events: none; background: var(--x5-gold);
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cpath d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M6.6 3.6l3 3-3 3-3-3z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cg transform='matrix(-1 0 0 1 18 0)'%3E%3Cpath d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M6.6 3.6l3 3-3 3-3-3z'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cg transform='matrix(1 0 0 -1 0 18)'%3E%3Cpath d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M6.6 3.6l3 3-3 3-3-3z'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cg transform='matrix(-1 0 0 -1 18 18)'%3E%3Cpath d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M6.6 3.6l3 3-3 3-3-3z'/%3E%3C/g%3E%3C/svg%3E");
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cpath d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M6.6 3.6l3 3-3 3-3-3z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cg transform='matrix(-1 0 0 1 18 0)'%3E%3Cpath d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M6.6 3.6l3 3-3 3-3-3z'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cg transform='matrix(1 0 0 -1 0 18)'%3E%3Cpath d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M6.6 3.6l3 3-3 3-3-3z'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cg transform='matrix(-1 0 0 -1 18 18)'%3E%3Cpath d='M1.2 16.5V7.2L7.2 1.2h9.3' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M6.6 3.6l3 3-3 3-3-3z'/%3E%3C/g%3E%3C/svg%3E");
+	-webkit-mask-position: left top, right top, left bottom, right bottom; mask-position: left top, right top, left bottom, right bottom;
+	-webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 18px 18px; mask-size: 18px 18px;
 }
-.ev-sys-dnd5e .nimble-npc-portrait { box-shadow: 0 0 0 1px var(--ev-paper-edge), 0 6px 18px rgba(0, 0, 0, 0.18); }
-.ev-sys-dnd5e .nimble-npc-name {
-	font-family: var(--ev-display-font); font-variant: var(--ev-display-variant); font-weight: var(--ev-display-weight);
-	font-size: 1.5rem; letter-spacing: 0.01em; color: var(--ev-accent-text);
-}
-.ev-sys-dnd5e .nimble-npc-role { color: var(--text-muted); font-style: italic; text-transform: none; letter-spacing: 0; font-size: 0.9rem; font-weight: 500; }
-.ev-sys-dnd5e .nimble-npc-head::after { content: ""; display: block; height: 1px; margin-top: 0.6rem; background: linear-gradient(90deg, var(--ev-ornament), transparent); }
-.ev-sys-dnd5e .nimble-note-stat { background: color-mix(in srgb, var(--ev-accent) 7%, var(--background-primary)); border: 1px solid var(--ev-paper-edge); }
-.ev-sys-dnd5e .nimble-note-stat-label { color: var(--ev-accent-text); }
-.ev-sys-dnd5e .nimble-npc-label { color: color-mix(in srgb, var(--ev-accent-text) 70%, var(--text-faint)); }
+.ev-sys-dnd5e .nimble-npc-card > * { position: relative; z-index: 1; }
+.ev-sys-dnd5e .nimble-npc-card.is-player { background: var(--ev-bg) var(--x5-paper); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+.ev-sys-dnd5e .nimble-npc-card.is-player::before { background: var(--x5-gold-soft); }
+.ev-sys-dnd5e .nimble-npc-portrait { border-radius: 4px; background: radial-gradient(120% 90% at 50% 20%, var(--ev-surface), var(--ev-surface-2)); box-shadow: 0 8px 18px -10px rgb(60 30 10 / 0.5); }
+.ev-sys-dnd5e .nimble-npc-portrait::after { box-shadow: inset 0 0 0 1px var(--x5-gold), inset 0 0 0 4px var(--ev-surface), inset 0 0 0 5px var(--x5-gold-soft); }
+.ev-sys-dnd5e .nimble-npc-portrait.is-empty { border-color: var(--x5-gold-soft); }
+.ev-sys-dnd5e .nimble-npc-name { font: 600 32px/34px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--ev-accent-text); }
+.ev-sys-dnd5e .nimble-npc-role { margin-top: 2px; font: italic 400 16.5px/21px var(--ev-font-display); letter-spacing: 0; color: var(--ev-text); }
+.ev-sys-dnd5e .nimble-npc-details { padding-bottom: 8px; border-bottom: 1px solid var(--ev-rule); font: 600 13.5px/20px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.05em; color: var(--ev-text-2); }
+.ev-sys-dnd5e .nimble-npc-link-label { font: 600 13.5px/1 var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; }
+.ev-sys-dnd5e .nimble-npc-link-icon { color: var(--x5-gold); }
+.ev-sys-dnd5e button.nimble-npc-pill { padding: 5px 9px 6px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--x5-gold-soft); font: 600 13.5px/1 var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.05em; }
+.ev-sys-dnd5e button.nimble-npc-pill.is-alive { color: var(--ev-ok); }
+.ev-sys-dnd5e button.nimble-npc-pill:is(.is-hostile, .is-dead) { box-shadow: none; }
+.ev-sys-dnd5e .nimble-npc-head > .nimble-note-stats { border-top: 0; margin-top: 12px; padding: 10px 12px; border-radius: var(--ev-r-md); background: color-mix(in srgb, var(--ev-surface-2) 65%, transparent); box-shadow: inset 0 0 0 1px var(--ev-line); }
+.ev-sys-dnd5e .nimble-note-stat { padding: 0 4px; background: none; font: 400 14px/1 var(--x5-font-book); }
+.ev-sys-dnd5e .nimble-note-stat-label { font: 700 14px/1 var(--x5-font-book); color: var(--x5-label); }
+.ev-sys-dnd5e .nimble-note-stat-value { font: 600 19px/1 var(--ev-font-display); font-variant-numeric: lining-nums; }
+.ev-sys-dnd5e .nimble-npc-fields { grid-template-columns: minmax(74px, max-content) minmax(0, 1fr); }
+.ev-sys-dnd5e .nimble-npc-value { font: 400 15px/22px var(--x5-font-book); }
+.ev-sys-dnd5e .nimble-npc-label { font: 600 14.5px/22px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.ev-sys-dnd5e .nimble-npc-field.is-secret { margin-top: 6px; padding: 8px 10px; border-top: 1px dashed color-mix(in srgb, var(--ev-accent) 45%, transparent); border: 1px dashed color-mix(in srgb, var(--ev-accent) 45%, transparent); border-radius: var(--ev-r-md); background: color-mix(in srgb, var(--ev-accent) 5%, transparent); }
+.ev-sys-dnd5e .nimble-npc-card.is-player .nimble-npc-fields-head { font: 600 14px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.05em; color: var(--ev-accent-text); }
+.ev-sys-dnd5e .nimble-npc-card.is-player .nimble-npc-value { font: italic 400 17px/23px var(--ev-font-display); }
+
 /* Narrow (hover previews, embeds, phones, split panes): a thumbnail beside the
    name, then the rows across the full width. */
 @container (max-width: 420px) {
-	.nimble-npc-card { grid-template-columns: minmax(64px, 26%) minmax(0, 1fr); grid-template-rows: auto; align-items: center; gap: 0.7rem 0.8rem; padding: 0.7rem; }
+	.nimble-npc-card { grid-template-columns: minmax(64px, 26%) minmax(0, 1fr); grid-template-rows: auto; align-items: center; gap: 12px 14px; padding: 14px; }
 	.nimble-npc-portrait { grid-row: auto; }
 	.nimble-npc-head { overflow-wrap: anywhere; }
+	.nimble-npc-name { font-size: 22px; line-height: 26px; }
+	.ev-sys-dnd5e .nimble-npc-name { font-size: 26px; line-height: 28px; }
 	.nimble-npc-fields { grid-column: 1 / -1; margin-top: 0; }
 	.nimble-npc-portrait.is-empty { padding: 0.25rem; }
 	.nimble-npc-portrait-hint { display: none; }

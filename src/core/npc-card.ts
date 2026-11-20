@@ -18,6 +18,8 @@ import { wireWikiLinks } from './wiki-links';
 import { cardWithoutBlock, drawSystemExtras, extensionFor, extrasKey } from './note-card';
 import { isNpc } from './campaigns';
 import { applyLook } from './look';
+import { evIcon, EvIconName } from './icons';
+import { pill } from './pill';
 
 export function registerNpcCard(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('nimble-npc', (source, el, ctx) => {
@@ -124,7 +126,10 @@ class NpcCard extends MarkdownRenderChild {
 		const name = def.name || fmText(fm.title).trim() || this.note()?.basename || 'NPC';
 		const role = def.role || fmText(fm.role);
 
+		const player = this.plugin.playerView(this.path);
 		const card = el.createDiv({ cls: 'nimble-npc-card' });
+		// A player's card is their own notes, written from outside: no stats, and never a secret (not even blurred).
+		if (player) card.addClass('is-player');
 		this.renderPortrait(card.createDiv({ cls: 'nimble-npc-portrait' }), fm, name, role);
 
 		const head = card.createDiv({ cls: 'nimble-npc-head' });
@@ -133,14 +138,20 @@ class NpcCard extends MarkdownRenderChild {
 		this.renderFacts(head, fm);
 		drawSystemExtras(this.plugin, head, ext, this.path, fm);
 
-		if (!def.fields.length) { card.addClass('is-brief'); return; }
+		const fields = player ? def.fields.filter(f => !SECRET_KEYS.includes(f.key)) : def.fields;
+		if (!fields.length) { card.addClass('is-brief'); return; }
 		const rows = card.createDiv({ cls: 'nimble-npc-fields' });
-		for (const f of def.fields) {
+		if (player) {
+			const h = rows.createDiv({ cls: 'nimble-npc-fields-head' });
+			setIcon(h.createSpan({ cls: 'nimble-npc-fields-icon' }), evIcon('feather'));
+			h.createSpan({ text: 'What we know · your notes' });
+		}
+		for (const f of fields) {
 			const secret = SECRET_KEYS.includes(f.key);
 			const row = rows.createDiv({ cls: 'nimble-npc-field' });
 			row.dataset.field = f.key;
 			const label = row.createDiv({ cls: 'nimble-npc-label' });
-			if (secret) setIcon(label.createSpan({ cls: 'nimble-npc-label-icon' }), 'eye-off');
+			if (secret) setIcon(label.createSpan({ cls: 'nimble-npc-label-icon' }), evIcon('eye'));
 			label.createSpan({ text: f.label });
 			const value = row.createDiv({ cls: 'nimble-npc-value' });
 			if (!f.value) { value.addClass('is-empty'); value.setText('—'); continue; }
@@ -157,14 +168,16 @@ class NpcCard extends MarkdownRenderChild {
 	private renderFacts(head: HTMLElement, fm: Record<string, unknown>): void {
 		const f = npcFacts(fm);
 		if (f.details.length) head.createDiv({ cls: 'nimble-npc-details', text: f.details.join(' · ') });
-		const links: [string, string, string | undefined][] = [['flag', 'Faction', f.faction], ['map-pin', 'Found at', f.location], ['handshake', 'First met', f.firstMet]];
+		// Each fact keeps its label beside its value (a flag, "Faction", the faction).
+		const links: [EvIconName, string, string | undefined][] = [['flag', 'Faction', f.faction], ['castle', 'Found at', f.location], ['book', 'First met', f.firstMet]];
 		const shown = links.filter(([, , v]) => v);
 		if (shown.length) {
 			const row = head.createDiv({ cls: 'nimble-npc-links' });
 			for (const [icon, label, v] of shown) {
-				const item = row.createSpan({ cls: 'nimble-npc-link', attr: { 'aria-label': label } });
-				setIcon(item.createSpan({ cls: 'nimble-npc-link-icon' }), icon);
-				appendRichText(item.createSpan(), v ?? '');
+				const item = row.createSpan({ cls: 'nimble-npc-link' });
+				setIcon(item.createSpan({ cls: 'nimble-npc-link-icon' }), evIcon(icon));
+				item.createSpan({ cls: 'nimble-npc-link-label', text: label });
+				appendRichText(item.createSpan({ cls: 'nimble-npc-link-value' }), v ?? '');
 			}
 			wireWikiLinks(row, this.app, this.path);
 		}
@@ -174,11 +187,13 @@ class NpcCard extends MarkdownRenderChild {
 		if (!pills.childElementCount) pills.remove();
 	}
 
+	/** Status and attitude: a pill with the word (tap it to change); the menu shows each choice's icon. */
 	private pill(parent: HTMLElement, key: 'status' | 'attitude', value: string | undefined, options: readonly string[], icons: Record<string, string>): void {
 		if (!value) return;
-		const b = parent.createEl('button', { cls: `nimble-npc-pill npc-${key} is-${value.replace(/[^a-z]+/g, '-')}`, attr: { 'aria-label': `${key === 'status' ? 'Status' : 'Attitude'}: ${value}. Click to change.` } });
-		if (icons[value]) setIcon(b.createSpan({ cls: 'nimble-npc-pill-icon' }), icons[value]);
-		b.createSpan({ text: value });
+		const b = pill(parent, {
+			tag: 'button', cls: `nimble-npc-pill npc-${key} is-${value.replace(/[^a-z]+/g, '-')}`, text: value[0].toUpperCase() + value.slice(1),
+			attr: { 'aria-label': `${key === 'status' ? 'Status' : 'Attitude'}: ${value}. Click to change.` },
+		});
 		b.addEventListener('click', (e) => {
 			e.preventDefault();
 			e.stopPropagation();

@@ -20,6 +20,8 @@ import { nimbleTokens } from './map-tokens';
 import { openCharacterView } from './character-register';
 import { nimbleSpotlight } from './spotlight';
 import { ENCOUNTER_VIEW_TYPE } from './tracker-view';
+import { NPC_FIELDS_NIMBLE } from './npc';
+import { drawNpcNimble } from './npc-card';
 
 export const nimbleSystem: GameSystem = {
 	id: 'nimble',
@@ -87,4 +89,8 @@ export const nimbleSystem: GameSystem = {
 	slashCommands: nimbleSlashCommands,
 	spotlight: nimbleSpotlight,
 	vocabulary: { defense: 'DEF' },
+	noteKinds: {
+		// The book's numbers on an NPC: level, the armor letter, HP in a heart, its monster block, Add to fight.
+		npc: { fields: NPC_FIELDS_NIMBLE, card: (el, ctx) => drawNpcNimble(nimble().plugin, el, ctx) },
+	},
 };

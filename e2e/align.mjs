@@ -28,6 +28,8 @@ export const PILL_SELECTORS = [
 	// 5e's sheet and NPC mini sheet (design pass): damage rolls, Cast, save DCs, Inspiration, feature and action names, the NPC's buttons.
 	'.dnd5e-dmg', '.dnd5e-cast-btn', '.dnd5e-dc', '.dnd5e-insp', '.dnd5e-feature-toggle', '.dnd5e-rest-btn', '.dnd5e-npc-btn', '.dnd5e-npc-fold',
 	'.dnd5e-npc-roll', '.dnd5e-npc-act-name', '.dnd5e-npc-skill', '.dnd5e-npc-empty', '.dnd5e-npc-save', '.dnd5e-plate-n', '.dnd5e-npc-ab-m',
+	// NPC cards, campaign notes and the Campaign panel (the armor chip's letter sits on its shield: measured on its own).
+	'.nimble-npc-stat:not(.is-armor)', '.nimble-npc-fight', '.nimble-npc-link', '.save-mark',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {
