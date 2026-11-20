@@ -20,6 +20,8 @@ export interface NoteField {
 	gmOnly?: boolean;
 	/** Left out of the card's stats (the system's `card` shows it its own way). */
 	hideInStats?: boolean;
+	/** Not written into new notes: a property people add when they want it (the card still reads it and redraws when it changes). */
+	optional?: boolean;
 }
 
 /** What the system draws in a note's card. */
@@ -59,14 +61,17 @@ export function noteStats(fields: readonly NoteField[] | undefined, fm: Record<s
 		.filter(s => s.value !== '');
 }
 
-/** Every field's value, as one string: a card redraws when it changes. */
+/** Every field's value, as one string: a card redraws when it changes (a map, like `skills: { athletics: 4 }`, too). */
 export function fieldsKey(fields: readonly NoteField[] | undefined, fm: Record<string, unknown>): string {
-	return (fields ?? []).map(f => fieldText(f, fm[f.key])).join('|');
+	return (fields ?? []).map(f => {
+		const v = fm[f.key];
+		return v && typeof v === 'object' && !Array.isArray(v) ? JSON.stringify(v) : fieldText(f, v);
+	}).join('|');
 }
 
 /** The frontmatter a new note gets for a system's fields: empty values, GM-only ones left out of a player's note. */
 export function fieldDefaults(fields: readonly NoteField[] | undefined, side: 'gm' | 'player'): Record<string, string> {
 	const out: Record<string, string> = {};
-	for (const f of fields ?? []) if (side === 'gm' || !f.gmOnly) out[f.key] = '""';
+	for (const f of fields ?? []) if (!f.optional && (side === 'gm' || !f.gmOnly)) out[f.key] = '""';
 	return out;
 }
