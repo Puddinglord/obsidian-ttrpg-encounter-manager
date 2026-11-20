@@ -815,6 +815,74 @@ const features = {
 		},
 		show: () => ['.modal.nimble-entity-builder'],
 	},
+	// 5e.md "Make your own": the monster builder on its Actions step, a breath weapon worded with its DC, the check on the banner.
+	'guide-5e-builder': {
+		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+				for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100));
+				app.commands.executeCommandById('nimble-gm:new-monster');
+			});
+			const B = '.modal.nimble-entity-builder';
+			const panel = `${B} .eb-panel.is-active`;
+			await page.locator(B).waitFor();
+			await page.locator(`${panel} input[data-field="Name"]`).fill('Cinder Drake');
+			await page.locator(`${panel} [data-key="size"] .eb-seg-btn`, { hasText: 'Large' }).click();
+			await page.locator(`${panel} select[data-field="Type"]`).selectOption('Dragon');
+			await page.locator(`${panel} select[data-field="Challenge"]`).selectOption('5');
+			await page.locator(`${B} .eb-dot`, { hasText: 'Armor' }).click();
+			await page.locator(`${panel} select[data-field="Armor"]`).selectOption('natural');
+			await page.locator(`${panel} input[data-field="AC"]`).fill('17');
+			await page.locator(`${panel} input[data-field="Hit dice"]`).fill('12');
+			await page.locator(`${panel} input[data-field="Fly"]`).fill('60');
+			await page.locator(`${B} .eb-dot`, { hasText: 'Abilities' }).click();
+			for (const [a, v] of [['STR', '19'], ['DEX', '12'], ['CON', '17'], ['WIS', '13'], ['CHA', '14']]) await page.locator(`${panel} input[data-field="${a}"]`).fill(v);
+			await page.locator(`${B} .eb-dot`, { hasText: /^Actions$/ }).click();
+			const strike = page.locator(`${panel} [data-key="actions"] .eb-list-item`).first();
+			await strike.locator('input[data-field="Name"]').fill('Rend');
+			await strike.locator('select[data-field="Die"]').selectOption('10');
+			await page.locator(`${panel} [data-key="actions"] .eb-list-add`).click();
+			const breath = page.locator(`${panel} [data-key="actions"] .eb-list-item`).nth(1);
+			await breath.locator('input[data-field="Name"]').fill('Cinder Breath');
+			await breath.locator('[data-key="kind"] .eb-seg-btn', { hasText: 'Save' }).click();
+			await breath.locator('select[data-field="Uses"]').selectOption('Recharge 5–6');
+			await breath.locator('input[data-field="Who and where"]').fill('each creature in a 30-foot Cone');
+			await breath.locator('input[data-field="Dice"]').fill('6');
+			await breath.locator('select[data-field="Die"]').selectOption('6');
+			await breath.locator('select[data-field="Damage"]').selectOption('Fire');
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+	},
+	// 5e.md "Character sheets": Level up on its Spells step, a cantrip and two spellbook spells picked, what the level brings beside.
+	'guide-5e-level-up': {
+		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const note = 'Campaigns/Sword Coast/Party/Ilse Vane.md';
+			await o.eval(async (app, plugin, note) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+				for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100));
+				const old = app.vault.getAbstractFileByPath(note); if (old) await app.vault.delete(old);
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast/Party')) await app.vault.createFolder('Campaigns/Sword Coast/Party');
+				await app.vault.create(note, ['---', 'nimble: character', 'system: 5e', 'edition: 2024', 'class: Wizard', 'subclass: Evoker', 'level: 3', 'species: Elf', 'background: Sage',
+					'str: 8', 'dex: 14', 'con: 14', 'int: 17', 'wis: 12', 'cha: 10', 'hp: 20', 'hp_max: 20', 'skills: [Arcana, History, Investigation, Insight]', 'spells: [Fire Bolt, Light, Prestidigitation, Shield, Magic Missile, Detect Magic, Sleep, Misty Step]',
+					'---', '', '```5e-sheet', '```', ''].join('\n'));
+			}, note);
+			await open(note);
+			await page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-sheet-actions button', { hasText: 'Level up' }).click();
+			const B = '.modal.nimble-entity-builder';
+			const panel = `${B} .eb-panel.is-active`;
+			await page.locator(B).waitFor();
+			await page.locator(`${B} .eb-dot`, { hasText: 'Spells' }).click();
+			await page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="Mage Hand"]`).click();
+			for (const sp of ['Invisibility', 'Scorching Ray']) await page.locator(`${panel} [data-key="spells"] .eb-pick[data-value="${sp}"]`).click();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+	},
 	// The 5e character sheet: the header, hit points, conditions and the first abilities.
 	'feature-5e-sheet': {
 		lineWidth: 900, viewport: [1200, 900],

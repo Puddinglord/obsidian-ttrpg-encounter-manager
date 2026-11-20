@@ -285,6 +285,29 @@ try {
 			await shoot(`5e-builder-${kind}${t}`, page.locator('.modal.nimble-entity-builder'), 0);
 		}
 
+		// 5e's New character on its Abilities step (the plaques, the summary on the banner), and Level up.
+		if (wanted(`5e-character-wizard${t}`) || wanted(`5e-level-up${t}`)) {
+			await clean();
+			await open(`${X5}/Homebrew.md`);
+			await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+			const W = '.modal.nimble-entity-builder';
+			await page.waitForSelector(`${W} .eb-panel.is-active`);
+			await page.locator(`${W} .eb-panel.is-active input[data-field="Name"]`).fill('Ilse Vane');
+			await page.locator(`${W} .eb-panel.is-active select[data-field="Class"]`).selectOption('Wizard');
+			await page.locator(`${W} .eb-dot`, { hasText: 'Abilities' }).click();
+			await page.waitForTimeout(600);
+			await shoot(`5e-character-wizard${t}`, page.locator(W), 0);
+			await page.locator(`${W} .eb-dot`, { hasText: 'Equipment' }).click();
+			await page.waitForTimeout(600);
+			await page.locator(`${W} .eb-next`).click();
+			await page.locator('.dnd5e-sheet .dnd5e-sheet-actions:visible').first().waitFor();
+			await page.waitForTimeout(600);
+			await page.locator('.dnd5e-sheet .dnd5e-sheet-actions:visible button', { hasText: 'Level up' }).first().click();
+			await page.waitForSelector(`${W} .eb-panel.is-active`);
+			await page.waitForTimeout(600);
+			await shoot(`5e-level-up${t}`, page.locator(W), 0);
+		}
+
 		// 5e map tokens: run the bridge fight, then its map.
 		await clean();
 		await open(`${X5}/Ambush.md`);
