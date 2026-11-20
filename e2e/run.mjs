@@ -3901,14 +3901,15 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 				// The stat's name (its ▲ / ▼ badge is a child of the label).
 				adv: [...s.querySelectorAll('.ns-stat.is-adv .ns-stat-label')].map(e => e.firstChild.textContent.trim()),
 				dis: [...s.querySelectorAll('.ns-stat.is-dis .ns-stat-label')].map(e => e.firstChild.textContent.trim()),
-				saveMarks: [...s.querySelectorAll('.ns-stat-save polygon')].map(pg => {
-					// Which way it points, and how far its centroid is from the badge's centre (should be ~0).
-					const b = pg.closest('.ns-stat-save').getBoundingClientRect();
-					const r = pg.getBoundingClientRect();
-					const up = pg.getAttribute('points').split(' ')[0].split(',')[1] < 5;
-					const cy = up ? r.top + (2 * r.height) / 3 : r.top + r.height / 3;
-					return { dir: up ? '▲' : '▼', dx: Math.abs((r.left + r.right) / 2 - (b.left + b.right) / 2), dy: Math.abs(cy - (b.top + b.bottom) / 2) };
+				// The save marks are the official sheet's triangles: filled above a stat for its ▲ save, below for its ▼ one,
+				// centred on the stat's box.
+				saveMarks: [...s.querySelectorAll('.ns-stat .ns-tri.is-on')].map(t => {
+					const b = t.closest('.ns-stat-box').getBoundingClientRect();
+					const r = t.getBoundingClientRect();
+					const stat = t.closest('.ns-stat').querySelector('.ns-stat-label').textContent;
+					return { dir: t.classList.contains('is-up') ? '▲' : '▼', stat, dx: Math.abs((r.left + r.right) / 2 - (b.left + b.right) / 2), edge: t.classList.contains('is-up') ? r.top - b.top : b.bottom - r.bottom };
 				}),
+				tris: s.querySelectorAll('.ns-stat .ns-tri').length,
 				hp: s.querySelector('.ns-hp-cur')?.textContent + '/' + s.querySelector('.ns-hp-max')?.textContent,
 				armor: s.querySelector('.ns-box-armor .ns-box-value')?.textContent,
 				wounds: s.querySelectorAll('.ns-pip').length,
@@ -3923,11 +3924,12 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		}, R);
 		assert.equal(info.name, 'Thorga Ironbrow');
 		assert.equal(info.line, 'Dwarf · Berserker · Level 3');
-		assert.deepEqual(info.stats, ['+2', '+2', '−1', '0']);
+		assert.deepEqual(info.stats, ['2', '2', '−1', '0'], 'stats as the official sheet prints them');
 		assert.deepEqual(info.adv, ['STR']);
 		assert.deepEqual(info.dis, ['INT']);
-		assert.deepEqual(info.saveMarks.map(m => m.dir), ['▲', '▼'], 'a ▲ / ▼ badge only on the advantaged and disadvantaged saves');
-		for (const m of info.saveMarks) assert.ok(m.dx < 0.6 && m.dy < 0.6, `${m.dir} sits on its badge's centre by its centroid: ${JSON.stringify(m)}`);
+		assert.deepEqual(info.saveMarks.map(m => `${m.dir}${m.stat}`), ['▲STR', '▼INT'], 'filled marks only for the advantaged and disadvantaged saves');
+		assert.equal(info.tris, 8, 'every stat has both marks (outlines when not its save)');
+		for (const m of info.saveMarks) assert.ok(m.dx < 0.6 && Math.abs(m.edge) < 0.6, `${m.dir} sits centred on its box's edge: ${JSON.stringify(m)}`);
 		assert.equal(info.hp, '20/32');
 		assert.equal(info.armor, '8', 'Rusty Mail 6+DEX (max 2)');
 		assert.equal(info.wounds, 7, 'Dwarf: +1 max Wounds');
@@ -3935,7 +3937,11 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(info.skills[6], '+6', 'Might: STR 2 + 2 points + 2 Berserker Skilled Hero');
 		assert.deepEqual(info.tabs, ['Actions', 'Features', 'Inventory', 'Notes']);
 		assert.deepEqual(info.conds, ['Dazed']);
-		assert.deepEqual(info.attacks, ['1d10+2', '1d6+2']);
+		assert.deepEqual(info.attacks, ['1d10 + 2', '1d6 + 2']);
+		// Damage buttons say the damage type with an icon, not a die (the dice are on the button).
+		assert.deepEqual(await sheet.locator('.ns-row.is-weapon .ns-roll').evaluateAll(bs => bs.map(b => !!b.querySelector('.ns-dmg-t svg'))), [true, true], 'damage type icons');
+		// The sheet wears Nimble's look.
+		assert.ok(await sheet.evaluate(el => el.classList.contains('ev-sys-nimble')), 'the sheet carries .ev-sys-nimble');
 		assert.ok(info.propsHidden, 'the Properties box is hidden on character notes');
 		await p.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-light.png') });
 		await sheet.locator('.ns-stats').screenshot({ path: join(ARTIFACTS, 'sheet-stats.png') });
@@ -4174,7 +4180,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		const panel = await p.evaluate(() => { const v = document.querySelector('.nimble-character-view'); const sh = v.querySelector('.nimble-sheet'); return { view: v.clientWidth, sheet: sh.scrollWidth }; });
 		assert.ok(panel.sheet <= panel.view, `the sheet fits the panel: ${JSON.stringify(panel)}`);
 		await p.screenshot({ path: join(ARTIFACTS, 'sheet-panel.png') });
-		const clippedInPanel = await p.evaluate(() => [...document.querySelectorAll('.nimble-character-view :is(.ns-box-label, .ns-skill-name, .ns-chip-label, .ns-stat-label, .ns-reaction-name)')]
+		const clippedInPanel = await p.evaluate(() => [...document.querySelectorAll('.nimble-character-view :is(.ns-box-label, .ns-skill-name, .ns-stat-label, .ns-tab-label, .ns-rc-name, .ns-scroll-title, .ev-pill-text)')]
 			.filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent));
 		assert.deepEqual(clippedInPanel, [], 'labels cut off in the Character panel');
 		// Tapping the sheet never scrolls the panel: an action dot and a wound pip, scrolled down.
@@ -4195,19 +4201,17 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 			await p.waitForTimeout(400);
 			assert.equal(await p.evaluate((sc) => sc.scrollTop, scroller), before, `tapping ${what} leaves the panel where it was`);
 		}
-		// Thin: End turn is an "End" pill on the dots' row, at its right edge.
+		// Thin: the Actions bar wraps as whole groups, End turn on one line inside the bar, nothing past its edge.
 		const end = await p.evaluate(() => {
-			const card = document.querySelector('.nimble-character-view .ns-actions-card');
-			const b = card.querySelector('.ns-actions-end');
-			const dot = card.querySelector('.ns-action-dot');
-			const r = b.getBoundingClientRect(), c = card.getBoundingClientRect(), d = dot.getBoundingClientRect();
-			return { text: b.innerText.trim(), sameRow: Math.abs((r.top + r.bottom) / 2 - (d.top + d.bottom) / 2) < 4, right: Math.round(c.right - r.right) };
+			const bar = document.querySelector('.nimble-character-view .ns-turn');
+			const b = bar.querySelector('.ns-actions-end');
+			const r = b.getBoundingClientRect(), c = bar.getBoundingClientRect();
+			return { text: b.innerText.trim(), oneLine: r.height < 34, inside: r.right <= c.right + 0.5 && [...bar.children].every(k => k.getBoundingClientRect().right <= c.right + 0.5) };
 		});
-		assert.deepEqual({ text: end.text, sameRow: end.sameRow }, { text: 'End', sameRow: true }, JSON.stringify(end));
-		assert.ok(end.right <= 2, `End sits at the card's right edge (${end.right}px)`);
+		assert.deepEqual(end, { text: 'End turn', oneLine: true, inside: true }, JSON.stringify(end));
 		// The rest of the panel, a screen at a time.
-		for (const [i, sel] of [['2', '.ns-turn'], ['3', '.ns-reactions']].entries()) {
-			if (sel[1] === '.ns-reactions') await p.locator('.nimble-character-view .ns-tab[data-tab="actions"]').click();
+		for (const [i, sel] of [['2', '.ns-turn'], ['3', '.ns-rcards']].entries()) {
+			if (sel[1] === '.ns-rcards') await p.locator('.nimble-character-view .ns-tab[data-tab="actions"]').click();
 			await p.evaluate((sel) => document.querySelector(`.nimble-character-view ${sel}`)?.scrollIntoView({ block: 'start' }), sel[1]);
 			await p.waitForTimeout(150);
 			const box = await p.locator('.nimble-character-view').boundingBox();
@@ -4261,7 +4265,7 @@ test('character sheet: Live Preview renders it too, and New character writes a n
 	await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f); }, WREN);
 });
 
-test('character sheet: Judgment Dice are rolled when gained and all go on the next attack; Fury Dice stay while Raging', async (o) => {
+test('character sheet: Judgment Dice typed in from the table or rolled, all on the next attack; Fury Dice stay while Raging', async (o) => {
 	const p = o.page;
 	await resetEncounter(o);
 	const ODO = 'Characters/Odo Brightshield.md';
@@ -4277,21 +4281,46 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		await o.openFile(ODO, 'preview');
 		const sheet = p.locator(`${R} .nimble-sheet`);
 		await sheet.waitFor();
-		const held = sheet.locator('.ns-held', { hasText: 'Judgment Dice' });
-		// The most a level 1 Oathsworn can hold, as outlines: 2 (Oath of Vengeance and level 14 add more).
-		assert.equal(await held.locator('.ns-die.is-empty').count(), 2, 'two outlines to start');
-		assert.equal(await held.locator('.ns-die:not(.is-empty)').count(), 0);
-		const width = await held.evaluate(el => el.getBoundingClientRect().width);
-		// + fills an outline (not rolled): two d6 shapes.
-		await held.locator('[aria-label="Judgment Dice +1"]').click();
-		await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 1, 'one Judgment Die');
-		await held.locator('[aria-label="Judgment Dice +1"]').click();
-		await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 2, 'two Judgment Dice');
-		await p.waitForFunction((R) => document.querySelectorAll(`${R} .ns-held .ns-die.is-d6:not(.is-empty)`).length === 2, R);
-		assert.equal(await held.locator('.ns-die-num').count(), 0, 'not rolled yet');
-		assert.ok(await held.locator('[aria-label="Judgment Dice +1"]').isDisabled(), 'no more than the rules allow');
-		assert.equal(Math.round(await held.evaluate(el => el.getBoundingClientRect().width)), Math.round(width), 'the pill keeps its size');
-		await sheet.locator('.ns-strip').screenshot({ path: join(ARTIFACTS, 'sheet-judgment-dice.png') });
+		const held = sheet.locator('.ns-class .ns-feat', { hasText: 'Judgment Dice' });
+		const count = (f) => { const v = f.resources?.['Judgment Dice']; return typeof v === 'object' && v ? v.current : v; };
+		// The most a level 1 Oathsworn can hold, as empty slots: 2 (Oath of Vengeance and level 14 add more).
+		assert.equal(await held.locator('.ns-held-die.is-empty').count(), 2, 'two empty slots to start');
+		assert.equal(await held.locator('.ns-held-die:not(.is-empty)').count(), 0);
+		// The formula is the name's tooltip; the chevron opens the book's words.
+		await held.locator('.ns-feat-name').click();
+		assert.match(await held.locator('.ns-feat-rule').innerText(), /Whenever an enemy attacks you, roll and set aside 2d6 Judgment Dice/);
+		await held.locator('.ns-feat-name').click();
+		assert.equal(await held.locator('.ns-feat-rule').isVisible(), false, 'the chevron closes it again');
+		// Typed in from the table: tap an empty slot, then the face rolled.
+		await held.locator('.ns-held-die.is-empty').first().click();
+		const pick = sheet.locator('.ev-face-pick');
+		await pick.waitFor();
+		assert.match(await pick.locator('.ev-face-pick-label').textContent(), /^Add a Judgment die you rolled$/);
+		assert.deepEqual(await pick.locator('.ev-face').allInnerTexts(), ['1', '2', '3', '4', '5', '6'], 'a d6: its faces in one row');
+		assert.equal(await pick.locator('.ev-face-remove').count(), 0, 'nothing to remove when adding');
+		await sheet.locator('.ns-class').screenshot({ path: join(ARTIFACTS, 'sheet-face-picker.png') });
+		await measure(`${R} .nimble-sheet`);
+		await pick.locator('.ev-face', { hasText: '4' }).click();
+		await waitFmAt(o, ODO, f => count(f) === 1 && f.resources['Judgment Dice'].rolled?.[0] === 4, 'one Judgment Die showing 4');
+		// The other rolled in the app: the slots are full, so Roll is off.
+		await held.locator('.ns-btn', { hasText: /^Roll/ }).click();
+		await waitFmAt(o, ODO, f => count(f) === 2 && f.resources['Judgment Dice'].rolled?.length === 2, 'two Judgment Dice');
+		await p.waitForFunction((R) => document.querySelectorAll(`${R} .ns-class .ns-held-die:not(.is-empty) .ns-die-num`).length === 2, R);
+		assert.ok(await held.locator('.ns-btn', { hasText: /^Roll/ }).isDisabled(), 'no more than the rules allow');
+		// Changing one: its face is pressed, and it can go.
+		await held.locator('.ns-held-die').first().click();
+		await pick.waitFor();
+		assert.match(await pick.locator('.ev-face-pick-label').textContent(), /^Judgment die: change it to$/);
+		assert.deepEqual(await pick.locator('.ev-face.is-on').allInnerTexts(), ['4'], 'the face it shows is pressed');
+		await pick.locator('.ev-face', { hasText: '6' }).click();
+		await waitFmAt(o, ODO, f => f.resources['Judgment Dice'].rolled?.[0] === 6, 'changed to 6');
+		await held.locator('.ns-held-die').nth(1).click();
+		await pick.locator('.ev-face-remove').click();
+		await waitFmAt(o, ODO, f => count(f) === 1, 'one removed');
+		await held.locator('.ns-held-die.is-empty').first().click();
+		await pick.locator('.ev-face', { hasText: '2' }).click();
+		await waitFmAt(o, ODO, f => count(f) === 2 && JSON.stringify(f.resources['Judgment Dice'].rolled) === '[6,2]', 'two dice, typed in: 6 and 2');
+		assert.equal(await sheet.locator('.ev-face-pick').count(), 0, 'the strip closes once a face is picked');
 		await measure(`${R} .nimble-sheet`);
 		// A bow is not a Reach attack: no Judgment Dice on it.
 		await sheet.locator('.ns-row.is-weapon', { hasText: 'Shortbow' }).locator('.ns-roll').click();
@@ -4305,13 +4334,12 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		await dlg.waitFor();
 		const row = dlg.locator('.rd-spend', { hasText: 'Judgment Dice' });
 		assert.ok(await row.evaluate(el => el.classList.contains('is-on')), 'on by default');
-		assert.match(await row.locator('.rd-spend-have').textContent(), /^2d6 · radiant$/);
-		assert.equal(await row.locator('.rd-step-value').textContent(), '2d6');
-		assert.match(await dlg.locator('.rd-expr').textContent(), /\+ 2d6 radiant$/);
+		// The faces typed in go into the roll as they are.
+		assert.match(await row.locator('.rd-spend-have').textContent(), /^\[6, 2\] = 8 · radiant$/);
 		await p.screenshot({ path: join(ARTIFACTS, 'roll-dialog-judgment.png') });
 		await measure('.modal.nimble-roll-dialog');
 		await dlg.locator('.rd-roll').click();
-		const fm = await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 0, 'Judgment Dice spent');
+		const fm = await waitFmAt(o, ODO, f => count(f) === 0, 'Judgment Dice spent');
 		assert.equal(fm.actions, 2, 'the attack took an action');
 		// Pips move one step: the first (filled) dot takes one away, not down to it; an empty one adds one back.
 		await sheet.locator('.ns-action-dot').first().click();
@@ -4320,7 +4348,7 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		await waitFmAt(o, ODO, f => f.actions === 2, 'last (empty) dot: 1 → 2');
 		// A reaction clicked twice before the sheet catches up is taken once: one roll, one action.
 		await sheet.locator('.ns-tab[data-tab="actions"]').click();
-		await p.evaluate((R) => { const card = [...document.querySelectorAll(`${R} .ns-reaction`)].find(c => c.textContent.includes('Opportunity Attack')); card.click(); card.click(); }, R);
+		await p.evaluate((R) => { const foot = document.querySelector(`${R} .ns-rcard[data-reaction="Opportunity Attack"] .ns-rc-foot`); foot.click(); foot.click(); }, R);
 		await p.locator('.modal.nimble-roll-dialog').first().waitFor();
 		await p.waitForTimeout(600);
 		assert.equal(await p.locator('.modal.nimble-roll-dialog').count(), 1, 'one Opportunity Attack, not two');
@@ -4329,7 +4357,7 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		assert.deepEqual(afterReaction.reactions_used, ['Opportunity Attack']);
 		assert.equal(afterReaction.actions, 1, 'one action for it');
 		const log = (await o.eval((app, plugin) => plugin.settings.rollLog))[0];
-		assert.match(log.detail, log.outcome === 'miss' ? /Judgment Dice lost/ : /Judgment Dice \[[1-6], [1-6]\] radiant/);
+		assert.match(log.detail, log.outcome === 'miss' ? /Judgment Dice lost/ : /Judgment Dice \[6, 2\] radiant/);
 
 		// Fury Dice: added to an attack while Raging, and still held after it.
 		await withSheetNote(o, async () => {
@@ -4338,7 +4366,11 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 			}, SHEET_NOTE);
 			await o.openFile(SHEET_NOTE, 'preview');
 			const thorga = p.locator(`${R} .nimble-sheet`);
-			await p.waitForFunction((R) => document.querySelector(`${R} .ns-held .ns-die-num`)?.textContent === '3', R);
+			await p.waitForFunction((R) => document.querySelector(`${R} .ns-class .ns-held-die .ns-die-num`)?.textContent === '3', R);
+			// Rage sits under the Fury Dice, on while Raging; its rules are the book's.
+			const rage = thorga.locator('.ns-feat[data-key="rage"]');
+			assert.equal(await rage.locator('.ns-state').innerText(), 'Raging');
+			assert.equal(await rage.locator('.ns-btn').innerText(), 'End rage');
 			await thorga.locator('.ns-tab[data-tab="actions"]').click();
 			await thorga.locator('.ns-row.is-weapon', { hasText: 'Battleaxe' }).locator('.ns-roll').click();
 			await dlg.waitFor();
@@ -4373,24 +4405,27 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 		await sheet.waitFor();
 		const hp = sheet.locator('.ns-meter.is-hp');
 		const mana = sheet.locator('.ns-meter.is-mana');
-		assert.equal(await hp.locator('.ns-meter-nums').textContent(), '14/20+3');
-		assert.equal(await hp.locator('.ns-meter-extra').textContent(), '3 temp');
-		assert.equal(await mana.locator('.ns-meter-nums').textContent(), '6/10');
-		await sheet.locator('.ns-meters').screenshot({ path: join(ARTIFACTS, 'sheet-meters.png') });
-		// White numbers read on every part of both bars, light and dark (WCAG 4.5:1).
+		const NUMS = '.ns-meter-nums:not(.is-on-fill)';
+		assert.equal(await hp.locator(NUMS).textContent(), '14/20+3');
+		// Temp HP sits in the box's dark foot, as on the official sheet.
+		assert.equal(await sheet.locator('.ns-hpw-foot b').textContent(), '3');
+		assert.equal(await mana.locator(NUMS).textContent(), '6/10');
+		await sheet.locator('.ns-band').screenshot({ path: join(ARTIFACTS, 'sheet-meters.png') });
+		// The numbers read on every part of both bars, light and dark (WCAG 4.5:1): one colour on the fill
+		// (the copy that rides in it), another on the track.
 		const contrast = () => p.evaluate((R) => {
 			const rgb = (c) => {
 				const n = c.match(/[\d.]+/g).map(Number);
 				return c.startsWith('color(') ? n.slice(0, 3).map(v => v * 255) : n.slice(0, 3);
 			};
 			const lum = ([r, g, b]) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
-			const ratio = (c) => 1.05 / (lum(rgb(c)) + 0.05);
+			const ratio = (a, b) => { const [x, y] = [lum(rgb(a)), lum(rgb(b))].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
 			const out = {};
-			for (const m of document.querySelectorAll(`${R} .ns-meter`)) {
+			for (const m of document.querySelectorAll(`${R} .ns-sheet .ns-meter`)) {
 				const kind = m.classList.contains('is-hp') ? 'hp' : 'mana';
-				out[`${kind} fill`] = ratio(getComputedStyle(m.querySelector('.ns-meter-fill')).backgroundColor);
-				out[`${kind} track`] = ratio(getComputedStyle(m.querySelector('.ns-meter-bar')).backgroundColor);
-				out[`${kind} text`] = getComputedStyle(m.querySelector('.ns-meter-cur')).color;
+				const color = (sel) => getComputedStyle(m.querySelector(sel)).color;
+				out[`${kind} on the fill`] = ratio(getComputedStyle(m.querySelector('.ns-meter-fill')).backgroundColor, color('.ns-meter-nums.is-on-fill .ns-meter-cur'));
+				out[`${kind} on the track`] = ratio(getComputedStyle(m.querySelector('.ns-meter-bar')).backgroundColor, color('.ns-meter-nums:not(.is-on-fill) .ns-meter-cur'));
 			}
 			return out;
 		}, R);
@@ -4398,11 +4433,9 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 			await setTheme(o, theme);
 			await p.waitForTimeout(150);
 			const c = await contrast();
-			for (const [k, v] of Object.entries(c)) {
-				if (k.endsWith('text')) assert.equal(v, 'rgb(255, 255, 255)', `${theme} ${k}`);
-				else assert.ok(v >= 4.5, `${theme} ${k}: white is ${v.toFixed(2)}:1`);
-			}
-			await sheet.locator('.ns-meters').screenshot({ path: join(ARTIFACTS, `sheet-meters-${theme.slice(6)}.png`) });
+			assert.equal(Object.keys(c).length, 4, JSON.stringify(c));
+			for (const [k, v] of Object.entries(c)) assert.ok(v >= 4.5, `${theme} ${k}: ${v.toFixed(2)}:1`);
+			await sheet.locator('.ns-band').screenshot({ path: join(ARTIFACTS, `sheet-meters-${theme.slice(6)}.png`) });
 		}
 		await setTheme(o, 'theme-light');
 		// − and +: damage takes temp HP first; mana spends and regains one.
@@ -4420,8 +4453,9 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 		// Quick taps add up: three − taps show −3 and land as one change of 3 (temp HP first).
 		await p.waitForTimeout(1300);
 		for (let i = 0; i < 3; i++) await hp.locator('[aria-label="Take 1 damage"]').click();
-		assert.equal(await hp.locator('.ns-meter-delta').textContent(), '−3');
-		assert.equal(await hp.locator('.ns-meter-cur').textContent(), '14', 'the running number: 15 + 2 temp − 3');
+		assert.equal(await hp.locator(`${NUMS} .ns-meter-delta`).textContent(), '−3');
+		assert.equal(await hp.locator(`${NUMS} .ns-meter-cur`).textContent(), '14', 'the running number: 15 + 2 temp − 3');
+		assert.equal(await hp.locator('.ns-meter-nums.is-on-fill .ns-meter-cur').textContent(), '14', 'both tones show it');
 		assert.equal((await sheetFmOf(o, ILSE)).hp, 15, 'nothing written while tapping');
 		await waitFmAt(o, ILSE, f => f.hp === 14 && f.temp_hp === 0, 'one change of 3');
 		await mana.locator('[aria-label="Spend 1 mana"]').click();
@@ -4457,7 +4491,7 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 		await p.keyboard.type('9');
 		await mp.locator('.hp-pad-apply').click();
 		await waitFmAt(o, ILSE, f => f.mana === 9, 'set mana to 9');
-		const bad = await p.evaluate(pillOffenders, { root: `${R} .ns-meters`, tolerance: 1, selectors: ['.ns-meter-extra', '.ns-meter-bar', '.ns-meter-label'] });
+		const bad = await p.evaluate(pillOffenders, { root: `${R} .ns-sheet`, tolerance: 1, selectors: ['.ns-meter-bar'] });
 		assert.deepEqual(bad, [], 'misaligned meters');
 	} finally {
 		await o.eval(async (app, _p, path) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.vault.delete(f); }, ILSE);
@@ -4495,9 +4529,9 @@ test('phone: character sheet at phone width, HP pad as a sheet, sticky tabs', as
 				return [...s.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > r.right + 1 || b.left < r.left - 1); }).map(e => e.className).slice(0, 5);
 			}, R);
 			assert.deepEqual(spill, [], 'nothing wider than the sheet');
-			assert.equal(await p.evaluate((R) => getComputedStyle(document.querySelector(`${R} .ns-skills`)).gridTemplateColumns.split(' ').length, R), 2, 'skills as a two-column list on a phone');
-			// Nothing in the top cards is cut off: every label shows in full.
-			const clipped = await p.evaluate((R) => [...document.querySelectorAll(`${R} :is(.ns-box-label, .ns-skill-name, .ns-chip-label, .ns-stat-label)`)]
+			assert.equal(await p.evaluate((R) => getComputedStyle(document.querySelector(`${R} .ns-sk-row`)).gridTemplateColumns.split(' ').length, R), 5, 'the skills band, five to a row on a phone');
+			// Nothing in the band, the skills or the tabs is cut off: every label shows in full.
+			const clipped = await p.evaluate((R) => [...document.querySelectorAll(`${R} :is(.ns-box-label, .ns-skill-name, .ns-stat-label, .ns-tab-label, .ns-scroll-title, .ev-pill-text)`)]
 				.filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent), R);
 			assert.deepEqual(clipped, [], 'labels cut off on a phone');
 			await p.screenshot({ path: join(ARTIFACTS, 'sheet-phone-light.png') });

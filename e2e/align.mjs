@@ -11,7 +11,8 @@
 /** Selectors for everything that's drawn as a pill, chip or compact button with an icon and/or a label. */
 export const PILL_SELECTORS = [
 	'.ns-add', '.ns-roll', '.ns-chip', '.ns-cond', '.ns-cond-add', '.ns-cond-x', '.ns-lang', '.ns-coin', '.ns-rest-btn', '.ns-step', '.ns-tab', '.ns-equip', '.ns-remove',
-	'.ns-actions-end', '.ns-reaction-cost', '.ns-reaction-used', '.rd-cost', '.rd-roll',
+	'.ns-actions-end', '.ns-reaction-used', '.rd-cost', '.rd-roll',
+	'.ns-btn', '.ns-state', '.ns-cond-name', '.ns-rc-cost', '.ns-turn-pair', '.ev-face', '.ev-face-remove',
 	'.nimble-npc-pill', '.campaign-role-pill', '.campaign-hero-you', '.lore-tag', '.battle-outcome', '.battle-fact',
 	'.lu-tag', '.lu-gain', '.lu-count', '.lu-dot', '.lu-back', '.lu-next', '.lu-sub-tab', '.lu-sub-band-choose', '.lu-skill-budget', '.lu-skill-move', '.lu-skill-reset',
 	'.lu-step-btn', '.lu-celebrate-chip', '.lu-view-toggle button', '.lu-badge',
