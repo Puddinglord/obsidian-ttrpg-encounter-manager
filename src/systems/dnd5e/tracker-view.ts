@@ -706,6 +706,8 @@ export class Dnd5eTrackerView extends ItemView {
 				const cmd = mode === 'damage' ? (v > 0 ? { kind: 'damage' as const, amount: v, crit, type: mod } : null) : mode === 'set' ? { kind: 'set' as const, amount: v } : v > 0 ? { kind: mode, amount: v } : null;
 				return cmd ? previewHp(this.fight, c.id, cmd) : '';
 			},
+			// Vulnerable doubles and Resisted halves: the big number and the button say what lands.
+			dealt: (v, crit, mod) => damageTaken({ kind: 'damage', amount: v, crit, type: mod }),
 			sideOf: this.containerEl,
 			apply: (cmd) => this.applyHp(c, cmd),
 		});

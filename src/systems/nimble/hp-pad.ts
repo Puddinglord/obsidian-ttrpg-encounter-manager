@@ -74,9 +74,24 @@ export function openHpCalculator(
 			return null;
 		},
 		preview: (mode, v, crit, mod, picks) => previewText(c, mode, v, crit, mod, autoArmor, reactionOf(picks), friends),
+		// Minions: any hit drops one, so what's typed is what the button says.
+		dealt: minions ? undefined : (v, crit, mod, picks) => dealtDamage(c, v, crit, mod, autoArmor, reactionOf(picks), friends),
 		sideOf: anchor.closest<HTMLElement>('.nimble-encounter-tracker'),
 		apply: (cmd, picks) => apply(cmd, reactionOf(picks)),
 	});
+}
+
+/**
+ * The damage that lands, as the keypad's big number and button show it: a monster's after its armor and
+ * Vulnerable (+10) or Resisted (−10), the same sum the preview shows; a hero's after Defend (their Armor, or the
+ * friend's who Interposes; a crit ignores it).
+ */
+export function dealtDamage(c: EncounterCreature, v: number, crit: boolean, mod: DamageMod | undefined, autoArmor: boolean, react: HeroReaction = {}, friends: EncounterCreature[] = []): number {
+	if (isHero(c)) {
+		const friend = react.interpose ? friends.find(f => f.id === react.interpose) : undefined;
+		return react.defend ? defendedDamage(v, (friend ?? c).defense, crit) : v;
+	}
+	return monsterHit(c, v, crit, { autoArmor, mod }).applied;
 }
 
 export function previewText(c: EncounterCreature, mode: Mode, v: number, crit: boolean, mod: DamageMod | undefined, autoArmor: boolean, react: HeroReaction = {}, friends: EncounterCreature[] = []): string {

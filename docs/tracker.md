@@ -60,7 +60,7 @@ Tap a combatant's HP, or **Damage** or **Heal** on the card. The keypad opens be
 - **Damage**, **Heal**, **Set** or **Temp** HP at the top.
 - **Crit** is on the keypad. Monsters also get **Vulnerable +10** and **Resisted −10**.
 - Hold the delete key (⌫) to clear.
-- The top shows the result before you apply it, armor included: `15 − 10 (Medium armor) = 5 → 19/24`.
+- The top shows the result before you apply it, armor included: `15 − 10 (Medium armor) = 5 → 19/24`. The big number and the button say the damage that lands: **Deal 5 damage**.
 - With a keyboard you can just type: `12` then Enter for damage, `12!` for a crit, `+5` to heal, `=20` to set HP, `t5` for temp HP, and `12v` / `12r` for a monster's vulnerability or resistance. Escape closes it.
 
 ### Defend and Interpose

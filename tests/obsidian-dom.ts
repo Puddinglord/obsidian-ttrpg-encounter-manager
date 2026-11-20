@@ -65,3 +65,6 @@ el.setCssStyles ??= function (this: HTMLElement, s: Record<string, string>) { Ob
 el.setCssProps ??= function (this: HTMLElement, s: Record<string, string>) { for (const [k, v] of Object.entries(s)) this.style.setProperty(k, v); };
 el.setAttr ??= function (this: HTMLElement, k: string, v: string | number | boolean | null) { if (v === null || v === false) this.removeAttribute(k); else this.setAttribute(k, String(v)); };
 el.setText ??= function (this: HTMLElement, t: string) { this.textContent = t; };
+el.addClasses ??= function (this: HTMLElement, c: string[]) { this.classList.add(...c); };
+el.hide ??= function (this: HTMLElement) { this.style.display = 'none'; };
+el.show ??= function (this: HTMLElement) { this.style.display = ''; };

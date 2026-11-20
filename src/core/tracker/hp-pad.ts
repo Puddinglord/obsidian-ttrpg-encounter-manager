@@ -59,6 +59,12 @@ export interface HpPadSpec {
 	command?: (mode: Mode, amount: number, crit: boolean, mod: DamageMod | undefined, picks: HpPadPicks) => HpCommand | null;
 	/** Where it lands: "→ 8/20". Empty for the hint. */
 	preview: (mode: Mode, amount: number, crit: boolean, mod: DamageMod | undefined, picks: HpPadPicks) => string;
+	/**
+	 * The damage that lands, where the game's rules change what was typed (Vulnerable, Resisted, armor, Defend).
+	 * The big number and the button show it, so they agree with the preview's sum ("9 + 10 (vulnerable) = 19").
+	 * Without it, the amount typed is the damage.
+	 */
+	dealt?: (amount: number, crit: boolean, mod: DamageMod | undefined, picks: HpPadPicks) => number;
 	/** The tracker the keypad sits beside. */
 	sideOf?: HTMLElement | null;
 	apply: (cmd: HpCommand, picks: HpPadPicks) => void;
@@ -227,8 +233,6 @@ export function openHpPad(anchor: HTMLElement, s: HpPadSpec): void {
 			slideThumb(seg, modeList.indexOf(mode), modeList.length);
 			el.dataset.mode = mode;
 			sign.setText(modes[mode]?.sign ?? '');
-			display.setText(amount || '0');
-			display.toggleClass('is-empty', !amount);
 			toggleRow?.toggleClass('is-off', mode !== 'damage');
 			quickBox?.toggleClass('is-off', mode !== 'damage');
 			if (mode !== 'damage') for (const k of Object.keys(picks)) delete picks[k];
@@ -250,7 +254,11 @@ export function openHpPad(anchor: HTMLElement, s: HpPadSpec): void {
 			}
 			const v = n();
 			const cmd = command();
-			apply.setText(cmd ? modes[mode]!.verb(cmd.kind === 'damage' || cmd.kind === 'heal' ? cmd.amount : v) : modes[mode]!.verb(0).replace(/\s*\b0\b\s*/, ' ').trim());
+			// What lands, when the game's rules change it: the screen, the button and the sum say the same number.
+			const landed = cmd?.kind === 'damage' && amount && s.dealt ? s.dealt(cmd.amount, crit, mod, picks) : undefined;
+			display.setText(landed !== undefined ? String(landed) : amount || '0');
+			display.toggleClass('is-empty', !amount);
+			apply.setText(cmd ? modes[mode]!.verb(landed ?? (cmd.kind === 'damage' || cmd.kind === 'heal' ? cmd.amount : v)) : modes[mode]!.verb(0).replace(/\s*\b0\b\s*/, ' ').trim());
 			apply.disabled = !cmd;
 			const text = s.preview(mode, v, crit, mod, picks);
 			preview.setText(text || 'Tap or type an amount');
