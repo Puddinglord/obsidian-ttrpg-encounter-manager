@@ -57,6 +57,11 @@ export function nimbleSettingsSections(plugin: EmberVaultPlugin): SettingsSectio
 				desc: 'One more minion drops per full die of damage.',
 				render: toggle(() => s.minionOverkill, v => { s.minionOverkill = v; }),
 			},
+			{
+				name: 'Legendary monsters act after each hero',
+				desc: 'Done on a hero turns the card to the legendary monster. Off: tap it when you want it.',
+				render: toggle(() => s.legendaryBeat, v => { s.legendaryBeat = v; }, () => nimble().encounters.trigger('changed')),
+			},
 		] },
 		{ heading: 'Nimble character sheets', rows: [
 			{

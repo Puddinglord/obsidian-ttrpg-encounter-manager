@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import * as c5flow from '../src/systems/dnd5e/combat';
 import { addCondition, addHero, concentrationDc, hpState, isDefeated, legendaryResistances, setConcentration, updateCondition, useResistance, addMonster, applyHp, current, deathSave, end, legendaryUses, newFight, next, normalizeFight, order, parseHp, previewHp, previous, remove, rollInitiative, setInitiative, start, useLegendary } from '../src/systems/dnd5e/combat';
 import type { Dnd5eMonster } from '../src/systems/dnd5e/types';
 
@@ -478,5 +479,71 @@ describe('timed conditions in the 5e tracker (core/tracker/effects.ts)', async (
 		expect(b?.description).toMatch(/1d4 Fire damage at the start of each of its turns/);
 		expect(trackerConditionsFor('2014').some(c => c.name === 'Burning')).toBe(false);
 		expect(conditionsFor('2024').some(c => c.name === 'Burning')).toBe(false); // not a condition in the rules' sense
+	});
+});
+
+describe('the card and the queue (5e)', () => {
+	const setupFight = () => {
+		const f = newFight();
+		const [g1, g2] = addMonster(f, goblin, 2);
+		const a = addHero(f, { name: 'Ari', maxHp: 10 });
+		const b = addHero(f, { name: 'Bo', maxHp: 10 });
+		setInitiative(f, a.id, 20); setInitiative(f, g1.id, 15); setInitiative(f, g2.id, 15); setInitiative(f, b.id, 5);
+		start(f);
+		return { f, a, b, g1, g2 };
+	};
+
+	it('tapped out of order: they act now, whoever was up stays still to act, Next goes back to them', () => {
+		const { f, a, b, g1 } = setupFight();
+		expect(current(f)?.id).toBe(a.id);
+		c5flow.activate(f, b.id);
+		expect(current(f)?.id).toBe(b.id);
+		expect(c5flow.upNext(f)?.id).toBe(a.id);
+		next(f);
+		expect(current(f)?.id).toBe(a.id);
+		expect(c5flow.actedIds(f).has(b.id)).toBe(true);
+		next(f);
+		expect(current(f)?.id).toBe(g1.id);
+	});
+
+	it('Back after a tap puts the turn and the acted set back', () => {
+		const { f, a, b } = setupFight();
+		next(f);
+		c5flow.activate(f, b.id);
+		previous(f);
+		expect(current(f)?.label).toBe('Goblin');
+		expect([...c5flow.actedIds(f)]).toEqual([a.id]);
+	});
+
+	it('the round ends when everyone has acted, whatever the order', () => {
+		const { f, b } = setupFight();
+		c5flow.activate(f, b.id);
+		next(f); next(f); next(f);
+		expect(f.round).toBe(1);
+		next(f);
+		expect(f.round).toBe(2);
+		expect(c5flow.actedIds(f).size).toBe(0);
+	});
+
+	it('identical monsters share one roll and one row, and are run one member at a time', () => {
+		const f = newFight();
+		const [g1, g2, g3] = addMonster(f, goblin, 3);
+		addHero(f, { name: 'Bo', maxHp: 10 });
+		rollInitiative(f, faces(10, 3, 17));
+		expect(new Set([g1.init, g2.init, g3.init]).size).toBe(1);
+		expect(c5flow.groupOf(f, g2.id).map(c => c.id)).toEqual([g1.id, g2.id, g3.id]);
+		start(f, faces(1));
+		expect(current(f)?.id).toBe(g1.id);
+		expect(c5flow.upNext(f)?.id).toBe(g2.id);
+	});
+
+	it('a fight saved before the acted set reads everyone before the turn as acted', () => {
+		const { f, a, g1 } = setupFight();
+		next(f);
+		delete f.acted;
+		expect([...c5flow.actedIds(f)]).toEqual([a.id]);
+		expect(current(f)?.id).toBe(g1.id);
+		const back = normalizeFight(JSON.parse(JSON.stringify({ ...f, acted: [a.id, 7] })))!;
+		expect(back.acted).toEqual([a.id]);
 	});
 });

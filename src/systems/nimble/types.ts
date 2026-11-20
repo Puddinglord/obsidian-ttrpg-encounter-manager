@@ -108,6 +108,10 @@ export interface EncounterCreature {
 	actions?: number;
 	defense?: number;
 	note?: string;
+	/** Heroes: the Initiative roll typed before the fight (it sets their first turn's actions). */
+	init?: number;
+	/** Legendary: the action it used after the last hero, so the next beat suggests the other one. */
+	lastAction?: string;
 }
 
 export type EncounterPhase = 'setup' | 'heroes' | 'monsters';
@@ -129,6 +133,10 @@ export interface Encounter {
 	log?: EncounterLogEntry[];
 	/** Set when combat was ended, so it can be resumed where it stopped. */
 	paused?: { round: number; phase: 'heroes' | 'monsters' };
+	/** Whoever is on the tracker's card now (a creature id). None: nobody picked yet. */
+	acting?: string;
+	/** The legendary beat: a legendary monster acting after a hero's turn (`after`: that hero). */
+	beat?: { after: string };
 }
 
 export interface MonsterIndexEntry {

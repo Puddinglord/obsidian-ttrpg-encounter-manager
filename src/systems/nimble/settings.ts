@@ -23,6 +23,8 @@ declare module '../../core/settings' {
 		autoArmor: boolean;
 		/** Big hits on a minion also drop more minions (damage ÷ die size). */
 		minionOverkill: boolean;
+		/** Done on a hero turns the tracker's card to a legendary monster, which acts after each hero. */
+		legendaryBeat: boolean;
 		/** Character sheets: ask for advantage, modifiers and dice to spend before every roll. */
 		rollDialog: boolean;
 		/** Offer the expansion-draft classes (and their spells) on character sheets and in Spotlight. */
@@ -44,6 +46,7 @@ export const NIMBLE_DEFAULTS = {
 	bundledBestiary: true,
 	autoArmor: true,
 	minionOverkill: true,
+	legendaryBeat: true,
 	rollDialog: true,
 	compendiumDrafts: true,
 	compendiumArt: {} as Record<string, string>,
