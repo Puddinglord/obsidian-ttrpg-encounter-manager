@@ -4,6 +4,7 @@ import { mergeParty, PartyMember, RollLogEntry, uid } from './src/core/types';
 import { EmberVaultSettings, migrateSettings, SettingsPart } from './src/core/settings';
 import { InlineRefs, inlineRefsLivePreview } from './src/core/inline-refs';
 import { HoverPreview } from './src/core/hover-preview';
+import { registerIcons } from './src/core/icons';
 import { SlashSuggest } from './src/core/slash';
 import { EmberVaultSettingsTab } from './src/app/settings-tab';
 import { parseDice, rollDie, rollPlain } from './src/core/dice';
@@ -134,6 +135,7 @@ export default class EmberVaultPlugin extends Plugin {
 	}
 
 	async onload() {
+		registerIcons();
 		await this.loadSettings();
 
 		this.campaigns = new CampaignStore(this);
