@@ -7,8 +7,11 @@ import { syntaxTree } from '@codemirror/language';
 import { RangeSetBuilder } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
+import { applyLook } from './look';
 
 export interface RefPillOptions {
+	/** The game the reference is to ('nimble', 'dnd5e'): the pill wears its look (colours from its tokens). */
+	system?: string;
 	/** Extra classes on the pill: `is-compendium kind-spell`, `role-minion`… (they pick its tint). */
 	cls?: string;
 	/** An icon segment before the name (a compendium entry's kind). */
@@ -31,6 +34,7 @@ export interface RefPillOptions {
  */
 export function refPill(o: RefPillOptions): { el: HTMLElement; name: HTMLElement } {
 	const el = createSpan({ cls: ['nimble-inline-ref', ...(o.cls ?? '').split(' ').filter(Boolean)] });
+	applyLook(el, o.system);
 	if (o.unknown) {
 		el.addClass('nimble-inline-unresolved');
 		const name = el.createSpan({ text: o.name, cls: 'nimble-inline-name unresolved' });

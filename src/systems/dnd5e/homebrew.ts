@@ -136,6 +136,11 @@ export function itemSource5e(i: { name: string; type: string; rarity: string; at
 	return `${lines.join('\n')}\n\n${i.desc.trim()}`.trim();
 }
 
+/** One of yours, marked as homebrew: its card says Homebrew where the SRD's say SRD 5.1 or 5.2. */
+export function homebrewSource<T extends object>(x: T): T & { source: string } {
+	return Object.assign({}, x, { source: 'Homebrew' });
+}
+
 /** Find every block of a language in a note. */
 export function extractBlocks(content: string, lang: string): string[] {
 	const out: string[] = [];

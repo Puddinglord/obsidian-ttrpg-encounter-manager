@@ -6,6 +6,7 @@ import { Compendium, CompendiumHit } from './compendium';
 import { pluginCardOptions, renderHitCard } from './compendium-card';
 import { addEditButton } from './builder-register';
 import { ITEM_LANG, itemForCompendium, parseItemBlock, parseSpellBlock, SPELL_LANG, unreadLines } from './homebrew-def';
+import { applyLook } from '../../core/look';
 
 /** The card the compendium would show for one homebrew entry. */
 export function homebrewHit(kind: 'spell' | 'item', body: string): CompendiumHit | null {
@@ -27,7 +28,9 @@ export function registerHomebrewBlocks(plugin: EmberVaultPlugin): void {
 				err.appendText(`Add a line like "name: ${kind === 'spell' ? 'Ember Lash' : 'Lantern of Echoes'}" to this block.`);
 				return;
 			}
-			const wrap = el.createDiv({ cls: 'nimble-homebrew' });
+			// The compendium's card for it, on Nimble's paper as a card in the note.
+			const wrap = el.createDiv({ cls: `nimble-homebrew is-${kind}` });
+			applyLook(wrap, 'nimble');
 			renderHitCard(wrap, hit, pluginCardOptions(plugin, hit.name));
 			const seed = kind === 'spell' ? { spell: parseSpellBlock(source), editing: true } : { item: parseItemBlock(source), editing: true };
 			addEditButton(plugin, el, ctx, { kind, lang, source, seed, unread: unreadLines(source, kind) });

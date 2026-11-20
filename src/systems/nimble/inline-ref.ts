@@ -13,6 +13,7 @@ import { formatLevel, monsterRole } from './rules';
 import type { HoverContent } from '../../core/hover-preview';
 import { refPill, type InlineRefProvider } from '../../core/inline-refs';
 import { nimble } from './runtime';
+import { evIcon } from '../../core/icons';
 
 export const INLINE_PREFIX = 'nimble:';
 
@@ -73,7 +74,7 @@ export function createInlineRef(plugin: EmberVaultPlugin, monsterName: string, s
 
 /** A reference that names nothing: the name, dashed, with a "?". */
 function unresolvedRef(text: string, sourcePath: string, shown: string, what: string): HTMLElement {
-	const { el } = refPill({ name: shown, unknown: { title: 'Not found', label: `Unknown ${what}` } });
+	const { el } = refPill({ system: 'nimble', name: shown, unknown: { title: 'Not found', label: `Unknown ${what}` } });
 	el.dataset.nimbleRef = text;
 	el.dataset.sourcePath = sourcePath;
 	return el;
@@ -86,6 +87,7 @@ function createCompendiumRef(plugin: EmberVaultPlugin, text: string, sourcePath:
 	const label = hit ? KIND_LABEL[hit.kind] : 'Condition';
 	const owner = hit?.kind === 'feature' ? hit.subclass ?? hit.className : hit?.kind === 'subclass' ? hit.className : undefined;
 	const { el, name } = refPill({
+		system: 'nimble',
 		cls: `is-compendium kind-${kind}`,
 		icon: { name: hit ? compendiumIcon(hit) : CONDITION_ICON, label },
 		name: target.name,
@@ -105,7 +107,7 @@ function createCompendiumRef(plugin: EmberVaultPlugin, text: string, sourcePath:
 function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourcePath: string): HTMLElement {
 	const entry = nimble().index.get(monsterName, sourcePath || undefined);
 	if (!entry) {
-		const { el } = refPill({ name: monsterName, unknown: { title: nimble().index.ready ? 'Not found' : 'Indexing…', label: 'Unknown monster' } });
+		const { el } = refPill({ system: 'nimble', name: monsterName, unknown: { title: nimble().index.ready ? 'Not found' : 'Indexing…', label: 'Unknown monster' } });
 		el.dataset.nimbleRef = monsterName;
 		el.dataset.sourcePath = sourcePath;
 		return el;
@@ -116,6 +118,7 @@ function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourceP
 	const role = monsterRole(entry.monster);
 	const lvl = formatLevel(entry.monster.level);
 	const { el: container, name } = refPill({
+		system: 'nimble',
 		cls: `${entry.bundled ? 'is-bundled ' : ''}${lore ? 'is-lore' : `role-${role}`}`,
 		badge: !lore && (lvl || role === 'minion')
 			? { text: lvl || 'min', title: role === 'legendary' ? `Level ${lvl} ${entry.monster.roleLabel || 'Legendary'}` : role === 'minion' ? 'Minion' : `Level ${lvl}` }
@@ -140,7 +143,7 @@ function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourceP
 		cls: 'nimble-inline-add-btn',
 		attr: { 'aria-label': `Add ${entry.name}`, title: 'Add to encounter' },
 	});
-	setIcon(add, 'plus');
+	setIcon(add, evIcon('plus'));
 	add.addEventListener('mousedown', (e) => e.preventDefault()); // keep editor cursor where it is
 	add.addEventListener('click', (e) => {
 		e.preventDefault();

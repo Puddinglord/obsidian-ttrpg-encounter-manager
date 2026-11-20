@@ -6,7 +6,7 @@ import type { App } from 'obsidian';
 import { BlockIndex } from '../../core/block-index';
 import { allHits, Hit5e, itemLine, Item5e, Kind5e, Spell5e, spellLine } from './compendium';
 import type { Dnd5eEdition } from './editions';
-import { extractBlocks, ITEM_LANG, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
+import { extractBlocks, homebrewSource, ITEM_LANG, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
 
 /** A hit from a note: where it's written. */
 export type HomebrewHit = Hit5e & { filePath: string };
@@ -27,8 +27,8 @@ export class Homebrew5e {
 	/** Every spell and item a note can see, as hits for an edition. */
 	hits(edition: Dnd5eEdition, from?: string): HomebrewHit[] {
 		return [
-			...this.spells.all(from).map((e): HomebrewHit => ({ kind: 'spell', name: e.name, edition, detail: `${spellLine(e.item, edition)}${e.item.concentration ? ' · concentration' : ''}`, spell: e.item, filePath: e.filePath })),
-			...this.items.all(from).map((e): HomebrewHit => ({ kind: 'item', name: e.name, edition, detail: itemLine(e.item), item: e.item, filePath: e.filePath })),
+			...this.spells.all(from).map((e): HomebrewHit => ({ kind: 'spell', name: e.name, edition, detail: `${spellLine(e.item, edition)}${e.item.concentration ? ' · concentration' : ''}`, spell: homebrewSource(e.item), filePath: e.filePath })),
+			...this.items.all(from).map((e): HomebrewHit => ({ kind: 'item', name: e.name, edition, detail: itemLine(e.item), item: homebrewSource(e.item), filePath: e.filePath })),
 		];
 	}
 }

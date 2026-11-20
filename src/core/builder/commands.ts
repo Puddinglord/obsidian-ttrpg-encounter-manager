@@ -5,6 +5,8 @@ import { MarkdownPostProcessorContext, Notice, setIcon } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { replaceEncounterBlock } from '../encounter-def';
 import { EntityKind, kindAvailable, kindsOf, openBuilder } from './frame';
+import { evIcon } from '../icons';
+import { applyLook } from '../look';
 
 /** The commands (their ids are kept from when only Nimble had them, so hotkeys still work). */
 export function registerBuilderCommands(plugin: EmberVaultPlugin): void {
@@ -51,7 +53,9 @@ export async function rewriteBlock(plugin: EmberVaultPlugin, el: HTMLElement, ct
 export function addEditButton(plugin: EmberVaultPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, o: { system: string; kind: EntityKind; lang: string; source: string; seed: unknown; unread?: number }): void {
 	if (!kindAvailable(o.system, o.kind) || !ctx.getSectionInfo(el)) return;
 	const btn = el.createEl('button', { cls: 'nimble-block-edit clickable-icon', attr: { 'aria-label': `Edit in the ${o.kind} builder` } });
-	setIcon(btn, 'pencil');
+	// On the block's paper, in its game's look and icons.
+	applyLook(btn, o.system);
+	setIcon(btn, evIcon('edit'));
 	btn.addEventListener('click', (e) => {
 		e.preventDefault();
 		e.stopPropagation();

@@ -6,6 +6,8 @@
 import { Component, MarkdownRenderer, Platform, Plugin, setIcon, TFile } from 'obsidian';
 import { isPhone, isTouch } from './touch';
 import { pill } from './pill';
+import { evIcon } from './icons';
+import { applyLook } from './look';
 
 /** What a preview card shows. */
 export interface HoverContent {
@@ -19,6 +21,8 @@ export interface HoverContent {
 	render: (body: HTMLElement) => void;
 	/** Extra class on the card ("is-compendium"). */
 	cls?: string;
+	/** The game it's from: the card wears its look. Without one, the look of the game the body drew (its `.ev-sys-<id>`). */
+	system?: string;
 }
 
 /**
@@ -100,6 +104,9 @@ export class HoverPreview {
 		const body = this.frame(anchor, content.name, content.label, pinned, content.open);
 		if (content.cls) this.el?.addClass(content.cls);
 		content.render(body);
+		// The card's frame (its bar, paper and edge) in the look of the game it shows.
+		const drawn = Array.from(body.querySelector('[class*="ev-sys-"]')?.classList ?? []).find(c => c.startsWith('ev-sys-'))?.slice('ev-sys-'.length);
+		if (this.el) applyLook(this.el, content.system ?? drawn);
 		this.finish(anchor);
 	}
 
@@ -148,7 +155,7 @@ export class HoverPreview {
 			go.addEventListener('click', (e) => { e.stopPropagation(); this.hide(); openIt(); });
 		}
 		const close = bar.createEl('button', { cls: 'clickable-icon hover-preview-close', attr: { 'aria-label': 'Close preview' } });
-		setIcon(close, 'x');
+		setIcon(close, evIcon('x'));
 		close.addEventListener('click', (e) => { e.stopPropagation(); this.hide(); });
 		this.makeDraggable(el, bar);
 		const body = el.createDiv({ cls: 'hover-preview-body' });

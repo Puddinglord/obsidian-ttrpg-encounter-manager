@@ -24,7 +24,7 @@ import { findIn, Homebrew5e, mergeHits } from './homebrew-index';
 import { setContentLayer5e } from './compendium';
 import { content5e } from './content';
 import type { LoadedPack } from '../../core/content/packs';
-import { ITEM_LANG, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
+import { homebrewSource, ITEM_LANG, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
 import { registerBuilders5e } from './builders';
 import { registerWizards5e } from './character-wizard';
 import { registerImports5e } from './import-ui';
@@ -94,9 +94,11 @@ export class Dnd5eRuntime {
 			const edition = this.edition(ctx.sourcePath);
 			const spell = kind === 'spell' ? parseSpell5e(source) : null;
 			const item = kind === 'item' ? parseItem5e(source, edition) : null;
-			const hit: Hit5e | null = spell ? { kind: 'spell', name: spell.name, edition, detail: spellLine(spell, edition), spell }
-				: item ? { kind: 'item', name: item.name, edition, detail: item.line ?? '', item } : null;
+			// Yours, so the card says Homebrew where the book's say SRD 5.2.
+			const hit: Hit5e | null = spell ? { kind: 'spell', name: spell.name, edition, detail: spellLine(spell, edition), spell: homebrewSource(spell) }
+				: item ? { kind: 'item', name: item.name, edition, detail: item.line ?? '', item: homebrewSource(item) } : null;
 			if (!hit) { el.createDiv({ cls: 'dnd5e-empty', text: `A ${kind} block starts with a name line, like "name: ${kind === 'spell' ? 'Ember Lash' : 'Ember Blade'}".` }); return; }
+			el.addClass('dnd5e-homebrew');
 			renderCard5e(el, hit, this.cardOptions(ctx.sourcePath));
 			if (!plugin.playerView(ctx.sourcePath)) addEditButton(plugin, el, ctx, { system: 'dnd5e', kind, lang, source, seed: spell ? { spell } : { item } });
 		});
@@ -284,6 +286,7 @@ export class Dnd5eRuntime {
 			const hit = target.hit;
 			const label = KIND5E[hit.kind].label;
 			const { el, name: link } = refPill({
+				system: 'dnd5e',
 				cls: `dnd5e-ref dnd5e-hit is-compendium kind-${hit.kind}`,
 				icon: { name: KIND5E[hit.kind].icon, label },
 				name: hit.name,
@@ -303,8 +306,8 @@ export class Dnd5eRuntime {
 		const entry = this.get(name, sourcePath);
 		const lore = !!entry && plugin.hideStats(entry.filePath, sourcePath || undefined);
 		const { el, name: link } = entry
-			? refPill({ cls: 'dnd5e-ref', badge: lore ? undefined : { text: entry.monster.cr, title: `CR ${entry.monster.cr}` }, name: entry.name })
-			: refPill({ cls: 'dnd5e-ref', name, unknown: { title: this.index.ready ? 'Not found' : 'Indexing…' } });
+			? refPill({ system: 'dnd5e', cls: 'dnd5e-ref', badge: lore ? undefined : { text: entry.monster.cr, title: `CR ${entry.monster.cr}` }, name: entry.name })
+			: refPill({ system: 'dnd5e', cls: 'dnd5e-ref', name, unknown: { title: this.index.ready ? 'Not found' : 'Indexing…' } });
 		el.dataset.dnd5eRef = name;
 		el.dataset.sourcePath = sourcePath;
 		if (!entry) return el;

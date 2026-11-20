@@ -1269,14 +1269,23 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 	border-radius: 4px;
 }
 
-/* Edit in the builder: a pencil on a monster, spell or item block in a note. Live Preview's own
-   "edit source" button takes the corner, so ours sits beside it there. */
-:is(.block-language-nimble, .block-language-nimble-spell, .block-language-nimble-item) { position: relative; }
-button.nimble-block-edit { position: absolute; top: 0.55rem; right: 0.55rem; z-index: 2; width: 1.9rem; height: 1.9rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-s); background: var(--background-primary); border: 1px solid var(--background-modifier-border); opacity: 0; transition: opacity 0.15s ease; }
-button.nimble-block-edit svg { width: 14px; height: 14px; }
-.block-language-nimble:hover > button.nimble-block-edit, :is(.block-language-nimble-spell, .block-language-nimble-item):hover > button.nimble-block-edit, button.nimble-block-edit:focus-visible { opacity: 1; }
+/* Edit in the builder: a pencil on a monster, spell or item block in a note, in either game. Live Preview's own
+   "edit source" button takes the corner, so ours sits beside it there. On the block's paper (its game's look). */
+:is(.block-language-nimble, .block-language-nimble-spell, .block-language-nimble-item, .block-language-5e, .block-language-5e-spell, .block-language-5e-item) { position: relative; }
+button.nimble-block-edit { position: absolute; top: 0.55rem; right: 0.55rem; z-index: 2; width: 2rem; height: 2rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--ev-r-md, var(--radius-s)); background: var(--ev-surface, var(--background-primary)); border: 1px solid var(--ev-line-strong, var(--background-modifier-border)); color: var(--ev-text-2, var(--text-muted)); opacity: 0; transition: opacity 0.15s ease; }
+button.nimble-block-edit:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); color: var(--ev-text, var(--text-normal)); }
+button.nimble-block-edit svg { width: 15px; height: 15px; }
+:is(.block-language-nimble, .block-language-nimble-spell, .block-language-nimble-item, .block-language-5e, .block-language-5e-spell, .block-language-5e-item):hover > button.nimble-block-edit, button.nimble-block-edit:focus-visible { opacity: 1; }
 .markdown-source-view button.nimble-block-edit { right: 2.6rem; }
 body.is-mobile button.nimble-block-edit { opacity: 0.85; }
+
+/* Homebrew spells and items (```nimble-spell / ```nimble-item, ```5e-spell / ```5e-item): the compendium's card for
+   the thing, framed as a card in the note on its game's paper: the encounter block's frame in Nimble, the NPC
+   card's gold hairline in 5e. As wide as a card reads well, so the pencil sits on its corner. */
+:is(.block-language-nimble-spell, .block-language-nimble-item, .block-language-5e-spell, .block-language-5e-item) { max-width: 640px; }
+.nimble-homebrew.ev-sys-nimble { margin: 0.75rem 0; padding: 14px 16px; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); color: var(--ev-text); }
+.dnd5e-homebrew > .dnd5e-card { margin: 1rem 0; padding: 16px 18px 12px; border-radius: var(--ev-r-lg); background: var(--ev-surface) var(--x5-glow); box-shadow: inset 0 0 0 1px var(--x5-gold-soft), var(--x5-card-shadow); }
+.markdown-source-view .dnd5e-homebrew > .dnd5e-card, .markdown-source-view .nimble-homebrew.ev-sys-nimble { margin-top: 0; margin-bottom: 0; }
 
 /* Stat block hints (statblock-issues.ts): one quiet line under a hand-written block, opening into notes. */
 .nimble-statblock + .nimble-issues { margin-top: -0.6rem; }
@@ -1558,6 +1567,19 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 	cursor: default;
 }
 .nimble-inline-kind svg { display: block; width: 0.95em; height: 0.95em; stroke-width: 2.2; }
+/* In a game's look (refPill's `system`): one anatomy, each game's colour. The tint is the game's own (its
+   --interactive-accent: charcoal in Nimble, oxblood in 5e), on the game's paper; a kind takes the colour the game
+   gives it (Nimble: spells blue as mana, items ochre; 5e: items gold, the rest the book's red). */
+.nimble-inline-ref:is(.ev-sys-nimble, .ev-sys-dnd5e) { border-color: color-mix(in srgb, var(--ref-tint) 30%, var(--ev-line)); }
+.nimble-inline-ref.ev-sys-nimble:is(.role-legendary, .role-minion, .role-regular, .is-lore) { --ref-tint: var(--ev-accent); }
+.nimble-inline-ref.ev-sys-nimble.is-compendium[class*="kind-"] { --ref-tint: var(--ev-accent); }
+.nimble-inline-ref.ev-sys-nimble.is-compendium.kind-spell { --ref-tint: var(--ev-mana); }
+.nimble-inline-ref.ev-sys-nimble.is-compendium:is(.kind-item, .kind-equipment) { --ref-tint: var(--ev-ochre); }
+.nimble-inline-ref.ev-sys-dnd5e.is-compendium[class*="kind-"] { --ref-tint: var(--ev-accent); }
+.nimble-inline-ref.ev-sys-dnd5e.is-compendium:is(.kind-item, .kind-equipment) { --ref-tint: var(--ev-gold); }
+.nimble-inline-ref:is(.ev-sys-nimble, .ev-sys-dnd5e).nimble-inline-unresolved { --ref-tint: var(--ev-text-2); }
+.nimble-inline-ref.ev-sys-nimble .nimble-inline-level { font-family: var(--ev-font-num); font-size: 0.86em; }
+.nimble-inline-ref:is(.ev-sys-nimble, .ev-sys-dnd5e) .nimble-inline-add-btn:is(:hover, :focus-visible) { color: var(--ev-on-accent); }
 
 
 .nimble-encounter-block .encounter-block-meta, .nimble-encounter-block .encounter-block-notes { font-size: 0.8rem; color: var(--text-muted); }
