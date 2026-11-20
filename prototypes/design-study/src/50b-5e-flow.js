@@ -55,7 +55,6 @@ G5.parts = (enc, opts = {}) => {
 		: G5.row(e.c, o);
 	const out = [];
 	out.push(sec('Still to act', `${toAct.length + (lair && !lairDone && enc.turn.activeId !== 'lair' ? 1 : 0)} this round`));
-	out.push(h('div.ev-sec-hint', 'Tap anyone to make them active'));
 	const q = h('div.x5-q');
 	if (lair && !lairDone && enc.turn.activeId !== 'lair') q.append(G5.lairRow(false, true));
 	toAct.forEach((e, i) => q.append(draw(e, { next: i === 0 && !(lair && !lairDone) })));

@@ -217,7 +217,6 @@ html[data-theme="dark"] .g-5e {
 .x5-iin .box.empty { color: var(--g-text-2); font-weight: 400; border-style: dashed; border-color: var(--g-line-strong); background: transparent; }
 .x5-iin .box.focus { border-style: solid; border-color: var(--g-accent); background: var(--g-surface); box-shadow: 0 0 0 3px color-mix(in srgb, var(--g-accent) 18%, transparent); }
 .x5-iin small { width: 30px; text-align: right; font: 500 12.5px/1 var(--g-font-ui); font-style: normal; font-variant-numeric: tabular-nums; }
-.x5-setup-note { margin: 12px 18px 0; font-size: 12.5px; color: var(--g-text-2); }
 
 /* Concept B: ribbon */
 .x5b-ribbon { display: flex; align-items: flex-start; gap: 10px; padding: 4px var(--g-pad) 14px; overflow: hidden; }

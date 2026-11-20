@@ -223,7 +223,6 @@ export class Dnd5eTrackerView extends ItemView {
 		if (heroes.length) {
 			const h = body.createDiv({ cls: 'dnd5e-setup-h' });
 			h.createSpan({ cls: 'dnd5e-setup-h-title', text: 'Party' });
-			h.createSpan({ cls: 'dnd5e-setup-h-note', text: 'Players roll; type what they say' });
 			const list = body.createDiv({ cls: 'dnd5e-tracker-list ev-list dnd5e-setup-list' });
 			for (const c of heroes) this.renderSetupRow(list, [c]);
 		}
@@ -242,7 +241,6 @@ export class Dnd5eTrackerView extends ItemView {
 				this.renderSetupRow(list, group.length ? group : [c]);
 			}
 		}
-		body.createDiv({ cls: 'dnd5e-setup-note', text: 'Ties go to the higher modifier; drag to settle the rest once the fight starts.' });
 	}
 
 	/** One line before the fight: the name (×3 for a group), the bonus, and the roll in its box (tap to type or roll). */
@@ -288,7 +286,7 @@ export class Dnd5eTrackerView extends ItemView {
 		const done = entries.filter(isActed);
 		const nxt = upNext(f);
 
-		flowSection(body, 'Still to act', { small: `${toAct.length} this round`, hint: toAct.length ? 'Tap anyone to make them active' : undefined });
+		flowSection(body, 'Still to act', { small: `${toAct.length} this round` });
 		const list = body.createDiv({ cls: 'dnd5e-tracker-list ev-list is-to-act' });
 		if (toAct.length) for (const e of toAct) this.renderRow(list, e.c, { mark: e.members.some(m => m.id === nxt?.id) ? 'next' : 'todo', members: e.members });
 		else list.createDiv({ cls: 'ev-list-empty dnd5e-round-next', text: `Round ${f.round + 1} next` });

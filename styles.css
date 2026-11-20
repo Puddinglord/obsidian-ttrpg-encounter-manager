@@ -6312,7 +6312,6 @@ body.ev-is-sorting .dnd5e-tracker .dnd5e-row:hover { background: transparent; bo
 
 /* Before the fight: the party types their rolls, the monsters roll (one roll for identical ones) */
 .dnd5e-tracker .dnd5e-setup-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px 6px; font: 600 14px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
-.dnd5e-tracker .dnd5e-setup-h-note { font: 500 12px/1 var(--ev-font-ui); font-variant: normal; letter-spacing: 0; color: var(--ev-text-2); }
 .dnd5e-tracker .dnd5e-roll-all { height: 28px; padding: 0 8px; border: 0; background: transparent; box-shadow: none; color: var(--ev-text-2); font: 500 13px/normal var(--ev-font-ui); font-variant: normal; letter-spacing: 0; --ev-pill-icon: 15px; }
 .dnd5e-tracker .dnd5e-roll-all:hover { color: var(--ev-text); }
 .dnd5e-tracker .ev-list.dnd5e-setup-list { margin: 2px 12px 6px; padding: 2px 10px; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line); }
@@ -6324,7 +6323,6 @@ body.ev-is-sorting .dnd5e-tracker .dnd5e-row:hover { background: transparent; bo
 .dnd5e-tracker .dnd5e-setup-bonus { font: 500 12.5px/1 var(--ev-font-ui); color: var(--ev-text-2); font-variant-numeric: tabular-nums; }
 .dnd5e-tracker .dnd5e-setup-row button.dnd5e-init { width: 52px; height: 36px; border-radius: var(--ev-r-md); border: 1px solid var(--x5-gold-soft); background: var(--ev-bg); color: var(--ev-text); font: 600 19px/1 var(--ev-font-display); justify-content: center; text-align: center; }
 .dnd5e-tracker .dnd5e-setup-row button.dnd5e-init.is-unset { border-style: dashed; border-color: var(--ev-line-strong); background: transparent; color: var(--ev-text-2); font-weight: 400; }
-.dnd5e-tracker .dnd5e-setup-note { margin: 12px 18px 0; font-size: 12.5px; color: var(--ev-text-2); }
 
 /* Folds: Defeated and the log */
 .dnd5e-tracker .ev-fold > summary { list-style: none; font: 600 13px/18px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; }

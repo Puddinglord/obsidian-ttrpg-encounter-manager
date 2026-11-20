@@ -174,14 +174,13 @@ G5.setup = enc => {
 	return {
 		children: [
 			G5.head(enc, { setup: true }),
-			h('div.x5-setup-h', h('b', 'Party'), h('span', 'Players roll; type what they say')),
+			h('div.x5-setup-h', h('b', 'Party')),
 			h('div.x5-setup-group', party.map((c, i) => h('div.x5-irow', h('span', h('b', c.name), h('small', c.meta)), i === 0 ? pin('+3', '19') : i === 1 ? pin('+0', '', '.empty.focus') : pin('+4', '–', '.empty')))),
 			h('div.x5-setup-h', h('b', 'Monsters'), btn({ icon: 'dice', text: 'Roll all', size: 'sm', kind: 'quiet' })),
 			h('div.x5-setup-group',
 				h('div.x5-irow', h('span', h('b', 'Bog Hag'), h('small', 'Legendary · CR 5 · lair at 20')), pin('+1', '17')),
 				h('div.x5-irow', h('span', h('b', 'Goblin Boss'), h('small', 'CR 1')), pin('+2', '15')),
 				h('div.x5-irow', h('span', h('b', 'Goblins ×3'), h('small', 'CR ¼ · one roll for the group')), pin('+2', '12'))),
-			h('p.x5-setup-note', 'Ties go to the higher modifier; drag to settle the rest once the fight starts.'),
 		],
 		foot: h('div.ev-foot', btn({ icon: 'x', kind: 'icon', title: 'Cancel' }), btn({ icon: 'play', kind: 'primary', text: 'Start combat', sub: '· 2 to roll' })),
 	};

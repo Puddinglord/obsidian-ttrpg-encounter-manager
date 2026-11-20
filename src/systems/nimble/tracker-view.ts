@@ -383,7 +383,7 @@ export class EncounterTrackerView extends ItemView {
 			if (!heroes.length) return;
 			if (heroSide) {
 				const toGo = heroes.filter(c => !c.done && c.id !== cur?.id && !isDown(c));
-				flowSection(el, 'Heroes still to act', { small: `${toGo.length} · any order`, hint: toGo.length ? 'Whoever speaks up: tap them' : undefined });
+				flowSection(el, 'Heroes still to act', { small: `${toGo.length} · any order` });
 				const list = el.createDiv({ cls: 'ev-list creature-list side-hero' });
 				if (toGo.length) for (const c of toGo) this.renderRow(list, enc, c, { mark: 'todo' });
 				else list.createDiv({ cls: 'ev-list-empty', text: monsters.length ? 'Every hero has gone. Next: the monsters.' : 'Every hero has gone.' });

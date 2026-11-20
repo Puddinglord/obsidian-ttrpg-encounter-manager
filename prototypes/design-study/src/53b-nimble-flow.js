@@ -77,7 +77,6 @@ GN.lists = (enc, opts = {}) => {
 	const heroBlock = [];
 	if (heroSide) {
 		heroBlock.push(sec('Heroes still to act', `${toGo.length} · any order`));
-		heroBlock.push(h('div.ev-sec-hint', 'Whoever speaks up: tap them'));
 		heroBlock.push(h('div.xn-list', toGo.length ? toGo.map((c, i) => GN.row(c, { next: i === 0 })) : h('div.xn-empty', 'Every hero has gone. Next: the monsters.')));
 	}
 	if (done.length) {
