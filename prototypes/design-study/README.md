@@ -16,6 +16,7 @@ open prototypes/encounter-design-study.html#nimble/sheet
 - Numbering: `2x` shared CSS, `29` icons, `3x` shared parts (the sheet frame, the NPC card, Obsidian's chrome, clusters), `4x` the model and research, `50–63` each game's tracker and design system, `70–75` sheets, NPCs and blocks, `76` campaign notes, `9x` pages, answers and critique.
 - Each game's page has sub-tabs (Tracker, Character sheet, NPC, Stat block, Campaign notes, Design system); a surface is a `DEFS.<game>.<surface>` with a research board, notes and shots in device frames (laptop with sidebars, iPad landscape and portrait, phone, hover card, quick look).
 - Your answers to the design questions are in `98b-answers.js` and `98e-answers2.js`; the flow research behind the trackers is [`../ENCOUNTER-FLOW-RESEARCH.md`](../ENCOUNTER-FLOW-RESEARCH.md).
+- Surfaces designed in the plugin first (the compendium, builders, dialogs) are archived as screenshots of the real plugin: PNGs in `shots/`, shown with `{ device: 'img', src: 'design-study/shots/<file>.png', w, cap, sub }`, under each game's Compendium and Builders & dialogs tabs, with the decisions in the surface's notes.
 - Reference screenshots of other products (D&D Beyond, Foundry…) live in `prototypes/refs/`, which is git-ignored: we look at them, we don't publish them.
 
 ## The rules

@@ -2,7 +2,7 @@
    Game pages get sub-tabs: Tracker · Character sheet · NPC · Stat block ·
    Design system. Hash: #5e/sheet. Built for an iPad: big targets, sticky.
    ========================================================================== */
-const SUBS = [['tracker', 'Tracker'], ['sheet', 'Character sheet'], ['npc', 'NPC'], ['block', 'Stat block'], ['campaign', 'Campaign notes'], ['ds', 'Design system']];
+const SUBS = [['tracker', 'Tracker'], ['sheet', 'Character sheet'], ['npc', 'NPC'], ['block', 'Stat block'], ['campaign', 'Campaign notes'], ['compendium', 'Compendium'], ['tools', 'Builders & dialogs'], ['ds', 'Design system']];
 
 /** A surface page: research board, then the mocks. */
 function surfacePage(def, s) {
@@ -33,6 +33,8 @@ gamePage = (orig => def => {
 	sp('npc', surfacePage(def, def.npc));
 	sp('block', surfacePage(def, def.block));
 	sp('campaign', surfacePage(def, def.campaign));
+	sp('compendium', surfacePage(def, def.compendium));
+	sp('tools', surfacePage(def, def.tools));
 	sp('ds', ds);
 	return page;
 })(gamePage);

@@ -762,6 +762,7 @@ html[data-theme="dark"] .g-pf { --g-meter-text: #111318; --g-meter-shadow: none;
 .wm .lay { display: block; margin: 4px 0 8px; color: var(--p-text-2); }
 .wm .lay.three { color: var(--p-good); }
 .wm .thumb { zoom: .2; pointer-events: none; }
+.dev-img { display: block; height: auto; border-radius: 12px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 12px 32px -12px rgb(0 0 0 / 0.25); background: #fff; }
 
 /* ---- 27-cluster.css ---- */
 /* ============================================================================
@@ -6011,6 +6012,18 @@ function ticker({ round, turn, note, cls = '' } = {}) {
 		turn ? h('span.ev-ticker-turn', turn) : null,
 		note ? h('span.ev-ticker-note', note) : null);
 }
+
+/* ---- 36-img-shot.js ---- */
+/* ============================================================================
+   A screenshot of the real plugin as a shot, for surfaces that were designed in
+   the plugin first (the compendium, builders, dialogs). The PNGs live in
+   prototypes/design-study/shots/ (our own UI and sample content only).
+     { device: 'img', src: 'design-study/shots/nimble-compendium-720.png', w: 720, cap, sub }
+   ========================================================================== */
+mainShot = (orig => (def, m) => {
+	if (m.device !== 'img') return orig(def, m);
+	return h('div.dev-wrap', h('img.dev-img', { src: m.src, alt: m.cap, style: { width: (m.w || 720) + 'px', maxWidth: '100%' } }), h('div.dev-cap', h('b', m.cap), m.sub || null));
+})(mainShot);
 
 /* ---- 40-model.js ---- */
 /* ============================================================================
@@ -11627,7 +11640,7 @@ function mainShot(def, m) {
    Game pages get sub-tabs: Tracker · Character sheet · NPC · Stat block ·
    Design system. Hash: #5e/sheet. Built for an iPad: big targets, sticky.
    ========================================================================== */
-const SUBS = [['tracker', 'Tracker'], ['sheet', 'Character sheet'], ['npc', 'NPC'], ['block', 'Stat block'], ['campaign', 'Campaign notes'], ['ds', 'Design system']];
+const SUBS = [['tracker', 'Tracker'], ['sheet', 'Character sheet'], ['npc', 'NPC'], ['block', 'Stat block'], ['campaign', 'Campaign notes'], ['compendium', 'Compendium'], ['tools', 'Builders & dialogs'], ['ds', 'Design system']];
 
 /** A surface page: research board, then the mocks. */
 function surfacePage(def, s) {
@@ -11658,6 +11671,8 @@ gamePage = (orig => def => {
 	sp('npc', surfacePage(def, def.npc));
 	sp('block', surfacePage(def, def.block));
 	sp('campaign', surfacePage(def, def.campaign));
+	sp('compendium', surfacePage(def, def.compendium));
+	sp('tools', surfacePage(def, def.tools));
 	sp('ds', ds);
 	return page;
 })(gamePage);
