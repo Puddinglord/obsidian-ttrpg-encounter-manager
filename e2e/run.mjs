@@ -4963,12 +4963,21 @@ test('phone: the 5e character sheet fits a phone, its HP opens the keypad as a s
 			assert.deepEqual(await spills(), [], `New character's ${step} step fits a phone`);
 			await p.screenshot({ path: join(ARTIFACTS, `dnd5e-wizard-phone-${step.toLowerCase()}.png`) });
 		}
-		await p.evaluate(() => document.querySelectorAll('.modal-container').forEach(n => n.remove()));
+		// Closed the way a person would (so the dialog lets go of the keyboard), asking first if it does.
+		const closeBuilder = async () => {
+			await p.keyboard.press('Escape');
+			const discard = p.locator('.modal-container button.mod-warning', { hasText: 'Discard' });
+			await p.waitForTimeout(300);
+			if (await discard.count()) await discard.first().click();
+			await p.locator(W).waitFor({ state: 'detached' });
+		};
+		await closeBuilder();
 		await tap(sheet.locator('.dnd5e-sheet-actions button', { hasText: 'Level up' }));
 		await p.locator(W).waitFor();
 		await p.waitForTimeout(450);
 		assert.deepEqual(await spills(), [], 'Level up fits a phone');
 		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-level-up-phone.png') });
+		await closeBuilder();
 	} finally {
 		await setTheme(o, 'theme-light');
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
@@ -5594,7 +5603,10 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 		await o.page.locator(`${B} .eb-panel.is-active .eb-pick[data-value="Arcana"]`).click();
 		await o.page.waitForTimeout(500);
 		await measurePills(o, bad, '5e New character', B);
-		await o.eval(() => document.querySelectorAll('.modal-container').forEach(n => n.remove()));
+		// Closed as a person would: with choices made, it asks first.
+		await o.page.keyboard.press('Escape');
+		await o.page.locator('.modal-container button.mod-warning', { hasText: 'Discard' }).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
 
 		// Spotlight in a 5e campaign, with a typed filter.
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
