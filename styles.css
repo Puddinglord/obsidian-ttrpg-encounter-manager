@@ -4334,7 +4334,7 @@ button.nimble-cmp-back:hover { background: var(--background-modifier-active-hove
 .nimble-cmp-card .nimble-cmp-kind { gap: 6px; margin: 0 0 2px; font: 700 11.5px/16px var(--ev-font-ui); letter-spacing: 0.08em; color: var(--ev-text-2); }
 .nimble-cmp-card .nimble-cmp-kind-icon svg { width: 14px; height: 14px; }
 .nimble-cmp-card.kind-condition .nimble-cmp-kind, .theme-dark .nimble-cmp-card.kind-condition .nimble-cmp-kind { color: var(--ev-text-2); }
-.nimble-cmp-card .nimble-cmp-name { font: italic 900 30px/1.12 var(--ev-font-name); letter-spacing: 0; color: var(--ev-text); text-wrap: balance; }
+.nimble-cmp-card .nimble-cmp-name { font: italic 900 30px/1.12 var(--ev-font-name); letter-spacing: 0; color: var(--ev-text); text-wrap: balance; overflow-wrap: break-word; }
 .nimble-cmp-card .nimble-cmp-detail { margin-top: 2px; font: 700 15px/20px var(--ev-font-display); color: var(--ev-text); }
 .nimble-cmp-card :is(.nimble-cmp-body, .nimble-cmp-page) { gap: 12px; }
 /* The class's scrollwork carries the page's name (the sheet's class panel heading, a size up). */
@@ -4394,6 +4394,7 @@ button.nimble-cmp-back:hover { background: var(--background-modifier-active-hove
 .nimble-cmp-card .nimble-cmp-faq-q { font: italic 900 15px/21px var(--ev-font-name); }
 @container (max-width: 420px) {
 	.nimble-cmp-card .nimble-cmp-name { font-size: 25px; }
+	.nimble-cmp-card .nimble-art-slot { width: 56px; height: 56px; }
 	.nimble-cmp-card .nimble-cmp-scroll .ns-scroll-title { font-size: 22px; line-height: 28px; }
 }
 /* In a hover preview the card is the page: a little tighter. */
@@ -5372,7 +5373,9 @@ body.is-phone .nimble-cmpx-side, body.is-phone .nimble-cmpx-detail { padding-bot
 .nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(300px, 420px) minmax(0, 1fr); }
 .nimble-cmpx-modal .nimble-cmpx-detail { padding: 8px 4px 16px 16px; }
 .nimble-cmpx-modal .nimble-cmpx-detail .bestiary-back { display: none; }
-@media (max-width: 780px) {
+/* Too narrow for the list and a readable page side by side (a small window, a dialog at 760px): the list alone. */
+.modal.nimble-cmpx-modal .modal-content { container: nimble-cmpx-modal / inline-size; }
+@container nimble-cmpx-modal (max-width: 820px) {
 	.nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(0, 1fr); }
 	.nimble-cmpx-modal .nimble-cmpx-detail { display: none; }
 }
