@@ -18,6 +18,10 @@ Open **Settings → Ember Vault**, or type `/settings` in a note. The settings e
 
 Your heroes: name, class, level, max HP, Defense and max Wounds. This is the party used outside a campaign. Inside one, the campaign's own party is used (edit it from the Campaign panel). In a campaign you run, heroes with character sheets show here read-only, with a button to open their sheet; their sheet keeps them current.
 
+![The party editor: three heroes with their class, level, HP, Defense and Wounds, and Add hero and Level up](images/guide-party-editor.png)
+
+Outside a campaign, **Edit party…** (or `/party`, or the party link on an encounter block) opens the same editor as a dialog, in the game's look. **Level up** raises every hero you entered by hand by one level.
+
 - **Party size when no party is set:** used to rate encounters until you add heroes.
 
 ## Content packs
@@ -36,18 +40,23 @@ Your heroes: name, class, level, max HP, Defense and max Wounds. This is the par
 
 ## Nimble
 
-These only change Nimble campaigns. The encounter ones are also in the tracker's **⋯** menu, under **Encounter settings…**
+These only change Nimble campaigns. **Nimble encounters** is also in the tracker's **⋯** menu, under **Encounter settings…**
 
-- **Include the Nimble bestiary:** the 525 bundled monsters. Turn it off if you only want your own. A note in your vault with the same name as a bundled monster always replaces it.
-- **Help with stat blocks you write:** a quiet line under a stat block when part of it couldn't be shown as written.
-- **Stat block style:** Book or Compact.
-- **Nimble attack rolls:** attack dice miss on a 1 and explode on their max.
-- **Multiple encounters:** keep several fights in the tracker and switch between them.
-- **Apply monster armor automatically:** subtract Medium (−10) and Heavy (−20) armor from typed damage. Crits ignore armor.
-- **Minion overkill:** one more minion drops for each full die of damage.
-- **Ask before rolling:** attacks, spells, saves and checks open the [roll dialog](character-sheets.md#rolling) for advantage, a modifier and class dice. Off rolls straight away, with class dice that are on by default (like Judgment Dice) added.
-- **Include expansion drafts:** the draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells, marked as drafts wherever they show. A hero who already plays a draft class keeps their whole sheet when this is off.
-- **Compendium art folder:** where images you upload for compendium entries are saved.
+- **Nimble bestiary**
+  - **Include the Nimble bestiary:** the 525 bundled monsters. Turn it off if you only want your own. A note in your vault with the same name as a bundled monster always replaces it.
+  - **Help with stat blocks you write:** a quiet line under a stat block when part of it couldn't be shown as written.
+- **Nimble stat blocks**
+  - **Stat block style:** Book or Compact.
+  - **Nimble attack rolls:** attack dice miss on a 1 and explode on their max.
+- **Nimble encounters**
+  - **Multiple encounters:** keep several fights in the tracker and switch between them.
+  - **Apply monster armor automatically:** subtract Medium (−10) and Heavy (−20) armor from typed damage. Crits ignore armor.
+  - **Minion overkill:** one more minion drops for each full die of damage.
+  - **Legendary monsters act after each hero:** on by default. **Done** on a hero turns the tracker's card to the legendary monster's turn. Off, tap the monster when you want it. See [Legendary monsters](tracker.md#legendary-monsters).
+- **Nimble character sheets**
+  - **Ask before rolling:** attacks, spells, saves and checks open the [roll dialog](character-sheets.md#rolling) for advantage, a modifier and class dice. Off rolls straight away, with class dice that are on by default (like Judgment Dice) added.
+  - **Include expansion drafts:** the draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells, marked as drafts wherever they show. A hero who already plays a draft class keeps their whole sheet when this is off.
+  - **Compendium art folder:** where images you upload for compendium entries are saved.
 
 ## 5e
 

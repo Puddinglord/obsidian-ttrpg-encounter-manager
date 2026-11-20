@@ -30,13 +30,13 @@ What changed lately is in the **[changelog](../CHANGELOG.md)**.
 | Page | What it covers |
 |---|---|
 | [Playing in a campaign](players.md) | Player campaigns, your party, battle notes, lore cards, switching between GM and player |
-| [Character sheets](character-sheets.md) | Your Nimble character as a note: the interactive sheet, rolling, resting, levelling up, adding gear and spells |
+| [Character sheets](character-sheets.md) | Your Nimble character as a note: the sheet, your class panel, rolling, dice from the table, resting, levelling up, adding gear and spells |
 
 ## At the table
 
 | Page | What it covers |
 |---|---|
-| [Combat tracker](tracker.md) | Running a fight, the HP calculator, armor, minions, legendary monsters, conditions |
+| [Combat tracker](tracker.md) | Running a fight from the card and queue, the HP keypad, armor, minions, legendary monsters, conditions |
 | [Dice](dice.md) | Clickable dice, Nimble attack rolls, 3D dice |
 | [Spotlight](spotlight.md) | Cmd/Ctrl+K: search adversaries, NPCs and notes, roll dice, run commands |
 | [Slash commands](slash-commands.md) | Every `/` command in one table |

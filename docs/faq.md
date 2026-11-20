@@ -7,7 +7,7 @@ No. Everything is for the GM: your notes, your monsters, your tracker. Players d
 The plugin includes the Nimble monsters, conditions and rules text with the creator's permission, so it works on its own. If you enjoy Nimble, please support it by buying the books at [nimbleRPG.com](https://nimbleRPG.com).
 
 **Can I use it for another system?**
-Campaigns, NPC cards, boxes and maps work with any game. The bestiary, encounter difficulty and tracker follow Nimble's rules. You can turn the bundled bestiary off and write your own stat blocks.
+It runs [5e](5e.md) campaigns as well as Nimble, each in its own book's look. For another game, campaigns, NPC cards, boxes and maps work as they are; the bestiary, encounter difficulty and tracker follow Nimble's or 5e's rules. You can turn the bundled bestiary off and write your own stat blocks.
 
 **Can I make my own monsters, spells and items?**
 Yes. The [builder](builder.md) (**New monster…**, **New spell…**, **New item…**) fills in the books' numbers for the level or tier you pick and writes an ordinary block into a note. You can also write the blocks by hand; homebrew spells and items join the compendium and the character sheet's Add spell and Add item.

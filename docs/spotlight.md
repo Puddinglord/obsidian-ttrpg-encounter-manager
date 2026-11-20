@@ -4,6 +4,8 @@
 
 One box for whatever you need mid-session. Press **Cmd+K** (Mac) or **Ctrl+K** (Windows, Linux), type, and press Enter. The same key closes it. You can also click the search bar at the top of the Campaign panel.
 
+Spotlight wears the look of the campaign you're in, and its rows look like the [compendium](compendium.md#reading-the-list)'s: a monster's level in its box, a spell's tier, and what each row is on the right.
+
 ## What you can type
 
 | Type | What you get |
@@ -12,7 +14,7 @@ One box for whatever you need mid-session. Press **Cmd+K** (Mac) or **Ctrl+K** (
 | `3 goblin` | **Add 3 × Goblin** to the encounter |
 | `2d6+3`, `d20`, `roll 4d8` | A roll. It goes to the notice, the roll log and the 3D dice like any other roll |
 | `lay on hands`, `battleaxe` | Spells, items, class features and the rest of the [compendium](compendium.md); Enter opens the card |
-| `school:fire`, `type:undead level:3` | The compendium's filters, as chips in Spotlight's own box, with the same suggestions and keys. With any filter, Spotlight lists the matching compendium entries (monsters, NPCs, spells, rules…); the last row, **Search the compendium**, opens the compendium with the same chips |
+| `school:fire`, `type:undead level:3` | The compendium's filters, as chips in Spotlight's own box, with the same suggestions and keys. With any filter, Spotlight lists the matching compendium entries (monsters, NPCs, spells, rules…); the last row, **Search the compendium for "…"**, opens the compendium with the same chips |
 | `> next` | Commands only: Next round, Start combat, New scene… |
 | nothing | A short list of what's useful right now, such as **Next round** during a fight |
 
@@ -34,7 +36,7 @@ Press Escape in a card or quick look you opened from Spotlight to come back to S
 
 NPCs match on their name and their aliases. Notes come from the active campaign.
 
-In a [5e campaign](5e.md), Spotlight searches the edition's monsters and compendium, and takes the 5e compendium's filters (`school:evocation`, `cr:1/4 type:undead`). Enter on a monster is a quick look; `3 goblin` doesn't add to the 5e tracker yet.
+In a [5e campaign](5e.md), Spotlight searches the edition's monsters and compendium, and takes the 5e compendium's filters (`school:evocation`, `cr:1/4 type:undead`). Enter on a monster is a quick look, Cmd/Ctrl+Enter adds it to the 5e fight, and `3 goblin warrior` adds three.
 
 ## The shortcut
 

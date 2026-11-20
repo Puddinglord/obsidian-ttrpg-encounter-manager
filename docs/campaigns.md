@@ -10,13 +10,14 @@ Use **New campaign**, from the castle icon in the ribbon or the command palette.
 
 ## The Campaign panel
 
-The panel in the left sidebar is home base. From it you can:
+The panel in the left sidebar is home base, in the look of the campaign's game. From it you can:
 
-- switch campaigns, and with them between GM and [player](players.md) view; **Campaign settings…** in the same menu changes the name, side, level and game system
+- switch campaigns, and with them between GM and [player](players.md) view (the tag beside the name says **GM** or **Player**); **Campaign settings…** in the same menu changes the name, side, level and game system
 - open [Spotlight](spotlight.md) from the search bar under the campaign name, to find adversaries, NPCs and notes or roll dice
 - see the party: a card for each hero's character sheet, with their HP
-- **Continue** where you left off
+- **Continue** where you left off (**Start** on the first scene, until you've opened one)
 - browse chapters and their scenes (map buttons sit on each chapter)
+- see the open quests, wherever they're kept, with a dot for each: filled when it's active, a ring while it waits ([quests](quests.md#open-finished-and-failed))
 - browse every folder in the campaign: Sessions, Quests, NPCs, Locations, Monsters, Assets, and any you make yourself, like Factions. Empty folders show too. NPCs with a [portrait](npcs.md#portraits) show it as their icon.
 - see the files in a folder, not just notes: Assets lists its images and PDFs, and clicking one opens it
 - add to any chapter or folder with its **+** button
@@ -31,9 +32,9 @@ The panel in the left sidebar is home base. From it you can:
 | Note | A blank note |
 | Scene | Read-aloud box, what's here, encounter and exits (chapters only) |
 | NPC | An NPC with a [character card](npcs.md) |
-| Location | Description and connections |
-| Quest | The hook, objectives, stakes, the truth behind it, clues, complications and rewards ([more](quests.md)) |
-| Session log | Prep checklist, recap and loose threads, dated today |
+| Location | A [card](#places), then the overview, people, points of interest, factions, rumors, connections, history and visits |
+| Quest | A [card](quests.md#the-quest-card), the hook, objectives, stakes, the truth behind it, clues, complications and rewards |
+| Session log | A [card](#sessions) with the party filled in, a prep checklist, recap and loose threads, dated today |
 | Map | A map block; pick its image from the campaign's files, or set it later |
 | Monster | A stat block the bestiary picks up |
 | Handout | Player-facing text and GM notes |
@@ -48,7 +49,7 @@ On a folder of files like **Assets**, **+** adds files from your computer or pho
 
 ### Quests
 
-New campaigns come with a **Quests** folder. Make a quest with its **+**, **New quest** on the **Campaign** heading's **+**, or the **New quest…** command. A quest note holds the hook, a checklist of objectives, the stakes, the truth behind it, clues and rewards, with its status, giver and reward as properties. The folder lists open quests first; set `status: completed` and the quest gets a green tick and moves below them. `/quest` links one in any note.
+New campaigns come with a **Quests** folder. Make a quest with its **+**, **New quest** on the **Campaign** heading's **+**, or the **New quest…** command. A quest note opens on a card with its status, who gave it, the reward, objectives you can tick and the GM's secret. The open ones are listed near the top of the panel; set `status: completed` and the quest gets a green tick and moves to the bottom of the folder. `/quest` links one in any note.
 
 See [Quests](quests.md) for the full note, every property and examples.
 
@@ -90,9 +91,61 @@ Obsidian's own items (Bookmark, Reveal in navigation, and items from other plugi
 
 **Each campaign has its own fight.** The tracker shows the active campaign's encounter: open a note in another campaign and the tracker switches to that campaign's fight (and to its game's tracker, for a 5e campaign beside a Nimble one). Go back and the first fight is where you left it. A party you entered by hand before keeps counting: those heroes show in the Party section after the sheets, with a button to make character sheets for them, until a sheet with the same name replaces each one.
 
-**Pages open ready to read.** Characters, chapters, scenes, NPCs, locations, quests, maps and handouts open in reading view, where cards, sheets and blocks look their best. Use Obsidian's edit button (or its hotkey) to change one; it stays in editing until you move to another page. Session logs, which you write in at the table, and notes you've just made open for editing as usual. Turn this off under Settings → Campaigns → **Open campaign pages in reading view**. In reading view, a campaign note's properties show as a row of tags (Ancestry Human, Status alive…) rather than the Properties form; switch to editing to change them, or turn off **Properties as tags**.
+**Pages open ready to read.** Characters, chapters, scenes, NPCs, locations, quests, maps and handouts open in reading view, where cards, sheets and blocks look their best. Use Obsidian's edit button (or its hotkey) to change one; it stays in editing until you move to another page. Session logs, which you write in at the table, and notes you've just made open for editing as usual. Turn this off under Settings → Campaigns → **Open campaign pages in reading view**. In reading view, a campaign note's properties show as a row of tags (Ancestry Human, Status alive…) rather than the Properties form, leaving out what a card already shows; switch to editing to change them, or turn off **Properties as tags**.
 
 **Moving through scenes:** the **Next scene** and **Previous scene** commands step through scenes in order, across chapters. Bind them to hotkeys under Settings → Hotkeys.
+
+## Places
+
+![The Alchemists' Guild's card: its banner, the region, the monsters to use there, who's here, and where it leads](images/guide-place-card.png)
+
+A location note opens on a card: a banner (the note's image, or contour lines in the game's colours), what kind of place it is, its name and region, then:
+
+- **Who's here:** every NPC in the campaign whose `location:` links to this place, with their portraits.
+- **Leads to:** the `leads:` property, or the links under a **Leads to**, **Exits** or **Connections** heading.
+- **Monsters here** (Nimble, GM only): the `monsters:` property, as references to their stat blocks. Hover one for the block, or use its **+** to add it to the fight.
+- **Read aloud** (5e, GM only): the `read_aloud:` property, in a boxed paragraph.
+- **Secret** (GM only): the `secret:` property.
+
+```yaml
+---
+nimble: location
+type: guildhall
+region: The Old Quarter
+image: "[[Alchemy bench.png]]"
+leads: ["[[Q1 Entry Chamber]]"]
+monsters: [City Guard]
+secret: The Guild bricked up the cellar under Lantern Row a year before Vess went quiet.
+---
+```
+
+A new location note starts with an empty ```` ```nimble-note ```` block, which is where the card goes; it shows the card while you edit too. Older notes without it still open on the card in reading view.
+
+## Sessions
+
+![Session 1's card: the date, the title, who was at the table, what happened, and the quests it moved](images/guide-session-card.png)
+
+A session note opens on a card that repeats nothing: "Session 1 - Silver Between the Stones" becomes the kicker's number and date, and the title's name. Then:
+
+- **At the table:** the `party:` property, with portraits. A new session note fills it in with the campaign's party.
+- **What happened:** the list under your **Recap** heading (or **What happened**, or **Summary**).
+- **Quests:** the `quests:` property, one quest per line with how it moved: `advanced`, `new`, `done` or `failed` after the link. A line with no word counts as advanced.
+- **Loot** and **Next time:** the `loot:` and `next:` properties, or the lists under **Loot** and **Next time** headings.
+
+```yaml
+---
+nimble: session
+date: 2026-11-07
+party: ["[[Brakka]]", "[[Ilse]]", "[[Tomas]]", "[[Wren]]"]
+quests:
+  - "[[The Guild's Quiet Job]] new"
+  - "[[The Sealed Cellar]] done"
+loot: ["30 gp each, up front", "Vess's last letter"]
+next: Down the cellar stair, into Q1.
+---
+```
+
+Sections the card shows (the recap, and loot and next time when they're not properties) step aside in reading view, as does the note's title, so nothing shows twice.
 
 ## How it's laid out
 
@@ -118,7 +171,7 @@ Campaigns/
 - `title:` is the name shown in the panel when it differs from the file name. File names can't hold characters like `:` `?` and `"`, so a campaign you call "Vecna: Eve of Ruin" is saved as `Vecna- Eve of Ruin` with `title: "Vecna: Eve of Ruin"`, and the panel and NPC cards show the name you typed.
 - Any other folder in the campaign is a **section** (NPCs, Locations, Quests, Sessions, Monsters, Handouts or anything you like). Sections list their notes and any other files in them, and show up even while empty.
 
-A ```` ```nimble-campaign ```` block on the home note shows the same outline inside the note.
+A ```` ```nimble-campaign ```` block on the home note shows the same outline inside the note, open quests included.
 
 ## Campaign properties
 

@@ -10,7 +10,7 @@ Your party is level 3 and you need a bear for tonight.
 
 1. Run **New monster…** (or type `/new-monster` in the scene note).
 2. Name it **Cave Bear**, leave the role on **Regular** and the level on **3**.
-3. Press **Create now**.
+3. Press **Create now** (**Insert now** if you started from `/new-monster`).
 
 That's it. The builder looks up the GM Guide's numbers for a level 3 monster and writes this block into your Monsters folder (or where you typed the slash):
 
@@ -56,15 +56,15 @@ attacks:
 - The **+** button in the [compendium](compendium.md)'s search bar opens it on the tab you're on: Spells makes a spell, Items an item.
 - On a monster's page in the compendium, **Use as a template** starts a new monster from that one. Spells and items have it too, and every builder's first step has **Start from** to search for one to copy.
 - `/new-monster`, `/new-spell` or `/new-item` in a note builds it right there: the block goes where you typed the slash.
-- Hover a monster, spell or item block in your notes and click the **pencil** to edit it in the builder. Save writes the block back in place, keeping what the builder has no control for (senses, languages, a spell's class, a wand's charges). If the block has lines it can't read, Save asks first, because those lines won't be in the rewritten block.
+- Point at a monster, spell or item block in your notes (in either game) and click the **pencil** to edit it in the builder; on a phone it's always there. Save writes the block back in place, keeping what the builder has no control for (senses, languages, a spell's class, a wand's charges). If the block has lines it can't read, Save asks first, because those lines won't be in the rewritten block.
 
-The switch at the top changes what you're making. Each kind keeps what you've typed, so you can look at a spell and come back to your monster. Closing the builder (Cancel, the ×, Escape) asks before throwing away anything you've filled in.
+The builder wears your campaign's look, and fills the screen on a phone. The switch at the top changes what you're making. Each kind keeps what you've typed, so you can look at a spell and come back to your monster. Closing the builder (Cancel, the ×, Escape) asks before throwing away anything you've filled in.
 
 ## Quick or full, without being asked
 
 The first step holds everything a quick build needs. Pick a role and a level and press **Create now**: you get a monster ready to run, with the GM Guide's HP, damage and dice for that level. **Create now** works from every step, and anything you haven't filled in follows the book.
 
-Or press **Next** and go through the rest. Every step shows the stat block as it will look on the right (a **Preview** button on phones), with the level check above it.
+Or press **Next** and go through the rest. Every step shows the stat block as it will look on the right (the eye button on phones), with the level check above it: what it plays like, and a tag saying whether that's right for its level.
 
 ## Level first, or stats first
 
@@ -137,7 +137,7 @@ text: Replays the last minute of sound in the room. **Catch:** it replays your w
 ```
 ````
 
-- The block shows as the compendium's card, and the spell or item joins the compendium: search, `nimble:spell:Ember Lash` references, and the character sheet's **Add spell** and **Add item**.
+- The block shows as the compendium's card, framed in the note, and the spell or item joins the compendium, marked Homebrew: search, `nimble:spell:Ember Lash` references, and the character sheet's **Add spell** and **Add item**.
 - `text:` comes last and can run over several lines.
 - Spell fields: `school`, `tier` (or `cantrip`), `utility: yes`, `actions`, `range`, `aoe`, `concentration`, `damage`, `upcast`, `scaling` (a cantrip's higher levels).
 - Item fields: `category` (weapon, armor, shield, consumable, magic, gear), `rarity`, `damage`, `stat`, `damage type`, `properties` (a list on one line), `armor`, `strength`, `charges`, `cost`.

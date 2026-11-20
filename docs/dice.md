@@ -2,9 +2,15 @@
 
 - **Interactive text:** dice are clickable, and attack lines follow Nimble rules (a 1 on the first die misses, its max crits and explodes). Condition names such as Grappled or Prone show their rules when clicked.
 
+## The roll's result
+
+![Three results in the corner: a STR save of 17, a Battleaxe crit of 16 with its CRIT tag, and a miss](images/guide-roll-toast.png)
+
+Every roll lands in the corner of the screen: a die (a d20 for a d20 roll), what was rolled, the dice and the total in your game's figures, and **CRIT** or **MISS** as a tag. It's kept in the [roll log](#the-roll-log) too.
+
 ## 3D dice
 
-Clicking a dice expression throws real dice across the screen. They tumble, collide and bounce differently every time, yet always land on the rolled result. The notice appears when they land. 3D dice switch off by themselves without WebGL or with reduced motion, and phones only get them if you turn on **3D dice on phones** in settings. Dice without a real shape (a d100, a d30) and rolls of more than 12 dice skip the animation and show the result straight away.
+Clicking a dice expression throws real dice across the screen. They tumble, collide and bounce differently every time, yet always land on the rolled result. The result shows when they land. 3D dice switch off by themselves without WebGL or with reduced motion, and phones only get them if you turn on **3D dice on phones** in settings. Dice without a real shape (a d100, a d30) and rolls of more than 12 dice skip the animation and show the result straight away.
 
 Everything below is in **Settings → Ember Vault → 3D dice**.
 

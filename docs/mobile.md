@@ -14,7 +14,7 @@ On a touch screen:
 - **Minion group attacks:** tapping asks how many minions attack.
 - **Encounter blocks:** the − / + steppers are always visible.
 - **Bestiary:** on a phone it shows the list or one monster at a time. Filters sit behind the sliders button.
-- **Maps:** pinch to zoom and double-tap to zoom in. Tapping a pin opens a card with Open note, Edit and Delete.
+- **Maps:** pinch to zoom and double-tap to zoom in. Tapping a pin opens a card with Quick look, Open note, Edit and Delete.
 - **Screen:** the screen stays on while combat is running. Turn this off under **Keep the screen on during combat**.
 
 **Prep on desktop, run on the iPad:**
