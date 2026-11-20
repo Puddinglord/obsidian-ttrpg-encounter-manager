@@ -33,6 +33,7 @@ import { renderCard5e, Card5eOptions } from './cards';
 import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-view';
 import { Dnd5eSheet, SHEET_LANG } from './sheet';
 import { applyLook } from '../../core/look';
+import { gameIcon } from '../../core/icons';
 import { anyTrackerLeaf } from '../../core/tracker/follow';
 import { addMonster } from './combat';
 
@@ -390,7 +391,7 @@ class Dnd5eQuickLook extends Modal {
 		if (!lore) titles.createDiv({ cls: 'record-sub', text: `CR ${this.entry.monster.cr}` });
 		const bar = head.createDiv({ cls: 'record-actions' });
 		for (const a of lore ? [] : this.rt.actions(this.entry, this.sourcePath, () => this.close())) {
-			const b = pill(bar, { tag: 'button', cls: `record-btn ${a.cls ?? ''}`.trim(), icon: a.icon, text: a.label });
+			const b = pill(bar, { tag: 'button', cls: `record-btn ${a.cls ?? ''}`.trim(), icon: a.icon ? gameIcon(a.icon) : undefined, text: a.label });
 			b.onclick = (e) => a.onClick(e);
 		}
 		this.rt.render(this.contentEl.createDiv({ cls: 'record-body' }), this.entry.monster, { sourcePath: this.sourcePath, variant: 'block', lore });

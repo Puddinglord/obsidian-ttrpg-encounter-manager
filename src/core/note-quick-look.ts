@@ -7,6 +7,7 @@ import { portraitOf, renderAvatar } from './npc-card';
 import { closePopover } from './popover';
 import { pill } from './pill';
 import { applyLook } from './look';
+import { gameIcon } from './icons';
 
 export interface NoteQuickLookTarget {
 	file: TFile;
@@ -54,7 +55,7 @@ class NoteQuickLook extends Modal {
 		const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
 		const sub = this.target.subtitle ?? (typeof fm?.role === 'string' ? fm.role : '');
 		if (sub) titles.createDiv({ cls: 'record-sub', text: sub });
-		const open = pill(head.createDiv({ cls: 'record-actions' }), { tag: 'button', cls: 'record-btn mod-cta', icon: 'file-symlink', text: 'Open page' });
+		const open = pill(head.createDiv({ cls: 'record-actions' }), { tag: 'button', cls: 'record-btn mod-cta', icon: this.target.system ? gameIcon('file-symlink') : 'file-symlink', text: 'Open page' });
 		open.onclick = (e) => { this.close(); void this.app.workspace.openLinkText(file.path, sourcePath, e.metaKey || e.ctrlKey); };
 		const text = await this.app.vault.cachedRead(file);
 		const md = text.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();

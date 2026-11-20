@@ -11,12 +11,17 @@ import type EmberVaultPlugin from '../../../main';
 import { EncounterCreature, MonsterIndexEntry } from './types';
 import { isDown, isHero, isMinionGroup } from './encounters';
 import { conditionLabel, formatLevel, HpCommand, monsterRole } from './rules';
-import { iconStep, renderActionDots, renderMeter, renderWoundPips, VitalsMemory } from './vitals-ui';
+import { renderActionDots, renderMeter, renderWoundPips, VitalsMemory } from './vitals-ui';
 import { openHpCalculator } from './hp-pad';
 import { closePopover } from '../../core/popover';
 import { portraitOf, renderAvatar } from '../../core/npc-card';
 import { nimble } from './runtime';
 import { pill } from '../../core/pill';
+import { applyLook } from '../../core/look';
+import { evIcon } from '../../core/icons';
+
+/** The meter's − / + / keypad in the game's icons, as on the sheet. */
+const METER_ICONS = { minus: evIcon('minus'), plus: evIcon('plus'), calc: evIcon('keypad') };
 
 export type RecordTarget =
 	| { kind: 'monster'; entry: MonsterIndexEntry; sourcePath?: string }
@@ -44,6 +49,8 @@ class RecordModal extends Modal {
 
 	onOpen(): void {
 		this.modalEl.addClass('nimble-record-modal');
+		// Nimble's paper and type, like the tracker it opens over.
+		applyLook(this.modalEl, 'nimble');
 		this.component.load();
 		const t = this.target;
 		if (t.kind === 'combatant') {
@@ -105,14 +112,14 @@ class RecordModal extends Modal {
 		const actions = head.createDiv({ cls: 'record-actions' });
 		const lore = !c && !!src.entry && this.plugin.hideStats(src.entry.filePath, src.sourcePath || undefined);
 		if (t.kind === 'monster' && !lore) {
-			const add = pill(actions, { tag: 'button', cls: 'record-btn', icon: 'plus', text: 'Add to fight' });
+			const add = pill(actions, { tag: 'button', cls: 'record-btn', icon: evIcon('plus'), text: 'Add to fight' });
 			add.onclick = (e) => { void nimble().addToEncounter(t.entry.monster, t.entry.filePath || undefined, e.shiftKey ? 2 : 1); };
 		}
 		// Players keep their own notes on a creature: add them, or open them.
 		if (lore && src.entry) {
 			const name = baseCreatureName(src.entry.name);
 			const noted = !!nimble().creatureNote(name);
-			const notes = pill(actions, { tag: 'button', cls: 'record-btn', icon: noted ? 'notebook-pen' : 'notebook', text: noted ? 'Open notes' : 'Add notes' });
+			const notes = pill(actions, { tag: 'button', cls: 'record-btn', icon: evIcon(noted ? 'edit' : 'note'), text: noted ? 'Open notes' : 'Add notes' });
 			notes.onclick = () => { this.close(); void nimble().openCreatureNote(name); };
 		}
 		const page = this.pageAction(src);
@@ -153,11 +160,11 @@ class RecordModal extends Modal {
 	}
 
 	private pageAction(src: { entry?: MonsterIndexEntry; file?: TFile; sourcePath: string }): { label: string; icon: string; run: (newTab: boolean) => void } | null {
-		if (src.file) return { label: 'Open page', icon: 'file-symlink', run: (tab) => void this.app.workspace.openLinkText(src.file!.path, src.sourcePath, tab) };
+		if (src.file) return { label: 'Open page', icon: evIcon('open'), run: (tab) => void this.app.workspace.openLinkText(src.file!.path, src.sourcePath, tab) };
 		const e = src.entry;
 		if (!e) return null;
-		if (e.filePath) return { label: 'Open page', icon: 'file-symlink', run: (tab) => void this.app.workspace.openLinkText(e.filePath, src.sourcePath, tab) };
-		if (e.bundled) return { label: 'Open in compendium', icon: 'book-open', run: () => void nimble().openBestiary(e.monster.bundledId) };
+		if (e.filePath) return { label: 'Open page', icon: evIcon('open'), run: (tab) => void this.app.workspace.openLinkText(e.filePath, src.sourcePath, tab) };
+		if (e.bundled) return { label: 'Open in compendium', icon: evIcon('books'), run: () => void nimble().openBestiary(e.monster.bundledId) };
 		return null;
 	}
 
@@ -180,19 +187,19 @@ class RecordModal extends Modal {
 			const alive = c.alive ?? 0;
 			const count = c.count ?? 0;
 			renderMeter(meters, {
-				key: 'alive', cls: 'is-hp', icon: 'users', label: 'Standing', cur: alive, max: count,
+				key: 'alive', cls: 'is-hp', icon: evIcon('users'), label: 'Standing', cur: alive, max: count,
 				bar: 'ns-hp', minus: 'Drop one', plus: 'Bring one back', calc: `${alive} of ${count} standing. Hit, bring back or set`,
-				minusOff: alive <= 0, plusOff: alive >= count,
+				minusOff: alive <= 0, plusOff: alive >= count, icons: METER_ICONS, twoTone: true,
 				onCalc: (a) => openHpCalculator(a, c, this.plugin.settings.autoArmor, hpCmd),
 				taps: { floor: -alive, commit: (d) => { if (d) store.setAlive(enc, c.id, alive + d); else this.renderStrip(c); } },
 			}, this.vitals);
 		} else if (c.maxHp > 0) {
 			const temp = c.tempHp ?? 0;
 			const hp = renderMeter(meters, {
-				key: 'hp', cls: 'is-hp', icon: 'heart', label: 'Hit points', cur: c.currentHp, max: c.maxHp, extra: temp, extraLabel: `${temp} temp`,
+				key: 'hp', cls: 'is-hp', icon: evIcon('heart'), label: 'Hit points', cur: c.currentHp, max: c.maxHp, extra: temp, extraLabel: `${temp} temp`,
 				state: isDown(c) ? (isHero(c) ? 'Dead' : 'Down') : undefined,
 				bar: 'ns-hp', minus: 'Take 1 damage', plus: 'Heal 1', calc: `Hit points ${c.currentHp} of ${c.maxHp}${temp ? `, ${temp} temp` : ''}. Damage, heal, set or temp HP`,
-				minusOff: false, plusOff: c.currentHp >= c.maxHp,
+				minusOff: false, plusOff: c.currentHp >= c.maxHp, icons: METER_ICONS, twoTone: true,
 				onCalc: (a) => openHpCalculator(a, c, this.plugin.settings.autoArmor, hpCmd),
 				taps: {
 					floor: -(c.currentHp + temp), soak: temp,
@@ -212,9 +219,7 @@ class RecordModal extends Modal {
 			card.createSpan({ cls: 'ns-chip-label ns-actions-label', text: 'Actions' });
 			renderActionDots(card, { count: c.actions ?? 3, perTurn: 3, set: (n) => store.setActions(enc, c.id, n) }, this.vitals);
 		}
-		const done = card.createEl('button', { cls: `ns-actions-end${c.done ? ' is-done' : ''}`, attr: { 'aria-pressed': String(!!c.done) } });
-		setIcon(done.createSpan({ cls: 'ns-actions-end-icon' }), c.done ? 'check-circle-2' : 'circle');
-		done.createSpan({ text: c.done ? 'Has gone' : 'Mark turn done' });
+		const done = pill(card, { tag: 'button', cls: `ns-actions-end${c.done ? ' is-done' : ''}`, icon: evIcon(c.done ? 'check-circle' : 'check'), text: c.done ? 'Has gone' : 'Mark turn done', attr: { 'aria-pressed': String(!!c.done) } });
 		done.onclick = () => {
 			const expired = store.setDone(enc, c.id, !c.done);
 			if (expired.length) new Notice(`${c.label}: ${expired.join(', ')} wore off`);
@@ -229,7 +234,8 @@ class RecordModal extends Modal {
 				const tag = conds.createSpan({ cls: 'ns-cond' });
 				tag.createEl('button', { cls: 'ns-cond-name', text: a.rounds ? `${conditionLabel(a)} · ${a.rounds}r` : conditionLabel(a) })
 					.addEventListener('click', (e) => nimble().showConditionInfo(e.currentTarget as HTMLElement, a.name));
-				const x = iconStep(tag, 'x', { 'aria-label': `Remove ${a.name}` }, 'ns-cond-x');
+				const x = tag.createEl('button', { cls: 'ns-cond-x', attr: { 'aria-label': `Remove ${a.name}` } });
+				setIcon(x, evIcon('x'));
 				x.onclick = () => store.removeCondition(enc, c.id, a.name);
 			}
 		}

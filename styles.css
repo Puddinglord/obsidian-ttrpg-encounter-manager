@@ -3289,6 +3289,55 @@ body.is-phone .nimble-record-modal .record-head { flex-wrap: wrap; }
 body.is-phone .nimble-record-modal .record-actions { width: 100%; }
 body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justify-content: center; }
 
+/* The quick look in its game's look (.ev-sys-<id> on the modal, core/look.ts): the game's paper and type, the
+   name as the tracker's card sets it, buttons as the tracker's (the main one in the game's colour, never
+   Obsidian's accent), and the fight's HP and turn as cards on that paper. */
+.modal.nimble-record-modal[class*="ev-sys-"] { font-family: var(--ev-font-ui); color: var(--ev-text); }
+.modal.nimble-record-modal.ev-sys-nimble .record-title { font: italic 900 23px/28px var(--ev-font-name); letter-spacing: 0; color: var(--ev-text); overflow-wrap: anywhere; }
+.modal.nimble-record-modal.ev-sys-dnd5e .record-title { padding-bottom: 2px; font: 600 25px/29px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; color: var(--ev-accent-text); overflow-wrap: anywhere; }
+.modal.nimble-record-modal[class*="ev-sys-"] .record-sub { margin-top: 2px; font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); }
+.modal.nimble-record-modal[class*="ev-sys-"] .record-avatar { box-shadow: 0 0 0 2px var(--ev-now-line); }
+.modal.nimble-record-modal[class*="ev-sys-"] .record-actions { gap: 6px; }
+.modal.nimble-record-modal[class*="ev-sys-"] button.record-btn { height: 36px; padding: 0 12px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); box-shadow: none; font: 600 14px/normal var(--ev-font-ui); --ev-pill-icon: 17px; --ev-pill-gap: 6px; }
+.modal.nimble-record-modal[class*="ev-sys-"] button.record-btn:hover { background: var(--ev-surface-2); }
+.modal.nimble-record-modal[class*="ev-sys-"] button.record-btn.mod-cta { border-color: var(--ev-accent); background: var(--ev-accent); color: var(--ev-on-accent); }
+.modal.nimble-record-modal[class*="ev-sys-"] button.record-btn.mod-cta:hover { border-color: var(--ev-accent-hover); background: var(--ev-accent-hover); }
+.modal.nimble-record-modal.ev-sys-dnd5e button.record-btn { background: linear-gradient(var(--ev-surface), color-mix(in srgb, var(--ev-surface-2) 60%, var(--ev-surface))); border-color: color-mix(in srgb, var(--x5-gold-soft) 70%, var(--ev-line-strong)); box-shadow: 0 1px 0 rgb(80 50 20 / 0.06); }
+.modal.nimble-record-modal.ev-sys-dnd5e button.record-btn.mod-cta { background: linear-gradient(color-mix(in srgb, var(--ev-accent) 88%, white), var(--ev-accent) 55%); border-color: var(--x5-ink-deep); box-shadow: inset 0 0 0 1px rgb(255 220 170 / 0.18), 0 1px 2px rgb(60 10 0 / 0.3); }
+.modal.nimble-record-modal[class*="ev-sys-"] .record-empty { font: italic 500 13.5px/19px var(--ev-font-ui); color: var(--ev-text-2); }
+/* Nimble's fight strip: the tracker card's paper and rule, the sheet's meter (a light track, the red fill, the
+   numbers in the game's figures), its labels and Mark turn done as the tracker's buttons. */
+.ev-sys-nimble .nimble-sheet.ns-embed { font-family: var(--ev-font-ui); color: var(--ev-text); }
+.ev-sys-nimble .nimble-sheet.ns-embed :is(.ns-meters, .ns-turn) { border: 0; border-radius: var(--ev-r-lg); background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line-strong); margin-bottom: 10px; }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meters { padding: 10px 12px 12px; gap: 10px; }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-turn { padding: 10px 12px; }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-label { display: inline-flex; align-items: center; gap: 5px; font: 700 12.5px/normal var(--ev-font-display); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-icon { display: inline-flex; color: var(--ev-hp); }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-icon svg { width: 14px; height: 14px; }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) 32px 32px; align-items: center; gap: 8px; }
+.ev-sys-nimble .nimble-sheet.ns-embed :is(.ns-meter-step, .ns-meter-calc).ns-step { display: grid; place-items: center; width: 100%; height: 32px; padding: 0; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); }
+.ev-sys-nimble .nimble-sheet.ns-embed :is(.ns-meter-step, .ns-meter-calc).ns-step:hover:not(:disabled) { background: var(--ev-surface-2); }
+.ev-sys-nimble .nimble-sheet.ns-embed :is(.ns-meter-step, .ns-meter-calc).ns-step svg { width: 16px; height: 16px; }
+.ev-sys-nimble .nimble-sheet.ns-embed button.ns-meter-bar { --ns-c: var(--ev-hp); container-type: inline-size; display: block; height: 28px; padding: 0; border: 0; border-radius: 999px; background: var(--ev-track-empty); box-shadow: none; }
+.ev-sys-nimble .nimble-sheet.ns-embed button.ns-meter-bar:hover { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ns-c) 45%, transparent); }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-fill { z-index: 1; overflow: hidden; background: var(--ns-c); }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-extra-fill { background: var(--ev-temp); opacity: 0.85; }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-nums { position: absolute; inset: 0 auto 0 0; z-index: 0; width: 100cqw; display: flex; align-items: center; justify-content: center; gap: 2px; padding-top: 1px; font: 700 17px/1 var(--ev-font-num); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text); text-shadow: none; }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-nums.is-on-fill { color: var(--ev-meter-text, #fff); text-shadow: var(--ev-meter-shadow, 0 1px 2px rgb(0 0 0 / 0.4)); }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-cur { font-size: 17px; font-weight: 700; }
+.ev-sys-nimble .nimble-sheet.ns-embed :is(.ns-meter-slash, .ns-meter-max) { font-size: 12.5px; font-weight: 600; color: inherit; opacity: 0.92; }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-delta { font-family: var(--ev-font-ui); font-size: 11px; }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-chip-label { font: 700 12.5px/normal var(--ev-font-display); letter-spacing: 0.07em; color: var(--ev-text-2); }
+.ev-sys-nimble .nimble-sheet.ns-embed button.ns-actions-end { height: 36px; padding: 0 12px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); box-shadow: none; font: 600 14px/normal var(--ev-font-ui); --ev-pill-icon: 17px; --ev-pill-gap: 6px; }
+.ev-sys-nimble .nimble-sheet.ns-embed button.ns-actions-end:hover { background: var(--ev-surface-2); color: var(--ev-text); }
+.ev-sys-nimble .nimble-sheet.ns-embed button.ns-actions-end.is-done { border-color: color-mix(in srgb, var(--ev-ok) 45%, transparent); color: var(--ev-ok); }
+.ev-sys-nimble .nimble-sheet.ns-embed .ns-conds-row.has-conds { border: 0; background: var(--ev-surface); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+@media (pointer: coarse) {
+	.ev-sys-nimble .nimble-sheet.ns-embed :is(.ns-meter-step, .ns-meter-calc).ns-step { height: 40px; }
+	.ev-sys-nimble .nimble-sheet.ns-embed .ns-meter-row { grid-template-columns: 40px minmax(0, 1fr) 40px 40px; }
+	.modal.nimble-record-modal[class*="ev-sys-"] button.record-btn, .ev-sys-nimble .nimble-sheet.ns-embed button.ns-actions-end { height: 42px; }
+}
+
 /* ==========================================================================
    3D DICE SETTINGS: gallery of looks, editor with live preview, import
    ========================================================================== */
