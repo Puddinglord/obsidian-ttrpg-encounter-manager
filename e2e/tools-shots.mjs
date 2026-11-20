@@ -274,10 +274,12 @@ try {
 		await page.waitForTimeout(300);
 		await shootPage(`nimble-encounter-builder-phone${t}`);
 
-		// The roll dialog on a phone, from Brakka's sheet.
+		// The roll dialog at a phone's width, from Brakka's sheet (the desktop dialog: the sheet doesn't draw under
+		// the emulated phone classes alone).
 		await clean();
+		await size(390, 844);
 		await open(`${NQ}/Party/Brakka.md`);
-		const pstat = page.locator(`${R} .ns-stat .ns-stat-box`).first();
+		const pstat = page.locator('.ns-stat-box:visible').first();
 		if (await pstat.count() && wanted(`nimble-roll-dialog-phone${t}`)) {
 			await pstat.click();
 			await page.waitForSelector('.modal.nimble-roll-dialog');
@@ -285,6 +287,7 @@ try {
 			await page.waitForTimeout(400);
 			await shootPage(`nimble-roll-dialog-phone${t}`);
 		}
+		await size(390, 844, { phone: true });
 
 		// 5e's New monster on a phone: the builder full screen.
 		await clean();
