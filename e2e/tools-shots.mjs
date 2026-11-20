@@ -200,6 +200,42 @@ try {
 		await page.waitForTimeout(300);
 		await shoot(`party-editor${t}`, page.locator('.modal.nimble-party-modal'));
 
+		// The character wizard: New character's Stats (DEX picked to swap), and Level up's subclass for Brakka.
+		if (wanted(`nimble-new-character${t}`)) {
+			await clean();
+			await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+			const m = page.locator('.modal.nimble-newchar-modal');
+			await m.waitFor();
+			await m.locator('input.lu-name-input').fill('Lyra Thornwood');
+			await m.locator('select[data-k="ancestry"]').selectOption('Elf');
+			await m.locator('select[data-k="class"]').selectOption('Hunter');
+			await m.locator('.lu-next').click();
+			await page.waitForTimeout(500);
+			await m.locator('.lu-panel.is-active .ev-seg button', { hasText: 'Balanced' }).click();
+			await m.locator('.lu-panel.is-active .lu-place', { hasText: 'DEX' }).locator('.ns-stat-box').click();
+			await page.mouse.move(2, 2);
+			await page.waitForTimeout(400);
+			await shoot(`nimble-new-character${t}`, m);
+		}
+		if (wanted(`nimble-level-up${t}`)) {
+			await clean();
+			await open(`Campaigns/Brakka's Journal/Party/Brakka.md`);
+			await page.locator(`${R} .nimble-sheet .ns-camp >> visible=true`).first().click();
+			await page.locator('.modal.ns-camp-dialog .ns-camp-card', { hasText: 'Level up' }).click();
+			const lv = page.locator('.modal.nimble-levelup');
+			await lv.waitFor();
+			await lv.locator('.lu-dot', { hasText: 'Hit points' }).click();
+			await page.waitForTimeout(400);
+			await lv.locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
+			await lv.locator('.lu-dot', { hasText: 'Subclass' }).click();
+			await page.waitForTimeout(500);
+			await lv.locator('.lu-panel.is-active .lu-sub-tab', { hasText: 'Red Mist' }).click();
+			await lv.locator('.lu-panel.is-active .lu-sub-band-choose').click();
+			await page.mouse.move(2, 2);
+			await page.waitForTimeout(500);
+			await shoot(`nimble-level-up${t}`, lv);
+		}
+
 		// Map tokens: the Old Quarter's encounter on its map.
 		await clean();
 		await o.eval(async (app, plugin, NQ) => {
@@ -288,6 +324,21 @@ try {
 			await shootPage(`nimble-roll-dialog-phone${t}`);
 		}
 		await size(390, 844, { phone: true });
+
+		// New character on a phone: the Stats step.
+		if (wanted(`nimble-new-character-phone${t}`)) {
+			await clean();
+			await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+			const m = page.locator('.modal.nimble-newchar-modal');
+			await m.waitFor();
+			await m.locator('input.lu-name-input').fill('Lyra Thornwood');
+			await m.locator('select[data-k="class"]').selectOption('Hunter');
+			await m.locator('.lu-next').click();
+			await page.waitForTimeout(500);
+			await m.locator('.lu-panel.is-active .ev-seg button', { hasText: 'Min-Max' }).click();
+			await page.waitForTimeout(400);
+			await shootPage(`nimble-new-character-phone${t}`);
+		}
 
 		// 5e's New monster on a phone: the builder full screen.
 		await clean();

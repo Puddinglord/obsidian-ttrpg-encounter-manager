@@ -6,7 +6,18 @@ A Nimble character is an ordinary note. Its properties hold the numbers, a ```` 
 
 ## Making a character
 
-- **New character** (command palette, or **Add your character** in a [player campaign](players.md)'s party) asks for a name, ancestry, class, stat array, background and level. It assigns the array to the class's key stats, and fills in HP, Hit Dice, saves and starting gear from the class. Above level 1, HP goes up by the Hit Die's flat bonus (d12: +6) for each level; pick your class options on the sheet afterwards.
+![New character on its Stats step: the Balanced array on a Hunter, DEX picked to swap, KEY under DEX and WIL, the ▲ and ▼ saves on the boxes](images/guide-new-character.png)
+
+**New character** (command palette, or **Add your character** in a [player campaign](players.md)'s party) walks you through making a hero the way Core Rules 3.3 does, one screen at a time. Chips along the top jump between the screens, and nothing is written until you press **Create** on the last one.
+
+1. **Hero**: name, ancestry, class, background, level and player. The class shows its Hit Die, starting HP, key stats, saves, armor and weapons. Pick **Class gear** or **25 gp** a level to buy your own. An ancestry that can be Small or Medium asks which.
+2. **Stats**: pick Standard (2, 2, 0, −1), Balanced (2, 1, 1, 0) or Min-Max (3, 1, −1, −1). The numbers start where your class puts them: the highest on its two **KEY** stats, the lowest on its ▼ save. Tap a stat, then another, to swap their numbers. Your class's ▲ and ▼ saves are marked on the boxes, as on the sheet. If a key stat ends up below another stat, the dialog says so and **Class's placement** puts the numbers back. A background with a stat requirement ("0 or negative INT") warns you too.
+3. **Above level 1**, the same screens as [levelling up](#levelling-up), for every level up to the one you start at: Hit points (the flat bonus unless you roll), your subclass, your class's picks (Savage Arsenal, Sacred Decrees…), spells, stat increases and an Epic Boon. A list you choose from at several levels is one screen: a level 8 Berserker picks 3 Savage Arsenal abilities together.
+4. **Skills**: a point for every level above 1 to place, and **Heroic Skills**, the optional rule where your GM gives you 1 to 4 more.
+5. **Review**: every choice in a line. Tap one to go back to it.
+
+Choices your class or background gives at level 1 come up too: an Academy Dropout picks a Utility Spell, a Hexbinder starts knowing the Withered and Frenzied Afflictions.
+
 - In a player campaign, the hero you make is marked as yours (`mine: true`) and goes in the Party folder. **+** next to Party makes a party member instead.
 - A **Character** starter in the New note dialog, or any note with `nimble: character` and an empty ```` ```nimble-sheet ```` block, works too. Fill it in from the sheet's pencil.
 
@@ -100,16 +111,18 @@ Judgment Dice and Fury Dice are gone after a Safe Rest; they don't outlast a fig
 
 ![The level-up wizard on Hit points: roll the Hit Die with advantage or take the flat bonus, with the new max HP](images/guide-level-up.png)
 
-**Level up** (under **Camp**) opens a wizard: one decision per screen, with chips along the top to jump between them. Everything you choose is kept as you move back and forth, and nothing is written to the note until you press **Reach level N** on the last screen.
+**Level up** (under **Camp**) opens the same kind of wizard: a screen for each decision, with chips along the top to jump between them. Everything you choose is kept as you move back and forth, and nothing is written to the note until you press **Reach level N** on the last screen.
 
 1. **Overview**: what the level brings, with the new features to read.
-2. **Hit points**: roll your Hit Die with advantage (both dice roll, the higher is kept), take the flat bonus, or type in what you rolled at the table. The new max HP shows as you choose.
-3. **Subclass**, at the level you pick one: swipe through a card for each, with its flavour, complexity, and what it gives at every level (this level's features open), or switch to **Compare** for a table with every subclass side by side, level by level.
-4. **Picks** the level grants, one screen each: Savage Arsenal abilities, Spellshaper abilities, Sacred Decrees and the like, with the ones you already know marked.
-5. **Stat increases** ("+1 STR or DEX"), and an **Epic Boon** at level 19.
-6. **Skill point**, then a **review** of everything. Tap any line to go back and change it.
+2. **Hit points**: roll your Hit Die with advantage (both dice roll, the higher is kept), take the flat bonus (d12: +6), or type in what you rolled at the table. The new max HP shows as you choose. Your max Hit Dice go up by one.
+3. **Subclass**, at the level you choose one: a tab for each, with its flavour, complexity, and what it gives at every level, or **Compare** for every subclass side by side. Choosing one adds its features to this level, and its lists to the picks after it. A Beastmaster also chooses a Small, Medium or Large companion.
+4. **Picks** the level grants, one screen per list: Savage Arsenal abilities, Spellshaper abilities, Sacred Decrees, Invocations and the like, with the ones you know already marked. When your subclass changes a list, the picks follow it: an Honorseeker chooses Honorable Gambits instead of Underhanded Abilities, a Spellblade takes Commander's Orders instead of Combat Tactics and Weapon Mastery, and a Muscle Mage has no Savage Arsenal to pick from. A Commander's "another Combat Ability or +1 max Combat Dice" offers both, and +1 max Combat Dice can be taken more than once.
+5. **Spells**, when the level has you learn a school or Utility Spells: a Songweaver's second spell school, a Mage's Utility Spells from one school, an Oathsworn's Radiant Utility Spell, a Stormshifter's Utility Spell from each school it knows. A school you learn is kept in the note's `schools` property, and its spells join your spellbook. "You know all…" levels add them for you.
+6. **Increases**: the level's stat increases ("+1 STR or DEX", or "+1 to any 2 of your stats"), with each stat's new value. Then an **Epic Boon** at level 19.
+7. **Skills**: place your new skill point, and if you like, move one point you placed earlier to another skill.
+8. **Review**: every choice in a line. Tap any line to go back and change it.
 
-Anything you leave for later (a subclass, a pick) can be chosen from the sheet afterwards.
+Anything you leave for later (a subclass, a pick, a spell) can be chosen from the sheet afterwards.
 
 ## Adding things
 

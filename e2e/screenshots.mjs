@@ -1120,6 +1120,27 @@ const features = {
 		},
 		show: () => [[...document.querySelectorAll('.workspace-leaf.mod-active .markdown-reading-view .nimble-sheet .ns-tabpanel-actions .ns-section')].find(n => n.getBoundingClientRect().width && /^Reactions/.test(n.textContent.trim()))],
 	},
+	// character-sheets.md "Making a character": the Stats step, DEX picked to swap with another stat.
+	'guide-new-character': {
+		viewport: [1200, 860], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await brakka();
+			await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+			const m = page.locator('.modal.nimble-newchar-modal');
+			await m.waitFor();
+			await m.locator('input.lu-name-input').fill('Lyra Thornwood');
+			await m.locator('select[data-k="ancestry"]').selectOption('Elf');
+			await m.locator('select[data-k="class"]').selectOption('Hunter');
+			await m.locator('select[data-k="background"]').selectOption('Wild One');
+			await m.locator('.lu-next').click();
+			await page.waitForTimeout(500);
+			await m.locator('.lu-panel.is-active .ev-seg button', { hasText: 'Balanced' }).click();
+			await m.locator('.lu-panel.is-active .lu-place', { hasText: 'DEX' }).locator('.ns-stat-box').click();
+			await page.mouse.move(0, 0);
+			await page.waitForTimeout(500);
+		},
+		show: () => ['.modal.nimble-newchar-modal'],
+	},
 	// character-sheets.md "Levelling up": the wizard's first screen.
 	'guide-level-up': {
 		viewport: [1200, 860], bg: 'var(--background-secondary)',
