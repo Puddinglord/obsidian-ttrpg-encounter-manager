@@ -2861,23 +2861,24 @@ body.is-tablet .nimble-box-editor .bxe-font { padding: 0 0.45rem; }
 	.markdown-source-view.mod-cm6 .cm-embed-block.cm-preview-code-block:is(.cm-lang-box, .cm-lang-nimble-encounter, .cm-lang-nimble-map, .cm-lang-nimble-campaign, .cm-lang-nimble) > .edit-block-button { opacity: 1; }
 }
 
-/* ---------- Tables ---------- */
-.nimble-box-body table, body.nimble-tables .markdown-rendered table, body.nimble-tables .markdown-source-view.mod-cm6 .cm-table-widget table {
+/* ---------- Tables ----------
+   A compendium card's own table (a 5e class's level table, in a note) keeps the card's look. */
+.nimble-box-body table, body.nimble-tables .markdown-rendered table:not(.dnd5e-card-table), body.nimble-tables .markdown-source-view.mod-cm6 .cm-table-widget table {
 	--tbl-accent: var(--box-color, var(--interactive-accent));
 	border-collapse: separate; border-spacing: 0; width: 100%;
 	border: 1px solid var(--background-modifier-border); border-radius: 10px; overflow: hidden; font-size: 0.92em;
 	background: var(--background-primary);
 }
-:is(.nimble-box-body, body.nimble-tables .markdown-rendered, body.nimble-tables .cm-table-widget) table :is(th, td) {
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered, body.nimble-tables .cm-table-widget) table:not(.dnd5e-card-table) :is(th, td) {
 	border: none; border-top: 1px solid var(--background-modifier-border); padding: 0.55rem 0.8rem; vertical-align: top; text-align: left;
 }
-:is(.nimble-box-body, body.nimble-tables .markdown-rendered, body.nimble-tables .cm-table-widget) table thead th {
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered, body.nimble-tables .cm-table-widget) table:not(.dnd5e-card-table) thead th {
 	border-top: none; background: color-mix(in srgb, var(--tbl-accent) 10%, var(--background-secondary));
 	color: var(--text-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding-top: 0.5rem; padding-bottom: 0.5rem;
 }
-:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--text-normal) 2.5%, transparent); }
-:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table tbody tr:hover td { background: color-mix(in srgb, var(--tbl-accent) 7%, transparent); }
-:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table tbody td:first-child { font-weight: 600; }
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table:not(.dnd5e-card-table) tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--text-normal) 2.5%, transparent); }
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table:not(.dnd5e-card-table) tbody tr:hover td { background: color-mix(in srgb, var(--tbl-accent) 7%, transparent); }
+:is(.nimble-box-body, body.nimble-tables .markdown-rendered) table:not(.dnd5e-card-table) tbody td:first-child { font-weight: 600; }
 .nimble-box-body table { background: color-mix(in srgb, var(--background-primary) 70%, transparent); }
 /* Old-paper and stone boxes keep their own look */
 .box-style-parchment .nimble-box-body table, .box-style-letter .nimble-box-body table { background: rgba(255,255,255,.35); border-color: rgba(120,80,30,.3); color: inherit; }
