@@ -330,7 +330,12 @@ const t0 = Date.now();
 /** This run's shots and errors, with the last report's for every surface (and pass) this run didn't redo. */
 const ran = new Set();
 const merged = (list) => [...(earlier ? list(earlier).filter(x => !ran.has(`${x.game}/${x.surface}|${!!x.phone}`)) : []), ...list({ shots, errors })];
-const flush = () => writeReport(OUT, { shots: merged(r => r.shots), errors: merged(r => r.errors), unknownPills: [...unknownPills].map(([sel, u]) => ({ sel, n: u.n, where: [...u.where] })), ignore: IGNORE.map(r => ({ ...Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)])) })), seconds: Math.round((Date.now() - t0) / 1000), pillSelectors: PILL_SELECTORS });
+const pillsSoFar = () => {
+	const all = new Map((earlier?.unknownPills ?? []).map(u => [u.sel, { n: u.n, where: new Set(u.where) }]));
+	for (const [sel, u] of unknownPills) { const a = all.get(sel) ?? { n: 0, where: new Set() }; a.n += u.n; u.where.forEach(w => a.where.add(w)); all.set(sel, a); }
+	return [...all].map(([sel, u]) => ({ sel, n: u.n, where: [...u.where] }));
+};
+const flush = () => writeReport(OUT, { shots: merged(r => r.shots), errors: merged(r => r.errors), unknownPills: pillsSoFar(), ignore: IGNORE.map(r => ({ ...Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)])) })), seconds: Math.round((Date.now() - t0) / 1000), pillSelectors: PILL_SELECTORS });
 try {
 	await prepareVault(o, ROOT);
 	// Obsidian's status bar floats over the bottom right of the window; keep it out of the shots.
