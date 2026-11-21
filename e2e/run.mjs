@@ -7281,26 +7281,21 @@ test('content blocks: a Nimble class typed in the content folder is in the Class
 		await o.waitFor(async () => /Strike the Anvil[\s\S]*Anvil Oath/.test(await detail.innerText()), { timeout: 3000, what: 'the class page' });
 		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-compendium-nimble.png') });
 
-		// New on Origins: a menu (ancestry or background), a name, a note with a starter block.
+		// New on Origins: a menu (ancestry or background), then the ancestry's builder; it writes a note in the content folder.
 		await input.fill('');
 		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="origins"]`).click();
 		assert.equal(await o.page.locator(`${CMP} .nimble-cmpx-new`).getAttribute('aria-label'), 'New ancestry or background');
 		await o.page.locator(`${CMP} .nimble-cmpx-new`).click();
 		await o.page.locator('.menu .menu-item', { hasText: 'New ancestry' }).click();
-		const prompt = o.page.locator('.modal.nimble-name-prompt');
-		await prompt.waitFor();
-		await prompt.locator('input').fill('Emberkin');
-		await prompt.locator('button.mod-cta').click();
+		const builder = o.page.locator('.modal.nimble-entity-builder');
+		await builder.waitFor();
+		await builder.locator('.eb-panel.is-active input[data-field="Name"]').fill('Emberkin');
+		await builder.locator('.eb-create').click();
 		const anc = `${F}/Nimble/Ancestries/Emberkin.md`;
-		await o.waitFor(async () => /^```nimble-ancestry\nname: Emberkin\nsize: Medium\nrarity: common\nflavor: ""\ntraits:\n {2}- name: ""\n {4}text: ""\n```/.test(await read(o, anc).catch(() => '')), { what: 'the starter note' });
-		// Half written, its card still shows, with what's wrong under it.
-		// It opened for editing; reading view shows the card.
-		await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === anc, { what: 'the new note open' });
-		await o.eval(async (app, _p, anc) => {
-			const leaf = app.workspace.getLeavesOfType('markdown').find(l => l.view.file?.path === anc);
-			await leaf.view.setMode(leaf.view.previewMode);
-			app.workspace.setActiveLeaf(leaf, { focus: true });
-		}, anc);
+		await o.waitFor(async () => /^```nimble-ancestry\nname: Emberkin\nsize: Medium\nrarity: common\n```/.test(await read(o, anc).catch(() => '')), { what: 'the built note' });
+		// Half written by hand, its card still shows, with what's wrong under it.
+		await o.eval(async (app, _p, anc) => { await app.vault.modify(app.vault.getAbstractFileByPath(anc), '```nimble-ancestry\nname: Emberkin\nsize: Medium\nrarity: common\ntraits:\n  - name: ""\n    text: ""\n```\n'); }, anc);
+		await o.openFile(anc, 'preview');
 		const issues = o.page.locator(`${R} .ev-content-issues.is-error`);
 		await issues.waitFor({ timeout: 5000 });
 		assert.match(await issues.innerText(), /Fix 2 things to add it to the compendium[\s\S]*"traits" item 1: "name" is missing[\s\S]*"traits" item 1: "text" is missing/);
