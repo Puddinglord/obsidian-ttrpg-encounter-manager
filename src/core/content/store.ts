@@ -99,6 +99,14 @@ export class ContentStore extends Events {
 		return out;
 	}
 
+	/**
+	 * Every entry a game's blocks write, from every note in the content folder whichever campaign it's in, each with its
+	 * note (an importer finds what an earlier import wrote by these).
+	 */
+	entriesOf(system: string): PackEntry[] {
+		return [...this.notes.values()].flat().filter(n => n.system === system).flatMap(n => n.entries);
+	}
+
 	/** Is this a file the store reads: a pack or a note in the content folder? */
 	private inFolder(f: TAbstractFile): f is TFile {
 		return f instanceof TFile && f.path.startsWith(`${this.folder()}/`) && /^(json|md)$/i.test(f.extension);

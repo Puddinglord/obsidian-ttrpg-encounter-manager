@@ -1,11 +1,18 @@
 // Import a D&D Beyond character… and Import a Fantasy Statblocks creature…:
 // paste the text or choose the file, see what will come across (and what
-// won't), then make the notes. Ember Vault never connects to D&D Beyond: the
-// link box only shows the address of the character's data, for your browser.
+// won't), then make the notes. A character also brings its class, subclass,
+// species, background, feats, spells and items into the compendium: a
+// checklist (import-content-ui.ts) under the character, ticked for what's new.
+// Ember Vault never connects to D&D Beyond: the link box only shows the
+// address of the character's data, for your browser.
 
 import { Modal, normalizePath, Notice, setIcon, TFile } from 'obsidian';
 import { homeFolder } from '../../core/builder/frame';
-import { ddbJsonUrl, DdbImport, importDdbCharacter } from './import-ddb';
+import { dialogFoot, gameDialog } from '../../core/dialog';
+import { evIcon } from '../../core/icons';
+import { ddbCharacterOf, ddbJsonUrl, DdbImport, importDdbCharacter } from './import-ddb';
+import { renameInFrontmatter } from './import-ddb-content';
+import { DdbContentChoice, wroteText } from './import-content-ui';
 import { FsImport, importFantasyStatblocks } from './import-fstatblocks';
 import { createCharacterNote5e } from './new-character';
 import { STATBLOCK_LANG, toStatblockSource5e } from './parser';
@@ -15,9 +22,10 @@ type Kind = 'ddb' | 'fs';
 
 export class Import5eModal extends Modal {
 	private text = '';
-	private result: { ddb?: DdbImport; fs?: FsImport[]; error?: string } = {};
+	private result: { ddb?: DdbImport; content?: DdbContentChoice; fs?: FsImport[]; error?: string } = {};
 	private reportEl!: HTMLElement;
 	private importBtn!: HTMLButtonElement;
+	private shrink: (read: boolean) => void = () => {};
 
 	constructor(private rt: Dnd5eRuntime, private kind: Kind) {
 		super(rt.plugin.app);
@@ -25,7 +33,7 @@ export class Import5eModal extends Modal {
 
 	onOpen(): void {
 		const ddb = this.kind === 'ddb';
-		this.modalEl.addClass('nimble-import-content', 'dnd5e-import');
+		gameDialog(this, 'dnd5e', { cls: 'nimble-import-content dnd5e-import' });
 		this.titleEl.setText(ddb ? 'Import a D&D Beyond character' : 'Import a Fantasy Statblocks creature');
 		const el = this.contentEl;
 		if (ddb) {
@@ -51,12 +59,11 @@ export class Import5eModal extends Modal {
 		});
 		const area = el.createEl('textarea', { cls: 'nimble-import-text', attr: { rows: '8', placeholder: ddb ? 'Or paste the character\'s data here' : 'Or paste the creature here', spellcheck: 'false' } });
 		area.addEventListener('input', () => this.set(area.value));
+		// Once a character is read, its data steps back so what it brings is in view.
+		this.shrink = (read) => { area.rows = read ? 3 : 8; };
 		this.reportEl = el.createDiv({ cls: 'nimble-import-report' });
-		const foot = el.createDiv({ cls: 'modal-button-container' });
-		this.importBtn = foot.createEl('button', { cls: 'mod-cta', text: 'Import' });
+		this.importBtn = dialogFoot(el, { cancel: () => this.close(), main: { text: 'Import', icon: evIcon(ddb ? 'user-plus' : 'skull'), onClick: () => void this.import() } }).main;
 		this.importBtn.disabled = true;
-		this.importBtn.addEventListener('click', () => void this.import());
-		foot.createEl('button', { text: 'Cancel' }).addEventListener('click', () => this.close());
 	}
 
 	private set(text: string): void {
@@ -65,13 +72,18 @@ export class Import5eModal extends Modal {
 		if (text.trim()) {
 			try {
 				const edition = this.rt.edition(this.rt.plugin.campaigns.active?.home.path);
-				if (this.kind === 'ddb') this.result.ddb = importDdbCharacter(text);
-				else this.result.fs = importFantasyStatblocks(text, { edition });
+				if (this.kind === 'ddb') {
+					const character = ddbCharacterOf(text);
+					const ddb = this.result.ddb = importDdbCharacter(character);
+					// What the character brings into the compendium, checked against the SRD for the rules it uses.
+					this.result.content = new DdbContentChoice(this.rt, character, ddb.edition);
+				} else this.result.fs = importFantasyStatblocks(text, { edition });
 				if (this.result.fs && !this.result.fs.length) this.result.error = 'No creatures found in that.';
 			} catch (e) {
 				this.result.error = e instanceof Error ? e.message : String(e);
 			}
 		}
+		this.shrink(!!this.result.ddb);
 		this.report();
 	}
 
@@ -82,7 +94,7 @@ export class Import5eModal extends Modal {
 		this.importBtn.disabled = !!r.error || (!r.ddb && !r.fs?.length);
 		if (!this.text.trim()) return;
 		const head = el.createDiv({ cls: `nimble-pack-head${r.error ? ' is-error' : ''}` });
-		setIcon(head.createSpan({ cls: 'nimble-pack-icon' }), r.error ? 'circle-alert' : this.kind === 'ddb' ? 'user-round' : 'skull');
+		setIcon(head.createSpan({ cls: 'nimble-pack-icon' }), evIcon(r.error ? 'warning' : this.kind === 'ddb' ? 'user' : 'skull'));
 		const t = head.createDiv();
 		if (r.error) { t.createDiv({ cls: 'nimble-pack-summary', text: r.error }); return; }
 		const notes: string[] = [];
@@ -102,6 +114,7 @@ export class Import5eModal extends Modal {
 			box.createDiv({ cls: 'nimble-pack-notes-title', text: 'Worth a look' });
 			for (const n of notes.slice(0, 40)) box.createDiv({ cls: 'nimble-pack-note', text: n });
 		}
+		r.content?.render(el, () => {});
 	}
 
 	private async import(): Promise<void> {
@@ -109,11 +122,15 @@ export class Import5eModal extends Modal {
 		const plugin = this.rt.plugin;
 		try {
 			if (r.ddb) {
+				// The content first, so the sheet finds the class when it opens; then the character, by the names the vault has.
+				const wrote = r.content ? await r.content.write() : { added: 0, updated: 0 };
+				if (r.content) renameInFrontmatter(r.ddb.frontmatter, r.content.inVault());
 				const c = plugin.campaigns.active;
 				const f = await createCharacterNote5e(this.rt, r.ddb.frontmatter, r.ddb.name, c ? `${c.folder}/Party` : '');
 				this.close();
 				await plugin.app.workspace.getLeaf(false).openFile(f);
-				new Notice(`Imported ${r.ddb.name}.`);
+				const said = wroteText(wrote);
+				new Notice(`Imported ${r.ddb.name}${said ? `, and ${said}` : ''}.`);
 			} else if (r.fs?.length) {
 				const files = await writeCreatures(this.rt, r.fs);
 				this.close();
@@ -122,7 +139,7 @@ export class Import5eModal extends Modal {
 			}
 		} catch (e) {
 			console.error('Ember Vault: import failed', e);
-			new Notice('Couldn\'t import it. Nothing was written.');
+			new Notice(r.ddb ? 'Couldn\'t finish the import.' : 'Couldn\'t import it. Nothing was written.');
 		}
 	}
 }

@@ -45,6 +45,8 @@ export const PILL_SELECTORS = [
 	'.nimble-cmp-kind', '.nimble-cmp-fact', '.nimble-cmp-tag', '.nimble-cmp-draft', '.nimble-cmp-count', '.nimble-cmp-level-badge', '.nimble-cmp-summary',
 	'.nimble-spot-icon', '.nimble-slash-icon', '.nimble-spotlight-die', '.nimble-cmpx-kbd', '.nimble-cmpx-sort-dir', '.nimble-cmpx-sort-add', '.nimble-cmpx-sort-reset',
 	'.nimble-art-level', '.nimble-cmpx-group',
+	// Importing a D&D Beyond character: the checklist's New and "levels 8–9" tags.
+	'.dnd5e-ddb-tag',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {

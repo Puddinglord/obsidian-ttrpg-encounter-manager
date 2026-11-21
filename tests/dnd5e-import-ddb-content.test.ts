@@ -235,6 +235,22 @@ describe('a D&D Beyond character\'s content', () => {
 	});
 });
 
+describe('a character that says little', () => {
+	it('brings nothing D&D Beyond gave only a name for, and isn\'t mistaken for homebrew', () => {
+		// The shape the older import tests use: names and numbers, no definitions.
+		const pip = ddbCharacterOf({ data: {
+			name: 'Pip', race: { fullName: 'Elf' }, background: { definition: { name: 'Sage' } },
+			classes: [{ level: 3, definition: { name: 'Wizard' }, subclassDefinition: { name: 'Evoker' } }], stats: [],
+			classSpells: [{ spells: [{ definition: { name: 'Fire Bolt' } }] }], inventory: [{ definition: { id: 10, name: 'Quarterstaff' } }], feats: [{ definition: { name: 'Alert' } }],
+		} });
+		expect(content(pip)).toEqual([]);
+		// A Wizard D&D Beyond gave features for but no hit die is still the SRD's Wizard.
+		const def = (pip.classes as Obj[])[0].definition as Obj;
+		def.classFeatures = [{ name: 'Arcane Recovery', requiredLevel: 1, description: html('Placeholder text.') }];
+		expect(planDdbContent(content(pip), srdOnly('2024')).map(p => `${p.name}: ${p.status}`)).toEqual(['Wizard: srd']);
+	});
+});
+
 describe('planning an import', () => {
 	it('leaves what the SRD has to the SRD, and ticks what\'s new', () => {
 		const plan = planDdbContent(content(), srdOnly('2024'));

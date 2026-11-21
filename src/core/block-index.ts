@@ -63,6 +63,11 @@ export class BlockIndex<T extends { name: string }> extends Events {
 		return [...this.byName.values()].map(list => list.find(e => this.visible(e.filePath, from))).filter((e): e is BlockEntry<T> => !!e).sort((a, b) => a.name.localeCompare(b.name));
 	}
 
+	/** Every definition, whoever can see it, by name then path. */
+	every(): BlockEntry<T>[] {
+		return [...this.byName.values()].flat().sort((a, b) => a.name.localeCompare(b.name) || a.filePath.localeCompare(b.filePath));
+	}
+
 	async update(file: TFile): Promise<void> {
 		const before = this.snapshot(file.path);
 		const gen = this.bump(file.path);

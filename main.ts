@@ -97,7 +97,8 @@ export default class EmberVaultPlugin extends Plugin {
 	 * something written in the note `filePath`? Campaigns keep their monsters to
 	 * themselves: one written in a campaign's notes is seen only from that
 	 * campaign; one in a loose note, from campaigns you run (and notes outside
-	 * any). Bundled monsters (no path) are seen everywhere.
+	 * any). Bundled monsters (no path) are seen everywhere, and so is the
+	 * content folder outside any campaign: it's the compendium, for every campaign.
 	 */
 	canSee(filePath: string, from?: string): boolean {
 		const cs = this.campaigns;
@@ -105,6 +106,7 @@ export default class EmberVaultPlugin extends Plugin {
 		const here = (from ? cs.of(from) : undefined) ?? cs.active;
 		const home = cs.of(filePath);
 		if (home) return home.folder === here?.folder;
+		if (filePath.startsWith(`${this.content.folder()}/`)) return true;
 		return here?.role !== 'player';
 	}
 

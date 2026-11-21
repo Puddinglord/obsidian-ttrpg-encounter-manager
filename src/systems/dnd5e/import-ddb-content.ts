@@ -51,6 +51,8 @@ export interface DdbContentEntry {
 	seen?: number;
 	/** D&D Beyond marks it homebrew. */
 	homebrew?: boolean;
+	/** What D&D Beyond itself said (not filled in by default), for telling its version from the SRD's. */
+	facts?: { hitDie?: number; level?: number; school?: string; rarity?: string; damage?: string };
 }
 
 type Obj = Record<string, unknown>;
@@ -308,7 +310,7 @@ function classEntries(c: Obj): DdbContentEntry[] {
 			features: features.map((f): ClassFeature5e => ({ level: f.level, name: f.name, desc: featureText(f) })),
 			levels,
 		};
-		out.push({ kind: 'class', name, ddbId: defId, value, seen, homebrew: def.isHomebrew === true });
+		out.push({ kind: 'class', name, ddbId: defId, value, seen, homebrew: def.isHomebrew === true, facts: { hitDie: num(def.hitDice) } });
 
 		if (subDef) {
 			const subName = clean(str(subDef.name));
@@ -499,7 +501,7 @@ function spellEntries(c: Obj, edition: Dnd5eEdition): DdbContentEntry[] {
 			...(def.concentration === true || /^concentration/i.test(duration) ? { concentration: true } : {}),
 			...(def.ritual === true ? { ritual: true } : {}),
 		};
-		out.push({ kind: 'spell', name, ddbId: id, value: spell, homebrew: def.isHomebrew === true });
+		out.push({ kind: 'spell', name, ddbId: id, value: spell, homebrew: def.isHomebrew === true, facts: { level: num(def.level), school: str(def.school) || undefined } });
 	}
 	return out;
 }
@@ -520,7 +522,7 @@ function itemEntries(c: Obj): DdbContentEntry[] {
 			const type = /^(weapon|armor)$/i.test(filter) && base && !same(base, filter) ? `${filter} (${base})` : filter || base || 'Wondrous item';
 			const att = def.canAttune === true ? (str(def.attunementDescription) ? `by ${str(def.attunementDescription).replace(/^by\s+/i, '')}` : true) : undefined;
 			out.push({
-				kind: 'item', name, ddbId: id, homebrew: def.isHomebrew === true,
+				kind: 'item', name, ddbId: id, homebrew: def.isHomebrew === true, facts: { rarity: str(def.rarity) || undefined },
 				value: { name, ...origin(id), rarity: str(def.rarity) || 'Uncommon', type, desc: desc || NO_TEXT, ...(att !== undefined ? { attunement: att } : {}) },
 			});
 			continue;
@@ -556,7 +558,7 @@ function itemEntries(c: Obj): DdbContentEntry[] {
 		const weight = num(def.weight);
 		if (weight) e.weight = weight;
 		if (desc) e.desc = desc;
-		out.push({ kind: 'equipment', name, ddbId: id, value: e, homebrew: def.isHomebrew === true });
+		out.push({ kind: 'equipment', name, ddbId: id, value: e, homebrew: def.isHomebrew === true, facts: { damage: str(obj(def.damage).diceString) || undefined } });
 	}
 	return out;
 }
@@ -572,7 +574,22 @@ export function ddbContent(c: Obj, edition: Dnd5eEdition): DdbContentEntry[] {
 		...featEntries(c),
 		...spellEntries(c, edition),
 		...itemEntries(c),
-	];
+	].filter(hasSubstance);
+}
+
+/** D&D Beyond gave something to import: text or rules, not only a name (a trimmed-down JSON, a custom item). */
+function hasSubstance(e: DdbContentEntry): boolean {
+	const v = e.value;
+	const list = (k: string) => Array.isArray(v[k]) && v[k].length > 0;
+	const text = (k: string) => typeof v[k] === 'string' && v[k].trim() !== '' && v[k] !== NO_TEXT;
+	switch (e.kind) {
+		case 'class': return list('features');
+		case 'subclass': return list('features') || text('desc');
+		case 'species': return list('traits') || text('desc');
+		case 'background': return list('proficiencies') || !!v.feature || text('equipment') || list('abilityScores') || text('feat');
+		case 'equipment': return text('desc') || !!v.damage || !!v.ac;
+		default: return text('desc');
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -607,16 +624,19 @@ export interface DdbPlanItem {
 const groupOf = (k: DdbContentKind) => (k === 'equipment' ? 'item' : k);
 const numOf = (v: unknown) => num(v);
 
-/** An SRD name whose D&D Beyond version is clearly something else (its homebrew, another hit die, level or rarity). */
+/**
+ * An SRD name whose D&D Beyond version is clearly something else: its homebrew, or another hit die, spell level or
+ * school, rarity or damage die than the SRD's, as D&D Beyond itself says (never a default filled in here).
+ */
 function differs(e: DdbContentEntry, srd: Record<string, unknown>): boolean {
 	if (e.homebrew) return true;
-	const v = e.value;
+	const f = e.facts ?? {};
 	const ne = (a: unknown, b: unknown) => a !== undefined && b !== undefined && str(a).toLowerCase() !== str(b).toLowerCase();
 	switch (e.kind) {
-		case 'class': return ne(v.hitDie, srd.hitDie);
-		case 'spell': return ne(v.level, srd.level) || ne(v.school, srd.school);
-		case 'item': return ne(v.rarity, srd.rarity);
-		case 'equipment': return ne(str(v.damage).split(' ')[0] || undefined, str(srd.damage).split(' ')[0] || undefined);
+		case 'class': return ne(f.hitDie, srd.hitDie);
+		case 'spell': return ne(f.level, srd.level) || ne(f.school, srd.school);
+		case 'item': return ne(f.rarity, srd.rarity);
+		case 'equipment': return ne(f.damage, str(srd.damage).split(' ')[0] || undefined);
 		default: return false;
 	}
 }

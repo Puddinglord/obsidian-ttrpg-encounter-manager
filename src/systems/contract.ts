@@ -16,6 +16,7 @@ import type { SlashCommand } from '../core/slash';
 import type { NoteKindExtensions } from '../core/note-kinds';
 import type { KindSpec } from '../core/content/spec';
 import type { BlockSpec } from '../core/content/blocks';
+import type { ContentImport } from '../core/content/import-modal';
 import type { SettingsPart } from '../core/settings';
 import type { SettingsSection } from '../core/settings-ui';
 import type { CombatTokens } from '../core/tracker/tokens';
@@ -161,4 +162,10 @@ export interface GameContent {
 	 * out (the block may have errors), so read it defensively: a missing field is never a crash.
 	 */
 	card?(el: HTMLElement, entry: { kind: string; value: Record<string, unknown> }, ctx: { plugin: EmberVaultPlugin; sourcePath: string }): void;
+	/**
+	 * Content in another app's file that this game reads (5e: a D&D Beyond character's JSON, whose class, subclass,
+	 * species, background, feats, spells and items join the compendium), for Import content…: null when the text
+	 * isn't one. It draws what the file brings, with a choice of what to add, and adds it as content blocks.
+	 */
+	importFrom?(plugin: EmberVaultPlugin, text: string): ContentImport | null;
 }
