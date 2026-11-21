@@ -63,6 +63,10 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Nimble: New on the compendium's Classes, Features and Origins tabs opens a builder for a class, subclass, class option, ancestry, background or boon, so you never type a block. A class gets its key stats and saves on the sheet's stat boxes, its gear and magic, its own dice and pools, each level's features and what they grant, its option lists and a book class's scrollwork motif, and beside it you see what each level grants the way Level up will ask. The pencil on any of those blocks opens it in its builder again. See the [homebrew guide](docs/homebrew.md#nimbles-builders).
 - Nimble: a class from a pack or your notes can say in its data what the books say in words: spell tiers, a list's next tier, what a feature gives outright, an Epic Boon, a subclass's swaps and companions, and dice that grow by level. Level up and the sheet read it first. See the [content packs guide](docs/content-packs.md#nimble).
 
+- 5e: New on the compendium's Classes, Origins and Feats tabs opens a builder for a class, subclass, species (or race), background or feat. There's no YAML to type, the compendium card sits beside you, and for a class you see what each level grants. A class fills in its own level table: proficiency bonus, spell slots for full, half, third and pact casters, and cantrips and spells like an SRD class's or your own numbers. The pencil on the block opens it again. See the [5e builders](docs/homebrew.md#5e-builders).
+- Your own 5e species, lineages, subraces and backgrounds can give skills, languages, tools and a cantrip, or let you choose them, and a subclass can list spells it always has prepared; New character and Level up ask for and add them. See [what the sheet and level up read](docs/homebrew.md#classes-what-the-sheet-and-level-up-read).
+- New character and Level up offer your own 5e spells, homebrew or imported, to the classes they name, and Level up lets a 5e Bard, Sorcerer or Warlock (and a 2014 Ranger) swap a spell they know for another. See [Playing 5e](docs/5e.md#make-your-own).
+
 ### Changed
 
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
@@ -121,6 +125,7 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Import content's summary gets plurals right ("2 classes", "1 species"). See the [content packs guide](docs/content-packs.md).
 - Nimble boons in content packs are read: a boon gives its kind as `"type": "epic"`. See [content packs](docs/content-packs.md#nimble).
 - With Styled tables on, a 5e class's level table in a note (or a table in a ```` ```5e-spell ````) keeps the compendium's look. See [Playing 5e](docs/5e.md).
+- A 2014 Draconic Sorcerer's AC without armor is 13 + Dex, and a 2024 one adds Charisma. See [Playing 5e](docs/5e.md#character-sheets).
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
