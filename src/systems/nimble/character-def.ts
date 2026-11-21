@@ -98,6 +98,8 @@ export interface SheetFeature {
 	cost?: string;
 	/** Option group the choice came from ("Savage Arsenal"). */
 	optionGroup?: string;
+	/** Uses between Safe Rests the class's data gives it (instead of "(1/Safe Rest)" in its words). */
+	uses?: string | number;
 	/** Index in the frontmatter `features` list, for the ones the note lists. */
 	index?: number;
 }
@@ -116,6 +118,8 @@ export interface Resource {
 	feature?: string;
 	/** How its dice behave, when the class describes them itself (homebrew, content packs); else the books' by name (resource-def.ts). */
 	rule?: ResourceRule;
+	/** The word on a number's button ("Heal"), when the class says. */
+	spend?: string;
 }
 
 export interface CharacterSheet {
@@ -557,7 +561,7 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 	for (const f of classFeatures) {
 		// "Subclass: Choose a Berserker subclass" / "Gain your subclass feature" says nothing once the subclass's own features are listed.
 		if (hasSubclass && f.from === 'class' && /^subclass$/i.test(f.name)) continue;
-		features.push({ name: f.name, text: f.text, group: f.from === 'class' ? 'Class' : 'Subclass', level: f.level, source: f.source, page: f.page, draft: f.draft });
+		features.push({ name: f.name, text: f.text, group: f.from === 'class' ? 'Class' : 'Subclass', level: f.level, source: f.source, page: f.page, draft: f.draft, ...(f.uses !== undefined ? { uses: f.uses } : {}) });
 	}
 	list(fm.features).forEach((v, index) => {
 		const name = isObj(v) ? text(v.name) : text(v);
@@ -592,7 +596,9 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 		// "+1 max Combat Dice", chosen instead of an ability (Commander's Fit for Any Battlefield), once per pick.
 		const extra = features.filter(f => new RegExp(`^\\+(\\d+) max ${r.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/s$/i, '')}s?\\b`, 'i').test(f.name))
 			.reduce((n, f) => n + Number(/^\+(\d+)/.exec(f.name)?.[1] ?? 0), 0);
-		const base = v.max ?? (rule?.maxAt ? rule.maxAt(level, text(fm.subclass)) : evalFormula(r.max, vars));
+		const formulaMax = rule?.maxAt ? rule.maxAt(level, text(fm.subclass)) : evalFormula(r.max, vars);
+		// More held from a level (or for a subclass), when the class's dice say so.
+		const base = v.max ?? (formulaMax !== undefined && rule?.maxAdd ? formulaMax + rule.maxAdd(level, text(fm.subclass)) : formulaMax);
 		const max = base !== undefined && v.max === undefined ? base + extra : base;
 		// Dice that grow with level: "Your Fury Dice are now d6s."
 		let die = r.die;
@@ -603,12 +609,14 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 		die = dieAt(rule, level) ?? die;
 		const startsEmpty = (/ends?\b/i.test(r.reset ?? '') && !/rest/i.test(r.reset ?? '')) || rule?.rolledWhen === 'gained' || !!rule?.clearsOnRest;
 		const current = Math.max(0, Math.min(max ?? Infinity, v.current ?? (startsEmpty ? 0 : max ?? 0)));
-		resources.push({ name: r.name, current, max: max !== undefined ? Math.max(0, max) : undefined, die, reset: r.reset, rolled: v.rolled?.slice(0, current), formula: r.max !== undefined ? String(r.max) : undefined, ...(own ? { rule: own } : {}) });
+		resources.push({ name: r.name, current, max: max !== undefined ? Math.max(0, max) : undefined, die, reset: r.reset, rolled: v.rolled?.slice(0, current), formula: r.max !== undefined ? String(r.max) : undefined, ...(own ? { rule: own } : {}), ...(r.spend ? { spend: r.spend } : {}) });
 	}
 	// Class features you can use a few times between Safe Rests ("(1/Safe Rest)", "(WIL/Safe Rest)"): uses, kept like a resource.
 	for (const f of features) {
 		if (f.group !== 'Class' && f.group !== 'Subclass' && f.group !== 'Chosen') continue;
-		const u = featureUses(f.text);
+		// The class's data says how many (`uses`), else its words do ("(1/Safe Rest)").
+		const said = f.uses !== undefined && String(f.uses).trim() ? { formula: String(f.uses).replace(/\s+/g, '').replace(/^(\d+)[x*]/i, '$1×').toUpperCase() } : null;
+		const u = said ?? featureUses(f.text);
 		if (!u || resources.some(r => nameKey(r.name) === nameKey(f.name))) continue;
 		const max = Math.max(0, evalFormula(u.formula, vars) ?? 0);
 		if (!max) continue;

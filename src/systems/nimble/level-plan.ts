@@ -212,6 +212,24 @@ export function statIncrease(feature: { name: string; text: string }): StatIncre
 	return options.length ? { feature: feature.name, options, count: 1 } : undefined;
 }
 
+/** A feature's spell picks from the class's data (`learn`), for a feature whose words don't say. */
+export function learnPicks(f: Pick<Feature, 'name' | 'learn'>, level: number): SpellPick[] {
+	const kinds = ['school', 'utilities', 'utility'];
+	return (f.learn ?? []).filter(l => l && kinds.includes(l.kind)).map((l, i) => {
+		const from = (l.from ?? []).map(x => String(x).trim()).filter(Boolean);
+		const word = from.length === 1 ? from[0].toLowerCase() : '';
+		const schools: SpellPick['schools'] = word === 'known' || word === 'new' || word === 'any' ? word : from.length ? from : 'any';
+		return { key: `${level}|${f.name}|${i}`, level, feature: f.name, kind: l.kind, schools, count: Math.max(1, l.count ?? 1), ...(l.each ? { each: true } : {}) };
+	});
+}
+
+/** A feature's stat increase from the class's data (`increase`): its stats ("any" for all four), and how many get +1. */
+export function increaseOf(f: Pick<Feature, 'name' | 'increase'>): StatIncrease | undefined {
+	const said = (f.increase?.stats ?? []).map(x => String(x).trim().toUpperCase());
+	const options = said.includes('ANY') ? [...STATS] : [...new Set(said.filter((x): x is StatKey => (STATS as string[]).includes(x)))];
+	return options.length ? { feature: f.name, options, count: Math.max(1, Math.min(options.length, f.increase?.count ?? 1)) } : undefined;
+}
+
 export interface PlanOptions {
 	className: string;
 	/** The subclass the hero has. */
@@ -289,14 +307,15 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 		if (named) { grants.push(named.name); return; }
 		picks.push({ feature: f.name, group: widen(group), count });
 	};
-	const texts: { name: string; text: string; from?: string }[] = [...features];
+	const texts: (Pick<Feature, 'name' | 'text' | 'increase' | 'learn'> & { from?: string })[] = [...features];
 	if (level === 1 && o.background?.text) texts.push({ name: o.background.name, text: o.background.text });
 	for (const f of texts) {
-		const sp = spellChoices(f, level, schoolList);
+		// What the class's data says the feature has you learn, else what its words say.
+		const sp = f.learn ? { picks: learnPicks(f, level), grants: [] } : spellChoices(f, level, schoolList);
 		spells.push(...sp.picks);
 		spellGrants.push(...sp.grants);
 		if (/epic boon/i.test(`${f.name} ${f.text}`) && /\bchoose\b/i.test(f.text)) { boons = comp.boons.filter(b => /epic/i.test(b.kind ?? '')); continue; }
-		const inc = statIncrease(f);
+		const inc = f.increase ? increaseOf(f) : statIncrease(f);
 		if (inc) { stats.push(inc); continue; }
 		const known = f.text.match(/You know all ([^.,]+)/i);
 		const all = known && !/utility spells/i.test(known[1]) ? groupNamed(known[1], groups) : undefined;

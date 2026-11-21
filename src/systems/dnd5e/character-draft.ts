@@ -9,7 +9,7 @@
 
 import type { Draft } from '../../core/builder/schema';
 import creationJson from './data/creation.json';
-import { Background5e, Class5e, ClassFeature5e, compendium5e, Species5e } from './compendium';
+import { Background5e, Class5e, ClassFeature5e, compendium5e, Species5e, StartingEquipment5e } from './compendium';
 import { Frontmatter, newCharacterFm, optionGroupOf, readSheet5e, SKILLS, STANDARD_ARRAY } from './character';
 
 export { optionGroupOf };
@@ -38,9 +38,50 @@ interface Creation5e { classes: Record<string, ClassCreation5e>; species: Record
 const CREATION = creationJson as unknown as Record<Dnd5eEdition, Creation5e>;
 
 const findIn = <T>(m: Record<string, T>, name: string): T | undefined => Object.entries(m).find(([k]) => same(k, name))?.[1];
-export const classCreation = (edition: Dnd5eEdition, name: string): ClassCreation5e | undefined => findIn(CREATION[edition].classes, name);
+
+/** "2 Javelin" → 2 × Javelin; "Shield" → 1. */
+function itemOf(text: string): { name: string; qty: number } {
+	const m = /^\s*(\d+)\s*[×x]?\s+(.+)$/.exec(text);
+	return m ? { name: m[2].trim(), qty: Number(m[1]) } : { name: text.trim(), qty: 1 };
+}
+
+/** Starting equipment as a class or background writes it, as the wizard's groups. */
+export function equipGroups(list: StartingEquipment5e[]): EquipGroup5e[] {
+	return list.filter(g => g?.options?.length).map(g => ({
+		label: g.label ?? g.options.map(o => o.label).join(' or '),
+		options: g.options.map(o => ({
+			label: o.label,
+			items: (o.items ?? []).filter(Boolean).map(itemOf),
+			picks: (o.picks ?? []).filter(p => p?.from?.length).map(p => ({ label: p.label ?? 'Choose', count: Math.max(1, p.count ?? 1), from: p.from })),
+			gold: o.gold ?? 0,
+		})),
+	}));
+}
+
+/** What a new character of a class starts with: the class's own (a pack's, yours), else the SRD's. */
+export function classCreation(edition: Dnd5eEdition, name: string): ClassCreation5e | undefined {
+	const srd = findIn(CREATION[edition].classes, name);
+	const own = classOf(edition, name);
+	if (!own?.startingEquipment && !own?.toolChoices) return srd;
+	return {
+		...(srd ?? { equipment: [] }),
+		...(own.startingEquipment ? { items: undefined, equipment: equipGroups(own.startingEquipment) } : {}),
+		...(own.toolChoices ? { tools: own.toolChoices } : {}),
+	};
+}
 export const speciesCreation = (edition: Dnd5eEdition, name: string): SpeciesCreation5e | undefined => (name ? findIn(CREATION[edition].species, name) : undefined);
-export const backgroundCreation = (edition: Dnd5eEdition, name: string): BackgroundCreation5e | undefined => findIn(CREATION[edition].backgrounds, name);
+/** What a new character with a background starts with: the background's own (a pack's, yours), else the SRD's. */
+export function backgroundCreation(edition: Dnd5eEdition, name: string): BackgroundCreation5e | undefined {
+	const srd = findIn(CREATION[edition].backgrounds, name);
+	const own = compendium5e(edition).backgrounds.find(b => same(b.name, name));
+	if (!own?.startingEquipment && !own?.tools && !own?.toolChoices) return srd;
+	return {
+		...(srd ?? { equipment: [] }),
+		...(own.startingEquipment ? { items: undefined, gold: undefined, equipment: equipGroups(own.startingEquipment) } : {}),
+		...(own.tools ? { tools: own.tools } : {}),
+		...(own.toolChoices ? { toolChoices: own.toolChoices } : {}),
+	};
+}
 
 export function classOf(edition: Dnd5eEdition, name: string): Class5e | undefined {
 	return compendium5e(edition).classes.find(c => same(c.name, name));

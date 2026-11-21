@@ -5,7 +5,8 @@
 // a save DC, the damage dice and type, the slot it spends. Pure: no Obsidian imports.
 
 import { Sheet5e, usesSpent } from './character';
-import type { Spell5e } from './compendium';
+import type { ClassResource5e, Spell5e } from './compendium';
+import type { Dnd5eEdition } from './editions';
 import type { AbilityKey } from './types';
 
 export type ActionGroup5e = 'action' | 'bonus' | 'reaction' | 'limited';
@@ -128,6 +129,62 @@ export function slotFor(s: Sheet5e, level: number): number | undefined {
 // Limited-use features
 
 const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const USE_WORDS: Record<string, AbilityKey> = { ...ABILITY_WORD, str: 'str', dex: 'dex', con: 'con', int: 'int', wis: 'wis', cha: 'cha' };
+
+/**
+ * A count written as a formula: numbers, ability modifiers ("CHA", "Charisma modifier"), "PB" (or "proficiency
+ * bonus") and "level", with + − × and /, which rounds down. Undefined when it can't be read.
+ */
+export function evalUses5e(formula: number | string | undefined, v: { mods: Record<AbilityKey, number>; pb: number; level: number }): number | undefined {
+	if (typeof formula === 'number') return Number.isFinite(formula) ? Math.floor(formula) : undefined;
+	if (typeof formula !== 'string' || !formula.trim()) return undefined;
+	const text = formula.toLowerCase().replace(/proficiency bonus/g, 'pb').replace(/\b(?:your|modifier|mod|score|class|times|minimum of \w+)\b/g, ' ').replace(/[×x](?=\s*[\d(a-z])/g, '*').replace(/−/g, '-');
+	const tokens = text.match(/\d+|[a-z]+|[-+*/()]/g) ?? [];
+	let i = 0;
+	const atom = (): number | undefined => {
+		const t = tokens[i++];
+		if (t === undefined) return undefined;
+		if (t === '(') { const n = sum(); return tokens[i++] === ')' ? n : undefined; }
+		if (t === '-') { const n = atom(); return n === undefined ? undefined : -n; }
+		if (/^\d+$/.test(t)) return Number(t);
+		if (t === 'pb') return v.pb;
+		if (t === 'level' || t === 'lvl') return v.level;
+		const ab = USE_WORDS[t];
+		return ab ? v.mods[ab] : undefined;
+	};
+	const product = (): number | undefined => {
+		let n = atom();
+		while (n !== undefined && (tokens[i] === '*' || tokens[i] === '/')) {
+			const op = tokens[i++];
+			const m = atom();
+			if (m === undefined) return undefined;
+			n = op === '*' ? n * m : m ? Math.floor(n / m) : undefined;
+		}
+		return n;
+	};
+	const sum = (): number | undefined => {
+		let n = product();
+		while (n !== undefined && (tokens[i] === '+' || tokens[i] === '-')) {
+			const op = tokens[i++];
+			const m = product();
+			if (m === undefined) return undefined;
+			n = op === '+' ? n + m : n - m;
+		}
+		return n;
+	};
+	const n = sum();
+	return n !== undefined && i === tokens.length ? n : undefined;
+}
+
+/**
+ * The SRD's limited-use features its class tables don't count, as class data (what a pack's or your own class
+ * writes as `resources`): used for the SRD's own classes only.
+ */
+const SRD_RESOURCES: Record<Dnd5eEdition, Record<string, ClassResource5e[]>> = {
+	'2024': { Bard: [{ name: 'Bardic Inspiration', uses: 'CHA', min: 1, shortFrom: 5 }] },
+	'2014': { Bard: [{ name: 'Bardic Inspiration', uses: 'CHA', min: 1, shortFrom: 5 }], Druid: [{ name: 'Wild Shape', uses: 2, level: 2, reset: 'short' }] },
+};
 const baseName = (n: string) => n.replace(/\s*\(\d+\s+uses?\)\s*$/i, '').trim();
 
 /**
@@ -146,16 +203,23 @@ export function resources5e(s: Sheet5e, spent: Record<string, number> = s.usesSp
 	const add = (name: string, max: number, per: 'short' | 'long', shortOne = false) => { if (max > 0) list.push({ name, max, per, ...(shortOne ? { shortOne } : {}) }); };
 	add('Rage', n('rage_count'), 'long', is2024);
 	add('Channel Divinity', n('channel_divinity_charges'), is2024 ? 'long' : 'short', is2024);
-	add('Wild Shape', is2024 ? n('wild_shape_uses') : cls.name === 'Druid' && s.level >= 2 ? 2 : 0, is2024 ? 'long' : 'short', is2024);
+	add('Wild Shape', n('wild_shape_uses'), 'long', true);
 	add('Second Wind', n('second_wind_uses'), 'long', true);
 	add('Focus Points', n('focus_points'), 'short');
 	add('Ki', n('ki_points'), 'short');
 	add('Sorcery Points', n('sorcery_points'), 'long');
 	add('Action Surge', n('action_surges'), 'short');
 	add('Indomitable', n('indomitable_uses'), 'long');
-	if (cls.name === 'Bard' && s.level >= 1) add('Bardic Inspiration', Math.max(1, s.mods.cha), s.level >= 5 ? 'short' : 'long');
-	const have = new Set(list.map(r => key(r.name)));
 	const sub = cls.subclasses.find(x => key(x.name) === key(s.subclass));
+	// The class's and subclass's own counted features (the SRD's classes: as data, by their name).
+	const own = cls.resources ?? (cls.source ? undefined : SRD_RESOURCES[s.edition]?.[cls.name]) ?? [];
+	for (const r of [...own, ...(sub?.resources ?? [])]) {
+		if (!r?.name || (r.level ?? 1) > s.level) continue;
+		const uses = evalUses5e(r.uses, { mods: s.mods, pb: s.pb, level: s.level });
+		if (uses === undefined) continue;
+		add(r.name, Math.max(r.min ?? 0, uses), r.shortFrom && s.level >= r.shortFrom ? 'short' : r.reset ?? 'long', !!r.shortOne);
+	}
+	const have = new Set(list.map(r => key(r.name)));
 	// Any other class's own counted feature (a content pack's): a number in its table named <feature>_uses, back on the
 	// rest the feature's words name ("…when you finish a Short or Long Rest"), else a long rest.
 	for (const [k, v] of Object.entries(extra)) {

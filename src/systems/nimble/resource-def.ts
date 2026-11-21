@@ -7,7 +7,7 @@
 // - Rolled when gained (Fury Dice, Swarm Dice): you roll them as you get them and
 //   set them aside, so the sheet keeps their faces and a roll adds those faces.
 
-import type { ClassResource } from './compendium';
+import { ClassResource, nameKey } from './compendium';
 
 export type RollKind = 'attack' | 'spell' | 'save' | 'check';
 
@@ -32,6 +32,8 @@ export interface ResourceRule {
 	reachOnly?: boolean;
 	/** The most you can hold, by the rules, at a level and subclass (the compendium's number is only the base). */
 	maxAt?: (level: number, subclass: string) => number;
+	/** More held on top of the resource's own max, from a level and for a subclass (a class's `maxSteps`). */
+	maxAdd?: (level: number, subclass: string) => number;
 	/** Gone after a fight, so empty after a Safe Rest. */
 	clearsOnRest?: boolean;
 	/** The die by level ("d6 from level 1, d8 from 3…"), from the class tables. */
@@ -71,6 +73,7 @@ export function ruleFromData(r: Pick<ClassResource, 'name' | 'dice'>): ResourceR
 	if (!d || (d.rolled !== 'spent' && d.rolled !== 'gained')) return undefined;
 	const on = (d.addTo ?? []).map(x => String(x).toLowerCase()).filter((x): x is RollKind => (ROLLS as string[]).includes(x));
 	const byLevel = (d.byLevel ?? []).filter(x => Number.isFinite(x?.level) && /^d\d+$/i.test(String(x?.die ?? '').trim()));
+	const steps = (d.maxSteps ?? []).filter(x => Number.isFinite(x?.level) && Number.isFinite(x?.add));
 	return {
 		match: new RegExp(`^${escape(r.name.trim())}$`, 'i'),
 		rolledWhen: d.rolled,
@@ -84,6 +87,7 @@ export function ruleFromData(r: Pick<ClassResource, 'name' | 'dice'>): ResourceR
 		...(d.clearsOnRest ? { clearsOnRest: true } : {}),
 		...(byLevel.length ? { dieByLevel: Object.fromEntries(byLevel.map(x => [x.level, x.die.trim().toLowerCase()])) } : {}),
 		...(d.rules?.length ? { rules: d.rules } : {}),
+		...(steps.length ? { maxAdd: (level: number, subclass: string) => steps.filter(x => level >= x.level && (!x.subclass || nameKey(x.subclass) === nameKey(subclass))).reduce((n, x) => n + x.add, 0) } : {}),
 	};
 }
 

@@ -14,7 +14,7 @@ import { evIcon } from '../../core/icons';
 import { pill } from '../../core/pill';
 import { renderPipRow } from '../../core/pip-row';
 import { addCondition, adjustResource, CharacterSheet, Frontmatter, regainMana, removeCondition, Resource, setMana, setQuarry, setResource, setRolled, spendMana } from './character-def';
-import { classPanelRows, PanelRow } from './class-panel-def';
+import { classPanelRows, isStateCondition, PanelRow } from './class-panel-def';
 import { renderClassScroll } from './class-scroll';
 import type { Compendium } from './compendium';
 import { openManaCalculator } from './hp-pad';
@@ -195,17 +195,19 @@ function renderRow(panel: HTMLElement, r: PanelRow, h: ClassPanelHost): void {
 			const a = acts();
 			if (r.on) {
 				button(a, `End ${r.label.toLowerCase()}`, () => void h.mutate((fm, cur) => {
-					for (const c of cur.conditions) if (/^rag(e|ing)$/i.test(c)) removeCondition(fm, c);
-					// Fury Dice are lost when your Rage ends.
-					for (const res of cur.resources) if (/fury/i.test(res.name) && res.current) setRolled(fm, res.name, []);
+					for (const c of cur.conditions) if (isStateCondition(c, r)) removeCondition(fm, c);
+					// The dice held while it lasts are lost when it ends (Fury Dice when your Rage ends).
+					for (const res of cur.resources) if (r.dice.includes(res.name) && res.current) setRolled(fm, res.name, []);
 				}));
 			} else {
 				button(a, r.label, () => {
 					void h.mutate(fm => addCondition(fm, r.condition)).then(() => {
-						const fury = h.sheet.resources.find(x => /fury/i.test(x.name));
-						if (fury && (fury.max === undefined || fury.current < fury.max)) h.gainDice(fury, 1);
+						for (const name of r.dice) {
+							const d = h.sheet.resources.find(x => x.name === name);
+							if (d && (d.max === undefined || d.current < d.max)) h.gainDice(d, 1);
+						}
 					});
-				}, { title: `${r.label}: become ${r.text}${s.resources.some(x => /fury/i.test(x.name)) ? ' and roll a Fury Die' : ''}` });
+				}, { title: `${r.label}: become ${r.text}${r.dice.length ? ` and roll ${r.dice.length === 1 ? `a ${r.dice[0].replace(/ice$/i, 'ie')}` : r.dice.join(' and ')}` : ''}` });
 			}
 			break;
 		}

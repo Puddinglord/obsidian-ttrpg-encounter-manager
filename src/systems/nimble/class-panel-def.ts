@@ -28,7 +28,8 @@ export type PanelRow = RowBase & (
 	| { kind: 'number'; res: Resource; value: number; max: number; spend: string }
 	| { kind: 'uses'; res: Resource; left: number; max: number }
 	| { kind: 'charges'; res: Resource; value: number }
-	| { kind: 'state'; on: boolean; text: string; condition: string }
+	/** `dice`: the resources held while it lasts (Fury Dice while Raging): one rolled when it starts, lost when it ends. */
+	| { kind: 'state'; on: boolean; text: string; condition: string; dice: string[] }
 	| { kind: 'target'; target: string }
 );
 
@@ -82,14 +83,27 @@ function tipFor(res: Resource): string {
 
 const RAGE = /^rag(e|ing)$/i;
 
+interface StateDef { key: string; name: string; condition: string; rules: RuleText[]; tip?: string }
+
+/** Is a condition on the hero this state's? The books' Rage is Raging (or Rage). */
+export function isStateCondition(condition: string, state: { key: string; condition: string }): boolean {
+	return state.key === 'rage' ? RAGE.test(condition.trim()) : nameKey(condition) === nameKey(state.condition);
+}
+
 /** Every row of the hero's class panel, in the order the sheet shows them. */
 export function classPanelRows(s: CharacterSheet, magicRules?: unknown): PanelRow[] {
 	const rows: PanelRow[] = [];
 	const has = (name: string) => s.features.find(f => nameKey(f.name) === nameKey(name) && (f.group === 'Class' || f.group === 'Subclass'));
+	const reached = (level?: number) => s.level >= (level ?? 1);
 
-	// A marked target leads (Hunter's Mark): it's what the Hunter's other things are about.
-	const mark = has('Hunter’s Mark');
-	if (mark) rows.push({ kind: 'target', key: 'quarry', label: mark.name, target: s.quarry, tip: 'one Quarry at a time, for a day', rules: [{ name: mark.name, text: mark.text }] });
+	// A marked target leads (Hunter's Mark): it's what the Hunter's other things are about. A class says which it keeps; the books' by name.
+	const declared = s.cls?.target;
+	if (declared?.name && reached(declared.level)) {
+		rows.push({ kind: 'target', key: 'quarry', label: declared.name, target: s.quarry, ...(declared.tip ? { tip: declared.tip } : {}), rules: rulesFor(declared.feature ?? declared.name, s.features) });
+	} else if (!declared) {
+		const mark = has('Hunter’s Mark');
+		if (mark) rows.push({ kind: 'target', key: 'quarry', label: mark.name, target: s.quarry, tip: 'one Quarry at a time, for a day', rules: [{ name: mark.name, text: mark.text }] });
+	}
 
 	if (s.manaMax > 0) {
 		const mana = magicRule(magicRules, 'Mana');
@@ -97,12 +111,18 @@ export function classPanelRows(s: CharacterSheet, magicRules?: unknown): PanelRo
 		rows.push({ kind: 'pool', key: 'mana', label: 'Mana', value: s.mana, max: s.manaMax, tip: [formula ?? '', 'back on a Safe Rest'].filter(Boolean).join(' · '), rules: mana ? [mana] : [] });
 	}
 
+	// States the class switches (Raging): the ones it declares, else the books' Rage by its feature's name.
 	const rage = has('Rage');
-	const rageRow = (): PanelRow | null => (rage ? {
-		kind: 'state', key: 'rage', label: rage.name, on: s.conditions.some(c => RAGE.test(c)), text: 'Raging', condition: 'Raging',
-		tip: 'until it ends', rules: [{ name: rage.name, text: rage.text }],
-	} : null);
-	let rageShown = false;
+	const states: StateDef[] = s.cls?.states
+		? s.cls.states.filter(x => x?.name && x.condition && reached(x.level)).map(x => ({ key: `state:${nameKey(x.name)}`, name: x.name, condition: x.condition, rules: rulesFor(x.feature ?? x.name, s.features) }))
+		: rage ? [{ key: 'rage', name: rage.name, condition: 'Raging', rules: [{ name: rage.name, text: rage.text }], tip: 'until it ends' }] : [];
+	/** The dice a state's held while it lasts: those switched on while its condition is (Fury Dice while Raging). */
+	const diceFor = (condition: string) => s.resources.filter(res => { const r = ruleOf(res); return r?.rolledWhen === 'gained' && r.autoOn instanceof RegExp && r.autoOn.test(condition); }).map(res => res.name);
+	const stateRow = (x: StateDef): PanelRow => ({
+		kind: 'state', key: x.key, label: x.name, on: s.conditions.some(c => isStateCondition(c, x)), text: x.condition, condition: x.condition,
+		dice: diceFor(x.condition), ...(x.tip ? { tip: x.tip } : {}), rules: x.rules,
+	});
+	const shown = new Set<string>();
 
 	for (const res of s.resources) {
 		const rule = ruleOf(res);
@@ -115,21 +135,18 @@ export function classPanelRows(s: CharacterSheet, magicRules?: unknown): PanelRo
 			const room = res.max !== undefined ? Math.max(0, res.max - faces.length) : 1;
 			const roll = rule?.gain?.count === 1 ? 1 : room || 1;
 			rows.push({ kind: 'dice', key, label: res.name, res, sides, faces, max: res.max, roll, rolledWhen: rule?.rolledWhen ?? 'spent', tip, rules });
-			// Rage sits under the dice it rolls.
-			if (/fury/i.test(res.name)) { const r = rageRow(); if (r) { rows.push(r); rageShown = true; } }
+			// A state sits under the dice it rolls (Rage under Fury Dice).
+			for (const x of states) if (!shown.has(x.key) && diceFor(x.condition).includes(res.name)) { rows.push(stateRow(x)); shown.add(x.key); }
 			continue;
 		}
 		if (res.max === undefined) { rows.push({ kind: 'charges', key, label: res.name, res, value: res.current, tip, rules }); continue; }
 		if (res.max > 10 || /LVL/i.test(res.formula ?? '')) {
-			rows.push({ kind: 'number', key, label: res.name, res, value: res.current, max: res.max, spend: /lay on hands/i.test(res.name) ? 'Heal' : 'Spend', tip, rules });
+			rows.push({ kind: 'number', key, label: res.name, res, value: res.current, max: res.max, spend: res.spend ?? (/lay on hands/i.test(res.name) ? 'Heal' : 'Spend'), tip, rules });
 			continue;
 		}
 		rows.push({ kind: 'uses', key, label: res.name, res, left: res.current, max: res.max, tip, rules });
 	}
-	if (!rageShown) {
-		const r = rageRow();
-		const lead = rows.filter(x => x.kind === 'target' || x.kind === 'pool').length;
-		if (r) rows.splice(lead, 0, r);
-	}
+	const lead = rows.filter(x => x.kind === 'target' || x.kind === 'pool').length;
+	rows.splice(lead, 0, ...states.filter(x => !shown.has(x.key)).map(stateRow));
 	return rows;
 }

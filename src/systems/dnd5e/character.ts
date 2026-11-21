@@ -115,6 +115,9 @@ const same = (a: string, b: string) => key(a) === key(b);
 
 /** "Fighting Style: Archery" → Fighting Style; "Pact of the Tome" → Pact Boon: a class's option (chosen, not had); null for a plain feature. */
 export function optionGroupOf(name: string, features: ClassFeature5e[]): string | null {
+	// One that says which feature it's a choice of (a pack's, yours), whatever it's called.
+	const own = features.find(f => f.name === name)?.group?.trim();
+	if (own && features.some(f => f.name === own || f.name === `${own}s`)) return own;
 	if (/^Pact of the /.test(name) && features.some(f => f.name === 'Pact Boon')) return 'Pact Boon';
 	const m = /^(.+?):\s/.exec(name);
 	if (!m) return null;
