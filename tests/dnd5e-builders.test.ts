@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	ABILITY_SHORT, Action5eDraft, attackText, CREATURE_TYPES, CRS, damageText, fromMonster5e, hpOf, Monster5eDraft, newAction5e, newMonster5e, passivePerception,
-	SIZES, SKILL_ABILITY, toHit, toMonster5e,
+	SIZES, SKILL_ABILITY, starterMonster5e, toHit, toMonster5e,
 } from '../src/systems/dnd5e/builder-model';
 import { fromItem5e, fromSpell5e, Item5eDraft, newItem5e, newSpell5e, Spell5eDraft, toItem5e, toSpell5e } from '../src/systems/dnd5e/builders';
 import { bundledMonsters } from '../src/systems/dnd5e/bestiary';
@@ -31,6 +31,18 @@ const roundTrip = (d: Monster5eDraft) => {
 	return m;
 };
 const product = <A, B>(as: A[], bs: B[]): [A, B][] => as.flatMap(a => bs.map((b): [A, B] => [a, b]));
+
+describe('5e monster starter (New → Monster in a 5e campaign)', () => {
+	it.each(EDITIONS)('is a ```5e block the bestiary reads, named for the note, in the %s wording', (edition) => {
+		const body = starterMonster5e('Reef Lurker', edition);
+		const m = parseStatblock5e(body);
+		expect(m?.name).toBe('Reef Lurker');
+		expect(m?.edition).toBe(edition);
+		expect(m?.actions?.[0]?.desc).toMatch(edition === '2014' ? /Melee Weapon Attack: \+\d+ to hit/ : /Melee Attack Roll: \+\d+/);
+		expect(toStatblockSource5e(m!)).toBe(body);
+		expect(parseStatblock5e(starterMonster5e('  ', edition))?.name).toBe('Monster');
+	});
+});
 
 describe('5e monster builder: the numbers', () => {
 	it('HP is the hit dice average plus Con per die, written the edition\'s way', () => {

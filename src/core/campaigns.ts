@@ -397,7 +397,8 @@ export class CampaignStore extends Events {
 			case 'npc': body = npcNote(name, side, x); break;
 			case 'location': body = locationNote(name, side, x); break;
 			case 'quest': body = questNote(name, side, x); break;
-			case 'monster': body = monsterNote(name); break;
+			// The campaign's game writes the block, so its own bestiary reads the note (a 5e campaign gets a ```5e block).
+			case 'monster': body = monsterNote(name, this.plugin.system(path).monsterStarter?.(name.replace(/[\r\n]+/g, ' ').trim() || 'Monster', this.plugin.edition(path))); break;
 			case 'handout': body = handoutNote(name, side); break;
 			case 'character': body = characterNote(name, { level: c?.level, mine: opts.mine }); break;
 			case 'session': {

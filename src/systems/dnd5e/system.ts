@@ -26,6 +26,7 @@ import { settingsSections5e } from './settings';
 import { ruleTerms } from '../../core/rule-terms';
 import { DND5E_TRACKER_VIEW } from './tracker-view';
 import { drawLocation5e, LOCATION_FIELDS_5E } from './location-card';
+import { starterMonster5e } from './builder-model';
 
 export const dnd5eSystem: GameSystem = {
 	id: 'dnd5e',
@@ -50,6 +51,8 @@ export const dnd5eSystem: GameSystem = {
 		// A place opens on its boxed read-aloud, as 5e adventures key their areas.
 		location: { fields: LOCATION_FIELDS_5E, card: drawLocation5e },
 	},
+	// The builder's defaults under the new name, worded for the campaign's edition.
+	monsterStarter: (name, edition) => `\`\`\`5e\n${starterMonster5e(name, asEdition(edition ?? DEFAULT_EDITION))}\n\`\`\``,
 	conditions: (edition?: string): readonly ConditionDef[] => trackerConditionsFor(edition ?? DEFAULT_EDITION),
 	quickLook(plugin, target) {
 		return openNoteQuickLook(plugin.app, { ...target, system: 'dnd5e' });

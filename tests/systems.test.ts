@@ -84,6 +84,11 @@ describe.each(SHIPPED_SYSTEMS.map(s => [s.id, s] as const))('game system %s', (_
 	it('can open a quick look', () => {
 		expect(typeof system.quickLook).toBe('function');
 	});
+	it.each(editions)('starts a new Monster note with its own stat block, named for the note (edition %s)', (edition) => {
+		// Without it, New → Monster in its campaigns writes a note its bestiary can't read.
+		expect(typeof system.monsterStarter).toBe('function');
+		expect(system.monsterStarter!('Reef Lurker', edition)).toMatch(/^```\S+\nname: Reef Lurker\n[\s\S]*\n```$/);
+	});
 	it('makes characters both ways, if it has character sheets', () => {
 		if (!system.characters) return;
 		expect(typeof system.characters.promptNew).toBe('function');

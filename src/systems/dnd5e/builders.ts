@@ -225,7 +225,7 @@ export function monsterSchema(rt: Dnd5eRuntime): EntitySchema<Monster5eDraft> {
 		},
 		chip: d => ({ text: `CR ${d.cr} · ${xpOfDraft(d).toLocaleString('en-US')} XP`, tone: 'none' }),
 		missing: d => (d.name.trim() ? null : 'Name the monster first.'),
-		output: d => ({ lang: '5e', body: toStatblockSource5e(toMonster5e(d)), name: d.name.trim(), frontmatter: {}, folder: homeFolder(rt.plugin, 'Monsters', 'Bestiary') }),
+		output: d => ({ lang: '5e', body: toStatblockSource5e(toMonster5e(d)), name: d.name.trim(), frontmatter: { nimble: 'monster', cr: d.cr }, folder: homeFolder(rt.plugin, 'Monsters', 'Bestiary') }),
 	};
 }
 

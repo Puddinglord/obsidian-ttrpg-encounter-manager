@@ -8,7 +8,7 @@
 // 3/Day) and legendary actions. Pure: no Obsidian imports.
 
 import type { Draft } from '../../core/builder/schema';
-import { averageRoll } from './parser';
+import { averageRoll, toStatblockSource5e } from './parser';
 import { abilityMod, crValue, formatMod, pbForCr, xpForCr } from './rules';
 import type { Dnd5eEdition } from './editions';
 import { ABILITIES, ABILITY_NAME, AbilityKey, Dnd5eMonster, Feature5e } from './types';
@@ -512,6 +512,11 @@ function readSpellcasting(d: Monster5eDraft, f: Feature5e): boolean {
 	if (back && back.name === f.name && back.desc === f.desc) return true;
 	Object.assign(d, was);
 	return false;
+}
+
+/** The ```5e block's body a new Monster note starts with: what the builder makes from just a name, in the edition's words. */
+export function starterMonster5e(name: string, edition: Dnd5eEdition): string {
+	return toStatblockSource5e(toMonster5e({ ...newMonster5e(edition), name: name.trim() || 'Monster' }));
 }
 
 /** A monster (a block being edited, a template) as a draft. */

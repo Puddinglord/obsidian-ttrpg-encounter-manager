@@ -27,6 +27,7 @@ import { ENCOUNTER_VIEW_TYPE } from './tracker-view';
 import { NPC_FIELDS_NIMBLE } from './npc';
 import { drawNpcNimble } from './npc-card';
 import { drawLocationNimble, LOCATION_FIELDS_NIMBLE } from './location-card';
+import { starterStatblock } from './parser';
 
 export const nimbleSystem: GameSystem = {
 	id: 'nimble',
@@ -106,4 +107,5 @@ export const nimbleSystem: GameSystem = {
 		// The monsters to use at a place, each a reference to its block.
 		location: { fields: LOCATION_FIELDS_NIMBLE, card: drawLocationNimble },
 	},
+	monsterStarter: (name) => starterStatblock(name),
 };
