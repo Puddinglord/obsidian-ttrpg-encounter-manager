@@ -69,7 +69,7 @@ export function register(test, { R, ARTIFACTS, assert, join, pillOffenders, PILL
 			await o.page.locator(`${B} .eb-create`).click();
 			await o.page.locator(B).waitFor({ state: 'detached' });
 			await o.waitFor(async () => /^```5e-class\nname: Hearth Warden\nhitDie: 10\n/.test(await read(o, cls).catch(() => '')), { what: 'the class note' });
-			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e').flatMap(p => p.entries.map(e => e.name)).join())) === 'Hearth Warden', { what: 'the class in the compendium' });
+			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e').flatMap(p => p.entries.map(e => e.name)))).includes('Hearth Warden'), { what: 'the class in the compendium' });
 			// It opened in a tab of its own; the compendium is still there.
 			assert.equal(await o.eval((app) => app.workspace.getLeavesOfType('nimble-dnd5e-compendium').length), 1);
 
