@@ -669,6 +669,23 @@ export function register(test, h) {
 	// -----------------------------------------------------------------------
 	// Characters
 
+	test('entities 5e: New character… in a campaign you run makes a party member, not "You"', async (o) => {
+		const C = 'Campaigns/E5 New Hero';
+		const pc = `${C}/Party/Bryn Ashby.md`;
+		await scenario(o, 'new-hero-gm', [C], async () => {
+			await campaign5e(o, 'E5 New Hero', { edition: '2024', level: 1 });
+			await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+			await fillCharacter(o, {
+				name: 'Bryn Ashby', className: 'Fighter', species: 'Dwarf', background: 'Soldier',
+				skills: ['Perception', 'Survival'], languages: ['Dwarvish', 'Giant'], masteries: ['Greatsword', 'Flail', 'Javelin'],
+			});
+			const fm = await waitFm(o, pc, f => f.class === 'Fighter', 'the fighter\'s note');
+			assert.notEqual(fm.mine, true);
+			await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-hero`, { hasText: 'Bryn Ashby' }).count()) === 1, { what: 'Bryn in the party' });
+			assert.equal(await o.page.locator(`${CP} .campaign-hero-you`).count(), 0, 'no You in a campaign you run');
+		});
+	});
+
 	test('entities 5e: character (2024): Add a hero in the Party section makes a fighter; the sheet in reading view and Live Preview; attacks, uses, HP, rests, a condition, level up; the party, its card and the encounter maths follow', async (o) => {
 		const C = 'Campaigns/E5 Shieldwall';
 		const pc = `${C}/Party/Bryn Ashby.md`;

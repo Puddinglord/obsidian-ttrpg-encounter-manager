@@ -31,7 +31,7 @@ In a player campaign the top of the Campaign panel shows your party instead of t
 
 - **+** next to **Party** adds a party member. It's a short character note in the Party folder, so you can keep notes on the rest of the table's heroes too.
 - Click a hero to open their note. Right-click (or long-press) for **This is my character**, which moves the **You** badge.
-- A hero is any note with `nimble: character` in the campaign. `mine: true` marks yours.
+- A hero is any note with `nimble: character` in the campaign. `mine: true` marks yours. **New character** sets it in a campaign you play in until you have a hero, and never in a campaign you run.
 
 ## Battle notes
 

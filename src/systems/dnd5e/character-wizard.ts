@@ -94,7 +94,7 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 	const lv = (x: Character5eDraft) => x.level ?? 1;
 	return {
 		kind: 'character', noun: 'character', icon: 'user-round',
-		blank: (_p, path) => newCharacter5e(rt.edition(path)),
+		blank: (_p, path) => newCharacter5e(rt.edition(path), { mine: rt.plugin.campaigns.newHeroIsMine((path ? rt.plugin.campaigns.of(path) : undefined) ?? rt.plugin.campaigns.active) }),
 		seed: (seed, _p, path) => {
 			const r = (seed as { request?: NewCharacterRequest } | undefined)?.request;
 			if (!r) return undefined;

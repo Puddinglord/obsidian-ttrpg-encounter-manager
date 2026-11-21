@@ -760,7 +760,8 @@ export default class EmberVaultPlugin extends Plugin {
 	/** New character: the active campaign's system's dialog. */
 	newCharacter(): void {
 		const system = this.system();
-		if (system.characters) system.characters.promptNew(this, { mine: true });
+		// Yours only where that means something: a campaign you play in (until you have one), or no campaign at all.
+		if (system.characters) system.characters.promptNew(this, { mine: this.campaigns.newHeroIsMine() });
 		else new Notice(`${system.name} has no characters yet.`);
 	}
 

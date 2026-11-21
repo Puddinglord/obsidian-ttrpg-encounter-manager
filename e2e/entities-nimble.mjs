@@ -233,6 +233,54 @@ export function register(test, h) {
 		}
 	});
 
+	test('entities nimble: New character… makes your hero only where you play — a party member (no You) in a campaign you run, yours in one you play in', async (o) => {
+		const GM = 'Campaigns/EN New Hero GM';
+		const PL = 'Campaigns/EN New Hero Player';
+		const m = o.page.locator('.modal.nimble-newchar-modal');
+		/** New character… from the command palette: name and class, then Create from Review. */
+		const viaCommand = async (name, title) => {
+			await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+			await m.waitFor();
+			assert.equal(await m.locator('.modal-title').textContent(), title);
+			await m.locator('input.lu-name-input').fill(name);
+			await m.locator('select[data-k="class"]').selectOption('Berserker');
+			await m.locator('.lu-dot', { hasText: 'Review' }).click();
+			await o.page.waitForTimeout(450);
+			await m.locator('.lu-next', { hasText: 'Create' }).click();
+			await m.waitFor({ state: 'detached' });
+		};
+		await resetEncounter(o);
+		try {
+			// A campaign you run: a party member, never "You".
+			await campaign(o, 'EN New Hero GM');
+			await viaCommand('Odo Brask', 'New party member');
+			const odo = `${GM}/Party/Odo Brask.md`;
+			const fm = await waitFmAt(o, odo, f => f.class === 'Berserker', 'Odo in the Party folder');
+			assert.notEqual(fm.mine, true);
+			await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-hero`, { hasText: 'Odo Brask' }).count()) === 1, { what: 'Odo in the roster' });
+			assert.equal(await o.page.locator(`${CP} .campaign-hero.is-mine, ${CP} .campaign-hero-you`).count(), 0, 'no You in a campaign you run');
+
+			// A campaign you play in, with no hero of yours yet: this one is yours.
+			await o.eval(async (app, plugin, PL) => {
+				const old = app.vault.getAbstractFileByPath(PL);
+				if (old) await app.vault.delete(old, true);
+				await plugin.campaigns.createCampaign({ name: 'EN New Hero Player', level: 1, heroes: 4, starter: true, role: 'player' });
+				await plugin.campaigns.setActive(PL);
+				await plugin.openCampaignView();
+			}, PL);
+			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.playerView())) === true, { what: 'the player campaign active' });
+			await viaCommand('Wren Ashby', 'New character');
+			const wren = `${PL}/Party/Wren Ashby.md`;
+			assert.equal((await waitFmAt(o, wren, f => f.class === 'Berserker', 'Wren in the Party folder')).mine, true);
+			await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-hero.is-mine .campaign-hero-you`).count()) === 1, { what: 'Wren marked You' });
+			// A second one there is another party member: the You badge stays with Wren.
+			await viaCommand('Pell Arno', 'New party member');
+			assert.notEqual((await waitFmAt(o, `${PL}/Party/Pell Arno.md`, f => f.class === 'Berserker', 'Pell in the Party folder')).mine, true);
+		} finally {
+			await done(o, [GM, PL]);
+		}
+	});
+
 	// -------------------------------------------------------------------------
 	// NPCs
 

@@ -18,7 +18,8 @@ A Nimble character is an ordinary note. Its properties hold the numbers, a ```` 
 
 Choices your class or background gives at level 1 come up too: an Academy Dropout picks a Utility Spell, a Hexbinder starts knowing the Withered and Frenzied Afflictions.
 
-- In a player campaign, the hero you make is marked as yours (`mine: true`) and goes in the Party folder. **+** next to Party makes a party member instead.
+- In a player campaign, the hero you make is marked as yours (`mine: true`) and goes in the Party folder. **+** next to Party makes a party member instead, and so does New character once you have a hero there.
+- In a campaign you run, New character makes a party member: no **You** badge.
 - A **Character** starter in the New note dialog, or any note with `nimble: character` and an empty ```` ```nimble-sheet ```` block, works too. Fill it in from the sheet's pencil.
 
 ## The sheet

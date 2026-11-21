@@ -213,6 +213,16 @@ export class CampaignStore extends Events {
 		return c ? this.characters(c).find(h => h.mine) : undefined;
 	}
 
+	/**
+	 * Is a hero made with New character yours (`mine: true`)? In a campaign you play in, until you have
+	 * one; outside any campaign, where it's your own sheet. Never in a campaign you run: a hero there
+	 * is a party member, and the "You" badge would be wrong.
+	 */
+	newHeroIsMine(c = this.active): boolean {
+		if (!c) return true;
+		return c.role === 'player' && !this.myCharacter(c);
+	}
+
 	/** Flag `path` as your hero in its campaign; any other hero there loses the flag. */
 	async setMine(c: Campaign, path: string): Promise<void> {
 		const write = async (p: string, mine: boolean) => {
