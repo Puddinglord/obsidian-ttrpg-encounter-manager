@@ -64,6 +64,8 @@ export interface RuleEntry {
 	source?: string;
 	page?: number | null;
 	draft?: boolean;
+	/** From a content pack (its name). */
+	pack?: string;
 }
 
 export interface Entry {
@@ -117,8 +119,9 @@ export function baseCreatureName(name: string): string {
 	return name.replace(/\s+\((?:GM Guide|lvl [^)]*)\)$/i, '').trim();
 }
 
-/** Which book a monster is from (or "Your note"), short and long. */
+/** Which book a monster is from (a content pack's name, or "Your note"), short and long. */
 export function bookOf(e: MonsterIndexEntry): { short: string; long: string } {
+	if (e.pack) return { short: e.pack, long: e.pack };
 	if (!e.bundled) return { short: 'Note', long: 'Your note' };
 	const gmg = e.monster.source?.startsWith('GM');
 	return gmg ? { short: 'GMG', long: e.monster.source ?? 'GM Guide' } : { short: 'M&M', long: e.monster.source ?? 'Monsters & More' };
@@ -137,6 +140,11 @@ function dice(text: string | undefined): string[] {
 	return [...new Set([...text.matchAll(DIE_RE)].map(m => `d${m[1]}`))];
 }
 
+/** A monster's compendium entry id: the books' by their id, a pack's by its name, a note's by its file. */
+export function monsterEntryId(e: MonsterIndexEntry): string {
+	return `monster:${e.monster.bundledId || (e.pack && !e.filePath ? `pack:${e.name.toLowerCase()}` : `vault:${e.filePath}#${e.name}`)}`;
+}
+
 function monsterEntry(e: MonsterIndexEntry, lore: boolean): Entry {
 	const m = e.monster;
 	const role = monsterRole(m);
@@ -151,7 +159,7 @@ function monsterEntry(e: MonsterIndexEntry, lore: boolean): Entry {
 		source: [book.short, book.long.replace(/\s*p\.?\s*\d+$/, '')],
 	};
 	const nums: Record<string, number> = {};
-	const flags: string[] = [book.short === 'Note' ? 'mine' : 'bundled'];
+	const flags: string[] = [e.pack ? 'pack' : book.short === 'Note' ? 'mine' : 'bundled'];
 	if (!lore) {
 		facets.role = [role === 'legendary' ? (m.roleLabel || 'Legendary') : role[0].toUpperCase() + role.slice(1)];
 		if (role === 'legendary' && m.roleLabel && m.roleLabel !== 'Legendary') facets.role.push('Legendary');
@@ -179,7 +187,7 @@ function monsterEntry(e: MonsterIndexEntry, lore: boolean): Entry {
 			role !== 'minion' ? (m.hpPerHero ? `${m.hpPerHero} HP/hero` : m.hp ? `${m.hp} HP` : '') : '',
 			m.armor !== 'none' ? (m.armor === 'medium' ? 'Armor M' : 'Armor H') : ''].filter(Boolean).join(' · ');
 	return {
-		id: `monster:${e.monster.bundledId || `vault:${e.filePath}#${e.name}`}`,
+		id: monsterEntryId(e),
 		kind: 'monster',
 		segments: isCompanionMonster(e) ? ['companions'] : ['adversaries'],
 		name: lore ? baseCreatureName(e.name) : e.name,
@@ -237,10 +245,12 @@ function isCompanionHit(h: CompendiumHit): boolean {
 }
 
 function hitEntry(h: CompendiumHit, seen: Map<string, number>): Entry {
-	const facets: Record<string, string[]> = { kind: [ENTRY_KIND_LABEL[h.kind]], source: h.source ? [h.source] : [] };
+	const facets: Record<string, string[]> = { kind: [ENTRY_KIND_LABEL[h.kind]], source: h.pack ? [h.pack] : h.source ? [h.source] : [] };
 	const nums: Record<string, number> = {};
 	const flags: string[] = [];
 	if (h.draft) flags.push('draft');
+	// A content pack's entry says which pack.
+	if (h.pack) flags.push('pack');
 	let badge: string | undefined;
 	let segments: Segment[] = [];
 	const extra: string[] = [];
@@ -397,7 +407,9 @@ export function ruleEntries(comp: Compendium | undefined): RuleEntry[] {
 		if (s(r.startingGold)) out.push({ name: 'Starting Gold', topic: 'Equipment', ...src, text: s(r.startingGold) });
 		for (const e of list(r.equipmentRules)) if (s(e.name)) out.push({ name: s(e.name), text: s(e.text), topic: 'Equipment', ...src });
 		for (const e of list(r.magicRules)) if (s(e.name)) out.push({ name: s(e.name), text: s(e.text), topic: 'Magic', ...src });
-		for (const p of comp.properties) if (p.text) out.push({ name: p.name, text: p.text, topic: 'Weapon properties', source: p.source, page: p.page, draft: p.draft });
+		// Rules a content pack adds, under the topic it gives them.
+		for (const e of list(r.packRules)) if (s(e.name)) out.push({ name: s(e.name), text: s(e.text), topic: s(e.topic) || 'Rules', source: s(e.pack), page: typeof e.page === 'number' ? e.page : undefined, pack: s(e.pack) });
+		for (const p of comp.properties) if (p.text) out.push({ name: p.name, text: p.text, topic: 'Weapon properties', source: p.source, page: p.page, draft: p.draft, ...(p.pack ? { pack: p.pack } : {}) });
 	}
 	return [...out, ...COMPANION_RULES];
 }
@@ -412,7 +424,7 @@ function ruleEntry(r: RuleEntry): Entry {
 		detail: [r.topic, r.source].filter(Boolean).join(' · '),
 		facets: { kind: ['Rule'], topic: [r.topic], source: r.source ? [r.source] : [] },
 		nums: {},
-		flags: r.draft ? ['draft'] : [],
+		flags: [...(r.draft ? ['draft'] : []), ...(r.pack ? ['pack'] : [])],
 		text: `${r.topic} ${r.text}`.toLowerCase(),
 		rule: r,
 	};

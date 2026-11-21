@@ -41,7 +41,7 @@ export function nimbleRuleTerms(comp: Compendium | undefined, conditions: readon
 			add({ id: ruleId(r.topic, r.name), name, names: m ? [m[2]] : [], tag: 'Stat', text: r.text, prose: true });
 		} else if (r.topic === 'Skills') {
 			add({ id: ruleId(r.topic, r.name), name: r.name, tag: 'Skill', text: r.text });
-		} else if (r.topic === 'Magic' || r.topic === 'Equipment') {
+		} else if (r.topic === 'Magic' || r.topic === 'Equipment' || (r.pack && r.topic !== 'Weapon properties')) {
 			add({ id: ruleId(r.topic, r.name), name: r.name, names: ALIASES[r.name], tag: 'Rule', text: r.text, prose: PROSE.has(r.name) });
 		}
 	}

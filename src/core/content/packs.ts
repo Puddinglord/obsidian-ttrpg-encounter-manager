@@ -109,8 +109,16 @@ export function packsEnabled(setting: unknown, packs: LoadedPack[]): LoadedPack[
 	return packs.filter(p => names.includes(p.name.toLowerCase()) || names.includes(p.path.replace(/^.*\//, '').replace(/\.json$/i, '').toLowerCase()));
 }
 
+/** "class" → "classes", "ancestry" → "ancestries", "species" → "species". */
+export function kindPlural(kind: string): string {
+	if (/^(?:species|equipment)$/i.test(kind)) return kind;
+	if (/(?:s|x|ch|sh)$/i.test(kind)) return `${kind}es`;
+	if (/[^aeiou]y$/i.test(kind)) return `${kind.slice(0, -1)}ies`;
+	return `${kind}s`;
+}
+
 /** A one-line summary: "12 entries: 5 spells, 4 monsters, 3 subclasses". */
-export function packSummary(p: LoadedPack, plural: (kind: string, n: number) => string = (k, n) => `${n} ${k}${n === 1 ? '' : 's'}`): string {
+export function packSummary(p: LoadedPack, plural: (kind: string, n: number) => string = (k, n) => `${n} ${n === 1 ? k : kindPlural(k)}`): string {
 	if (p.error) return p.error;
 	const counts = new Map<string, number>();
 	for (const e of p.entries) counts.set(e.kind, (counts.get(e.kind) ?? 0) + 1);

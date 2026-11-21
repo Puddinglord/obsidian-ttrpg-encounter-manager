@@ -16,7 +16,7 @@
 import { Component, MarkdownRenderer, setIcon, TFile } from 'obsidian';
 import { copyReference as copyRef, insertReference as insertRef } from '../../core/compendium/refs';
 import type EmberVaultPlugin from '../../../main';
-import { bundledCompendium } from './compendium-data';
+import { bundledCompendium, contentVersion } from './compendium-data';
 import { artKey, buildEntries, Entry, entryPills, entrySnippet, Segment, SEGMENTS, bookOf, baseCreatureName } from './compendium-entries';
 import { renderArtSlot, renderBadgeArt } from './compendium-art';
 import { NIMBLE_QUERY, valueMatches } from './compendium-query';
@@ -43,7 +43,7 @@ export function invalidateCompendium(): void { cache = null; }
 export function compendiumEntries(plugin: EmberVaultPlugin, lore = plugin.hideStats()): Entry[] {
 	const noted = lore ? new Set(nimble().creatureNotes().keys()) : new Set<string>();
 	const conditions = nimble().getAllConditions();
-	const key = [lore, nimble().index.size, plugin.campaigns.npcs.length, conditions.length, plugin.settings.compendiumDrafts, [...noted].sort().join('|')].join('#');
+	const key = [lore, nimble().index.size, plugin.campaigns.npcs.length, conditions.length, plugin.settings.compendiumDrafts, contentVersion(), plugin.campaigns.active?.folder ?? '', [...noted].sort().join('|')].join('#');
 	if (cache?.key === key) return cache.entries;
 	const campaignNames = new Map(plugin.campaigns.campaigns.map(c => [c.folder, c.name]));
 	const entries = buildEntries({
@@ -235,9 +235,14 @@ export function nimbleSource(plugin: EmberVaultPlugin): CompendiumSource<Entry, 
 		maxPills: e => (e.monster ? 4 : 5),
 		snippet: (e, lore) => entrySnippet(e, lore),
 		tags(e, tags) {
-			if (!e.monster) return;
+			// A content pack's entry names its pack, as 5e's do.
+			const pack = e.monster?.pack ?? e.hit?.pack ?? e.rule?.pack;
+			if (!e.monster) { if (pack) tags.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-pack', text: pack }); return; }
 			const books = [...new Set((e.printings ?? [e.monster]).map(x => bookOf(x).short))];
-			for (const b of books) tags.createSpan({ cls: `nimble-cmpx-pill-tag bestiary-tag is-source is-${b === 'Note' ? 'note' : b === 'GMG' ? 'gmg' : 'mm'}`, text: b });
+			for (const b of books) {
+				const from = (e.printings ?? [e.monster]).find(x => bookOf(x).short === b);
+				tags.createSpan({ cls: `nimble-cmpx-pill-tag bestiary-tag is-source is-${from?.pack ? 'pack' : b === 'Note' ? 'note' : b === 'GMG' ? 'gmg' : 'mm'}`, text: b });
+			}
 			if (e.noted) tags.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-noted', text: 'Notes' });
 		},
 		renderDetail(el, e, ctx) {

@@ -11,7 +11,9 @@ import { addEditButton, registerBuilders } from './builder-register';
 import { registerCharacterFeatures } from './character-register';
 import { watchArt } from './compendium-art';
 import { invalidateCompendium } from './compendium-browser';
-import { setCompendiumDrafts, setHomebrew } from './compendium-data';
+import { setCompendiumDrafts, setContentLayer, setHomebrew } from './compendium-data';
+import { contentNimble, hasContent, NimbleContent } from './content';
+import type { MonsterIndexEntry } from './types';
 import { COMPENDIUM_VIEW_TYPE, CompendiumView } from './compendium-view';
 import { registerHomebrewBlocks } from './homebrew-block';
 import { nimbleRefProvider } from './inline-ref';
@@ -75,6 +77,7 @@ export function registerNimble(plugin: EmberVaultPlugin): void {
 	});
 	registerFightBlock(plugin);
 	setCompendiumDrafts(plugin.settings.compendiumDrafts);
+	registerContentPacks(plugin, nb);
 	registerCharacterFeatures(plugin);
 	registerBuilders(plugin);
 	registerHomebrewBlocks(plugin);
@@ -109,6 +112,43 @@ export function registerNimble(plugin: EmberVaultPlugin): void {
 			renameSourceFile(plugin, oldPath, f.path);
 		}));
 	});
+}
+
+/**
+ * Content packs: each campaign's packs (`packs:` on its home note) go on top of the books, a
+ * note still beats them. The compendium (and so New character, Level up, the sheet, references,
+ * Spotlight, slash commands) reads them through compendium-data's layer; the monster index
+ * (the bestiary, `nimble:` references, the encounter builder, Add to fight) through its packs.
+ */
+function registerContentPacks(plugin: EmberVaultPlugin, nb: NimbleRuntime): void {
+	interface Layer { key: string; content: NimbleContent; monsters: Map<string, MonsterIndexEntry> }
+	const none = new Map<string, MonsterIndexEntry>();
+	/** By campaign folder ('' outside any campaign): packs change only when a file or a `packs:` does, which resets it. */
+	const memo = new Map<string, Layer | null>();
+	const forPath = (path?: string): Layer | null => {
+		const camp = (path ? plugin.campaigns.of(path) : undefined) ?? plugin.campaigns.active;
+		const at = camp?.folder ?? '';
+		if (memo.has(at)) return memo.get(at) ?? null;
+		const packs = plugin.content.enabled('nimble', camp?.home.path);
+		const key = packs.map(p => p.path).join('|');
+		// Campaigns using the same packs share one.
+		const same = [...memo.values()].find(l => l?.key === key);
+		const content = same ? same.content : contentNimble(packs.flatMap(p => p.entries.map(e => ({ ...e, pack: p.name }))));
+		const layer = same ?? (packs.length > 0 && hasContent(content)
+			? { key, content, monsters: new Map(content.monsters.map(m => [m.name.toLowerCase(), { name: m.name, filePath: '', monster: m, pack: m.pack }])) }
+			: null);
+		memo.set(at, layer);
+		return layer;
+	};
+	const reset = () => {
+		memo.clear();
+		setContentLayer(forPath);
+		invalidateCompendium();
+		// Re-reads everything that shows monsters (and, through its 'changed', the compendium and references).
+		nb.index.setPacks(from => forPath(from)?.monsters ?? none);
+	};
+	reset();
+	plugin.registerEvent(plugin.content.on('changed', reset));
 }
 
 /** A note moved: the encounters that came from it follow. */

@@ -145,6 +145,8 @@ export interface MonsterIndexEntry {
 	filePath: string;
 	monster: NimbleMonster;
 	bundled?: boolean;
+	/** From a content pack (its name): not in a note, not in the books. */
+	pack?: string;
 }
 
 /** The plugin's settings, with Nimble's fields (core/settings.ts and ./settings.ts). */

@@ -128,11 +128,11 @@ function objectSchema(fields: Record<string, FieldSpec>, extra: Json = {}): Json
 }
 
 /** The JSON Schema for a system's packs. */
-export function packSchema(o: { system: string; title: string; editions?: readonly string[]; kinds: readonly KindSpec[] }): Json {
+export function packSchema(o: { system: string; /** The game as people write it ("Nimble"), when its id isn't. */ name?: string; title: string; editions?: readonly string[]; kinds: readonly KindSpec[] }): Json {
 	return {
 		$schema: 'https://json-schema.org/draft/2020-12/schema',
 		title: o.title,
-		description: `An Ember Vault content pack for ${o.system}. Put the file in your content folder (Ember Vault/Content by default), or use Import content.`,
+		description: `An Ember Vault content pack for ${o.name ?? o.system}. Put the file in your content folder (Ember Vault/Content by default), or use Import content.`,
 		type: 'object',
 		required: ['pack', 'system', 'entries'],
 		properties: {

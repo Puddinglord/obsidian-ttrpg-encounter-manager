@@ -1,3 +1,4 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { SystemRegistry, normalizeSystemId, resolveEdition } from '../src/systems/registry';
 import type { GameSystem } from '../src/systems/contract';
@@ -102,6 +103,19 @@ describe.each(SHIPPED_SYSTEMS.map(s => [s.id, s] as const))('game system %s', (_
 		expect(system.trackerView).toMatch(/^nimble-/);
 		expect(typeof system.campaignState?.take).toBe('function');
 		expect(typeof system.campaignState?.put).toBe('function');
+	});
+	it('takes content packs: each kind named once, each entry with a name, a published schema and an example pack', () => {
+		// Everything a game ships is data, and users can add every kind of it.
+		const kinds = system.content?.kinds ?? [];
+		expect(kinds.length).toBeGreaterThan(0);
+		expect(new Set(kinds.map(k => k.kind)).size).toBe(kinds.length);
+		for (const k of kinds) {
+			expect(k.fields.name?.required, k.kind).toBe(true);
+			expect(k.label && k.description, k.kind).toBeTruthy();
+		}
+		const docs = readdirSync('docs/content');
+		expect(docs.some(f => f.endsWith('.schema.json') && JSON.parse(readFileSync(`docs/content/${f}`, 'utf8')).properties?.system?.const === (system.aliases?.[0] ?? system.id)), 'a schema').toBe(true);
+		expect(readdirSync('docs/content/examples').some(f => [system.id, ...(system.aliases ?? [])].some(n => JSON.parse(readFileSync(`docs/content/examples/${f}`, 'utf8')).system?.toLowerCase() === n.toLowerCase())), 'an example').toBe(true);
 	});
 });
 

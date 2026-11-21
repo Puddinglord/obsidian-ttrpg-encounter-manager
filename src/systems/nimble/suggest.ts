@@ -62,7 +62,7 @@ export class InlineRefSuggest extends EditorSuggest<Entry> {
 	renderSuggestion(e: Entry, el: HTMLElement): void {
 		el.addClass('nimble-suggestion');
 		el.createDiv({ text: e.name, cls: 'nimble-suggestion-name' });
-		const where = e.monster ? (e.monster.bundled ? e.monster.monster.source || 'Bestiary' : e.monster.filePath) : ENTRY_KIND_LABEL[e.kind];
+		const where = e.monster ? (e.monster.pack ?? (e.monster.bundled ? e.monster.monster.source || 'Bestiary' : e.monster.filePath)) : e.hit?.pack ?? ENTRY_KIND_LABEL[e.kind];
 		el.createDiv({ text: [e.detail, where].filter(Boolean).join(' · '), cls: 'nimble-suggestion-note' });
 	}
 

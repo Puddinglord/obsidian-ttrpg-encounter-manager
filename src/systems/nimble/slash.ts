@@ -137,7 +137,7 @@ function searchMonsters(plugin: EmberVaultPlugin, q: string, limit = 30): Monste
 
 function monsterBadge(e: MonsterIndexEntry) {
 	const lvl = formatLevel(e.monster.level);
-	return { text: e.bundled ? (e.monster.source?.startsWith('GM') ? 'GMG' : 'M&M') : 'note', cls: lvl ? '' : 'is-muted' };
+	return { text: e.pack ?? (e.bundled ? (e.monster.source?.startsWith('GM') ? 'GMG' : 'M&M') : 'note'), cls: lvl ? '' : 'is-muted' };
 }
 
 /** /spell fire, /feature lay on hands: the compendium's search, inline; the last row opens the full dialog. */

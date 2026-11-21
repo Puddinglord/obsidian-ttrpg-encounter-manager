@@ -13,9 +13,9 @@ import { RuleTerm, RuleTerms, ruleTerms } from '../../core/rule-terms';
 import { nimbleRuleTerms } from './rule-terms';
 import { BestiaryEntry, bestiaryEntries } from './bestiary';
 import { openAddMonsterPicker } from './compendium-pickers';
-import { baseCreatureName, bookOf } from './compendium-entries';
+import { baseCreatureName, bookOf, monsterEntryId } from './compendium-entries';
 import type { Segment } from './compendium-entries';
-import { bundledCompendium } from './compendium-data';
+import { bundledCompendium, contentVersion, packContent } from './compendium-data';
 import { COMPENDIUM_VIEW_TYPE, CompendiumView } from './compendium-view';
 import { AddSeveralModal } from './count-modal';
 import { notesBody } from './creature-notes';
@@ -60,8 +60,9 @@ export class NimbleRuntime {
 		this.index.setBundled(entries);
 	}
 
+	/** The book's conditions, then the active campaign's content packs', then your own. */
 	getAllConditions(): NimbleCondition[] {
-		return [...NIMBLE_CONDITIONS, ...(this.settings.customConditions || [])];
+		return [...NIMBLE_CONDITIONS, ...(packContent()?.conditions ?? []), ...(this.settings.customConditions || [])];
 	}
 
 	condition(name: string): NimbleCondition | undefined {
@@ -72,7 +73,7 @@ export class NimbleRuntime {
 	terms(): RuleTerms {
 		const comp = this.compendium;
 		const conditions = this.getAllConditions();
-		const key = `${conditions.map(c => `${c.name}\u0000${c.description}`).join('\u0001')}|${comp.all().length}`;
+		const key = `${conditions.map(c => `${c.name}\u0000${c.description}`).join('\u0001')}|${comp.all().length}|${contentVersion()}`;
 		if (this.termCache?.key !== key) this.termCache = { key, list: nimbleRuleTerms(comp, conditions) };
 		return ruleTerms(this.termCache.list);
 	}
@@ -164,7 +165,7 @@ export class NimbleRuntime {
 		if (this.plugin.hideStats(entry.filePath, opts.viewPath)) {
 			// Players can't add monsters to a fight; they can look them up and open their own notes.
 			const out: StatblockAction[] = [];
-			if (entry.bundled && !opts.inBestiary) out.push({ label: 'Compendium', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
+			if ((entry.bundled || entry.pack) && !opts.inBestiary) out.push({ label: 'Compendium', icon: 'book-open', onClick: () => { this.hover.hide(); this.openMonster(entry); } });
 			if (!entry.bundled && entry.filePath) out.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { this.hover.hide(); void this.app.workspace.openLinkText(entry.filePath, '', ev.metaKey || ev.ctrlKey); } });
 			const name = baseCreatureName(entry.name);
 			const noted = !!this.creatureNote(name);
@@ -192,8 +193,8 @@ export class NimbleRuntime {
 				},
 			},
 		];
-		if (entry.bundled) {
-			if (!opts.inBestiary) actions.push({ label: 'Compendium', icon: 'book-open', onClick: () => { this.hover.hide(); void this.openBestiary(entry.monster.bundledId); } });
+		if (entry.bundled || entry.pack) {
+			if (!opts.inBestiary) actions.push({ label: 'Compendium', icon: 'book-open', onClick: () => { this.hover.hide(); this.openMonster(entry); } });
 			actions.push({ label: 'Copy to vault', icon: 'file-plus', onClick: () => { this.hover.hide(); void this.copyMonsterToVault(entry.monster); } });
 		} else if (entry.filePath) {
 			actions.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { this.hover.hide(); void this.app.workspace.openLinkText(entry.filePath, '', ev.metaKey || ev.ctrlKey); } });
@@ -265,9 +266,10 @@ export class NimbleRuntime {
 		return view;
 	}
 
-	/** Open a monster wherever it lives: its note, or the bestiary for bundled ones. */
+	/** Open a monster wherever it lives: its note, or the compendium for the books' and content packs'. */
 	openMonster(entry: MonsterIndexEntry, sourcePath = '', newLeaf = false): void {
-		if (entry.bundled || !entry.filePath) void this.openBestiary(entry.monster.bundledId);
+		if (entry.pack && !entry.filePath) void this.openCompendium().then(view => view?.select(monsterEntryId(entry)));
+		else if (entry.bundled || !entry.filePath) void this.openBestiary(entry.monster.bundledId);
 		else void this.app.workspace.openLinkText(entry.filePath, sourcePath, newLeaf);
 	}
 

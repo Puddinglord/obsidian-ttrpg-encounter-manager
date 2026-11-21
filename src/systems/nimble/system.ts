@@ -13,7 +13,8 @@ import { nimbleEncounterBlock } from './encounter-block';
 import { nimbleSlashCommands } from './slash';
 import { NIMBLE_CONDITIONS } from './types';
 import { readCharacter } from './character-def';
-import { sheetCompendium } from './compendium-data';
+import { packContent, sheetCompendium } from './compendium-data';
+import { KINDS_NIMBLE } from './content';
 import { registerNimble } from './register';
 import { NIMBLE_SETTINGS } from './settings';
 import { nimble } from './runtime';
@@ -34,7 +35,8 @@ export const nimbleSystem: GameSystem = {
 		storeUrl: NIMBLE_STORE_URL,
 		storeLabel: 'nimbleRPG.com',
 	},
-	conditions: () => NIMBLE_CONDITIONS,
+	// The book's, then those the active campaign's content packs add.
+	conditions: () => [...NIMBLE_CONDITIONS, ...(packContent()?.conditions ?? [])],
 	settings: NIMBLE_SETTINGS,
 	settingsSections: nimbleSettingsSections,
 	ruleTerms: () => nimble().terms(),
@@ -58,7 +60,7 @@ export const nimbleSystem: GameSystem = {
 			return f;
 		},
 		partyMember(_plugin, fm, file) {
-			const s = readCharacter(fm, sheetCompendium(), file.basename);
+			const s = readCharacter(fm, sheetCompendium(file.path), file.basename);
 			return { id: `sheet:${file.path}`, name: s.name, level: s.level, maxHp: s.hpMax, defense: s.armor, maxWounds: s.woundsMax, ...(s.className ? { className: s.className } : {}) };
 		},
 	},
@@ -91,6 +93,7 @@ export const nimbleSystem: GameSystem = {
 	slashCommands: nimbleSlashCommands,
 	spotlight: nimbleSpotlight,
 	vocabulary: { defense: 'DEF' },
+	content: { kinds: KINDS_NIMBLE },
 	noteKinds: {
 		// The book's numbers on an NPC: level, the armor letter, HP in a heart, its monster block, Add to fight.
 		npc: { fields: NPC_FIELDS_NIMBLE, card: (el, ctx) => drawNpcNimble(nimble().plugin, el, ctx) },

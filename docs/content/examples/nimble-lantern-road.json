@@ -1,0 +1,200 @@
+{
+  "$schema": "../nimble.schema.json",
+  "pack": "The Lantern Road",
+  "system": "nimble",
+  "version": 1,
+  "description": "An example pack, all original: the Lamplighter class with its own Ember Dice and a subclass, a new Savage Arsenal ability for the Berserker, an ancestry, a background, two spells, a magic item and a monster.",
+  "entries": [
+    {
+      "kind": "class",
+      "name": "Lamplighter",
+      "tagline": "A wandering keeper of small fires, holding back the dark.",
+      "flavor": "Every road has a stretch where the lamps went out. Lamplighters walk those stretches with a lantern, a satchel of wicks and a stubborn little fire that comes when they call.",
+      "complexity": 2,
+      "keyStats": ["WIL", "DEX"],
+      "hitDie": 8,
+      "startingHp": 13,
+      "saves": { "adv": "WIL", "dis": "STR" },
+      "skillMods": { "Insight": 1, "Might": -1 },
+      "armor": "Cloth, Leather",
+      "weapons": "DEX weapons, Staff",
+      "startingGear": ["Staff", "Adventurer's Garb", "Lantern & Oil"],
+      "casting": {
+        "mana": "WIL+LVL",
+        "manaFormula": "WIL+LVL",
+        "manaFromLevel": 2,
+        "schools": ["Fire"],
+        "notes": "You know Fire cantrips and the Lamplighter's own. At level 2 you unlock tier 1 spells and a mana pool to cast them; it recharges on a Safe Rest."
+      },
+      "resources": [
+        {
+          "name": "Ember Dice",
+          "max": "WIL",
+          "die": "d6",
+          "reset": "Safe Rest",
+          "dice": {
+            "rolled": "spent",
+            "addTo": ["attack", "spell"],
+            "use": "one",
+            "damageType": "fire",
+            "byLevel": [{ "level": 1, "die": "d6" }, { "level": 5, "die": "d8" }],
+            "rules": ["Stoke the Flame"]
+          }
+        }
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "features": [
+            { "name": "Stoke the Flame", "text": "You have WIL Ember Dice (d6). When you hit with an attack or a spell, you may expend 1 Ember Die and add it to the damage as fire damage. They come back on a Safe Rest." },
+            { "name": "Lantern Light", "text": "(1/encounter) Action: Your lantern flares. Until the end of your next turn, creatures of your choice within 4 spaces of you can see invisible things." }
+          ]
+        },
+        {
+          "level": 2,
+          "features": [
+            { "name": "Kindlings", "text": "Choose 1 Kindling." },
+            { "name": "Spellfire", "text": "You unlock tier 1 spells and a mana pool to cast them." }
+          ]
+        },
+        {
+          "level": 3,
+          "features": [
+            { "name": "Subclass", "text": "Choose a Lamplighter subclass." },
+            { "name": "Steady Hands", "text": "Advantage on checks to light, carry or shield a flame." }
+          ]
+        },
+        {
+          "level": 4,
+          "features": [
+            { "name": "Key Stat Increase", "text": "+1 WIL or DEX." },
+            { "name": "Kindlings (2)", "text": "Choose a 2nd Kindling." }
+          ]
+        },
+        {
+          "level": 5,
+          "features": [
+            { "name": "Brighter Embers", "text": "Your Ember Dice are now d8s." },
+            { "name": "Tier 2 Spells", "text": "You may now cast spells up to tier 2." }
+          ]
+        }
+      ],
+      "optionGroups": [
+        {
+          "name": "Kindlings",
+          "intro": "Small tricks of the trade, learned on long nights.",
+          "options": [
+            { "name": "Warm Hands", "cost": "Passive", "text": "You and creatures you touch ignore the effects of extreme cold." },
+            { "name": "Smoke Screen", "cost": "1 Action", "text": "(1/encounter) Fill a 2×2 area within 6 spaces with thick smoke until the end of your next turn. It blocks sight." },
+            { "name": "Long Wick", "cost": "Passive", "text": "Your Lantern Light reaches 8 spaces instead of 4." },
+            { "name": "Cinder Step", "cost": "Reaction", "text": "When an enemy moves next to you, move 2 spaces, leaving a trail of embers behind." }
+          ]
+        }
+      ],
+      "sidebars": [
+        { "title": "Ember Dice", "text": "Roll an Ember Die when you spend it, one per attack or spell. Spending one is your choice, after you know you hit." }
+      ]
+    },
+    {
+      "kind": "subclass",
+      "name": "Keeper of the Night Watch",
+      "class": "Lamplighter",
+      "flavor": "Stand between the sleeping town and whatever walks the road at night.",
+      "complexity": 2,
+      "levels": [
+        {
+          "level": 3,
+          "features": [
+            { "name": "Watchful", "text": "You can't be surprised while you're awake, and you wake at the first sound of trouble." },
+            { "name": "Ward the Gate", "text": "Reaction: When a creature within 2 spaces of you is attacked, expend 1 Ember Die and add it to their Armor against that attack." }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "option",
+      "name": "Banked Fire",
+      "class": "Berserker",
+      "group": "Savage Arsenal",
+      "cost": "Passive",
+      "text": "When your Rage ends, keep 1 of your Fury Dice set aside for your next Rage."
+    },
+    {
+      "kind": "ancestry",
+      "name": "Emberkin",
+      "size": "Small",
+      "rarity": "uncommon",
+      "flavor": "Small folk with warm skin and eyes like coals, said to be born beside a hearth that never went out.",
+      "traits": [
+        { "name": "Warm Blooded", "text": "You are resistant to cold damage, and you see in dim light as if it were bright." }
+      ]
+    },
+    {
+      "kind": "background",
+      "name": "Night Watch Veteran",
+      "text": "You walked the walls for years. Advantage on Perception checks to stay awake or keep watch, and you know every guard's favourite excuse."
+    },
+    {
+      "kind": "spell",
+      "name": "Wickflame",
+      "school": "Fire",
+      "tier": 0,
+      "class": "Lamplighter",
+      "actions": "1 Action",
+      "range": "Range 6",
+      "damage": "1d8",
+      "text": "Range: 6. Damage: 1d8 fire. Or a flame you can see within range grows or shrinks to the size you choose, from a candle to a campfire.",
+      "cantripScaling": "+1d8 every 5 levels."
+    },
+    {
+      "kind": "spell",
+      "name": "Lantern Ward",
+      "school": "Radiant",
+      "tier": 1,
+      "class": "Lamplighter",
+      "actions": "2 Actions",
+      "range": "Self",
+      "concentration": "Up to 1 minute",
+      "text": "Your lantern burns white. While you concentrate, enemies within 2 spaces of you have disadvantage on attacks against your allies.",
+      "higherLevels": "+1 space."
+    },
+    {
+      "kind": "item",
+      "name": "Everburning Lantern",
+      "category": "magic",
+      "subcategory": "gear",
+      "rarity": "uncommon",
+      "text": "This brass lantern never needs oil, and wind and rain can't put it out. Once a day, its holder can speak a word to make it shine as bright as day for 1 minute."
+    },
+    {
+      "kind": "monster",
+      "name": "Wick Wraith",
+      "level": "3",
+      "size": "Medium",
+      "type": "Undead",
+      "group": "Lantern Haunts",
+      "habitat": "Old roads",
+      "armor": "none",
+      "hp": 30,
+      "speed": 6,
+      "fly": 6,
+      "saves": "WIL+",
+      "resist": ["necrotic"],
+      "vuln": ["radiant"],
+      "traits": [
+        { "name": "Snuff", "text": "Nonmagical flames within 4 spaces of it go out." }
+      ],
+      "actionsIntro": "Choose 1:",
+      "actions": [
+        { "name": "Cold Grasp", "text": "2d8+3 necrotic." },
+        { "name": "Smoke Breath", "text": "(Cone 3) 1d8+5, DEX save; on a fail, Blinded until the end of its next turn." }
+      ],
+      "bloodied": "It flickers: attacks against it have disadvantage until it's hit again.",
+      "flavor": "What's left of a lamplighter who let their fire go out.",
+      "tactics": {
+        "easier": "Use Cold Grasp on whoever is closest.",
+        "harder": "Open with Smoke Breath on the heroes carrying light."
+      }
+    }
+  ]
+}

@@ -41,7 +41,7 @@ export function registerCharacterFeatures(plugin: EmberVaultPlugin): void {
 			pickFromCompendium(plugin, {
 				kinds: ['item'], title: `Add to ${file.basename}'s inventory`, allowCustom: true,
 				onPick: (hit) => {
-					const it = bundledCompendium().item(hit.name);
+					const it = bundledCompendium(file.path).item(hit.name);
 					void plugin.app.fileManager.processFrontMatter(file, (fm: Frontmatter) => addItem(fm, hit.name, 1, { equip: it?.category === 'shield' }))
 						.then(() => new Notice(`${hit.name} added to ${file.basename}`));
 				},

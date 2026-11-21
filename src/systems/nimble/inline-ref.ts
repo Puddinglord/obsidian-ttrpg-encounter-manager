@@ -42,14 +42,14 @@ export function resolveInlineRef(plugin: EmberVaultPlugin, text: string, sourceP
 	};
 	if (ref.kind === 'condition') return condition(ref.name);
 	if (ref.kind) {
-		const hit = resolveCompendiumRef(bundledCompendium(), ref);
+		const hit = resolveCompendiumRef(bundledCompendium(sourcePath || undefined), ref);
 		return hit ? { kind: 'compendium', target: hit } : undefined;
 	}
 	const entry = nimble().index.get(text, sourcePath || undefined);
 	if (entry) return { kind: 'monster', entry };
 	// Until the vault's monsters are indexed a bare name might still be one; it stays "Indexing…".
 	if (!nimble().index.ready) return undefined;
-	const hit = resolveCompendiumRef(bundledCompendium(), ref);
+	const hit = resolveCompendiumRef(bundledCompendium(sourcePath || undefined), ref);
 	return hit ? { kind: 'compendium', target: hit } : condition(ref.name);
 }
 

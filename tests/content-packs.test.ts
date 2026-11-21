@@ -9,7 +9,7 @@ import { checkEntry, packSchema } from '../src/core/content/spec';
 import { compendium5e, findHit, setContentLayer5e, allHits } from '../src/systems/dnd5e/compendium';
 import { content5e, KINDS_5E } from '../src/systems/dnd5e/content';
 
-const kindsFor: KindsFor = (s) => (s.toLowerCase() === '5e' || s === 'dnd5e' ? { id: 'dnd5e', name: '5e', kinds: KINDS_5E, editions: ['2024', '2014'] } : s === 'nimble' ? 'no-packs' : null);
+const kindsFor: KindsFor = (s) => (s.toLowerCase() === '5e' || s === 'dnd5e' ? { id: 'dnd5e', name: '5e', kinds: KINDS_5E, editions: ['2024', '2014'] } : s === 'daggerheart' ? 'no-packs' : null);
 const pack = (o: Record<string, unknown>) => JSON.stringify({ pack: 'Test', system: '5e', ...o });
 const EXAMPLE = readFileSync('docs/content/examples/5e-hearth-and-cinder.json', 'utf8');
 
@@ -21,7 +21,7 @@ describe('reading a pack', () => {
 		expect(readPack('[]', 'p.json', kindsFor).error).toMatch(/"pack", "system" and "entries"/);
 		expect(readPack('{"pack":"x","entries":[]}', 'p.json', kindsFor).error).toMatch(/which game/);
 		expect(readPack('{"pack":"x","system":"gurps","entries":[]}', 'p.json', kindsFor).error).toMatch(/doesn't know the game "gurps"/);
-		expect(readPack('{"pack":"x","system":"nimble","entries":[]}', 'p.json', kindsFor).error).toMatch(/nimble doesn't take content packs yet/);
+		expect(readPack('{"pack":"x","system":"daggerheart","entries":[]}', 'p.json', kindsFor).error).toMatch(/daggerheart doesn't take content packs yet/);
 		expect(readPack(pack({ edition: '2018', entries: [] }), 'p.json', kindsFor).error).toMatch(/"edition" should be one of: 2024, 2014/);
 		expect(readPack(pack({}), 'p.json', kindsFor).error).toMatch(/no "entries" list/);
 	});

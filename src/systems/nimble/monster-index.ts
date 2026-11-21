@@ -1,6 +1,7 @@
 // Index of every monster: those defined in ```nimble blocks across the vault,
-// plus the Nimble bestiary bundled with the plugin. A vault note with the same
-// name as a bundled monster replaces it (that's how GMs customise one).
+// those in the content packs a campaign uses, and the Nimble bestiary bundled
+// with the plugin. A vault note with the same name as a pack's or a bundled
+// monster replaces it (that's how GMs customise one), and a pack's replaces the book's.
 //
 // Campaigns don't share monsters: a lookup from a note (or, with no note, the
 // active campaign) only sees vault monsters its campaign may see (see `setScope`).
@@ -12,6 +13,8 @@ import { extractNimbleBlocks, parseStatblock } from './parser';
 import { HomebrewItem, HomebrewSpell, ITEM_LANG, parseItemBlock, parseSpellBlock, SPELL_LANG } from './homebrew-def';
 
 interface Parsed { monsters: NimbleMonster[]; spells: HomebrewSpell[]; items: HomebrewItem[] }
+
+const NONE: ReadonlyMap<string, MonsterIndexEntry> = new Map();
 
 export class MonsterIndex extends Events {
 	/** name (lowercase) -> every definition, in discovery order. */
@@ -27,6 +30,8 @@ export class MonsterIndex extends Events {
 
 	/** Can a lookup from `from` (a note path, or none) see the monster defined in `filePath`? */
 	private visible: (filePath: string, from?: string) => boolean = () => true;
+	/** The content packs' monsters a lookup from `from` sees (its campaign's packs), by lowercase name. */
+	private packs: (from?: string) => ReadonlyMap<string, MonsterIndexEntry> = () => NONE;
 
 	constructor(private app: App) {
 		super();
@@ -35,6 +40,12 @@ export class MonsterIndex extends Events {
 	/** Which vault monsters each lookup can see (the plugin keeps campaigns apart with this). */
 	setScope(fn: (filePath: string, from?: string) => boolean): void {
 		this.visible = fn;
+		this.trigger('changed');
+	}
+
+	/** The content packs' monsters each lookup sees (null: none). */
+	setPacks(fn: ((from?: string) => ReadonlyMap<string, MonsterIndexEntry>) | null): void {
+		this.packs = fn ?? (() => NONE);
 		this.trigger('changed');
 	}
 
@@ -79,18 +90,19 @@ export class MonsterIndex extends Events {
 		this.trigger('changed');
 	}
 
-	/** A monster by name, as seen from the note `from` (or the active campaign). */
+	/** A monster by name, as seen from the note `from` (or the active campaign): a note, then a pack, then the books. */
 	get(name: string, from?: string): MonsterIndexEntry | undefined {
 		const key = name.trim().toLowerCase();
-		return this.pick(this.byName.get(key), from) ?? this.bundled.get(key);
+		return this.pick(this.byName.get(key), from) ?? this.packs(from).get(key) ?? this.bundled.get(key);
 	}
 
-	/** Every monster `from` can see: vault notes first-class; bundled ones unless a visible note overrides the name. */
+	/** Every monster `from` can see: vault notes first-class; then packs' and bundled ones unless something closer has the name. */
 	all(from?: string): MonsterIndexEntry[] {
 		const vault = [...this.byName.values()].map(list => this.pick(list, from)).filter((e): e is MonsterIndexEntry => !!e);
 		const shadowed = new Set(vault.map(e => e.name.toLowerCase()));
+		const packs = [...this.packs(from).entries()].filter(([key]) => !shadowed.has(key)).map(([key, e]) => { shadowed.add(key); return e; });
 		const bundled = [...this.bundled.entries()].filter(([key]) => !shadowed.has(key)).map(([, e]) => e);
-		return [...vault, ...bundled].sort((a, b) => a.name.localeCompare(b.name));
+		return [...vault, ...packs, ...bundled].sort((a, b) => a.name.localeCompare(b.name));
 	}
 
 	/** Only monsters written in vault notes (that `from` can see). */
@@ -99,7 +111,8 @@ export class MonsterIndex extends Events {
 	}
 
 	get size(): number {
-		return this.byName.size + [...this.bundled.keys()].filter(k => !this.byName.has(k)).length;
+		const packs = this.packs();
+		return this.byName.size + [...packs.keys()].filter(k => !this.byName.has(k)).length + [...this.bundled.keys()].filter(k => !this.byName.has(k) && !packs.has(k)).length;
 	}
 
 	async update(file: TFile): Promise<void> {

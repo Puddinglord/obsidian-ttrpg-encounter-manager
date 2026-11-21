@@ -34,7 +34,7 @@ export function nimbleSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
 			: {
 				kind: 'monster', iconClass: ['nimble-spot-level', `role-${monsterRole(m)}`], badge: formatLevel(m.level) || '–',
 				title: adding ? `Add ${count} × ${entry.name}` : entry.name,
-				meta: `${describeMonster(entry)}${entry.bundled ? (m.source ? ` · ${m.source}` : '') : ' · your note'}`,
+				meta: `${describeMonster(entry)}${entry.pack ? ` · ${entry.pack}` : entry.bundled ? (m.source ? ` · ${m.source}` : '') : ' · your note'}`,
 				tag: adding ? 'Add to encounter' : 'Adversary',
 			};
 		return {
