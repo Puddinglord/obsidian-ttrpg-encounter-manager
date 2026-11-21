@@ -1495,4 +1495,143 @@ export function register(test, h) {
 			await o.waitFor(async () => /AC\s*13[\s\S]*HP\s*7/.test(await view(o, '.dnd5e-statblock').innerText().catch(() => '')), { what: 'your own block in full' });
 		});
 	});
+
+	// -----------------------------------------------------------------------
+	// Linking it all together
+
+	test('entities 5e: a small adventure, linked: a quest given by an NPC with a mini sheet who lives at a read-aloud place, a fight there, a session with the party; every link both ways; renaming and deleting keep the rest working', async (o) => {
+		const C = 'Campaigns/E5 Saltwick';
+		const P = (p) => `${C}/${p}.md`;
+		const bryn = P('Party/Bryn Ashby'), wren = P('Party/Wren Hale');
+		let marta = P('NPCs/Marta Vey'), stair = P('Locations/The Salt Stair');
+		const bell = P('Quests/The Drowned Bell'), drowned = P('Monsters/Drowned One'), session = P('Sessions/Session 1');
+		const links = (from) => o.eval((app, _p, from) => Object.keys(app.metadataCache.resolvedLinks[from] ?? {}), from);
+		const updateLinks = await o.eval((app) => app.vault.getConfig('alwaysUpdateLinks'));
+		await scenario(o, 'adventure', [C], async () => {
+			// Renames update links, as Obsidian's "Automatically update internal links" does.
+			await o.eval((app) => app.vault.setConfig('alwaysUpdateLinks', true));
+			await campaign5e(o, 'E5 Saltwick', { edition: '2024', level: 2 });
+
+			// The party, from New character (Add a hero), twice.
+			await o.page.locator(`${CP} .campaign-roster-empty`).click();
+			await fillCharacter(o, { name: 'Bryn Ashby', className: 'Fighter', level: 2, skills: ['Perception', 'Survival'], languages: ['Dwarvish', 'Giant'], masteries: ['Greatsword', 'Flail', 'Javelin'] });
+			await o.page.locator(`${CP} .campaign-roster-head [aria-label="Add a hero"]`).click();
+			await fillCharacter(o, { name: 'Wren Hale', className: 'Wizard', level: 2, skills: ['Arcana', 'History'], languages: ['Elvish', 'Draconic'], fillSpells: true });
+			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.party.map(p => p.name).sort().join())) === 'Bryn Ashby,Wren Hale', { what: 'the party from the sheets' });
+
+			// The place, the NPC who lives there (with a stat block), the quest she gives, a monster of our own.
+			await h.openPicker(o, `${C}/Locations`);
+			await h.createFromPicker(o, 'The Salt Stair', 'location');
+			await o.waitFor(() => exists(o, stair), { what: 'the place' });
+			await setFm(o, stair, { region: 'Saltwick harbour', read_aloud: 'Worn steps run down into black water. A bell tolls somewhere below.' });
+			await h.openPicker(o, `${C}/NPCs`);
+			await h.createFromPicker(o, 'Marta Vey');
+			await o.waitFor(() => exists(o, marta), { what: 'the NPC' });
+			await setFm(o, marta, { role: 'Harbour master', location: '[[The Salt Stair]]', statblock: 'Bandit Captain', ac: 16 });
+			await h.openPicker(o, `${C}/Quests`);
+			await h.createFromPicker(o, 'The Drowned Bell');
+			await o.waitFor(() => exists(o, bell), { what: 'the quest' });
+			await setFm(o, bell, { status: 'active', type: 'main', giver: '[[Marta Vey]]', location: '[[The Salt Stair]]', reward: '50 gp' });
+			await h.openPicker(o, `${C}/Monsters`);
+			await h.createFromPicker(o, 'Drowned One');
+			await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.runtime('dnd5e').get('Drowned One', p)?.filePath, drowned)) === drowned, { what: 'our monster indexed' });
+
+			// The fight at the place: SRD monsters and ours, under the place's own text.
+			const placeText = await read(o, stair);
+			await write(o, stair, `${placeText}\n## The fight on the stair\n[[Marta Vey]] watches from the top step.\n\n\`\`\`nimble-encounter\nname: Ambush on the stair\nparty: true\nmonsters:\n- 2 \`5e:Bandit\`\n- [[Drowned One]]\n- Goblin Warrior\n\`\`\`\n`);
+
+			// The session: the party filled in from the sheets, the quest it moved, a recap that names her.
+			await h.openPicker(o, `${C}/Sessions`);
+			await o.page.locator('.nimble-new-note .nimble-name-input').press('Enter');
+			await o.waitFor(() => exists(o, session), { what: 'the session' });
+			const sText = await read(o, session);
+			assert.match(sText, /party: \n {2}- "\[\[Bryn Ashby\]\]"\n {2}- "\[\[Wren Hale\]\]"/);
+			await write(o, session, sText.replace('*What happened, for next time.*', '- Took [[The Drowned Bell]] from [[Marta Vey]] at [[The Salt Stair]].'));
+			await setFm(o, session, { quests: ['[[The Drowned Bell]] advanced'], next: 'Down the stair.' });
+
+			// Both ways, as Obsidian sees them: every note links where it should.
+			await o.waitFor(async () => { const l = await links(bell); return l.includes(marta) && l.includes(stair); }, { what: 'the quest links its giver and place' });
+			await o.waitFor(async () => (await links(marta)).includes(stair), { what: 'the NPC links her place' });
+			await o.waitFor(async () => { const l = await links(session); return [bell, marta, stair, bryn, wren].every(p => l.includes(p)); }, { what: 'the session links the quest, the NPC, the place and the party' });
+			// (Links inside a block, like the fight's [[Drowned One]], are the block's: Obsidian doesn't count them.)
+			await o.waitFor(async () => (await links(stair)).includes(marta), { what: 'the place links her' });
+
+			// The cards say the same: the quest's giver and place, the place's people and read-aloud, the NPC's place, the session's table.
+			await o.openFile(bell, 'preview');
+			const qc = view(o, '.ev-cq.kind-quest');
+			await o.waitFor(async () => /Given by[\s\S]*Marta Vey[\s\S]*Where[\s\S]*The Salt Stair/i.test(await qc.locator('.ev-cq-facts').innerText().catch(() => '')), { what: 'the quest card' });
+			await o.openFile(stair, 'preview');
+			const pc = view(o, '.ev-cq.kind-location');
+			await o.waitFor(async () => /Marta Vey/.test(await pc.locator('.ev-cq-whos').innerText().catch(() => '')), { what: 'who\'s here' });
+			assert.match(await pc.locator('.ev-cq-read').innerText(), /A bell tolls/);
+			// The fight there: rated for the party, our monster found; Run, then the NPC joins from her card.
+			const enc = view(o, '.dnd5e-encounter');
+			await o.waitFor(async () => (await enc.locator('.dnd5e-encounter-xp').count()) === 3, { what: 'three groups rated' });
+			assert.match(await enc.locator('.dnd5e-encounter-party').innerText(), /2 heroes, level 2/);
+			await enc.locator('button', { hasText: 'Run' }).click();
+			await o.waitFor(async () => (await fight(o)).length === 6, { what: 'the monsters and the party in the fight' });
+			await o.openFile(marta, 'preview');
+			const npcCard = view(o, '.nimble-npc-card');
+			await o.waitFor(async () => /Found at[\s\S]*The Salt Stair/i.test(await npcCard.innerText().catch(() => '')), { what: 'Found at' });
+			await o.waitFor(async () => (await npcCard.locator('.dnd5e-npc-ac b').innerText().catch(() => '')) === '16', { what: 'her mini sheet' });
+			await npcCard.locator('button.dnd5e-npc-fight').click();
+			await o.waitFor(async () => (await fight(o)).some(c => c.label === 'Marta Vey' && c.ac === 16), { what: 'Marta in the fight' });
+			assert.deepEqual((await fight(o)).map(c => c.name).sort(), ['Bandit', 'Bandit', 'Bryn Ashby', 'Drowned One', 'Goblin Warrior', 'Marta Vey', 'Wren Hale']);
+			await o.openFile(session, 'preview');
+			const sc = view(o, '.ev-cq.kind-session');
+			await o.waitFor(async () => (await sc.locator('.ev-cq-who').count()) === 2, { what: 'the table on the session card' });
+			assert.match(await sc.locator('.ev-cq-thread').innerText(), /The Drowned Bell\s*Advanced/i);
+			assert.match(await sc.locator('.ev-cq-recap').innerText(), /Took The Drowned Bell from Marta Vey at The Salt Stair/);
+			// The panel: the open quest, and the NPC, place, monster and session in their folders.
+			await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-quest`).count()) === 1, { what: 'the open quest in the panel' });
+			for (const p of [marta, stair, drowned, session, bell]) await crow(o, p).waitFor();
+			await shot(o, 'adventure');
+
+			// Rename the NPC from the panel: the quest's giver, the session's recap and the place's people follow.
+			await crow(o, marta).click({ button: 'right' });
+			await clickMenu(o, 'Rename…');
+			await o.page.locator('.nimble-name-prompt .nimble-name-input').fill('Marta Salt');
+			await o.page.locator('.nimble-name-prompt .nimble-name-input').press('Enter');
+			marta = P('NPCs/Marta Salt');
+			await o.waitFor(() => exists(o, marta), { what: 'the NPC renamed' });
+			await waitFm(o, bell, f => f.giver === '[[Marta Salt]]', 'the quest\'s giver updated');
+			await o.waitFor(async () => /\[\[Marta Salt\]\]/.test(await read(o, session)), { what: 'the session\'s recap updated' });
+			await o.openFile(stair, 'preview');
+			await o.waitFor(async () => /Marta Salt/.test(await view(o, '.ev-cq.kind-location .ev-cq-whos').innerText().catch(() => '')), { what: 'who\'s here, renamed' });
+			await o.openFile(bell, 'preview');
+			await o.waitFor(async () => /Marta Salt/.test(await view(o, '.ev-cq.kind-quest .ev-cq-facts').innerText().catch(() => '')), { what: 'the quest card, renamed' });
+			// Her card still has her stats, now under her new name.
+			await o.openFile(marta, 'preview');
+			await o.waitFor(async () => (await view(o, '.nimble-npc-card .dnd5e-npc-ac b').innerText().catch(() => '')) === '16', { what: 'her mini sheet after the rename' });
+
+			// Rename the place: the NPC's location, the quest's place and the session follow.
+			await crow(o, stair).click({ button: 'right' });
+			await clickMenu(o, 'Rename…');
+			await o.page.locator('.nimble-name-prompt .nimble-name-input').fill('The Salt Steps');
+			await o.page.locator('.nimble-name-prompt .nimble-name-input').press('Enter');
+			stair = P('Locations/The Salt Steps');
+			await o.waitFor(() => exists(o, stair), { what: 'the place renamed' });
+			await waitFm(o, marta, f => f.location === '[[The Salt Steps]]', 'the NPC\'s location updated');
+			await waitFm(o, bell, f => f.location === '[[The Salt Steps]]', 'the quest\'s place updated');
+			await o.openFile(stair, 'preview');
+			await o.waitFor(async () => /Marta Salt/.test(await view(o, '.ev-cq.kind-location .ev-cq-whos').innerText().catch(() => '')), { what: 'who\'s here at the renamed place' });
+			// The fight block inside it still finds its monsters.
+			await o.waitFor(async () => (await view(o, '.dnd5e-encounter .dnd5e-encounter-xp').count()) === 3 && (await view(o, '.dnd5e-encounter-missing').count()) === 0, { what: 'the fight still resolves' });
+
+			// Delete the quest: the session's card still draws, naming it; the panel has no open quests.
+			await crow(o, bell).click({ button: 'right' });
+			await clickMenu(o, 'Delete');
+			await o.page.locator('.modal-container button', { hasText: exact('Delete') }).click();
+			await o.waitFor(async () => !(await exists(o, bell)), { what: 'the quest deleted' });
+			await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-quest`).count()) === 0, { what: 'no open quests' });
+			await o.openFile(session, 'preview');
+			await o.waitFor(async () => /The Drowned Bell/.test(await view(o, '.ev-cq.kind-session .ev-cq-thread').innerText().catch(() => '')), { what: 'the session card without the quest note' });
+			// Delete the NPC: the place's card draws with nobody there.
+			await o.eval(async (app, _p, p) => { await app.vault.delete(app.vault.getAbstractFileByPath(p)); }, marta);
+			await o.openFile(stair, 'preview');
+			await o.waitFor(async () => (await view(o, '.ev-cq.kind-location').count()) === 1 && (await view(o, '.ev-cq.kind-location .ev-cq-whos').count()) === 0, { what: 'the place card without her' });
+			assert.match(await view(o, '.ev-cq.kind-location .ev-cq-read').innerText(), /A bell tolls/);
+		});
+		await o.eval((app, _p, v) => app.vault.setConfig('alwaysUpdateLinks', v), updateLinks ?? false);
+	});
 }
