@@ -1,21 +1,26 @@
-// Visual validation: drives every surface of both games (e2e/visual-surfaces.mjs) in one hidden
-// Obsidian, at every width and in both themes, screenshots each, and checks each in the page:
+// Visual validation: drives every surface of both games (e2e/visual-surfaces.mjs) in hidden
+// Obsidians, at several widths and in both themes, screenshots each, and checks each in the page:
 // pills centred on their capitals, text cut off, things wrapping that shouldn't, spilling,
 // overlapping or crushed, and tag labels too faint on their fill (e2e/visual-checks.mjs).
 //
-//   npm run test:visual                    build, then every surface (a while: about a thousand shots)
-//   node e2e/visual.mjs nimble sheet       Nimble's surfaces whose name contains "sheet"
+//   npm run test:visual                    build, then every surface: Nimble in one Obsidian, 5e and the shared
+//                                          surfaces in another, side by side, merged into one report
+//   node e2e/visual.mjs --full             every width (before a release)
+//   node e2e/visual.mjs nimble sheet       Nimble's surfaces whose name contains "sheet" (one Obsidian)
 //   node e2e/visual.mjs 5e tracker,map     several names, comma-separated
 //   node e2e/visual.mjs --widths=320,900 --themes=light --no-phone
+//   node e2e/visual.mjs --serial           every surface in one Obsidian
 //
-// Widths: a note or main-area view at content widths 320, 540, 700 and 900 (and a phone at 390,
-// in Obsidian's mobile emulation); dialogs at those window widths; sidebars at 260, 340 and 420.
+// Widths: a note or main-area view at content widths 320 and 700 (540 and 900 too with --full), and a
+// phone at 390 in Obsidian's mobile emulation; dialogs at those window widths; sidebars at 260 and 420
+// (340 too with --full).
 //
 // Out: e2e/artifacts/visual/<game>/<surface>/<width>-<theme>.png, a copy with the problems
 // outlined (…​.issues.png), report.json, report.md (worst first) and index.html (a gallery).
 // Exits 1 if anything is left after the ignore list below, so it can gate a release.
 
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { createWriteStream, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launchObsidian } from './harness.mjs';
@@ -36,7 +41,11 @@ const words = args.filter(a => !a.startsWith('--'));
 const GAMES = ['nimble', '5e', 'shared'];
 const gameFilter = words.filter(w => GAMES.includes(w));
 const nameFilter = words.filter(w => !GAMES.includes(w)).flatMap(w => w.split(','));
-const WIDTHS = { content: [320, 540, 700, 900], window: [320, 540, 700, 900], sidebar: [260, 340, 420] };
+// The narrowest and a usual width catch nearly everything; --full adds the ones between, for a release.
+const FULL = args.includes('--full');
+const WIDTHS = FULL ? { content: [320, 540, 700, 900], window: [320, 540, 700, 900], sidebar: [260, 340, 420] } : { content: [320, 700], window: [320, 700], sidebar: [260, 420] };
+// Run as one half of a side-by-side run (see below): write what was found to part-<name>.json, not the report.
+const PART = flag('part');
 const onlyWidths = flag('widths')?.split(',').map(Number);
 const THEMES = flag('themes')?.split(',') ?? ['light', 'dark'];
 const PHONE = !args.includes('--no-phone');
@@ -78,6 +87,7 @@ const IGNORE = [
 	// "Next: <a long creature name>" in the 260px tracker: the name ends in …, "Next:" and the button stay whole.
 	{ surface: /\/tracker$/, width: 260, kind: /truncated/, sel: /^span\.ev-pill-text$/, detail: /^button label "Next: /, why: "the next creature's long name at the 260px sidebar" },
 ];
+const IGNORE_LIST = IGNORE.map(r => ({ ...Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)])) }));
 const ignored = (surface, i, width) => IGNORE.find(r => (!r.kind || r.kind.test(i.kind)) && (!r.surface || r.surface.test(surface)) && (!r.sel || r.sel.test(i.sel)) && (!r.detail || r.detail.test(i.detail)) && (!r.width || r.width === width));
 
 // ---------------------------------------------------------------------------
@@ -88,9 +98,38 @@ const stateWanted = (s, full) => !nameFilter.length || nameFilter.some(n => s.na
 if (!surfaces.length) { console.log('No surface matches.'); process.exit(0); }
 // A run of everything starts afresh; a run of some surfaces updates them in the last report and keeps the rest.
 const partial = gameFilter.length || nameFilter.length || onlyWidths || flag('themes') || !PHONE || !DESKTOP;
-const earlier = partial && existsSync(join(OUT, 'report.json')) ? JSON.parse(readFileSync(join(OUT, 'report.json'), 'utf8')) : null;
+const earlier = partial && !PART && existsSync(join(OUT, 'report.json')) ? JSON.parse(readFileSync(join(OUT, 'report.json'), 'utf8')) : null;
 if (!gameFilter.length && !nameFilter.length) rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
+
+// With no game or surface named, the games run side by side: Nimble in one hidden Obsidian, 5e and the shared surfaces in
+// another, each a --part of this script, and this process merges what they found into one report. It prints only
+// problems as they're found, then the summary; each half's full log is part-<name>.log.
+if (!PART && !gameFilter.length && !nameFilter.length && !args.includes('--serial')) {
+	const started = Date.now();
+	const flags = args.filter(a => a.startsWith('--'));
+	const groups = [['nimble'], ['5e', 'shared']];
+	const codes = await Promise.all(groups.map((games, i) => new Promise((done) => setTimeout(() => {
+		const name = games.join('+');
+		const log = createWriteStream(join(OUT, `part-${name}.log`));
+		const child = spawn(process.execPath, [fileURLToPath(import.meta.url), ...games, `--part=${name}`, ...flags], { stdio: ['ignore', 'pipe', 'pipe'] });
+		let buf = '';
+		child.stdout.on('data', (d) => {
+			log.write(d);
+			buf += d;
+			for (let at = buf.indexOf('\n'); at >= 0; at = buf.indexOf('\n')) { const line = buf.slice(0, at); buf = buf.slice(at + 1); if (line.startsWith('  ✗')) console.log(line); }
+		});
+		child.stderr.on('data', (d) => log.write(d));
+		child.on('close', (code) => log.end(() => done(code)));
+	}, i * 1500))));
+	const parts = groups.map(g => { try { return JSON.parse(readFileSync(join(OUT, `part-${g.join('+')}.json`), 'utf8')); } catch { return null; } });
+	const pills = new Map();
+	for (const u of parts.flatMap(p => p?.unknownPills ?? [])) { const a = pills.get(u.sel) ?? { n: 0, where: new Set() }; a.n += u.n; u.where.forEach(w => a.where.add(w)); pills.set(u.sel, a); }
+	const report = writeReport(OUT, { shots: parts.flatMap(p => p?.shots ?? []), errors: parts.flatMap(p => p?.errors ?? []), unknownPills: [...pills].map(([sel, u]) => ({ sel, n: u.n, where: [...u.where] })), ignore: IGNORE_LIST, seconds: Math.round((Date.now() - started) / 1000), pillSelectors: PILL_SELECTORS });
+	const stopped = groups.filter((g, i) => !parts[i] || (codes[i] !== 0 && codes[i] !== 1)).map(g => g.join('+'));
+	console.log(`\n${report.summary}${stopped.length ? `\nStopped early: ${stopped.join(', ')} (see part-<name>.log)` : ''}\nReport: ${join(OUT, 'report.md')}\nGallery: ${join(OUT, 'index.html')}`);
+	process.exit(report.issues || stopped.length || parts.some(p => p?.errors.length) ? 1 : 0);
+}
 
 const o = await launchObsidian({ vaultDir: join(ROOT, 'sample-vault') });
 const { page } = o;
@@ -353,7 +392,15 @@ const pillsSoFar = () => {
 	for (const [sel, u] of unknownPills) { const a = all.get(sel) ?? { n: 0, where: new Set() }; a.n += u.n; u.where.forEach(w => a.where.add(w)); all.set(sel, a); }
 	return [...all].map(([sel, u]) => ({ sel, n: u.n, where: [...u.where] }));
 };
-const flush = () => writeReport(OUT, { shots: merged(r => r.shots), errors: merged(r => r.errors), unknownPills: pillsSoFar(), ignore: IGNORE.map(r => ({ ...Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)])) })), seconds: Math.round((Date.now() - t0) / 1000), pillSelectors: PILL_SELECTORS });
+const flush = () => {
+	const found = { shots: merged(r => r.shots), errors: merged(r => r.errors), unknownPills: pillsSoFar() };
+	if (PART) {
+		writeFileSync(join(OUT, `part-${PART}.json`), JSON.stringify(found));
+		const issues = found.shots.reduce((a, x) => a + x.issues.length, 0);
+		return { issues, summary: `${PART}: ${found.shots.length} screenshots; ${issues} issues; ${found.errors.length} harness errors` };
+	}
+	return writeReport(OUT, { ...found, ignore: IGNORE_LIST, seconds: Math.round((Date.now() - t0) / 1000), pillSelectors: PILL_SELECTORS });
+};
 try {
 	await prepareVault(o, ROOT);
 	// Obsidian's status bar floats over the bottom right of the window; keep it out of the shots.

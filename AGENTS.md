@@ -37,11 +37,18 @@ npm run dev            # watch build
 npm run build          # type-check + production build (main.js)
 npm test               # unit tests (vitest + happy-dom), fast
 npm run lint           # eslint (Obsidian's review rules + layer boundaries) and stylelint
-npm run test:e2e       # build, then drive a real, hidden Obsidian (about 5 minutes)
-node e2e/run.mjs "5e"  # only e2e tests whose name contains "5e"
+npm run test:e2e       # build, then the whole e2e suite in 3 hidden Obsidians side by side (a few minutes)
+node e2e/run.mjs "5e"  # only e2e tests whose name contains "5e" (one Obsidian)
+npm run test:visual    # build, then every surface of both games, screenshotted and checked (see CLAUDE_CODE_GUIDE.md)
 ```
 
-Before calling a change done: `npm test`, `npm run lint`, `npm run build`, and the e2e tests for what you touched. Run the full e2e suite before a commit that touches shared code. The e2e Obsidian runs hidden; don't run it in the foreground (the maintainer works while it runs).
+Test in tiers, so a check costs what the change is worth:
+
+- **While you work:** `npm test`, `npm run lint`, `npm run build`, the e2e tests for what you touched (`node e2e/run.mjs "<name>"`) and the visual check for the surfaces you touched (`node e2e/visual.mjs nimble sheet --themes=light`). After a fix, rerun only what failed.
+- **Once, at the end of a batch of work and before a PR:** the full suites, `npm run test:e2e` and `npm run test:visual`, in the background. Read the summary and the failures, not the whole log.
+- **Before a release:** `node e2e/visual.mjs --full` adds the widths in between.
+
+The e2e Obsidians run hidden; don't run them in the foreground (the maintainer works while they run).
 
 ## Rules that don't bend
 
