@@ -431,7 +431,7 @@ export class Dnd5eTrackerView extends ItemView {
 			damage: (b) => this.openHp(b, c, 'damage'),
 			heal: (b) => this.openHp(b, c, 'heal'),
 			condition: (b) => this.conditionPicker(b, c),
-			sheet: entry || this.partyMember(c) ? { label: entry ? 'Stat block' : 'Character sheet', run: (_b, e) => this.openCombatant(c, entry, e) } : undefined,
+			sheet: entry || this.partyMember(c) ? { label: entry ? 'Stat block' : 'Character sheet', short: entry ? 'Stat block' : 'Sheet', run: (_b, e) => this.openCombatant(c, entry, e) } : undefined,
 		});
 	}
 

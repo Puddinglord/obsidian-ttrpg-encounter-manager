@@ -584,7 +584,7 @@ export class EncounterTrackerView extends ItemView {
 			damage: (b) => this.openHp(b, enc, c, 'damage'),
 			heal: (b) => this.openHp(b, enc, c, 'heal'),
 			condition: (b) => this.showConditionPicker(b, enc, c),
-			sheet: { label: hero ? 'Character sheet' : 'Stat block', run: () => openRecord(this.plugin, { kind: 'combatant', encId: enc.id, creatureId: c.id }) },
+			sheet: { label: hero ? 'Character sheet' : 'Stat block', short: hero ? 'Sheet' : 'Stat block', run: () => openRecord(this.plugin, { kind: 'combatant', encId: enc.id, creatureId: c.id }) },
 		});
 	}
 

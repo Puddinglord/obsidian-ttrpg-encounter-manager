@@ -790,8 +790,29 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 .ev-tracker .ev-card-damage .ev-pill-icon { color: var(--ev-hp, var(--ev-accent-text)); }
 .ev-tracker .ev-card-heal .ev-pill-icon { color: var(--ev-text-2); }
 .ev-tracker .ev-card-tools { flex: none; margin-left: auto; gap: 6px; }
-.ev-tracker .ev-card-icon { width: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--ev-r-md); color: var(--ev-text-2); }
-.ev-tracker .ev-card-icon svg { width: 18px; height: 18px; }
+.ev-tracker .ev-card-icon { width: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--ev-r-md); color: var(--ev-text-2); --ev-pill-icon: 18px; --ev-pill-gap: 6px; }
+.ev-tracker .ev-card-icon.ev-pill:not(#nimble-pill) > .ev-pill-text { display: none; }
+/* A narrow card (a phone, a narrow sidebar): Damage | Heal take the whole row, so both keep their icon and
+   label at 50/50, and Condition and the stat block share the row below, each half and named. The same
+   rule twice: touch screens' taller buttons need the second row sooner. */
+@container (max-width: 339px) {
+	.ev-tracker .ev-card-acts { flex-wrap: wrap; }
+	.ev-tracker .ev-card-acts > :is(.ev-card-pair, .ev-card-tools) { flex: 1 1 100%; margin-left: 0; }
+	.ev-tracker .ev-card-tools { gap: 8px; }
+	.ev-tracker .ev-card-tools > .ev-card-icon { flex: 1 1 0; width: auto; min-width: 0; padding: 0 6px; color: var(--ev-text); font-weight: 500; font-size: 13px; --ev-pill-icon: 16px; --ev-pill-gap: 5px; }
+	.ev-tracker .ev-card-icon .ev-pill-icon { color: var(--ev-text-2); }
+	.ev-tracker .ev-card-icon.ev-pill:not(#nimble-pill) > .ev-pill-text { display: block; overflow: hidden; text-overflow: ellipsis; }
+}
+@media (pointer: coarse) {
+	@container (max-width: 359px) {
+		.ev-tracker .ev-card-acts { flex-wrap: wrap; }
+		.ev-tracker .ev-card-acts > :is(.ev-card-pair, .ev-card-tools) { flex: 1 1 100%; margin-left: 0; }
+		.ev-tracker .ev-card-tools { gap: 8px; }
+		.ev-tracker .ev-card-tools > .ev-card-icon { flex: 1 1 0; width: auto; min-width: 0; padding: 0 6px; color: var(--ev-text); font-weight: 500; font-size: 13px; --ev-pill-icon: 16px; --ev-pill-gap: 5px; }
+		.ev-tracker .ev-card-icon .ev-pill-icon { color: var(--ev-text-2); }
+		.ev-tracker .ev-card-icon.ev-pill:not(#nimble-pill) > .ev-pill-text { display: block; overflow: hidden; text-overflow: ellipsis; }
+	}
+}
 
 /* Sections: Still to act / Acted, with a count; then the list */
 .ev-tracker .ev-sec { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 16px calc(var(--ev-pad) + 4px) 6px; font: 600 13px/18px var(--ev-font-ui); color: var(--ev-text); }
@@ -1030,19 +1051,15 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 .nimble-encounter-tracker .nimble-init-input:placeholder-shown { border-style: dashed; }
 .nimble-encounter-tracker .nimble-card-init { display: flex; align-items: center; gap: 10px; }
 
-/* Narrow sidebars (down to 260px): the row's middle goes, the card's buttons keep one line */
+/* Narrow sidebars (down to 260px): the row's middle goes (the card's buttons take two rows above, at 339px) */
 @container (max-width: 300px) {
 	.nimble-encounter-tracker .nimble-row { grid-template-columns: 20px minmax(0, 1fr) 56px; gap: 8px; padding-right: 10px; }
 	.nimble-encounter-tracker .nimble-row .nimble-row-mid { display: none; }
 	.nimble-encounter-tracker .nimble-init-row { grid-template-columns: 20px minmax(0, 1fr) 48px; }
-	.ev-tracker .ev-card-btn { padding: 0 6px; --ev-pill-gap: 4px; font-size: 13px; }
-	.ev-tracker .ev-card-icon { width: 32px; }
-	.ev-tracker .ev-card-tools { gap: 4px; }
 	.nimble-encounter-tracker .nimble-card-hp-row { flex-wrap: wrap; row-gap: 6px; }
 	.nimble-encounter-tracker .phase-pill { padding: 0 8px 0 10px; font-size: 15px; }
 	.nimble-encounter-tracker .phase-pill-long { display: none; }
 	.nimble-encounter-tracker .phase-pill-short { display: inline; }
-	.ev-tracker .ev-card-btn.ev-pill:not(#nimble-pill) > .ev-pill-icon { display: none; }
 	.nimble-encounter-tracker .nimble-card-meta .meta-sep { display: none; }
 	.nimble-encounter-tracker .nimble-card-meta { gap: 2px 10px; }
 }
@@ -6336,7 +6353,7 @@ body.is-mobile .nimble-entity-builder button.ncb-motif, body.is-tablet .nimble-e
 .dnd5e-tracker .dnd5e-focus.is-dying { border-color: var(--ev-now-line); }
 .dnd5e-tracker .dnd5e-focus-top { display: flex; align-items: flex-start; gap: 10px; }
 .dnd5e-tracker .dnd5e-focus-name { flex: 1; min-width: 0; }
-.dnd5e-tracker .dnd5e-focus-name h2 { margin: 0; font: 600 26px/28px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--ev-accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.dnd5e-tracker .dnd5e-focus-name h2 { margin: 0; font: 600 26px/28px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--ev-accent-text); text-wrap: balance; overflow-wrap: break-word; cursor: pointer; }
 .dnd5e-tracker .dnd5e-focus-name h2:hover { text-decoration: underline; text-underline-offset: 3px; }
 .dnd5e-tracker .dnd5e-focus-type { margin: 1px 0 0; font: italic 400 15px/19px var(--ev-font-display); color: var(--ev-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dnd5e-tracker .dnd5e-focus .dnd5e-combatant-more { flex: none; width: 28px; height: 28px; margin: -2px -6px 0 0; padding: 0; color: var(--ev-text-2); }
@@ -6545,7 +6562,11 @@ body.ev-is-sorting .dnd5e-tracker .dnd5e-row:hover { background: transparent; bo
 
 .dnd5e-member-pop .dnd5e-member-pick { display: block; width: 100%; margin-top: 4px; text-align: left; }
 
-/* Narrow sidebars (down to 260px): the shield shrinks out of the rows, the card keeps one line of buttons */
+/* A narrowish card: the name a size down, so a long one ("Young Red Dragon") still takes one line */
+@container (max-width: 379px) {
+	.dnd5e-tracker .dnd5e-focus-name h2 { font-size: 23px; line-height: 26px; }
+}
+/* Narrow sidebars (down to 260px): the shield shrinks out of the rows, the card's buttons take two rows */
 @container (max-width: 300px) {
 	.dnd5e-tracker .dnd5e-row { grid-template-columns: 20px 22px minmax(0, 1fr) 54px; padding-right: 6px; }
 	.dnd5e-tracker .dnd5e-row > .dnd5e-shield, .dnd5e-tracker .dnd5e-row > .dnd5e-ac-none { display: none; }

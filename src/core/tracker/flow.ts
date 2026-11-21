@@ -73,13 +73,14 @@ export interface CardActionSpec {
 	damage: (anchor: HTMLElement) => void;
 	heal: (anchor: HTMLElement) => void;
 	condition: (anchor: HTMLElement) => void;
-	/** The stat block (monsters) or the character sheet (heroes). */
-	sheet?: { label: string; run: (anchor: HTMLElement, e: MouseEvent) => void };
+	/** The stat block (monsters) or the character sheet (heroes); `short` names it beside its icon on a narrow card. */
+	sheet?: { label: string; short?: string; run: (anchor: HTMLElement, e: MouseEvent) => void };
 	/** Extra icon buttons after these (a game's own). */
-	extra?: { icon: string; label: string; cls?: string; run: (anchor: HTMLElement) => void }[];
+	extra?: { icon: string; label: string; short?: string; cls?: string; run: (anchor: HTMLElement) => void }[];
 }
 
-/** The card's buttons: Damage | Heal joined and equal, then Condition and the stat block at the right edge. */
+/** The card's buttons: Damage | Heal joined and equal, then Condition and the stat block at the right edge.
+ *  On a narrow card (styles.css) the pair takes the whole row and the others share a row below, each named. */
 export function cardActions(parent: HTMLElement, a: CardActionSpec): HTMLElement {
 	const row = clusters(parent, 'ev-card-acts');
 	const pair = cluster(row, { joined: true, fill: true, cls: 'ev-card-pair', label: 'HP' });
@@ -88,16 +89,16 @@ export function cardActions(parent: HTMLElement, a: CardActionSpec): HTMLElement
 	const heal = pill(pair, { tag: 'button', icon: evIcon('first-aid'), text: 'Heal', cls: 'ev-card-btn ev-card-heal' });
 	heal.addEventListener('click', () => a.heal(heal));
 	const side = cluster(row, { cls: 'ev-card-tools' });
-	const iconBtn = (icon: string, label: string, cls: string, run: (b: HTMLElement, e: MouseEvent) => void) => {
-		const b = side.createEl('button', { cls: `ev-card-icon ${cls}`, attr: { 'aria-label': label } });
-		setIcon(b, icon);
+	// An icon, with its name beside it only when the card is narrow and these get a row of their own.
+	const iconBtn = (icon: string, label: string, text: string, cls: string, run: (b: HTMLElement, e: MouseEvent) => void) => {
+		const b = pill(side, { tag: 'button', icon, text, cls: `ev-card-icon ${cls}`, attr: { 'aria-label': label } });
 		setTooltip(b, label, { delay: 350 });
 		b.addEventListener('click', (e) => run(b, e));
 		return b;
 	};
-	iconBtn(evIcon('tag-bold'), 'Add a condition', 'ev-card-condition add-condition-btn', (b) => a.condition(b));
-	if (a.sheet) { const s = a.sheet; iconBtn(evIcon('book-bold'), s.label, 'ev-card-sheet', (b, e) => s.run(b, e)); }
-	for (const x of a.extra ?? []) iconBtn(x.icon, x.label, x.cls ?? '', (b) => x.run(b));
+	iconBtn(evIcon('tag-bold'), 'Add a condition', 'Condition', 'ev-card-condition add-condition-btn', (b) => a.condition(b));
+	if (a.sheet) { const s = a.sheet; iconBtn(evIcon('book-bold'), s.label, s.short ?? s.label, 'ev-card-sheet', (b, e) => s.run(b, e)); }
+	for (const x of a.extra ?? []) iconBtn(x.icon, x.label, x.short ?? x.label, x.cls ?? '', (b) => x.run(b));
 	return row;
 }
 
