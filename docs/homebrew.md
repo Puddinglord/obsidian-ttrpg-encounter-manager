@@ -4,6 +4,12 @@ Everything a game ships, you can add yourself: classes, subclasses, a class's op
 
 Your content lives in the [compendium](compendium.md), not beside your campaign notes. Each entry is a note in your content folder holding one block, written in a few lines of `field: value`.
 
+## Ways in
+
+- **Make it here:** press **+** in the compendium (below), or use the [builder](builder.md) for monsters, spells and items.
+- **A content pack:** a JSON file of entries, added with **Import content…**. See [Content packs](content-packs.md).
+- **A D&D Beyond character (5e):** importing one brings its class, subclass, species, background, feats, spells and items into the compendium, tagged **Imported**. See [Importing](import.md#what-it-brings-into-your-compendium).
+
 ## Make something
 
 1. Open the compendium (the book in the ribbon, or **Open compendium**) and go to the tab it belongs on: Classes, Feats, Origins…
@@ -274,6 +280,7 @@ A class's own words do most of the work, the way the books' do ("Choose 1 Kindli
 ## In the compendium
 
 - Everything you make is tagged **Homebrew**. `source:Homebrew` or `is:homebrew` finds it all, and its page has **Open note**.
+- What a D&D Beyond character brought in is tagged **Imported** (`is:imported`). It's a note like any other: change it and the change sticks.
 - A name you reuse replaces what was there: your note beats a pack, and a pack beats the books.
 - A campaign's `packs:` property can leave your homebrew out: it counts as a pack called Homebrew (`packs: [Hearth and Cinder, Homebrew]`). See [Pick packs per campaign](content-packs.md#pick-packs-per-campaign).
 - If your content folder is inside a campaign's folder, what's in it is that campaign's alone.

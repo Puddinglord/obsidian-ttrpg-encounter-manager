@@ -1044,6 +1044,21 @@ const features = {
 		css: '.nimble-import-content textarea.nimble-import-text { height: 6.5em !important; }',
 		show: () => ['.modal.nimble-import-content'],
 	},
+	// Importing a D&D Beyond character: what it brings into the compendium (a made-up class, tests/fixtures).
+	'guide-ddb-import': {
+		viewport: [1000, 1100], ratio: 0.72, snapText: true, bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const json = readFileSync(join(ROOT, 'tests/fixtures/ddb-hollowblade.json'), 'utf8');
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+			await page.locator('.modal.dnd5e-import textarea').fill(json);
+			await page.locator('.modal.dnd5e-import .dnd5e-ddb-content').waitFor();
+			await page.locator('.modal.dnd5e-import textarea').evaluate(t => { t.scrollTop = 0; });
+			await page.waitForTimeout(500);
+		},
+		css: '.modal.dnd5e-import .dnd5e-ddb-list { max-height: none !important; } .modal.dnd5e-import { max-height: none !important; }',
+		show: () => ['.modal.dnd5e-import'],
+	},
 	'feature-homebrew': {
 		lineWidth: 500,
 		setup: async () => {
