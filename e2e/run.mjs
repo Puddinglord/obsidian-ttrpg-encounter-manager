@@ -7150,7 +7150,7 @@ test('content packs: Import content takes a Nimble pack and says what it left ou
 	}
 });
 
-test('content blocks: a 5e class typed in the content folder is its card, in the compendium as Homebrew, and makes a hero; New on Feats writes a starter note', async (o) => {
+test('content blocks: a 5e class typed in the content folder is its card, in the compendium as Homebrew, and makes a hero; New on Feats builds a feat', async (o) => {
 	const C = 'Campaigns/Block Coast';
 	const F = 'Ember Vault/Content';
 	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
@@ -7203,21 +7203,23 @@ test('content blocks: a 5e class typed in the content folder is its card, in the
 		assert.ok(await o.page.locator(`${V} .nimble-cmpx-detail .statblock-action`, { hasText: 'Open note' }).count(), 'Open note on its page');
 		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-compendium-5e.png') });
 
-		// New on the Feats tab: a name, then a note with a starter block in the content folder, opened.
+		// New on the Feats tab opens the feat builder; Create writes the block to the content folder and opens it.
 		await input.fill('');
 		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Feats' }).click();
 		assert.equal(await o.page.locator(`${V} .nimble-cmpx-new`).getAttribute('aria-label'), 'New feat');
 		await o.page.locator(`${V} .nimble-cmpx-new`).click();
-		const prompt = o.page.locator('.modal.nimble-name-prompt');
-		await prompt.waitFor();
-		assert.match(await prompt.innerText(), new RegExp(`${F}/5e/Feats`));
-		await prompt.locator('input').fill('Kindler');
-		await prompt.locator('input').press('Enter');
+		const FB = '.modal.nimble-entity-builder';
+		await o.page.locator(FB).waitFor();
+		assert.equal(await o.page.locator(`${FB} .eb-kind.is-active`).innerText(), 'Feat');
+		await o.page.locator(`${FB} .eb-panel.is-active input[data-field="Name"]`).fill('Kindler');
+		await o.page.locator(`${FB} .eb-dot`, { hasText: 'Benefit' }).click();
+		await o.page.locator(`${FB} .eb-panel.is-active textarea[data-field="Text"]`).fill('You light fires with a word.');
+		await o.page.locator(`${FB} .eb-next`).click();
+		await o.page.locator(FB).waitFor({ state: 'detached' });
 		const feat = `${F}/5e/Feats/Kindler.md`;
-		await o.waitFor(async () => /^```5e-feat\nname: Kindler\ntype: general\nprerequisite: ""\ndesc: ""\n```/.test(await read(o, feat).catch(() => '')), { what: 'the starter note' });
+		await o.waitFor(async () => /^```5e-feat\nname: Kindler\ntype: general\nprerequisite: Level 4\+\ndesc: You light fires with a word\.\n```/.test(await read(o, feat).catch(() => '')), { what: 'the feat\'s note' });
 		await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === feat, { what: 'the new note open' });
-		// Filled in, it joins the compendium.
-		await o.eval(async (app, _p, feat) => { await app.vault.modify(app.vault.getAbstractFileByPath(feat), '```5e-feat\nname: Kindler\ntype: general\ndesc: You light fires with a word.\n```\n'); }, feat);
+		// It joins the compendium.
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e')[0]?.entries.map(e => e.name).join())) === 'Hearth Warden,Kindler', { what: 'the feat indexed' });
 		// Back to the compendium (the note opened in a tab of its own).
 		await o.eval((app) => { const l = app.workspace.getLeavesOfType('nimble-dnd5e-compendium')[0]; if (l) app.workspace.revealLeaf(l); });

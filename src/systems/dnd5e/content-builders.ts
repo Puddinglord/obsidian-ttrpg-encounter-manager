@@ -30,7 +30,6 @@ import { profMark } from './sheet-parts';
 
 type Entry = Record<string, unknown>;
 const LEVELS = Array.from({ length: 20 }, (_, i) => String(i + 1));
-const opts = (xs: readonly string[]) => () => xs.map(x => ({ value: x, label: x }));
 const ord = (n: number) => `${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'}`;
 /** A builder's seed: the block being edited (`entry`), or the edition the compendium shows. */
 interface Seed { entry?: Entry; edition?: Dnd5eEdition }
@@ -231,7 +230,7 @@ export function classSchema(rt: Dnd5eRuntime): EntitySchema<Class5eDraft> {
 						{
 							type: 'choice', key: 'caster', label: 'Spell slots', show: x => !!x.castAbility,
 							options: x => [{ value: 'full', label: 'Full' }, { value: 'half', label: 'Half' }, { value: 'third', label: 'Third' }, { value: 'pact', label: 'Pact' }, ...(x.caster === 'own' ? [{ value: 'own', label: 'As written' }] : [])],
-							hint: x => { const s = slotsAt(x, 20); return s ? `${ord(s.reduce((n, v, i) => (v ? i + 1 : n), 0))}-level slots at 20` : ''; },
+							hint: x => { const s = slotsAt(x, 20); const top = s ? s.reduce((n, v, i) => (v ? i + 1 : n), 0) : 0; return top ? `${x.edition === '2014' ? `${ord(top)}-level` : `Level ${top}`} slots at 20` : ''; },
 						},
 						[
 							{ type: 'choice', key: 'spellList', label: 'Spell list', dropdown: true, show: x => !!x.castAbility && !!x.caster, options: x => [{ value: '', label: x.name.trim() ? `Its own (${x.name.trim()})` : 'Its own' }, ...compendium5e(x.edition).classes.filter(c => c.spellcasting && c.name !== x.name).map(c => ({ value: c.name, label: c.name }))] },
@@ -243,7 +242,7 @@ export function classSchema(rt: Dnd5eRuntime): EntitySchema<Class5eDraft> {
 						{
 							type: 'choice', key: 'spellsLike', label: 'Cantrips and spells like', dropdown: true, show: x => !!x.castAbility && !!x.caster,
 							options: () => [...casters.map(c => ({ value: c, label: c })), { value: '', label: 'Its own numbers' }],
-							hint: x => { const n = spellNumbersAt(x, 20); return `${n.cantrips} cantrips${n.prepared ? ` · ${n.prepared} ${d.edition === '2014' ? 'known' : 'prepared'}` : ''} at 20`; },
+							hint: x => { const n = spellNumbersAt(x, 20); const parts = [n.cantrips ? `${n.cantrips} cantrips` : '', n.prepared ? `${n.prepared} ${d.edition === '2014' ? 'known' : 'prepared'}` : ''].filter(Boolean); return parts.length ? `${parts.join(' · ')} at 20` : ''; },
 						},
 						{ type: 'custom', key: 'cantrips', label: 'Cantrips known', show: x => !!x.castAbility && !!x.caster && !x.spellsLike, draw: (c, x, ui) => levelGrid(c, 'Cantrips known', () => x.cantrips, ui) },
 						{
@@ -301,7 +300,7 @@ export function classSchema(rt: Dnd5eRuntime): EntitySchema<Class5eDraft> {
 			statTiles(el, [
 				{ label: 'PB', value: `+${b.pb}`, lead: true },
 				{ label: 'Hit die', value: `d${d.hitDie}` },
-				...(b.slots ? [{ label: 'Slots', value: b.slots.slice(0, top).join('·'), sub: `up to ${ord(top)}` }] : []),
+				...(b.slots ? [{ label: 'Slots', value: b.slots.slice(0, top).join('·'), sub: d.edition === '2014' ? `up to ${ord(top)}` : `up to level ${top}` }] : []),
 				...(b.cantrips ? [{ label: 'Cantrips', value: String(b.cantrips) }] : []),
 				...(b.prepared ? [{ label: d.edition === '2014' ? 'Known' : 'Prepared', value: String(b.prepared) }] : []),
 			]);
@@ -476,7 +475,7 @@ export function speciesSchema(rt: Dnd5eRuntime): EntitySchema<Species5eDraft> {
 					rows: [
 						{ type: 'text', key: 'name', label: 'Name', words: true, placeholder: 'Emberfolk' },
 						[
-							{ type: 'choice', key: 'size', label: 'Size', options: opts(SIZES_5E) },
+							{ type: 'choice', key: 'size', label: 'Size', options: () => SIZES_5E.map(v => ({ value: v, label: v === 'Small or Medium' ? 'Either' : v })) },
 							{ type: 'number', key: 'speed', label: 'Speed', min: 0, max: 120, step: 5, placeholder: () => '30' },
 						],
 						[
