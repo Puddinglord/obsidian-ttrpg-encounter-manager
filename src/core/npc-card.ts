@@ -14,7 +14,7 @@ import { fmText, safeName } from './campaign-model';
 import { onLongPress } from './touch';
 import { IMAGE_EXTENSIONS, isRemote, NPC_ATTITUDES, NPC_STATUSES, npcFacts, parseNpcCard, portraitLink, SECRET_KEYS } from './npc-card-def';
 import { appendRichText } from './markdown';
-import { guardLinks, wireWikiLinks } from './wiki-links';
+import { guardLinks, oneLineLinks, wireWikiLinks } from './wiki-links';
 import { cardWithoutBlock, drawSystemExtras, extensionFor, extrasKey } from './note-card';
 import { isNpc } from './campaigns';
 import { applyLook } from './look';
@@ -180,6 +180,7 @@ class NpcCard extends MarkdownRenderChild {
 				item.createSpan({ cls: 'nimble-npc-link-label', text: label });
 				appendRichText(item.createSpan({ cls: 'nimble-npc-link-value' }), v ?? '');
 			}
+			oneLineLinks(row);
 			wireWikiLinks(row, this.app, this.path);
 		}
 		const pills = head.createDiv({ cls: 'nimble-npc-pills' });

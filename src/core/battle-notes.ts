@@ -7,7 +7,7 @@
 import { AbstractInputSuggest, App, MarkdownPostProcessorContext, Menu, Modal, Notice, setIcon, Setting } from 'obsidian';
 import { battleField, EncounterDef, encounterBlockSource, OUTCOMES, Outcome, outcomeOf, replaceEncounterBlock, withBattleField } from './encounter-def';
 import { appendRichText } from './markdown';
-import { wireWikiLinks } from './wiki-links';
+import { oneLineLinks, wireWikiLinks } from './wiki-links';
 import { EvIconName, evIcon } from './icons';
 import { pill } from './pill';
 import { linkPill } from './campaign-model';
@@ -87,6 +87,7 @@ export function battleFacts(card: HTMLElement, app: App, def: EncounterDef, sour
 		if (!linksToChip(app, value, sourcePath)) setIcon(f.createSpan({ cls: 'battle-fact-icon' }), evIcon(icon));
 		appendRichText(f.createSpan({ cls: 'battle-fact-text' }), value);
 	}
+	oneLineLinks(meta);
 	wireWikiLinks(meta, app, sourcePath);
 }
 

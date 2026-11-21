@@ -34,7 +34,7 @@ export const PILL_SELECTORS = [
 	'.ev-cq-mons-label', '.campaign-quest', '.campaign-continue', '.campaign-switch-btn', '.campaign-search',
 	// The trackers (core/tracker/flow.ts and each game's view): the card's buttons, the turn control, the ticker,
 	// conditions on the card, the side switch, moments, the keypad's quiet chips, the encounter blocks' buttons.
-	'.ev-card-btn', '.ev-card-icon', '.ev-foot-primary', '.ev-foot-second', '.ev-ticker', '.condition-tag', '.phase-pill', '.nimble-phase-chip', '.group-attack',
+	'.ev-card-btn', '.ev-foot-primary', '.ev-foot-second', '.ev-ticker', '.condition-tag', '.phase-pill', '.nimble-phase-chip', '.group-attack',
 	'.laststand-btn', '.ev-moment-btn', '.hp-pad-qa', '.hp-pad-choice', '.dnd5e-ribbon', '.dnd5e-roll-all', '.encounter-block-btn', '.dnd5e-init-roll', '.dnd5e-init-set',
 	// Builders and dialogs (design pass): the game dialog's buttons, the roll dialog, Add several, the encounter builder and its
 	// balance, the party editor's buttons, the map's toolbar, pin labels and tokens, the Edit pencil, the roll toast's tag.

@@ -43,6 +43,25 @@ export function guardLinks(el: HTMLElement, app: App, sourcePath: string): void 
 	el.addEventListener('auxclick', stop, true);
 }
 
+/**
+ * Links in a labelled row ("Found at", a battle's place) keep one line: their words go in a span that can end in
+ * "…" when the row is short (styles.css), and a cut one shows its whole name as a tooltip. Call before the links
+ * are drawn as chips (npc-links.ts puts its icon in front of the span).
+ */
+export function oneLineLinks(container: HTMLElement): void {
+	container.querySelectorAll<HTMLAnchorElement>('a.internal-link').forEach((a) => {
+		const name = (a.textContent ?? '').trim();
+		if (!name || a.querySelector(':scope > .ev-link-text')) return;
+		const nodes = Array.from(a.childNodes);
+		const text = a.createSpan({ cls: 'ev-link-text' });
+		text.append(...nodes);
+		a.addEventListener('mouseenter', () => {
+			if (text.scrollWidth > text.clientWidth + 1) a.setAttr('title', name);
+			else a.removeAttribute('title');
+		});
+	});
+}
+
 export function wireWikiLinks(container: HTMLElement, app: App, sourcePath: string): void {
 	container.querySelectorAll<HTMLAnchorElement>('a.nimble-wikilink').forEach((anchor) => {
 		const target = anchor.dataset.link || anchor.textContent || '';

@@ -3157,6 +3157,10 @@ body.is-tablet button.nimble-npc-pill { padding: 6px 10px; }
 :is(.nimble-npc-stats, .ev-cq-mons) > .nimble-inline-ref { top: 0; } /* in a row of chips, centred like them (not lifted to a sentence) */
 /* A note link in a labelled row (an NPC's "First met", a battle's place): centred on the row, not lifted to a sentence (it sat 1–1.5px high). */
 :is(span.nimble-npc-link, .battle-fact) a.internal-link:is(.nimble-note-link, .nimble-npc-link) { top: 0; }
+/* And on one line: the link shrinks to the room left beside its label and its words end in … (oneLineLinks, wiki-links.ts). */
+:is(span.nimble-npc-link, .battle-fact) :is(.nimble-npc-link-value, .battle-fact-text) { min-width: 0; max-width: 100%; }
+:is(span.nimble-npc-link, .battle-fact) a.internal-link { display: inline-flex; max-width: 100%; min-width: 0; white-space: nowrap; }
+:is(span.nimble-npc-link, .battle-fact) a.internal-link > .ev-link-text { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 button.nimble-npc-fight { height: 30px; padding: 0 12px; border-radius: var(--ev-r-md); font: 600 13px/1 var(--ev-font-ui); }
 body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 .nimble-note-card { margin: 0.25rem 0 0.75rem; }
