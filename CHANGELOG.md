@@ -58,6 +58,8 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Type content by hand: a ```` ```5e-class ````, ```` ```nimble-ancestry ```` or any other kind's block in a note in your content folder, with the same fields as a content pack. Reading view shows it as its compendium card, with anything that needs fixing listed under it. See the [guide to your own content](docs/homebrew.md).
 - Classes can say more than their wording: in 5e, uses from a formula ("Charisma modifier", at least 1), a class's or background's own starting equipment and tool choices, and options grouped by `group`; in Nimble, dice that grow by level or subclass, the states and target a class panel keeps, and a feature's stat increase, spell picks and uses per Safe Rest. See [content packs](docs/content-packs.md).
 
+- Importing a D&D Beyond character brings its class, subclass, species, background, feats, spells and items into your compendium, tagged Imported, so a class the SRD doesn't have works in New character, Level up and the sheet. You choose what comes in; what the SRD already has is left out. Import the character again after they level up and their class fills in the levels it was missing, keeping any changes you made. **Import content…** takes a D&D Beyond character's data too and adds just its content. See the [import guide](docs/import.md).
+
 ### Changed
 
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
@@ -98,6 +100,8 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 
 - The compendium's + makes something for the tab you're on and says what: New class or subclass on Classes, New feat on Feats. What you make is tagged Homebrew, with Open note on its page, and `source:Homebrew` and `is:homebrew` find it; a content pack's entries carry their pack's name as a dark tag. See [the compendium](docs/compendium.md#making-your-own).
 - A content pack's own 5e Bard gets only the limited-use features it lists. See [content packs](docs/content-packs.md#5e).
+
+- The Import a D&D Beyond character window uses 5e's look. See the [import guide](docs/import.md).
 
 ### Fixed
 
