@@ -75,9 +75,12 @@ function checkValue(spec: FieldSpec, v: unknown, where: string, errors: string[]
 		}
 		case 'list': {
 			if (!Array.isArray(v)) { errors.push(`${where} should be a list`); return undefined; }
+			// An item with something wrong is left out of what checked out (a card draws the rest).
 			return v.map((item, i) => {
 				if (!isObj(item)) { errors.push(`${where} item ${i + 1} should be an object`); return undefined; }
-				return checkFields(spec.of, item, `${where} item ${i + 1}: `, errors, warnings);
+				const before = errors.length;
+				const kept = checkFields(spec.of, item, `${where} item ${i + 1}: `, errors, warnings);
+				return errors.length > before ? undefined : kept;
 			}).filter(x => x !== undefined);
 		}
 	}

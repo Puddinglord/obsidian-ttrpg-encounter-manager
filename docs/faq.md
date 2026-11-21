@@ -13,7 +13,7 @@ It runs [5e](5e.md) campaigns as well as Nimble, each in its own book's look. Fo
 Yes. The [builder](builder.md) (**New monster…**, **New spell…**, **New item…**) fills in the books' numbers for the level or tier you pick and writes an ordinary block into a note. You can also write the blocks by hand; homebrew spells and items join the compendium and the character sheet's Add spell and Add item.
 
 **Can I add my own class, ancestry or subclass?**
-Yes, with a [content pack](content-packs.md): a JSON file in your vault. A pack's class works in New character, Level up and the sheet like the books' classes, and a subclass or a new option joins a class that's already there.
+Yes. Press **+** on the compendium's Classes or Origins tab and fill in the block it writes (see [Your own content](homebrew.md)), or bring in a [content pack](content-packs.md). Either way the class works in New character, Level up and the sheet like the books' classes, and a subclass or a new option joins a class that's already there.
 
 **A stat block says some lines "aren't shown as written".**
 A line in a ```` ```nimble ```` block you wrote couldn't be read: a misspelled field, a missing colon, list items with no heading. Click the line under the stat block to see which ones and why, and use **Fix** where it's offered. See [When a line isn't shown](bestiary.md#when-a-line-isnt-shown).

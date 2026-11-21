@@ -198,6 +198,6 @@ Because they're properties, Obsidian's Bases and Dataview can query them: a tabl
 
 The Core Rules' ancestries, backgrounds, equipment, magic items and spells, the GM Guide's rewards and boons, and all 11 class books (Berserker, Commander, Hunter, Mage, Oathsworn, Shadowmancer, Shepherd, Songweaver, Stormshifter, The Cheat, Zephyr) with every subclass. The expansion drafts are in it too: the Manawright (Artificer), Hexbinder, Psion and Revenant, marked **Draft**. Turn **Include expansion drafts** off under Settings → Nimble character sheets to hide them.
 
-Your table's own classes, subclasses, ancestries, backgrounds and options come in as [content packs](content-packs.md). New character, Level up and the sheet treat them like the books': a homebrew class levels up from what its pack says each level brings, and its own dice sit in the class panel.
+Your table's own classes, subclasses, ancestries, backgrounds and options are [your own content](homebrew.md) (made with + on a compendium tab) or come in as [content packs](content-packs.md). New character, Level up and the sheet treat them like the books': a homebrew class levels up from what it says each level brings, and its own dice, states and target sit in the class panel.
 
 Nimble TTRPG © Nimble Co., used under the Nimble 3rd Party Creator License. If you enjoy the game, buy the books at [nimbleRPG.com](https://nimbleRPG.com).

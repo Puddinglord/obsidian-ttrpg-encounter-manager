@@ -26,7 +26,7 @@ Outside a campaign, **Edit party…** (or `/party`, or the party link on an enco
 
 ## Content packs
 
-- **Content folder:** where [content packs](content-packs.md) live, with **Import content…** to add one. The list below it shows each pack, its game, and what it adds.
+- **Content folder:** where [content packs](content-packs.md) and [your own content](homebrew.md) live, with **Import content…** to add a pack. The list below it shows each pack, its game, and what it adds.
 
 ## Dice
 

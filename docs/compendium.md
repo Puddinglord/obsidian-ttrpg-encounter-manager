@@ -26,7 +26,9 @@ Pages are framed like the sheet: the name in Nimble's heavy italic, the facts as
 
 ## Making your own
 
-The **+** at the end of the search bar opens the [builder](builder.md) for the tab you're on: a monster on Adversaries, a spell on Spells, an item on Items. On an entry's page, **Use as a template** starts a new one from it. Homebrew spells and items you make (or write as ```` ```nimble-spell ```` and ```` ```nimble-item ```` blocks) show up here with the book's, marked Homebrew.
+The **+** at the end of the search bar makes something for the tab you're on. Adversaries, Spells and Items open the [builder](builder.md). Classes, Features, Origins and Rules write a note in your content folder with a block to fill in (a class, a subclass, a class option, a boon, an ancestry, a background, a rule or a condition); when there's more than one kind, + asks which. See [Your own content](homebrew.md).
+
+On an entry's page, **Use as a template** starts a new one from it. What you make (and spells and items written as ```` ```nimble-spell ```` and ```` ```nimble-item ```` blocks) shows up here with the books', tagged **Homebrew**, with **Open note** on its page. `source:Homebrew` or `is:homebrew` finds it all.
 
 [Content packs](content-packs.md) add classes, subclasses, options, ancestries, backgrounds, spells, items, monsters and rules, each tagged with its pack's name. `source:` filters by pack, and `is:pack` finds everything packs added.
 

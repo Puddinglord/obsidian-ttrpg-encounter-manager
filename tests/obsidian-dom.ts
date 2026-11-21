@@ -45,6 +45,15 @@ function createEl(this: Node, tag: keyof HTMLElementTagNameMap, o?: ElInfo | str
 proto.createEl ??= createEl;
 proto.createDiv ??= function (this: Node, o?: ElInfo | string, cb?: Cb) { return createEl.call(this, 'div', o, cb); };
 proto.createSpan ??= function (this: Node, o?: ElInfo | string, cb?: Cb) { return createEl.call(this, 'span', o, cb); };
+proto.createSvg ??= function (this: Node, tag: string, o?: ElInfo | string, cb?: (el: SVGElement) => void) {
+	const el = ownerDoc(this).createElementNS('http://www.w3.org/2000/svg', tag);
+	const info: ElInfo = typeof o === 'string' ? { cls: o } : o ?? {};
+	if (info.cls) el.setAttribute('class', Array.isArray(info.cls) ? info.cls.join(' ') : info.cls);
+	for (const [k, v] of Object.entries(info.attr ?? {})) if (v !== null && v !== false) el.setAttribute(k, String(v));
+	this.appendChild(el);
+	cb?.(el);
+	return el;
+};
 
 const g = globalThis as unknown as Record<string, unknown>;
 g.activeDocument ??= document;
@@ -66,5 +75,8 @@ el.setCssProps ??= function (this: HTMLElement, s: Record<string, string>) { for
 el.setAttr ??= function (this: HTMLElement, k: string, v: string | number | boolean | null) { if (v === null || v === false) this.removeAttribute(k); else this.setAttribute(k, String(v)); };
 el.setText ??= function (this: HTMLElement, t: string) { this.textContent = t; };
 el.addClasses ??= function (this: HTMLElement, c: string[]) { this.classList.add(...c); };
+// Drawings (createSvg) take the same helpers.
+const svg = SVGElement.prototype as unknown as Record<string, unknown>;
+for (const k of ['addClass', 'removeClass', 'toggleClass', 'setCssStyles', 'setCssProps', 'setAttr', 'setText']) svg[k] ??= el[k];
 el.hide ??= function (this: HTMLElement) { this.style.display = 'none'; };
 el.show ??= function (this: HTMLElement) { this.style.display = ''; };

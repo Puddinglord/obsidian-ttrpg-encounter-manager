@@ -5,6 +5,7 @@
 // precedence over packs and the books), Homebrew tags, block cards that never
 // crash on a half-written block, and a hand-typed class block in each game
 // driving New character and its level ups.
+import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { TFile } from 'obsidian';
 import { blockLang, contentNotePath, fencedBlocks, HOMEBREW, readContentBlock, readContentNote, starterBody } from '../src/core/content/blocks';
@@ -30,11 +31,15 @@ import { readCharacter } from '../src/systems/nimble/character-def';
 import { applyLevelChoices, increaseKey, levelPlans, noChoices } from '../src/systems/nimble/level-plan';
 import { newCharacterFrontmatter } from '../src/systems/nimble/new-character';
 import { classPanelRows } from '../src/systems/nimble/class-panel-def';
+import { renderCard, renderRuleCard } from '../src/systems/nimble/compendium-card';
+import { renderCard5e } from '../src/systems/dnd5e/cards';
 import BOOKS from '../src/systems/nimble/data/compendium.json';
 import NIMBLE_EXAMPLE from '../docs/content/examples/nimble-lantern-road.json';
 import FIVE_E_EXAMPLE from '../docs/content/examples/5e-hearth-and-cinder.json';
 
 const books = BOOKS as unknown as CompendiumData;
+/** The body of a note's one block of a language. */
+const noteBlock = (path: string, lang: string) => fencedBlocks(readFileSync(path, 'utf8'), new Set([lang]))[0].body;
 const kindOf = (list: readonly KindSpec[], k: string) => list.find(x => x.kind === k)!;
 const block = (list: readonly KindSpec[], k: string, body: string) => readContentBlock(kindOf(list, k), body);
 
@@ -171,6 +176,21 @@ describe('Nimble blocks', () => {
 });
 
 // ----------------------------------------------------------------------------
+
+describe('the guide\'s examples (docs/homebrew.md)', () => {
+	it('show every block kind of both games, and every one reads with nothing wrong', () => {
+		const langs = new Map<string, KindSpec>([
+			...BLOCKS_5E.kinds.map(k => [blockLang('5e', k), kindOf(KINDS_5E, k)] as const),
+			...NIMBLE_BLOCKS.kinds.map(k => [blockLang('nimble', k), kindOf(KINDS_NIMBLE, k)] as const),
+		]);
+		const found = fencedBlocks(readFileSync('docs/homebrew.md', 'utf8'), new Set(langs.keys()));
+		expect(new Set(found.map(b => b.lang))).toEqual(new Set(langs.keys()));
+		for (const b of found) {
+			const r = readContentBlock(langs.get(b.lang)!, b.body);
+			expect([r.errors, r.warnings], `${b.lang} at line ${b.line + 1}`).toEqual([[], []]);
+		}
+	});
+});
 
 describe('starters and where New puts a note', () => {
 	const kinds = [...BLOCKS_5E.kinds.map(k => kindOf(KINDS_5E, k)), ...NIMBLE_BLOCKS.kinds.map(k => kindOf(KINDS_NIMBLE, k))];
@@ -333,6 +353,36 @@ describe('a block\'s card draws what checked out, whatever is missing', () => {
 		const opt = contentTarget('option', { name: 'Cleave Through', class: 'Berserker', group: 'Savage Arsenal', text: 'x' }, 'Class option');
 		expect(opt && 'hit' in opt && opt.hit).toMatchObject({ kind: 'feature', group: 'Savage Arsenal', className: 'Berserker' });
 	});
+	it('every starter and every bad block draws its game\'s card, without throwing (a list item with something wrong is left out)', () => {
+		const app = { metadataCache: { getFirstLinkpathDest: () => null } } as never;
+		const draws = (lang: string, body: string) => {
+			const [prefix, kind] = [lang.slice(0, lang.indexOf('-')), lang.slice(lang.indexOf('-') + 1)];
+			const el = document.createElement('div');
+			if (prefix === '5e') {
+				const spec = kindOf(KINDS_5E, kind);
+				const hit = contentHit5e(kind as Kind5e, readContentBlock(spec, body).value, '2024', spec.label);
+				if (hit) renderCard5e(el, hit, { app, sourcePath: '' });
+			} else {
+				const spec = kindOf(KINDS_NIMBLE, kind);
+				const t = contentTarget(kind, readContentBlock(spec, body).value, spec.label);
+				if (t && 'rule' in t) renderRuleCard(el, t.rule);
+				else if (t) renderCard(el, 'hit' in t ? t.hit : t.condition);
+			}
+			return el;
+		};
+		for (const k of BLOCKS_5E.kinds) {
+			const spec = kindOf(KINDS_5E, k);
+			expect(draws(`5e-${k}`, starterBody(spec, 'Ember')).textContent, k).toMatch(/Ember/);
+			expect(() => draws(`5e-${k}`, 'name: Ember\nfeatures:\n  - level: x\ntraits:\n  - desc: y\nsaves: STR'), k).not.toThrow();
+		}
+		for (const k of NIMBLE_BLOCKS.kinds) {
+			const spec = kindOf(KINDS_NIMBLE, k);
+			expect(draws(`nimble-${k}`, starterBody(spec, 'Ember')).textContent, k).toMatch(/Ember/);
+			expect(() => draws(`nimble-${k}`, 'name: Ember\nlevels:\n  - level: x\ntraits:\n  - text: y\nsaves: STR'), k).not.toThrow();
+		}
+		// The starter ancestry's empty trait is left out; the card shows the rest.
+		expect(readContentBlock(kindOf(KINDS_NIMBLE, 'ancestry'), starterBody(kindOf(KINDS_NIMBLE, 'ancestry'), 'Emberkin')).value).toEqual({ name: 'Emberkin', size: 'Medium', rarity: 'common', traits: [] });
+	});
 	it.each(BLOCKS_5E.kinds)('5e %s: from nothing, from a name, from half a class', (k) => {
 		const label = KIND5E[k as Kind5e].label;
 		for (const v of [{}, { name: 'X' }, { name: 'X', class: 'Fighter', levels: [{ level: 1 }], subspecies: [{ name: 'Y' }], features: [{ level: 1 }] }]) {
@@ -345,63 +395,8 @@ describe('a block\'s card draws what checked out, whatever is missing', () => {
 // ----------------------------------------------------------------------------
 // A class typed by hand, in each game, through New character and level ups
 
-const HEARTH_WARDEN = `name: Hearth Warden
-hitDie: 10
-primary: Wisdom
-saves: [STR, WIS]
-proficiencies: [Light Armor, Medium Armor, Shields, Simple Weapons, Martial Weapons]
-skillChoice: "Choose 2: Athletics, Insight, Medicine, Perception, or Survival"
-spellcasting: WIS
-spellList: Ranger
-resources:
-  - name: Hearthfire
-    uses: Wisdom modifier
-    min: 1
-    shortFrom: 5
-startingEquipment:
-  - label: "(A) Chain Mail, Longsword, Shield and 2 Javelins; or (B) 100 GP"
-    options:
-      - label: A
-        items: [Chain Mail, Longsword, Shield, 2 Javelin]
-      - label: B
-        gold: 100
-toolChoices: { count: 1, from: [Cook's Utensils, Woodcarver's Tools] }
-features:
-  - level: 1
-    name: Hearthfire
-    desc: As a Bonus Action, you kindle a warding flame around an ally you can see within 30 feet.
-  - level: 1
-    name: Warding Style
-    desc: Choose one of the following options.
-  - level: 1
-    name: Ember Guard
-    group: Warding Style
-    desc: While your flame burns around an ally, attacks against them have disadvantage.
-  - level: 1
-    name: Ash Step
-    group: Warding Style
-    desc: You can teleport to an ally your flame warms.
-  - level: 2
-    name: Spellcasting
-    desc: You cast Ranger spells, using Wisdom.
-  - level: 3
-    name: Warden Circle
-    desc: Choose a circle.
-  - level: 4
-    name: Ability Score Improvement
-    desc: Increase one score by 2, or two scores by 1.
-levels:
-  - { level: 1, pb: 2, features: [Hearthfire, Warding Style] }
-  - { level: 2, pb: 2, features: [Spellcasting], slots: [2], prepared: 2 }
-  - { level: 3, pb: 2, features: [Warden Circle], slots: [3], prepared: 3 }
-  - { level: 4, pb: 2, features: [Ability Score Improvement], slots: [3], prepared: 3 }
-  - { level: 5, pb: 3, features: [], slots: [4, 2], prepared: 4 }
-subclasses:
-  - name: Circle of Embers
-    flavor: Warden Circle
-    features:
-      - { level: 3, name: Banked Coals, desc: Your flame lingers a round after it ends. }
-`;
+/** A hand-typed 5e class note (the e2e test types the same one). */
+const HEARTH_WARDEN = noteBlock('e2e/fixtures/content/5e-hearth-warden.md', '5e-class');
 
 describe('a 5e class typed in a ```5e-class block: New character and level ups', () => {
 	const typed = block(KINDS_5E, 'class', HEARTH_WARDEN);
@@ -479,73 +474,8 @@ describe('5e uses written as a formula', () => {
 	});
 });
 
-const CINDERWRIGHT = `name: Cinderwright
-tagline: A smith who hammers fire into the fight.
-keyStats: [STR, WIL]
-hitDie: 10
-startingHp: 17
-saves: { adv: STR, dis: DEX }
-armor: Mail, Shields
-weapons: STR weapons
-startingGear: [Club/Mace, Chain Shirt]
-resources:
-  - name: Forge Dice
-    max: 2
-    die: d6
-    reset: Safe Rest
-    dice:
-      rolled: spent
-      addTo: [attack]
-      use: any
-      rules: [Strike the Anvil]
-      maxSteps:
-        - { level: 3, add: 1, subclass: Anvil Oath }
-        - { level: 5, add: 1 }
-  - name: Ember Mend
-    max: 5×LVL
-    reset: Safe Rest
-    spend: Mend
-states:
-  - { name: Forgeheat, condition: Forgeheated, feature: Forgeheat }
-target: { name: Branded Foe, feature: Brand }
-levels:
-  - level: 1
-    features:
-      - name: Strike the Anvil
-        text: When you hit with a melee attack, spend any number of Forge Dice and add them to the damage.
-      - name: Forgeheat
-        text: As an action, you become Forgeheated until the end of the encounter.
-      - name: Brand
-        text: Mark one creature you can see. Your attacks against it ignore cover.
-        uses: WIL
-  - level: 2
-    features:
-      - name: Tempered Will
-        text: Your will hardens with the iron.
-        increase: { stats: [STR, WIL] }
-      - name: Spark Lore
-        text: You pick up a little fire magic.
-        learn:
-          - { kind: utility, from: [Fire], count: 1 }
-  - level: 3
-    features:
-      - name: Subclass
-        text: Choose a Cinderwright oath.
-  - level: 4
-    features:
-      - name: Hot Iron
-        text: Your Forge Dice are hotter.
-  - level: 5
-    features:
-      - name: Second Anvil
-        text: You hold one more Forge Die.
-subclasses:
-  - name: Anvil Oath
-    levels:
-      - level: 3
-        features:
-          - { name: Unbreakable, text: You can't be knocked prone. }
-`;
+/** A hand-typed Nimble class note (the e2e test types the same one). */
+const CINDERWRIGHT = noteBlock('e2e/fixtures/content/nimble-cinderwright.md', 'nimble-class');
 
 describe('a Nimble class typed in a ```nimble-class block: New character and level ups', () => {
 	const typed = block(KINDS_NIMBLE, 'class', CINDERWRIGHT);

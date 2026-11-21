@@ -4,6 +4,8 @@ A **content pack** adds what Ember Vault doesn't ship: your table's homebrew cla
 
 Packs work with both games. In Nimble they add classes, subclasses, a class's options, ancestries, backgrounds, spells, items, monsters and more. In 5e they add what isn't in the SRD.
 
+To make one class or feat yourself, you don't need a pack: press **+** on its compendium tab and fill in a block in a note. See [Your own content](homebrew.md). Blocks and packs use the same fields, so an entry can move from one to the other.
+
 ## Add a pack
 
 1. Run **Import content…** (command palette, or **Settings → Ember Vault → Content packs**).
@@ -20,7 +22,7 @@ Whatever a pack adds goes into the compendium, tagged with the pack's name, and 
 - **Nimble:** New character and Level up offer the pack's classes, subclasses, ancestries, backgrounds and options; character sheets read them; its monsters are in the compendium, `nimble:` references, the encounter builder and **Add to fight**; its spells and items are in `nimble:spell:` references, autocomplete, slash commands and Spotlight. A subclass joins its class, and an option joins its class's list (a new Savage Arsenal ability shows up when a Berserker levels up).
 - **5e:** monsters, spells, magic items, equipment, feats, backgrounds, species, classes and subclasses, in `5e:` references, autocomplete, slash commands, Spotlight, the compendium, character sheets, **New character** and **Level up**. A subclass joins its class.
 
-When two things share a name, the closest one wins: a note in your vault, then a pack, then the books.
+When two things share a name, the closest one wins: a note in your vault (your own content), then a pack, then the books.
 
 ## Pick packs per campaign
 
@@ -31,6 +33,8 @@ Every campaign uses every pack for its game unless its home note says otherwise,
 | (not set) | Every pack |
 | `none` | No packs |
 | `[Hearth and Cinder, Table Rules]` | Just these (by pack name or file name) |
+
+[Your own content](homebrew.md) counts as a pack called `Homebrew`: `packs: [Hearth and Cinder, Homebrew]` keeps it, `packs: none` leaves it out too.
 
 ## Write a pack
 
@@ -64,10 +68,13 @@ A pack is one JSON object: its name, the game, and a list of entries. Each entry
   - **Key Stat Increase** with "+1 WIL or DEX." raises a stat.
   - "Choose 1 Kindling." picks from the class's option list called Kindlings (`optionGroups`).
   - When the words don't name the list, give the feature `choose`: `{ "from": ["Combat Tactics"], "count": 1 }`.
-- **Resources** are what the class panel counts: `{ "name": "Ember Dice", "max": "WIL", "die": "d6" }`. For dice, `dice` says how they're used: rolled when spent or gained, which rolls they go into (`attack`, `spell`, `save`, `check`), and the die at each level.
+  - When the words don't say, a feature can also give `increase` (`{ "stats": ["STR", "WIL"] }`), `learn` (spell schools or Utility Spells: `[{ "kind": "utility", "from": ["Fire"] }]`) and `uses` (uses between Safe Rests: `"WIL"`).
+- **Resources** are what the class panel counts: `{ "name": "Ember Dice", "max": "WIL", "die": "d6" }`. For dice, `dice` says how they're used: rolled when spent or gained, which rolls they go into (`attack`, `spell`, `save`, `check`), the die at each level, and `maxSteps` to hold more from a level or for a subclass. A number's button says `spend` (`"Heal"`).
+- **States and a target:** `states` are what the class panel switches on and off (`{ "name": "Rage", "condition": "Raging" }`), and `target` what it keeps one of (`{ "name": "Hunter's Mark" }`).
 - **Casting:** `casting` gives the mana pool (`"manaFormula": "WIL+LVL"`) and the schools known. A spell with `"class": "Lamplighter"` is that class's own.
 - **Subclasses** name their class: `"class": "Berserker"`.
 - **Options** name their class and list: `"class": "Berserker", "group": "Savage Arsenal"`.
+- **Boons** say their kind with `type`: `"type": "epic"` (`kind` is the entry's, `"boon"`).
 - **Monsters** can be written field by field (`level`, `hp`, `armor`, `actions`…), or as `"statblock"`: the text of a ```` ```nimble ```` block (see the [bestiary](bestiary.md)).
 
 The full example is [nimble-lantern-road.json](content/examples/nimble-lantern-road.json): the Lamplighter class with its own Ember Dice and a subclass, a new Savage Arsenal ability for the Berserker, an ancestry, a background, two spells, a magic item and a monster.
@@ -98,7 +105,9 @@ The full example is [nimble-lantern-road.json](content/examples/nimble-lantern-r
 - **`edition`** (optional): `"2024"` or `"2014"` keeps the pack to campaigns on those rules. Leave it out for both.
 - **Kinds:** `monster`, `spell`, `item` (magic items), `equipment`, `feat`, `background`, `species`, `class`, `subclass`.
 - **Monsters** can be written field by field, or as `"statblock"`: the text of a ```` ```5e ```` block (see [Playing 5e](5e.md)), which is often easier.
-- **Classes** work in **New character**, **Level up** and the sheet from their own level table: each row's `features` (an `Ability Score Improvement` or `Expertise` there asks for one), `slots` and `cantrips`, and `prepared` for how many spells the class knows or prepares at that level. Its subclass comes at its first feature's level. `"spellList": "Paladin"` casts from another class's list. A row's `extra` holds the class's own numbers; one named `…_uses` is a limited-use feature with pips on the sheet: `"extra": { "blood_maledict_uses": 2 }`. Features named `Group: Option` under a feature named `Group` are a choice ("Ward Stance: Ember" under "Ward Stance").
+- **Classes** work in **New character**, **Level up** and the sheet from their own level table: each row's `features` (an `Ability Score Improvement` or `Expertise` there asks for one), `slots` and `cantrips`, and `prepared` for how many spells the class knows or prepares at that level. Its subclass comes at its first feature's level. `"spellList": "Paladin"` casts from another class's list. A row's `extra` holds the class's own numbers; one named `…_uses` is a limited-use feature with pips on the sheet: `"extra": { "blood_maledict_uses": 2 }`. Features named `Group: Option` under a feature named `Group` are a choice ("Ward Stance: Ember" under "Ward Stance"), and so is a feature with `"group": "Ward Stance"`, whatever its name.
+- **Limited uses as a formula:** `resources` lists features with uses the table doesn't count: `{ "name": "Hearthfire", "uses": "Wisdom modifier", "min": 1, "shortFrom": 5 }`.
+- **Starting equipment:** a class or background's `startingEquipment` lists its choices, each with options of `items` (`"2 Javelin"` for two), `picks` from a list and `gold`; `toolChoices` (`{ "count": 1, "from": ["Lute", "Flute"] }`), and a background's `tools`.
 - **Subclasses** name their class: `"class": "Barbarian"`.
 
 The full example is [5e-hearth-and-cinder.json](content/examples/5e-hearth-and-cinder.json): a subclass, a spell, a magic item, a feat and a monster.
