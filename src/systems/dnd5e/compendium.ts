@@ -12,12 +12,12 @@ import { HOMEBREW } from '../../core/content/blocks';
 import type { Dnd5eEdition } from './editions';
 import type { Feature5e } from './types';
 
-export interface Spell5e {
+export interface Spell5e extends Origin5e {
 	name: string; level: number; school: string; castingTime: string; range: string; components: string; duration: string;
 	desc: string; higherLevel?: string; classes: string[]; concentration?: boolean; ritual?: boolean;
 }
-export interface Item5e { name: string; rarity: string; type: string; line?: string; desc: string; attunement?: boolean }
-export interface Equipment5e {
+export interface Item5e extends Origin5e { name: string; rarity: string; type: string; line?: string; desc: string; attunement?: boolean }
+export interface Equipment5e extends Origin5e {
 	name: string; category: string; tags?: string[]; cost?: string; weight?: number; weaponCategory?: string; weaponRange?: string;
 	damage?: string; versatile?: string; range?: string; properties?: string[]; mastery?: string;
 	armorCategory?: string; ac?: { base: number; dex: boolean; max?: number }; strMin?: number; stealthDisadvantage?: boolean; desc?: string;
@@ -32,8 +32,12 @@ export interface ClassFeature5e { level: number; name: string; desc: string; gro
 export interface ClassResource5e { name: string; uses: number | string; min?: number; level?: number; reset?: 'short' | 'long'; shortFrom?: number; shortOne?: boolean }
 /** Starting equipment as a class or background writes it: a choice of options, each items ("2 Javelin"), picks from a list, gold. */
 export interface StartingEquipment5e { label?: string; options: { label: string; items?: string[]; picks?: { label?: string; count?: number; from: string[] }[]; gold?: number }[] }
-/** Where it's from (a content pack's name, Homebrew) and, for yours, the note it's written in. */
-interface Origin5e { source?: string; note?: string }
+/**
+ * Where it's from (a content pack's name, Homebrew, Imported) and, for yours, the note it's written in. An imported
+ * entry also says where it was imported from (`imported`: "D&D Beyond") and that app's id for it (`ddbId`), so
+ * importing again updates it.
+ */
+interface Origin5e { source?: string; note?: string; imported?: string; ddbId?: number }
 /** A class table's row. `prepared`: spells known or prepared (a pack's column; the SRD's come from creation.json). `extra`: the class's own numbers. */
 export interface ClassLevel5e { level: number; pb: number; features: string[]; slots?: number[]; cantrips?: number; prepared?: number; extra?: Record<string, unknown> }
 export interface Subclass5e extends Origin5e { name: string; flavor: string; desc: string; features: ClassFeature5e[]; resources?: ClassResource5e[] }

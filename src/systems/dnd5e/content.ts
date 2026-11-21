@@ -5,7 +5,7 @@
 
 import type { PackEntry } from '../../core/content/packs';
 import type { FieldSpec, KindSpec } from '../../core/content/spec';
-import type { BlockSpec } from '../../core/content/blocks';
+import { IMPORTED, type BlockSpec } from '../../core/content/blocks';
 import type { Background5e, Class5e, Compendium5e, Equipment5e, Feat5e, Item5e, Species5e, Spell5e, Subclass5e } from './compendium';
 import { SCHOOLS_5E } from './homebrew';
 import { parseStatblock5e } from './parser';
@@ -13,7 +13,12 @@ import { crValue } from './rules';
 import type { Dnd5eMonster } from './types';
 
 const text = (description?: string, required = false): FieldSpec => ({ type: 'string', required, description });
-const named = (extra: Record<string, FieldSpec> = {}): Record<string, FieldSpec> => ({ name: text('The name, as references use it.', true), ...extra });
+/** Where an imported entry came from, and that app's id for it: importing again finds it by these (import-ddb-content.ts). */
+const imported: Record<string, FieldSpec> = {
+	imported: text('Where it was imported from: "D&D Beyond". Your note of it is tagged Imported.'),
+	ddbId: { type: 'number', integer: true, description: 'D&D Beyond\'s id for it, so importing again updates this entry.' },
+};
+const named = (extra: Record<string, FieldSpec> = {}): Record<string, FieldSpec> => ({ name: text('The name, as references use it.', true), ...imported, ...extra });
 const feature = { name: text(undefined, true), desc: text('The text. Markdown is fine.', true) };
 const levelFeature = {
 	level: { type: 'number', integer: true, min: 1, max: 20, required: true } as FieldSpec, ...feature,
@@ -162,8 +167,9 @@ export function content5e(entries: (PackEntry & { pack: string })[]): Content5e 
 		if (i >= 0) list[i] = v; else list.push(v);
 	};
 	for (const e of entries) {
-		// Where it's from, for the card and the compendium's tag; your homebrew names its note.
-		const v = e.kind === 'monster' ? e.value : { ...e.value, source: e.pack, ...(e.file ? { note: e.file } : {}) };
+		// Where it's from, for the card and the compendium's tag; your homebrew names its note, and one you imported says so.
+		const from = e.file && typeof e.value.imported === 'string' && e.value.imported ? IMPORTED : e.pack;
+		const v = e.kind === 'monster' ? e.value : { ...e.value, source: from, ...(e.file ? { note: e.file } : {}) };
 		switch (e.kind) {
 			case 'monster': {
 				const m = typeof v.statblock === 'string' ? parseStatblock5e(v.statblock) : ({ ...v, cr: String(v.cr), source: v.source ?? e.pack } as unknown as Dnd5eMonster);

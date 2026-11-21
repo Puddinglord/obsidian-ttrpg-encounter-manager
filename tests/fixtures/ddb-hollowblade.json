@@ -1,0 +1,1190 @@
+{
+	"id": 7001,
+	"success": true,
+	"message": "Character successfully received.",
+	"data": {
+		"id": 7001,
+		"name": "Mira Hollowell",
+		"inspiration": false,
+		"race": {
+			"entityRaceId": 1501,
+			"entityRaceTypeId": 1743923279,
+			"fullName": "Elf",
+			"baseRaceName": "Elf",
+			"baseName": "Elf",
+			"isSubRace": false,
+			"isLegacy": false,
+			"isHomebrew": false,
+			"sizeId": 4,
+			"description": "<p>Placeholder text: the SRD already has this species.</p>",
+			"weightSpeeds": {
+				"normal": {
+					"walk": 30,
+					"fly": 0,
+					"burrow": 0,
+					"swim": 0,
+					"climb": 0
+				}
+			},
+			"racialTraits": [
+				{
+					"definition": {
+						"id": 1601,
+						"name": "Darkvision",
+						"description": "<p>Placeholder text.</p>",
+						"hideInSheet": false
+					}
+				}
+			],
+			"sources": [
+				{
+					"sourceId": 145,
+					"pageNumber": null,
+					"sourceType": 1
+				}
+			]
+		},
+		"background": {
+			"hasCustomBackground": false,
+			"customBackground": {
+				"name": null
+			},
+			"definition": {
+				"id": 930001,
+				"name": "Grave Tender",
+				"isHomebrew": false,
+				"description": "<p>You kept the quiet fields at the edge of a town, and you know the names on every stone.</p><p><strong>Ability Scores:</strong> Strength, Intelligence, Wisdom</p><p><strong>Feat:</strong> Alert</p>",
+				"skillProficienciesDescription": "Insight, Religion",
+				"toolProficienciesDescription": "Mason's Tools",
+				"languagesDescription": "",
+				"equipmentDescription": "<p><em>Choose A or B:</em> (A) Mason's Tools, Shovel, Lantern, Traveler's Clothes, and 8 GP; or (B) 50 GP</p>",
+				"featureName": null,
+				"featureDescription": null,
+				"grantedFeats": [
+					{
+						"id": 1,
+						"name": "Alert",
+						"featIds": [
+							1789160
+						]
+					}
+				],
+				"sources": [
+					{
+						"sourceId": 99001,
+						"pageNumber": null,
+						"sourceType": 1
+					}
+				]
+			}
+		},
+		"classes": [
+			{
+				"id": 5001,
+				"entityTypeId": 1446578651,
+				"level": 7,
+				"isStartingClass": true,
+				"hitDiceUsed": 1,
+				"definitionId": 900001,
+				"subclassDefinitionId": 900101,
+				"definition": {
+					"id": 900001,
+					"definitionKey": "class:900001",
+					"name": "Hollowblade",
+					"description": "<p>Hollowblades are wardens who fight with a blade that hums with an empty note.</p><h4>Core Hollowblade Traits</h4><table><tbody><tr><th>Primary Ability</th><td>Strength and Intelligence</td></tr><tr><th>Hit Point Die</th><td>D10 per Hollowblade level</td></tr><tr><th>Saving Throw Proficiencies</th><td>Strength and Intelligence</td></tr><tr><th>Skill Proficiencies</th><td><em>Choose 2:</em> Arcana, Athletics, Insight, Investigation, Perception, or Survival</td></tr><tr><th>Weapon Proficiencies</th><td>Simple and Martial weapons</td></tr><tr><th>Armor Training</th><td>Light and Medium armor and Shields</td></tr><tr><th>Starting Equipment</th><td><em>Choose A or B:</em> (A) Scale Mail, Shield, Longsword, 2 Dagger, and 12 GP; or (B) 160 GP</td></tr></tbody></table>",
+					"equipmentDescription": "",
+					"parentClassId": null,
+					"spellCastingAbilityId": null,
+					"canCastSpells": false,
+					"hitDice": 10,
+					"primaryAbilities": [
+						1,
+						4
+					],
+					"isHomebrew": false,
+					"sources": [
+						{
+							"sourceId": 99001,
+							"pageNumber": null,
+							"sourceType": 1
+						}
+					],
+					"classFeatures": [
+						{
+							"id": 910001,
+							"name": "Core Hollowblade Traits",
+							"prerequisite": null,
+							"description": "<p>You gain the traits in the Core Hollowblade Traits table.</p>",
+							"requiredLevel": 1,
+							"displayOrder": 1
+						},
+						{
+							"id": 910002,
+							"name": "Hollow Strike",
+							"prerequisite": null,
+							"description": "<p>When you hit a creature with a melee weapon, you can ring your blade: the target takes an extra Hollow die of Force damage. The die is shown in the Hollow Die column of the Hollowblade table.</p>",
+							"requiredLevel": 1,
+							"displayOrder": 1
+						},
+						{
+							"id": 910003,
+							"name": "Grave Sense",
+							"prerequisite": null,
+							"description": "<p>As a Bonus Action, you sense the undead within 60 feet of you until the end of your next turn.</p><p>You can use this feature a number of times shown in the Grave Sense column of the Hollowblade table, and you regain all expended uses when you finish a Long Rest.</p>",
+							"requiredLevel": 1,
+							"displayOrder": 1
+						},
+						{
+							"id": 910004,
+							"name": "Ashen Step",
+							"prerequisite": null,
+							"description": "<p>When you take the Dash action, you can leave a trail of cold ash. You can use this feature a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest.</p>",
+							"requiredLevel": 2,
+							"displayOrder": 2
+						},
+						{
+							"id": 910005,
+							"name": "Hollowblade Order",
+							"prerequisite": null,
+							"description": "<p>You join a Hollowblade order, a subclass of your choice. You gain each of its features at the levels it lists.</p>",
+							"requiredLevel": 3,
+							"displayOrder": 3
+						},
+						{
+							"id": 910006,
+							"name": "Ability Score Improvement",
+							"prerequisite": null,
+							"description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.</p>",
+							"requiredLevel": 4,
+							"displayOrder": 4
+						},
+						{
+							"id": 910007,
+							"name": "Extra Attack",
+							"prerequisite": null,
+							"description": "<p>You can attack twice instead of once whenever you take the Attack action on your turn.</p>",
+							"requiredLevel": 5,
+							"displayOrder": 5
+						},
+						{
+							"id": 910008,
+							"name": "Lantern Ward",
+							"prerequisite": null,
+							"description": "<p>You and allies within 10 feet of you have Advantage on saving throws against the <strong>Frightened</strong> condition.</p>",
+							"requiredLevel": 6,
+							"displayOrder": 6
+						},
+						{
+							"id": 910009,
+							"name": "Order Feature",
+							"prerequisite": null,
+							"description": "<p>You gain a feature from your Hollowblade order.</p>",
+							"requiredLevel": 7,
+							"displayOrder": 7
+						}
+					],
+					"spellRules": {
+						"multiClassSpellSlotDivisor": 0,
+						"isRitualSpellCaster": false,
+						"levelCantripsKnownMaxes": [
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0
+						],
+						"levelSpellKnownMaxes": [
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0
+						],
+						"levelSpellSlots": [
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							],
+							[
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0
+							]
+						]
+					}
+				},
+				"subclassDefinition": {
+					"id": 900101,
+					"definitionKey": "class:900101",
+					"name": "Order of the Quiet Lantern",
+					"parentClassId": 900001,
+					"isHomebrew": false,
+					"description": "<p>Hollowblades of this order carry a small lantern that never goes out.</p>",
+					"classFeatures": [
+						{
+							"id": 920001,
+							"name": "Quiet Flame",
+							"prerequisite": null,
+							"description": "<p>Your Hollow Strike can deal Radiant damage instead of Force damage.</p>",
+							"requiredLevel": 3,
+							"displayOrder": 3,
+							"classId": 900101
+						},
+						{
+							"id": 920002,
+							"name": "Lantern Bearer",
+							"prerequisite": null,
+							"description": "<p>You always know the way back to the last place you lit a fire.</p>",
+							"requiredLevel": 3,
+							"displayOrder": 3,
+							"classId": 900101
+						},
+						{
+							"id": 920003,
+							"name": "Steady Light",
+							"prerequisite": null,
+							"description": "<p>When you would be reduced to 0 Hit Points, you can drop to 1 Hit Point instead. Once you use this feature, you can&rsquo;t use it again until you finish a Long Rest.</p>",
+							"requiredLevel": 7,
+							"displayOrder": 7,
+							"classId": 900101
+						}
+					],
+					"sources": [
+						{
+							"sourceId": 99001,
+							"pageNumber": null,
+							"sourceType": 1
+						}
+					]
+				},
+				"classFeatures": [
+					{
+						"definition": {
+							"id": 910002,
+							"name": "Hollow Strike",
+							"prerequisite": null,
+							"description": "<p>When you hit a creature with a melee weapon, you can ring your blade: the target takes an extra Hollow die of Force damage. The die is shown in the Hollow Die column of the Hollowblade table.</p>",
+							"requiredLevel": 1,
+							"displayOrder": 1,
+							"levelScales": [
+								{
+									"id": 1,
+									"level": 1,
+									"description": "",
+									"dice": {
+										"diceCount": 1,
+										"diceValue": 4,
+										"diceMultiplier": null,
+										"fixedValue": null,
+										"diceString": "1d4"
+									},
+									"fixedValue": null
+								},
+								{
+									"id": 2,
+									"level": 5,
+									"description": "",
+									"dice": {
+										"diceCount": 1,
+										"diceValue": 6,
+										"diceMultiplier": null,
+										"fixedValue": null,
+										"diceString": "1d6"
+									},
+									"fixedValue": null
+								},
+								{
+									"id": 3,
+									"level": 11,
+									"description": "",
+									"dice": {
+										"diceCount": 1,
+										"diceValue": 8,
+										"diceMultiplier": null,
+										"fixedValue": null,
+										"diceString": "1d8"
+									},
+									"fixedValue": null
+								}
+							],
+							"classId": 900001,
+							"isSubClassFeature": false,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": {
+							"id": 1,
+							"level": 1,
+							"description": "",
+							"dice": {
+								"diceCount": 1,
+								"diceValue": 4,
+								"diceMultiplier": null,
+								"fixedValue": null,
+								"diceString": "1d4"
+							},
+							"fixedValue": null
+						}
+					},
+					{
+						"definition": {
+							"id": 910003,
+							"name": "Grave Sense",
+							"prerequisite": null,
+							"description": "<p>As a Bonus Action, you sense the undead within 60 feet of you until the end of your next turn.</p><p>You can use this feature a number of times shown in the Grave Sense column of the Hollowblade table, and you regain all expended uses when you finish a Long Rest.</p>",
+							"requiredLevel": 1,
+							"displayOrder": 1,
+							"levelScales": [
+								{
+									"id": 4,
+									"level": 1,
+									"description": "",
+									"dice": null,
+									"fixedValue": 2
+								},
+								{
+									"id": 5,
+									"level": 5,
+									"description": "",
+									"dice": null,
+									"fixedValue": 3
+								},
+								{
+									"id": 6,
+									"level": 9,
+									"description": "",
+									"dice": null,
+									"fixedValue": 4
+								}
+							],
+							"classId": 900001,
+							"isSubClassFeature": false,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": {
+							"id": 4,
+							"level": 1,
+							"description": "",
+							"dice": null,
+							"fixedValue": 2
+						}
+					},
+					{
+						"definition": {
+							"id": 910004,
+							"name": "Ashen Step",
+							"prerequisite": null,
+							"description": "<p>When you take the Dash action, you can leave a trail of cold ash. You can use this feature a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest.</p>",
+							"requiredLevel": 2,
+							"displayOrder": 2,
+							"levelScales": [],
+							"classId": 900001,
+							"isSubClassFeature": false,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					},
+					{
+						"definition": {
+							"id": 910005,
+							"name": "Hollowblade Order",
+							"prerequisite": null,
+							"description": "<p>You join a Hollowblade order, a subclass of your choice. You gain each of its features at the levels it lists.</p>",
+							"requiredLevel": 3,
+							"displayOrder": 3,
+							"levelScales": [],
+							"classId": 900001,
+							"isSubClassFeature": false,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					},
+					{
+						"definition": {
+							"id": 910006,
+							"name": "Ability Score Improvement",
+							"prerequisite": null,
+							"description": "<p>You gain the Ability Score Improvement feat or another feat of your choice for which you qualify.</p>",
+							"requiredLevel": 4,
+							"displayOrder": 4,
+							"levelScales": [],
+							"classId": 900001,
+							"isSubClassFeature": false,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					},
+					{
+						"definition": {
+							"id": 910007,
+							"name": "Extra Attack",
+							"prerequisite": null,
+							"description": "<p>You can attack twice instead of once whenever you take the Attack action on your turn.</p>",
+							"requiredLevel": 5,
+							"displayOrder": 5,
+							"levelScales": [],
+							"classId": 900001,
+							"isSubClassFeature": false,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					},
+					{
+						"definition": {
+							"id": 910008,
+							"name": "Lantern Ward",
+							"prerequisite": null,
+							"description": "<p>You and allies within 10 feet of you have Advantage on saving throws against the <strong>Frightened</strong> condition.</p>",
+							"requiredLevel": 6,
+							"displayOrder": 6,
+							"levelScales": [],
+							"classId": 900001,
+							"isSubClassFeature": false,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					},
+					{
+						"definition": {
+							"id": 910009,
+							"name": "Order Feature",
+							"prerequisite": null,
+							"description": "<p>You gain a feature from your Hollowblade order.</p>",
+							"requiredLevel": 7,
+							"displayOrder": 7,
+							"levelScales": [],
+							"classId": 900001,
+							"isSubClassFeature": false,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					},
+					{
+						"definition": {
+							"id": 920001,
+							"name": "Quiet Flame",
+							"prerequisite": null,
+							"description": "<p>Your Hollow Strike can deal Radiant damage instead of Force damage.</p>",
+							"requiredLevel": 3,
+							"displayOrder": 3,
+							"classId": 900101,
+							"levelScales": [],
+							"isSubClassFeature": true,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					},
+					{
+						"definition": {
+							"id": 920002,
+							"name": "Lantern Bearer",
+							"prerequisite": null,
+							"description": "<p>You always know the way back to the last place you lit a fire.</p>",
+							"requiredLevel": 3,
+							"displayOrder": 3,
+							"classId": 900101,
+							"levelScales": [],
+							"isSubClassFeature": true,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					},
+					{
+						"definition": {
+							"id": 920003,
+							"name": "Steady Light",
+							"prerequisite": null,
+							"description": "<p>When you would be reduced to 0 Hit Points, you can drop to 1 Hit Point instead. Once you use this feature, you can&rsquo;t use it again until you finish a Long Rest.</p>",
+							"requiredLevel": 7,
+							"displayOrder": 7,
+							"classId": 900101,
+							"levelScales": [],
+							"isSubClassFeature": true,
+							"snippet": "",
+							"limitedUse": []
+						},
+						"levelScale": null
+					}
+				]
+			}
+		],
+		"stats": [
+			{
+				"id": 1,
+				"name": null,
+				"value": 15
+			},
+			{
+				"id": 2,
+				"name": null,
+				"value": 12
+			},
+			{
+				"id": 3,
+				"name": null,
+				"value": 14
+			},
+			{
+				"id": 4,
+				"name": null,
+				"value": 14
+			},
+			{
+				"id": 5,
+				"name": null,
+				"value": 10
+			},
+			{
+				"id": 6,
+				"name": null,
+				"value": 8
+			}
+		],
+		"bonusStats": [
+			{
+				"id": 1,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 2,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 3,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 4,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 5,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 6,
+				"name": null,
+				"value": null
+			}
+		],
+		"overrideStats": [
+			{
+				"id": 1,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 2,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 3,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 4,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 5,
+				"name": null,
+				"value": null
+			},
+			{
+				"id": 6,
+				"name": null,
+				"value": null
+			}
+		],
+		"modifiers": {
+			"race": [],
+			"class": [
+				{
+					"type": "proficiency",
+					"subType": "strength-saving-throws",
+					"value": null,
+					"componentId": 910001
+				},
+				{
+					"type": "proficiency",
+					"subType": "intelligence-saving-throws",
+					"value": null,
+					"componentId": 910001
+				},
+				{
+					"type": "proficiency",
+					"subType": "athletics",
+					"value": null,
+					"componentId": 910001
+				},
+				{
+					"type": "proficiency",
+					"subType": "perception",
+					"value": null,
+					"componentId": 910001
+				}
+			],
+			"background": [
+				{
+					"type": "bonus",
+					"subType": "strength-score",
+					"value": 2,
+					"componentId": 930001
+				},
+				{
+					"type": "bonus",
+					"subType": "intelligence-score",
+					"value": 1,
+					"componentId": 930001
+				},
+				{
+					"type": "proficiency",
+					"subType": "insight",
+					"value": null,
+					"componentId": 930001
+				},
+				{
+					"type": "proficiency",
+					"subType": "religion",
+					"value": null,
+					"componentId": 930001
+				}
+			],
+			"item": [],
+			"feat": [],
+			"condition": []
+		},
+		"actions": {
+			"race": [],
+			"feat": [],
+			"item": null,
+			"class": [
+				{
+					"componentId": 910003,
+					"componentTypeId": 12168134,
+					"name": "Grave Sense",
+					"limitedUse": {
+						"resetType": 2,
+						"numberUsed": 0,
+						"maxUses": 3,
+						"useProficiencyBonus": false,
+						"statModifierUsesId": null
+					}
+				},
+				{
+					"componentId": 910004,
+					"componentTypeId": 12168134,
+					"name": "Ashen Step",
+					"limitedUse": {
+						"resetType": 2,
+						"numberUsed": 0,
+						"maxUses": 3,
+						"useProficiencyBonus": true,
+						"statModifierUsesId": null
+					}
+				}
+			]
+		},
+		"baseHitPoints": 46,
+		"bonusHitPoints": null,
+		"overrideHitPoints": null,
+		"removedHitPoints": 4,
+		"temporaryHitPoints": 0,
+		"feats": [
+			{
+				"componentTypeId": 1,
+				"componentId": 1,
+				"definition": {
+					"id": 940001,
+					"name": "Hollow Focus",
+					"isHomebrew": false,
+					"description": "<p>You gain the following benefits.</p><p><strong><em>Ringing Blade.</em></strong> Your Hollow Strike die increases by one size against undead.</p><p><strong><em>Lantern Lance.</em></strong> You learn the <em>Lantern Lance</em> spell.</p>",
+					"prerequisites": [
+						{
+							"description": "Level 4+, Hollowblade"
+						}
+					],
+					"categories": [
+						{
+							"tagName": "General"
+						}
+					]
+				}
+			},
+			{
+				"componentTypeId": 1,
+				"componentId": 2,
+				"definition": {
+					"id": 1789160,
+					"name": "Alert",
+					"isHomebrew": false,
+					"description": "<p>Placeholder text.</p>",
+					"prerequisites": [],
+					"categories": [
+						{
+							"tagName": "Origin"
+						}
+					]
+				}
+			}
+		],
+		"classSpells": [
+			{
+				"characterClassId": 5001,
+				"spells": []
+			}
+		],
+		"spells": {
+			"race": [
+				{
+					"definition": {
+						"id": 2129,
+						"name": "Light",
+						"level": 0,
+						"school": "Evocation",
+						"description": "<p>Placeholder text.</p>",
+						"components": [
+							1,
+							3
+						],
+						"componentsDescription": "a firefly",
+						"activation": {
+							"activationTime": 1,
+							"activationType": 1
+						},
+						"range": {
+							"origin": "Touch",
+							"rangeValue": null
+						},
+						"duration": {
+							"durationInterval": 1,
+							"durationUnit": "Hour",
+							"durationType": "Time"
+						},
+						"concentration": false,
+						"ritual": false
+					}
+				}
+			],
+			"feat": [
+				{
+					"definition": {
+						"id": 950001,
+						"name": "Lantern Lance",
+						"level": 1,
+						"school": "Evocation",
+						"isHomebrew": false,
+						"description": "<p>A spear of pale lantern light flies from your hand at a creature within range. Make a ranged spell attack. On a hit, the target takes 2d8 Radiant damage and sheds dim light until the start of your next turn.</p><p><strong><em>Using a Higher-Level Spell Slot.</em></strong> The damage increases by 1d8 for each spell slot level above 1.</p>",
+						"components": [
+							1,
+							2,
+							3
+						],
+						"componentsDescription": "a lantern wick",
+						"activation": {
+							"activationTime": 1,
+							"activationType": 1
+						},
+						"range": {
+							"origin": "Ranged",
+							"rangeValue": 60,
+							"aoeType": null,
+							"aoeValue": null
+						},
+						"duration": {
+							"durationInterval": 0,
+							"durationUnit": null,
+							"durationType": "Instantaneous"
+						},
+						"concentration": false,
+						"ritual": false
+					}
+				}
+			],
+			"background": [],
+			"item": [],
+			"class": []
+		},
+		"inventory": [
+			{
+				"id": 1,
+				"quantity": 1,
+				"equipped": true,
+				"isAttuned": true,
+				"definition": {
+					"id": 960001,
+					"name": "Lantern of Last Light",
+					"magic": true,
+					"rarity": "Uncommon",
+					"filterType": "Wondrous item",
+					"type": "Wondrous item",
+					"canAttune": true,
+					"attunementDescription": "",
+					"description": "<p>While attuned to this lantern, you can light it as a Bonus Action. It sheds Bright Light in a 20-foot radius, and undead in that light have Disadvantage on attack rolls against you.</p>",
+					"isHomebrew": false,
+					"weight": 2,
+					"cost": null
+				}
+			},
+			{
+				"id": 2,
+				"quantity": 1,
+				"equipped": true,
+				"isAttuned": false,
+				"definition": {
+					"id": 960002,
+					"name": "Hookblade",
+					"magic": false,
+					"rarity": "Common",
+					"filterType": "Weapon",
+					"type": "Hookblade",
+					"canAttune": false,
+					"categoryId": 2,
+					"attackType": 1,
+					"damage": {
+						"diceCount": 1,
+						"diceValue": 6,
+						"diceString": "1d6"
+					},
+					"damageType": "Slashing",
+					"properties": [
+						{
+							"id": 1,
+							"name": "Finesse",
+							"description": "",
+							"notes": null
+						},
+						{
+							"id": 2,
+							"name": "Light",
+							"description": "",
+							"notes": null
+						}
+					],
+					"range": 5,
+					"longRange": 5,
+					"description": "<p>A short blade with a hooked tip, made for pulling shields aside.</p>",
+					"isHomebrew": false,
+					"weight": 2,
+					"cost": 12
+				}
+			},
+			{
+				"id": 3,
+				"quantity": 1,
+				"equipped": false,
+				"isAttuned": false,
+				"definition": {
+					"id": 4581,
+					"name": "Longsword",
+					"magic": false,
+					"rarity": "Common",
+					"filterType": "Weapon",
+					"type": "Longsword",
+					"canAttune": false,
+					"categoryId": 2,
+					"attackType": 1,
+					"damage": {
+						"diceCount": 1,
+						"diceValue": 8,
+						"diceString": "1d8"
+					},
+					"damageType": "Slashing",
+					"properties": [
+						{
+							"id": 3,
+							"name": "Versatile",
+							"description": "",
+							"notes": "1d10"
+						}
+					],
+					"range": 5,
+					"longRange": 5,
+					"description": "<p>Placeholder text.</p>",
+					"weight": 3,
+					"cost": 15
+				}
+			}
+		],
+		"customItems": [],
+		"currencies": {
+			"cp": 0,
+			"sp": 4,
+			"ep": 0,
+			"gp": 31,
+			"pp": 0
+		}
+	},
+	"pagination": null
+}

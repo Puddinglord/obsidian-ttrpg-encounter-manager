@@ -8,6 +8,7 @@
 
 import { CompendiumEntry, createCompendiumQuery, QuerySchema, SegmentDef, SortDef } from '../../core/compendium/query';
 import { allHits, contentVersion5e, Hit5e, KIND5E, Kind5e } from './compendium';
+import { IMPORTED } from '../../core/content/blocks';
 import type { Dnd5eEdition } from './editions';
 import { crLabel, crValue, xpOf } from './rules';
 import type { Dnd5eEntry } from './types';
@@ -232,9 +233,9 @@ function hitEntry(h: Hit5e): Entry5e {
 			text = firstLine(h.desc, 600);
 			break;
 	}
-	// A content pack's entry says which pack; your homebrew (a block in the content folder) says Homebrew.
+	// A content pack's entry says which pack; your homebrew (a block in the content folder) says Homebrew, or Imported.
 	const own = Object.values(h).find(v => v && typeof v === 'object' && typeof (v as { source?: unknown }).source === 'string') as { source?: string; note?: string } | undefined;
-	if (own?.source) { facets.source = [own.source]; flags.push(own.note ? 'homebrew' : 'pack'); }
+	if (own?.source) { facets.source = [own.source]; flags.push(own.source === IMPORTED ? 'imported' : own.note ? 'homebrew' : 'pack'); }
 	return { id: `${h.kind}:${h.name}`, kind: h.kind, segments: [SEGMENT_OF[h.kind]], name: h.name, detail: h.detail, badge, facets, nums, flags, text, hit: h };
 }
 
@@ -249,7 +250,7 @@ export function buildEntries5e(edition: Dnd5eEdition, monsters: Dnd5eEntry[], lo
 	const key = `${edition}:${contentVersion5e()}`;
 	let hits = hitCache.get(key);
 	if (!hits) { hitCache.clear(); hitCache.set(key, hits = allHits(edition).map(hitEntry)); }
-	const yours = mine.map(h => { const e = hitEntry(h); e.id = `mine:${e.id}`; e.facets.source = ['Your notes']; e.flags.push('mine'); return e; });
+	const yours = mine.map(h => { const e = hitEntry(h); e.id = `mine:${e.id}`; if (!e.flags.includes('imported')) e.facets.source = ['Your notes']; e.flags.push('mine'); return e; });
 	const taken = new Set(mine.map(h => `${h.kind}:${h.name.toLowerCase()}`));
 	return [...monsters.map(m => monsterEntry(m, lore)), ...yours, ...(taken.size ? hits.filter(e => !taken.has(`${e.kind}:${e.name.toLowerCase()}`)) : hits)];
 }

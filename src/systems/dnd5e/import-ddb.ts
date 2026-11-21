@@ -2,10 +2,11 @@
 // character) as a 5e character note's frontmatter, in the format character.ts
 // reads. Pure: no Obsidian imports, and no network: the user brings the JSON.
 //
-// Only names and numbers are copied. D&D Beyond's JSON also carries the books'
-// text (class features, spell and item descriptions); that text is copyrighted
-// and never goes into the note. Names that match the SRD or a content pack
-// resolve on the sheet by themselves.
+// Only names and numbers go into the note. D&D Beyond's JSON also carries the
+// full definitions (class features, spell and item descriptions): the import
+// dialog offers those as entries for the user's own compendium, in their own
+// vault (import-ddb-content.ts), never in the note and never shipped. Names
+// that match the SRD, a content pack or those entries resolve on the sheet.
 //
 // Where things are in the JSON (the payload is usually under `data`):
 //   name, classes[].definition.name / .level / .subclassDefinition.name / .isStartingClass

@@ -46,6 +46,17 @@
 								],
 								"description": "The name, as references use it."
 							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
 							"statblock": {
 								"type": [
 									"string",
@@ -349,6 +360,17 @@
 								],
 								"description": "The name, as references use it."
 							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
 							"level": {
 								"type": "integer",
 								"minimum": 0,
@@ -452,6 +474,17 @@
 								],
 								"description": "The name, as references use it."
 							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
 							"rarity": {
 								"type": [
 									"string",
@@ -505,6 +538,17 @@
 									"number"
 								],
 								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
 							},
 							"category": {
 								"type": [
@@ -628,6 +672,17 @@
 								],
 								"description": "The name, as references use it."
 							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
 							"desc": {
 								"type": [
 									"string",
@@ -668,6 +723,17 @@
 									"number"
 								],
 								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
 							},
 							"proficiencies": {
 								"type": "array",
@@ -840,6 +906,17 @@
 								],
 								"description": "The name, as references use it."
 							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
 							"size": {
 								"type": [
 									"string",
@@ -963,6 +1040,17 @@
 									"number"
 								],
 								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
 							},
 							"hitDie": {
 								"type": "integer",
@@ -1393,6 +1481,17 @@
 									"number"
 								],
 								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
 							},
 							"class": {
 								"type": [

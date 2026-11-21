@@ -14,6 +14,12 @@ import { readYaml, toYaml } from '../yaml-lite';
 export const HOMEBREW = 'Homebrew';
 
 /**
+ * The tag on an entry imported from another app (a D&D Beyond character's class): a block in the content folder
+ * that says where it came from (`imported: D&D Beyond`). It's still in the Homebrew pack; only its tag differs.
+ */
+export const IMPORTED = 'Imported';
+
+/**
  * How a game system writes its kinds as blocks: ```<prefix>-<kind>, in notes under
  * <content folder>/<folder>/<the kind's plural>/. Kinds that already have a block of their own
  * (a game's spells, items and monsters) aren't listed.

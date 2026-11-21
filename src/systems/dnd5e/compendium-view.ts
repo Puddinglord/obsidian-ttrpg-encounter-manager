@@ -14,7 +14,7 @@ import type { Dnd5eRuntime } from './runtime';
 import { pill } from '../../core/pill';
 import { applyLook } from '../../core/look';
 import { evIcon } from '../../core/icons';
-import { HOMEBREW } from '../../core/content/blocks';
+import { HOMEBREW, IMPORTED } from '../../core/content/blocks';
 import { newButtonLabel, newContent } from '../../core/content/new-entry';
 
 export const DND5E_COMPENDIUM_VIEW = 'nimble-dnd5e-compendium';
@@ -93,7 +93,8 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 		tags(e, el) {
 			if (e.flags.includes('pack')) { el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-pack', text: e.facets.source?.[0] ?? 'Pack' }); return; }
 			if (!e.monster) {
-				if (e.flags.includes('mine') || e.flags.includes('homebrew')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-homebrew', text: HOMEBREW });
+				if (e.flags.includes('imported')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-imported', text: IMPORTED });
+				else if (e.flags.includes('mine') || e.flags.includes('homebrew')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-homebrew', text: HOMEBREW });
 				return;
 			}
 			el.createSpan({ cls: `nimble-cmpx-pill-tag bestiary-tag is-source is-${e.monster.bundled ? 'mm' : 'note'}`, text: e.monster.bundled ? 'SRD' : 'Note' });

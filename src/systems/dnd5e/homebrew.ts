@@ -26,9 +26,12 @@
 //
 // The properties come first, one per line; everything after the first blank
 // line is the text. A note's spell or item replaces the SRD's of the same name.
+// One imported from a D&D Beyond character says so after its name
+// (`imported: D&D Beyond`, `ddbId: 2120`), and is tagged Imported.
 // Pure: no Obsidian imports.
 
 import type { Equipment5e, Item5e, Spell5e } from './compendium';
+import { HOMEBREW, IMPORTED } from '../../core/content/blocks';
 import type { Dnd5eEdition } from './editions';
 
 export const SPELL_LANG = '5e-spell';
@@ -57,6 +60,18 @@ function split(source: string): { props: Map<string, string>; text: string } {
 }
 
 const yes = (v: string | undefined) => !!v && !/^(no|false|0|none)$/i.test(v.trim());
+
+/** Where an imported block came from (`imported: D&D Beyond`, `ddbId: 2120`), when it says. */
+function originOf(props: Map<string, string>): { imported?: string; ddbId?: number } {
+	const imported = props.get('imported')?.trim();
+	const id = Number(props.get('ddbid'));
+	return { ...(imported ? { imported } : {}), ...(Number.isFinite(id) && props.get('ddbid')?.trim() ? { ddbId: id } : {}) };
+}
+
+/** The lines that say where an imported block came from, after its name. */
+function originLines(x: { imported?: string; ddbId?: number }): string[] {
+	return [...(x.imported ? [`imported: ${x.imported}`] : []), ...(x.ddbId !== undefined ? [`ddbId: ${x.ddbId}`] : [])];
+}
 const list = (v: string | undefined) => (v ?? '').split(',').map(x => x.trim()).filter(Boolean);
 
 export function parseSpell5e(source: string): Spell5e | null {
@@ -81,13 +96,14 @@ export function parseSpell5e(source: string): Spell5e | null {
 	if (hi >= 0) spell.higherLevel = paras.slice(hi).join('\n\n').replace(HIGHER, '');
 	if (/^concentration/i.test(duration) || yes(props.get('concentration'))) spell.concentration = true;
 	if (yes(props.get('ritual'))) spell.ritual = true;
-	return spell;
+	return Object.assign(spell, originOf(props));
 }
 
 /** A spell as ```5e-spell block text (the body). The higher-level paragraph is worded for the edition. */
 export function spellSource5e(s: Spell5e, edition: Dnd5eEdition = '2024'): string {
 	const lines = [
 		`name: ${s.name}`,
+		...originLines(s),
 		`level: ${s.level === 0 ? 'cantrip' : s.level}`,
 		`school: ${s.school}`,
 		`casting time: ${s.castingTime}`,
@@ -120,7 +136,7 @@ export function parseItem5e(source: string, edition: Dnd5eEdition = '2024'): Ite
 	const att = attunementOf(props.get('attunement'));
 	const item: Item5e = { name, type, rarity, desc: text, line: itemLine5e(type, rarity, att, edition) };
 	if (att.on) item.attunement = true;
-	return item;
+	return Object.assign(item, originOf(props));
 }
 
 /** "Weapon (Longsword), rare (requires attunement by a paladin)": 2014 lower-cases the rarity, 2024 doesn't. */
@@ -131,8 +147,8 @@ export function itemLine5e(type: string, rarity: string, att: { on: boolean; by?
 }
 
 /** An item as ```5e-item block text (the body). */
-export function itemSource5e(i: { name: string; type: string; rarity: string; attunement?: boolean | string; desc: string }): string {
-	const lines = [`name: ${i.name}`, `type: ${i.type}`, `rarity: ${i.rarity}`];
+export function itemSource5e(i: { name: string; type: string; rarity: string; attunement?: boolean | string; desc: string; imported?: string; ddbId?: number }): string {
+	const lines = [`name: ${i.name}`, ...originLines(i), `type: ${i.type}`, `rarity: ${i.rarity}`];
 	if (i.attunement) lines.push(`attunement: ${i.attunement === true ? 'yes' : `by ${String(i.attunement).replace(/^by\s+/i, '')}`}`);
 	return `${lines.join('\n')}\n\n${i.desc.trim()}`.trim();
 }
@@ -182,12 +198,12 @@ export function parseEquipment5e(source: string): Equipment5e | null {
 	const w = /([\d.]+)/.exec(props.get('weight') ?? '');
 	if (w) e.weight = Number(w[1]);
 	if (text) e.desc = text;
-	return e;
+	return Object.assign(e, originOf(props));
 }
 
 /** Equipment as ```5e-item block text (the body). */
 export function equipmentSource5e(e: Equipment5e): string {
-	const lines = [`name: ${e.name}`, `category: ${e.category}`];
+	const lines = [`name: ${e.name}`, ...originLines(e), `category: ${e.category}`];
 	const add = (k: string, v: string | number | undefined) => { if (v !== undefined && v !== '') lines.push(`${k}: ${v}`); };
 	add('damage', e.damage);
 	add('versatile', e.versatile);
@@ -202,9 +218,9 @@ export function equipmentSource5e(e: Equipment5e): string {
 	return `${lines.join('\n')}${e.desc?.trim() ? `\n\n${e.desc.trim()}` : ''}`;
 }
 
-/** One of yours, marked as homebrew: its card says Homebrew where the SRD's say SRD 5.1 or 5.2. */
-export function homebrewSource<T extends object>(x: T): T & { source: string } {
-	return Object.assign({}, x, { source: 'Homebrew' });
+/** One of yours, marked as homebrew (or as imported, when it says where from): its card says so where the SRD's say SRD 5.1 or 5.2. */
+export function homebrewSource<T extends { imported?: string }>(x: T): T & { source: string } {
+	return Object.assign({}, x, { source: x.imported ? IMPORTED : HOMEBREW });
 }
 
 /** Find every block of a language in a note. */
