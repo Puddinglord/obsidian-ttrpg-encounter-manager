@@ -150,6 +150,16 @@ next: Down the cellar stair, into Q1.
 
 Sections the card shows (the recap, and loot and next time when they're not properties) step aside in reading view, as does the note's title, so nothing shows twice.
 
+## Your game's look
+
+While a campaign is active, all of Obsidian wears its game: notes and sidebars sit on the game's page instead of white, the tab bar and ribbon are a shade deeper around them, and headings and links take the game's type and ink. Nimble's headings are its heavy italic; 5e's are oxblood small capitals on parchment. It follows you: open a note in a 5e campaign and Obsidian turns 5e, open one in a Nimble campaign and it turns Nimble. Light and dark both work.
+
+![All of Obsidian in a Nimble campaign: the Campaign panel, a scene with its encounter, and the hound fight in the tracker](images/theme-nimble.png)
+
+![The same in a 5e campaign: parchment everywhere, the location's heading in oxblood small capitals, the road ambush in the 5e tracker](images/theme-5e.png)
+
+To keep your own theme, turn off **Theme Obsidian to match the game** in [settings](settings.md). Ember Vault's own panels, sheets and blocks keep their game's look either way.
+
 ## How it's laid out
 
 It's plain folders and a little frontmatter, so you can also build it by hand or convert an existing vault:

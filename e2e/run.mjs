@@ -3341,6 +3341,10 @@ test("app look: all of Obsidian wears the active campaign's game, and follows it
 		await o.waitFor(async () => (await body()).join() === 'ev-theme-dnd5e', { what: 'the 5e look' });
 		assert.equal(await bg(), 'rgb(242, 235, 221)', "the main area on 5e's parchment");
 		assert.equal(await p.evaluate(() => getComputedStyle(document.body).getPropertyValue('--h1-variant').trim()), 'small-caps');
+		// At startup the active campaign is only known once the campaigns are indexed: that puts the look on too.
+		await p.evaluate(() => document.body.classList.remove('ev-theme-dnd5e'));
+		await o.eval((app, plugin) => plugin.campaigns.trigger('changed'));
+		assert.deepEqual(await body(), ['ev-theme-dnd5e'], 'the look comes back when the campaigns are indexed');
 		// Dark: the same game, its dark page.
 		await p.evaluate(() => { document.body.classList.add('theme-dark'); document.body.classList.remove('theme-light'); });
 		assert.equal(await bg(), 'rgb(23, 18, 14)', "5e's dark page");

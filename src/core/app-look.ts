@@ -31,6 +31,8 @@ export function registerAppLook(plugin: EmberVaultPlugin): () => void {
 	const apply = () => { const game = appLookGame(plugin); for (const d of docs()) dress(d, game); };
 	plugin.app.workspace.onLayoutReady(apply);
 	plugin.registerEvent(plugin.events.on('active-campaign-changed', apply));
+	// At startup (and just after a campaign is made) the active one is only known once the campaigns are indexed.
+	plugin.registerEvent(plugin.campaigns.on('changed', apply));
 	plugin.registerEvent(plugin.app.workspace.on('window-open', (win) => dress(win.doc, appLookGame(plugin))));
 	plugin.register(() => { for (const d of docs()) dress(d, null); });
 	return apply;

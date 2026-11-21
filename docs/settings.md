@@ -6,6 +6,7 @@ Open **Settings → Ember Vault**, or type `/settings` in a note. The settings e
 
 - **Slash commands:** show your game's commands in the `/` menu.
 - **Open Omnisearch with Cmd/Ctrl+K:** off until you turn it on. [Omnisearch](omnisearch.md) then shares the key with Obsidian's Insert Markdown link: Omnisearch when nothing is selected, a link when text is.
+- **Theme Obsidian to match the game:** on unless you turn it off. Notes, sidebars and tabs take the colours and headings of the game your active campaign plays. See [your game's look](campaigns.md#your-games-look).
 - **Styled tables:** rounded corners, a tinted header and zebra rows for every table in your notes.
 
 ## Campaigns

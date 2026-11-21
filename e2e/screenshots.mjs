@@ -212,6 +212,40 @@ const shots = {
 	async tracker() {
 		await houndFight();
 	},
+	// campaigns.md "Your game's look": the whole app in Nimble's colours and type, the Campaign panel, a scene and the fight.
+	async 'theme-nimble'() {
+		await houndFight();
+		await o.eval(async (app, plugin) => { app.workspace.leftSplit.expand(); await plugin.openCampaignView(); });
+		await focusPanel(CHAPTER);
+		await page.waitForTimeout(500);
+		await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+	},
+	// The same in a 5e campaign: parchment, oxblood small capitals, the 5e tracker.
+	async 'theme-5e'() {
+		await layout({ left: true });
+		await swordCoast();
+		await writeNote('Campaigns/Sword Coast/Waymoot Bridge.md', ['---', 'nimble: location', 'type: bridge', 'region: The Trade Way', 'monsters: [Goblin Warrior, Ogre]', '---', '',
+			'A stone bridge over the river, its toll house shuttered. Goblins hold the far end.', '',
+			'## The toll house', '', 'A narrow stair goes down to a cellar that runs under the river. The ferryman, Old Tam, knows the way.', ''].join('\n'));
+		await writeNote('Campaigns/Sword Coast/Road Ambush.md', ['# Road ambush', '', 'Goblins spring from the ditch while their mage holds back. An ogre lumbers out of the trees on round two.', '',
+			'```nimble-encounter', 'name: Road ambush', 'monsters:', '- 2 `5e:Goblin Warrior`', '- `5e:Ogre`', '- `5e:Mage`', '```', ''].join('\n'));
+		await o.eval(async (app, plugin) => { await plugin.campaigns.setActive('Campaigns/Sword Coast'); await plugin.openCampaignView(); });
+		// The ambush running in the 5e tracker beside the bridge.
+		await open('Campaigns/Sword Coast/Road Ambush.md');
+		const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+		await page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-encounter button', { hasText: 'Run' }).click();
+		await page.locator(TR).waitFor();
+		await page.locator(`${TR} button`, { hasText: /Start combat/ }).first().click();
+		await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.change((f) => {
+			const by = (n) => f.combatants.find(c => c.label === n);
+			const ogre = by('Ogre'); if (ogre) { ogre.hp = 41; ogre.conditions.push({ name: 'Prone' }); }
+			const gob = by('Goblin Warrior'); if (gob) gob.hp = 4;
+		}));
+		await open('Campaigns/Sword Coast/Waymoot Bridge.md');
+		await o.eval((app) => app.workspace.rightSplit.setSize?.(330));
+		await page.waitForTimeout(900);
+		await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+	},
 	// The HP keypad open on a hound, showing its math before you commit.
 	async 'hp-calculator'() {
 		await houndFight();
