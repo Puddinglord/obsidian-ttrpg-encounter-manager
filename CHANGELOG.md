@@ -54,6 +54,10 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Content packs work in Nimble: add your own classes, subclasses, class options, ancestries, backgrounds, spells, items, monsters, boons, rules and conditions as a JSON file. They show up in the compendium tagged with the pack's name, and in New character, Level up, the sheet, references, Spotlight and Add to fight. **Import content…** takes Nimble packs and says what it left out and why. See the [content packs guide](docs/content-packs.md).
 - A pack's Nimble class levels up like a book's: its subclass joins it, a new option joins its class's list (a new Savage Arsenal ability for the Berserker), and the class's own dice go into rolls the way Fury and Judgment Dice do. See the [content packs guide](docs/content-packs.md).
 
+- Make your own classes, subclasses, feats, species, ancestries, backgrounds, boons, rules and conditions from the compendium: press + on its tab, give it a name, and fill in the block Ember Vault writes. It shows in the compendium tagged Homebrew and works in New character, Level up, the sheet, references and Spotlight like the books' own. See the [guide to your own content](docs/homebrew.md).
+- Type content by hand: a ```` ```5e-class ````, ```` ```nimble-ancestry ```` or any other kind's block in a note in your content folder, with the same fields as a content pack. Reading view shows it as its compendium card, with anything that needs fixing listed under it. See the [guide to your own content](docs/homebrew.md).
+- Classes can say more than their wording: in 5e, uses from a formula ("Charisma modifier", at least 1), a class's or background's own starting equipment and tool choices, and options grouped by `group`; in Nimble, dice that grow by level or subclass, the states and target a class panel keeps, and a feature's stat increase, spell picks and uses per Safe Rest. See [content packs](docs/content-packs.md).
+
 ### Changed
 
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
@@ -92,6 +96,9 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Battle notes in a campaign you play in are in Nimble's look, like the GM's encounter block, and the trackers drop hint lines that repeated what the screen already says. See the [tracker guide](docs/tracker.md).
 - Add several says **As written** for the middle strength, like the encounter block, and 5e's compendium tags your spells and items **Homebrew**. See the [encounters guide](docs/encounters.md).
 
+- The compendium's + makes something for the tab you're on and says what: New class or subclass on Classes, New feat on Feats. What you make is tagged Homebrew, with Open note on its page, and `source:Homebrew` and `is:homebrew` find it; a content pack's entries carry their pack's name as a dark tag. See [the compendium](docs/compendium.md#making-your-own).
+- A content pack's own 5e Bard gets only the limited-use features it lists. See [content packs](docs/content-packs.md#5e).
+
 ### Fixed
 
 - An NPC note written by hand, without a `nimble-npc` block, shows its card and portrait instead of only a row of properties. See the [NPCs guide](docs/npcs.md#character-cards).
@@ -105,6 +112,8 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Spotlight no longer offers an NPC's role as a `role:` filter, and the Nimble quick look calls a hero's number Armor, as the card and sheet do.
 - Renaming a combatant just after a hit no longer saves half the name.
 - Import content's summary gets plurals right ("2 classes", "1 species"). See the [content packs guide](docs/content-packs.md).
+- Nimble boons in content packs are read: a boon gives its kind as `"type": "epic"`. See [content packs](docs/content-packs.md#nimble).
+- With Styled tables on, a 5e class's level table in a note (or a table in a ```` ```5e-spell ````) keeps the compendium's look. See [Playing 5e](docs/5e.md).
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
