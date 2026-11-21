@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launchObsidian } from './harness.mjs';
-import { pillOffenders, PILL_SELECTORS } from './align.mjs';
+import { pillOffenders, PILL_SELECTORS, NOT_PILLS } from './align.mjs';
 import { markRoot, frameRoot, markPillLikes, visualChecks, drawOutlines, clearOutlines, settle } from './visual-checks.mjs';
 import { SURFACES, prepareVault } from './visual-surfaces.mjs';
 import { writeReport } from './visual-report.mjs';
@@ -202,7 +202,7 @@ async function capture(s, name, width, theme, phone) {
 		f = await page.evaluate(frameRoot, { pad: PAD });
 	}
 	if (!f) throw new Error('the surface went away');
-	for (const p of await page.evaluate(markPillLikes, { selectors: PILL_SELECTORS })) {
+	for (const p of await page.evaluate(markPillLikes, { selectors: PILL_SELECTORS, notPills: NOT_PILLS })) {
 		const u = unknownPills.get(p.sel) ?? { n: 0, where: new Set() };
 		u.n += p.n; u.where.add(`${s.game}/${name}`);
 		unknownPills.set(p.sel, u);

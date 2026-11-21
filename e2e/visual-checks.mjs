@@ -52,18 +52,23 @@ export function frameRoot({ pad }) {
 	return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, hidden: Math.round(hidden), vw: innerWidth, vh: innerHeight };
 }
 
-/** Elements that look like pills (a small rounded box with a fill, border or shadow and a short label) but aren't in PILL_SELECTORS. Marks them `data-vis-pill` so pillOffenders measures them too. */
-export function markPillLikes({ selectors }) {
+/**
+ * Elements that look like pills (a small rounded box with a fill, border or shadow and a short label) but aren't in
+ * PILL_SELECTORS, nor in NOT_PILLS (pill-like but not pills: align.mjs says why). Marks them `data-vis-pill` so
+ * pillOffenders measures them too.
+ */
+export function markPillLikes({ selectors, notPills = [] }) {
 	const root = document.querySelector('[data-vis-root]');
 	document.querySelectorAll('[data-vis-pill]').forEach(n => n.removeAttribute('data-vis-pill'));
 	if (!root) return [];
 	const known = selectors.join(',');
+	const not = notPills.join(',');
 	const cv = document.createElement('canvas'); cv.width = cv.height = 1;
 	const cx = cv.getContext('2d', { willReadFrequently: true });
 	const alpha = (css) => { cx.clearRect(0, 0, 1, 1); cx.fillStyle = 'rgba(0,0,0,0)'; cx.fillStyle = css; cx.fillRect(0, 0, 1, 1); return cx.getImageData(0, 0, 1, 1).data[3] / 255; };
 	const found = new Map();
 	for (const e of root.querySelectorAll('*')) {
-		if (e.matches(known) || e.closest('svg') || /^(INPUT|SELECT|TEXTAREA|IMG|CANVAS|OPTION|LABEL)$/.test(e.tagName)) continue;
+		if (e.matches(known) || (not && e.matches(not)) || e.closest('svg') || /^(INPUT|SELECT|TEXTAREA|IMG|CANVAS|OPTION|LABEL)$/.test(e.tagName)) continue;
 		if (e.closest('.mod-header, .mod-footer, .metadata-container, .embedded-backlinks, .modal-close-button')) continue;
 		// Inside a known pill: measured with it.
 		if (e.parentElement?.closest(known)) continue;

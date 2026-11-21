@@ -49,6 +49,45 @@ export const PILL_SELECTORS = [
 	'.dnd5e-ddb-tag',
 	// Nimble's builders for a hero's content: what a level grants in the check, a feature's grants, the stats said, the level ladder.
 	'.ncb-grant', '.ncb-grant-label', '.ncb-grant-add', '.ncb-said', '.ncb-rung',
+	// The builders (core/builder/frame.ts): step dots, kinds, segments, the footer's buttons and the phone sheet's, steppers,
+	// text buttons, the level chip, Edit and the review's fixes, the dice field, speed modes, the book's average, a class's motifs.
+	'.eb-dot', '.eb-kind', '.eb-seg-btn', '.eb-back', '.eb-next', '.eb-create', '.eb-preview-btn', '.eb-sheet-close', '.eb-num-btn', '.eb-icon-btn',
+	'.eb-text-btn', '.eb-chip', '.eb-review-edit', '.eb-note-fix', '.eb-df-step', 'button.eb-df-seg', '.eb-mode-toggle', '.eb-pill', '.eb-auto', '.ncb-motif',
+	// Sheets: Nimble's feature names, a reaction card's foot and the head's tools; 5e's spell remove, equip and item menu buttons,
+	// the NPC's ability scores, temp HP.
+	'.ns-feat-name', '.ns-rc-foot', '.ns-icon-btn', '.dnd5e-sheet-x', '.dnd5e-equip', '.dnd5e-item-more', '.dnd5e-npc-ab-s', '.ns-meter-extra',
+	// Rolls and dice in rules text, DC pills in tables, the condition picker's durations, the 5e tracker's initiative (not
+	// its gem: the number sits on the gem's shape).
+	'.dnd5e-roll', '.nimble-dice', '.nimble-dc', '.nimble-segmented > button', '.dnd5e-init:not(.dnd5e-gem)',
+	// The HP keypad's keys, modes, toggles and buttons; the trackers' card icons and Back; key steppers in dialogs.
+	'.hp-pad-keys > button', '.hp-pad-mode', '.hp-pad-toggles > button', '.hp-pad-close', '.hp-pad-cancel', '.hp-pad-apply',
+	'.ev-card-icon', '.ev-foot-back', '.ev-keys > button', '.rd-step-btn',
+	// Edit pencils and small buttons on notes: a stat block's hint fixes, a box's icon, an NPC portrait's edit, a rules card's link.
+	'.nimble-issue-fix', '.nimble-block-edit', '.nimble-box-icon', '.nimble-npc-portrait-edit', '.ev-term-open',
+	// A map token's letter and a party member's avatar: centred in their disc.
+	'.nimble-map-token-text', '.campaign-hero-avatar',
+	// Measured but not in the shared rule: links to notes sit on their sentence's baseline (like .nimble-inline-ref), and
+	// Obsidian's icon buttons (ours wear its class too) are Obsidian's to centre.
+	'.nimble-note-link', '.clickable-icon',
+];
+
+/**
+ * Pill-like to the visual check's eye (a small rounded box with a short label) but not a pill, so it's neither measured
+ * as one nor listed as missing from PILL_SELECTORS. Each with why.
+ */
+export const NOT_PILLS = [
+	// A rules word you can tap (core/rule-term-ui.ts): a word in its sentence, or a label, underlined. Text, not a pill.
+	'.ev-term',
+	// Boxes that hold pills, each measured on its own: segmented controls, the builder's speed modes, the compendium's search field.
+	'.eb-seg', '.eb-mode', '.nimble-segmented', '.dnd5e-cmp-editions', '.nimble-cmpx-field',
+	// Rows, names and two-line buttons: a sheet row (its name over its detail), the conditions row, a Campaign panel note, the 5e tracker's name.
+	'.ns-row-toggle', '.ns-conds-row', '.campaign-note', '.dnd5e-combatant-name',
+	// Checkboxes and marks: a quest objective's box, the tracker's turn mark.
+	'.ev-cq-box', '.ev-mark',
+	// A map pin: its icon sits in the pin's round head, not its box's middle (its label is .nimble-map-pin-label).
+	'.nimble-map-pin-icon',
+	// Obsidian's own buttons in its own rows (a modal's, a setting's): its look and its centring.
+	'.modal-button-container > button', '.setting-item-control > button',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {

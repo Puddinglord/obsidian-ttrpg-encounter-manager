@@ -2909,7 +2909,7 @@ body.is-tablet .nimble-box-editor .bxe-font { padding: 0 0.45rem; }
 /* Beats Obsidian's .markdown-rendered th[align=…] and the styled-table rule above. */
 :is(.nimble-box-body, body.nimble-tables .markdown-rendered, .markdown-rendered, .cm-table-widget) table :is(th, td).nimble-dc-cell { text-align: center; }
 .nimble-dc {
-	display: inline-flex; align-items: center; justify-content: center; min-width: 2.1rem; padding: 0.05rem 0.45rem; border-radius: 999px;
+	display: inline-flex; align-items: center; justify-content: center; min-width: 2.1rem; padding: 0.1rem 0.45rem; border-radius: 999px;
 	font-weight: 800; font-size: 0.9em; font-variant-numeric: tabular-nums;
 	background: color-mix(in srgb, var(--tbl-accent, var(--interactive-accent)) 18%, transparent); color: color-mix(in srgb, var(--tbl-accent, var(--interactive-accent)) 75%, var(--text-normal));
 }
@@ -3742,10 +3742,11 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet.ns-sheet .ns-class > * { grid-column: 1 / -1; min-width: 0; }
 .nimble-sheet.ns-sheet .ns-feat { display: grid; grid-template-columns: subgrid; align-items: center; gap: 8px 14px; padding: 10px 0; border-top: 1px solid var(--ev-line); }
 .nimble-sheet.ns-sheet .ns-class-head + .ns-feat { border-top: 0; }
-.nimble-sheet.ns-sheet .ns-feat-name { display: block; justify-self: start; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+.nimble-sheet.ns-sheet .ns-feat-name { justify-content: flex-start; justify-self: start; min-width: 0; min-height: 22px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
 .nimble-sheet.ns-sheet button.ns-feat-name { cursor: pointer; }
 /* The name's capitals sit on the row's centre line as they are (the bundled Vollkorn needs no nudge; measured). */
 .nimble-sheet.ns-sheet .ns-feat-name b { display: inline; font: italic 900 15px/20px var(--ev-font-name); color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-feat-name b { position: relative; top: 1px; } /* Vollkorn's capitals sit 1.1px high in a centred box (measured) */
 .nimble-sheet.ns-sheet .ns-feat.is-mana .ns-feat-name b { color: var(--ev-mana); }
 .nimble-sheet.ns-sheet .ns-feat-nw { white-space: nowrap; }
 .nimble-sheet.ns-sheet .ns-feat-chev { display: inline-flex; vertical-align: middle; margin: -2px 0 0 6px; color: var(--ev-text-2); transition: transform 0.15s ease; }
@@ -4948,14 +4949,16 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
    at line-height normal. (line-height 1 looks tidier but isn't: at small sizes Chromium rounds the font's
    ascent and descent to whole pixels and splits the difference unevenly, leaving labels ~1px high.) e2e/align.mjs
    measures the real glyphs and fails the run when anything drifts more than 1px. Add new pill classes here
-   and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die, .dnd5e-ddb-tag):not(#nimble-pill) {
+   and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules, so a pill's
+   hidden state needs it too, like the builder's .is-hidden. A label already trimmed to its capitals, the builder's
+   .eb-t, keeps its own box: as a flex box its text-box trim would stop working.) */
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die, .dnd5e-ddb-tag, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die, .dnd5e-ddb-tag):not(#nimble-pill) > :is(span, div) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die, .dnd5e-ddb-tag, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar):not(#nimble-pill) > :is(span, div):where(:not(.eb-t)) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die, .dnd5e-ddb-tag):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-spotlight-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-spotlight-die, .dnd5e-ddb-tag, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* The standard pill, core/pill.ts: [icon] [text] on one centre line, one gap, the icon at the text's size.
@@ -4985,7 +4988,7 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
 /* ============================================
    PRINT / PDF EXPORT: no controls on paper
    ============================================ */
-/* `html body :is(...)` outranks every screen rule for these (two classes at most), so no !important. */
+/* `html body :is(...):not(#nimble-pill)` outranks every screen rule for these, the shared pill rule too, so no !important. */
 @media print {
 	html body :is(.nimble-statblock .add-btn,
 	.nimble-statblock .statblock-actions,
@@ -4995,7 +4998,7 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
 	.nimble-map-tray,
 	.nimble-box-chevron,
 	.nimble-inline-add-btn,
-	.nimble-npc-portrait-edit) { display: none; }
+	.nimble-npc-portrait-edit):not(#nimble-pill) { display: none; }
 }
 
 /* Narrow quick looks and sheets (the Character panel, phones) ----------------------------------------------------- */
@@ -5546,7 +5549,7 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder button.eb-kind.is-active { background: color-mix(in srgb, var(--eb-accent) 14%, var(--background-primary)); border-color: color-mix(in srgb, var(--eb-accent) 55%, transparent); color: var(--text-normal); }
 .nimble-entity-builder .eb-kind-icon { display: inline-flex; }
 .nimble-entity-builder .eb-kind-icon svg { width: 15px; height: 15px; }
-.nimble-entity-builder .eb-chip { display: none; }
+.nimble-entity-builder:not(.is-phone-layout) .eb-chip:not(#nimble-pill), .nimble-entity-builder .eb-chip.is-hidden:not(#nimble-pill) { display: none; } /* :not(#nimble-pill) outranks the shared pill rule */
 
 /* Step chips */
 .nimble-entity-builder .eb-dots { display: flex; gap: 0.35rem; padding: 0.15rem 1.25rem 0.7rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--ev-paper-edge); flex: 0 0 auto; }
@@ -5790,7 +5793,7 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder.is-phone-layout .eb-foot { padding: 0.6rem 0.9rem calc(0.6rem + var(--safe-area-inset-bottom, 0px)); }
 .nimble-entity-builder.is-phone-layout .eb-chip { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
 .nimble-entity-builder.is-phone-layout .eb-chip.is-hidden { display: none; }
-.nimble-entity-builder.is-phone-layout .eb-kind > span:last-child { display: none; }
+.nimble-entity-builder.is-phone-layout .eb-kind:not(#nimble-pill) > span:last-child { display: none; }
 .nimble-entity-builder.is-phone-layout button.eb-kind { width: var(--eb-h); padding: 0; justify-content: center; }
 .nimble-entity-builder.is-phone-layout .eb-body { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1fr); }
 .nimble-entity-builder.is-phone-layout .eb-side { position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: 94%; border: 0; border-top: 1px solid var(--ev-paper-edge); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25); transform: translateY(105%); transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -5951,11 +5954,11 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 /* The last step's Create (in Next's place) gets the room the hidden "Create now" held: on a narrow footer,
    Next already stretches, so taking the hidden button out doesn't move anything. */
 @media (max-width: 760px) {
-	.nimble-entity-builder button.eb-create.is-gone { display: none; }
+	.nimble-entity-builder button.eb-create.is-gone:not(#nimble-pill) { display: none; }
 	.nimble-entity-builder button.eb-next { min-width: 0; }
 	.nimble-entity-builder button.eb-next .eb-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
-.nimble-entity-builder.is-phone-layout button.eb-create.is-gone { display: none; }
+.nimble-entity-builder.is-phone-layout button.eb-create.is-gone:not(#nimble-pill) { display: none; }
 .nimble-entity-builder.is-phone-layout button.eb-next { min-width: 0; }
 .nimble-entity-builder.is-phone-layout button.eb-next .eb-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -6152,8 +6155,8 @@ body.is-mobile .nimble-entity-builder button.ncb-motif, body.is-tablet .nimble-e
 	.nimble-entity-builder.ev-sys-nimble:is([data-kind="class"], [data-kind="subclass"]) .eb-check { max-height: none; }
 }
 
-/* Last, so it beats every button's display. */
-.nimble-entity-builder .is-hidden, .nimble-entity-builder button.is-hidden { display: none; }
+/* Last, so it beats every button's display (:not(#nimble-pill): the shared pill rule's too). */
+.nimble-entity-builder .is-hidden:not(#nimble-pill), .nimble-entity-builder button.is-hidden:not(#nimble-pill) { display: none; }
 
 /* ---------------------------------------------------------------------------
    5e stat blocks (src/systems/dnd5e/render.ts), each edition in its own dress (design study: #5e/block).
