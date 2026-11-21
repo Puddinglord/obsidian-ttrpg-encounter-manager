@@ -144,6 +144,16 @@ export function register(test, h) {
 	 * New character, filled in the way a player does: who they are, then a pick for every step that asks for one
 	 * (skills, tools and languages, class choices, spells). The wizard must already be open.
 	 */
+	/** In 5e's compendium dialog (a picker): search, wait for `name` to be the selected row, Enter. */
+	async function pickInCompendium(o, query, name) {
+		const M = '.modal.dnd5e-cmpx-modal';
+		await o.page.locator(`${M} .nimble-cmpx-input`).waitFor({ timeout: 3000 });
+		await o.page.locator(`${M} .nimble-cmpx-input`).fill(query);
+		await o.waitFor(async () => (await o.page.locator(`${M} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`).textContent().catch(() => '')) === name, { what: `${name} selected in the compendium` });
+		await o.page.keyboard.press('Enter');
+		await o.page.locator(M).waitFor({ state: 'detached' });
+	}
+
 	async function fillCharacter(o, c) {
 		await o.page.locator(B).waitFor({ timeout: 3000 });
 		await o.page.locator(`${PANEL} input[data-field="Name"]`).fill(c.name);
@@ -460,13 +470,15 @@ export function register(test, h) {
 			await o.waitFor(async () => (await lp(o, '.nimble-npc-card .dnd5e-npc-stats.is-empty').count()) === 1, { what: 'the card in Live Preview' });
 			assert.match(await lp(o, '.nimble-npc-card .dnd5e-npc-stats').innerText(), /A story NPC: no stats/);
 
-			// From a stat block: the picker lists 5e monsters; the card becomes the Bandit Captain's sheet.
+			// From a stat block: the compendium, on its Monsters tab, is the picker; the card becomes the Bandit Captain's sheet.
 			await o.openFile(npc, 'preview');
 			const card = view(o, '.nimble-npc-card');
 			await card.locator('.dnd5e-npc-stats button', { hasText: 'From a stat block' }).click();
-			await o.page.locator('.prompt-input').fill('bandit captain');
-			await o.waitFor(async () => /Bandit Captain/.test(await o.page.locator('.suggestion-item.is-selected').innerText().catch(() => '')), { what: 'the Bandit Captain offered' });
-			await o.page.keyboard.press('Enter');
+			const cmp = o.page.locator('.modal.dnd5e-cmpx-modal');
+			await cmp.waitFor();
+			assert.equal(await cmp.locator('.modal-title').innerText(), 'Stats for Marta Vey');
+			assert.equal(await cmp.evaluate(el => el.classList.contains('ev-sys-dnd5e')), true);
+			await pickInCompendium(o, 'bandit captain', 'Bandit Captain');
 			await waitFm(o, npc, fm => fm.statblock === 'Bandit Captain', 'statblock: Bandit Captain');
 			const captain = await o.eval((app, plugin, p) => { const m = plugin.runtime('dnd5e').get('Bandit Captain', p).monster; return { ac: m.ac, hp: m.hp }; }, npc);
 			const stats = card.locator('.dnd5e-npc-stats');
@@ -1041,9 +1053,7 @@ export function register(test, h) {
 			const addItem = async (name) => {
 				await SH('.dnd5e-tab[data-tab="inventory"]').click();
 				await SH('.dnd5e-sheet-add').filter({ hasText: 'Add item' }).click();
-				await o.page.locator('.prompt-input').fill(name);
-				await o.waitFor(async () => new RegExp(name).test(await o.page.locator('.suggestion-item.is-selected').innerText().catch(() => '')), { what: `${name} offered` });
-				await o.page.keyboard.press('Enter');
+				await pickInCompendium(o, name, name);
 				await o.waitFor(async () => (await SH('.dnd5e-sheet-item').filter({ hasText: name }).count()) === 1, { what: `${name} carried` });
 			};
 			await addItem('Ember Pike');
@@ -1721,6 +1731,34 @@ export function register(test, h) {
 
 	// -----------------------------------------------------------------------
 	// Gaps the entity tests found, now closed.
+
+	test('entities 5e: the compendium is the picker — the tracker\'s Add monster opens it on Monsters, "2 goblin warrior" adds two, Cmd/Ctrl+Enter keeps it open', async (o) => {
+		const C = 'Campaigns/E5 Picker';
+		await scenario(o, 'picker', [C], async () => {
+			await campaign5e(o, 'E5 Picker', { edition: '2024', level: 1, starter: false });
+			await o.eval((app, plugin) => plugin.runtime('dnd5e').openTracker());
+			await o.page.locator(`${TR} button`, { hasText: 'Add monster' }).first().click();
+			const M = '.modal.dnd5e-cmpx-modal';
+			await o.page.locator(`${M} .nimble-cmpx-input`).waitFor({ timeout: 3000 });
+			assert.equal(await o.page.locator(`${M} .modal-title`).innerText(), 'Add to the fight');
+			// Only monsters: a spell's name finds nothing.
+			await o.page.locator(`${M} .nimble-cmpx-input`).fill('fireball');
+			await o.page.waitForTimeout(300);
+			assert.equal(await o.page.locator(`${M} .nimble-cmpx-row[data-id^="spell:"]`).count(), 0, 'no spells offered');
+			// Cmd/Ctrl+Enter adds and keeps the dialog open; Enter adds and closes.
+			await o.page.locator(`${M} .nimble-cmpx-input`).fill('bandit captain');
+			await o.waitFor(async () => (await o.page.locator(`${M} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`).textContent().catch(() => '')) === 'Bandit Captain', { what: 'the captain selected' });
+			await o.page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+			await o.waitFor(async () => (await fight(o)).length === 1, { what: 'the captain added' });
+			assert.equal(await o.page.locator(M).count(), 1, 'still open');
+			await o.page.locator(`${M} .nimble-cmpx-input`).fill('2 goblin warrior');
+			await o.waitFor(async () => (await o.page.locator(`${M} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`).textContent().catch(() => '')) === 'Goblin Warrior', { what: 'the goblin warrior selected' });
+			await o.page.keyboard.press('Enter');
+			await o.page.locator(M).waitFor({ state: 'detached' });
+			await o.waitFor(async () => (await fight(o)).length === 3, { what: 'two goblin warriors more' });
+			assert.deepEqual((await fight(o)).map(c => c.name).sort(), ['Bandit Captain', 'Goblin Warrior', 'Goblin Warrior']);
+		});
+	});
 
 	test('entities 5e: renaming a note a map pin and an encounter block link to updates them; the pin opens the place under its new name', async (o) => {
 		const C = 'Campaigns/E5 Rename Map';

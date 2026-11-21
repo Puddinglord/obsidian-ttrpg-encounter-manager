@@ -7,7 +7,7 @@
 // the note, or nowhere (a story NPC gets one quiet line offering both). Players
 // never see any of it.
 
-import { FuzzySuggestModal, Notice, setTooltip, TFile } from 'obsidian';
+import { Notice, setTooltip, TFile } from 'obsidian';
 import { pill } from '../../core/pill';
 import { cluster } from '../../core/cluster';
 import { evIcon } from '../../core/icons';
@@ -23,7 +23,8 @@ import { abilityMod, formatMod, initiativeOf, pbForCr } from './rules';
 import type { Dnd5eRuntime } from './runtime';
 import { acShield, corners, damageButton, profMark } from './sheet-parts';
 import { renderText5e } from './cards';
-import { ABILITIES, ABILITY_NAME, Dnd5eEntry } from './types';
+import { ABILITIES, ABILITY_NAME } from './types';
+import { pickMonster5e } from './compendium-modal';
 
 const SHORT = { str: 'Str', dex: 'Dex', con: 'Con', int: 'Int', wis: 'Wis', cha: 'Cha' } as const;
 const d20 = (mod: number) => (mod === 0 ? '1d20' : `1d20${mod > 0 ? '+' : '-'}${Math.abs(mod)}`);
@@ -90,7 +91,14 @@ class NpcStats5e {
 		const pick = pill(g, { tag: 'button', icon: evIcon('plus'), text: 'From a stat block', cls: 'dnd5e-npc-btn' });
 		pick.addEventListener('click', (e) => {
 			e.preventDefault();
-			new StatblockPicker(this.rt, this.ctx.path, (entry) => this.edit(fm => { fm.statblock = entry.name; })).open();
+			// The compendium is the picker: its Monsters tab, each one's stat block beside the list.
+			pickMonster5e(this.rt, {
+				title: `Stats for ${this.name}`, pickLabel: 'Use these stats', path: this.ctx.path,
+				pick: (e) => {
+					this.edit(fm => { fm.statblock = e.name; });
+					new Notice(`Stats from ${e.name}`);
+				},
+			});
 		});
 		if (ref) return;
 		const own = pill(g, { tag: 'button', text: 'Type them in', cls: 'dnd5e-npc-btn' });
@@ -293,19 +301,5 @@ class NpcStats5e {
 			row.createSpan({ cls: 'dnd5e-npc-act-note', text: r.note });
 			if (open && r.text) renderText5e(row.createDiv({ cls: 'dnd5e-npc-act-text' }), r.text, `${this.name}: ${r.name}`, card);
 		}
-	}
-}
-
-/** Pick the stat block an NPC uses. */
-class StatblockPicker extends FuzzySuggestModal<Dnd5eEntry> {
-	constructor(private rt: Dnd5eRuntime, private sourcePath: string, private onPick: (e: Dnd5eEntry) => void) {
-		super(rt.plugin.app);
-		this.setPlaceholder('Use the stats of…');
-	}
-	getItems(): Dnd5eEntry[] { return this.rt.index.all(this.rt.edition(this.sourcePath), this.sourcePath); }
-	getItemText(e: Dnd5eEntry): string { return `${e.name} (CR ${e.monster.cr})`; }
-	onChooseItem(e: Dnd5eEntry): void {
-		this.onPick(e);
-		new Notice(`Stats from ${e.name}`);
 	}
 }

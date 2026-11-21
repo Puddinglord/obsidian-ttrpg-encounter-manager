@@ -13,16 +13,18 @@
 // groups them, spells by level with their slots, features that open to their
 // own words, and the inventory.
 
-import { FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Notice, setIcon, setTooltip, TFile } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Notice, setIcon, setTooltip, TFile } from 'obsidian';
 import {
 	addItem, addListEntry, changeHp, cycleSkill, equipsWhenAdded, Frontmatter, longRest, readSheet5e, removeListEntry, setDeathSaves, setExhaustion, setHitDiceLeft, setItem, Sheet5e, SheetItem, SheetSkill, shortRest, useSlot,
 } from './character';
-import { Hit5e, KIND5E, Spell5e } from './compendium';
+import { Hit5e, Spell5e } from './compendium';
 import { conditionsFor } from './conditions';
 import { asEdition } from './editions';
 import { formatMod } from './rules';
 import type { Dnd5eRuntime } from './runtime';
 import { openLevelUp5e } from './character-wizard';
+import { openCompendium5eModal } from './compendium-modal';
+import type { Entry5e } from './compendium-entries';
 import { ABILITIES, ABILITY_NAME } from './types';
 import { ABILITY_SHORT, ACTION_GROUPS, formatDice, Resource5e, resources5e, restoreUses, setUsesLeft, SheetAction5e, sheetActions5e, slotFor, spellEffect } from './sheet-actions';
 import { acShield, corners, damageButton, plateFrame, profMark } from './sheet-parts';
@@ -656,20 +658,20 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		openLevelUp5e(this.rt, file, { ...this.fm }, s.edition, s.name);
 	}
 
+	/** Add a spell or an item: the compendium, on its Spells tab (the class's own list first) or its items and equipment. */
 	private pick(kind: 'spell' | 'item', s: Sheet5e, onPick: (hit: Hit5e) => void): void {
-		const all = this.rt.hits(s.edition, this.path).filter(h => kind === 'spell' ? h.kind === 'spell' : h.kind === 'item' || h.kind === 'equipment');
-		// A caster's own class list first.
-		const mine = kind === 'spell' && s.className ? all.filter(h => h.kind === 'spell' && h.spell.classes.includes(s.className)) : [];
-		new HitPicker(this.rt, mine.length ? [...mine, ...all.filter(h => !mine.includes(h))] : all, kind === 'spell' ? 'Add a spell…' : 'Add an item…', onPick).open();
+		const cls = s.className;
+		const common = { path: this.path, edition: s.edition, pickLabel: 'Add', pick: (e: Entry5e) => { if (e.hit) onPick(e.hit); } };
+		if (kind === 'spell') {
+			openCompendium5eModal(this.rt, {
+				...common, title: `Add a spell to ${s.name}`, segment: 'spells', only: (e) => e.hit?.kind === 'spell',
+				prefer: cls ? { label: `${cls} spells`, test: (e) => e.hit?.kind === 'spell' && e.hit.spell.classes.includes(cls) } : undefined,
+			});
+			return;
+		}
+		openCompendium5eModal(this.rt, {
+			...common, title: `Add an item to ${s.name}`, segment: 'all', segments: ['all', 'items', 'equipment'],
+			only: (e) => e.hit?.kind === 'item' || e.hit?.kind === 'equipment', placeholder: 'Search items and equipment… try rarity:rare, weapon:martial',
+		});
 	}
-}
-
-class HitPicker extends FuzzySuggestModal<Hit5e> {
-	constructor(rt: Dnd5eRuntime, private hits: Hit5e[], placeholder: string, private onPick: (hit: Hit5e) => void) {
-		super(rt.plugin.app);
-		this.setPlaceholder(placeholder);
-	}
-	getItems(): Hit5e[] { return this.hits; }
-	getItemText(h: Hit5e): string { return `${h.name} (${KIND5E[h.kind].label}: ${h.detail})`; }
-	onChooseItem(h: Hit5e): void { this.onPick(h); }
 }

@@ -7950,9 +7950,17 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 
 		// A quarterstaff becomes an attack; Magic Missile joins the spells.
 		await tab('inventory');
+		// Add item and Add spell open the compendium, filtered to what they add.
+		const pickIn = async (query, name) => {
+			const M = '.modal.dnd5e-cmpx-modal';
+			await o.page.locator(`${M} .nimble-cmpx-input`).waitFor({ timeout: 3000 });
+			await o.page.locator(`${M} .nimble-cmpx-input`).fill(query);
+			await o.waitFor(async () => (await o.page.locator(`${M} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`).textContent().catch(() => '')) === name, { what: `${name} selected` });
+			await o.page.keyboard.press('Enter');
+			await o.page.locator(M).waitFor({ state: 'detached' });
+		};
 		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add item' }).click();
-		await o.page.locator('.prompt-input').fill('Quarterstaff');
-		await o.page.keyboard.press('Enter');
+		await pickIn('Quarterstaff', 'Quarterstaff');
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-item`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff carried' });
 		await tab('actions');
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff attack' });
@@ -7967,8 +7975,7 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[1]', { what: 'Shield cast' });
 		await tab('spells');
 		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add spell' }).click();
-		await o.page.locator('.prompt-input').fill('Magic Missile');
-		await o.page.keyboard.press('Enter');
+		await pickIn('Magic Missile', 'Magic Missile');
 		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-spell`, { hasText: 'Magic Missile' }).count()) === 1, { what: 'Magic Missile listed' });
 
 		// Spend a slot, then a long rest brings everything back.

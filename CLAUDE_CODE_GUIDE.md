@@ -169,7 +169,7 @@ The community directory's review bot flags things the `eslint-plugin-obsidianmd`
 
 ## The compendium is the picker
 
-Anything that asks the user to pick a monster, spell, item, feature or class opens the compendium dialog (`openCompendiumModal`, or the helpers in compendium-pickers.ts) with `segment` / `only` set, rather than a new SuggestModal. New searchable data goes in `buildEntries` (compendium-entries.ts) with its facets, and a new filter key in `FACETS` (compendium-query.ts), so the tab, every dialog, the slash commands, `nimble:` autocomplete and Spotlight all get it.
+Anything that asks the user to pick a monster, spell, item, feature or class opens the compendium dialog (Nimble: `openCompendiumModal`, or the helpers in compendium-pickers.ts; 5e: `openCompendium5eModal` and `pickMonster5e` in dnd5e/compendium-modal.ts) with `segment` / `only` set, rather than a new SuggestModal. New searchable data goes in `buildEntries` (compendium-entries.ts) with its facets, and a new filter key in `FACETS` (compendium-query.ts), so the tab, every dialog, the slash commands, `nimble:` autocomplete and Spotlight all get it.
 
 ## Shared components, GM and player alike
 

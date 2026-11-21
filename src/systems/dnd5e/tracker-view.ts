@@ -10,7 +10,7 @@
 
 import { openHpPad } from '../../core/tracker/hp-pad';
 import type { HpCommand } from '../../core/tracker/hp';
-import { FuzzySuggestModal, ItemView, Menu, Notice, setIcon, WorkspaceLeaf } from 'obsidian';
+import { ItemView, Menu, Notice, setIcon, WorkspaceLeaf } from 'obsidian';
 import { renderPipRow } from '../../core/pip-row';
 import { pill } from '../../core/pill';
 import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover';
@@ -32,6 +32,8 @@ import { ABILITY_NAME, ABILITIES } from './types';
 import { DAMAGE_TYPES } from './builder-model';
 import type { Dnd5eRuntime } from './runtime';
 import type { Dnd5eEntry } from './types';
+import type { Entry5e } from './compendium-entries';
+import { pickMonster5e } from './compendium-modal';
 import { formatMod } from './rules';
 import { applyLook } from '../../core/look';
 import { makeSortable } from '../../core/tracker/sortable';
@@ -879,30 +881,14 @@ export class Dnd5eTrackerView extends ItemView {
 		menu.showAtMouseEvent(e);
 	}
 
+	/** Add monsters from the compendium: "3 goblin" for three, Cmd/Ctrl+Enter to add and keep going. */
 	private pickMonster(): void {
-		new MonsterPicker(this.rt, this.fight.sourcePath, (e, count) => {
-			this.change(f => addMonster(f, e.monster, count, { sourceFile: e.filePath || undefined }));
-		}).open();
-	}
-}
-
-/** Pick a 5e monster to add (Shift+Enter adds two). */
-class MonsterPicker extends FuzzySuggestModal<Dnd5eEntry> {
-	constructor(private rt: Dnd5eRuntime, private sourcePath: string | undefined, private onPick: (e: Dnd5eEntry, count: number) => void) {
-		super(rt.plugin.app);
-		this.setPlaceholder('Add a monster…');
-		this.setInstructions([{ command: '↵', purpose: 'add one' }, { command: 'shift ↵', purpose: 'add two' }]);
-	}
-
-	getItems(): Dnd5eEntry[] {
-		return this.rt.index.all(this.rt.edition(this.sourcePath), this.sourcePath);
-	}
-
-	getItemText(e: Dnd5eEntry): string {
-		return `${e.name} (CR ${e.monster.cr})`;
-	}
-
-	onChooseItem(e: Dnd5eEntry, evt: MouseEvent | KeyboardEvent): void {
-		this.onPick(e, evt.shiftKey ? 2 : 1);
+		const add = (e: Entry5e, n: number) => this.change(f => addMonster(f, e.monster!.monster, n, { sourceFile: e.monster!.filePath || undefined }));
+		pickMonster5e(this.rt, {
+			title: 'Add to the fight', pickLabel: 'Add and close', path: this.fight.sourcePath, edition: this.fight.edition, counts: true,
+			placeholder: 'Search monsters… try 3 goblin, type:undead cr:1-4',
+			pick: (e, n) => add(e, n),
+			keep: { label: 'Add and keep open', run: (e, n) => add(e, n) },
+		});
 	}
 }

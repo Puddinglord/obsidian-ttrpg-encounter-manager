@@ -96,6 +96,7 @@ Everywhere the plugin asks you to pick something, it opens the compendium alread
 - **Add monster** (the tracker's button and the command): adversaries and companion stat blocks. `3 goblin` adds three, Shift+Enter adds two, ⌘/Ctrl+Enter or a row's + adds and keeps the dialog open, and each row shows how many are already in the fight. **Add several…** on a monster page's Add menu asks how many, and how tough ([several at once](encounters.md#several-at-once)).
 - **Slash commands:** `/monster`, `/statblock`, `/spell`, `/item`, `/feature`, `/class`, `/companion` and `/compendium` open it set to that tab. Enter writes the reference where you typed the slash, and the cursor goes back to the note so you can keep typing.
 - **Character sheets:** Add item, Add spell and Add feature pick from it. Your class's own options and your schools come first (`is:suggested` shows only those), things already on the sheet are tagged Added, and you can add something that isn't in the books by name.
+- **In a 5e campaign** too: the tracker's **Add monster**, an NPC card's **From a stat block**, and a sheet's **Add spell** (your class's list first) and **Add item** open 5e's compendium the same way.
 
 The dialog shows the selected entry's page beside the list when it's wide enough. Narrower, and on phones, it shows the list alone.
 
