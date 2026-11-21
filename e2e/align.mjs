@@ -85,6 +85,8 @@ export const NOT_PILLS = [
 	'.eb-seg', '.eb-mode', '.nimble-segmented', '.dnd5e-cmp-editions', '.nimble-cmpx-field',
 	// Rows, names and two-line buttons: a sheet row (its name over its detail), the conditions row, a Campaign panel note, the 5e tracker's name.
 	'.ns-row-toggle', '.ns-conds-row', '.campaign-note', '.dnd5e-combatant-name',
+	// A box's heading (tapped, it folds the box): a title across the box's head.
+	'.nimble-box-title',
 	// Checkboxes and marks: a quest objective's box, the tracker's turn mark.
 	'.ev-cq-box', '.ev-mark',
 	// A map pin: its icon sits in the pin's round head, not its box's middle (its label is .nimble-map-pin-label).
