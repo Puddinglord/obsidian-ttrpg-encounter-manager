@@ -3311,6 +3311,58 @@ test('campaign panel: chapter files and maps are listed, real titles are kept, m
 	await endCampaign(o, 'Fresh');
 });
 
+test("app look: all of Obsidian wears the active campaign's game, and follows it; the setting turns it off", async (o) => {
+	const p = o.page;
+	const body = () => p.evaluate(() => [...document.body.classList].filter(c => c.startsWith('ev-theme-')));
+	// What the main area shows behind a note: the first painted background from its content up.
+	const bg = () => p.evaluate(() => {
+		for (let el = document.querySelector('.workspace-split.mod-root .view-content'); el; el = el.parentElement) {
+			const c = getComputedStyle(el).backgroundColor;
+			if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c;
+		}
+		return null;
+	});
+	const was = await o.eval((app, plugin) => plugin.campaigns.active?.folder ?? null);
+	try {
+		await o.eval(async (app, plugin) => {
+			for (const [name, system] of [['Look Nimble', 'nimble'], ['Look Coast', '5e']]) {
+				const old = app.vault.getAbstractFileByPath(`Campaigns/${name}`);
+				if (old) await app.vault.delete(old, true);
+				await plugin.campaigns.createCampaign({ name, level: 1, heroes: 4, starter: false, system, ...(system === '5e' ? { edition: '2024' } : {}) });
+			}
+		});
+		await o.waitFor(() => o.eval((app, plugin) => ['Look Nimble', 'Look Coast'].every(n => plugin.campaigns.campaigns.some(c => c.folder === `Campaigns/${n}`))), { what: 'both campaigns' });
+		// A Nimble campaign: the body wears Nimble, and notes sit on its page, not white.
+		await o.eval((app, plugin) => plugin.campaigns.setActive('Campaigns/Look Nimble'));
+		await o.waitFor(async () => (await body()).join() === 'ev-theme-nimble', { what: 'the Nimble look' });
+		assert.equal(await bg(), 'rgb(238, 235, 228)', "the main area on Nimble's page");
+		// A 5e campaign: it turns to 5e's parchment, its headings in small capitals.
+		await o.eval((app, plugin) => plugin.campaigns.setActive('Campaigns/Look Coast'));
+		await o.waitFor(async () => (await body()).join() === 'ev-theme-dnd5e', { what: 'the 5e look' });
+		assert.equal(await bg(), 'rgb(242, 235, 221)', "the main area on 5e's parchment");
+		assert.equal(await p.evaluate(() => getComputedStyle(document.body).getPropertyValue('--h1-variant').trim()), 'small-caps');
+		// Dark: the same game, its dark page.
+		await p.evaluate(() => { document.body.classList.add('theme-dark'); document.body.classList.remove('theme-light'); });
+		assert.equal(await bg(), 'rgb(23, 18, 14)', "5e's dark page");
+		await p.evaluate(() => { document.body.classList.remove('theme-dark'); document.body.classList.add('theme-light'); });
+		// Off: Obsidian as your theme draws it, at once.
+		await o.eval((app, plugin) => { plugin.settings.appLook = false; plugin.applyAppLook(); });
+		assert.deepEqual(await body(), []);
+		assert.notEqual(await bg(), 'rgb(242, 235, 221)');
+		await o.eval((app, plugin) => { plugin.settings.appLook = true; plugin.applyAppLook(); });
+		assert.deepEqual(await body(), ['ev-theme-dnd5e']);
+		// No active campaign: no game's look.
+		await o.eval((app, plugin) => plugin.campaigns.setActive(null));
+		await o.waitFor(async () => (await body()).length === 0, { what: 'no look without a campaign' });
+	} finally {
+		await o.eval(async (app, plugin, was) => {
+			plugin.settings.appLook = true;
+			for (const n of ['Look Nimble', 'Look Coast']) { const f = app.vault.getAbstractFileByPath(`Campaigns/${n}`); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(was);
+		}, was);
+	}
+});
+
 test('campaign panel: the search bar under the switcher opens Omnisearch; the key hint follows the setting', async (o) => {
 	await freshCampaign(o, 'Fresh');
 	const bar = o.page.locator(`${CP} .campaign-search`);

@@ -40,6 +40,8 @@ export interface EmberVaultSettings {
 	spotlightKey: boolean;
 	/** The one-time "Use Cmd/Ctrl+K for Omnisearch?" offer has been shown. Saved under Omnisearch's first name. */
 	spotlightOffered: boolean;
+	/** All of Obsidian (notes, sidebars, tabs) in the active campaign's game's colours and headings (core/app-look.ts). */
+	appLook: boolean;
 	/** Give every table in notes the plugin's look (tables in boxes always have it). */
 	styleTables: boolean;
 	/** Link plain mentions of NPC names in reading view. */
@@ -92,6 +94,7 @@ export const CORE_DEFAULTS = {
 	slashCommands: true,
 	spotlightKey: false,
 	spotlightOffered: false,
+	appLook: true,
 	campaignsFolder: 'Campaigns',
 	playerStatblocks: false,
 	readingView: true,

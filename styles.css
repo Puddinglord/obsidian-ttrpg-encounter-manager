@@ -170,6 +170,39 @@ body {
 	--ev-ochre-soft: #352B1C;
 	--xsc-ink: #A39B8F;
 }
+body.ev-theme-nimble {
+	--ev-bg: #EEEBE4;
+	--ev-surface: #FFFEFB;
+	--ev-surface-2: #F6F3EC;
+	--ev-line: #E2DDD2;
+	--ev-line-strong: #C9C2B4;
+	--ev-text: #24211D;
+	--ev-text-2: #625C53;
+	--ev-accent: #46423D;
+	--ev-accent-hover: #2F2C28;
+	--ev-on-accent: #FFFFFF;
+	--ev-accent-text: #24211D;
+	--ev-now: #FFFEFB;
+	--ev-font-display: "Avenir Next Condensed", "Barlow Condensed", "Roboto Condensed", sans-serif;
+	--ev-display-variant: normal;
+	--ev-display-weight: 700;
+	--ev-font-ui: "Avenir Next", "Nunito Sans", -apple-system, sans-serif;
+	--ev-app-heading-font: "Vollkorn", "Avenir Next Condensed", Georgia, serif;
+}
+body.theme-dark.ev-theme-nimble {
+	--ev-bg: #171512;
+	--ev-surface: #211F1B;
+	--ev-surface-2: #2A2723;
+	--ev-line: #35312B;
+	--ev-line-strong: #4D4840;
+	--ev-text: #F2EEE7;
+	--ev-text-2: #AEA699;
+	--ev-accent: #E9E3D7;
+	--ev-accent-hover: #FFFFFF;
+	--ev-on-accent: #1B1916;
+	--ev-accent-text: #F2EEE7;
+	--ev-now: #211F1B;
+}
 .ev-sys-dnd5e {
 	--ev-bg: #F2EBDD;
 	--ev-surface: #FCF8EF;
@@ -285,6 +318,39 @@ body {
 	--x5-sb14-rule: #E07A5E;
 	--x5-sb14-name: #EBA68E;
 }
+body.ev-theme-dnd5e {
+	--ev-bg: #F2EBDD;
+	--ev-surface: #FCF8EF;
+	--ev-surface-2: #EFE6D5;
+	--ev-line: #E3D6BF;
+	--ev-line-strong: #C9B797;
+	--ev-text: #24190F;
+	--ev-text-2: #67543F;
+	--ev-accent: #7B1E12;
+	--ev-accent-hover: #63170D;
+	--ev-on-accent: #FFF6EA;
+	--ev-accent-text: #6E1A0E;
+	--ev-now: #F7E9DB;
+	--ev-font-display: "EB Garamond", "Iowan Old Style", Garamond, Baskerville, Georgia, serif;
+	--ev-display-variant: small-caps;
+	--ev-display-weight: 600;
+	--ev-font-ui: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+	--ev-app-heading-font: "EB Garamond", "Iowan Old Style", Garamond, Baskerville, Georgia, serif;
+}
+body.theme-dark.ev-theme-dnd5e {
+	--ev-bg: #17120E;
+	--ev-surface: #221A14;
+	--ev-surface-2: #2C221A;
+	--ev-line: #3A2E23;
+	--ev-line-strong: #5A4733;
+	--ev-text: #F1E6D3;
+	--ev-text-2: #B7A48B;
+	--ev-accent: #B4402F;
+	--ev-accent-hover: #C44C3A;
+	--ev-on-accent: #FFF6EA;
+	--ev-accent-text: #EBA68E;
+	--ev-now: #2F1E16;
+}
 /* ===== end GAME TOKENS ===== */
 /* A game with its own look (the generated GAME TOKENS above): the older --ev names and Obsidian's own
    variables follow it inside its surfaces, so Obsidian's buttons, inputs, toggles, links and text match the
@@ -317,6 +383,70 @@ body {
 }
 .ev-sys-nimble { --ev-ornament: var(--ev-line-strong); --ev-rule: transparent; }
 .ev-sys-dnd5e { --ev-ornament: var(--ev-gold); --ev-rule: var(--ev-gold); }
+
+/* The whole app in the active campaign's game (core/app-look.ts; "Theme Obsidian to match the game", on by default):
+   Obsidian's own variables from the game's colours and type on <body>, so notes, sidebars, tabs, menus and dialogs
+   wear it, in light and dark. Notes and sidebars sit on the game's page; fields and dialogs on its card; the tab bar,
+   title bar, ribbon and status bar are a shade deeper, a frame. Headings and links take the game's type and ink. A
+   game's own surfaces keep their look on top (the .ev-sys-<id> bridge above). */
+body:is(.ev-theme-nimble, .ev-theme-dnd5e) {
+	--ev-app-frame: color-mix(in srgb, var(--ev-bg) 93%, var(--ev-text));
+	--background-primary: var(--ev-bg);
+	--background-primary-alt: var(--ev-surface-2);
+	--background-secondary: var(--ev-bg);
+	--background-secondary-alt: var(--ev-surface-2);
+	--background-modifier-border: var(--ev-line);
+	--background-modifier-border-hover: var(--ev-line-strong);
+	--background-modifier-border-focus: var(--ev-accent);
+	--background-modifier-hover: color-mix(in srgb, var(--ev-text) 6%, transparent);
+	--background-modifier-active-hover: color-mix(in srgb, var(--ev-accent) 12%, transparent);
+	--background-modifier-form-field: var(--ev-surface);
+	--titlebar-background: var(--ev-app-frame);
+	--titlebar-background-focused: var(--ev-app-frame);
+	--tab-container-background: var(--ev-app-frame);
+	--ribbon-background: var(--ev-app-frame);
+	--ribbon-background-collapsed: var(--ev-app-frame);
+	--status-bar-background: var(--ev-app-frame);
+	--modal-background: var(--ev-surface);
+	--text-normal: var(--ev-text);
+	--text-muted: var(--ev-text-2);
+	--text-faint: color-mix(in srgb, var(--ev-text-2) 72%, var(--ev-bg));
+	--text-accent: var(--ev-accent-text);
+	--text-accent-hover: var(--ev-accent-hover);
+	--text-on-accent: var(--ev-on-accent);
+	--text-selection: color-mix(in srgb, var(--ev-accent) 18%, transparent);
+	--color-accent: var(--ev-accent);
+	--color-accent-1: var(--ev-accent-hover);
+	--color-accent-2: var(--ev-accent-hover);
+	--interactive-accent: var(--ev-accent);
+	--interactive-accent-hover: var(--ev-accent-hover);
+	--interactive-normal: var(--ev-surface);
+	--interactive-hover: var(--ev-surface-2);
+	--link-color: var(--ev-accent-text);
+	--link-color-hover: var(--ev-accent-hover);
+	--link-external-color: var(--ev-accent-text);
+	--link-external-color-hover: var(--ev-accent-hover);
+	--link-unresolved-color: var(--ev-text-2);
+	--font-interface-theme: var(--ev-font-ui);
+	--inline-title-font: var(--ev-app-heading-font);
+	--h1-font: var(--ev-app-heading-font);
+	--h2-font: var(--ev-app-heading-font);
+	--h3-font: var(--ev-app-heading-font);
+	--h4-font: var(--ev-app-heading-font);
+}
+/* Nimble: headings in the books' heavy italic, ink on the page. */
+body.ev-theme-nimble {
+	--inline-title-style: italic; --inline-title-weight: 900;
+	--h1-style: italic; --h1-weight: 900; --h2-style: italic; --h2-weight: 900; --h3-style: italic; --h3-weight: 800; --h4-weight: 800;
+}
+/* 5e: headings in small capitals, the books' oxblood. */
+body.ev-theme-dnd5e {
+	--inline-title-variant: small-caps; --inline-title-weight: 600; --inline-title-color: var(--ev-accent-text);
+	--h1-variant: small-caps; --h1-weight: 600; --h1-color: var(--ev-accent-text);
+	--h2-variant: small-caps; --h2-weight: 600; --h2-color: var(--ev-accent-text);
+	--h3-variant: small-caps; --h3-weight: 600; --h3-color: var(--ev-accent-text);
+	--h4-weight: 700; --h4-color: var(--ev-accent-text);
+}
 
 /* ============================================
    STAT BLOCK

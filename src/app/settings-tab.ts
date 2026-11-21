@@ -91,6 +91,11 @@ export class EmberVaultSettingsTab extends PluginSettingTab {
 					render: toggle(() => s.spotlightKey, v => { s.spotlightKey = v; }, () => this.plugin.campaigns.trigger('changed')), // the Campaign panel's search bar shows the key
 				},
 				{
+					name: 'Theme Obsidian to match the game',
+					desc: 'Notes, sidebars and tabs take the colours and headings of the game your active campaign plays.',
+					render: toggle(() => s.appLook, v => { s.appLook = v; }, () => this.plugin.applyAppLook()),
+				},
+				{
 					name: 'Styled tables',
 					desc: 'Applies to every table in your notes.',
 					render: toggle(() => s.styleTables, v => { s.styleTables = v; }, () => this.containerEl.doc.body.toggleClass('nimble-tables', s.styleTables)),

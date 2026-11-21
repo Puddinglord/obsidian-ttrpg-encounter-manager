@@ -27,13 +27,23 @@ function tokens(selector) {
 	}
 	return out;
 }
+const APP = ['--g-bg', '--g-surface', '--g-surface-2', '--g-line', '--g-line-strong', '--g-text', '--g-text-2', '--g-accent', '--g-accent-hover', '--g-on-accent', '--g-accent-text', '--g-now'];
+const APP_TYPE = ['--g-font-display', '--g-display-variant', '--g-display-weight', '--g-font-ui'];
 const rename = k => k.startsWith('--g-') ? '--ev-' + k.slice(4) : k;
 const block = (sel, map) => `${sel} {\n${[...map].map(([k, v]) => `\t${rename(k)}: ${v};`).join('\n')}\n}`;
 
 const parts = [];
 for (const [study, id] of GAMES) {
-	parts.push(block(`.ev-sys-${id}`, tokens(`.g-${study}`)));
-	parts.push(block(`.theme-dark .ev-sys-${id}`, tokens(`html[data-theme="dark"] .g-${study}`)));
+	const light = tokens(`.g-${study}`), dark = tokens(`html[data-theme="dark"] .g-${study}`);
+	parts.push(block(`.ev-sys-${id}`, light));
+	parts.push(block(`.theme-dark .ev-sys-${id}`, dark));
+	// The whole app while a campaign of this game is active (body.ev-theme-<id>, core/app-look.ts): only the colours and
+	// type every game sets, so one game's extras (Nimble's --ev-icon-dy, 5e's --x5-*) never reach another game's
+	// surfaces through <body>; and the face its headings take (its name face, else its display face).
+	const app = (map, withType) => new Map([...map].filter(([k]) => APP.includes(k) || (withType && APP_TYPE.includes(k))));
+	const heading = light.get('--g-font-name') ?? light.get('--g-font-display');
+	parts.push(block(`body.ev-theme-${id}`, new Map([...app(light, true), ...(heading ? [['--ev-app-heading-font', heading]] : [])])));
+	parts.push(block(`body.theme-dark.ev-theme-${id}`, app(dark, false)));
 }
 const path = new URL('../styles.css', import.meta.url);
 let out = readFileSync(path, 'utf8');

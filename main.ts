@@ -19,6 +19,7 @@ import { CampaignStore } from './src/core/campaigns';
 import { registerBoxBlock } from './src/core/box-block';
 import { registerNpcCard } from './src/core/npc-card';
 import { registerTrackerFollow, TrackerPlace } from './src/core/tracker/follow';
+import { registerAppLook } from './src/core/app-look';
 import { registerNoteCard } from './src/core/note-card';
 import { NpcLinker } from './src/core/npc-links';
 import { npcLivePreview } from './src/core/npc-live-preview';
@@ -56,6 +57,8 @@ export default class EmberVaultPlugin extends Plugin {
 	readonly runtimes = new Map<string, unknown>();
 	/** Plugin-wide events: 'roll-log-changed'. */
 	events = new Events();
+	/** Dress every window in the active campaign's game again (after the setting changes). */
+	applyAppLook: () => void = () => {};
 	/** Bumped whenever the monster index changes; Live Preview widgets watch it. */
 	indexVersion = 0;
 	campaigns!: CampaignStore;
@@ -187,6 +190,7 @@ export default class EmberVaultPlugin extends Plugin {
 		registerBuilderCommands(this);
 		registerReadingMode(this);
 		registerTrackerFollow(this);
+		this.applyAppLook = registerAppLook(this);
 
 		// The other game systems wire in their own blocks, references and indexes.
 		for (const system of this.systems.all()) system.register?.(this);
