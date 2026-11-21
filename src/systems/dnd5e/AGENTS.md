@@ -47,5 +47,5 @@ The second game system, and the template for adding more. One system, two **edit
 - **Edition at render time:** `runtime.edition(path)` is 2024 until campaigns are indexed; the ```5e processor redraws when that changes.
 - **What 5e doesn't have yet** (see MULTI-SYSTEM.md, "Known gaps"):
   - multiclassing (Level up adds a level of the character's one class);
-  - choices the SRD data doesn't list as options: 2024's Eldritch Invocations and Metamagic, Divine Order and Primal Order (they show as features; note your pick under your own features), and swapping a known spell on a level up;
+  - choices the SRD data doesn't list as options: 2024's Eldritch Invocations and Metamagic, Divine Order and Primal Order (they show as features; note your pick under your own features);
   These are planned as shared engines in SYSTEMLESS.md, not 5e-only code.

@@ -8,7 +8,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { readSheet5e } from '../src/systems/dnd5e/character';
 import {
-	alwaysPrepared, applyLevelUp5e, bonuses, characterFm, classOf, classSpells, featIncrease, givenLanguages, languageChoice, newCharacter5e, newLevelUp5e, optionGroups, speciesChoices, toolChoices,
+	alwaysPrepared, applyLevelUp5e, bonuses, canSwapSpell, characterFm, classOf, classSpells, featIncrease, swapChoices, swappable, givenLanguages, languageChoice, newCharacter5e, newLevelUp5e, optionGroups, speciesChoices, toolChoices,
 } from '../src/systems/dnd5e/character-draft';
 import { settle } from '../src/systems/dnd5e/character-wizard';
 import { setContentLayer5e, setSpellLibrary5e, Spell5e } from '../src/systems/dnd5e/compendium';
@@ -180,5 +180,37 @@ describe('your ```5e-spell blocks are in the wizards\' spell picks', () => {
 		const warden = classSpells('2024', 'Hearth Warden', 1, false);
 		expect(warden).toContain('Hearth Ward');
 		expect(warden).toContain('Hunter\'s Mark');
+	});
+});
+
+describe('Level up can swap a spell known for another', () => {
+	const sorcerer = (level: number, spells: string[]) => ({ class: 'Sorcerer', level, cha: 16, con: 14, hp: 20, hp_max: 20, spells });
+	it('2014 Sorcerer: one known spell for another of a level it has slots for; the sheet keeps its place', () => {
+		const fm: Record<string, unknown> = sorcerer(4, ['Fire Bolt', 'Light', 'Burning Hands', 'Shield', 'Magic Missile', 'Misty Step', 'Mirror Image']);
+		const up = newLevelUp5e(fm, '2014', 'S');
+		expect(canSwapSpell(up)).toBe(true);
+		expect(swappable(up)).toEqual(['Burning Hands', 'Shield', 'Magic Missile', 'Misty Step', 'Mirror Image']);
+		expect(swapChoices(up)).toContain('Fireball');
+		expect(swapChoices(up)).not.toContain('Shield');
+		up.swapOut = 'Burning Hands';
+		up.swapIn = 'Fireball';
+		applyLevelUp5e(fm, up);
+		expect((fm.spells as string[]).slice(0, 4)).toEqual(['Fire Bolt', 'Light', 'Fireball', 'Shield']);
+		expect(fm.spells).not.toContain('Burning Hands');
+	});
+	it('only where the class says so: 2024 Sorcerer yes, 2024 Cleric (a Long Rest) and Wizard (a spellbook) no, nor before it has spells', () => {
+		expect(canSwapSpell(newLevelUp5e(sorcerer(4, ['Shield']), '2024', 'S'))).toBe(true);
+		expect(canSwapSpell(newLevelUp5e({ class: 'Cleric', level: 4, wis: 16, spells: ['Bless'] }, '2024', 'C'))).toBe(false);
+		expect(canSwapSpell(newLevelUp5e({ class: 'Wizard', level: 4, int: 16, spells: ['Shield'] }, '2024', 'W'))).toBe(false);
+		expect(canSwapSpell(newLevelUp5e({ class: 'Ranger', level: 1, wis: 16, spells: [] }, '2014', 'R'))).toBe(false);
+		expect(canSwapSpell(newLevelUp5e({ class: 'Ranger', level: 2, wis: 16, spells: ['Hunter\'s Mark'] }, '2014', 'R'))).toBe(true);
+	});
+	it('a swap that isn\'t allowed is left alone', () => {
+		const fm: Record<string, unknown> = sorcerer(2, ['Fire Bolt', 'Shield', 'Magic Missile']);
+		const up = newLevelUp5e(fm, '2014', 'S');
+		up.swapOut = 'Fire Bolt';
+		up.swapIn = 'Fireball';
+		applyLevelUp5e(fm, up);
+		expect(fm.spells).toEqual(['Fire Bolt', 'Shield', 'Magic Missile']);
 	});
 });

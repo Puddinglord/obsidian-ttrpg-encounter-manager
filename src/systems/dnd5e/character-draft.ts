@@ -681,6 +681,9 @@ export interface LevelUp5eDraft extends Draft {
 	featUp: string;
 	cantrips: string[];
 	spells: string[];
+	/** A spell known swapped for another of the class's (blank: none). */
+	swapOut: string;
+	swapIn: string;
 	expertise: string[];
 	choices: string[];
 	styleFeat: string;
@@ -708,7 +711,7 @@ export function newLevelUp5e(fm: Frontmatter, edition: Dnd5eEdition, name = 'Her
 	return {
 		edition, name: s.name, className: s.className ?? '', level: Math.min(20, s.level + 1), hitDie: cls?.hitDie ?? s.hitDie, conMod: abilityMod(scores.con),
 		hasSubclass: !!s.subclass, subclassNow: s.subclass, hp: 'average', subclass: '', asi: 'plus2', a1: best[0] ?? 'str', a2: best[1] ?? 'dex', feat: '', featUp: '',
-		cantrips: [], spells: [], expertise: [], choices: [], styleFeat: '', masteries: [], scores, hpMax: s.hpMax,
+		cantrips: [], spells: [], swapOut: '', swapIn: '', expertise: [], choices: [], styleFeat: '', masteries: [], scores, hpMax: s.hpMax,
 		known: listOf(fm.spells), skillsNow: s.skills.filter(k => k.proficient).map(k => k.name), expertiseNow: listOf(fm.expertise), choicesNow: listOf(fm.choices), masteriesNow: listOf(fm.masteries),
 	};
 }
@@ -729,6 +732,29 @@ export const newSpellCount = (d: LevelUp5eDraft) => {
 	const was = spellCount(d.edition, cls, d.level - 1, d.scores)?.count ?? 0;
 	return Math.max(0, now - was);
 };
+/**
+ * Can a spell known be swapped for another as this level is reached? 2014's casters who know their spells (Bard,
+ * Ranger, Sorcerer, Warlock, and a class with a spells-known column); in 2024, a class whose spellcasting says so
+ * ("Whenever you gain a Bard level, you can replace one spell on your list…"; the others change theirs on a Long Rest).
+ * Not before the class has spells.
+ */
+export function canSwapSpell(d: LevelUp5eDraft): boolean {
+	const cls = classOf(d.edition, d.className);
+	const kind = spellCount(d.edition, cls, d.level, d.scores)?.kind;
+	if (!kind || kind === 'spellbook' || !spellsAt(cls, d.level - 1).maxLevel) return false;
+	if (d.edition === '2014') return kind === 'known';
+	return !!cls?.features.some(f => /gain an? [\w' -]+ level, you can replace one spell/i.test(f.desc));
+}
+/** The spells known that can be swapped out: the class's own (not a subclass's always-prepared ones, nor cantrips). */
+export function swappable(d: LevelUp5eDraft): string[] {
+	const mine = new Set(classSpells(d.edition, d.className, 9, false).map(n => n.toLowerCase()));
+	const always = new Set(alwaysPrepared(classOf(d.edition, d.className), d.subclassNow, d.level - 1).map(n => n.toLowerCase()));
+	return d.known.filter(n => mine.has(n.toLowerCase()) && !always.has(n.toLowerCase()));
+}
+/** What a swapped-out spell can become: the class's spells of a level it has slots for, not known or picked now. */
+export const swapChoices = (d: LevelUp5eDraft): string[] =>
+	classSpells(d.edition, d.className, spellsAt(classOf(d.edition, d.className), d.level).maxLevel, false).filter(n => !d.known.some(k => same(k, n)) && !d.spells.some(k => same(k, n)));
+
 /** The subclass this level counts with: the one chosen now, or the one the character has. */
 const subclassFor = (d: LevelUp5eDraft) => (needsSubclass(d) ? d.subclass : d.subclassNow);
 export const levelOptions = (d: LevelUp5eDraft) => optionGroups(classOf(d.edition, d.className), subclassFor(d), d.level, d.level - 1)
@@ -787,6 +813,11 @@ export function applyLevelUp5e(fm: Frontmatter, d: LevelUp5eDraft, rolled?: numb
 	if (picked.length) {
 		const now = listOf(fm.spells);
 		fm.spells = [...now, ...picked.filter(x => !now.includes(x))];
+	}
+	// A spell known swapped for another, in its place on the list.
+	if (d.swapOut && d.swapIn && canSwapSpell(d) && swappable(d).includes(d.swapOut) && swapChoices({ ...d, spells: [] }).includes(d.swapIn)) {
+		const now = listOf(fm.spells);
+		fm.spells = now.map(x => (same(x, d.swapOut) ? d.swapIn : x)).filter((x, i, all) => all.indexOf(x) === i);
 	}
 	const exp = d.expertise.filter(x => d.skillsNow.includes(x)).slice(0, expertiseAt(classOf(d.edition, d.className), d.level));
 	if (exp.length) fm.expertise = uniq([...listOf(fm.expertise), ...exp]);

@@ -12,7 +12,7 @@ import { openBuilder, registerKind } from '../../core/builder/frame';
 import { EntitySchema, FieldDef, schemaKind } from '../../core/builder/schema';
 import { Frontmatter, readSheet5e, SKILLS, STANDARD_ARRAY } from './character';
 import {
-	ABILITY_OF, allSkills, applyLevelUp5e, asiLevels, assignByClass, averageGain, backgroundCreation, backgroundOf, backgroundSkills, Character5eDraft, characterFm, characterMissing, classCreation,
+	ABILITY_OF, allSkills, applyLevelUp5e, asiLevels, canSwapSpell, swapChoices, swappable, assignByClass, averageGain, backgroundCreation, backgroundOf, backgroundSkills, Character5eDraft, characterFm, characterMissing, classCreation,
 	classOf, classSpells, expertiseAt, expertiseCount, featIncrease, featuresGained, fightingStyleAt, finalScores, givenLanguages, givenTools, hasAsi, hasVersatile, increaseLevels, languageChoice,
 	LevelUp5eDraft, levelOptions, magicInitiate, masteryCount, masteryWeapons, needsSubclass, newCantrips, newCharacter5e, newLevelUp5e, newMasteries, newSpellCount, newSpellLevel, optionGroups,
 	plusOf, settleIncreases, skillChoice, speciesChoices, speciesOf, spellCount, spellsAt, startingEquipment, subclassLevel, toolChoices,
@@ -305,7 +305,7 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 					],
 				}] : []),
 				...(choiceRows.length ? [{ id: 'features', label: 'Features', icon: 'sparkles', title: 'New choices', rows: choiceRows }] : []),
-				...((newSpellLevel(d) > 0 && newSpellCount(d) > 0) || newCantrips(d) > 0 ? [{
+				...((newSpellLevel(d) > 0 && newSpellCount(d) > 0) || newCantrips(d) > 0 || (canSwapSpell(d) && swappable(d).length) ? [{
 					id: 'spells', label: 'Spells', icon: 'wand-2', title: 'New spells',
 					rows: [
 						...(newCantrips(d) ? [{ type: 'chips' as const, key: 'cantrips', label: 'Cantrips', options: (x: LevelUp5eDraft) => classSpells(x.edition, x.className, 0, true).filter(n => !x.known.some(k => same(k, n))), max: () => newCantrips(d), hint: (x: LevelUp5eDraft) => `${x.cantrips.length} of ${newCantrips(d)}` }] : []),
@@ -315,6 +315,11 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 							options: (x: LevelUp5eDraft) => classSpells(x.edition, x.className, newSpellLevel(x), false).filter(n => !x.known.some(k => same(k, n))),
 							groups: (x: LevelUp5eDraft) => spellGroups(x.edition, x.className, newSpellLevel(x), x.known),
 						}] : []),
+						// One spell known can be swapped for another of the class's.
+						...(canSwapSpell(d) && swappable(d).length ? [[
+							{ type: 'choice' as const, key: 'swapOut', label: 'Replace a spell', dropdown: true, options: (x: LevelUp5eDraft) => [{ value: '', label: 'Keep them all' }, ...swappable(x).map(n => ({ value: n, label: n }))] },
+							{ type: 'choice' as const, key: 'swapIn', label: 'With', dropdown: true, show: (x: LevelUp5eDraft) => !!x.swapOut, options: (x: LevelUp5eDraft) => [{ value: '', label: 'Choose' }, ...swapChoices(x).map(n => ({ value: n, label: n }))] },
+						]] : []),
 					],
 				}] : []),
 			];
@@ -336,7 +341,7 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 							: `${short(d.a1 as AbilityKey)} +1, ${short(d.a2 as AbilityKey)} +1`,
 				nextIncrease: asiLevels(k).find(l => l > d.level),
 				slots: changed ? slotText : undefined,
-				picks: uniq([...d.cantrips, ...d.spells, ...d.choices.map(optionName), ...(d.styleFeat ? [d.styleFeat] : []), ...d.expertise.map(x => `${x} (expertise)`), ...d.masteries]),
+				picks: uniq([...d.cantrips, ...d.spells, ...(d.swapOut && d.swapIn ? [`${d.swapIn} (for ${d.swapOut})`] : []), ...d.choices.map(optionName), ...(d.styleFeat ? [d.styleFeat] : []), ...d.expertise.map(x => `${x} (expertise)`), ...d.masteries]),
 			});
 		},
 		chip: d => ({ text: `Level ${d.level}`, tone: 'none' }),
