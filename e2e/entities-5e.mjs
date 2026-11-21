@@ -1187,4 +1187,135 @@ export function register(test, h) {
 			assert.equal((await fight(o)).length, 5);
 		});
 	});
+
+	// -----------------------------------------------------------------------
+	// Your own character content
+
+	test('entities 5e: homebrew character content: a species, background and feat from the compendium\'s builders, a subclass typed as a block; New character takes them, level up takes the feat; all in the compendium, referenced and edited', async (o) => {
+		const C = 'Campaigns/E5 Emberfolk';
+		const pc = `${C}/Party/Kael Ashby.md`;
+		const knight = `${CONTENT}/5e/Subclasses/Ember Knight.md`;
+		const SH = (sel = '') => view(o, `.dnd5e-sheet ${sel}`);
+		/** The note in the content folder that holds a block named `name`, once it's written. */
+		const findNote = async (lang, name) => {
+			let path = null;
+			await o.waitFor(async () => {
+				path = await o.eval(async (app, _p, [CONTENT, lang, name]) => {
+					for (const f of app.vault.getMarkdownFiles().filter(f => f.path.startsWith(`${CONTENT}/`))) {
+						if (new RegExp(`^\`\`\`${lang}\\nname: ${name}\\n`, 'm').test(await app.vault.cachedRead(f))) return f.path;
+					}
+					return null;
+				}, [CONTENT, lang, name]);
+				return path;
+			}, { what: `the ${lang} note for ${name}` });
+			return path;
+		};
+		const entries = () => o.eval((app, plugin) => plugin.content.enabled('dnd5e').flatMap(p => p.entries.map(e => `${e.kind}:${e.name}`)).sort().join());
+		const newOn = async (tab, menuItem) => {
+			await compendium(o, tab, '');
+			await o.page.locator(`${CV} .nimble-cmpx-new`).click();
+			if (menuItem) await o.page.locator('.menu .menu-item', { hasText: menuItem }).click();
+			await o.page.locator(B).waitFor({ timeout: 3000 });
+		};
+		await scenario(o, 'homebrew-content', [C, CONTENT], async () => {
+			await o.eval(async (app, _p, CONTENT) => { const f = app.vault.getAbstractFileByPath(CONTENT); if (f) await app.vault.delete(f, true); }, CONTENT);
+			await campaign5e(o, 'E5 Emberfolk', { edition: '2024', level: 3, starter: false });
+
+			// A species from New on the Origins tab: its builder, a trait, a skill it gives.
+			await newOn('Origins', 'New species…');
+			assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Species');
+			await o.page.locator(`${PANEL} input[data-field="Name"]`).fill('Emberfolk');
+			await o.page.locator(`${PANEL} [data-key="darkvision"] .eb-seg-btn`, { hasText: '60 ft.' }).click();
+			await step(o, 'Traits');
+			const traits = o.page.locator(`${PANEL} [data-key="traits"] .eb-list-item`);
+			if (!(await traits.count())) await o.page.locator(`${PANEL} [data-key="traits"] .eb-list-add`).first().click();
+			await traits.first().locator('input[data-field="Name"]').fill('Warm Blood');
+			await traits.first().locator('textarea').first().fill('You have Resistance to Cold damage.');
+			await step(o, 'Choices');
+			await pick(o, 'Survival', `${PANEL} [data-key="skills"]`);
+			await finish(o);
+			const species = await findNote('5e-species', 'Emberfolk');
+			assert.match(await read(o, species), /name: Darkvision[\s\S]*60 feet[\s\S]*name: Warm Blood\n\s+desc: You have Resistance to Cold damage\./);
+
+			// A background from the same tab: three abilities, an origin feat, two skills and a tool.
+			await newOn('Origins', 'New background…');
+			await o.page.locator(`${PANEL} input[data-field="Name"]`).fill('Lamplighter');
+			for (const a of ['WIS', 'DEX', 'CON']) await pick(o, a, `${PANEL} [data-key="abilities"]`);
+			await o.page.locator(`${PANEL} select[data-field="Origin feat"]`).selectOption('Alert');
+			await step(o, 'Training');
+			for (const s of ['Perception', 'Stealth']) await pick(o, s, `${PANEL} [data-key="skills"]`);
+			await o.page.locator(`${PANEL} [data-key="tools"] .eb-pick`).first().click();
+			await finish(o);
+			await findNote('5e-background', 'Lamplighter');
+
+			// A feat from New on the Feats tab.
+			await newOn('Feats');
+			assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Feat');
+			await o.page.locator(`${PANEL} input[data-field="Name"]`).fill('Ember Heart');
+			await step(o, 'Benefit');
+			await pick(o, 'CON', `${PANEL} [data-key="increase"]`);
+			await o.page.locator(`${PANEL} textarea[data-field="Text"]`).fill('Fire you take heals you instead, once per Long Rest.');
+			await finish(o);
+			await findNote('5e-feat', 'Ember Heart');
+			await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
+
+			// A subclass of the SRD's Fighter, typed as a block.
+			await write(o, knight, '```5e-subclass\nname: Ember Knight\nclass: Fighter\nflavor: Fighter Subclass\nfeatures:\n  - level: 3\n    name: Banked Fire\n    desc: When you use Second Wind, you also gain 5 Temporary Hit Points.\n```\n');
+			await o.waitFor(async () => (await entries()) === 'background:Lamplighter,feat:Ember Heart,species:Emberfolk,subclass:Ember Knight', { what: `the four in the Homebrew pack (${await entries()})` });
+
+			// New character takes them: an Emberfolk Lamplighter, a level 3 fighter of the Ember Knights.
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+			await fillCharacter(o, {
+				name: 'Kael Ashby', className: 'Fighter', level: 3, species: 'Emberfolk', background: 'Lamplighter', subclass: 'Ember Knight',
+				skills: ['Athletics', 'Intimidation'], languages: ['Dwarvish', 'Giant'], masteries: ['Greatsword', 'Longsword', 'Javelin'],
+			});
+			const fm = await waitFm(o, pc, f => f.class === 'Fighter', 'the hero');
+			assert.deepEqual([fm.species, fm.background, fm.subclass], ['Emberfolk', 'Lamplighter', 'Ember Knight']);
+			for (const s of ['Perception', 'Stealth', 'Survival']) assert.ok(fm.skills.includes(s), `${s} from the species or background: ${fm.skills}`);
+			await o.openFile(pc, 'preview');
+			await SH().waitFor({ timeout: 5000 });
+			await SH('.dnd5e-tab[data-tab="features"]').click();
+			await o.waitFor(async () => /Banked Fire[\s\S]*|Warm Blood/.test(await SH().innerText()), { what: 'the features' });
+			const feats = await SH().innerText();
+			for (const f of ['Banked Fire', 'Warm Blood', 'Alert']) assert.match(feats, new RegExp(f), `${f} on the sheet`);
+
+			// Level up to 4: the increase can be your feat.
+			await SH('.dnd5e-sheet-actions button').filter({ hasText: 'Level up' }).click();
+			await o.page.locator(B).waitFor({ timeout: 3000 });
+			await step(o, 'Increase');
+			await o.page.locator(`${PANEL} [data-key="asi"] .eb-seg-btn`, { hasText: 'A feat' }).click();
+			await o.page.locator(`${PANEL} select[data-field="Feat"]`).selectOption('Ember Heart');
+			await finish(o);
+			const fm4 = await waitFm(o, pc, f => f.level === 4, 'level 4');
+			assert.ok((fm4.feats ?? []).includes('Ember Heart'), `feats: ${JSON.stringify(fm4.feats)}`);
+			assert.equal(fm4.con, fm.con + 1, 'the feat\'s +1 Constitution');
+
+			// Find: each is in the compendium, tagged Homebrew; references resolve by kind.
+			await compendium(o, 'Origins', 'emberfolk');
+			await o.waitFor(async () => (await cmpNames(o, CV))[0] === 'Emberfolk', { timeout: 5000, what: 'Emberfolk on the Origins tab' });
+			assert.equal(await cmpRow(o, 'Emberfolk', CV).locator('.bestiary-tag.is-homebrew').textContent(), 'Homebrew');
+			await o.page.locator(`${CV} .nimble-cmpx-input`).fill('lamplighter');
+			await o.waitFor(async () => (await cmpNames(o, CV))[0] === 'Lamplighter', { timeout: 5000, what: 'Lamplighter on the Origins tab' });
+			await o.page.locator(`${CV} .nimble-cmpx-seg`, { hasText: 'Classes' }).click();
+			await o.page.locator(`${CV} .nimble-cmpx-input`).fill('ember knight');
+			await o.waitFor(async () => (await cmpNames(o, CV))[0] === 'Ember Knight', { timeout: 5000, what: 'the subclass on the Classes tab' });
+			await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
+			await write(o, `${C}/Lore.md`, 'Kael is `5e:species:Emberfolk`, a `5e:background:Lamplighter`, sworn to the `5e:subclass:Ember Knight` and blessed with `5e:feat:Ember Heart`.\n');
+			await o.openFile(`${C}/Lore.md`, 'preview');
+			await o.waitFor(async () => (await view(o, '.dnd5e-ref.dnd5e-hit').count()) === 4, { what: 'four references found' });
+
+			// Edit: the pencil on the species block reopens its builder; Save writes it back in place.
+			await o.openFile(species, 'preview');
+			const block = view(o, '.ev-content-block').first();
+			await block.waitFor({ timeout: 5000 });
+			await block.hover();
+			await block.locator('.nimble-block-edit').click();
+			await o.page.locator(B).waitFor({ timeout: 3000 });
+			assert.equal(await o.page.locator(`${PANEL} input[data-field="Name"]`).inputValue(), 'Emberfolk');
+			await o.page.locator(`${PANEL} input[data-field="Speed"]`).fill('35');
+			await finish(o);
+			await o.waitFor(async () => /speed: 35/.test(await read(o, species)), { what: 'the new speed written back' });
+			assert.match(await read(o, species), /Warm Blood/, 'the trait kept');
+		});
+	});
 }
