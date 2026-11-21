@@ -432,7 +432,11 @@ export class CharacterSheetRenderer extends Component {
 				name.setAttr('tabindex', '0');
 				name.addEventListener('click', (e) => void this.app.workspace.openLinkText(this.file.path, '', e.metaKey || e.ctrlKey));
 			}
-			titles.createDiv({ cls: 'ns-line', text: [s.ancestry, s.className, `Level ${s.level}`].filter(Boolean).join(' · ') });
+			// "Level 2" stays on one line when the line wraps.
+			const line = titles.createDiv({ cls: 'ns-line' });
+			const kind = [s.ancestry, s.className].filter(Boolean).join(' · ');
+			if (kind) line.appendText(`${kind} · `);
+			line.createSpan({ cls: 'ns-nowrap', text: `Level ${s.level}` });
 			const sub = [s.subclass, s.background].filter(Boolean).join(' · ');
 			if (sub) titles.createDiv({ cls: 'ns-sub', text: sub });
 		}

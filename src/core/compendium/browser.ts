@@ -772,9 +772,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 		this.detailComponent = this.addChild(new Component());
 		d.empty();
 		if (this.o.onNarrowShow) {
-			const back = d.createEl('button', { cls: 'bestiary-back' });
-			setIcon(back.createSpan(), evIcon('chevron-left'));
-			back.appendText('Back to the list');
+			const back = pill(d, { tag: 'button', cls: 'bestiary-back', icon: evIcon('chevron-left'), text: 'Back to the list' });
 			back.addEventListener('click', () => this.o.onNarrowShow?.(false));
 		}
 		const detail = this.o.detail;

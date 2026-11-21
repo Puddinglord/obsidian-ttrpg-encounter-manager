@@ -726,6 +726,9 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 	padding: 0.5rem 0.65rem;
 	margin: 0.5rem 0 1rem;
 	display: grid;
+	/* One column as wide as the box, and long links (the SRD's address) break rather than push the text out of it. */
+	grid-template-columns: minmax(0, 1fr);
+	overflow-wrap: break-word;
 	gap: 0.25rem;
 }
 
@@ -3288,12 +3291,13 @@ body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 /* Quick look (record-modal.ts): a sheet over what you're doing, no page jump */
 .modal.nimble-record-modal { width: min(640px, 94vw); max-height: 88vh; }
 .nimble-record-modal .modal-content { display: flex; flex-direction: column; gap: 0.7rem; }
-.nimble-record-modal .record-head { display: flex; align-items: center; gap: 0.7rem; padding-right: 1.8rem; }
+/* The buttons go under the name when there isn't room beside it (a narrow window), rather than crushing it. */
+.nimble-record-modal .record-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem; padding-right: 1.8rem; }
 .nimble-record-modal .record-avatar { width: 44px; height: 44px; box-shadow: 0 0 0 1px var(--background-modifier-border); }
-.nimble-record-modal .record-titles { flex: 1; min-width: 0; }
+.nimble-record-modal .record-titles { flex: 1 1 12rem; min-width: 0; }
 .nimble-record-modal .record-title { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
 .nimble-record-modal .record-sub { font-size: 0.82rem; color: var(--text-muted); }
-.nimble-record-modal .record-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+.nimble-record-modal .record-actions { display: flex; flex-wrap: wrap; max-width: 100%; gap: 0.35rem; flex-shrink: 0; }
 .nimble-record-modal .record-btn { display: inline-flex; align-items: center; gap: 0.3rem; height: 2rem; }
 .nimble-record-modal .record-strip { margin-bottom: 0.25rem; }
 .nimble-record-modal .record-strip.is-down { opacity: 0.6; }
@@ -3307,7 +3311,6 @@ body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 @media (pointer: coarse) {
 	.nimble-record-modal .record-btn { height: 2.6rem; }
 }
-body.is-phone .nimble-record-modal .record-head { flex-wrap: wrap; }
 body.is-phone .nimble-record-modal .record-actions { width: 100%; }
 body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justify-content: center; }
 
@@ -3522,6 +3525,7 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet.ns-sheet .ns-initials { font: var(--ev-display-weight) 28px/1 var(--ev-font-display); letter-spacing: 0; color: var(--ev-accent-text); }
 .nimble-sheet.ns-sheet .ns-name { font: italic 900 36px/40px var(--ev-font-name); letter-spacing: 0; white-space: normal; overflow-wrap: anywhere; color: var(--ev-text); }
 .nimble-sheet.ns-sheet .ns-line { margin-top: 2px; font: 700 15px/20px var(--ev-font-display); text-transform: none; letter-spacing: 0; color: var(--ev-text); }
+.nimble-sheet.ns-sheet .ns-line .ns-nowrap { white-space: nowrap; }
 .nimble-sheet.ns-sheet .ns-sub { margin-top: 0; font: 500 13px/18px var(--ev-font-ui); color: var(--ev-text-2); }
 .nimble-sheet.ns-sheet .ns-head-actions { display: flex; align-items: center; gap: 6px; }
 .nimble-sheet.ns-sheet .ns-head-tools { display: flex; align-items: center; gap: 2px; }
@@ -3712,7 +3716,8 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet.ns-sheet .ns-turn .ns-btn { background: color-mix(in srgb, var(--ev-surface) 70%, transparent); color: var(--ev-band-text); border-color: color-mix(in srgb, var(--ev-bar) 30%, transparent); }
 .nimble-sheet.ns-sheet .ns-turn button.ns-actions-end { margin-left: 0; height: 30px; padding: 0 10px; font: 500 13px/normal var(--ev-font-ui); box-shadow: none; }
 .nimble-sheet.ns-sheet .ns-turn-sep { flex: 1; }
-.nimble-sheet.ns-sheet .ns-turn-pairs { display: flex; align-items: center; gap: 18px; }
+/* Speed and Hit dice each stay whole; the second goes under the first when the band is narrow. */
+.nimble-sheet.ns-sheet .ns-turn-pairs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; }
 .nimble-sheet.ns-sheet .ns-turn-pair { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: inherit; font: inherit; }
 .nimble-sheet.ns-sheet button.ns-turn-pair { cursor: pointer; border-radius: var(--ev-r-sm); }
 .nimble-sheet.ns-sheet button.ns-turn-pair:hover b { text-decoration: underline; text-underline-offset: 3px; }
@@ -4050,6 +4055,8 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 	font-size: 0.82rem; font-weight: 700;
 }
 .nimble-sheet .ns-lang { background: var(--ns-soft); border-color: var(--background-modifier-border); font-weight: 600; }
+/* The name's capitals sit a pixel high in the chip; bring them down to the × on its centre line. */
+.nimble-sheet .ns-lang > span:first-child { position: relative; top: 1px; }
 .nimble-sheet .ns-cond-name:hover { text-decoration: underline; }
 .nimble-sheet .ns-cond-x { width: 1.4rem; height: 1.4rem; border-radius: 50%; color: var(--text-muted); font-size: 1rem; }
 .nimble-sheet .ns-cond-x:hover { color: var(--text-error); background: var(--background-modifier-hover); }
@@ -5276,7 +5283,8 @@ button.nimble-cmpx-pill.is-empty { opacity: 0.45; }
 .nimble-cmpx-row-facts { flex: 0 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px; max-height: 20px; overflow: hidden; }
 /* An empty first item holds the line, so even the first chip wraps out of sight (whole) when it doesn't fit. */
 .nimble-cmpx-row-facts::before { content: ""; flex: none; width: 0; height: 20px; margin-right: -4px; }
-.nimble-cmpx-row-src { flex: 0 0 auto; display: flex; gap: 4px; }
+/* The tags keep their width, up to the row's; one that doesn't fit wraps out of sight whole rather than cut in half. */
+.nimble-cmpx-row-src { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 4px; max-width: 100%; min-width: 0; max-height: 20px; overflow: hidden; }
 .nimble-cmpx-row-facts:empty, .nimble-cmpx-row-src:empty { display: none; }
 .nimble-cmpx-row-pills.is-empty { display: none; }
 .nimble-cmpx-pill-tag {
@@ -5384,8 +5392,7 @@ body.is-mobile .nimble-cmpx-hints { display: none; }
 .nimble-cmpx-layout.is-narrow.show-detail .nimble-cmpx-detail { display: block; grid-row: 2; }
 .nimble-cmpx-layout.is-narrow.show-detail .nimble-cmpx-side { display: none; }
 .nimble-cmpx-layout.is-narrow .nimble-cmpx-side { border-right: none; }
-.nimble-cmpx-layout.is-narrow .nimble-compendium .bestiary-back, .nimble-cmpx-layout.is-narrow .nimble-cmpx-detail .bestiary-back { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; color: var(--ev-text-2); }
-.nimble-cmpx-detail .bestiary-back svg { width: 15px; height: 15px; }
+.nimble-cmpx-layout.is-narrow .nimble-compendium .bestiary-back, .nimble-cmpx-layout.is-narrow .nimble-cmpx-detail .bestiary-back { display: inline-flex; align-items: center; margin-bottom: 10px; color: var(--ev-text-2); --ev-pill-icon: 15px; --ev-pill-gap: 4px; }
 body.is-phone .nimble-cmpx-side, body.is-phone .nimble-cmpx-detail { padding-bottom: 5.5rem; }
 /* The attribution under the list (Nimble's tab). */
 .nimble-cmpx .bestiary-attribution { font: 500 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); border-top-color: var(--ev-line, var(--background-modifier-border)); }
@@ -5877,7 +5884,7 @@ body.is-tablet .nimble-entity-builder button.eb-book-use, body.is-mobile .nimble
 .nimble-entity-builder button.eb-df-step:hover:not(:disabled) { color: var(--text-normal); background: var(--background-modifier-hover); }
 .nimble-entity-builder button.eb-df-step:disabled { opacity: 0.35; }
 .nimble-entity-builder button.eb-df-step svg { width: 12px; height: 12px; }
-.nimble-entity-builder button.eb-df-die { gap: 0.15rem; height: 100%; padding: 0 0.45rem 0 0.6rem; border: 0; border-radius: 0; background: transparent; font-family: var(--font-monospace); font-size: var(--font-ui-medium); font-weight: 700; color: var(--text-accent); }
+.nimble-entity-builder button.eb-df-die { gap: 3px; height: 100%; padding: 0 0.45rem 0 0.6rem; border: 0; border-radius: 0; background: transparent; font-family: var(--font-monospace); font-size: var(--font-ui-medium); font-weight: 700; color: var(--text-accent); }
 .nimble-entity-builder button.eb-df-die:hover:not(:disabled) { background: var(--background-modifier-hover); }
 .nimble-entity-builder button.eb-df-die:disabled { padding-right: 0.6rem; opacity: 1; cursor: default; }
 .nimble-entity-builder .eb-df-plus { display: inline-flex; align-items: center; padding: 0 0.1rem 0 0.55rem; border-left: 1px solid var(--ev-paper-edge); color: var(--text-muted); font-weight: 700; }
