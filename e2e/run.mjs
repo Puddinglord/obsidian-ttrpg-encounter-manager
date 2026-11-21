@@ -8027,6 +8027,19 @@ test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, t
 	}
 });
 
+// Suites in their own files (e2e/entities-*.mjs): each exports register(test, helpers) and runs here, in the
+// same Obsidian, before the console check. A missing file is skipped.
+for (const file of ['entities-nimble.mjs', 'entities-5e.mjs']) {
+	let mod;
+	try { mod = await import(`./${file}`); } catch (e) { if (e.code === 'ERR_MODULE_NOT_FOUND') continue; throw e; }
+	mod.register(test, {
+		R, S, T, PREVIEW, PARTY, ARTIFACTS, ROOT, assert, join,
+		resetEncounter, typeHp, creatureMenu, onCard, parkMouse, openCompendiumTab, closeCompendiumTab,
+		freshCampaign, endCampaign, openPicker, createFromPicker, rollThrough, withSheetNote, waitFmAt, waitFm, measurePills,
+		pillOffenders, PILL_SELECTORS,
+	});
+}
+
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
 	assert.deepEqual(errors, []);
