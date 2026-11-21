@@ -183,6 +183,16 @@ function magicBase(item: Item5e | undefined, equipment: Equipment5e[]): { base?:
 	return { base, bonus };
 }
 
+/**
+ * Does Add item put this on equipped? Weapons and armor do, magic ones too (a +1 "Weapon (Longsword)"
+ * fights as a longsword); gear, potions and rings don't.
+ */
+export function equipsWhenAdded(hit: { kind: string; equipment?: Equipment5e; item?: Item5e }, edition: Dnd5eEdition, library: Library5e = {}): boolean {
+	const gear = hit.kind === 'equipment' ? hit.equipment
+		: hit.kind === 'item' ? magicBase(hit.item, [...(library.equipment ?? []), ...compendium5e(edition).equipment]).base : undefined;
+	return !!(gear && (gear.damage || gear.ac));
+}
+
 export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName = 'Hero', library: Library5e = {}): Sheet5e {
 	const c = compendium5e(edition);
 	const equipmentList = [...(library.equipment ?? []), ...c.equipment];
