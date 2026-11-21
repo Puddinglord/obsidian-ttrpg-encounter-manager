@@ -147,6 +147,11 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Language chips, the damage die button and the compendium's Back to the list on phones line up their icon and label, and the SRD notice in settings stays inside its box in a narrow window. See the [settings guide](docs/settings.md).
 - In the dark theme, Nimble's school, key stat, "Yours" and count tags and the choices you've made in New character and Level up, 5e's Bloodied and temp HP ribbons, and the level on 5e monster references are readable. They were light text on a light fill. See the [character sheets guide](docs/character-sheets.md).
 - A link to a note in an NPC card's "First met" row or a battle note's place, and feature names on the Nimble character sheet, line up with the rest of their row. See the [NPCs guide](docs/npcs.md).
+- On a phone or in a narrow sidebar, the tracker card keeps Damage and Heal whole: they take the full row, and Condition and the stat block (or Sheet) get a row of their own. See the [tracker guide](docs/tracker.md).
+- Map pin labels near the edge of the map stay inside it, and token names in the tray keep one line. See the [maps guide](docs/maps.md).
+- Dialogs fit a phone-width window: the import file picker, builder choices (now in even rows), the encounter builder's buttons and the party editor; a builder's or wizard's current step stays in view when the window narrows. See the [builder guide](docs/builder.md).
+- The compendium shows the list or the page when it's too narrow for both, instead of squeezing the page until names broke mid-word; filter labels no longer wrap, and rows no longer show above a group heading. See the [compendium guide](docs/compendium.md).
+- The Character panel's skills fit a 260px sidebar; Spotlight on a phone gives the name the row; the condition picker's title is the creature's name on one line; a battle's place shows one map pin; and links in an NPC's or a battle's labelled rows stay on one line. See the [character sheets guide](docs/character-sheets.md).
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
