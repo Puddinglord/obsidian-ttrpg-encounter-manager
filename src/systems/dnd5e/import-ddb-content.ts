@@ -252,7 +252,10 @@ function classEntries(c: Obj): DdbContentEntry[] {
 		const subDef = isObj(x.subclassDefinition) ? x.subclassDefinition : null;
 		const subId = subDef ? num(subDef.id) : undefined;
 		const own = objs(x.classFeatures).map(f => featureDef(obj(f.definition))).filter((f): f is FeatureDef => !!f);
-		const isSub = (f: FeatureDef) => f.sub || (subId !== undefined && f.classId === subId);
+		// The character's own list holds the subclass's features too: by their flag, their class id, or the subclass's own list.
+		const subListed = subDef ? objs(subDef.classFeatures).map(featureDef).filter((f): f is FeatureDef => !!f) : [];
+		const isSub = (f: FeatureDef) => f.sub || (subId !== undefined && f.classId === subId)
+			|| subListed.some(g => (g.id !== undefined && g.id === f.id) || (same(g.name, f.name) && g.level === f.level));
 		const all = joinFeatures([objs(def.classFeatures).map(featureDef).filter((f): f is FeatureDef => !!f), own.filter(f => !isSub(f))]);
 		const meta = all.filter(f => META_FEATURE.test(f.name));
 		const features = all.filter(f => !META_FEATURE.test(f.name));
@@ -315,7 +318,7 @@ function classEntries(c: Obj): DdbContentEntry[] {
 		if (subDef) {
 			const subName = clean(str(subDef.name));
 			if (!subName) continue;
-			const subFeatures = joinFeatures([objs(subDef.classFeatures).map(featureDef).filter((f): f is FeatureDef => !!f), own.filter(isSub)]);
+			const subFeatures = joinFeatures([subListed, own.filter(isSub)]);
 			const first = subFeatures.length ? Math.min(...subFeatures.map(f => f.level)) : 3;
 			// 2014 names what a subclass is ("Primal Path"): the class's feature at the level the subclass starts.
 			const flavorOf = features.find(f => f.level === first && !/subclass$/i.test(f.name) && (/\b(path|college|domain|circle|archetype|oath|conclave|tradition|patron|origin|order|school|way|pact)\b/i.test(f.name) || /subclass/i.test(htmlToText(f.html))));

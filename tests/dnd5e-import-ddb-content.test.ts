@@ -120,6 +120,14 @@ describe('a D&D Beyond character\'s content', () => {
 		expect((v.features as Obj[]).some(f => f.name === 'Proficiencies')).toBe(false);
 	});
 
+	it('keeps the subclass\'s features out of the class, even when the character\'s list doesn\'t mark them', () => {
+		const c = mira();
+		for (const f of ((c.classes as Obj[])[0].classFeatures as Obj[])) { const d = f.definition as Obj; delete d.classId; delete d.isSubClassFeature; }
+		const all = content(c);
+		expect((byName(all, 'class', 'Hollowblade').value.features as Obj[]).map(f => f.name)).not.toContain('Quiet Flame');
+		expect((byName(all, 'subclass', 'Order of the Quiet Lantern').value.features as Obj[]).map(f => f.name)).toEqual(['Quiet Flame', 'Lantern Bearer', 'Steady Light']);
+	});
+
 	it('reads the subclass for its class, with its features and what the class calls it', () => {
 		expect(byName(content(), 'subclass', 'Order of the Quiet Lantern')).toMatchObject({
 			ddbId: 900101, seen: 7,
