@@ -783,7 +783,9 @@ export function register(test, h) {
 			// The party: the panel's card for the sheet, with HP; the encounter party is read from it.
 			const hero = o.page.locator(`${CP} .campaign-hero[data-path="${pc}"]`);
 			await o.waitFor(async () => /Bryn Ashby/.test(await hero.innerText().catch(() => '')), { what: 'the hero card in the panel' });
-			assert.match(await hero.locator('.campaign-hero-hp-text').innerText(), new RegExp(`^${fm2.hp ?? fm2.hp_max}/${fm2.hp_max}$`));
+			// The panel's card redraws after the level up lands; wait for it rather than reading it once.
+			const wantHp = `${fm2.hp ?? fm2.hp_max}/${fm2.hp_max}`;
+			await o.waitFor(async () => (await hero.locator('.campaign-hero-hp-text').innerText().catch(() => '')) === wantHp, { what: `the hero card shows ${wantHp}` });
 			await o.waitFor(async () => JSON.stringify(await o.eval((app, plugin) => plugin.settings.party.map(p => [p.name, p.level, p.maxHp, p.defense]))) === JSON.stringify([['Bryn Ashby', 2, fm2.hp_max, 16]]), { what: 'the encounter party from the sheet' });
 			const fightNote = `${C}/Chapter 1/Ogre Bridge.md`;
 			await write(o, fightNote, '```nimble-encounter\nname: Ogre bridge\nmonsters:\n- Ogre\n```\n');
