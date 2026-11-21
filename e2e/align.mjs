@@ -62,6 +62,9 @@ export const PILL_SELECTORS = [
 	// The HP keypad's keys, modes, toggles and buttons; the trackers' card icons and Back; key steppers in dialogs.
 	'.hp-pad-keys > button', '.hp-pad-mode', '.hp-pad-toggles > button', '.hp-pad-close', '.hp-pad-cancel', '.hp-pad-apply',
 	'.ev-card-icon', '.ev-foot-back', '.ev-keys > button', '.rd-step-btn',
+	// A dialog's segmented choice on one line, not a choice's name over its numbers (New character's arrays). The wizard's
+	// (.lu-seg) stack their lines in a column, so they keep their own rule; the rest are in the shared one.
+	'.ev-seg > button:not(:has(.lu-seg-sub))',
 	// Edit pencils and small buttons on notes: a stat block's hint fixes, a box's icon, an NPC portrait's edit, a rules card's link.
 	'.nimble-issue-fix', '.nimble-block-edit', '.nimble-box-icon', '.nimble-npc-portrait-edit', '.ev-term-open',
 	// A map token's letter and a party member's avatar: centred in their disc.
