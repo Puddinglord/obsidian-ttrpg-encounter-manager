@@ -774,6 +774,13 @@ export function featIncrease(edition: Dnd5eEdition, feat: string): AbilityKey[] 
 	return ABILITIES.filter(a => new RegExp({ str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' }[a]).test(m[1]));
 }
 
+/** The ability a level up's feat raises by 1: the one picked, or the feat's only one (nothing to pick). */
+export function featUpOf(d: Pick<LevelUp5eDraft, 'edition' | 'feat' | 'featUp'>): AbilityKey | '' {
+	const options = featIncrease(d.edition, d.feat);
+	if (d.featUp && options.includes(d.featUp as AbilityKey)) return d.featUp as AbilityKey;
+	return options.length === 1 ? options[0] : '';
+}
+
 /** The class's and subclass's features at the level being reached. */
 export function featuresGained(d: LevelUp5eDraft): string[] {
 	const cls = classOf(d.edition, d.className);
@@ -798,7 +805,8 @@ export function applyLevelUp5e(fm: Frontmatter, d: LevelUp5eDraft, rolled?: numb
 	if (hasAsi(d)) {
 		if (d.asi === 'feat' && d.feat) {
 			if (!feats.includes(d.feat)) feats.push(d.feat);
-			if (d.featUp && featIncrease(d.edition, d.feat).includes(d.featUp as AbilityKey)) bump(d.featUp, 1, cap(d.feat));
+			const up = featUpOf(d);
+			if (up) bump(up, 1, cap(d.feat));
 		} else if (d.asi === 'plus2') bump(d.a1, 2);
 		else { bump(d.a1, 1); if (d.a2 !== d.a1) bump(d.a2, 1); else bump(d.a1, 1); }
 	}

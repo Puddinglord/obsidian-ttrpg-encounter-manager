@@ -13,7 +13,7 @@ import { SchemaBuilder } from '../src/core/builder/schema';
 import { readSheet5e, SKILLS } from '../src/systems/dnd5e/character';
 import {
 	allSkills, applyLevelUp5e, asiLevels, averageGain, backgroundCreation, backgroundOf, backgroundSkills, bonuses, Character5eDraft, characterFm, characterMissing, classCreation, classOf,
-	expertiseAt, expertiseCount, finalScores, hasAsi, LevelUp5eDraft, levelOptions, magicInitiate, masteryCount, masteryWeapons, needsSubclass, newCantrips, newCharacter5e, newLevelUp5e,
+	expertiseAt, expertiseCount, featUpOf, finalScores, hasAsi, LevelUp5eDraft, levelOptions, magicInitiate, masteryCount, masteryWeapons, needsSubclass, newCantrips, newCharacter5e, newLevelUp5e,
 	newMasteries, newSpellCount, optionGroups, pointsSpent, rollScores, settleIncreases, skillChoice, speciesBonuses, speciesChoices, spellCount, spellsAt, startingEquipment, subclassLevel,
 	swapScores, toolChoices, languageChoice, withArray,
 } from '../src/systems/dnd5e/character-draft';
@@ -404,6 +404,20 @@ describe('levelling up', () => {
 		Object.assign(b, { asi: 'feat', feat: 'Boon of Fate', featUp: 'int' });
 		applyLevelUp5e(boon, b);
 		expect([boon.int, (boon.feats as string[]).includes('Boon of Fate')]).toEqual([21, true]);
+	});
+	it('a feat that raises one ability raises it without asking; one with a choice waits for it', () => {
+		setContentLayer5e(() => ({ compendium: { feats: [{ name: 'Ember Heart', type: 'general', desc: 'Fire heals you.', increase: ['CON'] }] }, subclasses: [], monsters: [] }));
+		try {
+			const fm: Record<string, unknown> = { ...characterFm(filled('2024', 'Fighter', { level: 3 })), con: 14 };
+			const d = newLevelUp5e(fm, '2024', 'K');
+			Object.assign(d, { asi: 'feat', feat: 'Ember Heart' });
+			expect(featUpOf(d)).toBe('con');
+			applyLevelUp5e(fm, d);
+			expect([fm.con, (fm.feats as string[]).includes('Ember Heart')]).toEqual([15, true]);
+			// Grappler raises Strength or Dexterity: nothing until one is picked.
+			expect(featUpOf({ edition: '2024', feat: 'Grappler', featUp: '' })).toBe('');
+			expect(featUpOf({ edition: '2024', feat: 'Grappler', featUp: 'dex' })).toBe('dex');
+		} finally { setContentLayer5e(null); }
 	});
 	it('a rolled or table hit die counts as rolled', () => {
 		const fm = characterFm(filled('2024', 'Fighter'));

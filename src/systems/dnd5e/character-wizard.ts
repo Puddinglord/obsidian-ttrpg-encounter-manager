@@ -13,7 +13,7 @@ import { EntitySchema, FieldDef, schemaKind } from '../../core/builder/schema';
 import { Frontmatter, readSheet5e, SKILLS, STANDARD_ARRAY } from './character';
 import {
 	ABILITY_OF, allSkills, applyLevelUp5e, asiLevels, canSwapSpell, swapChoices, swappable, assignByClass, averageGain, backgroundCreation, backgroundOf, backgroundSkills, Character5eDraft, characterFm, characterMissing, classCreation,
-	classOf, classSpells, expertiseAt, expertiseCount, featIncrease, featuresGained, fightingStyleAt, finalScores, givenLanguages, givenTools, hasAsi, hasVersatile, increaseLevels, languageChoice,
+	classOf, classSpells, expertiseAt, expertiseCount, featIncrease, featuresGained, featUpOf, fightingStyleAt, finalScores, givenLanguages, givenTools, hasAsi, hasVersatile, increaseLevels, languageChoice,
 	LevelUp5eDraft, levelOptions, magicInitiate, masteryCount, masteryWeapons, needsSubclass, newCantrips, newCharacter5e, newLevelUp5e, newMasteries, newSpellCount, newSpellLevel, optionGroups,
 	plusOf, settleIncreases, skillChoice, speciesChoices, speciesOf, spellCount, spellsAt, startingEquipment, subclassLevel, toolChoices,
 } from './character-draft';
@@ -301,7 +301,7 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 							{ type: 'choice' as const, key: 'a2', label: 'And', dropdown: true, show: (x: LevelUp5eDraft) => x.asi === 'plus1', options: (x: LevelUp5eDraft) => ABILITIES.map(a => ({ value: a, label: `${ABILITY_NAME[a]} (${x.scores[a]})` })) },
 						],
 						{ type: 'choice' as const, rebuilds: true, key: 'feat', label: 'Feat', dropdown: true, show: (x: LevelUp5eDraft) => x.asi === 'feat', options: (x: LevelUp5eDraft) => [{ value: '', label: '—' }, ...featsAt(x.edition, x.level).map(f => ({ value: f, label: f }))] },
-						...(featUps.length ? [{ type: 'choice' as const, key: 'featUp', label: '+1 to', dropdown: true, options: (x: LevelUp5eDraft) => [{ value: '', label: 'Choose' }, ...featUps.map(a => ({ value: a, label: `${ABILITY_NAME[a]} (${x.scores[a]})` }))] }] : []),
+						...(featUps.length ? [{ type: 'choice' as const, key: 'featUp', label: '+1 to', dropdown: true, options: (x: LevelUp5eDraft) => [...(featUps.length > 1 ? [{ value: '', label: 'Choose' }] : []), ...featUps.map(a => ({ value: a, label: `${ABILITY_NAME[a]} (${x.scores[a]})` }))] }] : []),
 					],
 				}] : []),
 				...(choiceRows.length ? [{ id: 'features', label: 'Features', icon: 'sparkles', title: 'New choices', rows: choiceRows }] : []),
@@ -335,7 +335,7 @@ export function levelUpSchema(rt: Dnd5eRuntime): EntitySchema<LevelUp5eDraft> {
 				gained: featuresGained(d),
 				hpGain: gain,
 				subclass: needsSubclass(d) ? d.subclass : undefined,
-				increase: !hasAsi(d) ? undefined : d.asi === 'feat' ? `${d.feat || 'Not chosen yet'}${d.featUp ? ` (+1 ${short(d.featUp as AbilityKey)})` : ''}`
+				increase: !hasAsi(d) ? undefined : d.asi === 'feat' ? `${d.feat || 'Not chosen yet'}${featUpOf(d) ? ` (+1 ${short(featUpOf(d) as AbilityKey)})` : ''}`
 					: d.asi === 'plus2' ? `${short(d.a1 as AbilityKey)} ${d.scores[d.a1 as AbilityKey]} → ${Math.min(20, d.scores[d.a1 as AbilityKey] + 2)}`
 						: d.a1 === d.a2 ? `${short(d.a1 as AbilityKey)} ${d.scores[d.a1 as AbilityKey]} → ${Math.min(20, d.scores[d.a1 as AbilityKey] + 2)}`
 							: `${short(d.a1 as AbilityKey)} +1, ${short(d.a2 as AbilityKey)} +1`,
