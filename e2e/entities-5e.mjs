@@ -16,7 +16,7 @@
 import { readFileSync } from 'node:fs';
 
 export function register(test, h) {
-	const { R, S, ARTIFACTS, ROOT, assert, join, exact, read, exists, clickMenu, CP, cgroup, crow, panelSections, cmpNames, cmpRow, pickCondition5e, hpPad5e, measurePills, pillOffenders, PILL_SELECTORS } = h;
+	const { R, S, ARTIFACTS, ROOT, assert, join, exact, read, exists, clickMenu, CP, cgroup, crow, panelSections, cmpNames, cmpRow, hpPad5e, measurePills, pillOffenders, PILL_SELECTORS } = h;
 
 	const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
 	const CV = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
@@ -109,7 +109,6 @@ export function register(test, h) {
 	const fight = (o) => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => ({ label: c.label, name: c.name, hp: c.hp, maxHp: c.maxHp, ac: c.ac, init: c.init, side: c.side, conditions: c.conditions.map(x => x.name), legendary: c.legendary, resistances: c.resistances, death: c.deathSaves, concentrating: !!c.concentrating, rounds: Object.fromEntries(c.conditions.map(x => [x.name, x.rounds])) })));
 	const fightState = (o) => o.eval((app, plugin) => { const f = plugin.runtime('dnd5e').fights.fight; return { round: f.round, turn: f.combatants.find(c => c.id === f.turnId)?.label ?? null }; });
 	const row5e = (o, name) => o.page.locator(`${TR} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: exact(name) }) });
-	const turnName = (o) => o.page.locator(`${TR} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).first().innerText().catch(() => '');
 
 	/** Type into the open editor where the cursor is, slowly enough for the "/" menu and suggestions. */
 	const type = async (o, text) => { await o.page.keyboard.type(text, { delay: 15 }); await o.page.waitForTimeout(250); };
@@ -1399,6 +1398,16 @@ export function register(test, h) {
 			await o.openFile(`${C}/Chapter 1/Bog.md`, 'preview');
 			await o.waitFor(async () => /3 × .*|75 XP|300 XP/.test(await view(o, '.dnd5e-encounter-xp').innerText().catch(() => '')), { what: 'the wisps rated' });
 			assert.equal(await view(o, '.dnd5e-encounter-missing').count(), 0);
+
+			// Delete: the imported class changed, then the whole content folder deleted at once. Nothing of it stays in the compendium.
+			await o.eval(async (app, _p, CONTENT) => {
+				const f = app.vault.getAbstractFileByPath(`${CONTENT}/5e/Classes/Hollowblade.md`);
+				await app.vault.modify(f, `${await app.vault.read(f)}\n`);
+				await app.vault.delete(app.vault.getAbstractFileByPath(CONTENT), true);
+			}, CONTENT);
+			// (A change is read a moment after it's made: wait for that moment to pass.)
+			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.timers.size)) === 0, { what: 'pending reads done' });
+			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().length + plugin.content.enabled('dnd5e').length)) === 0, { what: `nothing left of the deleted content (${await o.eval((app, plugin) => plugin.content.enabled('dnd5e').flatMap(p => p.entries.map(e => e.name)).join())})` });
 		});
 	});
 
