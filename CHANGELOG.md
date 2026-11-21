@@ -3,11 +3,6 @@
 What changed in each release of Ember Vault. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
 New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A line of its own before the first of those is the release's headline: the changelog page on the site uses it as the title, and it's what shows when you share the release's link. Link the guide page an entry is about, repo-relative (`See the [builder guide](docs/builder.md).`): the site shows it as a Guide pill, and the release notes point it at the guide on the site. When a pull request merges, the release workflow moves that section under the new version number and uses it for the release notes.
-- Nimble's Level up no longer asks for a Weapon Mastery at level 14 or a Direbeast form at Stormshifter level 6, a Psion's picks offer every tier they've unlocked, a Hexbinder starts knowing Withered and Frenzied, and Razor Wind's text no longer repeats its range. See the [character sheets guide](docs/character-sheets.md#levelling-up).
-- With Vulnerable on, the HP keypad's big number and button show the damage that lands (19 for 9 + 10 in Nimble, 18 for 9 doubled in 5e), matching its sum.
-- Defend on a Nimble character sheet's HP keypad takes your Armor off the hit and spends an action. It used to do nothing.
-- Spotlight no longer offers an NPC's role as a `role:` filter, and the Nimble quick look calls a hero's number Armor, as the card and sheet do.
-- Renaming a combatant just after a hit no longer saves half the name.
 
 ## [Unreleased]
 
@@ -46,6 +41,16 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - The Nimble tracker brings in a legendary monster's turn after each hero ("Done · Krogg acts"), with its actions to pick from; turn it off in the encounter settings. The damage keypad has quiet **Defend** and **Interpose** chips for a hero who takes a hit. See the [tracker guide](docs/tracker.md#legendary-monsters).
 - Keys in both trackers: ↑ and ↓ move through the fight, Enter puts someone on the card, Space presses the main button (Done, Next) and Z undoes. See the [tracker guide](docs/tracker.md#keys).
 
+- New character lets you place your stat array: the numbers start where your class puts them, and tapping two stats swaps them, with your key stats and ▲ ▼ saves marked on the sheet's own boxes. See the [character sheets guide](docs/character-sheets.md#making-a-character).
+- A Nimble hero who starts above level 1 goes through every level's steps: hit points, subclass, your class's picks, spells, stat increases and skill points. Choose class gear or 25 gp a level, and add Heroic Skills if your GM allows them. See the [character sheets guide](docs/character-sheets.md#making-a-character).
+- Levelling up a Nimble hero asks for the spell schools and Utility Spells your class learns, a Beastmaster's companion, and a Commander's extra Combat Ability or +1 max Combat Dice. See the [character sheets guide](docs/character-sheets.md#levelling-up).
+- The 5e monster builder covers the whole stat block: armor and a shield set the AC, speeds and senses as numbers, 2024 initiative and lair XP, immunities as chips, melee-or-ranged attacks with extra damage, saving-throw actions with their DC, Recharge and per-day uses, and spellcasting with its save DC. A Goblin, an Ogre or an Adult Red Dragon built this way comes out with the book's numbers. See the [5e guide](docs/5e.md#building-a-monster).
+- The 5e spell builder words a spell attack or saving throw, its area and its higher-level or cantrip damage the way the SRD does, and picks range, duration and a reaction's trigger for you. See the [5e guide](docs/5e.md#building-a-spell).
+- The 5e item builder makes weapons, armor and gear with their numbers (damage, properties, mastery, AC, Strength, Stealth, cost, weight), and magic items with a +1 to +3 and charges. Character sheets use your items: a magic longsword attacks as a longsword with its bonus. See the [5e guide](docs/5e.md#building-an-item).
+- 5e's New character asks for everything the SRD gives you: spells known or prepared (a wizard's spellbook), expertise, your class's options and weapon masteries, your species' and background's choices (with 2014 subraces' bonuses and skills), tools and languages, rolled scores or the array swapped between abilities, starting equipment or gold, and every increase when you start above level 1. It asks before throwing away a character you've started, and the sheet shows only the options you chose. See the [5e guide](docs/5e.md#character-sheets).
+- 5e's Level up asks for new cantrips and spells by count, expertise and your class's new choices, and a feat's own +1, and shows the level's new features and spell slots. See the [5e guide](docs/5e.md#character-sheets).
+- A content pack's 5e class works in New character, Level up and the sheet like an SRD class, including its own spell list, prepared column and limited-use features. See [content packs](docs/content-packs.md).
+
 ### Changed
 
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
@@ -77,6 +82,13 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Settings are grouped: what every game shares first (General, Campaigns, Party, Content packs, Dice, Combat), then Nimble's own. See the [settings guide](docs/settings.md).
 - Nimble attack rolls (miss on a 1, explode on the max) only apply in Nimble campaigns; 5e attack rolls are plain d20s.
 
+- Nimble's New character and Level up look like the Nimble sheet and fit a phone, and Level up follows your subclass: an Honorseeker picks Honorable Gambits, a Spellblade picks Commander's Orders, and a Muscle Mage skips the Savage Arsenal. See the [character sheets guide](docs/character-sheets.md#levelling-up).
+- The 5e builder and character wizard wear the sheet's look: the oxblood banner, ability plaques and proficiency diamonds. See the [5e guide](docs/5e.md#make-your-own).
+- The tracker's quick look is in your game's look: its paper and type, buttons like the tracker's, no Obsidian purple. See the [tracker guide](docs/tracker.md).
+- A monster that's the only one of its kind shows without a number: "The Alchemist", not "The Alchemist-1". Two or more are still numbered. See the [tracker guide](docs/tracker.md).
+- Battle notes in a campaign you play in are in Nimble's look, like the GM's encounter block, and the trackers drop hint lines that repeated what the screen already says. See the [tracker guide](docs/tracker.md).
+- Add several says **As written** for the middle strength, like the encounter block, and 5e's compendium tags your spells and items **Homebrew**. See the [encounters guide](docs/encounters.md).
+
 ### Fixed
 
 - An NPC note written by hand, without a `nimble-npc` block, shows its card and portrait instead of only a row of properties. See the [NPCs guide](docs/npcs.md#character-cards).
@@ -84,7 +96,11 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - The icons on the quick look's buttons (Add to fight, Open page, Open notes) sit level with their labels instead of a little high.
 - Your own 5e spells and items say Homebrew at the foot of their card, not "SRD 5.2". See [Playing 5e](docs/5e.md#the-5e-compendium).
 - The Edit pencil shows when you point at a 5e monster, spell or item block, as it does on Nimble's. See the [builder guide](docs/builder.md#opening-it).
-
+- Nimble's Level up no longer asks for a Weapon Mastery at level 14 or a Direbeast form at Stormshifter level 6, a Psion's picks offer every tier they've unlocked, a Hexbinder starts knowing Withered and Frenzied, and Razor Wind's text no longer repeats its range. See the [character sheets guide](docs/character-sheets.md#levelling-up).
+- With Vulnerable on, the HP keypad's big number and button show the damage that lands (19 for 9 + 10 in Nimble, 18 for 9 doubled in 5e), matching its sum.
+- Defend on a Nimble character sheet's HP keypad takes your Armor off the hit and spends an action. It used to do nothing.
+- Spotlight no longer offers an NPC's role as a `role:` filter, and the Nimble quick look calls a hero's number Armor, as the card and sheet do.
+- Renaming a combatant just after a hit no longer saves half the name.
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
