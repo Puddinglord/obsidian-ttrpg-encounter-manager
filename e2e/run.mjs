@@ -8039,6 +8039,7 @@ for (const file of ['entities-nimble.mjs', 'entities-5e.mjs']) {
 		resetEncounter, typeHp, creatureMenu, onCard, parkMouse, openCompendiumTab, closeCompendiumTab,
 		freshCampaign, endCampaign, openPicker, createFromPicker, rollThrough, withSheetNote, waitFmAt, waitFm, measurePills,
 		pillOffenders, PILL_SELECTORS,
+		creatures, encounter, card, mainButton, pickOption, exact, notices, camp, CP, cgroup, crow, menuTitles, clickMenu, exists, read, CMP, cmpNames, cmpRow, sheetFmOf,
 	});
 }
 
