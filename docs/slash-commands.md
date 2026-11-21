@@ -17,6 +17,7 @@ In a campaign you [play in](players.md), the GM-only commands (`/add`, `/encount
 | `/statblock krogg` | The full stat block, editable in the note (`/statblock` on its own opens the compendium) |
 | `/builder` | Opens the encounter builder |
 | `/new-monster`, `/new-spell`, `/new-item` | Opens the [builder](builder.md); what you make goes where you typed |
+| `/new-class`, `/new-subclass`, `/new-option`, `/new-ancestry`, `/new-background`, `/new-boon` | Opens [Nimble's builder](homebrew.md#nimbles-builders) for it; the block goes where you typed (it joins the compendium from a note in your content folder) |
 | `/legendary`, `/minion` | Stat block templates |
 | `/condition dazed` | The condition's rules as a callout |
 | `/read-aloud`, `/look`, `/treasure`, `/trap`, `/clue`, `/hook`… | Styled boxes (see [Boxes](boxes.md)); `/hook` is the quest box |

@@ -19,7 +19,34 @@ Your content lives in the [compendium](compendium.md), not beside your campaign 
 
 As soon as the block reads cleanly it's in the compendium, tagged **Homebrew**. Change the block and everything that uses it changes too.
 
-Monsters, spells and items open the [builder](builder.md) instead, as they always have.
+Monsters, spells and items open the [builder](builder.md) instead, as they always have. In Nimble, so do classes, subclasses, a class's options, ancestries, backgrounds and boons: see [Nimble's builders](#nimbles-builders).
+
+## Nimble's builders
+
+In a Nimble campaign, **+** on the Classes, Features and Origins tabs opens a builder for the kind you picked, so you never type a block. It's the same builder as monsters and spells: steps across the top, **Create now** from any step, and on the right the card as the compendium will show it. What it writes is the block you'd have typed, in a note in your content folder.
+
+![The class builder on its Levels step: level 2's Wick Lore has you choose 1 from the class's Wicks list; beside it, what each level grants and the class page](images/guide-builder-class.png)
+
+**A class** takes eight steps:
+
+1. **Start:** name, tagline, Hit Die and starting HP (left blank, it's the books' for that die), its motif (the scrollwork on its page and its heroes' sheets: plain, or one of the book classes'), and what it's about.
+2. **Stats:** the sheet's four stat boxes. Tap two for the key stats, the triangle above one for the ▲ save and below one for the ▼ save. Under them, the Skilled Hero adjustments (+2 Perception, −1 Might).
+3. **Gear:** armor and weapons, and starting gear from the compendium (or typed).
+4. **Magic:** whether it casts, its mana (`WIL×3+LVL`), the level the mana starts at, its schools, and the level each spell tier comes at. **Every 2 levels** fills in the books' usual ladder.
+5. **Resources:** what the class panel keeps. **Dice** have a die, how many it holds, when they come back, whether they're rolled when spent or when gained, which rolls they go into (attack, spell, save, check), how many go into one roll, whether they're kept, a bigger die from a level, and more held from a level (for one subclass if you name it). **Points** (Lay on Hands) have a max and their button's word; **uses** have a max. Then the **states** it switches on (Rage puts Raging on the hero) and **a target** it keeps one of (Hunter's Mark).
+6. **Levels:** pick a level from 1 to 20 and give it features. Each feature can grant more with **What it grants**: a choice from one of its lists, a stat increase, spells to learn, uses per Safe Rest, a spell tier, the next tier of a list, things given outright, or a boon. **Subclass at level** moves the subclass choice; **Add the books' rhythm** puts in subclass features at 3, 7, 11 and 15, stat increases from its key stats, and the Epic Boon at 19.
+7. **Options:** the lists it chooses from, each with its options (name, cost, requirement, text).
+8. **Review:** where it's saved, and anything still missing, each with a button to its step.
+
+Beside the steps, **Level up asks** lists what every level grants, the way Level up will ask it: features, the subclass, "Choose 1 · Wicks", "+1 WIL or DEX", spells, dice that grow.
+
+**A subclass** picks its class (one of the books', a pack's or yours), then its features by level, its own lists, which of its class's lists it gives up, what it chooses instead ("whenever it would choose a Combat Tactic, it chooses an Order"), and which of its lists are companions. The check lists what it brings at each level.
+
+**An option** picks its class (and subclass), its list (or a new one, with its opening words), cost, requirement and text. The check says the levels its class offers it at.
+
+**An ancestry** has a size, a rarity and its traits. **A background** has its category, requirement and what it gives. **A boon** is Epic, Lodging or Other, with its category, requirement and text.
+
+To change one later, point at its block and click the **pencil**: the builder opens on it, and Save writes the block back in place. Fields the builder doesn't show (a class's FAQ, subclasses written inside it) stay as they were.
 
 ## Where the notes live
 

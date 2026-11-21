@@ -1149,6 +1149,54 @@ const features = {
 		setup: async () => { await buildMonster({ hp: 70, step: 1 }); },
 		show: () => ['.modal.nimble-entity-builder'],
 	},
+	// homebrew.md "Nimble's builders": a class on its Levels step, a feature choosing from its own list, the check
+	// saying what each level grants, and the class page as it will be.
+	'guide-builder-class': {
+		viewport: [1200, 760], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app) => { await app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+			const CMPX = '.nimble-compendium';
+			await page.waitForSelector(`${CMPX} .nimble-cmpx-row[data-id]`, { timeout: 8000 });
+			await page.locator(`${CMPX} .nimble-cmpx-seg[data-segment="classes"]`).click();
+			await page.locator(`${CMPX} .nimble-cmpx-new`).click();
+			await page.locator('.menu .menu-item', { hasText: 'New class' }).first().click();
+			const b = page.locator('.modal.nimble-entity-builder');
+			await b.waitFor();
+			const panel = () => b.locator('.eb-panel.is-active');
+			const step = async (name) => { await b.locator('.eb-dot', { hasText: name }).click(); await page.waitForTimeout(450); return panel(); };
+			let p = panel();
+			await p.locator('input[data-field="Name"]').fill('Lanternkeeper');
+			await p.locator('input[data-field="Tagline"]').fill('Carries the light into the dark.');
+			await p.locator('button.ncb-motif[aria-label="Mage\'s motif"]').click();
+			p = await step('Stats');
+			for (const k of ['key-WIL', 'key-DEX', 'adv-WIL', 'dis-STR']) await p.locator(`[data-k="${k}"]`).click();
+			p = await step('Resources');
+			await p.locator('.eb-text-btn', { hasText: 'Add dice' }).click();
+			await panel().locator('input[data-field="Resource name"]').fill('Wick Dice');
+			await panel().locator('input[data-field="Max"]').fill('2');
+			p = await step('Options');
+			await p.locator('.eb-text-btn', { hasText: 'Add a list' }).click();
+			await panel().locator('input[data-field="List name"]').fill('Wicks');
+			await panel().locator('input[data-field="Option name"]').fill('Red Wick');
+			await panel().locator('textarea[data-field="Option text"]').fill('Your light burns red, and foes in it can\'t hide.');
+			p = await step('Levels');
+			await p.locator('input[data-field="feature name"]').first().fill('Kindle');
+			await p.locator('textarea[data-field="feature text"]').first().fill('As an action, light your lantern until the end of the encounter.');
+			await p.locator('.ncb-rung[data-level="2"]').click();
+			await panel().locator('.eb-text-btn', { hasText: 'Add a feature' }).click();
+			await panel().locator('input[data-field="feature name"]').fill('Wick Lore');
+			await panel().locator('textarea[data-field="feature text"]').fill('You learn the old wick-craft.');
+			await panel().locator('.ncb-grant-add').click();
+			await page.locator('.menu .menu-item', { hasText: 'A choice from a list' }).click();
+			await panel().locator('.ncb-grant-edit .eb-pick[data-value="Wicks"]').click();
+			await page.evaluate(() => activeDocument.activeElement?.blur());
+			await page.waitForTimeout(450);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+		// Nothing to save from a shot: close without the Discard question.
+		after: async () => { await o.eval((app) => { document.querySelectorAll('.modal-container').forEach(n => n.remove()); app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()); }); },
+	},
 	// character-sheets.md "Rolling": the roll dialog for Brakka's Battleaxe while he's Raging, his Fury Die to put in.
 	'guide-roll-dialog': {
 		viewport: [1200, 900], bg: 'var(--background-secondary)', ratio: 0.8,

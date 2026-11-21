@@ -165,7 +165,7 @@ function grantFields(el: HTMLElement, ui: BuilderUI, key: keyof Feature, f: Draf
 			const rows = Array.isArray(f.learn) ? f.learn as Draft[] : (f.learn = [] as Draft[]);
 			rows.forEach((l, i) => {
 				const r = el.createDiv({ cls: 'ncb-learn' });
-				segmented<string>(r, [{ value: 'school', label: 'A school' }, { value: 'utilities', label: 'A school\'s Utility Spells' }, { value: 'utility', label: 'Utility Spells' }],
+				segmented<string>(r, [{ value: 'school', label: 'School', title: 'A spell school' }, { value: 'utilities', label: 'All Utility', title: 'Every Utility Spell of a school' }, { value: 'utility', label: 'Utility', title: 'Utility Spells, one by one' }],
 					() => str(l.kind) || 'utility', v => { l.kind = v; }, { label: 'What to learn', ui, cls: 'is-compact is-wrap-ok' });
 				chipToggles(r, ui, [...h.schools().map(s => ({ value: s })), { value: 'known', label: 'Known' }, { value: 'new', label: 'New' }], () => strs(l.from), v => { l.from = v; }, { label: 'From' });
 				const line = r.createDiv({ cls: 'ncb-inline' });

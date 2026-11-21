@@ -2,6 +2,8 @@
 
 Make your own monsters, spells and items without learning a format. The builder knows the books' numbers: tell it a level and it fills in the rest, or type your own numbers and it tells you what level they play like.
 
+In Nimble, the same builder makes a hero's content too: classes, subclasses, a class's options, ancestries, backgrounds and boons. See [Nimble's builders](homebrew.md#nimbles-builders).
+
 ![The monster builder making a Cave Bear, with the stat block preview and the level check beside the form](images/builder.png)
 
 ## Your first monster

@@ -98,6 +98,7 @@ src/systems/nimble/
   entity-builder.ts     Nimble's kinds for core's builder (core/builder/frame.ts)
   entity-monster.ts     The monster draft: typed values kept, the rest from the level; quick build, solo, minion, from a template (pure, tested); entity-monster-ui.ts its steps
   entity-homebrew.ts    Spell and item drafts (pure, tested); entity-homebrew-ui.ts their steps
+  entity-content.ts     A hero's content as builder drafts: class, subclass, option, ancestry, background, boon; the block they write, what's missing, what each level grants (pure, tested); entity-content-ui.ts the small kinds and shared editors, entity-class-ui.ts the class and subclass
   homebrew-def.ts       ```nimble-spell / ```nimble-item blocks (pure, tested); homebrew-block.ts renders them; the monster index collects them into the compendium
   builder-register.ts   Registers Nimble's builder kinds; the Edit pencil on Nimble's blocks
   system.ts             Nimble as a GameSystem: the contract's members, each a thin call into the modules below
@@ -113,7 +114,7 @@ e2e/                    End-to-end tests that drive a real Obsidian
 
 Rules that keep this healthy:
 
-- Core's `types.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, the registry, and Nimble's `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `attack-roll.ts`, `roll-def.ts`, `resource-def.ts`, `content.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
+- Core's `types.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, the registry, and Nimble's `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `attack-roll.ts`, `roll-def.ts`, `resource-def.ts`, `content.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `entity-content.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
 - Views don't mutate encounter data directly. Call `nimble().encounters.*` (or 5e's `dnd5e().fights.change`); it saves and fires `changed`, and every open tracker re-renders.
