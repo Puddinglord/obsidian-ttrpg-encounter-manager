@@ -816,4 +816,124 @@ export function register(test, h) {
 			await shot(o, 'sheet-2014');
 		});
 	});
+
+	// -----------------------------------------------------------------------
+	// Monsters
+
+	test('entities 5e: monster: SRD monsters, the Monsters folder\'s starter, a hand-written block in both layouts, the builder, the content folder seen from every campaign, Copy to vault in 2014; found in the compendium and run in a fight', async (o) => {
+		const C = 'Campaigns/E5 Reef';
+		const C2 = 'Campaigns/E5 Old Reef';
+		const lurker = `${C}/Monsters/Reef Lurker.md`;
+		const imp = `${CONTENT}/5e/Monsters/Cinder Imp.md`;
+		await scenario(o, 'monster', [C, C2, imp], async () => {
+			await campaign5e(o, 'E5 Reef', { edition: '2024', level: 3 });
+			// The Monsters folder's +: in a 5e campaign the starter is a ```5e block, which the 5e bestiary picks up.
+			await h.openPicker(o, `${C}/Monsters`);
+			assert.equal(await o.page.locator('.nimble-new-note .nimble-starter.is-active').getAttribute('data-kind'), 'monster');
+			await h.createFromPicker(o, 'Reef Lurker');
+			await o.waitFor(() => exists(o, lurker), { what: 'the monster note' });
+			assert.match(await read(o, lurker), /nimble: monster[\s\S]*```5e\nname: Reef Lurker\n/);
+			await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.runtime('dnd5e').get('Reef Lurker', p)?.filePath, lurker)) === lurker, { what: 'the starter in the 5e index' });
+
+			// Edit it by hand: a block as the book prints it, and a second laid out the 2014 way.
+			await write(o, lurker, [
+				'---', 'nimble: monster', '---', '',
+				'```5e', 'name: Reef Lurker', 'size: Large', 'type: Monstrosity', 'ac: 15 (natural armor)', 'hp: 52 (7d10 + 14)', 'speed: 10 ft., swim 40 ft.',
+				'str: 18', 'dex: 12', 'con: 15', 'int: 3', 'wis: 12', 'cha: 5', 'skills: Stealth +5', 'senses: darkvision 60 ft., passive Perception 11', 'cr: 3',
+				'traits:', '- Amphibious: The lurker can breathe air and water.',
+				'actions:', '- Multiattack: The lurker makes two Bite attacks.', '- Bite: Melee Attack Roll: +6, reach 10 ft. Hit: 11 (2d6 + 4) Piercing damage.', '```', '',
+				'```5e', 'name: Reef Lurker Hatchling', 'edition: 2014', 'size: Small', 'type: Monstrosity', 'ac: 12', 'hp: 9 (2d6 + 2)', 'speed: 10 ft., swim 30 ft.',
+				'str: 10', 'dex: 14', 'con: 12', 'int: 2', 'wis: 10', 'cha: 4', 'cr: 1/8',
+				'actions:', '- Bite: Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 4 (1d4 + 2) piercing damage.', '```', '',
+			].join('\n'));
+			await o.openFile(lurker, 'preview');
+			const blocks = view(o, '.dnd5e-statblock');
+			await o.waitFor(async () => (await blocks.count()) === 2, { what: 'both stat blocks' });
+			assert.deepEqual(await blocks.evaluateAll(bs => bs.map(b => ['ed-2024', 'ed-2014'].find(c => b.classList.contains(c)))), ['ed-2024', 'ed-2014']);
+			assert.match(await blocks.first().innerText(), /AC\s*15[\s\S]*HP\s*52[\s\S]*CR\s*3 \(XP 700; PB \+2\)/);
+			assert.match(await blocks.nth(1).innerText(), /Armor Class\s*12[\s\S]*Challenge\s*1\/8 \(25 XP\)/);
+			// Every number rolls: the bite's to-hit.
+			await blocks.first().locator('.dnd5e-feature .dnd5e-roll.is-clickable').first().click();
+			await o.waitFor(async () => (await lastRoll(o))?.expression === '1d20+6', { what: 'the bite rolled' });
+			// Live Preview draws them too.
+			await o.openFile(lurker, 'source');
+			await o.waitFor(async () => (await lp(o, '.dnd5e-statblock').count()) === 2, { what: 'the blocks in Live Preview' });
+
+			// The pencil reopens the block in the builder; Save writes the change back in place.
+			await o.openFile(lurker, 'preview');
+			const first = view(o, '.block-language-5e').first();
+			await first.hover();
+			await first.locator('.nimble-block-edit').click();
+			await o.page.locator(B).waitFor();
+			assert.equal(await o.page.locator(`${PANEL} input[data-field="Name"]`).inputValue(), 'Reef Lurker');
+			await step(o, 'Armor');
+			await o.page.locator(`${PANEL} input[data-field="AC"]`).fill('16');
+			await finish(o);
+			await o.waitFor(async () => /\nac: 16\b/.test(await read(o, lurker)), { what: 'AC written back' });
+			assert.match(await read(o, lurker), /name: Reef Lurker Hatchling/, 'the other block is left alone');
+
+			// New monster… builds one into the campaign's Monsters folder.
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-monster'); });
+			await o.page.locator(B).waitFor();
+			assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Monster');
+			await o.page.locator(`${PANEL} input[data-field="Name"]`).fill('Tide Hag');
+			await o.page.locator(`${PANEL} select[data-field="Challenge"]`).selectOption('4');
+			await finish(o);
+			const hag = `${C}/Monsters/Tide Hag.md`;
+			await o.waitFor(() => exists(o, hag), { what: 'the built monster' });
+			assert.match(await read(o, hag), /^---\nnimble: monster\ncr: "?4"?\n---[\s\S]*```5e\nname: Tide Hag\nedition: 2024\n[\s\S]*cr: 4\n/);
+			// Like every monster note, it's listed with a skull in the panel.
+			await o.waitFor(async () => crow(o, hag).evaluate(el => el.classList.contains('kind-monster')).catch(() => false), { what: 'the built monster listed as a monster' });
+			assert.ok(await crow(o, lurker).evaluate(el => el.classList.contains('kind-monster')));
+
+			// Homebrew in the content folder is seen from every campaign, in either edition.
+			await write(o, imp, '```5e\nname: Cinder Imp\nsize: Tiny\ntype: Fiend\nac: 13\nhp: 10 (4d4)\nspeed: 20 ft., fly 40 ft.\nstr: 6\ndex: 17\ncon: 10\nint: 11\nwis: 12\ncha: 14\ncr: 1/2\nactions:\n- Sting: Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3) Fire damage.\n```\n');
+			await campaign5e(o, 'E5 Old Reef', { edition: '2014', level: 1, starter: false });
+			for (const camp of [C, C2]) {
+				await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.runtime('dnd5e').get('Cinder Imp', p)?.filePath, `${camp}/x.md`)) === imp, { what: `the imp seen from ${camp}` });
+			}
+			// But a campaign's own monsters stay in their campaign.
+			assert.equal(await o.eval((app, plugin, p) => plugin.runtime('dnd5e').get('Reef Lurker', p)?.filePath ?? null, `${C2}/x.md`), null, 'the 2014 campaign doesn\'t see the other campaign\'s Reef Lurker');
+
+			// Copy to vault in the 2014 campaign: the Goblin's quick look makes it a note with the 2014 layout.
+			await write(o, `${C2}/Notes.md`, 'Watch for `5e:Goblin` and `5e:Cinder Imp`.\n');
+			await o.openFile(`${C2}/Notes.md`, 'preview');
+			await o.waitFor(async () => (await view(o, '.dnd5e-ref.nimble-inline-found').count()) === 2, { what: 'both references found' });
+			await view(o, '.dnd5e-ref .nimble-inline-name').first().click();
+			const look = o.page.locator('.modal.dnd5e-quick-look');
+			await look.locator('.dnd5e-statblock.ed-2014').waitFor({ timeout: 3000 });
+			await look.locator('button', { hasText: 'Copy to vault' }).click();
+			await o.waitFor(() => exists(o, `${C2}/Monsters/Goblin.md`), { what: 'the copy' });
+			assert.match(await read(o, `${C2}/Monsters/Goblin.md`), /```5e\nname: Goblin\nedition: 2014\n/);
+			await o.page.keyboard.press('Escape');
+			await tidy(o);
+
+			// The compendium finds them all in the 2024 campaign: the SRD's, yours, the content folder's, with filters.
+			await o.eval(async (app, plugin, C) => { await plugin.campaigns.setActive(C); }, C);
+			await compendium(o, 'Monsters', 'reef lurker');
+			await o.waitFor(async () => (await cmpNames(o, CV)).includes('Reef Lurker'), { timeout: 5000, what: 'Reef Lurker in the compendium' });
+			await o.page.locator(`${CV} .nimble-cmpx-input`).fill('');
+			await o.page.locator(`${CV} .nimble-cmpx-input`).pressSequentially('type:fiend cr:1/2 ', { delay: 15 });
+			await o.waitFor(async () => (await cmpNames(o, CV)).includes('Cinder Imp'), { timeout: 5000, what: 'the imp by its filters' });
+			assert.ok(!(await cmpNames(o, CV)).includes('Reef Lurker'), 'filters leave the lurker out');
+			// Enter on a monster adds it to the fight.
+			while (await o.page.locator(`${CV} .nimble-cmpx-chip-x`).count()) await o.page.locator(`${CV} .nimble-cmpx-chip-x`).first().click();
+			await o.page.locator(`${CV} .nimble-cmpx-input`).fill('owlbear');
+			await o.waitFor(async () => /Owlbear/.test(await o.page.locator(`${CV} .nimble-cmpx-row.is-selected`).innerText().catch(() => '')), { what: 'the Owlbear selected' });
+			await o.page.locator(`${CV} .nimble-cmpx-input`).press('Enter');
+			await o.waitFor(async () => (await fight(o)).some(c => c.name === 'Owlbear'), { what: 'the Owlbear in the fight' });
+
+			// A fight with an SRD monster, your own and the content folder's: each resolves, rated, and Run puts them in the tracker.
+			await write(o, `${C}/Chapter 1/Reef.md`, '```nimble-encounter\nname: The reef\nmonsters:\n- 2 `5e:Reef Lurker`\n- Cinder Imp\n- [[Tide Hag]]\n- Sahuagin Warrior\n```\n');
+			await o.openFile(`${C}/Chapter 1/Reef.md`, 'preview');
+			const enc = view(o, '.dnd5e-encounter');
+			await o.waitFor(async () => (await enc.locator('.dnd5e-encounter-xp').count()) === 4, { what: 'four groups with XP' });
+			assert.equal(await enc.locator('.dnd5e-encounter-missing').count(), 0, 'nothing missing');
+			await enc.locator('button', { hasText: 'Run' }).click();
+			await o.page.locator(TR).waitFor({ timeout: 5000 });
+			await o.waitFor(async () => (await fight(o)).length === 5, { what: 'five in the fight' });
+			assert.deepEqual((await fight(o)).map(c => c.name).sort(), ['Cinder Imp', 'Reef Lurker', 'Reef Lurker', 'Sahuagin Warrior', 'Tide Hag']);
+			assert.equal((await fight(o)).find(c => c.name === 'Reef Lurker').ac, 16, 'the edited AC');
+		});
+	});
 }
