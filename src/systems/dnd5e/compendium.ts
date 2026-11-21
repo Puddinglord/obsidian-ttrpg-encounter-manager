@@ -135,6 +135,28 @@ export function packContent5e(edition: Dnd5eEdition): Content5e | null {
 	return added.get(edition) ?? null;
 }
 
+// ----------------------------------------------------------------------------
+// Your ```5e-spell blocks, for the wizards' spell picks (the runtime sets where they come from)
+
+let spellLibrary: (() => Spell5e[]) | null = null;
+
+/** Where your own spells come from (```5e-spell blocks: homebrew, imported), or null for none. */
+export function setSpellLibrary5e(fn: (() => Spell5e[]) | null): void {
+	spellLibrary = fn;
+}
+
+/**
+ * An edition's spells to pick from: your ```5e-spell blocks first (one replaces the SRD's or a pack's of the same
+ * name), then the compendium's (the SRD's and the campaign's packs').
+ */
+export function spellsFor5e(edition: Dnd5eEdition): Spell5e[] {
+	const own = (spellLibrary?.() ?? []).filter(s => s?.name);
+	const base = compendium5e(edition).spells;
+	if (!own.length) return base;
+	const names = new Set(own.map(s => s.name.toLowerCase()));
+	return [...own, ...base.filter(s => !names.has(s.name.toLowerCase()))];
+}
+
 /** An edition's compendium: the SRD, with any content packs on top. */
 export function compendium5e(edition: Dnd5eEdition): Compendium5e {
 	const base = (edition === '2014' ? c2014 : c2024)() as Compendium5e;

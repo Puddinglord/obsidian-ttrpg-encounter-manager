@@ -21,7 +21,7 @@ import { Dnd5eEncounterBlock } from './encounter-block';
 import type { EncounterDef } from '../../core/encounter-def';
 import { equipmentLine, Hit5e, KIND5E, Kind5e, kindFromWord, spellLine } from './compendium';
 import { findIn, Homebrew5e, mergeHits } from './homebrew-index';
-import { setContentLayer5e } from './compendium';
+import { setContentLayer5e, setSpellLibrary5e } from './compendium';
 import { content5e } from './content';
 import type { LoadedPack } from '../../core/content/packs';
 import { homebrewSource, ITEM_LANG, parseEquipment5e, parseItem5e, parseSpell5e, SPELL_LANG } from './homebrew';
@@ -133,6 +133,8 @@ export class Dnd5eRuntime {
 			this.index.vault.trigger('changed');
 		};
 		plugin.registerEvent(plugin.content.on('changed', applyPacks));
+		// Your ```5e-spell blocks (homebrew, imported) join the wizards' spell picks, as the active campaign sees them.
+		setSpellLibrary5e(() => this.homebrew.library(plugin.campaigns.active?.home.path).spells);
 		plugin.registerEvent(plugin.campaigns.on('changed', applyPacks));
 
 		const indexes = [this.index.vault, ...this.homebrew.indexes];

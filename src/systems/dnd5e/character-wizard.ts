@@ -17,7 +17,7 @@ import {
 	LevelUp5eDraft, levelOptions, magicInitiate, masteryCount, masteryWeapons, needsSubclass, newCantrips, newCharacter5e, newLevelUp5e, newMasteries, newSpellCount, newSpellLevel, optionGroups,
 	plusOf, settleIncreases, skillChoice, speciesChoices, speciesOf, spellCount, spellsAt, startingEquipment, subclassLevel, toolChoices,
 } from './character-draft';
-import { compendium5e } from './compendium';
+import { compendium5e, spellsFor5e } from './compendium';
 import type { Dnd5eEdition } from './editions';
 import { formatMod } from './rules';
 import type { Dnd5eRuntime } from './runtime';
@@ -36,7 +36,7 @@ const optionName = (v: string) => v.replace(/^[^:]+:\s*/, '');
 function spellGroups(edition: Dnd5eEdition, cls: string, upTo: number, without: string[] = []): { label: string; options: string[] }[] {
 	const all = new Set(classSpells(edition, cls, upTo, false).filter(n => !without.some(k => same(k, n))));
 	const levels = new Map<number, string[]>();
-	for (const sp of compendium5e(edition).spells) if (all.has(sp.name)) levels.set(sp.level, [...(levels.get(sp.level) ?? []), sp.name]);
+	for (const sp of spellsFor5e(edition)) if (all.has(sp.name)) levels.set(sp.level, [...(levels.get(sp.level) ?? []), sp.name]);
 	return [...levels.keys()].sort((x, y) => x - y).map(l => ({ label: spellLevelLabel(l, edition), options: [...new Set(levels.get(l))].sort() }));
 }
 
@@ -198,7 +198,7 @@ export function characterSchema(rt: Dnd5eRuntime): EntitySchema<Character5eDraft
 						...(mi ? [
 							...(/^Magic Initiate$/i.test(d.originFeat ?? '') && !/^Magic Initiate/i.test(backgroundOf(d)?.feat ?? '') ? [{ type: 'choice' as const, rebuilds: true, key: 'miClass', label: 'Magic Initiate list', options: () => ['Cleric', 'Druid', 'Wizard'].map(c => ({ value: c, label: c })) }] : []),
 							{ type: 'chips' as const, key: 'miCantrips', label: `Magic Initiate cantrips (${mi})`, options: (x: Character5eDraft) => classSpells(x.edition, mi, 0, true).filter(n => !x.cantrips.includes(n)), max: () => 2, hint: (x: Character5eDraft) => `${(x.miCantrips ?? []).length} of 2` },
-							{ type: 'chips' as const, key: 'miSpell', label: `Magic Initiate spell (${mi})`, options: (x: Character5eDraft) => compendium5e(x.edition).spells.filter(s => s.level === 1 && s.classes.some(c => same(c, mi)) && !x.spells.includes(s.name)).map(s => s.name).sort(), max: () => 1 },
+							{ type: 'chips' as const, key: 'miSpell', label: `Magic Initiate spell (${mi})`, options: (x: Character5eDraft) => classSpells(x.edition, mi, 1, false).filter(n => !x.spells.includes(n)), max: () => 1 },
 						] : []),
 						...(ch.cantripChoices ? [{ type: 'choice' as const, key: 'raceCantrip', label: 'Race cantrip', dropdown: true, options: () => [{ value: '', label: 'Choose' }, ...ch.cantripChoices!.from.map(v => ({ value: v, label: v }))] }] : []),
 						...(masteryCount(d.edition, k, lv(d)) ? [{

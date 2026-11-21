@@ -9,7 +9,7 @@
 
 import type { Draft } from '../../core/builder/schema';
 import creationJson from './data/creation.json';
-import { Background5e, Class5e, ClassFeature5e, compendium5e, OriginChoices5e, Pick5e, Species5e, StartingEquipment5e } from './compendium';
+import { Background5e, Class5e, ClassFeature5e, compendium5e, OriginChoices5e, Pick5e, Species5e, spellsFor5e, StartingEquipment5e } from './compendium';
 import { Frontmatter, newCharacterFm, optionGroupOf, readSheet5e, SKILLS, STANDARD_ARRAY } from './character';
 
 export { optionGroupOf };
@@ -190,10 +190,13 @@ export function spellCount(edition: Dnd5eEdition, cls: Class5e | undefined, leve
 	return { count: Math.max(1, mod + lv), kind: 'prepared' };
 }
 
-/** The class's spells up to a level (0: cantrips only), from its own list or the one it borrows (`spellList`). */
+/**
+ * The class's spells up to a level (0: cantrips only): those naming the class or the list it borrows (`spellList`),
+ * from the SRD, the campaign's packs and your own ```5e-spell blocks (homebrew or imported).
+ */
 export function classSpells(edition: Dnd5eEdition, cls: string, upTo: number, cantrips: boolean): string[] {
-	const list = classOf(edition, cls)?.spellList || cls;
-	return compendium5e(edition).spells.filter(s => s.classes.some(c => same(c, list)) && (cantrips ? s.level === 0 : s.level >= 1 && s.level <= upTo)).map(s => s.name).sort();
+	const lists = uniq([cls, classOf(edition, cls)?.spellList ?? ''].filter(Boolean));
+	return uniq(spellsFor5e(edition).filter(s => (s.classes ?? []).some(c => lists.some(l => same(c, l))) && (cantrips ? s.level === 0 : s.level >= 1 && s.level <= upTo)).map(s => s.name)).sort();
 }
 
 /** Expertise picks a class grants at exactly this level (its table): two for each Expertise, one for 2024's Deft Explorer. */

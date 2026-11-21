@@ -11,7 +11,7 @@
 import type { Draft } from '../../core/builder/schema';
 import { classCreation, classOf, toolOf } from './character-draft';
 import { pbForLevel, SKILLS } from './character';
-import { Class5e, ClassFeature5e, ClassResource5e, compendium5e, StartingEquipment5e } from './compendium';
+import { Class5e, ClassFeature5e, ClassResource5e, compendium5e, spellsFor5e, StartingEquipment5e } from './compendium';
 import type { Dnd5eEdition } from './editions';
 import { ABILITIES, ABILITY_NAME, AbilityKey } from './types';
 
@@ -922,7 +922,7 @@ export function toolNames(edition: Dnd5eEdition): string[] {
 /** Cantrips (all, or a class's list's). */
 export function cantripNames(edition: Dnd5eEdition, cls = ''): string[] {
 	const listName = cls ? classOf(edition, cls)?.spellList || cls : '';
-	return uniq(compendium5e(edition).spells.filter(s => s.level === 0 && (!listName || s.classes.some(c => same(c, listName)))).map(s => s.name)).sort();
+	return uniq(spellsFor5e(edition).filter(s => s.level === 0 && (!listName || (s.classes ?? []).some(c => same(c, listName) || same(c, cls)))).map(s => s.name)).sort();
 }
 /** The highest spell level a class can cast at a class level. */
 export function maxSpellLevel(cls: Class5e | undefined, level: number): number {
@@ -937,7 +937,7 @@ export function maxSpellLevel(cls: Class5e | undefined, level: number): number {
 export function classSpellNames(edition: Dnd5eEdition, cls: string, upTo: number): { level: number; names: string[] }[] {
 	const c = classOf(edition, cls);
 	const listName = c?.spellcasting ? c.spellList || cls : '';
-	const spells = compendium5e(edition).spells.filter(s => s.level >= 1 && s.level <= Math.max(1, upTo) && (!listName || s.classes.some(x => same(x, listName))));
+	const spells = spellsFor5e(edition).filter(s => s.level >= 1 && s.level <= Math.max(1, upTo) && (!listName || (s.classes ?? []).some(x => same(x, listName) || same(x, cls))));
 	const levels = uniq(spells.map(s => s.level)).sort((a, b) => a - b);
 	return levels.map(l => ({ level: l, names: uniq(spells.filter(s => s.level === l).map(s => s.name)).sort() }));
 }

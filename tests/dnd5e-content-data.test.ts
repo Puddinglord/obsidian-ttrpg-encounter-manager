@@ -8,10 +8,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { readSheet5e } from '../src/systems/dnd5e/character';
 import {
-	alwaysPrepared, applyLevelUp5e, bonuses, characterFm, classOf, featIncrease, givenLanguages, languageChoice, newCharacter5e, newLevelUp5e, optionGroups, speciesChoices, toolChoices,
+	alwaysPrepared, applyLevelUp5e, bonuses, characterFm, classOf, classSpells, featIncrease, givenLanguages, languageChoice, newCharacter5e, newLevelUp5e, optionGroups, speciesChoices, toolChoices,
 } from '../src/systems/dnd5e/character-draft';
 import { settle } from '../src/systems/dnd5e/character-wizard';
-import { setContentLayer5e } from '../src/systems/dnd5e/compendium';
+import { setContentLayer5e, setSpellLibrary5e, Spell5e } from '../src/systems/dnd5e/compendium';
 import { content5e } from '../src/systems/dnd5e/content';
 import type { Dnd5eEdition } from '../src/systems/dnd5e/editions';
 
@@ -154,5 +154,31 @@ describe('a feat\'s increase and a subclass\'s spells are data', () => {
 		applyLevelUp5e(fm, newLevelUp5e(fm, '2024', 'Ama'));
 		expect(fm.level).toBe(5);
 		expect(fm.spells).toContain('Fireball');
+	});
+});
+
+describe('your ```5e-spell blocks are in the wizards\' spell picks', () => {
+	afterEach(() => setSpellLibrary5e(null));
+	const spell = (name: string, level: number, classes: string[]): Spell5e => ({ name, level, classes, school: 'Evocation', castingTime: 'Action', range: '60 feet', components: 'V', duration: 'Instantaneous', desc: 'x' });
+	it('a homebrew spell naming an SRD class is offered to it; one with the SRD\'s name replaces it', () => {
+		setSpellLibrary5e(() => [spell('Ember Lash', 1, ['Wizard', 'Sorcerer']), spell('Ash Mote', 0, ['Wizard']), spell('Sleep', 1, ['Bard'])]);
+		expect(classSpells('2024', 'Wizard', 1, false)).toContain('Ember Lash');
+		expect(classSpells('2024', 'Wizard', 0, true)).toContain('Ash Mote');
+		expect(classSpells('2024', 'Cleric', 1, false)).not.toContain('Ember Lash');
+		// Sleep is now only the Bard's (the block replaces the SRD's, which the Wizard had).
+		expect(classSpells('2024', 'Wizard', 1, false)).not.toContain('Sleep');
+		expect(classSpells('2024', 'Bard', 1, false)).toContain('Sleep');
+	});
+	it('an imported or homebrew caster class gets its own spells, and a class borrowing a list gets both', () => {
+		homebrew([
+			{ kind: 'class', name: 'Hollowblade', value: { hitDie: 8, saves: ['DEX', 'INT'], spellcasting: 'INT', features: [], levels: [{ level: 1, pb: 2, features: [], slots: [2], cantrips: 2 }] } },
+			{ kind: 'class', name: 'Hearth Warden', value: { hitDie: 10, saves: ['STR', 'WIS'], spellcasting: 'WIS', spellList: 'Ranger', features: [], levels: [{ level: 1, pb: 2, features: [], slots: [2] }] } },
+		]);
+		setSpellLibrary5e(() => [spell('Hollow Cut', 1, ['Hollowblade']), spell('Shade Whisper', 0, ['Hollowblade']), spell('Hearth Ward', 1, ['Hearth Warden'])]);
+		expect(classSpells('2024', 'Hollowblade', 1, false)).toEqual(['Hollow Cut']);
+		expect(classSpells('2024', 'Hollowblade', 0, true)).toEqual(['Shade Whisper']);
+		const warden = classSpells('2024', 'Hearth Warden', 1, false);
+		expect(warden).toContain('Hearth Ward');
+		expect(warden).toContain('Hunter\'s Mark');
 	});
 });
