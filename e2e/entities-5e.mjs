@@ -106,7 +106,8 @@ export function register(test, h) {
 		});
 	}, [path, fields]);
 	const lastRoll = (o) => o.eval((app, plugin) => plugin.settings.rollLog[0] ?? null);
-	const fight = (o) => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => ({ label: c.label, name: c.name, hp: c.hp, maxHp: c.maxHp, ac: c.ac, init: c.init, side: c.side, conditions: c.conditions.map(x => x.name), legendary: c.legendary, death: c.death })));
+	const fight = (o) => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => ({ label: c.label, name: c.name, hp: c.hp, maxHp: c.maxHp, ac: c.ac, init: c.init, side: c.side, conditions: c.conditions.map(x => x.name), legendary: c.legendary, resistances: c.resistances, death: c.deathSaves, concentrating: !!c.concentrating, rounds: Object.fromEntries(c.conditions.map(x => [x.name, x.rounds])) })));
+	const fightState = (o) => o.eval((app, plugin) => { const f = plugin.runtime('dnd5e').fights.fight; return { round: f.round, turn: f.combatants.find(c => c.id === f.turnId)?.label ?? null }; });
 	const row5e = (o, name) => o.page.locator(`${TR} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: exact(name) }) });
 	const turnName = (o) => o.page.locator(`${TR} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).first().innerText().catch(() => '');
 
@@ -1061,6 +1062,129 @@ export function register(test, h) {
 			await SH().waitFor({ timeout: 5000 });
 			await SH('.dnd5e-tab[data-tab="spells"]').click();
 			await o.waitFor(async () => (await SH('.dnd5e-sheet-spell').filter({ hasText: 'Brine Bolt' }).count()) === 1, { what: 'Brine Bolt on the sheet' });
+		});
+	});
+
+	// -----------------------------------------------------------------------
+	// Encounters
+
+	test('entities 5e: encounter (2014): a block rated with the multiplier, Run with the party, a full round: initiative, a group stepping, a tap out of turn, legendary actions and resistance, concentration, a timed condition, death saves, Back, round 2, End', async (o) => {
+		const C = 'Campaigns/E5 Red Peak';
+		const lair = `${C}/Lair.md`;
+		const next = o.page.locator(`${TR} .dnd5e-next`);
+		const of = async (label) => (await fight(o)).find(c => c.label === label);
+		await scenario(o, 'encounter', [C], async () => {
+			await campaign5e(o, 'E5 Red Peak', { edition: '2014', level: 10, heroes: 2, starter: false });
+			// Two heroes typed in (no sheets): the block and the tracker read them.
+			await o.eval((app, plugin) => { plugin.settings.party = [{ id: 'e5-ilse', name: 'Ilse', level: 10, maxHp: 70, defense: 17 }, { id: 'e5-bram', name: 'Bram', level: 10, maxHp: 85, defense: 18 }]; plugin.campaigns.trigger('changed'); });
+			await write(o, lair, '# Lair\n\n```nimble-encounter\nname: The red peak\nparty: true\nmonsters:\n- `5e:Adult Red Dragon`\n- 2 Kobold\n```\n');
+			await o.openFile(lair, 'preview');
+			const enc = view(o, '.dnd5e-encounter');
+			// 2014: 18,000 + 2 × 25 XP, three monsters against two heroes counts ×2.5.
+			await o.waitFor(async () => /18,050 × 2\.5 = 45,125 XP/.test(await enc.locator('.dnd5e-encounter-sum').innerText().catch(() => '')), { what: 'the 2014 sum with its multiplier' });
+			assert.match(await enc.locator('.nimble-difficulty').innerText(), /^Deadly · \d+%$/i);
+			assert.match(await enc.locator('.dnd5e-encounter-party').innerText(), /2 heroes, level 10/);
+			assert.deepEqual((await enc.locator('.dnd5e-encounter-budget-label').allInnerTexts()).map(s => s.toLowerCase()), ['easy', 'medium', 'hard', 'deadly']);
+
+			// Run: the monsters and the party.
+			await enc.locator('button', { hasText: 'Run' }).click();
+			await o.page.locator(TR).waitFor({ timeout: 5000 });
+			await o.waitFor(async () => (await fight(o)).length === 5, { what: 'five in the fight' });
+			const f0 = await fight(o);
+			assert.deepEqual(f0.map(c => c.label).sort(), ['Adult Red Dragon', 'Bram', 'Ilse', 'Kobold', 'Kobold 2']);
+			assert.deepEqual((await of('Adult Red Dragon')).legendary, { max: 3, used: 0 });
+			assert.deepEqual((await of('Adult Red Dragon')).resistances, { max: 3, used: 0 });
+			// Initiative: the players' rolls typed in, Roll all for the monsters (the kobolds share one), then the dragon's set by hand.
+			const setInit = async (name, n) => {
+				await row5e(o, name).locator('.dnd5e-init').click();
+				await o.page.locator('.dnd5e-init-pop input').fill(String(n));
+				await o.page.keyboard.press('Enter');
+				await o.page.locator('.dnd5e-init-pop').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {});
+			};
+			await setInit('Ilse', 15);
+			await setInit('Bram', 8);
+			await o.page.locator(`${TR} button[aria-label="Roll initiative"]`).click();
+			await o.waitFor(async () => (await o.page.locator(`${TR} .dnd5e-init.is-unset`).count()) === 0, { what: 'everyone rolled' });
+			await o.waitFor(async () => (await row5e(o, 'Kobolds ×2').count()) === 1, { what: 'the kobolds on one roll' });
+			await setInit('Kobolds ×2', 12);
+			await setInit('Adult Red Dragon', 20);
+			await o.waitFor(async () => (await fight(o)).map(c => `${c.label}:${c.init}`).sort().join() === 'Adult Red Dragon:20,Bram:8,Ilse:15,Kobold 2:12,Kobold:12', { timeout: 5000, what: `everyone's initiative: ${JSON.stringify((await fight(o)).map(c => [c.label, c.init]))}` });
+			await o.page.locator(`${TR} button`, { hasText: 'Start combat' }).click();
+			await o.waitFor(async () => (await fightState(o)).turn === 'Adult Red Dragon', { what: 'the dragon first' });
+			assert.equal((await fightState(o)).round, 1);
+
+			// The dragon's card: Legendary actions and resistance as pips; it burns a resistance.
+			const dragon = row5e(o, 'Adult Red Dragon');
+			assert.equal(await dragon.locator('.ev-pips.is-legendary .ev-pip').count(), 3);
+			await dragon.locator('.ev-pips.is-resist .ev-pip.is-on').first().click();
+			await o.waitFor(async () => (await of('Adult Red Dragon')).resistances.used === 1, { what: 'a legendary resistance spent' });
+			// Its stat block from the card, laid out the 2014 way.
+			await shot(o, 'tracker-dragon');
+
+			// Ilse's turn, then the kobolds': after a turn that isn't the dragon's, the strip offers its legendary actions.
+			await next.click();
+			await o.waitFor(async () => (await fightState(o)).turn === 'Ilse', { what: 'Ilse up' });
+			// She concentrates; damage calls for the save.
+			await o.page.locator(`${TR} .dnd5e-combatant.is-turn .dnd5e-combatant-more`).click();
+			await clickMenu(o, 'Concentrating');
+			await o.waitFor(async () => (await of('Ilse')).concentrating, { what: 'concentrating' });
+			await tidy(o);
+			await hpPad5e(o, row5e(o, 'Ilse'), '14');
+			await o.waitFor(async () => (await of('Ilse')).hp === 56, { what: 'Ilse hit for 14' });
+			await o.waitFor(async () => /Ilse: Constitution save DC 10/.test((await o.page.locator('.notice').allInnerTexts()).join(' ')), { what: 'the concentration save called' });
+			await next.click();
+			await o.waitFor(async () => (await fightState(o)).turn === 'Kobold', { what: 'the first kobold up' });
+			const moment = o.page.locator(`${TR} .dnd5e-moment`);
+			await o.waitFor(async () => /Adult Red Dragon: a legendary action\?/.test(await moment.innerText().catch(() => '')), { what: 'the legendary strip' });
+			assert.match(await moment.innerText(), /After Ilse's turn · 3 of 3 uses left/);
+			await moment.locator('.ev-moment-btn', { hasText: 'Wing Attack' }).click();
+			await o.waitFor(async () => (await of('Adult Red Dragon')).legendary.used === 2, { what: 'the wing attack costs two' });
+			await o.waitFor(async () => (await moment.locator('.ev-moment-btn', { hasText: 'Wing Attack' }).isDisabled().catch(() => false)), { what: 'no uses left for another wing attack' });
+			// The group: two kobolds on one initiative, the card steps through them.
+			assert.equal(await o.page.locator(`${TR} .dnd5e-members .dnd5e-member`).count(), 2);
+			assert.equal(await next.innerText(), 'Next: Kobold 2');
+
+			// Out of turn: tap Bram and he acts now; Next goes back to the kobold who hadn't acted.
+			await row5e(o, 'Bram').locator('.dnd5e-combatant-name').click();
+			await o.waitFor(async () => (await fightState(o)).turn === 'Bram', { what: 'Bram acts now' });
+			// Nobody is reshuffled: the kobolds, who hadn't acted yet, are next.
+			assert.equal(await next.innerText(), 'Next: Kobolds');
+			// Frightened for 1 round, from the picker (2014's list: no Burning).
+			await o.page.locator(`${TR} .dnd5e-combatant.is-turn .ev-card-condition`).click();
+			await o.page.locator('.condition-picker .condition-search').fill('burn');
+			assert.equal(await o.page.locator('.condition-picker .condition-option[aria-label="Burning"]').count(), 0, '2014 has no Burning');
+			await o.page.locator('.condition-picker .condition-search').fill('');
+			// Each says what it does in a line, from the 2014 rules (their bullet lists read as plain sentences).
+			assert.match(await o.page.locator('.condition-picker .condition-option[aria-label="Blinded"] small').innerText(), /^A blinded creature can't see/);
+			await o.page.locator('.condition-picker .nimble-segmented button', { hasText: exact('1 rd') }).click();
+			await o.page.locator('.condition-picker .condition-option[aria-label="Frightened"]').click();
+			await o.waitFor(async () => (await of('Bram')).rounds.Frightened === 1, { what: 'Frightened for a round' });
+			// Bram drops: death saves on his card, rolled from there.
+			await hpPad5e(o, row5e(o, 'Bram'), '100');
+			await o.waitFor(async () => (await of('Bram')).hp === 0, { what: 'Bram at 0' });
+			await o.waitFor(async () => (await row5e(o, 'Bram').locator('.dnd5e-death').count()) === 1, { what: 'death saves on the card' });
+			await row5e(o, 'Bram').locator('.dnd5e-death-roll').click();
+			await o.waitFor(async () => (await lastRoll(o))?.label === 'Bram: death save', { what: 'a death save rolled' });
+			// Back undoes the tap: the kobold is up again.
+			await o.page.locator(`${TR} button[aria-label="Back a turn"]`).click();
+			await o.waitFor(async () => (await fightState(o)).turn === 'Kobold', { what: 'Back to the kobold' });
+
+			// The rest of round 1, then round 2: the dragon's legendary actions come back at the start of its turn.
+			for (let i = 0; i < 8 && (await fightState(o)).round === 1; i++) { await next.click(); await o.page.waitForTimeout(150); await o.eval(() => document.querySelectorAll('.modal.ev-effect-prompt .ev-effect-done').forEach(b => b.click())); }
+			await o.waitFor(async () => (await fightState(o)).round === 2 && (await fightState(o)).turn === 'Adult Red Dragon', { what: 'round 2, the dragon first' });
+			assert.equal((await of('Adult Red Dragon')).legendary.used, 0, 'legendary actions back');
+			assert.equal((await of('Adult Red Dragon')).resistances.used, 1, 'legendary resistance stays spent');
+			// A kobold falls and folds into Defeated.
+			await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.change(f => { const k = f.combatants.find(c => c.label === 'Kobold 2'); k.hp = 0; }));
+			await o.waitFor(async () => (await o.page.locator(`${TR} .dnd5e-tracker-defeated .dnd5e-combatant`).count()) === 1, { what: 'a kobold defeated' });
+			await shot(o, 'tracker-round-2');
+
+			// End combat, from the tracker's menu: the round resets, the fight stays to run again.
+			await o.page.locator(`${TR} .dnd5e-tracker-more`).click();
+			await clickMenu(o, 'End combat');
+			await o.waitFor(async () => (await fightState(o)).round === 0, { what: 'combat over' });
+			await o.page.locator(`${TR} button`, { hasText: 'Start combat' }).waitFor({ timeout: 3000 });
+			assert.equal((await fight(o)).length, 5);
 		});
 	});
 }
