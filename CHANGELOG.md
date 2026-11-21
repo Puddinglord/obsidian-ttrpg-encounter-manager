@@ -71,6 +71,7 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 
 ### Changed
 
+- Hunter's Mark takes your Quarry in your own words ("Goblin 2", "the one in the red scarf"), as a reminder for you; nothing is picked from the fight. Its box has Clear mark for when the day is over. See the [character sheets guide](docs/character-sheets.md#the-sheet).
 - Spotlight, the Cmd/Ctrl+K search box, is now called Omnisearch, since Daggerheart's turns use the word spotlight. The key, the command and any hotkey you gave it stay the same. See the [Omnisearch guide](docs/omnisearch.md).
 - A Nimble hero's Armor is called Defense, as Core 3.3 calls it: on the sheet, the tracker, the quick look, Defend on the HP keypad, and an armor's number in the compendium ("2+DEX Defense"). Monsters keep Medium and Heavy Armor. Your notes don't change. See the [character sheets guide](docs/character-sheets.md).
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
@@ -156,6 +157,7 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - The Character panel's skills fit a 260px sidebar; Omnisearch on a phone gives the name the row; the condition picker's title is the creature's name on one line; a battle's place shows one map pin; and links in an NPC's or a battle's labelled rows stay on one line. See the [character sheets guide](docs/character-sheets.md).
 - Buttons keep their whole label in narrow windows: a builder's Next when its label is long, Add several's Add button, the balance targets in the encounter builder, and the compendium picker's tabs on a phone. See the [builder guide](docs/builder.md).
 - A tap on a character sheet, the tracker or the quick look no longer gets lost when the note or the fight changes at that moment (tapping HP again right after a hit): the redraw waits until you let go. See the [character sheets guide](docs/character-sheets.md).
+- Pressing Enter in a sheet's small boxes (Hunter's Mark, a number, coins, a language, a condition) or a map pin's label no longer opens the box again behind you. See the [character sheets guide](docs/character-sheets.md).
 
 ## [1.6.0] - 2026-11-17
 

@@ -4635,6 +4635,51 @@ test('character sheet: Judgment Dice typed in from the table or rolled, all on t
 	}
 });
 
+test("character sheet: Hunter's Mark keeps whoever the player names as their Quarry, in their own words", async (o) => {
+	const p = o.page;
+	const WREN = 'Characters/Wren Tallgrass.md';
+	const R = '.markdown-reading-view';
+	try {
+		await o.eval(async (app, _p, path) => {
+			const old = app.vault.getAbstractFileByPath(path);
+			if (old) await app.vault.delete(old);
+			await app.vault.create(path, '---\nnimble: character\nclass: Hunter\nlevel: 1\nstr: 0\ndex: 2\nint: 0\nwil: 1\nhp: 13\nhp_max: 13\n---\n\n```nimble-sheet\n```\n');
+		}, WREN);
+		await o.openFile(WREN, 'preview');
+		const sheet = p.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		const mark = sheet.locator('.ns-class .ns-feat', { hasText: /Hunter.s Mark/ });
+		assert.equal((await mark.locator('.ns-state.is-target').innerText()).trim(), 'No quarry');
+		// Mark: a name in the player's words, not a monster picked from the fight.
+		await mark.locator('button', { hasText: /^Mark$/ }).click();
+		const dlg = p.locator('.modal.ns-small-dialog');
+		await dlg.waitFor();
+		assert.equal(await dlg.locator('.modal-title').innerText(), 'Your Quarry');
+		assert.match(await dlg.locator('input').getAttribute('placeholder'), /Goblin 2/);
+		assert.equal(await dlg.locator('.ns-prompt-clear').count(), 0, 'nothing to clear yet');
+		await dlg.locator('input').fill('Goblin with the red scarf');
+		await p.keyboard.press('Enter');
+		await waitFmAt(o, WREN, f => f.quarry === 'Goblin with the red scarf', 'the quarry in the note');
+		await p.waitForFunction((R) => document.querySelector(`${R} .ns-class .ns-state.is-target.is-on`)?.textContent.trim() === 'Goblin with the red scarf', R);
+		// Move mark: the same box with the name in it, and Clear mark.
+		await mark.locator('button', { hasText: /^Move mark$/ }).click();
+		await dlg.waitFor();
+		assert.equal(await dlg.locator('input').inputValue(), 'Goblin with the red scarf');
+		await dlg.screenshot({ path: join(ARTIFACTS, 'quarry-dialog.png') });
+		assert.deepEqual(await p.evaluate(pillOffenders, { root: '.modal.ns-small-dialog', tolerance: 1, selectors: PILL_SELECTORS }), [], 'misaligned buttons in the Quarry box');
+		await dlg.locator('input').fill('Goblin 2');
+		await dlg.locator('button.mod-cta', { hasText: 'Set' }).click();
+		await waitFmAt(o, WREN, f => f.quarry === 'Goblin 2', 'the mark moved');
+		await mark.locator('button', { hasText: /^Move mark$/ }).click();
+		await dlg.waitFor();
+		await dlg.locator('.ns-prompt-clear').click();
+		await waitFmAt(o, WREN, f => f.quarry === undefined, 'the mark cleared');
+		await p.waitForFunction((R) => document.querySelector(`${R} .ns-class .ns-state.is-target`)?.textContent.trim() === 'No quarry', R);
+	} finally {
+		await o.eval(async (app, _p, path) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.vault.delete(f); }, WREN);
+	}
+});
+
 test('character sheet: HP and mana bars, with − and +, and a calculator for each', async (o) => {
 	const p = o.page;
 	await resetEncounter(o);

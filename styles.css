@@ -4308,6 +4308,8 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet-dialog .ns-step svg { width: 16px; height: 16px; }
 .nimble-sheet-dialog .ns-rest-actions button, .nimble-sheet-dialog .ns-coin-buttons button { flex: 1; }
 .nimble-sheet-dialog.ns-number-pop input, .nimble-sheet-dialog .ns-number-pop input, .nimble-sheet-dialog .ns-lang-pop input { flex: 1; min-width: 0; width: 100%; }
+/* Under a typed value (the Hunter's Quarry): the quiet way to empty it. */
+.nimble-sheet-dialog .ns-prompt-foot { margin-top: 0.5rem; }
 .nimble-sheet-dialog .ns-lang-pop .condition-grid, .nimble-sheet-dialog .condition-picker .condition-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 0.35rem; margin-top: 0.75rem; max-height: 50vh; overflow: auto; }
 .nimble-sheet-dialog .condition-option { justify-content: flex-start; font-size: 0.85rem; height: auto; min-height: 2.2rem; padding: 0.3rem 0.6rem; }
 .nimble-sheet-dialog .condition-option.is-applied { background: var(--interactive-accent); color: var(--text-on-accent); }

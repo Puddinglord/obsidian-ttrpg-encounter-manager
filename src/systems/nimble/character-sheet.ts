@@ -410,7 +410,7 @@ export class CharacterSheetRenderer extends Component {
 			render: () => this.render(),
 			gainDice: (res, n) => this.gainDice(res, n),
 			promptNumber: (label, value, done) => this.promptNumber(label, value, done),
-			promptText: (label, value, done) => this.promptText(label, value, done),
+			promptText: (label, value, done, opts) => this.promptText(label, value, done, opts),
 		};
 	}
 
@@ -795,6 +795,7 @@ export class CharacterSheetRenderer extends Component {
 			search.addEventListener('input', draw);
 			search.addEventListener('keydown', (e) => {
 				if (e.key !== 'Enter' || !search.value.trim()) return;
+				e.preventDefault(); // not also a click on the button focus goes back to
 				const first = grid.querySelector<HTMLButtonElement>('button');
 				if (first) first.click();
 				else { close(); void this.mutate(fm => addCondition(fm, search.value.trim())); }
@@ -813,21 +814,25 @@ export class CharacterSheetRenderer extends Component {
 			const ok = row.createEl('button', { cls: 'mod-cta', text: 'Set' });
 			const go = () => { const n = Number(input.value); close(); if (Number.isFinite(n)) done(n); };
 			ok.addEventListener('click', go);
-			input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+			input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } }); // not also a click on the button focus goes back to
 			window.setTimeout(() => { input.focus(); input.select(); }, 0);
 		}, 'ns-small-dialog');
 	}
 
-	/** A small text editor (the Hunter's Quarry); empty clears it. */
-	private promptText(label: string, value: string, done: (v: string) => void): void {
+	/** A small text editor (the Hunter's Quarry); empty clears it, and so does `clear` when there's something to clear. */
+	private promptText(label: string, value: string, done: (v: string) => void, opts: { placeholder?: string; clear?: string } = {}): void {
 		dialog(this.app, label, (el, close) => {
 			el.addClass('ns-number-pop');
 			const row = el.createDiv({ cls: 'popover-row' });
-			const input = row.createEl('input', { type: 'text', value, attr: { placeholder: 'Name' } });
+			const input = row.createEl('input', { type: 'text', value, attr: { placeholder: opts.placeholder ?? 'Name', 'aria-label': label } });
 			const ok = row.createEl('button', { cls: 'mod-cta', text: 'Set' });
 			const go = () => { close(); done(input.value); };
 			ok.addEventListener('click', go);
-			input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+			input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } }); // not also a click on the button focus goes back to
+			if (opts.clear && value) {
+				const clear = el.createDiv({ cls: 'popover-row ns-prompt-foot' }).createEl('button', { cls: 'ns-prompt-clear', text: opts.clear });
+				clear.addEventListener('click', () => { close(); done(''); });
+			}
 			window.setTimeout(() => { input.focus(); input.select(); }, 0);
 		}, 'ns-small-dialog');
 	}
@@ -1208,7 +1213,7 @@ export class CharacterSheetRenderer extends Component {
 				const b = buttons.createEl('button', { text: label, cls: sign === 1 ? 'mod-cta' : '' });
 				b.addEventListener('click', () => apply(sign));
 			}
-			input.addEventListener('keydown', (e) => { if (e.key === 'Enter') apply(1); });
+			input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); apply(1); } }); // not also a click on the button focus goes back to
 			window.setTimeout(() => input.focus(), 0);
 		}, 'ns-small-dialog');
 	}
@@ -1263,7 +1268,7 @@ export class CharacterSheetRenderer extends Component {
 				b.addEventListener('click', () => { close(); void this.mutate((fm, cur) => addLanguage(fm, cur, l.name)); });
 			}
 			input.addEventListener('keydown', (e) => {
-				if (e.key === 'Enter' && input.value.trim()) { const v = input.value.trim(); close(); void this.mutate((fm, cur) => addLanguage(fm, cur, v)); }
+				if (e.key === 'Enter' && input.value.trim()) { e.preventDefault(); const v = input.value.trim(); close(); void this.mutate((fm, cur) => addLanguage(fm, cur, v)); }
 			});
 			if (!isTouch()) window.setTimeout(() => input.focus(), 0);
 		}, 'ns-small-dialog');

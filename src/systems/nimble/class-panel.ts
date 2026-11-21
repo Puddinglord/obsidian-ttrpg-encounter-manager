@@ -35,7 +35,8 @@ export interface ClassPanelHost {
 	/** Roll `n` dice of a held pool in the app and set them aside. */
 	gainDice(res: Resource, n: number): void;
 	promptNumber(label: string, value: number, done: (n: number) => void): void;
-	promptText(label: string, value: string, done: (v: string) => void): void;
+	/** A word or two typed in; `clear` names a button that empties it (shown when there's something to clear). */
+	promptText(label: string, value: string, done: (v: string) => void, opts?: { placeholder?: string; clear?: string }): void;
 }
 
 /** The panel, or nothing for a hero whose class tracks nothing. */
@@ -214,7 +215,10 @@ function renderRow(panel: HTMLElement, r: PanelRow, h: ClassPanelHost): void {
 		case 'target': {
 			const t = pill(body, { cls: `ns-state is-target${r.target ? ' is-on' : ''}`, icon: evIcon('target'), text: r.target || 'No quarry' });
 			if (r.target) setTooltip(t, r.target, { delay: 350 });
-			button(acts(), r.target ? 'Move mark' : 'Mark', () => h.promptText('Your Quarry', r.target, (v) => void h.mutate(fm => setQuarry(fm, v))));
+			// Whoever the player says, in their words ("Goblin 2", "the one in the red scarf"): never picked from the fight or the
+			// compendium, since the table may not have told them a monster's name. It's a reminder for the player.
+			button(acts(), r.target ? 'Move mark' : 'Mark', () => h.promptText('Your Quarry', r.target, (v) => void h.mutate(fm => setQuarry(fm, v)),
+				{ placeholder: 'Goblin 2, the one in the red scarf…', clear: 'Clear mark' }));
 			break;
 		}
 	}

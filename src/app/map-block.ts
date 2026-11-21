@@ -620,7 +620,7 @@ class PinModal extends Modal {
 		new Setting(c).setName('Label').addText(t => {
 			labelInput = t.inputEl;
 			t.setValue(this.pin.label).setPlaceholder('e.g. 3. Kennel').onChange(v => { this.pin.label = v; });
-			t.inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') this.submit(); });
+			t.inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.submit(); } }); // not also a click on what focus goes back to
 		});
 		let linkInput: HTMLInputElement | null = null;
 		new Setting(c).setName('Links to').setDesc('A note, or a heading in one: Part 1#3. Kennel')

@@ -66,7 +66,7 @@ Each class's own things sit in one panel under the class's scrollwork. Point at 
 | **Uses** (Coordinated Strike, Pilfered Power, and features that say "1/Safe Rest", like One with the Ancients) | A pip for each use | **Use**. A Safe Rest brings them back |
 | **Charges** (Thrill of the Hunt, Momentum) | A number | **Gain** and **Spend** |
 | **Rage** | Raging or Not raging | **Rage** (you're Raging and roll a Fury Die) and **End rage** (the Fury Dice go too) |
-| **Hunter's Mark** | Your quarry's name | **Mark**, then **Move mark** to give it to someone else |
+| **Hunter's Mark** | Your Quarry, in your own words ("Goblin 2", "the one in the red scarf") | **Mark**, **Move mark** to mark someone else, and **Clear mark** in its box when it's over |
 
 ## Reactions
 
