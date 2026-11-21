@@ -16,9 +16,9 @@ export function register(test, h) {
 	const {
 		R, S, T, PREVIEW, ARTIFACTS, ROOT, assert, join,
 		resetEncounter, typeHp, onCard, parkMouse, openCompendiumTab, closeCompendiumTab,
-		freshCampaign, endCampaign, openPicker, createFromPicker, waitFmAt, measurePills,
+		freshCampaign, openPicker, createFromPicker, waitFmAt,
 		creatures, encounter, card, mainButton, pickOption, exact, notices, camp, CP, cgroup, crow,
-		clickMenu, exists, read, CMP, cmpNames, cmpRow,
+		clickMenu, exists, read, CMP, cmpNames,
 	} = h;
 
 	// -------------------------------------------------------------------------
@@ -164,7 +164,7 @@ export function register(test, h) {
 			assert.equal(made.ancestry, 'Dwarf');
 			assert.notEqual(made.mine, true, 'a party member, not the GM\'s own');
 			assert.ok(made.hp_max > 0 && made.hp === made.hp_max, `starts at full HP: ${made.hp}/${made.hp_max}`);
-			assert.match(await read(o, P), /```nimble-sheet\n```/);
+			assert.match(await read(o, P), /\n---\n\n```nimble-sheet\n```/, 'a blank line between the properties and the sheet');
 
 			// Find: a card in the panel's party, with HP; the encounter party is read from the sheet.
 			const heroCard = o.page.locator(`${CP} a.campaign-hero[data-path="${P}"]`);
@@ -178,10 +178,12 @@ export function register(test, h) {
 			const sheet = o.page.locator(`${R} .nimble-sheet`);
 			await sheet.waitFor();
 			assert.equal(await sheet.locator('.ns-name').innerText(), 'Brakka Stonehew');
-			assert.ok(await sheet.evaluate(n => !!n.closest('.ev-sys-nimble') || n.classList.contains('ev-sys-nimble') || !!n.querySelector('.ev-sys-nimble')) || true);
+			assert.match(await sheet.innerText(), /Commander/);
+			// Live Preview, as the note opens for editing: the sheet, not its block's source, and the properties hidden.
 			await o.openFile(P, 'source');
 			await o.page.locator(`${S} .nimble-sheet .ns-name`).waitFor();
 			assert.equal(await o.page.locator(`${S} .nimble-sheet .ns-name`).innerText(), 'Brakka Stonehew');
+			assert.ok(await o.page.evaluate((S) => [...document.querySelectorAll(`${S} .metadata-container`)].every(m => getComputedStyle(m).display === 'none'), S), 'properties hidden around the sheet');
 
 			// Edit: a hit on the sheet's HP bar is written to the note, and the panel's card follows.
 			await o.openFile(P, 'preview');
@@ -1125,6 +1127,24 @@ export function register(test, h) {
 			await o.openFile(SC, 'preview');
 			await o.waitFor(async () => (await o.page.locator(`${R} a.nimble-note-link`).count()) === 0, { what: 'no pills for deleted notes' });
 			assert.match(await o.page.locator(`${R} .markdown-preview-sizer`).innerText(), /Ollo Brask keeps the The Lower Gate\. The job: Open the Gate\./);
+
+			// A hero renamed: the party follows the sheet, and the session that lists them links the new name.
+			const H = `${F}/Party/Brakka.md`;
+			const SN = `${F}/Sessions/Session 1.md`;
+			await write(o, H, '---\nnimble: character\nclass: Berserker\nlevel: 2\nhp: 26\nhp_max: 26\n---\n\n```nimble-sheet\n```\n');
+			await write(o, SN, '---\nnimble: session\nparty: ["[[Brakka]]"]\n---\n\n```nimble-note\n```\n');
+			await o.waitFor(async () => (await party(o)).some(p => p.id === `sheet:${H}`), { what: 'Brakka in the party' });
+			await crow(o, H).waitFor();
+			const H2 = await rename(H, 'Brakka Stonehew');
+			await o.waitFor(async () => JSON.stringify((await party(o)).map(p => [p.id, p.name])) === JSON.stringify([[`sheet:${H2}`, 'Brakka Stonehew']]), { what: 'the party follows the rename' });
+			await o.waitFor(async () => JSON.stringify((await fmOf(o, SN))?.party) === JSON.stringify(['[[Brakka Stonehew]]']), { what: 'the session\'s party: updated' });
+			await o.openFile(SN, 'preview');
+			const s = o.page.locator(`${R} .ev-cq.kind-session`);
+			await o.waitFor(async () => (await s.locator(`.ev-cq-who a.nimble-wikilink[href="${H2}"]`).count()) === 1, { what: 'the session card links the renamed hero' });
+			// Deleted: out of the party; the session still says who was there.
+			await remove(o, [H2]);
+			await o.waitFor(async () => (await party(o)).length === 0, { what: 'the party empty' });
+			await o.waitFor(async () => (await s.locator('.ev-cq-who').innerText().catch(() => '')).includes('Brakka Stonehew'), { what: 'the session still names them' });
 		} finally {
 			await done(o, [F]);
 		}
@@ -1169,11 +1189,29 @@ export function register(test, h) {
 			};
 			const here = await classes();
 			assert.ok(here.includes('Lamplighter') && here.includes('Cinderwright'), `the pack's and the typed class offered: ${here}`);
+			// A background from the compendium's New on Origins: its builder writes a note in the content folder.
+			await openCompendiumTab(o);
+			await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="origins"]`).click();
+			await o.page.locator(`${CMP} .nimble-cmpx-new`).click();
+			await o.page.locator('.menu .menu-item', { hasText: 'New background' }).click();
+			const EB = '.modal.nimble-entity-builder';
+			await o.page.locator(EB).waitFor();
+			await o.page.locator(`${EB} .eb-panel.is-active input[data-field="Name"]`).fill('Lamp Tender');
+			await o.page.locator(`${EB} .eb-panel.is-active textarea[data-field="What it gives"]`).fill('You know every street by its lamps.');
+			await o.page.locator(`${EB} .eb-create`).click();
+			await o.page.locator(EB).waitFor({ state: 'detached' });
+			await o.waitFor(async () => /```nimble-background\nname: Lamp Tender\n/.test(await read(o, `${CF}/Nimble/Backgrounds/Lamp Tender.md`).catch(() => '')), { what: 'the background\'s note' });
+			await closeCompendiumTab(o);
+			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').find(p => p.name === 'Homebrew')?.entries.map(e => e.name).sort().join())) === 'Cinderwright,Lamp Tender', { what: 'the background as Homebrew' });
 			// A hero from the pack's class, ancestry and background, in this campaign's party.
 			await newHero(o, { name: 'Wren Lanternfield', cls: 'Lamplighter', ancestry: 'Emberkin', background: 'Night Watch Veteran' });
 			const HERO = `${F}/Party/Wren Lanternfield.md`;
 			const fm = await waitFmAt(o, HERO, f => f.class === 'Lamplighter', 'the hero in the party folder');
 			assert.deepEqual([fm.ancestry, fm.background], ['Emberkin', 'Night Watch Veteran']);
+			// And one from the typed class and the built background.
+			await newHero(o, { name: 'Brann Cinders', cls: 'Cinderwright', background: 'Lamp Tender' });
+			const cinders = await waitFmAt(o, `${F}/Party/Brann Cinders.md`, f => f.class === 'Cinderwright', 'the Cinderwright in the party folder');
+			assert.equal(cinders.background, 'Lamp Tender');
 			await o.waitFor(async () => (await party(o)).some(p => p.name === 'Wren Lanternfield' && p.className === 'Lamplighter'), { what: 'the hero in the encounter party' });
 			await o.openFile(HERO, 'preview');
 			await o.waitFor(async () => /Ember Dice/.test(await o.page.locator(`${R} .nimble-sheet`).innerText().catch(() => '')), { what: 'the pack class\'s panel on the sheet' });
