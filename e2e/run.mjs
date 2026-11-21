@@ -7044,6 +7044,112 @@ test('content packs: a pack in the content folder adds a 5e spell, subclass and 
 	}
 });
 
+test('content packs: Import content takes a Nimble pack and says what it left out; its class is in the compendium, makes a hero who levels into its subclass, and its monster joins a fight', async (o) => {
+	const F = 'Ember Vault/Content';
+	const example = JSON.parse(readFileSync(join(ROOT, 'docs/content/examples/nimble-lantern-road.json'), 'utf8'));
+	let hero = null;
+	await resetEncounter(o);
+	try {
+		await o.eval(async (app, _p, F) => { const old = app.vault.getAbstractFileByPath(F); if (old) await app.vault.delete(old, true); }, F);
+		// Import content: the example pack, with one entry that can't be used.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		const M = '.modal.nimble-import-content';
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(JSON.stringify({ ...example, entries: [...example.entries, { kind: 'spell', name: 'Half Done', school: 'Fire' }] }, null, 2));
+		await o.waitFor(async () => /9 entries: 1 class, 1 subclass, 1 option, 1 ancestry, 1 background, 2 spells, 1 item, 1 monster · 1 left out/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the import report' });
+		assert.match(await o.page.locator(`${M} .nimble-pack-notes.is-rejected`).innerText(), /Entry 10 \(Half Done\): "tier" is missing; "text" is missing/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-import-nimble.png') });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => `${p.name}:${p.system}:${p.entries.length}`).join())) === 'The Lantern Road:nimble:9', { what: 'the pack loaded' });
+
+		// The compendium: the class (tagged with its pack, its Ember Dice and Kindlings on its page), and the option in the Berserker's list.
+		await openCompendiumTab(o);
+		const input = o.page.locator(`${CMP} .nimble-cmpx-input`);
+		const detail = o.page.locator(`${CMP} .nimble-cmpx-detail`);
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="classes"]`).click();
+		await input.fill('lamplighter');
+		await o.waitFor(async () => (await cmpNames(o))[0] === 'Lamplighter', { timeout: 3000, what: 'the pack\'s class' });
+		assert.equal(await cmpRow(o, 'Lamplighter').locator('.bestiary-tag.is-pack').textContent(), 'The Lantern Road');
+		await o.waitFor(async () => (await detail.locator('.nimble-cmp-name').first().textContent().catch(() => '')) === 'Lamplighter', { timeout: 3000, what: 'the class page' });
+		const page = await detail.innerText();
+		for (const part of [/Stoke the Flame/, /Kindlings/, /Ember Dice/, /Keeper of the Night Watch/, /The Lantern Road/]) assert.match(page, part);
+		assert.ok(await cmpRow(o, 'Keeper of the Night Watch').count(), 'the subclass joined its class');
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="features"]`).click();
+		await input.fill('banked fire');
+		await o.waitFor(async () => (await cmpNames(o))[0] === 'Banked Fire', { timeout: 3000, what: 'the Berserker\'s new option' });
+		assert.match(await detail.innerText(), /Savage Arsenal/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-nimble-compendium.png') });
+
+		// Its monster, from the compendium into the fight.
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="adversaries"]`).click();
+		await input.fill('wick wraith');
+		await o.waitFor(async () => (await detail.locator('.monster-name').textContent().catch(() => '')) === 'Wick Wraith', { timeout: 3000, what: 'the pack\'s monster' });
+		assert.equal(await cmpRow(o, 'Wick Wraith').locator('.bestiary-tag.is-pack').textContent(), 'The Lantern Road');
+		await detail.locator('.statblock-action', { hasText: exact('Add') }).click();
+		await o.waitFor(async () => (await creatures(o)).some(c => c.label.startsWith('Wick Wraith') && c.max === 30), { what: 'the Wick Wraith in the fight' });
+		await closeCompendiumTab(o);
+
+		// New character: a Lamplighter, from the pack's class, ancestry and background.
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		const m = o.page.locator('.modal.nimble-newchar-modal');
+		await m.waitFor();
+		await m.locator('input.lu-name-input').fill('Wren Lanternfield');
+		await m.locator('select[data-k="class"]').selectOption('Lamplighter');
+		await m.locator('select[data-k="ancestry"]').selectOption('Emberkin');
+		await m.locator('select[data-k="background"]').selectOption('Night Watch Veteran');
+		await m.locator('.lu-dot', { hasText: 'Review' }).click();
+		await o.page.waitForTimeout(450);
+		await m.locator('.lu-next', { hasText: 'Create' }).click();
+		hero = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Wren Lanternfield')?.path ?? null), { what: 'the new note' });
+		const fmOf = (level) => o.waitFor(() => o.eval((app, _p, [p, level]) => { const f = app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter; return f?.level === level ? f : null; }, [hero, level]), { what: `level ${level}` });
+		const one = await fmOf(1);
+		assert.deepEqual([one.class, one.ancestry, one.background, one.hp_max], ['Lamplighter', 'Emberkin', 'Night Watch Veteran', 13]);
+		await o.openFile(hero, 'preview');
+		const sheet = o.page.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		await o.waitFor(async () => /Ember Dice/.test(await sheet.innerText()), { what: 'the class panel\'s Ember Dice' });
+
+		// Level up twice: a Kindling at 2, the pack's subclass at 3.
+		const levelUp = async (level, choose) => {
+			await camp(o, sheet, 'Level up');
+			const lv = o.page.locator('.modal.nimble-levelup');
+			await lv.waitFor();
+			const steps = (await lv.locator('.lu-dot').allInnerTexts()).map(t => t.trim());
+			const step = async (name) => { await lv.locator('.lu-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return lv.locator('.lu-panel.is-active'); };
+			await (await step('Hit points')).locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
+			await choose(step, steps);
+			if (steps.includes('Skills')) await (await step('Skills')).locator('.lu-skill-row', { hasText: 'Insight' }).locator('.lu-step-btn.is-plus').click();
+			const review = await step('Review');
+			assert.equal(await review.locator('.lu-review-row.is-missing').count(), 0, `every choice made at level ${level}`);
+			await lv.locator('.lu-next').click();
+			const fm = await fmOf(level);
+			await lv.locator('.lu-celebrate button').click();
+			return fm;
+		};
+		const two = await levelUp(2, async (step, steps) => {
+			assert.ok(steps.includes('Kindlings'), `steps: ${steps}`);
+			await (await step('Kindlings')).locator('.lu-option', { hasText: 'Warm Hands' }).click();
+		});
+		assert.deepEqual(two.features, ['Warm Hands']);
+		const three = await levelUp(3, async (step, steps) => {
+			assert.ok(steps.includes('Subclass'), `steps: ${steps}`);
+			await (await step('Subclass')).locator('.lu-sub-band-choose').first().click();
+		});
+		assert.equal(three.subclass, 'Keeper of the Night Watch');
+		assert.equal(three.hp_max, 13 + 4 + 4, 'd8: +4 a level');
+		await o.waitFor(async () => /Ward the Gate/.test(await sheet.innerText()), { what: 'the subclass\'s features on the sheet' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-nimble-sheet.png') });
+	} finally {
+		await o.eval(async (app, plugin, [F, hero]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [F, hero]) { const f = p && app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+		}, [F, hero]);
+		await closeCompendiumTab(o);
+		await resetEncounter(o);
+	}
+});
+
 test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its data address); Fantasy Statblocks creatures become ```5e notes', async (o) => {
 	const C = 'Campaigns/Import Coast';
 	const M = '.modal.dnd5e-import';
