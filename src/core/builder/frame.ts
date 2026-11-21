@@ -54,6 +54,8 @@ export interface KindBuilder {
 	/** A short line for the phone's check chip ("Plays like 4 ✓"). */
 	checkChip(): { text: string; tone: 'ok' | 'high' | 'low' | 'none' };
 	missing(): string | null;
+	/** The step to go to when `missing()` says something (the first step if left out). */
+	missingStep?(): string | undefined;
 	output(): Output;
 }
 
@@ -435,11 +437,13 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		const why = this.b.missing();
 		if (why) {
 			new Notice(why);
-			this.go(this.steps[0].id);
-			const input = this.panels[0]?.querySelector<HTMLInputElement>('input');
-			input?.focus();
-			this.panels[0]?.addClass('is-shake');
-			window.setTimeout(() => this.panels[0]?.removeClass('is-shake'), 450);
+			// The step that needs it (a class's saves are on Stats), else the first.
+			const i = Math.max(0, this.steps.findIndex(s => s.id === this.b.missingStep?.()));
+			this.go(this.steps[i].id);
+			const panel = this.panels[i];
+			panel?.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true });
+			panel?.addClass('is-shake');
+			window.setTimeout(() => panel?.removeClass('is-shake'), 450);
 			return;
 		}
 		this.busy = true;

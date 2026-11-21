@@ -364,7 +364,7 @@ class ClassBuilder extends ContentBuilder {
 		const g = grid(panel, 2);
 		const mana = field(g, 'Mana');
 		textInput(mana.control, {
-			value: str(c.manaFormula || c.mana), placeholder: 'WIL×3+LVL', code: true, labelledBy: mana.labelId, label: 'Mana',
+			value: str(c.mana || c.manaFormula), placeholder: 'WIL×3+LVL', code: true, labelledBy: mana.labelId, label: 'Mana',
 			onInput: v => { c.manaFormula = v.replace(/×/g, '*').replace(/\s+/g, ''); c.mana = v.replace(/\*/g, '×').trim(); ui.changed(); },
 		});
 		const from = field(g, 'From level');

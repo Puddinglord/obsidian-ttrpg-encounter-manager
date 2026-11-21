@@ -118,6 +118,7 @@ export abstract class ContentBuilder implements KindBuilder {
 	}
 
 	missing(): string | null { return draftMissing(this.kind, this.d); }
+	missingStep(): string | undefined { return draftProblems(this.kind, this.d)[0]?.step; }
 
 	output(): Output {
 		return { lang: `nimble-${this.kind}`, body: entryBody(this.kind, this.d), name: str(this.d.name).trim() || `New ${this.noun}`, frontmatter: {}, folder: this.folder };
