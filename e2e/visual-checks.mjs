@@ -257,6 +257,8 @@ export function visualChecks({ room, pillSelectors }) {
 				if (ellipsis && !(cutY && !acs.webkitLineClamp)) {
 					// Truncated on purpose. A name truncated where there's room is still wrong.
 					if (room && nameish(e) && text.length <= 40) add('truncated', 2, e, `"${text.slice(0, 30)}" ends in … (${Math.round(u.right - Rt)}px cut) at a width with room for it`, { left: L, top: T, width: Rt - L, height: B - T });
+					// A button's or pill's label never ends in …: "Next: Subcl" is a broken control, not a long name.
+					else if (e.closest('button, [role="button"], .ev-pill') && !e.closest('.nimble-inline-ref, .ev-ref-pill, .nimble-note-link')) add('truncated', 4, e, `button label "${text.slice(0, 30)}" is cut with … (${Math.round(u.right - Rt)}px)`, { left: L, top: T, width: Rt - L, height: B - T });
 				} else {
 					const px = cutX ? Math.max(u.right - Rt, L - u.left) : Math.max(u.bottom - tolY - B, T - u.top - tolY);
 					add('clipped', 5, e, `"${text.slice(0, 30)}" cut ${Math.round(px)}px ${cutX ? 'sideways' : 'top/bottom'} by ${a === e ? 'its own box' : sig(a)}`, { left: u.left, top: u.top, width: u.right - u.left, height: u.bottom - u.top });
