@@ -51,6 +51,9 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - 5e's Level up asks for new cantrips and spells by count, expertise and your class's new choices, and a feat's own +1, and shows the level's new features and spell slots. See the [5e guide](docs/5e.md#character-sheets).
 - A content pack's 5e class works in New character, Level up and the sheet like an SRD class, including its own spell list, prepared column and limited-use features. See [content packs](docs/content-packs.md).
 
+- Content packs work in Nimble: add your own classes, subclasses, class options, ancestries, backgrounds, spells, items, monsters, boons, rules and conditions as a JSON file. They show up in the compendium tagged with the pack's name, and in New character, Level up, the sheet, references, Spotlight and Add to fight. **Import content…** takes Nimble packs and says what it left out and why. See the [content packs guide](docs/content-packs.md).
+- A pack's Nimble class levels up like a book's: its subclass joins it, a new option joins its class's list (a new Savage Arsenal ability for the Berserker), and the class's own dice go into rolls the way Fury and Judgment Dice do. See the [content packs guide](docs/content-packs.md).
+
 ### Changed
 
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
@@ -101,6 +104,7 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Defend on a Nimble character sheet's HP keypad takes your Armor off the hit and spends an action. It used to do nothing.
 - Spotlight no longer offers an NPC's role as a `role:` filter, and the Nimble quick look calls a hero's number Armor, as the card and sheet do.
 - Renaming a combatant just after a hit no longer saves half the name.
+- Import content's summary gets plurals right ("2 classes", "1 species"). See the [content packs guide](docs/content-packs.md).
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
