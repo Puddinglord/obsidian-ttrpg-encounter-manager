@@ -4921,10 +4921,10 @@ body.is-tablet .nimble-count-modal button.nimble-count-seg { padding: 0 0.5rem; 
 /* The footer */
 .ev-dialog .ev-dialog-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 4px; container-type: inline-size; }
 .ev-dialog .ev-dialog-foot .is-cancel { margin-right: auto; }
-/* A narrow dialog (a phone-width window): the buttons fill the footer in equal parts, and with a second action
-   (Run now) the main one takes a row of its own under Cancel | the second. */
+/* A narrow dialog (a phone-width window): the buttons fill the footer, each at least its label's width, and with
+   a second action (Run now) the main one takes a row of its own under Cancel | the second. */
 @container (max-width: 360px) {
-	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn { flex: 1 1 0; }
+	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn { flex: 1 1 auto; padding-left: 10px; padding-right: 10px; }
 	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn.is-cancel { margin-right: 0; }
 	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn.is-second ~ .is-main { flex-basis: 100%; }
 }
@@ -7640,6 +7640,8 @@ body .workspace-leaf-content .ev-sheet-page:not(.nimble-show-props) .metadata-co
 .dnd5e-ddb-levels-icon { display: inline-flex; flex: 0 0 auto; padding-top: 1px; color: var(--ev-accent-text, var(--text-accent)); }
 .dnd5e-ddb-levels-icon svg { width: 16px; height: 16px; }
 @media (max-width: 480px) {
-	.dnd5e-ddb-name { flex-direction: column; align-items: flex-start; gap: 0; }
+	/* The kind under the name, and a long name ("Order of the Quiet Lantern") on two lines rather than off the edge. */
+	.dnd5e-ddb-name { flex-direction: column; align-items: stretch; gap: 0; }
+	.dnd5e-ddb-name > span:first-child { white-space: normal; }
 	.dnd5e-ddb-row { gap: 8px; padding: 6px 8px; }
 }

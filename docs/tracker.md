@@ -16,7 +16,7 @@ Before the fight, the **Initiative** list has a box for each hero. Type what the
 
 ![The whole tracker mid-fight: the round, the Heroes and Monsters switch, Brakka on the card, two heroes still to act, Wren done, and the four hounds](images/feature-tracker.png)
 
-- **The card** is whoever is acting. It shows their HP, their actions and Wounds (heroes), their armor and actions (monsters), and **Damage** | **Heal**, **Add a condition** and a book button that opens their stat block or character sheet.
+- **The card** is whoever is acting. It shows their HP, their actions and Wounds (heroes), their armor and actions (monsters), and **Damage** | **Heal**, **Add a condition** and a book button that opens their stat block or character sheet. In a narrow sidebar or on a phone, **Damage** | **Heal** take the whole row and **Condition** and **Stat block** (or **Sheet**) get a row of their own.
 - **Heroes go in any order.** Tap whoever speaks up and they're on the card. **Done** at the bottom marks their turn done: they move to **Done**, grey and ticked, with their actions back for next time. When every hero has gone, the monsters' side starts.
 - **Monsters** go one after another: **Next: Quicksilver Hound-2** at the bottom names who's next, and after the last one it's **Round 2**. Tap any monster to take it out of order.
 - **Heroes** | **Monsters** at the top shows each side and how many have gone. Tap a side to switch to it; nothing is enforced.
