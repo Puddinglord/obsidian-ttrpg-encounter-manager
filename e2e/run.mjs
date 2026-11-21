@@ -7150,6 +7150,189 @@ test('content packs: Import content takes a Nimble pack and says what it left ou
 	}
 });
 
+test('content blocks: a 5e class typed in the content folder is its card, in the compendium as Homebrew, and makes a hero; New on Feats writes a starter note', async (o) => {
+	const C = 'Campaigns/Block Coast';
+	const F = 'Ember Vault/Content';
+	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+	const typed = readFileSync(join(ROOT, 'e2e/fixtures/content/5e-hearth-warden.md'), 'utf8');
+	const note = `${C}/Party/Tess Emberly.md`;
+	try {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			for (const p of [C, F]) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Block Coast', level: 1, heroes: 4, starter: false, system: '5e', edition: '2024' });
+		}, [C, F]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		// Typed into a note in the content folder, it's indexed as the Homebrew pack…
+		await o.eval(async (app, _p, [F, typed]) => {
+			await app.vault.createFolder(`${F}/5e/Classes`);
+			await app.vault.create(`${F}/5e/Classes/Hearth Warden.md`, typed);
+		}, [F, typed]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e').map(p => `${p.name}:${p.entries.map(e => e.name)}`).join())) === 'Homebrew:Hearth Warden', { what: 'the typed class indexed' });
+		// …and drawn as its card: the class page, nothing wrong.
+		await o.openFile(`${F}/5e/Classes/Hearth Warden.md`, 'preview');
+		const card = o.page.locator(`${R} .ev-content-block .dnd5e-card`);
+		await card.waitFor({ timeout: 5000 });
+		assert.match(await card.innerText(), /Hearth Warden[\s\S]*Hit Die\s*d10[\s\S]*Hearthfire[\s\S]*Homebrew/i);
+		assert.equal(await o.page.locator(`${R} .ev-content-issues`).count(), 0);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-5e-class.png') });
+
+		// The compendium's Classes tab: tagged Homebrew, with Open note on its page.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.page.locator(V).waitFor({ timeout: 5000 });
+		const input = o.page.locator(`${V} .nimble-cmpx-input`);
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Classes' }).click();
+		assert.equal(await o.page.locator(`${V} .nimble-cmpx-new`).getAttribute('aria-label'), 'New class or subclass');
+		await input.fill('hearth warden');
+		await o.waitFor(async () => (await cmpNames(o, V))[0] === 'Hearth Warden', { timeout: 3000, what: 'the typed class in the Classes tab' });
+		const tag = cmpRow(o, 'Hearth Warden', V).locator('.bestiary-tag.is-homebrew');
+		assert.equal(await tag.textContent(), 'Homebrew');
+		// A dark tag with light text (the game's paper white), 4.5:1 or better.
+		const contrast = await tag.evaluate((el) => {
+			const lum = (c) => { const [r, g, b] = c.match(/\d+/g).slice(0, 3).map(n => { const v = Number(n) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+			const s = getComputedStyle(el);
+			const [bg, fg] = [lum(s.backgroundColor), lum(s.color)];
+			return { ratio: (Math.max(bg, fg) + 0.05) / (Math.min(bg, fg) + 0.05), dark: bg < fg };
+		});
+		assert.ok(contrast.dark && contrast.ratio >= 4.5, `tag contrast ${JSON.stringify(contrast)}`);
+		// Its row's tags and chips centred on their capitals.
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${V} .nimble-cmpx-list`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		assert.ok(await o.page.locator(`${V} .nimble-cmpx-detail .statblock-action`, { hasText: 'Open note' }).count(), 'Open note on its page');
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-compendium-5e.png') });
+
+		// New on the Feats tab: a name, then a note with a starter block in the content folder, opened.
+		await input.fill('');
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Feats' }).click();
+		assert.equal(await o.page.locator(`${V} .nimble-cmpx-new`).getAttribute('aria-label'), 'New feat');
+		await o.page.locator(`${V} .nimble-cmpx-new`).click();
+		const prompt = o.page.locator('.modal.nimble-name-prompt');
+		await prompt.waitFor();
+		assert.match(await prompt.innerText(), new RegExp(`${F}/5e/Feats`));
+		await prompt.locator('input').fill('Kindler');
+		await prompt.locator('input').press('Enter');
+		const feat = `${F}/5e/Feats/Kindler.md`;
+		await o.waitFor(async () => /^```5e-feat\nname: Kindler\ntype: general\nprerequisite: ""\ndesc: ""\n```/.test(await read(o, feat).catch(() => '')), { what: 'the starter note' });
+		await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === feat, { what: 'the new note open' });
+		// Filled in, it joins the compendium.
+		await o.eval(async (app, _p, feat) => { await app.vault.modify(app.vault.getAbstractFileByPath(feat), '```5e-feat\nname: Kindler\ntype: general\ndesc: You light fires with a word.\n```\n'); }, feat);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e')[0]?.entries.map(e => e.name).join())) === 'Hearth Warden,Kindler', { what: 'the feat indexed' });
+		// Back to the compendium (the note opened in a tab of its own).
+		await o.eval((app) => { const l = app.workspace.getLeavesOfType('nimble-dnd5e-compendium')[0]; if (l) app.workspace.revealLeaf(l); });
+		await input.fill('kindler');
+		await o.waitFor(async () => (await cmpNames(o, V))[0] === 'Kindler', { timeout: 3000, what: 'the new feat in the Feats tab' });
+		await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
+
+		// New character: a Hearth Warden from the typed class, its own equipment.
+		const B = '.modal.nimble-entity-builder';
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		const panel = `${B} .eb-panel.is-active`;
+		await o.page.locator(`${panel} input[data-field="Name"]`).fill('Tess Emberly');
+		await o.page.locator(`${panel} select[data-field="Class"]`).selectOption('Hearth Warden');
+		await o.waitFor(async () => /Hearth Warden/.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the class in the preview' });
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Equipment' }).click();
+		assert.match(await o.page.locator(`${panel}`).innerText(), /Chain Mail/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-5e-new-character.png') });
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter?.class, note)) === 'Hearth Warden', { what: 'the hero\'s note' });
+		const fm = await o.eval((app, _p, p) => app.metadataCache.getCache(p).frontmatter, note);
+		assert.ok(fm.inventory.some(i => (i.name ?? i) === 'Chain Mail'), `inventory: ${JSON.stringify(fm.inventory)}`);
+		await o.openFile(note, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="actions"]`).click();
+		await o.waitFor(async () => /Hearthfire/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'Hearthfire\'s uses on the sheet' });
+	} finally {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			for (const p of [C, F]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
+	}
+});
+
+test('content blocks: a Nimble class typed in the content folder is in the Classes tab as Homebrew and makes a hero; a half-written block lists what\'s wrong; New on Origins writes an ancestry', async (o) => {
+	const F = 'Ember Vault/Content';
+	const typed = readFileSync(join(ROOT, 'e2e/fixtures/content/nimble-cinderwright.md'), 'utf8');
+	let hero = null;
+	try {
+		await o.eval(async (app, plugin, F) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(F); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.setActive(null);
+			await app.vault.createFolder(`${F}/Nimble/Classes`);
+		}, F);
+		await o.eval(async (app, _p, [F, typed]) => { await app.vault.create(`${F}/Nimble/Classes/Cinderwright.md`, typed); }, [F, typed]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').map(p => `${p.name}:${p.entries.map(e => e.name)}`).join())) === 'Homebrew:Cinderwright', { what: 'the typed class indexed' });
+
+		// The compendium's Classes tab: tagged Homebrew; its page is the class's.
+		await openCompendiumTab(o);
+		const input = o.page.locator(`${CMP} .nimble-cmpx-input`);
+		const detail = o.page.locator(`${CMP} .nimble-cmpx-detail`);
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="classes"]`).click();
+		await input.fill('cinderwright');
+		await o.waitFor(async () => (await cmpNames(o))[0] === 'Cinderwright', { timeout: 3000, what: 'the typed class' });
+		assert.equal(await cmpRow(o, 'Cinderwright').locator('.bestiary-tag.is-homebrew').textContent(), 'Homebrew');
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${CMP} .nimble-cmpx-list`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		await o.waitFor(async () => /Strike the Anvil[\s\S]*Anvil Oath/.test(await detail.innerText()), { timeout: 3000, what: 'the class page' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-compendium-nimble.png') });
+
+		// New on Origins: a menu (ancestry or background), a name, a note with a starter block.
+		await input.fill('');
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="origins"]`).click();
+		assert.equal(await o.page.locator(`${CMP} .nimble-cmpx-new`).getAttribute('aria-label'), 'New ancestry or background');
+		await o.page.locator(`${CMP} .nimble-cmpx-new`).click();
+		await o.page.locator('.menu .menu-item', { hasText: 'New ancestry' }).click();
+		const prompt = o.page.locator('.modal.nimble-name-prompt');
+		await prompt.waitFor();
+		await prompt.locator('input').fill('Emberkin');
+		await prompt.locator('button.mod-cta').click();
+		const anc = `${F}/Nimble/Ancestries/Emberkin.md`;
+		await o.waitFor(async () => /^```nimble-ancestry\nname: Emberkin\nsize: Medium\nrarity: common\nflavor: ""\ntraits:\n {2}- name: ""\n {4}text: ""\n```/.test(await read(o, anc).catch(() => '')), { what: 'the starter note' });
+		// Half written, its card still shows, with what's wrong under it.
+		// It opened for editing; reading view shows the card.
+		await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === anc, { what: 'the new note open' });
+		await o.eval(async (app, _p, anc) => {
+			const leaf = app.workspace.getLeavesOfType('markdown').find(l => l.view.file?.path === anc);
+			await leaf.view.setMode(leaf.view.previewMode);
+			app.workspace.setActiveLeaf(leaf, { focus: true });
+		}, anc);
+		const issues = o.page.locator(`${R} .ev-content-issues.is-error`);
+		await issues.waitFor({ timeout: 5000 });
+		assert.match(await issues.innerText(), /Fix 2 things to add it to the compendium[\s\S]*"traits" item 1: "name" is missing[\s\S]*"traits" item 1: "text" is missing/);
+		assert.match(await o.page.locator(`${R} .ev-content-block .nimble-cmp-card`).innerText(), /Emberkin/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-nimble-issues.png') });
+		await closeCompendiumTab(o);
+
+		// New character: a Cinderwright, from the typed class; its class panel from its data.
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		const m = o.page.locator('.modal.nimble-newchar-modal');
+		await m.waitFor();
+		await m.locator('input.lu-name-input').fill('Brann Cinders');
+		await m.locator('select[data-k="class"]').selectOption('Cinderwright');
+		await m.locator('.lu-dot', { hasText: 'Review' }).click();
+		await o.page.waitForTimeout(450);
+		await m.locator('.lu-next', { hasText: 'Create' }).click();
+		hero = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Brann Cinders')?.path ?? null), { what: 'the new note' });
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter?.class, hero)) === 'Cinderwright', { what: 'the hero\'s class' });
+		await o.openFile(hero, 'preview');
+		const sheet = o.page.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		await o.waitFor(async () => /Forge Dice[\s\S]*Ember Mend/.test(await sheet.innerText()), { what: 'the class panel from its data' });
+		assert.ok(await sheet.locator('.ns-state', { hasText: 'Not forgeheated' }).count(), 'its own state');
+	} finally {
+		await o.eval(async (app, plugin, [F, hero]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [F, hero]) { const f = p && app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+		}, [F, hero]);
+		await closeCompendiumTab(o);
+	}
+});
+
 test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its data address); Fantasy Statblocks creatures become ```5e notes', async (o) => {
 	const C = 'Campaigns/Import Coast';
 	const M = '.modal.dnd5e-import';
