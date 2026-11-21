@@ -145,6 +145,8 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - A quick look in a narrow window keeps the name readable, with its buttons under it, and the compendium's rows no longer cut their last tag in half on narrow screens. See the [compendium guide](docs/compendium.md).
 - A Nimble hero's "Level 2" stays on one line in the sheet's heading, and Speed and Hit dice stay inside the turn band in a narrow Character panel. See the [character sheets guide](docs/character-sheets.md).
 - Language chips, the damage die button and the compendium's Back to the list on phones line up their icon and label, and the SRD notice in settings stays inside its box in a narrow window. See the [settings guide](docs/settings.md).
+- In the dark theme, Nimble's school, key stat, "Yours" and count tags and the choices you've made in New character and Level up, 5e's Bloodied and temp HP ribbons, and the level on 5e monster references are readable. They were light text on a light fill. See the [character sheets guide](docs/character-sheets.md).
+- A link to a note in an NPC card's "First met" row or a battle note's place, and feature names on the Nimble character sheet, line up with the rest of their row. See the [NPCs guide](docs/npcs.md).
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
