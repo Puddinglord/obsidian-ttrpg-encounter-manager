@@ -291,6 +291,27 @@ describe('the content folder\'s notes are the Homebrew pack', () => {
 		expect(store.enabled('dnd5e', 'Ash/x.md').map(p => p.entries.length)).toEqual([1]);
 		expect(store.enabled('dnd5e', 'Dust/x.md')).toEqual([]);
 	});
+	it('a note deleted while it was being read, or with its folder, leaves nothing behind', async () => {
+		const files: Record<string, string> = {
+			'Ember Vault/Content/5e/Classes/Hollowblade.md': '```5e-feat\nname: Hollow Edge\ndesc: x\n```',
+			'Ember Vault/Content/5e/Feats/Kindler.md': featBlock('Kindler', 'x'),
+		};
+		const plugin = fakePlugin(files);
+		const store = new ContentStore(plugin as never);
+		await store.load();
+		expect(store.enabled('dnd5e')[0].entries.map(e => e.name).sort()).toEqual(['Hollow Edge', 'Kindler']);
+		// A change read a moment later, after the note was deleted: it doesn't come back.
+		const read = (store as unknown as { read(f: unknown): Promise<void> }).read.bind(store);
+		const gone = plugin.app.vault.getFiles().find(f => f.path.endsWith('Hollowblade.md'))!;
+		const pending = read(gone);
+		delete files['Ember Vault/Content/5e/Classes/Hollowblade.md'];
+		(store as unknown as { forget(p: string): boolean }).forget(gone.path);
+		await pending;
+		expect(store.enabled('dnd5e')[0].entries.map(e => e.name)).toEqual(['Kindler']);
+		// A folder deleted: everything under it goes.
+		expect((store as unknown as { forget(p: string): boolean }).forget('Ember Vault/Content/5e')).toBe(true);
+		expect(store.enabled('dnd5e')).toEqual([]);
+	});
 	it('the first note (by path) wins a name, as with every other note', () => {
 		const kinds = new Map([['5e-feat', kindOf(KINDS_5E, 'feat')]]);
 		const a = readContentNote(`${featBlock('Kindler', 'one')}\n${featBlock('Kindler', 'two')}`, 'x/a.md', kinds);
