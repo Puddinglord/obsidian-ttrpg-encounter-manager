@@ -15,6 +15,8 @@ export interface Sourced {
 	draft?: boolean;
 	/** The content pack it comes from (its name), for the compendium's tag. */
 	pack?: string;
+	/** The note it's written in (your homebrew: a block in the content folder, a ```nimble-spell), for its Homebrew tag and Open note. */
+	note?: string;
 }
 
 export interface Feature {
@@ -26,6 +28,15 @@ export interface Feature {
 	 * taken more than once ("+1 max Combat Dice"). Homebrew and imported classes can set it on any feature.
 	 */
 	choose?: { name?: string; from: string[]; count?: number; or?: string[] };
+	/** A stat increase, when its words don't say ("+1 STR or DEX"): the stats it can go to, and how many different ones get +1. */
+	increase?: { stats: string[]; count?: number };
+	/**
+	 * Spell schools or Utility Spells it has you learn, when its words don't say: `school` learns a school, `utilities`
+	 * every Utility Spell of a school, `utility` Utility Spells one by one; `from` names schools, or is "known", "new" or "any".
+	 */
+	learn?: { kind: 'school' | 'utilities' | 'utility'; from?: string[]; count?: number; each?: boolean }[];
+	/** Uses between Safe Rests, when its words don't say "(1/Safe Rest)": a number or a formula ("WIL", "2×WIL"). */
+	uses?: string | number;
 }
 export interface LevelFeatures { level: number; features: Feature[] }
 
@@ -59,9 +70,17 @@ export interface ResourceDice {
 	clearsOnRest?: boolean;
 	byLevel?: { level: number; die: string }[];
 	rules?: string[];
+	/** The most held grows: `add` more from a level (for one subclass only, when it names one). */
+	maxSteps?: { level: number; add: number; subclass?: string }[];
 }
 
-export interface ClassResource { name: string; max?: string | number; reset?: string; die?: string; dice?: ResourceDice }
+/** `spend`: the word on a number's button ("Heal" for Lay on Hands; "Spend" if left out). */
+export interface ClassResource { name: string; max?: string | number; reset?: string; die?: string; dice?: ResourceDice; spend?: string }
+
+/** A state the class panel switches on and off (Raging): the condition it puts on the hero, and the feature that explains it. */
+export interface ClassState { name: string; condition: string; feature?: string; level?: number }
+/** A target the class panel keeps (Hunter's Mark's Quarry), and the feature that explains it. */
+export interface ClassTarget { name: string; feature?: string; level?: number; tip?: string }
 
 export interface Casting {
 	mana?: string;
@@ -94,6 +113,9 @@ export interface ClassEntry extends Sourced {
 	spellList?: string[];
 	/** The level 1 "Skilled Hero" adjustments (3.x class books): skill name → bonus, e.g. { Might: 2, Finesse: -2 }. */
 	skillMods?: Record<string, number>;
+	/** States the class panel switches (Raging), and the target it keeps (a Quarry); the books' are found by their features' names. */
+	states?: ClassState[];
+	target?: ClassTarget;
 	faq?: { q: string; a: string }[];
 }
 
@@ -193,6 +215,8 @@ export interface CompendiumHit {
 	cost?: string;
 	/** The content pack it comes from. */
 	pack?: string;
+	/** The note it's written in: yours (tagged Homebrew). */
+	note?: string;
 	entry: unknown;
 }
 
@@ -347,7 +371,10 @@ export class Compendium {
 			for (const l of arr<LevelFeatures>(levels).slice().sort((a, b) => (a.level ?? 0) - (b.level ?? 0))) {
 				if ((l.level ?? 0) > level) continue;
 				for (const f of arr<Feature>(l.features)) {
-					out.push({ name: str(f.name), text: str(f.text), ...(f.choose ? { choose: f.choose } : {}), level: l.level, from, className: cls.name, subclass: sub, source: src.source ?? cls.source, page: src.page ?? cls.page, draft: src.draft ?? cls.draft });
+					out.push({
+						name: str(f.name), text: str(f.text), ...(f.choose ? { choose: f.choose } : {}), ...(f.increase ? { increase: f.increase } : {}), ...(f.learn ? { learn: f.learn } : {}), ...(f.uses !== undefined ? { uses: f.uses } : {}),
+						level: l.level, from, className: cls.name, subclass: sub, source: src.source ?? cls.source, page: src.page ?? cls.page, draft: src.draft ?? cls.draft,
+					});
 				}
 			}
 		};
@@ -391,7 +418,8 @@ export class Compendium {
 	all(): CompendiumHit[] {
 		if (this.hits) return this.hits;
 		const out: CompendiumHit[] = [];
-		const base = (e: Sourced) => ({ source: e.source, page: e.page, draft: !!e.draft, ...(e.pack ? { pack: e.pack } : {}) });
+		const noteOf = (e: Sourced) => e.note ?? (e as { filePath?: string }).filePath;
+		const base = (e: Sourced) => ({ source: e.source, page: e.page, draft: !!e.draft, ...(e.pack ? { pack: e.pack } : {}), ...(noteOf(e) ? { note: noteOf(e) } : {}) });
 		for (const it of this.items) out.push({ kind: 'item', name: it.name, detail: itemDetail(it), text: it.text, ...base(it), entry: it });
 		for (const s of this.spells) out.push({ kind: 'spell', name: s.name, detail: spellDetail(s), text: s.text, ...base(s), entry: s });
 		for (const c of this.classes) {
@@ -405,7 +433,7 @@ export class Compendium {
 				out.push({ kind: 'feature', name: o.name, detail: [c.name, g.name, o.cost, o.requirement].filter(Boolean).join(' · '), text: o.text, className: c.name, group: g.name, cost: o.cost, ...base(o.pack ? o : c), entry: o });
 			}
 			for (const s of arr<Subclass>(c.subclasses)) {
-				const sb = { source: s.source ?? c.source, page: s.page ?? c.page, draft: !!(s.draft ?? c.draft), ...(s.pack ?? c.pack ? { pack: s.pack ?? c.pack } : {}) };
+				const sb = { source: s.source ?? c.source, page: s.page ?? c.page, draft: !!(s.draft ?? c.draft), ...(s.pack ?? c.pack ? { pack: s.pack ?? c.pack } : {}), ...(s.note ?? c.note ? { note: s.note ?? c.note } : {}) };
 				out.push({ kind: 'subclass', name: s.name, detail: `${c.name} subclass${s.story ? ' · Story' : ''}`, text: s.flavor, className: c.name, ...sb, entry: s });
 				for (const l of arr<LevelFeatures>(s.levels)) for (const f of arr<Feature>(l.features)) {
 					out.push({ kind: 'feature', name: f.name, detail: `${s.name} · Level ${l.level}`, text: f.text, className: c.name, subclass: s.name, level: l.level, ...sb, entry: f });

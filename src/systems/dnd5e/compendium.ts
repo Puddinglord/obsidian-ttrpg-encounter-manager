@@ -7,7 +7,8 @@
 import c2014 from './data/compendium-2014.json?gz';
 import c2024 from './data/compendium-2024.json?gz';
 import { conditionsFor } from './conditions';
-import { Content5e, mergeCompendium5e } from './content';
+import { Content5e, content5e, mergeCompendium5e } from './content';
+import { HOMEBREW } from '../../core/content/blocks';
 import type { Dnd5eEdition } from './editions';
 import type { Feature5e } from './types';
 
@@ -21,19 +22,39 @@ export interface Equipment5e {
 	damage?: string; versatile?: string; range?: string; properties?: string[]; mastery?: string;
 	armorCategory?: string; ac?: { base: number; dex: boolean; max?: number }; strMin?: number; stealthDisadvantage?: boolean; desc?: string;
 }
-export interface ClassFeature5e { level: number; name: string; desc: string }
+/** `group`: this feature is one choice of the feature of that name (an option not named "Group: Option"). */
+export interface ClassFeature5e { level: number; name: string; desc: string; group?: string }
+/**
+ * A limited-use feature the class table doesn't count: how many uses (a number, or a formula of ability modifiers,
+ * PB and level: "CHA", "Charisma modifier", "PB", "2 + WIS"), at least `min`, from class `level`, back on a `reset`
+ * (long unless it says short; from level `shortFrom` on a short rest), `shortOne`: a short rest brings back one.
+ */
+export interface ClassResource5e { name: string; uses: number | string; min?: number; level?: number; reset?: 'short' | 'long'; shortFrom?: number; shortOne?: boolean }
+/** Starting equipment as a class or background writes it: a choice of options, each items ("2 Javelin"), picks from a list, gold. */
+export interface StartingEquipment5e { label?: string; options: { label: string; items?: string[]; picks?: { label?: string; count?: number; from: string[] }[]; gold?: number }[] }
+/** Where it's from (a content pack's name, Homebrew) and, for yours, the note it's written in. */
+interface Origin5e { source?: string; note?: string }
 /** A class table's row. `prepared`: spells known or prepared (a pack's column; the SRD's come from creation.json). `extra`: the class's own numbers. */
 export interface ClassLevel5e { level: number; pb: number; features: string[]; slots?: number[]; cantrips?: number; prepared?: number; extra?: Record<string, unknown> }
-export interface Subclass5e { name: string; flavor: string; desc: string; features: ClassFeature5e[] }
-export interface Class5e {
+export interface Subclass5e extends Origin5e { name: string; flavor: string; desc: string; features: ClassFeature5e[]; resources?: ClassResource5e[] }
+export interface Class5e extends Origin5e {
 	name: string; hitDie: number; primary?: string; saves: string[]; proficiencies: string[]; skillChoice: string; spellcasting?: string;
+	/** Limited-use features its table doesn't count (Bardic Inspiration's Charisma modifier). */
+	resources?: ClassResource5e[];
+	/** What a new character of the class starts with, and the tools they choose (the SRD's are in creation.json). */
+	startingEquipment?: StartingEquipment5e[];
+	toolChoices?: { count: number; from: string[] };
 	/** Casts from another class's spell list ("Paladin"); else its own name's. */
 	spellList?: string;
 	features: ClassFeature5e[]; levels: ClassLevel5e[]; subclasses: Subclass5e[];
 }
-export interface Species5e { name: string; size: string; speed: number; type?: string; abilityBonuses?: string; desc?: string; traits: Feature5e[]; subspecies: { name: string; desc?: string; traits: Feature5e[] }[] }
-export interface Background5e { name: string; proficiencies: string[]; abilityScores?: string[]; feat?: string; feature?: Feature5e; equipment?: string }
-export interface Feat5e { name: string; desc: string; prerequisite?: string; type?: string }
+export interface Species5e extends Origin5e { name: string; size: string; speed: number; type?: string; abilityBonuses?: string; desc?: string; traits: Feature5e[]; subspecies: { name: string; desc?: string; traits: Feature5e[] }[] }
+export interface Background5e extends Origin5e {
+	name: string; proficiencies: string[]; abilityScores?: string[]; feat?: string; feature?: Feature5e; equipment?: string;
+	/** What a new character with it starts with, its tools, and the tools they choose (the SRD's are in creation.json). */
+	startingEquipment?: StartingEquipment5e[]; tools?: string[]; toolChoices?: { count: number; from: string[] };
+}
+export interface Feat5e extends Origin5e { name: string; desc: string; prerequisite?: string; type?: string }
 /** A rules section (2014) or a Rules Glossary entry (2024, `tag`: Condition, Action, Hazard…). */
 export interface Rule5e { name: string; desc: string; topic?: string; tag?: string }
 export interface Ability5e { abbr: string; name: string; desc: string; skills: string[] }
@@ -159,22 +180,51 @@ const cache = new Map<Dnd5eEdition, Hit5e[]>();
 export function allHits(edition: Dnd5eEdition): Hit5e[] {
 	let list = cache.get(edition);
 	if (list) return list;
-	const c = compendium5e(edition);
 	list = [
-		...c.spells.map((spell): Hit5e => ({ kind: 'spell', name: spell.name, edition, detail: `${spellLine(spell, edition)}${spell.concentration ? ' · concentration' : ''}`, spell })),
-		...c.items.map((item): Hit5e => ({ kind: 'item', name: item.name, edition, detail: itemLine(item), item })),
-		...c.equipment.map((equipment): Hit5e => ({ kind: 'equipment', name: equipment.name, edition, detail: equipmentLine(equipment), equipment })),
-		...c.classes.map((cls): Hit5e => ({ kind: 'class', name: cls.name, edition, detail: `d${cls.hitDie} hit die${cls.primary ? ` · ${cls.primary}` : ''}`, cls })),
-		...c.classes.flatMap(cls => cls.subclasses.map((subclass): Hit5e => ({ kind: 'subclass', name: subclass.name, edition, detail: `${cls.name} subclass${subclass.flavor ? ` · ${subclass.flavor}` : ''}`, cls, subclass }))),
-		...c.species.map((species): Hit5e => ({ kind: 'species', name: species.name, edition, detail: [edition === '2014' ? 'Race' : 'Species', species.size, `${species.speed} ft.`].join(' · '), species })),
-		...c.backgrounds.map((background): Hit5e => ({ kind: 'background', name: background.name, edition, detail: background.feat ? `Background · ${background.feat}` : 'Background', background })),
-		...c.feats.map((feat): Hit5e => ({ kind: 'feat', name: feat.name, edition, detail: [feat.type ? `${feat.type} feat` : 'Feat', feat.prerequisite ? `needs ${feat.prerequisite}` : ''].filter(Boolean).join(' · '), feat })),
-		// Glossary entries for conditions are the condition hits below.
-		...[...c.rules.filter(r => r.tag !== 'Condition'), ...extraRules(c)].map((rule): Hit5e => ({ kind: 'rule', name: rule.name, edition, detail: ruleDetail(rule), rule })),
+		...compendiumHits(compendium5e(edition), edition),
 		...conditionsFor(edition).map((cond): Hit5e => ({ kind: 'condition', name: cond.name, edition, detail: 'Condition', desc: cond.description })),
 	];
 	cache.set(edition, list);
 	return list;
+}
+
+/** What a compendium holds, as hits (allHits adds the edition's conditions). */
+export function compendiumHits(c: Compendium5e, edition: Dnd5eEdition): Hit5e[] {
+	return [
+		...c.spells.map((spell): Hit5e => ({ kind: 'spell', name: spell.name, edition, detail: `${spellLine(spell, edition)}${spell.concentration ? ' · concentration' : ''}`, spell })),
+		...c.items.map((item): Hit5e => ({ kind: 'item', name: item.name, edition, detail: itemLine(item), item })),
+		...c.equipment.map((equipment): Hit5e => ({ kind: 'equipment', name: equipment.name, edition, detail: equipmentLine(equipment), equipment })),
+		...c.classes.map((cls): Hit5e => ({ kind: 'class', name: cls.name, edition, detail: [cls.hitDie ? `d${cls.hitDie} hit die` : '', cls.primary ?? ''].filter(Boolean).join(' · '), cls })),
+		...c.classes.flatMap(cls => cls.subclasses.map((subclass): Hit5e => ({ kind: 'subclass', name: subclass.name, edition, detail: `${cls.name} subclass${subclass.flavor ? ` · ${subclass.flavor}` : ''}`, cls, subclass }))),
+		...c.species.map((species): Hit5e => ({ kind: 'species', name: species.name, edition, detail: [edition === '2014' ? 'Race' : 'Species', species.size, species.speed !== undefined ? `${species.speed} ft.` : ''].filter(Boolean).join(' · '), species })),
+		...c.backgrounds.map((background): Hit5e => ({ kind: 'background', name: background.name, edition, detail: background.feat ? `Background · ${background.feat}` : 'Background', background })),
+		...c.feats.map((feat): Hit5e => ({ kind: 'feat', name: feat.name, edition, detail: [feat.type ? `${feat.type} feat` : 'Feat', feat.prerequisite ? `needs ${feat.prerequisite}` : ''].filter(Boolean).join(' · '), feat })),
+		// Glossary entries for conditions are the condition hits.
+		...[...c.rules.filter(r => r.tag !== 'Condition'), ...extraRules(c)].map((rule): Hit5e => ({ kind: 'rule', name: rule.name, edition, detail: ruleDetail(rule), rule })),
+	];
+}
+
+/**
+ * A ```5e-<kind> block's entry (maybe only the fields that checked out) as the hit its card draws, made the way a
+ * pack's entry is: a subclass in its class (a stand-in, when the class is only named). Null when there's nothing to draw.
+ */
+export function contentHit5e(kind: Kind5e, value: Record<string, unknown>, edition: Dnd5eEdition, label: string): Hit5e | null {
+	const said = typeof value.name === 'string' && value.name.trim() ? value.name.trim() : `New ${label.toLowerCase()}`;
+	const add = content5e([{ kind, name: said, value: { ...value, name: said }, pack: HOMEBREW }]);
+	const owner = typeof value.class === 'string' ? value.class.trim() : '';
+	const stub: Class5e = { name: owner, hitDie: 0, saves: [], proficiencies: [], skillChoice: '', features: [], levels: [], subclasses: [] };
+	// A subclass before its block names its class: on its own.
+	const sub = add.subclasses[0]?.subclass;
+	if (kind === 'subclass' && !owner) return sub ? { kind: 'subclass', name: said, edition, detail: ['Subclass', sub.flavor].filter(Boolean).join(' · '), cls: stub, subclass: { ...sub, features: sub.features ?? [] } } : null;
+	const base: Compendium5e = { spells: [], items: [], equipment: [], weaponProperties: {}, classes: kind === 'subclass' && owner ? [stub] : [], species: [], backgrounds: [], feats: [], rules: [] };
+	// A field the block hasn't got right yet is an empty one here, so the card draws what's there.
+	const m = mergeCompendium5e(base, add);
+	const safe: Compendium5e = {
+		...m,
+		classes: m.classes.map(c => ({ ...c, saves: c.saves ?? [], features: c.features ?? [], levels: (c.levels ?? []).map(l => ({ ...l, features: l.features ?? [] })), subclasses: (c.subclasses ?? []).map(sc => ({ ...sc, features: sc.features ?? [] })) })),
+		species: m.species.map(x => ({ ...x, traits: x.traits ?? [], subspecies: (x.subspecies ?? []).map(y => ({ ...y, traits: y.traits ?? [] })) })),
+	};
+	return compendiumHits(safe, edition).find(h => h.kind === kind && h.name.toLowerCase() === said.toLowerCase()) ?? null;
 }
 
 function ruleDetail(rule: Rule5e): string {

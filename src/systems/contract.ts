@@ -15,6 +15,7 @@ import type { EncounterDef } from '../core/encounter-def';
 import type { SlashCommand } from '../core/slash';
 import type { NoteKindExtensions } from '../core/note-kinds';
 import type { KindSpec } from '../core/content/spec';
+import type { BlockSpec } from '../core/content/blocks';
 import type { SettingsPart } from '../core/settings';
 import type { SettingsSection } from '../core/settings-ui';
 import type { CombatTokens } from '../core/tracker/tokens';
@@ -143,5 +144,21 @@ export interface GameSystem {
 	 * fields. Packs are checked against these; the system reads the packs a
 	 * campaign uses from `plugin.content.enabled(id, path)`.
 	 */
-	readonly content?: { readonly kinds: readonly KindSpec[] };
+	readonly content?: GameContent;
+}
+
+/** A game's content: the kinds packs and blocks hold, how it writes them as blocks, and how a block's entry looks. */
+export interface GameContent {
+	readonly kinds: readonly KindSpec[];
+	/**
+	 * The kinds written in notes as ```<prefix>-<kind> blocks (core/content/blocks.ts). Core indexes them in the
+	 * content folder (they come back from `plugin.content.enabled` as the Homebrew pack, last), draws them with
+	 * `card`, and New on a compendium tab writes a starter one (core/content/new-entry.ts).
+	 */
+	readonly blocks?: BlockSpec;
+	/**
+	 * Draw a block's entry as its compendium card, in the game's look. `value` holds only the fields that checked
+	 * out (the block may have errors), so read it defensively: a missing field is never a crash.
+	 */
+	card?(el: HTMLElement, entry: { kind: string; value: Record<string, unknown> }, ctx: { plugin: EmberVaultPlugin; sourcePath: string }): void;
 }

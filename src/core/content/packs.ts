@@ -14,6 +14,8 @@ export interface PackEntry {
 	kind: string;
 	name: string;
 	value: Record<string, unknown>;
+	/** The note it's written in, for an entry written as a block (blocks.ts). */
+	file?: string;
 }
 
 /** An entry that was left out, or one with something ignored. */
@@ -37,6 +39,8 @@ export interface LoadedPack {
 	warnings: PackNote[];
 	/** Why nothing could be read at all. */
 	error?: string;
+	/** The content folder's notes (blocks.ts), not a file: named Homebrew, and on top of every pack. */
+	homebrew?: boolean;
 }
 
 /** What a system takes in packs (from its `content` member), by any of its names. */

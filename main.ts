@@ -39,6 +39,7 @@ import { noteKind } from './src/core/campaign-model';
 import { registerBuilderCommands } from './src/core/builder/commands';
 import { ContentStore } from './src/core/content/store';
 import { ImportContentModal } from './src/core/content/import-modal';
+import { registerContentBlocks } from './src/core/content/blocks-ui';
 import type { GameSystem } from './src/systems/contract';
 import { createSystems } from './src/app/systems';
 import { resolveEdition } from './src/systems/registry';
@@ -177,6 +178,7 @@ export default class EmberVaultPlugin extends Plugin {
 		// The other game systems wire in their own blocks, references and indexes.
 		for (const system of this.systems.all()) system.register?.(this);
 		this.content.register();
+		registerContentBlocks(this);
 		this.addCommand({ id: 'import-content', name: 'Import content…', icon: 'package-plus', callback: () => new ImportContentModal(this).open() });
 		this.registerMarkdownPostProcessor((el, ctx) => this.inlineRefs.process(el, ctx.sourcePath));
 

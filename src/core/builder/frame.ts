@@ -111,6 +111,14 @@ export function kindAvailable(system: string, kind: EntityKind): boolean {
 	return KINDS.some(k => k.system === system && k.kind === kind);
 }
 
+/**
+ * Does the system have a guided builder for this kind, to open from New (a compendium tab's, New monster…)?
+ * Hidden kinds (a character, a level up) open only on purpose, so they don't count.
+ */
+export function builderFor(system: string, kind: EntityKind): boolean {
+	return KINDS.some(k => k.system === system && k.kind === kind && !k.hidden);
+}
+
 /** What a system can build ("New monster…"), in order. */
 export function kindsOf(system: string): { kind: EntityKind; label: string; icon: string }[] {
 	return KINDS.filter(k => k.system === system && !k.hidden).map(({ kind, label, icon }) => ({ kind, label, icon }));

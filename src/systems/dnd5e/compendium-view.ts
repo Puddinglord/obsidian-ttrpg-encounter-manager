@@ -7,13 +7,15 @@ import { CompendiumBrowser, CompendiumSource } from '../../core/compendium/brows
 import { copyReference, insertReference } from '../../core/compendium/refs';
 import { renderCard5e } from './cards';
 import { addMonster } from './combat';
-import { contentVersion5e, KIND5E } from './compendium';
+import { contentVersion5e, Hit5e, KIND5E } from './compendium';
 import { buildEntries5e, Entry5e, entryPills5e, entryReference5e, QUERY_5E, Segment5e, SEGMENTS_5E } from './compendium-entries';
 import type { Dnd5eEdition } from './editions';
 import type { Dnd5eRuntime } from './runtime';
 import { pill } from '../../core/pill';
 import { applyLook } from '../../core/look';
 import { evIcon } from '../../core/icons';
+import { HOMEBREW } from '../../core/content/blocks';
+import { newButtonLabel, newContent } from '../../core/content/new-entry';
 
 export const DND5E_COMPENDIUM_VIEW = 'nimble-dnd5e-compendium';
 
@@ -41,6 +43,19 @@ const PLACEHOLDER: Partial<Record<Segment5e, string>> = {
 };
 
 let cache: { key: string; entries: Entry5e[] } | null = null;
+
+/** What New makes on each tab: monsters, spells and items in their builders (equipment is an item block), the rest as a note in the content folder. */
+const NEW_KINDS: Record<Segment5e, string[]> = {
+	all: ['monster', 'spell', 'item', 'class', 'subclass', 'species', 'background', 'feat'],
+	monsters: ['monster'], spells: ['spell'], items: ['item'], equipment: ['item'],
+	classes: ['class', 'subclass'], origins: ['species', 'background'], feats: ['feat'], rules: [],
+};
+
+/** The note a homebrew hit is written in (a ```5e-class in the content folder, a ```5e-spell), if any. */
+export function noteOf5e(h: Hit5e): string | undefined {
+	const own = Object.values(h).find(v => v && typeof v === 'object' && typeof (v as { note?: unknown }).note === 'string') as { note?: string } | undefined;
+	return own?.note ?? ('filePath' in h && typeof h.filePath === 'string' ? h.filePath : undefined);
+}
 
 /** The 5e compendium for core's browser, for one edition. */
 export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: () => string): CompendiumSource<Entry5e, Segment5e, object> {
@@ -78,7 +93,7 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 		tags(e, el) {
 			if (e.flags.includes('pack')) { el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-pack', text: e.facets.source?.[0] ?? 'Pack' }); return; }
 			if (!e.monster) {
-				if (e.flags.includes('mine')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-note', text: 'Homebrew' });
+				if (e.flags.includes('mine') || e.flags.includes('homebrew')) el.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-homebrew', text: HOMEBREW });
 				return;
 			}
 			el.createSpan({ cls: `nimble-cmpx-pill-tag bestiary-tag is-source is-${e.monster.bundled ? 'mm' : 'note'}`, text: e.monster.bundled ? 'SRD' : 'Note' });
@@ -96,7 +111,9 @@ export function source5e(rt: Dnd5eRuntime, edition: () => Dnd5eEdition, path: ()
 				return;
 			}
 			renderCard5e(el.createDiv({ cls: 'dnd5e-cmp-page' }), e.hit!, rt.cardOptions(at));
-			buttons(el, refs);
+			// Yours: the note it's written in, to change it.
+			const note = noteOf5e(e.hit!);
+			buttons(el, [...(note ? [{ label: 'Open note', icon: 'file-symlink', run: () => void rt.plugin.app.workspace.openLinkText(note, '', 'tab') }] : []), ...refs]);
 		},
 	};
 }
@@ -178,6 +195,8 @@ export class Dnd5eCompendiumView extends ItemView {
 			void rt.openTracker();
 		};
 		const insert = (e: Entry5e) => insertReference(plugin.app, entryReference5e(e), e.name);
+		// Players make heroes' things, not monsters.
+		const newKinds = (seg: Segment5e) => NEW_KINDS[seg].filter(k => !(lore && k === 'monster'));
 		const browser = this.browser = new CompendiumBrowser<Entry5e, Segment5e, object>(layout, source5e(rt, () => this.edition, path), {
 			segments: SEGMENTS_5E.map(s => s.id),
 			segment: this.tab,
@@ -191,6 +210,9 @@ export class Dnd5eCompendiumView extends ItemView {
 				? { icon: evIcon('plus'), label: `Add ${e.name} to the fight`, run: (ev) => fight(e, ev.shiftKey ? 2 : 1) }
 				: { icon: evIcon('copy'), label: `Copy a reference to ${e.name}`, run: () => copyReference(entryReference5e(e), e.name) }),
 			detail: {},
+			onNew: (seg, ev) => newContent(rt.plugin, 'dnd5e', newKinds(seg), ev),
+			// Equipment is made in the item builder; its button says what it makes there.
+			newLabel: (seg) => (seg === 'equipment' && newKinds(seg).length ? 'New equipment' : newButtonLabel(rt.plugin, 'dnd5e', newKinds(seg))),
 			onNarrowShow: (d) => {
 				layout.toggleClass('show-detail', d && this.narrow);
 				if (d) layout.querySelector('.nimble-cmpx-detail')?.scrollTo({ top: 0 });

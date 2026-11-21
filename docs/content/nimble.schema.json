@@ -831,12 +831,46 @@
 														"type": "string"
 													},
 													"description": "The class features whose words explain these dice."
+												},
+												"maxSteps": {
+													"type": "array",
+													"items": {
+														"type": "object",
+														"properties": {
+															"level": {
+																"type": "integer",
+																"minimum": 1,
+																"maximum": 20
+															},
+															"add": {
+																"type": "integer"
+															},
+															"subclass": {
+																"type": [
+																	"string",
+																	"number"
+																]
+															}
+														},
+														"required": [
+															"level",
+															"add"
+														]
+													},
+													"description": "The most held grows: \"add\" more from a level, for one subclass only when it names one."
 												}
 											},
 											"required": [
 												"rolled"
 											],
 											"description": "For dice: how they're rolled and what they go into. Without it they're a plain count."
+										},
+										"spend": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The word on a number's button: \"Heal\" (Lay on Hands). \"Spend\" if left out."
 										}
 									},
 									"required": [
@@ -844,6 +878,81 @@
 									]
 								},
 								"description": "What the class panel on the sheet counts: dice, uses, points."
+							},
+							"states": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The row's name: \"Rage\"."
+										},
+										"condition": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The condition it puts on the hero: \"Raging\"."
+										},
+										"feature": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The feature whose words explain it."
+										},
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "From this level (1 if left out)."
+										}
+									},
+									"required": [
+										"name",
+										"condition"
+									]
+								},
+								"description": "States the class panel switches on and off: Rage puts Raging on the hero."
+							},
+							"target": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "The row's name: \"Hunter's Mark\"."
+									},
+									"feature": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "The feature whose words explain it."
+									},
+									"level": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 20
+									},
+									"tip": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "\"one Quarry at a time, for a day\"."
+									}
+								},
+								"required": [
+									"name"
+								],
+								"description": "A target the class panel keeps, one at a time: Hunter's Mark's Quarry."
 							},
 							"levels": {
 								"type": "array",
@@ -907,6 +1016,73 @@
 															"from"
 														],
 														"description": "What the feature has you choose, when its words don't say: the option lists to pick from, how many, and choices that can be taken more than once instead."
+													},
+													"increase": {
+														"type": "object",
+														"properties": {
+															"stats": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																}
+															},
+															"count": {
+																"type": "integer",
+																"minimum": 1,
+																"maximum": 4,
+																"description": "How many different stats get +1 (1 if left out)."
+															}
+														},
+														"required": [
+															"stats"
+														],
+														"description": "A stat increase, when the words don't say \"+1 STR or DEX\": the stats it can go to (STR, DEX, INT, WIL), and how many different ones get +1."
+													},
+													"learn": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"kind": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"enum": [
+																		"school",
+																		"utilities",
+																		"utility"
+																	]
+																},
+																"from": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	},
+																	"description": "Schools by name, or one of \"known\", \"new\" (a school not known yet) or \"any\". Any school if left out."
+																},
+																"count": {
+																	"type": "integer",
+																	"minimum": 1,
+																	"description": "How many (1 if left out)."
+																},
+																"each": {
+																	"type": "boolean",
+																	"description": "One for each school the hero knows."
+																}
+															},
+															"required": [
+																"kind"
+															]
+														},
+														"description": "Spell schools or Utility Spells it has you learn, when the words don't say: \"school\" learns a school, \"utilities\" every Utility Spell of one school, \"utility\" Utility Spells one by one."
+													},
+													"uses": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
 													}
 												},
 												"required": [
@@ -921,7 +1097,7 @@
 										"features"
 									]
 								},
-								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name."
+								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`."
 							},
 							"optionGroups": {
 								"type": "array",
@@ -1105,6 +1281,73 @@
 																		"from"
 																	],
 																	"description": "What the feature has you choose, when its words don't say: the option lists to pick from, how many, and choices that can be taken more than once instead."
+																},
+																"increase": {
+																	"type": "object",
+																	"properties": {
+																		"stats": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			}
+																		},
+																		"count": {
+																			"type": "integer",
+																			"minimum": 1,
+																			"maximum": 4,
+																			"description": "How many different stats get +1 (1 if left out)."
+																		}
+																	},
+																	"required": [
+																		"stats"
+																	],
+																	"description": "A stat increase, when the words don't say \"+1 STR or DEX\": the stats it can go to (STR, DEX, INT, WIL), and how many different ones get +1."
+																},
+																"learn": {
+																	"type": "array",
+																	"items": {
+																		"type": "object",
+																		"properties": {
+																			"kind": {
+																				"type": [
+																					"string",
+																					"number"
+																				],
+																				"enum": [
+																					"school",
+																					"utilities",
+																					"utility"
+																				]
+																			},
+																			"from": {
+																				"type": "array",
+																				"items": {
+																					"type": "string"
+																				},
+																				"description": "Schools by name, or one of \"known\", \"new\" (a school not known yet) or \"any\". Any school if left out."
+																			},
+																			"count": {
+																				"type": "integer",
+																				"minimum": 1,
+																				"description": "How many (1 if left out)."
+																			},
+																			"each": {
+																				"type": "boolean",
+																				"description": "One for each school the hero knows."
+																			}
+																		},
+																		"required": [
+																			"kind"
+																		]
+																	},
+																	"description": "Spell schools or Utility Spells it has you learn, when the words don't say: \"school\" learns a school, \"utilities\" every Utility Spell of one school, \"utility\" Utility Spells one by one."
+																},
+																"uses": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
 																}
 															},
 															"required": [
@@ -1119,7 +1362,7 @@
 													"features"
 												]
 											},
-											"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name."
+											"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`."
 										},
 										"optionGroups": {
 											"type": "array",
@@ -1410,6 +1653,73 @@
 															"from"
 														],
 														"description": "What the feature has you choose, when its words don't say: the option lists to pick from, how many, and choices that can be taken more than once instead."
+													},
+													"increase": {
+														"type": "object",
+														"properties": {
+															"stats": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																}
+															},
+															"count": {
+																"type": "integer",
+																"minimum": 1,
+																"maximum": 4,
+																"description": "How many different stats get +1 (1 if left out)."
+															}
+														},
+														"required": [
+															"stats"
+														],
+														"description": "A stat increase, when the words don't say \"+1 STR or DEX\": the stats it can go to (STR, DEX, INT, WIL), and how many different ones get +1."
+													},
+													"learn": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"kind": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"enum": [
+																		"school",
+																		"utilities",
+																		"utility"
+																	]
+																},
+																"from": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	},
+																	"description": "Schools by name, or one of \"known\", \"new\" (a school not known yet) or \"any\". Any school if left out."
+																},
+																"count": {
+																	"type": "integer",
+																	"minimum": 1,
+																	"description": "How many (1 if left out)."
+																},
+																"each": {
+																	"type": "boolean",
+																	"description": "One for each school the hero knows."
+																}
+															},
+															"required": [
+																"kind"
+															]
+														},
+														"description": "Spell schools or Utility Spells it has you learn, when the words don't say: \"school\" learns a school, \"utilities\" every Utility Spell of one school, \"utility\" Utility Spells one by one."
+													},
+													"uses": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
 													}
 												},
 												"required": [
@@ -1424,7 +1734,7 @@
 										"features"
 									]
 								},
-								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name."
+								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`."
 							},
 							"optionGroups": {
 								"type": "array",
@@ -1765,6 +2075,16 @@
 						"type": "object",
 						"properties": {
 							"kind": {
+								"const": "boon"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"type": {
 								"type": [
 									"string",
 									"number"
@@ -1775,13 +2095,6 @@
 									"other"
 								],
 								"description": "Epic Boons are offered when a class grants one."
-							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
 							},
 							"text": {
 								"type": [

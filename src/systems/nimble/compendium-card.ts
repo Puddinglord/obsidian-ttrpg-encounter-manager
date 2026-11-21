@@ -430,6 +430,21 @@ export function renderConditionCard(parent: HTMLElement, condition: ConditionInf
 	return card;
 }
 
+/** A rule (a rules section, a weapon property, a pack's or your own rule) as a card: its topic over its name, the text, where it's from. Fills `card`. */
+export function renderRuleCard(card: HTMLElement, rule: { name: string; text: string; topic: string; source?: string; page?: number | null; draft?: boolean }, o: CardOptions = {}): HTMLElement {
+	card.addClass('nimble-cmp-card', 'kind-rule');
+	applyLook(card, 'nimble');
+	const head = card.createDiv({ cls: 'nimble-cmp-head' });
+	const kind = head.createDiv({ cls: 'nimble-cmp-kind' });
+	setIcon(kind.createSpan({ cls: 'nimble-cmp-kind-icon' }), evIcon('scales'));
+	kind.createSpan({ text: rule.topic });
+	head.createDiv({ cls: 'nimble-cmp-name', text: rule.name });
+	const body = card.createDiv({ cls: 'nimble-cmp-body' });
+	renderRulesText(body, rule.text, o);
+	renderSource(body, rule);
+	return card;
+}
+
 /** A card for a compendium hit or a condition. */
 export function renderCard(parent: HTMLElement, target: CardTarget, o: CardOptions = {}): HTMLElement {
 	return isHit(target) ? renderHitCard(parent, target, o) : renderConditionCard(parent, target, o);

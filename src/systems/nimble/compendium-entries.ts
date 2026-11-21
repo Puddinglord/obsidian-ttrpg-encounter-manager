@@ -7,6 +7,7 @@
 import { CompendiumHit, CompendiumKind, Compendium, Item, Spell, ClassEntry, Subclass, Ancestry, Background, Boon, tierLabel, weaponDamage, nameKey } from './compendium';
 import type { MonsterIndexEntry, NimbleCondition } from './types';
 import { formatLevel, levelValue, monsterRole } from './rules';
+import { HOMEBREW } from '../../core/content/blocks';
 
 /** The tabs of the compendium. */
 export type Segment = 'all' | 'adversaries' | 'npcs' | 'companions' | 'spells' | 'items' | 'features' | 'classes' | 'origins' | 'rules';
@@ -66,6 +67,8 @@ export interface RuleEntry {
 	draft?: boolean;
 	/** From a content pack (its name). */
 	pack?: string;
+	/** Written in your note (homebrew). */
+	note?: string;
 }
 
 export interface Entry {
@@ -245,12 +248,13 @@ function isCompanionHit(h: CompendiumHit): boolean {
 }
 
 function hitEntry(h: CompendiumHit, seen: Map<string, number>): Entry {
-	const facets: Record<string, string[]> = { kind: [ENTRY_KIND_LABEL[h.kind]], source: h.pack ? [h.pack] : h.source ? [h.source] : [] };
+	const facets: Record<string, string[]> = { kind: [ENTRY_KIND_LABEL[h.kind]], source: h.pack ? [h.pack] : h.note ? [HOMEBREW] : h.source ? [h.source] : [] };
 	const nums: Record<string, number> = {};
 	const flags: string[] = [];
 	if (h.draft) flags.push('draft');
-	// A content pack's entry says which pack.
-	if (h.pack) flags.push('pack');
+	// A content pack's entry says which pack; yours says Homebrew.
+	if (h.note) flags.push('homebrew');
+	else if (h.pack) flags.push('pack');
 	let badge: string | undefined;
 	let segments: Segment[] = [];
 	const extra: string[] = [];
@@ -408,8 +412,8 @@ export function ruleEntries(comp: Compendium | undefined): RuleEntry[] {
 		for (const e of list(r.equipmentRules)) if (s(e.name)) out.push({ name: s(e.name), text: s(e.text), topic: 'Equipment', ...src });
 		for (const e of list(r.magicRules)) if (s(e.name)) out.push({ name: s(e.name), text: s(e.text), topic: 'Magic', ...src });
 		// Rules a content pack adds, under the topic it gives them.
-		for (const e of list(r.packRules)) if (s(e.name)) out.push({ name: s(e.name), text: s(e.text), topic: s(e.topic) || 'Rules', source: s(e.pack), page: typeof e.page === 'number' ? e.page : undefined, pack: s(e.pack) });
-		for (const p of comp.properties) if (p.text) out.push({ name: p.name, text: p.text, topic: 'Weapon properties', source: p.source, page: p.page, draft: p.draft, ...(p.pack ? { pack: p.pack } : {}) });
+		for (const e of list(r.packRules)) if (s(e.name)) out.push({ name: s(e.name), text: s(e.text), topic: s(e.topic) || 'Rules', source: s(e.pack), page: typeof e.page === 'number' ? e.page : undefined, pack: s(e.pack), ...(s(e.note) ? { note: s(e.note) } : {}) });
+		for (const p of comp.properties) if (p.text) out.push({ name: p.name, text: p.text, topic: 'Weapon properties', source: p.source, page: p.page, draft: p.draft, ...(p.pack ? { pack: p.pack } : {}), ...(p.note ? { note: p.note } : {}) });
 	}
 	return [...out, ...COMPANION_RULES];
 }
@@ -424,7 +428,7 @@ function ruleEntry(r: RuleEntry): Entry {
 		detail: [r.topic, r.source].filter(Boolean).join(' · '),
 		facets: { kind: ['Rule'], topic: [r.topic], source: r.source ? [r.source] : [] },
 		nums: {},
-		flags: [...(r.draft ? ['draft'] : []), ...(r.pack ? ['pack'] : [])],
+		flags: [...(r.draft ? ['draft'] : []), ...(r.note ? ['homebrew'] : r.pack ? ['pack'] : [])],
 		text: `${r.topic} ${r.text}`.toLowerCase(),
 		rule: r,
 	};

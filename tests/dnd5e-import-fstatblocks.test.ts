@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fantasyStatblockCreatures, importFantasyStatblock, importFantasyStatblocks } from '../src/systems/dnd5e/import-fstatblocks';
 import { parseStatblock5e, toStatblockSource5e } from '../src/systems/dnd5e/parser';
-import { parseYamlLite } from '../src/systems/dnd5e/yaml-lite';
+import { parseYamlLite } from '../src/core/yaml-lite';
 import type { Dnd5eMonster } from '../src/systems/dnd5e/types';
 
 const roundTrips = (m: Dnd5eMonster) => expect(parseStatblock5e(toStatblockSource5e(m))).toEqual(m);

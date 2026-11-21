@@ -83,8 +83,12 @@ describe('every kind takes a good entry and says why a bad one is left out', () 
 		expect(why('ancestry', { name: 'Traitless', traits: [{ text: 'x' }] })).toEqual(['"traits" item 1: "name" is missing']);
 		ok('background', { name: 'Ferryman', text: 'x' });
 		expect(why('background', { name: 'Blank' })).toEqual(['"text" is missing']);
-		ok('boon', { name: 'Undying', kind: 'epic', text: 'x' });
-		expect(why('boon', { name: 'Odd Boon', kind: 'legendary', text: 'x' })).toEqual(['"kind" should be one of: epic, lodging, other (it says "legendary")']);
+		// A boon's own kind is `type`: in a pack, `kind` is the entry's.
+		ok('boon', { name: 'Undying', type: 'epic', text: 'x' });
+		expect(why('boon', { name: 'Odd Boon', type: 'legendary', text: 'x' })).toEqual(['"type" should be one of: epic, lodging, other (it says "legendary")']);
+		const boons = readPack(JSON.stringify({ pack: 'B', system: 'nimble', entries: [{ kind: 'boon', name: 'Undying', type: 'epic', text: 'x' }] }), 'b.json', kindsFor);
+		expect(boons.rejected).toEqual([]);
+		expect(boons.entries.map(e => e.value)).toEqual([{ name: 'Undying', type: 'epic', text: 'x' }]);
 		ok('property', { name: 'Brittle', text: 'Breaks on a 1.' });
 		ok('language', { name: 'Cant', speakers: 'Thieves.' });
 		ok('rule', { name: 'Lamplight', text: 'x', topic: 'Travel' });
@@ -184,7 +188,7 @@ describe('pack content on top of the books', () => {
 			{ kind: 'language', name: 'Cant', pack: 'P', value: { name: 'Cant', speakers: 'Thieves.' } },
 			{ kind: 'property', name: 'Brittle', pack: 'P', value: { name: 'Brittle', text: 'Breaks on a 1.' } },
 			{ kind: 'condition', name: 'Soot-Blind', pack: 'P', value: { name: 'Soot-Blind', text: 'Can\'t see past 2 spaces.', minor: true } },
-			{ kind: 'boon', name: 'Undying', pack: 'P', value: { name: 'Undying', kind: 'epic', text: 'x' } },
+			{ kind: 'boon', name: 'Undying', pack: 'P', value: { name: 'Undying', type: 'epic', text: 'x' } },
 		]);
 		expect(add.conditions).toEqual([{ name: 'Soot-Blind', description: 'Can\'t see past 2 spaces.', minor: true, pack: 'P' }]);
 		const comp = new Compendium(mergeNimbleData(books, add));
@@ -306,7 +310,8 @@ describe('the published JSON Schema', () => {
 		expect(missing('background', b.backgrounds)).toEqual([]);
 		expect(missing('item', b.items)).toEqual([]);
 		expect(missing('spell', b.spells)).toEqual([]);
-		expect(missing('boon', b.boons)).toEqual([]);
+		// A boon's kind is written `type` (`kind` is the entry's in a pack).
+		expect(missing('boon', (b.boons as Record<string, unknown>[]).map(({ kind: k, ...rest }) => ({ ...rest, ...(k ? { type: k } : {}) })))).toEqual([]);
 		expect(missing('property', b.properties)).toEqual([]);
 	});
 });

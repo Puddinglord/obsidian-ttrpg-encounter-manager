@@ -21,7 +21,7 @@ import type { Dnd5eEdition } from './editions';
 import { isStatblockField5e } from './parser';
 import { pbForCr, xpForCr } from './rules';
 import { ABILITIES, type AbilityKey, type Dnd5eMonster, type Feature5e } from './types';
-import { parseYamlLite } from './yaml-lite';
+import { parseYamlLite } from '../../core/yaml-lite';
 
 export interface FsImport {
 	monster: Dnd5eMonster;

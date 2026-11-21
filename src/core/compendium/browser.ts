@@ -108,10 +108,10 @@ export interface BrowserOptions<E extends CompendiumEntry, S extends string = st
 	prefer?: { label: string; test: (e: E) => boolean };
 	/** Already chosen: tagged and listed after the rest. */
 	isTaken?: (e: E) => boolean;
-	/** A New button in the search bar: make something for the tab you're on. */
-	onNew?: (segment: S) => void;
-	/** The New button's label. */
-	newLabel?: string;
+	/** A New button in the search bar: make something for the tab you're on (`ev`: the click, for a menu of kinds). */
+	onNew?: (segment: S, ev: MouseEvent) => void;
+	/** The New button's label: one for every tab, or each tab's ("New class"); undefined hides the button on that tab. */
+	newLabel?: string | ((segment: S) => string | undefined);
 	/** Offer "Add “what you typed”" when nothing matches exactly. */
 	custom?: { label: (text: string) => string; run: (text: string, ev: KeyboardEvent | MouseEvent) => void };
 	placeholder?: string;
@@ -165,6 +165,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 	private panelEl!: HTMLElement;
 	private detailEl: HTMLElement | null = null;
 	private hintEl!: HTMLElement;
+	private newBtn: HTMLElement | null = null;
 	private rows: AnyRow<E>[] = [];
 	private rowEls: (HTMLElement | null)[] = [];
 	private sel = 0;
@@ -324,9 +325,10 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 		setIcon(this.filterBtn, evIcon('sliders'));
 		this.filterBtn.addEventListener('click', () => { this.panelOpen = !this.panelOpen; if (this.panelOpen) this.sortOpen = false; this.drawSortPanel(); this.drawPanel(); this.input.focus(); });
 		if (this.o.onNew) {
-			const nb = bar.createEl('button', { cls: 'clickable-icon nimble-cmpx-new', attr: { 'aria-label': this.o.newLabel ?? 'New' } });
+			const nb = this.newBtn = bar.createEl('button', { cls: 'clickable-icon nimble-cmpx-new' });
 			setIcon(nb, evIcon('plus'));
-			nb.addEventListener('click', () => this.o.onNew!(this.segment));
+			nb.addEventListener('click', (ev) => this.o.onNew!(this.segment, ev));
+			this.drawNew();
 		}
 
 		this.sortEl = side.createDiv({ cls: 'nimble-cmpx-sortpanel' });
@@ -334,6 +336,16 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 		this.countEl = side.createDiv({ cls: 'nimble-cmpx-count' });
 		this.listEl = side.createDiv({ cls: 'nimble-cmpx-list', attr: { role: 'listbox' } });
 		this.hintEl = side.createDiv({ cls: 'nimble-cmpx-hints' });
+	}
+
+	/** The New button says what it makes on this tab, and hides where nothing can be made. */
+	private drawNew(): void {
+		const b = this.newBtn;
+		if (!b) return;
+		const l = this.o.newLabel;
+		const label = typeof l === 'function' ? l(this.segment) : l ?? 'New';
+		b.toggle(label !== undefined);
+		b.setAttr('aria-label', label ?? 'New');
 	}
 
 	private placeholder(): string {
@@ -386,6 +398,7 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 			if (on && changed) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 		});
 		this.input.placeholder = this.o.placeholder ?? this.placeholder();
+		this.drawNew();
 		if (refresh) this.refresh();
 	}
 

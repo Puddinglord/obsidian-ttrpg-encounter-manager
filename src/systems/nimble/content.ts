@@ -9,9 +9,10 @@
 
 import type { PackEntry } from '../../core/content/packs';
 import type { FieldSpec, KindSpec } from '../../core/content/spec';
+import { BlockSpec, HOMEBREW } from '../../core/content/blocks';
 import type { ConditionDef } from '../../core/types';
-import type { Ancestry, Background, Boon, ClassEntry, ClassOption, CompendiumData, Item, OptionGroup, Property, Spell, Subclass } from './compendium';
-import { nameKey, STATS } from './compendium';
+import type { Ancestry, Background, Boon, ClassEntry, ClassOption, CompendiumData, CompendiumHit, Item, OptionGroup, Property, Spell, Subclass } from './compendium';
+import { Compendium, nameKey, STATS } from './compendium';
 import { parseStatblock } from './parser';
 import { levelValue } from './rules';
 import type { ArmorType, NimbleMonster } from './types';
@@ -37,10 +38,30 @@ const choose: FieldSpec = {
 		or: { type: 'strings', description: 'Choices offered instead, that can be taken more than once: "+1 max Combat Dice".' },
 	},
 };
+/** A stat increase, when the words don't say. */
+const increase: FieldSpec = {
+	type: 'object',
+	description: 'A stat increase, when the words don\'t say "+1 STR or DEX": the stats it can go to (STR, DEX, INT, WIL), and how many different ones get +1.',
+	fields: { stats: { type: 'strings', required: true }, count: int({ min: 1, max: 4, description: 'How many different stats get +1 (1 if left out).' }) },
+};
+/** Spell schools and Utility Spells to learn, when the words don't say. */
+const learn: FieldSpec = {
+	type: 'list',
+	description: 'Spell schools or Utility Spells it has you learn, when the words don\'t say: "school" learns a school, "utilities" every Utility Spell of one school, "utility" Utility Spells one by one.',
+	of: {
+		kind: { type: 'string', enum: ['school', 'utilities', 'utility'], required: true },
+		from: { type: 'strings', description: 'Schools by name, or one of "known", "new" (a school not known yet) or "any". Any school if left out.' },
+		count: int({ min: 1, description: 'How many (1 if left out).' }),
+		each: { type: 'boolean', description: 'One for each school the hero knows.' },
+	},
+};
 const levels: FieldSpec = {
 	type: 'list',
-	description: 'What each level brings. A feature called "Subclass" offers the subclass; "Key Stat Increase" with "+1 STR or DEX." raises a stat; "Choose 1 Kindling" picks from the option list of that name.',
-	of: { level: int({ min: 1, max: 20, required: true }), features: { type: 'list', required: true, of: { ...feature, choose } } },
+	description: 'What each level brings. A feature called "Subclass" offers the subclass; "Key Stat Increase" with "+1 STR or DEX." raises a stat; "Choose 1 Kindling" picks from the option list of that name. When the words don\'t say, a feature can: `choose`, `increase`, `learn`, `uses`.',
+	of: {
+		level: int({ min: 1, max: 20, required: true }),
+		features: { type: 'list', required: true, of: { ...feature, choose, increase, learn, uses: text('Uses between Safe Rests, when the words don\'t say "(1/Safe Rest)": a number or a formula, "WIL", "2×WIL".') } },
+	},
 };
 const option = { name: text(undefined, true), text: text(undefined, true), cost: text('"Passive", "1 Action", "Reaction".'), requirement: text('"Req. level 5".') };
 const optionGroups: FieldSpec = {
@@ -78,6 +99,7 @@ const dice: FieldSpec = {
 		clearsOnRest: { type: 'boolean', description: 'Gone after a fight, so empty after a Safe Rest.' },
 		byLevel: { type: 'list', description: 'The die from each level on.', of: { level: int({ min: 1, max: 20, required: true }), die: text('"d8"', true) } },
 		rules: { type: 'strings', description: 'The class features whose words explain these dice.' },
+		maxSteps: { type: 'list', description: 'The most held grows: "add" more from a level, for one subclass only when it names one.', of: { level: int({ min: 1, max: 20, required: true }), add: int({ required: true }), subclass: text() } },
 	},
 };
 const resources: FieldSpec = {
@@ -89,7 +111,19 @@ const resources: FieldSpec = {
 		reset: text('"Safe Rest", "encounter", "Rage ends".'),
 		die: text('"d6", for dice.'),
 		dice,
+		spend: text('The word on a number\'s button: "Heal" (Lay on Hands). "Spend" if left out.'),
 	},
+};
+/** States the class panel switches, and a target it keeps. */
+const states: FieldSpec = {
+	type: 'list',
+	description: 'States the class panel switches on and off: Rage puts Raging on the hero.',
+	of: { name: text('The row\'s name: "Rage".', true), condition: text('The condition it puts on the hero: "Raging".', true), feature: text('The feature whose words explain it.'), level: int({ min: 1, max: 20, description: 'From this level (1 if left out).' }) },
+};
+const target: FieldSpec = {
+	type: 'object',
+	description: 'A target the class panel keeps, one at a time: Hunter\'s Mark\'s Quarry.',
+	fields: { name: text('The row\'s name: "Hunter\'s Mark".', true), feature: text('The feature whose words explain it.'), level: int({ min: 1, max: 20 }), tip: text('"one Quarry at a time, for a day".') },
 };
 const subclassFields = {
 	flavor: text(), complexity: int({ min: 1, max: 4 }), story: { type: 'boolean', description: 'A story subclass.' } as FieldSpec, intro: text(),
@@ -153,11 +187,15 @@ export const KINDS_NIMBLE: KindSpec[] = [
 			saves: { type: 'object', required: true, fields: { adv: { type: 'string', enum: STAT, required: true }, dis: { type: 'string', enum: STAT, required: true } }, description: 'The save with advantage, and the one with disadvantage.' },
 			skillMods: { type: 'map', description: 'Skilled Hero adjustments: { "Might": 2, "Finesse": -2 }.' },
 			armor: text('"Leather, Shields".'), weapons: text('"DEX weapons".'), startingGear: { type: 'strings', description: 'Items by name (the books\' or a pack\'s).' },
-			casting, resources, levels: { ...levels, required: true }, optionGroups, sidebars,
+			casting, resources, states, target, levels: { ...levels, required: true }, optionGroups, sidebars,
 			subclasses: { type: 'list', of: named(subclassFields) },
 			spellList: { type: 'strings', description: 'Spells the class can cast besides its schools\', by name.' },
 			faq: { type: 'list', of: { q: text(undefined, true), a: text(undefined, true) } }, page,
 		}),
+		starter: {
+			tagline: '', keyStats: ['STR'], hitDie: 8, startingHp: 13, saves: { adv: 'STR', dis: 'INT' }, armor: '', weapons: '', startingGear: [],
+			levels: [{ level: 1, features: [{ name: '', text: '' }] }, { level: 3, features: [{ name: 'Subclass', text: 'Choose a subclass.' }] }],
+		},
 		check: (v) => {
 			const stats = (v.keyStats as string[]).map(s => s.toUpperCase());
 			const bad = stats.filter(s => !(STATS as string[]).includes(s));
@@ -167,6 +205,7 @@ export const KINDS_NIMBLE: KindSpec[] = [
 	{
 		kind: 'subclass', label: 'Subclass', description: 'A subclass for a class (the books\' or a pack\'s), by the class\'s name.',
 		fields: named({ class: text('The class it belongs to: "Berserker".', true), ...subclassFields, levels: { ...levels, required: true } }),
+		starter: { class: '', flavor: '', levels: [{ level: 3, features: [{ name: '', text: '' }] }] },
 	},
 	{
 		kind: 'option', label: 'Class option', description: 'One more choice in a class\'s list (a Savage Arsenal ability, a Combat Tactic), by the class\'s and the list\'s names.',
@@ -175,45 +214,60 @@ export const KINDS_NIMBLE: KindSpec[] = [
 			subclass: text('When the list is a subclass\'s.'), groupIntro: text('The list\'s opening words, for a new list.'),
 			text: text(undefined, true), cost: option.cost, requirement: option.requirement, page,
 		}),
+		starter: { class: '', group: '', cost: '', text: '' },
 	},
 	{
 		kind: 'ancestry', label: 'Ancestry', description: 'An ancestry, with its traits.',
 		fields: named({ size: text('"Medium", "Small or Medium".'), rarity: text('common, uncommon, rare.'), flavor: text(), traits: { type: 'list', of: feature }, page }),
+		starter: { size: 'Medium', rarity: 'common', flavor: '', traits: [{ name: '', text: '' }] },
 	},
 	{
 		kind: 'background', label: 'Background', description: 'A background.',
 		fields: named({ text: text(undefined, true), requirement: text('"Req. 0 or negative INT at character creation."'), category: text(), page }),
+		starter: { text: '' },
 	},
 	{
 		kind: 'boon', label: 'Boon', description: 'A boon: an Epic Boon heroes choose at high level, a lodging boon, or another reward.',
-		fields: named({ kind: { type: 'string', enum: ['epic', 'lodging', 'other'], description: 'Epic Boons are offered when a class grants one.' }, text: text(undefined, true), requirement: text(), category: text('"Major Boons".'), roll: text(), page }),
+		// The boon's own kind is `type`: in a pack, `kind` is the entry's ("boon").
+		fields: named({ type: { type: 'string', enum: ['epic', 'lodging', 'other'], description: 'Epic Boons are offered when a class grants one.' }, text: text(undefined, true), requirement: text(), category: text('"Major Boons".'), roll: text(), page }),
+		starter: { type: 'epic', text: '' },
 	},
 	{
 		kind: 'property', label: 'Weapon property', description: 'A weapon property items can name ("Thrown 4" finds "Thrown").',
 		fields: named({ text: text(undefined, true), page }),
+		starter: { text: '' },
 	},
 	{
 		kind: 'language', label: 'Language', description: 'A language heroes can speak.',
 		fields: named({ speakers: text('Who speaks it.') }),
+		starter: { speakers: '' },
 	},
 	{
 		kind: 'rule', label: 'Rule', description: 'A rule: shown in the compendium\'s Rules tab, and its name is underlined in rules text.',
 		fields: named({ text: text(undefined, true), topic: text('"Magic", "Equipment", "Travel". "Rules" if left out.'), page }),
+		starter: { topic: 'Rules', text: '' },
 	},
 	{
 		kind: 'condition', label: 'Condition', description: 'A condition the tracker offers, beside the book\'s.',
 		fields: named({ text: text(undefined, true), minor: { type: 'boolean', description: 'A minor status that does nothing on its own.' }, value: { type: 'boolean', description: 'Takes a number: "Empowered 2".' } }),
+		starter: { text: '' },
 	},
 ];
+
+/** The kinds written as ```nimble-<kind> blocks (spells, items and monsters have their own: ```nimble-spell, ```nimble-item, ```nimble). */
+export const NIMBLE_BLOCKS: BlockSpec = {
+	prefix: 'nimble', folder: 'Nimble',
+	kinds: ['class', 'subclass', 'option', 'ancestry', 'background', 'boon', 'property', 'language', 'rule', 'condition'],
+};
 
 // ----------------------------------------------------------------------------
 // A pack's entries as Nimble content
 
-/** Where an entry came from, on everything a pack adds (the compendium's tag, the card's source line). */
-interface FromPack { pack: string }
+/** Where an entry came from, on everything a pack adds (the compendium's tag, the card's source line), and your note, for homebrew. */
+interface FromPack { pack: string; note?: string }
 
 export interface PackOption { className: string; subclass?: string; group: string; intro?: string; option: ClassOption }
-export interface PackRule { name: string; text: string; topic: string; pack: string; page?: number }
+export interface PackRule { name: string; text: string; topic: string; pack: string; page?: number; note?: string }
 
 /** What the packs a campaign uses add, in order (a later pack wins a name). */
 export interface NimbleContent {
@@ -276,15 +330,16 @@ export function packMonster(v: Record<string, unknown>, pack: string): NimbleMon
 }
 
 /** Pack entries (in order: later packs win a name) as Nimble content. */
-export function contentNimble(entries: (PackEntry & FromPack)[]): NimbleContent {
+export function contentNimble(entries: (PackEntry & { pack: string })[]): NimbleContent {
 	const out = emptyContent();
 	const put = <T extends { name: string }>(list: T[], v: T) => {
 		const i = list.findIndex(x => nameKey(x.name) === nameKey(v.name));
 		if (i >= 0) list[i] = v; else list.push(v);
 	};
 	for (const e of entries) {
-		// Where it's from, for the card and the compendium's tag.
-		const v = { ...e.value, source: e.pack, pack: e.pack } as Record<string, unknown>;
+		// Where it's from, for the card and the compendium's tag; your homebrew names its note.
+		const from: FromPack = { pack: e.pack, ...(e.file ? { note: e.file } : {}) };
+		const v = { ...e.value, source: e.pack, ...from } as Record<string, unknown>;
 		switch (e.kind) {
 			case 'monster': { const m = packMonster(e.value, e.pack); if (m) put(out.monsters, m); break; }
 			case 'spell': put(out.spells, v as unknown as Spell); break;
@@ -294,7 +349,7 @@ export function contentNimble(entries: (PackEntry & FromPack)[]): NimbleContent 
 				// Its own subclasses and options are the pack's too.
 				put(out.classes, {
 					...c, keyStats: c.keyStats?.map(s => s.toUpperCase()),
-					subclasses: (c.subclasses ?? []).map(s => ({ ...s, source: e.pack, pack: e.pack })),
+					subclasses: (c.subclasses ?? []).map(s => ({ ...s, source: e.pack, ...from })),
 				});
 				break;
 			}
@@ -312,11 +367,11 @@ export function contentNimble(entries: (PackEntry & FromPack)[]): NimbleContent 
 			}
 			case 'ancestry': put(out.ancestries, { traits: [], ...v } as unknown as Ancestry); break;
 			case 'background': put(out.backgrounds, v as unknown as Background); break;
-			case 'boon': put(out.boons, v as unknown as Boon); break;
+			case 'boon': { const { type, ...b } = v; put(out.boons, { ...b, ...(type ? { kind: type } : {}) } as unknown as Boon); break; }
 			case 'property': put(out.properties, v as unknown as Property); break;
 			case 'language': put(out.languages, { name: e.name, speakers: str(e.value.speakers), pack: e.pack }); break;
-			case 'rule': put(out.rules, { name: e.name, text: String(e.value.text), topic: str(e.value.topic) ?? 'Rules', pack: e.pack, page: typeof e.value.page === 'number' ? e.value.page : undefined }); break;
-			case 'condition': put(out.conditions, { name: e.name, description: String(e.value.text), ...(e.value.minor ? { minor: true } : {}), ...(e.value.value ? { hasValue: true } : {}), pack: e.pack }); break;
+			case 'rule': put(out.rules, { name: e.name, text: String(e.value.text), topic: str(e.value.topic) ?? 'Rules', ...from, page: typeof e.value.page === 'number' ? e.value.page : undefined }); break;
+			case 'condition': put(out.conditions, { name: e.name, description: String(e.value.text), ...(e.value.minor ? { minor: true } : {}), ...(e.value.value ? { hasValue: true } : {}), ...from }); break;
 		}
 	}
 	return out;
@@ -383,4 +438,39 @@ export function mergeNimbleData(base: CompendiumData, add: NimbleContent): Compe
 		properties: onTop(add.properties, asList<Property>(base.properties)),
 		rules,
 	};
+}
+
+// ----------------------------------------------------------------------------
+// A block's card
+
+/** What a ```nimble-<kind> block's card shows: a compendium hit (made the way the compendium makes it), a rule, or a condition. */
+export type ContentTarget =
+	| { hit: CompendiumHit }
+	| { rule: { name: string; text: string; topic: string; source: string } }
+	| { condition: { name: string; description: string } };
+
+/** A block's entry (only the fields that checked out, maybe) as what its card draws; null when there's nothing to draw. */
+export function contentTarget(kind: string, value: Record<string, unknown>, label: string): ContentTarget | null {
+	const name = str(value.name) ?? `New ${label.toLowerCase()}`;
+	const v: Record<string, unknown> = { ...value, name };
+	const said = str(v.text) ?? '';
+	switch (kind) {
+		case 'rule': return { rule: { name, text: said, topic: str(v.topic) ?? 'Rules', source: HOMEBREW } };
+		case 'property': return { rule: { name, text: said, topic: 'Weapon properties', source: HOMEBREW } };
+		case 'language': return { rule: { name, text: str(v.speakers) ? `**Speakers.** ${str(v.speakers)}` : '', topic: 'Languages', source: HOMEBREW } };
+		case 'condition': return { condition: { name, description: said } };
+	}
+	const content = contentNimble([{ kind, name, value: v, pack: HOMEBREW }]);
+	// A subclass or an option is shown in its class (a stand-in, when it's only named), as the compendium shows it;
+	// before the block names its class, on its own.
+	const owner = str(v.class);
+	if (!owner && kind === 'subclass') return { hit: { kind: 'subclass', name, detail: 'Subclass', text: str(v.flavor), source: HOMEBREW, pack: HOMEBREW, entry: content.subclasses[0]?.subclass ?? v } };
+	if (!owner && kind === 'option') return { hit: { kind: 'feature', name, detail: str(v.group) ?? 'Class option', text: said, group: str(v.group), cost: str(v.cost), source: HOMEBREW, pack: HOMEBREW, entry: content.options[0]?.option ?? v } };
+	const sub = str(v.subclass);
+	const base: CompendiumData = owner && (kind === 'subclass' || kind === 'option') ? { classes: [{ name: owner, ...(sub ? { subclasses: [{ name: sub }] } : {}) }] } : {};
+	const want = kind === 'option' ? 'feature' : kind;
+	const hit = new Compendium(mergeNimbleData(base, content)).all().find(h => h.kind === want && nameKey(h.name) === nameKey(name) && (kind !== 'option' || !!h.group));
+	if (hit) return { hit };
+	// An option that names its class but not yet its list.
+	return kind === 'option' ? { hit: { kind: 'feature', name, detail: owner ?? 'Class option', text: said, className: owner, source: HOMEBREW, pack: HOMEBREW, entry: v } } : null;
 }

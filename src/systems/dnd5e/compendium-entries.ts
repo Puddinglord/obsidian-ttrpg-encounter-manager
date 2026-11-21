@@ -232,9 +232,9 @@ function hitEntry(h: Hit5e): Entry5e {
 			text = firstLine(h.desc, 600);
 			break;
 	}
-	// A content pack's entry says which pack.
-	const from = (Object.values(h).find(v => v && typeof v === 'object' && typeof (v as { source?: unknown }).source === 'string') as { source?: string } | undefined)?.source;
-	if (from) { facets.source = [from]; flags.push('pack'); }
+	// A content pack's entry says which pack; your homebrew (a block in the content folder) says Homebrew.
+	const own = Object.values(h).find(v => v && typeof v === 'object' && typeof (v as { source?: unknown }).source === 'string') as { source?: string; note?: string } | undefined;
+	if (own?.source) { facets.source = [own.source]; flags.push(own.note ? 'homebrew' : 'pack'); }
 	return { id: `${h.kind}:${h.name}`, kind: h.kind, segments: [SEGMENT_OF[h.kind]], name: h.name, detail: h.detail, badge, facets, nums, flags, text, hit: h };
 }
 

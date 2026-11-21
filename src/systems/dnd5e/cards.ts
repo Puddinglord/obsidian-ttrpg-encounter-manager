@@ -138,7 +138,7 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 		case 'class': {
 			const c = hit.cls;
 			const facts = body.createDiv({ cls: 'dnd5e-card-facts' });
-			field(facts, 'Hit Die', `d${c.hitDie}`);
+			field(facts, 'Hit Die', c.hitDie ? `d${c.hitDie}` : undefined);
 			field(facts, 'Primary Ability', c.primary);
 			field(facts, 'Saving Throws', c.saves.join(', '));
 			field(facts, 'Proficiencies', c.proficiencies.join(', '));
@@ -152,7 +152,7 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			for (const l of c.levels) {
 				const tr = table.createEl('tr');
 				tr.createEl('td', { text: String(l.level) });
-				tr.createEl('td', { text: `+${l.pb}` });
+				tr.createEl('td', { text: l.pb !== undefined ? `+${l.pb}` : '—' });
 				tr.createEl('td', { text: l.features.join(', ') || '—' });
 				if (slots) for (let i = 0; i < 9; i++) tr.createEl('td', { text: l.slots?.[i] ? String(l.slots[i]) : '—' });
 			}
@@ -178,7 +178,7 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			const facts = body.createDiv({ cls: 'dnd5e-card-facts' });
 			field(facts, 'Creature Type', s.type);
 			field(facts, 'Size', s.size);
-			field(facts, 'Speed', `${s.speed} feet`);
+			field(facts, 'Speed', s.speed !== undefined ? `${s.speed} feet` : undefined);
 			field(facts, 'Ability Scores', s.abilityBonuses);
 			text(s.desc);
 			for (const t of s.traits) lead(t.name, t.desc);

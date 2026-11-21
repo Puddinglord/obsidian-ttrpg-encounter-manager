@@ -16,7 +16,8 @@ import { createCharacterNote5e } from './new-character';
 import { openNewCharacter5e } from './character-wizard';
 import { dnd5eSlashCommands } from './slash';
 import { dnd5eSpotlight } from './spotlight';
-import { KINDS_5E } from './content';
+import { BLOCKS_5E, KINDS_5E } from './content';
+import { draw5eContent } from './content-blocks';
 import { NPC_FIELDS_5E } from './npc';
 import { drawNpc5e } from './npc-card';
 import { ruleTerms5e, termPage5e } from './rule-terms';
@@ -32,7 +33,7 @@ export const dnd5eSystem: GameSystem = {
 	editions: EDITIONS,
 	attribution: DND5E_ATTRIBUTION,
 	vocabulary: { defense: 'AC' },
-	content: { kinds: KINDS_5E },
+	content: { kinds: KINDS_5E, blocks: BLOCKS_5E, card: draw5eContent },
 	slashCommands: dnd5eSlashCommands,
 	spotlight: dnd5eSpotlight,
 	settingsSections: settingsSections5e,

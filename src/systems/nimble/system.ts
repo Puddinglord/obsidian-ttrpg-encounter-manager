@@ -14,7 +14,8 @@ import { nimbleSlashCommands } from './slash';
 import { NIMBLE_CONDITIONS } from './types';
 import { readCharacter } from './character-def';
 import { packContent, sheetCompendium } from './compendium-data';
-import { KINDS_NIMBLE } from './content';
+import { KINDS_NIMBLE, NIMBLE_BLOCKS } from './content';
+import { drawNimbleContent } from './content-blocks';
 import { registerNimble } from './register';
 import { NIMBLE_SETTINGS } from './settings';
 import { nimble } from './runtime';
@@ -93,7 +94,7 @@ export const nimbleSystem: GameSystem = {
 	slashCommands: nimbleSlashCommands,
 	spotlight: nimbleSpotlight,
 	vocabulary: { defense: 'DEF' },
-	content: { kinds: KINDS_NIMBLE },
+	content: { kinds: KINDS_NIMBLE, blocks: NIMBLE_BLOCKS, card: drawNimbleContent },
 	noteKinds: {
 		// The book's numbers on an NPC: level, the armor letter, HP in a heart, its monster block, Add to fight.
 		npc: { fields: NPC_FIELDS_NIMBLE, card: (el, ctx) => drawNpcNimble(nimble().plugin, el, ctx) },

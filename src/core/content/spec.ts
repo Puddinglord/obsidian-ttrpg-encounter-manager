@@ -24,9 +24,15 @@ export interface KindSpec {
 	fields: Record<string, FieldSpec>;
 	/** Check the entry as a whole after its fields (a cross-field rule); reasons, or none. */
 	check?: (value: Record<string, unknown>) => string[];
+	/**
+	 * What a new one starts as (New on a compendium tab writes it as a block, its name added): the fields a
+	 * person fills in, with sensible empty values. Left out, it's made from the required fields.
+	 */
+	starter?: Record<string, unknown>;
 }
 
-export interface Checked { value?: Record<string, unknown>; errors: string[]; warnings: string[] }
+/** `value` when the entry can be used; `partial` always: every field that checked out (a card can show those while the rest is fixed). */
+export interface Checked { value?: Record<string, unknown>; partial: Record<string, unknown>; errors: string[]; warnings: string[] }
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const quote = (k: string) => `"${k}"`;
@@ -98,7 +104,31 @@ export function checkEntry(kind: KindSpec, raw: Record<string, unknown>): Checke
 	const warnings: string[] = [];
 	const value = checkFields(kind.fields, raw, '', errors, warnings);
 	if (!errors.length && kind.check) errors.push(...kind.check(value));
-	return errors.length ? { errors, warnings } : { value, errors, warnings };
+	return errors.length ? { partial: value, errors, warnings } : { value, partial: value, errors, warnings };
+}
+
+/** A value of a field's type that a person fills in: '' for text, the least a number may be, empty lists. */
+function emptyOf(spec: FieldSpec): unknown {
+	switch (spec.type) {
+		case 'string': return spec.enum?.[0] ?? '';
+		case 'number': return spec.min ?? 0;
+		case 'boolean': return false;
+		case 'strings': case 'numbers': return [];
+		case 'map': return {};
+		case 'object': return requiredOf(spec.fields);
+		case 'list': return [requiredOf(spec.of)];
+	}
+}
+
+function requiredOf(fields: Record<string, FieldSpec>): Record<string, unknown> {
+	return Object.fromEntries(Object.entries(fields).filter(([, f]) => f.required).map(([k, f]) => [k, emptyOf(f)]));
+}
+
+/** A new entry of a kind: its name, then its starter (or its required fields, empty). */
+export function starterEntry(kind: KindSpec, name: string): Record<string, unknown> {
+	const rest: Record<string, unknown> = { ...(kind.starter ?? requiredOf(kind.fields)) };
+	delete rest.name;
+	return { name, ...rest };
 }
 
 // ----------------------------------------------------------------------------

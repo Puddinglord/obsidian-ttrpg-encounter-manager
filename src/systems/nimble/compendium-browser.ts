@@ -20,7 +20,7 @@ import { bundledCompendium, contentVersion } from './compendium-data';
 import { artKey, buildEntries, Entry, entryPills, entrySnippet, Segment, SEGMENTS, bookOf, baseCreatureName } from './compendium-entries';
 import { renderArtSlot, renderBadgeArt } from './compendium-art';
 import { NIMBLE_QUERY, valueMatches } from './compendium-query';
-import { compendiumGlyph, CONDITION_GLYPH, pluginCardOptions, renderCard, renderRulesText, renderSource } from './compendium-card';
+import { compendiumGlyph, CONDITION_GLYPH, pluginCardOptions, renderCard, renderRuleCard } from './compendium-card';
 import { refForHit } from './compendium-ref';
 import { monsterRole } from './rules';
 import {
@@ -29,6 +29,7 @@ import {
 import type { StatblockAction } from './render';
 import { nimble } from './runtime';
 import { pill } from '../../core/pill';
+import { HOMEBREW } from '../../core/content/blocks';
 import { damageIcon, evIcon } from '../../core/icons';
 
 // ----------------------------------------------------------------------------
@@ -115,13 +116,7 @@ export function renderEntryDetail(el: HTMLElement, e: Entry, ctx: DetailContext)
 			});
 		}
 	} else if (e.rule) {
-		card.addClass('nimble-cmp-card', 'kind-rule');
-		const head = card.createDiv({ cls: 'nimble-cmp-head' });
-		kicker(head, 'scales', e.rule.topic);
-		head.createDiv({ cls: 'nimble-cmp-name', text: e.name });
-		const body = card.createDiv({ cls: 'nimble-cmp-body' });
-		renderRulesText(body, e.rule.text, pluginCardOptions(plugin, e.name));
-		renderSource(body, e.rule);
+		renderRuleCard(card, e.rule, pluginCardOptions(plugin, e.name));
 	} else if (e.hit || e.condition) {
 		const open = ctx.open;
 		renderCard(card, (e.hit ?? e.condition)!, pluginCardOptions(plugin, e.name, open ? (hit) => {
@@ -235,7 +230,8 @@ export function nimbleSource(plugin: EmberVaultPlugin): CompendiumSource<Entry, 
 		maxPills: e => (e.monster ? 4 : 5),
 		snippet: (e, lore) => entrySnippet(e, lore),
 		tags(e, tags) {
-			// A content pack's entry names its pack, as 5e's do.
+			// Yours (a block in the content folder, a ```nimble-spell) says Homebrew; a content pack's entry names its pack, as 5e's do.
+			if (e.hit?.note || e.rule?.note) { tags.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-homebrew', text: HOMEBREW }); return; }
 			const pack = e.monster?.pack ?? e.hit?.pack ?? e.rule?.pack;
 			if (!e.monster) { if (pack) tags.createSpan({ cls: 'nimble-cmpx-pill-tag bestiary-tag is-source is-pack', text: pack }); return; }
 			const books = [...new Set((e.printings ?? [e.monster]).map(x => bookOf(x).short))];

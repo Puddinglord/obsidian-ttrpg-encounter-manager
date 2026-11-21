@@ -16,8 +16,22 @@ import { openEntry } from './compendium-modal';
 import { nimble } from './runtime';
 import { evIcon } from '../../core/icons';
 import { applyLook } from '../../core/look';
+import { newButtonLabel, newContent } from '../../core/content/new-entry';
 
 export const COMPENDIUM_VIEW_TYPE = 'nimble-bestiary';
+
+/** What New makes on each tab: monsters, spells and items in their builders, the rest as a note in the content folder. */
+const NEW_KINDS: Record<Segment, string[]> = {
+	all: ['monster', 'spell', 'item', 'class', 'subclass', 'option', 'ancestry', 'background', 'boon', 'rule', 'condition', 'property', 'language'],
+	adversaries: ['monster'], npcs: [], companions: ['monster'], spells: ['spell'], items: ['item'],
+	features: ['option', 'boon'], classes: ['class', 'subclass'], origins: ['ancestry', 'background'],
+	rules: ['rule', 'condition', 'property', 'language'],
+};
+
+/** The kinds New offers on a tab; players make heroes' things, not monsters. */
+export function newKindsNimble(seg: Segment, lore: boolean): string[] {
+	return NEW_KINDS[seg].filter(k => !(lore && k === 'monster'));
+}
 
 export class CompendiumView extends ItemView {
 	private browser: CompendiumBrowser | null = null;
@@ -141,10 +155,8 @@ export class CompendiumView extends ItemView {
 				if (entryReference(e)) return { icon: evIcon('copy'), label: `Copy a reference to ${e.name}`, run: () => copyReference(e) };
 				return undefined;
 			},
-			onNew: (seg) => {
-				const kind = seg === 'spells' ? 'spell' : seg === 'items' ? 'item' : lore ? 'spell' : 'monster';
-				openBuilder(plugin, { kind });
-			},
+			onNew: (seg, ev) => newContent(plugin, 'nimble', newKindsNimble(seg, lore), ev),
+			newLabel: (seg) => newButtonLabel(plugin, 'nimble', newKindsNimble(seg, lore)),
 			detail: {
 				monsterActions: (e) => [
 					{ label: 'Copy reference', icon: 'copy', title: 'Copy `nimble:Name` to paste into any note', onClick: () => copyReference(e) },
@@ -175,6 +187,9 @@ export class CompendiumView extends ItemView {
 export function detailActions(plugin: EmberVaultPlugin, e: Entry): { label: string; icon: string; run: () => void; cta?: boolean }[] {
 	const out: { label: string; icon: string; run: () => void; cta?: boolean }[] = [];
 	if (e.npc) out.push({ label: 'Open note', icon: 'file-symlink', cta: true, run: () => void plugin.app.workspace.openLinkText(e.npc!.path, '', false) });
+	// Yours: the note it's written in, to change it.
+	const note = e.hit?.note ?? e.rule?.note;
+	if (note) out.push({ label: 'Open note', icon: 'file-symlink', run: () => void plugin.app.workspace.openLinkText(note, '', 'tab') });
 	if (entryReference(e)) {
 		out.push({ label: 'Copy reference', icon: 'copy', run: () => copyReference(e) });
 		out.push({ label: 'Insert in note', icon: 'at-sign', run: () => insertReference(plugin, e) });

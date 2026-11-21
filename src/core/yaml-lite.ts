@@ -1,26 +1,38 @@
-// Enough YAML to read a stat block written for another plugin, without a
-// dependency (Obsidian's parseYaml isn't available in pure modules). Pure.
+// Enough YAML for what people type by hand and what other plugins write,
+// without a dependency (Obsidian's parseYaml isn't available in pure modules):
+// a 5e stat block written for Fantasy Statblocks, and our own content blocks
+// (```5e-class, ```nimble-ancestry…, core/content/blocks.ts). Pure.
 //
 // Reads: block mappings and sequences (including "- key: value" items and
 // sequences at their key's indent), plain, 'single' and "double" quoted
 // scalars, | and > block scalars, [flow, lists] and {flow: maps}, comments,
 // and numbers, booleans and null. Plain scalars may run over several lines.
-// It never throws: what it can't make sense of, it skips. Nothing here is
-// specific to 5e; it could move to core when another system needs it.
+// It never throws: what it can't make sense of, it skips, and `readYaml` says
+// which lines those were. `toYaml` writes plain values back in the same subset.
 
-interface Line { indent: number; text: string }
+/** `n`: the line's number in the source (1-based). */
+interface Line { indent: number; text: string; n: number }
 
 export function parseYamlLite(source: string): unknown {
+	return readYaml(source).value;
+}
+
+/** The value, and the lines (1-based) it skipped because they didn't fit where they stood. */
+export function readYaml(source: string): { value: unknown; skipped: number[] } {
 	const lines: Line[] = [];
 	let started = false;
+	let n = 0;
 	for (const raw of source.replace(/^\uFEFF/, '').split(/\r?\n/)) {
+		n++;
 		const t = raw.replace(/\t/g, '  ');
 		// "---" opens the document; a second one (or "...") ends it.
 		if (/^(---|\.\.\.)\s*$/.test(t)) { if (started || lines.some(l => l.text.trim())) break; started = true; continue; }
 		const text = t.replace(/^ +/, '');
-		lines.push({ indent: t.length - text.length, text: text.replace(/\s+$/, '') });
+		lines.push({ indent: t.length - text.length, text: text.replace(/\s+$/, ''), n });
 	}
-	return new Reader(lines).document();
+	const reader = new Reader(lines);
+	const value = reader.document();
+	return { value, skipped: lines.filter((l, i) => isContent(l) && !reader.used.has(i)).map(l => l.n) };
 }
 
 const isContent = (l: Line | undefined) => !!l && l.text !== '' && !l.text.startsWith('#');
@@ -161,6 +173,8 @@ function parseFlow(s: string): unknown {
 
 class Reader {
 	private i = 0;
+	/** Lines read into the value (by index), so the rest can be reported as skipped. */
+	readonly used = new Set<number>();
 	constructor(private readonly lines: Line[]) {}
 
 	document(): unknown {
@@ -181,6 +195,7 @@ class Reader {
 		const l = this.lines[this.i];
 		if (isSeqItem(l.text)) return this.seq(l.indent);
 		if (keyOf(l.text)) return this.map(l.indent);
+		this.used.add(this.i);
 		this.i++;
 		return this.scalar(l.text, Math.max(0, indent - 1));
 	}
@@ -195,6 +210,7 @@ class Reader {
 			this.i = j;
 			const kv = l.indent === indent ? keyOf(l.text) : null;
 			if (!kv) { if (l.indent === indent) break; this.i++; continue; }
+			this.used.add(this.i);
 			this.i++;
 			out[kv.key] = this.value(kv.rest, indent);
 		}
@@ -209,6 +225,7 @@ class Reader {
 			const l = this.lines[j];
 			if (l.indent !== indent || !isSeqItem(l.text)) break;
 			this.i = j;
+			this.used.add(j);
 			const after = l.text.slice(1);
 			const rest = after.replace(/^\s+/, '');
 			if (!stripComment(rest)) {
@@ -221,7 +238,7 @@ class Reader {
 			const inner = indent + 1 + (after.length - rest.length);
 			if (isSeqItem(rest) || keyOf(rest)) {
 				// "- key: value" or "- - x": read it as a block that starts where the text does.
-				this.lines[j] = { indent: inner, text: rest };
+				this.lines[j] = { indent: inner, text: rest, n: l.n };
 				out.push(this.node(inner));
 			} else {
 				this.i++;
@@ -248,6 +265,7 @@ class Reader {
 				const k = this.next(this.i);
 				if (k < 0 || this.lines[k].indent <= indent && !/^[\]}]/.test(this.lines[k].text)) break;
 				text += ` ${stripComment(this.lines[k].text)}`;
+				this.used.add(k);
 				this.i = k + 1;
 			}
 			return parseFlow(text);
@@ -256,6 +274,7 @@ class Reader {
 			const parts = [r];
 			while (!readQuoted(parts.join('\n'), 0) && this.i < this.lines.length && (this.lines[this.i].indent > indent || !this.lines[this.i].text)) {
 				parts.push(this.lines[this.i].text);
+				this.used.add(this.i);
 				this.i++;
 			}
 			// A quoted string over several lines folds as YAML does; one that never closes is taken as written.
@@ -276,6 +295,7 @@ class Reader {
 			// Blank lines in between are paragraph breaks.
 			for (let b = this.i; b < k; b++) if (!this.lines[b].text) parts.push('');
 			parts.push(stripComment(this.lines[k].text));
+			this.used.add(k);
 			this.i = k + 1;
 		}
 		return parts.length === 1 ? resolve(parts[0]) : fold(parts);
@@ -294,6 +314,7 @@ class Reader {
 				if (blockIndent < 0) { if (l.indent <= indent) break; blockIndent = l.indent; }
 				if (l.indent < blockIndent) break;
 				body.push(' '.repeat(l.indent - blockIndent) + l.text);
+				this.used.add(this.i);
 			} else body.push('');
 			this.i++;
 		}
@@ -330,4 +351,81 @@ function balanced(s: string): boolean {
 		else if (ch === ']' || ch === '}') depth--;
 	}
 	return depth <= 0;
+}
+
+// ----------------------------------------------------------------------------
+// Writing: plain values (what JSON holds) as YAML this reader reads back the same
+
+/** Can `s` be written bare, and read back as the same text? */
+function plainSafe(s: string): boolean {
+	if (!s || s !== s.trim() || /[\n\r\t]/.test(s)) return false;
+	if (/^[-?:,[\]{}#&*!|>'"%@`]/.test(s) || /:(\s|$)|\s#/.test(s)) return false;
+	return resolve(s) === s;
+}
+
+/** A key as written: bare when it can be, else quoted. */
+function keyText(k: string): string {
+	return /^[A-Za-z_][\w -]*$/.test(k) && k === k.trim() ? k : JSON.stringify(k);
+}
+
+/** A string on its key's line, or a block below it (`|` for several lines). */
+function stringText(s: string, indent: number): string {
+	if (plainSafe(s)) return s;
+	const lines = s.replace(/\n+$/, '').split('\n');
+	// A block keeps several lines as written; one that starts with a space, or holds tabs or trailing spaces, can't.
+	if (lines.length > 1 && !/^ /.test(lines[0]) && !/[\t\r]/.test(s) && !lines.some(l => / $/.test(l))) {
+		const trailing = /\n*$/.exec(s)?.[0].length ?? 0;
+		const chomp = trailing === 0 ? '-' : trailing === 1 ? '' : '+';
+		const pad = ' '.repeat(indent + 2);
+		return `|${chomp}\n${lines.map(l => (l ? pad + l : '')).join('\n')}${'\n'.repeat(Math.max(0, trailing - 1))}`;
+	}
+	return JSON.stringify(s);
+}
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+/** Fits in a flow list: [Strength, Constitution]. */
+const flowSafe = (v: unknown) => typeof v === 'number' || typeof v === 'boolean' || (typeof v === 'string' && plainSafe(v) && !/[,[\]{}]/.test(v));
+
+/** A value after "key:" (or "- "): inline when it's short, else the lines below it. `indent`: its key's. */
+function valueText(v: unknown, indent: number): string {
+	if (v === null || v === undefined) return 'null';
+	if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+	if (typeof v === 'string') return stringText(v, indent);
+	if (Array.isArray(v)) {
+		if (!v.length) return '[]';
+		const flow = `[${v.map(String).join(', ')}]`;
+		if (v.every(flowSafe) && flow.length + indent <= 80) return flow;
+		return `\n${seqText(v, indent + 2)}`;
+	}
+	if (isPlainObject(v)) {
+		if (!Object.values(v).some(x => x !== undefined)) return '{}';
+		return `\n${mapText(v, indent + 2)}`;
+	}
+	return 'null';
+}
+
+function mapText(o: Record<string, unknown>, indent: number): string {
+	const pad = ' '.repeat(indent);
+	return Object.entries(o).filter(([, v]) => v !== undefined).map(([k, v]) => {
+		const val = valueText(v, indent);
+		return `${pad}${keyText(k)}:${val.startsWith('\n') ? '' : ' '}${val}`;
+	}).join('\n');
+}
+
+function seqText(list: unknown[], indent: number): string {
+	const pad = ' '.repeat(indent);
+	return list.map((x) => {
+		// "- name: …", the rest of the map under it two spaces in.
+		if (isPlainObject(x) && Object.values(x).some(y => y !== undefined)) return `${pad}- ${mapText(x, indent + 2).slice(indent + 2)}`;
+		if (Array.isArray(x) && x.length) return `${pad}-\n${seqText(x, indent + 2)}`;
+		const val = valueText(x, indent);
+		return `${pad}-${val.startsWith('\n') ? '' : ' '}${val}`;
+	}).join('\n');
+}
+
+/** A plain value (an object, usually) as YAML that `parseYamlLite` reads back the same. Undefined fields are left out. */
+export function toYaml(value: unknown): string {
+	if (isPlainObject(value)) return mapText(value, 0);
+	if (Array.isArray(value)) return value.length ? seqText(value, 0) : '[]';
+	return valueText(value, 0);
 }

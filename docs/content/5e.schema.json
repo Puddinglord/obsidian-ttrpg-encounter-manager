@@ -713,7 +713,111 @@
 								"type": [
 									"string",
 									"number"
-								]
+								],
+								"description": "The equipment as the book writes it."
+							},
+							"startingEquipment": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"label": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The choice as the book writes it: \"(A) Chain Mail and a Shield; or (B) 75 GP\"."
+										},
+										"options": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"label": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "\"A\", \"B\"."
+													},
+													"items": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"description": "Items by name; a number first for several: \"2 Javelin\"."
+													},
+													"picks": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"label": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "\"Musical Instrument\"."
+																},
+																"count": {
+																	"type": "integer",
+																	"minimum": 1
+																},
+																"from": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	}
+																}
+															},
+															"required": [
+																"from"
+															]
+														}
+													},
+													"gold": {
+														"type": "number",
+														"minimum": 0
+													}
+												},
+												"required": [
+													"label"
+												]
+											}
+										}
+									},
+									"required": [
+										"options"
+									]
+								},
+								"description": "What a new character starts with: each entry is one choice (\"A or B\"); an option gives items (\"2 Javelin\" for two), picks from a list, and gold."
+							},
+							"tools": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Tools it gives."
+							},
+							"toolChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "Tools to choose: how many, from which."
 							}
 						},
 						"required": [
@@ -902,6 +1006,160 @@
 								],
 								"description": "The class whose spell list it casts from, when it isn't its own: \"Paladin\"."
 							},
+							"resources": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"uses": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "How many: a number, or a formula of ability modifiers, PB and level: \"CHA\", \"Charisma modifier\", \"PB\", \"2 + WIS\"."
+										},
+										"min": {
+											"type": "integer",
+											"minimum": 0,
+											"description": "At least this many (1 for \"minimum of once\")."
+										},
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "The class level it starts at (1 if left out)."
+										},
+										"reset": {
+											"type": [
+												"string",
+												"number"
+											],
+											"enum": [
+												"short",
+												"long"
+											],
+											"description": "What brings them all back: a short or a long rest (long if left out)."
+										},
+										"shortFrom": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "From this level a short rest brings them all back."
+										},
+										"shortOne": {
+											"type": "boolean",
+											"description": "A short rest brings back one."
+										}
+									},
+									"required": [
+										"name",
+										"uses"
+									]
+								},
+								"description": "Limited-use features the level table doesn't count, with pips on the sheet."
+							},
+							"startingEquipment": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"label": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The choice as the book writes it: \"(A) Chain Mail and a Shield; or (B) 75 GP\"."
+										},
+										"options": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"label": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "\"A\", \"B\"."
+													},
+													"items": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"description": "Items by name; a number first for several: \"2 Javelin\"."
+													},
+													"picks": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"label": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "\"Musical Instrument\"."
+																},
+																"count": {
+																	"type": "integer",
+																	"minimum": 1
+																},
+																"from": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	}
+																}
+															},
+															"required": [
+																"from"
+															]
+														}
+													},
+													"gold": {
+														"type": "number",
+														"minimum": 0
+													}
+												},
+												"required": [
+													"label"
+												]
+											}
+										}
+									},
+									"required": [
+										"options"
+									]
+								},
+								"description": "What a new character starts with: each entry is one choice (\"A or B\"); an option gives items (\"2 Javelin\" for two), picks from a list, and gold."
+							},
+							"toolChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "Tools to choose: how many, from which."
+							},
 							"features": {
 								"type": "array",
 								"items": {
@@ -924,6 +1182,13 @@
 												"number"
 											],
 											"description": "The text. Markdown is fine."
+										},
+										"group": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
 										}
 									},
 									"required": [
@@ -1025,6 +1290,13 @@
 															"number"
 														],
 														"description": "The text. Markdown is fine."
+													},
+													"group": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
 													}
 												},
 												"required": [
@@ -1033,6 +1305,64 @@
 													"desc"
 												]
 											}
+										},
+										"resources": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"uses": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "How many: a number, or a formula of ability modifiers, PB and level: \"CHA\", \"Charisma modifier\", \"PB\", \"2 + WIS\"."
+													},
+													"min": {
+														"type": "integer",
+														"minimum": 0,
+														"description": "At least this many (1 for \"minimum of once\")."
+													},
+													"level": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20,
+														"description": "The class level it starts at (1 if left out)."
+													},
+													"reset": {
+														"type": [
+															"string",
+															"number"
+														],
+														"enum": [
+															"short",
+															"long"
+														],
+														"description": "What brings them all back: a short or a long rest (long if left out)."
+													},
+													"shortFrom": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20,
+														"description": "From this level a short rest brings them all back."
+													},
+													"shortOne": {
+														"type": "boolean",
+														"description": "A short rest brings back one."
+													}
+												},
+												"required": [
+													"name",
+													"uses"
+												]
+											},
+											"description": "Limited-use features the level table doesn't count, with pips on the sheet."
 										}
 									},
 									"required": [
@@ -1106,6 +1436,13 @@
 												"number"
 											],
 											"description": "The text. Markdown is fine."
+										},
+										"group": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
 										}
 									},
 									"required": [
@@ -1114,6 +1451,64 @@
 										"desc"
 									]
 								}
+							},
+							"resources": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"uses": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "How many: a number, or a formula of ability modifiers, PB and level: \"CHA\", \"Charisma modifier\", \"PB\", \"2 + WIS\"."
+										},
+										"min": {
+											"type": "integer",
+											"minimum": 0,
+											"description": "At least this many (1 for \"minimum of once\")."
+										},
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "The class level it starts at (1 if left out)."
+										},
+										"reset": {
+											"type": [
+												"string",
+												"number"
+											],
+											"enum": [
+												"short",
+												"long"
+											],
+											"description": "What brings them all back: a short or a long rest (long if left out)."
+										},
+										"shortFrom": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "From this level a short rest brings them all back."
+										},
+										"shortOne": {
+											"type": "boolean",
+											"description": "A short rest brings back one."
+										}
+									},
+									"required": [
+										"name",
+										"uses"
+									]
+								},
+								"description": "Limited-use features the level table doesn't count, with pips on the sheet."
 							}
 						},
 						"required": [
