@@ -77,8 +77,8 @@ export const dnd5eSystem: GameSystem = {
 	register(plugin) {
 		registerDnd5e(plugin);
 	},
-	encounterBlock(_plugin, def, el, ctx) {
-		dnd5e().encounterBlock(def, el, ctx);
+	encounterBlock(_plugin, def, el, ctx, source) {
+		dnd5e().encounterBlock(def, el, ctx, source);
 	},
 	async openTracker() {
 		await dnd5e().openTracker();

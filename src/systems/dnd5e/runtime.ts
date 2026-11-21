@@ -246,8 +246,8 @@ export class Dnd5eRuntime {
 		if (leaf.view instanceof Dnd5eCompendiumView) leaf.view.show({ edition: this.edition(o.path ?? this.plugin.campaigns.active?.home.path), tab: o.tab, query: o.query });
 	}
 
-	encounterBlock(def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext): void {
-		ctx.addChild(new Dnd5eEncounterBlock(this, el, def, ctx));
+	encounterBlock(def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void {
+		ctx.addChild(new Dnd5eEncounterBlock(this, el, def, ctx, source));
 	}
 
 	/** Draw a stat block, rolling dice through the plugin (3D dice, roll log). */

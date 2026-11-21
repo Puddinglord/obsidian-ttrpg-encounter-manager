@@ -11,7 +11,7 @@
 //   node e2e/run.mjs "entities 5e"
 //
 // A test whose name starts "entities 5e: KNOWN:" records a gap that needs a decision; it logs why and
-// returns without failing.
+// returns without failing. (None are open now.)
 
 import { readFileSync } from 'node:fs';
 
@@ -1487,8 +1487,9 @@ export function register(test, h) {
 			await o.page.keyboard.press('Escape');
 			const enc = view(o, '.dnd5e-encounter');
 			await enc.waitFor({ timeout: 5000 });
-			assert.equal(await enc.locator('.nimble-difficulty, .dnd5e-encounter-xp, .dnd5e-encounter-stats, button').count(), 0, 'no rating, numbers or Run for a player');
-			assert.match(await enc.innerText(), /Ambush on the stair[\s\S]*3×[\s\S]*Goblin Warrior/);
+			assert.equal(await enc.locator('.nimble-difficulty, .dnd5e-encounter-xp, .dnd5e-encounter-stats').count(), 0, 'no rating or numbers for a player');
+			assert.equal(await enc.locator('button', { hasText: /^(Run|Add to fight)$/ }).count(), 0, 'no Run for a player');
+			assert.match(await enc.innerText(), /Ambush on the stair[\s\S]*Won[\s\S]*3×[\s\S]*Goblin Warrior/i);
 
 			// The compendium's monsters are lore too, and the tracker isn't offered.
 			// (A player's tab says Creatures.)
@@ -1776,17 +1777,58 @@ export function register(test, h) {
 		});
 	});
 
-	test('entities 5e: KNOWN: a player\'s battle note in a 5e campaign drops its outcome, where and loot', async (o) => {
-		const C = 'Campaigns/E5 Known Battle';
-		await scenario(o, 'known-battle', [C], async () => {
-			await campaign5e(o, 'E5 Known Battle', { edition: '2024', role: 'player', level: 2, starter: false });
-			await write(o, `${C}/Session 1.md`, '```nimble-encounter\nname: Ambush at the ford\noutcome: won\nwhere: [[The Ford]]\nloot: 40 gp, a silver key\nmonsters:\n- 4 Goblin Warrior\nnotes: The shaman fled north.\n```\n');
-			await o.openFile(`${C}/Session 1.md`, 'preview');
-			const enc = view(o, '.dnd5e-encounter');
+	test('entities 5e: a player\'s battle note — how it went, who you fought (as lore), where, loot, notes, and Edit, written back to the block', async (o) => {
+		const C = 'Campaigns/E5 Battle Notes';
+		const note = `${C}/Session 1.md`;
+		await scenario(o, 'battle-notes', [C], async () => {
+			await campaign5e(o, 'E5 Battle Notes', { edition: '2024', role: 'player', level: 2, starter: false });
+			await write(o, `${C}/The Ford.md`, '---\nnimble: location\n---\n');
+			await write(o, note, '```nimble-encounter\nname: Ambush at the ford\noutcome: won\nwhere: [[The Ford]]\nloot: 40 gp, a silver key\nmonsters:\n- 4 Goblin Warrior\n- Mystery Hag\nnotes: The shaman fled north.\n```\n');
+			await o.openFile(note, 'preview');
+			const enc = view(o, '.dnd5e-encounter.dnd5e-battle-notes');
 			await enc.waitFor({ timeout: 5000 });
-			await shot(o, 'KNOWN-battle-note', enc);
-			const text = await enc.innerText();
-			console.log(`      KNOWN: the 5e block shows "${text.replace(/\s+/g, ' ').trim()}". docs/players.md describes battle notes with an outcome pill (Won, Fled…), where, loot and an Edit button; Nimble's block has them, 5e's draws only the name, the foes and the notes. Needs the battle-note view ported to 5e (or shared in core).`);
+			// 5e's page with what a player keeps: no rating, numbers, Run or Add to fight.
+			assert.equal(await enc.locator('.nimble-difficulty, .dnd5e-encounter-xp, .dnd5e-encounter-stats, .dnd5e-encounter-total').count(), 0);
+			assert.deepEqual(await enc.locator('button').allInnerTexts().then(t => t.map(x => x.trim().toLowerCase())), ['won', 'edit']);
+			assert.equal(await enc.evaluate(el => el.classList.contains('ev-sys-dnd5e')), true);
+			// Who: the goblin warriors as a lore reference (no CR), the hag as written.
+			const rows = enc.locator('.dnd5e-encounter-row');
+			assert.equal(await rows.count(), 2);
+			assert.match(await rows.nth(0).innerText(), /4×\s*Goblin Warrior/);
+			assert.equal(await rows.nth(0).locator('.dnd5e-ref.nimble-inline-found').count(), 1);
+			assert.equal(await rows.nth(0).locator('.nimble-inline-level').count(), 0, 'no CR for a player');
+			assert.match(await rows.nth(1).locator('.battle-foe-name').innerText(), /^Mystery Hag$/);
+			// Where (a link to the place), loot, notes.
+			assert.equal(await enc.locator(`.battle-fact a.nimble-wikilink[href="${C}/The Ford.md"]`).count(), 1);
+			assert.match(await enc.locator('.battle-facts').innerText(), /The Ford[\s\S]*40 gp, a silver key/);
+			assert.match(await enc.locator('.dnd5e-encounter-notes').innerText(), /The shaman fled north\./);
+			await shot(o, 'battle-notes', enc);
+			// Its pills (how it went, the place, Edit) sit on their capitals.
+			assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${MAIN} ${R} .dnd5e-battle-notes`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+
+			// How it went, from the pill: Fled.
+			await enc.locator('button.battle-outcome').click();
+			await clickMenu(o, 'Fled');
+			await o.waitFor(async () => /\noutcome: fled\n/.test(await read(o, note)), { what: 'outcome: fled' });
+			await o.waitFor(async () => /fled/i.test(await enc.locator('button.battle-outcome').innerText().catch(() => '')), { what: 'the pill redrawn' });
+
+			// Edit: the dialog in 5e's look. Two hired thugs more (as typed), when, saved into the block; the rest kept.
+			await enc.locator('button', { hasText: 'Edit' }).click();
+			const m = o.page.locator('.modal.nimble-battle-modal');
+			await m.waitFor();
+			assert.equal(await m.evaluate(el => el.classList.contains('ev-sys-dnd5e')), true);
+			const add = m.locator('.battle-modal-add');
+			await add.fill('Hired Thug');
+			await add.press('Enter');
+			await m.locator('.battle-modal-foe', { hasText: 'Hired Thug' }).locator('button[aria-label="One more Hired Thug"]').click();
+			await m.locator('.setting-item', { hasText: 'When' }).locator('input').fill('Day 3');
+			await m.locator('.battle-modal-save').click();
+			await m.waitFor({ state: 'detached' });
+			await o.waitFor(async () => /- 2 Hired Thug/.test(await read(o, note)), { what: 'the thugs written' });
+			const text = await read(o, note);
+			assert.match(text, /^```nimble-encounter\nname: Ambush at the ford\n/);
+			for (const line of ['outcome: fled', 'where: [[The Ford]]', 'loot: 40 gp, a silver key', 'when: Day 3', '- 4 Goblin Warrior', '- 1 Mystery Hag', 'notes: The shaman fled north.']) assert.ok(text.includes(line), line);
+			await o.waitFor(async () => (await view(o, '.dnd5e-battle-notes .dnd5e-encounter-row').count()) === 3, { what: 'three rows of foes' });
 		});
 	});
 }

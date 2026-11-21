@@ -64,7 +64,7 @@ notes: The shaman fled north.
 - **Names from the bestiary** open a lore card. Names that aren't in it, like "Mystery Hag", are kept as you typed them.
 - **Edit** opens the editor: add foes by name (the bestiary is suggested as you type), change counts, and fill in where, when, loot and notes.
 
-It's the same block the GM uses, so a note you write as a player still makes sense if you later switch that campaign to GM view.
+It's the same block the GM uses, so a note you write as a player still makes sense if you later switch that campaign to GM view. In a [5e campaign](5e.md#encounters) battle notes look like 5e's encounter blocks and do all of the above, with the 5e monsters you can know about as lore cards.
 
 ## Lore cards
 

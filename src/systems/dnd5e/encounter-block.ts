@@ -1,6 +1,6 @@
 // A ```nimble-encounter block in a 5e campaign: its monsters with CR and XP,
 // the difficulty against the party (the edition's rules), and Run / Add to
-// fight. Players see who was fought, not the numbers.
+// fight. Players see battle notes: who was fought and how it went, not the numbers.
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, setIcon } from 'obsidian';
 import { pill } from '../../core/pill';
@@ -10,9 +10,19 @@ import type { Dnd5eRuntime } from './runtime';
 import { rateEncounter5e, xpOf } from './rules';
 import { applyLook } from '../../core/look';
 import { evIcon } from '../../core/icons';
+import { appendRichText } from '../../core/markdown';
+import { wireWikiLinks } from '../../core/wiki-links';
+import { BattleEditOptions, battleEditButton, battleFacts, battleNotesText, outcomePill, writeEncounterBlock } from '../../core/battle-notes';
+import { rankByName } from '../../core/spotlight-def';
+
+/** The battle notes dialog in 5e's look, the monsters a note can see suggested as you type a foe. */
+export const battleEdit5e = (rt: Dnd5eRuntime, path?: string): BattleEditOptions => ({
+	system: 'dnd5e',
+	suggest: (q) => rankByName(rt.index.all(rt.edition(path), path), q, e => [e.name], 20).map(e => e.name),
+});
 
 export class Dnd5eEncounterBlock extends MarkdownRenderChild {
-	constructor(private rt: Dnd5eRuntime, el: HTMLElement, private def: EncounterDef, private ctx: MarkdownPostProcessorContext) {
+	constructor(private rt: Dnd5eRuntime, el: HTMLElement, private def: EncounterDef, private ctx: MarkdownPostProcessorContext, private source: string) {
 		super(el);
 	}
 
@@ -28,12 +38,13 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		const el = this.containerEl;
 		el.empty();
 		const path = this.ctx.sourcePath;
+		// In a campaign you play in, the same block is your battle notes.
+		if (this.rt.plugin.playerView(path)) { this.renderBattle(); return; }
 		const card = el.createDiv({ cls: 'nimble-encounter-block dnd5e-encounter' });
 		applyLook(card, 'dnd5e');
 		const head = card.createDiv({ cls: 'dnd5e-encounter-head' });
 		setIcon(head.createSpan({ cls: 'dnd5e-encounter-icon' }), evIcon('swords'));
 		head.createDiv({ cls: 'dnd5e-encounter-name', text: this.def.name });
-		const player = this.rt.plugin.playerView(path);
 		// Monsters, and the campaign's NPCs with stats (as Add to fight on their card makes them).
 		const groups = this.def.monsters.map(m => ({ m, fighter: this.rt.fighter(m, path) })).map(g => ({ ...g, entry: g.fighter?.entry }));
 		const known = groups.filter(g => g.entry).map(g => ({ monster: g.entry!.monster, count: g.m.count }));
@@ -43,15 +54,13 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		const party = `${levels.length} hero${levels.length === 1 ? '' : 'es'}, level ${[...new Set(levels)].join('/')}`;
 		const xp = (n: number) => `${n.toLocaleString('en-US')} XP`;
 
-		if (!player) {
-			const chip = head.createSpan({ cls: `nimble-difficulty diff-${r.label.toLowerCase()}`, text: `${r.label} · ${Math.round(r.pct * 100)}%` });
-			chip.setAttr('title', [
-				`${xp(r.xp)}${r.multiplier !== 1 ? ` × ${r.multiplier} = ${r.adjusted.toLocaleString('en-US')}` : ''}`,
-				`Party: ${party}`,
-				...r.thresholds.map(t => `${t.label}: ${xp(t.xp)}`),
-				edition === '2014' ? '2014 rules (DMG thresholds and multipliers)' : '2024 rules (XP budget per character)',
-			].join('\n'));
-		}
+		const chip = head.createSpan({ cls: `nimble-difficulty diff-${r.label.toLowerCase()}`, text: `${r.label} · ${Math.round(r.pct * 100)}%` });
+		chip.setAttr('title', [
+			`${xp(r.xp)}${r.multiplier !== 1 ? ` × ${r.multiplier} = ${r.adjusted.toLocaleString('en-US')}` : ''}`,
+			`Party: ${party}`,
+			...r.thresholds.map(t => `${t.label}: ${xp(t.xp)}`),
+			edition === '2014' ? '2014 rules (DMG thresholds and multipliers)' : '2024 rules (XP budget per character)',
+		].join('\n'));
 
 		// The roster: how many, the monster (its reference, with CR), AC and HP, and the XP they're worth.
 		const list = card.createDiv({ cls: 'dnd5e-encounter-monsters' });
@@ -59,8 +68,8 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 			const row = list.createDiv({ cls: 'dnd5e-encounter-row' });
 			row.createSpan({ cls: 'dnd5e-encounter-count', text: `${m.count}×` });
 			// An NPC under their own name; their AC, HP and XP below are their own.
-			row.appendChild(fighter?.npc && !player ? this.rt.createNpcRef(fighter, path) : this.rt.createRef(m.name, path)).addClass('dnd5e-encounter-ref');
-			if (entry && !player) {
+			row.appendChild(fighter?.npc ? this.rt.createNpcRef(fighter, path) : this.rt.createRef(m.name, path)).addClass('dnd5e-encounter-ref');
+			if (entry) {
 				const stats = row.createSpan({ cls: 'dnd5e-encounter-stats' });
 				stats.createSpan({ text: `AC ${entry.monster.ac}` });
 				stats.createSpan({ text: `HP ${entry.monster.hp}` });
@@ -69,7 +78,7 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		}
 
 		// The budget: the total, and where it sits against the party's thresholds.
-		if (!player && known.length) {
+		if (known.length) {
 			const total = card.createDiv({ cls: 'dnd5e-encounter-total' });
 			total.createSpan({ cls: 'dnd5e-encounter-party', text: party });
 			total.createSpan({ cls: 'dnd5e-encounter-sum', text: r.multiplier !== 1 ? `${r.xp.toLocaleString('en-US')} × ${r.multiplier} = ${xp(r.adjusted)}` : xp(r.xp) });
@@ -86,7 +95,6 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 			}
 		}
 		if (this.def.notes) card.createDiv({ cls: 'dnd5e-encounter-notes', text: this.def.notes });
-		if (player) return;
 
 		const missing = groups.filter(g => !g.entry).map(g => g.m.name);
 		if (missing.length) card.createDiv({ cls: 'dnd5e-encounter-missing', text: `Not found: ${missing.join(', ')}` });
@@ -97,6 +105,39 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		};
 		button('Run', evIcon('play'), () => void this.run(true), true);
 		button('Add to fight', evIcon('plus'), () => void this.run(false));
+	}
+
+	/**
+	 * A player's battle notes on 5e's page: the name over its red rule with how it went, who you fought
+	 * (a monster you can know about is its lore card; anything else as you wrote it), where, when and
+	 * loot, the notes, and Edit. Core draws the parts every game shares (core/battle-notes.ts).
+	 */
+	private renderBattle(): void {
+		const app = this.rt.plugin.app;
+		const path = this.ctx.sourcePath;
+		const def = this.def;
+		const save = (next: EncounterDef) => void writeEncounterBlock(app, this.containerEl, this.ctx, this.source, next);
+		const card = this.containerEl.createDiv({ cls: 'nimble-encounter-block dnd5e-encounter dnd5e-battle-notes ev-battle-notes' });
+		applyLook(card, 'dnd5e');
+		const head = card.createDiv({ cls: 'dnd5e-encounter-head' });
+		setIcon(head.createSpan({ cls: 'dnd5e-encounter-icon' }), evIcon('swords'));
+		head.createDiv({ cls: 'dnd5e-encounter-name', text: def.name });
+		outcomePill(head, def, save);
+
+		const list = card.createDiv({ cls: 'dnd5e-encounter-monsters' });
+		for (const m of def.monsters) {
+			const row = list.createDiv({ cls: 'dnd5e-encounter-row battle-foe' });
+			row.createSpan({ cls: 'dnd5e-encounter-count', text: `${m.count}×` });
+			if (this.rt.get(m.name, path)) row.appendChild(this.rt.createRef(m.name, path)).addClass('dnd5e-encounter-ref');
+			else appendRichText(row.createSpan({ cls: 'battle-foe-name' }), m.written ?? m.name);
+		}
+		if (!def.monsters.length) list.createDiv({ cls: 'dnd5e-encounter-empty', text: 'No foes yet' });
+		wireWikiLinks(list, app, path);
+
+		battleFacts(card, app, def, path);
+		battleNotesText(card, app, def, path, 'dnd5e-encounter-notes');
+		const bar = card.createDiv({ cls: 'dnd5e-encounter-actions' });
+		battleEditButton(bar, app, def, save, battleEdit5e(this.rt, path), '');
 	}
 
 	private run(fresh: boolean): Promise<void> {

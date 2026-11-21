@@ -4,7 +4,8 @@
 import { confirmReplaceFight, resumeSavedFight, savedFightsFor } from './saved-fight';
 import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, setIcon } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
-import { EncounterDef, encounterBlockSource, replaceEncounterBlock } from '../../core/encounter-def';
+import { EncounterDef } from '../../core/encounter-def';
+import { writeEncounterBlock } from '../../core/battle-notes';
 import { budgetPhrase, monsterRole, partyPhrase, rateEncounter, shiftLabel, shiftMonster } from './rules';
 import { createInlineRef, createNpcRef } from './inline-ref';
 import { fighterFor } from './fighters';
@@ -84,35 +85,13 @@ class EncounterBlockChild extends MarkdownRenderChild {
 	}
 }
 
-/**
- * Rewrite a code block's body in its note. For a block in a callout or a list
- * the section Obsidian reports is the whole callout or list, so the block's
- * own fence is looked up (by its source) and nothing else is touched.
- */
-async function writeBack(plugin: EmberVaultPlugin, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string, next: EncounterDef): Promise<void> {
-	const info = ctx.getSectionInfo(el);
-	const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
-	if (!info || !file) { new Notice('Could not find this block in the note to update it.'); return; }
-	let ok = false;
-	try {
-		await plugin.app.vault.process(file, (text) => {
-			const out = replaceEncounterBlock(text, info.lineStart, info.lineEnd, source, encounterBlockSource(next));
-			ok = out !== null;
-			return out ?? text;
-		});
-	} catch (e) {
-		console.error('Ember Vault: could not update the encounter block', e);
-	}
-	if (!ok) new Notice('Couldn\'t update this encounter: the note changed. Nothing was written. Try again.');
-}
-
 function partyText(plugin: EmberVaultPlugin, levels: number[]): string {
 	const entered = plugin.settings.party.length > 0;
 	return `${partyPhrase(levels, entered)}${entered ? '' : ' (no party set)'}`;
 }
 
 function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, source: string): void {
-	const save = (next: EncounterDef) => void writeBack(plugin, el, ctx, source, next);
+	const save = (next: EncounterDef) => void writeEncounterBlock(plugin.app, el, ctx, source, next);
 	// In a campaign you play in, the same block is your battle notes.
 	if (plugin.playerView(ctx.sourcePath)) { renderBattleNotes(plugin, el, def, ctx, save); return; }
 	const card = el.createDiv({ cls: 'nimble-encounter-block' });

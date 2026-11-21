@@ -11,13 +11,14 @@
 import type EmberVaultPlugin from '../../../main';
 import { parseDice } from '../../core/dice';
 import { encounterBlockSource, EncounterDef, parseMonsterLine } from '../../core/encounter-def';
-import { plainRoll, SlashCommand, SlashItem, SlashWriter } from '../../core/slash';
+import { plainRoll, SlashCommand, SlashItem, SlashWriter, writeAt } from '../../core/slash';
+import { BattleNotesModal } from '../../core/battle-notes';
 import { rankByName } from '../../core/spotlight-def';
 import { addMonster } from './combat';
 import { Hit5e, KIND5E, Kind5e } from './compendium';
 import { buildEntries5e, QUERY_5E } from './compendium-entries';
 import type { Tab } from './compendium-view';
-import { runEncounter5e } from './encounter-block';
+import { battleEdit5e, runEncounter5e } from './encounter-block';
 import { toStatblockSource5e } from './parser';
 import { rateEncounter5e, xpOf } from './rules';
 import { dnd5e, Dnd5eRuntime } from './runtime';
@@ -227,10 +228,18 @@ function encounterItems(rt: Dnd5eRuntime, arg: string, path?: string): SlashItem
 function foughtItems(rt: Dnd5eRuntime, arg: string, path?: string): SlashItem[] {
 	const { monsters } = parseEncounterArg(arg, n => findMonster(rt, n, path)?.name, true);
 	const def: EncounterDef = { name: 'Battle', party: false, monsters, extra: ['outcome: won'] };
-	return [{
-		icon: 'swords',
-		title: monsters.length ? monsters.map(x => `${x.count} ${x.name}`).join(', ') : 'Battle notes',
-		detail: 'Insert battle notes',
-		run: (w) => w.write(fence(def), { block: true }),
-	}];
+	const items: SlashItem[] = [];
+	if (monsters.length) items.push({ icon: 'swords', title: monsters.map(x => `${x.count} ${x.name}`).join(', '), detail: 'Insert battle notes', run: (w) => w.write(fence(def), { block: true }) });
+	items.push({
+		icon: 'pencil', title: monsters.length ? 'Fill in the rest…' : 'Battle notes…', detail: 'Pick who you fought, how it went, and what you found',
+		run: (w) => {
+			w.clear();
+			// Written where the cursor is when the dialog is saved, on lines of its own.
+			new BattleNotesModal(rt.plugin.app, def, (d) => {
+				const at = w.editor.getCursor();
+				writeAt(w.editor, at, at, fence(d), true);
+			}, battleEdit5e(rt, path)).open();
+		},
+	});
+	return items;
 }

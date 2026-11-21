@@ -12,7 +12,8 @@ import type EmberVaultPlugin from '../../../main';
 import { parseDice } from '../../core/dice';
 import { encounterBlockSource, EncounterDef, parseMonsterLine } from '../../core/encounter-def';
 import { plainRoll, SlashCommand, SlashItem, SlashWriter, writeAt } from '../../core/slash';
-import { BattleNotesModal } from './battle-notes';
+import { BattleNotesModal } from '../../core/battle-notes';
+import { nimbleBattleEdit } from './battle-notes';
 import { BuilderModal } from './builder-modal';
 import type { Segment } from './compendium-entries';
 import { compendiumEntries, entryReference } from './compendium-browser';
@@ -220,10 +221,10 @@ function foughtItems(plugin: EmberVaultPlugin, arg: string): SlashItem[] {
 		run: (w) => {
 			w.clear();
 			// Written where the cursor is when the dialog is saved (the note may have changed meanwhile), on lines of its own.
-			new BattleNotesModal(plugin, def, (d) => {
+			new BattleNotesModal(plugin.app, def, (d) => {
 				const at = w.editor.getCursor();
 				writeAt(w.editor, at, at, block(d), true);
-			}).open();
+			}, nimbleBattleEdit()).open();
 		},
 	});
 	return items;

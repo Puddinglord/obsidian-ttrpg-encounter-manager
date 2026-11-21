@@ -2520,28 +2520,33 @@ body.is-tablet :is(.campaign-party, .campaign-continue, .campaign-switch-btn, .c
 .nimble-bestiary .bestiary-level.bestiary-lore-icon { display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint); background: transparent; }
 .nimble-bestiary .bestiary-lore-icon svg { width: 15px; height: 15px; }
 
-/* Battle notes: a player's encounter block, the GM block's card on the game's paper (.ev-sys-nimble). How it went
-   is a tag like the GM's rating (dark, white text), its colour on the icon; unset, a quiet dashed chip. */
-.nimble-battle-notes .encounter-block-head button.battle-outcome {
+/* Battle notes: a player's encounter block (core/battle-notes.ts), the GM block's card in the game's look
+   (Nimble's paper, 5e's page). How it went is a tag like the GM's rating (dark, white text; 5e's red), its
+   colour on the icon; unset, a quiet outlined chip. */
+.ev-battle-notes :is(.encounter-block-head, .dnd5e-encounter-head) button.battle-outcome {
 	display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border: 0; border-radius: var(--ev-r-chip); box-shadow: none; cursor: pointer;
-	background: var(--ev-bar); color: var(--ev-on-bar); font: 700 11.5px/normal var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
+	background: var(--ev-bar, var(--ev-accent)); color: var(--ev-on-bar, var(--ev-on-accent)); font: 700 11.5px/normal var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
 	--ev-pill-icon: 13px; --ev-pill-gap: 5px;
 }
-.nimble-battle-notes .encounter-block-head button.battle-outcome:hover { background: color-mix(in srgb, var(--ev-bar) 88%, var(--ev-text)); }
-.nimble-battle-notes .battle-outcome .ev-pill-icon { color: var(--outcome-dot, currentColor); }
-.nimble-battle-notes .battle-outcome.outcome-won { --outcome-dot: #6cc48a; }
-.nimble-battle-notes .battle-outcome.outcome-fled { --outcome-dot: #e3cd5a; }
-.nimble-battle-notes .battle-outcome.outcome-lost { --outcome-dot: #ff7a6b; }
-.nimble-battle-notes .battle-outcome.outcome-parley { --outcome-dot: #9fc3ec; }
-.nimble-battle-notes .encounter-block-head button.battle-outcome.outcome-unset { background: transparent; color: var(--ev-text-2); box-shadow: inset 0 0 0 1px var(--ev-line-strong); font-weight: 600; letter-spacing: 0; text-transform: none; }
-.nimble-battle-notes .encounter-block-head button.battle-outcome.outcome-unset:hover { background: var(--ev-surface-2); }
+.ev-battle-notes :is(.encounter-block-head, .dnd5e-encounter-head) button.battle-outcome:hover { background: color-mix(in srgb, var(--ev-bar, var(--ev-accent)) 88%, var(--ev-text)); }
+.ev-battle-notes .battle-outcome .ev-pill-icon { color: var(--outcome-dot, currentColor); }
+.ev-battle-notes .battle-outcome.outcome-won { --outcome-dot: #6cc48a; }
+.ev-battle-notes .battle-outcome.outcome-fled { --outcome-dot: #e3cd5a; }
+.ev-battle-notes .battle-outcome.outcome-lost { --outcome-dot: #ff7a6b; }
+.ev-battle-notes .battle-outcome.outcome-parley { --outcome-dot: #9fc3ec; }
+.ev-battle-notes :is(.encounter-block-head, .dnd5e-encounter-head) button.battle-outcome.outcome-unset { background: transparent; color: var(--ev-text-2); box-shadow: inset 0 0 0 1px var(--ev-line-strong); font-weight: 600; letter-spacing: 0; text-transform: none; }
+.ev-battle-notes :is(.encounter-block-head, .dnd5e-encounter-head) button.battle-outcome.outcome-unset:hover { background: var(--ev-surface-2); }
 .nimble-battle-notes .battle-foe { display: inline-flex; align-items: center; gap: 0.3rem; }
 .nimble-battle-notes .battle-foe-count { display: inline-flex; align-items: center; padding-left: 0.6em; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ev-text-2); }
 .nimble-battle-notes .battle-foe-name { display: inline-flex; align-items: center; padding-right: 0.75em; }
-.nimble-battle-notes .battle-facts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 2px; font: 500 12.5px/18px var(--ev-font-ui); color: var(--ev-text-2); }
-.nimble-battle-notes .battle-fact { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
-.nimble-battle-notes .battle-fact-icon { display: inline-flex; color: var(--ev-text-2); }
-.nimble-battle-notes .battle-fact-icon svg { width: 14px; height: 14px; }
+.ev-battle-notes .battle-facts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 2px; font: 500 12.5px/18px var(--ev-font-ui); color: var(--ev-text-2); }
+.ev-battle-notes .battle-fact { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+.ev-battle-notes .battle-fact-icon { display: inline-flex; color: var(--ev-text-2); }
+.ev-battle-notes .battle-fact-icon svg { width: 14px; height: 14px; }
+/* 5e: the facts and notes under the roster's dotted rows, Edit at the foot like Run. */
+.dnd5e-battle-notes .battle-facts { margin-top: 0.15rem; }
+.dnd5e-battle-notes .battle-fact-icon { color: var(--ev-accent-text); }
+.dnd5e-battle-notes .dnd5e-encounter-empty { color: var(--text-faint); font-style: italic; padding: 0.22rem 0; }
 .nimble-battle-modal .battle-modal-heading { margin: 4px 0 -6px; font: 700 12.5px/normal var(--ev-font-display); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ev-text-2); }
 .nimble-battle-modal .battle-modal-foes { display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 0.4rem; }
 .nimble-battle-modal .battle-modal-foe { display: grid; grid-template-columns: auto 1.6rem auto minmax(0, 1fr) auto; align-items: center; gap: 0.3rem; }
@@ -2717,7 +2722,7 @@ a.internal-link.nimble-npc-mention:hover { color: color-mix(in srgb, #22a35a 75%
 :is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon).kind-handout { --pill: var(--color-yellow); }
 :is(.nimble-note-link, .nimble-note-lp-link, .nimble-note-lp-icon).is-quest-failed { --pill: var(--text-faint); }
 a.internal-link.nimble-note-link {
-	display: inline-flex; align-items: baseline; gap: 0.25em; text-decoration: none; line-height: 1.3;
+	display: inline-flex; align-items: baseline; gap: max(0.25em, 3px); text-decoration: none; line-height: 1.3;
 	/* A little shorter than the text line, with room above and below, so pills on wrapped lines don't touch. */
 	padding: 0 0.4em 0 0.35em; margin: 0.15em 0.08em 0.15em 0; border-radius: 999px; position: relative; top: -0.05em;
 	background: color-mix(in srgb, var(--pill) 14%, transparent); color: color-mix(in srgb, var(--pill) 70%, var(--text-normal));
