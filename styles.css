@@ -1946,7 +1946,8 @@ body.is-phone .nimble-add-monster-modal .nimble-add-btn { flex: 1; height: 2.4re
 .nimble-bestiary .bestiary-search { display: flex; align-items: center; gap: 0.3rem; }
 .nimble-bestiary .bestiary-filter-toggle { display: none; position: relative; flex-shrink: 0; }
 .nimble-bestiary .bestiary-filter-toggle.has-active::after { content: ""; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--interactive-accent); }
-.nimble-bestiary .bestiary-back { display: none; }
+/* (Each rule names :not(#nimble-pill) to stay above the shared pill rule: the Back button is a pill.) */
+.nimble-bestiary .bestiary-back:not(#nimble-pill) { display: none; }
 .nimble-bestiary .bestiary-layout.is-narrow { grid-template-columns: minmax(0, 1fr); }
 .nimble-bestiary .bestiary-side, .nimble-bestiary .bestiary-detail { min-width: 0; }
 .nimble-bestiary .is-narrow .bestiary-level-input { width: 4.5rem; flex: none; }
@@ -1957,7 +1958,7 @@ body.is-phone .nimble-bestiary .bestiary-side, body.is-phone .nimble-bestiary .b
 .nimble-bestiary .is-narrow .bestiary-detail { display: none; padding: 0.5rem 0.75rem 2rem; }
 .nimble-bestiary .is-narrow.show-detail .bestiary-side { display: none; }
 .nimble-bestiary .is-narrow.show-detail .bestiary-detail { display: block; height: 100%; }
-.nimble-bestiary .is-narrow .bestiary-back {
+.nimble-bestiary .is-narrow .bestiary-back:not(#nimble-pill) {
 	display: inline-flex; align-items: center; gap: 0.2rem;
 	position: sticky; top: 0; z-index: 2;
 	margin: 0 0 0.4rem -0.3rem; padding: 0 0.6rem 0 0.3rem; height: 2.2rem;
@@ -5386,13 +5387,13 @@ body.is-mobile .nimble-cmpx-hints { display: none; }
 .nimble-cmpx :is(.nimble-cmpx-group, .nimble-cmpx-row-badge, .nimble-art-level) { font-variant-numeric: lining-nums tabular-nums; }
 
 /* The tab: list beside the page; narrow, one or the other. */
-.nimble-compendium .nimble-cmpx .bestiary-back { display: none; }
+.nimble-compendium .nimble-cmpx .bestiary-back:not(#nimble-pill) { display: none; }
 .nimble-cmpx-layout.is-narrow .nimble-cmpx.has-detail { grid-template-columns: minmax(0, 1fr); }
 .nimble-cmpx-layout.is-narrow .nimble-cmpx-detail { display: none; padding: 12px; }
 .nimble-cmpx-layout.is-narrow.show-detail .nimble-cmpx-detail { display: block; grid-row: 2; }
 .nimble-cmpx-layout.is-narrow.show-detail .nimble-cmpx-side { display: none; }
 .nimble-cmpx-layout.is-narrow .nimble-cmpx-side { border-right: none; }
-.nimble-cmpx-layout.is-narrow .nimble-compendium .bestiary-back, .nimble-cmpx-layout.is-narrow .nimble-cmpx-detail .bestiary-back { display: inline-flex; align-items: center; margin-bottom: 10px; color: var(--ev-text-2); --ev-pill-icon: 15px; --ev-pill-gap: 4px; }
+.nimble-cmpx-layout.is-narrow .nimble-compendium .bestiary-back:not(#nimble-pill), .nimble-cmpx-layout.is-narrow .nimble-cmpx-detail .bestiary-back:not(#nimble-pill) { display: inline-flex; align-items: center; margin-bottom: 10px; color: var(--ev-text-2); --ev-pill-icon: 15px; --ev-pill-gap: 4px; }
 body.is-phone .nimble-cmpx-side, body.is-phone .nimble-cmpx-detail { padding-bottom: 5.5rem; }
 /* The attribution under the list (Nimble's tab). */
 .nimble-cmpx .bestiary-attribution { font: 500 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); border-top-color: var(--ev-line, var(--background-modifier-border)); }
@@ -5408,7 +5409,7 @@ body.is-phone .nimble-cmpx-side, body.is-phone .nimble-cmpx-detail { padding-bot
 .nimble-cmpx-modal .nimble-cmpx-segments { margin: 4px 4px 0; }
 .nimble-cmpx-modal .nimble-cmpx.has-detail { grid-template-columns: minmax(300px, 420px) minmax(0, 1fr); }
 .nimble-cmpx-modal .nimble-cmpx-detail { padding: 8px 4px 16px 16px; }
-.nimble-cmpx-modal .nimble-cmpx-detail .bestiary-back { display: none; }
+.nimble-cmpx-modal .nimble-cmpx-detail .bestiary-back:not(#nimble-pill) { display: none; }
 /* Too narrow for the list and a readable page side by side (a small window, a dialog at 760px): the list alone. */
 .modal.nimble-cmpx-modal .modal-content { container: nimble-cmpx-modal / inline-size; }
 @container nimble-cmpx-modal (max-width: 820px) {
