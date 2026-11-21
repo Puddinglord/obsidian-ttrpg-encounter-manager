@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { addItem, addListEntry, changeHp, cycleSkill, Frontmatter, levelUp, longRest, newCharacterFm, pbForLevel, readSheet5e, removeListEntry, setExhaustion, setHitDiceLeft, setItem, shortRest, useSlot } from '../src/systems/dnd5e/character';
+import { addItem, addListEntry, changeHp, cycleSkill, equipsWhenAdded, Frontmatter, levelUp, longRest, newCharacterFm, pbForLevel, readSheet5e, removeListEntry, setExhaustion, setHitDiceLeft, setItem, shortRest, useSlot } from '../src/systems/dnd5e/character';
+import { compendium5e } from '../src/systems/dnd5e/compendium';
+import { parseEquipment5e, parseItem5e } from '../src/systems/dnd5e/homebrew';
+
+describe('Add item on a 5e sheet', () => {
+	const srd = (name: string) => compendium5e('2024').equipment.find(e => e.name === name)!;
+	const item = (src: string) => ({ kind: 'item', item: parseItem5e(src, '2024')! });
+	it('puts weapons and armor on equipped, magic ones by their base too; gear and other magic items go in the pack', () => {
+		expect(equipsWhenAdded({ kind: 'equipment', equipment: srd('Longsword') }, '2024')).toBe(true);
+		expect(equipsWhenAdded({ kind: 'equipment', equipment: srd('Chain Mail') }, '2024')).toBe(true);
+		expect(equipsWhenAdded({ kind: 'equipment', equipment: srd('Backpack') }, '2024')).toBe(false);
+		expect(equipsWhenAdded(item('name: Gloomfang\ntype: Weapon (Longsword)\nrarity: Uncommon\n\nYou gain a +1 bonus to attack and damage rolls made with this magic weapon.'), '2024')).toBe(true);
+		expect(equipsWhenAdded(item('name: Tidewall\ntype: Armor (Chain Mail)\nrarity: Rare\n\nYou have a +1 bonus to Armor Class while wearing this armor.'), '2024')).toBe(true);
+		expect(equipsWhenAdded(item('name: Salt Charm\ntype: Wondrous item\nrarity: Common'), '2024')).toBe(false);
+		// A magic weapon whose base is your own weapon.
+		const pike = parseEquipment5e('name: Ember Pike\ncategory: Martial Melee Weapon\ndamage: 1d10 piercing')!;
+		expect(equipsWhenAdded(item('name: Pike of Cinders\ntype: Weapon (Ember Pike)\nrarity: Rare'), '2024', { equipment: [pike] })).toBe(true);
+		expect(equipsWhenAdded({ kind: 'spell' }, '2024')).toBe(false);
+	});
+});
 
 const wizard = (): Frontmatter => ({ class: 'Wizard', subclass: 'Evoker', level: 5, species: 'Elf', background: 'Sage', str: 8, dex: 14, con: 14, int: 16, wis: 12, cha: 10, skills: ['Arcana', 'History'], hp: 27, hp_max: 32, spells: ['Fireball', 'Shield', 'Not A Spell'] });
 

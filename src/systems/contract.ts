@@ -112,6 +112,11 @@ export interface GameSystem {
 	 * notes get and their cards show, and optionally its own drawing of a kind's card.
 	 */
 	readonly noteKinds?: NoteKindExtensions;
+	/**
+	 * The stat block a new Monster note starts with (New → Monster in the Campaign panel), fenced, in the
+	 * note's edition, so the system's own bestiary picks the note up. Without it, the note starts with no block.
+	 */
+	monsterStarter?(name: string, edition?: string): string;
 	/** How attack rolls go in its campaigns: 'exploding' (a 1 on the primary die misses, its max explodes), else plain. */
 	attackRolls?(plugin: EmberVaultPlugin): 'exploding' | undefined;
 	/** Its running fight's combatants as tokens for GM maps (core/tracker/tokens.ts); null with no fight. */

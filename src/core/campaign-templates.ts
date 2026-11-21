@@ -379,25 +379,10 @@ pins:
 `;
 }
 
-export function monsterNote(name: string): string {
-	const title = name.replace(/[\r\n]+/g, ' ').trim() || 'Monster';
+/** A monster note: the game's starter stat block (its `monsterStarter`, fenced), then Tactics. */
+export function monsterNote(name: string, block = ''): string {
 	return fm({ nimble: 'monster', title: titleOf(name) }) + `
-\`\`\`nimble
-name: ${title}
-level: 1
-size: Medium
-type: Humanoid
-hp: 21
-armor: none
-movement: 6
-saves: STR+
-abilities:
-- Trait: What makes it dangerous.
-attacks:
-- **Strike.** 1d8+2.
-\`\`\`
-
-## Tactics
+${block.trim() ? `${block.trim()}\n\n` : ''}## Tactics
 -
 `;
 }

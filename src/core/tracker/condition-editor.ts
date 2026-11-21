@@ -80,10 +80,10 @@ export function conditionIcon(name: string): string {
 }
 
 /** A condition's rules in one line, for the picker: the first sentence, without markup. */
-function firstLine(text: string): string {
-	// Past the books' preambles ("While you have the Blinded condition, you experience the following effects.")
-	// and run-in labels ("**Can't See.**"), to what it does.
-	const body = text.replace(/^\s*while you have the [^.:]*?condition[^.:]*[.:]\s*/i, '').replace(/\*\*[^*]{1,40}\*\*\s*/, '');
+export function firstLine(text: string): string {
+	// Past the books' preambles ("While you have the Blinded condition, you experience the following effects."),
+	// run-in labels ("**Can't See.**") and a list's bullet (SRD 5.1 lists its rules), to what it does.
+	const body = text.replace(/^\s*while you have the [^.:]*?condition[^.:]*[.:]\s*/i, '').replace(/\*\*[^*]{1,40}\*\*\s*/, '').replace(/^\s*(?:[-*+•]|\d+[.)])\s+/, '');
 	const plain = body.replace(/\*\*|__|[*_]/g, '').replace(/\s+/g, ' ').trim();
 	const m = /^(.{1,140}?[.;])(\s|$)/.exec(plain);
 	return (m ? m[1] : plain).replace(/[.;]$/, '');

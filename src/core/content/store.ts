@@ -124,6 +124,8 @@ export class ContentStore extends Events {
 	private async read(f: TFile, notify = true): Promise<void> {
 		try {
 			const text = await this.plugin.app.vault.cachedRead(f);
+			// Deleted or moved while it was being read (an import's note, then its folder deleted): nothing to add.
+			if (!this.plugin.app.vault.getFileByPath(f.path) || !this.inFolder(f)) { if (this.forget(f.path) && notify) this.trigger('changed'); return; }
 			if (f.extension.toLowerCase() === 'json') this.packs.set(f.path, readPack(text, f.path, this.kindsFor));
 			else {
 				const before = JSON.stringify(this.notes.get(f.path) ?? null);
@@ -160,8 +162,16 @@ export class ContentStore extends Events {
 		this.timers.set(f.path, window.setTimeout(() => { this.timers.delete(f.path); void this.read(f); }, 300));
 	}
 
+	/** Drop a file's packs and notes, or everything under a folder; a read waiting to happen goes too. */
 	private forget(path: string): boolean {
-		const had = this.packs.delete(path) || this.notes.delete(path);
+		let had = false;
+		for (const p of [...this.packs.keys(), ...this.notes.keys(), ...this.timers.keys()]) {
+			if (p !== path && !p.startsWith(`${path}/`)) continue;
+			window.clearTimeout(this.timers.get(p));
+			this.timers.delete(p);
+			had = this.packs.delete(p) || had;
+			had = this.notes.delete(p) || had;
+		}
 		if (had) this.homebrewCache.clear();
 		return had;
 	}
@@ -176,7 +186,10 @@ export class ContentStore extends Events {
 			plugin.registerEvent(plugin.app.vault.on('delete', f => { if (this.forget(f.path)) this.trigger('changed'); }));
 			plugin.registerEvent(plugin.app.vault.on('rename', (f, old) => {
 				const had = this.forget(old);
-				if (this.inFolder(f)) void this.read(f); else if (had) this.trigger('changed');
+				// A folder moved: read what's in it at its new place.
+				const moved = (f instanceof TFile ? [f] : plugin.app.vault.getFiles().filter(x => x.path.startsWith(`${f.path}/`))).filter(x => this.inFolder(x));
+				for (const x of moved) void this.read(x);
+				if (!moved.length && had) this.trigger('changed');
 			}));
 		});
 		plugin.register(() => { for (const t of this.timers.values()) window.clearTimeout(t); });

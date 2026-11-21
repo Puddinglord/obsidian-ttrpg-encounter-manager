@@ -15,7 +15,7 @@
 
 import { FuzzySuggestModal, MarkdownPostProcessorContext, MarkdownRenderChild, Menu, Notice, setIcon, setTooltip, TFile } from 'obsidian';
 import {
-	addItem, addListEntry, changeHp, cycleSkill, Frontmatter, longRest, readSheet5e, removeListEntry, setDeathSaves, setExhaustion, setHitDiceLeft, setItem, Sheet5e, SheetItem, SheetSkill, shortRest, useSlot,
+	addItem, addListEntry, changeHp, cycleSkill, equipsWhenAdded, Frontmatter, longRest, readSheet5e, removeListEntry, setDeathSaves, setExhaustion, setHitDiceLeft, setItem, Sheet5e, SheetItem, SheetSkill, shortRest, useSlot,
 } from './character';
 import { Hit5e, KIND5E, Spell5e } from './compendium';
 import { conditionsFor } from './conditions';
@@ -600,7 +600,7 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 		if (!s.inventory.length) list.createDiv({ cls: 'dnd5e-sheet-empty', text: 'Nothing carried yet.' });
 		for (const it of s.inventory) this.renderItem(list, it);
 		const add = pill(panel, { tag: 'button', icon: evIcon('plus'), text: 'Add item', cls: 'dnd5e-sheet-add' });
-		add.onclick = (e) => { e.preventDefault(); this.pick('item', s, (hit) => this.edit(fm => addItem(fm, hit.name, { equipped: hit.kind === 'equipment' && !!(hit.equipment.damage || hit.equipment.ac) }))); };
+		add.onclick = (e) => { e.preventDefault(); this.pick('item', s, (hit) => this.edit(fm => addItem(fm, hit.name, { equipped: equipsWhenAdded(hit, s.edition, this.rt.homebrew.library(this.path)) }))); };
 	}
 
 	private renderItem(list: HTMLElement, it: SheetItem): void {

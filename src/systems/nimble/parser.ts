@@ -461,6 +461,14 @@ export function normalizeRole(value: string): MonsterRole | null {
 
 const oneLine = (s: string) => s.replace(/\s*\n\s*/g, ' ').trim();
 
+/** The ```nimble block a new Monster note starts with (New → Monster), to fill in. */
+export function starterStatblock(name: string): string {
+	return [
+		'```nimble', `name: ${oneLine(name) || 'Monster'}`, 'level: 1', 'size: Medium', 'type: Humanoid', 'hp: 21', 'armor: none', 'movement: 6', 'saves: STR+',
+		'abilities:', '- Trait: What makes it dangerous.', 'attacks:', '- **Strike.** 1d8+2.', '```',
+	].join('\n');
+}
+
 export function toStatblockSource(m: NimbleMonster): string {
 	const lines: string[] = [`name: ${m.name}`];
 	const kv = (key: string, value: string | number | null | undefined) => {

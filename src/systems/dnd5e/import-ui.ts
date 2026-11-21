@@ -153,7 +153,8 @@ async function writeCreatures(rt: Dnd5eRuntime, list: FsImport[]): Promise<TFile
 	for (const c of list) {
 		const safe = c.name.replace(/[\\/:*?"<>|#^[\]]/g, '').trim() || 'Creature';
 		const path = rt.plugin.campaigns.available(`${folder}/${safe}.md`);
-		const props = c.source ? `---\nsource: ${JSON.stringify(c.source)}\n---\n\n` : '';
+		// A monster note, as Copy to vault writes one: the panel and links show it as a monster.
+		const props = `---\nnimble: monster\ncr: ${JSON.stringify(c.monster.cr)}\n${c.source ? `source: ${JSON.stringify(c.source)}\n` : ''}---\n\n`;
 		out.push(await app.vault.create(path, `${props}\`\`\`${STATBLOCK_LANG}\n${toStatblockSource5e(c.monster)}\n\`\`\`\n`));
 	}
 	return out;
