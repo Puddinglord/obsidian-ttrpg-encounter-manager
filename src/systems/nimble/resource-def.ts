@@ -116,10 +116,13 @@ export function heldFaces(current: number, rolled: number[] | undefined): number
 }
 
 
-/** The die a pool uses at this level, from its table (undefined when the rule has none). */
-export function dieAt(rule: ResourceRule | undefined, level: number): string | undefined {
+/**
+ * The die a pool uses at this level, from its table (undefined when the rule has none). Below the table's first level,
+ * the resource's own die (`base`: a class's "d6" that grows to d8 at 5), else the table's first.
+ */
+export function dieAt(rule: ResourceRule | undefined, level: number, base?: string): string | undefined {
 	if (!rule?.dieByLevel) return undefined;
 	let die: string | undefined;
 	for (const [lv, d] of Object.entries(rule.dieByLevel).sort((a, b) => Number(a[0]) - Number(b[0]))) if (level >= Number(lv)) die = d;
-	return die ?? Object.values(rule.dieByLevel)[0];
+	return die ?? base ?? Object.values(rule.dieByLevel)[0];
 }

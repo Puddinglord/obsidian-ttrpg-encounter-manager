@@ -613,7 +613,7 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 			const m = f.text.match(new RegExp(`${r.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} are now (d\\d+)`, 'i'));
 			if (m) die = m[1];
 		}
-		die = dieAt(rule, level) ?? die;
+		die = dieAt(rule, level, own ? die : undefined) ?? die;
 		const startsEmpty = (/ends?\b/i.test(r.reset ?? '') && !/rest/i.test(r.reset ?? '')) || rule?.rolledWhen === 'gained' || !!rule?.clearsOnRest;
 		const current = Math.max(0, Math.min(max ?? Infinity, v.current ?? (startsEmpty ? 0 : max ?? 0)));
 		resources.push({ name: r.name, current, max: max !== undefined ? Math.max(0, max) : undefined, die, reset: r.reset, rolled: v.rolled?.slice(0, current), formula: r.max !== undefined ? String(r.max) : undefined, ...(own ? { rule: own } : {}), ...(r.spend ? { spend: r.spend } : {}) });

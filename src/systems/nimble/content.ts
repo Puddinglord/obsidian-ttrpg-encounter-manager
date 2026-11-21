@@ -208,7 +208,8 @@ export const KINDS_NIMBLE: KindSpec[] = [
 	{
 		kind: 'class', label: 'Class', description: 'A whole class, as the class books write one: key stats, saves, Hit Die, gear, levels, option lists, resources and subclasses.',
 		fields: named({
-			tagline: text('One line: "High-damage, melee-focused class."'), flavor: text(), highlights: { type: 'strings' }, complexity: int({ min: 1, max: 4 }),
+			tagline: text('One line: "High-damage, melee-focused class."'),
+			motif: text('The motif in its scrollwork: a book class\'s ("Berserker", "Mage"). A plain one if left out.'), flavor: text(), highlights: { type: 'strings' }, complexity: int({ min: 1, max: 4 }),
 			keyStats: { type: 'strings', required: true, description: 'One or two of STR, DEX, INT, WIL.' },
 			hitDie: int({ min: 4, max: 20, required: true, description: '8 for d8.' }), startingHp: int({ min: 1, required: true }),
 			saves: { type: 'object', required: true, fields: { adv: { type: 'string', enum: STAT, required: true }, dis: { type: 'string', enum: STAT, required: true } }, description: 'The save with advantage, and the one with disadvantage.' },
@@ -217,8 +218,7 @@ export const KINDS_NIMBLE: KindSpec[] = [
 			casting, resources, states, target, levels: { ...levels, required: true }, optionGroups, sidebars,
 			subclasses: { type: 'list', of: named(subclassFields) },
 			spellList: { type: 'strings', description: 'Spells the class can cast besides its schools\', by name.' },
-			faq: { type: 'list', of: { q: text(undefined, true), a: text(undefined, true) } },
-			motif: text('The motif in its scrollwork: a book class\'s ("Berserker", "Mage"). A plain one if left out.'), page,
+			faq: { type: 'list', of: { q: text(undefined, true), a: text(undefined, true) } }, page,
 		}),
 		starter: {
 			tagline: '', keyStats: ['STR'], hitDie: 8, startingHp: 13, saves: { adv: 'STR', dis: 'INT' }, armor: '', weapons: '', startingGear: [],

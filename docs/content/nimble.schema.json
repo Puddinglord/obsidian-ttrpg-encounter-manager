@@ -558,6 +558,13 @@
 								],
 								"description": "One line: \"High-damage, melee-focused class.\""
 							},
+							"motif": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The motif in its scrollwork: a book class's (\"Berserker\", \"Mage\"). A plain one if left out."
+							},
 							"flavor": {
 								"type": [
 									"string",
@@ -1676,13 +1683,6 @@
 										"a"
 									]
 								}
-							},
-							"motif": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The motif in its scrollwork: a book class's (\"Berserker\", \"Mage\"). A plain one if left out."
 							},
 							"page": {
 								"type": "integer",
