@@ -42,5 +42,6 @@ The same menu, with 5e's compendium and rules behind it. Shared commands (`/npc`
 | `/add 2 ogre` | Straight into the 5e tracker |
 | `/statblock ogre` | The full ```` ```5e ```` stat block, editable in the note |
 | `/new-monster`, `/new-spell`, `/new-item` | 5e's [builder](5e.md#make-your-own); what you make goes where you typed |
+| `/new-class`, `/new-subclass`, `/new-species`, `/new-background`, `/new-feat` | 5e's [builders for your own content](homebrew.md#5e-builders); the block goes where you typed (move the note into the content folder for the compendium) |
 | `/roll +5` | A d20 check; the menu also offers it with advantage or disadvantage |
 | `/party-table` | A table of your heroes, with their AC |

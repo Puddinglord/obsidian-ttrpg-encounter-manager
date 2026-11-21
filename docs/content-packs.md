@@ -110,7 +110,8 @@ The full example is [nimble-lantern-road.json](content/examples/nimble-lantern-r
 - **Classes** work in **New character**, **Level up** and the sheet from their own level table: each row's `features` (an `Ability Score Improvement` or `Expertise` there asks for one), `slots` and `cantrips`, and `prepared` for how many spells the class knows or prepares at that level. Its subclass comes at its first feature's level. `"spellList": "Paladin"` casts from another class's list. A row's `extra` holds the class's own numbers; one named `…_uses` is a limited-use feature with pips on the sheet: `"extra": { "blood_maledict_uses": 2 }`. Features named `Group: Option` under a feature named `Group` are a choice ("Ward Stance: Ember" under "Ward Stance"), and so is a feature with `"group": "Ward Stance"`, whatever its name.
 - **Limited uses as a formula:** `resources` lists features with uses the table doesn't count: `{ "name": "Hearthfire", "uses": "Wisdom modifier", "min": 1, "shortFrom": 5 }`.
 - **Starting equipment:** a class or background's `startingEquipment` lists its choices, each with options of `items` (`"2 Javelin"` for two), `picks` from a list and `gold`; `toolChoices` (`{ "count": 1, "from": ["Lute", "Flute"] }`), and a background's `tools`.
-- **Subclasses** name their class: `"class": "Barbarian"`.
+- **Subclasses** name their class: `"class": "Barbarian"`, and can list spells they always have prepared: `"spells": [{ "level": 3, "spells": ["Bless"] }]`.
+- **More a class, species or background can say** (a feature's options count, AC without armor, a species' skill and cantrip choices, a feat's increase): see [Classes: what the sheet and level up read](homebrew.md#classes-what-the-sheet-and-level-up-read).
 
 The full example is [5e-hearth-and-cinder.json](content/examples/5e-hearth-and-cinder.json): a subclass, a spell, a magic item, a feat and a monster.
 

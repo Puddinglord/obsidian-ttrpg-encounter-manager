@@ -856,6 +856,62 @@ const features = {
 		},
 		show: () => ['.modal.nimble-entity-builder'],
 	},
+	// homebrew.md "5e builders" and 5e.md "Make your own": the class builder on its Features step, a feature with options, what level 3 grants.
+	'guide-5e-class-builder': {
+		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+				for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100));
+				app.commands.executeCommandById('nimble-gm:open-bestiary');
+			});
+			const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+			await page.locator(V).waitFor();
+			await page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Classes' }).click();
+			await page.locator(`${V} .nimble-cmpx-new`).click();
+			await page.locator('.menu .menu-item', { hasText: 'New class…' }).click();
+			const B = '.modal.nimble-entity-builder';
+			const panel = `${B} .eb-panel.is-active`;
+			const go = async (step) => { await page.locator(`${B} .eb-dot`, { hasText: step }).click(); await page.waitForTimeout(450); };
+			await page.locator(B).waitFor();
+			await page.locator(`${panel} input[data-field="Name"]`).fill('Hearth Warden');
+			await page.locator(`${panel} [data-key="hitDie"] .eb-seg-btn`, { hasText: 'd10' }).click();
+			for (const a of ['STR', 'WIS']) await page.locator(`${panel} [data-key="primary"] .eb-pick[data-value="${a}"]`).click();
+			for (const a of ['STR', 'WIS']) await page.locator(`${panel} [data-key="saves"] .eb-pick[data-value="${a}"]`).click();
+			await go('Training');
+			for (const a of ['Light Armor', 'Medium Armor', 'Shields']) await page.locator(`${panel} [data-key="armor"] .eb-pick[data-value="${a}"]`).click();
+			await page.locator(`${panel} [data-key="weapons"] .eb-pick[data-value="Martial Weapons"]`).click();
+			for (const s of ['Athletics', 'Insight', 'Medicine', 'Survival']) await page.locator(`${panel} [data-key="skillFrom"] .eb-pick[data-value="${s}"]`).click();
+			await go('Spells');
+			await page.locator(`${panel} [data-key="castAbility"] .eb-seg-btn`, { hasText: 'Wisdom' }).click();
+			await page.waitForTimeout(300);
+			await page.locator(`${B} .eb-panel.is-active [data-key="caster"] .eb-seg-btn`, { hasText: 'Half' }).click();
+			await page.locator(`${B} .eb-panel.is-active select[data-field="Spell list"]`).selectOption('Ranger');
+			await page.locator(`${B} .eb-panel.is-active select[data-field="Cantrips and spells like"]`).selectOption('Ranger');
+			await go('Table');
+			await page.locator(`${panel} input[data-field="Subclass called"]`).fill('Warden Circle');
+			await go('Features');
+			const features = () => page.locator(`${panel} [data-key="features"] > .eb-control > .eb-list > .eb-list-item`);
+			await features().first().locator('input[data-field="Name"]').first().fill('Hearthfire');
+			await features().first().locator('textarea[data-field="Text"]').first().fill('As a Bonus Action, you kindle a warding flame around an ally you can see within 30 feet.');
+			await page.locator(`${panel} [data-key="features"] > .eb-control > .eb-list-add`).click();
+			await features().nth(1).locator('input[data-field="Name"]').first().fill('Warding Style');
+			await features().nth(1).locator('textarea[data-field="Text"]').first().fill('Choose one of the following options.');
+			for (const [name, text] of [['Ember Guard', 'Attacks against the warmed ally have Disadvantage.'], ['Ash Step', 'As a Bonus Action, you teleport to the warmed ally.']]) {
+				await features().nth(1).locator('[data-key="options"] .eb-list-add').click();
+				const opt = features().nth(1).locator('[data-key="options"] .eb-list-item').last();
+				await opt.locator('input[data-field="Name"]').fill(name);
+				await opt.locator('textarea[data-field="Text"]').fill(text);
+			}
+			await features().nth(1).locator('[data-key="more"] .eb-pick[data-value="6"]').click();
+			await page.locator(`${B} .eb-check .dnd5e-cb-level`, { hasText: /^3$/ }).click();
+			// The second feature in view, with its options.
+			await features().nth(1).evaluate(el => el.scrollIntoView({ block: 'start' }));
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+	},
 	// 5e.md "Character sheets": Level up on its Spells step, a cantrip and two spellbook spells picked, what the level brings beside.
 	'guide-5e-level-up': {
 		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',

@@ -6,7 +6,7 @@ Your content lives in the [compendium](compendium.md), not beside your campaign 
 
 ## Ways in
 
-- **Make it here:** press **+** in the compendium (below), or use the [builder](builder.md) for monsters, spells and items.
+- **Make it here:** press **+** in the compendium (below). Most kinds open a builder ([Nimble's](#nimbles-builders), [5e's](#5e-builders)); monsters, spells and items open the [builder](builder.md).
 - **A content pack:** a JSON file of entries, added with **Import content…**. See [Content packs](content-packs.md).
 - **A D&D Beyond character (5e):** importing one brings its class, subclass, species, background, feats, spells and items into the compendium, tagged **Imported**. See [Importing](import.md#what-it-brings-into-your-compendium).
 
@@ -14,12 +14,12 @@ Your content lives in the [compendium](compendium.md), not beside your campaign 
 
 1. Open the compendium (the book in the ribbon, or **Open compendium**) and go to the tab it belongs on: Classes, Feats, Origins…
 2. Press **+** at the end of the search bar. On a tab with more than one kind (Classes has classes and subclasses), pick which.
-3. Give it a name. Ember Vault writes a note with a starter block and opens it.
+3. A kind with a builder opens it (see [Nimble's builders](#nimbles-builders) and [5e builders](#5e-builders)). Any other asks for a name, then Ember Vault writes a note with a starter block and opens it.
 4. Fill in the block. In reading view it shows as the compendium's card for it, and anything that still needs fixing is listed under the card.
 
 As soon as the block reads cleanly it's in the compendium, tagged **Homebrew**. Change the block and everything that uses it changes too.
 
-Monsters, spells and items open the [builder](builder.md) instead, as they always have. In Nimble, so do classes, subclasses, a class's options, ancestries, backgrounds and boons: see [Nimble's builders](#nimbles-builders).
+Monsters, spells and items open the [builder](builder.md) instead, as they always have. In Nimble, so do classes, subclasses, a class's options, ancestries, backgrounds and boons: see [Nimble's builders](#nimbles-builders). In 5e, so do classes, subclasses, species, backgrounds and feats: see [5e builders](#5e-builders).
 
 ## Nimble's builders
 
@@ -47,6 +47,43 @@ Beside the steps, **Level up asks** lists what every level grants, the way Level
 **An ancestry** has a size, a rarity and its traits. **A background** has its category, requirement and what it gives. **A boon** is Epic, Lodging or Other, with its category, requirement and text.
 
 To change one later, point at its block and click the **pencil**: the builder opens on it, and Save writes the block back in place. Fields the builder doesn't show (a class's FAQ, subclasses written inside it) stay as they were.
+
+## 5e builders
+
+In 5e, **+** on the Classes, Origins and Feats tabs opens a builder instead of a starter note: steps across the top, the compendium's card for what you're making beside them, and a summary on top of it. Fill in what you know and press **Create** from any step. It writes the same block you'd type, in the same folder, and it's in the compendium as soon as it's saved. The pencil on the block opens it in the builder again; anything you typed that the builder doesn't show is kept.
+
+![The class builder on its Features step: Hearthfire, and Warding Style with two options to choose from and one more at level 6, beside the class page and what level 3 grants](images/guide-5e-class-builder.png)
+
+The words follow your campaign's rules: a 2014 builder makes a race with subraces, a 2024 one a species with lineages.
+
+### Class
+
+- **Class:** name, hit die, primary ability and saving throws.
+- **Training:** armor, weapons and tools, the skills it chooses from and how many, and tools to choose.
+- **Gear:** starting equipment as choices: each option's items (`2 Javelin` for two) and gold.
+- **Spells:** a spellcasting ability, then full, half, third or pact slots, its own spell list or another class's, and its cantrips and spells known or prepared, either like an SRD class's or your own numbers by level.
+- **Features:** each with its level and text. A feature can have options to choose from: how many it gives, and the levels that give one more (or a column of the table that counts them).
+- **Table:** what its subclasses are called and the levels they give features, the Ability Score Improvements (and 2024's Epic Boon at 19), and its own columns, such as uses with pips on the sheet.
+- **Uses:** limited uses a column doesn't count: how many (a number, an ability's modifier, the proficiency bonus or the class level, at least 1 if you like), from which level, and the rest that brings them back.
+
+The proficiency bonus and spell slots are worked out for every level. The summary shows what any level grants: tap a level along its strip.
+
+### Subclass
+
+Its class (any in the compendium: the SRD's, a pack's or yours), its name and description, then its features. New features come at the class's subclass levels. **Spells** lists spells it always has prepared from a class level, like a domain's or an oath's; New character and Level up add them to the sheet when the level comes.
+
+### Feat
+
+Name, its category in 2024 (origin, general, fighting style or epic boon), prerequisite and whether it's repeatable, then an Ability Score Increase (which abilities can take the +1) and its text.
+
+### Species or race
+
+Size, speed, creature type and darkvision; traits; what it gives and lets you choose (skills, a cantrip from a list, tools, and in 2014 languages); 2014's ability score increases and subraces, or 2024's lineages.
+
+### Background
+
+- **2024:** its three ability scores, its origin feat, two skills, a tool (or a choice of tools), and equipment: option A's items and gold, or option B's gold.
+- **2014:** two skills, tools, languages to choose, its feature, and its equipment.
 
 ## Where the notes live
 
@@ -295,6 +332,12 @@ A class's own words do most of the work, the way the books' do ("Choose 1 Kindli
 - `resources`: limited-use features the level table doesn't count, with pips on the sheet. `uses` is a number or a formula of ability modifiers, `PB` and `level` (`Charisma modifier`, `2 + WIS`); `min`, the level it starts at, the rest that brings them back (`reset: short`), from which level a short rest does (`shortFrom`), or one back on a short rest (`shortOne`).
 - `startingEquipment` and `toolChoices`, for a class or a background (and a background's `tools`). Each choice lists its options; an option has `items` (`2 Javelin` for two), `picks` from a list, and `gold`.
 - `group` on a feature: it's one choice of the feature named there, whatever it's called.
+- `choose` on a feature with options: how many it gives when gained (each later level that names it in the table gives one more), or `known`: the table column that says how many are known (`invocations_known`).
+- `unarmored` on a feature: its AC without armor, `{ base: 10, add: [CON], shield: true }`.
+- `subclassTitle` and `subclassLevels`: what its subclasses are called and the levels they give features.
+- A subclass's `spells`: always prepared from a class level, `- { level: 3, spells: [Bless, Cure Wounds] }`.
+- A feat's `increase` (`[STR, DEX]`: +1 to one of them) and `repeatable`.
+- A species, lineage or subrace's `skills`, `skillChoices`, `cantripChoices`, `toolChoices`, and in 2014 `languages`, `languageChoices` and `abilityChoices`; a subrace's `abilityBonuses`. A background's `languages` and `languageChoices`.
 
 **Nimble**
 
