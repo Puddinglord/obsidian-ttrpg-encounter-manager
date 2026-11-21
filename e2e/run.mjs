@@ -7404,6 +7404,168 @@ test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its
 	}
 });
 
+test('5e imports: a D&D Beyond character brings its class into the compendium as Imported; it makes a hero and levels up; importing again fills in levels', async (o) => {
+	const C = 'Campaigns/Hollow Coast';
+	const F = 'Ember Vault/Content';
+	const M = '.modal.dnd5e-import';
+	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+	const B = '.modal.nimble-entity-builder';
+	const panel = `${B} .eb-panel.is-active`;
+	// Mira Hollowell, a made-up level 7 Hollowblade in D&D Beyond's shape (tests/fixtures; every name and sentence invented).
+	const json = readFileSync(join(ROOT, 'tests/fixtures/ddb-hollowblade.json'), 'utf8');
+	// Two levels on, D&D Beyond gives the class's features up to level 9.
+	const at9 = JSON.parse(json);
+	at9.data.classes[0].level = 9;
+	at9.data.classes[0].definition.classFeatures.push(
+		{ id: 910010, name: 'Ability Score Improvement', description: '<p>You gain the Ability Score Improvement feat or another feat of your choice.</p>', requiredLevel: 8 },
+		{ id: 910011, name: 'Undying Edge', description: '<p>Your weapon attacks score a Critical Hit on a roll of 19 or 20 against undead.</p>', requiredLevel: 9 },
+	);
+	const fm = (p) => o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter ?? null, p);
+	try {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			for (const p of [C, F]) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Hollow Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+		}, [C, F]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		// The import dialog: the character, then what it brings into the compendium, ticked for what's new.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+		await o.page.locator(M).waitFor();
+		assert.ok(await o.page.locator(`${M}.ev-dialog.ev-sys-dnd5e`).count(), 'the dialog wears 5e\'s look');
+		await o.page.locator(`${M} textarea`).fill(json);
+		const report = o.page.locator(`${M} .nimble-import-report`);
+		await o.waitFor(async () => /Mira Hollowell[\s\S]*Level 7 Hollowblade[\s\S]*For your compendium/.test(await report.innerText()), { what: 'the character and its content' });
+		assert.equal(await o.page.locator(`${M} .dnd5e-ddb-summary`).innerText(), 'Hollowblade (class, levels 1–7 seen), Order of the Quiet Lantern (subclass), Elf (species), Grave Tender (background), 2 feats, 2 spells, 3 items: 4 already in the SRD');
+		const rows = await o.page.locator(`${M} .dnd5e-ddb-row input`).evaluateAll(els => els.map(e => `${e.dataset.name}${e.checked ? '' : ' (off)'}`));
+		assert.deepEqual(rows, ['Hollowblade', 'Order of the Quiet Lantern', 'Grave Tender', 'Hollow Focus', 'Lantern Lance', 'Lantern of Last Light', 'Hookblade']);
+		assert.equal(await o.page.locator(`${M} .dnd5e-ddb-skip.is-srd`).innerText(), 'Already in the SRD: Elf, Alert, Light, Longsword');
+		assert.match(await o.page.locator(`${M} .dnd5e-ddb-levels`).innerText(), /only gave Hollowblade's features up to level 7\. Import the character again after they level up/);
+		// New entries need no tag; on a phone, nothing spills sideways.
+		assert.equal(await o.page.locator(`${M} .dnd5e-ddb-tag`).count(), 0);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb-content.png') });
+		const spill = await o.page.evaluate((M) => {
+			const modal = document.querySelector(M);
+			const before = modal.style.width;
+			modal.style.width = '340px';
+			const out = [...modal.querySelectorAll('.dnd5e-ddb-content, .dnd5e-ddb-row, .ev-dialog-foot')].filter(el => el.scrollWidth > el.clientWidth + 1).map(el => el.className);
+			modal.style.width = before;
+			return out;
+		}, M);
+		assert.deepEqual(spill, []);
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+
+		// The character note, and a note for each entry in the content folder, which the compendium reads.
+		const sheet = `${C}/Party/Mira Hollowell.md`;
+		await o.waitFor(async () => (await fm(sheet))?.class === 'Hollowblade', { what: 'the imported character note' });
+		assert.match(await read(o, `${F}/5e/Classes/Hollowblade.md`), /^```5e-class\nname: Hollowblade\nimported: D&D Beyond\nddbId: 900001\nhitDie: 10\n/);
+		assert.match(await read(o, `${F}/5e/Spells/Lantern Lance.md`), /^```5e-spell\nname: Lantern Lance\nimported: D&D Beyond\nddbId: 950001\n/);
+		assert.match(await read(o, `${F}/5e/Magic items/Lantern of Last Light.md`), /^```5e-item\nname: Lantern of Last Light\nimported: D&D Beyond\n/);
+		assert.match(await read(o, `${F}/5e/Equipment/Hookblade.md`), /category: Martial Melee Weapon/);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e').flatMap(p => p.entries.map(e => e.name)).sort().join())) === 'Grave Tender,Hollow Focus,Hollowblade,Order of the Quiet Lantern', { what: 'the entries indexed' });
+
+		// The sheet reads the imported class: its features, its subclass's, the feat's text, its limited uses.
+		await o.openFile(sheet, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="features"]`).click();
+		await o.waitFor(async () => /Hollow Strike[\s\S]*Order Feature[\s\S]*Quiet Flame[\s\S]*Steady Light/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'the class\'s and subclass\'s features on the sheet' });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="actions"]`).click();
+		await o.waitFor(async () => /Grave Sense[\s\S]*|Ashen Step/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'the limited uses on the sheet' });
+		const actions = await o.page.locator(`${R} .dnd5e-sheet`).innerText();
+		assert.match(actions, /Grave Sense/);
+		assert.match(actions, /Ashen Step/);
+
+		// The compendium's Classes tab: tagged Imported (a dark tag), its page says where it came from.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.page.locator(V).waitFor({ timeout: 5000 });
+		const input = o.page.locator(`${V} .nimble-cmpx-input`);
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Classes' }).click();
+		await input.fill('hollow');
+		await o.waitFor(async () => (await cmpNames(o, V)).join() === 'Hollowblade,Order of the Quiet Lantern', { timeout: 3000, what: 'the class and subclass in the Classes tab' });
+		const tag = cmpRow(o, 'Hollowblade', V).locator('.bestiary-tag.is-imported');
+		assert.equal(await tag.textContent(), 'Imported');
+		const contrast = await tag.evaluate((el) => {
+			const lum = (c) => { const [r, g, b] = c.match(/\d+/g).slice(0, 3).map(n => { const v = Number(n) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+			const s = getComputedStyle(el);
+			const [bg, fg] = [lum(s.backgroundColor), lum(s.color)];
+			return { ratio: (Math.max(bg, fg) + 0.05) / (Math.min(bg, fg) + 0.05), dark: bg < fg };
+		});
+		assert.ok(contrast.dark && contrast.ratio >= 4.5, `tag contrast ${JSON.stringify(contrast)}`);
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${V} .nimble-cmpx-list`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		await cmpRow(o, 'Hollowblade', V).click();
+		await o.waitFor(async () => /Hollow Strike[\s\S]*Imported from D&D Beyond/.test(await o.page.locator(`${V} .nimble-cmpx-detail`).innerText()), { what: 'the class page' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb-compendium.png') });
+		// Its spell and its magic item too.
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Spells' }).click();
+		await input.fill('lantern lance');
+		await o.waitFor(async () => (await cmpNames(o, V))[0] === 'Lantern Lance', { timeout: 3000, what: 'the imported spell' });
+		assert.equal(await cmpRow(o, 'Lantern Lance', V).locator('.bestiary-tag.is-imported').textContent(), 'Imported');
+		await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
+
+		// New character: a Hollowblade, with the class's own starting equipment.
+		const hero = `${C}/Party/Tamsin Vale.md`;
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		await o.page.locator(`${panel} input[data-field="Name"]`).fill('Tamsin Vale');
+		await o.page.locator(`${panel} select[data-field="Class"]`).selectOption('Hollowblade');
+		await o.waitFor(async () => /Hollowblade/.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the class in the preview' });
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Equipment' }).click();
+		assert.match(await o.page.locator(panel).innerText(), /Scale Mail/);
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await fm(hero))?.class === 'Hollowblade', { what: 'the hero\'s note' });
+		assert.ok((await fm(hero)).inventory.some(i => (i.name ?? i) === 'Scale Mail'), 'the class\'s starting equipment');
+
+		// Level up: level 2 brings Ashen Step.
+		await o.openFile(hero, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Tamsin Vale[\s\S]*level 1 → 2/);
+		await o.page.locator(`${B} .eb-dot`).last().click();
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await fm(hero))?.level === 2, { what: 'level 2' });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="features"]`).click();
+		await o.waitFor(async () => /Ashen Step/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'level 2\'s feature' });
+
+		// Import content… takes the character's JSON two levels on: the class fills in levels 8–9, nothing else is written again.
+		const IC = '.modal.nimble-import-content';
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(IC).waitFor();
+		await o.page.locator(`${IC} textarea`).fill(JSON.stringify(at9));
+		await o.waitFor(async () => /Mira Hollowell's content/.test(await o.page.locator(`${IC} .nimble-import-report`).innerText()), { what: 'the character read as content' });
+		const again = await o.page.locator(`${IC} .dnd5e-ddb-row`).evaluateAll(els => els.map(e => `${e.querySelector('input').dataset.name}: ${e.querySelector('.dnd5e-ddb-tag').textContent}`));
+		assert.deepEqual(again, ['Hollowblade: levels 8–9']);
+		// The tag that says what it gains: dark with light text, centred on its capitals.
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${IC} .dnd5e-ddb-list`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		const fill = await o.page.locator(`${IC} .dnd5e-ddb-tag`).evaluate((el) => {
+			const lum = (c) => { const [r, g, b] = c.match(/\d+/g).slice(0, 3).map(n => { const v = Number(n) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+			const s = getComputedStyle(el);
+			const [bg, fg] = [lum(s.backgroundColor), lum(s.color)];
+			return { ratio: (Math.max(bg, fg) + 0.05) / (Math.min(bg, fg) + 0.05), dark: bg < fg };
+		});
+		assert.ok(fill.dark && fill.ratio >= 4.5, `tag contrast ${JSON.stringify(fill)}`);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb-again.png') });
+		assert.match(await o.page.locator(`${IC} .dnd5e-ddb-skip.is-same`).innerText(), /Already imported: Order of the Quiet Lantern, Grave Tender, Hollow Focus, Lantern Lance, Lantern of Last Light, Hookblade/);
+		await o.page.locator(`${IC} button.mod-cta`).click();
+		await o.page.locator(IC).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /- level: 9\n\s+name: Undying Edge/.test(await read(o, `${F}/5e/Classes/Hollowblade.md`)), { what: 'the class filled in' });
+		assert.deepEqual(await o.eval((app, _p, F) => app.vault.getMarkdownFiles().filter(f => f.path.startsWith(`${F}/5e/Classes/`)).map(f => f.basename), F), ['Hollowblade']);
+	} finally {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			for (const p of [C, F]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			plugin.settings.party = [];
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
+	}
+});
+
 test('5e compendium: spells, items and classes for both editions, 5e:spell: references, autocomplete, Spotlight', async (o) => {
 	const C = 'Campaigns/Sword Coast';
 	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
