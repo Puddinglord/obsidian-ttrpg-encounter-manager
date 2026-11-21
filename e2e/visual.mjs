@@ -264,7 +264,7 @@ async function capture(s, name, width, theme, phone) {
 		await page.evaluate(drawOutlines, issues);
 		await grab(`${base}.issues.png`);
 		await page.evaluate(clearOutlines);
-	}
+	} else rmSync(join(dir, `${base}.issues.png`), { force: true }); // an outline from an earlier run, now fixed
 	ran.add(`${s.game}/${name}|${!!phone}`);
 	shots.push({
 		game: s.game, surface: name, mode: s.mode, width, theme, phone,
