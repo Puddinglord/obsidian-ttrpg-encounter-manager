@@ -23,6 +23,24 @@ const feature = { name: text(undefined, true), desc: text('The text. Markdown is
 const levelFeature = {
 	level: { type: 'number', integer: true, min: 1, max: 20, required: true } as FieldSpec, ...feature,
 	group: text('This feature is one choice of the feature named here ("Ward Stance"), for options not named "Ward Stance: Ember".'),
+	choose: { type: 'number', integer: true, min: 1, max: 20, description: 'A feature with options: how many it gives when gained (1 if left out). Each later level that names it in the table gives one more.' } as FieldSpec,
+	known: text('A feature with options: the level table\'s column (in "extra") that says how many are known at each level, instead: "invocations_known".'),
+	unarmored: { type: 'object', description: 'While wearing no armor, AC is base + Dex + these abilities\' modifiers (Unarmored Defense).', fields: {
+		base: { type: 'number', integer: true, min: 0, max: 30, description: '10 if left out.' },
+		add: { type: 'strings', description: 'Abilities whose modifiers add to it besides Dex: [CON].' },
+		shield: { type: 'boolean', description: 'A Shield still counts (true if left out).' },
+	} } as FieldSpec,
+};
+/** A choice of a few from a list: skills, languages, tools, cantrips. */
+const choice = (description: string, fromRequired = true): FieldSpec => ({ type: 'object', description, fields: { count: { type: 'number', integer: true, min: 1, required: true }, from: { type: 'strings', required: fromRequired } } });
+/** What a species, a subspecies or a lineage gives a new character, and what they choose. */
+const originChoices: Record<string, FieldSpec> = {
+	languages: { type: 'strings', description: 'Languages it gives (2014): [Common, Elvish].' },
+	languageChoices: choice('Languages to choose: how many, and from which (any if left out).', false),
+	skills: { type: 'strings', description: 'Skills it gives: [Perception].' },
+	skillChoices: choice('Skills to choose: how many, from which.'),
+	toolChoices: choice('Tools to choose: how many, from which.'),
+	cantripChoices: choice('A cantrip to choose, from these.'),
 };
 /** Limited-use features the level table doesn't count. */
 const resources: FieldSpec = {
@@ -102,7 +120,11 @@ export const KINDS_5E: KindSpec[] = [
 	},
 	{
 		kind: 'feat', label: 'Feat', description: 'A feat.',
-		fields: named({ desc: text(undefined, true), prerequisite: text(), type: text('origin, general, fighting-style, epic-boon') }),
+		fields: named({
+			desc: text(undefined, true), prerequisite: text(), type: text('origin, general, fighting-style, epic-boon'),
+			repeatable: { type: 'boolean', description: 'It can be taken more than once.' },
+			increase: { type: 'strings', description: 'Its Ability Score Increase: +1 to one of these, to a maximum of 20 (30 for an Epic Boon): [STR, DEX].' },
+		}),
 		starter: { type: 'general', prerequisite: '', desc: '' },
 	},
 	{
@@ -110,14 +132,20 @@ export const KINDS_5E: KindSpec[] = [
 		fields: named({
 			proficiencies: { type: 'strings' }, abilityScores: { type: 'strings' }, feat: text(), feature: { type: 'object', fields: feature }, equipment: text('The equipment as the book writes it.'),
 			startingEquipment, tools: { type: 'strings', description: 'Tools it gives.' }, toolChoices,
+			languages: { type: 'strings', description: 'Languages it gives.' }, languageChoices: choice('Languages to choose: how many, and from which (any if left out).', false),
 		}),
 		starter: { abilityScores: [], feat: '', proficiencies: [], equipment: '' },
 	},
 	{
 		kind: 'species', label: 'Species', description: 'A species (2014: a race).',
 		fields: named({
-			size: text(undefined, true), speed: { type: 'number', integer: true, min: 0, required: true }, type: text(), abilityBonuses: text(), desc: text(),
-			traits: { type: 'list', of: feature }, subspecies: { type: 'list', of: { name: text(undefined, true), desc: text(), traits: { type: 'list', of: feature } } },
+			size: text(undefined, true), speed: { type: 'number', integer: true, min: 0, required: true }, type: text(), abilityBonuses: text('2014: "DEX +2, WIS +1".'), desc: text(),
+			traits: { type: 'list', of: feature },
+			abilityChoices: { type: 'object', description: '2014: abilities to choose for a bonus (a half-elf\'s two +1s).', fields: { count: { type: 'number', integer: true, min: 1, required: true }, bonus: { type: 'number', integer: true, min: 1, max: 2, required: true }, from: { type: 'strings', description: 'Any if left out.' } } },
+			...originChoices,
+			subspecies: { type: 'list', description: '2014: subraces; 2024: lineages and other choices of the species ("Elven Lineage: Drow").', of: {
+				name: text(undefined, true), desc: text(), traits: { type: 'list', of: feature }, abilityBonuses: text('2014: "WIS +1".'), ...originChoices,
+			} },
 		}),
 		starter: { size: 'Medium', speed: 30, type: 'Humanoid', desc: '', traits: [{ name: '', desc: '' }] },
 	},
@@ -127,6 +155,8 @@ export const KINDS_5E: KindSpec[] = [
 			hitDie: { type: 'number', integer: true, min: 4, max: 12, required: true }, primary: text(), saves: { type: 'strings', required: true },
 			proficiencies: { type: 'strings' }, skillChoice: text(), spellcasting: text(), spellList: text('The class whose spell list it casts from, when it isn\'t its own: "Paladin".'),
 			resources, startingEquipment, toolChoices,
+			subclassTitle: text('What its subclasses are called: "Warden Circle".'),
+			subclassLevels: { type: 'numbers', description: 'The levels its subclass gives features, the first when it\'s chosen: [3, 6, 10, 14].' },
 			features: { type: 'list', of: levelFeature, required: true },
 			levels: { type: 'list', of: {
 				level: { type: 'number', integer: true, min: 1, max: 20, required: true }, pb: { type: 'number', integer: true, required: true }, features: { type: 'strings' }, slots: { type: 'numbers' },
@@ -143,7 +173,10 @@ export const KINDS_5E: KindSpec[] = [
 	},
 	{
 		kind: 'subclass', label: 'Subclass', description: 'A subclass for a class (the SRD\'s or a pack\'s), by the class\'s name.',
-		fields: named({ class: text('The class it belongs to: "Barbarian".', true), flavor: text('"Primal Path"'), desc: text(), features: { type: 'list', of: levelFeature, required: true }, resources }),
+		fields: named({
+			class: text('The class it belongs to: "Barbarian".', true), flavor: text('"Primal Path"'), desc: text(), features: { type: 'list', of: levelFeature, required: true }, resources,
+			spells: { type: 'list', description: 'Spells it always has prepared, from a class level (domain or oath spells).', of: { level: { type: 'number', integer: true, min: 1, max: 20, required: true }, spells: { type: 'strings', required: true } } },
+		}),
 		starter: { class: '', flavor: '', desc: '', features: [{ level: 3, name: '', desc: '' }] },
 	},
 ];

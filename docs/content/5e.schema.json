@@ -701,6 +701,17 @@
 									"number"
 								],
 								"description": "origin, general, fighting-style, epic-boon"
+							},
+							"repeatable": {
+								"type": "boolean",
+								"description": "It can be taken more than once."
+							},
+							"increase": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Its Ability Score Increase: +1 to one of these, to a maximum of 20 (30 for an Epic Boon): [STR, DEX]."
 							}
 						},
 						"required": [
@@ -884,6 +895,32 @@
 									"from"
 								],
 								"description": "Tools to choose: how many, from which."
+							},
+							"languages": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Languages it gives."
+							},
+							"languageChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count"
+								],
+								"description": "Languages to choose: how many, and from which (any if left out)."
 							}
 						},
 						"required": [
@@ -937,7 +974,8 @@
 								"type": [
 									"string",
 									"number"
-								]
+								],
+								"description": "2014: \"DEX +2, WIS +1\"."
 							},
 							"desc": {
 								"type": [
@@ -969,6 +1007,125 @@
 										"desc"
 									]
 								}
+							},
+							"abilityChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"bonus": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 2
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										},
+										"description": "Any if left out."
+									}
+								},
+								"required": [
+									"count",
+									"bonus"
+								],
+								"description": "2014: abilities to choose for a bonus (a half-elf's two +1s)."
+							},
+							"languages": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Languages it gives (2014): [Common, Elvish]."
+							},
+							"languageChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count"
+								],
+								"description": "Languages to choose: how many, and from which (any if left out)."
+							},
+							"skills": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Skills it gives: [Perception]."
+							},
+							"skillChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "Skills to choose: how many, from which."
+							},
+							"toolChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "Tools to choose: how many, from which."
+							},
+							"cantripChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "A cantrip to choose, from these."
 							},
 							"subspecies": {
 								"type": "array",
@@ -1011,12 +1168,113 @@
 													"desc"
 												]
 											}
+										},
+										"abilityBonuses": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "2014: \"WIS +1\"."
+										},
+										"languages": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"description": "Languages it gives (2014): [Common, Elvish]."
+										},
+										"languageChoices": {
+											"type": "object",
+											"properties": {
+												"count": {
+													"type": "integer",
+													"minimum": 1
+												},
+												"from": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													}
+												}
+											},
+											"required": [
+												"count"
+											],
+											"description": "Languages to choose: how many, and from which (any if left out)."
+										},
+										"skills": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"description": "Skills it gives: [Perception]."
+										},
+										"skillChoices": {
+											"type": "object",
+											"properties": {
+												"count": {
+													"type": "integer",
+													"minimum": 1
+												},
+												"from": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													}
+												}
+											},
+											"required": [
+												"count",
+												"from"
+											],
+											"description": "Skills to choose: how many, from which."
+										},
+										"toolChoices": {
+											"type": "object",
+											"properties": {
+												"count": {
+													"type": "integer",
+													"minimum": 1
+												},
+												"from": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													}
+												}
+											},
+											"required": [
+												"count",
+												"from"
+											],
+											"description": "Tools to choose: how many, from which."
+										},
+										"cantripChoices": {
+											"type": "object",
+											"properties": {
+												"count": {
+													"type": "integer",
+													"minimum": 1
+												},
+												"from": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													}
+												}
+											},
+											"required": [
+												"count",
+												"from"
+											],
+											"description": "A cantrip to choose, from these."
 										}
 									},
 									"required": [
 										"name"
 									]
-								}
+								},
+								"description": "2014: subraces; 2024: lineages and other choices of the species (\"Elven Lineage: Drow\")."
 							}
 						},
 						"required": [
@@ -1248,6 +1506,20 @@
 								],
 								"description": "Tools to choose: how many, from which."
 							},
+							"subclassTitle": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "What its subclasses are called: \"Warden Circle\"."
+							},
+							"subclassLevels": {
+								"type": "array",
+								"items": {
+									"type": "number"
+								},
+								"description": "The levels its subclass gives features, the first when it's chosen: [3, 6, 10, 14]."
+							},
 							"features": {
 								"type": "array",
 								"items": {
@@ -1277,6 +1549,42 @@
 												"number"
 											],
 											"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
+										},
+										"choose": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "A feature with options: how many it gives when gained (1 if left out). Each later level that names it in the table gives one more."
+										},
+										"known": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "A feature with options: the level table's column (in \"extra\") that says how many are known at each level, instead: \"invocations_known\"."
+										},
+										"unarmored": {
+											"type": "object",
+											"properties": {
+												"base": {
+													"type": "integer",
+													"minimum": 0,
+													"maximum": 30,
+													"description": "10 if left out."
+												},
+												"add": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													},
+													"description": "Abilities whose modifiers add to it besides Dex: [CON]."
+												},
+												"shield": {
+													"type": "boolean",
+													"description": "A Shield still counts (true if left out)."
+												}
+											},
+											"description": "While wearing no armor, AC is base + Dex + these abilities' modifiers (Unarmored Defense)."
 										}
 									},
 									"required": [
@@ -1385,6 +1693,42 @@
 															"number"
 														],
 														"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
+													},
+													"choose": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20,
+														"description": "A feature with options: how many it gives when gained (1 if left out). Each later level that names it in the table gives one more."
+													},
+													"known": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "A feature with options: the level table's column (in \"extra\") that says how many are known at each level, instead: \"invocations_known\"."
+													},
+													"unarmored": {
+														"type": "object",
+														"properties": {
+															"base": {
+																"type": "integer",
+																"minimum": 0,
+																"maximum": 30,
+																"description": "10 if left out."
+															},
+															"add": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Abilities whose modifiers add to it besides Dex: [CON]."
+															},
+															"shield": {
+																"type": "boolean",
+																"description": "A Shield still counts (true if left out)."
+															}
+														},
+														"description": "While wearing no armor, AC is base + Dex + these abilities' modifiers (Unarmored Defense)."
 													}
 												},
 												"required": [
@@ -1542,6 +1886,42 @@
 												"number"
 											],
 											"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
+										},
+										"choose": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "A feature with options: how many it gives when gained (1 if left out). Each later level that names it in the table gives one more."
+										},
+										"known": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "A feature with options: the level table's column (in \"extra\") that says how many are known at each level, instead: \"invocations_known\"."
+										},
+										"unarmored": {
+											"type": "object",
+											"properties": {
+												"base": {
+													"type": "integer",
+													"minimum": 0,
+													"maximum": 30,
+													"description": "10 if left out."
+												},
+												"add": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													},
+													"description": "Abilities whose modifiers add to it besides Dex: [CON]."
+												},
+												"shield": {
+													"type": "boolean",
+													"description": "A Shield still counts (true if left out)."
+												}
+											},
+											"description": "While wearing no armor, AC is base + Dex + these abilities' modifiers (Unarmored Defense)."
 										}
 									},
 									"required": [
@@ -1608,6 +1988,30 @@
 									]
 								},
 								"description": "Limited-use features the level table doesn't count, with pips on the sheet."
+							},
+							"spells": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"spells": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										}
+									},
+									"required": [
+										"level",
+										"spells"
+									]
+								},
+								"description": "Spells it always has prepared, from a class level (domain or oath spells)."
 							}
 						},
 						"required": [

@@ -22,8 +22,16 @@ export interface Equipment5e extends Origin5e {
 	damage?: string; versatile?: string; range?: string; properties?: string[]; mastery?: string;
 	armorCategory?: string; ac?: { base: number; dex: boolean; max?: number }; strMin?: number; stealthDisadvantage?: boolean; desc?: string;
 }
-/** `group`: this feature is one choice of the feature of that name (an option not named "Group: Option"). */
-export interface ClassFeature5e { level: number; name: string; desc: string; group?: string }
+/**
+ * `group`: this feature is one choice of the feature of that name (an option not named "Group: Option").
+ * On a feature with options: `choose`, how many it gives when gained (each later level naming it in the table
+ * gives one more), or `known`, the table's column with how many are known at each level ("invocations_known").
+ * `unarmored`: without armor, AC is `base` (10) + Dex + the `add` abilities' modifiers, a Shield allowed unless `shield` is false.
+ */
+export interface ClassFeature5e {
+	level: number; name: string; desc: string; group?: string; choose?: number; known?: string;
+	unarmored?: { base?: number; add?: string[]; shield?: boolean };
+}
 /**
  * A limited-use feature the class table doesn't count: how many uses (a number, or a formula of ability modifiers,
  * PB and level: "CHA", "Charisma modifier", "PB", "2 + WIS"), at least `min`, from class `level`, back on a `reset`
@@ -40,7 +48,9 @@ export interface StartingEquipment5e { label?: string; options: { label: string;
 interface Origin5e { source?: string; note?: string; imported?: string; ddbId?: number }
 /** A class table's row. `prepared`: spells known or prepared (a pack's column; the SRD's come from creation.json). `extra`: the class's own numbers. */
 export interface ClassLevel5e { level: number; pb: number; features: string[]; slots?: number[]; cantrips?: number; prepared?: number; extra?: Record<string, unknown> }
-export interface Subclass5e extends Origin5e { name: string; flavor: string; desc: string; features: ClassFeature5e[]; resources?: ClassResource5e[] }
+/** Spells a subclass always has prepared from a class level (domain or oath spells). */
+export interface SubclassSpells5e { level: number; spells: string[] }
+export interface Subclass5e extends Origin5e { name: string; flavor: string; desc: string; features: ClassFeature5e[]; resources?: ClassResource5e[]; spells?: SubclassSpells5e[] }
 export interface Class5e extends Origin5e {
 	name: string; hitDie: number; primary?: string; saves: string[]; proficiencies: string[]; skillChoice: string; spellcasting?: string;
 	/** Limited-use features its table doesn't count (Bardic Inspiration's Charisma modifier). */
@@ -50,15 +60,30 @@ export interface Class5e extends Origin5e {
 	toolChoices?: { count: number; from: string[] };
 	/** Casts from another class's spell list ("Paladin"); else its own name's. */
 	spellList?: string;
+	/** What its subclasses are called ("Warden Circle"), and the levels the subclass gives features (the first: when it's chosen). */
+	subclassTitle?: string;
+	subclassLevels?: number[];
 	features: ClassFeature5e[]; levels: ClassLevel5e[]; subclasses: Subclass5e[];
 }
-export interface Species5e extends Origin5e { name: string; size: string; speed: number; type?: string; abilityBonuses?: string; desc?: string; traits: Feature5e[]; subspecies: { name: string; desc?: string; traits: Feature5e[] }[] }
+/** A choice of a few from a list (skills, languages, tools, cantrips); `from` left out: any. */
+export interface Pick5e { count: number; from?: string[] }
+/** What a species, subspecies or lineage gives a new character and what they choose (the SRD's are in creation.json). */
+export interface OriginChoices5e { languages?: string[]; languageChoices?: Pick5e; skills?: string[]; skillChoices?: Pick5e; toolChoices?: Pick5e; cantripChoices?: Pick5e }
+export interface Subspecies5e extends OriginChoices5e { name: string; desc?: string; traits: Feature5e[]; abilityBonuses?: string }
+export interface Species5e extends Origin5e, OriginChoices5e {
+	name: string; size: string; speed: number; type?: string; abilityBonuses?: string; desc?: string; traits: Feature5e[]; subspecies: Subspecies5e[];
+	/** 2014: abilities to choose for a bonus (a half-elf's two +1s). */
+	abilityChoices?: { count: number; bonus: number; from?: string[] };
+}
 export interface Background5e extends Origin5e {
 	name: string; proficiencies: string[]; abilityScores?: string[]; feat?: string; feature?: Feature5e; equipment?: string;
 	/** What a new character with it starts with, its tools, and the tools they choose (the SRD's are in creation.json). */
 	startingEquipment?: StartingEquipment5e[]; tools?: string[]; toolChoices?: { count: number; from: string[] };
+	/** Languages it gives, and to choose. */
+	languages?: string[]; languageChoices?: Pick5e;
 }
-export interface Feat5e extends Origin5e { name: string; desc: string; prerequisite?: string; type?: string }
+/** `increase`: its Ability Score Increase, +1 to one of these abilities. */
+export interface Feat5e extends Origin5e { name: string; desc: string; prerequisite?: string; type?: string; repeatable?: boolean; increase?: string[] }
 /** A rules section (2014) or a Rules Glossary entry (2024, `tag`: Condition, Action, Hazard…). */
 export interface Rule5e { name: string; desc: string; topic?: string; tag?: string }
 export interface Ability5e { abbr: string; name: string; desc: string; skills: string[] }

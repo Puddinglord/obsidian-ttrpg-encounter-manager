@@ -10,7 +10,8 @@ import { App } from 'obsidian';
 import { appendRichText, RichTextOptions } from '../../core/markdown';
 import { appendWithTerms, TermContext } from '../../core/rule-term-ui';
 import { wireWikiLinks } from '../../core/wiki-links';
-import { compendium5e, Hit5e } from './compendium';
+import { compendium5e, Hit5e, OriginChoices5e } from './compendium';
+import { ABILITIES, ABILITY_NAME } from './types';
 import { applyLook } from '../../core/look';
 import { classScroll } from './scroll';
 
@@ -65,6 +66,30 @@ export function renderText5e(parent: HTMLElement, text: string, label: string, o
 		}
 		rich(parent.createEl('p'), line, { onDice });
 	}
+}
+
+/** "Strength or Dexterity", from STR, Dexterity… */
+function abilityWords(list: string[], joiner = 'or'): string {
+	const names = list.map(a => ABILITY_NAME[ABILITIES.find(k => k === a.toLowerCase() || ABILITY_NAME[k].toLowerCase() === a.toLowerCase()) ?? 'str'] ?? a);
+	return names.length < 3 ? names.join(` ${joiner} `) : `${names.slice(0, -1).join(', ')}, ${joiner} ${names[names.length - 1]}`;
+}
+const NUMBER_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six'];
+/** "Common and Ignan, and one of Elvish or Sylvan": what an origin gives and lets you choose. */
+function choiceWords(given: string[] | undefined, pick: { count: number; from?: string[] } | undefined, anyWord: string): string {
+	const parts: string[] = [];
+	if (given?.length) parts.push(given.join(', '));
+	if (pick?.count) {
+		const n = NUMBER_WORDS[pick.count] ?? String(pick.count);
+		parts.push(pick.from?.length ? `${n} of ${pick.from.join(pick.from.length === 2 ? ' or ' : ', ')}` : `${n} ${anyWord} of your choice`);
+	}
+	return parts.join('; ');
+}
+/** The facts an origin's own choices add (a pack's or your species, lineage or background). */
+function originFacts(facts: HTMLElement, o: OriginChoices5e): void {
+	field(facts, 'Languages', choiceWords(o.languages, o.languageChoices, o.languageChoices?.count === 1 ? 'language' : 'languages'));
+	field(facts, 'Skills', choiceWords(o.skills, o.skillChoices, 'skill'));
+	field(facts, 'Tools', choiceWords(undefined, o.toolChoices, 'tool'));
+	field(facts, 'Cantrip', choiceWords(undefined, o.cantripChoices, 'cantrip'));
 }
 
 /** A labelled line: "**Casting Time** 1 action". */
@@ -167,6 +192,20 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 		}
 		case 'subclass': {
 			text(hit.subclass.desc);
+			// Spells it always has prepared, as the book tables a domain's or an oath's.
+			const spells = (hit.subclass.spells ?? []).filter(x => x.spells?.length);
+			if (spells.length) {
+				body.createDiv({ cls: 'dnd5e-card-sub', text: `${hit.subclass.name} Spells` });
+				const t = body.createDiv({ cls: 'dnd5e-table-wrap' }).createEl('table', { cls: 'dnd5e-card-table' });
+				const hr = t.createEl('tr');
+				hr.createEl('th', { text: `${hit.cls.name || 'Class'} Level` });
+				hr.createEl('th', { text: hit.edition === '2014' ? 'Spells' : 'Prepared Spells' });
+				for (const x of [...spells].sort((a, b) => a.level - b.level)) {
+					const tr = t.createEl('tr');
+					tr.createEl('td', { text: String(x.level) });
+					tr.createEl('td', { text: x.spells.join(', ') });
+				}
+			}
 			for (const f of hit.subclass.features) {
 				body.createDiv({ cls: 'dnd5e-card-sub', text: hit.edition === '2014' ? `${f.name} (level ${f.level})` : `Level ${f.level}: ${f.name}` });
 				text(f.desc, f.name);
@@ -179,11 +218,16 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			field(facts, 'Creature Type', s.type);
 			field(facts, 'Size', s.size);
 			field(facts, 'Speed', s.speed !== undefined ? `${s.speed} feet` : undefined);
-			field(facts, 'Ability Scores', s.abilityBonuses);
+			field(facts, 'Ability Scores', [s.abilityBonuses, s.abilityChoices?.count ? `+${s.abilityChoices.bonus || 1} to ${NUMBER_WORDS[s.abilityChoices.count] ?? s.abilityChoices.count} of your choice${s.abilityChoices.from?.length ? ` (${abilityWords(s.abilityChoices.from)})` : ''}` : ''].filter(Boolean).join(', '));
+			originFacts(facts, s);
 			text(s.desc);
 			for (const t of s.traits) lead(t.name, t.desc);
 			for (const sub of s.subspecies) {
 				body.createDiv({ cls: 'dnd5e-card-level', text: sub.name });
+				const subFacts = body.createDiv({ cls: 'dnd5e-card-facts' });
+				field(subFacts, 'Ability Scores', sub.abilityBonuses);
+				originFacts(subFacts, sub);
+				if (!subFacts.childElementCount) subFacts.remove();
 				text(sub.desc);
 				for (const t of sub.traits) lead(t.name, t.desc);
 			}
@@ -195,14 +239,20 @@ export function renderCard5e(el: HTMLElement, hit: Hit5e, o: Card5eOptions): HTM
 			field(facts, 'Ability Scores', b.abilityScores?.join(', '));
 			field(facts, 'Feat', b.feat);
 			field(facts, 'Proficiencies', b.proficiencies.join(', '));
+			field(facts, 'Languages', choiceWords(b.languages, b.languageChoices, b.languageChoices?.count === 1 ? 'language' : 'languages'));
 			field(facts, 'Equipment', b.equipment);
 			if (b.feature) lead(b.feature.name, b.feature.desc);
 			break;
 		}
-		case 'feat':
-			if (hit.feat.prerequisite) field(body, 'Prerequisite', hit.feat.prerequisite);
-			text(hit.feat.desc);
+		case 'feat': {
+			const f = hit.feat;
+			if (f.prerequisite) field(body, 'Prerequisite', f.prerequisite);
+			text(f.desc);
+			// Its increase and Repeatable, as the 2024 book closes a feat, unless its text already says so.
+			if (f.increase?.length && !/Ability Score Increase/i.test(f.desc)) lead('Ability Score Increase', `Increase your ${abilityWords(f.increase)} score by 1, to a maximum of ${f.type === 'epic-boon' ? 30 : 20}.`);
+			if (f.repeatable && !/\bRepeatable\b/.test(f.desc)) lead('Repeatable', 'You can take this feat more than once.');
 			break;
+		}
 		case 'rule':
 			text(hit.rule.desc);
 			break;

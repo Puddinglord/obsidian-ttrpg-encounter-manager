@@ -259,8 +259,38 @@ def classes(ed):
                 sf = [{'level': f.get('level', 0), 'name': f['name'], 'desc': text(f.get('desc') or f.get('description'))} for f in sf]
             sub_out.append({'name': sc_['name'], 'flavor': sc_.get('subclass_flavor') or sc_.get('summary') or '', 'desc': text(sc_.get('desc') or sc_.get('description')), 'features': sorted(sf, key=lambda f: (f['level'], f['name']))})
         x['subclasses'] = sub_out
+        class_data(ed, x)
         out.append(x)
     return out
+
+# What the plugin would otherwise find by a feature's name, as data on the feature (the fields a pack's class uses):
+# how many options a feature gives (`choose`) or the table column that counts them (`known`), and the AC a feature
+# gives without armor (`unarmored`).
+OPTION_DATA = {
+    ('2014', 'Sorcerer', 'Metamagic'): {'choose': 2},
+    ('2024', 'Sorcerer', 'Metamagic'): {'choose': 2},
+    ('2014', 'Warlock', 'Eldritch Invocations'): {'known': 'invocations_known'},
+    ('2024', 'Warlock', 'Eldritch Invocations'): {'known': 'eldritch_invocations'},
+}
+UNARMORED = {
+    ('Barbarian', 'Unarmored Defense'): {'add': ['CON']},
+    ('Monk', 'Unarmored Defense'): {'add': ['WIS'], 'shield': False},
+    ('2014', 'Draconic Resilience'): {'base': 13},
+    ('2024', 'Draconic Resilience'): {'add': ['CHA']},
+}
+
+def class_data(ed, c):
+    for f in c['features']:
+        o = OPTION_DATA.get((ed, c['name'], f['name']))
+        # The first feature of that name is the one the options belong to (2014's Metamagic is listed at 3, 10 and 17).
+        if o and not any(g['name'] == f['name'] and ('choose' in g or 'known' in g) for g in c['features']):
+            f.update(o)
+        u = UNARMORED.get((c['name'], f['name']))
+        if u: f['unarmored'] = u
+    for s in c['subclasses']:
+        for f in s['features']:
+            u = UNARMORED.get((ed, f['name']))
+            if u: f['unarmored'] = u
 
 def species(ed):
     traits = {t['index']: t for t in load(ed, 'Traits')}

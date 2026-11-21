@@ -9,7 +9,7 @@
 
 import type { Draft } from '../../core/builder/schema';
 import creationJson from './data/creation.json';
-import { Background5e, Class5e, ClassFeature5e, compendium5e, Species5e, StartingEquipment5e } from './compendium';
+import { Background5e, Class5e, ClassFeature5e, compendium5e, OriginChoices5e, Pick5e, Species5e, StartingEquipment5e } from './compendium';
 import { Frontmatter, newCharacterFm, optionGroupOf, readSheet5e, SKILLS, STANDARD_ARRAY } from './character';
 
 export { optionGroupOf };
@@ -33,7 +33,7 @@ export interface SpeciesCreation5e {
 	languages?: string[]; languageChoices?: Choice5e; skills?: string[]; skillChoices?: Choice5e; toolChoices?: Choice5e;
 	abilityChoices?: Choice5e & { bonus: number }; abilityBonuses?: string; cantripChoices?: Choice5e; traitChoices?: Choice5e & { label: string };
 }
-export interface BackgroundCreation5e { items?: { name: string; qty: number }[]; gold?: number; equipment: EquipGroup5e[]; tools?: string[]; toolChoices?: Choice5e; languageChoices?: Choice5e }
+export interface BackgroundCreation5e { items?: { name: string; qty: number }[]; gold?: number; equipment: EquipGroup5e[]; tools?: string[]; toolChoices?: Choice5e; languages?: string[]; languageChoices?: Choice5e }
 interface Creation5e { classes: Record<string, ClassCreation5e>; species: Record<string, SpeciesCreation5e>; backgrounds: Record<string, BackgroundCreation5e> }
 const CREATION = creationJson as unknown as Record<Dnd5eEdition, Creation5e>;
 
@@ -69,17 +69,50 @@ export function classCreation(edition: Dnd5eEdition, name: string): ClassCreatio
 		...(own.toolChoices ? { tools: own.toolChoices } : {}),
 	};
 }
-export const speciesCreation = (edition: Dnd5eEdition, name: string): SpeciesCreation5e | undefined => (name ? findIn(CREATION[edition].species, name) : undefined);
+/**
+ * What a new character of a species, subspecies or lineage gets and chooses: the entry's own (a pack's, yours) on
+ * top of the SRD's.
+ */
+export function speciesCreation(edition: Dnd5eEdition, name: string): SpeciesCreation5e | undefined {
+	if (!name) return undefined;
+	const srd = findIn(CREATION[edition].species, name);
+	const own = ownOrigin(edition, name);
+	return own ? { ...srd, ...own } : srd;
+}
+
+const ALL_ABILITIES = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+
+/** A species' or subspecies' own choices (its fields), or nothing when it says none. */
+function ownOrigin(edition: Dnd5eEdition, name: string): SpeciesCreation5e | undefined {
+	const c = compendium5e(edition);
+	const sp = c.species.find(s => same(s.name, name));
+	const o: (OriginChoices5e & { abilityBonuses?: string; abilityChoices?: Species5e['abilityChoices'] }) | undefined = sp ?? c.species.flatMap(s => s.subspecies).find(s => same(s.name, name));
+	if (!o) return undefined;
+	const out: SpeciesCreation5e = {};
+	const pick = (p: Pick5e | undefined): Choice5e | undefined => (p && p.count > 0 && p.from?.length ? { count: p.count, from: p.from } : undefined);
+	if (o.languages?.length) out.languages = o.languages;
+	if (o.languageChoices?.count) out.languageChoices = { count: o.languageChoices.count, from: o.languageChoices.from ?? [] };
+	if (o.skills?.length) out.skills = o.skills;
+	if (pick(o.skillChoices)) out.skillChoices = pick(o.skillChoices);
+	if (pick(o.toolChoices)) out.toolChoices = pick(o.toolChoices);
+	if (pick(o.cantripChoices)) out.cantripChoices = pick(o.cantripChoices);
+	if (o.abilityChoices?.count) out.abilityChoices = { count: o.abilityChoices.count, bonus: o.abilityChoices.bonus || 1, from: o.abilityChoices.from?.length ? o.abilityChoices.from : ALL_ABILITIES };
+	// A subrace's own bonus (a species' is read from the species itself).
+	if (!sp && o.abilityBonuses) out.abilityBonuses = o.abilityBonuses;
+	return Object.keys(out).length ? out : undefined;
+}
 /** What a new character with a background starts with: the background's own (a pack's, yours), else the SRD's. */
 export function backgroundCreation(edition: Dnd5eEdition, name: string): BackgroundCreation5e | undefined {
 	const srd = findIn(CREATION[edition].backgrounds, name);
 	const own = compendium5e(edition).backgrounds.find(b => same(b.name, name));
-	if (!own?.startingEquipment && !own?.tools && !own?.toolChoices) return srd;
+	if (!own?.startingEquipment && !own?.tools && !own?.toolChoices && !own?.languages && !own?.languageChoices) return srd;
 	return {
 		...(srd ?? { equipment: [] }),
 		...(own.startingEquipment ? { items: undefined, gold: undefined, equipment: equipGroups(own.startingEquipment) } : {}),
 		...(own.tools ? { tools: own.tools } : {}),
 		...(own.toolChoices ? { toolChoices: own.toolChoices } : {}),
+		...(own.languages?.length ? { languages: own.languages } : {}),
+		...(own.languageChoices?.count ? { languageChoices: { count: own.languageChoices.count, from: own.languageChoices.from ?? [] } } : {}),
 	};
 }
 
@@ -213,10 +246,7 @@ export function optionGroups(cls: Class5e | undefined, subclass: string, level: 
 		for (const [g] of groups) {
 			const parent = list.find(f => f.name === g || f.name === `${g}s`);
 			if (!parent || parent.level > lv) continue;
-			const row = cls.levels.find(l => l.level === lv);
-			const known = Number(row?.extra?.invocations_known ?? 0);
-			const times = fromTable ? cls.levels.filter(l => l.level <= lv && l.features.some(x => x === parent.name)).length : 1;
-			counts.set(g, g === 'Eldritch Invocation' && known ? known : g === 'Metamagic' ? times + 1 : Math.max(1, times));
+			counts.set(g, optionCount(cls, parent, lv, fromTable));
 		}
 		return { groups, counts };
 	};
@@ -228,6 +258,21 @@ export function optionGroups(cls: Class5e | undefined, subclass: string, level: 
 		}
 	}
 	return out;
+}
+
+/**
+ * How many of a feature's options a character has at a level: the table's column the feature names (`known`), else
+ * what it gives when gained (`choose`, 1 if it doesn't say) and one more for each later level the table names it.
+ * Packs written before `choose` and `known` keep the old reading of Metamagic and Eldritch Invocations.
+ */
+function optionCount(cls: Class5e, parent: ClassFeature5e, lv: number, fromTable: boolean): number {
+	const row = cls.levels.find(l => l.level === lv);
+	const column = parent.known ?? (parent.choose === undefined && /^Eldritch Invocations?$/.test(parent.name) ? 'invocations_known' : undefined);
+	const known = column ? Number(row?.extra?.[column] ?? 0) : 0;
+	if (known > 0) return known;
+	const times = fromTable ? cls.levels.filter(l => l.level <= lv && l.features.some(x => x === parent.name)).length : 1;
+	const first = parent.choose ?? (parent.name === 'Metamagic' ? 2 : 1);
+	return Math.max(1, times) + first - 1;
 }
 
 /** 2024: a Fighting Style feat comes with the class's Fighting Style feature (Fighter 1, Paladin and Ranger 2). */
@@ -454,18 +499,23 @@ export function expertiseCount(d: Character5eDraft): number {
 	return n;
 }
 
-/** Languages the character knows without choosing: 2014 the race's, 2024 Common. */
+/** Languages the character knows without choosing: 2014 the race's, 2024 Common; and any the background gives. */
 export function givenLanguages(d: Character5eDraft): string[] {
-	return d.edition === '2024' ? ['Common'] : speciesChoices(d).languages ?? [];
+	const bg = backgroundCreation(d.edition, d.background)?.languages ?? [];
+	return uniq([...(d.edition === '2024' ? ['Common'] : speciesChoices(d).languages ?? []), ...bg]);
 }
 
 /** How many languages to choose, and from which: 2024's two standard languages; 2014's race, subrace and background choices. */
 export function languageChoice(d: Character5eDraft): Choice5e {
 	const all = (compendium5e(d.edition).languages ?? []).filter(l => !/druidic|thieves/i.test(l.name));
 	const known = givenLanguages(d);
-	if (d.edition === '2024') return { count: 2, from: all.filter(l => l.type === 'Standard' && !known.includes(l.name)).map(l => l.name) };
-	const count = (speciesChoices(d).languageChoices?.count ?? 0) + (backgroundCreation(d.edition, d.background)?.languageChoices?.count ?? 0);
-	return { count, from: all.map(l => l.name).filter(n => !known.includes(n)) };
+	const extra = d.edition === '2024' ? speciesChoices(d).languageChoices?.count ?? 0 : 0;
+	if (d.edition === '2024') return { count: 2 + extra + (backgroundCreation(d.edition, d.background)?.languageChoices?.count ?? 0), from: all.filter(l => l.type === 'Standard' && !known.includes(l.name)).map(l => l.name) };
+	const choices = [speciesChoices(d).languageChoices, backgroundCreation(d.edition, d.background)?.languageChoices].filter((c): c is Choice5e => !!c?.count);
+	const count = choices.reduce((n, c) => n + c.count, 0);
+	// Each choice's own list when every one has one (a homebrew race's "Elvish or Sylvan"); else any language.
+	const from = choices.length && choices.every(c => c.from.length) ? uniq(choices.flatMap(c => c.from)) : all.map(l => l.name);
+	return { count, from: from.filter(n => !known.includes(n)) };
 }
 
 /** Tools the character has without choosing (the class's, the background's, a rock gnome's tinker's tools). */
@@ -524,6 +574,12 @@ export function startingEquipment(d: Character5eDraft): { items: { name: string;
 	return { items, gold };
 }
 
+/** A subclass's spells always prepared by a class level (domain and oath spells, as its `spells` list them). */
+export function alwaysPrepared(cls: Class5e | undefined, subclass: string, level: number, after = 0): string[] {
+	const sub = subclass ? cls?.subclasses.find(s => same(s.name, subclass)) : undefined;
+	return uniq((sub?.spells ?? []).filter(x => x.level <= level && x.level > after).flatMap(x => x.spells ?? []));
+}
+
 /** What the character still needs before it can be made, or null. */
 export function characterMissing(d: Character5eDraft): string | null {
 	if (!d.name.trim()) return 'Name your character first.';
@@ -571,6 +627,7 @@ export function characterFm(d: Character5eDraft): Frontmatter {
 		...(maxLevel ? d.spells.slice(0, count || d.spells.length) : []),
 		...(d.edition === '2014' && d.raceCantrip ? [d.raceCantrip] : []),
 		...mi,
+		...alwaysPrepared(cls, fm.subclass ? d.subclass : '', level),
 	]);
 	const { items, gold } = startingEquipment(d);
 	const eq = compendium5e(d.edition).equipment;
@@ -672,6 +729,8 @@ export const newMasteries = (d: LevelUp5eDraft) => {
 /** 2024: what a feat's own increase allows ("Strength or Dexterity", "one ability score of your choice"), or none. */
 export function featIncrease(edition: Dnd5eEdition, feat: string): AbilityKey[] {
 	const f = compendium5e(edition).feats.find(x => same(x.name, feat));
+	// The feat's own data (a pack's, yours), else its words.
+	if (f?.increase?.length) return f.increase.map(a => ABILITY_OF[a.toUpperCase()] ?? ABILITIES.find(k => same(ABILITY_NAME[k], a))).filter((a): a is AbilityKey => !!a);
 	const m = /Ability Score Increase\.\*{0,2}\s*Increase (?:your )?(.*?) score/i.exec(f?.desc ?? '');
 	if (!m) return [];
 	if (/one ability/i.test(m[1])) return [...ABILITIES];
@@ -711,7 +770,9 @@ export function applyLevelUp5e(fm: Frontmatter, d: LevelUp5eDraft, rolled?: numb
 	// A higher Constitution raises the maximum by one per level, this one included.
 	const conGain = abilityMod(Number(fm.con ?? 10)) - d.conMod;
 	if (conGain > 0) { fm.hp_max = Number(fm.hp_max) + conGain * (s.level + 1); fm.hp = Number(fm.hp) + conGain * (s.level + 1); }
-	const picked = [...d.cantrips.slice(0, newCantrips(d)), ...d.spells];
+	// A subclass's always-prepared spells: all of them up to this level when it's chosen now, else this level's.
+	const always = alwaysPrepared(classOf(d.edition, d.className), subclassFor(d), d.level, needsSubclass(d) ? 0 : d.level - 1);
+	const picked = [...d.cantrips.slice(0, newCantrips(d)), ...d.spells, ...always];
 	if (picked.length) {
 		const now = listOf(fm.spells);
 		fm.spells = [...now, ...picked.filter(x => !now.includes(x))];

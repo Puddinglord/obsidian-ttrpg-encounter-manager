@@ -27,7 +27,7 @@
 //   uses_spent: { Rage: 1 } (limited-use features' spent uses; a rest brings them back)
 
 import { abilityMod } from './rules';
-import { Class5e, ClassFeature5e, compendium5e, Equipment5e, Item5e, Spell5e } from './compendium';
+import { Class5e, ClassFeature5e, compendium5e, Equipment5e, Item5e, Spell5e, Subclass5e } from './compendium';
 import type { Dnd5eEdition } from './editions';
 import { ABILITIES, ABILITY_NAME, AbilityKey, Feature5e } from './types';
 
@@ -124,6 +124,20 @@ export function optionGroupOf(name: string, features: ClassFeature5e[]): string 
 	return features.some(f => f.name === m[1] || f.name === `${m[1]}s`) ? m[1] : null;
 }
 
+/** Without armor: each feature's AC (`unarmored`, or an Unarmored Defense's words), and whether a shield still counts. */
+function unarmoredAc(cls: Class5e | undefined, sub: Subclass5e | undefined, level: number, mods: Record<AbilityKey, number>): { name: string; ac: number; shield: boolean }[] {
+	const features = [...(cls?.features ?? []), ...(sub?.features ?? [])].filter(f => f.level <= level);
+	const out = features.filter(f => f.unarmored).map(f => {
+		const u = f.unarmored!;
+		const add = (u.add ?? []).map(a => ABILITY_OF[a.toUpperCase()] ?? ABILITY_OF[a]).filter((a): a is AbilityKey => !!a && a !== 'dex');
+		return { name: f.name, ac: (u.base ?? 10) + mods.dex + add.reduce((n, a) => n + mods[a], 0), shield: u.shield !== false };
+	});
+	if (out.length) return out;
+	const ud = (cls?.features ?? []).find(f => f.level <= level && /^Unarmored Defense/i.test(f.name));
+	const ability = ud ? ABILITIES.find(a => a !== 'dex' && new RegExp(`\\b${ABILITY_NAME[a]} modifiers?\\b|\\band ${ABILITY_NAME[a]}\\b`).test(ud.desc)) : undefined;
+	return ud && ability ? [{ name: 'Unarmored Defense', ac: 10 + mods.dex + mods[ability], shield: !/(not|n't)\s[^.]*wielding a shield/i.test(ud.desc) }] : [];
+}
+
 /** Proficiency bonus by character level. */
 export function pbForLevel(level: number): number {
 	return 2 + Math.floor((Math.max(1, Math.min(20, level)) - 1) / 4);
@@ -199,10 +213,11 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		return { ...x, index, equipment: own ?? magic.base, item, bonus: magic.bonus };
 	});
 
-	// Unarmored Defense, from the feature's own words: 10 + Dex + the other ability it names, a shield allowed unless it says not.
-	const ud = (cls?.features ?? []).find(f => f.level <= level && /^Unarmored Defense/i.test(f.name));
-	const udAbility = ud ? ABILITIES.find(a => a !== 'dex' && new RegExp(`\\b${ABILITY_NAME[a]} modifiers?\\b|\\band ${ABILITY_NAME[a]}\\b`).test(ud.desc)) : undefined;
-	const unarmored = ud && udAbility ? { ability: udAbility, shield: !/(not|n't)\s[^.]*wielding a shield/i.test(ud.desc) } : undefined;
+	// Unarmored Defense: a class or subclass feature that says what AC is without armor (`unarmored`), the best of
+	// them; else, for classes written before that, a feature named Unarmored Defense read from its own words.
+	const subclass = text(fm.subclass);
+	const sub = cls?.subclasses.find(s => same(s.name, subclass));
+	const unarmored = unarmoredAc(cls, sub, level, mods);
 
 	// AC: set by hand, else the armor worn (+ Dex as it allows) and a shield, else unarmored.
 	const isShield = (i: (typeof inventory)[number]) => /shield/i.test(i.equipment?.name ?? '') || i.equipment?.armorCategory === 'Shield' || /\bshield\b/i.test(i.name);
@@ -217,8 +232,11 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 		const dex = a.dex ? (a.max !== undefined ? Math.min(a.max, mods.dex) : mods.dex) : 0;
 		ac = a.base + dex + shield + worn.bonus;
 		acFrom = `${worn.name}${a.dex ? ' + Dex' : ''}${shield ? ' + Shield' : ''}`;
-	} else if (unarmored && (!shield || unarmored.shield)) { ac = 10 + mods.dex + mods[unarmored.ability] + shield; acFrom = `Unarmored Defense${shield ? ' + Shield' : ''}`; }
-	else { ac = 10 + mods.dex + shield; acFrom = `Unarmored${shield ? ' + Shield' : ''}`; }
+	} else {
+		const best = unarmored.filter(u => !shield || u.shield).sort((a, b) => b.ac - a.ac)[0];
+		if (best && best.ac >= 10 + mods.dex) { ac = best.ac + shield; acFrom = `${best.name}${shield ? ' + Shield' : ''}`; }
+		else { ac = 10 + mods.dex + shield; acFrom = `Unarmored${shield ? ' + Shield' : ''}`; }
+	}
 
 	// Spellcasting, from the class.
 	const castAbility = cls?.spellcasting ? ABILITY_OF[cls.spellcasting] : undefined;
@@ -239,8 +257,6 @@ export function readSheet5e(fm: Frontmatter, edition: Dnd5eEdition, fallbackName
 	});
 
 	// Features: the class's up to this level, the subclass's, the species' traits, the background's, and your own.
-	const subclass = text(fm.subclass);
-	const sub = cls?.subclasses.find(s => same(s.name, subclass));
 	const species = text(fm.species) || text(fm.race);
 	const found = c.species.find(s => same(s.name, species)) ?? c.species.flatMap(s => s.subspecies.map(x => ({ ...s, name: x.name, traits: [...s.traits, ...x.traits] }))).find(s => same(s.name, species));
 	// 2024: a lineage or ancestry (`lineage: Elven Lineage: Drow`) adds its traits to the species'.
