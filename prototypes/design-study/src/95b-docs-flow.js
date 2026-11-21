@@ -39,6 +39,7 @@ sharedPage = (orig => () => {
 			h('li', 'Encounter settings belong to the fight and apply to every view at once.')),
 		h('h2.sec', 'Breakpoints'),
 		h('table.slots-map', h('thead', h('tr', h('th', 'Main area width'), h('th', 'Where you meet it'), h('th', 'Layout'))), h('tbody',
+			h('tr', h('td', 'under 340 (360 on touch)'), h('td', 'A 260\u2013300 sidebar, a phone'), h('td', 'The sidebar layout, the card\u2019s buttons in two rows: Damage | Heal across the card (50/50, icons kept), then Condition | Stat block (or Sheet), each half and named.')),
 			h('tr', h('td', 'under 480'), h('td', 'The sidebar (300\u2013420), a phone, a narrow split'), h('td', 'The sidebar layout: header, economy strip, the active card, the lists, the pinned footer.')),
 			h('tr', h('td', '480\u2013660'), h('td', 'Laptop with both sidebars open (596 at 1280), iPad portrait with a pinned panel (520), splits'), h('td', 'One column: the active card first, then the lists, then the log or prompts.')),
 			h('tr', h('td', '660\u20131000'), h('td', 'Laptop with one sidebar open, iPad portrait (820), iPad landscape with a pinned panel (880)'), h('td', 'Two columns: the lists beside the card; the third column folds under the card.')),
