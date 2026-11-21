@@ -128,6 +128,58 @@ function groupNamed(phrase: string, groups: OptionGroup[]): OptionGroup | undefi
 	return hits.sort((x, y) => name(y).length - name(x).length)[0];
 }
 
+/** The list of that name (or the one the name describes: "Greater Psionic Abilities"). */
+function groupByName(name: string, groups: OptionGroup[]): OptionGroup | undefined {
+	return groups.find(g => nameKey(g.name) === nameKey(name)) ?? groupNamed(name, groups);
+}
+
+const names = (v: unknown): string[] => (Array.isArray(v) ? v.map(x => String(x ?? '').trim()).filter(Boolean) : []);
+
+/** The lists a feature gives every option of: its data's `knows.lists`, else "You know all Chimeric Boons" (not Utility Spells). */
+export function knownLists(f: Pick<Feature, 'text' | 'knows'>, groups: OptionGroup[]): OptionGroup[] {
+	if (f.knows) return names(f.knows.lists).map(n => groupByName(n, groups)).filter((g): g is OptionGroup => !!g);
+	const m = f.text.match(/You know all ([^.,]+)/i);
+	const g = m && !/utility spells/i.test(m[1]) ? groupNamed(m[1], groups) : undefined;
+	return g ? [g] : [];
+}
+
+/** The options a feature gives outright, by name: every option of its known lists, then its data's `knows.options`. */
+export function knownOptions(f: Pick<Feature, 'text' | 'knows'>, groups: OptionGroup[]): string[] {
+	const out = knownLists(f, groups).flatMap(g => (g.options ?? []).map(x => x.name));
+	const all = groups.flatMap(g => g.options ?? []);
+	for (const n of names(f.knows?.options)) {
+		const x = all.find(op => nameKey(op.name) === nameKey(n));
+		if (x && !out.includes(x.name)) out.push(x.name);
+	}
+	return out;
+}
+
+/** The Utility Spells a feature's data gives outright (`knows.utility`): their schools, or "known". */
+export function knownUtility(f: Pick<Feature, 'name' | 'knows'>): LevelPlan['spellGrants'] {
+	const schools = names(f.knows?.utility);
+	if (!schools.length) return [];
+	return [{ feature: f.name, schools: schools.some(x => /^known$/i.test(x)) ? 'known' : schools }];
+}
+
+/** The type of boon a feature has you choose: its data's `boon`, else "epic" when it says "Choose an Epic Boon". */
+export function boonOf(f: Pick<Feature, 'name' | 'text' | 'boon'>): string | undefined {
+	if (typeof f.boon === 'string' && f.boon.trim()) return f.boon.trim();
+	return /epic boon/i.test(`${f.name} ${f.text}`) && /\bchoose\b/i.test(f.text) ? 'epic' : undefined;
+}
+
+/** What a subclass's data says it changes in its class's lists (`lose`, `instead`), as subclassSwaps reads it from the words. */
+export function dataSwaps(sub: Pick<Subclass, 'lose' | 'instead'>, groups: OptionGroup[]): { lost: Set<string>; instead: Map<string, string> } {
+	const lost = new Set<string>();
+	const instead = new Map<string, string>();
+	for (const n of names(sub.lose)) { const g = groupByName(n, groups); if (g) lost.add(g.name); }
+	for (const x of Array.isArray(sub.instead) ? sub.instead : []) {
+		const from = x && groupByName(String(x.from ?? ''), groups);
+		const to = x && groupByName(String(x.to ?? ''), groups);
+		if (from && to) instead.set(from.name, to.name);
+	}
+	return { lost, instead };
+}
+
 /**
  * What a subclass does to the class's lists (the 3.x class books): lists it gives up ("You lose access to the
  * Savage Arsenal", "You forgo all Commander’s Orders"), and what you choose instead ("For every Underhanded
@@ -268,12 +320,11 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 	const lastWord = (g: OptionGroup) => stems(g.name).slice(-1)[0];
 	const groups = [...classGroups, ...(subEntry?.optionGroups ?? []).filter(g => !classGroups.some(c => lastWord(c) === lastWord(g)))];
 	// Tiers of a list that open as you level ("Unlock Greater Psionic Abilities"): picks from the list come from every tier open by now.
+	// The class's data names the lists a feature opens (`unlock`); else its words do.
 	const unlocked: OptionGroup[] = [];
 	for (const f of comp.featuresFor(o.className, sub, level)) {
-		for (const m of f.text.matchAll(/\bUnlock ([^.,]+)/gi)) {
-			const g = groupNamed(m[1], groups);
-			if (g && !unlocked.includes(g)) unlocked.push(g);
-		}
+		const opened = f.unlock ? f.unlock.map(n => groupByName(String(n), groups)) : [...f.text.matchAll(/\bUnlock ([^.,]+)/gi)].map(m => groupNamed(m[1], groups));
+		for (const g of opened) if (g && !unlocked.includes(g)) unlocked.push(g);
 	}
 	const widen = (g: OptionGroup): OptionGroup => {
 		const tiers = unlocked.filter(u => u !== g && nameKey(u.name).endsWith(nameKey(g.name)));
@@ -281,14 +332,11 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 	};
 	// What the subclass changes, from everything it says up to this level.
 	const subTexts = subEntry ? [subEntry.intro ?? '', ...(subEntry.levels ?? []).filter(l => (l.level ?? 0) <= level).flatMap(l => (l.features ?? []).map(f => f.text ?? ''))] : [];
-	const swaps = subclassSwaps(subTexts, groups);
+	// The subclass's data says what it changes (`lose`, `instead`); else its words do.
+	const swaps = subEntry && (subEntry.lose || subEntry.instead) ? dataSwaps(subEntry, groups) : subclassSwaps(subTexts, groups);
 	// Lists the hero knows all of by now ("You know all Chimeric Boons") have nothing left to choose.
 	const knowAll = new Set<string>();
-	for (const f of comp.featuresFor(o.className, sub, level)) {
-		const m = f.text.match(/You know all ([^.,]+)/i);
-		const g = m && !/utility spells/i.test(m[1]) ? groupNamed(m[1], groups) : undefined;
-		if (g) knowAll.add(g.name);
-	}
+	for (const f of comp.featuresFor(o.className, sub, level)) for (const g of knownLists(f, groups)) knowAll.add(g.name);
 	const schoolList = spellSchools(comp);
 	const picks: OptionPick[] = [];
 	const stats: StatIncrease[] = [];
@@ -307,19 +355,20 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 		if (named) { grants.push(named.name); return; }
 		picks.push({ feature: f.name, group: widen(group), count });
 	};
-	const texts: (Pick<Feature, 'name' | 'text' | 'increase' | 'learn'> & { from?: string })[] = [...features];
+	const texts: (Pick<Feature, 'name' | 'text' | 'increase' | 'learn' | 'knows' | 'boon'> & { from?: string })[] = [...features];
 	if (level === 1 && o.background?.text) texts.push({ name: o.background.name, text: o.background.text });
 	for (const f of texts) {
-		// What the class's data says the feature has you learn, else what its words say.
+		// What the class's data says the feature has you learn (and know outright), else what its words say.
 		const sp = f.learn ? { picks: learnPicks(f, level), grants: [] } : spellChoices(f, level, schoolList);
 		spells.push(...sp.picks);
-		spellGrants.push(...sp.grants);
-		if (/epic boon/i.test(`${f.name} ${f.text}`) && /\bchoose\b/i.test(f.text)) { boons = comp.boons.filter(b => /epic/i.test(b.kind ?? '')); continue; }
+		spellGrants.push(...(f.knows ? knownUtility(f) : sp.grants));
+		const boon = boonOf(f);
+		if (boon) { boons = comp.boons.filter(b => nameKey(b.kind ?? '') === nameKey(boon)); continue; }
 		const inc = f.increase ? increaseOf(f) : statIncrease(f);
 		if (inc) { stats.push(inc); continue; }
-		const known = f.text.match(/You know all ([^.,]+)/i);
-		const all = known && !/utility spells/i.test(known[1]) ? groupNamed(known[1], groups) : undefined;
-		if (all) { grants.push(...(all.options ?? []).map(x => x.name)); continue; }
+		// Options it gives outright: "You know all Chimeric Boons", or what the class's data says it knows.
+		const known = knownOptions(f, groups);
+		if (known.length) { for (const x of known) if (!grants.includes(x)) grants.push(x); continue; }
 		// "You know the Withered and Frenzied Afflictions": those, given.
 		const given = /^\s*You know the\b/i.test(f.text) ? groupNamed(f.text.split('.')[0], groups) : undefined;
 		if (given) {
@@ -330,7 +379,12 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 		// A feature that says which lists it picks from (its `choose`), and what's offered instead ("+1 max Combat Dice").
 		const hint = (f as { choose?: Feature['choose'] }).choose;
 		if (hint?.from?.length) {
-			const lists = hint.from.map(n => groups.find(g => nameKey(g.name) === nameKey(n))).filter((g): g is OptionGroup => !!g && !swaps.lost.has(g.name));
+			// The subclass's swaps apply to the class's features, and the lists open as they unlock, as for a feature's words.
+			const own = f.from === 'subclass';
+			const lists = hint.from.map(n => groups.find(g => nameKey(g.name) === nameKey(n)))
+				.map(g => { const to = g && !own ? swaps.instead.get(g.name) : undefined; return to ? groups.find(x => x.name === to) : g; })
+				.filter((g): g is OptionGroup => !!g && (own || !swaps.lost.has(g.name)) && !knowAll.has(g.name))
+				.map(widen);
 			const instead: RepeatableOption[] = (hint.or ?? []).map(x => ({ name: x, text: `Gain ${x}.`, repeatable: true }));
 			const options = [...lists.flatMap(g => g.options ?? []), ...instead];
 			if (options.length) picks.push({ feature: f.name, group: { name: hint.name ?? lists.map(g => g.name).join(' or '), options }, count: Math.max(1, hint.count ?? 1) });
@@ -344,8 +398,12 @@ export function levelPlan(comp: Compendium, o: PlanOptions): LevelPlan {
 		} else for (const g of gs) pickFrom(f, g, 1);
 	}
 	// A subclass that has you choose a companion when you take it (Beastmaster): one of its companion lists.
-	if (subEntry && choosesSubclass && /\bchoose an? [^.]*\bas your companion\b/i.test(subEntry.intro ?? '')) {
-		const companions = (subEntry.optionGroups ?? []).filter(g => /companion$/i.test(g.name));
+	// Its data names the companion lists (`companions`); else its intro's words do.
+	if (subEntry && choosesSubclass && (subEntry.companions?.length || /\bchoose an? [^.]*\bas your companion\b/i.test(subEntry.intro ?? ''))) {
+		const own = subEntry.optionGroups ?? [];
+		const companions = subEntry.companions?.length
+			? subEntry.companions.map(n => own.find(g => nameKey(g.name) === nameKey(String(n)))).filter((g): g is OptionGroup => !!g)
+			: own.filter(g => /companion$/i.test(g.name));
 		if (companions.length) {
 			const options = companions.map(g => ({ name: g.name, text: g.intro ?? '', requirement: /Req\. Lvl \d+/i.exec(g.intro ?? '')?.[0] }));
 			picks.push({ feature: subEntry.name, group: { name: 'Companion', options }, count: 1 });

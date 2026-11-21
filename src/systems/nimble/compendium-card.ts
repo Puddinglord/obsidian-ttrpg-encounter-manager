@@ -405,7 +405,7 @@ export function renderHitCard(parent: HTMLElement, hit: CompendiumHit, o: CardOp
 	const kind = head.createDiv({ cls: 'nimble-cmp-kind' });
 	setIcon(kind.createSpan({ cls: 'nimble-cmp-kind-icon' }), compendiumGlyph(hit));
 	kind.createSpan({ text: KIND_LABEL[hit.kind] });
-	if (page) renderClassScroll(head, hit.name, 'nimble-cmp-name nimble-cmp-scroll', hit.kind === 'subclass' ? hit.className : undefined);
+	if (page) renderClassScroll(head, hit.name, 'nimble-cmp-name nimble-cmp-scroll', motifFor(hit));
 	else head.createDiv({ cls: 'nimble-cmp-name', text: hit.name });
 	const body = card.createDiv({ cls: 'nimble-cmp-body' });
 	renderHitBody(body, hit, o);
@@ -413,6 +413,13 @@ export function renderHitCard(parent: HTMLElement, hit: CompendiumHit, o: CardOp
 	const tagline = hit.kind === 'class' && (hit.entry as ClassEntry).tagline;
 	if (hit.detail && !tagline && !body.querySelector('.nimble-cmp-facts')) head.createDiv({ cls: 'nimble-cmp-detail', text: hit.detail });
 	return card;
+}
+
+/** The motif a class page wears: the one the class names, else its own; a subclass page wears its class's. */
+function motifFor(hit: CompendiumHit): string | undefined {
+	if (hit.kind === 'class') return (hit.entry as ClassEntry).motif;
+	const cls = hit.className ? (findHit('class', hit.className)?.entry as ClassEntry | undefined) : undefined;
+	return cls?.motif ?? hit.className;
 }
 
 /** A condition as a card: name and rules text (keywords and dice work as in any card). */

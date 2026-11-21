@@ -69,10 +69,12 @@ A pack is one JSON object: its name, the game, and a list of entries. Each entry
   - "Choose 1 Kindling." picks from the class's option list called Kindlings (`optionGroups`).
   - When the words don't name the list, give the feature `choose`: `{ "from": ["Combat Tactics"], "count": 1 }`.
   - When the words don't say, a feature can also give `increase` (`{ "stats": ["STR", "WIL"] }`), `learn` (spell schools or Utility Spells: `[{ "kind": "utility", "from": ["Fire"] }]`) and `uses` (uses between Safe Rests: `"WIL"`).
+  - The same goes for what the books say in words: `spellTier` (the highest spell tier from this level: `2`, for a feature not called "Tier 2 Spells"), `unlock` (the next tier of a list: `["Greater Wicks"]`), `knows` (given outright: every option of `lists`, `options` by name, and the Utility Spells of `utility` schools, or `["known"]`) and `boon` (`"epic"`: choose an Epic Boon).
 - **Resources** are what the class panel counts: `{ "name": "Ember Dice", "max": "WIL", "die": "d6" }`. For dice, `dice` says how they're used: rolled when spent or gained, which rolls they go into (`attack`, `spell`, `save`, `check`), the die at each level, and `maxSteps` to hold more from a level or for a subclass. A number's button says `spend` (`"Heal"`).
 - **States and a target:** `states` are what the class panel switches on and off (`{ "name": "Rage", "condition": "Raging" }`), and `target` what it keeps one of (`{ "name": "Hunter's Mark" }`).
 - **Casting:** `casting` gives the mana pool (`"manaFormula": "WIL+LVL"`) and the schools known. A spell with `"class": "Lamplighter"` is that class's own.
-- **Subclasses** name their class: `"class": "Berserker"`.
+- **Its look:** `motif` picks the scrollwork on its page and sheet from a book class's (`"Mage"`); without it, a class that isn't in the books gets a plain one.
+- **Subclasses** name their class: `"class": "Berserker"`. When their words don't say, `lose` names the class's lists they give up, `instead` a list chosen in another's place (`[{ "from": "Combat Tactics", "to": "Orders" }]`), and `companions` their own lists that are companions, one chosen with the subclass.
 - **Options** name their class and list: `"class": "Berserker", "group": "Savage Arsenal"`.
 - **Boons** say their kind with `type`: `"type": "epic"` (`kind` is the entry's, `"boon"`).
 - **Monsters** can be written field by field (`level`, `hp`, `armor`, `actions`…), or as `"statblock"`: the text of a ```` ```nimble ```` block (see the [bestiary](bestiary.md)).

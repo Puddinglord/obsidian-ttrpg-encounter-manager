@@ -55,12 +55,32 @@ const learn: FieldSpec = {
 		each: { type: 'boolean', description: 'One for each school the hero knows.' },
 	},
 };
+/** What a feature gives outright, when the words don't say "You know all …". */
+const knows: FieldSpec = {
+	type: 'object',
+	description: 'What the feature gives outright, when the words don\'t say "You know all …": every option of some lists, options by name, and every Utility Spell of some schools.',
+	fields: {
+		lists: { type: 'strings', description: 'Option lists it gives every option of ("Chimeric Boons").' },
+		options: { type: 'strings', description: 'Options it gives, by name.' },
+		utility: { type: 'strings', description: 'Schools whose Utility Spells it gives, or "known" for every school the hero knows.' },
+	},
+};
 const levels: FieldSpec = {
 	type: 'list',
-	description: 'What each level brings. A feature called "Subclass" offers the subclass; "Key Stat Increase" with "+1 STR or DEX." raises a stat; "Choose 1 Kindling" picks from the option list of that name. When the words don\'t say, a feature can: `choose`, `increase`, `learn`, `uses`.',
+	description: 'What each level brings. A feature called "Subclass" offers the subclass; "Key Stat Increase" with "+1 STR or DEX." raises a stat; "Choose 1 Kindling" picks from the option list of that name. When the words don\'t say, a feature can: `choose`, `increase`, `learn`, `uses`, `spellTier`, `unlock`, `knows`, `boon`.',
 	of: {
 		level: int({ min: 1, max: 20, required: true }),
-		features: { type: 'list', required: true, of: { ...feature, choose, increase, learn, uses: text('Uses between Safe Rests, when the words don\'t say "(1/Safe Rest)": a number or a formula, "WIL", "2×WIL".') } },
+		features: {
+			type: 'list', required: true,
+			of: {
+				...feature, choose, increase, learn,
+				uses: text('Uses between Safe Rests, when the words don\'t say "(1/Safe Rest)": a number or a formula, "WIL", "2×WIL".'),
+				spellTier: int({ min: 0, max: 9, description: 'The highest spell tier the hero casts from this level, when the feature isn\'t called "Tier 2 Spells".' }),
+				unlock: { type: 'strings', description: 'Option lists it opens, when the words don\'t say "Unlock Greater Psionic Abilities": picks from a list then offer every tier of it open so far.' },
+				knows,
+				boon: { type: 'string', enum: ['epic', 'lodging', 'other'], description: 'It has you choose a boon of this type, when the words don\'t say "Choose an Epic Boon".' },
+			},
+		},
 	},
 };
 const option = { name: text(undefined, true), text: text(undefined, true), cost: text('"Passive", "1 Action", "Reaction".'), requirement: text('"Req. level 5".') };
@@ -127,7 +147,14 @@ const target: FieldSpec = {
 };
 const subclassFields = {
 	flavor: text(), complexity: int({ min: 1, max: 4 }), story: { type: 'boolean', description: 'A story subclass.' } as FieldSpec, intro: text(),
-	levels, optionGroups, sidebars, casting, page,
+	levels, optionGroups, sidebars, casting,
+	lose: { type: 'strings', description: 'Its class\'s option lists it gives up, when the words don\'t say "You lose access to …".' } as FieldSpec,
+	instead: {
+		type: 'list', description: 'A list chosen in another\'s place, when the words don\'t say "Whenever you could choose a Combat Tactic, instead choose …".',
+		of: { from: text('The class\'s list: "Combat Tactics".', true), to: text('The list chosen instead.', true) },
+	} as FieldSpec,
+	companions: { type: 'strings', description: 'Its own option lists that are companions (a Beastmaster\'s): one is chosen with the subclass.' } as FieldSpec,
+	page,
 };
 
 export const KINDS_NIMBLE: KindSpec[] = [
@@ -190,7 +217,8 @@ export const KINDS_NIMBLE: KindSpec[] = [
 			casting, resources, states, target, levels: { ...levels, required: true }, optionGroups, sidebars,
 			subclasses: { type: 'list', of: named(subclassFields) },
 			spellList: { type: 'strings', description: 'Spells the class can cast besides its schools\', by name.' },
-			faq: { type: 'list', of: { q: text(undefined, true), a: text(undefined, true) } }, page,
+			faq: { type: 'list', of: { q: text(undefined, true), a: text(undefined, true) } },
+			motif: text('The motif in its scrollwork: a book class\'s ("Berserker", "Mage"). A plain one if left out.'), page,
 		}),
 		starter: {
 			tagline: '', keyStats: ['STR'], hitDie: 8, startingHp: 13, saves: { adv: 'STR', dis: 'INT' }, armor: '', weapons: '', startingGear: [],

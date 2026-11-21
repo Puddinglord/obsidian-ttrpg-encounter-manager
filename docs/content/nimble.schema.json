@@ -1083,6 +1083,58 @@
 															"number"
 														],
 														"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
+													},
+													"spellTier": {
+														"type": "integer",
+														"minimum": 0,
+														"maximum": 9,
+														"description": "The highest spell tier the hero casts from this level, when the feature isn't called \"Tier 2 Spells\"."
+													},
+													"unlock": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"description": "Option lists it opens, when the words don't say \"Unlock Greater Psionic Abilities\": picks from a list then offer every tier of it open so far."
+													},
+													"knows": {
+														"type": "object",
+														"properties": {
+															"lists": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Option lists it gives every option of (\"Chimeric Boons\")."
+															},
+															"options": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Options it gives, by name."
+															},
+															"utility": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Schools whose Utility Spells it gives, or \"known\" for every school the hero knows."
+															}
+														},
+														"description": "What the feature gives outright, when the words don't say \"You know all …\": every option of some lists, options by name, and every Utility Spell of some schools."
+													},
+													"boon": {
+														"type": [
+															"string",
+															"number"
+														],
+														"enum": [
+															"epic",
+															"lodging",
+															"other"
+														],
+														"description": "It has you choose a boon of this type, when the words don't say \"Choose an Epic Boon\"."
 													}
 												},
 												"required": [
@@ -1097,7 +1149,7 @@
 										"features"
 									]
 								},
-								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`."
+								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`, `spellTier`, `unlock`, `knows`, `boon`."
 							},
 							"optionGroups": {
 								"type": "array",
@@ -1348,6 +1400,58 @@
 																		"number"
 																	],
 																	"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
+																},
+																"spellTier": {
+																	"type": "integer",
+																	"minimum": 0,
+																	"maximum": 9,
+																	"description": "The highest spell tier the hero casts from this level, when the feature isn't called \"Tier 2 Spells\"."
+																},
+																"unlock": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	},
+																	"description": "Option lists it opens, when the words don't say \"Unlock Greater Psionic Abilities\": picks from a list then offer every tier of it open so far."
+																},
+																"knows": {
+																	"type": "object",
+																	"properties": {
+																		"lists": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			},
+																			"description": "Option lists it gives every option of (\"Chimeric Boons\")."
+																		},
+																		"options": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			},
+																			"description": "Options it gives, by name."
+																		},
+																		"utility": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			},
+																			"description": "Schools whose Utility Spells it gives, or \"known\" for every school the hero knows."
+																		}
+																	},
+																	"description": "What the feature gives outright, when the words don't say \"You know all …\": every option of some lists, options by name, and every Utility Spell of some schools."
+																},
+																"boon": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"enum": [
+																		"epic",
+																		"lodging",
+																		"other"
+																	],
+																	"description": "It has you choose a boon of this type, when the words don't say \"Choose an Epic Boon\"."
 																}
 															},
 															"required": [
@@ -1362,7 +1466,7 @@
 													"features"
 												]
 											},
-											"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`."
+											"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`, `spellTier`, `unlock`, `knows`, `boon`."
 										},
 										"optionGroups": {
 											"type": "array",
@@ -1490,6 +1594,47 @@
 											},
 											"description": "Spellcasting: the mana pool and the schools the class knows."
 										},
+										"lose": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"description": "Its class's option lists it gives up, when the words don't say \"You lose access to …\"."
+										},
+										"instead": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"from": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The class's list: \"Combat Tactics\"."
+													},
+													"to": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The list chosen instead."
+													}
+												},
+												"required": [
+													"from",
+													"to"
+												]
+											},
+											"description": "A list chosen in another's place, when the words don't say \"Whenever you could choose a Combat Tactic, instead choose …\"."
+										},
+										"companions": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"description": "Its own option lists that are companions (a Beastmaster's): one is chosen with the subclass."
+										},
 										"page": {
 											"type": "integer",
 											"minimum": 1,
@@ -1531,6 +1676,13 @@
 										"a"
 									]
 								}
+							},
+							"motif": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The motif in its scrollwork: a book class's (\"Berserker\", \"Mage\"). A plain one if left out."
 							},
 							"page": {
 								"type": "integer",
@@ -1720,6 +1872,58 @@
 															"number"
 														],
 														"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
+													},
+													"spellTier": {
+														"type": "integer",
+														"minimum": 0,
+														"maximum": 9,
+														"description": "The highest spell tier the hero casts from this level, when the feature isn't called \"Tier 2 Spells\"."
+													},
+													"unlock": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"description": "Option lists it opens, when the words don't say \"Unlock Greater Psionic Abilities\": picks from a list then offer every tier of it open so far."
+													},
+													"knows": {
+														"type": "object",
+														"properties": {
+															"lists": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Option lists it gives every option of (\"Chimeric Boons\")."
+															},
+															"options": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Options it gives, by name."
+															},
+															"utility": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Schools whose Utility Spells it gives, or \"known\" for every school the hero knows."
+															}
+														},
+														"description": "What the feature gives outright, when the words don't say \"You know all …\": every option of some lists, options by name, and every Utility Spell of some schools."
+													},
+													"boon": {
+														"type": [
+															"string",
+															"number"
+														],
+														"enum": [
+															"epic",
+															"lodging",
+															"other"
+														],
+														"description": "It has you choose a boon of this type, when the words don't say \"Choose an Epic Boon\"."
 													}
 												},
 												"required": [
@@ -1734,7 +1938,7 @@
 										"features"
 									]
 								},
-								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`."
+								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`, `spellTier`, `unlock`, `knows`, `boon`."
 							},
 							"optionGroups": {
 								"type": "array",
@@ -1861,6 +2065,47 @@
 									}
 								},
 								"description": "Spellcasting: the mana pool and the schools the class knows."
+							},
+							"lose": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Its class's option lists it gives up, when the words don't say \"You lose access to …\"."
+							},
+							"instead": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"from": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The class's list: \"Combat Tactics\"."
+										},
+										"to": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The list chosen instead."
+										}
+									},
+									"required": [
+										"from",
+										"to"
+									]
+								},
+								"description": "A list chosen in another's place, when the words don't say \"Whenever you could choose a Combat Tactic, instead choose …\"."
+							},
+							"companions": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Its own option lists that are companions (a Beastmaster's): one is chosen with the subclass."
 							},
 							"page": {
 								"type": "integer",

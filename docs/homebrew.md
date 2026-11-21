@@ -276,6 +276,9 @@ A class's own words do most of the work, the way the books' do ("Choose 1 Kindli
 - `states`: what the class panel switches on and off. `- { name: Forgeheat, condition: Forgeheated }` puts Forgeheated on the hero; dice that are `onWhile` it are rolled when it starts and lost when it ends.
 - `target`: what the class panel keeps one of at a time: `{ name: Branded Foe, feature: Brand }`.
 - On a feature: `increase` (`{ stats: [STR, WIL] }`, or `count` for several), `learn` (spell schools or Utility Spells: `- { kind: utility, from: [Fire] }`) and `uses` (`WIL`: uses between Safe Rests).
+- Also on a feature: `spellTier` (`2`: spells up to tier 2 from this level), `unlock` (`[Greater Wicks]`: the next tier of a list), `knows` (given outright: `{ lists: [Wicks], options: [Blue Wick], utility: [Fire] }`) and `boon` (`epic`: choose an Epic Boon).
+- On a subclass: `lose` (`[Savage Arsenal]`: lists it gives up), `instead` (`- { from: Combat Tactics, to: Orders }`) and `companions` (its own lists that are companions; one is chosen with the subclass).
+- `motif`: the scrollwork on the class's page and sheet, from a book class (`Mage`). Without it, your class gets a plain one.
 
 ## In the compendium
 

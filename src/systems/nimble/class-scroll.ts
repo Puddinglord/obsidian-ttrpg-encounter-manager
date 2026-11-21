@@ -26,6 +26,22 @@ const MOTIFS: Record<string, string> = {
 	Revenant: '<path fill-rule="evenodd" d="M12 2.2c-5.2 0-8 3.6-8 8 0 3 1.6 5 3.5 5.8v3.4c0 .9.6 1.6 1.5 1.6h6c.9 0 1.5-.7 1.5-1.6V16c1.9-.8 3.5-2.8 3.5-5.8 0-4.4-2.8-8-8-8zM6.3999999999999995 10.4a2.3 2.3 0 1 0 4.6 0a2.3 2.3 0 1 0 -4.6 0ZM13 10.4a2.3 2.3 0 1 0 4.6 0a2.3 2.3 0 1 0 -4.6 0ZM12 13l1.1 2.2h-2.2zM10.1 18.2h.9V21h-.9zM13 18.2h.9V21H13zM12.6 2.1l-1.5 2.9 1.6 1.7-1.2 1.9.6.2 1.5-2.1-1.5-1.7 1.2-2.9z"/>',
 };
 const ALIASES: Record<string, string> = { cheat: 'The Cheat' };
+/** The plain motif, for a class that isn't in the books and names none: a four-pointed star with an open heart. */
+const PLAIN = '<path fill-rule="evenodd" d="M12 1.6l2.6 7.8 7.8 2.6-7.8 2.6-2.6 7.8-2.6-7.8L1.6 12l7.8-2.6zM12 9.4l-1.1 1.5L9.4 12l1.5 1.1 1.1 1.5 1.1-1.5 1.5-1.1-1.5-1.1z"/>';
+
+/** The motifs a class can wear: the book classes' (by class), in book order. */
+export const MOTIF_NAMES: readonly string[] = Object.keys(MOTIFS);
+
+/** The book class whose motif this is ("cheat" is The Cheat), or undefined for any other name. */
+export function motifName(name: string | undefined): string | undefined {
+	const k = String(name ?? '').trim().toLowerCase();
+	return Object.keys(MOTIFS).find(m => m.toLowerCase() === k) ?? ALIASES[k];
+}
+
+/** A motif on its own, 24 × 24 (the class builder's picker); the plain one for a name that isn't a motif. */
+export function drawMotif(parent: HTMLElement, name: string | undefined, cls = ''): SVGSVGElement {
+	return drawSvg(parent, `<g fill="currentColor">${motif(name ?? '')}</g>`, 24, 24, cls);
+}
 
 const H = 28;
 const CAP = '<path class="ink" d="M1 9.6h9v8.8H1a4.4 4.4 0 0 0 0-8.8z"/>';
@@ -37,11 +53,9 @@ const OW = 95;
 const MX = 34;
 const CW = 52;
 
-/** The motif for a class (homebrew classes get the Commander's banner). */
+/** The motif for a class, or one a class names (`motif:`); any other class gets the plain one. */
 function motif(className: string): string {
-	const k = className.trim().toLowerCase();
-	const hit = Object.keys(MOTIFS).find(m => m.toLowerCase() === k) ?? ALIASES[k];
-	return MOTIFS[hit ?? ''] ?? MOTIFS.Commander;
+	return MOTIFS[motifName(className) ?? ''] ?? PLAIN;
 }
 
 function side(parent: HTMLElement, m: string, right: boolean): void {
@@ -53,7 +67,10 @@ function side(parent: HTMLElement, m: string, right: boolean): void {
 	drawSvg(el, `${COMPACT}<g class="m" transform="translate(28 2)">${m}</g>`, CW, H, 'ns-scroll-compact');
 }
 
-/** The heading: scroll, the class's name, scroll. `motifOf` draws another class's motif (a subclass page: its class's). */
+/**
+ * The heading: scroll, the class's name, scroll. `motifOf` draws another motif: a subclass page's class's, or the one
+ * a class names (`motif:`); unknown names get the plain one.
+ */
 export function renderClassScroll(parent: HTMLElement, className: string, cls = '', motifOf?: string): HTMLElement {
 	const head = parent.createDiv({ cls: `ns-scroll${cls ? ` ${cls}` : ''}` });
 	const m = motif(motifOf ?? className);

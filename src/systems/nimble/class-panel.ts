@@ -44,7 +44,7 @@ export function renderClassPanel(parent: HTMLElement, h: ClassPanelHost): HTMLEl
 	const rows = classPanelRows(s, h.comp.rules.magicRules);
 	if (!rows.length) return null;
 	const panel = parent.createEl('section', { cls: 'ns-class' });
-	renderClassScroll(panel, s.className || 'Class', 'ns-class-head');
+	renderClassScroll(panel, s.className || 'Class', 'ns-class-head', s.cls?.motif);
 	for (const r of rows) renderRow(panel, r, h);
 	return panel;
 }

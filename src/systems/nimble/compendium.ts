@@ -37,6 +37,17 @@ export interface Feature {
 	learn?: { kind: 'school' | 'utilities' | 'utility'; from?: string[]; count?: number; each?: boolean }[];
 	/** Uses between Safe Rests, when its words don't say "(1/Safe Rest)": a number or a formula ("WIL", "2×WIL"). */
 	uses?: string | number;
+	/** The highest spell tier the hero casts from this level on, when its name isn't "Tier 2 Spells". */
+	spellTier?: number;
+	/** Option lists it opens (tiers of a list: "Unlock Greater Psionic Abilities"): picks from the list then offer every tier open so far. */
+	unlock?: string[];
+	/**
+	 * What it gives outright, when its words don't say "You know all …": every option of `lists`, `options` by name, and
+	 * every Utility Spell of the schools in `utility` ("known": the schools the hero knows).
+	 */
+	knows?: { lists?: string[]; options?: string[]; utility?: string[] };
+	/** It has you choose a boon of this type ("Choose an Epic Boon"), when its words don't say. */
+	boon?: string;
 }
 export interface LevelFeatures { level: number; features: Feature[] }
 
@@ -50,6 +61,11 @@ export interface Subclass extends Sourced {
 	intro?: string;
 	levels?: LevelFeatures[];
 	optionGroups?: OptionGroup[];
+	/** What it changes in its class's lists, when its words don't say: lists it gives up, and a list chosen in another's place. */
+	lose?: string[];
+	instead?: { from: string; to: string }[];
+	/** Its own option lists that are companions (a Beastmaster's): one is chosen with the subclass. */
+	companions?: string[];
 }
 
 /**
@@ -117,6 +133,8 @@ export interface ClassEntry extends Sourced {
 	states?: ClassState[];
 	target?: ClassTarget;
 	faq?: { q: string; a: string }[];
+	/** The motif in its scrollwork (a book class's: "Berserker", "Mage"…); a class that isn't in the books gets the plain one. */
+	motif?: string;
 }
 
 export interface Ancestry extends Sourced { rarity?: string; size?: string; flavor?: string; traits?: Feature[] }
@@ -236,6 +254,8 @@ export function nameKey(name: string): string {
 }
 
 const arr = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]).filter(x => !!x && typeof x === 'object') : []);
+/** A feature's data fields: what it does when its words don't say (level-plan.ts and the sheet read them first). */
+const FEATURE_DATA = ['choose', 'increase', 'learn', 'uses', 'spellTier', 'unlock', 'knows', 'boon'] as const satisfies readonly (keyof Feature)[];
 const str = (v: unknown): string => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
 
 export function tierLabel(tier: number | undefined): string {
@@ -371,8 +391,11 @@ export class Compendium {
 			for (const l of arr<LevelFeatures>(levels).slice().sort((a, b) => (a.level ?? 0) - (b.level ?? 0))) {
 				if ((l.level ?? 0) > level) continue;
 				for (const f of arr<Feature>(l.features)) {
+					// What the class's data says the feature does (when its words don't), carried along.
+					const data: Partial<Feature> = {};
+					for (const k of FEATURE_DATA) if (f[k] !== undefined) (data as Record<string, unknown>)[k] = f[k];
 					out.push({
-						name: str(f.name), text: str(f.text), ...(f.choose ? { choose: f.choose } : {}), ...(f.increase ? { increase: f.increase } : {}), ...(f.learn ? { learn: f.learn } : {}), ...(f.uses !== undefined ? { uses: f.uses } : {}),
+						name: str(f.name), text: str(f.text), ...data,
 						level: l.level, from, className: cls.name, subclass: sub, source: src.source ?? cls.source, page: src.page ?? cls.page, draft: src.draft ?? cls.draft,
 					});
 				}

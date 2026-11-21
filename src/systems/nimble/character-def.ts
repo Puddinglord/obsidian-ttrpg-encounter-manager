@@ -14,7 +14,7 @@
 // point of INT.
 
 import {
-	Ancestry, Background, ClassEntry, ClassOption, Compendium, Item, nameKey, ResolvedFeature, Spell, STATS, StatKey,
+	Ancestry, Background, ClassEntry, ClassOption, Compendium, Feature, Item, nameKey, ResolvedFeature, Spell, STATS, StatKey,
 } from './compendium';
 import { heroDamage } from './rules';
 import { fmTrue } from '../../core/campaign-model';
@@ -397,6 +397,19 @@ function slotsFor(e: Omit<InventoryEntry, 'slotsUsed'>): number {
 	return 1;
 }
 
+/**
+ * The spell tier a class feature lets the hero cast up to: the class's data (`spellTier`), else its words ("Tier 2
+ * Spells", "Mana and Unlock Tier 1 Spells"; "You may now cast spells up to tier 3"; "You know Radiant cantrips and tier
+ * 1 spells"). Undefined when it says nothing about tiers.
+ */
+export function spellTierOf(f: Pick<Feature, 'name' | 'text' | 'spellTier'>): number | undefined {
+	if (typeof f.spellTier === 'number' && Number.isFinite(f.spellTier)) return Math.max(0, Math.min(9, Math.floor(f.spellTier)));
+	const m = f.name.match(/\btier (\d+) spells\b/i)
+		?? f.text.match(/may now cast (?:spells up to )?tier (\d+)/i)
+		?? f.text.match(/\b(?:know|learn|unlock)\b[^.]*?\btier (\d+)\b[^.]*?\bspells\b/i);
+	return m ? Number(m[1]) : undefined;
+}
+
 // ----------------------------------------------------------------------------
 // The sheet
 
@@ -464,13 +477,7 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 
 	// Spellcasting: tiers unlock with "Tier N Spells" / "may now cast spells up to tier N" features.
 	let maxTier = 0;
-	for (const f of classFeatures) {
-		// "Tier 2 Spells", "Mana and Unlock Tier 1 Spells"; "You may now cast spells up to tier 3"; "You know Radiant cantrips and tier 1 spells".
-		const m = f.name.match(/\btier (\d+) spells\b/i)
-			?? f.text.match(/may now cast (?:spells up to )?tier (\d+)/i)
-			?? f.text.match(/\b(?:know|learn|unlock)\b[^.]*?\btier (\d+)\b[^.]*?\bspells\b/i);
-		if (m) maxTier = Math.max(maxTier, Number(m[1]));
-	}
+	for (const f of classFeatures) maxTier = Math.max(maxTier, spellTierOf(f) ?? 0);
 	const casting = cls?.casting;
 	const manaFrom = casting?.manaFromLevel ?? 1;
 	const manaCalc = casting?.manaFormula && level >= manaFrom ? Math.max(0, evalFormula(casting.manaFormula, vars) ?? 0) : 0;
