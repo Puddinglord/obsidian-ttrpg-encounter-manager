@@ -10,6 +10,7 @@ import { appendRichText } from './markdown';
 import { wireWikiLinks } from './wiki-links';
 import { EvIconName, evIcon } from './icons';
 import { pill } from './pill';
+import { linkPill } from './campaign-model';
 import { dialogFoot, gameDialog } from './dialog';
 
 /** Each outcome: its word, its Lucide icon for Obsidian's menu, and its Phosphor glyph on the card. */
@@ -67,6 +68,13 @@ export function outcomePill(head: HTMLElement, def: EncounterDef, save: (next: E
 	return chip;
 }
 
+/** A value that's one link to a campaign note of a kind (a location, a quest…), which reading view draws as a chip with its kind's icon. */
+function linksToChip(app: App, value: string, sourcePath: string): boolean {
+	const m = /^\s*\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]\s*$/.exec(value);
+	const dest = m ? app.metadataCache.getFirstLinkpathDest(m[1].trim(), sourcePath) : null;
+	return !!dest && !!linkPill(app.metadataCache.getFileCache(dest)?.frontmatter);
+}
+
 /** Where, when and loot, each with its icon (links work); nothing when none is set. */
 export function battleFacts(card: HTMLElement, app: App, def: EncounterDef, sourcePath: string): void {
 	const facts: [EvIconName, string, string][] = [['map-pin', 'Where', battleField(def, 'where')], ['clock', 'When', battleField(def, 'when')], ['gem', 'Loot', battleField(def, 'loot')]];
@@ -75,7 +83,8 @@ export function battleFacts(card: HTMLElement, app: App, def: EncounterDef, sour
 	const meta = card.createDiv({ cls: 'battle-facts' });
 	for (const [icon, label, value] of shown) {
 		const f = meta.createDiv({ cls: 'battle-fact', attr: { 'aria-label': label } });
-		setIcon(f.createSpan({ cls: 'battle-fact-icon' }), evIcon(icon));
+		// A place's link draws as a chip with its own pin (npc-links.ts): one pin is enough.
+		if (!linksToChip(app, value, sourcePath)) setIcon(f.createSpan({ cls: 'battle-fact-icon' }), evIcon(icon));
 		appendRichText(f.createSpan({ cls: 'battle-fact-text' }), value);
 	}
 	wireWikiLinks(meta, app, sourcePath);
