@@ -7,7 +7,10 @@ import type EmberVaultPlugin from '../../../main';
 import type { HoverContent } from '../../core/hover-preview';
 import { refPill, type InlineRefProvider } from '../../core/inline-refs';
 import { pill } from '../../core/pill';
-import { homeFolderFor } from '../../core/campaign-model';
+import { fmText, homeFolderFor } from '../../core/campaign-model';
+import type { NpcInfo } from '../../core/campaigns';
+import { openNoteQuickLook } from '../../core/note-quick-look';
+import { npcSheet5e, statblockName } from './npc';
 import { asEdition, Dnd5eEdition } from './editions';
 import { Dnd5eIndex } from './monster-index';
 import { parseStatblock5e, STATBLOCK_LANG, toStatblockSource5e } from './parser';
@@ -45,6 +48,13 @@ export function parse5eRef(code: string): string | null {
 	return m ? m[1] : null;
 }
 
+/** What a line of an encounter block fights with: a monster, or an NPC note with stats (`npc`, with the HP it has left). */
+export interface Fighter5e {
+	entry: Dnd5eEntry;
+	npc?: NpcInfo;
+	hpNow?: number;
+}
+
 export class Dnd5eRuntime {
 	readonly index: Dnd5eIndex;
 	readonly fights: FightStore;
@@ -65,6 +75,52 @@ export class Dnd5eRuntime {
 
 	get(name: string, from?: string): Dnd5eEntry | undefined {
 		return this.index.get(name, this.edition(from), from || undefined);
+	}
+
+	/**
+	 * A line of an encounter block as what fights: a [[link]] to an NPC note means the NPC; any other
+	 * name is a monster first, then an NPC (only NPCs `from` can see). An NPC is made the way Add to
+	 * fight on its card makes it: its stat block under its own name, its own AC, HP and stats on top,
+	 * and the HP its note says are left.
+	 */
+	fighter(m: { name: string; written?: string }, from?: string): Fighter5e | undefined {
+		const link = m.written?.startsWith('[[') ? m.written : undefined;
+		const monster = (): Fighter5e | undefined => {
+			const e = this.get(m.name, from);
+			return e ? { entry: e } : undefined;
+		};
+		const npc = (): Fighter5e | undefined => {
+			const n = this.plugin.campaigns.npcNamed(link ?? m.name, from);
+			if (!n) return undefined;
+			const fm = this.plugin.campaigns.npcProps(n);
+			const ref = statblockName(fm.statblock);
+			// The block it uses, found the way its card finds it: from the NPC's own note.
+			const base = ref ? this.get(ref, n.path) : undefined;
+			const name = fmText(fm.title).trim() || n.name;
+			const s = npcSheet5e(name, fm, base ? { name: ref, monster: base.monster } : undefined);
+			return s ? { entry: { name, filePath: n.path, monster: s.monster }, npc: n, hpNow: s.hpNow } : undefined;
+		};
+		return link ? npc() ?? monster() : monster() ?? npc();
+	}
+
+	/** An NPC in a fight: [CR | their name], their numbers on hover, their note in a quick look on click (Cmd/Ctrl-click: the page). */
+	createNpcRef(f: Fighter5e, sourcePath: string): HTMLElement {
+		const { el, name } = refPill({
+			system: 'dnd5e', cls: 'dnd5e-ref is-npc', name: f.entry.name,
+			badge: { text: f.entry.monster.cr, title: `CR ${f.entry.monster.cr}` },
+			nameAttr: { 'aria-label': `NPC: ${f.entry.name}` },
+		});
+		name.addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			this.plugin.hover.hide();
+			const file = this.plugin.app.vault.getFileByPath(f.entry.filePath);
+			if (!file) return;
+			if (e.metaKey || e.ctrlKey) { void this.plugin.app.workspace.getLeaf('tab').openFile(file); return; }
+			openNoteQuickLook(this.plugin.app, { file, sourcePath, subtitle: f.npc?.role, system: 'dnd5e' });
+		});
+		this.plugin.hover.attach(name, () => this.hover(f.entry, sourcePath));
+		return el;
 	}
 
 	register(): void {

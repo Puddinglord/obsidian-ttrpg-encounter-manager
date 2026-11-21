@@ -6,7 +6,8 @@ import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, se
 import type EmberVaultPlugin from '../../../main';
 import { EncounterDef, encounterBlockSource, replaceEncounterBlock } from '../../core/encounter-def';
 import { budgetPhrase, monsterRole, partyPhrase, rateEncounter, shiftLabel, shiftMonster } from './rules';
-import { createInlineRef } from './inline-ref';
+import { createInlineRef, createNpcRef } from './inline-ref';
+import { fighterFor } from './fighters';
 import { BuilderModal } from './builder-modal';
 import { EncounterTemplate } from './encounters';
 import { renderBalance } from './balance-ui';
@@ -34,7 +35,7 @@ export function resolveDef(plugin: EmberVaultPlugin, def: EncounterDef, from?: s
 	const found: EncounterTemplate['monsters'] = [];
 	const missing: string[] = [];
 	for (const m of def.monsters) {
-		const e = nimble().index.get(m.name, from);
+		const e = fighterFor(plugin, m, from)?.entry;
 		if (e) found.push({ monster: shiftMonster(e.monster, m.shift ?? 0), count: m.count, sourceFile: e.filePath || undefined });
 		else missing.push(m.name);
 	}
@@ -134,13 +135,14 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 			e.preventDefault();
 			e.stopPropagation();
 			if (isPopoverOpenFor(chip)) { closePopover(); return; }
-			openPopover(chip, (pop, close) => renderBalance(pop, plugin, def, (next) => { close(); save(next); }), { width: 340, cls: 'balance-popover ev-sys-nimble' });
+			openPopover(chip, (pop, close) => renderBalance(pop, plugin, def, (next) => { close(); save(next); }, { from: ctx.sourcePath }), { width: 340, cls: 'balance-popover ev-sys-nimble' });
 		});
 	}
 
 	const list = card.createDiv({ cls: 'encounter-block-monsters' });
 	def.monsters.forEach((m, i) => {
-		const entry = nimble().index.get(m.name, ctx.sourcePath);
+		const fighter = fighterFor(plugin, m, ctx.sourcePath);
+		const entry = fighter?.entry;
 		const chip = list.createDiv({ cls: `encounter-chip role-${entry ? monsterRole(entry.monster) : 'unknown'}` });
 		// The count is a button: click it to change how many, make them tougher or weaker, or remove them.
 		const count = chip.createEl('button', { cls: 'encounter-count', attr: { 'aria-label': `${m.count} ${m.name}${m.shift ? `, ${shiftLabel(m.shift)} level` : ''}` } });
@@ -201,7 +203,8 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 				},
 			});
 		});
-		chip.appendChild(createInlineRef(plugin, m.name, ctx.sourcePath));
+		// An NPC under their own name, with their level; a click is their quick look.
+		chip.appendChild(fighter?.npc ? createNpcRef(plugin, fighter.entry, ctx.sourcePath, fighter.npc.role) : createInlineRef(plugin, m.name, ctx.sourcePath));
 	});
 	if (!def.monsters.length) list.createDiv({ cls: 'encounter-block-empty', text: 'No monsters yet.' });
 
@@ -235,7 +238,7 @@ function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: En
 		await nimble().showTracker();
 		new Notice(`Added ${def.name}'s monsters to the current encounter${missing.length ? `. Not found: ${missing.join(', ')}` : ''}`);
 	})(), 'Add these monsters to the encounter already in the tracker');
-	btn('Edit', evIcon('edit'), '', () => new BuilderModal(plugin, def, save).open(), 'Edit monsters with the encounter builder');
+	btn('Edit', evIcon('edit'), '', () => new BuilderModal(plugin, def, save, ctx.sourcePath).open(), 'Edit monsters with the encounter builder');
 	// A fight saved from this block can be picked up where it stopped.
 	const saved = savedFightsFor(plugin.app, ctx.sourcePath, def.name)[0];
 	if (saved) {

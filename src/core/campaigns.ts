@@ -10,6 +10,7 @@ import {
 import {
 	blankNote, campaignHome, chapterHome, characterNote, handoutNote, locationNote, mapNote, monsterNote, npcNote, playerCampaignHome, questNote, sceneNote, sessionNote, StarterKind,
 } from './campaign-templates';
+import { findNpc } from './npc-lookup';
 
 export type NewNoteKind = 'scene' | 'npc' | 'location' | 'quest' | 'session';
 
@@ -161,6 +162,28 @@ export class CampaignStore extends Events {
 		this.rebuildSoon();
 	}
 	chapterOf(path: string): Chapter | undefined { const c = this.of(path); return c && chapterOf(c, path); }
+
+	/**
+	 * The NPC note a name in a block means, seen from the note `from` (only NPCs `plugin.canSee` lets it
+	 * see): written as a [[link]], the note the link goes to when that's an NPC; then an NPC of that name
+	 * or alias. A game's encounter block uses it for names that aren't monsters.
+	 */
+	npcNamed(name: string, from?: string): NpcInfo | undefined {
+		const visible = (n: NpcInfo) => this.plugin.canSee(n.path, from);
+		const link = /^\[\[([^\]|#]+)/.exec(name.trim())?.[1];
+		if (link) {
+			const dest = this.app.metadataCache.getFirstLinkpathDest(link.trim(), from ?? '');
+			const npc = dest ? this.npcs.find(n => n.path === dest.path) : undefined;
+			if (npc && visible(npc)) return npc;
+		}
+		return findNpc(this.npcs, link ?? name, visible);
+	}
+
+	/** An NPC note's properties (empty while it isn't indexed). */
+	npcProps(npc: NpcInfo): Record<string, unknown> {
+		const f = this.app.vault.getFileByPath(npc.path);
+		return (f ? this.app.metadataCache.getFileCache(f)?.frontmatter : undefined) ?? {};
+	}
 
 	/** The heroes in a campaign: every character note in its folder, yours first. */
 	characters(c: Campaign): CharacterInfo[] {

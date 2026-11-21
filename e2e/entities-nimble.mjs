@@ -824,27 +824,50 @@ export function register(test, h) {
 		}
 	});
 
-	test('entities nimble: KNOWN: an NPC with stats can\'t be listed in an encounter block (Add to fight on its card is the way in)', async (o) => {
-		const F = 'Campaigns/EN Known';
+	test('entities nimble: an NPC with stats in an encounter block — shown under her name with her level, counted in the rating, run in with her own HP; NPCs of other campaigns stay unknown', async (o) => {
+		const F = 'Campaigns/EN NPC Fight';
+		const OTHER = 'Campaigns/EN NPC Elsewhere';
+		const SC = `${F}/Chapter 1/Opening Scene.md`;
 		await resetEncounter(o);
 		try {
-			await campaign(o, 'EN Known');
+			await campaign(o, 'EN NPC Elsewhere');
+			await write(o, `${OTHER}/NPCs/Hask Morrow.md`, '---\nnimble: npc\nlevel: 2\nhp: 20\n---\n');
+			await campaign(o, 'EN NPC Fight');
 			await write(o, `${F}/NPCs/Ysolde Krenn.md`, '---\nnimble: npc\nrole: Captain of the guard\nlevel: 3\narmor: M\nhp: 33\nstatblock: Goblin Boss\n---\n');
-			await write(o, `${F}/Chapter 1/Opening Scene.md`, '---\nnimble: scene\norder: 1\n---\n```nimble-encounter\nname: The guard turns\nmonsters:\n- 2 Goblin\n- [[Ysolde Krenn]]\n```\n');
-			await o.openFile(`${F}/Chapter 1/Opening Scene.md`, 'preview');
-			const block = o.page.locator(`${R} .nimble-encounter-block`);
+			// Listed by link, by name too; Hask lives in another campaign, so this one can't see him.
+			await write(o, SC, '---\nnimble: scene\norder: 1\n---\n```nimble-encounter\nname: The guard turns\nmonsters:\n- 2 Goblin\n- [[Ysolde Krenn]]\n- Hask Morrow\n```\n\n```nimble-encounter\nname: Goblins only\nmonsters:\n- 2 Goblin\n```\n');
+			await o.waitFor(() => o.eval((app, plugin, F) => plugin.campaigns.npcs.some(n => n.path === `${F}/NPCs/Ysolde Krenn.md`), F), { what: 'Ysolde indexed as an NPC' });
+			await o.openFile(SC, 'preview');
+			const block = o.page.locator(`${R} .nimble-encounter-block`).filter({ hasText: 'The guard turns' });
 			await block.waitFor();
+			// Her chip: her name, her level, as an NPC (not a monster called "Ysolde Krenn").
+			const her = block.locator('.encounter-chip .nimble-inline-ref.is-npc');
+			await o.waitFor(async () => (await her.count()) === 1, { what: 'Ysolde\'s chip' });
+			assert.equal(await her.locator('.nimble-inline-name').innerText(), 'Ysolde Krenn');
+			assert.equal(await her.locator('.nimble-inline-level').innerText(), '3');
 			const warnings = (await block.locator('.encounter-block-warning').allInnerTexts()).join('\n');
-			if (/Not found: Ysolde Krenn/.test(warnings)) {
-				await shot(o, 'KNOWN-npc-in-encounter-block');
-				console.log('      KNOWN: an encounter block looks its monsters up in the bestiary only, so an NPC note with level, armor, HP and statblock: shows "Not found" and is left out of Run. Screenshot: e2e/artifacts/entities-nimble-KNOWN-npc-in-encounter-block.png');
-				return;
-			}
-			// Once NPCs can be listed: Run brings her in under her own name with her own HP.
+			assert.match(warnings, /Not found: Hask Morrow/, 'an NPC from another campaign is not this block\'s');
+			assert.doesNotMatch(warnings, /Not found:.*Ysolde/);
+			// The GM Guide's warnings read her too: medium armor in a level-1 fight.
+			assert.match(warnings, /Ysolde Krenn has Medium armor/);
+			// The rating counts her: her level 3 on top of the two goblins of the block beside it.
+			const valueOf = async (b) => Number(/^([\d.]+) of/.exec(await b.locator('.encounter-block-meta').innerText())?.[1]);
+			const goblins = o.page.locator(`${R} .nimble-encounter-block`).filter({ hasText: 'Goblins only' });
+			assert.equal(Math.round((await valueOf(block) - await valueOf(goblins)) * 10) / 10, 3, 'Ysolde counts as level 3');
+			// A click on her name is a quick look at her note, not a jump.
+			await her.locator('.nimble-inline-name').click();
+			await o.page.locator(Q).waitFor();
+			assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Ysolde Krenn');
+			assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), SC, 'still on the scene');
+			await o.page.keyboard.press('Escape');
+			await o.page.locator(Q).waitFor({ state: 'detached' });
+			// Run brings her in under her own name with her own HP, beside the goblins.
 			await block.locator('.encounter-block-actions button', { hasText: 'Run' }).click();
 			await o.waitFor(async () => (await creatures(o)).some(c => /^Ysolde Krenn/.test(c.label) && c.max === 33), { what: 'Ysolde in the fight' });
+			assert.equal((await creatures(o)).filter(c => /^Goblin/.test(c.label)).length, 2);
+			assert.ok(!(await creatures(o)).some(c => /Hask/.test(c.label)));
 		} finally {
-			await done(o, [F]);
+			await done(o, [F, OTHER]);
 		}
 	});
 

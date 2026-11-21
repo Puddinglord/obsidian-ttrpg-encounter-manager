@@ -61,6 +61,8 @@ In a Nimble campaign, an NPC can carry the book's numbers, for when the party en
 
 **Add to fight** puts the NPC in the tracker under their own name, with the stat block's attacks and the NPC's own level, armor and HP on top. With no stat block, HP is enough. The GM sees all of this; players never do. In a 5e campaign, NPCs get a small character sheet instead: see [Playing 5e](5e.md#npcs).
 
+To plan a fight with them in it, list the NPC in an [encounter block](encounters.md#encounter-blocks) like a monster: `- [[Tobren Kask]]` (or just his name). The block shows him under his own name and level, counts him in the difficulty, and **Run** brings him in like **Add to fight** does. A block only finds NPCs in its own campaign.
+
 ### In a campaign you play in
 
 Your NPC notes are your own: the card shows the portrait, name, role, facts and pills, then your rows under **What we know**. There are no numbers, and no secret rows (the player starter has `suspicions:` instead).

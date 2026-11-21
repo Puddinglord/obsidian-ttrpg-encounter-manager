@@ -22,7 +22,7 @@ Then it calls a contract member: `system.characters?.promptNew(…)`, `system.qu
 
 | Module | What it's for |
 |---|---|
-| `campaign-model.ts`, `campaigns.ts` | Campaigns from folders and frontmatter (`system:`, `edition:`, `role:`), the active campaign, characters in a campaign |
+| `campaign-model.ts`, `campaigns.ts` | Campaigns from folders and frontmatter (`system:`, `edition:`, `role:`), the active campaign, characters in a campaign. `campaigns.npcNamed(name, from)` is the NPC note a name or `[[link]]` in a block means, seen from that note (`npc-lookup.ts`, pure); a game's encounter block uses it for NPCs with stats |
 | `campaign-ui.ts`, `campaign-modals.ts`, `campaign-templates.ts` | The Campaign panel, New campaign and Campaign settings (with the Game system picker), starter notes |
 | `inline-refs.ts` | Finds `prefix:Name` inline code in Reading view and Live Preview; each system adds a provider (`plugin.inlineRefs.add`). `refPill()` draws the pill for every game: [icon or level | name], or [name | ?] |
 | `face-picker.ts` | `renderFacePicker(parent, { sides, current, label, pick, remove })`: a held die typed in from the table, its faces as buttons in even rows (`faceRows`). Any game's set-aside dice use it; the game writes the value |
@@ -71,7 +71,7 @@ A condition's timing lives on core's `AppliedCondition` as optional fields (`Con
 - **Campaigns are indexed after Obsidian's layout is ready.** Anything drawn at startup that depends on the note's system or edition must redraw on `plugin.campaigns.on('changed')` if the answer changed (see `app/encounter-blocks.ts`).
 - **`title` attributes become Obsidian tooltips:** `tooltips.ts` moves them to `aria-label`. Tests should read either.
 - **Names in frontmatter can be numbers** (`edition: 2024` is a YAML number); read them through helpers that accept both.
-- **Pure modules** (`types.ts`, `tracker/effects.ts`, `tracker/hp.ts`, `note-kinds.ts`, `spotlight-def.ts`, `spotlight-source.ts` (types only from obsidian), `compendium/query.ts`, `content/spec.ts`, `content/packs.ts`, `content/blocks.ts`, `yaml-lite.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `campaign-model.ts`) must not import `obsidian`.
+- **Pure modules** (`types.ts`, `tracker/effects.ts`, `tracker/hp.ts`, `note-kinds.ts`, `spotlight-def.ts`, `spotlight-source.ts` (types only from obsidian), `compendium/query.ts`, `content/spec.ts`, `content/packs.ts`, `content/blocks.ts`, `yaml-lite.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `campaign-model.ts`, `npc-lookup.ts`) must not import `obsidian`.
 
 ## Your own content (`content/blocks.ts`, `store.ts`, `new-entry.ts`)
 

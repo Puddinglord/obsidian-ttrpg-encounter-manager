@@ -15,6 +15,8 @@ notes: If spotted, one goblin runs to warn the den.
 ```
 ````
 
+Monsters can be bestiary names, your own stat blocks, or the campaign's [NPCs with stats](npcs.md#an-npcs-numbers): `- [[Tobren Kask]]` shows him under his own name and level, counts him like a monster, and **Run** brings him in with his own HP.
+
 The block shows its difficulty using the GM Guide budget:
 
 - The budget is the party's total hero levels.

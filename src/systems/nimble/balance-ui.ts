@@ -6,6 +6,7 @@ import { EncounterDef } from '../../core/encounter-def';
 import { BALANCE_TARGETS, BalanceGroup, BalanceTarget, balanceEncounter, describeChange, monsterRole, rateEncounter, shiftMonster } from './rules';
 import { partyLevels } from './encounter-block';
 import { nimble } from './runtime';
+import { fighterFor } from './fighters';
 import { applyLook } from '../../core/look';
 import { slideThumb } from '../../core/segmented';
 
@@ -21,10 +22,10 @@ function familyMinions(plugin: EmberVaultPlugin, groups: BalanceGroup[]): Balanc
 		.map(e => ({ name: e.name, monster: e.monster, count: 0 }));
 }
 
-export function renderBalance(el: HTMLElement, plugin: EmberVaultPlugin, def: EncounterDef, apply: (next: EncounterDef) => void, opts: { initial?: BalanceTarget; onTarget?: (t: BalanceTarget) => void; hideTitle?: boolean } = {}): void {
+export function renderBalance(el: HTMLElement, plugin: EmberVaultPlugin, def: EncounterDef, apply: (next: EncounterDef) => void, opts: { initial?: BalanceTarget; onTarget?: (t: BalanceTarget) => void; hideTitle?: boolean; from?: string } = {}): void {
 	const groups: BalanceGroup[] = def.monsters
-		// As they'll be run: a tougher or weaker monster counts as its shifted level.
-		.map(m => { const e = nimble().index.get(m.name); return { name: m.name, monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })
+		// As they'll be run: a tougher or weaker monster counts as its shifted level, an NPC as their own.
+		.map(m => { const e = fighterFor(plugin, m, opts.from)?.entry; return { name: m.name, monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })
 		.filter((g): g is BalanceGroup => !!g.monster);
 	const levels = partyLevels(plugin);
 	const current = rateEncounter(groups, levels);

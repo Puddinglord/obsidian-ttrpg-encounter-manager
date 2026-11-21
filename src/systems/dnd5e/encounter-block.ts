@@ -34,7 +34,8 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 		setIcon(head.createSpan({ cls: 'dnd5e-encounter-icon' }), evIcon('swords'));
 		head.createDiv({ cls: 'dnd5e-encounter-name', text: this.def.name });
 		const player = this.rt.plugin.playerView(path);
-		const groups = this.def.monsters.map(m => ({ m, entry: this.rt.get(m.name, path) }));
+		// Monsters, and the campaign's NPCs with stats (as Add to fight on their card makes them).
+		const groups = this.def.monsters.map(m => ({ m, fighter: this.rt.fighter(m, path) })).map(g => ({ ...g, entry: g.fighter?.entry }));
 		const known = groups.filter(g => g.entry).map(g => ({ monster: g.entry!.monster, count: g.m.count }));
 		const levels = this.rt.partyLevels();
 		const edition = this.rt.edition(path);
@@ -54,10 +55,11 @@ export class Dnd5eEncounterBlock extends MarkdownRenderChild {
 
 		// The roster: how many, the monster (its reference, with CR), AC and HP, and the XP they're worth.
 		const list = card.createDiv({ cls: 'dnd5e-encounter-monsters' });
-		for (const { m, entry } of groups) {
+		for (const { m, entry, fighter } of groups) {
 			const row = list.createDiv({ cls: 'dnd5e-encounter-row' });
 			row.createSpan({ cls: 'dnd5e-encounter-count', text: `${m.count}×` });
-			row.appendChild(this.rt.createRef(m.name, path)).addClass('dnd5e-encounter-ref');
+			// An NPC under their own name; their AC, HP and XP below are their own.
+			row.appendChild(fighter?.npc && !player ? this.rt.createNpcRef(fighter, path) : this.rt.createRef(m.name, path)).addClass('dnd5e-encounter-ref');
 			if (entry && !player) {
 				const stats = row.createSpan({ cls: 'dnd5e-encounter-stats' });
 				stats.createSpan({ text: `AC ${entry.monster.ac}` });
@@ -107,8 +109,12 @@ export async function runEncounter5e(rt: Dnd5eRuntime, def: EncounterDef, path: 
 	const store = rt.fights;
 	if (fresh) store.reset(def.name, rt.edition(path), path);
 	store.change(f => {
-		for (const { m, entry } of def.monsters.map(m => ({ m, entry: rt.get(m.name, path) }))) {
-			if (entry) addMonster(f, entry.monster, m.count, { sourceFile: entry.filePath || undefined });
+		for (const m of def.monsters) {
+			const fighter = rt.fighter(m, path);
+			if (!fighter) continue;
+			const added = addMonster(f, fighter.entry.monster, m.count, { sourceFile: fighter.entry.filePath || undefined });
+			// An NPC starts from what their note says is left, as from their card.
+			if (fighter.hpNow !== undefined) for (const c of added) c.hp = fighter.hpNow;
 		}
 		if (fresh && def.party) for (const h of rt.plugin.settings.party) addHero(f, { name: h.name, maxHp: h.maxHp, ac: h.defense });
 	});

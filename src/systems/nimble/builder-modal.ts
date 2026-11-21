@@ -13,6 +13,7 @@ import { describeMonster } from './suggest';
 import { isTouch } from '../../core/touch';
 import { attachMonsterHover } from './inline-ref';
 import { nimble } from './runtime';
+import { fighterFor } from './fighters';
 import { dialogFoot, dialogLabel, gameDialog } from '../../core/dialog';
 import { evIcon } from '../../core/icons';
 import { pill, setPill } from '../../core/pill';
@@ -30,8 +31,8 @@ export class BuilderModal extends Modal {
 	private ratingEl!: HTMLElement;
 	private balanceTarget?: BalanceTarget;
 
-	/** `onSave` writes the result back (editing a block); without it the modal inserts a new block. */
-	constructor(private plugin: EmberVaultPlugin, def?: EncounterDef, private onSave?: (def: EncounterDef) => void) {
+	/** `onSave` writes the result back (editing a block, `from` its note); without it the modal inserts a new block. */
+	constructor(private plugin: EmberVaultPlugin, def?: EncounterDef, private onSave?: (def: EncounterDef) => void, private from?: string) {
 		super(plugin.app);
 		this.def = def ? JSON.parse(JSON.stringify(def)) as EncounterDef : { name: 'New encounter', party: plugin.settings.party.length > 0, monsters: [] };
 	}
@@ -83,7 +84,7 @@ export class BuilderModal extends Modal {
 		dialogFoot(c, {
 			cancel: () => this.close(),
 			// Run stays open if the GM decides to keep the fight that's in the tracker, so the build isn't lost.
-			second: [{ text: 'Run now', icon: evIcon('play'), cls: 'builder-run', onClick: () => void runEncounter(this.plugin, this.def).then(ran => { if (ran) this.close(); }) }],
+			second: [{ text: 'Run now', icon: evIcon('play'), cls: 'builder-run', onClick: () => void runEncounter(this.plugin, this.def, this.from).then(ran => { if (ran) this.close(); }) }],
 			main: { text: this.onSave ? 'Save' : 'Insert into note', icon: evIcon(this.onSave ? 'check' : 'arrow-right'), cls: 'builder-save', onClick: () => this.save() },
 		});
 
@@ -153,7 +154,7 @@ export class BuilderModal extends Modal {
 			keys.createSpan({ cls: 'builder-pick-count', text: String(m.count) });
 			const plus = keys.createEl('button', { attr: { 'aria-label': `One more ${m.name}` } });
 			setIcon(plus, evIcon('plus'));
-			const entry = nimble().index.get(m.name);
+			const entry = fighterFor(this.plugin, m, this.from)?.entry;
 			const name = row.createSpan({ cls: 'builder-pick-name', text: m.name });
 			if (!entry) name.addClass('is-missing');
 			else {
@@ -171,7 +172,7 @@ export class BuilderModal extends Modal {
 		const el = this.ratingEl;
 		el.empty();
 		// Rated as they'll be run: a tougher or weaker monster counts as its shifted level.
-		const groups = this.def.monsters.map(m => { const e = nimble().index.get(m.name); return { monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })
+		const groups = this.def.monsters.map(m => { const e = fighterFor(this.plugin, m, this.from)?.entry; return { monster: e ? shiftMonster(e.monster, m.shift ?? 0) : undefined, count: m.count }; })
 			.filter((g): g is { monster: NonNullable<typeof g.monster>; count: number } => !!g.monster);
 		const levels = partyLevels(this.plugin);
 		const r = rateEncounter(groups, levels);
@@ -202,7 +203,7 @@ export class BuilderModal extends Modal {
 			const bal = el.createDiv({ cls: 'builder-balance' });
 			dialogLabel(bal, 'Balance to');
 			renderBalance(bal.createDiv(), this.plugin, this.def, (next) => { this.def.monsters = next.monsters; this.renderPicked(); }, {
-				initial: this.balanceTarget, onTarget: (t) => { this.balanceTarget = t; }, hideTitle: true,
+				initial: this.balanceTarget, onTarget: (t) => { this.balanceTarget = t; }, hideTitle: true, from: this.from,
 			});
 		}
 	}

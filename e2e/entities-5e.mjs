@@ -1727,18 +1727,46 @@ export function register(test, h) {
 		await o.eval((app, _p, v) => app.vault.setConfig('alwaysUpdateLinks', v), was ?? false);
 	});
 
-	test('entities 5e: KNOWN: an NPC listed in an encounter block isn\'t found (her stats are on her note, not in a 5e block)', async (o) => {
-		const C = 'Campaigns/E5 Known NPC';
-		await scenario(o, 'known-npc', [C], async () => {
-			await campaign5e(o, 'E5 Known NPC', { edition: '2024', level: 2, starter: false });
-			await write(o, `${C}/NPCs/Marta Vey.md`, '---\nnimble: npc\nrole: Harbour master\nstatblock: Bandit Captain\nac: 16\n---\n');
-			await write(o, `${C}/Ambush.md`, '```nimble-encounter\nname: Ambush\nmonsters:\n- [[Marta Vey]]\n- 2 Bandit\n```\n');
+	test('entities 5e: an NPC listed in an encounter block — under her own name with her own AC and HP, counted in the XP, run in from the HP she has left; NPCs of other campaigns stay unknown', async (o) => {
+		const C = 'Campaigns/E5 NPC Fight';
+		const OTHER = 'Campaigns/E5 NPC Elsewhere';
+		const npc = `${C}/NPCs/Marta Vey.md`;
+		await scenario(o, 'npc-fight', [C, OTHER], async () => {
+			await campaign5e(o, 'E5 NPC Elsewhere', { edition: '2024', level: 2, starter: false });
+			await write(o, `${OTHER}/NPCs/Hask Morrow.md`, '---\nnimble: npc\nstatblock: Bandit\n---\n');
+			await campaign5e(o, 'E5 NPC Fight', { edition: '2024', level: 2, starter: false });
+			await write(o, npc, '---\nnimble: npc\nrole: Harbour master\nstatblock: Bandit Captain\nac: 16\nhp_now: 30\n---\n');
+			// By link, by name; Hask lives in another campaign, so this one can't see him.
+			await write(o, `${C}/Ambush.md`, '```nimble-encounter\nname: Ambush\nmonsters:\n- [[Marta Vey]]\n- 2 Bandit\n- Hask Morrow\n```\n');
+			await o.waitFor(() => o.eval((app, plugin, p) => plugin.campaigns.npcs.some(n => n.path === p), npc), { what: 'Marta indexed as an NPC' });
+			const captain = await o.eval((app, plugin, p) => { const m = plugin.runtime('dnd5e').get('Bandit Captain', p).monster; return { hp: m.hp }; }, npc);
 			await o.openFile(`${C}/Ambush.md`, 'preview');
-			await view(o, '.dnd5e-encounter').waitFor({ timeout: 5000 });
-			await o.waitFor(async () => (await view(o, '.dnd5e-encounter-xp').count()) >= 1, { what: 'the block drawn' });
-			await shot(o, 'KNOWN-npc-in-encounter', view(o, '.dnd5e-encounter'));
-			const missing = await view(o, '.dnd5e-encounter-missing').innerText().catch(() => '');
-			console.log(`      KNOWN: "${missing}". An encounter block finds monsters by their stat block's name; an NPC note with \`statblock:\` or typed stats isn't one, so the fight can't include her (Add to fight on her card works). Nimble behaves the same. Decide whether blocks should resolve NPC notes (npcMonster5e) before changing it.`);
+			const enc = view(o, '.dnd5e-encounter');
+			await enc.waitFor({ timeout: 5000 });
+			const her = enc.locator('.dnd5e-encounter-row').filter({ has: o.page.locator('.dnd5e-ref.is-npc') });
+			await o.waitFor(async () => (await her.count()) === 1, { what: 'Marta\'s row' });
+			assert.equal(await her.locator('.nimble-inline-name').innerText(), 'Marta Vey');
+			assert.match(await her.innerText(), new RegExp(`AC 16[\\s\\S]*HP ${captain.hp}`), 'her own AC, the captain\'s HP');
+			assert.match(await enc.locator('.dnd5e-encounter-missing').innerText(), /^Not found: Hask Morrow$/);
+			// Counted: her XP is in the total with the bandits'.
+			const xps = (await enc.locator('.dnd5e-encounter-xp').allInnerTexts()).map(t => Number(t.replace(/[^\d]/g, '')));
+			assert.equal(xps.length, 2);
+			assert.ok(xps[0] > 0, 'Marta is worth XP');
+			assert.equal(Number((await enc.locator('.dnd5e-encounter-sum').innerText()).replace(/[^\d]/g, '')), xps[0] + xps[1]);
+			// A click on her name is a quick look at her note.
+			await her.locator('.nimble-inline-name').click();
+			const look = o.page.locator('.modal.nimble-record-modal');
+			await look.waitFor({ timeout: 3000 });
+			assert.equal(await look.locator('.record-title').innerText(), 'Marta Vey');
+			await o.page.keyboard.press('Escape');
+			await look.waitFor({ state: 'detached' });
+			// Run: Marta under her own name, her AC, from the 30 HP her note says she has left; and two bandits.
+			await enc.locator('.dnd5e-encounter-actions button', { hasText: 'Run' }).click();
+			await o.waitFor(async () => (await fight(o)).length === 3, { what: 'three in the fight' });
+			const marta = (await fight(o)).find(c => c.name === 'Marta Vey');
+			assert.ok(marta, 'Marta in the fight');
+			assert.deepEqual([marta.ac, marta.hp, marta.maxHp], [16, 30, captain.hp]);
+			assert.equal((await fight(o)).filter(c => /^Bandit/.test(c.name)).length, 2);
 		});
 	});
 

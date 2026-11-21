@@ -154,6 +154,34 @@ function createMonsterRef(plugin: EmberVaultPlugin, monsterName: string, sourceP
 	return container;
 }
 
+/**
+ * An NPC in a fight (an encounter block's line): [level | their name], their stat block with their own
+ * numbers on hover, their note in a quick look on click (Cmd/Ctrl-click opens the page). `entry` is the
+ * NPC as a monster, its `filePath` the NPC's note. Not redrawn by refreshInlineRefs: its block redraws it.
+ */
+export function createNpcRef(plugin: EmberVaultPlugin, entry: MonsterIndexEntry, sourcePath: string, subtitle?: string): HTMLElement {
+	const role = monsterRole(entry.monster);
+	const lvl = formatLevel(entry.monster.level);
+	const { el, name } = refPill({
+		system: 'nimble',
+		cls: `is-npc role-${role}`,
+		badge: lvl ? { text: lvl, title: `Level ${lvl}` } : undefined,
+		name: entry.name,
+		nameAttr: { 'aria-label': `NPC: ${entry.name}` },
+	});
+	name.addEventListener('click', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		plugin.hover.hide();
+		const file = plugin.app.vault.getFileByPath(entry.filePath);
+		if (!file) return;
+		if (e.metaKey || e.ctrlKey) { void plugin.app.workspace.getLeaf('tab').openFile(file); return; }
+		openRecord(plugin, { kind: 'note', file, sourcePath, subtitle });
+	});
+	attachMonsterHover(plugin, name, entry);
+	return el;
+}
+
 /** Re-render every inline reference on screen, e.g. after the index changes. */
 export function refreshInlineRefs(plugin: EmberVaultPlugin, root?: ParentNode): void {
 	// By default, every window with a leaf in it: the main one and any popouts.
