@@ -1318,4 +1318,87 @@ export function register(test, h) {
 			assert.match(await read(o, species), /Warm Blood/, 'the trait kept');
 		});
 	});
+
+	// -----------------------------------------------------------------------
+	// Content packs and imports
+
+	test('entities 5e: content pack and imports (2014): Import content… adds the example pack (its subclass makes a hero, its monster runs in a fight); a D&D Beyond character and a Fantasy Statblocks creature land in the campaign', async (o) => {
+		const C = 'Campaigns/E5 Hearthguard';
+		const pack = readFileSync(join(ROOT, 'docs/content/examples/5e-hearth-and-cinder.json'), 'utf8');
+		const ddb = readFileSync(join(ROOT, 'tests/fixtures/ddb-hollowblade.json'), 'utf8');
+		const IC = '.modal.nimble-import-content';
+		const M = '.modal.dnd5e-import';
+		const hero = `${C}/Party/Orla Venn.md`;
+		const SH = (sel = '') => view(o, `.dnd5e-sheet ${sel}`);
+		await scenario(o, 'packs', [C, CONTENT], async () => {
+			await o.eval(async (app, _p, CONTENT) => { const f = app.vault.getAbstractFileByPath(CONTENT); if (f) await app.vault.delete(f, true); }, CONTENT);
+			await campaign5e(o, 'E5 Hearthguard', { edition: '2014', level: 3 });
+
+			// Import content…: the example pack, pasted; all five entries go in.
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+			await o.page.locator(IC).waitFor();
+			await o.page.locator(`${IC} textarea`).fill(pack);
+			await o.waitFor(async () => /Hearth and Cinder[\s\S]*5 entries/.test(await o.page.locator(`${IC} .nimble-import-report`).innerText().catch(() => '')), { what: 'the pack read' });
+			assert.equal(await o.page.locator(`${IC} .nimble-pack-notes.is-rejected`).count(), 0, 'nothing left out');
+			await o.page.locator(`${IC} button.mod-cta`).click();
+			await o.page.locator(IC).waitFor({ state: 'detached' });
+			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => p.name).join())) === 'Hearth and Cinder', { what: 'the pack loaded' });
+
+			// Find: each kind on its tab, tagged with the pack's name, in the 2014 compendium.
+			for (const [tab, name] of [['Classes', 'Path of the Hearthguard'], ['Spells', 'Ember Lash'], ['Magic items', 'Lantern of Steady Light'], ['Feats', 'Kindler'], ['Monsters', 'Cinder Hound']]) {
+				await compendium(o, tab, name.toLowerCase());
+				await o.waitFor(async () => (await cmpNames(o, CV)).includes(name), { timeout: 5000, what: `${name} on the ${tab} tab` });
+				if (tab !== 'Monsters') assert.equal(await cmpRow(o, name, CV).locator('.bestiary-tag.is-pack').textContent(), 'Hearth and Cinder', `${name} tagged with its pack`);
+			}
+			assert.match(await o.page.locator(`${CV} .dnd5e-cmp-editions button.is-active`).innerText(), /2014/);
+			await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
+
+			// Use: its subclass for a 2014 barbarian at level 3, from New character.
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+			await fillCharacter(o, { name: 'Orla Venn', className: 'Barbarian', level: 3, species: 'Half-Orc', background: 'Acolyte', skills: ['Athletics', 'Survival'], subclass: 'Path of the Hearthguard' });
+			await waitFm(o, hero, f => f.subclass === 'Path of the Hearthguard', 'the pack\'s subclass on the hero');
+			await o.openFile(hero, 'preview');
+			await SH().waitFor({ timeout: 5000 });
+			await SH('.dnd5e-tab[data-tab="features"]').click();
+			await o.waitFor(async () => /Hearth Ward/.test(await SH().innerText()), { what: 'the subclass\'s level 3 feature' });
+			// And its monster in a fight, beside an SRD one.
+			await write(o, `${C}/Chapter 1/Kennels.md`, '```nimble-encounter\nname: The kennels\nmonsters:\n- 2 `5e:Cinder Hound`\n- Goblin\n```\n');
+			await o.openFile(`${C}/Chapter 1/Kennels.md`, 'preview');
+			const enc = view(o, '.dnd5e-encounter');
+			await o.waitFor(async () => (await enc.locator('.dnd5e-encounter-xp').count()) === 2, { what: 'both groups rated' });
+			await enc.locator('button', { hasText: 'Run' }).click();
+			await o.waitFor(async () => (await fight(o)).map(c => c.name).sort().join() === 'Cinder Hound,Cinder Hound,Goblin', { what: 'the pack\'s monster in the fight' });
+
+			// A D&D Beyond character: the note in the Party folder, its sheet, its class in the compendium as Imported.
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+			await o.page.locator(M).waitFor();
+			await o.page.locator(`${M} textarea`).fill(ddb);
+			await o.waitFor(async () => /Mira Hollowell[\s\S]*Level 7 Hollowblade/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the character read' });
+			await o.page.locator(`${M} button.mod-cta`).click();
+			await o.page.locator(M).waitFor({ state: 'detached' });
+			const mira = `${C}/Party/Mira Hollowell.md`;
+			await waitFm(o, mira, f => f.class === 'Hollowblade', 'the imported character');
+			await o.openFile(mira, 'preview');
+			await SH().waitFor({ timeout: 5000 });
+			assert.match(await SH('.dnd5e-sheet-sub').innerText(), /Level 7[\s\S]*Hollowblade/i);
+			await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-hero[data-path="${mira}"]`).count()) === 1, { what: 'Mira in the party' });
+			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e').flatMap(p => p.entries.map(e => e.name)))).includes('Hollowblade'), { what: 'the class in the content folder' });
+
+			// A Fantasy Statblocks creature: a monster note in the campaign's Monsters folder, in the fight from a block.
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-fantasy-statblocks'); });
+			await o.page.locator(M).waitFor();
+			await o.page.locator(`${M} textarea`).fill('```statblock\nname: Bog Wisp\nsize: Tiny\ntype: undead\nalignment: chaotic evil\nac: 13\nhp: 9\nhit_dice: 2d4 + 4\nspeed: 0 ft., fly 40 ft. (hover)\nstats: [3, 16, 14, 10, 12, 6]\ncr: 1/2\nactions:\n  - name: Chill Touch\n    desc: "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) cold damage."\n```');
+			await o.waitFor(async () => /Bog Wisp/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the creature read' });
+			await o.page.locator(`${M} button.mod-cta`).click();
+			await o.page.locator(M).waitFor({ state: 'detached' });
+			const wisp = `${C}/Monsters/Bog Wisp.md`;
+			await o.waitFor(() => exists(o, wisp), { what: 'the creature note' });
+			assert.match(await read(o, wisp), /^---\nnimble: monster\ncr: "1\/2"\n---\n\n```5e\nname: Bog Wisp\n/);
+			await o.waitFor(async () => crow(o, wisp).evaluate(el => el.classList.contains('kind-monster')).catch(() => false), { what: 'listed as a monster in the panel' });
+			await write(o, `${C}/Chapter 1/Bog.md`, '```nimble-encounter\nname: The bog\nmonsters:\n- 3 [[Bog Wisp]]\n```\n');
+			await o.openFile(`${C}/Chapter 1/Bog.md`, 'preview');
+			await o.waitFor(async () => /3 × .*|75 XP|300 XP/.test(await view(o, '.dnd5e-encounter-xp').innerText().catch(() => '')), { what: 'the wisps rated' });
+			assert.equal(await view(o, '.dnd5e-encounter-missing').count(), 0);
+		});
+	});
 }
