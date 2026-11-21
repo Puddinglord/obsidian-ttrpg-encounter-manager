@@ -131,6 +131,7 @@ npm run test:e2e     # build, then drive a real Obsidian through the e2e suite
 node e2e/run.mjs dice           # only e2e tests whose name contains "dice"
 node e2e/explore.mjs /tmp/shots # screenshots of every fixture note and the tracker
 node e2e/layout-sweep.mjs       # every sample-vault note in the hover preview and at phone width; fails on crushed or spilling elements
+npm run test:visual             # every surface of both games at every width, light and dark: screenshots and visual checks (node e2e/visual.mjs nimble sheet for a subset)
 ```
 
 ## End-to-end tests
@@ -144,6 +145,8 @@ node e2e/layout-sweep.mjs       # every sample-vault note in the hover preview a
 - Inside a test, `o.eval((app, plugin, arg) => ..., arg)` runs code inside Obsidian. Only plain JSON comes back.
 
 To cover a new scenario, add notes to `e2e/fixtures/vault/` and a `test('...', async (o) => { ... })` block in `e2e/run.mjs`.
+
+**Visual check.** `npm run test:visual` (`e2e/visual.mjs`) opens the sample vault plus the 5e campaigns and notes it writes, drives every surface in both games (sheets and their tabs, trackers mid-fight, encounter blocks, stat blocks, cards, the Campaign and Character panels, the compendiums, Spotlight, the slash menu, references and hover cards, every builder and wizard step, the dialogs, maps, homebrew), and shoots each at content widths 320, 540, 700 and 900, at 390 in the phone layout, and its sidebars at 260, 340 and 420, light and dark, into `e2e/artifacts/visual/<game>/<surface>/`. In the page it checks each shot: pills off their capitals' centre line (`pillOffenders`, over `PILL_SELECTORS` and anything pill-like it finds, listing those so they can be added), text cut off, labels, names and numbers that wrap, spilling or sideways scroll, overlapping siblings, crushed text, and tag labels under 4.5:1 on a dark fill. It writes `report.md` (worst first), `report.json` and `index.html` (a gallery with each problem outlined), and exits 1 if anything is left. Surfaces live in `e2e/visual-surfaces.mjs`; a genuine false positive goes in `IGNORE` in `e2e/visual.mjs` with why. `node e2e/visual.mjs 5e tracker --themes=light --no-phone` runs a slice.
 
 ## Installing in a vault by hand
 

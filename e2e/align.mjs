@@ -92,6 +92,8 @@ export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selecto
 	for (const el of new Set(scopes.flatMap(scope => [...scope.querySelectorAll(selectors.join(','))]))) {
 		const box = el.getBoundingClientRect();
 		if (!box.width || !box.height || getComputedStyle(el).visibility === 'hidden') continue;
+		// Where it is, so a report can outline it.
+		const rect = { x: Math.round(box.left), y: Math.round(box.top), w: Math.round(box.width), h: Math.round(box.height) };
 		const cs = getComputedStyle(el);
 		// The content box's centre: padding can be uneven on purpose, borders are symmetric.
 		const top = box.top + parseFloat(cs.borderTopWidth) + parseFloat(cs.paddingTop);
@@ -117,19 +119,19 @@ export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selecto
 		walk(el);
 		const offs = parts.filter(([, r]) => r.height).map(([part, r]) => [part, (r.top + r.bottom) / 2 - mid]);
 		for (const [part, offset] of offs) {
-			if (Math.abs(offset) > tolerance) out.push({ el: name(el), part, offset: Math.round(offset * 10) / 10 });
+			if (Math.abs(offset) > tolerance) out.push({ el: name(el), part, offset: Math.round(offset * 10) / 10, rect });
 		}
 		// An icon and its label have to agree with each other too, not just each be near the middle.
 		if (offs.length > 1) {
 			const spread = Math.max(...offs.map(([, v]) => v)) - Math.min(...offs.map(([, v]) => v));
-			if (spread > tolerance) out.push({ el: name(el), part: 'icon vs text', offset: Math.round(spread * 10) / 10 });
+			if (spread > tolerance) out.push({ el: name(el), part: 'icon vs text', offset: Math.round(spread * 10) / 10, rect });
 		}
 		// And an icon keeps clear of its label: at least `gap` px between the icon's box and the nearest word.
 		const texts = parts.filter(([part, r]) => part === 'text' && r.height).map(([, r]) => r);
 		for (const [part, r] of parts) {
 			if (part !== 'icon' || !r.width || !texts.length) continue;
 			const space = Math.min(...texts.map(t => Math.max(t.left - r.right, r.left - t.right)));
-			if (space < gap) out.push({ el: name(el), part: 'icon gap', offset: Math.round(space * 10) / 10 });
+			if (space < gap) out.push({ el: name(el), part: 'icon gap', offset: Math.round(space * 10) / 10, rect });
 		}
 	}
 	return out;
