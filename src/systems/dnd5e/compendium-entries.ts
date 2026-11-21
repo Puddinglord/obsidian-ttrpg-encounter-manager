@@ -250,7 +250,14 @@ export function buildEntries5e(edition: Dnd5eEdition, monsters: Dnd5eEntry[], lo
 	const key = `${edition}:${contentVersion5e()}`;
 	let hits = hitCache.get(key);
 	if (!hits) { hitCache.clear(); hitCache.set(key, hits = allHits(edition).map(hitEntry)); }
-	const yours = mine.map(h => { const e = hitEntry(h); e.id = `mine:${e.id}`; if (!e.flags.includes('imported')) e.facets.source = ['Your notes']; e.flags.push('mine'); return e; });
+	// Yours, never a pack's: the list tags them Homebrew (or Imported), and `source:` finds them as "Your notes".
+	const yours = mine.map(h => {
+		const e = hitEntry(h);
+		e.id = `mine:${e.id}`;
+		if (!e.flags.includes('imported')) e.facets.source = ['Your notes'];
+		e.flags = [...e.flags.filter(f => f !== 'pack'), 'mine'];
+		return e;
+	});
 	const taken = new Set(mine.map(h => `${h.kind}:${h.name.toLowerCase()}`));
 	return [...monsters.map(m => monsterEntry(m, lore)), ...yours, ...(taken.size ? hits.filter(e => !taken.has(`${e.kind}:${e.name.toLowerCase()}`)) : hits)];
 }

@@ -6,6 +6,8 @@ import {
 	buildEntries5e, castingTime, Entry5e, entryPills5e, entryReference5e, itemType, priceGp, QUERY_5E, rarities, SEGMENTS_5E,
 } from '../src/systems/dnd5e/compendium-entries';
 import type { Dnd5eEdition } from '../src/systems/dnd5e/editions';
+import { equipmentLine, Hit5e, spellLine } from '../src/systems/dnd5e/compendium';
+import { homebrewSource, parseEquipment5e, parseSpell5e } from '../src/systems/dnd5e/homebrew';
 
 const entries = (ed: Dnd5eEdition) => buildEntries5e(ed, bundledMonsters(ed));
 const names = (r: { entries: Entry5e[] }) => r.entries.map(e => e.name);
@@ -111,5 +113,29 @@ describe.each(['2024', '2014'] as Dnd5eEdition[])('the %s compendium', (ed) => {
 		const lore = buildEntries5e(ed, bundledMonsters(ed), true).filter(e => e.kind === 'monster');
 		expect(lore.every(e => e.badge === undefined && e.nums.cr === undefined && !e.detail.includes('CR'))).toBe(true);
 		expect(QUERY_5E.sortsFor('monsters', true).map(s => s.key)).not.toContain('cr');
+	});
+});
+
+describe('your own spells and items in the compendium', () => {
+	it('are yours, not a pack\'s: tagged Homebrew in the list (Imported for an import), found by source:"your notes"', () => {
+		const spell = parseSpell5e('name: Brine Bolt\nlevel: 1\nschool: Evocation\ncasting time: Action\nrange: 90 feet\nclasses: Wizard\n\nA lance of seawater.')!;
+		const pike = parseEquipment5e('name: Ember Pike\ncategory: Martial Melee Weapon\ndamage: 1d10 piercing')!;
+		const imported = parseSpell5e('name: Lantern Lance\nimported: D&D Beyond\nlevel: 1\nschool: Evocation\ncasting time: Action')!;
+		const mine: Hit5e[] = [
+			{ kind: 'spell', name: spell.name, edition: '2024', detail: spellLine(spell, '2024'), spell: homebrewSource(spell) },
+			{ kind: 'equipment', name: pike.name, edition: '2024', detail: equipmentLine(pike), equipment: homebrewSource(pike) },
+			{ kind: 'spell', name: imported.name, edition: '2024', detail: spellLine(imported, '2024'), spell: homebrewSource(imported) },
+		];
+		const all = buildEntries5e('2024', [], false, mine);
+		const of = (name: string) => all.find(e => e.name === name)!;
+		for (const name of ['Brine Bolt', 'Ember Pike']) {
+			// The list's tag is a pack's name for a pack's entry; yours say Homebrew.
+			expect(of(name).flags).toContain('mine');
+			expect(of(name).flags).not.toContain('pack');
+			expect(of(name).facets.source).toEqual(['Your notes']);
+		}
+		expect(of('Lantern Lance').flags).toEqual(expect.arrayContaining(['mine', 'imported']));
+		expect(of('Lantern Lance').flags).not.toContain('pack');
+		expect(names(QUERY_5E.search(all, 'source:"your notes"', { segment: 'all' }))).toEqual(expect.arrayContaining(['Brine Bolt', 'Ember Pike']));
 	});
 });
