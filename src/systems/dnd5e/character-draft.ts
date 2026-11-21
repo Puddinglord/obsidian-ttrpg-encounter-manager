@@ -518,9 +518,17 @@ export function languageChoice(d: Character5eDraft): Choice5e {
 	return { count, from: from.filter(n => !known.includes(n)) };
 }
 
+/** A proficiency that's a tool: "Tool: Lute", anything ending in kit, tools or supplies, or a tool or instrument the compendium has. */
+export function toolOf(edition: Dnd5eEdition, p: string): string {
+	const named = /^Tools?:\s*(.+)$/i.exec(p)?.[1];
+	if (named) return named.trim();
+	if (/(kit|tools|supplies)$/i.test(p)) return p;
+	return compendium5e(edition).equipment.some(e => same(e.name, p) && /tools|instrument|gaming set/i.test(`${e.category} ${(e.tags ?? []).join(' ')}`)) ? p : '';
+}
+
 /** Tools the character has without choosing (the class's, the background's, a rock gnome's tinker's tools). */
 export function givenTools(d: Character5eDraft): string[] {
-	const fromClass = (classOf(d.edition, d.className)?.proficiencies ?? []).map(p => /^Tool:\s*(.+)$/.exec(p)?.[1] ?? (/(kit|tools|supplies)$/i.test(p) ? p : '')).filter(Boolean);
+	const fromClass = (classOf(d.edition, d.className)?.proficiencies ?? []).map(p => toolOf(d.edition, p)).filter(Boolean);
 	return uniq([...fromClass, ...(backgroundCreation(d.edition, d.background)?.tools ?? [])]);
 }
 
