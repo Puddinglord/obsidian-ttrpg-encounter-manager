@@ -129,6 +129,10 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - A new Nimble character's sheet shows when you open their note for editing, instead of the sheet block's code. See the [character sheets guide](docs/character-sheets.md).
 - Encounter blocks and the encounter builder say "1 hero, level 2" for a party of one, not "1 heroes". See the [encounters guide](docs/encounters.md).
 - Done and Next in the Nimble tracker say when a condition wears off, as marking a turn done from its row always did. See the [tracker guide](docs/tracker.md).
+- A new Monster note in a 5e campaign starts with a 5e stat block, so the 5e bestiary finds it, and monsters you build with New monster… or import from Fantasy Statblocks get the monster icon in the Campaign panel and the monster pill in links. See the [bestiary guide](docs/bestiary.md).
+- Add item on a 5e sheet equips magic weapons and armor, so a +1 longsword shows up as an attack right away, and your own 5e spells and items say Homebrew in the compendium list. See [Playing 5e](docs/5e.md#character-sheets).
+- Level up: a 5e feat that raises one ability score raises it without asking, and in a 2014 campaign the tracker's condition list no longer starts each line with a dash. See [Playing 5e](docs/5e.md#character-sheets).
+- Content you delete from the content folder leaves the compendium straight away, even right after you changed it. See the [guide to your own content](docs/homebrew.md).
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
