@@ -24,8 +24,10 @@ export function frameRoot({ pad }) {
 	for (let a = root.parentElement; a && a !== document.body; a = a.parentElement) {
 		const cs = getComputedStyle(a);
 		if (/(auto|scroll)/.test(cs.overflowY) && a.scrollHeight > a.clientHeight + 1) {
-			const delta = root.getBoundingClientRect().top - a.getBoundingClientRect().top - pad - 4;
-			a.scrollTop += delta;
+			// Only when its top is out of sight: where the note puts it is where a reader sees it (under a phone's
+			// floating buttons is not).
+			const top = root.getBoundingClientRect().top, ar = a.getBoundingClientRect();
+			if (top < ar.top || top > ar.bottom - 40) a.scrollTop += top - ar.top - pad - 4;
 			break;
 		}
 	}
@@ -76,15 +78,23 @@ export function markPillLikes({ selectors }) {
 		const text = e.textContent.replace(/\s+/g, ' ').trim();
 		if (text.length > 32 || (!text && !e.querySelector('svg'))) continue;
 		if (e.querySelectorAll('*').length > 8) continue;
-		// Words in two sizes (a big 19 over a small /19) are set on one baseline, not centred each on their own.
-		const sizes = new Set();
-		for (const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); w.nextNode();) if (w.currentNode.textContent.trim()) sizes.add(Math.round(parseFloat(getComputedStyle(w.currentNode.parentElement).fontSize)));
+		// Words in two sizes (a big 19 over a small /19) are set on one baseline, not centred each on their own;
+		// words on two rows (a choice's name over its numbers) make a card, not a pill.
+		const sizes = new Set(), rows = [];
+		for (const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); w.nextNode();) {
+			if (!w.currentNode.textContent.trim()) continue;
+			sizes.add(Math.round(parseFloat(getComputedStyle(w.currentNode.parentElement).fontSize)));
+			const rg = document.createRange(); rg.selectNodeContents(w.currentNode);
+			rows.push(...[...rg.getClientRects()].filter(x => x.width > 0));
+		}
 		if (Math.max(...sizes) - Math.min(...sizes) > 1) continue;
+		if (rows.some(a => rows.some(b => b.top >= a.bottom - 1))) continue;
 		// A shape drawn behind its label (a die face, a shield) centres the label on the shape's own middle, not the box's.
 		if ([...e.querySelectorAll('svg')].some(g => { const b = g.getBoundingClientRect(); return b.width * b.height >= r.width * r.height * 0.6; })) continue;
 		const fill = alpha(cs.backgroundColor) > 0.05 || cs.backgroundImage !== 'none';
 		const border = parseFloat(cs.borderTopWidth) > 0 && cs.borderTopStyle !== 'none' && alpha(cs.borderTopColor) > 0.05;
-		const shadow = cs.boxShadow !== 'none';
+		// A ring drawn with a shadow (0 0 0 1px) outlines a chip; an underline drawn with one (a rules term) doesn't.
+		const shadow = /0px 0px 0px [0-9.]+px/.test(cs.boxShadow);
 		if (!(button || ((fill || border || shadow) && parseFloat(cs.borderTopLeftRadius) >= 3))) continue;
 		// A box of icons and words laid out in rows is a card, not a pill.
 		if ([...e.children].some(c => /^(block|flex|grid)$/.test(getComputedStyle(c).display) && c.getBoundingClientRect().height > r.height * 0.7 && c.children.length > 2)) continue;
@@ -203,6 +213,11 @@ export function visualChecks({ room, pillSelectors }) {
 		const own = [...e.classList];
 		return (own.length ? own : [...(e.parentElement?.classList ?? [])]).some(c => NAMEISH.test(c));
 	};
+	// A web address or a path may break anywhere; that's how it fits.
+	const urlish = (w) => /^[a-z]+:\/\/|[/\\]/.test(w) && w.length > 12;
+	// A compact control (a pill, a button in a row): a short label, not a card or a drop zone that holds a sentence.
+	// (A term or link inline in a sentence wraps with the sentence: not a control.)
+	const compact = (c) => !!c && getComputedStyle(c).display !== 'inline' && c.textContent.trim().length <= 32 && c.getBoundingClientRect().height <= 52;
 	const numberish = (t) => /^[+−–-]?\d[\d,./×x+−–-]*\s?(ft\.?|gp|sp|cp|%)?$/.test(t);
 
 	// ---- text: cut off, spilling, wrapped ----
@@ -231,7 +246,7 @@ export function visualChecks({ room, pillSelectors }) {
 				const outside = u.right <= L || u.left >= Rt || u.bottom - tolY <= T || u.top + tolY >= B;
 				if (outside) break; // hidden on purpose (a closed fold, a slid-away panel)
 				const cutX = u.right > Rt + 1 || u.left < L - 1;
-				const cutY = u.bottom - tolY > B + 1 || u.top + tolY < T - 1;
+				const cutY = u.bottom - tolY > B + 2 || u.top + tolY < T - 2;
 				if (!cutX && !cutY) continue;
 				const ellipsis = acs.textOverflow === 'ellipsis' || cs.textOverflow === 'ellipsis' || (acs.webkitLineClamp && acs.webkitLineClamp !== 'none');
 				if (ellipsis && !(cutY && !acs.webkitLineClamp)) {
@@ -269,6 +284,16 @@ export function visualChecks({ room, pillSelectors }) {
 			// Wrapped: more than one line where one is meant.
 			const tops = [];
 			for (const r of [...rects].sort((x, y) => x.top - y.top)) if (!tops.length || r.top > tops[tops.length - 1] + r.height * 0.5) tops.push(r.top);
+			// Longer text may wrap, but never mid-word (only possible where overflow-wrap or word-break allow it).
+			if (tops.length > 1 && text.length > 48 && /(anywhere|break-word|break-all)/.test(`${cs.overflowWrap} ${cs.wordBreak}`)) {
+				for (const m of t.textContent.matchAll(/\S{4,}/g)) {
+					if (urlish(m[0])) continue;
+					const wr = document.createRange();
+					wr.setStart(t, m.index); wr.setEnd(t, m.index + m[0].length);
+					const bs = [...wr.getClientRects()].filter(x => x.width > 0);
+					if (bs.length > 1 && bs.some(x => x.top > bs[0].top + bs[0].height * 0.5)) { add('wrap', 4, e, `"${m[0]}" broken mid-word in "${text.slice(0, 30)}…"`); break; }
+				}
+			}
 			if (tops.length > 1 && text.length <= 48) {
 				const lh = parseFloat(cs.lineHeight);
 				// A small label set solid (line-height about 1) is meant to sit on one line; a big title may wrap when it must.
@@ -276,18 +301,23 @@ export function visualChecks({ room, pillSelectors }) {
 				const whole = (e.textContent || '').trim().length;
 				// Which words landed on which line: a number left alone on a line, away from its label ("Level / 2").
 				const lineOf = [];
+				let broken = null;
 				for (const m of t.textContent.matchAll(/\S+/g)) {
 					const wr = document.createRange();
 					wr.setStart(t, m.index); wr.setEnd(t, m.index + m[0].length);
-					const b = [...wr.getClientRects()].find(x => x.width > 0);
+					const bs = [...wr.getClientRects()].filter(x => x.width > 0);
+					const b = bs[0];
+					// One word on two lines: broken mid-word ("Adventurin / g").
+					if (bs.length > 1 && bs.some(x => x.top > b.top + b.height * 0.5) && m[0].length > 3 && !urlish(m[0])) broken ??= m[0];
 					if (b) lineOf.push([m[0], tops.findIndex((top, k) => k === tops.length - 1 || b.top < tops[k + 1] - 1)]);
 				}
 				const lines = tops.map((_, k) => lineOf.filter(([, l]) => l === k).map(([w]) => w));
 				const orphan = lines.findIndex((ws, k) => k > 0 && ws.length === 1 && /^[+−–-]?\d[\d/]*$/.test(ws[0]) && /[A-Za-z]$/.test(lines[k - 1][lines[k - 1].length - 1] ?? ''));
-				if (orphan > 0) add('wrap', 3, e, `"${lines[orphan][0]}" left alone on its own line, away from "${lines[orphan - 1][lines[orphan - 1].length - 1]}"`);
+				if (broken) add('wrap', 4, e, `"${broken}" broken mid-word in "${text.slice(0, 30)}"`);
+				else if (orphan > 0) add('wrap', 3, e, `"${lines[orphan][0]}" left alone on its own line, away from "${lines[orphan - 1][lines[orphan - 1].length - 1]}"`);
 				else if (!/\s/.test(text) && text.length > 1) add('wrap', 4, e, `"${text}" broken mid-word over ${tops.length} lines`);
 				else if (numberish(text) && whole <= 24) add('wrap', 4, e, `the number "${text}" wraps onto ${tops.length} lines`);
-				else if (pillish(e) && text.length <= 32 && (e.closest(`button, [role="tab"], [role="button"], [data-vis-pill], ${known}`)?.textContent.trim().length ?? 0) <= 32) add('wrap', 3, e, `the label "${text}" wraps onto ${tops.length} lines`);
+				else if (pillish(e) && text.length <= 32 && compact(e.closest(`button, [role="tab"], [role="button"], [data-vis-pill], ${known}`))) add('wrap', 3, e, `the label "${text}" wraps onto ${tops.length} lines`);
 				else if (nameish(e) && (room || tight) && text.length <= 40) add('wrap', 2, e, `"${text}" wraps onto ${tops.length} lines${tight ? ' (its line-height says one line)' : ''}`);
 			}
 		}

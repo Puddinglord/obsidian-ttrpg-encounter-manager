@@ -53,10 +53,14 @@ const PHONE_W = 390, PHONE_H = 844;
 const IGNORE = [
 	// Obsidian's own chrome inside a surface (the settings dialog's frame, a modal's close button).
 	{ sel: /^div\.modal-close-button|^div\.vertical-tab/, why: "Obsidian's own controls, not ours" },
+	// Obsidian's own accent button (a plain .mod-cta): its colours are the theme's, not ours.
+	{ sel: /^button\.mod-cta$/, kind: /contrast/, why: "Obsidian's accent button, coloured by the theme" },
+	// Obsidian's settings window at 320px leaves its tab content about 30px wide: nothing anyone's fits.
+	{ surface: /^shared\/settings$/, width: 320, why: "Obsidian's settings window has no room for its content at 320px" },
 	// A map pin's number is a hair wider than its round badge and is centred over it (as in layout-sweep).
 	{ sel: /nimble-map-pin-inner/, kind: /spill|clipped/, why: 'centred over the badge on purpose' },
 ];
-const ignored = (surface, i) => IGNORE.find(r => (!r.kind || r.kind.test(i.kind)) && (!r.surface || r.surface.test(surface)) && (!r.sel || r.sel.test(i.sel)) && (!r.detail || r.detail.test(i.detail)));
+const ignored = (surface, i, width) => IGNORE.find(r => (!r.kind || r.kind.test(i.kind)) && (!r.surface || r.surface.test(surface)) && (!r.sel || r.sel.test(i.sel)) && (!r.detail || r.detail.test(i.detail)) && (!r.width || r.width === width));
 
 // ---------------------------------------------------------------------------
 
@@ -72,6 +76,8 @@ const { page } = o;
 // Its own Obsidian (its own user-data dir under this folder), so a stuck run can be told apart from any other.
 console.log(`Obsidian for this run: ${o.work}`);
 const cdp = await page.context().newCDPSession(page);
+// A step that can't find its control fails in seconds, not Playwright's 30.
+page.setDefaultTimeout(8000);
 const originals = new Map();
 
 let viewport = { width: 1200, height: DESKTOP_H, mobile: false };
@@ -214,7 +220,7 @@ async function capture(s, name, width, theme, phone) {
 	];
 	const surface = `${s.game}/${name}`;
 	const issues = [], skipped = [];
-	for (const i of all) (ignored(surface, i) ? skipped : issues).push(i);
+	for (const i of all) (ignored(surface, i, phone ? 'phone' : width) ? skipped : issues).push(i);
 	issues.sort((a, b) => b.sev - a.sev);
 
 	// The shot: the surface (and anything sticking out of it) with even padding, clamped to the window.
@@ -247,6 +253,7 @@ async function capture(s, name, width, theme, phone) {
 }
 
 async function runSurface(s, phone) {
+	if (phone && s.phone === false) return;
 	const widths = phone ? [PHONE_W] : WIDTHS[s.mode].filter(w => !onlyWidths || onlyWidths.includes(w));
 	if (!widths.length) return;
 	// `width`: set it up at that width (a popover or hover card closes when the window or sidebar changes size).

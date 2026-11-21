@@ -167,6 +167,12 @@ const tabStates = (root) => async (c) => {
 	}));
 };
 
+/** On a narrow compendium (a phone), a page covers the list: go back to it first. */
+async function toList(c, view) {
+	const back = c.page.locator(`${view} .bestiary-back`).filter({ visible: true });
+	if (await back.count()) { await back.first().click(); await c.wait(300); }
+}
+
 /** Open a game's compendium on its All tab and pick "New <kind>…" from its New button. */
 async function newFromCompendium(c, view, kind) {
 	if (view === CMP) await c.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
@@ -405,9 +411,9 @@ const nimble = [
 		states: [
 			{ name: 'class', go: async (c) => { await c.eval((app) => { const l = app.workspace.getLeavesOfType('nimble-bestiary')[0]; l?.view.select('class:oathsworn'); }); await c.page.locator(`${CMP} .nimble-cmp-card.kind-class`).first().waitFor({ timeout: 3000 }); const s = c.page.locator(`${CMP} .nimble-cmpx-detail .nimble-cmp-summary`).first(); if (await s.count()) await s.click(); await c.wait(300); } },
 			{ name: 'spell', go: async (c) => { await c.eval((app) => { const l = app.workspace.getLeavesOfType('nimble-bestiary')[0]; l?.view.select('spell:pyroclasm'); }); await c.wait(500); } },
-			{ name: 'monster', go: async (c) => { await c.page.locator(`${CMP} .nimble-cmpx-seg`).first().click(); await c.page.locator(`${CMP} .nimble-cmpx-input`).fill('krogg'); await c.wait(500); await c.page.locator(`${CMP} .nimble-cmpx-row[data-id]`).first().click(); await c.wait(500); } },
-			{ name: 'filters', go: async (c) => { await c.page.locator(`${CMP} .nimble-cmpx-input`).fill(''); await c.page.locator(`${CMP} .nimble-cmpx-input`).pressSequentially('level:2 role:solo ', { delay: 20 }); await c.click(`${CMP} .nimble-cmpx-filter`); await c.page.mouse.move(2, 2); } },
-			{ name: 'sorting', go: async (c) => { await c.click(`${CMP} .nimble-cmpx-sort`); await c.page.mouse.move(2, 2); } },
+			{ name: 'monster', go: async (c) => { await toList(c, CMP); await c.page.locator(`${CMP} .nimble-cmpx-seg`).first().click(); await c.page.locator(`${CMP} .nimble-cmpx-input`).fill('krogg'); await c.wait(500); await c.page.locator(`${CMP} .nimble-cmpx-row[data-id]`).first().click(); await c.wait(500); } },
+			{ name: 'filters', go: async (c) => { await toList(c, CMP); await c.page.locator(`${CMP} .nimble-cmpx-input`).fill(''); await c.page.locator(`${CMP} .nimble-cmpx-input`).pressSequentially('level:2 role:solo ', { delay: 20 }); await c.click(`${CMP} .nimble-cmpx-filter`); await c.page.mouse.move(2, 2); } },
+			{ name: 'sorting', go: async (c) => { await toList(c, CMP); await c.click(`${CMP} .nimble-cmpx-sort`); await c.page.mouse.move(2, 2); } },
 		],
 	},
 	{
@@ -437,7 +443,7 @@ const nimble = [
 	{ name: 'references', mode: 'content', root: SIZER, setup: async (c) => { await c.campaign(NQ); await c.open(`${V}/Nimble References.md`); } },
 	{ name: 'references-live-preview', mode: 'content', root: `${S} .cm-contentContainer`, setup: async (c) => { await c.campaign(NQ); await c.open(`${V}/Nimble References.md`, 'source'); await c.eval((app) => { const ed = app.workspace.activeEditor?.editor; ed?.setCursor({ line: 0, ch: 0 }); }); } },
 	{
-		name: 'hover-card', mode: 'window', root: '.nimble-hover-preview', hover: true,
+		name: 'hover-card', mode: 'window', root: '.nimble-hover-preview', hover: true, phone: false, // no hover on a touch screen
 		setup: async (c) => {
 			await c.campaign(NQ);
 			await c.open(`${V}/Nimble References.md`);
@@ -488,7 +494,7 @@ const nimble = [
 		states: dotSteps('.modal.nimble-levelup', '.lu-dot'),
 	},
 	{
-		name: 'add-several', mode: 'window', root: '.modal.nimble-count-modal',
+		name: 'add-several', mode: 'window', root: '.modal.nimble-count-modal', phone: false, // reached from a hover card here
 		setup: async (c) => {
 			await c.campaign(NQ);
 			await c.open(`${V}/Nimble References.md`);
@@ -664,10 +670,10 @@ const dnd5e = [
 		name: 'compendium-pages', mode: 'content', root: `${CV5} .nimble-compendium`,
 		setup: async (c) => { await c.campaign(X5); await c.open(`${X5}/Chapter 1/Road Ambush.md`); await c.cmd('open-bestiary'); await c.page.locator(`${CV5} .nimble-cmpx-row[data-id]`).first().waitFor({ timeout: 5000 }); },
 		states: [
-			{ name: 'class', go: async (c) => { await c.page.locator(`${CV5} .nimble-cmpx-seg`, { hasText: 'Classes' }).first().click(); await c.page.locator(`${CV5} .nimble-cmpx-input`).fill('wizard'); await c.wait(500); await c.page.locator(`${CV5} .nimble-cmpx-row[data-id]`).first().click(); await c.wait(600); } },
-			{ name: 'spell', go: async (c) => { await c.page.locator(`${CV5} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click(); await c.page.locator(`${CV5} .nimble-cmpx-input`).fill('fireball'); await c.wait(500); await c.page.locator(`${CV5} .nimble-cmpx-row[data-id]`).first().click(); await c.wait(500); } },
-			{ name: 'monster', go: async (c) => { await c.page.locator(`${CV5} .nimble-cmpx-seg`, { hasText: 'Monsters' }).first().click(); await c.page.locator(`${CV5} .nimble-cmpx-input`).fill('young red dragon'); await c.wait(500); await c.page.locator(`${CV5} .nimble-cmpx-row[data-id]`).first().click(); await c.wait(500); } },
-			{ name: 'filters', go: async (c) => { await c.page.locator(`${CV5} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click(); await c.page.locator(`${CV5} .nimble-cmpx-input`).fill(''); await c.page.locator(`${CV5} .nimble-cmpx-input`).pressSequentially('level:3 school:evocation ', { delay: 20 }); await c.click(`${CV5} .nimble-cmpx-filter`); await c.page.mouse.move(2, 2); } },
+			{ name: 'class', go: async (c) => { await toList(c, CV5); await c.page.locator(`${CV5} .nimble-cmpx-seg`, { hasText: 'Classes' }).first().click(); await c.page.locator(`${CV5} .nimble-cmpx-input`).fill('wizard'); await c.wait(500); await c.page.locator(`${CV5} .nimble-cmpx-row[data-id]`).first().click(); await c.wait(600); } },
+			{ name: 'spell', go: async (c) => { await toList(c, CV5); await c.page.locator(`${CV5} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click(); await c.page.locator(`${CV5} .nimble-cmpx-input`).fill('fireball'); await c.wait(500); await c.page.locator(`${CV5} .nimble-cmpx-row[data-id]`).first().click(); await c.wait(500); } },
+			{ name: 'monster', go: async (c) => { await toList(c, CV5); await c.page.locator(`${CV5} .nimble-cmpx-seg`, { hasText: 'Monsters' }).first().click(); await c.page.locator(`${CV5} .nimble-cmpx-input`).fill('young red dragon'); await c.wait(500); await c.page.locator(`${CV5} .nimble-cmpx-row[data-id]`).first().click(); await c.wait(500); } },
+			{ name: 'filters', go: async (c) => { await toList(c, CV5); await c.page.locator(`${CV5} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click(); await c.page.locator(`${CV5} .nimble-cmpx-input`).fill(''); await c.page.locator(`${CV5} .nimble-cmpx-input`).pressSequentially('level:3 school:evocation ', { delay: 20 }); await c.click(`${CV5} .nimble-cmpx-filter`); await c.page.mouse.move(2, 2); } },
 		],
 	},
 	{
@@ -697,7 +703,7 @@ const dnd5e = [
 	{ name: 'references', mode: 'content', root: SIZER, setup: async (c) => { await c.campaign(X5); await c.open(`${X5}/References.md`); } },
 	{ name: 'references-live-preview', mode: 'content', root: `${S} .cm-contentContainer`, setup: async (c) => { await c.campaign(X5); await c.open(`${X5}/References.md`, 'source'); await c.eval((app) => { app.workspace.activeEditor?.editor?.setCursor({ line: 0, ch: 0 }); }); } },
 	{
-		name: 'hover-card', mode: 'window', root: '.nimble-hover-preview', hover: true,
+		name: 'hover-card', mode: 'window', root: '.nimble-hover-preview', hover: true, phone: false, // no hover on a touch screen
 		setup: async (c) => {
 			await c.campaign(X5);
 			await c.open(`${X5}/References.md`);
