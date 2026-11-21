@@ -67,6 +67,8 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Your own 5e species, lineages, subraces and backgrounds can give skills, languages, tools and a cantrip, or let you choose them, and a subclass can list spells it always has prepared; New character and Level up ask for and add them. See [what the sheet and level up read](docs/homebrew.md#classes-what-the-sheet-and-level-up-read).
 - New character and Level up offer your own 5e spells, homebrew or imported, to the classes they name, and Level up lets a 5e Bard, Sorcerer or Warlock (and a 2014 Ranger) swap a spell they know for another. See [Playing 5e](docs/5e.md#make-your-own).
 
+- NPCs with stats can go in an encounter block: `- [[Ysolde Krenn]]` shows them under their own name with their numbers, counts them in the difficulty, and Run brings them in. See the [encounters guide](docs/encounters.md).
+
 ### Changed
 
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
@@ -110,6 +112,9 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 
 - The Import a D&D Beyond character window uses 5e's look. See the [import guide](docs/import.md).
 
+- In a 5e campaign, an NPC card's From a stat block, a sheet's Add spell and Add item, and the tracker's Add monster open the compendium, with its filters and each entry's page. See the [compendium guide](docs/compendium.md#the-compendium-as-a-dialog).
+- A name under a place's Who's here, or a quest's Given by, opens the NPC's quick look, like NPC links everywhere else; Cmd/Ctrl-click opens their page. See the [campaigns guide](docs/campaigns.md#places).
+
 ### Fixed
 
 - An NPC note written by hand, without a `nimble-npc` block, shows its card and portrait instead of only a row of properties. See the [NPCs guide](docs/npcs.md#character-cards).
@@ -133,6 +138,10 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Add item on a 5e sheet equips magic weapons and armor, so a +1 longsword shows up as an attack right away, and your own 5e spells and items say Homebrew in the compendium list. See [Playing 5e](docs/5e.md#character-sheets).
 - Level up: a 5e feat that raises one ability score raises it without asking, and in a 2014 campaign the tracker's condition list no longer starts each line with a dash. See [Playing 5e](docs/5e.md#character-sheets).
 - Content you delete from the content folder leaves the compendium straight away, even right after you changed it. See the [guide to your own content](docs/homebrew.md).
+- Renaming or moving a note updates the links to it in map pins, encounter blocks, boxes, NPC card rows, and properties like a session's `quests:` lines, which Obsidian doesn't update itself. See the [campaigns guide](docs/campaigns.md#moving-things-around).
+- Clicking a map pin, or a link in a card or box, that goes to a note that doesn't exist says so instead of making an empty note at the top of your vault. See the [maps guide](docs/maps.md).
+- A player's battle notes in a 5e campaign show how it went, where, when and the loot, with Edit, like Nimble's; `/fought` offers Fill in the rest… there too. See [Playing in a campaign](docs/players.md#battle-notes).
+- New character… in a campaign you run makes a party member, not a hero marked You. See the [character sheets guide](docs/character-sheets.md).
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
