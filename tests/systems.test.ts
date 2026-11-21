@@ -94,9 +94,9 @@ describe.each(SHIPPED_SYSTEMS.map(s => [s.id, s] as const))('game system %s', (_
 		expect(typeof system.characters.promptNew).toBe('function');
 		expect(typeof system.characters.createFromPartyMember).toBe('function');
 	});
-	it('puts its monsters and compendium in Spotlight', () => {
-		// Spotlight imports no game: without this, a campaign's Spotlight finds only notes, people and commands.
-		expect(typeof system.spotlight).toBe('function');
+	it('puts its monsters and compendium in Omnisearch', () => {
+		// Omnisearch imports no game: without this, a campaign's Omnisearch finds only notes, people and commands.
+		expect(typeof system.omnisearch).toBe('function');
 	});
 	it('makes its rules words clickable, each with a page to open', () => {
 		expect(typeof system.ruleTerms).toBe('function');

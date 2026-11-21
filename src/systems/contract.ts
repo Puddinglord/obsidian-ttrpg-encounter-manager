@@ -20,7 +20,7 @@ import type { ContentImport } from '../core/content/import-modal';
 import type { SettingsPart } from '../core/settings';
 import type { SettingsSection } from '../core/settings-ui';
 import type { CombatTokens } from '../core/tracker/tokens';
-import type { SpotlightSource } from '../core/spotlight-source';
+import type { OmnisearchSource } from '../core/omnisearch-source';
 import type { RuleTerm, RuleTerms } from '../core/rule-terms';
 
 /** Who wrote the system's text and where to buy it. Shown wherever its content is. */
@@ -87,7 +87,7 @@ export interface GameSystem {
 	/** The rules' conditions for an edition (the default one when missing), before any the GM adds in settings. */
 	conditions(edition?: string): readonly ConditionDef[];
 	readonly characters?: CharacterCapability;
-	/** Open a quick look on a note (an NPC, a hero). Returns the dialog (Spotlight comes back when it's closed with Escape). */
+	/** Open a quick look on a note (an NPC, a hero). Returns the dialog (Omnisearch comes back when it's closed with Escape). */
 	quickLook(plugin: EmberVaultPlugin, target: QuickLookNote): Modal | void;
 	/** Wire the system into the plugin at load: its code blocks, references, indexes, views. Called once. */
 	register?(plugin: EmberVaultPlugin): void;
@@ -100,11 +100,11 @@ export interface GameSystem {
 	/** "/" commands in its campaigns, added to core's base ones (a command with a base command's name replaces it). */
 	slashCommands?(plugin: EmberVaultPlugin): SlashCommand[];
 	/**
-	 * Its part of Spotlight (Cmd/Ctrl+K) in its campaigns: its monsters and compendium as
+	 * Its part of Omnisearch (Cmd/Ctrl+K) in its campaigns: its monsters and compendium as
 	 * rows (how each looks, Enter, Cmd/Ctrl+Enter), adding several ("3 goblin"), typed
-	 * filters with chips, and the "Search the compendium" row. Asked each time Spotlight opens.
+	 * filters with chips, and the "Search the compendium" row. Asked each time Omnisearch opens.
 	 */
-	spotlight?(plugin: EmberVaultPlugin): SpotlightSource;
+	omnisearch?(plugin: EmberVaultPlugin): OmnisearchSource;
 	/** The system's words for things core shows: the party table's defense column ("DEF", "AC"). */
 	readonly vocabulary?: { readonly defense?: string };
 	/**

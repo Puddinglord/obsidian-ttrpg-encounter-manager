@@ -47,7 +47,7 @@ If you run one game and play in another, keep both in one vault: every campaign 
 **And more:**
 - campaigns, chapters and scenes in a sidebar panel
 - links to quests, places and heroes that show as pills with their icon
-- Spotlight (Cmd/Ctrl+K) to find anything, roll dice and add monsters
+- Omnisearch (Cmd/Ctrl+K) to find anything, roll dice and add monsters
 - help with stat blocks you write, with fixes for lines it can't read
 - read-aloud, trap, treasure and clue boxes
 - clickable dice and 3D dice
@@ -84,7 +84,7 @@ The full guide is in **[docs/](docs/README.md)**:
 - [GM maps](docs/maps.md)
 - [Combat tracker](docs/tracker.md)
 - [Dice](docs/dice.md)
-- [Spotlight](docs/spotlight.md)
+- [Omnisearch](docs/omnisearch.md)
 - [Slash commands](docs/slash-commands.md)
 - [Phone and iPad](docs/mobile.md)
 - [Settings](docs/settings.md)

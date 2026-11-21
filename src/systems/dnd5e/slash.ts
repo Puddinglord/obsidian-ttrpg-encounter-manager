@@ -13,7 +13,7 @@ import { parseDice } from '../../core/dice';
 import { encounterBlockSource, EncounterDef, parseMonsterLine } from '../../core/encounter-def';
 import { plainRoll, SlashCommand, SlashItem, SlashWriter, writeAt } from '../../core/slash';
 import { BattleNotesModal } from '../../core/battle-notes';
-import { rankByName } from '../../core/spotlight-def';
+import { rankByName } from '../../core/omnisearch-def';
 import { addMonster } from './combat';
 import { Hit5e, KIND5E, Kind5e } from './compendium';
 import { buildEntries5e, QUERY_5E } from './compendium-entries';

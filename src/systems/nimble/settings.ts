@@ -27,7 +27,7 @@ declare module '../../core/settings' {
 		legendaryBeat: boolean;
 		/** Character sheets: ask for advantage, modifiers and dice to spend before every roll. */
 		rollDialog: boolean;
-		/** Offer the expansion-draft classes (and their spells) on character sheets and in Spotlight. */
+		/** Offer the expansion-draft classes (and their spells) on character sheets and in Omnisearch. */
 		compendiumDrafts: boolean;
 		/** Your own art for compendium entries: entry key (see artKey) → image path in the vault. */
 		compendiumArt: Record<string, string>;

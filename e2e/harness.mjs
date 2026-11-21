@@ -97,7 +97,7 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 	const pluginDir = join(vault, '.obsidian', 'plugins', PLUGIN_ID);
 	mkdirSync(pluginDir, { recursive: true });
 	for (const f of ['main.js', 'manifest.json', 'styles.css']) cpSync(join(ROOT, f), join(pluginDir, f));
-	// Tests start past the one-time "Use Cmd+K for Spotlight?" offer, unless one asks for it (spotlightOffered: false).
+	// Tests start past the one-time "Use Cmd+K for Omnisearch?" offer, unless one asks for it (spotlightOffered: false).
 	const dataFile = join(pluginDir, 'data.json');
 	const shipped = !settings && existsSync(dataFile) ? JSON.parse(readFileSync(dataFile, 'utf8')) : {};
 	writeFileSync(dataFile, JSON.stringify({ spotlightOffered: true, ...shipped, ...(settings || {}) }));

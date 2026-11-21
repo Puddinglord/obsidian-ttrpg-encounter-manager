@@ -1,7 +1,7 @@
 // Every entity in a Nimble campaign, as a user meets it: made the way they make it (the Campaign
 // panel's +, slash commands, the builders, New character), seen in reading view and Live Preview,
 // edited through its own controls, linked to the rest, found again (the panel, the compendium,
-// Spotlight, autocomplete), used at the table (the tracker, encounter blocks, maps), and what a
+// Omnisearch, autocomplete), used at the table (the tracker, encounter blocks, maps), and what a
 // player campaign shows of it. Then one small adventure where everything links to everything, and
 // what renaming or deleting a note does to the others.
 //
@@ -64,7 +64,7 @@ export function register(test, h) {
 
 	/** Leave nothing behind: the campaign, its fight, any dialog or tab a test left open. */
 	async function done(o, folders, extra = []) {
-		// Spotlight and other prompts have no close button: Escape out of whatever is still open.
+		// Omnisearch and other prompts have no close button: Escape out of whatever is still open.
 		for (let i = 0; i < 4 && await o.page.locator('.modal-container').count(); i++) {
 			await o.page.keyboard.press('Escape');
 			await o.page.waitForTimeout(150);
@@ -103,18 +103,18 @@ export function register(test, h) {
 	/** Put the cursor at the end of a note open in the editor, on a new line. */
 	const cursorAtEnd = (o) => o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: ed.lineCount(), ch: 0 }); ed.replaceSelection('\n'); ed.focus(); });
 
-	const SPOT = '.modal-container .prompt.nimble-spotlight';
-	/** Spotlight, searched: the names of its rows (filters left out). */
-	async function spotlight(o, query, first) {
+	const SPOT = '.modal-container .prompt.nimble-omnisearch';
+	/** Omnisearch, searched: the names of its rows (filters left out). */
+	async function omnisearch(o, query, first) {
 		if (!(await o.page.locator(SPOT).count())) await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
 		await o.page.locator(`${SPOT} .prompt-input`).waitFor();
 		await o.page.locator(`${SPOT} .prompt-input`).fill(query);
 		const names = () => o.page.locator(`${SPOT} .suggestion-item:not(.is-filter) .nimble-spot-name`).allInnerTexts();
-		await o.waitFor(async () => (await names())[0] === first, { what: `"${first}" first in Spotlight for "${query}"` });
+		await o.waitFor(async () => (await names())[0] === first, { what: `"${first}" first in Omnisearch for "${query}"` });
 		return o.page.locator(`${SPOT} .suggestion-item:not(.is-filter)`).first();
 	}
-	/** Escape out of Spotlight (and a quick look opened from it, which comes back to Spotlight first). */
-	const closeSpotlight = async (o) => {
+	/** Escape out of Omnisearch (and a quick look opened from it, which comes back to Omnisearch first). */
+	const closeOmnisearch = async (o) => {
 		for (let i = 0; i < 4 && await o.page.locator('.modal-container').count(); i++) {
 			await o.page.keyboard.press('Escape');
 			await o.page.waitForTimeout(200);
@@ -223,8 +223,8 @@ export function register(test, h) {
 			await block.locator('.encounter-block-actions button', { hasText: 'Run' }).click();
 			await o.waitFor(async () => (await creatures(o)).some(c => c.label === 'Brakka Stonehew' && c.side === 'hero' && c.max === two.hp_max), { what: 'the hero in the fight with their sheet\'s HP' });
 
-			// Spotlight finds the hero's note.
-			const row = await spotlight(o, 'brakka', 'Brakka Stonehew');
+			// Omnisearch finds the hero's note.
+			const row = await omnisearch(o, 'brakka', 'Brakka Stonehew');
 			assert.match(await row.innerText(), /Party/);
 			await o.page.keyboard.press('Enter');
 			await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === P, { what: 'Enter opens the sheet' });
@@ -284,7 +284,7 @@ export function register(test, h) {
 	// -------------------------------------------------------------------------
 	// NPCs
 
-	test('entities nimble: NPC — the NPCs + makes one; its card in both views; status and Nimble numbers; /npc and mentions link it; Spotlight; Add to fight', async (o) => {
+	test('entities nimble: NPC — the NPCs + makes one; its card in both views; status and Nimble numbers; /npc and mentions link it; Omnisearch; Add to fight', async (o) => {
 		const F = 'Campaigns/EN NPCs';
 		const N = `${F}/NPCs/Tobren Kask.md`;
 		const SC = `${F}/Chapter 1/Opening Scene.md`;
@@ -363,14 +363,14 @@ export function register(test, h) {
 			await o.page.keyboard.press('Escape');
 			await o.page.locator(Q).waitFor({ state: 'detached' });
 
-			// Find: the panel's NPCs folder lists both; Spotlight finds him by name.
+			// Find: the panel's NPCs folder lists both; Omnisearch finds him by name.
 			await crow(o, `${F}/NPCs/Mira Quell.md`).waitFor();
-			const row = await spotlight(o, 'tobren', 'Tobren Kask');
+			const row = await omnisearch(o, 'tobren', 'Tobren Kask');
 			assert.match(await row.innerText(), /NPC/);
 			await o.page.keyboard.press('Enter');
 			await o.page.locator(Q).waitFor();
 			assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Tobren Kask');
-			await closeSpotlight(o);
+			await closeOmnisearch(o);
 
 			// Use: Add to fight puts him in the tracker under his own name, his HP and armor on the boss's attacks.
 			await o.openFile(N, 'preview');
@@ -388,7 +388,7 @@ export function register(test, h) {
 	// -------------------------------------------------------------------------
 	// Monsters
 
-	test('entities nimble: monster — the bestiary, a Monsters + stat block, the builder and a content-folder monster; references, hover, Edit, the compendium, Spotlight, autocomplete; campaigns keep theirs apart', async (o) => {
+	test('entities nimble: monster — the bestiary, a Monsters + stat block, the builder and a content-folder monster; references, hover, Edit, the compendium, Omnisearch, autocomplete; campaigns keep theirs apart', async (o) => {
 		const F = 'Campaigns/EN Monsters';
 		const OTHER = 'Campaigns/EN Elsewhere';
 		const M = `${F}/Monsters/Quarry Boss.md`;
@@ -483,10 +483,10 @@ export function register(test, h) {
 			await detail.locator('.statblock-action', { hasText: exact('Add') }).click();
 			await o.waitFor(async () => (await creatures(o)).some(c => /^Goblin Boss/.test(c.label)), { what: 'the Goblin Boss in the fight' });
 			await closeCompendiumTab(o);
-			// Spotlight finds the campaign's monster as an adversary.
-			const row = await spotlight(o, 'quarry boss', 'Quarry Boss');
+			// Omnisearch finds the campaign's monster as an adversary.
+			const row = await omnisearch(o, 'quarry boss', 'Quarry Boss');
 			assert.match(await row.innerText(), /Adversary/i);
-			await closeSpotlight(o);
+			await closeOmnisearch(o);
 		} finally {
 			await done(o, [F, OTHER], ['Ember Vault/Content']);
 		}
@@ -495,7 +495,7 @@ export function register(test, h) {
 	// -------------------------------------------------------------------------
 	// Spells and items
 
-	test('entities nimble: spells and items — the books\' in the compendium and references; ```nimble-spell and ```nimble-item homebrew is their card, in the compendium and Spotlight, and goes on a sheet', async (o) => {
+	test('entities nimble: spells and items — the books\' in the compendium and references; ```nimble-spell and ```nimble-item homebrew is their card, in the compendium and Omnisearch, and goes on a sheet', async (o) => {
 		const F = 'Campaigns/EN Spells';
 		const HS = `${F}/Homebrew/Cinder Whip.md`;
 		const HI = `${F}/Homebrew/Lamp of Embers.md`;
@@ -539,10 +539,10 @@ export function register(test, h) {
 			await input.fill('lamp of embers');
 			await o.waitFor(async () => (await cmpNames(o))[0] === 'Lamp of Embers', { timeout: 5000, what: 'the homebrew item' });
 			await closeCompendiumTab(o);
-			// Spotlight: the note that holds it (a campaign note) and the spell itself.
-			await spotlight(o, 'cinder whip', 'Cinder Whip');
-			await o.waitFor(async () => (await o.page.locator(`${SPOT} .suggestion-item:not(.is-filter)`).allInnerTexts()).some(t => /Cinder Whip[\s\S]*Spell/i.test(t)), { what: 'the homebrew spell in Spotlight' });
-			await closeSpotlight(o);
+			// Omnisearch: the note that holds it (a campaign note) and the spell itself.
+			await omnisearch(o, 'cinder whip', 'Cinder Whip');
+			await o.waitFor(async () => (await o.page.locator(`${SPOT} .suggestion-item:not(.is-filter)`).allInnerTexts()).some(t => /Cinder Whip[\s\S]*Spell/i.test(t)), { what: 'the homebrew spell in Omnisearch' });
+			await closeOmnisearch(o);
 
 			// On a sheet: a Fire mage adds the homebrew spell and the item through the sheet's pickers.
 			await write(o, HERO, '---\nnimble: character\nclass: Mage\nlevel: 2\nstr: -1\ndex: 1\nint: 3\nwil: 1\nhp: 14\nhp_max: 14\nmana: 4\nmana_max: 4\nschools: [Fire]\n---\n\n```nimble-sheet\n```\n');
@@ -573,7 +573,7 @@ export function register(test, h) {
 	// -------------------------------------------------------------------------
 	// Quests
 
-	test('entities nimble: quest — the Quests + makes one; its card ticks objectives into the note; status moves it in the panel; /quest links it as a pill; Spotlight', async (o) => {
+	test('entities nimble: quest — the Quests + makes one; its card ticks objectives into the note; status moves it in the panel; /quest links it as a pill; Omnisearch', async (o) => {
 		const F = 'Campaigns/EN Quests';
 		const QN = `${F}/Quests/The Missing Lantern.md`;
 		const SC = `${F}/Chapter 1/Opening Scene.md`;
@@ -630,8 +630,8 @@ export function register(test, h) {
 			await o.openFile(SC, 'preview');
 			const pill = o.page.locator(`${R} a.nimble-note-link.kind-quest`);
 			await o.waitFor(async () => (await pill.count()) === 1, { what: 'the quest pill' });
-			// Spotlight finds the quest note; Enter opens it.
-			const row = await spotlight(o, 'missing lantern', 'The Missing Lantern');
+			// Omnisearch finds the quest note; Enter opens it.
+			const row = await omnisearch(o, 'missing lantern', 'The Missing Lantern');
 			assert.match(await row.innerText(), /Quest/i);
 			await o.page.keyboard.press('Enter');
 			await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === QN, { what: 'Enter opens the quest' });
@@ -697,11 +697,11 @@ export function register(test, h) {
 			await o.waitFor(async () => /Mira Quell[\s\S]*Tobren Kask/.test(await p.locator('.ev-cq-whos').innerText().catch(() => '')), { what: 'Mira moved in' });
 			await o.waitFor(async () => /The Docks/.test(await p.locator('.ev-cq-leads').innerText().catch(() => '')), { what: 'leads: from the property' });
 			await p.screenshot({ path: join(ARTIFACTS, 'entities-nimble-location.png') });
-			// Find: the panel and Spotlight.
+			// Find: the panel and Omnisearch.
 			await crow(o, L).waitFor();
-			const row = await spotlight(o, 'lantern inn', 'The Lantern Inn');
+			const row = await omnisearch(o, 'lantern inn', 'The Lantern Inn');
 			assert.match(await row.innerText(), /Location/i);
-			await closeSpotlight(o);
+			await closeOmnisearch(o);
 		} finally {
 			await done(o, [F]);
 		}

@@ -1,6 +1,6 @@
 # Your own content
 
-Everything a game ships, you can add yourself: classes, subclasses, a class's options, feats, species and ancestries, backgrounds, boons, rules and conditions. What you add works like the books' own. **New character**, **Level up**, the character sheet, the compendium, references, autocomplete, Spotlight, the "/" menu and the tracker all see it.
+Everything a game ships, you can add yourself: classes, subclasses, a class's options, feats, species and ancestries, backgrounds, boons, rules and conditions. What you add works like the books' own. **New character**, **Level up**, the character sheet, the compendium, references, autocomplete, Omnisearch, the "/" menu and the tracker all see it.
 
 Your content lives in the [compendium](compendium.md), not beside your campaign notes. Each entry is a note in your content folder holding one block, written in a few lines of `field: value`.
 

@@ -1,6 +1,6 @@
 // How a 5e compendium entry looks: a spell, a magic item, a piece of equipment,
 // a class page, a species, a background, a feat, a rule or a condition. Used
-// by the compendium view, hover cards, the card modal and Spotlight. Drawn as
+// by the compendium view, hover cards, the card modal and Omnisearch. Drawn as
 // the SRD sets them, in the stat block's dress for the edition (design study:
 // #5e/compendium): the name in Garamond small caps, the italic line under it,
 // labels in the book's red, run-in headings ("Using a Higher-Level Spell Slot.")

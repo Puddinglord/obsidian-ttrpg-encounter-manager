@@ -152,7 +152,7 @@ const c = {
 		}
 		await o.eval(async (app, plugin) => {
 			plugin.hover?.hide?.();
-			plugin.spotlight?.close?.();
+			plugin.omnisearch?.close?.();
 			app.setting?.close?.();
 			document.querySelectorAll('.menu, .nimble-popover, .suggestion-container, .notice, .ev-term-popover, .tooltip').forEach(n => n.remove());
 			document.querySelectorAll('.modal-container').forEach(n => n.remove());

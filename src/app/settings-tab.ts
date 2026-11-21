@@ -86,8 +86,8 @@ export class EmberVaultSettingsTab extends PluginSettingTab {
 					render: toggle(() => s.slashCommands, v => { s.slashCommands = v; }),
 				},
 				{
-					name: 'Open Spotlight with Cmd/Ctrl+K',
-					desc: 'Spotlight searches adversaries, NPCs and notes, rolls dice and runs commands. Cmd/Ctrl+K is Obsidian\'s Insert Markdown link key: with this on, it opens Spotlight when no text is selected, and still makes a link when some is. You can also give the Spotlight command any key under Hotkeys.',
+					name: 'Open Omnisearch with Cmd/Ctrl+K',
+					desc: 'Omnisearch searches adversaries, NPCs and notes, rolls dice and runs commands. Cmd/Ctrl+K is Obsidian\'s Insert Markdown link key: with this on, it opens Omnisearch when no text is selected, and still makes a link when some is. You can also give the Omnisearch command any key under Hotkeys.',
 					render: toggle(() => s.spotlightKey, v => { s.spotlightKey = v; }, () => this.plugin.campaigns.trigger('changed')), // the Campaign panel's search bar shows the key
 				},
 				{

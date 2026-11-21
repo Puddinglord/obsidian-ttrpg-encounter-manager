@@ -1403,7 +1403,7 @@ export class CharacterSheetRenderer extends Component {
 		return this.comp.search(name, [kind], 20).find(h => nameKey(h.name) === nameKey(name));
 	}
 
-	/** Items or spells from Spotlight, written to the note. */
+	/** Items or spells from Omnisearch, written to the note. */
 	addFromCompendium(kinds: CompendiumKind[]): void {
 		const s = this.sheet;
 		const spell = kinds.includes('spell');

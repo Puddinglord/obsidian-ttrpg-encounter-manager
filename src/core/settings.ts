@@ -1,5 +1,5 @@
 // The plugin's settings (data.json). Core owns the fields every game shares:
-// the party and campaigns, dice and the roll log, Spotlight, reading options.
+// the party and campaigns, dice and the roll log, Omnisearch, reading options.
 // Each game system adds its own fields to this interface (TypeScript module
 // augmentation, see nimble/settings.ts) and gives their defaults and
 // migration through the contract's `settings`. data.json stays one flat
@@ -36,9 +36,9 @@ export interface EmberVaultSettings {
 	defaultPartySize: number;
 	/** "/" commands in the editor. */
 	slashCommands: boolean;
-	/** Cmd/Ctrl+K opens Spotlight instead of inserting an empty Markdown link (selected text still becomes a link). */
+	/** Cmd/Ctrl+K opens Omnisearch instead of inserting an empty Markdown link (selected text still becomes a link). Saved under Omnisearch's first name. */
 	spotlightKey: boolean;
-	/** The one-time "Use Cmd/Ctrl+K for Spotlight?" offer has been shown. */
+	/** The one-time "Use Cmd/Ctrl+K for Omnisearch?" offer has been shown. Saved under Omnisearch's first name. */
 	spotlightOffered: boolean;
 	/** Give every table in notes the plugin's look (tables in boxes always have it). */
 	styleTables: boolean;

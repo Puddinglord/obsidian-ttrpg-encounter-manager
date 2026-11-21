@@ -1,5 +1,5 @@
-// What a game system puts in Spotlight (app/spotlight.ts), through the contract's
-// `spotlight` member. Spotlight keeps what every game has (NPCs, the campaign's
+// What a game system puts in Omnisearch (app/omnisearch.ts), through the contract's
+// `omnisearch` member. Omnisearch keeps what every game has (NPCs, the campaign's
 // notes, conditions, commands, dice); the system gives its own things (monsters,
 // its compendium), how each row looks and what choosing it does, adding several
 // ("3 goblin"), and its compendium's search language for typed filters with chips
@@ -10,10 +10,10 @@
 import type { Modal } from 'obsidian';
 import type { FilterQuery } from './compendium/filter-field';
 import type { CompendiumEntry, CompendiumQuery, Suggestion } from './compendium/query';
-import type { SpotlightQuery } from './spotlight-def';
+import type { OmnisearchQuery } from './omnisearch-def';
 
-/** How a row looks. Spotlight draws it with its own classes. */
-export interface SpotlightLook {
+/** How a row looks. Omnisearch draws it with its own classes. */
+export interface OmnisearchLook {
 	/** The row's kind, as its class (`spot-<kind>`): "monster", "compendium", "entry". */
 	kind: string;
 	/** A Lucide icon on the left. */
@@ -32,29 +32,29 @@ export interface SpotlightLook {
 }
 
 /** One of the system's results. */
-export interface SpotlightRow {
-	look: SpotlightLook;
+export interface OmnisearchRow {
+	look: OmnisearchLook;
 	/** Names to rank by, the main one first. */
 	names: string[];
 	/** Secondary text (a monster's group or type, a spell's detail): matches here rank below name matches. */
 	others?: string[];
-	/** Ties go to the lower group: monsters 0, the compendium 4 (Spotlight's own: people 1, places 2, conditions 3, commands 5). */
+	/** Ties go to the lower group: monsters 0, the compendium 4 (Omnisearch's own: people 1, places 2, conditions 3, commands 5). */
 	order: number;
-	/** Enter (and a click). Return the dialog it opened: closing that with Escape comes back to Spotlight. */
+	/** Enter (and a click). Return the dialog it opened: closing that with Escape comes back to Omnisearch. */
 	open(): Modal | void;
-	/** Cmd/Ctrl+Enter, keeping Spotlight open with its box cleared (Nimble adds the monster to the fight). Without it, Enter's action. */
+	/** Cmd/Ctrl+Enter, keeping Omnisearch open with its box cleared (Nimble adds the monster to the fight). Without it, Enter's action. */
 	alt?(): void;
 }
 
 /** The system's results for a typed name. */
-export interface SpotlightResults {
-	rows: SpotlightRow[];
+export interface OmnisearchResults {
+	rows: OmnisearchRow[];
 	/** The text was a search in the compendium's language ("in:spells fire"): show just these rows, in this order, and the lookup. */
 	only?: boolean;
 }
 
 /** Typed filters with chips: the system's compendium search language over its entries. */
-export interface SpotlightFilters {
+export interface OmnisearchFilters {
 	/** The words the chips understand (a bound compendium query). */
 	query: FilterQuery;
 	/** Is this a whole value for the key? A space after one finishes the chip. */
@@ -62,15 +62,15 @@ export interface SpotlightFilters {
 	/** Filter suggestions for the token being typed, counted against the rest of the query. */
 	suggest(token: string, rest: string, o: { applied: string[]; limit: number }): Suggestion[];
 	/** Every entry that matches a whole query (chips and all), as rows. */
-	search(query: string, limit: number): SpotlightRow[];
+	search(query: string, limit: number): OmnisearchRow[];
 }
 
-export interface SpotlightSource {
-	/** Its things matching a typed name (`q.text`; `input` is the whole box). Spotlight ranks them with its own. */
-	results(q: SpotlightQuery, input: string): SpotlightResults;
+export interface OmnisearchSource {
+	/** Its things matching a typed name (`q.text`; `input` is the whole box). Omnisearch ranks them with its own. */
+	results(q: OmnisearchQuery, input: string): OmnisearchResults;
 	/** "3 goblin": rows that add that many, or nothing when adding isn't what this means here (players, a game without fights). */
-	adding?(q: SpotlightQuery): SpotlightRow[] | undefined;
-	filters?: SpotlightFilters;
+	adding?(q: OmnisearchQuery): OmnisearchRow[] | undefined;
+	filters?: OmnisearchFilters;
 	/** "Search the compendium for …": open the system's compendium with this query (filters as typed). */
 	lookup?(query: string): Modal | void;
 }
@@ -81,8 +81,8 @@ export function compendiumFilters<E extends CompendiumEntry, S extends string>(o
 	/** The tab that holds everything. */
 	all: S;
 	entries(): E[];
-	row(e: E): SpotlightRow;
-}): SpotlightFilters {
+	row(e: E): OmnisearchRow;
+}): OmnisearchFilters {
 	const q = o.query;
 	return {
 		query: q,

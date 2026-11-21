@@ -1,28 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { orderPicks, parseSpotlight, rankByName } from '../src/core/spotlight-def';
+import { orderPicks, parseOmnisearch, rankByName } from '../src/core/omnisearch-def';
 
-describe('parseSpotlight', () => {
+describe('parseOmnisearch', () => {
 	it('reads dice, with or without "roll"', () => {
-		expect(parseSpotlight('2d6+3').roll).toBe('2d6+3');
-		expect(parseSpotlight(' d20 ').roll).toBe('1d20');
-		expect(parseSpotlight('roll 4d8 - 1').roll).toBe('4d8-1');
-		expect(parseSpotlight('r d6').roll).toBe('1d6');
+		expect(parseOmnisearch('2d6+3').roll).toBe('2d6+3');
+		expect(parseOmnisearch(' d20 ').roll).toBe('1d20');
+		expect(parseOmnisearch('roll 4d8 - 1').roll).toBe('4d8-1');
+		expect(parseOmnisearch('r d6').roll).toBe('1d6');
 	});
 	it('does not mistake names for dice', () => {
-		expect(parseSpotlight('dragon').roll).toBeUndefined();
-		expect(parseSpotlight('d0').roll).toBeUndefined();
-		expect(parseSpotlight('roll call').roll).toBeUndefined();
-		expect(parseSpotlight('roll call').text).toBe('roll call');
+		expect(parseOmnisearch('dragon').roll).toBeUndefined();
+		expect(parseOmnisearch('d0').roll).toBeUndefined();
+		expect(parseOmnisearch('roll call').roll).toBeUndefined();
+		expect(parseOmnisearch('roll call').text).toBe('roll call');
 	});
 	it('takes a count for adding several', () => {
-		expect(parseSpotlight('3 goblin')).toMatchObject({ count: 3, counted: true, text: 'goblin' });
-		expect(parseSpotlight('2x Dire Wolf')).toMatchObject({ count: 2, counted: true, text: 'dire wolf' });
-		expect(parseSpotlight('goblin')).toMatchObject({ count: 1, counted: false, text: 'goblin' });
-		expect(parseSpotlight('999 rats').count).toBe(50);
+		expect(parseOmnisearch('3 goblin')).toMatchObject({ count: 3, counted: true, text: 'goblin' });
+		expect(parseOmnisearch('2x Dire Wolf')).toMatchObject({ count: 2, counted: true, text: 'dire wolf' });
+		expect(parseOmnisearch('goblin')).toMatchObject({ count: 1, counted: false, text: 'goblin' });
+		expect(parseOmnisearch('999 rats').count).toBe(50);
 	});
 	it('limits to commands after >', () => {
-		expect(parseSpotlight('> next')).toMatchObject({ commandsOnly: true, text: 'next' });
-		expect(parseSpotlight('>')).toMatchObject({ commandsOnly: true, text: '' });
+		expect(parseOmnisearch('> next')).toMatchObject({ commandsOnly: true, text: 'next' });
+		expect(parseOmnisearch('>')).toMatchObject({ commandsOnly: true, text: '' });
 	});
 });
 

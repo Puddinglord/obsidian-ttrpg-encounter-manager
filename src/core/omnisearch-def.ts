@@ -1,4 +1,4 @@
-// What a Spotlight query means. Pure: no Obsidian imports.
+// What an Omnisearch query means. Pure: no Obsidian imports.
 //
 //   2d6+3, d20, roll 4d8   a dice roll
 //   goblin                 search everything
@@ -8,7 +8,7 @@
 import { nameMatch } from './compendium/query';
 import { formatDice, parseDice } from './dice';
 
-export interface SpotlightQuery {
+export interface OmnisearchQuery {
 	/** A dice expression to roll ("2d6+3"), when the query is one. */
 	roll?: string;
 	/** How many to add: "3 goblin" is 3. 1 when no count was typed. */
@@ -21,7 +21,7 @@ export interface SpotlightQuery {
 	text: string;
 }
 
-export function parseSpotlight(input: string): SpotlightQuery {
+export function parseOmnisearch(input: string): OmnisearchQuery {
 	const raw = input.trim();
 	if (raw.startsWith('>')) return { count: 1, counted: false, commandsOnly: true, text: raw.slice(1).trim().toLowerCase() };
 	// "roll 2d6", "r d20", or just the dice.
@@ -33,8 +33,8 @@ export function parseSpotlight(input: string): SpotlightQuery {
 	return { count: 1, counted: false, commandsOnly: false, text: raw.toLowerCase() };
 }
 
-/** Something Spotlight lists for a typed name: a monster, an NPC, a note, a spell, a command. */
-export interface SpotlightCandidate<T> {
+/** Something Omnisearch lists for a typed name: a monster, an NPC, a note, a spell, a command. */
+export interface OmnisearchCandidate<T> {
 	item: T;
 	/** Names to rank by, the main one first (aliases after). */
 	names: string[];
@@ -45,13 +45,13 @@ export interface SpotlightCandidate<T> {
 }
 
 /**
- * Spotlight's one list, ranked by how well each name matches (an exact name, then
+ * Omnisearch's one list, ranked by how well each name matches (an exact name, then
  * the start of a name, then the start of a word…), whatever kind of thing it is.
  * A match only in secondary text ranks below name matches, and typo matches
  * ("compen" for Companions) only show when nothing anywhere matches for real.
  * Ties go to the lower order group, then to the order the candidates came in.
  */
-export function rankSpotlight<T>(candidates: SpotlightCandidate<T>[], text: string, limit = 14): T[] {
+export function rankOmnisearch<T>(candidates: OmnisearchCandidate<T>[], text: string, limit = 14): T[] {
 	const ranked: { item: T; score: number; fuzzy: boolean; order: number }[] = [];
 	for (const c of candidates) {
 		const own = nameMatch(c.names, text);
@@ -82,7 +82,7 @@ export function rankByName<T>(items: T[], query: string, text: (item: T) => stri
 }
 
 /**
- * Picker order (Spotlight's filtered mode): with nothing typed, the preferred
+ * Picker order (Omnisearch's filtered mode): with nothing typed, the preferred
  * entries (the class's own options, the caster's schools) come first, the rest
  * after; once something is typed, an exact name leads, then preferred matches,
  * then the rest, each keeping the search's ranking. Taken entries sink below

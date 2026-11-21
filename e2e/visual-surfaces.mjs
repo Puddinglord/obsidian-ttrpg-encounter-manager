@@ -421,8 +421,8 @@ const nimble = [
 		setup: async (c) => { await c.campaign(NQ); await c.open(`${CH}/Q1 Entry Chamber.md`); await c.cmd('search-compendium'); await c.page.locator('.modal.nimble-cmpx-modal .nimble-cmpx-row[data-id]').first().waitFor({ timeout: 5000 }); await c.page.keyboard.type('hound'); await c.wait(500); },
 	},
 	{
-		name: 'spotlight', mode: 'window', root: '.modal-container .prompt.nimble-spotlight',
-		setup: async (c) => { await c.campaign(NQ); await c.open(`${CH}/Q2 Mercury Pool.md`); await c.cmd('spotlight'); await c.page.locator('.nimble-spotlight .prompt-input').waitFor(); await c.page.keyboard.type('level:2 alchemist'); await c.wait(600); },
+		name: 'omnisearch', mode: 'window', root: '.modal-container .prompt.nimble-omnisearch',
+		setup: async (c) => { await c.campaign(NQ); await c.open(`${CH}/Q2 Mercury Pool.md`); await c.cmd('omnisearch'); await c.page.locator('.nimble-omnisearch .prompt-input').waitFor(); await c.page.keyboard.type('level:2 alchemist'); await c.wait(600); },
 	},
 	{
 		name: 'slash-menu', mode: 'window', root: '.suggestion-container:has(.nimble-slash-item)',
@@ -681,8 +681,8 @@ const dnd5e = [
 		setup: async (c) => { await c.campaign(X5); await c.open(`${X5}/Chapter 1/Road Ambush.md`); await c.cmd('search-compendium'); await c.page.locator('.modal.nimble-cmpx-modal .nimble-cmpx-row[data-id]').first().waitFor({ timeout: 5000 }); await c.page.keyboard.type('goblin'); await c.wait(500); },
 	},
 	{
-		name: 'spotlight', mode: 'window', root: '.modal-container .prompt.nimble-spotlight',
-		setup: async (c) => { await c.campaign(X5); await c.open(`${X5}/Chapter 1/Road Ambush.md`); await c.cmd('spotlight'); await c.page.locator('.nimble-spotlight .prompt-input').waitFor(); await c.page.keyboard.type('school:evocation fire'); await c.wait(600); },
+		name: 'omnisearch', mode: 'window', root: '.modal-container .prompt.nimble-omnisearch',
+		setup: async (c) => { await c.campaign(X5); await c.open(`${X5}/Chapter 1/Road Ambush.md`); await c.cmd('omnisearch'); await c.page.locator('.nimble-omnisearch .prompt-input').waitFor(); await c.page.keyboard.type('school:evocation fire'); await c.wait(600); },
 	},
 	{
 		name: 'slash-menu', mode: 'window', root: '.suggestion-container:has(.nimble-slash-item)',

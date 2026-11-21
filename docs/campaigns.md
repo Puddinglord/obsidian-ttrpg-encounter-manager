@@ -13,7 +13,7 @@ Use **New campaign**, from the castle icon in the ribbon or the command palette.
 The panel in the left sidebar is home base, in the look of the campaign's game. From it you can:
 
 - switch campaigns, and with them between GM and [player](players.md) view (the tag beside the name says **GM** or **Player**); **Campaign settings…** in the same menu changes the name, side, level and game system
-- open [Spotlight](spotlight.md) from the search bar under the campaign name, to find adversaries, NPCs and notes or roll dice
+- open [Omnisearch](omnisearch.md) from the search bar under the campaign name, to find adversaries, NPCs and notes or roll dice
 - see the party: a card for each hero's character sheet, with their HP
 - **Continue** where you left off (**Start** on the first scene, until you've opened one)
 - browse chapters and their scenes (map buttons sit on each chapter)

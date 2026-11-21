@@ -5,7 +5,7 @@ Open **Settings → Ember Vault**, or type `/settings` in a note. The settings e
 ## General
 
 - **Slash commands:** show your game's commands in the `/` menu.
-- **Open Spotlight with Cmd/Ctrl+K:** off until you turn it on. [Spotlight](spotlight.md) then shares the key with Obsidian's Insert Markdown link: Spotlight when nothing is selected, a link when text is.
+- **Open Omnisearch with Cmd/Ctrl+K:** off until you turn it on. [Omnisearch](omnisearch.md) then shares the key with Obsidian's Insert Markdown link: Omnisearch when nothing is selected, a link when text is.
 - **Styled tables:** rounded corners, a tinted header and zebra rows for every table in your notes.
 
 ## Campaigns

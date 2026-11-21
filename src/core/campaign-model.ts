@@ -87,7 +87,7 @@ export interface Campaign {
 	looseFiles: FileRef[];
 }
 
-/** Each kind's icon: the Campaign panel, Spotlight and links to the note all use it. */
+/** Each kind's icon: the Campaign panel, Omnisearch and links to the note all use it. */
 export const KIND_ICON: Record<NoteKind, string> = {
 	campaign: 'castle', chapter: 'book-marked', scene: 'clapperboard', map: 'map', npc: 'user-round', location: 'map-pin', quest: 'flag',
 	session: 'calendar-days', monster: 'skull', handout: 'scroll-text', combat: 'swords', character: 'shield', creature: 'paw-print', note: 'file-text',

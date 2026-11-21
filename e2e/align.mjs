@@ -16,7 +16,7 @@ export const PILL_SELECTORS = [
 	'.nimble-npc-pill', '.campaign-role-pill', '.campaign-hero-you', '.lore-tag', '.battle-outcome', '.battle-fact',
 	'.lu-tag', '.lu-gain', '.lu-count', '.lu-dot', '.lu-back', '.lu-next', '.lu-sub-tab', '.lu-sub-band-choose', '.lu-skill-budget', '.lu-skill-move', '.lu-skill-reset',
 	'.lu-step-btn', '.lu-celebrate-chip', '.lu-view-toggle button', '.lu-badge', '.lu-chip', '.lu-key-tag', '.lu-level-tag', '.lu-reset', '.lu-view-btn', '.lu-compare-choose', '.lu-option-less',
-	'.nimble-spotlight-chip', '.nimble-difficulty', '.encounter-count', '.bestiary-tag', '.statblock-action', '.rd-seg-btn', '.rd-mode-btn',
+	'.nimble-omnisearch-chip', '.nimble-difficulty', '.encounter-count', '.bestiary-tag', '.statblock-action', '.rd-seg-btn', '.rd-mode-btn',
 	'.nimble-cmpx-chip', '.nimble-cmpx-pill', '.nimble-cmpx-tag', '.nimble-cmpx-pill-tag', '.nimble-cmp-back', '.nimble-count-seg', '.ev-term-tag',
 	'.nimble-inline-ref', '.nimble-cmpx-seg', '.nimble-cmpx-row-badge', '.nimble-slash-badge', '.nimble-spot-tag', '.encounter-chip',
 	'.dnd5e-death-stable', '.dnd5e-death-dead', '.dnd5e-condition', '.dnd5e-condition-add', '.dnd5e-hp-text', '.dnd5e-death-roll', '.dnd5e-tracker-combat button',
@@ -40,10 +40,10 @@ export const PILL_SELECTORS = [
 	// balance, the party editor's buttons, the map's toolbar, pin labels and tokens, the Edit pencil, the roll toast's tag.
 	'.ev-dialog-btn', '.rd-mode-btn', '.builder-party', '.builder-level', '.builder-pick-meta', '.balance-targets > button', '.nimble-party-btn',
 	'.nimble-map-btn', '.nimble-map-pin-label', '.ev-roll-tag', '.eb-verdict', '.eb-check-tag',
-	// The compendiums (design pass): a card's kind, facts, tags and level boxes; Spotlight's and the slash menu's
+	// The compendiums (design pass): a card's kind, facts, tags and level boxes; Omnisearch's and the slash menu's
 	// squares; the browser's keys, sort buttons, art level chip, group headings and a card's folding rows.
 	'.nimble-cmp-kind', '.nimble-cmp-fact', '.nimble-cmp-tag', '.nimble-cmp-draft', '.nimble-cmp-count', '.nimble-cmp-level-badge', '.nimble-cmp-summary',
-	'.nimble-spot-icon', '.nimble-slash-icon', '.nimble-spotlight-die', '.nimble-cmpx-kbd', '.nimble-cmpx-sort-dir', '.nimble-cmpx-sort-add', '.nimble-cmpx-sort-reset',
+	'.nimble-spot-icon', '.nimble-slash-icon', '.nimble-omnisearch-die', '.nimble-cmpx-kbd', '.nimble-cmpx-sort-dir', '.nimble-cmpx-sort-add', '.nimble-cmpx-sort-reset',
 	'.nimble-art-level', '.nimble-cmpx-group', '.bestiary-back',
 	// Importing a D&D Beyond character: the checklist's New and "levels 8–9" tags.
 	'.dnd5e-ddb-tag',

@@ -72,7 +72,7 @@ async function layout({ left = false, right = false } = {}) {
 		document.querySelectorAll('.menu, .nimble-popover').forEach(n => n.remove());
 		document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click());
 		plugin.hover.hide();
-		plugin.spotlight?.close();
+		plugin.omnisearch?.close();
 		document.getElementById('shot-focus')?.remove(); // focusPanel's hidden party cards
 		// One tab only, so stale tabs from earlier shots don't show.
 		const leaves = [];
@@ -312,17 +312,17 @@ const shots = {
 		await open(`${C}/Quests/Bring Wick Home.md`);
 		await focusPanel('Quests');
 	},
-	// Spotlight over a scene, searching everything at once.
-	async spotlight() {
+	// Omnisearch over a scene, searching everything at once.
+	async omnisearch() {
 		await layout({ left: true });
 		await open(`${CH}/Q2 Mercury Pool.md`);
 		await focusPanel(CHAPTER);
 		await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
-		await page.waitForSelector('.nimble-spotlight .nimble-cmpx-input');
+		await page.waitForSelector('.nimble-omnisearch .nimble-cmpx-input');
 		await page.keyboard.type('alchemist');
 		await page.waitForTimeout(500);
 		// Select the adversary (Obsidian's suggestions select on hover; the mouse leaves before the shot).
-		await page.locator('.nimble-spotlight .nimble-spot-row.spot-monster').first().hover();
+		await page.locator('.nimble-omnisearch .nimble-spot-row.spot-monster').first().hover();
 		await page.waitForTimeout(200);
 	},
 	// Links to campaign notes as pills: locations, scenes, maps and NPCs in a session's prep list.
@@ -600,10 +600,10 @@ const features = {
 		setup: () => shots['encounter-block'](),
 		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .nimble-encounter-block'],
 	},
-	'feature-spotlight': {
+	'feature-omnisearch': {
 		bg: 'var(--background-secondary)', snapText: true,
-		setup: () => shots.spotlight(),
-		show: () => ['.nimble-spotlight'],
+		setup: () => shots.omnisearch(),
+		show: () => ['.nimble-omnisearch'],
 	},
 	// Link pills in a session's prep list.
 	'feature-pills': {

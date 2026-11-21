@@ -1,4 +1,4 @@
-// The search field every compendium and Spotlight share: filters are chips from
+// The search field every compendium and Omnisearch share: filters are chips from
 // the moment you name one. Accept "type" (or type "type:") and a chip waits for
 // its value; everything typed next is that value, with its values suggested,
 // and Enter or Tab completes it. Nothing half-typed is ever left in the box.

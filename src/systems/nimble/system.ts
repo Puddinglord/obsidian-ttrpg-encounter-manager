@@ -22,7 +22,7 @@ import { NIMBLE_SETTINGS } from './settings';
 import { nimble } from './runtime';
 import { nimbleTokens } from './map-tokens';
 import { openCharacterView } from './character-register';
-import { nimbleSpotlight } from './spotlight';
+import { nimbleOmnisearch } from './omnisearch';
 import { ENCOUNTER_VIEW_TYPE } from './tracker-view';
 import { NPC_FIELDS_NIMBLE } from './npc';
 import { drawNpcNimble } from './npc-card';
@@ -94,7 +94,7 @@ export const nimbleSystem: GameSystem = {
 	trackerView: ENCOUNTER_VIEW_TYPE,
 	encounterBlock: nimbleEncounterBlock,
 	slashCommands: nimbleSlashCommands,
-	spotlight: nimbleSpotlight,
+	omnisearch: nimbleOmnisearch,
 	vocabulary: { defense: 'DEF' },
 	content: {
 		kinds: KINDS_NIMBLE, blocks: NIMBLE_BLOCKS, card: drawNimbleContent,

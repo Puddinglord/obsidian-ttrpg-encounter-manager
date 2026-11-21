@@ -78,11 +78,11 @@ export class CampaignView extends ItemView {
 	}
 
 	/**
-	 * A button dressed as a search field that opens Spotlight; typing happens in
+	 * A button dressed as a search field that opens Omnisearch; typing happens in
 	 * the modal. The key chip only shows when the setting makes that key work.
 	 */
 	private renderSearch(root: HTMLElement): void {
-		const btn = root.createEl('button', { cls: 'campaign-search', attr: { 'aria-label': 'Search (opens Spotlight)' } });
+		const btn = root.createEl('button', { cls: 'campaign-search', attr: { 'aria-label': 'Search (opens Omnisearch)' } });
 		setIcon(btn.createSpan({ cls: 'campaign-search-icon' }), 'search');
 		btn.createSpan({ cls: 'campaign-search-placeholder', text: 'Search or roll dice…' });
 		if (this.plugin.settings.spotlightKey && !Platform.isPhone) {
@@ -90,7 +90,7 @@ export class CampaignView extends ItemView {
 			btn.createSpan({ cls: 'campaign-search-kbd', text: mac ? '⌘K' : 'Ctrl K' });
 			btn.setAttr('aria-keyshortcuts', mac ? 'Meta+K' : 'Control+K');
 		}
-		btn.addEventListener('click', () => this.plugin.toggleSpotlight());
+		btn.addEventListener('click', () => this.plugin.toggleOmnisearch());
 	}
 }
 

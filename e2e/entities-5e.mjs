@@ -22,7 +22,7 @@ export function register(test, h) {
 	const CV = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
 	const B = '.modal.nimble-entity-builder';
 	const PANEL = `${B} .eb-panel.is-active`;
-	const SP = '.modal-container .prompt.nimble-spotlight';
+	const SP = '.modal-container .prompt.nimble-omnisearch';
 	// The note on screen: the main area's reading view (or Live Preview) that's showing. Not `.mod-active`, which
 	// moves to the Campaign panel or the tracker as soon as they're clicked.
 	const MAIN = '.workspace-split.mod-root';
@@ -122,13 +122,13 @@ export function register(test, h) {
 	/** The note open in the active tab, read back. */
 	const editorText = (o) => o.eval((app) => app.workspace.activeEditor?.editor?.getValue() ?? '');
 
-	/** Open Spotlight with a query; returns the rows' text. */
-	async function spotlight(o, query, until) {
+	/** Open Omnisearch with a query; returns the rows' text. */
+	async function omnisearch(o, query, until) {
 		await o.eval((app) => { document.querySelectorAll('.modal-container').forEach(n => n.remove()); app.commands.executeCommandById('nimble-gm:spotlight'); });
 		await o.page.locator(`${SP} .prompt-input`).waitFor();
 		await o.page.locator(`${SP} .prompt-input`).fill(query);
 		let rows = [];
-		await o.waitFor(async () => { rows = await o.page.locator(`${SP} .suggestion-item`).allInnerTexts(); return until(rows); }, { what: `Spotlight for "${query}"` });
+		await o.waitFor(async () => { rows = await o.page.locator(`${SP} .suggestion-item`).allInnerTexts(); return until(rows); }, { what: `Omnisearch for "${query}"` });
 		return rows;
 	}
 
@@ -540,9 +540,9 @@ export function register(test, h) {
 			await o.page.keyboard.press('Enter');
 			await o.waitFor(async () => /Then \[\[Marta Vey\]\]/.test(await editorText(o)), { what: 'the link written' });
 
-			// Find: the panel lists her under NPCs; Spotlight finds her.
+			// Find: the panel lists her under NPCs; Omnisearch finds her.
 			await crow(o, npc).waitFor();
-			await spotlight(o, 'marta', r => r.some(t => /Marta Vey/.test(t)));
+			await omnisearch(o, 'marta', r => r.some(t => /Marta Vey/.test(t)));
 			await o.page.keyboard.press('Escape');
 			await tidy(o);
 
@@ -978,7 +978,7 @@ export function register(test, h) {
 	// -----------------------------------------------------------------------
 	// Spells, magic items and equipment
 
-	test('entities 5e: spells, items and equipment: the SRD\'s in both editions, homebrew blocks typed by hand (cards, references, compendium, Spotlight, the pencil), a homebrew weapon on a sheet, a homebrew spell offered by New character', async (o) => {
+	test('entities 5e: spells, items and equipment: the SRD\'s in both editions, homebrew blocks typed by hand (cards, references, compendium, Omnisearch, the pencil), a homebrew weapon on a sheet, a homebrew spell offered by New character', async (o) => {
 		const C = 'Campaigns/E5 Armory';
 		const armory = `${C}/Armory.md`;
 		const refs = `${C}/Chapter 1/Opening Scene.md`;
@@ -1038,8 +1038,8 @@ export function register(test, h) {
 			await o.page.locator(`${CV} .nimble-cmpx-input`).fill('bag of holding');
 			await o.waitFor(async () => (await cmpNames(o, CV))[0] === 'Bag of Holding', { timeout: 5000, what: 'the 2014 Bag of Holding' });
 			await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
-			// Spotlight finds a homebrew spell too.
-			await spotlight(o, 'brine bolt', rows => rows.some(r => /Brine Bolt/.test(r)));
+			// Omnisearch finds a homebrew spell too.
+			await omnisearch(o, 'brine bolt', rows => rows.some(r => /Brine Bolt/.test(r)));
 			await o.page.keyboard.press('Escape');
 			await tidy(o);
 

@@ -2312,7 +2312,7 @@ test('settings tab: party editor, toggles and attribution', async (o) => {
 	}
 });
 
-test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice and adds to the encounter', async (o) => {
+test('Omnisearch: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice and adds to the encounter', async (o) => {
 	await resetEncounter(o);
 	await o.eval(async (app) => {
 		for (const f of ['Spot NPC.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
@@ -2321,7 +2321,7 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	});
 	await o.openFile('Adventure.md', 'source');
 	await o.waitFor(() => o.eval((app, plugin) => plugin.campaigns.npcs.some(n => n.name === 'Spot NPC')), { what: 'the NPC to be indexed' });
-	const S = '.modal-container .prompt.nimble-spotlight';
+	const S = '.modal-container .prompt.nimble-omnisearch';
 	const input = o.page.locator(`${S} .prompt-input`);
 	const rows = o.page.locator(`${S} .suggestion-item:not(.is-filter)`);
 	const names = () => o.page.locator(`${S} .suggestion-item:not(.is-filter) .nimble-spot-name`).allInnerTexts();
@@ -2346,17 +2346,17 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getValue().includes('[]()')), false, 'no Markdown link was inserted');
 	// The same key closes it.
 	await pressK();
-	await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: 'Spotlight to close' });
+	await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: 'Omnisearch to close' });
 
 	// Adversaries: Enter is a quick look.
 	await openIt();
 	await input.fill('goblin');
 	await o.waitFor(async () => (await names())[0] === 'Goblin', { what: 'Goblin first' });
 	assert.match(await rows.first().innerText(), /Adversary/i);
-	await o.page.screenshot({ path: join(ARTIFACTS, 'spotlight-search.png') });
+	await o.page.screenshot({ path: join(ARTIFACTS, 'omnisearch-search.png') });
 	await o.page.keyboard.press('Enter');
 	await o.page.locator('.modal.nimble-record-modal').waitFor();
-	// Escape out of the quick look comes back to Spotlight, still searching.
+	// Escape out of the quick look comes back to Omnisearch, still searching.
 	await o.page.keyboard.press('Escape');
 	await input.waitFor();
 
@@ -2378,9 +2378,9 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await input.fill('2d6+3');
 	await o.waitFor(async () => (await names())[0] === 'Roll 2d6+3', { what: 'the roll row' });
 	await o.page.keyboard.press('Meta+Enter');
-	await o.waitFor(async () => /2d6\+3 → \d+/.test(await o.page.locator(`${S} .nimble-spotlight-result`).innerText().catch(() => '')), { what: 'the result in the box' });
-	await o.page.locator(`${S} .nimble-spotlight-die`, { hasText: exact('d20') }).click();
-	await o.waitFor(async () => /1d20 → \d+/.test(await o.page.locator(`${S} .nimble-spotlight-result`).innerText()), { what: 'the d20 result' });
+	await o.waitFor(async () => /2d6\+3 → \d+/.test(await o.page.locator(`${S} .nimble-omnisearch-result`).innerText().catch(() => '')), { what: 'the result in the box' });
+	await o.page.locator(`${S} .nimble-omnisearch-die`, { hasText: exact('d20') }).click();
+	await o.waitFor(async () => /1d20 → \d+/.test(await o.page.locator(`${S} .nimble-omnisearch-result`).innerText()), { what: 'the d20 result' });
 	await input.fill('d8');
 	await o.page.keyboard.press('Enter');
 	await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: 'Enter to roll and close' });
@@ -2394,7 +2394,7 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await o.waitFor(async () => (await names())[0] === 'Spot NPC', { what: 'the NPC by alias' });
 	await o.page.keyboard.press('Enter');
 	await o.page.locator('.modal.nimble-record-modal').waitFor();
-	// Escape out of the quick look comes back to Spotlight.
+	// Escape out of the quick look comes back to Omnisearch.
 	await o.page.keyboard.press('Escape');
 	await input.waitFor();
 	await input.fill('> open compendium');
@@ -2414,10 +2414,10 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	// The key itself, wherever the focus is: an editor, a note in reading view, a sidebar panel.
 	const keyOpens = async (where) => {
 		await o.page.keyboard.press('Meta+k');
-		await input.waitFor({ timeout: 5000 }).catch(() => { throw new Error(`Cmd+K did not open Spotlight with focus in ${where}`); });
+		await input.waitFor({ timeout: 5000 }).catch(() => { throw new Error(`Cmd+K did not open Omnisearch with focus in ${where}`); });
 		await o.page.waitForTimeout(350); // a person doesn't press it again within a fifth of a second
 		await o.page.keyboard.press('Meta+k');
-		await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: `Cmd+K to close Spotlight (${where})` });
+		await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: `Cmd+K to close Omnisearch (${where})` });
 	};
 	await keyOpens('the editor');
 	await o.openFile('Adventure.md', 'preview');
@@ -2427,59 +2427,59 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await o.page.locator(`${T}`).first().click({ position: { x: 5, y: 5 } });
 	await keyOpens('the tracker sidebar');
 	await openIt();
-	await o.page.screenshot({ path: join(ARTIFACTS, 'spotlight.png') });
+	await o.page.screenshot({ path: join(ARTIFACTS, 'omnisearch.png') });
 	await o.page.keyboard.press('Escape');
-	// Spotlight's own command works whatever the setting, and outside an editor.
+	// Omnisearch's own command works whatever the setting, and outside an editor.
 	await o.eval((app, plugin) => { plugin.settings.spotlightKey = false; app.commands.executeCommandById('nimble-gm:spotlight'); });
 	await input.waitFor();
 	await o.page.keyboard.press('Escape');
 	await o.eval(async (app) => { const x = app.vault.getAbstractFileByPath('Spot NPC.md'); if (x) await app.vault.delete(x); });
 });
 
-test('Spotlight: Escape in a card or quick look opened from it comes back to Spotlight with the same search', async (o) => {
+test('Omnisearch: Escape in a card or quick look opened from it comes back to Omnisearch with the same search', async (o) => {
 	const open = async (q) => {
 		await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
-		await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+		await o.page.waitForSelector('.nimble-omnisearch .prompt-input');
 		await o.page.keyboard.type(q);
 		await o.page.waitForTimeout(300);
 	};
-	const spotlight = () => o.page.evaluate(() => document.querySelector('.nimble-spotlight .prompt-input')?.value ?? null);
-	// A spell's card: Escape → back to Spotlight, still searching "flame dart".
+	const omnisearch = () => o.page.evaluate(() => document.querySelector('.nimble-omnisearch .prompt-input')?.value ?? null);
+	// A spell's card: Escape → back to Omnisearch, still searching "flame dart".
 	await open('flame dart');
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForSelector('.modal.nimble-cmp-modal');
-	assert.equal(await spotlight(), null, 'Spotlight closed while the card is up');
+	assert.equal(await omnisearch(), null, 'Omnisearch closed while the card is up');
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await spotlight()) === 'flame dart', { timeout: 3000, what: 'Spotlight back with the search' });
+	await o.waitFor(async () => (await omnisearch()) === 'flame dart', { timeout: 3000, what: 'Omnisearch back with the search' });
 	assert.equal(await o.page.locator('.modal.nimble-cmp-modal').count(), 0);
-	// Closing the card with its × doesn't bring Spotlight back.
+	// Closing the card with its × doesn't bring Omnisearch back.
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForSelector('.modal.nimble-cmp-modal');
 	await o.page.locator('.modal.nimble-cmp-modal .modal-close-button').click();
 	await o.page.waitForTimeout(300);
-	assert.equal(await spotlight(), null, 'no Spotlight after closing with ×');
+	assert.equal(await omnisearch(), null, 'no Omnisearch after closing with ×');
 	// A monster's quick look works the same way.
 	await open('krogg');
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForSelector('.modal.nimble-record-modal');
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await spotlight()) === 'krogg', { timeout: 3000, what: 'Spotlight back after the quick look' });
+	await o.waitFor(async () => (await omnisearch()) === 'krogg', { timeout: 3000, what: 'Omnisearch back after the quick look' });
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await spotlight()) === null, { timeout: 2000, what: 'Spotlight closed' });
+	await o.waitFor(async () => (await omnisearch()) === null, { timeout: 2000, what: 'Omnisearch closed' });
 });
 
-test('Spotlight and the compendium forgive typos: "zombieq" still finds Zombie', async (o) => {
+test('Omnisearch and the compendium forgive typos: "zombieq" still finds Zombie', async (o) => {
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
-	await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+	await o.page.waitForSelector('.nimble-omnisearch .prompt-input');
 	await o.page.keyboard.type('zombieq');
-	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-spotlight .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in Spotlight' });
+	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-omnisearch .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in Omnisearch' });
 	await o.page.keyboard.press('Escape');
 	// A real name match beats typo matches of anything else: "compen" is Open compendium, not monsters in a Companions group.
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
-	await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+	await o.page.waitForSelector('.nimble-omnisearch .prompt-input');
 	await o.page.keyboard.type('compen');
-	await o.waitFor(async () => (await o.page.locator('.nimble-spotlight .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) === 'Open compendium', { timeout: 3000, what: 'Open compendium first for "compen"' });
-	assert.equal(await o.page.locator('.nimble-spotlight .suggestion-item.spot-monster').count(), 0, 'no typo-matched monsters beside a real match');
+	await o.waitFor(async () => (await o.page.locator('.nimble-omnisearch .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) === 'Open compendium', { timeout: 3000, what: 'Open compendium first for "compen"' });
+	assert.equal(await o.page.locator('.nimble-omnisearch .suggestion-item.spot-monster').count(), 0, 'no typo-matched monsters beside a real match');
 	await o.page.keyboard.press('Escape');
 	await o.eval((app, plugin) => plugin.runtime('nimble').openCompendium('adversaries', 'zombieq'));
 	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-compendium .nimble-cmpx-row[data-id] .nimble-cmpx-row-name > span:first-child').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in the compendium' });
@@ -2509,15 +2509,15 @@ test('compendium: after picking a row, typing a filter key starts on its suggest
 	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
 });
 
-test('Spotlight: filters work right in Spotlight (chips, suggestions, filtered results), and the lookup row takes them to the compendium', async (o) => {
+test('Omnisearch: filters work right in Omnisearch (chips, suggestions, filtered results), and the lookup row takes them to the compendium', async (o) => {
 	await resetEncounter(o);
-	const S = '.modal-container .prompt.nimble-spotlight';
+	const S = '.modal-container .prompt.nimble-omnisearch';
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
 	const input = o.page.locator(`${S} .prompt-input`);
 	await input.waitFor();
-	// A finished filter becomes a chip in Spotlight's own box; the results are compendium entries that match.
+	// A finished filter becomes a chip in Omnisearch's own box; the results are compendium entries that match.
 	await input.fill('school:fire ');
-	await o.waitFor(async () => (await cmpChips(o, S)).length === 1, { timeout: 3000, what: 'the School chip in Spotlight' });
+	await o.waitFor(async () => (await cmpChips(o, S)).length === 1, { timeout: 3000, what: 'the School chip in Omnisearch' });
 	assert.deepEqual(await cmpChips(o, S), [['School', 'fire']]);
 	assert.equal(await input.inputValue(), '');
 	const rows = o.page.locator(`${S} .suggestion-item`);
@@ -2547,7 +2547,7 @@ test('Spotlight: filters work right in Spotlight (chips, suggestions, filtered r
 	assert.ok(names.includes('Flame Dart'), `fire cantrips listed: ${names.slice(0, 5)}`);
 	await o.page.keyboard.press('Escape');
 	await o.waitFor(async () => (await o.page.locator(M).count()) === 0, { what: 'the dialog to close' });
-	// Escape from the compendium opened from Spotlight comes back to Spotlight; close that too.
+	// Escape from the compendium opened from Omnisearch comes back to Omnisearch; close that too.
 	await input.waitFor();
 	await o.page.keyboard.press('Escape');
 });
@@ -3267,23 +3267,23 @@ test('campaign panel: chapter files and maps are listed, real titles are kept, m
 	await endCampaign(o, 'Fresh');
 });
 
-test('campaign panel: the search bar under the switcher opens Spotlight; the key hint follows the setting', async (o) => {
+test('campaign panel: the search bar under the switcher opens Omnisearch; the key hint follows the setting', async (o) => {
 	await freshCampaign(o, 'Fresh');
 	const bar = o.page.locator(`${CP} .campaign-search`);
-	const SPOT = '.modal-container .prompt.nimble-spotlight';
+	const SPOT = '.modal-container .prompt.nimble-omnisearch';
 	assert.ok(await o.page.evaluate((cp) => document.querySelector(`${cp} .campaign-search`)?.previousElementSibling?.classList.contains('campaign-switcher'), CP), 'right under the switcher');
-	assert.equal(await bar.getAttribute('aria-label'), 'Search (opens Spotlight)');
+	assert.equal(await bar.getAttribute('aria-label'), 'Search (opens Omnisearch)');
 
 	await bar.click();
-	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Spotlight from the panel search bar' });
+	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Omnisearch from the panel search bar' });
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Spotlight to close' });
+	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Omnisearch to close' });
 	// Keyboard: focus and Enter.
 	await bar.focus();
 	await o.page.keyboard.press('Enter');
-	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Spotlight via Enter on the search bar' });
+	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Omnisearch via Enter on the search bar' });
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Spotlight to close' });
+	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Omnisearch to close' });
 
 	// The key hint only shows when the shortcut is on.
 	const was = await o.eval((app, plugin) => plugin.settings.spotlightKey);
@@ -4192,20 +4192,20 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.match(body, /Berserker 3\.1/);
 		await sheet.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-features.png') });
 
-		// Spotlight's normal search finds compendium entries and opens their card.
+		// Omnisearch's normal search finds compendium entries and opens their card.
 		await p.keyboard.press('Escape');
-		await o.eval((app, plugin) => plugin.toggleSpotlight());
-		await p.locator('.modal-container .prompt.nimble-spotlight .prompt-input').fill('battleaxe');
+		await o.eval((app, plugin) => plugin.toggleOmnisearch());
+		await p.locator('.modal-container .prompt.nimble-omnisearch .prompt-input').fill('battleaxe');
 		await p.waitForTimeout(200);
-		const row = p.locator('.modal-container .prompt.nimble-spotlight .suggestion-item.spot-compendium', { hasText: 'Battleaxe' });
+		const row = p.locator('.modal-container .prompt.nimble-omnisearch .suggestion-item.spot-compendium', { hasText: 'Battleaxe' });
 		await row.first().click();
 		await p.locator('.modal.nimble-cmp-modal').waitFor();
 		assert.match(await p.locator('.modal.nimble-cmp-modal').innerText(), /1d10\+STR slashing/);
-		// Escape goes back to Spotlight (still on "battleaxe"); a second Escape closes it.
+		// Escape goes back to Omnisearch (still on "battleaxe"); a second Escape closes it.
 		await p.keyboard.press('Escape');
-		await p.locator('.modal-container .prompt.nimble-spotlight .prompt-input').waitFor();
+		await p.locator('.modal-container .prompt.nimble-omnisearch .prompt-input').waitFor();
 		await p.keyboard.press('Escape');
-		await o.waitFor(async () => (await p.locator('.modal-container .prompt.nimble-spotlight').count()) === 0, { what: 'Spotlight closed' });
+		await o.waitFor(async () => (await p.locator('.modal-container .prompt.nimble-omnisearch').count()) === 0, { what: 'Omnisearch closed' });
 
 		// Edit mode: change a stat.
 		await sheet.locator('.ns-head-actions [aria-label="Edit details and stats"]').click();
@@ -5385,7 +5385,7 @@ async function measurePills(o, bad, where, root) {
 	if (!Object.keys(seen).length) bad.push({ where, el: root, part: 'no pills measured', offset: 0 });
 }
 
-test('pills: Nimble references, stat block buttons, compendium, Spotlight and the slash menu line up', async (o) => {
+test('pills: Nimble references, stat block buttons, compendium, Omnisearch and the slash menu line up', async (o) => {
 	const bad = [];
 	// The tracker mid-fight: the ticker, the side switch, a hero's card with a timed condition, the turn control;
 	// then the legendary beat, a Bloodied moment, and a hero's keypad with Defend and Interpose.
@@ -5465,13 +5465,13 @@ test('pills: Nimble references, stat block buttons, compendium, Spotlight and th
 	await o.page.locator(`${CMP} .nimble-cmpx-detail .nimble-cmp-summary`).first().click();
 	await o.page.waitForTimeout(200);
 	await measurePills(o, bad, 'Nimble compendium (a class)', `${CMP} .nimble-cmpx-detail`);
-	// Spotlight with a typed filter.
+	// Omnisearch with a typed filter.
 	await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
-	const SP = '.modal-container .prompt.nimble-spotlight';
+	const SP = '.modal-container .prompt.nimble-omnisearch';
 	await o.page.locator(`${SP} .prompt-input`).fill('level:2 gob');
-	await o.waitFor(async () => (await o.page.locator(`${SP} .nimble-cmpx-chip`).count()) >= 1, { what: 'Spotlight chip' });
+	await o.waitFor(async () => (await o.page.locator(`${SP} .nimble-cmpx-chip`).count()) >= 1, { what: 'Omnisearch chip' });
 	await o.page.waitForTimeout(300);
-	await measurePills(o, bad, 'Nimble Spotlight', SP);
+	await measurePills(o, bad, 'Nimble Omnisearch', SP);
 	await o.page.keyboard.press('Escape');
 	// The slash menu, with a difficulty badge.
 	await o.eval(async (app) => {
@@ -5625,13 +5625,13 @@ test('pills: 5e references, stat block, compendium, tracker and character sheet 
 		await o.page.locator('.modal-container button.mod-warning', { hasText: 'Discard' }).click();
 		await o.page.locator(B).waitFor({ state: 'detached' });
 
-		// Spotlight in a 5e campaign, with a typed filter.
+		// Omnisearch in a 5e campaign, with a typed filter.
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
-		const SP = '.modal-container .prompt.nimble-spotlight';
+		const SP = '.modal-container .prompt.nimble-omnisearch';
 		await o.page.locator(`${SP} .prompt-input`).fill('school:evocation fire');
-		await o.waitFor(async () => (await o.page.locator(`${SP} .nimble-cmpx-chip`).count()) >= 1, { what: 'Spotlight chip' });
+		await o.waitFor(async () => (await o.page.locator(`${SP} .nimble-cmpx-chip`).count()) >= 1, { what: 'Omnisearch chip' });
 		await o.page.waitForTimeout(300);
-		await measurePills(o, bad, '5e Spotlight', SP);
+		await measurePills(o, bad, '5e Omnisearch', SP);
 		await o.page.keyboard.press('Escape');
 	} finally {
 		await o.eval(async (app, plugin, C) => {
@@ -5888,22 +5888,22 @@ test('5e monsters: ```5e blocks in both layouts, 5e: references with CR, hover c
 		assert.equal(await o.page.locator('.modal.dnd5e-quick-look button', { hasText: 'Copy to vault' }).count(), 0);
 		await o.page.keyboard.press('Escape');
 
-		// Spotlight in a 5e campaign: 5e monsters with their CR, no Nimble bestiary; Enter is a quick look.
+		// Omnisearch in a 5e campaign: 5e monsters with their CR, no Nimble bestiary; Enter is a quick look.
 		await o.eval(async (app, plugin, C) => { await plugin.campaigns.setActive(C); app.commands.executeCommandById('nimble-gm:spotlight'); }, C);
-		const SP = '.modal-container .prompt.nimble-spotlight';
+		const SP = '.modal-container .prompt.nimble-omnisearch';
 		await o.page.locator(`${SP} .prompt-input`).waitFor();
 		await o.page.locator(`${SP} .prompt-input`).fill('goblin');
-		await o.waitFor(async () => (await o.page.locator(`${SP} .suggestion-item .nimble-spot-name`).allInnerTexts()).includes('Goblin Warrior'), { what: '5e goblin in Spotlight' });
+		await o.waitFor(async () => (await o.page.locator(`${SP} .suggestion-item .nimble-spot-name`).allInnerTexts()).includes('Goblin Warrior'), { what: '5e goblin in Omnisearch' });
 		const spotNames = await o.page.locator(`${SP} .suggestion-item .nimble-spot-name`).allInnerTexts();
 		assert.ok(!spotNames.includes('Goblin Taskmaster'), 'no Nimble monsters in a 5e campaign');
 		assert.match(await o.page.locator(`${SP} .suggestion-item`, { hasText: 'Goblin Warrior' }).first().innerText(), /1\/4[\s\S]*Goblin Warrior[\s\S]*CR 1\/4/);
 		await o.page.locator(`${SP} .suggestion-item`, { hasText: 'Goblin Warrior' }).first().click();
 		await o.page.locator('.modal.dnd5e-quick-look').waitFor({ timeout: 3000 });
-		// Escape from the quick look goes back to Spotlight; a second closes it.
+		// Escape from the quick look goes back to Omnisearch; a second closes it.
 		await o.page.keyboard.press('Escape');
 		await o.page.locator(`${SP} .prompt-input`).waitFor({ timeout: 3000 });
 		await o.page.keyboard.press('Escape');
-		await o.waitFor(async () => (await o.page.locator('.modal-container').count()) === 0, { what: 'Spotlight closed' });
+		await o.waitFor(async () => (await o.page.locator('.modal-container').count()) === 0, { what: 'Omnisearch closed' });
 
 		// Typing `5e: suggests 5e monsters.
 		await o.eval(async (app, plugin, C) => {
@@ -6521,9 +6521,9 @@ test('fights follow the campaign: each campaign keeps its own, and the tracker s
 	}
 });
 
-test('5e: Add to fight from Spotlight and the quick look; "2 goblin warrior" adds two', async (o) => {
+test('5e: Add to fight from Omnisearch and the quick look; "2 goblin warrior" adds two', async (o) => {
 	const C = 'Campaigns/Add Coast';
-	const SP = '.modal-container .prompt.nimble-spotlight';
+	const SP = '.modal-container .prompt.nimble-omnisearch';
 	const count = () => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => c.label));
 	try {
 		await o.eval(async (app, plugin, C) => {
@@ -6536,10 +6536,10 @@ test('5e: Add to fight from Spotlight and the quick look; "2 goblin warrior" add
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
 		await o.eval((app, plugin) => { plugin.runtime('dnd5e').fights.put(undefined); });
 
-		// Spotlight → the Wyvern's quick look → Add to fight.
+		// Omnisearch → the Wyvern's quick look → Add to fight.
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
 		await o.page.locator(`${SP} .prompt-input`).fill('wyvern');
-		await o.waitFor(async () => /Wyvern/.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'Wyvern in Spotlight' });
+		await o.waitFor(async () => /Wyvern/.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'Wyvern in Omnisearch' });
 		await o.page.keyboard.press('Enter');
 		const add = o.page.locator('.modal.dnd5e-quick-look button', { hasText: 'Add to fight' });
 		await add.waitFor({ timeout: 3000 });
@@ -7743,7 +7743,7 @@ test('5e imports: a D&D Beyond character brings its class into the compendium as
 	}
 });
 
-test('5e compendium: spells, items and classes for both editions, 5e:spell: references, autocomplete, Spotlight', async (o) => {
+test('5e compendium: spells, items and classes for both editions, 5e:spell: references, autocomplete, Omnisearch', async (o) => {
 	const C = 'Campaigns/Sword Coast';
 	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
 	try {
@@ -7822,14 +7822,14 @@ test('5e compendium: spells, items and classes for both editions, 5e:spell: refe
 		await o.page.waitForTimeout(200);
 		assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), 'Cast `5e:spell:Magic Missile`');
 
-		// Spotlight finds spells in a 5e campaign.
+		// Omnisearch finds spells in a 5e campaign.
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
-		const SP = '.modal-container .prompt.nimble-spotlight';
+		const SP = '.modal-container .prompt.nimble-omnisearch';
 		await o.page.locator(`${SP} .prompt-input`).fill('magic missile');
-		await o.waitFor(async () => /Magic Missile[\s\S]*Spell/i.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'spell in Spotlight' });
-		// Typed filters work in a 5e campaign's Spotlight too: a chip in 5e's words, 5e entries that match.
+		await o.waitFor(async () => /Magic Missile[\s\S]*Spell/i.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'spell in Omnisearch' });
+		// Typed filters work in a 5e campaign's Omnisearch too: a chip in 5e's words, 5e entries that match.
 		await o.page.locator(`${SP} .prompt-input`).fill('school:evocation ');
-		await o.waitFor(async () => (await cmpChips(o, SP)).length === 1, { timeout: 3000, what: 'the School chip in 5e Spotlight' });
+		await o.waitFor(async () => (await cmpChips(o, SP)).length === 1, { timeout: 3000, what: 'the School chip in 5e Omnisearch' });
 		assert.deepEqual(await cmpChips(o, SP), [['School', 'evocation']]);
 		await o.waitFor(async () => (await o.page.locator(`${SP} .spot-entry .nimble-spot-name`).allInnerTexts()).includes('Fireball'), { timeout: 3000, what: 'Fireball for school:evocation' });
 		const evocation = await o.page.locator(`${SP} .spot-entry .nimble-spot-name`).allInnerTexts();

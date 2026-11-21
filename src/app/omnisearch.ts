@@ -1,4 +1,4 @@
-// Spotlight: one box for everything at the table. Search adversaries, NPCs,
+// Omnisearch: one box for everything at the table. Search adversaries, NPCs,
 // the campaign's notes and conditions, and the player compendium (items,
 // spells, classes, features…); type dice to roll them; run the plugin's
 // commands. Opened with Cmd/Ctrl+K (rebindable under Hotkeys).
@@ -12,9 +12,9 @@
 //
 // The compendium's own dialog does the pickers; this box is for getting anywhere fast.
 //
-// Spotlight knows no game: the campaign's system gives its own rows (monsters,
+// Omnisearch knows no game: the campaign's system gives its own rows (monsters,
 // its compendium), adding several, and its search language for typed filters,
-// through the contract's `spotlight` member (core/spotlight-source.ts).
+// through the contract's `omnisearch` member (core/omnisearch-source.ts).
 
 import { Modal, Notice, Platform, prepareFuzzySearch, setIcon, SuggestModal, TFile } from 'obsidian';
 import type EmberVaultPlugin from '../../main';
@@ -28,13 +28,13 @@ import { applyLook } from '../core/look';
 import type { Suggestion } from '../core/compendium/query';
 import { chooseSelected, pluginCommands, runCommand, setSuggestSelection } from '../core/internals';
 import { portraitOf, renderAvatar } from '../core/npc-card';
-import { parseSpotlight, rankByName, rankSpotlight, SpotlightCandidate, SpotlightQuery } from '../core/spotlight-def';
-import type { SpotlightFilters, SpotlightRow, SpotlightSource } from '../core/spotlight-source';
+import { parseOmnisearch, rankByName, rankOmnisearch, OmnisearchCandidate, OmnisearchQuery } from '../core/omnisearch-def';
+import type { OmnisearchFilters, OmnisearchRow, OmnisearchSource } from '../core/omnisearch-source';
 import type { ConditionDef } from '../core/types';
 
 type Item =
 	| { kind: 'roll'; expression: string }
-	| { kind: 'row'; row: SpotlightRow }
+	| { kind: 'row'; row: OmnisearchRow }
 	| { kind: 'npc'; npc: NpcInfo }
 	| { kind: 'note'; note: NoteRef; where: string }
 	| { kind: 'condition'; condition: ConditionDef }
@@ -47,12 +47,12 @@ const MOD = Platform.isMacOS ? '⌘' : 'Ctrl';
 
 const QUICK_DICE = ['1d20', '1d4', '1d6', '1d8', '1d10', '1d12', '2d6'];
 
-export class SpotlightModal extends SuggestModal<Item> {
-	private q: SpotlightQuery = parseSpotlight('');
+export class OmnisearchModal extends SuggestModal<Item> {
+	private q: OmnisearchQuery = parseOmnisearch('');
 	/** What the campaign's game system puts here: its monsters, its compendium, typed filters. */
-	private source: SpotlightSource | undefined;
+	private source: OmnisearchSource | undefined;
 	private diceRow: HTMLElement | null = null;
-	/** The compendium's search field (chips for filters) on Spotlight's own box. */
+	/** The compendium's search field (chips for filters) on Omnisearch's own box. */
 	private field: FilterField | null = null;
 	/** Re-running the search ourselves (after the field turned text into a chip). */
 	private rerunning = false;
@@ -65,10 +65,10 @@ export class SpotlightModal extends SuggestModal<Item> {
 
 	constructor(private plugin: EmberVaultPlugin, private onClosed?: () => void) {
 		super(plugin.app);
-		this.modalEl.addClass('nimble-spotlight');
-		// The rows are the campaign's game (its monsters, its compendium): Spotlight wears its look.
+		this.modalEl.addClass('nimble-omnisearch');
+		// The rows are the campaign's game (its monsters, its compendium): Omnisearch wears its look.
 		applyLook(this.modalEl, plugin.system().id);
-		this.source = plugin.system().spotlight?.(plugin);
+		this.source = plugin.system().omnisearch?.(plugin);
 		const player = plugin.playerView();
 		this.setPlaceholder(player
 			? 'Search creatures, people, places, spells and items, type 2d6+3 to roll, or > for commands'
@@ -87,7 +87,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		]);
 		// Cmd/Ctrl+Enter is the row's second action.
 		this.scope.register(['Mod'], 'Enter', (e) => { chooseSelected(this, e); return false; });
-		// The key that opens Spotlight also closes it (hotkeys don't reach commands while a dialog is open).
+		// The key that opens Omnisearch also closes it (hotkeys don't reach commands while a dialog is open).
 		// The keypress that opened it can arrive here too, so it's ignored for a moment.
 		const born = Date.now();
 		this.scope.register(['Mod'], 'k', () => { if (Date.now() - born > 150) this.close(); return false; });
@@ -98,9 +98,9 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const filters = this.source?.filters;
 		if (filters) this.chips(filters);
 		// Dice one tap away, without typing.
-		const row = createDiv({ cls: 'nimble-spotlight-dice' });
+		const row = createDiv({ cls: 'nimble-omnisearch-dice' });
 		for (const d of QUICK_DICE) {
-			const b = row.createEl('button', { cls: 'nimble-spotlight-die', text: d.replace(/^1d/, 'd'), attr: { 'aria-label': `Roll ${d}`, tabindex: '-1' } });
+			const b = row.createEl('button', { cls: 'nimble-omnisearch-die', text: d.replace(/^1d/, 'd'), attr: { 'aria-label': `Roll ${d}`, tabindex: '-1' } });
 			b.addEventListener('mousedown', (e) => e.preventDefault()); // keep the cursor in the search box
 			b.addEventListener('click', () => this.roll(d, true));
 		}
@@ -109,7 +109,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 	}
 
 	/** The system's typed filters, as chips exactly as in the compendium. */
-	private chips(filters: SpotlightFilters): void {
+	private chips(filters: OmnisearchFilters): void {
 		// The chips sit in the box, before the text.
 		const chipsEl = createDiv({ cls: 'nimble-cmpx-chips nimble-spot-chips' });
 		this.inputEl.before(chipsEl);
@@ -177,7 +177,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 	private suggestionsFor(input: string): Item[] {
 		const f = this.field;
 		const filters = this.source?.filters;
-		// With filters (chips, or one being typed), Spotlight searches the compendium with them: monsters, NPCs, spells, rules…
+		// With filters (chips, or one being typed), Omnisearch searches the compendium with them: monsters, NPCs, spells, rules…
 		if (f && filters && (f.chips.length || f.pending)) {
 			const rows = filters.search(f.query(), 30);
 			// The lookup carries the chips as chips (and a filter still being typed as unfinished).
@@ -188,12 +188,12 @@ export class SpotlightModal extends SuggestModal<Item> {
 	}
 
 	private plainSuggestions(input: string): Item[] {
-		const q = this.q = parseSpotlight(input);
+		const q = this.q = parseOmnisearch(input);
 		if (q.roll) return [{ kind: 'roll', expression: q.roll }];
 		if (q.commandsOnly) return this.commands(q.text, 40);
 		if (!q.text) return this.home();
 
-		const asItems = (rows: SpotlightRow[]): Item[] => rows.map(row => ({ kind: 'row', row }));
+		const asItems = (rows: OmnisearchRow[]): Item[] => rows.map(row => ({ kind: 'row', row }));
 		// "3 goblin" is about adding monsters, where the game adds them (not for players).
 		const adding = q.counted ? this.source?.adding?.(q) : undefined;
 		if (adding) return asItems(adding);
@@ -204,15 +204,15 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const lookup = this.lookup(input.trim());
 		if (res.only) return [...asItems(res.rows), ...lookup];
 
-		// One list, ranked by how well each name matches, whatever kind of thing it is (rankSpotlight).
+		// One list, ranked by how well each name matches, whatever kind of thing it is (rankOmnisearch).
 		// Ties go to adversaries, then people, places, rules, the compendium, commands.
-		const found: SpotlightCandidate<Item>[] = res.rows.map(row => ({ item: { kind: 'row', row }, names: row.names, others: row.others, order: row.order }));
+		const found: OmnisearchCandidate<Item>[] = res.rows.map(row => ({ item: { kind: 'row', row }, names: row.names, others: row.others, order: row.order }));
 		for (const npc of this.npcs()) found.push({ item: { kind: 'npc', npc }, names: [npc.name, ...npc.aliases], order: 1 });
 		for (const n of this.notes()) found.push({ item: n, names: [n.note.title], others: [n.note.area ? `${n.note.area} ${n.note.title}` : ''], order: 2 });
 		const conditions = [...this.plugin.system().conditions(this.plugin.edition()), ...this.plugin.settings.customConditions];
 		for (const condition of conditions.filter(c => !c.auto)) found.push({ item: { kind: 'condition', condition }, names: [condition.name], order: 3 });
 		for (const c of this.commands(q.text, 8)) if (c.kind === 'command') found.push({ item: c, names: [c.name], order: 5 });
-		return [...rankSpotlight(found, q.text), ...lookup];
+		return [...rankOmnisearch(found, q.text), ...lookup];
 	}
 
 	/** With nothing typed: what's most useful right now. */
@@ -350,12 +350,12 @@ export class SpotlightModal extends SuggestModal<Item> {
 	/** Choosing a hint or a kept-open roll shouldn't close the box. */
 	selectSuggestion(i: Item, evt: MouseEvent | KeyboardEvent): void {
 		const mod = evt.metaKey || evt.ctrlKey;
-		// A filter becomes a chip (Spotlight stays open); Enter on a value typed for a waiting chip finishes it as typed.
+		// A filter becomes a chip (Omnisearch stays open); Enter on a value typed for a waiting chip finishes it as typed.
 		if (i.kind === 'filter') { this.field?.apply(i.s); return; }
 		if (this.field?.pending && i.kind !== 'lookup') { this.field.commit(); return; }
 		if (i.kind === 'hint') { this.fill(i.fill); return; }
 		if (i.kind === 'roll' && mod) { this.roll(i.expression, true); return; }
-		// The row's second action, keeping Spotlight open (Nimble: add and keep searching, to build a fight in one go).
+		// The row's second action, keeping Omnisearch open (Nimble: add and keep searching, to build a fight in one go).
 		if (i.kind === 'row' && mod && i.row.alt) { i.row.alt(); this.fill(''); return; }
 		super.selectSuggestion(i, evt);
 	}
@@ -382,7 +382,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		}
 	}
 
-	/** Type `text` into the box as if typed (coming back to Spotlight). */
+	/** Type `text` into the box as if typed (coming back to Omnisearch). */
 	setQuery(text: string): void {
 		if (this.field) this.field.set(text);
 		else this.inputEl.value = text;
@@ -392,7 +392,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 
 	/**
 	 * Something opened from here (a card, a quick look, the compendium):
-	 * closing it with Escape comes back to Spotlight with the same search, so
+	 * closing it with Escape comes back to Omnisearch with the same search, so
 	 * you can look at the next result. Closing it any other way doesn't.
 	 */
 	private escapeBack(modal: Modal): void {
@@ -414,7 +414,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 			close();
 			window.setTimeout(() => {
 				win.removeEventListener('keydown', onKey, true);
-				if (escaped) this.plugin.openSpotlight(query);
+				if (escaped) this.plugin.openOmnisearch(query);
 			}, 0);
 		};
 	}
@@ -431,7 +431,7 @@ export class SpotlightModal extends SuggestModal<Item> {
 		const r = this.plugin.rollDice(expression, '');
 		if (!stay || !r) return;
 		// Kept open: show the last result where the eyes already are.
-		let out = this.diceRow?.querySelector<HTMLElement>('.nimble-spotlight-result');
-		if (!out && this.diceRow) out = this.diceRow.createSpan({ cls: 'nimble-spotlight-result', attr: { 'aria-live': 'polite' } });
+		let out = this.diceRow?.querySelector<HTMLElement>('.nimble-omnisearch-result');
+		if (!out && this.diceRow) out = this.diceRow.createSpan({ cls: 'nimble-omnisearch-result', attr: { 'aria-live': 'polite' } });
 		out?.setText(`${r.expression} → ${r.total}${r.detail && r.detail !== String(r.total) ? `  (${r.detail})` : ''}`);
 	}}

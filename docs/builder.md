@@ -54,7 +54,7 @@ attacks:
 
 ## Opening it
 
-- **New monster…**, **New spell…** or **New item…** in the command palette or [Spotlight](spotlight.md).
+- **New monster…**, **New spell…** or **New item…** in the command palette or [Omnisearch](omnisearch.md).
 - The **+** button in the [compendium](compendium.md)'s search bar opens it on the tab you're on: Spells makes a spell, Items an item.
 - On a monster's page in the compendium, **Use as a template** starts a new monster from that one. Spells and items have it too, and every builder's first step has **Start from** to search for one to copy.
 - `/new-monster`, `/new-spell` or `/new-item` in a note builds it right there: the block goes where you typed the slash.

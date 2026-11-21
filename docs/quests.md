@@ -10,7 +10,7 @@ New campaigns come with a **Quests** folder. Make a quest with any of these:
 
 - the **+** on the Quests folder in the [Campaign panel](campaigns.md)
 - **New quest** on the **Campaign** heading's **+**
-- the **New quest…** command, in the command palette or [Spotlight](spotlight.md)
+- the **New quest…** command, in the command palette or [Omnisearch](omnisearch.md)
 
 A quest made from a chapter's **+** is still saved in the Quests folder, so all your quests stay in one list. A folder called Quest log, Missions, Jobs or Bounties works the same way as Quests.
 

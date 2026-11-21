@@ -22,7 +22,7 @@ import { registerTrackerFollow } from './src/core/tracker/follow';
 import { registerNoteCard } from './src/core/note-card';
 import { NpcLinker } from './src/core/npc-links';
 import { npcLivePreview } from './src/core/npc-live-preview';
-import { SpotlightModal } from './src/app/spotlight';
+import { OmnisearchModal } from './src/app/omnisearch';
 import { registerTables, styleTablesIn } from './src/core/tables';
 import { registerTooltips, watchTooltips } from './src/core/tooltips';
 import { canRoll3d, dice3dLastStats, dice3dSupported, diceForRoll, landedWithin, roll3d, warm3d } from './src/core/dice3d';
@@ -237,9 +237,10 @@ export default class EmberVaultPlugin extends Plugin {
 
 
 	private registerCommands(): void {
-		// Spotlight: search and actions in one box. Any hotkey can be set for it; Cmd/Ctrl+K is shared with Insert link (see shareInsertLinkKey).
-		this.addCommand({ id: 'spotlight', name: 'Spotlight: search adversaries, roll dice and more', icon: 'search', callback: () => this.toggleSpotlight() });
-		this.app.workspace.onLayoutReady(() => { this.shareInsertLinkKey(); this.offerSpotlightKey(); });
+		// Omnisearch: search and actions in one box. Any hotkey can be set for it; Cmd/Ctrl+K is shared with Insert link (see shareInsertLinkKey).
+		// Its id is still 'spotlight', its first name: hotkeys people have set are saved against it.
+		this.addCommand({ id: 'spotlight', name: 'Omnisearch: search adversaries, roll dice and more', icon: 'search', callback: () => this.toggleOmnisearch() });
+		this.app.workspace.onLayoutReady(() => { this.shareInsertLinkKey(); this.offerOmnisearchKey(); });
 		// GM tools are left out of the palette while you're in a campaign you play in.
 		const gm = (fn: () => void) => (checking: boolean) => {
 			if (this.playerView()) return false;
@@ -287,20 +288,20 @@ export default class EmberVaultPlugin extends Plugin {
 		this.addCommand({ id: 'previous-scene', name: 'Previous scene', checkCallback: stepCmd(-1) });
 	}
 
-	private spotlight: SpotlightModal | null = null;
+	private omnisearch: OmnisearchModal | null = null;
 
-	/** Open Spotlight with `query` already typed (coming back to it from something it opened). */
-	openSpotlight(query = ''): void {
-		if (this.spotlight) return;
-		const modal = this.spotlight = new SpotlightModal(this, () => { if (this.spotlight === modal) this.spotlight = null; });
+	/** Open Omnisearch with `query` already typed (coming back to it from something it opened). */
+	openOmnisearch(query = ''): void {
+		if (this.omnisearch) return;
+		const modal = this.omnisearch = new OmnisearchModal(this, () => { if (this.omnisearch === modal) this.omnisearch = null; });
 		modal.open();
 		if (query) modal.setQuery(query);
 	}
 
-	/** Open Spotlight, or close it if it's already up. */
-	toggleSpotlight(): void {
-		if (this.spotlight) { this.spotlight.close(); return; }
-		const modal = this.spotlight = new SpotlightModal(this, () => { if (this.spotlight === modal) this.spotlight = null; });
+	/** Open Omnisearch, or close it if it's already up. */
+	toggleOmnisearch(): void {
+		if (this.omnisearch) { this.omnisearch.close(); return; }
+		const modal = this.omnisearch = new OmnisearchModal(this, () => { if (this.omnisearch === modal) this.omnisearch = null; });
 		modal.open();
 	}
 
@@ -310,7 +311,7 @@ export default class EmberVaultPlugin extends Plugin {
 	 * checkCallback (the macOS menu item only shows the key; Obsidian ignores menu
 	 * clicks that come from a modified accelerator). So that one command is wrapped:
 	 * with the setting on and no text selected (an empty link is all it would
-	 * insert), it opens Spotlight; with text selected it makes the link as always.
+	 * insert), it opens Omnisearch; with text selected it makes the link as always.
 	 * Undone when the plugin unloads, and it changes none of the user's hotkeys.
 	 */
 	private shareInsertLinkKey(): void {
@@ -319,34 +320,34 @@ export default class EmberVaultPlugin extends Plugin {
 		if (!cmd || !original) return;
 		const wantsLink = () => {
 			const editor = this.app.workspace.activeEditor?.editor;
-			return !this.spotlight && !!editor && editor.hasFocus() && editor.somethingSelected();
+			return !this.omnisearch && !!editor && editor.hasFocus() && editor.somethingSelected();
 		};
 		const wrapped = (checking: boolean): boolean | void => {
 			if (!this.settings.spotlightKey || wantsLink()) return original.call(cmd, checking);
-			if (!checking) this.toggleSpotlight();
+			if (!checking) this.toggleOmnisearch();
 			return true;
 		};
 		cmd.checkCallback = wrapped;
 		this.register(() => { if (cmd.checkCallback === wrapped) cmd.checkCallback = original; });
 	}
 
-	/** Once, after the update that adds Spotlight: offer Cmd/Ctrl+K rather than taking it. */
-	private offerSpotlightKey(): void {
+	/** Once, after the update that adds Omnisearch: offer Cmd/Ctrl+K rather than taking it. */
+	private offerOmnisearchKey(): void {
 		if (this.settings.spotlightOffered) return;
 		this.settings.spotlightOffered = true;
 		void this.saveSettings();
 		if (this.settings.spotlightKey) return;
 		const key = Platform.isMacOS ? '⌘K' : 'Ctrl+K';
 		const frag = createFragment((f) => {
-			f.createDiv({ text: 'New in Ember Vault: Spotlight', cls: 'nimble-notice-title' });
-			f.createDiv({ text: `Search adversaries, roll dice and run commands from one box. ${key} is Obsidian's Insert link key; Spotlight can share it (selected text still becomes a link).` });
+			f.createDiv({ text: 'New in Ember Vault: Omnisearch', cls: 'nimble-notice-title' });
+			f.createDiv({ text: `Search adversaries, roll dice and run commands from one box. ${key} is Obsidian's Insert link key; Omnisearch can share it (selected text still becomes a link).` });
 			const row = f.createDiv({ cls: 'nimble-notice-actions' });
 			const use = row.createEl('button', { cls: 'mod-cta', text: `Use ${key}` });
 			use.addEventListener('click', () => {
 				this.settings.spotlightKey = true;
 				void this.saveSettings();
 				this.campaigns.trigger('changed'); // the Campaign panel's search bar shows the key
-				new Notice(`${key} now opens Spotlight. You can turn that off in the plugin's settings.`);
+				new Notice(`${key} now opens Omnisearch. You can turn that off in the plugin's settings.`);
 			});
 			row.createEl('button', { text: 'Not now' });
 		});

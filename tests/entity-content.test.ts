@@ -46,11 +46,11 @@ function buildClass(): Draft {
 		{ name: 'Oil', max: '3×LVL', reset: 'Safe Rest', spend: 'Pour' },
 	];
 	d.states = [{ name: 'Kindle', condition: 'Kindled', feature: 'Kindle' }];
-	d.target = { name: 'Lit Quarry', feature: 'Spotlight' };
+	d.target = { name: 'Lit Quarry', feature: 'Omnisearch' };
 	// Levels
 	levelRow(d, 1)!.features = [
 		{ name: 'Kindle', text: 'As an action, you become Kindled until the end of the encounter.' },
-		{ name: 'Spotlight', text: 'Mark one creature you can see. It can\'t hide from you.', uses: 'WIL' },
+		{ name: 'Omnisearch', text: 'Mark one creature you can see. It can\'t hide from you.', uses: 'WIL' },
 	];
 	levelRow(d, 2, true)!.features.push({ name: 'Wick Lore', text: 'You learn the old wick-craft.', choose: { from: ['Wicks'], count: 1 } });
 	setSubclassLevel(d, 3);
@@ -159,7 +159,7 @@ describe('a class\'s levels as the builder edits them', () => {
 	it('the check says what each level grants, as Level up will ask it', () => {
 		const { comp } = withDraft(books, 'class', buildClass());
 		const rows = Object.fromEntries(levelRows(comp, 'Lanternkeeper').map(r => [r.level, r.grants.map(g => `${g.kind}:${g.text}`)]));
-		expect(rows[1]).toEqual(['feature:Kindle', 'feature:Spotlight', 'uses:Spotlight: uses per Safe Rest', 'die:Wick Dice: d6', 'state:Kindle', 'target:Lit Quarry']);
+		expect(rows[1]).toEqual(['feature:Kindle', 'feature:Omnisearch', 'uses:Omnisearch: uses per Safe Rest', 'die:Wick Dice: d6', 'state:Kindle', 'target:Lit Quarry']);
 		expect(rows[2]).toEqual(['feature:Tier 1 Spells', 'feature:Wick Lore', 'pick:Choose 1 · Wicks', 'tier:Tier 1 spells', 'mana:Mana']);
 		expect(rows[3]).toEqual(['subclass:Choose a subclass']);
 		expect(rows[4]).toEqual(['feature:Tier 2 Spells', 'feature:Steady Hand', 'stat:+1 WIL or DEX', 'tier:Tier 2 spells']);
@@ -205,7 +205,7 @@ describe('a hero made from a built class, subclass, ancestry and background', ()
 		expect(s.skills.find(k => k.name === 'Perception')?.total).toBe(s.stats.WIL + 2);
 		expect(s.manaMax).toBe(0);
 		const rows = classPanelRows(s);
-		expect(rows.map(r => [r.kind, r.label])).toEqual([['target', 'Lit Quarry'], ['dice', 'Wick Dice'], ['state', 'Kindle'], ['number', 'Oil'], ['uses', 'Spotlight']]);
+		expect(rows.map(r => [r.kind, r.label])).toEqual([['target', 'Lit Quarry'], ['dice', 'Wick Dice'], ['state', 'Kindle'], ['number', 'Oil'], ['uses', 'Omnisearch']]);
 		expect(rows.find(r => r.kind === 'dice')).toMatchObject({ sides: 6, rolledWhen: 'gained', max: 2 });
 		expect(rows.find(r => r.kind === 'state')).toMatchObject({ condition: 'Kindled', dice: ['Wick Dice'] });
 		expect(rows.find(r => r.kind === 'number')).toMatchObject({ spend: 'Pour', max: 3 });

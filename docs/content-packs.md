@@ -19,8 +19,8 @@ The file is saved in `Ember Vault/Content` (change the folder in settings). You 
 
 Whatever a pack adds goes into the compendium, tagged with the pack's name, and works like the books' own:
 
-- **Nimble:** New character and Level up offer the pack's classes, subclasses, ancestries, backgrounds and options; character sheets read them; its monsters are in the compendium, `nimble:` references, the encounter builder and **Add to fight**; its spells and items are in `nimble:spell:` references, autocomplete, slash commands and Spotlight. A subclass joins its class, and an option joins its class's list (a new Savage Arsenal ability shows up when a Berserker levels up).
-- **5e:** monsters, spells, magic items, equipment, feats, backgrounds, species, classes and subclasses, in `5e:` references, autocomplete, slash commands, Spotlight, the compendium, character sheets, **New character** and **Level up**. A subclass joins its class.
+- **Nimble:** New character and Level up offer the pack's classes, subclasses, ancestries, backgrounds and options; character sheets read them; its monsters are in the compendium, `nimble:` references, the encounter builder and **Add to fight**; its spells and items are in `nimble:spell:` references, autocomplete, slash commands and Omnisearch. A subclass joins its class, and an option joins its class's list (a new Savage Arsenal ability shows up when a Berserker levels up).
+- **5e:** monsters, spells, magic items, equipment, feats, backgrounds, species, classes and subclasses, in `5e:` references, autocomplete, slash commands, Omnisearch, the compendium, character sheets, **New character** and **Level up**. A subclass joins its class.
 
 When two things share a name, the closest one wins: a note in your vault (your own content), then a pack, then the books.
 

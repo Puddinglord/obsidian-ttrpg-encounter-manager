@@ -13,7 +13,7 @@ import { evIcon } from '../../core/icons';
 import { appendRichText } from '../../core/markdown';
 import { wireWikiLinks } from '../../core/wiki-links';
 import { BattleEditOptions, battleEditButton, battleFacts, battleNotesText, outcomePill, writeEncounterBlock } from '../../core/battle-notes';
-import { rankByName } from '../../core/spotlight-def';
+import { rankByName } from '../../core/omnisearch-def';
 
 /** The battle notes dialog in 5e's look, the monsters a note can see suggested as you type a foe. */
 export const battleEdit5e = (rt: Dnd5eRuntime, path?: string): BattleEditOptions => ({

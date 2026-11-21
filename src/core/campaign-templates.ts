@@ -108,7 +108,7 @@ export function sceneNote(name: string, order: number): string {
 }
 
 /**
- * An NPC. The properties are the quick facts the card and Spotlight show; the
+ * An NPC. The properties are the quick facts the card and Omnisearch show; the
  * headings below are prompts, all optional. A player's version is written
  * from the outside: what we've seen and suspect, not their secrets.
  */

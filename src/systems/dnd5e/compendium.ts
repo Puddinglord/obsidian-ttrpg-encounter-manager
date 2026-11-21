@@ -170,7 +170,7 @@ export function compendium5e(edition: Dnd5eEdition): Compendium5e {
 export type Kind5e = 'spell' | 'item' | 'equipment' | 'class' | 'subclass' | 'species' | 'background' | 'feat' | 'rule' | 'condition';
 
 /** What `5e:<kind>:Name` may say, and each kind's words. */
-/** Each kind's words; `icon` for the editor's chrome (references, the slash menu), `glyph` for the game's own surfaces (the compendium, Spotlight). */
+/** Each kind's words; `icon` for the editor's chrome (references, the slash menu), `glyph` for the game's own surfaces (the compendium, Omnisearch). */
 export const KIND5E: Record<Kind5e, { label: string; plural: string; icon: string; glyph: string; words: string[] }> = {
 	spell: { label: 'Spell', plural: 'Spells', icon: 'wand-2', glyph: 'ev-spell', words: ['spell', 'spells'] },
 	item: { label: 'Magic item', plural: 'Magic items', icon: 'gem', glyph: 'ev-diamond', words: ['item', 'items', 'magic'] },

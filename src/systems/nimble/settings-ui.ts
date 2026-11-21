@@ -71,7 +71,7 @@ export function nimbleSettingsSections(plugin: EmberVaultPlugin): SettingsSectio
 			},
 			{
 				name: 'Include expansion drafts',
-				desc: 'The draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells in New character, sheet pickers and Spotlight. Drafts are marked as such wherever they show. A hero who already plays a draft class keeps their whole sheet either way.',
+				desc: 'The draft classes (Manawright, Hexbinder, Psion, Revenant) and their spells in New character, sheet pickers and Omnisearch. Drafts are marked as such wherever they show. A hero who already plays a draft class keeps their whole sheet either way.',
 				render: toggle(() => s.compendiumDrafts, v => { s.compendiumDrafts = v; }, () => { setCompendiumDrafts(s.compendiumDrafts); plugin.rerenderNotes(); }),
 			},
 			{

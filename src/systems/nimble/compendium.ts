@@ -201,7 +201,7 @@ export interface CompendiumData {
 	rules?: Rules;
 }
 
-/** What the pickers and Spotlight search over. Options and class/subclass features are both 'feature'. */
+/** What the pickers and Omnisearch search over. Options and class/subclass features are both 'feature'. */
 export type CompendiumKind = 'class' | 'subclass' | 'ancestry' | 'background' | 'item' | 'spell' | 'feature' | 'boon';
 export const COMPENDIUM_KINDS: CompendiumKind[] = ['item', 'spell', 'feature', 'class', 'subclass', 'ancestry', 'background', 'boon'];
 

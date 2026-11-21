@@ -129,7 +129,7 @@ Anything you leave for later (a subclass, a pick, a spell) can be chosen from th
 
 **Add item**, **Add spell** and **Add feature** open the [compendium](compendium.md#the-compendium-as-a-dialog) as a dialog, set to what you're adding. Your class's own options and your schools come first, and things already on the sheet are tagged **Added**. Enter adds and closes; Cmd/Ctrl+Enter adds and keeps it open, for packing a whole bag at once. Anything that isn't in the books can be added by name as your own.
 
-[Spotlight](spotlight.md) also finds compendium entries on its own: type "flame dart" or "battleaxe" anywhere and press Enter for the card.
+[Omnisearch](omnisearch.md) also finds compendium entries on its own: type "flame dart" or "battleaxe" anywhere and press Enter for the card.
 
 ## The Character panel
 

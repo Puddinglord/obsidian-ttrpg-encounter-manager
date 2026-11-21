@@ -1,7 +1,7 @@
 // Autocomplete for `5e:` references: type `5e:gob` and pick a monster.
 
 import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile } from 'obsidian';
-import { rankByName } from '../../core/spotlight-def';
+import { rankByName } from '../../core/omnisearch-def';
 import type { Dnd5eRuntime } from './runtime';
 import type { Dnd5eEntry } from './types';
 import { Hit5e, KIND5E, kindFromWord } from './compendium';

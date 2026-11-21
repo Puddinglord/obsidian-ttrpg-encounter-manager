@@ -1,6 +1,6 @@
 // How a compendium entry looks: its name, a line about it, the rules text, and
 // where it comes from (book, page, a Draft badge for playtest books). Used for
-// the sheet's expandable rows, the pickers' previews, Spotlight's card, the
+// the sheet's expandable rows, the pickers' previews, Omnisearch's card, the
 // card modal and the hover preview of `nimble:spell:…` references. Classes and
 // subclasses get a whole page: every level, option group, subclass and FAQ.
 // Rules text goes through appendRichText, never innerHTML.
@@ -62,7 +62,7 @@ const KIND_GLYPH: Record<CompendiumKind, Parameters<typeof evIcon>[0]> = {
 	ancestry: 'users-three', background: 'scroll', boon: 'diamond',
 };
 
-/** The same, in the game's own icons (Phosphor Bold): cards, the compendium's rows, Spotlight. */
+/** The same, in the game's own icons (Phosphor Bold): cards, the compendium's rows, Omnisearch. */
 export function compendiumGlyph(h: CompendiumHit): string {
 	if (h.kind === 'item') {
 		const c = (h.entry as Item).category;

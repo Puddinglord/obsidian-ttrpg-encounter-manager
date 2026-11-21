@@ -265,7 +265,7 @@ export class Dnd5eRuntime {
 	actions(entry: Dnd5eEntry, sourcePath: string, close?: () => void): Statblock5eAction[] {
 		const plugin = this.plugin;
 		const out: Statblock5eAction[] = [];
-		// Wherever a monster shows up (quick look, Spotlight, hover card), the GM can put it in the fight.
+		// Wherever a monster shows up (quick look, Omnisearch, hover card), the GM can put it in the fight.
 		if (!plugin.playerView(sourcePath || undefined)) out.push({ label: 'Add to fight', icon: 'swords', cls: 'mod-cta', onClick: () => { close?.(); plugin.hover.hide(); void this.addToFight(entry); } });
 		if (entry.filePath) out.push({ label: 'Open note', icon: 'file-symlink', onClick: (ev) => { close?.(); plugin.hover.hide(); void plugin.app.workspace.openLinkText(entry.filePath, sourcePath, ev.metaKey || ev.ctrlKey); } });
 		else if (entry.bundled) out.push({ label: 'Copy to vault', icon: 'file-plus', onClick: () => { close?.(); plugin.hover.hide(); void this.copyToVault(entry.monster, sourcePath); } });

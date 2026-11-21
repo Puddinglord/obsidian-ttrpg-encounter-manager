@@ -117,7 +117,7 @@ export function registerNimble(plugin: EmberVaultPlugin): void {
 /**
  * Content packs: each campaign's packs (`packs:` on its home note) go on top of the books, a
  * note still beats them. The compendium (and so New character, Level up, the sheet, references,
- * Spotlight, slash commands) reads them through compendium-data's layer; the monster index
+ * Omnisearch, slash commands) reads them through compendium-data's layer; the monster index
  * (the bestiary, `nimble:` references, the encounter builder, Add to fight) through its packs.
  */
 function registerContentPacks(plugin: EmberVaultPlugin, nb: NimbleRuntime): void {

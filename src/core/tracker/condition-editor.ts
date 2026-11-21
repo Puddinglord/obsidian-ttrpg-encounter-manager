@@ -91,7 +91,7 @@ export function firstLine(text: string): string {
 
 /**
  * Keep a condition of your own (settings.customConditions, offered in every
- * game's trackers, the "/" menu and Spotlight), with its timing as the default.
+ * game's trackers, the "/" menu and Omnisearch), with its timing as the default.
  * One by that name already: its timing is updated, its description kept unless
  * it was written from the timing.
  */

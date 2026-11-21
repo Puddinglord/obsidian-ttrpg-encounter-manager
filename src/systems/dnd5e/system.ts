@@ -15,7 +15,7 @@ import { asEdition } from './editions';
 import { createCharacterNote5e } from './new-character';
 import { openNewCharacter5e } from './character-wizard';
 import { dnd5eSlashCommands } from './slash';
-import { dnd5eSpotlight } from './spotlight';
+import { dnd5eOmnisearch } from './omnisearch';
 import { BLOCKS_5E, KINDS_5E } from './content';
 import { draw5eContent } from './content-blocks';
 import { importDdbContent } from './import-content-ui';
@@ -38,7 +38,7 @@ export const dnd5eSystem: GameSystem = {
 	// A block's pencil opens 5e's builder on the fields that checked out (content-builders.ts keeps the rest as written).
 	content: { kinds: KINDS_5E, blocks: BLOCKS_5E, card: draw5eContent, importFrom: importDdbContent, editSeed: (e) => ({ entry: e.value }) },
 	slashCommands: dnd5eSlashCommands,
-	spotlight: dnd5eSpotlight,
+	omnisearch: dnd5eOmnisearch,
 	settingsSections: settingsSections5e,
 	ruleTerms: (_plugin, path) => ruleTerms(ruleTerms5e(dnd5e().edition(path))),
 	ruleTermPage(_plugin, term, path) {

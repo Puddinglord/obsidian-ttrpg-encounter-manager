@@ -1,10 +1,10 @@
-// Nimble in Spotlight (app/spotlight.ts): adversaries (Enter a quick look,
+// Nimble in Omnisearch (app/omnisearch.ts): adversaries (Enter a quick look,
 // Cmd/Ctrl+Enter adds one to the encounter, "3 goblin" adds three), the player
 // compendium (spells, items, features…), and the compendium's search language
 // for typed filters ("school:fire", "tier:cantrip").
 
 import type EmberVaultPlugin from '../../../main';
-import { compendiumFilters, SpotlightRow, SpotlightSource } from '../../core/spotlight-source';
+import { compendiumFilters, OmnisearchRow, OmnisearchSource } from '../../core/omnisearch-source';
 import { CompendiumHit, KIND_LABEL } from './compendium';
 import { compendiumEntries } from './compendium-browser';
 import { CompendiumCardModal, compendiumGlyph, CONDITION_GLYPH } from './compendium-card';
@@ -18,14 +18,14 @@ import { nimble } from './runtime';
 import { describeMonster } from './suggest';
 import type { MonsterIndexEntry } from './types';
 
-export function nimbleSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
+export function nimbleOmnisearch(plugin: EmberVaultPlugin): OmnisearchSource {
 	// Players look monsters up; they don't add them to fights.
 	const player = plugin.playerView();
 	const add = (e: MonsterIndexEntry, count: number) => void nimble().addToEncounter(e.monster, e.filePath || undefined, count);
 
-	const monsterRow = (entry: MonsterIndexEntry, count: number, adding: boolean): SpotlightRow => {
+	const monsterRow = (entry: MonsterIndexEntry, count: number, adding: boolean): OmnisearchRow => {
 		const m = entry.monster;
-		const look: SpotlightRow['look'] = plugin.hideStats(entry.filePath)
+		const look: OmnisearchRow['look'] = plugin.hideStats(entry.filePath)
 			// Player view: what a hero could know, no level.
 			? {
 				kind: 'monster', icon: evIcon('paw-print'), title: entry.name, tag: 'Creature',
@@ -45,7 +45,7 @@ export function nimbleSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
 		};
 	};
 
-	const hitRow = (e: Entry, h: CompendiumHit): SpotlightRow => ({
+	const hitRow = (e: Entry, h: CompendiumHit): OmnisearchRow => ({
 		look: { kind: 'compendium', iconClass: [`cmp-${h.kind}`], icon: compendiumGlyph(h), title: h.name, draft: h.draft, meta: h.detail, tag: KIND_LABEL[h.kind] },
 		names: [e.name], others: [e.detail], order: 4,
 		open: () => {
@@ -56,8 +56,8 @@ export function nimbleSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
 	});
 
 	/** An entry of the compendium's search (with filters): monsters, NPCs, spells, rules… */
-	const entryRow = (e: Entry): SpotlightRow => {
-		const look: SpotlightRow['look'] = { kind: 'entry', title: e.name, meta: e.detail, tag: ENTRY_KIND_LABEL[e.kind] };
+	const entryRow = (e: Entry): OmnisearchRow => {
+		const look: OmnisearchRow['look'] = { kind: 'entry', title: e.name, meta: e.detail, tag: ENTRY_KIND_LABEL[e.kind] };
 		if (e.monster && !plugin.hideStats(e.monster.filePath)) {
 			look.iconClass = ['nimble-spot-level', `role-${monsterRole(e.monster.monster)}`];
 			look.badge = e.badge ?? '–';
@@ -70,7 +70,7 @@ export function nimbleSpotlight(plugin: EmberVaultPlugin): SpotlightSource {
 
 	return {
 		results(q, input) {
-			// Typo matches ("zombieq") are kept: Spotlight shows them only when nothing matches outright.
+			// Typo matches ("zombieq") are kept: Omnisearch shows them only when nothing matches outright.
 			const mons = fuzzyRank(nimble().index.all(), q.text, e => [e.name, e.monster.group ?? ''], q.counted ? 20 : 8, true);
 			const rows = mons.map(x => monsterRow(x.item, q.count, false));
 			// Spells, items, class features…: the compendium's own search (typo-tolerant, typed filters).
