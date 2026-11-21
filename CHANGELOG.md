@@ -60,6 +60,9 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 
 - Importing a D&D Beyond character brings its class, subclass, species, background, feats, spells and items into your compendium, tagged Imported, so a class the SRD doesn't have works in New character, Level up and the sheet. You choose what comes in; what the SRD already has is left out. Import the character again after they level up and their class fills in the levels it was missing, keeping any changes you made. **Import content…** takes a D&D Beyond character's data too and adds just its content. See the [import guide](docs/import.md).
 
+- Nimble: New on the compendium's Classes, Features and Origins tabs opens a builder for a class, subclass, class option, ancestry, background or boon, so you never type a block. A class gets its key stats and saves on the sheet's stat boxes, its gear and magic, its own dice and pools, each level's features and what they grant, its option lists and a book class's scrollwork motif, and beside it you see what each level grants the way Level up will ask. The pencil on any of those blocks opens it in its builder again. See the [homebrew guide](docs/homebrew.md#nimbles-builders).
+- Nimble: a class from a pack or your notes can say in its data what the books say in words: spell tiers, a list's next tier, what a feature gives outright, an Epic Boon, a subclass's swaps and companions, and dice that grow by level. Level up and the sheet read it first. See the [content packs guide](docs/content-packs.md#nimble).
+
 ### Changed
 
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
