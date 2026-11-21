@@ -4,6 +4,12 @@
 
 Nimble's turn order: the heroes act first, in any order, then the monsters. The tracker shows whoever is acting on a big card, with everyone else in a queue below it.
 
+## Where it opens
+
+- **Beside your notes:** **Open encounter tracker**, or **Run** on an encounter block, opens it in the right sidebar.
+- **As a page:** the swords icon in the left ribbon, or **Open encounter tracker in a tab**, opens it in a tab of its own, centred like a note. Good for a second screen at the table.
+- **From the tracker:** its **⋯** menu has **Open in a tab** (or **Open in the sidebar** when it's already a page). Both show the same fight and stay in step.
+
 ## Starting a fight
 
 **Run** on an [encounter block](encounters.md) loads its monsters and your party. You can also start from the tracker itself: **+** adds monsters, and the people button adds the party.

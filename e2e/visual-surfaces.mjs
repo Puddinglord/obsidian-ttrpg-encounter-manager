@@ -325,6 +325,16 @@ const nimble = [
 			st.setActing(enc.id, by('Brakka').id);
 		}),
 	},
+	// The tracker as a page in a tab (the ribbon, or Open in a tab from its menu).
+	{
+		name: 'tracker-tab', mode: 'window', widths: [700, 1200], root: `.workspace-split.mod-root ${T}`,
+		setup: async (c) => {
+			await nimbleFight(c, [['Quicksilver Hound', 3]], (st, enc, by) => { st.setHp(enc.id, by('Quicksilver Hound-1').id, 9); st.setActing(enc.id, by('Brakka').id); });
+			await c.eval(async (app, plugin) => { await plugin.openTracker('tab'); app.workspace.rightSplit.collapse(); });
+			await c.page.locator(`.workspace-split.mod-root ${T} .creature-item`).first().waitFor({ timeout: 5000 });
+			await c.wait(400);
+		},
+	},
 	{
 		name: 'tracker-legendary', mode: 'sidebar', side: 'right', root: T,
 		setup: async (c) => {
@@ -569,6 +579,15 @@ const dnd5e = [
 	},
 	// (5e has no Character panel: Open my character opens the character's note, the sheet surfaces above.)
 	{ name: 'tracker', mode: 'sidebar', side: 'right', root: TR5, setup: (c) => fight5e(c) },
+	{
+		name: 'tracker-tab', mode: 'window', widths: [700, 1200], root: '.workspace-split.mod-root .dnd5e-tracker',
+		setup: async (c) => {
+			await fight5e(c);
+			await c.eval(async (app, plugin) => { await plugin.openTracker('tab'); app.workspace.rightSplit.collapse(); });
+			await c.page.locator(`.workspace-split.mod-root ${TR5} .dnd5e-combatant`).first().waitFor({ timeout: 5000 });
+			await c.wait(400);
+		},
+	},
 	{
 		name: 'hp-keypad', mode: 'sidebar', side: 'right', root: '.nimble-hp-pad',
 		setup: async (c) => {

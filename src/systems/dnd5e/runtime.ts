@@ -38,7 +38,7 @@ import { DND5E_COMPENDIUM_VIEW, Dnd5eCompendiumView, Tab } from './compendium-vi
 import { Dnd5eSheet, SHEET_LANG } from './sheet';
 import { applyLook } from '../../core/look';
 import { gameIcon } from '../../core/icons';
-import { anyTrackerLeaf } from '../../core/tracker/follow';
+import { openTrackerLeaf, TrackerPlace } from '../../core/tracker/follow';
 import { addMonster } from './combat';
 
 /** `5e:Goblin` → "Goblin". */
@@ -221,20 +221,9 @@ export class Dnd5eRuntime {
 		return Array.from({ length: d.heroes }, () => d.level);
 	}
 
-	/** Show the 5e tracker in the right sidebar. */
-	async openTracker(): Promise<WorkspaceLeaf | null> {
-		const ws = this.plugin.app.workspace;
-		let leaf: WorkspaceLeaf | null = ws.getLeavesOfType(DND5E_TRACKER_VIEW)[0] ?? null;
-		// Another game's tracker is open: this one takes its place.
-		const other = leaf ? null : anyTrackerLeaf(this.plugin);
-		if (other) { await other.setViewState({ type: DND5E_TRACKER_VIEW, active: true }); leaf = other; }
-		if (!leaf) {
-			leaf = ws.getRightLeaf(false);
-			if (!leaf) return null;
-			await leaf.setViewState({ type: DND5E_TRACKER_VIEW, active: true });
-		}
-		await ws.revealLeaf(leaf);
-		return leaf;
+	/** Show the 5e tracker: the open one, else in the right sidebar; or in a main tab, or the sidebar, when asked. */
+	async openTracker(place?: TrackerPlace): Promise<WorkspaceLeaf | null> {
+		return openTrackerLeaf(this.plugin, DND5E_TRACKER_VIEW, place);
 	}
 
 	/** Show the 5e compendium in a tab, set to the note's (else the active campaign's) edition. */

@@ -18,6 +18,7 @@ import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover'
 import { HeroReaction, openHpCalculator } from './hp-pad';
 import { confirmAction, isTouch, onLongPress } from '../../core/touch';
 import { holdRedraws } from '../../core/hold-redraws';
+import { addPlaceItems } from '../../core/tracker/follow';
 import { HpCommand } from './rules';
 import { openPluginSettings } from '../../core/internals';
 import { slideThumb } from '../../core/segmented';
@@ -209,6 +210,8 @@ export class EncounterTrackerView extends ItemView {
 
 	private encounterMenu(e: MouseEvent, enc: Encounter | null): void {
 		const menu = new Menu();
+		addPlaceItems(menu, this.plugin, this.leaf, ENCOUNTER_VIEW_TYPE);
+		menu.addSeparator();
 		if (enc) {
 			const inCombat = !!enc.phase && enc.phase !== 'setup';
 			if (this.plugin.settings.party.length) {

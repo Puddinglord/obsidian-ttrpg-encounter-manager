@@ -315,7 +315,8 @@ async function capture(s, name, width, theme, phone) {
 
 async function runSurface(s, phone) {
 	if (phone && s.phone === false) return;
-	const widths = phone ? [PHONE_W] : WIDTHS[s.mode].filter(w => !onlyWidths || onlyWidths.includes(w));
+	// A surface can name its own widths (a page, like the tracker in a tab, is worth seeing wide).
+	const widths = phone ? [PHONE_W] : (s.widths ?? WIDTHS[s.mode]).filter(w => !onlyWidths || onlyWidths.includes(w));
 	if (!widths.length) return;
 	// `width`: set it up at that width (a popover or hover card closes when the window or sidebar changes size).
 	const setup = async (width) => {

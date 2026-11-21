@@ -10,6 +10,7 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 
 ### Added
 
+- The encounter tracker opens as a page in a tab: the swords icon in the ribbon, **Open encounter tracker in a tab**, or **Open in a tab** in the tracker's ⋯ menu (which offers the sidebar when it's already a page). A tracker in a tab and one in the sidebar show the same fight. See the [tracker guide](docs/tracker.md#where-it-opens).
 - 5e campaigns, with the 2024 rules (SRD 5.2) or the 2014 rules (SRD 5.1). Pick **Game system** in **New campaign** or **Campaign settings…**; everything else about campaigns works as before. See the new [Playing 5e](docs/5e.md) guide.
 - Both SRD bestiaries (341 and 334 monsters), ```` ```5e ```` stat blocks laid out the way each edition prints them, with clickable attack bonuses, saves, checks and damage, and `` `5e:Goblin` `` references with the CR, a hover card and a quick look. **Copy to vault** makes a book monster your campaign's own. See [Playing 5e](docs/5e.md#monsters).
 - 5e encounters: an encounter block in a 5e campaign shows XP and difficulty by its rules (2024's XP budget, or 2014's thresholds and multipliers), and **Run** starts the fight in a 5e combat tracker with initiative order, turns and rounds, temporary HP, death saves, legendary actions and conditions. See [Playing 5e](docs/5e.md#encounters).

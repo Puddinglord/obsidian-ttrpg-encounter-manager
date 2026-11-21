@@ -80,8 +80,8 @@ export const dnd5eSystem: GameSystem = {
 	encounterBlock(_plugin, def, el, ctx, source) {
 		dnd5e().encounterBlock(def, el, ctx, source);
 	},
-	async openTracker() {
-		await dnd5e().openTracker();
+	async openTracker(_plugin, place) {
+		await dnd5e().openTracker(place);
 	},
 	async openCompendium() {
 		await dnd5e().openCompendium();

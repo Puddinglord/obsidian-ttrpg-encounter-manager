@@ -2245,6 +2245,47 @@ test('adding reveals the tracker even when the sidebar is collapsed', async (o) 
 	}));
 });
 
+test('tracker: the ribbon opens it as a page in a tab; its menu opens it in a tab or the sidebar', async (o) => {
+	const p = o.page;
+	const TYPE = 'nimble-encounter-tracker';
+	// Where each open tracker is: 'tab' (the main area) or 'side'.
+	const where = () => o.eval((app, _p, TYPE) => app.workspace.getLeavesOfType(TYPE).map(l => [app.workspace.leftSplit, app.workspace.rightSplit].includes(l.getRoot()) ? 'side' : 'tab').sort(), TYPE);
+	const TAB = `.workspace-split.mod-root .workspace-leaf-content[data-type="${TYPE}"]`;
+	const SIDE = `.mod-right-split .workspace-leaf-content[data-type="${TYPE}"]`;
+	const menuItems = async (root) => { await p.locator(`${root} .tracker-more`).click(); const items = await p.locator('.menu .menu-item-title').allInnerTexts(); return items; };
+	try {
+		await o.eval((app, _p, TYPE) => app.workspace.getLeavesOfType(TYPE).forEach(l => l.detach()), TYPE);
+		// The ribbon: a page in the main area.
+		await p.locator('.side-dock-ribbon-action[aria-label="Encounter tracker"]').click();
+		await p.locator(TAB).waitFor();
+		assert.deepEqual(await where(), ['tab']);
+		assert.equal(await o.eval((app, _p, TYPE) => app.workspace.getActiveViewOfType ? app.workspace.activeLeaf?.view.getViewType() : null, TYPE), TYPE, 'the tab is in front');
+		// Its menu offers the sidebar; that opens a second tracker beside your notes, showing the same fight.
+		const tabItems = await menuItems(TAB);
+		assert.ok(tabItems.includes('Open in the sidebar') && !tabItems.includes('Open in a tab'), `the tab's menu: ${tabItems.join(', ')}`);
+		await p.locator('.menu .menu-item', { hasText: 'Open in the sidebar' }).click();
+		await p.locator(SIDE).waitFor();
+		assert.deepEqual(await where(), ['side', 'tab']);
+		// The sidebar's menu offers a tab, and goes back to the one that's open rather than making another; so does the ribbon.
+		const sideItems = await menuItems(SIDE);
+		assert.ok(sideItems.includes('Open in a tab') && !sideItems.includes('Open in the sidebar'), `the sidebar's menu: ${sideItems.join(', ')}`);
+		await p.locator('.menu .menu-item', { hasText: 'Open in a tab' }).click();
+		await p.waitForTimeout(300);
+		assert.deepEqual(await where(), ['side', 'tab'], 'no second tab');
+		await p.locator('.side-dock-ribbon-action[aria-label="Encounter tracker"]').click();
+		await p.waitForTimeout(300);
+		assert.deepEqual(await where(), ['side', 'tab'], 'the ribbon brings back the tab');
+		assert.equal(await o.eval((app, _p, TYPE) => app.workspace.getLeavesOfType(TYPE).find(l => l.getRoot() === app.workspace.rootSplit) === app.workspace.activeLeaf, TYPE), true);
+		// The page draws the tracker at the main area's width.
+		assert.ok(await p.locator(`${TAB} .tracker-more`).isVisible());
+		assert.ok((await p.locator(TAB).boundingBox()).width > 600, 'a page, not a sidebar');
+	} finally {
+		// Leave one tracker, in the sidebar, as the other tests expect.
+		await o.eval((app, _p, TYPE) => app.workspace.getLeavesOfType(TYPE).filter(l => l.getRoot() === app.workspace.rootSplit).forEach(l => l.detach()), TYPE);
+		await o.eval((app, plugin) => plugin.openTracker('side'));
+	}
+});
+
 test('compact style and dice toggle apply to open notes', async (o) => {
 	await o.openFile('Bestiary/Goblin.md');
 	await o.eval(async (app, plugin) => { plugin.settings.statblockStyle = 'compact'; plugin.settings.clickableDice = false; plugin.rerenderNotes(); });

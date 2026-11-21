@@ -73,8 +73,8 @@ export const nimbleSystem: GameSystem = {
 	register(plugin) {
 		registerNimble(plugin);
 	},
-	async openTracker() {
-		await nimble().activateEncounterView();
+	async openTracker(_plugin, place) {
+		await nimble().activateEncounterView(true, place);
 	},
 	async openCompendium() {
 		await nimble().openBestiary();

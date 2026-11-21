@@ -754,6 +754,9 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 	font-family: var(--ev-font-ui); font-size: 14px; line-height: 20px;
 	container-type: inline-size;
 }
+/* The tracker as a page in a tab (the ribbon, Open in a tab): one column the width of a wide note, centred, so a row's
+   name stays near its HP and Damage | Heal don't stretch across the screen. Its container queries see the column. */
+.workspace-split.mod-root .view-content.ev-tracker { padding-left: max(0px, calc((100% - 920px) / 2)); padding-right: max(0px, calc((100% - 920px) / 2)); }
 .ev-tracker button { cursor: pointer; }
 .ev-tracker .ev-tracker-body { flex: 1 0 auto; padding-bottom: 14px; }
 .ev-tracker :is(button, [role="button"], [data-flow-row]):focus-visible { outline: 2px solid var(--ev-accent); outline-offset: 1px; box-shadow: none; }

@@ -16,6 +16,7 @@ import { pill } from '../../core/pill';
 import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover';
 import { onLongPress } from '../../core/touch';
 import { holdRedraws } from '../../core/hold-redraws';
+import { addPlaceItems } from '../../core/tracker/follow';
 import { openGameSettings } from '../../core/settings-ui';
 import { isSheetMember, type AppliedCondition, type PartyMember } from '../../core/types';
 import { ConditionEditorOptions, keepCustomCondition, openConditionDetails, openConditionPicker } from '../../core/tracker/condition-editor';
@@ -871,6 +872,8 @@ export class Dnd5eTrackerView extends ItemView {
 	private fightMenu(e: MouseEvent): void {
 		const f = this.fight;
 		const menu = new Menu();
+		addPlaceItems(menu, this.rt.plugin, this.leaf, DND5E_TRACKER_VIEW);
+		menu.addSeparator();
 		menu.addItem(i => i.setTitle('Add the party').setIcon('users').onClick(() => this.addParty()));
 		menu.addItem(i => i.setTitle('Add monster…').setIcon('plus').onClick(() => this.pickMonster()));
 		if (f.combatants.some(c => c.side === 'monster')) menu.addItem(i => i.setTitle('Roll initiative').setIcon('dices').onClick(() => this.change(x => rollInitiative(x))));

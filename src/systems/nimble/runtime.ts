@@ -27,7 +27,7 @@ import { DiceKind, renderStatblock, RenderOptions, StatblockAction } from './ren
 import { monsterRole, shiftMonster } from './rules';
 import { ENCOUNTER_VIEW_TYPE, EncounterTrackerView } from './tracker-view';
 import { MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleCondition, NimbleMonster } from './types';
-import { anyTrackerLeaf } from '../../core/tracker/follow';
+import { openTrackerLeaf, TrackerPlace } from '../../core/tracker/follow';
 
 let runtime: NimbleRuntime | null = null;
 
@@ -295,18 +295,9 @@ export class NimbleRuntime {
 		return leaf?.view instanceof EncounterTrackerView ? leaf.view : null;
 	}
 
-	async activateEncounterView(focus = true): Promise<WorkspaceLeaf | null> {
-		let leaf: WorkspaceLeaf | null = this.app.workspace.getLeavesOfType(ENCOUNTER_VIEW_TYPE)[0] ?? null;
-		// Another game's tracker is open: this one takes its place.
-		const other = leaf ? null : anyTrackerLeaf(this.plugin);
-		if (other) { await other.setViewState({ type: ENCOUNTER_VIEW_TYPE, active: focus }); leaf = other; }
-		if (!leaf) {
-			leaf = this.app.workspace.getRightLeaf(false);
-			if (!leaf) return null;
-			await leaf.setViewState({ type: ENCOUNTER_VIEW_TYPE, active: focus });
-		}
-		if (focus) await this.app.workspace.revealLeaf(leaf);
-		return leaf;
+	/** Show the tracker: the open one, else in the right sidebar; or in a main tab, or the sidebar, when asked. */
+	async activateEncounterView(focus = true, place?: TrackerPlace): Promise<WorkspaceLeaf | null> {
+		return openTrackerLeaf(this.plugin, ENCOUNTER_VIEW_TYPE, place, focus);
 	}
 
 	/** Make sure the tracker is visible (even in a collapsed sidebar) without stealing focus. */

@@ -20,6 +20,7 @@ import type { ContentImport } from '../core/content/import-modal';
 import type { SettingsPart } from '../core/settings';
 import type { SettingsSection } from '../core/settings-ui';
 import type { CombatTokens } from '../core/tracker/tokens';
+import type { TrackerPlace } from '../core/tracker/follow';
 import type { OmnisearchSource } from '../core/omnisearch-source';
 import type { RuleTerm, RuleTerms } from '../core/rule-terms';
 
@@ -93,8 +94,8 @@ export interface GameSystem {
 	register?(plugin: EmberVaultPlugin): void;
 	/** Draw a ```nimble-encounter block in one of this system's campaigns (difficulty by its rules, Run into its tracker). */
 	encounterBlock?(plugin: EmberVaultPlugin, def: EncounterDef, el: HTMLElement, ctx: MarkdownPostProcessorContext, source: string): void;
-	/** Show this system's combat tracker (Open encounter tracker, the ribbon). */
-	openTracker?(plugin: EmberVaultPlugin): Promise<void>;
+	/** Show this system's combat tracker (Open encounter tracker, the ribbon): the open one, or in a main tab or the sidebar when `place` says (core/tracker/follow.ts openTrackerLeaf). */
+	openTracker?(plugin: EmberVaultPlugin, place?: TrackerPlace): Promise<void>;
 	/** Show this system's compendium (Open compendium, the ribbon). */
 	openCompendium?(plugin: EmberVaultPlugin): Promise<void>;
 	/** "/" commands in its campaigns, added to core's base ones (a command with a base command's name replaces it). */

@@ -18,7 +18,7 @@ import { registerMapBlock } from './src/app/map-block';
 import { CampaignStore } from './src/core/campaigns';
 import { registerBoxBlock } from './src/core/box-block';
 import { registerNpcCard } from './src/core/npc-card';
-import { registerTrackerFollow } from './src/core/tracker/follow';
+import { registerTrackerFollow, TrackerPlace } from './src/core/tracker/follow';
 import { registerNoteCard } from './src/core/note-card';
 import { NpcLinker } from './src/core/npc-links';
 import { npcLivePreview } from './src/core/npc-live-preview';
@@ -156,7 +156,8 @@ export default class EmberVaultPlugin extends Plugin {
 
 		this.registerView(CAMPAIGN_VIEW_TYPE, (leaf) => new CampaignView(leaf, this));
 		this.addRibbonIcon('castle', 'Campaign', () => this.openCampaignView());
-		const trackerRibbon = this.addRibbonIcon('swords', 'Encounter tracker', () => void this.openTracker());
+		// The ribbon opens the tracker as a page in the main area; Open encounter tracker (and the blocks) keep it beside your notes.
+		const trackerRibbon = this.addRibbonIcon('swords', 'Encounter tracker', () => void this.openTracker('tab'));
 		// The tracker is a GM tool: its ribbon button hides while you're in a campaign you play in.
 		const syncRibbon = () => trackerRibbon.toggle(!this.playerView());
 		this.registerEvent(this.campaigns.on('changed', syncRibbon));
@@ -248,6 +249,7 @@ export default class EmberVaultPlugin extends Plugin {
 			return true;
 		};
 		this.addCommand({ id: 'open-tracker', name: 'Open encounter tracker', checkCallback: gm(() => void this.openTracker()) });
+		this.addCommand({ id: 'open-tracker-tab', name: 'Open encounter tracker in a tab', checkCallback: gm(() => void this.openTracker('tab')) });
 		this.addCommand({ id: 'open-bestiary', name: 'Open compendium', icon: 'book-open', callback: () => void this.openSystemCompendium() });
 		this.addCommand({ id: 'edit-party', name: 'Edit party…', callback: () => this.openParty() });
 		this.addCommand({ id: 'open-settings', name: 'Open settings', callback: () => this.openSettings() });
@@ -783,9 +785,9 @@ export default class EmberVaultPlugin extends Plugin {
 	}
 
 	/** The active campaign's combat tracker. */
-	async openTracker(): Promise<void> {
+	async openTracker(place?: TrackerPlace): Promise<void> {
 		const system = this.system();
-		if (system.openTracker) await system.openTracker(this);
+		if (system.openTracker) await system.openTracker(this, place);
 		else new Notice(`${system.name} has no tracker yet.`);
 	}
 
