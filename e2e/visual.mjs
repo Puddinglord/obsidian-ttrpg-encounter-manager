@@ -63,6 +63,10 @@ const IGNORE = [
 	{ sel: /nimble-map-pin-inner/, kind: /spill|clipped/, why: 'centred over the badge on purpose' },
 	// Four reaction cards across a narrow sheet: a two-word name ("Opportunity Attack") takes two lines, balanced and centred.
 	{ sel: /^b\.ns-rc-name$/, kind: /wrap/, why: 'a reaction card name in four narrow cards wraps on purpose (text-wrap: balance, centred)' },
+	// The 5e tracker card's name is a heading you can click (role=button), not a button label: in a 260px sidebar or on a
+	// phone a long one ("Goblin Warrior") takes two balanced lines rather than ending in "…".
+	{ surface: /^5e\/tracker$/, sel: /^h2\.dnd5e-combatant-name$/, kind: /wrap/, width: 260, why: "the card's name wraps balanced when the card is this narrow" },
+	{ surface: /^5e\/tracker$/, sel: /^h2\.dnd5e-combatant-name$/, kind: /wrap/, width: 'phone', why: "the card's name wraps balanced when the card is this narrow" },
 ];
 const ignored = (surface, i, width) => IGNORE.find(r => (!r.kind || r.kind.test(i.kind)) && (!r.surface || r.surface.test(surface)) && (!r.sel || r.sel.test(i.sel)) && (!r.detail || r.detail.test(i.detail)) && (!r.width || r.width === width));
 
