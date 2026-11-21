@@ -4115,8 +4115,13 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(fm.hp, 15);
 		await p.waitForFunction((R) => document.querySelector(`${R} .ns-hp-cur`)?.textContent === '15', R);
 
-		// Temp HP soaks first.
-		await sheet.locator('.ns-hp').click();
+		// Temp HP soaks first. The meter animates the hit and then redraws, so a click straight after it can land on
+		// the bar being replaced: click until the keypad is open.
+		await o.waitFor(async () => {
+			if (await p.locator('.nimble-hp-pad').isVisible().catch(() => false)) return true;
+			await sheet.locator('.ns-hp').click({ timeout: 2000 }).catch(() => {});
+			return p.locator('.nimble-hp-pad').isVisible().catch(() => false);
+		}, { what: 'the HP keypad open' });
 		await p.locator('.nimble-hp-pad .hp-pad-mode', { hasText: 'Temp' }).click();
 		await p.keyboard.type('4');
 		await p.keyboard.press('Enter');
