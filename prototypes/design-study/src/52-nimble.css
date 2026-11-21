@@ -13,6 +13,9 @@
 	/* Nimble's own: the book's khaki banners, HP red, mana blue, the Heroes book's ochre for class things */
 	--g-band: #DDD6C4; --g-band-text: #3A352E; --g-hp: #C8321E; --g-hp-soft: #F6E3DE;
 	--g-mana: #2F64AE; --g-mana-soft: #E2EAF5; --g-ochre: #9A6A1E; --g-ochre-soft: #F3E8D2;
+	/* Mana and ochre as a fill under white type (a school tag, a key stat, a chosen chip): deep enough for 4.5:1 in
+	   both themes. The dark theme's --g-mana and --g-ochre are light, for bars and words on a dark ground. */
+	--g-mana-fill: #2F64AE; --g-ochre-fill: #92641B;
 	--g-font-display: "Avenir Next Condensed", "Barlow Condensed", "Roboto Condensed", sans-serif; --g-display-variant: normal; --g-display-weight: 700;
 	--g-font-name: "Vollkorn", "Avenir Next Condensed", Georgia, serif;
 	--g-font-ui: "Avenir Next", "Nunito Sans", -apple-system, sans-serif; --g-font-num: "Avenir Next Condensed", "Barlow Condensed", sans-serif;
