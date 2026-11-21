@@ -1441,7 +1441,7 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 .nimble-map button.nimble-map-btn.is-active:hover { background: var(--ev-accent-hover, var(--interactive-accent-hover)); }
 .nimble-map button.nimble-map-zoom { color: var(--ev-text-2, var(--icon-color)); }
 .nimble-map button.nimble-map-zoom svg { width: 17px; height: 17px; }
-.nimble-map-spacer { flex: 1; }
+.nimble-map-zooms { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; margin-left: auto; }
 .nimble-map-hint { padding: 5px 10px; font: 500 12.5px/18px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); background: var(--ev-surface-2, var(--background-primary-alt)); border-bottom: 1px solid var(--ev-line, var(--background-modifier-border)); }
 .nimble-map-body { display: flex; }
 .nimble-map-viewport { position: relative; flex: 1; height: 480px; overflow: hidden; background: #111; cursor: grab; touch-action: none; resize: vertical; outline: none; }
@@ -1460,9 +1460,12 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 .nimble-map-pin-inner { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%) scale(var(--nimble-map-inv)); transform-origin: 50% 100%; }
 .nimble-map-pin-icon { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--pin); border: 2px solid var(--pin-ring); box-shadow: 0 2px 6px rgba(0,0,0,.45); }
 .nimble-map-pin-icon svg { width: 15px; height: 15px; color: var(--pin-ink); transform: rotate(45deg); }
-.nimble-map-pin-label { order: -1; display: flex; align-items: center; height: 19px; margin-bottom: 3px; padding: 0 6px; border-radius: var(--ev-r-chip, 3px); background: rgb(20 18 16 / 0.82); color: #fff; font: 700 12px/normal var(--ev-font-ui, var(--font-interface)); white-space: nowrap; }
+/* The label sits above its pin, moved in from an edge it would run past (--label-dx) and under the pin near the top (map-block.ts placeLabels). */
+.nimble-map-pin-label { position: absolute; left: 50%; bottom: calc(100% + 3px); transform: translateX(calc(-50% + var(--label-dx, 0px))); display: flex; align-items: center; height: 19px; padding: 0 6px; border-radius: var(--ev-r-chip, 3px); background: rgb(20 18 16 / 0.82); color: #fff; font: 700 12px/normal var(--ev-font-ui, var(--font-interface)); white-space: nowrap; }
 .nimble-map.ev-sys-nimble .nimble-map-pin-label { font: 700 12.5px/normal var(--ev-font-display); letter-spacing: 0.02em; }
 .nimble-map.ev-sys-dnd5e .nimble-map-pin-label { background: rgb(42 10 6 / 0.86); font: 600 14px/normal var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.03em; }
+.nimble-map-pin-label.is-below { top: calc(100% + 4px); bottom: auto; }
+.nimble-map-pin-label.is-off { visibility: hidden; }
 .nimble-map .pin-label-short { display: none; }
 /* Zoomed out, numbered labels ("N5. Gate") shrink to their key until you hover or focus the pin.
    Labels without a key stay whole: Show pin labels always shows something. */
@@ -1490,17 +1493,23 @@ body.is-phone .nimble-issues button.nimble-issue-fix, body.is-tablet .nimble-iss
 .nimble-map .nimble-map-token.role-hero .nimble-map-token-text { background: var(--ev-surface, #fff); color: var(--ev-text, #111); border-color: var(--ev-bar, #4b4743); }
 .nimble-map.ev-sys-dnd5e .nimble-map-token.role-hero .nimble-map-token-text { background: var(--ev-surface); color: var(--ev-accent-text); border-color: var(--ev-accent); }
 .nimble-map .nimble-map-token.role-minion .nimble-map-token-text { width: 26px; height: 26px; font-size: 11px; }
+.nimble-map .nimble-map-token .nimble-map-token-text.is-long { font-size: 10px; letter-spacing: 0; }
+.nimble-map .nimble-map-token.role-minion .nimble-map-token-text.is-long { font-size: 9px; }
 .nimble-map .nimble-map-token.role-legendary .nimble-map-token-text { border-color: var(--ev-ochre, var(--x5-gold, #c89a2c)); box-shadow: 0 0 0 2px rgb(0 0 0 / 0.35), 0 2px 5px rgba(0,0,0,.5); }
 .nimble-map.ev-sys-dnd5e .nimble-map-token.role-legendary .nimble-map-token-text { border-color: var(--x5-gold); }
 .nimble-map-token.is-done { opacity: 0.6; }
 .nimble-map-token.is-down { opacity: 0.35; filter: grayscale(1); }
-.nimble-map-tray { width: 168px; flex-shrink: 0; border-left: 1px solid var(--ev-line, var(--background-modifier-border)); padding: 8px; overflow: auto; max-height: 480px; display: flex; flex-direction: column; gap: 6px; background: var(--ev-surface, var(--background-secondary)); }
-.nimble-map-tray-title { font: 600 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
+/* The tray: as wide as its longest name (within reason), so names keep one line; a longer one ends in … (the token's tooltip has it). */
+.nimble-map-tray { width: max-content; min-width: 168px; max-width: 240px; flex-shrink: 0; border-left: 1px solid var(--ev-line, var(--background-modifier-border)); padding: 8px; overflow: auto; max-height: 480px; display: flex; flex-direction: column; gap: 6px; background: var(--ev-surface, var(--background-secondary)); }
+.nimble-map-tray-head { display: flex; flex-direction: column; min-width: 0; padding: 0 4px 2px; }
+.nimble-map-tray-title { font: 600 12.5px/17px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text, var(--text-normal)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nimble-map-tray-hint { font: 500 12px/16px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
 .nimble-map-tray-empty { font: 500 12.5px/18px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text-2, var(--text-muted)); }
 .nimble-map-token.in-tray { position: static; width: auto; height: auto; display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 2px 4px; border-radius: var(--ev-r-md, 6px); cursor: grab; touch-action: none; }
 .nimble-map-token.in-tray:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); }
 .nimble-map-token.in-tray .nimble-map-token-text { flex: none; }
-.nimble-map-token-name { min-width: 0; font: 600 13px/17px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text, var(--text-normal)); overflow-wrap: anywhere; }
+.nimble-map-token.in-tray { min-width: 0; max-width: 100%; }
+.nimble-map-token-name { min-width: 0; font: 600 13px/17px var(--ev-font-ui, var(--font-interface)); color: var(--ev-text, var(--text-normal)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nimble-map.ev-sys-nimble .nimble-map-token-name { font: italic 800 14px/17px var(--ev-font-name); }
 .nimble-map.ev-sys-dnd5e .nimble-map-token-name { font: 600 15px/17px var(--ev-font-display); font-variant: small-caps; color: var(--ev-accent-text); letter-spacing: 0.02em; }
 .nimble-map-token-ghost { position: fixed; z-index: var(--layer-popover); transform: translate(-50%, -50%); pointer-events: none; padding: 3px 10px; border-radius: 999px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 0.8rem; font-weight: 600; }
@@ -2027,14 +2036,16 @@ body.is-phone .nimble-bestiary .bestiary-side, body.is-phone .nimble-bestiary .b
 /* Maps on phones: a shorter viewport and the token tray underneath */
 body.is-phone .nimble-map-viewport { flex: none; height: 60vh; resize: none; }
 body.is-phone .nimble-map-body, body.is-phone .nimble-map-main { flex-direction: column; }
-body.is-phone .nimble-map-tray { width: auto; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
+body.is-phone .nimble-map-tray { width: auto; min-width: 0; max-width: none; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
+body.is-phone .nimble-map-tray-head { flex: 1 1 100%; }
 /* The same stacking in a narrow pane on any device (sidebar, split, hover preview, Canvas card).
    .nimble-map is the container, so only elements inside it are restyled here. */
 .nimble-map { container-type: inline-size; }
 @container (max-width: 520px) {
 	.nimble-map-viewport { flex: none; }
 	.nimble-map-body { flex-direction: column; }
-	.nimble-map-tray { width: auto; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
+	.nimble-map-tray { width: auto; min-width: 0; max-width: none; max-height: none; border-left: none; border-top: 1px solid var(--background-modifier-border); flex-direction: row; flex-wrap: wrap; }
+	.nimble-map-tray-head { flex: 1 1 100%; }
 }
 
 /* Finger-sized targets wherever the main pointer is a finger */

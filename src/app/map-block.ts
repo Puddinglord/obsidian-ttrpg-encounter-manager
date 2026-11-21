@@ -107,9 +107,10 @@ class MapBlock extends MarkdownRenderChild {
 		}
 		const labels = pill(bar, { tag: 'button', icon: evIcon('tag'), cls: `nimble-map-btn${this.showLabels ? ' is-active' : ''}`, attr: { 'aria-label': 'Show pin labels', 'aria-pressed': String(this.showLabels) } });
 		labels.onclick = () => { this.showLabels = !this.showLabels; this.root?.toggleClass('hide-labels', !this.showLabels); labels.toggleClass('is-active', this.showLabels); labels.setAttr('aria-pressed', String(this.showLabels)); };
-		bar.createDiv({ cls: 'nimble-map-spacer' });
+		// Zoom out, in and Fit at the right, wrapping together so none is left alone on a line.
+		const zooms = bar.createDiv({ cls: 'nimble-map-zooms' });
 		const zoom = (icon: string, label: string, fn: () => void) => {
-			const b = bar.createEl('button', { cls: 'clickable-icon nimble-map-zoom', attr: { 'aria-label': label } });
+			const b = zooms.createEl('button', { cls: 'clickable-icon nimble-map-zoom', attr: { 'aria-label': label } });
 			setIcon(b, gameIcon(icon));
 			b.onclick = fn;
 		};
@@ -138,9 +139,11 @@ class MapBlock extends MarkdownRenderChild {
 		this.img.onload = () => { if (!this.fitted) this.fit(); else this.apply(); };
 		if (this.img.complete && this.img.naturalWidth) this.fit();
 		// Maps in collapsed callouts, hidden tabs or a rotating phone get their size late.
-		const ro = new ResizeObserver(() => { if (!this.fitted) this.fit(); });
+		const ro = new ResizeObserver(() => { if (!this.fitted) this.fit(); else this.placeLabels(); });
 		ro.observe(this.viewport);
 		this.register(() => ro.disconnect());
+		// Labels are measured in the game's display type, which may still be loading.
+		void this.viewport.doc.fonts?.ready.then(() => this.placeLabels());
 		this.wirePanZoom();
 		this.renderPins();
 		this.renderTokens();
@@ -164,6 +167,36 @@ class MapBlock extends MarkdownRenderChild {
 		this.root?.toggleClass('is-zoomed-out', this.scale * (this.img?.naturalWidth || 0) < 1600);
 		// Pins and tokens keep a constant on-screen size.
 		this.stage.style.setProperty('--nimble-map-inv', String(1 / this.scale));
+		this.placeLabels();
+	}
+
+	/**
+	 * Keep every pin's label on the map: moved in from a side it would run past, under its pin when
+	 * the top edge would cut it, and hidden while its pin is out of view.
+	 */
+	private placeLabels(): void {
+		const vw = this.viewport?.clientWidth, vh = this.viewport?.clientHeight;
+		const iw = this.img?.naturalWidth, ih = this.img?.naturalHeight;
+		if (!vw || !vh || !iw || !ih || !this.pinLayer) return;
+		const M = 4;
+		const pins = Array.from(this.pinLayer.children).filter((n): n is HTMLElement => n.instanceOf(HTMLElement));
+		// Every size first, then every change, so a pan lays the map out once rather than once per pin.
+		const sizes = pins.map(el => {
+			const lab = el.querySelector<HTMLElement>('.nimble-map-pin-label');
+			const inner = el.querySelector<HTMLElement>('.nimble-map-pin-inner');
+			return { lab, w: lab?.offsetWidth ?? 0, h: lab?.offsetHeight ?? 0, pinH: inner?.offsetHeight ?? 0 };
+		});
+		pins.forEach((el, i) => {
+			const pin = this.def.pins[i], s = sizes[i];
+			if (!pin || !s?.lab || !s.w) return;
+			const x = this.tx + (pin.x / 100) * iw * this.scale;
+			const y = this.ty + (pin.y / 100) * ih * this.scale;
+			const left = x - s.w / 2;
+			const dx = left < M ? M - left : left + s.w > vw - M ? vw - M - (left + s.w) : 0;
+			s.lab.toggleClass('is-off', x < 0 || x > vw || y < 0 || y - s.pinH > vh);
+			s.lab.toggleClass('is-below', y - s.pinH - 3 - s.h < M);
+			s.lab.style.setProperty('--label-dx', `${Math.round(dx)}px`);
+		});
 	}
 
 	private fit(): void {
@@ -317,6 +350,8 @@ class MapBlock extends MarkdownRenderChild {
 			lab.createSpan({ cls: 'pin-label-full', text: pin.label });
 			if (key) { lab.createSpan({ cls: 'pin-label-short', text: key }); el.addClass('has-key'); }
 			if (!pin.link) el.addClass('is-unlinked');
+			// A zoomed-out label grows from its key to its name under the pointer: keep it on the map.
+			if (key) for (const ev of ['mouseenter', 'mouseleave', 'focus', 'blur']) el.addEventListener(ev, () => window.requestAnimationFrame(() => this.placeLabels()));
 
 			el.addEventListener('mouseover', (event) => {
 				if (!pin.link || this.mode === 'move') return;
@@ -350,6 +385,7 @@ class MapBlock extends MarkdownRenderChild {
 			});
 			this.draggable(el, (x, y) => { pin.x = x; pin.y = y; void this.save(); }, () => this.mode === 'move');
 		});
+		if (this.fitted) this.placeLabels();
 	}
 
 	/**
@@ -480,7 +516,9 @@ class MapBlock extends MarkdownRenderChild {
 			return;
 		}
 		const positions = this.tokenPositions();
-		this.tray.createDiv({ cls: 'nimble-map-tray-title', text: `${fight.name}: drag onto the map` });
+		const head = this.tray.createDiv({ cls: 'nimble-map-tray-head' });
+		head.createDiv({ cls: 'nimble-map-tray-title', text: fight.name, attr: { title: fight.name } });
+		head.createDiv({ cls: 'nimble-map-tray-hint', text: 'Drag onto the map' });
 		for (const c of fight.tokens) {
 			const pos = positions[c.id];
 			if (pos) this.placeToken(c, pos);
@@ -492,7 +530,8 @@ class MapBlock extends MarkdownRenderChild {
 		const el = parent.createDiv({ cls: `nimble-map-token role-${c.role}`, attr: { title: c.title } });
 		if (c.done) el.addClass('is-done');
 		if (c.down) el.addClass('is-down');
-		el.createSpan({ cls: 'nimble-map-token-text', text: c.text });
+		// Three letters ("YRD", "GW2") take a size down to stay inside the disc.
+		el.createSpan({ cls: `nimble-map-token-text${c.text.length > 2 ? ' is-long' : ''}`, text: c.text });
 		c.hover?.(el);
 		return el;
 	}

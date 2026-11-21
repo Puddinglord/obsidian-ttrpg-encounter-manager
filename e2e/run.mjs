@@ -6362,7 +6362,7 @@ test('map tokens come from the campaign\'s game: Nimble\'s encounter, then 5e\'s
 			const n = await trayNames();
 			return n.length === 2 && n.every(x => /^Goblin Warrior/.test(x));
 		}, { what: '5e fighters in the tray' });
-		await o.waitFor(async () => /Bridge: drag onto the map/.test(await o.page.locator(`${M} .nimble-map-tray-title`).innerText().catch(() => '')), { what: 'the 5e fight\'s name over the tray' });
+		await o.waitFor(async () => (await o.page.locator(`${M} .nimble-map-tray-title`).innerText().catch(() => '')) === 'Bridge', { what: 'the 5e fight\'s name over the tray' });
 		// A change in the fight redraws the tokens.
 		await o.eval((app, plugin) => { plugin.runtime("dnd5e").fights.change(f => { f.combatants[0].hp = 0; }); });
 		await o.waitFor(async () => (await o.page.locator(`${M} .nimble-map-token.in-tray.is-down`).count()) === 1, { what: 'the downed goblin' });
