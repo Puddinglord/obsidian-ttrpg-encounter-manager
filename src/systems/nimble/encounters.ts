@@ -782,9 +782,11 @@ export class EncounterStore extends Events {
 	 * on the monsters' side, the next monster; after the last, the next round. With nobody on the card it
 	 * moves on to the monsters' side (or the next round).
 	 */
-	next(encId: string): void {
+	next(encId: string): string[] {
 		const enc = this.find(encId);
-		if (!enc || !enc.phase || enc.phase === 'setup') return;
+		if (!enc || !enc.phase || enc.phase === 'setup') return [];
+		// What wore off, as the tracker says it: "Goblin-1: Dazed wore off", "Wore off: Goblin-2: Prone".
+		const said: string[] = [];
 		this.step(enc, () => {
 			const cur = actingCreature(enc);
 			if (enc.beat) {
@@ -793,7 +795,10 @@ export class EncounterStore extends Events {
 				if (enc.phase === 'heroes' && !heroesToAct(enc).length) this.monstersStart(enc);
 				return;
 			}
-			if (cur && !cur.done) this.markDone(enc, cur);
+			if (cur && !cur.done) {
+				const expired = this.markDone(enc, cur);
+				if (expired.length) said.push(`${shownLabel(cur, enc.creatures)}: ${expired.join(', ')} wore off`);
+			}
 			if (enc.phase === 'heroes') {
 				if (cur && isHero(cur)) {
 					const boss = this.s.legendaryBeat !== false ? legendaryUp(enc) : undefined;
@@ -810,9 +815,13 @@ export class EncounterStore extends Events {
 			}
 			const nxt = nextMonster(enc);
 			if (nxt) enc.acting = nxt.id;
-			else this.newRound(enc);
+			else {
+				const expired = this.newRound(enc);
+				if (expired.length) said.push(`Wore off: ${expired.join(', ')}`);
+			}
 		});
 		this.commitTurn(enc);
+		return said;
 	}
 
 	/** The legendary beat: the action the boss used (the next beat suggests the other). */

@@ -799,7 +799,7 @@ export class EncounterTrackerView extends ItemView {
 
 	private toggleDone(enc: Encounter, c: EncounterCreature): void {
 		const inCombat = !!enc.phase && enc.phase !== 'setup';
-		if (inCombat && enc.acting === c.id && !c.done) { this.store.next(enc.id); return; }
+		if (inCombat && enc.acting === c.id && !c.done) { this.next(enc); return; }
 		const expired = this.store.setDone(enc.id, c.id, !c.done);
 		if (expired.length) new Notice(`${this.nm(enc, c)}: ${expired.join(', ')} wore off`);
 	}
@@ -826,7 +826,7 @@ export class EncounterTrackerView extends ItemView {
 			return;
 		}
 		const cur = actingCreature(enc);
-		const next = () => this.store.next(enc.id);
+		const next = () => this.next(enc);
 		if (enc.phase !== 'monsters') {
 			const boss = this.plugin.settings.legendaryBeat !== false ? legendaryUp(enc) : undefined;
 			if (enc.beat && cur) primary = heroesToAct(enc).length ? { text: 'Back to heroes', icon: evIcon('arrow-right'), run: next } : { text: "Monsters' turn", icon: evIcon('next'), run: next };
@@ -839,6 +839,11 @@ export class EncounterTrackerView extends ItemView {
 		}
 		trackerFoot(container, { back, primary: { ...primary, cls: 'round-action' } });
 		this.primaryRun = primary.run;
+	}
+
+	/** The main button's step; whatever wore off on the way is said, as marking a turn done says it. */
+	private next(enc: Encounter): void {
+		for (const line of this.store.next(enc.id)) new Notice(line);
 	}
 
 	private nextRound(enc: Encounter): void {

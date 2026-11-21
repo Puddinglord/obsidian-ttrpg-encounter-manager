@@ -387,6 +387,21 @@ describe('the card and the queue (Nimble)', () => {
 		expect(enc.creatures.every(c => !c.done)).toBe(true);
 	});
 
+	it('Next says what wore off: on the creature whose turn ended, and at the round\'s end', () => {
+		const { store, enc, aria, bram, g1, g2 } = fight();
+		store.addCondition(enc.id, g1.id, 'Dazed', { rounds: 1 });
+		store.addCondition(enc.id, g2.id, 'Prone', { rounds: 1 });
+		store.setDone(enc.id, aria.id, true);
+		store.setDone(enc.id, bram.id, true);
+		expect(enc.acting).toBe(g1.id);
+		expect(store.next(enc.id)).toEqual(['Goblin: Dazed wore off']); // a lone goblin is shown without its number
+		expect(store.creature(enc.id, g1.id)!.conditions).toEqual([]);
+		// The last monster's Next ends its turn too, then starts the round.
+		expect(store.next(enc.id)).toEqual([expect.stringMatching(/^\S.*: Prone wore off$/)]);
+		expect(enc.round).toBe(2);
+		expect(store.next(enc.id)).toEqual([]);
+	});
+
 	it('any monster can be tapped, on either side; nothing is enforced', () => {
 		const { store, enc, g2 } = fight();
 		store.setActing(enc.id, g2.id);
