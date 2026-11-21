@@ -9,7 +9,9 @@ import { joinPath, safeName } from '../../core/campaign-model';
 import type { Frontmatter } from './character-def';
 import { newCharacterFrontmatter, NewHero } from './new-character';
 
-const SHEET_BODY = '```nimble-sheet\n```\n\n## Backstory\n\n\n## Notes\n\n';
+// A blank line before the block: opening the note for editing puts the cursor on the first line after the
+// properties, and a cursor on the fence shows the block's source instead of the sheet.
+const SHEET_BODY = '\n```nimble-sheet\n```\n\n## Backstory\n\n\n## Notes\n\n';
 
 /** Where new characters go: the active campaign's Party folder, else the vault root. */
 export function defaultCharacterFolder(plugin: EmberVaultPlugin): string {
