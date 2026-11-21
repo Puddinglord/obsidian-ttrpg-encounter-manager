@@ -28,9 +28,10 @@ export function holdRedraws(owner: Component, root: HTMLElement, redraw: () => v
 	const onDown = (e: PointerEvent) => {
 		if (!e.isPrimary) return;
 		down = true;
-		// A release we never hear about (the pointer captured elsewhere, the window left) mustn't hold the view for good.
+		// A release we never hear about mustn't hold the view for good: the window losing focus mid-press lets go at once
+		// (below), and this is the backstop. Long, so a slow machine's press isn't cut short.
 		win.clearTimeout(timer);
-		timer = win.setTimeout(flush, 4000);
+		timer = win.setTimeout(flush, 10000);
 	};
 	// Registered when the view opens, so this runs before listeners added on the press (a drag's drop).
 	const onUp = (e: PointerEvent) => {
@@ -40,14 +41,17 @@ export function holdRedraws(owner: Component, root: HTMLElement, redraw: () => v
 		// After the click this release makes, which is dispatched in the same task.
 		if (waiting) timer = win.setTimeout(flush, 0);
 	};
+	const onBlur = () => { if (down) flush(); };
 	root.addEventListener('pointerdown', onDown, true);
 	doc.addEventListener('pointerup', onUp, true);
 	doc.addEventListener('pointercancel', onUp, true);
+	win.addEventListener('blur', onBlur);
 	owner.register(() => {
 		win.clearTimeout(timer);
 		root.removeEventListener('pointerdown', onDown, true);
 		doc.removeEventListener('pointerup', onUp, true);
 		doc.removeEventListener('pointercancel', onUp, true);
+		win.removeEventListener('blur', onBlur);
 	});
 	return () => {
 		if (down) { waiting = true; return; }

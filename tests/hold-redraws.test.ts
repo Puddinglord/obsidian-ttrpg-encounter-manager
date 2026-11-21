@@ -79,10 +79,20 @@ describe('holdRedraws', () => {
 		const t = setup();
 		t.press(t.button, 'pointerdown');
 		t.changed();
-		vi.advanceTimersByTime(4000);
+		vi.advanceTimersByTime(9000);
+		expect(t.redraw).not.toHaveBeenCalled();
+		vi.advanceTimersByTime(1000);
 		expect(t.redraw).toHaveBeenCalledTimes(1);
 		t.changed();
 		expect(t.redraw).toHaveBeenCalledTimes(2);
+	});
+
+	it('the window losing focus mid-press lets the held change through', () => {
+		const t = setup();
+		t.press(t.button, 'pointerdown');
+		t.changed();
+		window.dispatchEvent(new Event('blur'));
+		expect(t.redraw).toHaveBeenCalledTimes(1);
 	});
 
 	it('stops listening when the view unloads', () => {

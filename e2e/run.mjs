@@ -4117,14 +4117,27 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 
 		// A tap that spans a redraw still lands. Press the bar, change the note while the button is down (the sheet
 		// would redraw and replace the bar under it), release: the keypad opens, then the sheet catches up.
-		await p.evaluate((R) => { document.querySelector(`${R} .ns-hp`).dataset.e2eOld = '1'; }, R);
+		await p.evaluate((R) => {
+			const bar = document.querySelector(`${R} .ns-hp`);
+			bar.dataset.e2eOld = '1';
+			// What happened, if this fails: pointer events and when the bar went.
+			const t0 = performance.now(), log = (window.__evTap = []);
+			for (const t of ['pointerdown', 'pointerup', 'pointercancel']) document.addEventListener(t, (e) => log.push(`${Math.round(performance.now() - t0)}ms ${t} ${e.pointerType} primary=${e.isPrimary} on ${e.target?.className?.baseVal ?? e.target?.className}`), { capture: true });
+			new MutationObserver((_m, obs) => { if (!bar.isConnected) { log.push(`${Math.round(performance.now() - t0)}ms bar replaced`); obs.disconnect(); } }).observe(document.body, { childList: true, subtree: true });
+		}, R);
 		const hpBox = await sheet.locator('.ns-hp').boundingBox();
 		await p.mouse.move(hpBox.x + hpBox.width / 2, hpBox.y + hpBox.height / 2);
+		const tDown = Date.now();
 		await p.mouse.down();
-		await o.eval(async (app, _p, path) => { await app.fileManager.processFrontMatter(app.vault.getFileByPath(path), fm => { fm.e2e_poke = 1; }); }, SHEET_NOTE);
-		await waitFm(o, f => f.e2e_poke === 1, 'the note changed while the button is down');
+		// Change the note and wait for Obsidian to say so (what redraws the sheet), rather than polling: a short press.
+		await o.eval((app, _p, path) => new Promise((done) => {
+			const ref = app.metadataCache.on('changed', (f) => { if (f.path === path) { app.metadataCache.offref(ref); done(); } });
+			void app.fileManager.processFrontMatter(app.vault.getFileByPath(path), fm => { fm.e2e_poke = 1; });
+		}), SHEET_NOTE);
 		await p.waitForTimeout(250);
-		assert.equal(await p.evaluate((R) => document.querySelector(`${R} .ns-hp`)?.dataset.e2eOld ?? null, R), '1', 'no redraw while the button is down');
+		const held = await p.evaluate((R) => document.querySelector(`${R} .ns-hp`)?.dataset.e2eOld ?? null, R);
+		if (held !== '1') console.log(`      held ${Date.now() - tDown}ms; ${(await p.evaluate(() => window.__evTap)).join('; ')}`);
+		assert.equal(held, '1', 'no redraw while the button is down');
 		await p.mouse.up();
 		await p.locator('.nimble-hp-pad').waitFor({ timeout: 3000 });
 		await p.waitForFunction((R) => !document.querySelector(`${R} .ns-hp`)?.dataset.e2eOld, R, { timeout: 3000 });
