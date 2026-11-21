@@ -1634,4 +1634,116 @@ export function register(test, h) {
 		});
 		await o.eval((app, _p, v) => app.vault.setConfig('alwaysUpdateLinks', v), updateLinks ?? false);
 	});
+
+	// -----------------------------------------------------------------------
+	// Maps
+
+	/** A small PNG in the vault, drawn on a canvas so the map has real pixels. */
+	const pngAt = (o, path) => o.eval(async (app, _p, path) => {
+		const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+		c.getContext('2d').fillRect(0, 0, 400, 300);
+		const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+		await app.vault.createBinary(path, await blob.arrayBuffer());
+	}, path);
+
+	test('entities 5e: map: New → Map in a chapter picks the campaign\'s image; pins to a place and an NPC open quick looks; the 5e fight shows as tokens', async (o) => {
+		const C = 'Campaigns/E5 Harbour Map';
+		const map = `${C}/Chapter 1/Harbour Map.md`;
+		const M = `${MAIN} ${R}`;
+		await scenario(o, 'map', [C], async () => {
+			await campaign5e(o, 'E5 Harbour Map', { edition: '2024', level: 2 });
+			await pngAt(o, `${C}/Assets/harbour.png`);
+			await write(o, `${C}/Locations/The Salt Stair.md`, '---\nnimble: location\nread_aloud: Worn steps.\n---\nSteps into the sea.\n');
+			await write(o, `${C}/NPCs/Marta Vey.md`, '---\nnimble: npc\nrole: Harbour master\nac: 15\nhp: 30\n---\nShe runs the harbour.\n');
+			// Create: New on the chapter's +, Map, the image picked from the campaign's files (once the panel lists it).
+			await o.page.locator(`${CP} [data-path="${C}/Assets/harbour.png"]`).waitFor({ timeout: 5000 });
+			await h.openPicker(o, `${C}/Chapter 1`);
+			await o.page.locator('.nimble-new-note .nimble-starter[data-kind="map"]').click();
+			await o.page.locator('.nimble-new-note .nimble-starter-map select').selectOption(`${C}/Assets/harbour.png`);
+			await h.createFromPicker(o, 'Harbour Map');
+			await o.waitFor(() => exists(o, map), { what: 'the map note' });
+			assert.match(await read(o, map), /nimble: map[\s\S]*```nimble-map\nimage: \[\[harbour\.png\]\]\npins:/);
+			// Pins written into the block: the place and the NPC.
+			await write(o, map, (await read(o, map)).replace('pins:\n', 'pins:\n- 40, 60 | The stair | [[The Salt Stair]] | place\n- 70, 30 | Marta | [[Marta Vey]] | npc\n'));
+			await o.openFile(map, 'preview');
+			await o.waitFor(() => o.page.evaluate((M) => { const img = document.querySelector(`${M} .nimble-map img`); return !!img && img.naturalWidth > 0; }, M), { what: 'the map image' });
+			const pins = o.page.locator(`${M} .nimble-map-pin .nimble-map-pin-inner`);
+			await o.waitFor(async () => (await pins.count()) === 2, { what: 'two pins' });
+			assert.ok(await o.page.locator(`${M} .nimble-map`).first().evaluate(n => !!n.closest('.ev-sys-dnd5e')), 'the map in 5e\'s look');
+			// The chapter in the panel has a button for its map.
+			await o.waitFor(async () => (await cgroup(o, `${C}/Chapter 1`).locator('[aria-label*="Harbour Map"]').count()) >= 1, { what: 'the map on its chapter in the panel' });
+			// A pin opens a quick look of its note, over the map.
+			await pins.first().click();
+			const look = o.page.locator('.modal.nimble-record-modal');
+			await look.waitFor({ timeout: 3000 });
+			assert.match(await look.locator('.record-title').innerText(), /The Salt Stair/);
+			assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), map, 'still on the map');
+			await o.page.keyboard.press('Escape');
+			await look.waitFor({ state: 'detached', timeout: 3000 });
+			// The fight as tokens: the NPC added from her card, and a monster.
+			await o.openFile(`${C}/NPCs/Marta Vey.md`, 'preview');
+			await view(o, '.nimble-npc-card button.dnd5e-npc-fight').click();
+			await o.eval(async (app, plugin) => { const rt = plugin.runtime('dnd5e'); await rt.addToFight(rt.get('Goblin Warrior')); });
+			await o.waitFor(async () => (await fight(o)).length === 2, { what: 'two in the fight' });
+			await o.openFile(map, 'preview');
+			await o.page.locator(`${M} .nimble-map-btn[aria-label="Show the current encounter as tokens"]`).click();
+			await o.waitFor(async () => (await o.page.locator(`${M} .nimble-map-token .nimble-map-token-name`).allInnerTexts()).sort().join() === 'Goblin Warrior,Marta Vey', { what: 'the fight as tokens' });
+			await shot(o, 'map');
+		});
+	});
+
+	// -----------------------------------------------------------------------
+	// Gaps that need a decision: each sets the scene, takes a picture, says why, and stops.
+
+	test('entities 5e: KNOWN: renaming a note a map pin links to leaves the pin pointing at the old name, and a click on it does nothing', async (o) => {
+		const C = 'Campaigns/E5 Known Map';
+		const map = `${C}/Harbour Map.md`;
+		const M = `${MAIN} ${R}`;
+		const was = await o.eval((app) => app.vault.getConfig('alwaysUpdateLinks'));
+		await scenario(o, 'known-map', [C], async () => {
+			await campaign5e(o, 'E5 Known Map', { edition: '2024', level: 2, starter: false });
+			await pngAt(o, `${C}/harbour.png`);
+			await write(o, `${C}/The Salt Stair.md`, '---\nnimble: location\n---\nSteps into the sea.\n');
+			await write(o, map, '---\nnimble: map\n---\n```nimble-map\nimage: [[harbour.png]]\npins:\n- 40, 60 | The stair | [[The Salt Stair]] | place\n```\n');
+			await o.eval(async (app, _p, C) => { app.vault.setConfig('alwaysUpdateLinks', true); await app.fileManager.renameFile(app.vault.getAbstractFileByPath(`${C}/The Salt Stair.md`), `${C}/The Salt Steps.md`); }, C);
+			await o.waitFor(() => exists(o, `${C}/The Salt Steps.md`), { what: 'the rename' });
+			await o.openFile(map, 'preview');
+			await o.page.locator(`${M} .nimble-map-pin .nimble-map-pin-inner`).first().waitFor({ state: 'visible', timeout: 10000 });
+			await o.page.locator(`${M} .nimble-map-pin .nimble-map-pin-inner`).first().click();
+			await o.page.waitForTimeout(500);
+			await shot(o, 'KNOWN-map-pin-rename');
+			const pins = (await read(o, map)).match(/\[\[[^\]]+\]\] \| place/)?.[0];
+			console.log(`      KNOWN: after renaming "The Salt Stair" to "The Salt Steps" (links updated), the pin still says ${pins} and a click opens nothing (${await o.page.locator('.modal-container').count()} dialogs). Obsidian doesn't update links inside code blocks, so a map's pins (and an encounter block's where:) go stale. Needs a rename hook for the plugin's blocks, or pins that say they're missing.`);
+		});
+		await o.eval((app, _p, v) => app.vault.setConfig('alwaysUpdateLinks', v), was ?? false);
+	});
+
+	test('entities 5e: KNOWN: an NPC listed in an encounter block isn\'t found (her stats are on her note, not in a 5e block)', async (o) => {
+		const C = 'Campaigns/E5 Known NPC';
+		await scenario(o, 'known-npc', [C], async () => {
+			await campaign5e(o, 'E5 Known NPC', { edition: '2024', level: 2, starter: false });
+			await write(o, `${C}/NPCs/Marta Vey.md`, '---\nnimble: npc\nrole: Harbour master\nstatblock: Bandit Captain\nac: 16\n---\n');
+			await write(o, `${C}/Ambush.md`, '```nimble-encounter\nname: Ambush\nmonsters:\n- [[Marta Vey]]\n- 2 Bandit\n```\n');
+			await o.openFile(`${C}/Ambush.md`, 'preview');
+			await view(o, '.dnd5e-encounter').waitFor({ timeout: 5000 });
+			await o.waitFor(async () => (await view(o, '.dnd5e-encounter-xp').count()) >= 1, { what: 'the block drawn' });
+			await shot(o, 'KNOWN-npc-in-encounter', view(o, '.dnd5e-encounter'));
+			const missing = await view(o, '.dnd5e-encounter-missing').innerText().catch(() => '');
+			console.log(`      KNOWN: "${missing}". An encounter block finds monsters by their stat block's name; an NPC note with \`statblock:\` or typed stats isn't one, so the fight can't include her (Add to fight on her card works). Nimble behaves the same. Decide whether blocks should resolve NPC notes (npcMonster5e) before changing it.`);
+		});
+	});
+
+	test('entities 5e: KNOWN: a player\'s battle note in a 5e campaign drops its outcome, where and loot', async (o) => {
+		const C = 'Campaigns/E5 Known Battle';
+		await scenario(o, 'known-battle', [C], async () => {
+			await campaign5e(o, 'E5 Known Battle', { edition: '2024', role: 'player', level: 2, starter: false });
+			await write(o, `${C}/Session 1.md`, '```nimble-encounter\nname: Ambush at the ford\noutcome: won\nwhere: [[The Ford]]\nloot: 40 gp, a silver key\nmonsters:\n- 4 Goblin Warrior\nnotes: The shaman fled north.\n```\n');
+			await o.openFile(`${C}/Session 1.md`, 'preview');
+			const enc = view(o, '.dnd5e-encounter');
+			await enc.waitFor({ timeout: 5000 });
+			await shot(o, 'KNOWN-battle-note', enc);
+			const text = await enc.innerText();
+			console.log(`      KNOWN: the 5e block shows "${text.replace(/\s+/g, ' ').trim()}". docs/players.md describes battle notes with an outcome pill (Won, Fled…), where, loot and an Edit button; Nimble's block has them, 5e's draws only the name, the foes and the notes. Needs the battle-note view ported to 5e (or shared in core).`);
+		});
+	});
 }
