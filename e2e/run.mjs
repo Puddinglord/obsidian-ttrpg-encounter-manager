@@ -6,7 +6,7 @@
 //
 // Screenshots of failures (and a few showcase shots) go to e2e/artifacts/.
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -17,7 +17,8 @@ import { strToU8, zipSync } from 'fflate';
 
 const ARTIFACTS = join(dirname(fileURLToPath(import.meta.url)), 'artifacts');
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-rmSync(ARTIFACTS, { recursive: true, force: true });
+// A fresh folder for this run, but leave the visual check's shots (e2e/artifacts/visual, its own run) alone.
+if (existsSync(ARTIFACTS)) for (const f of readdirSync(ARTIFACTS)) if (f !== 'visual') rmSync(join(ARTIFACTS, f), { recursive: true, force: true });
 mkdirSync(ARTIFACTS, { recursive: true });
 
 const tests = [];

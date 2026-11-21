@@ -60,7 +60,9 @@ const ignored = (surface, i) => IGNORE.find(r => (!r.kind || r.kind.test(i.kind)
 
 // ---------------------------------------------------------------------------
 
-const surfaces = SURFACES.filter(s => (!gameFilter.length || gameFilter.includes(s.game)) && (!nameFilter.length || nameFilter.some(n => s.name.includes(n))));
+// A name matches a surface ("sheet") or one of its states ("sheet-inventory", "builder-monster-03").
+const surfaces = SURFACES.filter(s => (!gameFilter.length || gameFilter.includes(s.game)) && (!nameFilter.length || nameFilter.some(n => s.name.includes(n) || n.startsWith(`${s.name}-`))));
+const stateWanted = (s, full) => !nameFilter.length || nameFilter.some(n => s.name.includes(n) || (n.startsWith(`${s.name}-`) && full.includes(n)));
 if (!surfaces.length) { console.log('No surface matches.'); process.exit(0); }
 if (!gameFilter.length && !nameFilter.length) rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
@@ -76,7 +78,9 @@ let viewport = { width: 1200, height: DESKTOP_H, mobile: false };
 async function setViewport(width, height, mobile = viewport.mobile) {
 	viewport = { width: Math.round(width), height: Math.round(height), mobile };
 	await cdp.send('Emulation.setDeviceMetricsOverride', { width: viewport.width, height: viewport.height, deviceScaleFactor: 2, mobile });
-	await page.waitForTimeout(250);
+	// Let the resize land: Obsidian's resize handlers, then two frames for layout.
+	await page.waitForTimeout(120);
+	await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
 }
 
 /** What the setups get: the app and the small moves they all make. */
@@ -148,19 +152,21 @@ async function setTheme(theme) {
 
 /** Size the window for a width: a note's content, a dialog's window, or a sidebar. */
 async function applyWidth(s, width, phone) {
-	if (phone) { await setViewport(PHONE_W, PHONE_H, true); return; }
+	// The height a state grew to for an earlier width stays: the next width usually needs about as much.
+	const h = Math.max(viewport.height, phone ? PHONE_H : DESKTOP_H);
+	if (phone) { await setViewport(PHONE_W, h, true); return; }
 	if (s.mode === 'sidebar') {
-		await setViewport(1200, DESKTOP_H, false);
+		await setViewport(1200, h, false);
 		await o.eval((app, _p, [side, w]) => { const split = side === 'left' ? app.workspace.leftSplit : app.workspace.rightSplit; split.expand(); split.setSize?.(w); }, [s.side, width]);
 		await page.waitForTimeout(250);
 		return;
 	}
-	if (s.mode === 'window') { await setViewport(width, DESKTOP_H, false); return; }
+	if (s.mode === 'window') { await setViewport(width, h, false); return; }
 	// content: the note's readable width set to the target, and the window just wide enough for it.
 	await page.evaluate((w) => document.body.style.setProperty('--file-line-width', `${w}px`), width);
 	let w = width + 200;
 	for (let i = 0; i < 3; i++) {
-		await setViewport(w, DESKTOP_H, false);
+		await setViewport(w, h, false);
 		const got = await page.evaluate(() => {
 			const root = document.querySelector('[data-vis-root]');
 			if (!root) return null;
@@ -182,7 +188,7 @@ async function capture(s, name, width, theme, phone) {
 	await page.evaluate(settle, 900);
 	let f = await page.evaluate(frameRoot, { pad: PAD });
 	for (let i = 0; f && f.hidden > 0 && viewport.height < MAX_H && i < 3; i++) {
-		await setViewport(viewport.width, Math.min(MAX_H, viewport.height + f.hidden + 16));
+		await setViewport(viewport.width, Math.min(MAX_H, viewport.height + Math.ceil(f.hidden * 1.2) + 16));
 		await page.evaluate(settle, 600);
 		f = await page.evaluate(frameRoot, { pad: PAD });
 	}
@@ -192,8 +198,11 @@ async function capture(s, name, width, theme, phone) {
 		u.n += p.n; u.where.add(`${s.game}/${name}`);
 		unknownPills.set(p.sel, u);
 	}
+	const T0 = Date.now();
 	const pills = await page.evaluate(pillOffenders, { root: '[data-vis-root]', tolerance: 1, gap: 3, selectors: [...PILL_SELECTORS, '[data-vis-pill]'].map(x => `${x}:not([data-vis-offscreen])`) });
+	const T1 = Date.now();
 	const checks = await page.evaluate(visualChecks, { room, pillSelectors: PILL_SELECTORS });
+	const T2 = Date.now();
 	const all = [
 		...pills.filter(p => p.part !== 'missing root').map(p => {
 			const m = /^(\S+)(?: "(.*)")?$/.exec(p.el) ?? [];
@@ -223,6 +232,7 @@ async function capture(s, name, width, theme, phone) {
 		writeFileSync(join(dir, file), Buffer.from(data, 'base64'));
 	};
 	await grab(`${base}.png`);
+	if (process.env.VIS_TIMING) console.log(`    ${name} ${base}: pills ${T1 - T0}ms, checks ${T2 - T1}ms, shot ${Date.now() - T2}ms, ${clip.width}×${clip.height}`);
 	if (issues.length) {
 		await page.evaluate(drawOutlines, issues);
 		await grab(`${base}.issues.png`);
@@ -242,7 +252,7 @@ async function runSurface(s, phone) {
 	// `width`: set it up at that width (a popover or hover card closes when the window or sidebar changes size).
 	const setup = async (width) => {
 		await c.clean();
-		if (!phone) await setViewport(1200, DESKTOP_H, false);
+		await setViewport(phone ? PHONE_W : 1200, phone ? PHONE_H : DESKTOP_H, phone);
 		await page.evaluate(() => document.body.style.setProperty('--file-line-width', '700px'));
 		if (width && s.mode !== 'content') await applyWidth(s, width, phone);
 		await s.setup(c);
@@ -259,6 +269,7 @@ async function runSurface(s, phone) {
 	const states = typeof s.states === 'function' ? await s.states(c) : (s.states ?? [null]);
 	for (const st of states) {
 		const name = st ? `${s.name}-${st.name}` : s.name;
+		if (!stateWanted(s, name)) continue;
 		let n = 0;
 		try {
 			if (st) await st.go(c);
@@ -295,14 +306,20 @@ async function runSurface(s, phone) {
 		}
 	}
 	await setTheme('light');
+	// Put back any note this surface changed (a Rage, a die, a level), so the next one starts from the sample.
+	for (const [path, text] of originals) {
+		await o.eval(async (app, _p, [p, text]) => { const f = app.vault.getAbstractFileByPath(p); if (f && (await app.vault.read(f)) !== text) await app.vault.modify(f, text); }, [path, text]).catch(() => {});
+	}
 }
 
 const t0 = Date.now();
+/** Write the report as it stands (after every surface, so a long run can be read before it ends). */
+const flush = () => writeReport(OUT, { shots, errors, unknownPills: [...unknownPills].map(([sel, u]) => ({ sel, n: u.n, where: [...u.where] })), ignore: IGNORE.map(r => ({ ...Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)])) })), seconds: Math.round((Date.now() - t0) / 1000), pillSelectors: PILL_SELECTORS });
 try {
 	await prepareVault(o, ROOT);
 	// Obsidian's status bar floats over the bottom right of the window; keep it out of the shots.
 	await page.evaluate(() => { const st = document.createElement('style'); st.id = 'vis-style'; st.textContent = '.status-bar { display: none; }'; document.head.append(st); });
-	if (DESKTOP) for (const s of surfaces) await runSurface(s, false);
+	if (DESKTOP) for (const s of surfaces) { await runSurface(s, false); flush(); }
 	if (PHONE) {
 		// The phone pass: Obsidian's mobile layout (it reloads the plugin), a touch screen at 390×844.
 		await o.eval(async (app, plugin) => { await plugin.saveSettings(); });
@@ -312,12 +329,12 @@ try {
 		await o.eval((app) => app.emulateMobile(true));
 		await page.waitForTimeout(1500);
 		await o.waitFor(() => page.evaluate(() => !!window.app.plugins?.plugins?.['nimble-gm']?._loaded), { what: 'the plugin after the switch to mobile' });
-		for (const s of surfaces) await runSurface(s, true);
+		for (const s of surfaces) { await runSurface(s, true); flush(); }
 	}
 } finally {
 	await o.close();
 }
 
-const report = writeReport(OUT, { shots, errors, unknownPills: [...unknownPills].map(([sel, u]) => ({ sel, n: u.n, where: [...u.where] })), ignore: IGNORE.map(r => ({ ...Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)])) })), seconds: Math.round((Date.now() - t0) / 1000), pillSelectors: PILL_SELECTORS });
+const report = flush();
 console.log(`\n${report.summary}\nReport: ${join(OUT, 'report.md')}\nGallery: ${join(OUT, 'index.html')}`);
 process.exit(report.issues || errors.length ? 1 : 0);

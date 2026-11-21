@@ -100,7 +100,7 @@ export function markPillLikes({ selectors }) {
 		let shown = r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
 		for (let a = e.parentElement; shown && a && a !== document.body; a = a.parentElement) {
 			const cs = getComputedStyle(a);
-			if (!/(auto|scroll)/.test(cs.overflowY + cs.overflowX)) continue;
+			if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue;
 			const ar = a.getBoundingClientRect();
 			if (r.right <= ar.left || r.left >= ar.right || r.bottom <= ar.top || r.top >= ar.bottom) shown = false;
 		}
@@ -141,7 +141,8 @@ export function visualChecks({ room, pillSelectors }) {
 	const shown = (e, r) => {
 		if (r.right <= 0 || r.bottom <= 0 || r.left >= innerWidth || r.top >= innerHeight) return false;
 		for (let a = e.parentElement; a && a !== document.body; a = a.parentElement) {
-			if (!/(auto|scroll)/.test(getComputedStyle(a).overflowY + getComputedStyle(a).overflowX)) continue;
+			const acs = getComputedStyle(a);
+			if (acs.overflowX === 'visible' && acs.overflowY === 'visible') continue;
 			const ar = a.getBoundingClientRect();
 			if (r.right <= ar.left || r.left >= ar.right || r.bottom <= ar.top || r.top >= ar.bottom) return false;
 		}
@@ -179,7 +180,8 @@ export function visualChecks({ room, pillSelectors }) {
 		if (!p || p === document.body) return null;
 		if (scroller.has(p)) return scroller.get(p);
 		const cs = getComputedStyle(p);
-		const v = /(auto|scroll)/.test(cs.overflowY + cs.overflowX) ? p : nearestScroller(p);
+		// Anything that scrolls or clips: what's wholly outside it isn't drawn (a list's far rows, a wizard's other steps).
+		const v = cs.overflowX !== 'visible' || cs.overflowY !== 'visible' ? p : nearestScroller(p);
 		scroller.set(p, v);
 		return v;
 	};
@@ -269,7 +271,8 @@ export function visualChecks({ room, pillSelectors }) {
 			for (const r of [...rects].sort((x, y) => x.top - y.top)) if (!tops.length || r.top > tops[tops.length - 1] + r.height * 0.5) tops.push(r.top);
 			if (tops.length > 1 && text.length <= 48) {
 				const lh = parseFloat(cs.lineHeight);
-				const tight = lh && lh <= fs * 1.15;
+				// A small label set solid (line-height about 1) is meant to sit on one line; a big title may wrap when it must.
+				const tight = lh && lh <= fs * 1.15 && fs <= 16;
 				const whole = (e.textContent || '').trim().length;
 				// Which words landed on which line: a number left alone on a line, away from its label ("Level / 2").
 				const lineOf = [];
@@ -284,7 +287,7 @@ export function visualChecks({ room, pillSelectors }) {
 				if (orphan > 0) add('wrap', 3, e, `"${lines[orphan][0]}" left alone on its own line, away from "${lines[orphan - 1][lines[orphan - 1].length - 1]}"`);
 				else if (!/\s/.test(text) && text.length > 1) add('wrap', 4, e, `"${text}" broken mid-word over ${tops.length} lines`);
 				else if (numberish(text) && whole <= 24) add('wrap', 4, e, `the number "${text}" wraps onto ${tops.length} lines`);
-				else if (pillish(e) && text.length <= 32) add('wrap', 3, e, `the label "${text}" wraps onto ${tops.length} lines`);
+				else if (pillish(e) && text.length <= 32 && (e.closest(`button, [role="tab"], [role="button"], [data-vis-pill], ${known}`)?.textContent.trim().length ?? 0) <= 32) add('wrap', 3, e, `the label "${text}" wraps onto ${tops.length} lines`);
 				else if (nameish(e) && (room || tight) && text.length <= 40) add('wrap', 2, e, `"${text}" wraps onto ${tops.length} lines${tight ? ' (its line-height says one line)' : ''}`);
 			}
 		}
@@ -320,7 +323,8 @@ export function visualChecks({ room, pillSelectors }) {
 		const on = e.querySelector('.is-active, .is-current, [aria-selected="true"], [aria-current="step"], [aria-current="page"]');
 		if (!on) continue;
 		const er = e.getBoundingClientRect(), or = on.getBoundingClientRect();
-		if (or.right > er.right + 2 || or.left < er.left - 2) add('spill', 3, on, `the current one is scrolled out of sight in ${sig(e)} (${e.scrollWidth}px of content in ${e.clientWidth}px)`, er);
+		// (Often after the window narrowed: the strip keeps its scroll.)
+		if (or.right > er.right + 2 || or.left < er.left - 2) add('spill', 2, on, `the current one is scrolled out of sight in ${sig(e)} (${e.scrollWidth}px of content in ${e.clientWidth}px)`, er);
 	}
 	const doc = document.scrollingElement;
 	if (doc && doc.scrollWidth > innerWidth + 1) add('spill', 5, document.body, `the window scrolls sideways (${doc.scrollWidth}px in ${innerWidth}px)`, { left: 0, top: 0, width: innerWidth, height: 4 });
