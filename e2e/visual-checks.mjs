@@ -213,8 +213,8 @@ export function visualChecks({ room, pillSelectors }) {
 		const own = [...e.classList];
 		return (own.length ? own : [...(e.parentElement?.classList ?? [])]).some(c => NAMEISH.test(c));
 	};
-	// A web address or a path may break anywhere; that's how it fits.
-	const urlish = (w) => /^[a-z]+:\/\/|[/\\]/.test(w) && w.length > 12;
+	// A web address or a path may break anywhere; that's how it fits. A hyphenated word ("10-foot") breaks at its hyphen.
+	const urlish = (w) => (/^[a-z]+:\/\/|[/\\]/.test(w) && w.length > 12) || /[-‐–—]/.test(w);
 	// A compact control (a pill, a button in a row): a short label, not a card or a drop zone that holds a sentence.
 	// (A term or link inline in a sentence wraps with the sentence: not a control.)
 	const compact = (c) => !!c && getComputedStyle(c).display !== 'inline' && c.textContent.trim().length <= 32 && c.getBoundingClientRect().height <= 52;
