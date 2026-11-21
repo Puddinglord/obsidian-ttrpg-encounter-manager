@@ -18,7 +18,10 @@ import { strToU8, zipSync } from 'fflate';
 const ARTIFACTS = join(dirname(fileURLToPath(import.meta.url)), 'artifacts');
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // A fresh folder for this run, but leave the visual check's shots (e2e/artifacts/visual, its own run) alone.
-if (existsSync(ARTIFACTS)) for (const f of readdirSync(ARTIFACTS)) if (f !== 'visual') rmSync(join(ARTIFACTS, f), { recursive: true, force: true });
+// A fresh artifacts folder for each run, keeping the visual check's and the timings the parallel runs split by. A slice of a
+// parallel run (E2E_SHARD) leaves it alone: parallel.mjs cleans it once, before starting the slices.
+const KEPT = (f) => f === 'visual' || f === 'timings.json' || /^shard-\d+\.log$/.test(f);
+if (!process.env.E2E_SHARD && existsSync(ARTIFACTS)) for (const f of readdirSync(ARTIFACTS)) if (!KEPT(f)) rmSync(join(ARTIFACTS, f), { recursive: true, force: true });
 mkdirSync(ARTIFACTS, { recursive: true });
 
 const tests = [];
@@ -8137,17 +8140,37 @@ const range = process.env.E2E_RANGE?.split('-').map(Number);
 // A file-chooser wait left pending by a test that failed earlier must not take the whole run down with it.
 process.on('unhandledRejection', (e) => console.log(`      (ignored a late rejection: ${String(e?.message ?? e).split('\n')[0]})`));
 const selected = range ? tests.filter((t, i) => (i >= range[0] && i <= range[1]) || (filter && t.name.includes(filter))) : tests.filter(t => !filter || t.name.includes(filter));
+// E2E_SHARD=2/3 runs the second of three slices, for e2e/parallel.mjs. A slice is a contiguous run of tests in the order
+// they're written (so a test that leans on the one before it keeps it), sized by how long each took last time
+// (artifacts/timings.json), and every slice ends with the console check.
+const CONSOLE_CHECK = 'no console errors during the run';
+const TIMINGS = join(ARTIFACTS, 'timings.json');
+const shard = process.env.E2E_SHARD?.match(/^(\d+)\/(\d+)$/)?.slice(1).map(Number);
+let run = selected;
+if (shard) {
+	const [k, n] = shard;
+	let last = {};
+	try { last = JSON.parse(readFileSync(TIMINGS, 'utf8')); } catch { /* first run: equal counts */ }
+	const cost = (t) => last[t.name] ?? 5000;
+	const rest = selected.filter(t => t.name !== CONSOLE_CHECK);
+	const total = rest.reduce((a, t) => a + cost(t), 0) || 1;
+	let at = 0;
+	run = rest.filter((t) => { const mid = at + cost(t) / 2; at += cost(t); return Math.min(n, Math.floor((mid / total) * n) + 1) === k; });
+	run.push(...selected.filter(t => t.name === CONSOLE_CHECK));
+}
 // 3D dice are off for the general run (notices would wait for them to land); one test turns them on.
 // Reading view for campaign pages is off for the general run (tests open campaign notes in Source mode on purpose); one test turns it on.
 const o = await launchObsidian({ settings: { dice3d: false, readingView: false } });
 await o.page.setViewportSize?.({ width: 1400, height: 900 }).catch(() => {});
 let failed = 0;
 const started = Date.now();
-for (const t of selected) {
+const took = {};
+for (const t of run) {
 	const t0 = Date.now();
 	try {
 		await t.fn(o);
-		console.log(`  ✓ ${t.name} (${Date.now() - t0}ms)`);
+		took[t.name] = Date.now() - t0;
+		console.log(`  ✓ ${t.name} (${took[t.name]}ms)`);
 	} catch (e) {
 		failed++;
 		const file = join(ARTIFACTS, `FAIL-${t.name.replace(/[^a-z0-9]+/gi, '-')}.png`);
@@ -8157,5 +8180,11 @@ for (const t of selected) {
 	}
 }
 await o.close();
-console.log(`\n${selected.length - failed}/${selected.length} passed in ${((Date.now() - started) / 1000).toFixed(1)}s`);
+// What each test took, so the next parallel run can split the suite evenly. Shards write their own file; parallel.mjs merges them.
+try {
+	mkdirSync(ARTIFACTS, { recursive: true });
+	if (shard) writeFileSync(join(ARTIFACTS, `timings-${shard[0]}.json`), JSON.stringify(took));
+	else { let all = {}; try { all = JSON.parse(readFileSync(TIMINGS, 'utf8')); } catch { /* none yet */ } writeFileSync(TIMINGS, JSON.stringify({ ...all, ...took })); }
+} catch { /* timings are a nicety */ }
+console.log(`\n${run.length - failed}/${run.length} passed in ${((Date.now() - started) / 1000).toFixed(1)}s`);
 process.exit(failed ? 1 : 0);
