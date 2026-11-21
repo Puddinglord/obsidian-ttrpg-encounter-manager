@@ -24,7 +24,7 @@ portrait: "[[Tobren Kask.png]]"
 
 Below the card, the starter has headings for Personality, What they know, Relationships, Quotes, Appears in and Notes. In a campaign you [play in](players.md), they're written from the party's side instead: First impressions, What we learned, What they want from us, Promises & debts. All of them are optional; delete whatever you don't use.
 
-An NPC whose `location:` is a place shows on that place's card, under **Who's here** ([places](campaigns.md#places)).
+An NPC whose `location:` is a place shows on that place's card, under **Who's here** ([places](campaigns.md#places)). A click there is a quick look, like their chips elsewhere.
 
 ## Character cards
 

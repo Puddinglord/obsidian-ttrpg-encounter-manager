@@ -88,6 +88,16 @@ function who(parent: HTMLElement, plugin: EmberVaultPlugin, raw: string, from: s
 	else chip.createSpan({ cls: 'ev-cq-avatar is-initials', text: initials(shown) });
 	const name = chip.createSpan({ cls: 'ev-cq-who-name' });
 	appendRichText(name, link || file ? `[[${target}${shown !== target ? `|${shown}` : ''}]]` : shown);
+	// An NPC's name is a quick look, as NPC chips are everywhere; Cmd/Ctrl-click opens the page.
+	const npc = file ? plugin.campaigns.npcs.find(n => n.path === file.path) : undefined;
+	if (!file || !npc) return;
+	chip.addClass('is-npc');
+	name.addEventListener('click', (e) => {
+		if (e.metaKey || e.ctrlKey || !(e.target as HTMLElement | null)?.closest('a')) return;
+		e.preventDefault();
+		e.stopPropagation();
+		plugin.system(from).quickLook(plugin, { kind: 'note', file, sourcePath: from, subtitle: npc.role });
+	}, true);
 }
 
 const initials = (name: string) => name.replace(/[[\]]/g, '').split(/\s+/).filter(w => /^[A-Za-z]/.test(w)).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';

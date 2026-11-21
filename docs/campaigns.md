@@ -104,7 +104,7 @@ Obsidian's own items (Bookmark, Reveal in navigation, and items from other plugi
 
 A location note opens on a card: a banner (the note's image, or contour lines in the game's colours), what kind of place it is, its name and region, then:
 
-- **Who's here:** every NPC in the campaign whose `location:` links to this place, with their portraits.
+- **Who's here:** every NPC in the campaign whose `location:` links to this place, with their portraits. Click a name for a quick look at the NPC, as with NPC links everywhere; Cmd/Ctrl-click opens their page.
 - **Leads to:** the `leads:` property, or the links under a **Leads to**, **Exits** or **Connections** heading.
 - **Monsters here** (Nimble, GM only): the `monsters:` property, as references to their stat blocks. Hover one for the block, or use its **+** to add it to the fight.
 - **Read aloud** (5e, GM only): the `read_aloud:` property, in a boxed paragraph.

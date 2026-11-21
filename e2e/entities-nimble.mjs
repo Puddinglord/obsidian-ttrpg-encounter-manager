@@ -988,6 +988,18 @@ export function register(test, h) {
 			await o.waitFor(async () => (await p.locator('.ev-cq-who').count()) === 1, { what: 'who\'s here' });
 			assert.match(await p.locator('.ev-cq-whos').innerText(), /Tobren Kask/);
 			assert.equal(await p.locator(`.ev-cq-whos a.nimble-wikilink[href="${N}"]`).count(), 1);
+			// A click on Tobren there is a quick look, as his chips are everywhere; Cmd/Ctrl-click opens his page.
+			await p.locator(`.ev-cq-whos a.nimble-wikilink[href="${N}"]`).click();
+			await o.page.locator(Q).waitFor();
+			assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Tobren Kask');
+			assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), L, 'still on the place');
+			await o.page.keyboard.press('Escape');
+			await o.page.locator(Q).waitFor({ state: 'detached' });
+			await p.locator(`.ev-cq-whos a.nimble-wikilink[href="${N}"]`).click({ modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'] });
+			await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === N, { what: 'Cmd/Ctrl-click opens his page' });
+			assert.equal(await o.page.locator(Q).count(), 0, 'no quick look for Cmd/Ctrl-click');
+			await o.openFile(L, 'preview');
+			await o.waitFor(async () => (await p.locator('.ev-cq-who').count()) === 1, { what: 'back on the place' });
 			assert.equal(await p.locator('.ev-cq-mons .nimble-inline-ref.nimble-inline-found[data-nimble-ref="Goblin"]').count(), 1);
 			assert.equal(await p.locator(`.ev-cq-leads a.nimble-wikilink[href="${SC}"]`).count(), 1);
 			// Tobren's card says where he's found.

@@ -605,8 +605,15 @@ export function register(test, h) {
 			assert.match(await pc.locator('.ev-cq-leads').innerText(), /The Drowned Chapel/);
 			assert.match(await pc.locator('.ev-cq-secret').innerText(), /ninth step/);
 			await shot(o, 'location-card', pc);
-			// Both ways: the name on the place's card opens the NPC, whose card says where they're found.
+			// Both ways: the name on the place's card is the NPC's quick look (as NPC chips are); its Open page goes to
+			// his note, whose card says where he's found.
 			await pc.locator('.ev-cq-whos a.internal-link', { hasText: 'Old Brannoc' }).first().click();
+			const look = o.page.locator('.modal.nimble-record-modal');
+			await look.waitFor({ timeout: 3000 });
+			assert.equal(await look.locator('.record-title').innerText(), 'Old Brannoc');
+			assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), place, 'still on the place');
+			await look.locator('button', { hasText: 'Open page' }).click();
+			await look.waitFor({ state: 'detached' });
 			await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === ferryman, { what: 'the NPC opened from the place' });
 			await o.waitFor(async () => /Found at[\s\S]*The Salt Stair/i.test(await view(o, '.nimble-npc-card').innerText().catch(() => '')), { what: 'Found at on the NPC card' });
 			assert.equal(await view(o, '.nimble-npc-card a.nimble-note-link.kind-location, .nimble-npc-card a.internal-link').filter({ hasText: 'The Salt Stair' }).count(), 1, 'the place is a link on the NPC card');
