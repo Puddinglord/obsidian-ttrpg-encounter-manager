@@ -6,7 +6,7 @@
 import { MarkdownView, Modal, Notice, setIcon } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { EncounterDef, encounterBlockSource } from '../../core/encounter-def';
-import { BalanceTarget, budgetPhrase, formatLevel, levelValue, monsterRole, rateEncounter, shiftMonster } from './rules';
+import { BalanceTarget, budgetPhrase, formatLevel, levelValue, monsterRole, partyPhrase, rateEncounter, shiftMonster } from './rules';
 import { renderBalance } from './balance-ui';
 import { partyLevels, ratingChip, runEncounter } from './encounter-block';
 import { describeMonster } from './suggest';
@@ -180,10 +180,8 @@ export class BuilderModal extends Modal {
 		const text = head.createSpan({ cls: 'builder-rating-text' });
 		text.appendText(`${r.value.toFixed(1)} monster levels of ${budgetPhrase(r.budget)} · `);
 		// Who it's rated against: the party, a link to edit it.
-		const avg = levels.reduce((a, b) => a + b, 0) / (levels.length || 1);
-		const who = this.plugin.settings.party.length
-			? `${levels.length} heroes, level ${avg.toFixed(levels.every(l => l === levels[0]) ? 0 : 1)}`
-			: `${levels.length} level-${levels[0] ?? 1} heroes: set up your party`;
+		const entered = this.plugin.settings.party.length > 0;
+		const who = `${partyPhrase(levels, entered)}${entered ? '' : ': set up your party'}`;
 		const edit = text.createEl('a', { cls: 'builder-party-link', text: who, href: '#', attr: { 'aria-label': this.plugin.settings.party.length ? 'Edit party' : 'Set up your party' } });
 		edit.addEventListener('click', (e) => { e.preventDefault(); this.plugin.openParty(); });
 

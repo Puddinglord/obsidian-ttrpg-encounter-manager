@@ -5,7 +5,7 @@ import { confirmReplaceFight, resumeSavedFight, savedFightsFor } from './saved-f
 import { debounce, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, setIcon } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { EncounterDef, encounterBlockSource, replaceEncounterBlock } from '../../core/encounter-def';
-import { budgetPhrase, monsterRole, rateEncounter, shiftLabel, shiftMonster } from './rules';
+import { budgetPhrase, monsterRole, partyPhrase, rateEncounter, shiftLabel, shiftMonster } from './rules';
 import { createInlineRef } from './inline-ref';
 import { BuilderModal } from './builder-modal';
 import { EncounterTemplate } from './encounters';
@@ -106,10 +106,8 @@ async function writeBack(plugin: EmberVaultPlugin, el: HTMLElement, ctx: Markdow
 }
 
 function partyText(plugin: EmberVaultPlugin, levels: number[]): string {
-	const avg = levels.reduce((a, b) => a + b, 0) / levels.length;
-	return plugin.settings.party.length
-		? `${levels.length} heroes, level ${avg.toFixed(levels.every(l => l === levels[0]) ? 0 : 1)}`
-		: `${levels.length} level-${levels[0] ?? 1} heroes (no party set)`;
+	const entered = plugin.settings.party.length > 0;
+	return `${partyPhrase(levels, entered)}${entered ? '' : ' (no party set)'}`;
 }
 
 function renderEncounterBlock(plugin: EmberVaultPlugin, el: HTMLElement, def: EncounterDef, ctx: MarkdownPostProcessorContext, source: string): void {

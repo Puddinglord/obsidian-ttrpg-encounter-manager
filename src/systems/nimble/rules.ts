@@ -234,6 +234,18 @@ export function budgetPhrase(budget: number): string {
 	return `${an ? 'an' : 'a'} ${budget}-level budget`;
 }
 
+/**
+ * Who an encounter is rated against, as the encounter block and the builder say it: "4 heroes, level 2",
+ * "1 hero, level 3", "3 heroes, level 2.3"; with no party entered, "4 level-1 heroes".
+ */
+export function partyPhrase(levels: number[], entered: boolean): string {
+	const n = levels.length;
+	const heroes = n === 1 ? 'hero' : 'heroes';
+	if (!entered) return `${n} level-${levels[0] ?? 1} ${heroes}`;
+	const avg = levels.reduce((a, b) => a + b, 0) / (n || 1);
+	return `${n} ${heroes}, level ${avg.toFixed(levels.every(l => l === levels[0]) ? 0 : 1)}`;
+}
+
 /** Rate a list of monsters against party levels (one entry per hero). */
 export function rateEncounter(groups: { monster: NimbleMonster; count: number }[], partyLevels: number[]): EncounterRating {
 	const heroes = partyLevels.length || 1;
