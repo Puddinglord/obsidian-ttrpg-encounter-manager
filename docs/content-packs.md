@@ -1,8 +1,8 @@
 # Content packs
 
-Ember Vault ships only what it's allowed to: all of Nimble, and the 5e SRD. A **content pack** adds the rest yourself: a subclass from a book you own, a third-party bestiary, your table's homebrew. It's a JSON file in your vault. Ember Vault never downloads or hosts packs.
+A **content pack** adds what Ember Vault doesn't ship: your table's homebrew class, a third-party bestiary, a subclass from a book you own. It's a JSON file in your vault. Ember Vault never downloads or hosts packs.
 
-Content packs work with 5e today.
+Packs work with both games. In Nimble they add classes, subclasses, a class's options, ancestries, backgrounds, spells, items, monsters and more. In 5e they add what isn't in the SRD.
 
 ## Add a pack
 
@@ -15,13 +15,16 @@ The file is saved in `Ember Vault/Content` (change the folder in settings). You 
 
 ## What a pack adds
 
-A pack's monsters, spells, magic items, equipment, feats, backgrounds, species, classes and subclasses work like the SRD's: in `5e:` references, autocomplete, slash commands, Spotlight, the compendium (tagged with the pack's name), character sheets and **New character**. A subclass joins its class.
+Whatever a pack adds goes into the compendium, tagged with the pack's name, and works like the books' own:
 
-When two things share a name, the closest one wins: a note in your vault, then a pack, then the SRD.
+- **Nimble:** New character and Level up offer the pack's classes, subclasses, ancestries, backgrounds and options; character sheets read them; its monsters are in the compendium, `nimble:` references, the encounter builder and **Add to fight**; its spells and items are in `nimble:spell:` references, autocomplete, slash commands and Spotlight. A subclass joins its class, and an option joins its class's list (a new Savage Arsenal ability shows up when a Berserker levels up).
+- **5e:** monsters, spells, magic items, equipment, feats, backgrounds, species, classes and subclasses, in `5e:` references, autocomplete, slash commands, Spotlight, the compendium, character sheets, **New character** and **Level up**. A subclass joins its class.
+
+When two things share a name, the closest one wins: a note in your vault, then a pack, then the books.
 
 ## Pick packs per campaign
 
-Every campaign uses every pack unless its home note says otherwise, with a `packs` property:
+Every campaign uses every pack for its game unless its home note says otherwise, with a `packs` property:
 
 | `packs:` | Uses |
 |---|---|
@@ -32,6 +35,44 @@ Every campaign uses every pack unless its home note says otherwise, with a `pack
 ## Write a pack
 
 A pack is one JSON object: its name, the game, and a list of entries. Each entry has a `kind` and a `name`, then that kind's fields.
+
+```json
+{
+  "pack": "The Lantern Road",
+  "system": "nimble",
+  "entries": [
+    {
+      "kind": "spell",
+      "name": "Lantern Ward",
+      "school": "Radiant",
+      "tier": 1,
+      "class": "Lamplighter",
+      "actions": "2 Actions",
+      "text": "Your lantern burns white. While you concentrate, enemies within 2 spaces of you have disadvantage on attacks against your allies."
+    }
+  ]
+}
+```
+
+`"system"` is `"nimble"` or `"5e"`.
+
+### Nimble
+
+- **Kinds:** `class`, `subclass`, `option`, `ancestry`, `background`, `spell`, `item`, `monster`, `boon`, `property` (a weapon property), `language`, `rule` and `condition`.
+- **Classes** are written the way the class books are: `keyStats`, `saves`, `hitDie`, `startingHp`, `startingGear`, and `levels`, each with its features. New character and Level up read the features' words:
+  - A feature called **Subclass** offers the subclass.
+  - **Key Stat Increase** with "+1 WIL or DEX." raises a stat.
+  - "Choose 1 Kindling." picks from the class's option list called Kindlings (`optionGroups`).
+  - When the words don't name the list, give the feature `choose`: `{ "from": ["Combat Tactics"], "count": 1 }`.
+- **Resources** are what the class panel counts: `{ "name": "Ember Dice", "max": "WIL", "die": "d6" }`. For dice, `dice` says how they're used: rolled when spent or gained, which rolls they go into (`attack`, `spell`, `save`, `check`), and the die at each level.
+- **Casting:** `casting` gives the mana pool (`"manaFormula": "WIL+LVL"`) and the schools known. A spell with `"class": "Lamplighter"` is that class's own.
+- **Subclasses** name their class: `"class": "Berserker"`.
+- **Options** name their class and list: `"class": "Berserker", "group": "Savage Arsenal"`.
+- **Monsters** can be written field by field (`level`, `hp`, `armor`, `actions`…), or as `"statblock"`: the text of a ```` ```nimble ```` block (see the [bestiary](bestiary.md)).
+
+The full example is [nimble-lantern-road.json](content/examples/nimble-lantern-road.json): the Lamplighter class with its own Ember Dice and a subclass, a new Savage Arsenal ability for the Berserker, an ancestry, a background, two spells, a magic item and a monster.
+
+### 5e
 
 ```json
 {
@@ -64,13 +105,15 @@ The full example is [5e-hearth-and-cinder.json](content/examples/5e-hearth-and-c
 
 ### Check it as you write
 
-Point your editor at the schema and it suggests fields and flags mistakes as you type. Add this line at the top of the pack:
+Point your editor at the game's schema and it suggests fields and flags mistakes as you type. Add this line at the top of the pack:
 
 ```json
-"$schema": "https://raw.githubusercontent.com/Puddinglord/obsidian-ttrpg-encounter-manager/main/docs/content/5e.schema.json",
+"$schema": "https://raw.githubusercontent.com/Puddinglord/obsidian-ttrpg-encounter-manager/main/docs/content/nimble.schema.json",
 ```
 
-Import content checks it too, and says exactly what's wrong: `Entry 2 (Half Done): "school" is missing`.
+For 5e, end it with `5e.schema.json` instead.
+
+Import content checks it too, and says exactly what's wrong: `Entry 2 (Half Done): "tier" is missing`.
 
 ## Sharing
 

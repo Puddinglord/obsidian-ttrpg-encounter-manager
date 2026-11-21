@@ -83,7 +83,8 @@ src/systems/nimble/
   live-preview.ts       CodeMirror extension that renders references in Live Preview
   hp-pad.ts             Touch HP keypad used by the tracker instead of the text box
   suggest.ts            `nimble:` autocomplete and the "Add monster…" picker
-  compendium.ts         Player compendium types, lookups, featuresFor, search (pure, tested); data/compendium.json, compendium-data.ts loads it
+  compendium.ts         Player compendium types, lookups, featuresFor, search (pure, tested); data/compendium.json, compendium-data.ts loads it with the campaign's content packs and the vault's homebrew on top
+  content.ts            What Nimble takes in content packs (every kind it ships, with the bundled data's fields), pack entries as content, and that content merged onto the books (pure, tested)
   compendium-card.ts    How a compendium entry looks: cards, full class pages, condition cards, the card modal
   character-def.ts      Character note frontmatter → sheet values, and every sheet change as a frontmatter edit (pure, tested)
   character-sheet.ts    The ```nimble-sheet renderer (writes through processFrontMatter, rolls through plugin.rollDice), as the design study draws it
@@ -112,7 +113,7 @@ e2e/                    End-to-end tests that drive a real Obsidian
 
 Rules that keep this healthy:
 
-- Core's `types.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, the registry, and Nimble's `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `attack-roll.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
+- Core's `types.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, the registry, and Nimble's `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `attack-roll.ts`, `roll-def.ts`, `resource-def.ts`, `content.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
 - Views don't mutate encounter data directly. Call `nimble().encounters.*` (or 5e's `dnd5e().fights.change`); it saves and fires `changed`, and every open tracker re-renders.
