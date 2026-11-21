@@ -4,6 +4,19 @@ import {
 	retime, saveEnds, savePassed, triggerMark, turnEvent, TurnEventResult, undoTurnEvent, untilSaved,
 } from '../src/core/tracker/effects';
 import type { AppliedCondition, ConditionTiming, EffectTrigger, TurnBoundary } from '../src/core/types';
+import { firstLine } from '../src/core/tracker/condition-editor';
+import { trackerConditionsFor } from '../src/systems/dnd5e/conditions';
+import { NIMBLE_CONDITIONS } from '../src/systems/nimble/types';
+
+describe('the condition picker\'s one-line rules', () => {
+	it('start at what the condition does: past a preamble, a run-in label or a list\'s bullet', () => {
+		expect(firstLine("- A blinded creature can't see and automatically fails any ability check that requires sight.\n- Attack rolls against the creature have advantage.")).toBe("A blinded creature can't see and automatically fails any ability check that requires sight");
+		expect(firstLine("While you have the Blinded condition, you experience the following effects.\n**Can't See.** You can't see and automatically fail any ability check that requires sight.")).toBe("You can't see and automatically fail any ability check that requires sight");
+		for (const c of [...trackerConditionsFor('2014'), ...trackerConditionsFor('2024'), ...NIMBLE_CONDITIONS]) {
+			expect(firstLine(c.description), c.name).toMatch(/^[A-Za-z0-9"'(]/);
+		}
+	});
+});
 
 const burn: EffectTrigger = { kind: 'damage', at: 'start', dice: '1d4', damageType: 'Fire' };
 const hold: EffectTrigger = { kind: 'save', at: 'end', ability: 'Wisdom', dc: 13, endsOnSave: true };
