@@ -1401,4 +1401,98 @@ export function register(test, h) {
 			assert.equal(await view(o, '.dnd5e-encounter-missing').count(), 0);
 		});
 	});
+
+	// -----------------------------------------------------------------------
+	// The player's side
+
+	test('entities 5e: player campaign: your character marked You; NPC, quest and place cards without stats, secrets or read-aloud; monsters as lore; battle notes; no tracker', async (o) => {
+		const C = 'Campaigns/E5 Players';
+		const me = `${C}/Party/Pip Thistle.md`;
+		const npc = `${C}/NPCs/Marta Vey.md`;
+		const quest = `${C}/Quests/The Drowned Bell.md`;
+		const place = `${C}/Locations/The Salt Stair.md`;
+		const fightNote = `${C}/Sessions/Ambush.md`;
+		await scenario(o, 'player', [C], async () => {
+			await campaign5e(o, 'E5 Players', { edition: '2024', role: 'player', level: 2 });
+			assert.equal(await o.eval((app, plugin, C) => plugin.playerView(`${C}/x.md`), C), true);
+			assert.equal(await cgroup(o, `${C}/Monsters`).count(), 0, 'no Monsters folder for a player');
+
+			// Your character: Add your character opens 5e's New character; the sheet is yours, marked You.
+			await o.page.locator(`${CP} .campaign-roster-empty`).click();
+			await fillCharacter(o, { name: 'Pip Thistle', className: 'Rogue', level: 2, skills: ['Stealth', 'Perception', 'Sleight of Hand', 'Acrobatics'], languages: ['Halfling', 'Elvish'] });
+			const fm = await waitFm(o, me, f => f.class === 'Rogue', 'your character');
+			assert.equal(fm.mine, true);
+			await o.waitFor(async () => (await o.page.locator(`${CP} .campaign-hero.is-mine .campaign-hero-you`).count()) === 1, { what: 'You in the party' });
+			await o.openFile(me, 'preview');
+			await view(o, '.dnd5e-sheet').waitFor({ timeout: 5000 });
+
+			// An NPC from the panel: the player's starter (no stats, Suspicions instead of a secret).
+			await h.openPicker(o, `${C}/NPCs`);
+			await h.createFromPicker(o, 'Marta Vey');
+			await o.waitFor(() => exists(o, npc), { what: 'the NPC note' });
+			const npcText = await read(o, npc);
+			assert.doesNotMatch(npcText, /\nac: |\nstatblock: |\nsecret: /, 'no GM properties in a player\'s NPC');
+			assert.match(npcText, /suspicions:/);
+			// Even with numbers and a secret pasted in, the player's card shows neither.
+			await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); await app.vault.modify(f, (await app.vault.read(f)).replace('```nimble-npc\n', '```nimble-npc\nsecret: She sells the tide tables.\nsaid: Mind the ninth step.\n')); }, npc);
+			await setFm(o, npc, { role: 'Harbour master', ac: 17, hp: 45, statblock: 'Bandit Captain' });
+			await o.openFile(npc, 'preview');
+			const card = view(o, '.nimble-npc-card');
+			await o.waitFor(async () => /Mind the ninth step/.test(await card.innerText().catch(() => '')), { what: 'the player\'s card' });
+			assert.ok(await card.evaluate(n => n.classList.contains('is-player')));
+			assert.equal(await card.locator('.dnd5e-npc-stats, .dnd5e-npc-fight, .nimble-npc-field.is-secret').count(), 0);
+			assert.doesNotMatch(await card.innerText(), /tide tables|Bandit Captain/);
+
+			// A quest: it starts active; a secret typed in stays off the card.
+			await h.openPicker(o, `${C}/Quests`);
+			await h.createFromPicker(o, 'The Drowned Bell');
+			await o.waitFor(() => exists(o, quest), { what: 'the quest note' });
+			assert.match(await read(o, quest), /status: active/);
+			await setFm(o, quest, { giver: '[[Marta Vey]]', reward: '50 gp', secret: 'Marta rang it herself.' });
+			await o.openFile(quest, 'preview');
+			const qc = view(o, '.ev-cq.kind-quest');
+			await o.waitFor(async () => /Given by[\s\S]*Marta Vey/i.test(await qc.innerText().catch(() => '')), { what: 'the quest card' });
+			assert.equal(await qc.locator('.ev-cq-secret').count(), 0);
+			assert.doesNotMatch(await qc.innerText(), /rang it herself/);
+
+			// A place: no read-aloud box, no secret.
+			await h.openPicker(o, `${C}/Locations`);
+			await h.createFromPicker(o, 'The Salt Stair', 'location');
+			await o.waitFor(() => exists(o, place), { what: 'the place' });
+			await setFm(o, place, { read_aloud: 'Worn steps run down into black water.', secret: 'The ninth step is hollow.', region: 'The Drowned Quarter' });
+			await o.openFile(place, 'preview');
+			const pcard = view(o, '.ev-cq.kind-location');
+			await o.waitFor(async () => /The Drowned Quarter/.test(await pcard.innerText().catch(() => '')), { what: 'the place card' });
+			assert.equal(await pcard.locator('.ev-cq-read, .ev-cq-secret').count(), 0);
+
+			// Monsters: a reference is a lore card, never the numbers; an encounter block is a battle note.
+			await write(o, fightNote, '# Ambush\n\nWe met a `5e:Goblin Warrior`.\n\n```nimble-encounter\nname: Ambush on the stair\noutcome: won\nmonsters:\n- 3 Goblin Warrior\n```\n');
+			await o.openFile(fightNote, 'preview');
+			await o.waitFor(async () => (await view(o, 'p .dnd5e-ref.nimble-inline-found').count()) === 1, { what: 'the reference' });
+			assert.equal(await view(o, '.dnd5e-ref .nimble-inline-level').count(), 0, 'no CR on a player\'s reference');
+			await view(o, 'p .dnd5e-ref .nimble-inline-name').click();
+			const look = o.page.locator('.modal.dnd5e-quick-look');
+			await look.waitFor({ timeout: 3000 });
+			await o.waitFor(async () => (await look.locator('.dnd5e-lore').count()) === 1, { what: 'the lore card' });
+			assert.doesNotMatch(await look.innerText(), /Armor Class|\bAC\b|Hit Points|Challenge|Add to fight|Copy to vault/);
+			await o.page.keyboard.press('Escape');
+			const enc = view(o, '.dnd5e-encounter');
+			await enc.waitFor({ timeout: 5000 });
+			assert.equal(await enc.locator('.nimble-difficulty, .dnd5e-encounter-xp, .dnd5e-encounter-stats, button').count(), 0, 'no rating, numbers or Run for a player');
+			assert.match(await enc.innerText(), /Ambush on the stair[\s\S]*3×[\s\S]*Goblin Warrior/);
+
+			// The compendium's monsters are lore too, and the tracker isn't offered.
+			// (A player's tab says Creatures.)
+			await compendium(o, 'Creatures', 'goblin warrior');
+			await o.waitFor(async () => (await cmpNames(o, CV)).includes('Goblin Warrior'), { timeout: 5000, what: 'the Goblin Warrior listed' });
+			await cmpRow(o, 'Goblin Warrior', CV).click();
+			await o.waitFor(async () => (await o.page.locator(`${CV} .nimble-cmpx-detail .dnd5e-lore`).count()) === 1, { what: 'the compendium page as lore' });
+			assert.doesNotMatch(await o.page.locator(`${CV} .nimble-cmpx-detail`).innerText(), /Armor Class|Hit Points|Add to fight/);
+			assert.equal(await o.eval((app) => app.commands.findCommand('nimble-gm:open-tracker').checkCallback(true)), false, 'no tracker in a campaign you play in');
+			// But a stat block you wrote yourself, in your own campaign, shows in full.
+			await write(o, `${C}/Notes/Our familiar.md`, '```5e\nname: Sprocket\nsize: Tiny\ntype: Construct\nac: 13\nhp: 7 (2d4 + 2)\nspeed: 30 ft.\ncr: 0\n```\n');
+			await o.openFile(`${C}/Notes/Our familiar.md`, 'preview');
+			await o.waitFor(async () => /AC\s*13[\s\S]*HP\s*7/.test(await view(o, '.dnd5e-statblock').innerText().catch(() => '')), { what: 'your own block in full' });
+		});
+	});
 }
