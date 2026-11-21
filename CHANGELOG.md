@@ -142,6 +142,9 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Clicking a map pin, or a link in a card or box, that goes to a note that doesn't exist says so instead of making an empty note at the top of your vault. See the [maps guide](docs/maps.md).
 - A player's battle notes in a 5e campaign show how it went, where, when and the loot, with Edit, like Nimble's; `/fought` offers Fill in the rest… there too. See [Playing in a campaign](docs/players.md#battle-notes).
 - New character… in a campaign you run makes a party member, not a hero marked You. See the [character sheets guide](docs/character-sheets.md).
+- A quick look in a narrow window keeps the name readable, with its buttons under it, and the compendium's rows no longer cut their last tag in half on narrow screens. See the [compendium guide](docs/compendium.md).
+- A Nimble hero's "Level 2" stays on one line in the sheet's heading, and Speed and Hit dice stay inside the turn band in a narrow Character panel. See the [character sheets guide](docs/character-sheets.md).
+- Language chips, the damage die button and the compendium's Back to the list on phones line up their icon and label, and the SRD notice in settings stays inside its box in a narrow window. See the [settings guide](docs/settings.md).
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
