@@ -200,7 +200,7 @@ export const KINDS_NIMBLE: KindSpec[] = [
 		fields: named({
 			category: text('weapon, armor, shield, gear, magic, wand, scroll, consumable…', true), subcategory: text('"melee", "ranged", "cloth", "weapon"…'),
 			cost: text('"12 gp".'), damage: text('Weapons: "1d8".'), stat: text('Weapons: STR or DEX.'), damageType: text('"slashing".'),
-			properties: { type: 'strings', description: '"2-handed", "Thrown 4", "Light".' }, range: text(), armor: text('Armor: "2+DEX", "6".'),
+			properties: { type: 'strings', description: '"2-handed", "Thrown 4", "Light".' }, range: text(), armor: text('Defense: "2+DEX", "6".'),
 			strength: int({ min: 0, description: 'STR needed.' }), slots: int({ min: 0 }), rarity: text('common, uncommon, rare, very rare, legendary.'),
 			rarityText: text('"Rarity varies".'), tier: int({ min: 0 }), charges: text(), flavor: text(), text: text(), page,
 		}),

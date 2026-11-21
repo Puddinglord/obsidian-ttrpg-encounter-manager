@@ -266,7 +266,7 @@ export function itemDetail(it: Item): string {
 	const cat = it.category ? it.category[0].toUpperCase() + it.category.slice(1) : 'Item';
 	const bits = [it.subcategory && it.category !== 'gear' ? `${cat} (${it.subcategory})` : cat];
 	if (it.damage) bits.push(weaponDamage(it));
-	if (it.armor) bits.push(`${it.armor} armor`);
+	if (it.armor) bits.push(`${it.armor} Defense`);
 	if (it.properties?.length) bits.push(it.properties.join(', '));
 	if (it.rarity) bits.push(it.rarity);
 	if (it.cost) bits.push(it.cost);

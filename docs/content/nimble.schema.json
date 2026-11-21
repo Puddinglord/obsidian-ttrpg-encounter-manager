@@ -477,7 +477,7 @@
 									"string",
 									"number"
 								],
-								"description": "Armor: \"2+DEX\", \"6\"."
+								"description": "Defense: \"2+DEX\", \"6\"."
 							},
 							"strength": {
 								"type": "integer",

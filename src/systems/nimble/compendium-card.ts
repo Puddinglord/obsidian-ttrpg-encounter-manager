@@ -137,7 +137,7 @@ export function renderHitBody(parent: HTMLElement, hit: CompendiumHit, o: CardOp
 			const it = hit.entry as Item;
 			fact('Type', [it.category, it.subcategory].filter(Boolean).join(' · '));
 			fact('Damage', weaponDamage(it));
-			fact('Armor', it.armor);
+			fact('Defense', it.armor);
 			fact('Range', it.range);
 			fact('Req.', it.strength ? `${it.strength} STR` : undefined);
 			fact('Slots', it.slots);

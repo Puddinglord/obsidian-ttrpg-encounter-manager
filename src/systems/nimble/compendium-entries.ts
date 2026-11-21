@@ -546,7 +546,7 @@ export function entryPills(e: Entry, lore = false): Pill[] {
 				const it = h.entry as Item;
 				add(it.subcategory && it.category !== 'gear' ? `${CAP(it.category ?? '')} · ${it.subcategory}` : CAP(it.category ?? ''));
 				if (it.damage) add(weaponDamage(it));
-				if (it.armor) add(`${it.armor} armor`);
+				if (it.armor) add(`${it.armor} Defense`);
 				for (const p of it.properties ?? []) add(p.replace(/\s*\(.*\)$/, ''));
 				add(it.cost);
 				break;

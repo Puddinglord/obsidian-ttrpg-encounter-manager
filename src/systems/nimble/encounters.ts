@@ -147,7 +147,7 @@ export interface HeroReaction {
 	interpose?: string;
 }
 
-/** Damage after a Defend: the defender's Armor off, nothing off a crit. */
+/** Damage after a Defend: the defender's Defense off, nothing off a crit. */
 export function defendedDamage(amount: number, armor: number | undefined, crit: boolean): number {
 	return crit ? amount : Math.max(0, amount - Math.max(0, armor ?? 0));
 }
@@ -541,11 +541,11 @@ export class EncounterStore extends Events {
 		if (react.defend) {
 			amount = defendedDamage(amount, target.defense, !!cmd.crit);
 			spend(target);
-			said.push(cmd.crit ? `${target.label} defends (a crit: Armor doesn't help)` : `${target.label} defends (−${target.defense ?? 0})`);
+			said.push(cmd.crit ? `${target.label} defends (a crit: Defense doesn't help)` : `${target.label} defends (−${target.defense ?? 0})`);
 		}
 		for (const s of said) this.log(enc, s, false);
 		const r = this.applyHp(encId, target.id, { ...cmd, amount });
-		const working = react.defend && !cmd.crit ? `${cmd.amount} − ${target.defense ?? 0} Armor = ${amount}` : undefined;
+		const working = react.defend && !cmd.crit ? `${cmd.amount} − ${target.defense ?? 0} Defense = ${amount}` : undefined;
 		return { ...r, breakdown: working ?? r.breakdown };
 	}
 

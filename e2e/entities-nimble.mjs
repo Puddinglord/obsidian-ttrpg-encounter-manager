@@ -821,7 +821,7 @@ export function register(test, h) {
 			}
 			assert.equal((await encounter(o)).phase, 'monsters', 'both heroes done: the monsters\' side');
 
-			// A goblin hits Brakka, who Defends: his Armor comes off the hit.
+			// A goblin hits Brakka, who Defends: his Defense comes off the hit.
 			await card(o, 'Brakka').locator('.hp-display').click();
 			const pad = o.page.locator('.nimble-hp-pad');
 			await pad.waitFor();

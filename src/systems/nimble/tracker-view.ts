@@ -508,7 +508,7 @@ export class EncounterTrackerView extends ItemView {
 		if (hero) {
 			const cls = [c.monster.type, c.monster.level !== undefined ? String(c.monster.level) : ''].filter(Boolean).join(' ');
 			if (cls) part(cls);
-			if (c.defense !== undefined) part(`Armor ${c.defense}`);
+			if (c.defense !== undefined) part(`Defense ${c.defense}`);
 		} else {
 			const lvl = formatLevel(c.monster.level);
 			if (role === 'legendary') part(`${c.monster.roleLabel || 'Legendary'}${lvl ? ` · Level ${lvl}` : ''}`);

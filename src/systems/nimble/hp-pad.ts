@@ -2,7 +2,7 @@
 // Heal on the tracker's card, or anyone's HP, and it opens beside it (a bottom
 // sheet on phones). Monsters' armor and Vulnerable/Resisted show in the
 // preview; minions are hit or brought back; a hero's keypad has the players'
-// answers as quiet chips (Defend takes their Armor off, Interpose sends the
+// answers as quiet chips (Defend takes their Defense off, Interpose sends the
 // hit to a friend), never a prompt. Typing works too, with the same shorthand
 // as always: 12, 12!, +5, =20, t5, 12v, 12r, then Enter.
 
@@ -83,7 +83,7 @@ export function openHpCalculator(
 
 /**
  * The damage that lands, as the keypad's big number and button show it: a monster's after its armor and
- * Vulnerable (+10) or Resisted (−10), the same sum the preview shows; a hero's after Defend (their Armor, or the
+ * Vulnerable (+10) or Resisted (−10), the same sum the preview shows; a hero's after Defend (their Defense, or the
  * friend's who Interposes; a crit ignores it).
  */
 export function dealtDamage(c: EncounterCreature, v: number, crit: boolean, mod: DamageMod | undefined, autoArmor: boolean, react: HeroReaction = {}, friends: EncounterCreature[] = []): number {
@@ -110,7 +110,7 @@ export function previewText(c: EncounterCreature, mode: Mode, v: number, crit: b
 		const t = friend ?? c;
 		const amount = react.defend ? defendedDamage(v, t.defense, crit) : v;
 		const who = friend ? `${friend.label} takes it: ` : '';
-		const defend = react.defend ? (crit ? 'crit: Armor doesn\'t help · ' : `${v} − ${t.defense ?? 0} = ${amount} · `) : '';
+		const defend = react.defend ? (crit ? 'crit: Defense doesn\'t help · ' : `${v} − ${t.defense ?? 0} = ${amount} · `) : '';
 		if (t.currentHp <= 0) return `${who}${defend}hit while Dying: +${crit ? 3 : 2} Wounds`;
 		const left = Math.max(0, t.currentHp + (t.tempHp ?? 0) - amount);
 		return `${who}${defend}${left <= 0 ? `drops ${t.label} to 0: Dying, +1 Wound` : `→ ${Math.min(left, t.currentHp)}/${t.maxHp}`}`;

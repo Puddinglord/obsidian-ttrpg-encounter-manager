@@ -71,6 +71,7 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 
 ### Changed
 
+- A Nimble hero's Armor is called Defense, as Core 3.3 calls it: on the sheet, the tracker, the quick look, Defend on the HP keypad, and an armor's number in the compendium ("2+DEX Defense"). Monsters keep Medium and Heavy Armor. Your notes don't change. See the [character sheets guide](docs/character-sheets.md).
 - Each campaign keeps its own fight. Opening a note in another campaign switches the tracker to that campaign's encounter, and to its game's tracker (Nimble's or 5e's); going back brings the first fight back. See the [campaigns guide](docs/campaigns.md).
 - Clicking a map pin shows its note in a quick look over the map instead of opening the page; Cmd/Ctrl-click still opens it. **Show pin labels** now shows labels on small maps too. See the [maps guide](docs/maps.md).
 - Pips work the same in both games: tap a filled pip to take one away, an empty one to add one, and the one that changed animates. 5e's legendary actions, death saves and spell slots use them. See [Playing 5e](docs/5e.md#the-5e-combat-tracker).
@@ -124,8 +125,8 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - The Edit pencil shows when you point at a 5e monster, spell or item block, as it does on Nimble's. See the [builder guide](docs/builder.md#opening-it).
 - Nimble's Level up no longer asks for a Weapon Mastery at level 14 or a Direbeast form at Stormshifter level 6, a Psion's picks offer every tier they've unlocked, a Hexbinder starts knowing Withered and Frenzied, and Razor Wind's text no longer repeats its range. See the [character sheets guide](docs/character-sheets.md#levelling-up).
 - With Vulnerable on, the HP keypad's big number and button show the damage that lands (19 for 9 + 10 in Nimble, 18 for 9 doubled in 5e), matching its sum.
-- Defend on a Nimble character sheet's HP keypad takes your Armor off the hit and spends an action. It used to do nothing.
-- Spotlight no longer offers an NPC's role as a `role:` filter, and the Nimble quick look calls a hero's number Armor, as the card and sheet do.
+- Defend on a Nimble character sheet's HP keypad takes your Defense off the hit and spends an action. It used to do nothing.
+- Spotlight no longer offers an NPC's role as a `role:` filter, and the Nimble quick look calls a hero's number Defense, as the card and sheet do.
 - Renaming a combatant just after a hit no longer saves half the name.
 - Import content's summary gets plurals right ("2 classes", "1 species"). See the [content packs guide](docs/content-packs.md).
 - Nimble boons in content packs are read: a boon gives its kind as `"type": "epic"`. See [content packs](docs/content-packs.md#nimble).

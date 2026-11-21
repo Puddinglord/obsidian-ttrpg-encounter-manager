@@ -50,7 +50,7 @@ describe('Nimble keypad: what lands', () => {
 		expect(read().button).toBe('Deal 15 damage');
 	});
 
-	it("a hero's Defend takes their Armor off the hit", () => {
+	it("a hero's Defend takes their Defense off the hit", () => {
 		openHpCalculator(document.body.createDiv(), brakka, true, () => {});
 		press('9');
 		tap('.hp-pad-qa', 'Defend');

@@ -142,5 +142,5 @@ text: Replays the last minute of sound in the room. **Catch:** it replays your w
 - The block shows as the compendium's card, framed in the note, and the spell or item joins the compendium, marked Homebrew: search, `nimble:spell:Ember Lash` references, and the character sheet's **Add spell** and **Add item**.
 - `text:` comes last and can run over several lines.
 - Spell fields: `school`, `tier` (or `cantrip`), `utility: yes`, `actions`, `range`, `aoe`, `concentration`, `damage`, `upcast`, `scaling` (a cantrip's higher levels).
-- Item fields: `category` (weapon, armor, shield, consumable, magic, gear), `rarity`, `damage`, `stat`, `damage type`, `properties` (a list on one line), `armor`, `strength`, `charges`, `cost`.
+- Item fields: `category` (weapon, armor, shield, consumable, magic, gear), `rarity`, `damage`, `stat`, `damage type`, `properties` (a list on one line), `armor` (the Defense it gives, like `2+DEX`), `strength`, `charges`, `cost`.
 - A note with the same name as a book spell or item replaces it in the compendium, for every campaign in the vault. If two notes use the same name, the first by path wins.

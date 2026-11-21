@@ -7202,7 +7202,7 @@ GN.focus = (c, opts = {}) => {
 	const dying = c.status === 'dying';
 	return h('div.xn-focus',
 		h('div.xn-f-top',
-			h('div.nm', h('h2', c.name), h('p', c.meta, h('span', '·'), `Armor ${c.armor}`)),
+			h('div.nm', h('h2', c.name), h('p', c.meta, h('span', '·'), `Defense ${c.armor}`)),
 			h('div.acts', GN.acts(c.actions.max, c.actions.left, true), h('small', dying ? '1 action while Dying' : `${c.actions.left} actions left`))),
 		h('div.xn-hp', GN.hpLine(c, true), bar({ value: c.hp.value, max: c.hp.max })),
 		dying ? h('div.xn-dying', 'Dying: 2 Wounds of 6', h('span', 'Any hit adds 2 Wounds, 3 on a crit. Healing brings Wren back up.')) : null,
@@ -9443,7 +9443,7 @@ GNS.hpBar = hp => {
 			btn({ icon: 'keypad', kind: 'icon', size: 'sm', title: 'Keypad', cls: 'sh-pad' })),
 		h('span.f', icon('heal', 12), h('span', 'Temp'), h('b.ev-num' + (hp.temp ? '' : '.none'), String(hp.temp || 0))));
 };
-/** Armor and Initiative: boxes with the sheet's dark foot. Initiative rolls. */
+/** Defense and Initiative: boxes with the sheet's dark foot. Initiative rolls. */
 GNS.box = (label, value, opts = {}) => h((opts.roll ? 'button' : 'div') + '.xns-box' + (opts.roll ? '.is-roll' : ''), { title: opts.title || label },
 	h('span.l', label), h('b.ev-num', value), h('span.f', opts.roll ? GNS.d20(13) : null));
 /** Wounds: the chain of circles ending in a skull, in a box whose top dips for its label. */
@@ -9537,10 +9537,10 @@ GNS.sheet = (c, state = 'full', opts = {}) => {
 		h('div.xns-hero', portrait(c.name, opts.phone ? 60 : 78),
 			h('div.xns-id', h('h1', c.name), h('div.l', c.line), h('div.s', c.sub)),
 			h('div.xns-acts', GNS.cluster([{ icon: 'moon', text: 'Camp' }, { icon: 'arrow-up', text: 'Level up', cls: opts.levelUp ? 'xns-lvl' : '' }]))),
-		// The boxes (stats, Armor, Initiative, Wounds) pack above; Hit points is the wide bar along the bottom.
+		// The boxes (stats, Defense, Initiative, Wounds) pack above; Hit points is the wide bar along the bottom.
 		h('div.xns-band',
 			h('div.xns-stats', c.stats.map(st => GNS.statBox(st))),
-			h('div.xns-ai', GNS.box('Armor', String(c.armor), { title: 'Armor: Defend takes this off a hit' }), GNS.box('Initiative', sg(c.init), { roll: true, title: `Roll initiative ${sg(c.init)}` })),
+			h('div.xns-ai', GNS.box('Defense', String(c.armor), { title: 'Defense: Defend takes this off a hit' }), GNS.box('Initiative', sg(c.init), { roll: true, title: `Roll initiative ${sg(c.init)}` })),
 			GNS.woundsBox(c.wounds, 190, c.extraWounds || 0),
 			GNS.hpBar(c.hp)),
 		state === 'dying' ? h('div.xns-dying', h('b', 'Dying'), h('span', '1 action at most. Attacking costs a Wound unless you pass a DC 10 STR save; damage adds 2 Wounds, 3 on a crit.')) : null,
@@ -9619,7 +9619,7 @@ GNS.block = (kind = 'regular', size = 'full') => kind === 'regular'
 
 Object.assign(DEFS.nimble, {
 	sheet: {
-		title: 'Character sheet', lede: 'Brakka, level 3 Berserker, in a nimble-sheet block. This pass follows the official sheet closely: the four stat boxes with notched corners and a dark band, the save marks built into each box as triangles, Armor, Initiative and Wounds as boxes with the same dark foot (Wounds a chain ending in a skull), Hit Points as a wide red bar like mana’s along the bottom, and the ten skills as one band with notched end caps. HP is red and mana is blue; the rest is the sheet’s charcoal on the books’ parchment.',
+		title: 'Character sheet', lede: 'Brakka, level 3 Berserker, in a nimble-sheet block. This pass follows the official sheet closely: the four stat boxes with notched corners and a dark band, the save marks built into each box as triangles, Defense (Core 3.3’s word for it), Initiative and Wounds as boxes with the same dark foot (Wounds a chain ending in a skull), Hit Points as a wide red bar like mana’s along the bottom, and the ten skills as one band with notched end caps. HP is red and mana is blue; the rest is the sheet’s charcoal on the books’ parchment.',
 		research: { cards: [
 			{ t: 'The official sheet (premade characters, Core p.20)', sw: [['#545454', 'sheet charcoal'], ['#969696', 'stat over a skill'], ['#FCFCFC', 'paper']], li: [['Stat boxes: a value area with its two bottom corners bitten by round notches, over a dark band with the stat name. A triangle sits on top of each box and another hangs under it: filled above for an advantaged save, filled below for a disadvantaged one, outlines otherwise.', S('Premade characters p.1', '#')], ['Hit Points is a shield: a peaked top with a heart on it, the max after a slash, Temp HP in the lower half, a dark foot with a point. Armor and Initiative are boxes with a dark foot. Wounds: five circles joined in a chain, a skull at the end, the label sitting in a dip in the box’s top edge.', S('Premade characters p.1', '#')], ['Skills: one charcoal band, ten white cells, the stat small and grey above the number, the name on the band below; round bites where the cells meet; notched end caps.', S('Premade characters p.1–3', '#')]] },
 			{ t: 'The books’ colour', sw: [['#F0EAD8', 'parchment'], ['#D8D2BA', 'khaki banner'], ['#D02020', 'callout red'], ['#D09040', 'Heroes ochre']], li: [['Every page is a warm parchment, never white; side notes and monster passives sit on a khaki band. Spot colour is rare: red for the sheet callouts and Bloodied numbers, an ochre in the Heroes class ornaments.', S('Core p.13, 20; GMG p.33, 46; Heroes p.55', '#')], ['Names are Beaufort Pro Heavy Italic in small caps (monsters) and Beaufort Heavy (headings); everything else is Avenir Next Condensed.', S('fonts embedded in the PDFs', '#')]] },
@@ -9631,7 +9631,7 @@ Object.assign(DEFS.nimble, {
 			{ device: 'note-laptop', title: 'Brakka', path: 'Campaigns / Brakka’s journal / Party / Brakka', cap: 'Laptop: the full sheet', sub: 'The official band, the skills band, three actions with End turn and hit dice, the Berserker panel (Fury dice, Rage, One with the Ancients).', render: () => GNS.sheet(BRAKKA), height: 1060 },
 			{ device: 'note-landscape', title: 'Brakka', cap: 'iPad landscape: a hit, and Defend', sub: 'Tapping the HP bar or the keypad button opens the shared keypad, with Defend as a quiet chip.', render: () => GNS.sheet(BRAKKA), overlay: () => GNS.modal() },
 			{ device: 'note-portrait', title: 'Tamsin Reed', cap: 'iPad portrait: a mage spends mana', sub: 'Tamsin’s Mage panel: mana in blue, Steel Will spent. She has 2 extra Wounds from a feature, so the sheet’s dashed circles appear under her Wounds chain (8 in all); heroes without extras don’t get the row.', render: () => GNS.sheet(TAMSIN, 'mana') },
-			{ device: 'note-phone', title: 'Brakka', cap: 'Phone: Dying', sub: 'Stats across the top, then Armor, Initiative and Wounds 2 of 6, then the HP bar across the width.', render: () => GNS.sheet(BRAKKA, 'dying', { phone: true }) },
+			{ device: 'note-phone', title: 'Brakka', cap: 'Phone: Dying', sub: 'Stats across the top, then Defense, Initiative and Wounds 2 of 6, then the HP bar across the width.', render: () => GNS.sheet(BRAKKA, 'dying', { phone: true }) },
 			{ device: 'pair', cap: 'One frame for every class', sub: 'Fury and Judgment dice, Lay on Hands, Hunter’s Mark, Thrill of the Hunt charges, Coordinated Strike uses, a Shepherd’s mana. Same columns, same clusters.', items: [{ el: () => h('div.g-nimble', { style: { width: '700px', background: 'var(--g-bg)', padding: '16px 20px', borderRadius: '14px' } }, GNS.classGallery()), cap: 'Class panels' }] },
 		],
 	},

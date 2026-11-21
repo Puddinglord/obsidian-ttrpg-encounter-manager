@@ -538,7 +538,7 @@ const features = {
 		setup: async () => { await layout(); await open(`${C}/Sessions/Session 1 - Silver Between the Stones.md`); },
 		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .nimble-note-card.kind-session'],
 	},
-	// The top of Brakka's sheet: who he is, the band (stats, Armor, Initiative, Wounds, HP) and the skills.
+	// The top of Brakka's sheet: who he is, the band (stats, Defense, Initiative, Wounds, HP) and the skills.
 	'feature-character-sheet': {
 		lineWidth: 760,
 		setup: async () => { await layout(); await open(`Campaigns/Brakka's Journal/Party/Brakka.md`); },
@@ -582,7 +582,7 @@ const features = {
 			return { left: b.left, right: b.right, top: b.top, bottom: card.getBoundingClientRect().bottom };
 		},
 	},
-	// tracker.md "HP": a hero's damage keypad with the players' answers as chips; Defend takes Brakka's Armor off.
+	// tracker.md "HP": a hero's damage keypad with the players' answers as chips; Defend takes Brakka's Defense off.
 	'guide-tracker-defend': {
 		viewport: [1200, 1000], bg: 'var(--background-secondary)', ratio: 0.5, // the whole keypad
 		setup: async () => {

@@ -549,7 +549,7 @@ export class CharacterSheetRenderer extends Component {
 		}
 	}
 
-	/** Armor and Initiative: boxes with the sheet's dark foot; Initiative's shows a d20 and rolls. */
+	/** Defense and Initiative: boxes with the sheet's dark foot; Initiative's shows a d20 and rolls. */
 	private renderBoxes(ai: HTMLElement): void {
 		const s = this.sheet;
 		const editing = this.state.editing;
@@ -567,7 +567,7 @@ export class CharacterSheetRenderer extends Component {
 			const foot = el.createSpan({ cls: 'ns-box-foot' });
 			if (roll) setIcon(foot, evIcon('d20'));
 		};
-		box('armor', 'Armor', String(s.armor), `Armor ${s.armor}`);
+		box('armor', 'Defense', String(s.armor), `Defense ${s.armor}`);
 		box('initiative', 'Initiative', fmtMod(s.initiative), `Initiative ${fmtMod(s.initiative)}. Roll initiative`, () => this.rollD20(s.initiative, 'Initiative', null));
 	}
 
@@ -637,18 +637,18 @@ export class CharacterSheetRenderer extends Component {
 			// The pad only reads the monster's name and armor for heroes.
 			monster: { name: s.name, armor: 'none', hp: s.hpMax, movement: String(s.speed) },
 			currentHp: s.hp, maxHp: s.hpMax, tempHp: s.tempHp, wounds: s.wounds, maxWounds: s.woundsMax, conditions: [],
-			// Armor, for the keypad's Defend chip.
+			// Defense, for the keypad's Defend chip.
 			defense: s.armor,
 		};
 		openHpCalculator(anchor, c, false, (cmd, react) => {
 			void this.mutate((fm, cur) => {
 				if (cmd.kind === 'damage') {
-					// Defend, when the player says so: their Armor comes off the hit (not a crit's), and it costs an action.
+					// Defend, when the player says so: their Defense comes off the hit (not a crit's), and it costs an action.
 					const amount = react.defend ? defendedDamage(cmd.amount, cur.armor, !!cmd.crit) : cmd.amount;
 					if (react.defend) useReaction(fm, cur, 'Defend');
 					const ev = applyDamage(fm, cur, amount, cmd.crit);
 					const said = [
-						...(react.defend ? [cmd.crit ? 'defends (a crit: Armor doesn\'t help)' : `defends (−${cur.armor})`] : []),
+						...(react.defend ? [cmd.crit ? 'defends (a crit: Defense doesn\'t help)' : `defends (−${cur.armor})`] : []),
 						...ev.filter(e => !/absorbed/.test(e)),
 					];
 					if (said.length) new Notice(`${cur.name} ${said.join('; ')}`);
@@ -1158,7 +1158,7 @@ export class CharacterSheetRenderer extends Component {
 			this.row(rows, `i:${e.index}:${e.name}`, {
 				name: e.name,
 				tags: [e.equipped ? 'Equipped' : '', it?.draft ? 'Draft' : ''],
-				detail: [it ? (it.damage ? weaponDamage(it) : it.armor ? `${it.armor} armor` : it.category ?? '') : 'Your own item', e.note ?? '', `${e.slotsUsed} slot${e.slotsUsed === 1 ? '' : 's'}`].filter(Boolean).join(' · '),
+				detail: [it ? (it.damage ? weaponDamage(it) : it.armor ? `${it.armor} Defense` : it.category ?? '') : 'Your own item', e.note ?? '', `${e.slotsUsed} slot${e.slotsUsed === 1 ? '' : 's'}`].filter(Boolean).join(' · '),
 				cls: `is-item${e.equipped ? ' is-equipped' : ''}`,
 				lead: wearable || e.equipped ? (el) => {
 					const eq = el.createEl('button', { cls: `ns-equip${e.equipped ? ' is-on' : ''}`, attr: { 'aria-pressed': String(e.equipped), 'aria-label': e.equipped ? `Unequip ${e.name}` : `Equip ${e.name}`, title: e.equipped ? 'Equipped' : 'Not equipped' } });

@@ -65,9 +65,9 @@ Tap a combatant's HP, or **Damage** or **Heal** on the card. The keypad opens be
 
 ### Defend and Interpose
 
-![Brakka's damage keypad with Defend on: 9 − 4 = 5, his Armor taken off the hit](images/guide-tracker-defend.png)
+![Brakka's damage keypad with Defend on: 9 − 4 = 5, his Defense taken off the hit](images/guide-tracker-defend.png)
 
-A hero's damage keypad has two quiet chips, for when the player says so: **Defend** takes their Armor off the hit (not a crit's), and **Interpose** has a friend take it instead (pick who). Each costs whoever did it an action, and goes in the combat log. You can use both: Defend then uses the friend's Armor.
+A hero's damage keypad has two quiet chips, for when the player says so: **Defend** takes their Defense off the hit (not a crit's), and **Interpose** has a friend take it instead (pick who). Each costs whoever did it an action, and goes in the combat log. You can use both: Defend then uses the friend's Defense.
 
 ## Quick look
 

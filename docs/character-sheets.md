@@ -24,7 +24,7 @@ Choices your class or background gives at level 1 come up too: an Academy Dropou
 
 ## The sheet
 
-![The top of Brakka's sheet: his name, Camp and Level up, the four stats with their save marks, Armor, Initiative, Wounds as a chain ending in a skull, the Hit points bar, and the skills](images/feature-character-sheet.png)
+![The top of Brakka's sheet: his name, Camp and Level up, the four stats with their save marks, Defense, Initiative, Wounds as a chain ending in a skull, the Hit points bar, and the skills](images/feature-character-sheet.png)
 
 The sheet follows Nimble's official character sheet. From the top:
 
@@ -32,7 +32,7 @@ The sheet follows Nimble's official character sheet. From the top:
 |---|---|
 | **Header** | Portrait, name, ancestry, class and level, then subclass and background. **Camp** opens Field rest, Safe rest and Level up; **Level up** goes straight to it. The list button shows the note's properties, and the pencil edits the details and stats (or long-press the name on a touch screen) |
 | **Stats** (STR, DEX, INT, WIL) | Tap one to roll a check or a save: the roll dialog opens on **Check**, with **Save** beside it. The triangles on a box's edges are your saves: filled above the box for your advantaged save, below it for the disadvantaged one |
-| **Armor** and **Initiative** | Worked out from your stats, gear, class and ancestry. Tap Initiative to roll it |
+| **Defense** and **Initiative** | Worked out from your stats, gear, class and ancestry (Defense is your DEX with no armor on). Tap Initiative to roll it |
 | **Wounds** | A chain of circles ending in a skull, with how many you have under it ("1 of 6"). Tap an empty circle to add a Wound and a filled one to heal one. Ancestry and background bonuses that always apply (a Dwarf's extra Wounds, say) are counted, and extra Wounds show as dashed circles; situational ones, like "+2 Defense if you moved", are left to you |
 | **Hit points** | A wide bar with **−** and **+** either side (tap a few times and they add up, then land as one change). Tap the bar, or the keypad button, for the HP keypad: damage, heal, set or temp HP. Temp HP is in the bar's foot and takes damage first. Dropping to 0 adds Wounds, as in the tracker, and a strip under the bar says what Dying means |
 | **Skills** | All ten in one band: stat, plus your points and your class's Skilled Hero bonuses. Tap one to roll a check |
@@ -185,7 +185,7 @@ cssclasses: [nimble-sheet-note]
 |---|---|
 | `save_adv`, `save_dis` | From the class (`none` for no save) |
 | `hit_die`, `hit_dice_max` | The class's Hit Die; max is your level (plus ancestry bonuses) |
-| `armor`, `initiative`, `speed`, `wounds_max`, `mana_max` | Worked out from your stats, gear, class and ancestry. Set one to override it |
+| `armor` (your Defense), `initiative`, `speed`, `wounds_max`, `mana_max` | Worked out from your stats, gear, class and ancestry. Set one to override it |
 | `skills` | 0 points: each skill equals its stat, plus your class's Skilled Hero bonuses |
 | `languages` | Common, your ancestry's language, and one more per point of INT |
 | `resources` | Nothing held or spent: no class dice, every use of a feature left |

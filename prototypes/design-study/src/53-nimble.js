@@ -63,7 +63,7 @@ GN.focus = (c, opts = {}) => {
 	const dying = c.status === 'dying';
 	return h('div.xn-focus',
 		h('div.xn-f-top',
-			h('div.nm', h('h2', c.name), h('p', c.meta, h('span', '·'), `Armor ${c.armor}`)),
+			h('div.nm', h('h2', c.name), h('p', c.meta, h('span', '·'), `Defense ${c.armor}`)),
 			h('div.acts', GN.acts(c.actions.max, c.actions.left, true), h('small', dying ? '1 action while Dying' : `${c.actions.left} actions left`))),
 		h('div.xn-hp', GN.hpLine(c, true), bar({ value: c.hp.value, max: c.hp.max })),
 		dying ? h('div.xn-dying', 'Dying: 2 Wounds of 6', h('span', 'Any hit adds 2 Wounds, 3 on a crit. Healing brings Wren back up.')) : null,
