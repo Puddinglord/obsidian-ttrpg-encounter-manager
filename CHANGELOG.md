@@ -4,6 +4,10 @@ What changed in each release of Ember Vault. The format follows [Keep a Changelo
 
 New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A line of its own before the first of those is the release's headline: the changelog page on the site uses it as the title, and it's what shows when you share the release's link. Link the guide page an entry is about, repo-relative (`See the [builder guide](docs/builder.md).`): the site shows it as a Guide pill, and the release notes point it at the guide on the site. When a pull request merges, the release workflow moves that section under the new version number and uses it for the release notes.
 - Nimble's Level up no longer asks for a Weapon Mastery at level 14 or a Direbeast form at Stormshifter level 6, a Psion's picks offer every tier they've unlocked, a Hexbinder starts knowing Withered and Frenzied, and Razor Wind's text no longer repeats its range. See the [character sheets guide](docs/character-sheets.md#levelling-up).
+- With Vulnerable on, the HP keypad's big number and button show the damage that lands (19 for 9 + 10 in Nimble, 18 for 9 doubled in 5e), matching its sum.
+- Defend on a Nimble character sheet's HP keypad takes your Armor off the hit and spends an action. It used to do nothing.
+- Spotlight no longer offers an NPC's role as a `role:` filter, and the Nimble quick look calls a hero's number Armor, as the card and sheet do.
+- Renaming a combatant just after a hit no longer saves half the name.
 
 ## [Unreleased]
 
