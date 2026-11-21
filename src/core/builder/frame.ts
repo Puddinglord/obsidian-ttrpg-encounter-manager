@@ -14,6 +14,7 @@ import type EmberVaultPlugin from '../../../main';
 import { confirmAction, isPhone, isTouch } from '../touch';
 import { fuzzyRank } from '../compendium/query';
 import { applyLook } from '../look';
+import { keepCurrentInView } from '../dialog';
 
 /** What a builder makes: "monster", "spell", "item"… (each system has its own). */
 export type EntityKind = string;
@@ -143,6 +144,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 	private queued = false;
 	private kindBar!: HTMLElement;
 	private dots!: HTMLElement;
+	private stopDots?: () => void;
 	private viewport!: HTMLElement;
 	private track!: HTMLElement;
 	private panels: HTMLElement[] = [];
@@ -182,6 +184,8 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		this.kindBar = head.createDiv({ cls: 'eb-kinds', attr: { role: 'radiogroup' } });
 		this.chip = head.createDiv({ cls: 'eb-chip', attr: { 'aria-live': 'polite' } });
 		this.dots = contentEl.createDiv({ cls: 'eb-dots', attr: { role: 'tablist' } });
+		this.stopDots?.();
+		this.stopDots = keepCurrentInView(this.dots);
 
 		const body = contentEl.createDiv({ cls: 'eb-body' });
 		this.viewport = body.createDiv({ cls: 'eb-viewport' });
@@ -231,7 +235,7 @@ export class EntityBuilder extends Modal implements BuilderUI {
 		this.setKind(this.o.kind, this.o.seed);
 	}
 
-	onClose(): void { this.contentEl.empty(); }
+	onClose(): void { this.stopDots?.(); this.contentEl.empty(); }
 
 	/** The kinds with something changed since they opened (the one on screen first). */
 	private changedKinds(): KindBuilder[] {
@@ -713,6 +717,28 @@ export function segmented<T>(parent: HTMLElement, options: SegOption<T>[], get: 
 		if (size && now !== size) place(false);
 		size = now;
 	}).observe(row);
+	// Options that don't fit on one line go into even rows ("One target · Around · Cone" over "Line · Square"),
+	// never off the dialog's edge. Measured on one line each time the room changes.
+	let room = -1;
+	const fit = () => {
+		const width = parent.clientWidth;
+		if (!width || width === room) return;
+		room = width;
+		row.removeClass('is-rows');
+		row.setCssProps({ '--eb-cols': '' });
+		if (!/flex/.test(row.getCssPropertyValue('display'))) return; // a control that lays out its own rows (a grid)
+		// On one line the control is at most as wide as its place (max-width: 100%), so overflow is its own.
+		const avail = row.clientWidth;
+		if (row.scrollWidth <= avail + 1) return;
+		const widest = Math.max(1, ...buttons.map(x => Math.max(x.b.offsetWidth, x.b.scrollWidth)));
+		const per = Math.max(1, Math.min(buttons.length, Math.floor((avail - 4) / widest)));
+		const cols = Math.ceil(buttons.length / Math.ceil(buttons.length / per));
+		row.addClass('is-rows');
+		row.setCssProps({ '--eb-cols': String(cols) });
+		place(false);
+	};
+	const fitSoon = () => window.requestAnimationFrame(fit);
+	new ResizeObserver(fitSoon).observe(parent);
 	o.ui.live(sync);
 	sync();
 	return row;

@@ -29,7 +29,7 @@ import {
 import { heroPlans, NewHero } from './new-character';
 import { createCharacterNote, defaultCharacterFolder } from './character-modals';
 import { plainMod, saveTriangle } from './sheet-marks';
-import { dialogFoot, dialogLabel, gameDialog } from '../../core/dialog';
+import { dialogFoot, dialogLabel, gameDialog, keepCurrentInView } from '../../core/dialog';
 import { damageIcon, evIcon, EvIconName } from '../../core/icons';
 import { pill, setPill } from '../../core/pill';
 import { cluster } from '../../core/cluster';
@@ -86,6 +86,7 @@ class CharacterWizard extends Modal {
 	private subclassView: 'cards' | 'compare' = 'cards';
 	private viewSub = -1;
 	private dots!: HTMLElement;
+	private stopDots?: () => void;
 	private viewport!: HTMLElement;
 	private track!: HTMLElement;
 	private backBtn!: HTMLElement;
@@ -218,6 +219,7 @@ class CharacterWizard extends Modal {
 		const c = this.contentEl;
 		this.sub = c.createDiv({ cls: 'lu-sub' });
 		this.dots = c.createDiv({ cls: 'lu-dots', attr: { role: 'tablist' } });
+		this.stopDots = keepCurrentInView(this.dots);
 		this.viewport = c.createDiv({ cls: 'lu-viewport' });
 		this.track = this.viewport.createDiv({ cls: 'lu-track' });
 		const foot = dialogFoot(c, {
@@ -1179,6 +1181,7 @@ class CharacterWizard extends Modal {
 
 	onClose(): void {
 		this.stopShow?.();
+		this.stopDots?.();
 		this.contentEl.empty();
 	}
 }

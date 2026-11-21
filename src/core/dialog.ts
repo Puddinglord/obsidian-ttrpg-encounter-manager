@@ -61,3 +61,20 @@ export function dialogLabel(parent: HTMLElement, text: string, value?: string, v
 	const v = value !== undefined ? el.createSpan({ cls: `ev-dialog-label-value ${valueCls}`.trim(), text: value }) : null;
 	return { el, value: v };
 }
+
+/**
+ * Keep a step strip's current step in view: when the strip scrolls sideways (more steps than room) and the
+ * window narrows, the step you're on would otherwise slide out of sight. Returns a stop function.
+ */
+export function keepCurrentInView(strip: HTMLElement, selector = '.is-active'): () => void {
+	const show = () => {
+		const on = strip.querySelector<HTMLElement>(selector);
+		if (!on || strip.scrollWidth <= strip.clientWidth) return;
+		const s = strip.getBoundingClientRect(), r = on.getBoundingClientRect();
+		if (r.left >= s.left && r.right <= s.right) return;
+		strip.scrollLeft += r.left + r.width / 2 - (s.left + s.width / 2);
+	};
+	const ro = new ResizeObserver(show);
+	ro.observe(strip);
+	return () => ro.disconnect();
+}

@@ -2020,6 +2020,17 @@ body.is-phone .nimble-bestiary .bestiary-side, body.is-phone .nimble-bestiary .b
 	.nimble-party-field.field-class { grid-column: 3 / 5; }
 	.nimble-party-del { grid-column: 5; grid-row: 1; align-self: end; }
 }
+/* A phone-width card: the name beside its button, the class on a line of its own (whole), the four numbers across it all. */
+@container (max-width: 360px) {
+	.nimble-party-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.nimble-party-field.field-name { grid-column: 1 / 4; }
+	.nimble-party-field.field-class { grid-column: 1 / -1; grid-row: 2; }
+	.nimble-party-del { grid-column: 4; justify-self: end; }
+}
+/* Narrower still (a 320px window): the numbers two by two, so "Wounds" keeps its label over its box. */
+@container (max-width: 300px) {
+	.nimble-party-field:is(.field-level, .field-max-hp, .field-defense, .field-max-wounds) { grid-column: span 2; }
+}
 
 /* Builder: stack the columns on narrow screens */
 @media (max-width: 640px) {
@@ -4896,8 +4907,15 @@ body.is-tablet .nimble-count-modal button.nimble-count-seg { padding: 0 0.5rem; 
 .ev-dialog.ev-sys-dnd5e .ev-dialog-label-text { font: 600 15px/normal var(--ev-font-display); font-variant: small-caps; text-transform: none; letter-spacing: 0.04em; color: var(--ev-accent-text); }
 .ev-dialog .ev-dialog-label-value { display: inline-flex; align-items: center; line-height: normal; font: 600 13px/normal var(--ev-font-ui, var(--font-interface)); color: var(--ev-text, var(--text-normal)); }
 /* The footer */
-.ev-dialog .ev-dialog-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.ev-dialog .ev-dialog-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 4px; container-type: inline-size; }
 .ev-dialog .ev-dialog-foot .is-cancel { margin-right: auto; }
+/* A narrow dialog (a phone-width window): the buttons fill the footer in equal parts, and with a second action
+   (Run now) the main one takes a row of its own under Cancel | the second. */
+@container (max-width: 360px) {
+	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn { flex: 1 1 0; }
+	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn.is-cancel { margin-right: 0; }
+	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn.is-second ~ .is-main { flex-basis: 100%; }
+}
 .ev-dialog.is-compact .ev-dialog-foot { display: grid; grid-template-columns: minmax(min-content, 1fr) minmax(0, 2fr); }
 .ev-dialog.is-compact .ev-dialog-foot .is-cancel { margin-right: 0; }
 .ev-dialog button.ev-dialog-btn { height: 40px; min-width: 0; padding: 0 16px; border-radius: var(--ev-r-md, 6px); font: 600 14px/normal var(--ev-font-ui, var(--font-interface)); --ev-pill-icon: 17px; --ev-pill-gap: 7px; }
@@ -5675,6 +5693,9 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder button.eb-seg-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; height: calc(var(--eb-h) - 4px); padding: 0 0.85rem; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); font-size: var(--eb-text); font-weight: 600; line-height: 1; white-space: nowrap; }
 .nimble-entity-builder .eb-seg.is-compact button.eb-seg-btn { padding: 0 0.6rem; }
 .nimble-entity-builder .eb-seg.is-tight button.eb-seg-btn { min-width: 2.1rem; padding: 0 0.45rem; }
+/* Options that don't fit on one line: even rows, as many columns as the widest fits (segmented() in frame.ts). */
+.nimble-entity-builder .eb-seg.is-rows { display: grid; grid-template-columns: repeat(var(--eb-cols, 3), minmax(0, 1fr)); width: 100%; border-radius: calc(var(--eb-h) / 2 + 2px); }
+.nimble-entity-builder .eb-seg.is-rows button.eb-seg-btn { min-width: 0; padding: 0 0.3rem; }
 .nimble-entity-builder button.eb-seg-btn:hover:not(.is-active) { color: var(--text-normal); }
 .nimble-entity-builder button.eb-seg-btn.is-active { background: transparent; color: var(--text-normal); }
 /* The thumb slides to the picked segment (across rows when the control wraps into a grid). */
@@ -7423,7 +7444,9 @@ body .workspace-leaf-content .ev-sheet-page:not(.nimble-show-props) .metadata-co
 
 /* Content packs (src/core/content): Import content, and the list in settings */
 .nimble-import-content .nimble-import-lead { margin-top: 0; color: var(--text-muted); }
-.nimble-import-content .nimble-import-pick { margin-bottom: 0.5rem; }
+.nimble-import-content .nimble-import-pick { margin-bottom: 0.5rem; min-width: 0; }
+/* The browser's file picker is about 250px whatever the room: let it fit a phone-width dialog. */
+.nimble-import-content .nimble-import-pick input[type="file"] { max-width: 100%; }
 .nimble-import-content textarea.nimble-import-text { width: 100%; font-family: var(--font-monospace); font-size: 0.8rem; }
 .nimble-import-report { margin-top: 0.6rem; }
 .nimble-pack-head { display: flex; align-items: flex-start; gap: 0.5rem; }
