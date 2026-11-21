@@ -15,7 +15,7 @@
 // outlined (…​.issues.png), report.json, report.md (worst first) and index.html (a gallery).
 // Exits 1 if anything is left after the ignore list below, so it can gate a release.
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launchObsidian } from './harness.mjs';
@@ -68,6 +68,9 @@ const ignored = (surface, i, width) => IGNORE.find(r => (!r.kind || r.kind.test(
 const surfaces = SURFACES.filter(s => (!gameFilter.length || gameFilter.includes(s.game)) && (!nameFilter.length || nameFilter.some(n => s.name.includes(n) || n.startsWith(`${s.name}-`))));
 const stateWanted = (s, full) => !nameFilter.length || nameFilter.some(n => s.name.includes(n) || (n.startsWith(`${s.name}-`) && full.includes(n)));
 if (!surfaces.length) { console.log('No surface matches.'); process.exit(0); }
+// A run of everything starts afresh; a run of some surfaces updates them in the last report and keeps the rest.
+const partial = gameFilter.length || nameFilter.length || onlyWidths || flag('themes') || !PHONE || !DESKTOP;
+const earlier = partial && existsSync(join(OUT, 'report.json')) ? JSON.parse(readFileSync(join(OUT, 'report.json'), 'utf8')) : null;
 if (!gameFilter.length && !nameFilter.length) rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
@@ -244,6 +247,7 @@ async function capture(s, name, width, theme, phone) {
 		await grab(`${base}.issues.png`);
 		await page.evaluate(clearOutlines);
 	}
+	ran.add(`${s.game}/${name}|${!!phone}`);
 	shots.push({
 		game: s.game, surface: name, mode: s.mode, width, theme, phone,
 		file: `${s.game}/${name}/${base}.png`, outlined: issues.length ? `${s.game}/${name}/${base}.issues.png` : null,
@@ -269,6 +273,7 @@ async function runSurface(s, phone) {
 	try {
 		await setup(widths[0]);
 	} catch (e) {
+		ran.add(`${s.game}/${s.name}|${!!phone}`);
 		errors.push({ game: s.game, surface: s.name, phone, error: `setup: ${e.message.split('\n')[0]}` });
 		console.log(`  ✗ ${s.game}/${s.name}${phone ? ' (phone)' : ''}: setup failed: ${e.message.split('\n')[0]}`);
 		return;
@@ -308,6 +313,7 @@ async function runSurface(s, phone) {
 			}
 			console.log(`  ${n ? '✗' : '✓'} ${s.game}/${name}${phone ? ' (phone)' : ''}: ${n} issue${n === 1 ? '' : 's'} (${((Date.now() - started) / 1000).toFixed(0)}s)`);
 		} catch (e) {
+			ran.add(`${s.game}/${name}|${!!phone}`);
 			errors.push({ game: s.game, surface: name, phone, error: e.message.split('\n')[0] });
 			console.log(`  ✗ ${s.game}/${name}${phone ? ' (phone)' : ''}: ${e.message.split('\n')[0]}`);
 		}
@@ -321,7 +327,10 @@ async function runSurface(s, phone) {
 
 const t0 = Date.now();
 /** Write the report as it stands (after every surface, so a long run can be read before it ends). */
-const flush = () => writeReport(OUT, { shots, errors, unknownPills: [...unknownPills].map(([sel, u]) => ({ sel, n: u.n, where: [...u.where] })), ignore: IGNORE.map(r => ({ ...Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)])) })), seconds: Math.round((Date.now() - t0) / 1000), pillSelectors: PILL_SELECTORS });
+/** This run's shots and errors, with the last report's for every surface (and pass) this run didn't redo. */
+const ran = new Set();
+const merged = (list) => [...(earlier ? list(earlier).filter(x => !ran.has(`${x.game}/${x.surface}|${!!x.phone}`)) : []), ...list({ shots, errors })];
+const flush = () => writeReport(OUT, { shots: merged(r => r.shots), errors: merged(r => r.errors), unknownPills: [...unknownPills].map(([sel, u]) => ({ sel, n: u.n, where: [...u.where] })), ignore: IGNORE.map(r => ({ ...Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)])) })), seconds: Math.round((Date.now() - t0) / 1000), pillSelectors: PILL_SELECTORS });
 try {
 	await prepareVault(o, ROOT);
 	// Obsidian's status bar floats over the bottom right of the window; keep it out of the shots.
@@ -344,4 +353,4 @@ try {
 
 const report = flush();
 console.log(`\n${report.summary}\nReport: ${join(OUT, 'report.md')}\nGallery: ${join(OUT, 'index.html')}`);
-process.exit(report.issues || errors.length ? 1 : 0);
+process.exit(report.issues || merged(r => r.errors).length ? 1 : 0);
