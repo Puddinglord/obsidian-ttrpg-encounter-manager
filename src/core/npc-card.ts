@@ -14,7 +14,7 @@ import { fmText, safeName } from './campaign-model';
 import { onLongPress } from './touch';
 import { IMAGE_EXTENSIONS, isRemote, NPC_ATTITUDES, NPC_STATUSES, npcFacts, parseNpcCard, portraitLink, SECRET_KEYS } from './npc-card-def';
 import { appendRichText } from './markdown';
-import { wireWikiLinks } from './wiki-links';
+import { guardLinks, wireWikiLinks } from './wiki-links';
 import { cardWithoutBlock, drawSystemExtras, extensionFor, extrasKey } from './note-card';
 import { isNpc } from './campaigns';
 import { applyLook } from './look';
@@ -156,6 +156,7 @@ class NpcCard extends MarkdownRenderChild {
 			const value = row.createDiv({ cls: 'nimble-npc-value' });
 			if (!f.value) { value.addClass('is-empty'); value.setText('—'); continue; }
 			if (secret) this.hideSecret(row, value);
+			guardLinks(value, this.app, this.path);
 			void MarkdownRenderer.render(this.app, f.value, value, this.path, this);
 		}
 	}

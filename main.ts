@@ -1,4 +1,4 @@
-import { debounce, Events, MarkdownView, normalizePath, Notice, Platform, Plugin, WorkspaceLeaf } from 'obsidian';
+import { debounce, Events, MarkdownPostProcessor, MarkdownView, normalizePath, Notice, Platform, Plugin, WorkspaceLeaf } from 'obsidian';
 import { editorSuggests, editorView, findCommand, openPluginSettings } from './src/core/internals';
 import { mergeParty, PartyMember, RollLogEntry, uid } from './src/core/types';
 import { EmberVaultSettings, migrateSettings, SettingsPart } from './src/core/settings';
@@ -11,6 +11,7 @@ import { parseDice, rollDie, rollPlain } from './src/core/dice';
 import { DiceKind, rollExplodingAttack } from './src/core/dice-attack';
 import { EdgeRollInput, EdgeRollResult, rollEdge } from './src/core/dice-edge';
 import { registerEncounterBlocks } from './src/app/encounter-blocks';
+import { registerLinkFollow } from './src/core/link-follow';
 import { PartyModal } from './src/core/party';
 import { rollToast } from './src/core/roll-toast';
 import { registerMapBlock } from './src/app/map-block';
@@ -66,6 +67,8 @@ export default class EmberVaultPlugin extends Plugin {
 	readonly content = new ContentStore(this);
 	/** Bumped when the NPC list changes; Live Preview decorations watch it. */
 	npcVersion = 0;
+	/** The fences of our blocks (```nimble-map, ```box…), lowercase: links inside them follow renames (core/link-follow.ts). */
+	readonly fences = new Set<string>();
 	private wakeLock: WakeLockSentinel | null = null;
 	private wakePending = false;
 	private settingsTab?: EmberVaultSettingsTab;
@@ -138,6 +141,12 @@ export default class EmberVaultPlugin extends Plugin {
 		return resolveEdition(this.systems.resolve(campaign?.system), campaign?.edition);
 	}
 
+	/** Every block of ours is registered here, so its fence is known (`fences`). */
+	registerMarkdownCodeBlockProcessor(language: string, handler: Parameters<Plugin['registerMarkdownCodeBlockProcessor']>[1], sortOrder?: number): MarkdownPostProcessor {
+		this.fences.add(language.toLowerCase());
+		return super.registerMarkdownCodeBlockProcessor(language, handler, sortOrder);
+	}
+
 	async onload() {
 		registerIcons();
 		await this.loadSettings();
@@ -160,6 +169,7 @@ export default class EmberVaultPlugin extends Plugin {
 		this.registerHoverLinkSource('nimble-gm', { display: 'Ember Vault', defaultMod: true });
 
 		registerEncounterBlocks(this);
+		registerLinkFollow(this);
 		registerBoxBlock(this);
 		registerNpcCard(this);
 		registerNoteCard(this);

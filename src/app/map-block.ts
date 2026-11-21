@@ -12,6 +12,7 @@ import { closePopover, isPopoverOpenFor, openPopover } from '../core/popover';
 import { evIcon, gameIcon } from '../core/icons';
 import { applyLook } from '../core/look';
 import { pill } from '../core/pill';
+import { openLink } from '../core/wiki-links';
 
 const PIN_ICON: Record<PinKind, string> = {
 	place: evIcon('map-pin'), area: evIcon('flag'), encounter: evIcon('swords'), npc: evIcon('user'), treasure: evIcon('treasure'), danger: evIcon('skull'), note: evIcon('note'), secret: evIcon('eye-off'),
@@ -339,7 +340,7 @@ class MapBlock extends MarkdownRenderChild {
 				const menu = new Menu();
 				if (pin.link) {
 					menu.addItem(it => it.setTitle('Quick look').setIcon('eye').onClick(() => this.openPin(pin.link!)));
-					menu.addItem(it => it.setTitle('Open note').setIcon('file-symlink').onClick(() => void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false)));
+					menu.addItem(it => it.setTitle('Open note').setIcon('file-symlink').onClick(() => openLink(this.app, pin.link!, this.ctx.sourcePath, false)));
 				}
 				if (this.canSave()) {
 					menu.addItem(it => it.setTitle('Edit pin…').setIcon('pencil').onClick(() => this.editPin(i)));
@@ -362,7 +363,8 @@ class MapBlock extends MarkdownRenderChild {
 			this.plugin.system(file.path).quickLook(this.plugin, { kind: 'note', file, sourcePath: this.ctx.sourcePath });
 			return;
 		}
-		void this.app.workspace.openLinkText(link, this.ctx.sourcePath, newTab);
+		// A link to nothing (a renamed note the pin wasn't told about) says so; it never makes an empty note.
+		openLink(this.app, link, this.ctx.sourcePath, newTab);
 	}
 
 	/** Touch: a small card for a pin (quick look, open, edit, delete) instead of a hover preview. */
@@ -378,7 +380,7 @@ class MapBlock extends MarkdownRenderChild {
 				const look = row.createEl('button', { cls: 'mod-cta', text: 'Quick look' });
 				look.onclick = () => { close(); this.openPin(pin.link!); };
 				const open = row.createEl('button', { text: 'Open note' });
-				open.onclick = () => { close(); void this.app.workspace.openLinkText(pin.link!, this.ctx.sourcePath, false); };
+				open.onclick = () => { close(); openLink(this.app, pin.link!, this.ctx.sourcePath, false); };
 			}
 			if (!this.canSave()) return;
 			const edit = row.createEl('button', { text: 'Edit' });

@@ -914,8 +914,8 @@ export function register(test, h) {
 			await edit(o, SN, '*What happened, for next time.*', '- Met Tobren Kask at [[The Lantern Inn]].');
 
 			// Obsidian's own index: every note links to what it names.
-			// (A session's `quests:` lines and a map's pins aren't links to Obsidian: see the KNOWN tests below.
-			// The cards and the map resolve them themselves, checked further down.)
+			// (A session's `quests:` lines and a map's pins aren't links to Obsidian; the plugin keeps them up to date
+			// on a rename, see the rename tests below. The cards and the map resolve them themselves, checked further down.)
 			const pairs = [[QN, N], [QN, L], [N, L], [L, SC], [SC, L], [SC, N], [SC, QN], [SN, L], [SN, BR], [SN, WR]];
 			let missing = [];
 			await o.waitFor(async () => {
@@ -1012,69 +1012,114 @@ export function register(test, h) {
 		}
 	});
 
-	test('entities nimble: KNOWN: a session\'s quests: lines ("[[Quest]] advanced") aren\'t links to Obsidian, so renaming the quest leaves the session on the old name', async (o) => {
-		const F = 'Campaigns/EN Known Quests';
+	test('entities nimble: renaming a quest updates a session\'s quests: lines ("[[Quest]] advanced"), which Obsidian doesn\'t count as links; the card follows', async (o) => {
+		const F = 'Campaigns/EN Rename Quests';
 		const QN = `${F}/Quests/The Missing Lantern.md`;
 		const SN = `${F}/Sessions/Session 1.md`;
 		const SC = `${F}/Chapter 1/Opening Scene.md`;
 		await resetEncounter(o);
 		try {
-			await campaign(o, 'EN Known Quests');
+			await campaign(o, 'EN Rename Quests');
 			await write(o, QN, '---\nnimble: quest\nstatus: active\n---\n');
-			await write(o, SN, '---\nnimble: session\nquests:\n  - "[[The Missing Lantern]] advanced"\n---\n\n```nimble-note\n```\n');
+			const session = (name) => `---\nnimble: session\nquests:\n  - "[[${name}]] advanced"\n  - "[[Another Quest]] stalled"\nloot: 40 gp, from [[${name}]]\n---\n\n\`\`\`nimble-note\n\`\`\`\n\nWe took up [[${name}]] at the inn.\n`;
+			await write(o, SN, session('The Missing Lantern'));
 			await write(o, SC, '---\nnimble: scene\norder: 1\n---\nThe job: [[The Missing Lantern]].\n');
 			await crow(o, QN).waitFor();
 			await o.waitFor(async () => (await linksFrom(o, SC)).includes(QN), { what: 'the scene\'s link indexed' });
-			const backlinked = await linksFrom(o, SN);
 			const QN2 = await renameFromPanel(o, QN, 'The Stolen Lantern');
 			await o.waitFor(async () => /\[\[The Stolen Lantern\]\]/.test(await read(o, SC)), { what: 'the scene\'s link updated by Obsidian' });
-			await o.page.waitForTimeout(500);
-			const session = await read(o, SN);
-			if (!backlinked.includes(QN) && /\[\[The Missing Lantern\]\] advanced/.test(session)) {
-				await o.openFile(SN, 'preview');
-				const s = o.page.locator(`${R} .ev-cq.kind-session`);
-				await o.waitFor(async () => (await s.locator('.ev-cq-thread a.nimble-wikilink.is-unresolved').count()) === 1, { what: 'the session\'s quest line, now unresolved' });
-				await shot(o, 'KNOWN-session-quests-rename');
-				console.log('      KNOWN: Obsidian only counts a property as a link when the whole value is [[…]], so a session\'s quests: lines ("[[Quest]] advanced") are not backlinks and are not updated when the quest is renamed. The session card then shows the old name as a broken link. Screenshot: e2e/artifacts/entities-nimble-KNOWN-session-quests-rename.png');
-				return;
-			}
-			// Once they are: the session follows the rename.
-			assert.match(session, /\[\[The Stolen Lantern\]\] advanced/);
-			assert.ok((await linksFrom(o, SN)).includes(QN2));
+			// The session follows: its quests: line and loot, and its text (Obsidian's own); nothing else moves.
+			await o.waitFor(async () => (await read(o, SN)) === session('The Stolen Lantern'), { what: 'the session\'s lines follow the rename', timeout: 8000 });
+			await o.openFile(SN, 'preview');
+			const s = o.page.locator(`${R} .ev-cq.kind-session`);
+			await o.waitFor(async () => (await s.locator(`.ev-cq-thread a.nimble-wikilink[href="${QN2}"]`).count()) === 1, { what: 'the session card links the renamed quest' });
+			assert.match(await s.locator('.ev-cq-thread').filter({ hasText: 'The Stolen Lantern' }).innerText(), /The Stolen Lantern\s*Advanced/i);
 		} finally {
 			await done(o, [F]);
 		}
 	});
 
-	test('entities nimble: KNOWN: map pins aren\'t links to Obsidian, so renaming a pinned place leaves its pin on the old name', async (o) => {
-		const F = 'Campaigns/EN Known Pins';
+	test('entities nimble: renaming a note updates links inside our blocks (map pins, an encounter\'s where:, a box, NPC card rows), a folder\'s too; Do not update leaves them; a pin to a note that isn\'t there says so and makes nothing', async (o) => {
+		const F = 'Campaigns/EN Rename Pins';
 		const L = `${F}/Locations/Lower Gate.md`;
 		const MAP = `${F}/Chapter 1/Gate Map.md`;
+		const SC = `${F}/Chapter 1/At the Gate.md`;
+		const N = `${F}/NPCs/Gate Warden.md`;
+		const HALL = `${F}/Old Wing/Hall.md`;
+		const MILL = `${F}/Locations/The Mill.md`;
+		const updateLinks = await o.eval((app) => app.vault.getConfig('alwaysUpdateLinks'));
 		await resetEncounter(o);
 		try {
-			await campaign(o, 'EN Known Pins');
+			await o.eval((app) => app.vault.setConfig('alwaysUpdateLinks', false));
+			await campaign(o, 'EN Rename Pins');
 			await png(o, `${F}/Assets/gate.png`);
-			await write(o, L, '---\nnimble: location\n---\n');
-			await write(o, MAP, '---\nnimble: map\n---\n```nimble-map\nimage: [[gate.png]]\npins:\n- 50, 50 | The gate | [[Lower Gate]] | place\n```\n');
+			await write(o, L, '---\nnimble: location\n---\n## Cells\n');
+			await write(o, HALL, '---\nnimble: location\n---\n');
+			await write(o, MILL, '---\nnimble: location\n---\n');
+			// The text's links are Obsidian's; the pins are ours.
+			const map = (gate, hall, mill, text = { hall: 'Old Wing/Hall', mill: 'The Mill' }) => `---\nnimble: map\n---\nAlso: [[${text.hall}]] and [[${text.mill}]].\n\n\`\`\`nimble-map\nimage: [[gate.png]]\npins:\n- 50, 50 | The gate | [[${gate}]] | place\n- 20, 30 | Cells | [[${gate}#Cells|cells]] | danger\n- 70, 20 | Hall | [[${hall}]] | area\n- 30, 70 | Mill | [[${mill}]] | place\n- 80, 80 | Gatehouse | [[Lower Gatehouse]] | area\n\`\`\`\n`;
+			await write(o, MAP, map('Lower Gate', 'Old Wing/Hall', 'The Mill'));
+			const scene = (gate) => `---\nnimble: scene\norder: 1\n---\n\`\`\`nimble-encounter\nname: At the gate\nwhere: [[${gate}]]\nmonsters:\n- 2 Goblin\n\`\`\`\n\n\`\`\`box\nMeet at [[${gate}]], not [[Lower Gatehouse]].\n\`\`\`\n`;
+			await write(o, SC, scene('Lower Gate'));
+			const warden = (gate) => `---\nnimble: npc\n---\n\`\`\`nimble-npc\nknows: The way into [[${gate}]]\n\`\`\`\n`;
+			await write(o, N, warden('Lower Gate'));
 			await crow(o, L).waitFor();
+			const before = await o.eval((app, _p, p) => app.vault.getMarkdownFiles().length, F);
+
+			// Renamed from the panel (Obsidian asks, Just once): every link in our blocks follows; Lower Gatehouse doesn't.
 			await renameFromPanel(o, L, 'The Lower Gate');
+			await o.waitFor(async () => (await read(o, MAP)) === map('The Lower Gate', 'Old Wing/Hall', 'The Mill'), { what: 'the map\'s pins follow', timeout: 8000 });
+			await o.waitFor(async () => (await read(o, SC)) === scene('The Lower Gate'), { what: 'the encounter\'s where: and the box follow' });
+			await o.waitFor(async () => (await read(o, N)) === warden('The Lower Gate'), { what: 'the NPC card\'s row follows' });
+			// The pin is a quick look at the place, under its new name.
+			await o.openFile(MAP, 'preview');
+			const M = `${R} .nimble-map`;
+			await o.waitFor(() => o.page.evaluate((M) => { const img = document.querySelector(`${M} img`); return !!img && img.naturalWidth > 0; }, M), { what: 'the map image' });
+			const pin = (label) => o.page.locator(`${M} .nimble-map-pin`).filter({ hasText: label }).locator('.nimble-map-pin-inner');
+			await pin('The gate').waitFor({ state: 'visible', timeout: 10000 });
+			await pin('The gate').click();
+			await o.page.locator(Q).waitFor();
+			assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'The Lower Gate');
+			await o.page.keyboard.press('Escape');
+			await o.page.locator(Q).waitFor({ state: 'detached' });
+
+			// A folder renamed: a pin that links by path follows, written the way Obsidian rewrote the text's link.
+			await o.eval(async (app, _p, F) => { app.vault.setConfig('alwaysUpdateLinks', true); await app.fileManager.renameFile(app.vault.getAbstractFileByPath(`${F}/Old Wing`), `${F}/New Wing`); }, F);
+			await o.waitFor(async () => !/Old Wing/.test(await read(o, MAP)), { what: 'the folder\'s links follow', timeout: 8000 });
+			const text = await read(o, MAP);
+			const written = /^Also: \[\[([^\]]+)\]\]/m.exec(text)?.[1];
+			assert.ok(written && /Hall$/.test(written), `Obsidian's own link: ${written}`);
+			assert.equal(text, map('The Lower Gate', written, 'The Mill', { hall: written, mill: 'The Mill' }));
+
+			// Do not update: Obsidian leaves its links, and so do we.
+			await o.eval((app) => app.vault.setConfig('alwaysUpdateLinks', false));
+			await crow(o, MILL).click({ button: 'right' });
+			await clickMenu(o, 'Rename…');
+			await o.page.locator('.nimble-name-prompt .nimble-name-input').fill('The Old Mill');
+			await o.page.locator('.nimble-name-prompt .nimble-name-input').press('Enter');
+			const no = o.page.locator('.modal-container .modal button', { hasText: 'Do not update' });
+			await no.waitFor();
+			await no.click();
+			await o.waitFor(() => exists(o, `${F}/Locations/The Old Mill.md`), { what: 'the mill renamed' });
 			await o.page.waitForTimeout(800);
-			const map = await read(o, MAP);
-			if (/\[\[Lower Gate\]\]/.test(map)) {
-				assert.ok(!(await linksFrom(o, MAP)).includes(`${F}/Locations/The Lower Gate.md`));
-				await o.openFile(MAP, 'preview');
-				await o.waitFor(() => o.page.evaluate((R) => { const img = document.querySelector(`${R} .nimble-map img`); return !!img && img.naturalWidth > 0; }, R), { what: 'the map image' });
-				await o.page.locator(`${R} .nimble-map .nimble-map-pin .nimble-map-pin-inner`).first().waitFor({ state: 'visible', timeout: 10000 });
-				await shot(o, 'KNOWN-map-pin-rename');
-				// A click on the pin now opens a new, empty note of the old name, as an unresolved link does.
-				await o.page.locator(`${R} .nimble-map .nimble-map-pin .nimble-map-pin-inner`).first().click();
-				const made = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Lower Gate')?.path ?? null), { what: 'a new note made by the pin', timeout: 5000 }).catch(() => null);
-				if (made) await remove(o, [made]);
-				console.log(`      KNOWN: pins live inside the \`\`\`nimble-map block, where Obsidian doesn't look for links: they aren't backlinks, and a rename leaves a pin on the old name${made ? ` (clicking it then made a new, empty "${made}")` : ''}. The same holds for [[links]] in encounter blocks, boxes and NPC card rows. Screenshot: e2e/artifacts/entities-nimble-KNOWN-map-pin-rename.png`);
-				return;
-			}
-			assert.match(map, /\[\[The Lower Gate\]\] \| place/);
+			assert.equal(await read(o, MAP), map('The Lower Gate', written, 'The Mill', { hall: written, mill: 'The Mill' }), 'the mill\'s pin is left as it was, like the text\'s link');
+
+			// A pin to a note that isn't there (the mill's, now): a notice, and no new empty note.
+			await o.openFile(MAP, 'preview');
+			await pin('Mill').waitFor({ state: 'visible', timeout: 10000 });
+			await pin('Mill').click();
+			await o.waitFor(async () => (await notices(o)).some(n => /No note called "The Mill"/.test(n)), { what: 'the notice' });
+			await pin('Gatehouse').click();
+			await o.waitFor(async () => (await notices(o)).some(n => /No note called "Lower Gatehouse"/.test(n)), { what: 'the gatehouse notice' });
+			// A box's link to nothing says so too.
+			await o.openFile(SC, 'preview');
+			await o.page.locator(`${R} .nimble-box-body a.internal-link`, { hasText: 'Lower Gatehouse' }).click();
+			await o.waitFor(async () => (await notices(o)).filter(n => /No note called "Lower Gatehouse"/.test(n)).length >= 1, { what: 'the box\'s notice' });
+			await o.page.waitForTimeout(400);
+			assert.equal(await o.eval((app) => app.vault.getMarkdownFiles().filter(f => ['The Mill', 'Lower Gatehouse'].includes(f.basename)).length), 0, 'no stray notes');
+			assert.equal(await o.eval((app, _p, F) => app.vault.getMarkdownFiles().length, F), before, 'no notes made');
 		} finally {
+			await o.eval((app, _p, v) => app.vault.setConfig('alwaysUpdateLinks', v), updateLinks ?? false);
 			await done(o, [F]);
 		}
 	});

@@ -1702,27 +1702,33 @@ export function register(test, h) {
 	});
 
 	// -----------------------------------------------------------------------
-	// Gaps that need a decision: each sets the scene, takes a picture, says why, and stops.
+	// Gaps the entity tests found, now closed.
 
-	test('entities 5e: KNOWN: renaming a note a map pin links to leaves the pin pointing at the old name, and a click on it does nothing', async (o) => {
-		const C = 'Campaigns/E5 Known Map';
+	test('entities 5e: renaming a note a map pin and an encounter block link to updates them; the pin opens the place under its new name', async (o) => {
+		const C = 'Campaigns/E5 Rename Map';
 		const map = `${C}/Harbour Map.md`;
+		const fightNote = `${C}/Ambush.md`;
 		const M = `${MAIN} ${R}`;
 		const was = await o.eval((app) => app.vault.getConfig('alwaysUpdateLinks'));
-		await scenario(o, 'known-map', [C], async () => {
-			await campaign5e(o, 'E5 Known Map', { edition: '2024', level: 2, starter: false });
+		await scenario(o, 'rename-map', [C], async () => {
+			await campaign5e(o, 'E5 Rename Map', { edition: '2024', level: 2, starter: false });
 			await pngAt(o, `${C}/harbour.png`);
 			await write(o, `${C}/The Salt Stair.md`, '---\nnimble: location\n---\nSteps into the sea.\n');
-			await write(o, map, '---\nnimble: map\n---\n```nimble-map\nimage: [[harbour.png]]\npins:\n- 40, 60 | The stair | [[The Salt Stair]] | place\n```\n');
+			const mapText = (name) => `---\nnimble: map\n---\n\`\`\`nimble-map\nimage: [[harbour.png]]\npins:\n- 40, 60 | The stair | [[${name}]] | place\n\`\`\`\n`;
+			const fightText = (name) => `\`\`\`nimble-encounter\nname: Ambush\nwhere: [[${name}]]\nmonsters:\n- 2 Bandit\n\`\`\`\n`;
+			await write(o, map, mapText('The Salt Stair'));
+			await write(o, fightNote, fightText('The Salt Stair'));
 			await o.eval(async (app, _p, C) => { app.vault.setConfig('alwaysUpdateLinks', true); await app.fileManager.renameFile(app.vault.getAbstractFileByPath(`${C}/The Salt Stair.md`), `${C}/The Salt Steps.md`); }, C);
 			await o.waitFor(() => exists(o, `${C}/The Salt Steps.md`), { what: 'the rename' });
+			await o.waitFor(async () => (await read(o, map)) === mapText('The Salt Steps'), { what: 'the pin follows', timeout: 8000 });
+			await o.waitFor(async () => (await read(o, fightNote)) === fightText('The Salt Steps'), { what: 'the encounter\'s where: follows' });
 			await o.openFile(map, 'preview');
 			await o.page.locator(`${M} .nimble-map-pin .nimble-map-pin-inner`).first().waitFor({ state: 'visible', timeout: 10000 });
 			await o.page.locator(`${M} .nimble-map-pin .nimble-map-pin-inner`).first().click();
-			await o.page.waitForTimeout(500);
-			await shot(o, 'KNOWN-map-pin-rename');
-			const pins = (await read(o, map)).match(/\[\[[^\]]+\]\] \| place/)?.[0];
-			console.log(`      KNOWN: after renaming "The Salt Stair" to "The Salt Steps" (links updated), the pin still says ${pins} and a click opens nothing (${await o.page.locator('.modal-container').count()} dialogs). Obsidian doesn't update links inside code blocks, so a map's pins (and an encounter block's where:) go stale. Needs a rename hook for the plugin's blocks, or pins that say they're missing.`);
+			const look = o.page.locator('.modal.nimble-record-modal');
+			await look.waitFor({ timeout: 3000 });
+			assert.equal(await look.locator('.record-title').innerText(), 'The Salt Steps');
+			await shot(o, 'map-pin-rename');
 		});
 		await o.eval((app, _p, v) => app.vault.setConfig('alwaysUpdateLinks', v), was ?? false);
 	});

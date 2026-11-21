@@ -8,6 +8,7 @@ import {
 	BOX_COLORS, BOX_FONTS, BOX_ICONS, BOX_PRESETS, BOX_STYLES, boxColor, boxFence, BoxOptions, parseBoxFence, resolveBox,
 } from './box-def';
 import { closePopover, openPopover } from './popover';
+import { guardLinks } from './wiki-links';
 
 export function registerBoxBlock(plugin: EmberVaultPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor('box', (source, el, ctx) => {
@@ -87,6 +88,7 @@ class BoxBlock extends MarkdownRenderChild {
 		chev.addEventListener('click', toggle);
 
 		const body = box.createDiv({ cls: 'nimble-box-body markdown-rendered' });
+		guardLinks(body, this.plugin.app, this.ctx.sourcePath);
 		if (this.source.trim()) void MarkdownRenderer.render(this.plugin.app, this.source, body, this.ctx.sourcePath, this);
 		else body.createDiv({ cls: 'nimble-box-empty', text: 'Empty' });
 	}

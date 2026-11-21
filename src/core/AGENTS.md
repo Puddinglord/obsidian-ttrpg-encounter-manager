@@ -35,7 +35,8 @@ Then it calls a contract member: `system.characters?.promptNew(…)`, `system.qu
 | `block-index.ts` | A live vault index of fenced blocks (a system's stat blocks), scoped per campaign with `plugin.canSee` (the content folder is seen from every campaign); `every()` ignores the scope |
 | `note-quick-look.ts` | A quick-look modal for any note |
 | `markdown.ts` | Safe inline markdown and dice detection (`appendRichText`) |
-| `wiki-links.ts` | `[[links]]` inside rendered text |
+| `wiki-links.ts` | `[[links]]` inside rendered text. Open a link from our blocks with `openLink` (a link to nothing is a notice, never a new empty note) and pass Obsidian-rendered markdown in our blocks through `guardLinks` |
+| `link-rename.ts`, `link-follow.ts` | Our links follow renames: Obsidian doesn't update links inside fenced blocks or in a property that holds a link among other words. On a rename (a folder's too), after Obsidian's own update (`afterLinkUpdates`, internals.ts), the notes whose blocks or properties still name the old note are rewritten (`rewriteLinks`, pure, tested), unless Obsidian was told Do not update. "Our blocks" are every fence registered through `plugin.registerMarkdownCodeBlockProcessor` (`plugin.fences`) |
 | `dice.ts`, `dice3d/` | Dice expressions, plain rolls, 3D dice (game-specific roll rules live in systems) |
 | `encounter-def.ts` | The ```nimble-encounter format, shared by every system (`- 3 Goblin`, `` - `5e:Goblin` ``) |
 | `map-def.ts`, `box-def.ts`, `box-block.ts`, `npc-*`, `tables.ts` | Maps, boxes, NPC cards and links, styled tables |
@@ -71,7 +72,7 @@ A condition's timing lives on core's `AppliedCondition` as optional fields (`Con
 - **Campaigns are indexed after Obsidian's layout is ready.** Anything drawn at startup that depends on the note's system or edition must redraw on `plugin.campaigns.on('changed')` if the answer changed (see `app/encounter-blocks.ts`).
 - **`title` attributes become Obsidian tooltips:** `tooltips.ts` moves them to `aria-label`. Tests should read either.
 - **Names in frontmatter can be numbers** (`edition: 2024` is a YAML number); read them through helpers that accept both.
-- **Pure modules** (`types.ts`, `tracker/effects.ts`, `tracker/hp.ts`, `note-kinds.ts`, `spotlight-def.ts`, `spotlight-source.ts` (types only from obsidian), `compendium/query.ts`, `content/spec.ts`, `content/packs.ts`, `content/blocks.ts`, `yaml-lite.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `campaign-model.ts`, `npc-lookup.ts`) must not import `obsidian`.
+- **Pure modules** (`types.ts`, `tracker/effects.ts`, `tracker/hp.ts`, `note-kinds.ts`, `spotlight-def.ts`, `spotlight-source.ts` (types only from obsidian), `compendium/query.ts`, `content/spec.ts`, `content/packs.ts`, `content/blocks.ts`, `yaml-lite.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `campaign-model.ts`, `npc-lookup.ts`, `link-rename.ts`) must not import `obsidian`.
 
 ## Your own content (`content/blocks.ts`, `store.ts`, `new-entry.ts`)
 

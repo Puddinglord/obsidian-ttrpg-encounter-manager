@@ -112,3 +112,34 @@ export function setSuggestSelection(modal: SuggestModal<unknown>, index: number)
 export function findCommand(app: App, id: string): Command | undefined {
 	return (app as unknown as AppInternals).commands?.commands?.[id];
 }
+
+interface FileManagerInternals { updateQueue?: { queue?: (fn: () => Promise<void>) => Promise<unknown> } }
+
+/**
+ * Run `fn` once Obsidian has finished updating links after a rename (including while it asks
+ * whether to update them), so our own rewriting never races its edits. Without the internals,
+ * after a moment.
+ */
+export function afterLinkUpdates(app: App, fn: () => Promise<void>): void {
+	const run = async () => {
+		try { await fn(); } catch (e) { console.error('Ember Vault: could not update links after a rename', e); }
+	};
+	const queue = (app.fileManager as unknown as FileManagerInternals).updateQueue;
+	if (typeof queue?.queue === 'function') { void queue.queue(run); return; }
+	window.setTimeout(() => void run(), 600);
+}
+
+/** Resolves once Obsidian has read every changed note and resolved its links (or after `timeout` ms without the internals). */
+export function whenIndexed(app: App, timeout = 3000): Promise<void> {
+	const cache = app.metadataCache as unknown as { onCleanCache?: (cb: () => void) => void };
+	return new Promise((resolve) => {
+		const t = window.setTimeout(resolve, timeout);
+		if (typeof cache.onCleanCache === 'function') cache.onCleanCache(() => { window.clearTimeout(t); resolve(); });
+	});
+}
+
+/** One of the vault's settings (Settings → Files and links): `alwaysUpdateLinks`, `newLinkFormat`… */
+export function vaultConfig(app: App, key: string): unknown {
+	const v = app.vault as unknown as { getConfig?: (k: string) => unknown };
+	return typeof v.getConfig === 'function' ? v.getConfig(key) : undefined;
+}

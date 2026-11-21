@@ -71,6 +71,8 @@ A link to a campaign note shows what it links to. `[[Bring Wick Home]]` is an or
 
 It's the `nimble:` property on the linked note that counts, so a link to a plain note stays a plain link. Clicking a pill opens the note as usual.
 
+A link in a card, a box or on a map that goes to a note that doesn't exist says so when you click it, rather than making a new empty note.
+
 ### Moving things around
 
 - **Drag** a note or file onto a chapter or folder to move it there. Drop it on the **Campaign** heading to move it to the top of the campaign.
@@ -78,6 +80,7 @@ It's the `nimble:` property on the linked note that counts, so a link to a plain
 - A scene or plain note moved into a chapter becomes that chapter's last scene. An NPC, handout or map moved there is kept with the chapter but isn't numbered as a scene.
 - Files you add to a chapter, or drop on the **Campaign** heading, are listed there too.
 - Links to moved notes are updated the way Obsidian always updates them (Settings → Files and links).
+- **Renaming or moving a note updates the plugin's links to it too:** map pins, encounter blocks, boxes, NPC card rows, and properties that hold a link among other words, like a session's `quests:` line `"[[The Missing Lantern]] advanced"`. Obsidian doesn't track those itself. If Obsidian asks whether to update links and you say **Do not update**, they're left alone too.
 
 **Right-click** a note, file, folder or chapter (or **long-press** it on a phone or tablet) for:
 
