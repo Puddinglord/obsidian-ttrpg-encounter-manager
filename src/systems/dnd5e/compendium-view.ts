@@ -3,7 +3,7 @@
 // edition, chosen at the top. Monsters are the SRD's plus your ```5e blocks.
 
 import { debounce, ItemView, setIcon, WorkspaceLeaf } from 'obsidian';
-import { CompendiumBrowser, CompendiumSource } from '../../core/compendium/browser';
+import { COMPENDIUM_SPLIT_MIN, CompendiumBrowser, CompendiumSource } from '../../core/compendium/browser';
 import { copyReference, insertReference } from '../../core/compendium/refs';
 import { renderCard5e } from './cards';
 import { addMonster } from './combat';
@@ -143,7 +143,7 @@ export class Dnd5eCompendiumView extends ItemView {
 		this.registerEvent(this.rt.plugin.campaigns.on('changed', () => { if (this.rt.plugin.hideStats() !== this.lore) this.build(); }));
 		this.build();
 		const ro = new ResizeObserver(() => {
-			const narrow = this.containerEl.clientWidth > 0 && this.containerEl.clientWidth < 620;
+			const narrow = this.containerEl.clientWidth > 0 && this.containerEl.clientWidth < COMPENDIUM_SPLIT_MIN;
 			if (narrow === this.narrow) return;
 			this.narrow = narrow;
 			this.layout?.toggleClass('is-narrow', narrow);

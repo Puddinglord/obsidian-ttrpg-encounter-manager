@@ -5084,7 +5084,8 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
 .nimble-cmpx[class*="ev-sys-"] { background: var(--ev-bg); color: var(--ev-text); font-family: var(--ev-font-ui); }
 .nimble-cmpx.ev-sys-dnd5e, .workspace-leaf-content .view-content.nimble-compendium.ev-sys-dnd5e { background-image: var(--x5-paper); }
 .nimble-cmpx.has-segments { grid-template-rows: auto minmax(0, 1fr); }
-.nimble-cmpx.has-detail { grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); }
+/* The list gives way first (400px down to 300) so the page keeps 440px; below that a tab shows one or the other (COMPENDIUM_SPLIT_MIN). */
+.nimble-cmpx.has-detail { grid-template-columns: clamp(300px, 100% - 440px, 400px) minmax(0, 1fr); }
 .nimble-cmpx-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; padding: 12px; }
 .nimble-cmpx.has-detail .nimble-cmpx-side { border-right: 1px solid var(--ev-line, var(--background-modifier-border)); }
 .nimble-cmpx-detail { min-width: 0; overflow: auto; padding: 16px 24px 32px; }
@@ -5234,7 +5235,11 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
 	box-shadow: inset 0 0 0 1px var(--ev-line, var(--background-modifier-border));
 }
 .nimble-cmpx.panel-open .nimble-cmpx-panel { max-height: 40%; overflow: auto; }
-.nimble-cmpx-panel-row { display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); align-items: start; gap: 6px; }
+/* The labels' column is as wide as the longest ("Casting time"), shared by every row (subgrid), so none wraps. */
+.nimble-cmpx.panel-open .nimble-cmpx-panel { grid-template-columns: fit-content(9rem) minmax(0, 1fr); gap: 8px 6px; }
+.nimble-cmpx-panel > * { grid-column: 1 / -1; }
+.nimble-cmpx-panel-row { display: grid; grid-template-columns: subgrid; align-items: start; gap: 6px; }
+@supports not (grid-template-columns: subgrid) { .nimble-cmpx-panel-row { grid-template-columns: 6.4rem minmax(0, 1fr); } }
 .nimble-cmpx-panel-label, .nimble-cmpx-sort-label { padding-top: 5px; font: 700 11px/16px var(--ev-font-ui, var(--font-interface)); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2, var(--text-muted)); }
 .nimble-cmpx-pills { display: flex; flex-wrap: wrap; gap: 4px; }
 button.nimble-cmpx-pill {
@@ -5401,7 +5406,8 @@ body.is-mobile .nimble-cmpx-row-btn { opacity: 1; }
    caps over its rule. */
 .nimble-cmpx-group {
 	position: sticky;
-	top: 0;
+	/* Up into the list's 2px top padding, so no row shows above a stuck heading. */
+	top: -2px;
 	z-index: 2;
 	margin: 8px 0 4px;
 	padding: 4px 10px 3px;

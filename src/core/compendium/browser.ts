@@ -138,6 +138,12 @@ export interface BrowserSnapshot<S extends string = string> {
 	selected: string | null;
 }
 
+/**
+ * Below this width a compendium tab shows the list or the page, never both: side by side, the page would be
+ * under ~390px and names would break ("Adventurin/g"). The list takes 300–400px (styles.css), the page the rest.
+ */
+export const COMPENDIUM_SPLIT_MIN = 740;
+
 interface Row { type: 'suggestion'; s: Suggestion }
 interface ERow<E> { type: 'entry'; e: E }
 interface CRow { type: 'custom'; text: string }

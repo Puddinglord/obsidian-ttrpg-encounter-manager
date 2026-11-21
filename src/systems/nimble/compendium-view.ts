@@ -16,6 +16,7 @@ import { openEntry } from './compendium-modal';
 import { nimble } from './runtime';
 import { evIcon } from '../../core/icons';
 import { applyLook } from '../../core/look';
+import { COMPENDIUM_SPLIT_MIN } from '../../core/compendium/browser';
 import { newButtonLabel, newContent } from '../../core/content/new-entry';
 
 export const COMPENDIUM_VIEW_TYPE = 'nimble-bestiary';
@@ -99,7 +100,7 @@ export class CompendiumView extends ItemView {
 	}
 
 	private checkWidth(): void {
-		const narrow = this.containerEl.clientWidth > 0 && this.containerEl.clientWidth < 620;
+		const narrow = this.containerEl.clientWidth > 0 && this.containerEl.clientWidth < COMPENDIUM_SPLIT_MIN;
 		if (narrow === this.narrow) return;
 		this.narrow = narrow;
 		this.layout?.toggleClass('is-narrow', narrow);
