@@ -246,3 +246,28 @@ describe('a hero made from a built class, subclass, ancestry and background', ()
 		expect(rows.map(r => r.kind)).toEqual(['target', 'pool', 'dice', 'state', 'number', 'uses']);
 	});
 });
+
+describe('the builders plug into New and the Edit pencil', () => {
+	it('each kind is registered under its block\'s id, so New on a compendium tab opens it; the Edit pencil gets a seed', async () => {
+		const { builderFor, kindsOf } = await import('../src/core/builder/frame');
+		const { registerClassBuilders } = await import('../src/systems/nimble/entity-class-ui');
+		const { registerSmallContentBuilders } = await import('../src/systems/nimble/entity-content-ui');
+		const { SHIPPED_SYSTEMS } = await import('../src/app/systems');
+		registerClassBuilders();
+		registerSmallContentBuilders();
+		for (const k of CONTENT_KINDS) expect(builderFor('nimble', k), k).toBe(true);
+		expect(kindsOf('nimble').map(k => k.kind)).toEqual(expect.arrayContaining([...CONTENT_KINDS]));
+		const nimble = SHIPPED_SYSTEMS.find(s => s.id === 'nimble')!;
+		expect(nimble.content?.editSeed?.({ kind: 'class', value: { name: 'X' } })).toEqual({ entry: { name: 'X' }, editing: true });
+		expect(nimble.content?.editSeed?.({ kind: 'rule', value: { name: 'X' } })).toBeUndefined();
+	});
+	it('a class wears the motif it names; one that isn\'t in the books and names none, the plain one', async () => {
+		const { renderClassScroll, motifName } = await import('../src/systems/nimble/class-scroll');
+		const motifOf = (name: string, motif?: string) => renderClassScroll(document.createElement('div'), name, '', motif).querySelector('.ns-scroll-orn g.m')!.innerHTML;
+		expect(motifName('mage')).toBe('Mage');
+		expect(motifName('Lanternkeeper')).toBeUndefined();
+		expect(motifOf('Lanternkeeper', 'Mage')).toBe(motifOf('Mage'));
+		expect(motifOf('Lanternkeeper')).not.toBe(motifOf('Commander'));
+		expect(motifOf('Lanternkeeper')).toBe(motifOf('Anything Else'));
+	});
+});

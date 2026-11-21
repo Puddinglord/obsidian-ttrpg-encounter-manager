@@ -47,6 +47,8 @@ export const PILL_SELECTORS = [
 	'.nimble-art-level', '.nimble-cmpx-group',
 	// Importing a D&D Beyond character: the checklist's New and "levels 8–9" tags.
 	'.dnd5e-ddb-tag',
+	// Nimble's builders for a hero's content: what a level grants in the check, a feature's grants, the stats said, the level ladder.
+	'.ncb-grant', '.ncb-grant-label', '.ncb-grant-add', '.ncb-said', '.ncb-rung',
 ];
 
 export function pillOffenders({ root = 'body', tolerance = 1.5, gap = 3, selectors }) {

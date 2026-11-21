@@ -103,6 +103,11 @@ export function heroCompendium(o: { path?: string; className?: unknown } = {}): 
 	return compendiumFor(o.className, o.path);
 }
 
+/** What the compendium is built from (the books, a campaign's packs, the vault's homebrew), for a builder to put a draft in front of. */
+export function compendiumData(path?: string): CompendiumData {
+	return data(layer?.(path)?.content ?? null) as CompendiumData;
+}
+
 /** The compendium for reading sheets in bulk (the GM party): drafts always included. */
 export function sheetCompendium(path?: string): Compendium {
 	return fullCompendium(path);

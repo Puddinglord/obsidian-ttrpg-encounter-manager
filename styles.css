@@ -1275,7 +1275,8 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
 button.nimble-block-edit { position: absolute; top: 0.55rem; right: 0.55rem; z-index: 2; width: 2rem; height: 2rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--ev-r-md, var(--radius-s)); background: var(--ev-surface, var(--background-primary)); border: 1px solid var(--ev-line-strong, var(--background-modifier-border)); color: var(--ev-text-2, var(--text-muted)); opacity: 0; transition: opacity 0.15s ease; }
 button.nimble-block-edit:hover { background: var(--ev-surface-2, var(--background-modifier-hover)); color: var(--ev-text, var(--text-normal)); }
 button.nimble-block-edit svg { width: 15px; height: 15px; }
-:is(.block-language-nimble, .block-language-nimble-spell, .block-language-nimble-item, .block-language-5e, .block-language-5e-spell, .block-language-5e-item):hover > button.nimble-block-edit, button.nimble-block-edit:focus-visible { opacity: 1; }
+:is(.block-language-nimble, .block-language-nimble-spell, .block-language-nimble-item, .block-language-5e, .block-language-5e-spell, .block-language-5e-item, .ev-content-block):hover > button.nimble-block-edit, button.nimble-block-edit:focus-visible { opacity: 1; }
+.ev-content-block { position: relative; }
 .markdown-source-view button.nimble-block-edit { right: 2.6rem; }
 body.is-mobile button.nimble-block-edit { opacity: 0.85; }
 
@@ -5989,6 +5990,119 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 @media (max-width: 380px) {
 	.nimble-entity-builder.is-phone-layout .eb-foot { gap: 0.4rem; padding-left: 0.6rem; padding-right: 0.6rem; }
 	.nimble-entity-builder.is-phone-layout :is(button.eb-back, button.eb-create, button.eb-next) { min-width: 0; padding-left: 0.65rem; padding-right: 0.65rem; }
+}
+
+/* ---------------------------------------------------------------------------
+   Nimble's builders for a hero's content (entity-content-ui.ts, entity-class-ui.ts): a class's stat boxes and
+   save triangles as the sheet draws them, its motif in ochre, the level ladder (the subclass level in ochre), a
+   feature's grants as small sub-cards, and the check's level rows as tags. Ochre marks the class's own things;
+   names are in Vollkorn; the level heading is a khaki ribbon. */
+.nimble-entity-builder .ncb-card.eb-attack { gap: 8px; padding: 10px 12px 12px; border-color: var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.nimble-entity-builder .ncb-card-head { min-height: 24px; }
+.nimble-entity-builder .ncb-card-title { font: italic 800 15.5px/20px var(--ev-font-name); color: var(--ev-text); }
+.nimble-entity-builder.ev-sys-dnd5e .ncb-card-title { font: 600 16px/20px var(--ev-font-display); font-variant: small-caps; }
+.nimble-entity-builder button.ncb-card-remove { width: 1.8rem; height: 1.8rem; }
+.nimble-entity-builder .ncb-feature-fields { display: flex; flex-direction: column; gap: 6px; }
+.nimble-entity-builder.ev-sys-nimble input.eb-input.ncb-feature-name { font: italic 800 15.5px/normal var(--ev-font-name); }
+.nimble-entity-builder .ncb-card.is-subclass { background: var(--ev-ochre-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ev-ochre) 40%, transparent); border-color: transparent; }
+.nimble-entity-builder .ncb-preview-empty { padding: 1.5rem 0.5rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+.nimble-entity-builder .ncb-aside-hint { font-size: 0.78rem; color: var(--text-muted); }
+.nimble-entity-builder button.eb-text-btn.ncb-small { height: 1.8rem; padding: 0 0.7rem; font-size: 0.8rem; }
+.nimble-entity-builder :is(.eb-control.is-stack, .ncb-grant-edit, .ncb-card) > button.eb-text-btn { align-self: flex-start; }
+
+/* Steppers: − value + (a Skilled Hero's −1, how many to choose) */
+.nimble-entity-builder .ncb-stepper { display: inline-flex; align-items: center; gap: 2px; flex: 0 0 auto; height: 2rem; border: 1px solid var(--ev-paper-edge); border-radius: 999px; background: var(--background-modifier-form-field); }
+.nimble-entity-builder .ncb-stepper button.eb-num-btn { width: 1.9rem; height: 1.9rem; border-radius: 999px; }
+.nimble-entity-builder .ncb-stepper button.eb-num-btn:disabled { opacity: 0.3; }
+.nimble-entity-builder .ncb-stepper-value { min-width: 1.9rem; text-align: center; font: 700 15px/normal var(--ev-font-num); font-variant-numeric: tabular-nums; color: var(--ev-text); }
+.nimble-entity-builder .ncb-stepper-value.is-zero { color: var(--text-faint); }
+.nimble-entity-builder .ncb-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.nimble-entity-builder .ncb-inline-label { font: 600 12.5px/normal var(--ev-font-ui); color: var(--ev-text-2); }
+.nimble-entity-builder input.eb-input.ncb-inline-text { flex: 1 1 9rem; width: auto; height: 2rem; }
+
+/* Motifs: the plain one, then the book classes' */
+.nimble-entity-builder .ncb-motifs { display: flex; flex-wrap: wrap; gap: 6px; }
+.nimble-entity-builder button.ncb-motif { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line); background: var(--ev-surface); color: var(--ev-text-2); }
+.nimble-entity-builder button.ncb-motif:hover { color: var(--ev-ochre); }
+.nimble-entity-builder button.ncb-motif.is-active { color: var(--ev-ochre); border-color: var(--ev-ochre); box-shadow: inset 0 0 0 1px var(--ev-ochre); background: var(--ev-ochre-soft); }
+.nimble-entity-builder .ncb-motif-svg { width: 24px; height: 24px; }
+.nimble-entity-builder .ncb-motif-name { font: italic 800 14px/normal var(--ev-font-name); color: var(--ev-ochre); }
+body.is-mobile .nimble-entity-builder button.ncb-motif, body.is-tablet .nimble-entity-builder button.ncb-motif { width: 44px; height: 44px; padding: 0; }
+
+/* Key stats and saves on the sheet's own boxes */
+.nimble-entity-builder .nimble-sheet.ns-sheet.ncb-sheet { width: 100%; padding: 0; border-radius: 0; background: none; box-shadow: none; }
+.nimble-entity-builder .ncb-sheet .ns-stats.ncb-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 460px; }
+.nimble-entity-builder .ncb-sheet .ns-stat-box { cursor: default; }
+.nimble-entity-builder .ncb-sheet button.ns-stat-face { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; justify-content: stretch; width: auto; height: 68px; margin: 0; padding: 0; cursor: pointer; box-shadow: none; }
+.nimble-entity-builder .ncb-sheet .ns-stat-value.ncb-key { font: 700 13px/normal var(--ev-font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ev-ochre); }
+.nimble-entity-builder .ncb-sheet .ncb-stat.is-key .ns-stat-face { box-shadow: 0 0 0 2px var(--ev-ochre); }
+.nimble-entity-builder .ncb-sheet button.ns-tri { position: absolute; z-index: 1; }
+.nimble-entity-builder .ncb-stat-said { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 24px; }
+.nimble-entity-builder .ncb-said { height: 24px; padding: 0 9px; border-radius: var(--ev-r-chip); background: var(--ev-bar); color: var(--ev-on-bar); font: 700 12px/normal var(--ev-font-ui); }
+.nimble-entity-builder .ncb-said.is-key { background: var(--ev-ochre); }
+.nimble-entity-builder .ncb-skills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; width: 100%; }
+.nimble-entity-builder .ncb-skill { display: flex; align-items: center; gap: 8px; min-height: 2.25rem; }
+.nimble-entity-builder .ncb-skill-name { flex: 1 1 auto; min-width: 0; font: 600 14px/normal var(--ev-font-ui); color: var(--ev-text); }
+.nimble-entity-builder .ncb-skill-stat { font: 700 11.5px/normal var(--ev-font-num); letter-spacing: 0.06em; color: var(--ev-text-2); }
+
+/* Spell tiers: the level each tier comes at */
+.nimble-entity-builder .ncb-tiers { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.4rem, 1fr)); gap: 6px; width: 100%; }
+.nimble-entity-builder .ncb-tier { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px 7px; border-radius: var(--ev-r-md); background: var(--ev-mana-soft); }
+.nimble-entity-builder .ncb-tier-label { font: 700 11.5px/normal var(--ev-font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-mana); }
+.nimble-entity-builder input.ncb-tier-input { width: 3.2rem; height: 2rem; text-align: center; font: 700 16px/normal var(--ev-font-num); font-variant-numeric: tabular-nums; }
+
+/* Resources and states */
+.nimble-entity-builder .ncb-adds { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--eb-gap); }
+.nimble-entity-builder .ncb-resource .eb-field.is-wide { margin-bottom: 0; }
+.nimble-entity-builder .ncb-swap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.nimble-entity-builder .ncb-swap select { flex: 1 1 10rem; min-width: 0; }
+.nimble-entity-builder .ncb-swap-arrow { display: inline-flex; color: var(--ev-text-2); }
+.nimble-entity-builder .ncb-swap-arrow svg { width: 14px; height: 14px; }
+
+/* Levels: the ladder, then the level's features */
+.nimble-entity-builder .ncb-ladder { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; margin: 4px 0 12px; }
+.nimble-entity-builder button.ncb-rung { position: relative; display: flex; align-items: center; justify-content: center; height: 2.1rem; padding: 0; border-radius: var(--ev-r-sm); border: 1px solid var(--ev-line); background: var(--ev-surface); color: var(--ev-text-2); font: 700 15px/normal var(--ev-font-num); font-variant-numeric: tabular-nums; box-shadow: none; }
+.nimble-entity-builder button.ncb-rung.has-features { background: var(--ev-band); color: var(--ev-band-text); border-color: transparent; }
+.nimble-entity-builder button.ncb-rung.is-subclass { background: var(--ev-ochre-soft); color: var(--ev-ochre); box-shadow: inset 0 0 0 1px var(--ev-ochre); }
+.nimble-entity-builder button.ncb-rung.is-active { background: var(--ev-bar); color: var(--ev-on-bar); border-color: var(--ev-bar); box-shadow: none; }
+.nimble-entity-builder .ncb-level-head { display: flex; align-items: center; margin: 0 0 8px; padding: 5px 10px 4px; border-radius: 2px; background: var(--ev-band); color: var(--ev-band-text); }
+.nimble-entity-builder .ncb-level-title { font: italic 900 15px/19px var(--ev-font-name); }
+.nimble-entity-builder .ncb-grants { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.nimble-entity-builder .ncb-grant-edit { display: flex; flex-direction: column; gap: 6px; align-self: stretch; padding: 7px 9px 9px; border-radius: var(--ev-r-sm); background: var(--ev-ochre-soft); }
+.nimble-entity-builder .ncb-grant-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.nimble-entity-builder .ncb-grant-label { --ev-pill-icon: 13px; --ev-pill-gap: 5px; font: 700 12px/normal var(--ev-font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-ochre); }
+.nimble-entity-builder button.ncb-grant-remove { width: 1.6rem; height: 1.6rem; }
+.nimble-entity-builder button.ncb-grant-add { --ev-pill-icon: 13px; --ev-pill-gap: 5px; height: 1.8rem; padding: 0 10px 0 8px; border-radius: 999px; border: 1px dashed color-mix(in srgb, var(--ev-ochre) 55%, var(--ev-line)); background: transparent; color: var(--ev-ochre); font: 600 12.5px/normal var(--ev-font-ui); box-shadow: none; }
+.nimble-entity-builder .ncb-learn { display: flex; flex-direction: column; gap: 6px; }
+.nimble-entity-builder .ncb-learn .eb-seg.is-wrap-ok { flex-wrap: wrap; border-radius: calc(var(--eb-h) / 2 + 2px); }
+
+/* Option lists */
+.nimble-entity-builder .ncb-options { display: flex; flex-direction: column; gap: 8px; }
+.nimble-entity-builder .ncb-option { display: flex; flex-direction: column; gap: 5px; padding: 8px; border-radius: var(--ev-r-sm); background: var(--ev-surface-2); }
+.nimble-entity-builder .ncb-option-line { display: flex; align-items: center; gap: 6px; }
+.nimble-entity-builder .ncb-option-line input.ncb-feature-name { flex: 1 1 auto; }
+.nimble-entity-builder .ncb-option-line input.ncb-option-cost { flex: 0 1 8rem; width: 8rem; }
+
+/* The check: what each level grants, as tags */
+.nimble-entity-builder .ncb-levels-check { display: flex; flex-direction: column; gap: 5px; }
+.nimble-entity-builder .ncb-grant-row { display: grid; grid-template-columns: 1.9rem minmax(0, 1fr); align-items: start; gap: 8px; }
+.nimble-entity-builder .ncb-grant-level { display: flex; align-items: center; justify-content: center; height: 22px; border-radius: 2px; background: var(--ev-bar); color: var(--ev-on-bar); font: 700 13px/normal var(--ev-font-num); }
+.nimble-entity-builder .ncb-grant-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.nimble-entity-builder .ncb-grant { --ev-pill-icon: 12px; --ev-pill-gap: 4px; height: 22px; padding: 0 7px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 12px/normal var(--ev-font-ui); }
+.nimble-entity-builder .ncb-grant:is(.is-subclass, .is-pick, .is-stat, .is-boon, .is-die, .is-more, .is-state, .is-target, .is-uses) { background: var(--ev-ochre-soft); color: var(--ev-text); }
+.nimble-entity-builder .ncb-grant:is(.is-subclass, .is-pick, .is-stat, .is-boon, .is-die, .is-more, .is-state, .is-target, .is-uses) .ev-pill-icon { color: var(--ev-ochre); }
+.nimble-entity-builder .ncb-grant:is(.is-spell, .is-tier, .is-mana, .is-knows) { background: var(--ev-mana-soft); color: var(--ev-text); }
+.nimble-entity-builder .ncb-grant:is(.is-spell, .is-tier, .is-mana, .is-knows) .ev-pill-icon { color: var(--ev-mana); }
+.nimble-entity-builder .ncb-grant.is-subclass { background: var(--ev-ochre); color: #FFFFFF; }
+.nimble-entity-builder .ncb-grant.is-subclass .ev-pill-icon { color: #FFFFFF; }
+.nimble-entity-builder.ev-sys-nimble:is([data-kind="class"], [data-kind="subclass"]) .eb-check { max-height: 46%; overflow-y: auto; overscroll-behavior: contain; }
+
+@media (max-width: 760px) {
+	.nimble-entity-builder .ncb-ladder { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+	.nimble-entity-builder button.ncb-rung { height: 2.5rem; }
+	.nimble-entity-builder .ncb-skills { grid-template-columns: minmax(0, 1fr); }
+	.nimble-entity-builder .ncb-sheet .ns-stats.ncb-stats { gap: 7px; }
+	.nimble-entity-builder.ev-sys-nimble:is([data-kind="class"], [data-kind="subclass"]) .eb-check { max-height: none; }
 }
 
 /* Last, so it beats every button's display. */

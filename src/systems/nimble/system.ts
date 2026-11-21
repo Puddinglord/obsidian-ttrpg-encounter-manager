@@ -16,6 +16,7 @@ import { readCharacter } from './character-def';
 import { packContent, sheetCompendium } from './compendium-data';
 import { KINDS_NIMBLE, NIMBLE_BLOCKS } from './content';
 import { drawNimbleContent } from './content-blocks';
+import { CONTENT_KINDS } from './entity-content';
 import { registerNimble } from './register';
 import { NIMBLE_SETTINGS } from './settings';
 import { nimble } from './runtime';
@@ -94,7 +95,11 @@ export const nimbleSystem: GameSystem = {
 	slashCommands: nimbleSlashCommands,
 	spotlight: nimbleSpotlight,
 	vocabulary: { defense: 'DEF' },
-	content: { kinds: KINDS_NIMBLE, blocks: NIMBLE_BLOCKS, card: drawNimbleContent },
+	content: {
+		kinds: KINDS_NIMBLE, blocks: NIMBLE_BLOCKS, card: drawNimbleContent,
+		// A class, subclass, option, ancestry, background or boon block opens in its guided builder (entity-content-ui.ts).
+		editSeed: (e) => ((CONTENT_KINDS as readonly string[]).includes(e.kind) ? { entry: e.value, editing: true } : undefined),
+	},
 	noteKinds: {
 		// The book's numbers on an NPC: level, the armor letter, HP in a heart, its monster block, Add to fight.
 		npc: { fields: NPC_FIELDS_NIMBLE, card: (el, ctx) => drawNpcNimble(nimble().plugin, el, ctx) },

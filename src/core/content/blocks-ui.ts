@@ -6,9 +6,20 @@
 
 import type EmberVaultPlugin from '../../../main';
 import { applyLook } from '../look';
+import { addEditButton } from '../builder/commands';
+import { builderFor } from '../builder/frame';
+import { readYaml } from '../yaml-lite';
 import { readContentBlock } from './blocks';
 
 const things = (n: number) => (n === 1 ? 'one thing' : `${n} things`);
+
+/** What saving from a builder would drop: lines it couldn't read, fields that aren't the kind's, list items with something wrong. */
+function unreadOf(source: string, read: { errors: string[]; warnings: string[] }): number {
+	const lines = readYaml(source).skipped.length;
+	const fields = read.warnings.filter(w => !/^Lines? \d/.test(w)).length;
+	const items = read.errors.filter(e => /\bitem \d+/.test(e)).length;
+	return lines + fields + items;
+}
 
 /** Every game's content blocks, drawn as their cards. Call after the systems have registered. */
 export function registerContentBlocks(plugin: EmberVaultPlugin): void {
@@ -17,6 +28,10 @@ export function registerContentBlocks(plugin: EmberVaultPlugin): void {
 			const read = readContentBlock(kind, source);
 			el.addClass('ev-content-block');
 			applyLook(el, system);
+			// The game's guided builder opens on it (the Edit pencil), for someone who can edit the note.
+			const content = plugin.systems.get(system)?.content;
+			const seed = builderFor(system, kind.kind) && !plugin.playerView(ctx.sourcePath) ? content?.editSeed?.({ kind: kind.kind, value: read.value }) : undefined;
+			if (seed !== undefined) addEditButton(plugin, el, ctx, { system, kind: kind.kind, lang, source, seed, unread: unreadOf(source, read) });
 			const card = el.createDiv({ cls: 'ev-content-card' });
 			try {
 				plugin.systems.get(system)?.content?.card?.(card, { kind: kind.kind, value: read.value }, { plugin, sourcePath: ctx.sourcePath });

@@ -168,4 +168,10 @@ export interface GameContent {
 	 * isn't one. It draws what the file brings, with a choice of what to add, and adds it as content blocks.
 	 */
 	importFrom?(plugin: EmberVaultPlugin, text: string): ContentImport | null;
+	/**
+	 * The seed the game's builder opens on to edit a block (`value`: the fields that checked out). A kind with a guided
+	 * builder (core/builder, registered under the kind's id) and a seed gets the Edit pencil on its block, and Save
+	 * writes the builder's body over the block. Undefined: no pencil.
+	 */
+	editSeed?(entry: { kind: string; value: Record<string, unknown> }): unknown;
 }

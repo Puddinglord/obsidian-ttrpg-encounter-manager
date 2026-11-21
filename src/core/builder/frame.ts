@@ -96,12 +96,15 @@ export interface BuilderOptions {
 export type KindFactory = (plugin: EmberVaultPlugin, seed: unknown) => KindBuilder;
 
 /** A kind a system can build, in the order the kind bar shows them. */
-interface KindEntry { system: string; kind: EntityKind; label: string; icon: string; factory: KindFactory; hidden?: boolean }
+interface KindEntry { system: string; kind: EntityKind; label: string; icon: string; factory: KindFactory; hidden?: boolean; group?: string }
 const KINDS: KindEntry[] = [];
 
-/** Systems register their kinds when they load, so this file doesn't import them. */
-/** `hidden`: opened only on purpose (a character, a level up), never in the kind bar or the New… commands. */
-export function registerKind(system: string, kind: EntityKind, meta: { label: string; icon: string; hidden?: boolean }, f: KindFactory): void {
+/**
+ * Systems register their kinds when they load, so this file doesn't import them. `hidden`: opened only on purpose (a
+ * character, a level up), never in the kind bar or the New… commands. `group`: the kind bar shows the kinds of one
+ * group (a hero's content apart from a GM's monsters, spells and items); kinds without one are a group together.
+ */
+export function registerKind(system: string, kind: EntityKind, meta: { label: string; icon: string; hidden?: boolean; group?: string }, f: KindFactory): void {
 	const i = KINDS.findIndex(k => k.system === system && k.kind === kind);
 	const entry = { system, kind, ...meta, factory: f };
 	if (i >= 0) KINDS[i] = entry; else KINDS.push(entry);
@@ -292,8 +295,9 @@ export class EntityBuilder extends Modal implements BuilderUI {
 
 	private renderKinds(): void {
 		this.kindBar.empty();
-		// Editing a block in place keeps its kind.
-		const kinds = KINDS.filter(k => k.system === this.system && (k.kind === this.b.kind || (!k.hidden && !this.o.writeBack && !this.o.apply && !KINDS.find(x => x.system === this.system && x.kind === this.b.kind)?.hidden)));
+		// Editing a block in place keeps its kind; otherwise, the kinds of its group.
+		const current = KINDS.find(x => x.system === this.system && x.kind === this.b.kind);
+		const kinds = KINDS.filter(k => k.system === this.system && (k.kind === this.b.kind || (!k.hidden && !this.o.writeBack && !this.o.apply && !current?.hidden && (k.group ?? '') === (current?.group ?? ''))));
 		for (const { kind: k, label, icon } of kinds) {
 			const on = k === this.b.kind;
 			const btn = this.kindBar.createEl('button', { cls: `eb-kind${on ? ' is-active' : ''}`, attr: { role: 'radio', 'aria-checked': String(on) } });

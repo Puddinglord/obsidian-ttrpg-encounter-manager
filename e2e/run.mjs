@@ -7333,6 +7333,169 @@ test('content blocks: a Nimble class typed in the content folder is in the Class
 	}
 });
 
+test('content builders: New on the Classes tab builds a Nimble class with its own dice and a subclass; a hero levels through the subclass; Edit reopens the class', async (o) => {
+	const F = 'Ember Vault/Content';
+	const B = '.modal.nimble-entity-builder';
+	const cls = `${F}/Nimble/Classes/Lanternkeeper.md`;
+	const sub = `${F}/Nimble/Subclasses/Hooded Lantern.md`;
+	let hero = null;
+	const b = o.page.locator(B);
+	const panel = () => b.locator('.eb-panel.is-active');
+	const step = async (name) => { await b.locator('.eb-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return panel(); };
+	const bad = [];
+	const measure = async () => bad.push(...await o.page.evaluate(pillOffenders, { root: B, tolerance: 1, selectors: PILL_SELECTORS }));
+	const newFromClasses = async (which) => {
+		await openCompendiumTab(o);
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="classes"]`).click();
+		assert.equal(await o.page.locator(`${CMP} .nimble-cmpx-new`).getAttribute('aria-label'), 'New class or subclass');
+		await o.page.locator(`${CMP} .nimble-cmpx-new`).click();
+		await o.page.locator('.menu .menu-item', { hasText: which }).click();
+		await b.waitFor();
+	};
+	try {
+		await o.eval(async (app, plugin, F) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(F); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.setActive(null);
+		}, F);
+
+		// The class: New on the Classes tab opens the class builder, its kinds a hero's content only.
+		await newFromClasses('New class');
+		assert.deepEqual((await b.locator('.eb-kind').allInnerTexts()).map(t => t.trim()), ['Class', 'Subclass', 'Option', 'Ancestry', 'Background', 'Boon']);
+		let p = panel();
+		await p.locator('input[data-field="Name"]').fill('Lanternkeeper');
+		await p.locator('input[data-field="Tagline"]').fill('Carries the light into the dark.');
+		await p.locator('button.ncb-motif[aria-label="Mage\'s motif"]').click();
+		p = await step('Stats');
+		for (const k of ['key-WIL', 'key-DEX', 'adv-WIL', 'dis-STR']) await p.locator(`[data-k="${k}"]`).click();
+		assert.equal(await p.locator('.ncb-stat.is-key').count(), 2);
+		assert.equal(await p.locator('.ns-tri.is-on').count(), 2);
+		await measure();
+		p = await step('Resources');
+		await p.locator('.eb-text-btn', { hasText: 'Add dice' }).click();
+		p = panel();
+		await p.locator('input[data-field="Resource name"]').fill('Wick Dice');
+		await p.locator('input[data-field="Max"]').fill('2');
+		p = await step('Options');
+		await p.locator('.eb-text-btn', { hasText: 'Add a list' }).click();
+		p = panel();
+		await p.locator('input[data-field="List name"]').fill('Wicks');
+		await p.locator('input[data-field="Option name"]').fill('Red Wick');
+		await p.locator('textarea[data-field="Option text"]').fill('Your light burns red.');
+		p = await step('Levels');
+		await p.locator('input[data-field="feature name"]').first().fill('Kindle');
+		await p.locator('textarea[data-field="feature text"]').first().fill('Light your lantern as an action.');
+		await p.locator('.ncb-rung[data-level="2"]').click();
+		p = panel();
+		await p.locator('.eb-text-btn', { hasText: 'Add a feature' }).click();
+		p = panel();
+		await p.locator('input[data-field="feature name"]').fill('Wick Lore');
+		await p.locator('textarea[data-field="feature text"]').fill('You learn the old wick-craft.');
+		await p.locator('.ncb-grant-add').click();
+		await o.page.locator('.menu .menu-item', { hasText: 'A choice from a list' }).click();
+		p = panel();
+		await p.locator('.ncb-grant-edit .eb-pick[data-value="Wicks"]').click();
+		// The check says what each level grants, as Level up will ask it.
+		await o.waitFor(async () => /\n?2\s*Wick Lore\s*Choose 1 · Wicks\s*3\s*Choose a subclass/.test(await b.locator('.eb-check').innerText()), { what: 'the levels in the check' });
+		await measure();
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-builder-class-levels.png') });
+		await step('Review');
+		assert.equal(await b.locator('.eb-note.tone-warn').count(), 0, 'nothing left to fix');
+		await b.locator('.eb-next').click();
+		await o.waitFor(async () => /^```nimble-class\nname: Lanternkeeper\ntagline: Carries the light into the dark\.\nmotif: Mage\nkeyStats: \[WIL, DEX\]\nhitDie: 8\nstartingHp: 13\nsaves:\n {2}adv: WIL\n {2}dis: STR\n/.test(await read(o, cls).catch(() => '')), { what: 'the class note' });
+		const written = await read(o, cls);
+		assert.match(written, /resources:\n {2}- name: Wick Dice\n {4}max: 2\n {4}reset: Safe Rest\n {4}die: d6\n {4}dice:\n {6}rolled: spent\n {6}addTo: \[attack\]\n/);
+		assert.match(written, /- name: Wick Lore\n {8}text: You learn the old wick-craft\.\n {8}choose:\n {10}from: \[Wicks\]\n {10}count: 1\n/);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').flatMap(x => x.entries.map(e => e.name)).join())).includes('Lanternkeeper'), { what: 'the built class in the compendium' });
+		await b.waitFor({ state: 'detached' });
+
+		// The subclass, for the class just built.
+		await newFromClasses('New subclass');
+		p = panel();
+		await p.locator('input[data-field="Name"]').fill('Hooded Lantern');
+		await p.locator('input[data-field="Class"]').fill('Lanternk');
+		await p.locator('input[data-field="Class"]').press('Enter');
+		assert.equal(await panel().locator('input[data-field="Class"]').inputValue(), 'Lanternkeeper');
+		p = await step('Levels');
+		await p.locator('input[data-field="feature name"]').fill('Shutter');
+		await p.locator('textarea[data-field="feature text"]').fill('You can hide your light as a free action.');
+		await o.waitFor(async () => /In the Lanternkeeper[\s\S]*Levels 3[\s\S]*Shutter/i.test(await b.locator('.eb-check').innerText()), { what: 'the subclass check' });
+		await step('Review');
+		await b.locator('.eb-next').click();
+		await o.waitFor(async () => /^```nimble-subclass\nname: Hooded Lantern\nclass: Lanternkeeper\nlevels:\n {2}- level: 3\n/.test(await read(o, sub).catch(() => '')), { what: 'the subclass note' });
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').flatMap(x => x.entries.map(e => e.name)).join())).includes('Hooded Lantern'), { what: 'the built subclass in the compendium' });
+		await closeCompendiumTab(o);
+
+		// A hero from the built class, levelled 1 → 3 through the Wicks and the subclass.
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		const m = o.page.locator('.modal.nimble-newchar-modal');
+		await m.waitFor();
+		await m.locator('input.lu-name-input').fill('Ilse Wick');
+		await m.locator('select[data-k="class"]').selectOption('Lanternkeeper');
+		await m.locator('.lu-dot', { hasText: 'Review' }).click();
+		await o.page.waitForTimeout(450);
+		await m.locator('.lu-next', { hasText: 'Create' }).click();
+		hero = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Ilse Wick')?.path ?? null), { what: 'the new note' });
+		const fmOf = (level) => o.waitFor(() => o.eval((app, _p, [p, level]) => { const f = app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter; return f?.level === level ? f : null; }, [hero, level]), { what: `level ${level}` });
+		assert.deepEqual([(await fmOf(1)).class, (await fmOf(1)).hp_max], ['Lanternkeeper', 13]);
+		await o.openFile(hero, 'preview');
+		const sheet = o.page.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		await o.waitFor(async () => /Wick Dice/.test(await sheet.innerText()), { what: 'the class panel\'s Wick Dice' });
+		const levelUp = async (level, choose) => {
+			await camp(o, sheet, 'Level up');
+			const lv = o.page.locator('.modal.nimble-levelup');
+			await lv.waitFor();
+			const steps = (await lv.locator('.lu-dot').allInnerTexts()).map(t => t.trim());
+			const lstep = async (name) => { await lv.locator('.lu-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return lv.locator('.lu-panel.is-active'); };
+			await (await lstep('Hit points')).locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
+			await choose(lstep, steps);
+			if (steps.includes('Skills')) await (await lstep('Skills')).locator('.lu-skill-row', { hasText: 'Insight' }).locator('.lu-step-btn.is-plus').click();
+			const review = await lstep('Review');
+			assert.equal(await review.locator('.lu-review-row.is-missing').count(), 0, `every choice made at level ${level}`);
+			await lv.locator('.lu-next').click();
+			const fm = await fmOf(level);
+			await lv.locator('.lu-celebrate button').click();
+			return fm;
+		};
+		const two = await levelUp(2, async (lstep, steps) => {
+			assert.ok(steps.includes('Wicks'), `steps: ${steps}`);
+			await (await lstep('Wicks')).locator('.lu-option', { hasText: 'Red Wick' }).click();
+		});
+		assert.deepEqual(two.features, ['Red Wick']);
+		const three = await levelUp(3, async (lstep, steps) => {
+			assert.ok(steps.includes('Subclass'), `steps: ${steps}`);
+			await (await lstep('Subclass')).locator('.lu-sub-band-choose').first().click();
+		});
+		assert.equal(three.subclass, 'Hooded Lantern');
+		await sheet.locator('.ns-tab', { hasText: 'Features' }).click();
+		await o.waitFor(async () => /Shutter[\s\S]*Red Wick|Red Wick[\s\S]*Shutter/.test(await sheet.innerText()), { what: 'the subclass\'s feature and the Wick on the sheet' });
+		assert.ok(await sheet.locator('.ns-class .ns-feat', { hasText: 'Wick Dice' }).count(), 'the class\'s own dice on the class panel');
+
+		// Edit on the class's block opens the builder on it; Save writes the block back.
+		await o.openFile(cls, 'preview');
+		const block = o.page.locator(`${R} .ev-content-block`);
+		await block.waitFor();
+		await block.hover();
+		await block.locator('button.nimble-block-edit').click();
+		await b.waitFor();
+		assert.deepEqual((await b.locator('.eb-kind').allInnerTexts()).map(t => t.trim()), ['Class'], 'editing keeps its kind');
+		assert.equal(await panel().locator('input[data-field="Name"]').inputValue(), 'Lanternkeeper');
+		await panel().locator('input[data-field="Tagline"]').fill('Walks ahead with the light.');
+		await step('Review');
+		await b.locator('.eb-next', { hasText: 'Save class' }).click();
+		await o.waitFor(async () => /tagline: Walks ahead with the light\.\n/.test(await read(o, cls)), { what: 'the edit written back' });
+		assert.match(await read(o, cls), /- name: Wick Dice[\s\S]*from: \[Wicks\]/, 'the rest stays');
+		assert.deepEqual(bad, [], 'pills in the builder centred on their capitals');
+	} finally {
+		await o.eval(async (app, plugin, [F, hero]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [F, hero]) { const f = p && app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+		}, [F, hero]);
+		await closeCompendiumTab(o);
+	}
+});
+
 test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its data address); Fantasy Statblocks creatures become ```5e notes', async (o) => {
 	const C = 'Campaigns/Import Coast';
 	const M = '.modal.dnd5e-import';
