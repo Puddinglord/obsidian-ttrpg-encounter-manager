@@ -936,4 +936,131 @@ export function register(test, h) {
 			assert.equal((await fight(o)).find(c => c.name === 'Reef Lurker').ac, 16, 'the edited AC');
 		});
 	});
+
+	// -----------------------------------------------------------------------
+	// Spells, magic items and equipment
+
+	test('entities 5e: spells, items and equipment: the SRD\'s in both editions, homebrew blocks typed by hand (cards, references, compendium, Spotlight, the pencil), a homebrew weapon on a sheet, a homebrew spell offered by New character', async (o) => {
+		const C = 'Campaigns/E5 Armory';
+		const armory = `${C}/Armory.md`;
+		const refs = `${C}/Chapter 1/Opening Scene.md`;
+		const fighter = `${C}/Party/Tamsin Reed.md`;
+		const wizard = `${C}/Party/Oriel Vash.md`;
+		const SH = (sel = '') => view(o, `.dnd5e-sheet ${sel}`);
+		await scenario(o, 'gear', [C], async () => {
+			await campaign5e(o, 'E5 Armory', { edition: '2024', level: 3 });
+			await write(o, armory, [
+				'# Armory', '',
+				'```5e-spell', 'name: Brine Bolt', 'level: 1', 'school: Evocation', 'casting time: Action', 'range: 90 feet', 'components: V, S', 'duration: Instantaneous', 'classes: Wizard, Sorcerer', '',
+				'A lance of seawater strikes a creature you can see. Make a ranged spell attack against the target. On a hit, the target takes 2d8 Cold damage.', '```', '',
+				'```5e-item', 'name: Ember Pike', 'category: Martial Melee Weapon', 'damage: 1d10 piercing', 'properties: Heavy, Reach, Two-Handed', 'mastery: Cleave', 'cost: 20 gp', 'weight: 18 lb.', '```', '',
+				'```5e-item', 'name: Gloomfang', 'type: Weapon (Longsword)', 'rarity: Uncommon', '',
+				'You gain a +1 bonus to attack and damage rolls made with this magic weapon.', '```', '',
+			].join('\n'));
+			// See: each block is its compendium card, tagged Homebrew, in reading view and Live Preview.
+			await o.openFile(armory, 'preview');
+			const cards = view(o, '.dnd5e-homebrew .dnd5e-card');
+			await o.waitFor(async () => (await cards.count()) === 3, { what: 'three homebrew cards' });
+			assert.match(await cards.nth(0).innerText(), /Brine Bolt[\s\S]*Level 1 Evocation[\s\S]*lance of seawater/i);
+			assert.match(await cards.nth(1).innerText(), /Ember Pike[\s\S]*1d10[\s\S]*Cleave/i);
+			assert.match(await cards.nth(2).innerText(), /Gloomfang[\s\S]*Uncommon/i);
+			for (const c of await cards.allInnerTexts()) assert.match(c, /Homebrew/);
+			await o.openFile(armory, 'source');
+			await o.waitFor(async () => (await lp(o, '.dnd5e-homebrew .dnd5e-card').count()) === 3, { what: 'the cards in Live Preview' });
+
+			// Link: references to yours and the SRD's, by kind; the hover card is the entry.
+			await write(o, refs, '# Opening Scene\n\nShe casts `5e:spell:Brine Bolt` and `5e:spell:Fireball`, swings an `5e:equipment:Ember Pike` and a `5e:item:Gloomfang`, and carries a `5e:item:Bag of Holding`.\n');
+			await o.openFile(refs, 'preview');
+			await o.waitFor(async () => (await view(o, '.dnd5e-ref.dnd5e-hit').count()) === 5, { what: 'five references found' });
+			assert.deepEqual(await view(o, '.dnd5e-ref.dnd5e-hit').evaluateAll(els => els.map(e => [...e.classList].find(c => c.startsWith('kind-')))), ['kind-spell', 'kind-spell', 'kind-equipment', 'kind-item', 'kind-item']);
+			await view(o, '.dnd5e-ref.kind-spell .nimble-inline-name').first().hover();
+			await o.waitFor(async () => /lance of seawater/.test(await o.page.locator('.nimble-hover-preview .dnd5e-card').innerText().catch(() => '')), { what: 'the homebrew spell\'s hover card' });
+			await o.page.keyboard.press('Escape');
+			await tidy(o);
+
+			// Find: the compendium lists yours with the SRD's, tagged Homebrew, and the filters take them.
+			await compendium(o, 'Spells', 'brine bolt');
+			await o.waitFor(async () => (await cmpNames(o, CV))[0] === 'Brine Bolt', { timeout: 5000, what: 'Brine Bolt in the Spells tab' });
+			assert.equal(await cmpRow(o, 'Brine Bolt', CV).locator('.bestiary-tag.is-homebrew').textContent(), 'Homebrew');
+			await o.page.locator(`${CV} .nimble-cmpx-input`).fill('');
+			await o.page.locator(`${CV} .nimble-cmpx-input`).pressSequentially('level:cantrip class:wizard ', { delay: 15 });
+			await o.waitFor(async () => (await cmpNames(o, CV)).includes('Fire Bolt'), { timeout: 5000, what: 'Fire Bolt among wizard cantrips' });
+			assert.ok(!(await cmpNames(o, CV)).includes('Brine Bolt'), 'a level 1 spell isn\'t a cantrip');
+			while (await o.page.locator(`${CV} .nimble-cmpx-chip-x`).count()) await o.page.locator(`${CV} .nimble-cmpx-chip-x`).first().click();
+			await o.page.locator(`${CV} .nimble-cmpx-seg`, { hasText: 'Equipment' }).click();
+			await o.page.locator(`${CV} .nimble-cmpx-input`).pressSequentially('weapon:martial prop:reach ', { delay: 15 });
+			await o.waitFor(async () => { const n = await cmpNames(o, CV); return n.includes('Ember Pike') && n.includes('Glaive'); }, { timeout: 5000, what: 'Ember Pike with the SRD\'s reach weapons' });
+			while (await o.page.locator(`${CV} .nimble-cmpx-chip-x`).count()) await o.page.locator(`${CV} .nimble-cmpx-chip-x`).first().click();
+			await o.page.locator(`${CV} .nimble-cmpx-seg`, { hasText: 'Magic items' }).click();
+			await o.page.locator(`${CV} .nimble-cmpx-input`).fill('gloomfang');
+			await o.waitFor(async () => (await cmpNames(o, CV))[0] === 'Gloomfang', { timeout: 5000, what: 'Gloomfang in Magic items' });
+			// The 2014 rules have their own SRD gear.
+			await o.page.locator(`${CV} .dnd5e-cmp-editions button`, { hasText: '2014' }).click();
+			await o.page.locator(`${CV} .nimble-cmpx-seg`, { hasText: 'Magic items' }).click();
+			await o.page.locator(`${CV} .nimble-cmpx-input`).fill('bag of holding');
+			await o.waitFor(async () => (await cmpNames(o, CV))[0] === 'Bag of Holding', { timeout: 5000, what: 'the 2014 Bag of Holding' });
+			await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
+			// Spotlight finds a homebrew spell too.
+			await spotlight(o, 'brine bolt', rows => rows.some(r => /Brine Bolt/.test(r)));
+			await o.page.keyboard.press('Escape');
+			await tidy(o);
+
+			// Edit: the pencil on the pike reopens it in the item builder; Save writes the change in place.
+			await o.openFile(armory, 'preview');
+			const pike = view(o, '.block-language-5e-item').first();
+			await pike.hover();
+			await pike.locator('.nimble-block-edit').click();
+			await o.page.locator(B).waitFor();
+			assert.equal(await o.page.locator(`${PANEL} input[data-field="Name"]`).inputValue(), 'Ember Pike');
+			await o.page.locator(`${PANEL} input[data-field="Cost"]`).fill('25 gp');
+			await finish(o);
+			await o.waitFor(async () => /name: Ember Pike[\s\S]*cost: 25 gp/.test(await read(o, armory)), { what: 'the new cost written back' });
+			assert.match(await read(o, armory), /name: Gloomfang/, 'the other blocks stay');
+
+			// Use: on a fighter's sheet, Add item finds the homebrew weapons; they attack with their own numbers.
+			await write(o, fighter, '---\nnimble: character\nsystem: 5e\nedition: "2024"\nclass: Fighter\nlevel: 3\nhp: 28\nhp_max: 28\nstr: 16\ndex: 12\ncon: 14\nint: 10\nwis: 12\ncha: 8\ninventory: []\n---\n\n```5e-sheet\n```\n');
+			await o.openFile(fighter, 'preview');
+			await SH().waitFor({ timeout: 5000 });
+			const addItem = async (name) => {
+				await SH('.dnd5e-tab[data-tab="inventory"]').click();
+				await SH('.dnd5e-sheet-add').filter({ hasText: 'Add item' }).click();
+				await o.page.locator('.prompt-input').fill(name);
+				await o.waitFor(async () => new RegExp(name).test(await o.page.locator('.suggestion-item.is-selected').innerText().catch(() => '')), { what: `${name} offered` });
+				await o.page.keyboard.press('Enter');
+				await o.waitFor(async () => (await SH('.dnd5e-sheet-item').filter({ hasText: name }).count()) === 1, { what: `${name} carried` });
+			};
+			await addItem('Ember Pike');
+			await addItem('Gloomfang');
+			// Both are weapons, so both go on equipped (the magic one by its base, a longsword).
+			await waitFm(o, fighter, fm => fm.inventory?.length === 2 && fm.inventory.every(i => i.equipped), 'both weapons equipped');
+			await SH('.dnd5e-tab[data-tab="actions"]').click();
+			const pikeRow = SH('.dnd5e-sheet-attack').filter({ hasText: 'Ember Pike' });
+			const fangRow = SH('.dnd5e-sheet-attack').filter({ hasText: 'Gloomfang' });
+			await o.waitFor(async () => (await pikeRow.count()) === 1 && (await fangRow.count()) === 1, { what: 'both weapons as attacks' });
+			// Str 16 (+3) and proficiency +2: the pike +5 for 1d10 + 3 piercing; Gloomfang a longsword with its +1.
+			assert.match(await pikeRow.locator('.dnd5e-act-hit').innerText(), /\+5/);
+			assert.match(await pikeRow.locator('.dnd5e-dmg').getAttribute('aria-label'), /1d10 \+ 3 Piercing damage/);
+			assert.match(await fangRow.locator('.dnd5e-act-hit').innerText(), /\+6/);
+			assert.match(await fangRow.locator('.dnd5e-dmg').getAttribute('aria-label'), /1d8 \+ 4 Slashing damage/);
+			await pikeRow.locator('.dnd5e-dmg').click();
+			await o.waitFor(async () => (await lastRoll(o))?.label === 'Tamsin Reed: Ember Pike damage', { what: 'the pike\'s damage rolled' });
+			assert.equal((await lastRoll(o)).expression.replace(/\s/g, ''), '1d10+3');
+			await shot(o, 'homebrew-weapons');
+
+			// New character offers your spell beside the SRD's: a wizard takes Brine Bolt into the spellbook.
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+			await o.page.locator(B).waitFor({ timeout: 3000 });
+			await o.page.locator(`${PANEL} input[data-field="Name"]`).fill('Oriel Vash');
+			await o.page.locator(`${PANEL} select[data-field="Class"]`).selectOption('Wizard');
+			await step(o, 'Class');
+			await o.waitFor(async () => (await o.page.locator(`${PANEL} [data-key="spells"] .eb-pick[data-value="Brine Bolt"]`).count()) === 1, { what: 'Brine Bolt offered to a wizard' });
+			await o.page.locator(B).locator('.eb-dot').first().click();
+			await fillCharacter(o, { name: 'Oriel Vash', className: 'Wizard', skills: ['Arcana', 'History'], languages: ['Elvish', 'Draconic'], spells: ['Brine Bolt'], fillSpells: true });
+			await waitFm(o, wizard, fm => (fm.spells ?? []).includes('Brine Bolt'), 'Brine Bolt in the spellbook');
+			await o.openFile(wizard, 'preview');
+			await SH().waitFor({ timeout: 5000 });
+			await SH('.dnd5e-tab[data-tab="spells"]').click();
+			await o.waitFor(async () => (await SH('.dnd5e-sheet-spell').filter({ hasText: 'Brine Bolt' }).count()) === 1, { what: 'Brine Bolt on the sheet' });
+		});
+	});
 }
