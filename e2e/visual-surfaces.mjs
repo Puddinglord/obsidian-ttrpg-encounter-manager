@@ -422,7 +422,7 @@ const nimble = [
 	},
 	{
 		name: 'omnisearch', mode: 'window', root: '.modal-container .prompt.nimble-omnisearch',
-		setup: async (c) => { await c.campaign(NQ); await c.open(`${CH}/Q2 Mercury Pool.md`); await c.cmd('omnisearch'); await c.page.locator('.nimble-omnisearch .prompt-input').waitFor(); await c.page.keyboard.type('level:2 alchemist'); await c.wait(600); },
+		setup: async (c) => { await c.campaign(NQ); await c.open(`${CH}/Q2 Mercury Pool.md`); await c.cmd('spotlight'); await c.page.locator('.nimble-omnisearch .prompt-input').waitFor(); await c.page.keyboard.type('level:2 alchemist'); await c.wait(600); },
 	},
 	{
 		name: 'slash-menu', mode: 'window', root: '.suggestion-container:has(.nimble-slash-item)',
@@ -682,7 +682,7 @@ const dnd5e = [
 	},
 	{
 		name: 'omnisearch', mode: 'window', root: '.modal-container .prompt.nimble-omnisearch',
-		setup: async (c) => { await c.campaign(X5); await c.open(`${X5}/Chapter 1/Road Ambush.md`); await c.cmd('omnisearch'); await c.page.locator('.nimble-omnisearch .prompt-input').waitFor(); await c.page.keyboard.type('school:evocation fire'); await c.wait(600); },
+		setup: async (c) => { await c.campaign(X5); await c.open(`${X5}/Chapter 1/Road Ambush.md`); await c.cmd('spotlight'); await c.page.locator('.nimble-omnisearch .prompt-input').waitFor(); await c.page.keyboard.type('school:evocation fire'); await c.wait(600); },
 	},
 	{
 		name: 'slash-menu', mode: 'window', root: '.suggestion-container:has(.nimble-slash-item)',
