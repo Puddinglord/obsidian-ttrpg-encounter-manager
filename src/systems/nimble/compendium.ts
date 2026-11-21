@@ -13,6 +13,8 @@ export interface Sourced {
 	source?: string;
 	page?: number | null;
 	draft?: boolean;
+	/** The content pack it comes from (its name), for the compendium's tag. */
+	pack?: string;
 }
 
 export interface Feature {
@@ -39,7 +41,27 @@ export interface Subclass extends Sourced {
 	optionGroups?: OptionGroup[];
 }
 
-export interface ClassResource { name: string; max?: string | number; reset?: string; die?: string }
+/**
+ * How a class's dice behave at the table, written as data (homebrew and content packs; the books' own
+ * dice are described in resource-def.ts). resource-def.ts's `ruleFromData` turns it into a ResourceRule.
+ */
+export interface ResourceDice {
+	rolled: 'spent' | 'gained';
+	addTo?: string[];
+	use?: 'one' | 'any' | 'all';
+	keep?: boolean;
+	on?: boolean;
+	onWhile?: string;
+	damageType?: string;
+	gain?: number;
+	gainLabel?: string;
+	reachOnly?: boolean;
+	clearsOnRest?: boolean;
+	byLevel?: { level: number; die: string }[];
+	rules?: string[];
+}
+
+export interface ClassResource { name: string; max?: string | number; reset?: string; die?: string; dice?: ResourceDice }
 
 export interface Casting {
 	mana?: string;
@@ -169,6 +191,8 @@ export interface CompendiumHit {
 	level?: number;
 	/** "Passive", "1 Action", "1+ Mana" for options. */
 	cost?: string;
+	/** The content pack it comes from. */
+	pack?: string;
 	entry: unknown;
 }
 
@@ -367,7 +391,7 @@ export class Compendium {
 	all(): CompendiumHit[] {
 		if (this.hits) return this.hits;
 		const out: CompendiumHit[] = [];
-		const base = (e: Sourced) => ({ source: e.source, page: e.page, draft: !!e.draft });
+		const base = (e: Sourced) => ({ source: e.source, page: e.page, draft: !!e.draft, ...(e.pack ? { pack: e.pack } : {}) });
 		for (const it of this.items) out.push({ kind: 'item', name: it.name, detail: itemDetail(it), text: it.text, ...base(it), entry: it });
 		for (const s of this.spells) out.push({ kind: 'spell', name: s.name, detail: spellDetail(s), text: s.text, ...base(s), entry: s });
 		for (const c of this.classes) {
@@ -377,16 +401,17 @@ export class Compendium {
 				out.push({ kind: 'feature', name: f.name, detail: `${c.name} · Level ${l.level}`, text: f.text, className: c.name, level: l.level, ...base(c), entry: f });
 			}
 			for (const g of arr<OptionGroup>(c.optionGroups)) for (const o of arr<ClassOption>(g.options)) {
-				out.push({ kind: 'feature', name: o.name, detail: [c.name, g.name, o.cost, o.requirement].filter(Boolean).join(' · '), text: o.text, className: c.name, group: g.name, cost: o.cost, ...base(c), entry: o });
+				// An option a pack added to a book's list is the pack's.
+				out.push({ kind: 'feature', name: o.name, detail: [c.name, g.name, o.cost, o.requirement].filter(Boolean).join(' · '), text: o.text, className: c.name, group: g.name, cost: o.cost, ...base(o.pack ? o : c), entry: o });
 			}
 			for (const s of arr<Subclass>(c.subclasses)) {
-				const sb = { source: s.source ?? c.source, page: s.page ?? c.page, draft: !!(s.draft ?? c.draft) };
+				const sb = { source: s.source ?? c.source, page: s.page ?? c.page, draft: !!(s.draft ?? c.draft), ...(s.pack ?? c.pack ? { pack: s.pack ?? c.pack } : {}) };
 				out.push({ kind: 'subclass', name: s.name, detail: `${c.name} subclass${s.story ? ' · Story' : ''}`, text: s.flavor, className: c.name, ...sb, entry: s });
 				for (const l of arr<LevelFeatures>(s.levels)) for (const f of arr<Feature>(l.features)) {
 					out.push({ kind: 'feature', name: f.name, detail: `${s.name} · Level ${l.level}`, text: f.text, className: c.name, subclass: s.name, level: l.level, ...sb, entry: f });
 				}
 				for (const g of arr<OptionGroup>(s.optionGroups)) for (const o of arr<ClassOption>(g.options)) {
-					out.push({ kind: 'feature', name: o.name, detail: [s.name, g.name, o.cost].filter(Boolean).join(' · '), text: o.text, className: c.name, subclass: s.name, group: g.name, cost: o.cost, ...sb, entry: o });
+					out.push({ kind: 'feature', name: o.name, detail: [s.name, g.name, o.cost].filter(Boolean).join(' · '), text: o.text, className: c.name, subclass: s.name, group: g.name, cost: o.cost, ...(o.pack ? base(o) : sb), entry: o });
 				}
 			}
 		}

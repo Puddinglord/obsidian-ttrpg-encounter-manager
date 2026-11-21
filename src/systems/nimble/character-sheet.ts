@@ -34,7 +34,7 @@ import { CustomFeatureModal } from './character-modals';
 import { RollDialog, RollRequest, Spendable, spendCount } from './roll-dialog';
 import { actionCost, EdgeRollResult, ExtraDice } from './roll-def';
 import { parseDice } from '../../core/dice';
-import { heldFaces, resourceRule, spendsOn, startsOn } from './resource-def';
+import { heldFaces, ruleOf, startsOn } from './resource-def';
 import { dieShape, inkOn } from '../../core/die-shape';
 import { iconStep, renderActionDots, renderMeter, renderWoundChain, VitalsMemory } from './vitals-ui';
 import { applyLook } from '../../core/look';
@@ -257,8 +257,8 @@ export class CharacterSheetRenderer extends Component {
 	private spendablesFor(kind: 'attack' | 'spell' | 'save' | 'check', o: { ranged?: boolean } = {}): Spendable[] {
 		const s = this.sheet;
 		return s.resources.flatMap((r): Spendable[] => {
-			const rule = resourceRule(r.name);
-			if (!rule || !r.die || r.current <= 0 || !spendsOn(r.name, kind)) return [];
+			const rule = ruleOf(r);
+			if (!rule || !r.die || r.current <= 0 || !rule.on.includes(kind)) return [];
 			// Judgment Dice go on Reach attacks: not a bow shot or a Range spell.
 			if (rule.reachOnly && o.ranged) return [];
 			return [{

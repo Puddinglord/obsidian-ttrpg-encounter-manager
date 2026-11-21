@@ -8,7 +8,7 @@
 
 import type { CharacterSheet, Resource, SheetFeature } from './character-def';
 import { nameKey } from './compendium';
-import { heldFaces, resourceRule } from './resource-def';
+import { heldFaces, ruleOf } from './resource-def';
 
 export interface RuleText { name: string; text: string }
 
@@ -105,7 +105,7 @@ export function classPanelRows(s: CharacterSheet, magicRules?: unknown): PanelRo
 	let rageShown = false;
 
 	for (const res of s.resources) {
-		const rule = resourceRule(res.name);
+		const rule = ruleOf(res);
 		const key = `res:${res.name}`;
 		const rules = res.feature ? rulesFor(res.feature, s.features) : rulesFor(res.name, s.features, rule?.rules);
 		const tip = tipFor(res);

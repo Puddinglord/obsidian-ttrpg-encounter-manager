@@ -7,6 +7,8 @@
 // - Rolled when gained (Fury Dice, Swarm Dice): you roll them as you get them and
 //   set them aside, so the sheet keeps their faces and a roll adds those faces.
 
+import type { ClassResource } from './compendium';
+
 export type RollKind = 'attack' | 'spell' | 'save' | 'check';
 
 export interface ResourceRule {
@@ -58,6 +60,36 @@ const RULES: ResourceRule[] = [
 
 export function resourceRule(resource: string): ResourceRule | undefined {
 	return RULES.find(r => r.match.test(resource.trim()));
+}
+
+const ROLLS: RollKind[] = ['attack', 'spell', 'save', 'check'];
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Dice described as data (a homebrew or content pack class's `dice`), as a rule like the books' own. */
+export function ruleFromData(r: Pick<ClassResource, 'name' | 'dice'>): ResourceRule | undefined {
+	const d = r.dice;
+	if (!d || (d.rolled !== 'spent' && d.rolled !== 'gained')) return undefined;
+	const on = (d.addTo ?? []).map(x => String(x).toLowerCase()).filter((x): x is RollKind => (ROLLS as string[]).includes(x));
+	const byLevel = (d.byLevel ?? []).filter(x => Number.isFinite(x?.level) && /^d\d+$/i.test(String(x?.die ?? '').trim()));
+	return {
+		match: new RegExp(`^${escape(r.name.trim())}$`, 'i'),
+		rolledWhen: d.rolled,
+		on: on.length ? on : ['attack'],
+		amount: d.use ?? 'one',
+		...(d.keep ? { keep: true } : {}),
+		autoOn: d.onWhile?.trim() ? new RegExp(`^${escape(d.onWhile.trim())}$`, 'i') : !!d.on,
+		...(d.damageType ? { damageType: d.damageType } : {}),
+		...(d.gain ? { gain: { count: d.gain, label: d.gainLabel?.trim() || 'Gain' } } : {}),
+		...(d.reachOnly ? { reachOnly: true } : {}),
+		...(d.clearsOnRest ? { clearsOnRest: true } : {}),
+		...(byLevel.length ? { dieByLevel: Object.fromEntries(byLevel.map(x => [x.level, x.die.trim().toLowerCase()])) } : {}),
+		...(d.rules?.length ? { rules: d.rules } : {}),
+	};
+}
+
+/** A resource's dice rule: its own (from data), else the books' by its name. */
+export function ruleOf(r: { name: string; rule?: ResourceRule }): ResourceRule | undefined {
+	return r.rule ?? resourceRule(r.name);
 }
 
 /** Is `resource` a pool of dice you can put into a roll of this kind? */

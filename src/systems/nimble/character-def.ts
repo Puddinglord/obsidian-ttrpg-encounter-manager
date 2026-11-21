@@ -18,7 +18,7 @@ import {
 } from './compendium';
 import { heroDamage } from './rules';
 import { fmTrue } from '../../core/campaign-model';
-import { dieAt, resourceRule } from './resource-def';
+import { dieAt, resourceRule, ResourceRule, ruleFromData, ruleOf } from './resource-def';
 
 export type Frontmatter = Record<string, unknown>;
 
@@ -114,6 +114,8 @@ export interface Resource {
 	formula?: string;
 	/** Uses of a feature ("(1/Safe Rest)"): the feature they belong to. */
 	feature?: string;
+	/** How its dice behave, when the class describes them itself (homebrew, content packs); else the books' by name (resource-def.ts). */
+	rule?: ResourceRule;
 }
 
 export interface CharacterSheet {
@@ -563,7 +565,7 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 		const own = isObj(v) ? text(v.text) : '';
 		const opt = comp.option(name, cls?.name);
 		if (opt) {
-			features.push({ name: opt.option.name, text: own || opt.option.text, group: 'Chosen', cost: opt.option.cost, optionGroup: opt.group.name, source: opt.subclass?.source ?? opt.cls.source, page: opt.subclass?.page ?? opt.cls.page, draft: opt.cls.draft, index });
+			features.push({ name: opt.option.name, text: own || opt.option.text, group: 'Chosen', cost: opt.option.cost, optionGroup: opt.group.name, source: opt.option.source ?? opt.subclass?.source ?? opt.cls.source, page: opt.subclass?.page ?? opt.cls.page, draft: opt.cls.draft, index });
 			return;
 		}
 		const any = comp.search(name, ['feature', 'boon'], 5).find(h => nameKey(h.name) === nameKey(name));
@@ -585,7 +587,8 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 	for (const r of cls?.resources ?? []) {
 		if (!r?.name) continue;
 		const v = resValue(r.name);
-		const rule = resourceRule(r.name);
+		const own = ruleFromData(r);
+		const rule = own ?? resourceRule(r.name);
 		// "+1 max Combat Dice", chosen instead of an ability (Commander's Fit for Any Battlefield), once per pick.
 		const extra = features.filter(f => new RegExp(`^\\+(\\d+) max ${r.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/s$/i, '')}s?\\b`, 'i').test(f.name))
 			.reduce((n, f) => n + Number(/^\+(\d+)/.exec(f.name)?.[1] ?? 0), 0);
@@ -597,10 +600,10 @@ export function readCharacter(fmIn: Frontmatter | null | undefined, comp: Compen
 			const m = f.text.match(new RegExp(`${r.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} are now (d\\d+)`, 'i'));
 			if (m) die = m[1];
 		}
-		die = dieAt(resourceRule(r.name), level) ?? die;
+		die = dieAt(rule, level) ?? die;
 		const startsEmpty = (/ends?\b/i.test(r.reset ?? '') && !/rest/i.test(r.reset ?? '')) || rule?.rolledWhen === 'gained' || !!rule?.clearsOnRest;
 		const current = Math.max(0, Math.min(max ?? Infinity, v.current ?? (startsEmpty ? 0 : max ?? 0)));
-		resources.push({ name: r.name, current, max: max !== undefined ? Math.max(0, max) : undefined, die, reset: r.reset, rolled: v.rolled?.slice(0, current), formula: r.max !== undefined ? String(r.max) : undefined });
+		resources.push({ name: r.name, current, max: max !== undefined ? Math.max(0, max) : undefined, die, reset: r.reset, rolled: v.rolled?.slice(0, current), formula: r.max !== undefined ? String(r.max) : undefined, ...(own ? { rule: own } : {}) });
 	}
 	// Class features you can use a few times between Safe Rests ("(1/Safe Rest)", "(WIL/Safe Rest)"): uses, kept like a resource.
 	for (const f of features) {
@@ -769,7 +772,7 @@ export function safeRest(fm: Frontmatter, s: CharacterSheet): void {
 	if (s.manaMax > 0) put(fm, 'mana', s.manaMax, s.manaMax);
 	put(fm, 'wounds', Math.max(0, s.wounds - 1), 0);
 	for (const r of s.resources) {
-		const rule = resourceRule(r.name);
+		const rule = ruleOf(r);
 		// Class dice (Judgment Dice, Fury Dice) don't outlast a fight, and resources that reset when
 		// something ends (Rage) start empty; the rest refill.
 		const empty = (/ends?\b/i.test(r.reset ?? '') && !/rest/i.test(r.reset ?? '')) || rule?.rolledWhen === 'gained' || !!rule?.clearsOnRest;
