@@ -152,6 +152,8 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - Dialogs fit a phone-width window: the import file picker, builder choices (now in even rows), the encounter builder's buttons and the party editor; a builder's or wizard's current step stays in view when the window narrows. See the [builder guide](docs/builder.md).
 - The compendium shows the list or the page when it's too narrow for both, instead of squeezing the page until names broke mid-word; filter labels no longer wrap, and rows no longer show above a group heading. See the [compendium guide](docs/compendium.md).
 - The Character panel's skills fit a 260px sidebar; Spotlight on a phone gives the name the row; the condition picker's title is the creature's name on one line; a battle's place shows one map pin; and links in an NPC's or a battle's labelled rows stay on one line. See the [character sheets guide](docs/character-sheets.md).
+- Buttons keep their whole label in narrow windows: a builder's Next when its label is long, Add several's Add button, the balance targets in the encounter builder, and the compendium picker's tabs on a phone. See the [builder guide](docs/builder.md).
+
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.

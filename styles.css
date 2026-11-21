@@ -1253,7 +1253,7 @@ button.ev-cond-add-trigger:hover { background: var(--ev-tint); }
    suggestion a card with the rating it lands on. */
 .nimble-balance { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .nimble-balance .balance-title { font: italic 900 17px/22px var(--ev-font-name); color: var(--ev-text); }
-.nimble-balance .balance-targets { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding: 3px; border-radius: var(--ev-r-md); background: color-mix(in srgb, var(--ev-text) 7%, transparent); --seg-pad: 3px; --seg-gap: 0px; --seg-color: var(--ev-surface); }
+.nimble-balance .balance-targets { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(min-content, 1fr); padding: 3px; border-radius: var(--ev-r-md); background: color-mix(in srgb, var(--ev-text) 7%, transparent); --seg-pad: 3px; --seg-gap: 0px; --seg-color: var(--ev-surface); }
 .nimble-balance .balance-targets > .seg-thumb { border-radius: calc(var(--ev-r-md) - 2px); box-shadow: 0 1px 2px rgb(0 0 0 / 0.16), 0 0 0 1px var(--ev-line); }
 .nimble-balance .balance-targets > button { min-width: 0; height: 30px; padding: 0 4px; border: 0; border-radius: calc(var(--ev-r-md) - 2px); background: transparent; box-shadow: none; color: var(--ev-text-2); font: 500 13px/normal var(--ev-font-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nimble-balance .balance-targets > button:hover:not(.is-active) { color: var(--ev-text); }
@@ -4932,7 +4932,7 @@ body.is-tablet .nimble-count-modal button.nimble-count-seg { padding: 0 0.5rem; 
 	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn.is-cancel { margin-right: 0; }
 	.ev-dialog:not(.is-compact) .ev-dialog-foot > .ev-dialog-btn.is-second ~ .is-main { flex-basis: 100%; }
 }
-.ev-dialog.is-compact .ev-dialog-foot { display: grid; grid-template-columns: minmax(min-content, 1fr) minmax(0, 2fr); }
+.ev-dialog.is-compact .ev-dialog-foot { display: grid; grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 2fr); }
 .ev-dialog.is-compact .ev-dialog-foot .is-cancel { margin-right: 0; }
 .ev-dialog button.ev-dialog-btn { height: 40px; min-width: 0; padding: 0 16px; border-radius: var(--ev-r-md, 6px); font: 600 14px/normal var(--ev-font-ui, var(--font-interface)); --ev-pill-icon: 17px; --ev-pill-gap: 7px; }
 .ev-dialog.is-compact button.ev-dialog-btn { height: 44px; }
@@ -5157,6 +5157,13 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
 @container nimble-cmpx (max-width: 820px) {
 	.nimble-cmpx-segments.is-crowded .nimble-cmpx-seg-icon { display: flex; }
 	.nimble-cmpx-segments.is-crowded .nimble-cmpx-seg-label { display: none; }
+}
+
+/* A narrow dialog (a picker on a phone): every tab row gives its words the room, icons go first. */
+@container nimble-cmpx (max-width: 480px) {
+	.nimble-cmpx-segments:not(.is-crowded) .nimble-cmpx-seg-icon { display: none; }
+	.nimble-cmpx-segments:not(.is-crowded) > button.nimble-cmpx-seg { font-size: 13px; letter-spacing: 0; padding-left: 4px; padding-right: 4px; }
+	.ev-sys-dnd5e .nimble-cmpx-segments:not(.is-crowded) > button.nimble-cmpx-seg { font-size: 12.5px; letter-spacing: 0; padding-left: 3px; padding-right: 3px; }
 }
 
 /* The search field: the Campaign panel's box, chips for filters, then the text. */
@@ -5838,10 +5845,10 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 /* Footer */
 .nimble-entity-builder .eb-foot { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--ev-paper-edge); background: var(--background-primary); flex: 0 0 auto; }
 .nimble-entity-builder .eb-foot-space { flex: 1 1 auto; }
-/* Fixed widths: nothing shifts as the labels change from step to step. */
+/* Fixed widths: nothing shifts as the labels change from step to step (Next grows only for a label that wouldn't fit). */
 .nimble-entity-builder button.eb-back { width: 6.5rem; }
 .nimble-entity-builder button.eb-create { width: 8rem; }
-.nimble-entity-builder button.eb-next { width: 11rem; }
+.nimble-entity-builder button.eb-next { width: auto; min-width: 11rem; }
 .nimble-entity-builder button.eb-create.is-gone { visibility: hidden; }
 .nimble-entity-builder :is(button.eb-back, button.eb-next, button.eb-create, button.eb-preview-btn) { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: var(--eb-h); padding: 0 1rem; line-height: 1; font-weight: 700; }
 .nimble-entity-builder :is(.eb-back, .eb-next) > span { display: flex; align-items: center; }

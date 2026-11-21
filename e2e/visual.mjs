@@ -67,6 +67,16 @@ const IGNORE = [
 	// phone a long one ("Goblin Warrior") takes two balanced lines rather than ending in "…".
 	{ surface: /^5e\/tracker$/, sel: /^h2\.dnd5e-combatant-name$/, kind: /wrap/, width: 260, why: "the card's name wraps balanced when the card is this narrow" },
 	{ surface: /^5e\/tracker$/, sel: /^h2\.dnd5e-combatant-name$/, kind: /wrap/, width: 'phone', why: "the card's name wraps balanced when the card is this narrow" },
+	// Cut-with-… labels that are meant to be: a secondary line under a name, never the name or the action itself.
+	{ surface: /condition-picker$/, sel: /^small$/, kind: /truncated/, why: "a condition's one-line summary in the picker; its full rules open beside it" },
+	{ sel: /eb-folder-parent/, kind: /truncated/, why: "the folder path above the note's name in the builder; the name stays whole" },
+	{ sel: /ns-row-detail/, kind: /truncated/, why: "an item's detail line under its name; the row opens to the full text" },
+	// The narrowest sidebar (260px) has no room for a long campaign, chapter or creature name: it ends in …, with the full name as its tooltip.
+	{ width: 260, kind: /truncated/, sel: /campaign-switch-name|campaign-chapter-name|dnd5e-member/, why: "a long name at the 260px sidebar, with its tooltip" },
+	// A group member's chip in the 260px 5e tracker ("4 / 10 · Frightened"): its HP stays whole, a condition after it may end in …, with the full text as its tooltip.
+	{ surface: /^5e\/tracker$/, width: 260, kind: /truncated/, sel: /^span$/, detail: /^button label "\d+ \/ \d+/, why: "a group member's condition at the 260px sidebar" },
+	// "Next: <a long creature name>" in the 260px tracker: the name ends in …, "Next:" and the button stay whole.
+	{ surface: /\/tracker$/, width: 260, kind: /truncated/, sel: /^span\.ev-pill-text$/, detail: /^button label "Next: /, why: "the next creature's long name at the 260px sidebar" },
 ];
 const ignored = (surface, i, width) => IGNORE.find(r => (!r.kind || r.kind.test(i.kind)) && (!r.surface || r.surface.test(surface)) && (!r.sel || r.sel.test(i.sel)) && (!r.detail || r.detail.test(i.detail)) && (!r.width || r.width === width));
 
