@@ -1081,7 +1081,7 @@ export class EncounterTrackerView extends ItemView {
 	}
 
 	private showConditionPicker(anchor: HTMLElement, enc: Encounter, c: EncounterCreature): void {
-		openConditionPicker(anchor, { ...this.conditionOptions(enc, c), placeholder: `Condition for ${this.nm(enc, c)}…` });
+		openConditionPicker(anchor, this.conditionOptions(enc, c));
 	}
 
 	// ------------------------------------------------------------------------

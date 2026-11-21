@@ -121,7 +121,7 @@ export function openConditionPicker(anchor: HTMLElement, o: ConditionEditorOptio
 		if (o.cls) el.addClasses(o.cls.split(/\s+/).filter(Boolean));
 		applyLook(el, o.system);
 		el.setAttr('role', 'dialog');
-		el.createDiv({ cls: 'popover-title', text: `${o.bearer.label}: add a condition` });
+		el.createDiv({ cls: 'popover-title', text: o.bearer.label });
 		const box = el.createDiv({ cls: 'condition-search-box' });
 		setIcon(box.createSpan({ cls: 'condition-search-icon', attr: { 'aria-hidden': 'true' } }), evIcon('search'));
 		const search = box.createEl('input', { type: 'search', cls: 'condition-search', attr: { placeholder: o.placeholder ?? 'Condition, or a new one…', 'aria-label': 'Find or name a condition' } });

@@ -628,6 +628,8 @@ body.ev-is-sorting { cursor: grabbing; }
    per condition (an icon, its name, what it does in one line, a check when it's on); how long under the list. */
 .nimble-popover.ev-cond-pop { background: var(--ev-surface, var(--background-primary)); color: var(--ev-text, var(--text-normal)); font-family: var(--ev-font-ui, var(--font-interface)); }
 .nimble-popover.ev-cond-pop .popover-title { margin-bottom: 10px; font: var(--ev-display-weight, 700) 17px/22px var(--ev-font-display, var(--font-interface)); font-variant: var(--ev-display-variant, normal); }
+/* The picker's title is who gets the condition: one line. */
+.nimble-popover.condition-picker .popover-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nimble-popover.ev-cond-pop.ev-sys-nimble .popover-title { font: italic 900 18px/22px var(--ev-font-name); }
 .nimble-popover.ev-cond-pop.ev-sys-dnd5e .popover-title { font-size: 19px; color: var(--ev-accent-text); letter-spacing: 0.02em; }
 .ev-cond-pop .condition-search-box { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: var(--ev-r-md, 6px); background: var(--ev-surface-2, var(--background-secondary)); color: var(--ev-text-2, var(--text-muted)); }
@@ -3227,7 +3229,7 @@ body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 /* Narrow (hover previews, embeds, phones, split panes): a thumbnail beside the
    name, then the rows across the full width. */
 @container (max-width: 420px) {
-	.nimble-npc-card { grid-template-columns: minmax(64px, 26%) minmax(0, 1fr); grid-template-rows: auto; align-items: center; gap: 12px 14px; padding: 14px; }
+	.nimble-npc-card { grid-template-columns: minmax(60px, 22%) minmax(0, 1fr); grid-template-rows: auto; align-items: center; gap: 12px 14px; padding: 14px; }
 	.nimble-npc-portrait { grid-row: auto; }
 	.nimble-npc-head { overflow-wrap: anywhere; }
 	.nimble-npc-name { font-size: 22px; line-height: 26px; }
@@ -3294,6 +3296,11 @@ body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 .nimble-spotlight .nimble-spot-meta.is-long { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
 /* What a row is, on the right: quiet small capitals, not a tag (a column of them would shout). */
 .nimble-spotlight .nimble-spot-tag { flex-shrink: 0; font: 700 10.5px/normal var(--ev-font-ui, var(--font-interface)); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2, var(--text-faint)); }
+/* A phone-width box: the name wins; the row's icon already says what it is. */
+.prompt.nimble-spotlight { container-type: inline-size; }
+@container (max-width: 360px) {
+	.nimble-spotlight .nimble-spot-tag { display: none; }
+}
 .nimble-spotlight .spot-hint .nimble-spot-name { font-weight: 500; }
 .nimble-spotlight .spot-roll .nimble-spot-icon { background: var(--ev-accent, var(--interactive-accent)); color: var(--ev-on-accent, var(--text-on-accent)); }
 /* Sliding segmented-control thumb (see segmented.ts) */
@@ -3342,7 +3349,7 @@ body.is-tablet button.nimble-npc-fight { padding: 0 12px; }
 /* The buttons go under the name when there isn't room beside it (a narrow window), rather than crushing it. */
 .nimble-record-modal .record-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem; padding-right: 1.8rem; }
 .nimble-record-modal .record-avatar { width: 44px; height: 44px; box-shadow: 0 0 0 1px var(--background-modifier-border); }
-.nimble-record-modal .record-titles { flex: 1 1 12rem; min-width: 0; }
+.nimble-record-modal .record-titles { flex: 1 1 auto; min-width: min(12rem, 100%); }
 .nimble-record-modal .record-title { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
 .nimble-record-modal .record-sub { font-size: 0.82rem; color: var(--text-muted); }
 .nimble-record-modal .record-actions { display: flex; flex-wrap: wrap; max-width: 100%; gap: 0.35rem; flex-shrink: 0; }
@@ -3744,6 +3751,11 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 	.nimble-sheet.ns-sheet .ns-sk-cap { width: 7px; }
 	.nimble-sheet.ns-sheet .ns-sk-row { gap: 1px; padding: 1px; }
 	.nimble-sheet.ns-sheet .ns-skill-name { padding: 0 1px; font-size: clamp(7.5px, calc((100cqi - 30px) / 28.5), 11px); letter-spacing: 0; }
+}
+/* Narrower still (the Character panel at 260px): five across would need "Examination" under 7px. Two across, names at full size. */
+@container nimble-sheet (max-width: 250px) {
+	.nimble-sheet.ns-sheet .ns-sk-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.nimble-sheet.ns-sheet .ns-skill-name { padding: 0 2px; font-size: 11px; letter-spacing: 0.03em; }
 }
 
 /* Edit mode: the numbers the sheet works out, set by hand */

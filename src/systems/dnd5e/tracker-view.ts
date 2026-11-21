@@ -809,7 +809,7 @@ export class Dnd5eTrackerView extends ItemView {
 
 	/** Every condition of the fight's edition, your own, Concentrating, or a new one. */
 	private conditionPicker(anchor: HTMLElement, c: Combatant5e): void {
-		openConditionPicker(anchor, { ...this.conditionOptions(c), placeholder: `Condition for ${c.label}…` });
+		openConditionPicker(anchor, this.conditionOptions(c));
 	}
 
 	// ------------------------------------------------------------------------

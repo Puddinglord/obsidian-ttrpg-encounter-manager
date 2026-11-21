@@ -57,8 +57,12 @@ const IGNORE = [
 	{ sel: /^button\.mod-cta$/, kind: /contrast/, why: "Obsidian's accent button, coloured by the theme" },
 	// Obsidian's settings window at 320px leaves its tab content about 30px wide: nothing anyone's fits.
 	{ surface: /^shared\/settings$/, width: 320, why: "Obsidian's settings window has no room for its content at 320px" },
+	// At 540px its tab is about 210px: Obsidian's own setting rows wrap a name beside its toggle, ours as any plugin's.
+	{ surface: /^shared\/settings$/, width: 540, kind: /wrap/, sel: /^div\.setting-item-name$/, why: "Obsidian's setting rows in a 210px tab (its layout, not ours)" },
 	// A map pin's number is a hair wider than its round badge and is centred over it (as in layout-sweep).
 	{ sel: /nimble-map-pin-inner/, kind: /spill|clipped/, why: 'centred over the badge on purpose' },
+	// Four reaction cards across a narrow sheet: a two-word name ("Opportunity Attack") takes two lines, balanced and centred.
+	{ sel: /^b\.ns-rc-name$/, kind: /wrap/, why: 'a reaction card name in four narrow cards wraps on purpose (text-wrap: balance, centred)' },
 ];
 const ignored = (surface, i, width) => IGNORE.find(r => (!r.kind || r.kind.test(i.kind)) && (!r.surface || r.surface.test(surface)) && (!r.sel || r.sel.test(i.sel)) && (!r.detail || r.detail.test(i.detail)) && (!r.width || r.width === width));
 
