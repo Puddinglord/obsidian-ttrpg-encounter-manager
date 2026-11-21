@@ -41,6 +41,7 @@ import type { HpCommand } from '../../core/tracker/hp';
 import { renderMeter, VitalsMemory } from '../../core/vitals/meter';
 import { markSheetPage, unmarkSheetPage } from '../../core/sheet-page';
 import { onLongPress } from '../../core/touch';
+import { holdRedraws } from '../../core/hold-redraws';
 
 export const SHEET_LANG = '5e-sheet';
 const d20 = (mod: number) => (mod === 0 ? '1d20' : `1d20${mod > 0 ? '+' : '-'}${Math.abs(mod)}`);
@@ -83,7 +84,9 @@ export class Dnd5eSheet extends MarkdownRenderChild {
 	}
 
 	onload(): void {
-		this.registerEvent(this.rt.plugin.app.metadataCache.on('changed', (f) => { if (f.path === this.path) this.render(); }));
+		// A change to the note redraws the sheet, but not under a finger that's down (it would lose the tap).
+		const changed = holdRedraws(this, this.containerEl, () => this.render());
+		this.registerEvent(this.rt.plugin.app.metadataCache.on('changed', (f) => { if (f.path === this.path) changed(); }));
 		this.render();
 	}
 

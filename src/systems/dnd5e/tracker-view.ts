@@ -15,6 +15,7 @@ import { renderPipRow } from '../../core/pip-row';
 import { pill } from '../../core/pill';
 import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover';
 import { onLongPress } from '../../core/touch';
+import { holdRedraws } from '../../core/hold-redraws';
 import { openGameSettings } from '../../core/settings-ui';
 import { isSheetMember, type AppliedCondition, type PartyMember } from '../../core/types';
 import { ConditionEditorOptions, keepCustomCondition, openConditionDetails, openConditionPicker } from '../../core/tracker/condition-editor';
@@ -119,7 +120,9 @@ export class Dnd5eTrackerView extends ItemView {
 	getIcon(): string { return 'swords'; }
 
 	async onOpen(): Promise<void> {
-		this.registerEvent(this.rt.fights.on('changed', () => this.render()));
+		// The fight redraws the tracker, but not under a finger that's down (it would lose the tap).
+		const changed = holdRedraws(this, this.containerEl, () => this.render());
+		this.registerEvent(this.rt.fights.on('changed', changed));
 		flowKeys(this.contentEl, {
 			select: (row) => { const id = row.dataset.flowRow; if (id && isRunning(this.fight)) this.turn(f => activate(f, id)); },
 			done: () => this.primaryRun?.(),

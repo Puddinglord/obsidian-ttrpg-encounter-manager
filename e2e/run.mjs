@@ -4115,13 +4115,24 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(fm.hp, 15);
 		await p.waitForFunction((R) => document.querySelector(`${R} .ns-hp-cur`)?.textContent === '15', R);
 
-		// Temp HP soaks first. The meter animates the hit and then redraws, so a click straight after it can land on
-		// the bar being replaced: click until the keypad is open.
-		await o.waitFor(async () => {
-			if (await p.locator('.nimble-hp-pad').isVisible().catch(() => false)) return true;
-			await sheet.locator('.ns-hp').click({ timeout: 2000 }).catch(() => {});
-			return p.locator('.nimble-hp-pad').isVisible().catch(() => false);
-		}, { what: 'the HP keypad open' });
+		// A tap that spans a redraw still lands. Press the bar, change the note while the button is down (the sheet
+		// would redraw and replace the bar under it), release: the keypad opens, then the sheet catches up.
+		await p.evaluate((R) => { document.querySelector(`${R} .ns-hp`).dataset.e2eOld = '1'; }, R);
+		const hpBox = await sheet.locator('.ns-hp').boundingBox();
+		await p.mouse.move(hpBox.x + hpBox.width / 2, hpBox.y + hpBox.height / 2);
+		await p.mouse.down();
+		await o.eval(async (app, _p, path) => { await app.fileManager.processFrontMatter(app.vault.getFileByPath(path), fm => { fm.e2e_poke = 1; }); }, SHEET_NOTE);
+		await waitFm(o, f => f.e2e_poke === 1, 'the note changed while the button is down');
+		await p.waitForTimeout(250);
+		assert.equal(await p.evaluate((R) => document.querySelector(`${R} .ns-hp`)?.dataset.e2eOld ?? null, R), '1', 'no redraw while the button is down');
+		await p.mouse.up();
+		await p.locator('.nimble-hp-pad').waitFor({ timeout: 3000 });
+		await p.waitForFunction((R) => !document.querySelector(`${R} .ns-hp`)?.dataset.e2eOld, R, { timeout: 3000 });
+		await p.keyboard.press('Escape');
+		await p.locator('.nimble-hp-pad').waitFor({ state: 'detached', timeout: 3000 });
+
+		// Temp HP soaks first.
+		await sheet.locator('.ns-hp').click();
 		await p.locator('.nimble-hp-pad .hp-pad-mode', { hasText: 'Temp' }).click();
 		await p.keyboard.type('4');
 		await p.keyboard.press('Enter');

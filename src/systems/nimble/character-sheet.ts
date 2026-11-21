@@ -46,6 +46,7 @@ import { ClassPanelHost, renderClassPanel } from './class-panel';
 import { LevelUpWizard } from './character-wizard';
 import { plainMod, saveTriangle } from './sheet-marks';
 import { nimble } from './runtime';
+import { holdRedraws } from '../../core/hold-redraws';
 
 export type SheetTab = 'actions' | 'features' | 'spells' | 'inventory' | 'notes';
 
@@ -160,7 +161,9 @@ export class CharacterSheetRenderer extends Component {
 
 	onload(): void {
 		this.render();
-		this.registerEvent(this.app.metadataCache.on('changed', (f) => { if (f.path === this.file.path) this.render(); }));
+		// A change to the note redraws the sheet, but not under a finger that's down (it would lose the tap).
+		const changed = holdRedraws(this, this.root, () => this.render());
+		this.registerEvent(this.app.metadataCache.on('changed', (f) => { if (f.path === this.file.path) changed(); }));
 		this.registerEvent(this.app.vault.on('rename', (f, old) => {
 			if (old !== this.file.path || !(f instanceof TFile)) return;
 			STATE.set(f.path, this.state);

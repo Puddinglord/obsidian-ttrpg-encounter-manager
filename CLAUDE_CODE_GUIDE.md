@@ -47,6 +47,7 @@ src/core/
   pill.ts               pill(): the one markup for pills, chips and compact icon+label buttons (see "Pills and compact buttons")
   popover.ts            Shared floating popover (condition info, pickers); a bottom sheet on phones
   touch.ts              isTouch/isPhone, onLongPress (right-click on touch), confirmAction (no window.confirm on mobile)
+  hold-redraws.ts       holdRedraws(): a view that redraws when its data changes waits while a finger is down in it, so a tap isn't lost
   party.ts              Party editor (settings tab and the /party modal); cards on narrow screens
   dice.ts               Dice expression parsing and rolling
   types.ts              Shared types: conditions (AppliedCondition, ConditionDef), the party, the roll log, uid()
@@ -181,6 +182,7 @@ Running a campaign and playing in one show the same things; build each once and 
 - Party: `renderRoster` and `heroCard` (campaign-ui.ts) for both roles; the GM side also feeds the encounter party from the same sheets (`syncPartyFromSheets` in main.ts).
 - Monsters: `renderStatblock` and `renderLoreCard` (render.ts) share `renderActionBar`; `plugin.renderStatblock` adds the player's creature notes and every printing to any lore card.
 - Vitals: `renderMeter` (core/vitals/meter.ts, every game) draws an HP or mana bar with its damage and heal animations and batched − / + taps; wrap it in `.nimble-sheet` or `.ev-vitals` for its styles. 5e's sheet uses it. Nimble's `renderActionDots` and `renderWoundPips` (vitals-ui.ts) draw action dots and Wound pips, for the character sheet (writing to the note) and the tracker's quick look (writing to the fight; `.nimble-sheet.ns-embed`).
+- Redraws on changed data: a view that redraws when its note or fight changes passes that redraw through `holdRedraws` (core/hold-redraws.ts), so a redraw never replaces the button under a finger that's down. Both sheets, both trackers and Nimble's quick look do.
 - A game's sheet takes the page: `markSheetPage` (core/sheet-page.ts) hides the note's inline title and Properties box around any sheet, for notes with or without `cssclasses`; the sheet's own button shows the properties again.
 - Dice and marks: `dieShape` and `triangleMark` (die-shape.ts), styled globally (`.ns-die`, `.ns-tri-mark`), used by the sheet and the Camp dialog.
 - Dice rolled at the table: any die a hero holds can be typed in. Tap it to change it, tap an empty slot to add one; `renderFacePicker` (core/face-picker.ts) opens the strip of faces under the row. Nimble's class panel uses it for Fury and Judgment Dice.

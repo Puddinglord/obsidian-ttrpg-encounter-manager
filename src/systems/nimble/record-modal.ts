@@ -19,6 +19,7 @@ import { nimble } from './runtime';
 import { pill } from '../../core/pill';
 import { applyLook } from '../../core/look';
 import { evIcon } from '../../core/icons';
+import { holdRedraws } from '../../core/hold-redraws';
 
 /** The meter's − / + / keypad in the game's icons, as on the sheet. */
 const METER_ICONS = { minus: evIcon('minus'), plus: evIcon('plus'), calc: evIcon('keypad') };
@@ -55,11 +56,12 @@ class RecordModal extends Modal {
 		const t = this.target;
 		if (t.kind === 'combatant') {
 			// Keep the combat strip current while the modal is open.
-			this.ref = nimble().encounters.on('changed', () => {
+			// Not under a finger that's down, though: it would lose the tap.
+			this.ref = nimble().encounters.on('changed', holdRedraws(this.component, this.modalEl, () => {
 				const c = this.creature();
 				if (!c) { this.close(); return; }
 				this.renderStrip(c);
-			});
+			}));
 		}
 		void this.render();
 	}

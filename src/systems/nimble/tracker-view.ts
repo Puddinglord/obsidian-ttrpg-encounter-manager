@@ -17,6 +17,7 @@ import { appendRichText } from '../../core/markdown';
 import { closePopover, isPopoverOpenFor, openPopover } from '../../core/popover';
 import { HeroReaction, openHpCalculator } from './hp-pad';
 import { confirmAction, isTouch, onLongPress } from '../../core/touch';
+import { holdRedraws } from '../../core/hold-redraws';
 import { HpCommand } from './rules';
 import { openPluginSettings } from '../../core/internals';
 import { slideThumb } from '../../core/segmented';
@@ -98,7 +99,9 @@ export class EncounterTrackerView extends ItemView {
 	getIcon(): string { return 'swords'; }
 
 	async onOpen(): Promise<void> {
-		this.registerEvent(nimble().encounters.on('changed', () => this.render()));
+		// The fight redraws the tracker, but not under a finger that's down (it would lose the tap).
+		const changed = holdRedraws(this, this.containerEl, () => this.render());
+		this.registerEvent(nimble().encounters.on('changed', changed));
 		this.registerEvent(this.plugin.events.on('roll-log-changed', () => this.renderRollLog()));
 		this.registerEvent(this.plugin.campaigns.on('changed', () => { if (this.plugin.playerView() !== this.playerShown) this.render(); }));
 		flowKeys(this.root, {
