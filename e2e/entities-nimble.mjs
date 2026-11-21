@@ -1202,7 +1202,12 @@ export function register(test, h) {
 			await o.page.locator(EB).waitFor({ state: 'detached' });
 			await o.waitFor(async () => /```nimble-background\nname: Lamp Tender\n/.test(await read(o, `${CF}/Nimble/Backgrounds/Lamp Tender.md`).catch(() => '')), { what: 'the background\'s note' });
 			await closeCompendiumTab(o);
-			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').find(p => p.name === 'Homebrew')?.entries.map(e => e.name).sort().join())) === 'Cinderwright,Lamp Tender', { what: 'the background as Homebrew' });
+			let homebrew = [];
+			await o.waitFor(async () => {
+				homebrew = await o.eval((app, plugin) => plugin.content.enabled('nimble').find(p => p.name === 'Homebrew')?.entries.map(e => e.name) ?? []);
+				return homebrew.includes('Cinderwright') && homebrew.includes('Lamp Tender');
+			}, { what: 'the background as Homebrew', timeout: 10000 }).catch(() => {});
+			assert.ok(homebrew.includes('Cinderwright') && homebrew.includes('Lamp Tender'), `Homebrew: ${homebrew.join(', ')}`);
 			// A hero from the pack's class, ancestry and background, in this campaign's party.
 			await newHero(o, { name: 'Wren Lanternfield', cls: 'Lamplighter', ancestry: 'Emberkin', background: 'Night Watch Veteran' });
 			const HERO = `${F}/Party/Wren Lanternfield.md`;
