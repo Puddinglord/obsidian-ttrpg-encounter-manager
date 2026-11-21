@@ -6,6 +6,11 @@
 // sheet exactly like the SRD's: a hero is made and levelled with a built
 // class, subclass, species, background and feat.
 import { afterEach, describe, expect, it } from 'vitest';
+import type EmberVaultPlugin from '../main';
+import type { BuilderUI } from '../src/core/builder/frame';
+import { SchemaBuilder } from '../src/core/builder/schema';
+import { backgroundSchema, classSchema, featSchema, speciesSchema, subclassSchema } from '../src/systems/dnd5e/content-builders';
+import type { Dnd5eRuntime } from '../src/systems/dnd5e/runtime';
 import { readContentBlock } from '../src/core/content/blocks';
 import { checkEntry, KindSpec } from '../src/core/content/spec';
 import { toYaml } from '../src/core/yaml-lite';
@@ -245,5 +250,68 @@ describe.each(EDITIONS)('a hero made and levelled with built content (%s)', (ed)
 		expect(res.find(r => r.name === 'Ember Burst')).toMatchObject({ max: 4, per: 'short' });
 		expect(res.find(r => r.name === 'Hearthfire')?.per).toBe('short');
 		expect(sheet.slots.map(s => s.max)).toEqual(classOf(ed, 'Ranger')!.levels[9].slots!.filter(Boolean));
+	});
+});
+
+// ----------------------------------------------------------------------------
+// The builders drawn by core's schema engine, driven like a user
+
+const app = { workspace: { getActiveFile: () => null }, metadataCache: { getFirstLinkpathDest: () => null }, vault: { getAbstractFileByPath: () => null } };
+const plugin = { app, campaigns: { active: null }, content: { folder: () => 'Ember Vault/Content' }, systems: { get: () => ({ content: { kinds: KINDS_5E, blocks: { prefix: '5e', folder: '5e', kinds: [] } } }) } } as unknown as EmberVaultPlugin;
+const rt = (ed: Dnd5eEdition) => ({ plugin, edition: () => ed, cardOptions: () => ({ app, sourcePath: '' }) }) as unknown as Dnd5eRuntime;
+function harness<M extends Record<string, unknown>>(b: SchemaBuilder<M>) {
+	let lives: (() => void)[] = [];
+	const panel = document.createElement('div');
+	let step = b.steps()[0].id;
+	const ui: BuilderUI = { plugin, sourcePath: '', phone: false, changed: () => lives.forEach(f => f()), rebuild: () => draw(step), live: (f) => { lives.push(f); f(); }, go: () => {}, nudge: () => {} };
+	const draw = (id: string) => { step = id; lives = []; panel.empty(); b.renderStep(id, panel, ui); };
+	return { ui, panel, draw };
+}
+
+describe.each(EDITIONS)('the content builders drawn by the schema engine (%s)', (ed) => {
+	const schemas = { class: classSchema, subclass: subclassSchema, feat: featSchema, species: speciesSchema, background: backgroundSchema } as const;
+	it.each(Object.keys(schemas) as (keyof typeof schemas)[])('%s: every step draws, the check and preview draw, and Create writes a block that checks out', (k) => {
+		const b = new SchemaBuilder(plugin, schemas[k](rt(ed)) as never, { edition: ed }) as SchemaBuilder<Record<string, unknown>>;
+		expect(b.draft.edition).toBe(ed);
+		b.draft.name = 'Built Thing';
+		if (k === 'feat') b.draft.desc = 'It does a thing.';
+		const h = harness(b);
+		for (const s of b.steps()) { h.draw(s.id); expect(h.panel.querySelectorAll('.eb-field').length, s.id).toBeGreaterThan(0); }
+		const check = document.createElement('div');
+		b.renderCheck(check, h.ui);
+		expect(check.querySelector('.eb-check-value')?.textContent).toBe('Built Thing');
+		const out = b.output();
+		expect(out.lang).toBe(`5e-${k}`);
+		expect(out.folder).toBe(`Ember Vault/Content/5e/${({ class: 'Classes', subclass: 'Subclasses', feat: 'Feats', species: 'Species', background: 'Backgrounds' })[k]}`);
+		const read = readContentBlock(kind(k), out.body);
+		expect(read.errors).toEqual([]);
+		expect(read.warnings).toEqual([]);
+		expect(b.missing()).toBeNull();
+	});
+	it('class: saves stop at two; a spellcasting ability brings a full caster\'s slots; the check\'s level strip moves the level shown', () => {
+		const b = new SchemaBuilder(plugin, classSchema(rt(ed)), { edition: ed });
+		const h = harness(b);
+		h.draw('class');
+		const saves = [...h.panel.querySelectorAll<HTMLButtonElement>('[data-key="saves"] .eb-pick')];
+		saves.slice(0, 3).forEach(p => p.click());
+		expect(b.draft.saves).toEqual(['STR', 'DEX']);
+		expect(saves[2].disabled).toBe(true);
+		b.draft.castAbility = 'WIS';
+		h.draw('spells');
+		expect(b.draft.caster).toBe('full');
+		const check = document.createElement('div');
+		b.renderCheck(check, h.ui);
+		expect(check.querySelectorAll('.dnd5e-cb-level').length).toBe(20);
+		check.querySelectorAll<HTMLButtonElement>('.dnd5e-cb-level')[4].click();
+		expect(b.draft.levelAt).toBe(5);
+		const again = document.createElement('div');
+		b.renderCheck(again, h.ui);
+		expect(again.textContent).toMatch(/What level 5 grants[\s\S]*Slots\s*4·3·2/);
+	});
+	it('an Edit seed reopens a block\'s fields as they were written', () => {
+		const entry = toClassEntry(hearthWarden(ed));
+		const b = new SchemaBuilder(plugin, classSchema(rt(ed)), { entry });
+		expect(b.draft.name).toBe('Hearth Warden');
+		expect(toYaml(toClassEntry(b.draft))).toBe(toYaml(entry));
 	});
 });

@@ -211,7 +211,8 @@ export class Dnd5eCompendiumView extends ItemView {
 				? { icon: evIcon('plus'), label: `Add ${e.name} to the fight`, run: (ev) => fight(e, ev.shiftKey ? 2 : 1) }
 				: { icon: evIcon('copy'), label: `Copy a reference to ${e.name}`, run: () => copyReference(entryReference5e(e), e.name) }),
 			detail: {},
-			onNew: (seg, ev) => newContent(rt.plugin, 'dnd5e', newKinds(seg), ev),
+			// A builder opens on the edition the compendium shows.
+			onNew: (seg, ev) => newContent(rt.plugin, 'dnd5e', newKinds(seg), ev, { seed: { edition: this.edition } }),
 			// Equipment is made in the item builder; its button says what it makes there.
 			newLabel: (seg) => (seg === 'equipment' && newKinds(seg).length ? 'New equipment' : newButtonLabel(rt.plugin, 'dnd5e', newKinds(seg))),
 			onNarrowShow: (d) => {

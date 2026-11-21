@@ -58,22 +58,30 @@ export function newButtonLabel(plugin: EmberVaultPlugin, system: string, kinds: 
  * New: one kind goes straight to it; several (a tab with classes and subclasses) ask which, in a menu at the
  * button. Nothing to make: a notice.
  */
-export function newContent(plugin: EmberVaultPlugin, system: string, kinds: readonly string[], ev?: MouseEvent): void {
+export function newContent(plugin: EmberVaultPlugin, system: string, kinds: readonly string[], ev?: MouseEvent, o: { seed?: unknown } = {}): void {
 	const list = makeable(plugin, system, kinds);
 	if (!list.length) { new Notice('Nothing to make here yet.'); return; }
-	if (list.length === 1) { make(plugin, system, list[0]); return; }
+	if (list.length === 1) { make(plugin, system, list[0], o.seed); return; }
 	const menu = new Menu();
-	for (const m of list) menu.addItem(i => i.setTitle(`${newLabel(m.kind)}${m.how === 'builder' ? '…' : ''}`).onClick(() => make(plugin, system, m)));
+	for (const m of list) menu.addItem(i => i.setTitle(`${newLabel(m.kind)}${m.how === 'builder' ? '…' : ''}`).onClick(() => make(plugin, system, m, o.seed)));
 	if (ev) menu.showAtMouseEvent(ev); else menu.showAtPosition({ x: window.innerWidth / 2, y: window.innerHeight / 3 });
 }
 
-function make(plugin: EmberVaultPlugin, system: string, m: Makeable): void {
-	if (m.how === 'builder') { openBuilder(plugin, { system, kind: m.kind.kind }); return; }
+/** `seed`: what the tab knows that a builder can start from (5e's compendium: the edition it shows). */
+function make(plugin: EmberVaultPlugin, system: string, m: Makeable, seed?: unknown): void {
+	if (m.how === 'builder') { openBuilder(plugin, { system, kind: m.kind.kind, seed, onCreated: (file) => { void openNew(plugin, file); } }); return; }
 	new NamePrompt(plugin.app, newLabel(m.kind), m.kind.label, '', 'Create', (name) => { void createContentNote(plugin, system, m.kind, name); }, (el) => {
 		const where = el.createDiv({ cls: 'ev-content-new-where' });
 		setIcon(where.createSpan({ cls: 'ev-content-new-icon' }), gameIcon('folder'));
 		where.createSpan({ text: contentFolderFor(plugin, system, m.kind.kind) });
 	}).open();
+}
+
+/** Open a new entry's note: from the compendium (not a note), in a tab of its own, so the compendium stays. */
+async function openNew(plugin: EmberVaultPlugin, file: TFile, mode?: 'source'): Promise<void> {
+	const app = plugin.app;
+	const leaf = app.workspace.getLeaf(app.workspace.getActiveViewOfType(MarkdownView) ? false : 'tab');
+	await leaf.openFile(file, mode ? { state: { mode } } : undefined);
 }
 
 /** Write a note with a kind's starter block in the content folder, and open it. */
@@ -86,9 +94,7 @@ export async function createContentNote(plugin: EmberVaultPlugin, system: string
 		const folder = path.slice(0, path.lastIndexOf('/'));
 		if (!app.vault.getFolderByPath(folder)) await app.vault.createFolder(folder);
 		const file = await app.vault.create(path, `${fence(blockLang(blocks.prefix, kind.kind), starterBody(kind, name.trim()))}\n`);
-		// From the compendium (not a note), the note opens in a tab of its own.
-		const leaf = app.workspace.getLeaf(app.workspace.getActiveViewOfType(MarkdownView) ? false : 'tab');
-		await leaf.openFile(file, { state: { mode: 'source' } });
+		await openNew(plugin, file, 'source');
 		return file;
 	} catch (e) {
 		console.error('Ember Vault: could not create the note', e);

@@ -5982,6 +5982,31 @@ body.is-tablet .nimble-entity-builder .eb-seg.is-schools button.eb-seg-btn:nth-o
 .nimble-entity-builder.ev-sys-dnd5e .eb-tiles .eb-tile-value { font: 600 24px/28px var(--ev-font-display); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text); }
 .nimble-entity-builder.ev-sys-dnd5e .eb-tiles .eb-tile.is-lead { border-color: var(--x5-gold); background: var(--ev-tint); }
 .nimble-entity-builder.ev-sys-dnd5e .eb-step-title { font: 600 21px/26px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.02em; color: var(--ev-accent-text); }
+/* 5e's content builders (dnd5e/content-builders.ts). A number that steps up the levels as twenty small fields, one a
+   level: the one you type is gold-edged, the levels after it follow faintly until the next. The class check's level
+   strip (oxblood for the level shown, a gold dot where a level grants something), and abilities as diamond chips. */
+.nimble-entity-builder .dnd5e-lv-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; width: 100%; }
+.nimble-entity-builder.is-phone-layout .dnd5e-lv-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.nimble-entity-builder .dnd5e-lv-cell { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.nimble-entity-builder .dnd5e-lv-n { font: 600 12px/14px var(--ev-font-display); font-variant: small-caps; text-align: center; color: var(--ev-text-2); }
+.nimble-entity-builder input.dnd5e-lv-input { width: 100%; min-width: 0; height: 2rem; padding: 0; text-align: center; font-variant-numeric: lining-nums tabular-nums; }
+.nimble-entity-builder.is-phone-layout input.dnd5e-lv-input { height: 2.75rem; }
+.nimble-entity-builder .dnd5e-lv-cell.is-set .dnd5e-lv-n { color: var(--ev-accent-text); }
+.nimble-entity-builder .dnd5e-lv-cell.is-set input.dnd5e-lv-input { border-color: var(--x5-gold); font-weight: 700; }
+.nimble-entity-builder .dnd5e-cb-levels { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; }
+.nimble-entity-builder button.dnd5e-cb-level {
+	position: relative; height: 1.75rem; min-width: 0; padding: 0; border: 1px solid var(--x5-gold-soft); border-radius: var(--ev-r-chip, 3px);
+	background: var(--ev-surface); box-shadow: none; font: 600 12px/normal var(--ev-font-ui); font-variant-numeric: lining-nums tabular-nums; color: var(--ev-text-2); cursor: pointer;
+}
+.nimble-entity-builder button.dnd5e-cb-level.has-more { border-color: var(--x5-gold); color: var(--ev-text); }
+.nimble-entity-builder button.dnd5e-cb-level.has-more::after { content: ""; position: absolute; left: calc(50% - 2px); bottom: 2px; width: 4px; height: 4px; border-radius: 50%; background: var(--x5-gold); }
+.nimble-entity-builder button.dnd5e-cb-level.is-active { border-color: var(--ev-accent); background: var(--ev-accent); color: var(--ev-on-accent); }
+.nimble-entity-builder button.dnd5e-cb-level.is-active.has-more::after { background: var(--x5-on-banner); }
+.nimble-entity-builder.is-phone-layout button.dnd5e-cb-level { height: 2.4rem; }
+.nimble-entity-builder .dnd5e-cb-abilities { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
+.nimble-entity-builder .dnd5e-cb-abilities-title { margin-right: 0.2rem; font: 600 17px/22px var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.04em; color: var(--ev-accent-text); }
+.nimble-entity-builder .dnd5e-cb-ability:not(.is-on) { color: var(--ev-text-2); }
+.nimble-entity-builder .dnd5e-cb-warn { font-size: 0.8rem; font-weight: 600; color: var(--ev-danger-text); }
 /* What a field works out to ("PB +2 · 200 XP", "Book: 52") sits beside its label, not at the far edge. */
 .nimble-entity-builder .eb-label-row { justify-content: flex-start; flex-wrap: wrap; row-gap: 2px; }
 /* A schema's segments on a phone: even rows (--eb-cols, from how many options there are), never off the edge. */

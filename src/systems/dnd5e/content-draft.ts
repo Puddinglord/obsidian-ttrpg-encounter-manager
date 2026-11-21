@@ -35,9 +35,11 @@ function tidy(o: Entry): Entry {
 	}
 	return out;
 }
-/** The fields this builder writes, then what the entry had that it doesn't (kept as written). */
-function keep(base: Entry | undefined, owned: readonly string[], fields: Entry): Entry {
-	const out = tidy(fields);
+/** The fields this builder writes (a required list stays, even empty), then what the entry had that it doesn't (kept as written). */
+function keep(base: Entry | undefined, owned: readonly string[], fields: Entry, required: readonly string[] = []): Entry {
+	const kept = tidy(fields);
+	const out: Entry = {};
+	for (const [k, v] of Object.entries(fields)) if (k in kept || (required.includes(k) && v !== undefined)) out[k] = v;
 	for (const [k, v] of Object.entries(base ?? {})) if (!owned.includes(k) && !(k in out) && k !== 'kind' && k !== 'source' && k !== 'note') out[k] = v;
 	return out;
 }
@@ -209,6 +211,9 @@ export const WEAPONS_5E: readonly string[] = ['Simple Weapons', 'Martial Weapons
 const ASI = 'Ability Score Improvement';
 const EPIC = 'Epic Boon';
 
+/** A feature's level, 1 to 20 (a cleared field is level 1). */
+export const levelOf = (f: { level?: number }): number => Math.min(20, Math.max(1, Math.floor(f.level || 1)));
+
 export function newFeature5e(level = 1): ClassFeature5eDraft {
 	return { level, name: '', desc: '', options: [], more: [], known: '' };
 }
@@ -273,7 +278,7 @@ function resourceDraft(r: Entry): Resource5eDraft {
 export function resourceEntry(r: Resource5eDraft): ClassResource5e | null {
 	if (!r.name.trim()) return null;
 	return tidy({
-		name: r.name.trim(), uses: usesValue(r), min: r.min1 ? 1 : undefined, level: r.level && r.level > 1 ? r.level : undefined,
+		name: r.name.trim(), uses: usesValue(r), min: r.min1 ? 1 : undefined, level: r.level && r.level > 1 ? levelOf(r) : undefined,
 		reset: r.reset === 'short' ? 'short' : undefined, shortFrom: r.reset === 'long' && r.shortFrom ? r.shortFrom : undefined, shortOne: r.shortOne || undefined,
 	}) as unknown as ClassResource5e;
 }
@@ -326,7 +331,7 @@ function rowFeatures(d: Class5eDraft, level: number): string[] {
 	const firstSlot = LEVELS.find(l => (slotsAt(d, l) ?? []).some(n => n > 0));
 	for (const f of d.features) {
 		if (!f.name.trim()) continue;
-		if (f.level === level || (f.options.length && f.more.includes(String(level)) && level > f.level)) out.push(f.name.trim());
+		if (levelOf(f) === level || (f.options.length && f.more.includes(String(level)) && level > levelOf(f))) out.push(f.name.trim());
 	}
 	if (d.castAbility && firstSlot === level && !d.features.some(f => same(f.name, castFeature(d)))) out.unshift(castFeature(d));
 	const subs = subclassLevelsOf(d);
@@ -355,15 +360,15 @@ export function spellNumbersAt(d: Class5eDraft, level: number): { cantrips: numb
 function classFeatures(d: Class5eDraft): ClassFeature5e[] {
 	const out: ClassFeature5e[] = [];
 	const name = d.name.trim();
-	for (const f of [...d.features].sort((a, b) => a.level - b.level)) {
+	for (const f of [...d.features].sort((a, b) => levelOf(a) - levelOf(b))) {
 		if (!f.name.trim()) continue;
-		const parent: ClassFeature5e = { level: f.level, name: f.name.trim(), desc: f.desc.trim() || f.name.trim() };
+		const parent: ClassFeature5e = { level: levelOf(f), name: f.name.trim(), desc: f.desc.trim() || f.name.trim() };
 		if (f.options.some(o => o.name.trim())) {
 			if (f.known) parent.known = f.known;
 			else if (f.choose && f.choose > 1) parent.choose = f.choose;
 		}
 		out.push(tidy(parent as unknown as Entry) as unknown as ClassFeature5e);
-		for (const o of f.options) if (o.name.trim()) out.push({ level: f.level, name: o.name.trim(), desc: o.desc.trim() || o.name.trim(), group: f.name.trim() });
+		for (const o of f.options) if (o.name.trim()) out.push({ level: levelOf(f), name: o.name.trim(), desc: o.desc.trim() || o.name.trim(), group: f.name.trim() });
 	}
 	const has = (n: string, level?: number) => out.some(f => same(f.name, n) && (level === undefined || f.level === level));
 	const firstSlot = LEVELS.find(l => (slotsAt(d, l) ?? []).some(n => n > 0));
@@ -419,7 +424,7 @@ export function toClassEntry(d: Class5eDraft): Entry {
 		primary: d.primary.length ? primaryText(d) : undefined,
 		saves: d.saves,
 		proficiencies: [...ARMOR_5E.filter(a => d.armor.includes(a)), ...WEAPONS_5E.filter(w => d.weapons.includes(w)), ...others, ...tools],
-		skillChoice: skillChoiceText(d.edition, d.skillCount, d.skillFrom),
+		skillChoice: skillChoiceText(d.edition, d.skillCount ?? 2, d.skillFrom),
 		spellcasting: d.castAbility && d.caster ? d.castAbility : undefined,
 		spellList: d.castAbility && d.caster && d.spellList && !same(d.spellList, d.name) ? d.spellList : undefined,
 		resources: resources.length ? resources : undefined,
@@ -429,7 +434,7 @@ export function toClassEntry(d: Class5eDraft): Entry {
 		subclassLevels: subclassLevelsOf(d).length ? subclassLevelsOf(d) : undefined,
 		features: classFeatures(d),
 		levels: classLevels(d),
-	});
+	}, ['saves', 'features']);
 }
 
 /** A class's entry (a block's fields, a pack's entry, the compendium's) as the builder edits it. */
@@ -523,15 +528,15 @@ export interface LevelBrief5e {
 
 export function levelBrief(d: Class5eDraft, level: number): LevelBrief5e {
 	const subs = subclassLevelsOf(d);
-	const named = d.features.filter(f => f.name.trim() && f.level === level).map(f => f.name.trim());
+	const named = d.features.filter(f => f.name.trim() && levelOf(f) === level).map(f => f.name.trim());
 	const options: LevelBrief5e['options'] = [];
 	for (const f of d.features.filter(x => x.name.trim() && x.options.some(o => o.name.trim()))) {
-		if (f.level > level) continue;
+		if (levelOf(f) > level) continue;
 		if (f.known) {
 			const col = d.columns.find(c => columnKey(c) === f.known);
 			const now = atLevel(col?.steps, level), was = level > 1 ? atLevel(col?.steps, level - 1) : 0;
 			if (now > was) options.push({ group: f.name.trim(), count: now - was });
-		} else if (f.level === level) options.push({ group: f.name.trim(), count: Math.max(1, f.choose ?? 1) });
+		} else if (levelOf(f) === level) options.push({ group: f.name.trim(), count: Math.max(1, f.choose ?? 1) });
 		else if (f.more.includes(String(level))) options.push({ group: f.name.trim(), count: 1 });
 	}
 	const firstSlot = LEVELS.find(l => (slotsAt(d, l) ?? []).some(n => n > 0));
@@ -570,6 +575,8 @@ export interface Subclass5eDraft extends Draft {
 	features: ClassFeature5eDraft[];
 	spells: SubclassSpells5eDraft[];
 	resources: Resource5eDraft[];
+	/** The class the blank features were laid out for (not written). */
+	followed?: string;
 	base?: Entry;
 }
 
@@ -605,12 +612,14 @@ export function newSubclass5e(edition: Dnd5eEdition, className = ''): Subclass5e
 	const cls = className ? classOf(edition, className) : compendium5e(edition).classes[0];
 	return {
 		edition, name: '', className: cls?.name ?? className, flavor: '', desc: '',
-		features: subclassLevelsFor(cls).map(l => newFeature5e(l)), spells: [], resources: [],
+		features: subclassLevelsFor(cls).map(l => newFeature5e(l)), spells: [], resources: [], followed: cls?.name ?? className,
 	};
 }
 
-/** Make the features follow a new class's levels while they're still blank. */
+/** When its class changes, its features follow the new class's levels, while they're still blank. */
 export function followClass(d: Subclass5eDraft): void {
+	if (d.followed === d.className) return;
+	d.followed = d.className;
 	if (d.features.some(f => f.name.trim() || f.desc.trim() || f.options.length)) return;
 	d.features = subclassLevelsFor(classOf(d.edition, d.className)).map(l => newFeature5e(l));
 }
@@ -619,19 +628,19 @@ const SUBCLASS_FIELDS = ['name', 'class', 'flavor', 'desc', 'features', 'resourc
 
 export function toSubclassEntry(d: Subclass5eDraft): Entry {
 	const features: Entry[] = [];
-	for (const f of [...d.features].sort((a, b) => a.level - b.level)) {
+	for (const f of [...d.features].sort((a, b) => levelOf(a) - levelOf(b))) {
 		if (!f.name.trim()) continue;
-		features.push(tidy({ level: f.level, name: f.name.trim(), desc: f.desc.trim() || f.name.trim(), choose: f.options.some(o => o.name.trim()) && f.choose && f.choose > 1 ? f.choose : undefined }));
-		for (const o of f.options) if (o.name.trim()) features.push({ level: f.level, name: o.name.trim(), desc: o.desc.trim() || o.name.trim(), group: f.name.trim() });
+		features.push(tidy({ level: levelOf(f), name: f.name.trim(), desc: f.desc.trim() || f.name.trim(), choose: f.options.some(o => o.name.trim()) && f.choose && f.choose > 1 ? f.choose : undefined }));
+		for (const o of f.options) if (o.name.trim()) features.push({ level: levelOf(f), name: o.name.trim(), desc: o.desc.trim() || o.name.trim(), group: f.name.trim() });
 	}
 	const resources = d.resources.map(resourceEntry).filter((r): r is ClassResource5e => !!r);
-	const spells = d.spells.filter(s => s.spells.length).sort((a, b) => a.level - b.level).map(s => ({ level: s.level, spells: s.spells }));
+	const spells = d.spells.filter(s => s.spells.length).sort((a, b) => levelOf(a) - levelOf(b)).map(s => ({ level: levelOf(s), spells: s.spells }));
 	// Its heading: as typed, else the class's (a homebrew class's "Warden Circle", 2014's "Primal Path"), not 2024's "Barbarian Subclass".
 	const title = subclassTitleFor(classOf(d.edition, d.className));
 	return keep(d.base, SUBCLASS_FIELDS, {
 		name: d.name.trim(), class: d.className, flavor: d.flavor.trim() || (title && !/subclass$/i.test(title) ? title : undefined), desc: d.desc.trim() || undefined,
 		features, resources: resources.length ? resources : undefined, spells: spells.length ? spells : undefined,
-	});
+	}, ['features']);
 }
 
 export function fromSubclassEntry(v: Entry, edition: Dnd5eEdition): Subclass5eDraft {
@@ -639,6 +648,7 @@ export function fromSubclassEntry(v: Entry, edition: Dnd5eEdition): Subclass5eDr
 	d.base = v;
 	d.name = str(v.name);
 	d.className = str(v.class) || d.className;
+	d.followed = d.className;
 	d.flavor = str(v.flavor);
 	d.desc = str(v.desc);
 	const features = list(v.features).map(f => ({ level: num(f.level) ?? 3, name: str(f.name), desc: str(f.desc), group: str(f.group), choose: num(f.choose) }));
@@ -792,7 +802,7 @@ export function toSpeciesEntry(d: Species5eDraft): Entry {
 	const traits = traitList(d.traits);
 	if (d.darkvision > 0 && !traits.some(t => /^darkvision/i.test(t.name))) traits.unshift(darkvisionTrait(d.edition, d.darkvision));
 	return keep(d.base, SPECIES_FIELDS, {
-		name: d.name.trim(), size: d.size, speed: d.speed, type: d.type.trim() || undefined,
+		name: d.name.trim(), size: d.size, speed: d.speed ?? 30, type: d.type.trim() || undefined,
 		abilityBonuses: d.edition === '2014' ? bonusText(d.bonuses) || undefined : undefined,
 		abilityChoices: d.edition === '2014' && d.abilityChoiceCount ? { count: d.abilityChoiceCount, bonus: 1 } : undefined,
 		desc: d.desc.trim() || undefined,
@@ -920,10 +930,13 @@ export function maxSpellLevel(cls: Class5e | undefined, level: number): number {
 	for (const r of cls?.levels ?? []) if (r.level <= level) (r.slots ?? []).forEach((n, i) => { if (n > 0) top = Math.max(top, i + 1); });
 	return top;
 }
-/** A class's list's spells up to a spell level (a subclass's always-prepared spells come from it). */
+/**
+ * A class's list's spells up to a spell level (a subclass's always-prepared spells come from it); for a class
+ * without spells, every spell.
+ */
 export function classSpellNames(edition: Dnd5eEdition, cls: string, upTo: number): { level: number; names: string[] }[] {
 	const c = classOf(edition, cls);
-	const listName = c?.spellList || cls;
+	const listName = c?.spellcasting ? c.spellList || cls : '';
 	const spells = compendium5e(edition).spells.filter(s => s.level >= 1 && s.level <= Math.max(1, upTo) && (!listName || s.classes.some(x => same(x, listName))));
 	const levels = uniq(spells.map(s => s.level)).sort((a, b) => a - b);
 	return levels.map(l => ({ level: l, names: uniq(spells.filter(s => s.level === l).map(s => s.name)).sort() }));

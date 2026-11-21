@@ -34,7 +34,8 @@ export const dnd5eSystem: GameSystem = {
 	editions: EDITIONS,
 	attribution: DND5E_ATTRIBUTION,
 	vocabulary: { defense: 'AC' },
-	content: { kinds: KINDS_5E, blocks: BLOCKS_5E, card: draw5eContent, importFrom: importDdbContent },
+	// A block's pencil opens 5e's builder on the fields that checked out (content-builders.ts keeps the rest as written).
+	content: { kinds: KINDS_5E, blocks: BLOCKS_5E, card: draw5eContent, importFrom: importDdbContent, editSeed: (e) => ({ entry: e.value }) },
 	slashCommands: dnd5eSlashCommands,
 	spotlight: dnd5eSpotlight,
 	settingsSections: settingsSections5e,
