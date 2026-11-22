@@ -102,7 +102,7 @@ Obsidian's own items (Bookmark, Reveal in navigation, and items from other plugi
 
 ![The Alchemists' Guild's card: its banner, the region, the monsters to use there, who's here, and where it leads](images/guide-place-card.png)
 
-A location note opens on a card: a banner (the note's image, or contour lines in the game's colours), what kind of place it is, its name and region, then:
+A location note opens on a card: a banner (the note's image, or a hex map with a compass rose in the game's colours), what kind of place it is, its name and region, then:
 
 - **Who's here:** every NPC in the campaign whose `location:` links to this place, with their portraits. Click a name for a quick look at the NPC, as with NPC links everywhere; Cmd/Ctrl-click opens their page.
 - **Leads to:** the `leads:` property, or the links under a **Leads to**, **Exits** or **Connections** heading.

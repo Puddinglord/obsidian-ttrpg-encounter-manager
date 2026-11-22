@@ -49,7 +49,7 @@ CQ.quest = q => h('div.cq-card.cq-quest',
 
 /** A location: a banner (the game's map texture and emblem), kicker, name, facts, the game's own block, who's here, where it leads. */
 CQ.place = l => h('div.cq-card.cq-place',
-	h('div.cq-banner', CQ.contours(), h('span.cq-emb', icon(l.emblem || 'castle', 22, 2))),
+	h('div.cq-banner', CQ.map(), h('span.cq-emb', icon(l.emblem || 'castle', 22, 2))),
 	h('div.cq-head',
 		h('div.cq-kick', icon('castle', 13), l.kicker),
 		h('h2.cq-title', l.name)),
@@ -59,8 +59,54 @@ CQ.place = l => h('div.cq-card.cq-place',
 	CQ.sec('Leads to'), h('div.cq-leads', l.leads.map(t => CQ.link(t))),
 	l.secret ? h('div.cq-secret', h('span.k', icon('eye', 13), 'Secret'), h('span', l.secret)) : null);
 
-/** Contour lines for a banner: drawn, so every game tints them. */
-CQ.contours = () => svg('<g fill="none" stroke="currentColor" stroke-width="1.2"><path d="M-10 60c60-30 110 20 170-6s100-34 160-10 120 28 180 4 110-20 160 2"/><path d="M-10 44c60-28 110 18 170-8s100-30 160-8 120 24 180 2 110-18 160 4" opacity=".7"/><path d="M-10 28c60-26 110 16 170-10s100-26 160-6 120 20 180 0 110-16 160 6" opacity=".5"/><path d="M-10 76c60-30 110 22 170-4s100-36 160-12 120 30 180 6 110-22 160 0" opacity=".7"/><ellipse cx="420" cy="40" rx="38" ry="16" opacity=".6"/><ellipse cx="420" cy="40" rx="20" ry="8" opacity=".6"/></g>', 700, 90, 'cq-contours');
+/**
+ * A banner's map, as the plugin draws it (src/core/campaign-cards.ts, hexMap): flat-topped hexes fading in past
+ * the emblem, and a faint engraved compass rose a fixed distance in from the right edge. Drawn in CSS pixels
+ * (no viewBox) so nothing scales with the card's width; ids are numbered so two cards keep their own masks.
+ */
+CQ.mapSeq = 0;
+CQ.map = () => {
+	const n = ++CQ.mapSeq, ref = k => `cq-${k}-${n}`, num = v => String(Math.round(v * 100) / 100);
+	const R = 13, ROW = 22.5, at = 'transform="translate(-62 5)"';
+	const RO = { ring: 21.5, band: 19, outer: 23.5, card: 31, cardW: 3.5, ord: 19, ordW: 2.6 };
+	const turn = (x, y, a) => `${num(x * Math.cos(a) - y * Math.sin(a))} ${num(x * Math.sin(a) + y * Math.cos(a))}`;
+	const anchor = inner => `<svg x="100%" y="50%" overflow="visible"><g ${at}>${inner}</g></svg>`;
+	let hex = '';
+	for (let i = -1; i <= 1; i++) for (let j = -1; j <= 2; j++) {
+		for (const [cx, cy] of [[3 * R * i, ROW * (j + 0.25)], [3 * R * i + 1.5 * R, ROW * (j + 0.75)]]) {
+			hex += `M${num(cx - R / 2)} ${num(cy - ROW / 2)}H${num(cx + R / 2)}L${num(cx + R)} ${num(cy)}L${num(cx + R / 2)} ${num(cy + ROW / 2)}`;
+		}
+	}
+	const stops = list => list.map(([o, a]) => `<stop offset="${o}" stop-color="#000" stop-opacity="${a}"/>`).join('');
+	let star = '';
+	for (let k = 0; k < 4; k++) star += `${k ? 'L' : 'M'}${turn(-RO.cardW, -RO.cardW, k * Math.PI / 2)}L${turn(0, -RO.card, k * Math.PI / 2)}`;
+	let ticks = '';
+	for (let k = 0; k < 32; k++) if (k % 8) ticks += `M${turn(0, -RO.band, k * Math.PI / 16)}L${turn(0, -RO.ring, k * Math.PI / 16)}`;
+	let points = '';
+	for (const [t, w, off] of [[RO.ord, RO.ordW, Math.PI / 4], [RO.card, RO.cardW, 0]]) {
+		for (let k = 0; k < 4; k++) {
+			const a = off + k * Math.PI / 2;
+			points += `<path class="cq-paper" d="M0 0L${turn(-w, -w, a)}L${turn(0, -t, a)}Z"/><path class="cq-shade" fill="currentColor" d="M0 0L${turn(0, -t, a)}L${turn(w, -w, a)}Z"/>`;
+		}
+	}
+	const s = document.createElementNS(svgNS, 'svg');
+	s.setAttribute('class', 'cq-map');
+	s.setAttribute('aria-hidden', 'true');
+	s.innerHTML = `<defs>
+		<pattern id="${ref('hex')}" width="${3 * R}" height="${2 * ROW}" y="${num(-ROW / 4)}" patternUnits="userSpaceOnUse"><path d="${hex}" fill="none" stroke="currentColor" stroke-width="0.6"/></pattern>
+		<linearGradient id="${ref('left')}">${stops([[0, 1], [0.3, 0.92], [0.65, 0.35], [1, 0]])}</linearGradient>
+		<linearGradient id="${ref('edges')}" x2="0" y2="1">${stops([[0, 0.3], [0.22, 0], [0.78, 0], [1, 0.3]])}</linearGradient>
+		<radialGradient id="${ref('clear')}">${stops([[0, 0.45], [0.5, 0.3], [1, 0]])}</radialGradient>
+		<mask id="${ref('fade')}" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+			<rect width="100%" height="100%" fill="#fff"/><rect width="100%" height="100%" fill="url(#${ref('edges')})"/><rect width="260" height="100%" fill="url(#${ref('left')})"/>
+			${anchor(`<circle r="70" fill="url(#${ref('clear')})"/><g class="cq-halo" fill="#000" stroke="#000" stroke-width="4" stroke-linejoin="round"><circle r="${RO.outer}"/><path d="${star}Z"/><rect x="-3.5" y="${num(-RO.card - 9.6)}" width="7" height="7"/></g>`)}
+		</mask></defs>
+		<g class="cq-grid" mask="url(#${ref('fade')})">${anchor(`<rect x="-3000" y="-150" width="3200" height="300" fill="url(#${ref('hex')})"/>`)}</g>
+		${anchor(`<g class="cq-rose" fill="none" stroke="currentColor" stroke-width="0.55" stroke-linejoin="round">
+			<circle r="${RO.outer}" stroke-width="0.4"/><circle r="${RO.ring}"/><circle r="${RO.band}"/><path d="${ticks}" stroke-width="0.45"/>
+			${points}<circle class="cq-paper" r="1.5"/><text class="cq-rose-n" y="${num(-RO.card - 2.6)}" text-anchor="middle" fill="currentColor" stroke="none">N</text></g>`)}`;
+	return s;
+};
 
 /** A session log: number and date, who was there, what happened, the quests it moved, loot, and what's next. */
 CQ.session = s => h('div.cq-card.cq-session',
