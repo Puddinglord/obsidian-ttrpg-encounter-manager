@@ -1,0 +1,2030 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Ember Vault content pack (5e)",
+	"description": "An Ember Vault content pack for 5e. Put the file in your content folder (Ember Vault/Content by default), or use Import content.",
+	"type": "object",
+	"required": [
+		"pack",
+		"system",
+		"entries"
+	],
+	"properties": {
+		"pack": {
+			"type": "string",
+			"description": "The pack's name, as campaigns turn it on or off."
+		},
+		"system": {
+			"const": "5e"
+		},
+		"edition": {
+			"enum": [
+				"2024",
+				"2014"
+			],
+			"description": "Only for campaigns on these rules. Leave it out for both."
+		},
+		"version": {
+			"type": "number"
+		},
+		"description": {
+			"type": "string"
+		},
+		"entries": {
+			"type": "array",
+			"items": {
+				"oneOf": [
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "monster"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"statblock": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The whole stat block in the ```5e block format, instead of the fields below."
+							},
+							"size": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Tiny, Small, Medium, Large, Huge or Gargantuan."
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"humanoid (goblinoid)\""
+							},
+							"alignment": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"ac": {
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 40
+							},
+							"acNote": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"natural armor\""
+							},
+							"hp": {
+								"type": "integer",
+								"minimum": 1
+							},
+							"hpFormula": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"4d8 + 4\""
+							},
+							"speed": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"30 ft., fly 60 ft.\""
+							},
+							"abilities": {
+								"type": "array",
+								"items": {
+									"type": "number"
+								},
+								"minItems": 6,
+								"maxItems": 6,
+								"description": "Str, Dex, Con, Int, Wis, Cha scores."
+							},
+							"saves": {
+								"type": "object",
+								"additionalProperties": {
+									"type": "number"
+								},
+								"description": "Saving throw bonuses that differ from the modifier: { \"dex\": 5 }."
+							},
+							"skills": {
+								"type": "object",
+								"additionalProperties": {
+									"type": "number"
+								},
+								"description": "{ \"Stealth\": 6 }"
+							},
+							"vulnerabilities": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"resistances": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"immunities": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"conditionImmunities": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"senses": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"languages": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"cr": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"1/4\", \"5\""
+							},
+							"xp": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"pb": {
+								"type": "integer"
+							},
+							"initiative": {
+								"type": "integer"
+							},
+							"gear": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"traits": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"actions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"bonusActions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"reactions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"legendaryActions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"legendaryIntro": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"description": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"source": {
+								"type": [
+									"string",
+									"number"
+								]
+							}
+						},
+						"required": [
+							"kind",
+							"name"
+						],
+						"title": "Monster",
+						"description": "A stat block. Give the fields, or \"statblock\" with the text of a ```5e block."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "spell"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"level": {
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 9,
+								"description": "0 for a cantrip."
+							},
+							"school": {
+								"type": [
+									"string",
+									"number"
+								],
+								"enum": [
+									"Abjuration",
+									"Conjuration",
+									"Divination",
+									"Enchantment",
+									"Evocation",
+									"Illusion",
+									"Necromancy",
+									"Transmutation"
+								]
+							},
+							"castingTime": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Action\", \"1 minute\""
+							},
+							"range": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"60 feet\""
+							},
+							"components": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"V, S, M (a pinch of ash)\""
+							},
+							"duration": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Instantaneous\", \"Concentration, up to 1 minute\""
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"higherLevel": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "What a higher-level slot adds."
+							},
+							"classes": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"concentration": {
+								"type": "boolean"
+							},
+							"ritual": {
+								"type": "boolean"
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"level",
+							"school",
+							"castingTime",
+							"range",
+							"components",
+							"duration",
+							"desc"
+						],
+						"title": "Spell",
+						"description": "A spell, as the compendium shows it."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "item"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"rarity": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Common, Uncommon, Rare, Very Rare, Legendary or Artifact."
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Wondrous item\", \"Weapon (Longsword)\""
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"attunement": {
+								"type": "boolean"
+							},
+							"line": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The line under the name, if not the usual \"Weapon (Longsword), rare\"."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"rarity",
+							"type",
+							"desc"
+						],
+						"title": "Magic item",
+						"description": "A magic item."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "equipment"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"category": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Weapon\", \"Armor\", \"Adventuring Gear\", \"Tools\""
+							},
+							"cost": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"15 gp\""
+							},
+							"weight": {
+								"type": "number",
+								"minimum": 0
+							},
+							"weaponCategory": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Simple or Martial."
+							},
+							"weaponRange": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Melee or Ranged."
+							},
+							"damage": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"1d8 slashing\""
+							},
+							"versatile": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"range": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"properties": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"mastery": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"armorCategory": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Light, Medium, Heavy or Shield."
+							},
+							"ac": {
+								"type": "object",
+								"properties": {
+									"base": {
+										"type": "integer"
+									},
+									"dex": {
+										"type": "boolean"
+									},
+									"max": {
+										"type": "integer"
+									}
+								},
+								"required": [
+									"base",
+									"dex"
+								]
+							},
+							"strMin": {
+								"type": "integer"
+							},
+							"stealthDisadvantage": {
+								"type": "boolean"
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"category"
+						],
+						"title": "Equipment",
+						"description": "A weapon, armor, tool or piece of gear."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "feat"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"prerequisite": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "origin, general, fighting-style, epic-boon"
+							},
+							"repeatable": {
+								"type": "boolean",
+								"description": "It can be taken more than once."
+							},
+							"increase": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Its Ability Score Increase: +1 to one of these, to a maximum of 20 (30 for an Epic Boon): [STR, DEX]."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"desc"
+						],
+						"title": "Feat",
+						"description": "A feat."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "background"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"proficiencies": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"abilityScores": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"feat": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"feature": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": [
+											"string",
+											"number"
+										]
+									},
+									"desc": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "The text. Markdown is fine."
+									}
+								},
+								"required": [
+									"name",
+									"desc"
+								]
+							},
+							"equipment": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The equipment as the book writes it."
+							},
+							"startingEquipment": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"label": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The choice as the book writes it: \"(A) Chain Mail and a Shield; or (B) 75 GP\"."
+										},
+										"options": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"label": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "\"A\", \"B\"."
+													},
+													"items": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"description": "Items by name; a number first for several: \"2 Javelin\"."
+													},
+													"picks": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"label": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "\"Musical Instrument\"."
+																},
+																"count": {
+																	"type": "integer",
+																	"minimum": 1
+																},
+																"from": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	}
+																}
+															},
+															"required": [
+																"from"
+															]
+														}
+													},
+													"gold": {
+														"type": "number",
+														"minimum": 0
+													}
+												},
+												"required": [
+													"label"
+												]
+											}
+										}
+									},
+									"required": [
+										"options"
+									]
+								},
+								"description": "What a new character starts with: each entry is one choice (\"A or B\"); an option gives items (\"2 Javelin\" for two), picks from a list, and gold."
+							},
+							"tools": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Tools it gives."
+							},
+							"toolChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "Tools to choose: how many, from which."
+							},
+							"languages": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Languages it gives."
+							},
+							"languageChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count"
+								],
+								"description": "Languages to choose: how many, and from which (any if left out)."
+							}
+						},
+						"required": [
+							"kind",
+							"name"
+						],
+						"title": "Background",
+						"description": "A background."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "species"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"size": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"speed": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"abilityBonuses": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "2014: \"DEX +2, WIS +1\"."
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"traits": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"desc"
+									]
+								}
+							},
+							"abilityChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"bonus": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 2
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										},
+										"description": "Any if left out."
+									}
+								},
+								"required": [
+									"count",
+									"bonus"
+								],
+								"description": "2014: abilities to choose for a bonus (a half-elf's two +1s)."
+							},
+							"languages": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Languages it gives (2014): [Common, Elvish]."
+							},
+							"languageChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count"
+								],
+								"description": "Languages to choose: how many, and from which (any if left out)."
+							},
+							"skills": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Skills it gives: [Perception]."
+							},
+							"skillChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "Skills to choose: how many, from which."
+							},
+							"toolChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "Tools to choose: how many, from which."
+							},
+							"cantripChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "A cantrip to choose, from these."
+							},
+							"subspecies": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"traits": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"desc": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The text. Markdown is fine."
+													}
+												},
+												"required": [
+													"name",
+													"desc"
+												]
+											}
+										},
+										"abilityBonuses": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "2014: \"WIS +1\"."
+										},
+										"languages": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"description": "Languages it gives (2014): [Common, Elvish]."
+										},
+										"languageChoices": {
+											"type": "object",
+											"properties": {
+												"count": {
+													"type": "integer",
+													"minimum": 1
+												},
+												"from": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													}
+												}
+											},
+											"required": [
+												"count"
+											],
+											"description": "Languages to choose: how many, and from which (any if left out)."
+										},
+										"skills": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"description": "Skills it gives: [Perception]."
+										},
+										"skillChoices": {
+											"type": "object",
+											"properties": {
+												"count": {
+													"type": "integer",
+													"minimum": 1
+												},
+												"from": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													}
+												}
+											},
+											"required": [
+												"count",
+												"from"
+											],
+											"description": "Skills to choose: how many, from which."
+										},
+										"toolChoices": {
+											"type": "object",
+											"properties": {
+												"count": {
+													"type": "integer",
+													"minimum": 1
+												},
+												"from": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													}
+												}
+											},
+											"required": [
+												"count",
+												"from"
+											],
+											"description": "Tools to choose: how many, from which."
+										},
+										"cantripChoices": {
+											"type": "object",
+											"properties": {
+												"count": {
+													"type": "integer",
+													"minimum": 1
+												},
+												"from": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													}
+												}
+											},
+											"required": [
+												"count",
+												"from"
+											],
+											"description": "A cantrip to choose, from these."
+										}
+									},
+									"required": [
+										"name"
+									]
+								},
+								"description": "2014: subraces; 2024: lineages and other choices of the species (\"Elven Lineage: Drow\")."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"size",
+							"speed"
+						],
+						"title": "Species",
+						"description": "A species (2014: a race)."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "class"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"hitDie": {
+								"type": "integer",
+								"minimum": 4,
+								"maximum": 12
+							},
+							"primary": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"saves": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"proficiencies": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"skillChoice": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"spellcasting": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"spellList": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The class whose spell list it casts from, when it isn't its own: \"Paladin\"."
+							},
+							"resources": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"uses": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "How many: a number, or a formula of ability modifiers, PB and level: \"CHA\", \"Charisma modifier\", \"PB\", \"2 + WIS\"."
+										},
+										"min": {
+											"type": "integer",
+											"minimum": 0,
+											"description": "At least this many (1 for \"minimum of once\")."
+										},
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "The class level it starts at (1 if left out)."
+										},
+										"reset": {
+											"type": [
+												"string",
+												"number"
+											],
+											"enum": [
+												"short",
+												"long"
+											],
+											"description": "What brings them all back: a short or a long rest (long if left out)."
+										},
+										"shortFrom": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "From this level a short rest brings them all back."
+										},
+										"shortOne": {
+											"type": "boolean",
+											"description": "A short rest brings back one."
+										}
+									},
+									"required": [
+										"name",
+										"uses"
+									]
+								},
+								"description": "Limited-use features the level table doesn't count, with pips on the sheet."
+							},
+							"startingEquipment": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"label": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The choice as the book writes it: \"(A) Chain Mail and a Shield; or (B) 75 GP\"."
+										},
+										"options": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"label": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "\"A\", \"B\"."
+													},
+													"items": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"description": "Items by name; a number first for several: \"2 Javelin\"."
+													},
+													"picks": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"label": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "\"Musical Instrument\"."
+																},
+																"count": {
+																	"type": "integer",
+																	"minimum": 1
+																},
+																"from": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	}
+																}
+															},
+															"required": [
+																"from"
+															]
+														}
+													},
+													"gold": {
+														"type": "number",
+														"minimum": 0
+													}
+												},
+												"required": [
+													"label"
+												]
+											}
+										}
+									},
+									"required": [
+										"options"
+									]
+								},
+								"description": "What a new character starts with: each entry is one choice (\"A or B\"); an option gives items (\"2 Javelin\" for two), picks from a list, and gold."
+							},
+							"toolChoices": {
+								"type": "object",
+								"properties": {
+									"count": {
+										"type": "integer",
+										"minimum": 1
+									},
+									"from": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								},
+								"required": [
+									"count",
+									"from"
+								],
+								"description": "Tools to choose: how many, from which."
+							},
+							"subclassTitle": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "What its subclasses are called: \"Warden Circle\"."
+							},
+							"subclassLevels": {
+								"type": "array",
+								"items": {
+									"type": "number"
+								},
+								"description": "The levels its subclass gives features, the first when it's chosen: [3, 6, 10, 14]."
+							},
+							"features": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										},
+										"group": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
+										},
+										"choose": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "A feature with options: how many it gives when gained (1 if left out). Each later level that names it in the table gives one more."
+										},
+										"known": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "A feature with options: the level table's column (in \"extra\") that says how many are known at each level, instead: \"invocations_known\"."
+										},
+										"unarmored": {
+											"type": "object",
+											"properties": {
+												"base": {
+													"type": "integer",
+													"minimum": 0,
+													"maximum": 30,
+													"description": "10 if left out."
+												},
+												"add": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													},
+													"description": "Abilities whose modifiers add to it besides Dex: [CON]."
+												},
+												"shield": {
+													"type": "boolean",
+													"description": "A Shield still counts (true if left out)."
+												}
+											},
+											"description": "While wearing no armor, AC is base + Dex + these abilities' modifiers (Unarmored Defense)."
+										}
+									},
+									"required": [
+										"level",
+										"name",
+										"desc"
+									]
+								}
+							},
+							"levels": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"pb": {
+											"type": "integer"
+										},
+										"features": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"slots": {
+											"type": "array",
+											"items": {
+												"type": "number"
+											}
+										},
+										"cantrips": {
+											"type": "integer"
+										},
+										"prepared": {
+											"type": "integer",
+											"minimum": 0,
+											"description": "Spells known or prepared at this level (its table's column)."
+										},
+										"extra": {
+											"type": "object",
+											"additionalProperties": {
+												"type": "number"
+											},
+											"description": "The class's own numbers at this level. A name ending in _uses is a limited-use feature: { \"blood_maledict_uses\": 2 }."
+										}
+									},
+									"required": [
+										"level",
+										"pb"
+									]
+								}
+							},
+							"subclasses": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"flavor": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"features": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"level": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20
+													},
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"desc": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The text. Markdown is fine."
+													},
+													"group": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
+													},
+													"choose": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20,
+														"description": "A feature with options: how many it gives when gained (1 if left out). Each later level that names it in the table gives one more."
+													},
+													"known": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "A feature with options: the level table's column (in \"extra\") that says how many are known at each level, instead: \"invocations_known\"."
+													},
+													"unarmored": {
+														"type": "object",
+														"properties": {
+															"base": {
+																"type": "integer",
+																"minimum": 0,
+																"maximum": 30,
+																"description": "10 if left out."
+															},
+															"add": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Abilities whose modifiers add to it besides Dex: [CON]."
+															},
+															"shield": {
+																"type": "boolean",
+																"description": "A Shield still counts (true if left out)."
+															}
+														},
+														"description": "While wearing no armor, AC is base + Dex + these abilities' modifiers (Unarmored Defense)."
+													}
+												},
+												"required": [
+													"level",
+													"name",
+													"desc"
+												]
+											}
+										},
+										"resources": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"uses": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "How many: a number, or a formula of ability modifiers, PB and level: \"CHA\", \"Charisma modifier\", \"PB\", \"2 + WIS\"."
+													},
+													"min": {
+														"type": "integer",
+														"minimum": 0,
+														"description": "At least this many (1 for \"minimum of once\")."
+													},
+													"level": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20,
+														"description": "The class level it starts at (1 if left out)."
+													},
+													"reset": {
+														"type": [
+															"string",
+															"number"
+														],
+														"enum": [
+															"short",
+															"long"
+														],
+														"description": "What brings them all back: a short or a long rest (long if left out)."
+													},
+													"shortFrom": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20,
+														"description": "From this level a short rest brings them all back."
+													},
+													"shortOne": {
+														"type": "boolean",
+														"description": "A short rest brings back one."
+													}
+												},
+												"required": [
+													"name",
+													"uses"
+												]
+											},
+											"description": "Limited-use features the level table doesn't count, with pips on the sheet."
+										}
+									},
+									"required": [
+										"name"
+									]
+								}
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"hitDie",
+							"saves",
+							"features"
+						],
+						"title": "Class",
+						"description": "A whole class, with its features and level table."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "subclass"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"imported": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"ddbId": {
+								"type": "integer",
+								"description": "D&D Beyond's id for it, so importing again updates this entry."
+							},
+							"class": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The class it belongs to: \"Barbarian\"."
+							},
+							"flavor": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Primal Path\""
+							},
+							"desc": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"features": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"desc": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The text. Markdown is fine."
+										},
+										"group": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "This feature is one choice of the feature named here (\"Ward Stance\"), for options not named \"Ward Stance: Ember\"."
+										},
+										"choose": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "A feature with options: how many it gives when gained (1 if left out). Each later level that names it in the table gives one more."
+										},
+										"known": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "A feature with options: the level table's column (in \"extra\") that says how many are known at each level, instead: \"invocations_known\"."
+										},
+										"unarmored": {
+											"type": "object",
+											"properties": {
+												"base": {
+													"type": "integer",
+													"minimum": 0,
+													"maximum": 30,
+													"description": "10 if left out."
+												},
+												"add": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													},
+													"description": "Abilities whose modifiers add to it besides Dex: [CON]."
+												},
+												"shield": {
+													"type": "boolean",
+													"description": "A Shield still counts (true if left out)."
+												}
+											},
+											"description": "While wearing no armor, AC is base + Dex + these abilities' modifiers (Unarmored Defense)."
+										}
+									},
+									"required": [
+										"level",
+										"name",
+										"desc"
+									]
+								}
+							},
+							"resources": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"uses": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "How many: a number, or a formula of ability modifiers, PB and level: \"CHA\", \"Charisma modifier\", \"PB\", \"2 + WIS\"."
+										},
+										"min": {
+											"type": "integer",
+											"minimum": 0,
+											"description": "At least this many (1 for \"minimum of once\")."
+										},
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "The class level it starts at (1 if left out)."
+										},
+										"reset": {
+											"type": [
+												"string",
+												"number"
+											],
+											"enum": [
+												"short",
+												"long"
+											],
+											"description": "What brings them all back: a short or a long rest (long if left out)."
+										},
+										"shortFrom": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "From this level a short rest brings them all back."
+										},
+										"shortOne": {
+											"type": "boolean",
+											"description": "A short rest brings back one."
+										}
+									},
+									"required": [
+										"name",
+										"uses"
+									]
+								},
+								"description": "Limited-use features the level table doesn't count, with pips on the sheet."
+							},
+							"spells": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"spells": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										}
+									},
+									"required": [
+										"level",
+										"spells"
+									]
+								},
+								"description": "Spells it always has prepared, from a class level (domain or oath spells)."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"class",
+							"features"
+						],
+						"title": "Subclass",
+						"description": "A subclass for a class (the SRD's or a pack's), by the class's name."
+					}
+				]
+			}
+		}
+	}
+}

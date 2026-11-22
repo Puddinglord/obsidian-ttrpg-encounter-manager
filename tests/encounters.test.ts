@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyHpInput, crossedThreshold, EncounterStore, nextLabel } from '../src/encounters';
-import { DEFAULT_SETTINGS, NimbleStatblocksSettings } from '../src/types';
+import { applyHpInput, crossedThreshold, EncounterStore, nextLabel, shownLabel } from '../src/systems/nimble/encounters';
+import { DEFAULT_SETTINGS, NimbleStatblocksSettings } from '../src/systems/nimble/types';
 
 const goblin = { name: 'Goblin', hp: 12, armor: 'none' as const, movement: '6' };
 
@@ -15,6 +15,40 @@ describe('nextLabel', () => {
 		expect(nextLabel(['Goblin-2', 'Goblin-3'], 'Goblin')).toBe('Goblin-4');
 		expect(nextLabel(['Goblin Boss-1', 'Goblin-1'], 'Goblin')).toBe('Goblin-2');
 		expect(nextLabel(['Goblin-x', 'Fred'], 'Goblin')).toBe('Goblin-1');
+	});
+});
+
+describe('shownLabel', () => {
+	it('drops the number while a monster is the only one of its kind, and keeps the saved label', () => {
+		const { store: s } = store();
+		const [one] = s.add(goblin);
+		const enc = s.active!;
+		expect(one.label).toBe('Goblin-1');
+		expect(shownLabel(one, enc.creatures)).toBe('Goblin');
+		const [two] = s.add(goblin);
+		expect(shownLabel(one, enc.creatures)).toBe('Goblin-1');
+		expect(shownLabel(two, enc.creatures)).toBe('Goblin-2');
+		s.remove(enc.id, one.id);
+		expect(shownLabel(two, enc.creatures)).toBe('Goblin');
+		expect(two.label).toBe('Goblin-2');
+	});
+
+	it('leaves heroes, minion groups and renamed monsters as they are', () => {
+		const { store: s } = store();
+		const [boss] = s.add(goblin);
+		const enc = s.active!;
+		s.renameCreature(enc.id, boss.id, 'Gob the Great');
+		expect(shownLabel(boss, enc.creatures)).toBe('Gob the Great');
+		const hero = s.addHero({ id: 'h', name: 'Goblin-1', level: 1, maxHp: 10 })!;
+		expect(shownLabel(hero, enc.creatures)).toBe('Goblin-1');
+	});
+
+	it('names a lone monster plainly in the log', () => {
+		const { store: s } = store();
+		const [one] = s.add(goblin);
+		const enc = s.active!;
+		s.applyHp(enc.id, one.id, { kind: 'damage', amount: 3 });
+		expect(enc.log?.[0]?.text).toMatch(/^Goblin takes 3/);
 	});
 });
 

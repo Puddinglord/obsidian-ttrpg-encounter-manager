@@ -1,0 +1,53 @@
+{
+  "$schema": "../5e.schema.json",
+  "pack": "Hearth and Cinder",
+  "system": "5e",
+  "version": 1,
+  "description": "An example pack: a subclass, a spell, a magic item, a feat and a monster, all original.",
+  "entries": [
+    {
+      "kind": "subclass",
+      "name": "Path of the Hearthguard",
+      "class": "Barbarian",
+      "flavor": "Barbarian Subclass",
+      "desc": "Your rage burns like a banked fire, warming the people you protect.",
+      "features": [
+        { "level": 3, "name": "Hearth Ward", "desc": "While you're raging, allies within 10 feet of you have resistance to Cold damage." },
+        { "level": 6, "name": "Warm Welcome", "desc": "When you finish a Short Rest, you and up to five allies regain 1d6 extra Hit Points." },
+        { "level": 10, "name": "Banked Coals", "desc": "When you would drop to 0 Hit Points while raging, you can end your rage to drop to 1 Hit Point instead. Once you use this feature, you can't use it again until you finish a Long Rest." },
+        { "level": 14, "name": "Last Ember", "desc": "When your rage ends, each creature of your choice within 10 feet of you takes Fire damage equal to your Barbarian level." }
+      ]
+    },
+    {
+      "kind": "spell",
+      "name": "Ember Lash",
+      "level": 1,
+      "school": "Evocation",
+      "castingTime": "Action",
+      "range": "30 feet",
+      "components": "V, S, M (a pinch of ash)",
+      "duration": "Instantaneous",
+      "classes": ["Sorcerer", "Wizard"],
+      "desc": "A whip of fire cracks at a creature you can see within range. Make a ranged spell attack. On a hit, the target takes 2d8 Fire damage and can't take Reactions until the start of its next turn.",
+      "higherLevel": "The damage increases by 1d8 for each spell slot level above 1."
+    },
+    {
+      "kind": "item",
+      "name": "Lantern of Steady Light",
+      "type": "Wondrous item",
+      "rarity": "Uncommon",
+      "desc": "This brass lantern never needs oil. Wind and rain can't put it out, and its light can't be dimmed by magic of 2nd level or lower."
+    },
+    {
+      "kind": "feat",
+      "name": "Kindler",
+      "type": "origin",
+      "desc": "You can light a fire with anything that will burn, even when it's wet, as an action. When you finish a Long Rest beside a fire you lit, you gain 1 Heroic Inspiration."
+    },
+    {
+      "kind": "monster",
+      "name": "Cinder Hound",
+      "statblock": "name: Cinder Hound\nsize: Medium\ntype: elemental\nalignment: Neutral\nac: 13 (natural armor)\nhp: 27 (5d8 + 5)\nspeed: 40 ft.\nstr: 14\ndex: 15\ncon: 12\nint: 4\nwis: 13\ncha: 6\nimmunities: Fire\nsenses: Darkvision 60 ft., Passive Perception 13\nlanguages: —\ncr: 1\ntraits:\n- Glowing Coat: The hound sheds dim light in a 10-foot radius.\nactions:\n- Bite: Melee Attack Roll: +4, reach 5 ft. Hit: 7 (1d10 + 2) Piercing damage plus 3 (1d6) Fire damage."
+    }
+  ]
+}

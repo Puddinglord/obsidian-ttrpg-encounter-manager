@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractNimbleBlocks, normalizeArmor, parseAbility, parseMovement, parseStatblock, readStatblock, toStatblockSource, applyStatblockFix } from '../src/parser';
+import { extractNimbleBlocks, normalizeArmor, parseAbility, parseMovement, parseStatblock, readStatblock, toStatblockSource, applyStatblockFix } from '../src/systems/nimble/parser';
 
 describe('parseStatblock', () => {
 	it('parses the README goblin', () => {
@@ -354,8 +354,8 @@ harder: Move often; end turns out of melee reach.`;
 	});
 
 	it('finds nothing to say about any bundled monster written back out', async () => {
-		const { bestiaryEntries } = await import('../src/bestiary');
-		const raw = (await import('../src/data/bestiary.json')).default as unknown as Parameters<typeof bestiaryEntries>[0];
+		const { bestiaryEntries } = await import('../src/systems/nimble/bestiary');
+		const raw = (await import('../src/systems/nimble/data/bestiary.json')).default as unknown as Parameters<typeof bestiaryEntries>[0];
 		const noisy = bestiaryEntries(raw).map(e => ({ name: e.name, issues: readStatblock(toStatblockSource(e.monster)).issues })).filter(r => r.issues.length);
 		expect(noisy.slice(0, 5)).toEqual([]);
 	});
@@ -363,7 +363,7 @@ harder: Move often; end turns out of melee reach.`;
 
 describe('applyStatblockFix in a note', () => {
 	it('rewrites only the ```nimble block it came from, inside a callout too', async () => {
-		const { replaceEncounterBlock } = await import('../src/encounter-def');
+		const { replaceEncounterBlock } = await import('../src/core/encounter-def');
 		const source = 'name: A\nmovment: 8';
 		const issue = readStatblock(source).issues[0];
 		const note = '```nimble-encounter\nname: Fight\n```\n> ```nimble\n> name: A\n> movment: 8\n> ```\n';

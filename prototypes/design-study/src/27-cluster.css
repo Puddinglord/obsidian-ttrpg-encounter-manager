@@ -1,0 +1,90 @@
+/* ============================================================================
+   Shared contract CSS (design-system lead): icons, clusters, the ticker, footers.
+   Markup and JS helpers are documented at the top of 35-ui.js and 29-icons.js.
+   Buildable as-is: no clip-path, :has, display: contents, column-gap, !important.
+   ========================================================================== */
+
+/* --- Icons: ICON() draws filled Phosphor glyphs (256 grid) and game-icons glyphs (512 grid) --- */
+.ev-i { flex: none; overflow: visible; }
+svg.ev-i { vertical-align: -0.15em; } /* inline in running text: centred on the capitals, not sat on the baseline */
+.ev-gi { color: var(--g-gi, currentColor); }
+
+/* --- Centring fixes from the alignment pass --- */
+.ev-pick .ic { display: grid; place-items: center; width: 22px; height: 22px; }
+.npc-links span, .npc-ref, .npc-rows-h, .npc-row .k, .gl-open, .sh-meter-h > span:first-child { line-height: normal; }
+
+/* --- Icons sit on the capitals, not the font box ---
+   Flex centring centres the font's box; each face puts its capitals higher or lower in that box, so a centred
+   icon looks high (Crimson Pro, Barlow) or low (Overpass, Avenir Next). --g-icon-dy moves icons by the face's
+   offset: (ascent − descent − cap height) / 2, in em, measured in headless Chrome for each game's UI face.
+   Chromium 124 has no text-box-trim, so this is the buildable fix. Games own the value; these are the measurements. */
+.g-nimble { --g-icon-dy: -0.04em; --g-num-dy: -0.05em; }
+.g-coc { --g-icon-dy: 0.06em; --g-num-dy: -0.07em; }
+.g-dh { --g-icon-dy: -0.1em; --g-num-dy: -0.1em; }
+.g-pf { --g-icon-dy: 0.05em; --g-num-dy: 0.05em; }
+.ev-btn > .ev-i, .ev-chip .ev-i, .ev-prompt-head > .ev-i, .sh-roll > .ev-i, .npc-links .ev-i, .npc-ref > .ev-i, .gl-open > .ev-i,
+.sh-meter-h .ev-i, .ev-search > .ev-i, .ev-moment > .ev-i, .npc-row .k > .ev-i, .npc-rows-h > .ev-i, .sh-toast > .ev-i, .npc-stat .ev-i,
+.ev-qa-b .ev-i, .ev-cap-align > .ev-i { transform: translateY(var(--g-icon-dy, 0em)); }
+.ev-btn.is-icon > .ev-i { transform: none; } /* alone in its box: centre the glyph, there are no capitals to meet */
+/* Text alone in a fixed box (keys, segments, pills): the same offset, taken out of the padding so the box keeps its size. */
+.ev-pad-keys > span:not(.fn) { padding-top: max(0px, calc(-2 * var(--g-num-dy, 0em))); padding-bottom: max(0px, calc(2 * var(--g-num-dy, 0em))); }
+.ev-pad-keys > span.fn, .ev-pad-mode > span, .ev-segs > span { padding-top: max(0px, calc(-2 * var(--g-icon-dy, 0em))); padding-bottom: max(0px, calc(2 * var(--g-icon-dy, 0em))); }
+.npc-pill { padding-top: calc(6px - var(--g-icon-dy, 0em)); padding-bottom: calc(6px + var(--g-icon-dy, 0em)); }
+.later-flag { padding-top: calc(4px - var(--g-icon-dy, 0em)); padding-bottom: calc(4px + var(--g-icon-dy, 0em)); }
+
+/* The roll toast: the icon meets the first line's capitals even when the total is set large. */
+.sh-toast { align-items: baseline; }
+.sh-toast > svg { position: relative; top: calc(8px - 0.35em); transform: none; }
+
+/* --- Clusters: buttons that belong together; clusters never wrap into a ragged row --- */
+.ev-clusters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; width: 100%; }
+.ev-cluster { display: flex; flex: 1 1 auto; flex-wrap: nowrap; align-items: center; gap: 6px; min-width: 0; }
+.ev-cluster > .ev-btn { flex: 1 1 auto; min-width: 0; }
+.ev-cluster.is-fixed > .ev-btn, .ev-cluster.is-end > .ev-btn { flex: none; }
+.ev-cluster.is-end { flex: none; margin-left: auto; }
+.ev-cluster.is-joined { gap: 0; }
+.ev-cluster.is-joined > .ev-btn { border-radius: 0; }
+.ev-cluster.is-joined > .ev-btn:first-of-type { border-top-left-radius: var(--g-r-md); border-bottom-left-radius: var(--g-r-md); }
+.ev-cluster.is-joined > .ev-btn:last-of-type { border-top-right-radius: var(--g-r-md); border-bottom-right-radius: var(--g-r-md); }
+.ev-cluster.is-joined > .ev-btn + .ev-btn { margin-left: -1px; }
+.ev-cluster-l { flex: none; font: 500 12px/16px var(--g-font-ui); color: var(--g-text-2); margin-right: 4px; }
+/* Where the old rows were flex-wrap lists, the clusters take the whole row. */
+.ev-prompt-acts, .ev-moment .acts { display: block; }
+.ev-prompt-acts .ev-btn.is-sm { padding: 0 10px; }
+
+/* --- Ticker: round and turn, a muted strip above the card --- */
+.ev-ticker { flex: none; display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 30px; padding: 5px calc(var(--g-pad) + 4px); background: var(--g-ticker-bg, color-mix(in srgb, var(--g-text) 5%, var(--g-bg))); border-bottom: 1px solid var(--g-line); font: 500 12.5px/18px var(--g-font-ui); color: var(--g-text-2); white-space: nowrap; overflow: hidden; }
+.ev-ticker-round { flex: none; color: var(--g-text); font-weight: 600; }
+.ev-ticker-round b { font-weight: 700; font-variant-numeric: tabular-nums lining-nums; }
+.ev-ticker-round + .ev-ticker-turn::before { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: .7; margin: 0 8px 0 0; vertical-align: 0.25em; }
+.ev-ticker-turn { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ev-ticker-note { flex: none; margin-left: auto; font-variant-numeric: tabular-nums; }
+.ev-ticker.is-card { margin: 0 0 8px; border: 0; border-radius: var(--g-r-md); padding: 5px 10px; }
+
+/* --- Footers: Back and the main button sit on the right at every width --- */
+.mt-foot { justify-content: flex-end; }
+.ev-foot { justify-content: flex-end; }
+
+/* --- The one layout, as the Shared page draws it in the neutral base (study only) --- */
+.cq-card { margin: 10px var(--g-pad) 4px; padding: 12px 14px 14px; border-radius: var(--g-r-lg); background: var(--g-surface); box-shadow: 0 0 0 2px var(--g-now-line); display: grid; gap: 10px; }
+.cq-k { font: 600 12px/16px var(--g-font-ui); color: var(--g-accent-text); }
+.cq-name { font: var(--g-display-weight) 22px/26px var(--g-font-display); margin-top: -8px; }
+.cq-meta { font-size: 13px; color: var(--g-text-2); margin-top: -10px; }
+.cq-vit { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 12px; align-items: center; }
+.cq-ac { position: relative; display: grid; place-items: center; width: 34px; height: 34px; color: var(--g-line-strong); }
+.cq-ac > svg { position: absolute; inset: 0; }
+.cq-ac > b { position: relative; font: 700 13px/1 var(--g-font-num); color: var(--g-text); }
+.cq-hpbig b { font: 700 24px/1 var(--g-font-num); }
+.cq-hpbig small { color: var(--g-text-2); font-size: 13px; }
+.cq-q { display: grid; padding: 0 var(--g-pad); }
+.cq-r { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 4px; border-bottom: 1px solid var(--g-line); }
+.cq-i { width: 20px; text-align: right; font: 600 13px/1 var(--g-font-num); color: var(--g-text-2); }
+.cq-n { flex: 1; min-width: 0; display: grid; }
+.cq-n b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cq-n small { font-size: 12px; line-height: 16px; color: var(--g-text-2); }
+.cq-hp b { font: 600 15px/1 var(--g-font-num); }
+.cq-hp small { color: var(--g-text-2); font-size: 12px; }
+
+/* --- The ribbon's round marker: a label beside a rule, never lifted over the ribbon's edge (it clipped there) --- */
+.ev-view .rib > .rib-sep { width: auto; margin: 0 4px; padding: 0 2px 0 10px; background: none; display: flex; align-items: center; box-shadow: inset 1.5px 0 0 var(--g-line-strong); }
+.ev-view .rib > .rib-sep span { position: static; transform: none; background: none; padding: 0; white-space: nowrap; }

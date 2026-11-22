@@ -1,0 +1,64 @@
+/* PF2e tracker: the ticker as a ribbon, the card in the sheet's clothes, the queue */
+.g-pf .ev-ticker.xp-tick { position: relative; margin: 0 var(--g-pad) 10px; padding: 4px 18px; min-height: 28px; border: 0; border-radius: 0; background: var(--pf-rib); color: var(--pf-rib-text); box-shadow: inset 0 3px 0 -2px var(--pf-gold), inset 0 -3px 0 -2px var(--pf-gold); font: 700 12.5px/18px var(--g-font-cap); text-transform: uppercase; letter-spacing: .07em; }
+.g-pf .ev-ticker.xp-tick::before, .g-pf .ev-ticker.xp-tick::after { content: ""; position: absolute; top: 0; bottom: 0; width: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
+.g-pf .ev-ticker.xp-tick::before { left: 0; border-left: 8px solid var(--g-bg); }
+.g-pf .ev-ticker.xp-tick::after { right: 0; border-right: 8px solid var(--g-bg); }
+.g-pf .xp-tick .ev-ticker-round { color: var(--pf-rib-text); font-weight: 700; }
+.g-pf .xp-tick .ev-ticker-turn { color: var(--pf-rib-text); opacity: .9; }
+.xp-tick-th { display: inline-flex; align-items: center; gap: 6px; }
+
+/* The card: parchment in a gold-lined frame, a banner head, the shield */
+.xp-card { position: relative; margin: 0 var(--g-pad) 4px; padding: 0 0 12px; border: 1.5px solid var(--pfs-ink); border-radius: 3px; background: radial-gradient(120% 90% at 50% 30%, var(--pfs-page) 55%, var(--pfs-page-edge) 100%); box-shadow: 0 8px 20px -14px rgb(40 10 0 / 0.55); --glyph-cut: var(--pfs-page); }
+.xp-card::before { content: ""; position: absolute; inset: 4px; border: 1px solid var(--pf-gold); pointer-events: none; }
+.xp-card .pfs-corner { width: 22px; height: 22px; z-index: 2; }
+.xp-card .pfs-corner svg { width: 22px; height: 22px; }
+.xp-card .pfs-corner.tl { left: 0; top: 0; } .xp-card .pfs-corner.tr { right: 0; top: 0; }
+.xp-card-h { position: relative; display: flex; align-items: center; gap: 10px; min-height: 48px; margin: 8px 8px 0; padding: 0 2px 0 6px; background: var(--pf-rib); color: var(--pf-rib-text); box-shadow: inset 0 3px 0 -2px var(--pf-gold), inset 0 -3px 0 -2px var(--pf-gold); }
+.xp-card-i { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #FBF3E2; color: var(--pf-rib); box-shadow: inset 0 0 0 2px var(--pf-rib), 0 0 0 2px var(--pf-gold); }
+.xp-card-i b { font: 700 17px/1 var(--g-font-cap); }
+.xp-card-n { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.xp-card-n b { font: 400 20px/23px var(--g-font-display); letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 1px rgb(0 0 0 / 0.35); }
+.xp-card-n small { font: 700 11.5px/14px var(--g-font-cap); text-transform: uppercase; letter-spacing: .1em; color: #F0D79C; }
+.xp-card-h .ev-btn.is-quiet { color: var(--pf-rib-text); }
+.xp-card-def { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 12px 12px 0; }
+.xp-card-hp { display: grid; gap: 3px; min-width: 0; }
+.xp-card-hp .v { display: flex; align-items: baseline; gap: 2px; }
+.xp-card-hp .v b { font: 700 26px/28px var(--g-font-cap); }
+.xp-card-hp .v small { font: 600 14px/1 var(--g-font-cap); color: var(--g-text-2); }
+.xp-card-hp.is-low .v b { color: var(--g-track-low); }
+.xp-card-hp.is-zero .v b { color: var(--g-danger-text); }
+.xp-card-hp .ev-bar { margin-top: 2px; }
+.xp-card-sv { display: grid; grid-template-columns: repeat(3, 44px); gap: 4px; }
+.xp-sv { appearance: none; display: grid; grid-template-rows: 18px 28px; padding: 0; border: 1.5px solid var(--pfs-ink); border-radius: 3px; background: var(--pf-box); overflow: hidden; color: var(--g-text); cursor: pointer; font: inherit; }
+.xp-sv span { display: grid; place-items: center; background: var(--pf-rib); color: var(--pf-rib-text); font: 700 10.5px/1 var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; }
+.xp-sv b { display: grid; place-items: center; font: 700 16px/1 var(--g-font-cap); }
+.xp-sv:hover { background: var(--g-now); }
+.xp-card .xp-open { margin: 0; padding: 12px 12px 0; background: none; display: grid; gap: 10px; }
+.xp-card .xp-open .xp-tags { margin: 0; }
+.xp-card .xp-turn { min-height: 22px; }
+.xp-card-rule { margin: 0; font: 500 14px/19px var(--g-font-ui); }
+.xp-card-rule b { font: 700 14px/19px var(--g-font-cap); text-transform: uppercase; letter-spacing: .05em; color: var(--g-danger-text); }
+.xp-card .ev-clusters { gap: 6px 8px; }
+.xp-card .ev-btn { height: 36px; }
+.xp-card.is-dying { border-color: var(--g-danger-text); }
+.xp-deg { flex: 1 1 0; height: 44px; display: grid; place-items: center; align-content: center; gap: 2px; padding: 0 6px; }
+.g-pf .ev-btn.xp-deg { height: 44px; }
+.xp-deg span { font: 700 12.5px/14px var(--g-font-cap); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.xp-deg small { font: 500 12px/13px var(--g-font-ui); text-transform: none; letter-spacing: 0; color: var(--g-text-2); }
+
+/* The queue */
+.g-pf .ev-sec { margin: 14px var(--g-pad) 0; }
+.g-pf .ev-sec span { font: 700 12.5px/16px var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; color: var(--g-accent-text); }
+.g-pf .ev-sec.is-acted span { color: var(--g-text-2); }
+.g-pf .ev-sec small { font: 600 12px/16px var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; }
+.g-pf .ev-sec-hint { margin: 0 var(--g-pad) 6px; }
+.g-pf .ev-sec + .xp-list, .g-pf .ev-sec-hint + .xp-list { margin-top: 6px; }
+.xp-round-div { margin: 6px var(--g-pad) 0; padding: 10px; text-align: center; border: 1px dashed var(--g-line-strong); border-radius: var(--g-r-lg); font: 700 12.5px/16px var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; color: var(--g-text-2); }
+.xp-defeated { display: flex; align-items: center; gap: 6px; margin: 12px var(--g-pad) 0; font: 700 12.5px/16px var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; color: var(--g-text-2); }
+.xp-mt-col { padding-top: 12px; }
+.xp-defeated > svg { transform: translateY(.14em); }
+
+/* The acting creature's buttons: Damage | Heal split 50/50, then Condition | Delay | Stat block in thirds. */
+.xp-card .xp-open .ev-clusters { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
+.xp-card .xp-open .ev-cluster { width: 100%; }
+.xp-card .xp-open .ev-cluster.is-joined > .ev-btn { flex: 1 1 0; min-width: 0; padding-left: 4px; padding-right: 4px; }

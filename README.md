@@ -16,7 +16,7 @@ If you run one game and play in another, keep both in one vault: every campaign 
 
 ![An encounter block rated for a party of four level 2 heroes](docs/images/encounter-block.png)
 
-**A tracker that does Nimble's math.** Heroes go first, then monsters. Tap a monster's HP for a damage calculator that applies crits, armor, vulnerabilities and minion overkill, and shows the math before you commit. Bloodied and Last Stand appear as prompts.
+**A tracker that does Nimble's math.** Whoever is acting is on a big card, with everyone else in a queue below it. Heroes go first, in any order: tap whoever speaks up. Then the monsters go one after another, and a legendary monster acts after each hero. Tap anyone's HP for a keypad that applies crits, armor, Vulnerable and minion overkill, and shows the sum before you apply it. Bloodied and Last Stand appear under the card when they happen. See [the tracker](docs/tracker.md).
 
 **No page jumps.** Click a monster pill, an NPC, or anyone in the tracker and their sheet opens in a quick look over what you're doing: the full Nimble stat block (or the NPC's note), with HP, turn, actions and Wounds when they're in the fight. **Open page** is there when you do want the note.
 
@@ -47,7 +47,7 @@ If you run one game and play in another, keep both in one vault: every campaign 
 **And more:**
 - campaigns, chapters and scenes in a sidebar panel
 - links to quests, places and heroes that show as pills with their icon
-- Spotlight (Cmd/Ctrl+K) to find anything, roll dice and add monsters
+- Omnisearch (Cmd/Ctrl+K) to find anything, roll dice and add monsters
 - help with stat blocks you write, with fixes for lines it can't read
 - read-aloud, trap, treasure and clue boxes
 - clickable dice and 3D dice
@@ -67,7 +67,7 @@ In Obsidian, open **Settings → Community plugins → Browse**, search for **Em
 1. Open **Settings → Ember Vault** and add your party (name, class, level, HP, Defense).
 2. Type `/` in a note: `/encounter 3 goblin, 2 wolf` writes an encounter block rated against your party.
 3. Click **Run** on the block. The tracker opens with the monsters and your heroes.
-4. Click **Start combat**. Heroes go first; tick each one off as they act, then the monsters go. Click **Next round**.
+4. Click **Heroes go first**. Tap whoever speaks up to put them on the card, and **Done** when their turn is over. When every hero has gone, the monsters take their turns: **Next** names who's up, and after the last one it's **Round 2**.
 
 ## User guide
 
@@ -84,7 +84,7 @@ The full guide is in **[docs/](docs/README.md)**:
 - [GM maps](docs/maps.md)
 - [Combat tracker](docs/tracker.md)
 - [Dice](docs/dice.md)
-- [Spotlight](docs/spotlight.md)
+- [Omnisearch](docs/omnisearch.md)
 - [Slash commands](docs/slash-commands.md)
 - [Phone and iPad](docs/mobile.md)
 - [Settings](docs/settings.md)

@@ -46,17 +46,17 @@ try {
 			tildeRendered: document.body.innerText.includes('Tilde Toad'),
 		};
 	});
-	findings.paperGolemHp = await o.eval((app, plugin) => plugin.index.get('Paper Golem')?.monster.hp);
-	findings.tildeIndexed = await o.eval((app, plugin) => !!plugin.index.get('Tilde Toad'));
+	findings.paperGolemHp = await o.eval((app, plugin) => plugin.runtime('nimble').index.get('Paper Golem')?.monster.hp);
+	findings.tildeIndexed = await o.eval((app, plugin) => !!plugin.runtime('nimble').index.get('Tilde Toad'));
 
 	// 3. Encounter tracker: rapid adds, label numbering after removal
 	await o.openFile('Bestiary/Goblin.md');
 	await page.click('.markdown-reading-view .nimble-statblock .add-btn');
 	await page.waitForTimeout(600);
 	await o.eval((app, plugin) => {
-		const g = plugin.index.get('Goblin');
-		plugin.addToEncounter(g.monster, g.filePath);
-		plugin.addToEncounter(g.monster, g.filePath);
+		const g = plugin.runtime('nimble').index.get('Goblin');
+		plugin.runtime('nimble').addToEncounter(g.monster, g.filePath);
+		plugin.runtime('nimble').addToEncounter(g.monster, g.filePath);
 	});
 	await page.waitForTimeout(300);
 	findings.rapidAddIds = await o.eval((app, plugin) => {
@@ -66,9 +66,9 @@ try {
 	// remove Goblin-1 then add again -> label clash?
 	await o.eval((app, plugin) => {
 		const enc = plugin.settings.encounters[0];
-		plugin.encounters.remove(enc.id, enc.creatures[0].id);
-		const g = plugin.index.get('Goblin');
-		plugin.addToEncounter(g.monster, g.filePath);
+		plugin.runtime('nimble').encounters.remove(enc.id, enc.creatures[0].id);
+		const g = plugin.runtime('nimble').index.get('Goblin');
+		plugin.runtime('nimble').addToEncounter(g.monster, g.filePath);
 	});
 	findings.labelsAfterRemoveAdd = await o.eval((app, plugin) => plugin.settings.encounters[0].creatures.map(c => c.label));
 	await page.waitForTimeout(400);

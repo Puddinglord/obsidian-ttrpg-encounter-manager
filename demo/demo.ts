@@ -4,20 +4,22 @@
 
 import './obsidian-shim';
 import { setIcon, Notice, Events } from 'obsidian';
-import { createInlineRef, HoverPreview } from '../src/inline-ref';
-import { renderStatblock, DiceKind, RenderOptions } from '../src/render';
-import { appendRichText } from '../src/markdown';
-import { extractNimbleBlocks, parseStatblock } from '../src/parser';
-import { monsterRole, rateEncounter, shiftMonster, shiftLabel } from '../src/rules';
-import { parseDice, rollNimbleAttack, rollPlain } from '../src/dice';
-import { dice3dSupported, roll3d, diceForRoll } from '../src/dice3d';
-import { closePopover, isPopoverOpenFor, openPopover } from '../src/popover';
-import { renderBalance } from '../src/balance-ui';
-import { EncounterDef } from '../src/encounter-def';
-import { DEFAULT_SETTINGS, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleMonster, NimbleStatblocksSettings, PartyMember, RollLogEntry } from '../src/types';
-import { EncounterStore, isHero } from '../src/encounters';
-import { EncounterTrackerView } from '../src/tracker-view';
-import { keywordPattern } from '../src/markdown';
+import { createInlineRef, monsterHover } from '../src/systems/nimble/inline-ref';
+import { HoverPreview } from '../src/core/hover-preview';
+import { renderStatblock, DiceKind, RenderOptions } from '../src/systems/nimble/render';
+import { appendRichText } from '../src/core/markdown';
+import { extractNimbleBlocks, parseStatblock } from '../src/systems/nimble/parser';
+import { monsterRole, rateEncounter, shiftMonster, shiftLabel } from '../src/systems/nimble/rules';
+import { parseDice, rollPlain } from '../src/core/dice';
+import { rollNimbleAttack } from '../src/systems/nimble/attack-roll';
+import { dice3dSupported, roll3d, diceForRoll } from '../src/core/dice3d';
+import { closePopover, isPopoverOpenFor, openPopover } from '../src/core/popover';
+import { renderBalance } from '../src/systems/nimble/balance-ui';
+import { EncounterDef } from '../src/core/encounter-def';
+import { DEFAULT_SETTINGS, MonsterIndexEntry, NIMBLE_CONDITIONS, NimbleMonster, NimbleStatblocksSettings, PartyMember, RollLogEntry } from '../src/systems/nimble/types';
+import { EncounterStore, isHero } from '../src/systems/nimble/encounters';
+import { EncounterTrackerView } from '../src/systems/nimble/tracker-view';
+import { keywordPattern } from '../src/core/markdown';
 import sampleSettings from 'sample-vault-settings';
 
 import hound from '../sample-vault/Campaigns/The Old Quarter/Monsters/Quicksilver Hound.md';
@@ -411,7 +413,7 @@ function build(root: HTMLElement): void {
 		e.stopPropagation();
 		const ref = name.closest<HTMLElement>('.nimble-inline-ref');
 		const entry = byName.get((ref?.dataset.nimbleRef ?? '').toLowerCase());
-		if (entry) plugin.hover.show(name, entry, true);
+		if (entry) plugin.hover.show(name, monsterHover(plugin as never, entry, name), true);
 		markDone('hover');
 	}, true);
 

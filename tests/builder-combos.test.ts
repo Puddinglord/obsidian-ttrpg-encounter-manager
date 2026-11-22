@@ -6,18 +6,18 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
-import { extractNimbleBlocks, readStatblock, toStatblockSource } from '../src/parser';
-import { BuildRole, draftFromMonster, MonsterDraft, newMonsterDraft, toMonster, toSource } from '../src/entity-monster';
+import { extractNimbleBlocks, readStatblock, toStatblockSource } from '../src/systems/nimble/parser';
+import { BuildRole, draftFromMonster, MonsterDraft, newMonsterDraft, toMonster, toSource } from '../src/systems/nimble/entity-monster';
 import {
 	AreaShape, fromItem, fromSpell, itemSource, newItemDraft, newSpellDraft, RangeKind, SaveKey, spellSource, toItem, toSpell,
-} from '../src/entity-homebrew';
-import { HomebrewItem, ITEM_KINDS, ItemKind, itemBlockSource, parseItemBlock, parseSpellBlock, spellBlockSource } from '../src/homebrew-def';
-import { RARITIES } from '../src/builder-math';
-import { bundledCompendium, setHomebrew } from '../src/compendium-data';
-import { fromBestiary } from '../src/bestiary';
-import BESTIARY from '../src/data/bestiary.json';
-import { monsterRole } from '../src/rules';
-import type { ArmorType } from '../src/types';
+} from '../src/systems/nimble/entity-homebrew';
+import { HomebrewItem, ITEM_KINDS, ItemKind, itemBlockSource, parseItemBlock, parseSpellBlock, spellBlockSource } from '../src/systems/nimble/homebrew-def';
+import { RARITIES } from '../src/systems/nimble/builder-math';
+import { bundledCompendium, setHomebrew } from '../src/systems/nimble/compendium-data';
+import { fromBestiary } from '../src/systems/nimble/bestiary';
+import BESTIARY from '../src/systems/nimble/data/bestiary.json';
+import { monsterRole } from '../src/systems/nimble/rules';
+import type { ArmorType } from '../src/systems/nimble/types';
 
 const cross = <T>(axes: Record<string, unknown[]>): T[] =>
 	Object.entries(axes).reduce<Record<string, unknown>[]>((acc, [k, vals]) => acc.flatMap(a => vals.map(v => ({ ...a, [k]: v }))), [{}]) as T[];

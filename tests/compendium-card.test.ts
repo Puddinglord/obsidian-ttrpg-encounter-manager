@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('obsidian', () => ({
+vi.mock('obsidian', async () => ({
+	// The test stand-ins for the rest of the API (the Nimble runtime's imports), then these.
+	...(await import('./obsidian-stub')),
 	Modal: class {},
 	// compendium-art.ts (the quick look's art slot) builds on these.
 	FuzzySuggestModal: class {},
@@ -11,10 +13,10 @@ vi.mock('obsidian', () => ({
 	setIcon: (el: HTMLElement, icon: string) => { el.dataset.icon = icon; },
 }));
 
-import { Compendium, CompendiumHit, nameKey } from '../src/compendium';
-import { compendiumIcon, renderCard, renderConditionCard, renderHitCard } from '../src/compendium-card';
-import { bundledCompendium } from '../src/compendium-data';
-import { resolveCompendiumRef } from '../src/compendium-ref';
+import { Compendium, CompendiumHit, nameKey } from '../src/systems/nimble/compendium';
+import { compendiumGlyph, renderCard, renderConditionCard, renderHitCard } from '../src/systems/nimble/compendium-card';
+import { bundledCompendium } from '../src/systems/nimble/compendium-data';
+import { resolveCompendiumRef } from '../src/systems/nimble/compendium-ref';
 import { FIXTURE } from './compendium-fixture';
 
 const real = bundledCompendium();
@@ -90,7 +92,9 @@ describe('other cards', () => {
 		for (const hit of real.all()) {
 			const el = box();
 			expect(() => renderHitCard(el, hit), `${hit.kind} ${hit.name}`).not.toThrow();
-			expect(el.querySelector('.nimble-cmp-kind-icon')?.getAttribute('data-icon')).toBe(compendiumIcon(hit));
+			// The game's own icons (Phosphor, `ev-…`) on its cards.
+			expect(el.querySelector('.nimble-cmp-kind-icon')?.getAttribute('data-icon')).toBe(compendiumGlyph(hit));
+			expect(compendiumGlyph(hit)).toMatch(/^ev-/);
 			el.remove();
 		}
 	});
@@ -103,6 +107,7 @@ describe('other cards', () => {
 		const both = box();
 		renderCard(both, { name: 'Prone', description: 'On the ground.' });
 		renderCard(both, new Compendium(FIXTURE).all()[0]);
-		expect([...both.querySelectorAll('.nimble-cmp-card')].map(c => c.className)).toEqual(['nimble-cmp-card kind-condition', 'nimble-cmp-card kind-item']);
+		// Each card wears Nimble's look, wherever it's drawn.
+		expect([...both.querySelectorAll('.nimble-cmp-card')].map(c => c.className)).toEqual(['nimble-cmp-card kind-condition ev-sys-nimble', 'nimble-cmp-card kind-item ev-sys-nimble']);
 	});
 });

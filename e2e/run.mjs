@@ -6,7 +6,7 @@
 //
 // Screenshots of failures (and a few showcase shots) go to e2e/artifacts/.
 
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -16,7 +16,12 @@ import { createServer } from 'node:http';
 import { strToU8, zipSync } from 'fflate';
 
 const ARTIFACTS = join(dirname(fileURLToPath(import.meta.url)), 'artifacts');
-rmSync(ARTIFACTS, { recursive: true, force: true });
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+// A fresh folder for this run, but leave the visual check's shots (e2e/artifacts/visual, its own run) alone.
+// A fresh artifacts folder for each run, keeping the visual check's and the timings the parallel runs split by. A slice of a
+// parallel run (E2E_SHARD) leaves it alone: parallel.mjs cleans it once, before starting the slices.
+const KEPT = (f) => f === 'visual' || f === 'timings.json' || /^shard-\d+\.log$/.test(f);
+if (!process.env.E2E_SHARD && existsSync(ARTIFACTS)) for (const f of readdirSync(ARTIFACTS)) if (!KEPT(f)) rmSync(join(ARTIFACTS, f), { recursive: true, force: true });
 mkdirSync(ARTIFACTS, { recursive: true });
 
 const tests = [];
@@ -52,26 +57,30 @@ async function resetEncounter(o, { party = [] } = {}) {
 		plugin.settings.autoArmor = true;
 		plugin.settings.minionOverkill = true;
 		plugin.settings.nimbleAttackRolls = true;
-		const view = plugin.getEncounterView();
+		const view = plugin.runtime('nimble').getEncounterView();
 		if (view) {
 			view.prompts = [];
 			view.viewingCreatureId = null;
 			view.expanded?.clear();
 			view.flash?.clear();
 		}
-		plugin.encounters.trigger('changed');
+		plugin.runtime('nimble').encounters.trigger('changed');
 		document.querySelectorAll('.notice').forEach(n => n.remove());
-		await plugin.activateEncounterView(false);
+		await plugin.runtime('nimble').activateEncounterView(false);
+		// The tracker in view (a test run on its own starts with the sidebar folded).
+		app.workspace.rightSplit.expand();
+		const leaf = app.workspace.getLeavesOfType('nimble-encounter-tracker')[0];
+		if (leaf) await app.workspace.revealLeaf(leaf);
 	}, party);
 	await o.page.waitForTimeout(150);
 }
 
-const creatures = (o) => o.eval((app, plugin) => (plugin.encounters.active?.creatures || []).map(c => ({
+const creatures = (o) => o.eval((app, plugin) => (plugin.runtime('nimble').encounters.active?.creatures || []).map(c => ({
 	label: c.label, side: c.side, hp: c.currentHp, max: c.maxHp, conditions: c.conditions, done: !!c.done,
 	alive: c.alive, count: c.count, wounds: c.wounds, armor: c.monster.armor, lastStand: !!c.lastStand,
 })));
 const encounter = (o) => o.eval((app, plugin) => {
-	const e = plugin.encounters.active;
+	const e = plugin.runtime('nimble').encounters.active;
 	return e && { name: e.name, round: e.round, phase: e.phase, sourcePath: e.sourcePath };
 });
 const notices = (o) => o.page.evaluate(() => [...document.querySelectorAll('.notice')].map(n => n.innerText));
@@ -82,18 +91,38 @@ const card = (o, label) => o.page.locator(`${T} .creature-item`).filter({ has: o
 
 /** Type into a combatant's HP box, like a GM would: click the HP, type, Enter. */
 async function typeHp(o, label, value) {
+	// A hero before the fight is an Initiative row: their HP is on their card.
+	if (!(await card(o, label).locator('.hp-display').count())) await onCard(o, label);
 	await card(o, label).locator('.hp-display').click();
 	await o.page.keyboard.type(value);
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(120);
 }
 
-/** Pick an item from a combatant's ⋮ menu. */
+/** Pick an item from a combatant's menu: the card's ⋯, or a right-click on their row. */
 async function creatureMenu(o, label, item) {
-	await card(o, label).locator('.creature-more').click();
+	const c = card(o, label);
+	const more = c.locator('.creature-more');
+	if (await more.count()) await more.click();
+	else await c.locator('.creature-label').click({ button: 'right' });
 	await o.page.locator('.menu .menu-item', { hasText: item }).first().click();
 	await o.page.waitForTimeout(100);
 }
+
+/** Put a combatant on the tracker's card (a tap on their row), as the GM does; returns the card. */
+async function onCard(o, label) {
+	const c = card(o, label);
+	if (!(await c.evaluate(el => el.classList.contains('ev-card')).catch(() => false))) {
+		await c.locator('.creature-label').click();
+		await o.waitFor(async () => (await o.page.locator(`${T} .ev-card .creature-label`, { hasText: exact(label) }).count()) === 1, { what: `${label} on the card` });
+	}
+	return card(o, label);
+}
+
+/** The tracker's main button (Done, Next, Monsters' turn…) and Back. */
+const mainButton = (o) => o.page.locator(`${T} .ev-foot .round-action`);
+/** A condition in the picker, by name (each row also says what it does). */
+const pickOption = (o, name) => o.page.locator(`.condition-picker .condition-option[aria-label="${name}"]`);
 
 /** Move the pointer somewhere neutral so no hover preview is pending or open. */
 async function parkMouse(o) {
@@ -110,7 +139,7 @@ const rectsOverlap = (a, b) => a.left < b.right && b.left < a.right && a.top < b
 test('plugin loads cleanly', async (o) => {
 	const loaded = await o.eval((app) => !!app.plugins.plugins['nimble-gm']?._loaded);
 	assert.ok(loaded);
-	assert.ok(await o.eval((app, plugin) => plugin.index.bundledCount) >= 500, 'bundled bestiary loaded');
+	assert.ok(await o.eval((app, plugin) => plugin.runtime('nimble').index.bundledCount) >= 500, 'bundled bestiary loaded');
 });
 
 test('regular stat block renders kicker, badges, abilities and attacks', async (o) => {
@@ -118,19 +147,32 @@ test('regular stat block renders kicker, badges, abilities and attacks', async (
 	const info = await o.page.evaluate((R) => {
 		const b = document.querySelector(`${R} .nimble-statblock`);
 		return {
+			look: b.classList.contains('ev-sys-nimble'),
 			kicker: b.querySelector('.monster-kicker')?.textContent,
 			name: b.querySelector('.monster-name')?.textContent,
-			badges: [...b.querySelectorAll('.monster-badges .stat-badge .badge-value')].map(x => x.textContent),
+			badges: [...b.querySelectorAll('.monster-badges .badge-value')].map(x => x.textContent),
+			saves: b.querySelector('.saves-badge')?.getAttribute('aria-label'),
+			triangles: [...b.querySelectorAll('.saves-badge .save-mark')].map(s => `${s.textContent}${'▲'.repeat(s.querySelectorAll('.nb-tri.is-up').length)}${'▼'.repeat(s.querySelectorAll('.nb-tri.is-down').length)}`),
 			armorTitle: b.querySelector('.armor-badge')?.getAttribute('aria-label'),
 			ability: b.querySelector('.ability-item')?.textContent,
 			multi: b.querySelector('.multiattack')?.textContent,
 			attacks: [...b.querySelectorAll('.actions-list li')].map(li => li.textContent),
+			damage: [...b.querySelectorAll('.actions-list .monster-damage-type')].map(d => d.getAttribute('aria-label')),
 			hasAdd: !!b.querySelector('.add-btn'),
+			// The GM's Guide's box: cut corners drawn by a border image, never a clip-path.
+			frame: getComputedStyle(b).borderImageSource.startsWith('url('),
 		};
 	}, R);
+	assert.ok(info.look, 'the block wears Nimble\'s look');
 	assert.equal(info.name, 'Goblin Boss');
-	assert.equal(info.kicker, 'Lvl 2 · Small · Humanoid');
-	assert.deepEqual(info.badges, ['36', 'M', 'STR+ DEX++ WIL−']);
+	// Name and level inline, as the book prints a regular monster ("Lvl 2, small humanoid" in small caps).
+	assert.equal(info.kicker, 'Lvl 2, Small Humanoid');
+	// HP in the heart, the armor letter on its shield; speed 6 is the default, so it's left off.
+	assert.deepEqual(info.badges, ['36', 'M']);
+	assert.equal(info.saves, 'Saves: STR+ DEX++ WIL−');
+	assert.deepEqual(info.triangles, ['STR▲', 'DEX▲▲', 'WIL▼']);
+	assert.deepEqual(info.damage, ['Slashing damage', 'Piercing damage']);
+	assert.ok(info.frame);
 	assert.equal(info.armorTitle, 'Medium armor');
 	assert.match(info.ability, /^Redirect Attack\. When missed/);
 	assert.equal(info.multi, 'Makes two scimitar attacks');
@@ -153,17 +195,23 @@ test('legendary stat block renders header, senses and phases', async (o) => {
 			lastStand: b.querySelector('.phase-section.laststand-section')?.textContent,
 			abilities: [...b.querySelectorAll('.ability-item .ability-name')].map(x => x.textContent),
 			frightened: b.querySelector('.nimble-condition-ref')?.textContent,
+			fireIcon: b.querySelector('.monster-defenses .monster-damage-type')?.getAttribute('aria-label'),
+			// The after-each-hero actions beside Bloodied and Last Stand, at a note's width.
+			split: getComputedStyle(b.querySelector('.monster-body')).gridTemplateColumns.split(' ').length,
 		};
 	}, R);
 	assert.ok(info.role);
-	assert.equal(info.kicker, 'Lvl 7 · Solo · Large · Dragon');
+	assert.equal(info.kicker, 'Level 7 Solo · Large · Dragon');
 	assert.equal(info.name, 'Young Dragon');
-	assert.deepEqual(info.badges, ['120', 'H', '8, fly 16', 'STR++ DEX+ WIL++']);
-	assert.match(info.defenses, /Resistant: Fire/);
-	assert.match(info.defenses, /Senses: Blindsight 6 spaces/);
-	assert.match(info.intro, /^SOLO: After each hero's turn, choose one:/);
-	assert.match(info.bloodied, /^BLOODIED: Fire Breath recharges/);
-	assert.match(info.lastStand, /^LAST STAND: The dragon lashes out/);
+	assert.deepEqual(info.badges, ['120', 'H', '8, fly 16']);
+	assert.match(info.defenses, /Resistant Fire/);
+	assert.equal(info.fireIcon, 'Fire damage');
+	assert.match(info.defenses, /Senses Blindsight 6 spaces/);
+	// The book's words: "Actions: after each hero's turn, choose one", never "Solo:" or "Legendary:".
+	assert.match(info.intro, /^Actionsafter each hero's turn, choose one$/);
+	assert.match(info.bloodied, /^BloodiedFire Breath recharges/);
+	assert.match(info.lastStand, /^Last StandThe dragon lashes out/);
+	assert.equal(info.split, 2);
 	assert.deepEqual(info.abilities, ['Frightful Presence.', 'Wing Attack.']);
 	assert.equal(info.frightened, 'Frightened');
 	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-solo.png') });
@@ -198,7 +246,7 @@ test('hp 0, tilde fences and missing names are handled', async (o) => {
 	}), R);
 	assert.equal(r.golemHp, '0');
 	assert.match(r.error, /needs a name/);
-	assert.ok(await o.eval((app, plugin) => !!plugin.index.get('Tilde Toad')));
+	assert.ok(await o.eval((app, plugin) => !!plugin.runtime('nimble').index.get('Tilde Toad')));
 });
 
 test('stat block hints: a quiet line under a hand-written block, opening into fixes', async (o) => {
@@ -240,7 +288,7 @@ test('monster builder: a quick build makes a note with a clean stat block', asyn
 	const leaf = '.workspace-leaf.mod-active';
 	await o.page.locator(`${leaf} .nimble-statblock >> visible=true`).first().waitFor();
 	assert.equal(await o.page.locator(`${leaf} .nimble-issues`).count(), 0);
-	assert.ok(await o.eval((app, plugin) => !!plugin.index.get('Quick Bear')));
+	assert.ok(await o.eval((app, plugin) => !!plugin.runtime('nimble').index.get('Quick Bear')));
 });
 
 test('monster builder: a solo from a template, re-levelled, with stats typed first', async (o) => {
@@ -288,7 +336,7 @@ test('spell and item builders: homebrew lands in a note, renders as a card and j
 	assert.match(spell, /```nimble-spell\nname: Ember Lash\nschool: Fire\ntier: 2\nactions: 2 Actions\nrange: Range 8\ndamage: \S+\nupcast: \+\d+ damage\.\n```/);
 	// The tab holds both the reading view and the editor, so only one card is on screen.
 	await o.page.locator('.workspace-leaf.mod-active .nimble-homebrew .nimble-cmp-card:visible').first().waitFor();
-	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.spell('Ember Lash')?.tier === 2), { what: 'the spell in the compendium' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').compendium.spell('Ember Lash')?.tier === 2), { what: 'the spell in the compendium' });
 
 	// An item from the switch at the top of the same dialog.
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-spell'));
@@ -301,7 +349,7 @@ test('spell and item builders: homebrew lands in a note, renders as a card and j
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const item = await o.eval((app) => app.vault.adapter.read('Homebrew/Lantern of Echoes.md'));
 	assert.match(item, /category: magic\nrarity: rare\ncost: 500 gp\ntext: Replays the last minute of sound\./);
-	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.item('Lantern of Echoes')?.rarity === 'rare'), { what: 'the item in the compendium' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').compendium.item('Lantern of Echoes')?.rarity === 'rare'), { what: 'the item in the compendium' });
 });
 
 test('builder ways in: Edit on a block writes it back, /new-spell builds in place, the compendium has New', async (o) => {
@@ -323,7 +371,7 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	assert.match(await o.eval((app) => app.vault.adapter.read('Bestiary/Goblin.md')), /^# Goblin\n\n```nimble\nname: Goblin\n/);
 	// Later tests count on the fixture's Goblin (12 HP).
 	await o.eval((app, _p, text) => app.vault.adapter.write('Bestiary/Goblin.md', text), goblin);
-	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Goblin')?.monster.hp === 12), { what: 'the Goblin back to 12 HP' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Goblin')?.monster.hp === 12), { what: 'the Goblin back to 12 HP' });
 
 	// /new-spell in a note: the builder, then the block lands where the slash was.
 	await o.eval(async (app) => { await app.vault.create('Spellbook.md', 'Spells:\n'); });
@@ -337,9 +385,10 @@ test('builder ways in: Edit on a block writes it back, /new-spell builds in plac
 	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Other' }).click();
 	const schoolName = o.page.locator(`${B} input[data-field="School name"]`);
 	await schoolName.waitFor();
-	assert.equal(await o.page.evaluate(() => document.activeElement?.getAttribute('data-field')), 'School name');
+	// Focus moves on the next tick, after the field shows.
+	await o.waitFor(async () => (await o.page.evaluate(() => document.activeElement?.getAttribute('data-field'))) === 'School name', { what: 'the school name field focused', timeout: 3000 });
 	await schoolName.fill('Shadow');
-	assert.match(await o.page.locator(`${B} .eb-preview .nimble-cmp-detail`).textContent(), /^Shadow · /);
+	assert.match(await o.page.locator(`${B} .eb-preview .nimble-cmp-facts`).textContent(), /School\s*Shadow/);
 	await o.page.locator(`${B} .eb-seg-btn`, { hasText: 'Ice' }).click();
 	assert.equal(await schoolName.isVisible(), false);
 	await o.page.locator(`${B} .eb-create`).click();
@@ -383,7 +432,7 @@ test('builder Edit on spell and item blocks: one change is written back, the res
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const wantSpell = [...spell.slice(0, 5), 'concentration: up to 1 minute', ...spell.slice(5)].join('\n');
 	await o.waitFor(async () => (await o.eval((app) => app.vault.adapter.read('Edit Spell.md'))).includes(`\`\`\`nimble-spell\n${wantSpell}\n\`\`\``), { what: 'the spell written back with only concentration added' });
-	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.spell('Ward')?.actions === 'Reaction'), { what: 'the edited spell in the compendium' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').compendium.spell('Ward')?.actions === 'Reaction'), { what: 'the edited spell in the compendium' });
 
 	// The item: a price on the Details step.
 	await edit('Edit Item.md', 'nimble-item');
@@ -393,7 +442,7 @@ test('builder Edit on spell and item blocks: one change is written back, the res
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const wantItem = [...item.slice(0, 7), 'cost: 40 gp', ...item.slice(7)].join('\n');
 	await o.waitFor(async () => (await o.eval((app) => app.vault.adapter.read('Edit Item.md'))).includes(`\`\`\`nimble-item\n${wantItem}\n\`\`\``), { what: 'the item written back with only its price added' });
-	await o.waitFor(() => o.eval((app, plugin) => plugin.compendium.item('Wand of Sparks')?.category === 'wand'), { what: 'the edited item in the compendium' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').compendium.item('Wand of Sparks')?.category === 'wand'), { what: 'the edited item in the compendium' });
 });
 
 test('builder Edit asks before Save drops lines the block can\'t read', async (o) => {
@@ -431,10 +480,10 @@ test('monster builder: a minion, with the party level\'s die, joins the tracker 
 	await o.page.locator(B).waitFor({ state: 'detached' });
 	const text = await o.eval((app) => app.vault.adapter.read('Bestiary/Pack Rat.md'));
 	assert.match(text, /```nimble\nname: Pack Rat\nrole: minion\nsize: Medium\nminion die: d\d+\nattacks:\n- \*\*\w+\.\*\* 1d\d+ \(follows minion rules\)\.\n```/);
-	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Pack Rat')?.monster.role === 'minion'), { what: 'the minion in the index' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Pack Rat')?.monster.role === 'minion'), { what: 'the minion in the index' });
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Pack Rat').monster, 'Bestiary/Pack Rat.md', 4));
-	const group = await o.eval((app, plugin) => plugin.encounters.active?.creatures.map(c => ({ count: c.count, alive: c.alive })));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Pack Rat').monster, 'Bestiary/Pack Rat.md', 4));
+	const group = await o.eval((app, plugin) => plugin.runtime('nimble').encounters.active?.creatures.map(c => ({ count: c.count, alive: c.alive })));
 	assert.deepEqual(group, [{ count: 4, alive: 4 }]);
 });
 
@@ -566,7 +615,7 @@ test('reading view: inline references resolve, unknown ones are flagged', async 
 	assert.deepEqual(r.found, ['Goblin', 'Goblin Boss', 'Young Dragon', 'Goblin']);
 	assert.equal(r.bundled, 0);
 	assert.deepEqual(r.missing, ['Mire Owlbear']);
-	assert.equal(await o.eval((app, plugin) => plugin.index.get('Goblin').filePath), 'Bestiary/Goblin.md');
+	assert.equal(await o.eval((app, plugin) => plugin.runtime('nimble').index.get('Goblin').filePath), 'Bestiary/Goblin.md');
 });
 
 test('bundled reference: Krogg resolves, previews with an action bar, and goes away with the bestiary setting', async (o) => {
@@ -585,10 +634,13 @@ test('bundled reference: Krogg resolves, previews with an action bar, and goes a
 			actions: [...el.querySelectorAll('.statblock-actions .statblock-action:not(.statblock-action-more)')].map(b => b.textContent),
 			more: el.querySelectorAll('.statblock-actions .statblock-action-more').length,
 			source: el.querySelector('.monster-source')?.textContent,
+			// The note's block, a size down, in Nimble's look.
+			block: [...(el.querySelector('.nimble-statblock')?.classList ?? [])].filter(c => c === 'is-compact' || c === 'ev-sys-nimble').sort(),
 		};
 	}, PREVIEW);
+	assert.deepEqual(p.block, ['ev-sys-nimble', 'is-compact']);
 	assert.equal(p.name, 'Krogg, Goblin King');
-	assert.match(p.kicker, /Lvl 2 · Solo/);
+	assert.match(p.kicker, /^Level 2 Solo/);
 	assert.deepEqual(p.actions, ['Add', 'Compendium', 'Copy to vault']);
 	assert.equal(p.more, 1, 'Add has a menu (Add several…, tougher, weaker)');
 	assert.match(p.source, /Monsters & More p\.7/);
@@ -603,11 +655,11 @@ test('bundled reference: Krogg resolves, previews with an action bar, and goes a
 
 	// Turning the bundled bestiary off leaves the reference unresolved.
 	try {
-		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = false; plugin.loadBundledBestiary(); });
+		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = false; plugin.runtime('nimble').loadBundledBestiary(); });
 		await o.waitFor(() => o.page.evaluate((R) => [...document.querySelectorAll(`${R} .nimble-inline-unresolved`)].some(e => e.dataset.nimbleRef === 'Krogg, Goblin King'), R),
 			{ timeout: 3000, what: 'Krogg to go unresolved' });
 	} finally {
-		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = true; plugin.loadBundledBestiary(); });
+		await o.eval((app, plugin) => { plugin.settings.bundledBestiary = true; plugin.runtime('nimble').loadBundledBestiary(); });
 	}
 	await o.waitFor(() => o.page.evaluate((R) => !document.querySelector(`${R} .nimble-inline-unresolved`), R), { timeout: 3000, what: 'Krogg to resolve again' });
 });
@@ -771,7 +823,7 @@ test('index updates live: new, renamed and deleted monsters', async (o) => {
 	await o.eval((app) => app.vault.create('Bestiary/Mire Owlbear.md', '```nimble\nname: Mire Owlbear\nhp: 30\n```\n'));
 	await o.waitFor(() => o.page.evaluate((R) => !document.querySelector(`${R} .nimble-inline-unresolved`), R), { timeout: 5000, what: 'Mire Owlbear to resolve' });
 	await o.eval((app) => app.fileManager.renameFile(app.vault.getAbstractFileByPath('Bestiary/Mire Owlbear.md'), 'Bestiary/Mire Owlbear (Swamp).md'));
-	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Mire Owlbear')?.filePath === 'Bestiary/Mire Owlbear (Swamp).md'), { timeout: 5000, what: 'rename to be indexed' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Mire Owlbear')?.filePath === 'Bestiary/Mire Owlbear (Swamp).md'), { timeout: 5000, what: 'rename to be indexed' });
 	await o.eval((app) => app.vault.delete(app.vault.getAbstractFileByPath('Bestiary/Mire Owlbear (Swamp).md')));
 	await o.waitFor(() => o.page.evaluate((R) => !!document.querySelector(`${R} .nimble-inline-unresolved`), R), { timeout: 5000, what: 'Mire Owlbear to go unresolved' });
 });
@@ -941,7 +993,8 @@ test('compendium: search, role filter, add to the tracker', async (o) => {
 	const list = await creatures(o);
 	assert.deepEqual(list.map(c => [c.label, c.count]), [['Krogg, Goblin King-1', undefined], ['Goblin Minion', 2]]);
 	assert.equal(list[0].max, 90);
-	assert.equal(await card(o, 'Krogg, Goblin King-1').count(), 1);
+	// Saved as Krogg, Goblin King-1; a lone monster shows without its number.
+	assert.equal(await card(o, 'Krogg, Goblin King').count(), 1);
 
 	// Enter adds the selected monster, Shift+Enter two.
 	await o.page.locator(`${CMP} .nimble-cmpx-chip-x`).click();
@@ -980,7 +1033,7 @@ test('compendium: typed filters become chips, Tab completes, Backspace edits, Al
 	const bad = await o.eval((app, plugin, ids) => {
 		const lvl = (v) => { const s = String(v ?? ''); const f = s.match(/^(\d+)\/(\d+)$/); return f ? Number(f[1]) / Number(f[2]) : Number(s); };
 		return ids.filter(id => {
-			const e = plugin.index.all().find(x => `monster:${x.monster.bundledId || `vault:${x.filePath}#${x.name}`}` === id);
+			const e = plugin.runtime('nimble').index.all().find(x => `monster:${x.monster.bundledId || `vault:${x.filePath}#${x.name}`}` === id);
 			if (!e) return true;
 			const types = [e.monster.group, e.monster.type].filter(Boolean).join(' ');
 			const l = lvl(e.monster.level);
@@ -1021,7 +1074,7 @@ test('compendium art: pick an image for an entry; it shows on the page and as th
 		const blob = await new Promise(r => c.toBlob(r, 'image/png'));
 		if (!app.vault.getAbstractFileByPath('flame-art.png')) await app.vault.createBinary('flame-art.png', await blob.arrayBuffer());
 	});
-	await o.eval((app, plugin) => plugin.openCompendium('spells', 'flame dart'));
+	await o.eval((app, plugin) => plugin.runtime('nimble').openCompendium('spells', 'flame dart'));
 	const D = '.nimble-compendium .nimble-cmpx-detail';
 	await o.waitFor(async () => (await o.page.locator(`${D} .nimble-cmp-name`).first().textContent().catch(() => '')) === 'Flame Dart', { timeout: 4000, what: 'Flame Dart on the page' });
 	assert.equal(await o.page.locator(`${D} .nimble-art-slot:not(.has-art)`).count(), 1, 'an empty art slot');
@@ -1083,12 +1136,18 @@ test('add to encounter: button, shift-click, inline +, unique labels', async (o)
 	list = await creatures(o);
 	assert.deepEqual(list.map(c => c.label), ['Goblin-2', 'Goblin-3', 'Goblin Boss-1', 'Goblin-4']);
 	assert.equal(await o.page.locator(`${T} .creature-item`).count(), 4);
-	assert.deepEqual(await o.page.locator(`${T} .side-header > span:first-child`).allTextContents(), ['Monsters']);
-	assert.equal(await o.page.locator(`${T} .side-header .side-count`).textContent(), '0/4 gone');
-	assert.deepEqual(await o.page.locator(`${T} .creature-label`).allTextContents(), ['Goblin-2', 'Goblin-3', 'Goblin Boss-1', 'Goblin-4']);
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.hp-display').textContent(), '36/36');
-	assert.match(await card(o, 'Goblin Boss-1').locator('.creature-meta').textContent(), /Lvl 2.*Medium/);
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.armor-chip.armor-medium').count(), 1, 'armor shows as a badge');
+	assert.deepEqual(await o.page.locator(`${T} .ev-sec > .ev-sec-title`).allTextContents(), ['Monsters']);
+	assert.equal(await o.page.locator(`${T} .ev-sec > small`).textContent(), '4');
+	// Numbers show only where there are two or more of a monster: the lone boss reads "Goblin Boss".
+	assert.deepEqual(await o.page.locator(`${T} .creature-label`).allTextContents(), ['Goblin-2', 'Goblin-3', 'Goblin Boss', 'Goblin-4']);
+	assert.equal(await card(o, 'Goblin Boss').locator('.hp-display').textContent(), '36/36');
+	// The row: its level, and its armor as the books draw it (the letter in a filled shield).
+	assert.equal(await card(o, 'Goblin Boss').locator('.nimble-lvl').textContent(), 'L2');
+	assert.equal(await card(o, 'Goblin Boss').locator('.nimble-armor.is-medium').textContent(), 'M');
+	// On the card: "Level 2" and the armor.
+	const boss = await onCard(o, 'Goblin Boss');
+	assert.match(await boss.locator('.creature-meta').textContent(), /Level 2/);
+	assert.equal(await boss.locator('.armor-chip.armor-medium').count(), 1, 'armor shows as a badge');
 });
 
 test('add-monster search adds from anywhere', async (o) => {
@@ -1125,7 +1184,7 @@ test('add monster dialog: "3 goblin minion" makes one minion group', async (o) =
 	assert.equal(group.label, 'Goblin Minion');
 	assert.equal(group.count, 3);
 	assert.equal(group.alive, 3);
-	const row = card(o, 'Goblin Minion');
+	const row = await onCard(o, 'Goblin Minion');
 	assert.equal(await row.locator('.minion-pip').count(), 3);
 	assert.equal(await row.locator('.minion-pip.is-on').count(), 3);
 	assert.equal(await row.locator('.hp-display').textContent(), '3/3');
@@ -1168,7 +1227,7 @@ test('add monster dialog: "3 goblin minion" makes one minion group', async (o) =
 	assert.equal(roll.expression, '3d6');
 });
 
-test('turn flow: party, Start combat, heroes then monsters, Next round', async (o) => {
+test('turn flow: party, heroes go first in any order, the monsters\' side, the next round, Back', async (o) => {
 	await resetEncounter(o, { party: PARTY });
 	await o.page.locator(`${T} .quick-add-party`).click();
 	await o.page.waitForTimeout(100);
@@ -1180,29 +1239,41 @@ test('turn flow: party, Start combat, heroes then monsters, Next round', async (
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(150);
 	assert.deepEqual((await creatures(o)).map(c => [c.label, c.side]), [['Aria', 'hero'], ['Bram', 'hero'], ['Goblin Minion', 'monster']]);
-	assert.deepEqual(await o.page.locator(`${T} .side-header > span:first-child`).allTextContents(), ['Heroes', 'Monsters']);
+	assert.deepEqual(await o.page.locator(`${T} .ev-sec > .ev-sec-title`).allTextContents(), ['Initiative', 'Monsters']);
 	assert.equal(await o.page.locator(`${T} .quick-add-party`).count(), 0, 'Party button hides once heroes are in');
 	assert.equal((await encounter(o)).phase, 'setup');
 
-	const action = o.page.locator(`${T} .round-action`);
-	assert.equal(await action.textContent(), 'Start combat');
+	// Initiative typed before the fight sets a hero's first-turn actions (10–19: two).
+	await o.page.locator(`${T} .nimble-init-input[aria-label="Aria: Initiative"]`).fill('12');
+	await o.page.keyboard.press('Enter');
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').encounters.active.creatures[0].actions === 2), { what: 'two actions from Initiative 12' });
+
+	const action = mainButton(o);
+	assert.equal(await action.textContent(), 'Heroes go first');
 	await action.click();
 	assert.deepEqual(await encounter(o).then(e => [e.round, e.phase]), [1, 'heroes']);
-	assert.equal(await o.page.locator(`${T} .phase-pill.is-active .phase-pill-text`).textContent(), "Heroes' turn");
-	assert.equal(await action.textContent(), 'Next round');
+	assert.equal(await o.page.locator(`${T} .phase-pill.is-active .phase-pill-text`).textContent(), 'Heroes');
+	// Nobody is assumed: the card waits for whoever speaks up, and no hero is marked next.
+	assert.equal(await o.page.locator(`${T} .ev-card.is-empty`).count(), 1);
+	assert.equal(await o.page.locator(`${T} .side-hero .ev-mark.is-next`).count(), 0);
+	assert.equal(await action.textContent(), "Monsters' turn");
 	assert.ok(await card(o, 'Goblin Minion').evaluate(el => el.classList.contains('is-waiting')));
 
-	await card(o, 'Aria').locator('.turn-toggle').click();
+	// Bram speaks up first: one tap puts him on the card; Done marks him.
+	await onCard(o, 'Bram');
+	assert.equal(await action.textContent(), 'Done');
+	await action.click();
 	assert.equal((await encounter(o)).phase, 'heroes');
-	assert.equal(await card(o, 'Aria').locator('.turn-toggle').getAttribute('aria-pressed'), 'true');
-	assert.match(await o.page.locator(`${T} .side-header`).first().textContent(), /1\/2 gone/);
-	await card(o, 'Bram').locator('.turn-toggle').click();
+	assert.equal(await card(o, 'Bram').locator('.turn-toggle').getAttribute('aria-pressed'), 'true');
+	assert.ok(await card(o, 'Bram').evaluate(el => el.classList.contains('is-acted')), 'acted rows look acted');
+	assert.match(await o.page.locator(`${T} .phase-pill.phase-heroes .phase-pill-count`).textContent(), /1 of 2 done/);
+	// Aria's mark, straight from her row: every hero has gone, so it's the monsters' side, the minions up.
+	await card(o, 'Aria').locator('.turn-toggle').click();
 	assert.equal((await encounter(o)).phase, 'monsters');
-	assert.equal(await o.page.locator(`${T} .phase-pill.is-active .phase-pill-text`).textContent(), "Monsters' turn");
+	assert.equal(await o.page.locator(`${T} .phase-pill.is-active .phase-pill-text`).textContent(), 'Monsters');
 	assert.ok(await card(o, 'Aria').evaluate(el => el.classList.contains('is-done')));
-	await card(o, 'Goblin Minion').locator('.turn-toggle').click();
-	assert.equal(await o.page.locator(`${T} .turn-toggle.is-done`).count(), 3);
-
+	assert.equal(await o.page.locator(`${T} .ev-card .creature-label`).textContent(), 'Goblin Minion');
+	assert.equal(await action.textContent(), 'Round 2');
 	await action.click();
 	assert.deepEqual(await encounter(o).then(e => [e.round, e.phase]), [2, 'heroes']);
 	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Round 2');
@@ -1210,7 +1281,27 @@ test('turn flow: party, Start combat, heroes then monsters, Next round', async (
 	assert.equal(await o.page.locator(`${T} .turn-toggle.is-done`).count(), 0);
 	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-tracker-turns.png') });
 
-	// The phase pills switch sides by hand.
+	// Back undoes the step: round 1, the minions on the card again.
+	await o.page.locator(`${T} .ev-foot-back`).click();
+	assert.deepEqual(await encounter(o).then(e => [e.round, e.phase]), [1, 'monsters']);
+	assert.equal(await o.page.locator(`${T} .ev-card .creature-label`).textContent(), 'Goblin Minion');
+	await action.click();
+	assert.equal((await encounter(o)).round, 2);
+
+	// The keys: ↓ moves through the rows, Enter puts one on the card, Space is Done, Z undoes it.
+	await o.page.locator(`${T} .creature-item`, { hasText: 'Aria' }).focus();
+	await o.page.keyboard.press('ArrowDown');
+	assert.equal(await o.page.evaluate(() => document.activeElement?.querySelector('.creature-label')?.textContent), 'Bram');
+	await o.page.keyboard.press('Enter');
+	assert.equal(await o.page.locator(`${T} .ev-card .creature-label`).textContent(), 'Bram');
+	await o.page.locator(`${T} .ev-card`).focus();
+	await o.page.keyboard.press(' ');
+	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').done, { what: 'Space: Bram done' });
+	await o.page.locator(`${T} .creature-item`, { hasText: 'Aria' }).focus();
+	await o.page.keyboard.press('z');
+	await o.waitFor(async () => !(await creatures(o)).find(c => c.label === 'Bram').done, { what: 'Z: undone' });
+
+	// The side switch moves sides by hand.
 	await o.page.locator(`${T} .phase-pill.phase-monsters`).click();
 	assert.equal((await encounter(o)).phase, 'monsters');
 });
@@ -1219,19 +1310,19 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	await resetEncounter(o, { party: PARTY });
 	await o.eval(async (app, plugin) => {
 		plugin.settings.dice3d = false;
-		const id = plugin.encounters.ensureActive().id;
-		plugin.encounters.addParty(id);
-		await plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
-		await plugin.addToEncounter(plugin.index.get('Krogg, Goblin King').monster, undefined, 1);
+		const id = plugin.runtime('nimble').encounters.ensureActive().id;
+		plugin.runtime('nimble').encounters.addParty(id);
+		await plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
+		await plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Krogg, Goblin King').monster, undefined, 1);
 	});
 	await o.page.waitForTimeout(300);
 	const action = o.page.locator(`${T} .round-action`);
-	assert.equal(await action.textContent(), 'Start combat');
-	assert.equal(await o.page.locator(`${T} .tracker-end, ${T} .turn-segmented`).count(), 0, 'no End or turn control before combat');
+	assert.equal(await action.textContent(), 'Heroes go first');
+	assert.equal(await o.page.locator(`${T} .turn-segmented`).count(), 0, 'no side switch before combat');
 
 	// Calculator by tapping: starts on Damage, switch to Heal, preview, apply.
 	await typeHp(o, 'Aria', '6');
-	await card(o, 'Aria').locator('.hp-display').click();
+	await (await onCard(o, 'Aria')).locator('.hp-display').click();
 	const pad = o.page.locator('.nimble-hp-pad');
 	assert.equal(await pad.locator('.hp-pad-mode.is-active').textContent(), 'Damage');
 	await pad.locator('.hp-pad-mode', { hasText: 'Heal' }).click();
@@ -1243,25 +1334,39 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 0, 'closes after applying');
 
 	// Crit toggle on a monster with armor shows the working.
-	const boss = (await creatures(o)).find(c => c.label.startsWith('Goblin Boss'));
-	await card(o, boss.label).locator('.hp-display').click();
+	// The only Goblin Boss and the only Krogg: shown without their numbers.
+	await card(o, 'Goblin Boss').locator('.hp-display').click();
 	await o.page.keyboard.type('8');
 	await pad.locator('.hp-pad-crit').click();
 	assert.match(await pad.locator('.hp-pad-preview').textContent(), /crit ignores armor/);
 	await o.page.keyboard.press('Escape');
 
-	// Start, then the legendary card after a hero's turn: pick one, it rolls and logs.
+	// Start: nobody is on the card until a hero speaks up.
 	await action.click();
-	assert.equal(await action.textContent(), 'Next round');
+	assert.equal(await action.textContent(), "Monsters' turn");
 	assert.equal(await o.page.locator(`${T} .turn-segmented .phase-pill`).count(), 2);
-	assert.match(await o.page.locator(`${T} .phase-pill.phase-heroes .phase-pill-count`).textContent(), /0\/2/);
-	await card(o, 'Aria').locator('.turn-toggle').click();
+	assert.match(await o.page.locator(`${T} .phase-pill.phase-heroes .phase-pill-count`).textContent(), /0 of 2 done/);
+	assert.equal(await o.page.locator(`${T} .ev-card.is-empty`).count(), 1);
+	// Aria goes: Done turns the card to the legendary monster, which acts after each hero.
+	await onCard(o, 'Aria');
+	assert.match(await action.textContent(), /^Done · Krogg acts$/);
+	await action.click();
+	const beat = o.page.locator(`${T} .ev-card.is-beat`);
+	await beat.waitFor({ timeout: 2000 });
+	assert.match(await beat.locator('.ev-card-kicker').textContent(), /After Aria's turn/);
+	assert.match(await beat.locator('.nimble-card-menu-h').first().textContent(), /After each hero.s turn, choose one/);
+	assert.equal(await beat.locator('.nimble-card-act').count(), 2);
+	await beat.locator('.nimble-card-act strong', { hasText: 'Crack Skulls' }).click();
+	await o.waitFor(async () => (await beat.locator('.nimble-card-act.is-used').count()) === 1, { what: 'the used action marked' });
+	assert.equal(await action.textContent(), 'Back to heroes');
+	await action.click();
+	assert.equal(await o.page.locator(`${T} .ev-card.is-empty`).count(), 1, 'back to the heroes, nobody assumed');
 	assert.equal(await o.page.locator(`${T} .tracker-prompt`).count(), 0, 'no legendary helper card any more');
 
-	// Clicking a combatant opens their sheet over the tracker, with the fight's state.
+	// The card's stat block button opens their sheet over the tracker, with the fight's state.
 	const Q = '.modal.nimble-record-modal';
 	const krogg = (await creatures(o)).find(c => c.label.startsWith('Krogg'));
-	await card(o, krogg.label).locator('.creature-label').click();
+	await (await onCard(o, 'Krogg, Goblin King')).locator('.ev-card-sheet').click();
 	await o.waitFor(async () => (await o.page.locator(Q).count()) === 1, { what: 'the quick look' });
 	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Krogg, Goblin King');
 	assert.match(await o.page.locator(`${Q} .record-sub`).textContent(), /Legendary|Solo/);
@@ -1272,7 +1377,7 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForTimeout(200);
 	assert.equal((await creatures(o)).find(c => c.label === krogg.label).hp, krogg.hp - 10, 'HP from the modal');
-	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-meter-cur`).textContent()) === String(krogg.hp - 10), { what: 'the strip stays live' });
+	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-meter-nums:not(.is-on-fill) .ns-meter-cur`).textContent()) === String(krogg.hp - 10), { what: 'the strip stays live' });
 	assert.equal(await o.page.locator(`${Q} .record-strip .ns-action-dot`).count(), 0, 'no action dots for a monster');
 	await o.page.locator(`${Q} .record-strip .ns-actions-end`).click();
 	assert.equal((await creatures(o)).find(c => c.label === krogg.label).done, true);
@@ -1280,14 +1385,14 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	assert.equal(await o.page.locator(Q).count(), 0);
 
 	// A hero's quick look: the sheet's round Wound pips (last a skull) and action dots, one step a tap.
-	await card(o, 'Bram').locator('.creature-label').click();
+	await (await onCard(o, 'Bram')).locator('.ev-card-sheet').click();
 	await o.waitFor(async () => (await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).count()) > 0, { what: 'hero pips' });
 	assert.equal(await o.page.locator(`${Q} .record-strip .ns-pip.is-skull`).count(), 1);
 	await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).first().click();
 	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').wounds === 1, { what: 'a Wound' });
 	await o.page.locator(`${Q} .record-strip .ns-wounds .ns-pip`).last().click();
 	await o.waitFor(async () => (await creatures(o)).find(c => c.label === 'Bram').wounds === 2, { what: 'one more Wound, not the skull' });
-	const bramActions = () => o.eval((app, plugin) => plugin.encounters.active.creatures.find(c => c.label === 'Bram').actions ?? 3);
+	const bramActions = () => o.eval((app, plugin) => plugin.runtime('nimble').encounters.active.creatures.find(c => c.label === 'Bram').actions ?? 3);
 	const before = await bramActions();
 	await o.page.locator(`${Q} .record-strip .ns-action-dot`).first().click();
 	await o.waitFor(async () => (await bramActions()) === before - 1, { what: 'one action spent' });
@@ -1297,26 +1402,28 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 	assert.deepEqual(bad, [], 'misaligned pills in the strip');
 	await o.page.keyboard.press('Escape');
 
-	// End combat: no callout, just Resume / New fight. HP is kept.
-	await o.page.locator(`${T} .tracker-end`).click();
-	await o.page.waitForTimeout(150);
+	// End combat (the ⋯ menu): no callout, just Resume / New fight. HP is kept.
+	const endCombat = async () => { await o.page.locator(`${T} .tracker-more`).click(); await o.page.locator('.menu .menu-item', { hasText: 'End combat' }).click(); await o.page.waitForTimeout(150); };
+	await endCombat();
 	assert.equal((await encounter(o)).phase, 'setup');
 	assert.equal(await o.page.locator(`${T} .tracker-prompt`).count(), 0, 'no "combat over" callout');
 	assert.equal(await action.textContent(), 'Resume round 1');
 	assert.equal((await creatures(o)).find(c => c.label === 'Aria').hp, 7);
 	await action.click();
 	assert.deepEqual(await encounter(o).then(e => [e.round, e.phase]), [1, 'heroes'], 'resumes where it stopped');
-	await o.page.locator(`${T} .tracker-end`).click();
+	await endCombat();
 	await o.page.locator(`${T} .tracker-new-fight`).click();
-	assert.equal(await action.textContent(), 'Next round', 'New fight starts round 1');
+	assert.equal(await action.textContent(), "Monsters' turn", 'New fight starts round 1');
+	assert.equal((await encounter(o)).round, 1);
 
 	// Save the fight to a note; the note resumes it, and the source block offers Resume.
 	await o.eval(async (app, plugin) => {
 		for (const f of ['Fights/Saved fight test.md', 'Saved fight test.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
 		await app.vault.create('Saved fight test.md', '```nimble-encounter\nname: Current Encounter\nmonsters:\n- 1 Goblin\n```\n');
-		plugin.encounters.active.sourcePath = 'Saved fight test.md';
+		plugin.runtime('nimble').encounters.active.sourcePath = 'Saved fight test.md';
 	});
-	await o.page.locator(`${T} .tracker-save`).click();
+	await o.page.locator(`${T} .tracker-more`).click();
+	await o.page.locator('.menu .menu-item', { hasText: 'Save fight to a note' }).click();
 	await o.waitFor(() => o.eval((app) => !!app.vault.getAbstractFileByPath('Fights/Saved fight test - Current Encounter.md')), { what: 'the fight note' });
 	const note = await o.eval((app) => app.vault.adapter.read('Fights/Saved fight test - Current Encounter.md'));
 	assert.match(note, /nimble: combat/);
@@ -1344,13 +1451,13 @@ test('tracker controls: calculator modes, quick look from the tracker, End and s
 
 test('typed damage, healing and set; invalid input is flagged', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster, 'Bestiary/Goblin.md'));
-	const row = card(o, 'Goblin-1');
-	await typeHp(o, 'Goblin-1', '5');
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster, 'Bestiary/Goblin.md'));
+	const row = card(o, 'Goblin');
+	await typeHp(o, 'Goblin', '5');
 	assert.equal((await creatures(o))[0].hp, 7);
-	await typeHp(o, 'Goblin-1', '+3');
+	await typeHp(o, 'Goblin', '+3');
 	assert.equal((await creatures(o))[0].hp, 10);
-	await typeHp(o, 'Goblin-1', '=2');
+	await typeHp(o, 'Goblin', '=2');
 	assert.equal((await creatures(o))[0].hp, 2);
 	assert.ok(await row.evaluate(el => el.classList.contains('hp-critical')));
 	assert.equal(await row.locator('.hp-display').textContent(), '2/12');
@@ -1365,45 +1472,46 @@ test('typed damage, healing and set; invalid input is flagged', async (o) => {
 	assert.equal(await row.locator('.hp-display').textContent(), '2/12', 'the HP button never changes size or swaps out');
 
 	// Down at 0 HP, and back up.
-	await typeHp(o, 'Goblin-1', '5');
+	await typeHp(o, 'Goblin', '5');
 	assert.equal((await creatures(o))[0].hp, 0);
 	assert.ok(await row.evaluate(el => el.classList.contains('is-down')));
 	assert.match(await row.locator('.conditions-row').textContent(), /Defeated/);
-	await typeHp(o, 'Goblin-1', '+5');
+	await typeHp(o, 'Goblin', '+5');
 	assert.equal((await creatures(o))[0].hp, 5);
 });
 
 test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
 	await resetEncounter(o, { party: PARTY.slice(0, 1) });
 	await o.eval((app, plugin) => {
-		plugin.encounters.addParty();
-		plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md');
-		plugin.addToEncounter(plugin.index.get('Goblin Minion').monster, undefined, 3);
+		plugin.runtime('nimble').encounters.addParty();
+		plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md');
+		plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Minion').monster, undefined, 3);
 	});
 	await o.page.waitForTimeout(150);
 
 	// Medium armor takes 10 off a normal hit, with the working shown.
-	await typeHp(o, 'Goblin Boss-1', '15');
+	await typeHp(o, 'Goblin Boss', '15');
 	let boss = (await creatures(o)).find(c => c.label === 'Goblin Boss-1');
 	assert.equal(boss.hp, 31);
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.creature-flash').textContent(), '15 − 10 (Medium armor) = 5');
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.hp-display').textContent(), '31/36');
+	assert.equal(await card(o, 'Goblin Boss').locator('.creature-flash').textContent(), '15 − 10 (Medium armor) = 5');
+	assert.equal(await card(o, 'Goblin Boss').locator('.hp-display').textContent(), '31/36');
 	// A crit ignores armor.
-	await typeHp(o, 'Goblin Boss-1', '15!');
+	await typeHp(o, 'Goblin Boss', '15!');
 	boss = (await creatures(o)).find(c => c.label === 'Goblin Boss-1');
 	assert.equal(boss.hp, 16);
-	assert.equal(await card(o, 'Goblin Boss-1').locator('.creature-flash').textContent(), '15 (crit ignores armor) = 15');
+	assert.equal(await card(o, 'Goblin Boss').locator('.creature-flash').textContent(), '15 (crit ignores armor) = 15');
 	// A hit smaller than the armor does nothing.
-	await typeHp(o, 'Goblin Boss-1', '8');
+	await typeHp(o, 'Goblin Boss', '8');
 	assert.equal((await creatures(o)).find(c => c.label === 'Goblin Boss-1').hp, 16);
 	// Vulnerable adds 10 on top.
-	await typeHp(o, 'Goblin Boss-1', '10v');
+	await typeHp(o, 'Goblin Boss', '10v');
 	assert.equal((await creatures(o)).find(c => c.label === 'Goblin Boss-1').hp, 6);
 
 	// Any hit drops one minion.
 	await typeHp(o, 'Goblin Minion', '5');
 	let minions = (await creatures(o)).find(c => c.label === 'Goblin Minion');
 	assert.equal(minions.alive, 2);
+	await onCard(o, 'Goblin Minion');
 	assert.equal(await card(o, 'Goblin Minion').locator('.minion-pip.is-on').count(), 2);
 	assert.equal(await card(o, 'Goblin Minion').locator('.hp-display').textContent(), '2/3');
 	// Clicking a pip drops one too, and a lit-off pip brings one back.
@@ -1422,9 +1530,10 @@ test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
 	let aria = (await creatures(o)).find(c => c.label === 'Aria');
 	assert.equal(aria.hp, 0);
 	assert.equal(aria.wounds, 1);
+	await onCard(o, 'Aria');
 	assert.equal(await card(o, 'Aria').locator('.wound-pip.is-on').count(), 1);
 	assert.equal(await card(o, 'Aria').locator('.wound-pip').count(), 6);
-	assert.match(await card(o, 'Aria').locator('.conditions-row').textContent(), /Dying/);
+	assert.match(await card(o, 'Aria').locator('.nimble-card-dying').textContent(), /Dying · 1 of 6 Wounds/);
 	// Hit again while Dying: two more Wounds (three on a crit).
 	await typeHp(o, 'Aria', '3');
 	aria = (await creatures(o)).find(c => c.label === 'Aria');
@@ -1433,25 +1542,27 @@ test('damage rules: armor, crits, minions and hero Wounds', async (o) => {
 	// Healing ends Dying.
 	await typeHp(o, 'Aria', '+4');
 	assert.equal((await creatures(o)).find(c => c.label === 'Aria').hp, 4);
-	assert.doesNotMatch(await card(o, 'Aria').locator('.conditions-row').textContent(), /Dying/);
+	assert.equal(await card(o, 'Aria').locator('.nimble-card-dying').count(), 0);
 	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-tracker-damage.png') });
 });
 
 test('conditions: add from picker, Escape closes it, remove with ×', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
-	const row = card(o, 'Goblin-1');
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
+	const row = await onCard(o, 'Goblin');
 	await row.locator('.add-condition-btn').click();
-	await o.page.locator('.condition-picker .condition-option', { hasText: exact('Prone') }).click();
+	await pickOption(o, 'Prone').click();
 	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Prone' }]);
 	assert.equal(await o.page.locator('.condition-picker').count(), 0);
 	await row.locator('.add-condition-btn').click();
 	assert.equal(await o.page.locator('.condition-picker').count(), 1);
-	assert.equal(await o.page.locator('.condition-picker .condition-option.is-applied', { hasText: exact('Prone') }).count(), 1);
+	assert.equal(await o.page.locator('.condition-picker .condition-option.is-applied[aria-label="Prone"]').count(), 1);
+	// Each row says what the condition does, in a line.
+	assert.match(await pickOption(o, 'Prone').locator('.condition-option-text small').textContent(), /\w/);
 	// The search box has focus, and typing filters the list.
 	await o.waitFor(() => o.page.evaluate(() => document.activeElement?.classList.contains('condition-search')), { timeout: 2000, what: 'condition search to take focus' });
 	await o.page.keyboard.type('fri');
-	assert.deepEqual(await o.page.locator('.condition-picker .condition-option').allTextContents(), ['Frightened']);
+	assert.deepEqual(await o.page.locator('.condition-picker .condition-option-name').allTextContents(), ['Frightened']);
 	await o.page.keyboard.press('Escape');
 	assert.equal(await o.page.locator('.condition-picker').count(), 0);
 	await row.locator('.condition-tag', { hasText: 'Prone' }).locator('.remove-condition').click();
@@ -1460,26 +1571,27 @@ test('conditions: add from picker, Escape closes it, remove with ×', async (o) 
 
 test('conditions: durations count down at end of turn, X values, chip editor', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
-	const row = card(o, 'Goblin-1');
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
+	let row = await onCard(o, 'Goblin');
 
 	// Dazed for 1 round.
 	await row.locator('.add-condition-btn').click();
 	await o.page.locator('.condition-picker .nimble-segmented button', { hasText: '1 rd' }).click();
 	assert.equal(await o.page.locator('.condition-picker .nimble-segmented button.is-active').textContent(), '1 rd');
-	await o.page.locator('.condition-picker .condition-option', { hasText: exact('Dazed') }).click();
+	await pickOption(o, 'Dazed').click();
 	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Dazed', rounds: 1 }]);
 	const dazed = row.locator('.condition-tag', { hasText: 'Dazed' });
 	assert.equal(await dazed.locator('.condition-rounds').textContent(), '1');
 	// Ending the goblin's turn wears it off.
-	await row.locator('.turn-toggle').click();
+	await creatureMenu(o, 'Goblin', 'Mark turn done');
 	assert.deepEqual((await creatures(o))[0].conditions, []);
 	assert.equal(await row.locator('.condition-tag:not(.auto-condition)').count(), 0);
-	assert.ok((await notices(o)).some(n => /Goblin-1: Dazed wore off/.test(n)));
+	assert.ok((await notices(o)).some(n => /^Goblin: Dazed wore off/.test(n)));
 
 	// Empowered asks for X.
+	row = await onCard(o, 'Goblin');
 	await row.locator('.add-condition-btn').click();
-	await o.page.locator('.condition-picker .condition-option', { hasText: exact('Empowered') }).click();
+	await pickOption(o, 'Empowered').click();
 	assert.equal(await o.page.locator('.condition-picker .condition-value-row').isVisible(), true);
 	assert.match(await o.page.locator('.condition-picker .condition-value-row').textContent(), /Empowered X =/);
 	assert.deepEqual((await creatures(o))[0].conditions, []);
@@ -1493,8 +1605,13 @@ test('conditions: durations count down at end of turn, X values, chip editor', a
 	const editor = o.page.locator('.nimble-popover.condition-editor');
 	await editor.waitFor({ timeout: 2000 });
 	assert.equal(await editor.locator('.popover-title').textContent(), 'Empowered 2');
-	await editor.locator('button', { hasText: '3 rds' }).click();
+	// Lasts: Rounds, then up to 3 (each change applies as it's made).
+	await editor.locator('.ev-cond-lasts button', { hasText: 'Rounds' }).click();
+	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Empowered', value: 2, rounds: 1 }]);
+	await editor.locator('.ev-stepper button[aria-label="More rounds"]').click();
+	await editor.locator('.ev-stepper button[aria-label="More rounds"]').click();
 	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Empowered', value: 2, rounds: 3 }]);
+	await o.page.keyboard.press('Escape');
 	await row.locator('.condition-tag', { hasText: 'Empowered' }).click();
 	await o.page.locator('.nimble-popover.condition-editor button', { hasText: exact('4') }).click();
 	assert.deepEqual((await creatures(o))[0].conditions, [{ name: 'Empowered', value: 4, rounds: 3 }]);
@@ -1509,12 +1626,14 @@ test('conditions: durations count down at end of turn, X values, chip editor', a
 test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (o) => {
 	await resetEncounter(o, { party: PARTY });
 	await o.eval((app, plugin) => {
-		plugin.encounters.addParty();
-		plugin.addToEncounter(plugin.index.get('Krogg, Goblin King').monster);
+		plugin.runtime('nimble').encounters.addParty();
+		plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Krogg, Goblin King').monster);
 	});
 	await o.page.waitForTimeout(150);
-	const label = 'Krogg, Goblin King-1';
-	const row = card(o, label);
+	// Saved as Krogg, Goblin King-1, shown without the number while he's the only one.
+	const saved = 'Krogg, Goblin King-1';
+	const label = 'Krogg, Goblin King';
+	const row = await onCard(o, label);
 	assert.equal(await row.locator('.hp-display').textContent(), '90/90');
 	assert.match(await row.locator('.legendary-line').textContent(), /Bloodied at 45/);
 
@@ -1524,7 +1643,7 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 	assert.equal(await bloodied.locator('.prompt-title').textContent(), `${label} is Bloodied`);
 	assert.match(await bloodied.locator('.prompt-text').textContent(), /damage increases to 2d8\+2/);
 	assert.equal(await bloodied.locator('.nimble-dice').count(), 1);
-	assert.equal(await row.locator('.legendary-line .phase-chip.is-on').textContent(), 'Bloodied');
+	assert.equal(await row.locator('.nimble-phase-chip.is-on').textContent(), 'Bloodied');
 	assert.equal(await notices(o).then(n => n.filter(t => /Bloodied/.test(t)).length), 0, 'Bloodied is a tracker prompt, not a Notice');
 
 	// To 0: Last Stand prompt; Apply gives the final damage pool and Medium armor.
@@ -1538,38 +1657,38 @@ test('legendary: Bloodied and Last Stand prompts, acts after each hero', async (
 	assert.ok(!(await row.evaluate(el => el.classList.contains('is-down'))));
 	await o.page.screenshot({ path: join(ARTIFACTS, 'showcase-tracker-solo.png') });
 	await last.locator('.prompt-action', { hasText: 'Apply: 20 more damage to finish' }).click();
-	let krogg = (await creatures(o)).find(c => c.label === label);
+	let krogg = (await creatures(o)).find(c => c.label === saved);
 	assert.equal(krogg.hp, 20);
 	assert.equal(krogg.armor, 'medium');
 	assert.equal(krogg.lastStand, true);
 	assert.equal(await last.count(), 0);
 	assert.equal(await row.locator('.laststand-btn').count(), 0);
-	assert.equal(await row.locator('.phase-chip.laststand.is-on').textContent(), 'Last Stand');
-	assert.match(await row.locator('.creature-meta .armor-chip').textContent(), /Medium/);
+	assert.equal(await row.locator('.nimble-phase-chip.is-on').textContent(), 'Last Stand');
+	assert.equal(await row.locator('.creature-meta .armor-chip.armor-medium').count(), 1);
 	// His new armor applies.
 	await typeHp(o, label, '15');
-	krogg = (await creatures(o)).find(c => c.label === label);
+	krogg = (await creatures(o)).find(c => c.label === saved);
 	assert.equal(krogg.hp, 15);
 
 });
 
 test('rename, round counter, clear all', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
-	await creatureMenu(o, 'Goblin-1', 'Rename');
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
+	await creatureMenu(o, 'Goblin', 'Rename');
 	await o.page.locator(`${T} .label-edit-input`).waitFor({ timeout: 2000 });
 	await o.page.keyboard.press('Meta+A');
 	await o.page.keyboard.type('Sneaky Pete');
 	await o.page.keyboard.press('Enter');
 	assert.equal((await creatures(o))[0].label, 'Sneaky Pete');
 
-	assert.equal(await o.page.locator(`${T} .round-label`).count(), 0, 'no round counter until combat starts');
+	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Setting up', 'no round until combat starts');
 	await o.page.locator(`${T} .round-action`).click();
-	const up = o.page.locator(`${T} .round-btn[aria-label="Round up"]`);
-	await up.click();
-	await up.click();
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:next-round'));
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:next-round'));
 	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Round 3');
-	await o.page.locator(`${T} .round-btn[aria-label="Previous round"]`).click();
+	await o.page.locator(`${T} .tracker-more`).click();
+	await o.page.locator('.menu .menu-item', { hasText: 'Back to round 2' }).click();
 	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Round 2');
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:next-round'));
 	assert.equal(await o.page.locator(`${T} .round-label`).textContent(), 'Round 3');
@@ -1581,21 +1700,24 @@ test('rename, round counter, clear all', async (o) => {
 	await o.page.waitForTimeout(150);
 	assert.equal((await creatures(o)).length, 0);
 	assert.equal(await o.page.locator(`${T} .round-label`).count(), 0, 'back to setup');
-	assert.equal(await o.page.locator(`${T} .round-action`).textContent(), 'Start combat');
+	assert.match(await o.page.locator(`${T} .empty-message`).textContent(), /No one here yet/);
 });
 
 test('creature menu: view stat block, duplicate, add note', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md'));
-	await creatureMenu(o, 'Goblin Boss-1', 'View stat block');
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md'));
+	await creatureMenu(o, 'Goblin Boss', 'View stat block');
 	const Q = '.modal.nimble-record-modal';
-	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss-1');
+	// The only Goblin Boss: shown without its number.
+	assert.equal(await o.page.locator(`${Q} .record-title`).textContent(), 'Goblin Boss');
 	assert.equal(await o.page.locator(`${Q} .nimble-statblock .monster-name`).textContent(), 'Goblin Boss');
 	await o.page.keyboard.press('Escape');
 	assert.equal(await o.page.locator(Q).count(), 0);
 
-	await creatureMenu(o, 'Goblin Boss-1', 'Duplicate');
+	await creatureMenu(o, 'Goblin Boss', 'Duplicate');
 	assert.deepEqual((await creatures(o)).map(c => c.label), ['Goblin Boss-1', 'Goblin Boss-2']);
+	// Two of them now: both numbered.
+	assert.equal(await card(o, 'Goblin Boss-1').count(), 1);
 
 	// A real Obsidian modal (window.prompt doesn't exist in Electron).
 	await creatureMenu(o, 'Goblin Boss-2', 'Add note');
@@ -1941,7 +2063,7 @@ test('multiple encounters: create and switch', async (o) => {
 		plugin.settings.multipleEncounters = true;
 		plugin.settings.encounters = [];
 		plugin.settings.activeEncounterId = null;
-		plugin.encounters.trigger('changed');
+		plugin.runtime('nimble').encounters.trigger('changed');
 	});
 	assert.match(await o.page.locator(`${T} .empty-message`).textContent(), /Create or select an encounter/);
 	await o.page.locator(`${T} .encounter-picker [aria-label="New encounter"]`).click();
@@ -1952,7 +2074,7 @@ test('multiple encounters: create and switch', async (o) => {
 	await o.page.keyboard.type('Ambush');
 	await o.page.keyboard.press('Enter');
 	assert.equal((await encounter(o)).name, 'Ambush');
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
 	await o.page.locator(`${T} .encounter-picker [aria-label="New encounter"]`).click();
 	assert.equal((await encounter(o)).name, 'Encounter 2');
 	assert.equal((await creatures(o)).length, 0);
@@ -1965,8 +2087,8 @@ test('multiple encounters: create and switch', async (o) => {
 
 test('encounter state is saved to disk', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
-	await o.eval((app, plugin) => plugin.encounters.addCondition(plugin.encounters.active.id, plugin.encounters.active.creatures[0].id, 'Dazed', { rounds: 2 }));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').encounters.addCondition(plugin.runtime('nimble').encounters.active.id, plugin.runtime('nimble').encounters.active.creatures[0].id, 'Dazed', { rounds: 2 }));
 	await o.page.waitForTimeout(300);
 	const saved = await o.eval((app, plugin) => plugin.loadData());
 	assert.equal(saved.encounters[0].creatures[0].label, 'Goblin-1');
@@ -2094,12 +2216,12 @@ test('nimble attack rolls: 1 misses, max crits and explodes, saves stay plain', 
 test('stat blocks indented under a list item are indexed', async (o) => {
 	await o.openFile('Camp.md');
 	await o.waitFor(() => o.page.evaluate((R) => !!document.querySelector(`${R} .nimble-inline-found`), R), { timeout: 5000, what: 'Camp Guard ref to resolve' });
-	assert.equal(await o.eval((app, plugin) => plugin.index.get('Camp Guard')?.monster.hp), 14);
+	assert.equal(await o.eval((app, plugin) => plugin.runtime('nimble').index.get('Camp Guard')?.monster.hp), 14);
 });
 
 test('cancelling HP entry does not swallow the next click', async (o) => {
 	await resetEncounter(o);
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster, undefined, 2));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster, undefined, 2));
 	await card(o, 'Goblin-1').locator('.hp-display').click();
 	assert.equal(await o.page.locator('.nimble-hp-pad').count(), 1);
 	// Click straight from one HP box to the next one.
@@ -2115,12 +2237,53 @@ test('adding reveals the tracker even when the sidebar is collapsed', async (o) 
 		app.workspace.getLeavesOfType('nimble-encounter-tracker').forEach(l => l.detach());
 		app.workspace.rightSplit.collapse();
 	});
-	await o.eval((app, plugin) => plugin.addToEncounter(plugin.index.get('Goblin').monster));
+	await o.eval((app, plugin) => plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin').monster));
 	await o.page.waitForTimeout(300);
 	assert.ok(await o.eval((app) => {
 		const leaf = app.workspace.getLeavesOfType('nimble-encounter-tracker')[0];
 		return !!leaf && leaf.view.containerEl.isShown() && !app.workspace.rightSplit.collapsed;
 	}));
+});
+
+test('tracker: the ribbon opens it as a page in a tab; its menu opens it in a tab or the sidebar', async (o) => {
+	const p = o.page;
+	const TYPE = 'nimble-encounter-tracker';
+	// Where each open tracker is: 'tab' (the main area) or 'side'.
+	const where = () => o.eval((app, _p, TYPE) => app.workspace.getLeavesOfType(TYPE).map(l => [app.workspace.leftSplit, app.workspace.rightSplit].includes(l.getRoot()) ? 'side' : 'tab').sort(), TYPE);
+	const TAB = `.workspace-split.mod-root .workspace-leaf-content[data-type="${TYPE}"]`;
+	const SIDE = `.mod-right-split .workspace-leaf-content[data-type="${TYPE}"]`;
+	const menuItems = async (root) => { await p.locator(`${root} .tracker-more`).click(); const items = await p.locator('.menu .menu-item-title').allInnerTexts(); return items; };
+	try {
+		await o.eval((app, _p, TYPE) => app.workspace.getLeavesOfType(TYPE).forEach(l => l.detach()), TYPE);
+		// The ribbon: a page in the main area.
+		await p.locator('.side-dock-ribbon-action[aria-label="Encounter tracker"]').click();
+		await p.locator(TAB).waitFor();
+		assert.deepEqual(await where(), ['tab']);
+		assert.equal(await o.eval((app, _p, TYPE) => app.workspace.getActiveViewOfType ? app.workspace.activeLeaf?.view.getViewType() : null, TYPE), TYPE, 'the tab is in front');
+		// Its menu offers the sidebar; that opens a second tracker beside your notes, showing the same fight.
+		const tabItems = await menuItems(TAB);
+		assert.ok(tabItems.includes('Open in the sidebar') && !tabItems.includes('Open in a tab'), `the tab's menu: ${tabItems.join(', ')}`);
+		await p.locator('.menu .menu-item', { hasText: 'Open in the sidebar' }).click();
+		await p.locator(SIDE).waitFor();
+		assert.deepEqual(await where(), ['side', 'tab']);
+		// The sidebar's menu offers a tab, and goes back to the one that's open rather than making another; so does the ribbon.
+		const sideItems = await menuItems(SIDE);
+		assert.ok(sideItems.includes('Open in a tab') && !sideItems.includes('Open in the sidebar'), `the sidebar's menu: ${sideItems.join(', ')}`);
+		await p.locator('.menu .menu-item', { hasText: 'Open in a tab' }).click();
+		await p.waitForTimeout(300);
+		assert.deepEqual(await where(), ['side', 'tab'], 'no second tab');
+		await p.locator('.side-dock-ribbon-action[aria-label="Encounter tracker"]').click();
+		await p.waitForTimeout(300);
+		assert.deepEqual(await where(), ['side', 'tab'], 'the ribbon brings back the tab');
+		assert.equal(await o.eval((app, _p, TYPE) => app.workspace.getLeavesOfType(TYPE).find(l => l.getRoot() === app.workspace.rootSplit) === app.workspace.activeLeaf, TYPE), true);
+		// The page draws the tracker at the main area's width.
+		assert.ok(await p.locator(`${TAB} .tracker-more`).isVisible());
+		assert.ok((await p.locator(TAB).boundingBox()).width > 600, 'a page, not a sidebar');
+	} finally {
+		// Leave one tracker, in the sidebar, as the other tests expect.
+		await o.eval((app, _p, TYPE) => app.workspace.getLeavesOfType(TYPE).filter(l => l.getRoot() === app.workspace.rootSplit).forEach(l => l.detach()), TYPE);
+		await o.eval((app, plugin) => plugin.openTracker('side'));
+	}
 });
 
 test('compact style and dice toggle apply to open notes', async (o) => {
@@ -2147,14 +2310,21 @@ test('settings tab: party editor, toggles and attribution', async (o) => {
 	}, { timeout: 5000, what: 'the settings tab' });
 	try {
 		const names = await sp.locator(`${C} .setting-item-name`).allTextContents();
-		for (const n of ['Include the Nimble bestiary', 'Nimble slash commands', 'Party', 'Stat block style', 'Clickable dice', 'Nimble attack rolls', 'Multiple encounters',
+		for (const n of ['Include the Nimble bestiary', 'Slash commands', 'Party', 'Stat block style', 'Clickable dice', 'Nimble attack rolls', 'Multiple encounters',
 			'Apply monster armor automatically', 'Minion overkill', 'Custom conditions']) assert.ok(names.includes(n), `missing setting ${n}`);
+		// The shared settings come first, then each game's own sections (from the game, not the plugin).
+		const at = (n) => names.indexOf(n);
+		assert.ok(at('Keep the screen on during combat') < at('Include the Nimble bestiary'), `order: ${names.join(' | ')}`);
+		assert.ok(at('Minion overkill') < at('Custom conditions'), `order: ${names.join(' | ')}`);
 
 		// Attribution and the link to buy the books.
 		const notice = sp.locator(`${C} .nimble-notice`).first();
 		assert.match(await notice.textContent(), /Nimble 3rd Party Creator License/);
 		const link = notice.locator('a', { hasText: 'nimbleRPG.com' });
 		assert.equal(await link.getAttribute('href'), 'https://nimbleRPG.com');
+		assert.match(await notice.textContent(), /books at nimbleRPG\.com\./, 'the store name in the notice is the link, not repeated');
+		// Every game's attribution.
+		assert.match(await sp.locator(`${C} .nimble-notice`).allTextContents().then(t => t.join(' ')), /SRD/);
 
 		// Party editor: one row per hero, with their values.
 		const rows = sp.locator(`${C} .nimble-party-row`);
@@ -2178,15 +2348,15 @@ test('settings tab: party editor, toggles and attribution', async (o) => {
 		// Toggling the bundled bestiary from settings empties and refills the index.
 		const toggle = sp.locator(`${C} .setting-item`, { hasText: 'Include the Nimble bestiary' }).locator('.checkbox-container');
 		await toggle.click();
-		await o.waitFor(() => o.eval((app, plugin) => plugin.index.bundledCount === 0 && !plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to unload' });
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.bundledCount === 0 && !plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to unload' });
 		await toggle.click();
-		await o.waitFor(() => o.eval((app, plugin) => plugin.index.bundledCount >= 500 && plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to reload' });
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.bundledCount >= 500 && plugin.settings.bundledBestiary), { timeout: 3000, what: 'bestiary to reload' });
 	} finally {
-		await o.eval((app, plugin) => { app.setting.close(); plugin.settings.party = []; if (!plugin.settings.bundledBestiary) { plugin.settings.bundledBestiary = true; plugin.loadBundledBestiary(); } });
+		await o.eval((app, plugin) => { app.setting.close(); plugin.settings.party = []; if (!plugin.settings.bundledBestiary) { plugin.settings.bundledBestiary = true; plugin.runtime('nimble').loadBundledBestiary(); } });
 	}
 });
 
-test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice and adds to the encounter', async (o) => {
+test('Omnisearch: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice and adds to the encounter', async (o) => {
 	await resetEncounter(o);
 	await o.eval(async (app) => {
 		for (const f of ['Spot NPC.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
@@ -2195,7 +2365,7 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	});
 	await o.openFile('Adventure.md', 'source');
 	await o.waitFor(() => o.eval((app, plugin) => plugin.campaigns.npcs.some(n => n.name === 'Spot NPC')), { what: 'the NPC to be indexed' });
-	const S = '.modal-container .prompt.nimble-spotlight';
+	const S = '.modal-container .prompt.nimble-omnisearch';
 	const input = o.page.locator(`${S} .prompt-input`);
 	const rows = o.page.locator(`${S} .suggestion-item:not(.is-filter)`);
 	const names = () => o.page.locator(`${S} .suggestion-item:not(.is-filter) .nimble-spot-name`).allInnerTexts();
@@ -2220,17 +2390,17 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getValue().includes('[]()')), false, 'no Markdown link was inserted');
 	// The same key closes it.
 	await pressK();
-	await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: 'Spotlight to close' });
+	await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: 'Omnisearch to close' });
 
 	// Adversaries: Enter is a quick look.
 	await openIt();
 	await input.fill('goblin');
 	await o.waitFor(async () => (await names())[0] === 'Goblin', { what: 'Goblin first' });
 	assert.match(await rows.first().innerText(), /Adversary/i);
-	await o.page.screenshot({ path: join(ARTIFACTS, 'spotlight-search.png') });
+	await o.page.screenshot({ path: join(ARTIFACTS, 'omnisearch-search.png') });
 	await o.page.keyboard.press('Enter');
 	await o.page.locator('.modal.nimble-record-modal').waitFor();
-	// Escape out of the quick look comes back to Spotlight, still searching.
+	// Escape out of the quick look comes back to Omnisearch, still searching.
 	await o.page.keyboard.press('Escape');
 	await input.waitFor();
 
@@ -2252,9 +2422,9 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await input.fill('2d6+3');
 	await o.waitFor(async () => (await names())[0] === 'Roll 2d6+3', { what: 'the roll row' });
 	await o.page.keyboard.press('Meta+Enter');
-	await o.waitFor(async () => /2d6\+3 → \d+/.test(await o.page.locator(`${S} .nimble-spotlight-result`).innerText().catch(() => '')), { what: 'the result in the box' });
-	await o.page.locator(`${S} .nimble-spotlight-die`, { hasText: exact('d20') }).click();
-	await o.waitFor(async () => /1d20 → \d+/.test(await o.page.locator(`${S} .nimble-spotlight-result`).innerText()), { what: 'the d20 result' });
+	await o.waitFor(async () => /2d6\+3 → \d+/.test(await o.page.locator(`${S} .nimble-omnisearch-result`).innerText().catch(() => '')), { what: 'the result in the box' });
+	await o.page.locator(`${S} .nimble-omnisearch-die`, { hasText: exact('d20') }).click();
+	await o.waitFor(async () => /1d20 → \d+/.test(await o.page.locator(`${S} .nimble-omnisearch-result`).innerText()), { what: 'the d20 result' });
 	await input.fill('d8');
 	await o.page.keyboard.press('Enter');
 	await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: 'Enter to roll and close' });
@@ -2268,7 +2438,7 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	await o.waitFor(async () => (await names())[0] === 'Spot NPC', { what: 'the NPC by alias' });
 	await o.page.keyboard.press('Enter');
 	await o.page.locator('.modal.nimble-record-modal').waitFor();
-	// Escape out of the quick look comes back to Spotlight.
+	// Escape out of the quick look comes back to Omnisearch.
 	await o.page.keyboard.press('Escape');
 	await input.waitFor();
 	await input.fill('> open compendium');
@@ -2288,81 +2458,81 @@ test('Spotlight: Cmd/Ctrl+K searches adversaries, NPCs and commands, rolls dice 
 	// The key itself, wherever the focus is: an editor, a note in reading view, a sidebar panel.
 	const keyOpens = async (where) => {
 		await o.page.keyboard.press('Meta+k');
-		await input.waitFor({ timeout: 5000 }).catch(() => { throw new Error(`Cmd+K did not open Spotlight with focus in ${where}`); });
+		await input.waitFor({ timeout: 5000 }).catch(() => { throw new Error(`Cmd+K did not open Omnisearch with focus in ${where}`); });
 		await o.page.waitForTimeout(350); // a person doesn't press it again within a fifth of a second
 		await o.page.keyboard.press('Meta+k');
-		await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: `Cmd+K to close Spotlight (${where})` });
+		await o.waitFor(async () => (await o.page.locator(S).count()) === 0, { what: `Cmd+K to close Omnisearch (${where})` });
 	};
 	await keyOpens('the editor');
 	await o.openFile('Adventure.md', 'preview');
 	await o.page.locator(`${R} h1, ${R} p`).first().click();
 	await keyOpens('reading view');
-	await o.eval(async (app, plugin) => { await plugin.activateEncounterView(); });
+	await o.eval(async (app, plugin) => { await plugin.runtime('nimble').activateEncounterView(); });
 	await o.page.locator(`${T}`).first().click({ position: { x: 5, y: 5 } });
 	await keyOpens('the tracker sidebar');
 	await openIt();
-	await o.page.screenshot({ path: join(ARTIFACTS, 'spotlight.png') });
+	await o.page.screenshot({ path: join(ARTIFACTS, 'omnisearch.png') });
 	await o.page.keyboard.press('Escape');
-	// Spotlight's own command works whatever the setting, and outside an editor.
+	// Omnisearch's own command works whatever the setting, and outside an editor.
 	await o.eval((app, plugin) => { plugin.settings.spotlightKey = false; app.commands.executeCommandById('nimble-gm:spotlight'); });
 	await input.waitFor();
 	await o.page.keyboard.press('Escape');
 	await o.eval(async (app) => { const x = app.vault.getAbstractFileByPath('Spot NPC.md'); if (x) await app.vault.delete(x); });
 });
 
-test('Spotlight: Escape in a card or quick look opened from it comes back to Spotlight with the same search', async (o) => {
+test('Omnisearch: Escape in a card or quick look opened from it comes back to Omnisearch with the same search', async (o) => {
 	const open = async (q) => {
 		await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
-		await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+		await o.page.waitForSelector('.nimble-omnisearch .prompt-input');
 		await o.page.keyboard.type(q);
 		await o.page.waitForTimeout(300);
 	};
-	const spotlight = () => o.page.evaluate(() => document.querySelector('.nimble-spotlight .prompt-input')?.value ?? null);
-	// A spell's card: Escape → back to Spotlight, still searching "flame dart".
+	const omnisearch = () => o.page.evaluate(() => document.querySelector('.nimble-omnisearch .prompt-input')?.value ?? null);
+	// A spell's card: Escape → back to Omnisearch, still searching "flame dart".
 	await open('flame dart');
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForSelector('.modal.nimble-cmp-modal');
-	assert.equal(await spotlight(), null, 'Spotlight closed while the card is up');
+	assert.equal(await omnisearch(), null, 'Omnisearch closed while the card is up');
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await spotlight()) === 'flame dart', { timeout: 3000, what: 'Spotlight back with the search' });
+	await o.waitFor(async () => (await omnisearch()) === 'flame dart', { timeout: 3000, what: 'Omnisearch back with the search' });
 	assert.equal(await o.page.locator('.modal.nimble-cmp-modal').count(), 0);
-	// Closing the card with its × doesn't bring Spotlight back.
+	// Closing the card with its × doesn't bring Omnisearch back.
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForSelector('.modal.nimble-cmp-modal');
 	await o.page.locator('.modal.nimble-cmp-modal .modal-close-button').click();
 	await o.page.waitForTimeout(300);
-	assert.equal(await spotlight(), null, 'no Spotlight after closing with ×');
+	assert.equal(await omnisearch(), null, 'no Omnisearch after closing with ×');
 	// A monster's quick look works the same way.
 	await open('krogg');
 	await o.page.keyboard.press('Enter');
 	await o.page.waitForSelector('.modal.nimble-record-modal');
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await spotlight()) === 'krogg', { timeout: 3000, what: 'Spotlight back after the quick look' });
+	await o.waitFor(async () => (await omnisearch()) === 'krogg', { timeout: 3000, what: 'Omnisearch back after the quick look' });
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await spotlight()) === null, { timeout: 2000, what: 'Spotlight closed' });
+	await o.waitFor(async () => (await omnisearch()) === null, { timeout: 2000, what: 'Omnisearch closed' });
 });
 
-test('Spotlight and the compendium forgive typos: "zombieq" still finds Zombie', async (o) => {
+test('Omnisearch and the compendium forgive typos: "zombieq" still finds Zombie', async (o) => {
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
-	await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+	await o.page.waitForSelector('.nimble-omnisearch .prompt-input');
 	await o.page.keyboard.type('zombieq');
-	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-spotlight .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in Spotlight' });
+	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-omnisearch .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in Omnisearch' });
 	await o.page.keyboard.press('Escape');
 	// A real name match beats typo matches of anything else: "compen" is Open compendium, not monsters in a Companions group.
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
-	await o.page.waitForSelector('.nimble-spotlight .prompt-input');
+	await o.page.waitForSelector('.nimble-omnisearch .prompt-input');
 	await o.page.keyboard.type('compen');
-	await o.waitFor(async () => (await o.page.locator('.nimble-spotlight .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) === 'Open compendium', { timeout: 3000, what: 'Open compendium first for "compen"' });
-	assert.equal(await o.page.locator('.nimble-spotlight .suggestion-item.spot-monster').count(), 0, 'no typo-matched monsters beside a real match');
+	await o.waitFor(async () => (await o.page.locator('.nimble-omnisearch .suggestion-item .nimble-spot-name').first().textContent().catch(() => '')) === 'Open compendium', { timeout: 3000, what: 'Open compendium first for "compen"' });
+	assert.equal(await o.page.locator('.nimble-omnisearch .suggestion-item.spot-monster').count(), 0, 'no typo-matched monsters beside a real match');
 	await o.page.keyboard.press('Escape');
-	await o.eval((app, plugin) => plugin.openCompendium('adversaries', 'zombieq'));
+	await o.eval((app, plugin) => plugin.runtime('nimble').openCompendium('adversaries', 'zombieq'));
 	await o.waitFor(async () => /^Zombie/.test((await o.page.locator('.nimble-compendium .nimble-cmpx-row[data-id] .nimble-cmpx-row-name > span:first-child').first().textContent().catch(() => '')) ?? ''), { timeout: 3000, what: 'Zombie for "zombieq" in the compendium' });
 	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
 });
 
 test('compendium: after picking a row, typing a filter key starts on its suggestions, and Enter makes a chip and clears the text', async (o) => {
 	const C = '.nimble-compendium';
-	await o.eval((app, plugin) => plugin.openCompendium('adversaries', 'type:undead '));
+	await o.eval((app, plugin) => plugin.runtime('nimble').openCompendium('adversaries', 'type:undead '));
 	const input = o.page.locator(`${C} .nimble-cmpx-input`);
 	await o.waitFor(async () => (await o.page.locator(`${C} .nimble-cmpx-chip`).count()) === 1, { timeout: 3000, what: 'the Undead chip' });
 	assert.match(await o.page.locator(`${C} .nimble-cmpx-chip`).first().textContent(), /undead/i);
@@ -2383,15 +2553,15 @@ test('compendium: after picking a row, typing a filter key starts on its suggest
 	await o.eval((app) => app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()));
 });
 
-test('Spotlight: filters work right in Spotlight (chips, suggestions, filtered results), and the lookup row takes them to the compendium', async (o) => {
+test('Omnisearch: filters work right in Omnisearch (chips, suggestions, filtered results), and the lookup row takes them to the compendium', async (o) => {
 	await resetEncounter(o);
-	const S = '.modal-container .prompt.nimble-spotlight';
+	const S = '.modal-container .prompt.nimble-omnisearch';
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
 	const input = o.page.locator(`${S} .prompt-input`);
 	await input.waitFor();
-	// A finished filter becomes a chip in Spotlight's own box; the results are compendium entries that match.
+	// A finished filter becomes a chip in Omnisearch's own box; the results are compendium entries that match.
 	await input.fill('school:fire ');
-	await o.waitFor(async () => (await cmpChips(o, S)).length === 1, { timeout: 3000, what: 'the School chip in Spotlight' });
+	await o.waitFor(async () => (await cmpChips(o, S)).length === 1, { timeout: 3000, what: 'the School chip in Omnisearch' });
 	assert.deepEqual(await cmpChips(o, S), [['School', 'fire']]);
 	assert.equal(await input.inputValue(), '');
 	const rows = o.page.locator(`${S} .suggestion-item`);
@@ -2421,7 +2591,7 @@ test('Spotlight: filters work right in Spotlight (chips, suggestions, filtered r
 	assert.ok(names.includes('Flame Dart'), `fire cantrips listed: ${names.slice(0, 5)}`);
 	await o.page.keyboard.press('Escape');
 	await o.waitFor(async () => (await o.page.locator(M).count()) === 0, { what: 'the dialog to close' });
-	// Escape from the compendium opened from Spotlight comes back to Spotlight; close that too.
+	// Escape from the compendium opened from Omnisearch comes back to Omnisearch; close that too.
 	await input.waitFor();
 	await o.page.keyboard.press('Escape');
 });
@@ -2448,8 +2618,8 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 
 		// HP pad: tap the HP, key in 15, Damage. Medium armor takes 10 off.
 		await o.eval(async (app, plugin) => {
-			await plugin.activateEncounterView(true);
-			await plugin.addToEncounter(plugin.index.get('Goblin Taskmaster').monster, undefined, 1);
+			await plugin.runtime('nimble').activateEncounterView(true);
+			await plugin.runtime('nimble').addToEncounter(plugin.runtime('nimble').index.get('Goblin Taskmaster').monster, undefined, 1);
 		});
 		await p.waitForTimeout(400);
 		const before = (await creatures(o)).find(c => c.label.startsWith('Goblin Taskmaster'));
@@ -2462,13 +2632,14 @@ test('phone: touch HP pad, bottom sheets, narrow bestiary, pinch-zoom map', asyn
 		const after = (await creatures(o)).find(c => c.label.startsWith('Goblin Taskmaster'));
 		assert.equal(after.hp, before.hp - 5);
 
-		// Status picker is a bottom sheet.
-		await tap(p.locator(`${T} .creature-item`).filter({ hasText: 'Goblin Taskmaster' }).locator('.add-condition-btn'));
+		// The condition picker is a bottom sheet: tap the row to put it on the card, then its condition button.
+		await tap(p.locator(`${T} .creature-item`).filter({ hasText: 'Goblin Taskmaster' }).locator('.creature-label'));
+		await tap(p.locator(`${T} .ev-card.creature-item`).filter({ hasText: 'Goblin Taskmaster' }).locator('.add-condition-btn'));
 		assert.equal(await p.locator('.nimble-popover.is-sheet').count(), 1, 'popover is a sheet on phones');
 		await p.evaluate(() => document.querySelectorAll('.nimble-popover').forEach(n => n.remove()));
 
 		// Narrow compendium: list → monster → back; filters behind a toggle.
-		await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
+		await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
 		await p.waitForTimeout(500);
 		const layout = p.locator('.nimble-compendium .nimble-cmpx-layout');
 		assert.match(await layout.getAttribute('class'), /is-narrow/);
@@ -2654,6 +2825,22 @@ const cgroup = (o, folder) => o.page.locator(`${CP} .campaign-group[data-folder=
 const crow = (o, path) => o.page.locator(`${CP} .campaign-note[data-path="${path}"]`);
 const menuTitles = (o) => o.page.evaluate(() => [...document.querySelectorAll('.menu .menu-item-title')].map(e => e.textContent));
 const clickMenu = (o, title) => o.page.locator('.menu .menu-item', { hasText: exact(title) }).click();
+/** The 5e tracker's condition picker: the row's +, then the condition. */
+const pickCondition5e = async (o, row, name) => {
+	// The card has its condition button; a row in the queue has it in its menu (right-click, long-press).
+	const btn = row.locator('.ev-card-condition');
+	if (await btn.count()) await btn.click();
+	else { await row.locator('.dnd5e-combatant-name').first().click({ button: 'right' }); await clickMenu(o, 'Add a condition…'); }
+	await o.page.locator(`.condition-picker .condition-option[aria-label="${name}"]`).click();
+};
+/** Type into the 5e tracker's HP keypad (the HP language: 7, 7r, +7, t7, =7) and apply. */
+const hpPad5e = async (o, row, keys) => {
+	await row.locator('.dnd5e-hp-text, .dnd5e-focus-hp-btn').first().click();
+	await o.page.locator('.nimble-hp-pad').waitFor();
+	await o.page.keyboard.type(keys);
+	await o.page.keyboard.press('Enter');
+	await o.page.locator('.nimble-hp-pad').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {});
+};
 const exists = (o, path) => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), path);
 const read = (o, path) => o.eval((app, _p, path) => app.vault.adapter.read(path), path);
 const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -2821,7 +3008,7 @@ test('New note picker: each starter writes its template where it was opened', as
 	await openPicker(o, 'Campaigns/Fresh/Monsters');
 	assert.equal(await activeStarter(o), 'monster');
 	await createFromPicker(o, 'Quarry Boss');
-	await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Quarry Boss')?.filePath === 'Campaigns/Fresh/Monsters/Quarry Boss.md'), { what: 'the monster in the index' });
+	await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Quarry Boss')?.filePath === 'Campaigns/Fresh/Monsters/Quarry Boss.md'), { what: 'the monster in the index' });
 
 	// Map: pick the image from the campaign's files.
 	await openPicker(o, 'Campaigns/Fresh/Factions');
@@ -3124,23 +3311,79 @@ test('campaign panel: chapter files and maps are listed, real titles are kept, m
 	await endCampaign(o, 'Fresh');
 });
 
-test('campaign panel: the search bar under the switcher opens Spotlight; the key hint follows the setting', async (o) => {
+test("app look: all of Obsidian wears the active campaign's game, and follows it; the setting turns it off", async (o) => {
+	const p = o.page;
+	const body = () => p.evaluate(() => [...document.body.classList].filter(c => c.startsWith('ev-theme-')));
+	// What the main area shows behind a note: the first painted background from its content up.
+	const bg = () => p.evaluate(() => {
+		for (let el = document.querySelector('.workspace-split.mod-root .view-content'); el; el = el.parentElement) {
+			const c = getComputedStyle(el).backgroundColor;
+			if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c;
+		}
+		return null;
+	});
+	const was = await o.eval((app, plugin) => plugin.campaigns.active?.folder ?? null);
+	try {
+		await o.eval(async (app, plugin) => {
+			for (const [name, system] of [['Look Nimble', 'nimble'], ['Look Coast', '5e']]) {
+				const old = app.vault.getAbstractFileByPath(`Campaigns/${name}`);
+				if (old) await app.vault.delete(old, true);
+				await plugin.campaigns.createCampaign({ name, level: 1, heroes: 4, starter: false, system, ...(system === '5e' ? { edition: '2024' } : {}) });
+			}
+		});
+		await o.waitFor(() => o.eval((app, plugin) => ['Look Nimble', 'Look Coast'].every(n => plugin.campaigns.campaigns.some(c => c.folder === `Campaigns/${n}`))), { what: 'both campaigns' });
+		// A Nimble campaign: the body wears Nimble, and notes sit on its page, not white.
+		await o.eval((app, plugin) => plugin.campaigns.setActive('Campaigns/Look Nimble'));
+		await o.waitFor(async () => (await body()).join() === 'ev-theme-nimble', { what: 'the Nimble look' });
+		assert.equal(await bg(), 'rgb(238, 235, 228)', "the main area on Nimble's page");
+		// A 5e campaign: it turns to 5e's parchment, its headings in small capitals.
+		await o.eval((app, plugin) => plugin.campaigns.setActive('Campaigns/Look Coast'));
+		await o.waitFor(async () => (await body()).join() === 'ev-theme-dnd5e', { what: 'the 5e look' });
+		assert.equal(await bg(), 'rgb(242, 235, 221)', "the main area on 5e's parchment");
+		assert.equal(await p.evaluate(() => getComputedStyle(document.body).getPropertyValue('--h1-variant').trim()), 'small-caps');
+		// At startup the active campaign is only known once the campaigns are indexed: that puts the look on too.
+		await p.evaluate(() => document.body.classList.remove('ev-theme-dnd5e'));
+		await o.eval((app, plugin) => plugin.campaigns.trigger('changed'));
+		assert.deepEqual(await body(), ['ev-theme-dnd5e'], 'the look comes back when the campaigns are indexed');
+		// Dark: the same game, its dark page.
+		await p.evaluate(() => { document.body.classList.add('theme-dark'); document.body.classList.remove('theme-light'); });
+		assert.equal(await bg(), 'rgb(23, 18, 14)', "5e's dark page");
+		await p.evaluate(() => { document.body.classList.remove('theme-dark'); document.body.classList.add('theme-light'); });
+		// Off: Obsidian as your theme draws it, at once.
+		await o.eval((app, plugin) => { plugin.settings.appLook = false; plugin.applyAppLook(); });
+		assert.deepEqual(await body(), []);
+		assert.notEqual(await bg(), 'rgb(242, 235, 221)');
+		await o.eval((app, plugin) => { plugin.settings.appLook = true; plugin.applyAppLook(); });
+		assert.deepEqual(await body(), ['ev-theme-dnd5e']);
+		// No active campaign: no game's look.
+		await o.eval((app, plugin) => plugin.campaigns.setActive(null));
+		await o.waitFor(async () => (await body()).length === 0, { what: 'no look without a campaign' });
+	} finally {
+		await o.eval(async (app, plugin, was) => {
+			plugin.settings.appLook = true;
+			for (const n of ['Look Nimble', 'Look Coast']) { const f = app.vault.getAbstractFileByPath(`Campaigns/${n}`); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(was);
+		}, was);
+	}
+});
+
+test('campaign panel: the search bar under the switcher opens Omnisearch; the key hint follows the setting', async (o) => {
 	await freshCampaign(o, 'Fresh');
 	const bar = o.page.locator(`${CP} .campaign-search`);
-	const SPOT = '.modal-container .prompt.nimble-spotlight';
+	const SPOT = '.modal-container .prompt.nimble-omnisearch';
 	assert.ok(await o.page.evaluate((cp) => document.querySelector(`${cp} .campaign-search`)?.previousElementSibling?.classList.contains('campaign-switcher'), CP), 'right under the switcher');
-	assert.equal(await bar.getAttribute('aria-label'), 'Search (opens Spotlight)');
+	assert.equal(await bar.getAttribute('aria-label'), 'Search (opens Omnisearch)');
 
 	await bar.click();
-	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Spotlight from the panel search bar' });
+	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Omnisearch from the panel search bar' });
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Spotlight to close' });
+	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Omnisearch to close' });
 	// Keyboard: focus and Enter.
 	await bar.focus();
 	await o.page.keyboard.press('Enter');
-	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Spotlight via Enter on the search bar' });
+	await o.waitFor(async () => (await o.page.locator(`${SPOT} .prompt-input`).count()) === 1, { what: 'Omnisearch via Enter on the search bar' });
 	await o.page.keyboard.press('Escape');
-	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Spotlight to close' });
+	await o.waitFor(async () => (await o.page.locator(SPOT).count()) === 0, { what: 'Omnisearch to close' });
 
 	// The key hint only shows when the shortcut is on.
 	const was = await o.eval((app, plugin) => plugin.settings.spotlightKey);
@@ -3698,7 +3941,7 @@ test('settings: a change synced from another device is picked up, and a damaged 
 		return good;
 	}, DATA);
 	assert.equal(await o.eval((app, plugin) => plugin.settings.party[0].name), 'Synced Hero', 'the synced party is in use');
-	await o.eval(async (app, plugin) => { plugin.encounters.trigger('changed'); await plugin.saveSettings(); });
+	await o.eval(async (app, plugin) => { plugin.runtime('nimble').encounters.trigger('changed'); await plugin.saveSettings(); });
 	assert.equal(JSON.parse(await read(o, DATA)).party[0].name, 'Synced Hero', 'and the next save keeps it');
 
 	// A file a sync conflict left unreadable: the plugin still loads, and the bad file is kept beside it.
@@ -3778,7 +4021,7 @@ test('player campaign: roster, lore cards, battle notes, GM tools hidden, switch
 		await o.waitFor(async () => /outcome: fled/.test(await read(o, 'Campaigns/Ironbrow Saga/Sessions/Session 1.md')), { what: 'outcome written' });
 
 		// The compendium's creatures are names and lore: no levels, no stats.
-		await o.eval((app, plugin) => plugin.openBestiary());
+		await o.eval((app, plugin) => plugin.runtime('nimble').openBestiary());
 		await o.waitFor(async () => (await o.page.locator('.nimble-compendium.is-lore .nimble-cmpx-row[data-id]').count()) > 0, { what: 'lore compendium' });
 		assert.equal(await o.page.locator('.nimble-compendium .nimble-cmpx-seg[data-segment="adversaries"] .nimble-cmpx-seg-label').textContent(), 'Creatures');
 		assert.equal(await o.page.locator('.nimble-compendium .nimble-cmpx-row-badge.is-level').count(), 0);
@@ -3877,14 +4120,15 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 				// The stat's name (its ▲ / ▼ badge is a child of the label).
 				adv: [...s.querySelectorAll('.ns-stat.is-adv .ns-stat-label')].map(e => e.firstChild.textContent.trim()),
 				dis: [...s.querySelectorAll('.ns-stat.is-dis .ns-stat-label')].map(e => e.firstChild.textContent.trim()),
-				saveMarks: [...s.querySelectorAll('.ns-stat-save polygon')].map(pg => {
-					// Which way it points, and how far its centroid is from the badge's centre (should be ~0).
-					const b = pg.closest('.ns-stat-save').getBoundingClientRect();
-					const r = pg.getBoundingClientRect();
-					const up = pg.getAttribute('points').split(' ')[0].split(',')[1] < 5;
-					const cy = up ? r.top + (2 * r.height) / 3 : r.top + r.height / 3;
-					return { dir: up ? '▲' : '▼', dx: Math.abs((r.left + r.right) / 2 - (b.left + b.right) / 2), dy: Math.abs(cy - (b.top + b.bottom) / 2) };
+				// The save marks are the official sheet's triangles: filled above a stat for its ▲ save, below for its ▼ one,
+				// centred on the stat's box.
+				saveMarks: [...s.querySelectorAll('.ns-stat .ns-tri.is-on')].map(t => {
+					const b = t.closest('.ns-stat-box').getBoundingClientRect();
+					const r = t.getBoundingClientRect();
+					const stat = t.closest('.ns-stat').querySelector('.ns-stat-label').textContent;
+					return { dir: t.classList.contains('is-up') ? '▲' : '▼', stat, dx: Math.abs((r.left + r.right) / 2 - (b.left + b.right) / 2), edge: t.classList.contains('is-up') ? r.top - b.top : b.bottom - r.bottom };
 				}),
+				tris: s.querySelectorAll('.ns-stat .ns-tri').length,
 				hp: s.querySelector('.ns-hp-cur')?.textContent + '/' + s.querySelector('.ns-hp-max')?.textContent,
 				armor: s.querySelector('.ns-box-armor .ns-box-value')?.textContent,
 				wounds: s.querySelectorAll('.ns-pip').length,
@@ -3899,11 +4143,12 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		}, R);
 		assert.equal(info.name, 'Thorga Ironbrow');
 		assert.equal(info.line, 'Dwarf · Berserker · Level 3');
-		assert.deepEqual(info.stats, ['+2', '+2', '−1', '0']);
+		assert.deepEqual(info.stats, ['2', '2', '−1', '0'], 'stats as the official sheet prints them');
 		assert.deepEqual(info.adv, ['STR']);
 		assert.deepEqual(info.dis, ['INT']);
-		assert.deepEqual(info.saveMarks.map(m => m.dir), ['▲', '▼'], 'a ▲ / ▼ badge only on the advantaged and disadvantaged saves');
-		for (const m of info.saveMarks) assert.ok(m.dx < 0.6 && m.dy < 0.6, `${m.dir} sits on its badge's centre by its centroid: ${JSON.stringify(m)}`);
+		assert.deepEqual(info.saveMarks.map(m => `${m.dir}${m.stat}`), ['▲STR', '▼INT'], 'filled marks only for the advantaged and disadvantaged saves');
+		assert.equal(info.tris, 8, 'every stat has both marks (outlines when not its save)');
+		for (const m of info.saveMarks) assert.ok(m.dx < 0.6 && Math.abs(m.edge) < 0.6, `${m.dir} sits centred on its box's edge: ${JSON.stringify(m)}`);
 		assert.equal(info.hp, '20/32');
 		assert.equal(info.armor, '8', 'Rusty Mail 6+DEX (max 2)');
 		assert.equal(info.wounds, 7, 'Dwarf: +1 max Wounds');
@@ -3911,7 +4156,11 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(info.skills[6], '+6', 'Might: STR 2 + 2 points + 2 Berserker Skilled Hero');
 		assert.deepEqual(info.tabs, ['Actions', 'Features', 'Inventory', 'Notes']);
 		assert.deepEqual(info.conds, ['Dazed']);
-		assert.deepEqual(info.attacks, ['1d10+2', '1d6+2']);
+		assert.deepEqual(info.attacks, ['1d10 + 2', '1d6 + 2']);
+		// Damage buttons say the damage type with an icon, not a die (the dice are on the button).
+		assert.deepEqual(await sheet.locator('.ns-row.is-weapon .ns-roll').evaluateAll(bs => bs.map(b => !!b.querySelector('.ns-dmg-t svg'))), [true, true], 'damage type icons');
+		// The sheet wears Nimble's look.
+		assert.ok(await sheet.evaluate(el => el.classList.contains('ev-sys-nimble')), 'the sheet carries .ev-sys-nimble');
 		assert.ok(info.propsHidden, 'the Properties box is hidden on character notes');
 		await p.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-light.png') });
 		await sheet.locator('.ns-stats').screenshot({ path: join(ARTIFACTS, 'sheet-stats.png') });
@@ -3952,10 +4201,10 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		// A skill check and an attack roll.
 		await sheet.locator('.ns-skill', { hasText: 'Might' }).click();
 		await rollThrough(o);
-		assert.match((await o.eval((app, plugin) => plugin.settings.rollLog))[0].label, /Thorga Ironbrow · Might check/);
+		await o.waitFor(async () => /Thorga Ironbrow · Might check/.test((await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) ?? ''), { what: 'the Might check logged' });
 		await sheet.locator('.ns-row.is-weapon', { hasText: 'Battleaxe' }).locator('.ns-roll').click();
 		await rollThrough(o);
-		assert.equal((await o.eval((app, plugin) => plugin.settings.rollLog))[0].label, 'Thorga Ironbrow · Battleaxe');
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Thorga Ironbrow · Battleaxe', { what: 'the Battleaxe roll logged' });
 
 		// Damage through the HP pad: 5 off 20.
 		await sheet.locator('.ns-hp').click();
@@ -3965,6 +4214,35 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		let fm = await waitFm(o, f => f.hp === 15, 'hp 15 in the frontmatter');
 		assert.equal(fm.hp, 15);
 		await p.waitForFunction((R) => document.querySelector(`${R} .ns-hp-cur`)?.textContent === '15', R);
+
+		// A tap that spans a redraw still lands. Press the bar, change the note while the button is down (the sheet
+		// would redraw and replace the bar under it), release: the keypad opens, then the sheet catches up.
+		await p.evaluate((R) => {
+			const bar = document.querySelector(`${R} .ns-hp`);
+			bar.dataset.e2eOld = '1';
+			// What happened, if this fails: pointer events and when the bar went.
+			const t0 = performance.now(), log = (window.__evTap = []);
+			for (const t of ['pointerdown', 'pointerup', 'pointercancel']) document.addEventListener(t, (e) => log.push(`${Math.round(performance.now() - t0)}ms ${t} ${e.pointerType} primary=${e.isPrimary} on ${e.target?.className?.baseVal ?? e.target?.className}`), { capture: true });
+			new MutationObserver((_m, obs) => { if (!bar.isConnected) { log.push(`${Math.round(performance.now() - t0)}ms bar replaced`); obs.disconnect(); } }).observe(document.body, { childList: true, subtree: true });
+		}, R);
+		const hpBox = await sheet.locator('.ns-hp').boundingBox();
+		await p.mouse.move(hpBox.x + hpBox.width / 2, hpBox.y + hpBox.height / 2);
+		const tDown = Date.now();
+		await p.mouse.down();
+		// Change the note and wait for Obsidian to say so (what redraws the sheet), rather than polling: a short press.
+		await o.eval((app, _p, path) => new Promise((done) => {
+			const ref = app.metadataCache.on('changed', (f) => { if (f.path === path) { app.metadataCache.offref(ref); done(); } });
+			void app.fileManager.processFrontMatter(app.vault.getFileByPath(path), fm => { fm.e2e_poke = 1; });
+		}), SHEET_NOTE);
+		await p.waitForTimeout(250);
+		const held = await p.evaluate((R) => document.querySelector(`${R} .ns-hp`)?.dataset.e2eOld ?? null, R);
+		if (held !== '1') console.log(`      held ${Date.now() - tDown}ms; ${(await p.evaluate(() => window.__evTap)).join('; ')}`);
+		assert.equal(held, '1', 'no redraw while the button is down');
+		await p.mouse.up();
+		await p.locator('.nimble-hp-pad').waitFor({ timeout: 3000 });
+		await p.waitForFunction((R) => !document.querySelector(`${R} .ns-hp`)?.dataset.e2eOld, R, { timeout: 3000 });
+		await p.keyboard.press('Escape');
+		await p.locator('.nimble-hp-pad').waitFor({ state: 'detached', timeout: 3000 });
 
 		// Temp HP soaks first.
 		await sheet.locator('.ns-hp').click();
@@ -4027,20 +4305,20 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.match(body, /Berserker 3\.1/);
 		await sheet.screenshot({ path: join(ARTIFACTS, 'sheet-desktop-features.png') });
 
-		// Spotlight's normal search finds compendium entries and opens their card.
+		// Omnisearch's normal search finds compendium entries and opens their card.
 		await p.keyboard.press('Escape');
-		await o.eval((app, plugin) => plugin.toggleSpotlight());
-		await p.locator('.modal-container .prompt.nimble-spotlight .prompt-input').fill('battleaxe');
+		await o.eval((app, plugin) => plugin.toggleOmnisearch());
+		await p.locator('.modal-container .prompt.nimble-omnisearch .prompt-input').fill('battleaxe');
 		await p.waitForTimeout(200);
-		const row = p.locator('.modal-container .prompt.nimble-spotlight .suggestion-item.spot-compendium', { hasText: 'Battleaxe' });
+		const row = p.locator('.modal-container .prompt.nimble-omnisearch .suggestion-item.spot-compendium', { hasText: 'Battleaxe' });
 		await row.first().click();
 		await p.locator('.modal.nimble-cmp-modal').waitFor();
 		assert.match(await p.locator('.modal.nimble-cmp-modal').innerText(), /1d10\+STR slashing/);
-		// Escape goes back to Spotlight (still on "battleaxe"); a second Escape closes it.
+		// Escape goes back to Omnisearch (still on "battleaxe"); a second Escape closes it.
 		await p.keyboard.press('Escape');
-		await p.locator('.modal-container .prompt.nimble-spotlight .prompt-input').waitFor();
+		await p.locator('.modal-container .prompt.nimble-omnisearch .prompt-input').waitFor();
 		await p.keyboard.press('Escape');
-		await o.waitFor(async () => (await p.locator('.modal-container .prompt.nimble-spotlight').count()) === 0, { what: 'Spotlight closed' });
+		await o.waitFor(async () => (await p.locator('.modal-container .prompt.nimble-omnisearch').count()) === 0, { what: 'Omnisearch closed' });
 
 		// Edit mode: change a stat.
 		await sheet.locator('.ns-head-actions [aria-label="Edit details and stats"]').click();
@@ -4089,7 +4367,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		await lv.waitFor();
 		assert.match(await lv.locator('.lu-panel.is-active').innerText(), /Enduring Rage/, 'level 4 features listed');
 		const steps = await lv.locator('.lu-dot').allInnerTexts();
-		assert.deepEqual(steps.map(t => t.trim()), ['Overview', 'Hit points', 'Savage Arsenal', 'Stats', 'Skills', 'Review']);
+		assert.deepEqual(steps.map(t => t.trim()), ['Overview', 'Hit points', 'Savage Arsenal', 'Increases', 'Skills', 'Review']);
 		const next = () => lv.locator('.lu-next').click();
 		await next();
 		// Hit points have to be decided before moving on.
@@ -4112,7 +4390,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		assert.equal(await skill('Arcana').locator('.lu-step-btn').first().isDisabled(), true, 'no points of yours on Arcana to move');
 		await skill('Insight').locator('.lu-step-btn').first().click();
 		await skill('Stealth').locator('.lu-step-btn.is-plus').click();
-		assert.match(await skill('Stealth').innerText(), /\+2/);
+		assert.equal(await skill('Stealth').locator('.lu-stat-new').count(), 1, 'Stealth shows its new total');
 		// Going back keeps what was chosen.
 		await lv.locator('.lu-dot', { hasText: 'Savage Arsenal' }).click();
 		assert.equal(await lv.locator('.lu-panel.is-active .lu-option.is-chosen').count(), 1);
@@ -4150,7 +4428,7 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 		const panel = await p.evaluate(() => { const v = document.querySelector('.nimble-character-view'); const sh = v.querySelector('.nimble-sheet'); return { view: v.clientWidth, sheet: sh.scrollWidth }; });
 		assert.ok(panel.sheet <= panel.view, `the sheet fits the panel: ${JSON.stringify(panel)}`);
 		await p.screenshot({ path: join(ARTIFACTS, 'sheet-panel.png') });
-		const clippedInPanel = await p.evaluate(() => [...document.querySelectorAll('.nimble-character-view :is(.ns-box-label, .ns-skill-name, .ns-chip-label, .ns-stat-label, .ns-reaction-name)')]
+		const clippedInPanel = await p.evaluate(() => [...document.querySelectorAll('.nimble-character-view :is(.ns-box-label, .ns-skill-name, .ns-stat-label, .ns-tab-label, .ns-rc-name, .ns-scroll-title, .ev-pill-text)')]
 			.filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent));
 		assert.deepEqual(clippedInPanel, [], 'labels cut off in the Character panel');
 		// Tapping the sheet never scrolls the panel: an action dot and a wound pip, scrolled down.
@@ -4171,19 +4449,17 @@ test('character sheet: renders from frontmatter, rolls a save, takes damage, add
 			await p.waitForTimeout(400);
 			assert.equal(await p.evaluate((sc) => sc.scrollTop, scroller), before, `tapping ${what} leaves the panel where it was`);
 		}
-		// Thin: End turn is an "End" pill on the dots' row, at its right edge.
+		// Thin: the Actions bar wraps as whole groups, End turn on one line inside the bar, nothing past its edge.
 		const end = await p.evaluate(() => {
-			const card = document.querySelector('.nimble-character-view .ns-actions-card');
-			const b = card.querySelector('.ns-actions-end');
-			const dot = card.querySelector('.ns-action-dot');
-			const r = b.getBoundingClientRect(), c = card.getBoundingClientRect(), d = dot.getBoundingClientRect();
-			return { text: b.innerText.trim(), sameRow: Math.abs((r.top + r.bottom) / 2 - (d.top + d.bottom) / 2) < 4, right: Math.round(c.right - r.right) };
+			const bar = document.querySelector('.nimble-character-view .ns-turn');
+			const b = bar.querySelector('.ns-actions-end');
+			const r = b.getBoundingClientRect(), c = bar.getBoundingClientRect();
+			return { text: b.innerText.trim(), oneLine: r.height < 34, inside: r.right <= c.right + 0.5 && [...bar.children].every(k => k.getBoundingClientRect().right <= c.right + 0.5) };
 		});
-		assert.deepEqual({ text: end.text, sameRow: end.sameRow }, { text: 'End', sameRow: true }, JSON.stringify(end));
-		assert.ok(end.right <= 2, `End sits at the card's right edge (${end.right}px)`);
+		assert.deepEqual(end, { text: 'End turn', oneLine: true, inside: true }, JSON.stringify(end));
 		// The rest of the panel, a screen at a time.
-		for (const [i, sel] of [['2', '.ns-turn'], ['3', '.ns-reactions']].entries()) {
-			if (sel[1] === '.ns-reactions') await p.locator('.nimble-character-view .ns-tab[data-tab="actions"]').click();
+		for (const [i, sel] of [['2', '.ns-turn'], ['3', '.ns-rcards']].entries()) {
+			if (sel[1] === '.ns-rcards') await p.locator('.nimble-character-view .ns-tab[data-tab="actions"]').click();
 			await p.evaluate((sel) => document.querySelector(`.nimble-character-view ${sel}`)?.scrollIntoView({ block: 'start' }), sel[1]);
 			await p.waitForTimeout(150);
 			const box = await p.locator('.nimble-character-view').boundingBox();
@@ -4205,20 +4481,40 @@ test('character sheet: Live Preview renders it too, and New character writes a n
 	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
 	const m = o.page.locator('.modal.nimble-newchar-modal');
 	await m.waitFor();
-	await m.locator('input[type="text"]').first().fill('Wren Ashdown');
-	const selects = m.locator('select');
-	await selects.nth(0).selectOption('Human');
-	await selects.nth(1).selectOption('Mage');
-	await selects.nth(2).selectOption('Min-Max');
-	assert.match(await m.locator('.nimble-newchar-preview').innerText(), /10 HP/);
+	await m.locator('input.lu-name-input').fill('Wren Ashdown');
+	await m.locator('select[data-k="ancestry"]').selectOption('Human');
+	await m.locator('select[data-k="class"]').selectOption('Mage');
+	assert.match(await m.locator('.lu-class').innerText(), /10/, 'the Mage starts with 10 HP');
+	assert.deepEqual((await m.locator('.lu-dot').allInnerTexts()).map(t => t.trim()), ['Hero', 'Stats', 'Skills', 'Review']);
+	await m.locator('.lu-next').click();
+	// Min-Max, as the class places it (INT 3, WIL 1), then INT and WIL swapped by tapping one and then the other.
+	await m.locator('.lu-panel.is-active .ev-seg button', { hasText: 'Min-Max' }).click();
+	const stat = (k) => m.locator('.lu-panel.is-active .lu-place', { hasText: k }).locator('.ns-stat-value');
+	assert.deepEqual(await Promise.all(['STR', 'DEX', 'INT', 'WIL'].map(k => stat(k).innerText())), ['−1', '−1', '3', '1']);
+	assert.equal(await m.locator('.lu-panel.is-active .lu-place.is-key').count(), 2, 'INT and WIL are the key stats');
+	assert.equal(await m.locator('.lu-panel.is-active .lu-place.is-adv .ns-tri.is-up.is-on').count(), 1, 'the ▲ save is marked');
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'INT' }).locator('.ns-stat-box').click();
+	assert.equal(await m.locator('.lu-panel.is-active .lu-place.is-picked').count(), 1);
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'WIL' }).locator('.ns-stat-box').click();
+	assert.deepEqual(await Promise.all(['INT', 'WIL'].map(k => stat(k).innerText())), ['1', '3']);
+	// A key stat left with less than STR is pointed out; the class's placement puts it back.
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'STR' }).locator('.ns-stat-box').click();
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'INT' }).locator('.ns-stat-box').click();
+	assert.match(await m.locator('.lu-panel.is-active .lu-warn').innerText(), /INT/);
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'STR' }).locator('.ns-stat-box').click();
+	await m.locator('.lu-panel.is-active .lu-place', { hasText: 'INT' }).locator('.ns-stat-box').click();
+	assert.equal(await m.locator('.lu-panel.is-active .lu-warn').count(), 0);
 	await m.screenshot({ path: join(ARTIFACTS, 'sheet-new-character.png') });
-	await m.locator('button.mod-cta', { hasText: 'Create' }).click();
+	await m.locator('.lu-dot', { hasText: 'Review' }).click();
+	assert.match(await m.locator('.lu-panel.is-active .lu-review').innerText(), /INT 1 · WIL 3/);
+	await m.locator('.lu-next', { hasText: 'Create' }).click();
 	// It goes to the active campaign's Party folder, or the vault root when there's none (earlier tests may leave one active).
 	const WREN = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Wren Ashdown')?.path ?? null), { what: 'the new note' });
 	const made = await o.waitFor(() => o.eval((app, _p, p) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter ?? null, WREN), { what: 'its frontmatter' });
 	assert.equal(made.nimble, 'character');
 	assert.equal(made.class, 'Mage');
-	assert.equal(made.int, 3);
+	assert.equal(made.int, 1, 'INT where the player put it');
+	assert.equal(made.wil, 3, 'WIL where the player put it');
 	assert.equal(made.hp, 10);
 	assert.ok(made.inventory.some(i => (i.name ?? i) === 'Adventurer’s Garb'));
 	await o.openFile(WREN);
@@ -4237,7 +4533,98 @@ test('character sheet: Live Preview renders it too, and New character writes a n
 	await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f); }, WREN);
 });
 
-test('character sheet: Judgment Dice are rolled when gained and all go on the next attack; Fury Dice stay while Raging', async (o) => {
+test('character sheet: New character starts a Berserker at level 4, taking each level’s steps (level)', async (o) => {
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+	const m = o.page.locator('.modal.nimble-newchar-modal');
+	await m.waitFor();
+	await m.locator('input.lu-name-input').fill('Brakka Four');
+	await m.locator('select[data-k="class"]').selectOption('Berserker');
+	for (let i = 0; i < 3; i++) await m.locator('[data-k="level-plus"]').click();
+	assert.equal(await m.locator('input.lu-level-input').inputValue(), '4');
+	const steps = (await m.locator('.lu-dot').allInnerTexts()).map(t => t.trim());
+	assert.deepEqual(steps, ['Hero', 'Stats', 'Hit points', 'Subclass', 'Savage Arsenal', 'Increases', 'Skills', 'Review']);
+	const step = async (name) => { await m.locator('.lu-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return m.locator('.lu-panel.is-active'); };
+	// Hit points: the flat bonus is taken unless they roll (d12: +6 a level).
+	assert.match(await (await step('Hit points')).locator('.lu-hp-new').innerText(), /^38$/);
+	const sub = await step('Subclass');
+	await sub.locator('.lu-sub-tab', { hasText: 'Red Mist' }).click();
+	await sub.locator('.lu-sub-band-choose').click();
+	assert.match(await m.locator('.lu-sub').innerText(), /Path of the Red Mist/);
+	await (await step('Savage Arsenal')).locator('.lu-option', { hasText: 'Whirlwind' }).click();
+	await (await step('Increases')).locator('.lu-stat', { hasText: 'DEX' }).click();
+	const skills = await step('Skills');
+	assert.match(await skills.locator('.lu-skill-budget').innerText(), /3 to place/);
+	const row = (name) => skills.locator('.lu-skill-row', { hasText: name });
+	await row('Might').locator('.lu-step-btn.is-plus').click();
+	await row('Might').locator('.lu-step-btn.is-plus').click();
+	await row('Stealth').locator('.lu-step-btn.is-plus').click();
+	assert.equal(await row('Lore').locator('.lu-step-btn.is-plus').isDisabled(), true, 'all three placed');
+	await m.screenshot({ path: join(ARTIFACTS, 'new-character-level-4.png') });
+	const review = await step('Review');
+	assert.equal(await review.locator('.lu-review-row.is-missing').count(), 0, 'every choice made');
+	await m.locator('.lu-next', { hasText: 'Create' }).click();
+	const path = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Brakka Four')?.path ?? null), { what: 'the new note' });
+	try {
+		const fm = await o.waitFor(() => o.eval((app, _p, p) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter ?? null, path), { what: 'its frontmatter' });
+		assert.equal(fm.level, 4);
+		assert.equal(fm.hp_max, 38);
+		assert.equal(fm.subclass, 'Path of the Red Mist');
+		assert.deepEqual(fm.features, ['Whirlwind']);
+		assert.deepEqual([fm.str, fm.dex], [2, 3], 'Standard array, +1 DEX at level 4');
+		assert.deepEqual(fm.skills, { might: 2, stealth: 1 });
+	} finally {
+		await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f); }, path);
+	}
+});
+
+test('character sheet: level up through the subclass choice, with a school and Utility Spells (level)', async (o) => {
+	const path = 'Characters/Orin Levels.md';
+	await o.eval(async (app, _p, path) => {
+		await app.vault.create(path, '---\nnimble: character\nclass: Songweaver\nlevel: 2\nstr: -1\ndex: 0\nint: 2\nwil: 2\nhp: 17\nhp_max: 17\nschools: [Fire]\ncssclasses: [nimble-sheet-note]\n---\n\n```nimble-sheet\n```\n');
+	}, path);
+	try {
+		await o.openFile(path, 'preview');
+		const sheet = o.page.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		await camp(o, sheet, 'Level up');
+		const lv = o.page.locator('.modal.nimble-levelup');
+		await lv.waitFor();
+		assert.deepEqual((await lv.locator('.lu-dot').allInnerTexts()).map(t => t.trim()), ['Overview', 'Hit points', 'Subclass', 'Spells', 'Skills', 'Review']);
+		const step = async (name) => { await lv.locator('.lu-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return lv.locator('.lu-panel.is-active'); };
+		await (await step('Hit points')).locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
+		// The subclass: Compare shows every one side by side; choosing one adds its features to the overview.
+		const sub = await step('Subclass');
+		await sub.locator('.lu-view-btn', { hasText: 'Compare' }).click();
+		assert.ok(await sub.locator('.lu-compare th').count() >= 5, 'every Herald side by side');
+		await sub.locator('.lu-compare-choose').first().click();
+		assert.equal(await lv.locator('.lu-panel.is-active .lu-compare-choose.is-chosen').count(), 1);
+		const chosen = (await lv.locator('.lu-panel.is-active .lu-compare-name').first().innerText()).trim();
+		// "Choose 1 Utility Spell from each spell school you know": Wind (the class's) and Fire (the note's).
+		const spells = await step('Spells');
+		const boxes = spells.locator('.lu-spell-box');
+		assert.equal(await boxes.count(), 2);
+		assert.match(await boxes.nth(0).innerText(), /Wind/);
+		assert.match(await boxes.nth(1).innerText(), /Fire/);
+		await boxes.nth(0).locator('.lu-option', { hasText: 'Feather Fall' }).click();
+		await boxes.nth(1).locator('.lu-option', { hasText: 'Kindle' }).click();
+		await (await step('Skills')).locator('.lu-skill-row', { hasText: 'Influence' }).locator('.lu-step-btn.is-plus').click();
+		const review = await step('Review');
+		assert.equal(await review.locator('.lu-review-row.is-missing').count(), 0);
+		await lv.screenshot({ path: join(ARTIFACTS, 'level-up-subclass-review.png') });
+		await lv.locator('.lu-next').click();
+		const fm = await o.waitFor(() => o.eval((app, _p, p) => { const f = app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter; return f?.level === 3 ? f : null; }, path), { what: 'level 3' });
+		assert.match(fm.subclass, new RegExp(chosen));
+		assert.equal(fm.hp_max, 21, 'd8: +4');
+		assert.deepEqual(fm.spells, ['Feather Fall', 'Kindle']);
+		assert.deepEqual(fm.schools, ['Fire'], 'the school kept as it was');
+		assert.equal(fm.skills.influence, 1);
+		await lv.locator('.lu-celebrate button').click();
+	} finally {
+		await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f); }, path);
+	}
+});
+
+test('character sheet: Judgment Dice typed in from the table or rolled, all on the next attack; Fury Dice stay while Raging', async (o) => {
 	const p = o.page;
 	await resetEncounter(o);
 	const ODO = 'Characters/Odo Brightshield.md';
@@ -4253,21 +4640,46 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		await o.openFile(ODO, 'preview');
 		const sheet = p.locator(`${R} .nimble-sheet`);
 		await sheet.waitFor();
-		const held = sheet.locator('.ns-held', { hasText: 'Judgment Dice' });
-		// The most a level 1 Oathsworn can hold, as outlines: 2 (Oath of Vengeance and level 14 add more).
-		assert.equal(await held.locator('.ns-die.is-empty').count(), 2, 'two outlines to start');
-		assert.equal(await held.locator('.ns-die:not(.is-empty)').count(), 0);
-		const width = await held.evaluate(el => el.getBoundingClientRect().width);
-		// + fills an outline (not rolled): two d6 shapes.
-		await held.locator('[aria-label="Judgment Dice +1"]').click();
-		await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 1, 'one Judgment Die');
-		await held.locator('[aria-label="Judgment Dice +1"]').click();
-		await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 2, 'two Judgment Dice');
-		await p.waitForFunction((R) => document.querySelectorAll(`${R} .ns-held .ns-die.is-d6:not(.is-empty)`).length === 2, R);
-		assert.equal(await held.locator('.ns-die-num').count(), 0, 'not rolled yet');
-		assert.ok(await held.locator('[aria-label="Judgment Dice +1"]').isDisabled(), 'no more than the rules allow');
-		assert.equal(Math.round(await held.evaluate(el => el.getBoundingClientRect().width)), Math.round(width), 'the pill keeps its size');
-		await sheet.locator('.ns-strip').screenshot({ path: join(ARTIFACTS, 'sheet-judgment-dice.png') });
+		const held = sheet.locator('.ns-class .ns-feat', { hasText: 'Judgment Dice' });
+		const count = (f) => { const v = f.resources?.['Judgment Dice']; return typeof v === 'object' && v ? v.current : v; };
+		// The most a level 1 Oathsworn can hold, as empty slots: 2 (Oath of Vengeance and level 14 add more).
+		assert.equal(await held.locator('.ns-held-die.is-empty').count(), 2, 'two empty slots to start');
+		assert.equal(await held.locator('.ns-held-die:not(.is-empty)').count(), 0);
+		// The formula is the name's tooltip; the chevron opens the book's words.
+		await held.locator('.ns-feat-name').click();
+		assert.match(await held.locator('.ns-feat-rule').innerText(), /Whenever an enemy attacks you, roll and set aside 2d6 Judgment Dice/);
+		await held.locator('.ns-feat-name').click();
+		assert.equal(await held.locator('.ns-feat-rule').isVisible(), false, 'the chevron closes it again');
+		// Typed in from the table: tap an empty slot, then the face rolled.
+		await held.locator('.ns-held-die.is-empty').first().click();
+		const pick = sheet.locator('.ev-face-pick');
+		await pick.waitFor();
+		assert.match(await pick.locator('.ev-face-pick-label').textContent(), /^Add a Judgment die you rolled$/);
+		assert.deepEqual(await pick.locator('.ev-face').allInnerTexts(), ['1', '2', '3', '4', '5', '6'], 'a d6: its faces in one row');
+		assert.equal(await pick.locator('.ev-face-remove').count(), 0, 'nothing to remove when adding');
+		await sheet.locator('.ns-class').screenshot({ path: join(ARTIFACTS, 'sheet-face-picker.png') });
+		await measure(`${R} .nimble-sheet`);
+		await pick.locator('.ev-face', { hasText: '4' }).click();
+		await waitFmAt(o, ODO, f => count(f) === 1 && f.resources['Judgment Dice'].rolled?.[0] === 4, 'one Judgment Die showing 4');
+		// The other rolled in the app: the slots are full, so Roll is off.
+		await held.locator('.ns-btn', { hasText: /^Roll/ }).click();
+		await waitFmAt(o, ODO, f => count(f) === 2 && f.resources['Judgment Dice'].rolled?.length === 2, 'two Judgment Dice');
+		await p.waitForFunction((R) => document.querySelectorAll(`${R} .ns-class .ns-held-die:not(.is-empty) .ns-die-num`).length === 2, R);
+		assert.ok(await held.locator('.ns-btn', { hasText: /^Roll/ }).isDisabled(), 'no more than the rules allow');
+		// Changing one: its face is pressed, and it can go.
+		await held.locator('.ns-held-die').first().click();
+		await pick.waitFor();
+		assert.match(await pick.locator('.ev-face-pick-label').textContent(), /^Judgment die: change it to$/);
+		assert.deepEqual(await pick.locator('.ev-face.is-on').allInnerTexts(), ['4'], 'the face it shows is pressed');
+		await pick.locator('.ev-face', { hasText: '6' }).click();
+		await waitFmAt(o, ODO, f => f.resources['Judgment Dice'].rolled?.[0] === 6, 'changed to 6');
+		await held.locator('.ns-held-die').nth(1).click();
+		await pick.locator('.ev-face-remove').click();
+		await waitFmAt(o, ODO, f => count(f) === 1, 'one removed');
+		await held.locator('.ns-held-die.is-empty').first().click();
+		await pick.locator('.ev-face', { hasText: '2' }).click();
+		await waitFmAt(o, ODO, f => count(f) === 2 && JSON.stringify(f.resources['Judgment Dice'].rolled) === '[6,2]', 'two dice, typed in: 6 and 2');
+		assert.equal(await sheet.locator('.ev-face-pick').count(), 0, 'the strip closes once a face is picked');
 		await measure(`${R} .nimble-sheet`);
 		// A bow is not a Reach attack: no Judgment Dice on it.
 		await sheet.locator('.ns-row.is-weapon', { hasText: 'Shortbow' }).locator('.ns-roll').click();
@@ -4281,13 +4693,12 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		await dlg.waitFor();
 		const row = dlg.locator('.rd-spend', { hasText: 'Judgment Dice' });
 		assert.ok(await row.evaluate(el => el.classList.contains('is-on')), 'on by default');
-		assert.match(await row.locator('.rd-spend-have').textContent(), /^2d6 · radiant$/);
-		assert.equal(await row.locator('.rd-step-value').textContent(), '2d6');
-		assert.match(await dlg.locator('.rd-expr').textContent(), /\+ 2d6 radiant$/);
+		// The faces typed in go into the roll as they are.
+		assert.match(await row.locator('.rd-spend-have').textContent(), /^\[6, 2\] = 8 · radiant$/);
 		await p.screenshot({ path: join(ARTIFACTS, 'roll-dialog-judgment.png') });
 		await measure('.modal.nimble-roll-dialog');
 		await dlg.locator('.rd-roll').click();
-		const fm = await waitFmAt(o, ODO, f => f.resources?.['Judgment Dice'] === 0, 'Judgment Dice spent');
+		const fm = await waitFmAt(o, ODO, f => count(f) === 0, 'Judgment Dice spent');
 		assert.equal(fm.actions, 2, 'the attack took an action');
 		// Pips move one step: the first (filled) dot takes one away, not down to it; an empty one adds one back.
 		await sheet.locator('.ns-action-dot').first().click();
@@ -4296,7 +4707,7 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		await waitFmAt(o, ODO, f => f.actions === 2, 'last (empty) dot: 1 → 2');
 		// A reaction clicked twice before the sheet catches up is taken once: one roll, one action.
 		await sheet.locator('.ns-tab[data-tab="actions"]').click();
-		await p.evaluate((R) => { const card = [...document.querySelectorAll(`${R} .ns-reaction`)].find(c => c.textContent.includes('Opportunity Attack')); card.click(); card.click(); }, R);
+		await p.evaluate((R) => { const foot = document.querySelector(`${R} .ns-rcard[data-reaction="Opportunity Attack"] .ns-rc-foot`); foot.click(); foot.click(); }, R);
 		await p.locator('.modal.nimble-roll-dialog').first().waitFor();
 		await p.waitForTimeout(600);
 		assert.equal(await p.locator('.modal.nimble-roll-dialog').count(), 1, 'one Opportunity Attack, not two');
@@ -4305,7 +4716,7 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		assert.deepEqual(afterReaction.reactions_used, ['Opportunity Attack']);
 		assert.equal(afterReaction.actions, 1, 'one action for it');
 		const log = (await o.eval((app, plugin) => plugin.settings.rollLog))[0];
-		assert.match(log.detail, log.outcome === 'miss' ? /Judgment Dice lost/ : /Judgment Dice \[[1-6], [1-6]\] radiant/);
+		assert.match(log.detail, log.outcome === 'miss' ? /Judgment Dice lost/ : /Judgment Dice \[6, 2\] radiant/);
 
 		// Fury Dice: added to an attack while Raging, and still held after it.
 		await withSheetNote(o, async () => {
@@ -4314,7 +4725,11 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 			}, SHEET_NOTE);
 			await o.openFile(SHEET_NOTE, 'preview');
 			const thorga = p.locator(`${R} .nimble-sheet`);
-			await p.waitForFunction((R) => document.querySelector(`${R} .ns-held .ns-die-num`)?.textContent === '3', R);
+			await p.waitForFunction((R) => document.querySelector(`${R} .ns-class .ns-held-die .ns-die-num`)?.textContent === '3', R);
+			// Rage sits under the Fury Dice, on while Raging; its rules are the book's.
+			const rage = thorga.locator('.ns-feat[data-key="rage"]');
+			assert.equal(await rage.locator('.ns-state').innerText(), 'Raging');
+			assert.equal(await rage.locator('.ns-btn').innerText(), 'End rage');
 			await thorga.locator('.ns-tab[data-tab="actions"]').click();
 			await thorga.locator('.ns-row.is-weapon', { hasText: 'Battleaxe' }).locator('.ns-roll').click();
 			await dlg.waitFor();
@@ -4330,6 +4745,51 @@ test('character sheet: Judgment Dice are rolled when gained and all go on the ne
 		assert.deepEqual(bad, [], 'misaligned pills');
 	} finally {
 		await o.eval(async (app, _p, path) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.vault.delete(f); }, ODO);
+	}
+});
+
+test("character sheet: Hunter's Mark keeps whoever the player names as their Quarry, in their own words", async (o) => {
+	const p = o.page;
+	const WREN = 'Characters/Wren Tallgrass.md';
+	const R = '.markdown-reading-view';
+	try {
+		await o.eval(async (app, _p, path) => {
+			const old = app.vault.getAbstractFileByPath(path);
+			if (old) await app.vault.delete(old);
+			await app.vault.create(path, '---\nnimble: character\nclass: Hunter\nlevel: 1\nstr: 0\ndex: 2\nint: 0\nwil: 1\nhp: 13\nhp_max: 13\n---\n\n```nimble-sheet\n```\n');
+		}, WREN);
+		await o.openFile(WREN, 'preview');
+		const sheet = p.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		const mark = sheet.locator('.ns-class .ns-feat', { hasText: /Hunter.s Mark/ });
+		assert.equal((await mark.locator('.ns-state.is-target').innerText()).trim(), 'No quarry');
+		// Mark: a name in the player's words, not a monster picked from the fight.
+		await mark.locator('button', { hasText: /^Mark$/ }).click();
+		const dlg = p.locator('.modal.ns-small-dialog');
+		await dlg.waitFor();
+		assert.equal(await dlg.locator('.modal-title').innerText(), 'Your Quarry');
+		assert.match(await dlg.locator('input').getAttribute('placeholder'), /Goblin 2/);
+		assert.equal(await dlg.locator('.ns-prompt-clear').count(), 0, 'nothing to clear yet');
+		await dlg.locator('input').fill('Goblin with the red scarf');
+		await p.keyboard.press('Enter');
+		await waitFmAt(o, WREN, f => f.quarry === 'Goblin with the red scarf', 'the quarry in the note');
+		await p.waitForFunction((R) => document.querySelector(`${R} .ns-class .ns-state.is-target.is-on`)?.textContent.trim() === 'Goblin with the red scarf', R);
+		// Move mark: the same box with the name in it, and Clear mark.
+		await mark.locator('button', { hasText: /^Move mark$/ }).click();
+		await dlg.waitFor();
+		assert.equal(await dlg.locator('input').inputValue(), 'Goblin with the red scarf');
+		await dlg.screenshot({ path: join(ARTIFACTS, 'quarry-dialog.png') });
+		assert.deepEqual(await p.evaluate(pillOffenders, { root: '.modal.ns-small-dialog', tolerance: 1, selectors: PILL_SELECTORS }), [], 'misaligned buttons in the Quarry box');
+		await dlg.locator('input').fill('Goblin 2');
+		await dlg.locator('button.mod-cta', { hasText: 'Set' }).click();
+		await waitFmAt(o, WREN, f => f.quarry === 'Goblin 2', 'the mark moved');
+		await mark.locator('button', { hasText: /^Move mark$/ }).click();
+		await dlg.waitFor();
+		await dlg.locator('.ns-prompt-clear').click();
+		await waitFmAt(o, WREN, f => f.quarry === undefined, 'the mark cleared');
+		await p.waitForFunction((R) => document.querySelector(`${R} .ns-class .ns-state.is-target`)?.textContent.trim() === 'No quarry', R);
+	} finally {
+		await o.eval(async (app, _p, path) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.vault.delete(f); }, WREN);
 	}
 });
 
@@ -4349,24 +4809,27 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 		await sheet.waitFor();
 		const hp = sheet.locator('.ns-meter.is-hp');
 		const mana = sheet.locator('.ns-meter.is-mana');
-		assert.equal(await hp.locator('.ns-meter-nums').textContent(), '14/20+3');
-		assert.equal(await hp.locator('.ns-meter-extra').textContent(), '3 temp');
-		assert.equal(await mana.locator('.ns-meter-nums').textContent(), '6/10');
-		await sheet.locator('.ns-meters').screenshot({ path: join(ARTIFACTS, 'sheet-meters.png') });
-		// White numbers read on every part of both bars, light and dark (WCAG 4.5:1).
+		const NUMS = '.ns-meter-nums:not(.is-on-fill)';
+		assert.equal(await hp.locator(NUMS).textContent(), '14/20+3');
+		// Temp HP sits in the box's dark foot, as on the official sheet.
+		assert.equal(await sheet.locator('.ns-hpw-foot b').textContent(), '3');
+		assert.equal(await mana.locator(NUMS).textContent(), '6/10');
+		await sheet.locator('.ns-band').screenshot({ path: join(ARTIFACTS, 'sheet-meters.png') });
+		// The numbers read on every part of both bars, light and dark (WCAG 4.5:1): one colour on the fill
+		// (the copy that rides in it), another on the track.
 		const contrast = () => p.evaluate((R) => {
 			const rgb = (c) => {
 				const n = c.match(/[\d.]+/g).map(Number);
 				return c.startsWith('color(') ? n.slice(0, 3).map(v => v * 255) : n.slice(0, 3);
 			};
 			const lum = ([r, g, b]) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
-			const ratio = (c) => 1.05 / (lum(rgb(c)) + 0.05);
+			const ratio = (a, b) => { const [x, y] = [lum(rgb(a)), lum(rgb(b))].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
 			const out = {};
-			for (const m of document.querySelectorAll(`${R} .ns-meter`)) {
+			for (const m of document.querySelectorAll(`${R} .ns-sheet .ns-meter`)) {
 				const kind = m.classList.contains('is-hp') ? 'hp' : 'mana';
-				out[`${kind} fill`] = ratio(getComputedStyle(m.querySelector('.ns-meter-fill')).backgroundColor);
-				out[`${kind} track`] = ratio(getComputedStyle(m.querySelector('.ns-meter-bar')).backgroundColor);
-				out[`${kind} text`] = getComputedStyle(m.querySelector('.ns-meter-cur')).color;
+				const color = (sel) => getComputedStyle(m.querySelector(sel)).color;
+				out[`${kind} on the fill`] = ratio(getComputedStyle(m.querySelector('.ns-meter-fill')).backgroundColor, color('.ns-meter-nums.is-on-fill .ns-meter-cur'));
+				out[`${kind} on the track`] = ratio(getComputedStyle(m.querySelector('.ns-meter-bar')).backgroundColor, color('.ns-meter-nums:not(.is-on-fill) .ns-meter-cur'));
 			}
 			return out;
 		}, R);
@@ -4374,11 +4837,9 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 			await setTheme(o, theme);
 			await p.waitForTimeout(150);
 			const c = await contrast();
-			for (const [k, v] of Object.entries(c)) {
-				if (k.endsWith('text')) assert.equal(v, 'rgb(255, 255, 255)', `${theme} ${k}`);
-				else assert.ok(v >= 4.5, `${theme} ${k}: white is ${v.toFixed(2)}:1`);
-			}
-			await sheet.locator('.ns-meters').screenshot({ path: join(ARTIFACTS, `sheet-meters-${theme.slice(6)}.png`) });
+			assert.equal(Object.keys(c).length, 4, JSON.stringify(c));
+			for (const [k, v] of Object.entries(c)) assert.ok(v >= 4.5, `${theme} ${k}: ${v.toFixed(2)}:1`);
+			await sheet.locator('.ns-band').screenshot({ path: join(ARTIFACTS, `sheet-meters-${theme.slice(6)}.png`) });
 		}
 		await setTheme(o, 'theme-light');
 		// − and +: damage takes temp HP first; mana spends and regains one.
@@ -4396,8 +4857,9 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 		// Quick taps add up: three − taps show −3 and land as one change of 3 (temp HP first).
 		await p.waitForTimeout(1300);
 		for (let i = 0; i < 3; i++) await hp.locator('[aria-label="Take 1 damage"]').click();
-		assert.equal(await hp.locator('.ns-meter-delta').textContent(), '−3');
-		assert.equal(await hp.locator('.ns-meter-cur').textContent(), '14', 'the running number: 15 + 2 temp − 3');
+		assert.equal(await hp.locator(`${NUMS} .ns-meter-delta`).textContent(), '−3');
+		assert.equal(await hp.locator(`${NUMS} .ns-meter-cur`).textContent(), '14', 'the running number: 15 + 2 temp − 3');
+		assert.equal(await hp.locator('.ns-meter-nums.is-on-fill .ns-meter-cur').textContent(), '14', 'both tones show it');
 		assert.equal((await sheetFmOf(o, ILSE)).hp, 15, 'nothing written while tapping');
 		await waitFmAt(o, ILSE, f => f.hp === 14 && f.temp_hp === 0, 'one change of 3');
 		await mana.locator('[aria-label="Spend 1 mana"]').click();
@@ -4417,6 +4879,17 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 		await hp.screenshot({ path: join(ARTIFACTS, 'sheet-hp-damage-ghost.png') });
 		await p.waitForSelector(`${R} .ns-meter.is-hp .ns-meter-ghost`, { state: 'detached', timeout: 3000 });
 		await waitFmAt(o, ILSE, f => f.hp === 7 && f.temp_hp === 0, '7 damage through the calculator');
+		// Defend, when the player says so: their Defense comes off the hit, and it costs an action.
+		const armor = Number(await sheet.locator('.ns-box-armor .ns-box-value').textContent());
+		await hp.locator('.ns-meter-bar').click();
+		await pad.waitFor();
+		await p.keyboard.type('5');
+		await pad.locator('.qa-defend').click();
+		assert.equal(await pad.locator('.hp-pad-apply').textContent(), `Deal ${Math.max(0, 5 - armor)} damage`);
+		await pad.locator('.hp-pad-apply').click();
+		await waitFmAt(o, ILSE, f => f.hp === 7 - Math.max(0, 5 - armor) && f.actions === 2 && (f.reactions_used ?? []).includes('Defend'), 'Defend: Defense off the hit, an action spent');
+		await o.eval(async (app, _p, path) => { await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (fm) => { fm.hp = 7; delete fm.actions; delete fm.reactions_used; }); }, ILSE);
+		await waitFmAt(o, ILSE, f => f.hp === 7 && f.actions === undefined, 'back to 7 HP and 3 actions');
 		// The mana calculator from its button: spend 4, then set 9.
 		await mana.locator('.ns-meter-calc').click();
 		const mp = p.locator('.nimble-mana-pad');
@@ -4433,7 +4906,7 @@ test('character sheet: HP and mana bars, with − and +, and a calculator for ea
 		await p.keyboard.type('9');
 		await mp.locator('.hp-pad-apply').click();
 		await waitFmAt(o, ILSE, f => f.mana === 9, 'set mana to 9');
-		const bad = await p.evaluate(pillOffenders, { root: `${R} .ns-meters`, tolerance: 1, selectors: ['.ns-meter-extra', '.ns-meter-bar', '.ns-meter-label'] });
+		const bad = await p.evaluate(pillOffenders, { root: `${R} .ns-sheet`, tolerance: 1, selectors: ['.ns-meter-bar'] });
 		assert.deepEqual(bad, [], 'misaligned meters');
 	} finally {
 		await o.eval(async (app, _p, path) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.vault.delete(f); }, ILSE);
@@ -4471,9 +4944,9 @@ test('phone: character sheet at phone width, HP pad as a sheet, sticky tabs', as
 				return [...s.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > r.right + 1 || b.left < r.left - 1); }).map(e => e.className).slice(0, 5);
 			}, R);
 			assert.deepEqual(spill, [], 'nothing wider than the sheet');
-			assert.equal(await p.evaluate((R) => getComputedStyle(document.querySelector(`${R} .ns-skills`)).gridTemplateColumns.split(' ').length, R), 2, 'skills as a two-column list on a phone');
-			// Nothing in the top cards is cut off: every label shows in full.
-			const clipped = await p.evaluate((R) => [...document.querySelectorAll(`${R} :is(.ns-box-label, .ns-skill-name, .ns-chip-label, .ns-stat-label)`)]
+			assert.equal(await p.evaluate((R) => getComputedStyle(document.querySelector(`${R} .ns-sk-row`)).gridTemplateColumns.split(' ').length, R), 5, 'the skills band, five to a row on a phone');
+			// Nothing in the band, the skills or the tabs is cut off: every label shows in full.
+			const clipped = await p.evaluate((R) => [...document.querySelectorAll(`${R} :is(.ns-box-label, .ns-skill-name, .ns-stat-label, .ns-tab-label, .ns-scroll-title, .ev-pill-text)`)]
 				.filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent), R);
 			assert.deepEqual(clipped, [], 'labels cut off on a phone');
 			await p.screenshot({ path: join(ARTIFACTS, 'sheet-phone-light.png') });
@@ -4517,6 +4990,181 @@ test('phone: character sheet at phone width, HP pad as a sheet, sticky tabs', as
 		await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
 		await p.setViewportSize({ width: 1400, height: 900 });
 		await p.waitForTimeout(800);
+	}
+});
+
+test('phone: the character wizard fits a phone; two taps swap stats, the steps swipe', async (o) => {
+	const p = o.page;
+	const cdp = await p.context().newCDPSession(p);
+	const tap = async (loc) => {
+		const b = await loc.boundingBox();
+		assert.ok(b, 'tap target is visible');
+		const x = b.x + b.width / 2, y = b.y + b.height / 2;
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await p.waitForTimeout(250);
+	};
+	await p.setViewportSize({ width: 360, height: 780 });
+	await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+	await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400);
+	await o.eval((app) => app.emulateMobile(true));
+	await p.waitForTimeout(1200);
+	try {
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		const m = p.locator('.modal.nimble-newchar-modal');
+		await m.waitFor();
+		await m.locator('select[data-k="class"]').selectOption('Hunter');
+		for (let i = 0; i < 2; i++) await tap(m.locator('[data-k="level-plus"]'));
+		await tap(m.locator('.lu-next'));
+		await p.waitForTimeout(450);
+		const stat = (k) => m.locator('.lu-panel.is-active .lu-place', { hasText: k });
+		// Hunter: DEX and WIL are key. Standard puts 2 on both; swap DEX's 2 with STR's 0, and back.
+		assert.equal(await stat('DEX').locator('.ns-stat-value').innerText(), '2');
+		await tap(stat('DEX').locator('.ns-stat-box'));
+		await tap(stat('STR').locator('.ns-stat-box'));
+		assert.equal(await stat('STR').locator('.ns-stat-value').innerText(), '2');
+		assert.equal(await m.locator('.lu-panel.is-active .lu-warn').count(), 1, 'DEX is short now');
+		await m.screenshot({ path: join(ARTIFACTS, 'new-character-phone.png') });
+		// Nothing spills past the dialog, on any step.
+		const steps = await m.locator('.lu-dot').count();
+		for (let k = 0; k < steps; k++) {
+			await m.locator('.lu-dot').nth(k).click();
+			await p.waitForTimeout(450);
+			const spill = await p.evaluate(() => {
+				const panel = document.querySelector('.nimble-wizard .lu-panel.is-active');
+				const r = panel.getBoundingClientRect();
+				return [...panel.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > r.right + 1 || b.left < r.left - 1) && !e.closest('.lu-compare'); }).map(e => String(e.className)).slice(0, 5);
+			});
+			assert.deepEqual(spill, [], `step ${k} fits the phone`);
+		}
+		// A sideways swipe moves between steps.
+		await m.locator('.lu-dot').nth(2).click();
+		await p.waitForTimeout(450);
+		const before = await m.locator('.lu-dot.is-active').innerText();
+		const vp = await m.locator('.lu-viewport').boundingBox();
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: vp.x + vp.width - 30, y: vp.y + 200 }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: vp.x + 40, y: vp.y + 205 }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await p.waitForTimeout(500);
+		assert.notEqual(await m.locator('.lu-dot.is-active').innerText(), before, 'swiped to the next step');
+	} finally {
+		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
+		await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400);
+		await o.eval((app) => app.emulateMobile(false));
+		await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+		await p.setViewportSize({ width: 1400, height: 900 });
+		await p.waitForTimeout(800);
+	}
+});
+
+test('phone: the 5e character sheet fits a phone, its HP opens the keypad as a sheet', async (o) => {
+	const p = o.page;
+	const C = 'Campaigns/Phone Coast';
+	const note = `${C}/Party/Wren.md`;
+	const cdp = await p.context().newCDPSession(p);
+	const tap = async (loc) => {
+		await loc.scrollIntoViewIfNeeded().catch(() => {});
+		const b = await loc.boundingBox();
+		assert.ok(b, 'tap target is visible');
+		const x = b.x + b.width / 2, y = b.y + b.height / 2;
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await p.waitForTimeout(250);
+	};
+	await o.eval(async (app, plugin, [C, note]) => {
+		const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+		await plugin.campaigns.createCampaign({ name: 'Phone Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+		await app.vault.createFolder(`${C}/Party`).catch(() => {});
+		// Written by hand, without the sheet note class: the sheet still takes the page.
+		await app.vault.create(note, ['---', 'class: Wizard', 'species: Elf', 'background: Sage', 'level: 5', 'edition: "2024"', 'int: 17', 'dex: 14', 'con: 13', 'hp: 20', 'hp_max: 27',
+			'skills: [Arcana, Sleight of Hand]', 'spells: [Fire Bolt, Shield, Fireball]', 'conditions: [Frightened]', 'inventory:', '  - { name: Dagger, equipped: true }', '---', '', '```5e-sheet', '```', ''].join('\n'));
+	}, [C, note]);
+	await p.setViewportSize({ width: 360, height: 780 });
+	await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+	await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400); // switching to and from phone mode reloads settings; don't let it read a half-written file
+	await o.eval((app) => app.emulateMobile(true));
+	await p.waitForTimeout(1200);
+	try {
+		await o.openFile(note, 'preview');
+		const sheet = p.locator(`${R} .dnd5e-sheet`);
+		await sheet.waitFor({ timeout: 5000 });
+		await p.waitForTimeout(300);
+		// Nothing spills past the screen, and the labels show in full.
+		const spill = await p.evaluate((R) => {
+			const s = document.querySelector(`${R} .dnd5e-sheet`);
+			const r = s.getBoundingClientRect();
+			return [...s.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > r.right + 1 || b.left < r.left - 1); }).map(e => e.className).slice(0, 5);
+		}, R);
+		assert.deepEqual(spill, [], 'nothing wider than the sheet');
+		// Every damage button on the sheet is one width.
+		const dmgWidths = await p.evaluate((R) => [...document.querySelectorAll(`${R} .dnd5e-sheet .dnd5e-dmg`)].map(b => Math.round(b.getBoundingClientRect().width)), R);
+		assert.ok(dmgWidths.length >= 2 && new Set(dmgWidths).size === 1, `damage buttons one width: ${dmgWidths}`);
+		const clipped = await p.evaluate((R) => [...document.querySelectorAll(`${R} .dnd5e-sheet :is(.dnd5e-sheet-box-label, .dnd5e-row-name, .dnd5e-sheet-ability-name, .dnd5e-tab .ev-pill-text)`)]
+			.filter(e => e.checkVisibility() && e.scrollWidth > e.clientWidth + 1).map(e => e.textContent), R);
+		assert.deepEqual(clipped, [], 'labels cut off on a phone');
+		assert.equal(await p.evaluate((R) => document.querySelector(`${R} .metadata-container`)?.checkVisibility() ?? false, R), false, 'properties hidden');
+		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet-phone-light.png') });
+
+		// The bar opens the keypad, a bottom sheet on a phone.
+		await tap(sheet.locator('.ns-meter-bar'));
+		assert.equal(await p.locator('.nimble-hp-pad.is-sheet').count(), 1, 'HP pad is a bottom sheet');
+		await tap(p.locator('.hp-pad-keys button', { hasText: exact('3') }));
+		await tap(p.locator('.hp-pad-apply'));
+		await o.waitFor(async () => (await o.eval((app, _p, path) => app.metadataCache.getCache(path)?.frontmatter?.hp, note)) === 17, { what: 'hp 17' });
+		await tap(sheet.locator('.dnd5e-tab[data-tab="spells"]'));
+		await p.waitForTimeout(200);
+		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet-phone-spells.png') });
+		await tap(sheet.locator('.dnd5e-tab[data-tab="actions"]'));
+		await setTheme(o, 'theme-dark');
+		await p.waitForTimeout(250);
+		await p.evaluate((R) => { document.querySelector(`${R} .markdown-preview-view`).scrollTop = 0; }, R);
+		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet-phone-dark.png') });
+
+		// The wizards fit the narrowest phone: New character's plaques, class choices and equipment cards, and Level up.
+		await setTheme(o, 'theme-light');
+		await p.setViewportSize({ width: 320, height: 700 });
+		await p.waitForTimeout(400);
+		const W = '.modal.nimble-entity-builder';
+		const spills = () => p.evaluate((W) => {
+			const m = document.querySelector(W);
+			const r = m.getBoundingClientRect();
+			return [...m.querySelectorAll('.eb-panel.is-active *')].filter(e => { const b = e.getBoundingClientRect(); return b.width && e.checkVisibility() && (b.right > r.right + 1 || b.left < r.left - 1); }).map(e => e.className).slice(0, 5);
+		}, W);
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		await p.locator(W).waitFor();
+		for (const step of ['Abilities', 'Class', 'Equipment']) {
+			await tap(p.locator(`${W} .eb-dot`, { hasText: step }));
+			await p.waitForTimeout(450);
+			assert.deepEqual(await spills(), [], `New character's ${step} step fits a phone`);
+			await p.screenshot({ path: join(ARTIFACTS, `dnd5e-wizard-phone-${step.toLowerCase()}.png`) });
+		}
+		// Closed the way a person would (so the dialog lets go of the keyboard), asking first if it does.
+		const closeBuilder = async () => {
+			await p.keyboard.press('Escape');
+			const discard = p.locator('.modal-container button.mod-warning', { hasText: 'Discard' });
+			await p.waitForTimeout(300);
+			if (await discard.count()) await discard.first().click();
+			await p.locator(W).waitFor({ state: 'detached' });
+		};
+		await closeBuilder();
+		await tap(sheet.locator('.dnd5e-sheet-actions button', { hasText: 'Level up' }));
+		await p.locator(W).waitFor();
+		await p.waitForTimeout(450);
+		assert.deepEqual(await spills(), [], 'Level up fits a phone');
+		await p.screenshot({ path: join(ARTIFACTS, 'dnd5e-level-up-phone.png') });
+		await closeBuilder();
+	} finally {
+		await setTheme(o, 'theme-light');
+		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
+		await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400);
+		await o.eval((app) => app.emulateMobile(false));
+		await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+		await p.setViewportSize({ width: 1400, height: 900 });
+		await p.waitForTimeout(800);
+		await o.eval(async (app, plugin, C) => {
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
 	}
 });
 
@@ -4580,7 +5228,8 @@ test('campaign properties as tags: empty ones stay hidden, and show once filled 
 			const old = app.vault.getAbstractFileByPath('Campaigns/Tag Room');
 			if (old) await app.vault.delete(old, true);
 			await plugin.campaigns.createCampaign({ name: 'Tag Room', level: 1, heroes: 4, starter: false });
-			const f = await app.vault.create('Campaigns/Tag Room/Mira.md', '---\nnimble: npc\nstatus: alive\nrole: \n---\nA tinker.\n');
+			// A place: an NPC's card shows its status and role, so on an NPC the tags leave them out.
+			const f = await app.vault.create('Campaigns/Tag Room/Mira.md', '---\nnimble: location\nstatus: alive\nrole: \n---\nA tinker\'s yard.\n');
 			await app.workspace.getLeaf(false).openFile(f, { state: { mode: 'preview' } });
 		});
 		await o.waitFor(() => shown('status'), { what: 'status shows as a tag' });
@@ -4699,15 +5348,15 @@ test('campaigns keep their monsters apart: a player campaign never opens the GM\
 			await plugin.campaigns.createCampaign({ name: 'Iso Play', level: 2, heroes: 4, starter: false, role: 'player', character: 'Pip' });
 			await app.vault.create('Campaigns/Iso Play/Session.md', '---\nnimble: session\n---\nWe met `nimble:Quicksilver Hound` and `nimble:Ogre`.\n\n```nimble-encounter\nname: Cellar\noutcome: won\nmonsters:\n- 2 Quicksilver Hound\n- 1 Ogre\n```\n');
 		});
-		await o.waitFor(() => o.eval((app, plugin) => plugin.index.get('Quicksilver Hound', 'Campaigns/Iso Run/Prep.md')?.filePath === 'Campaigns/Iso Run/Monsters/Quicksilver Hound.md'), { what: 'the GM monster indexed' });
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('nimble').index.get('Quicksilver Hound', 'Campaigns/Iso Run/Prep.md')?.filePath === 'Campaigns/Iso Run/Monsters/Quicksilver Hound.md'), { what: 'the GM monster indexed' });
 		const seen = await o.eval((app, plugin) => {
-			const at = (name, from) => { const e = plugin.index.get(name, from); return e ? (e.bundled ? 'bundled' : e.filePath) : null; };
+			const at = (name, from) => { const e = plugin.runtime('nimble').index.get(name, from); return e ? (e.bundled ? 'bundled' : e.filePath) : null; };
 			return {
 				gmHound: at('Quicksilver Hound', 'Campaigns/Iso Run/Prep.md'),
 				gmOgre: at('Ogre', 'Campaigns/Iso Run/Prep.md'),
 				playerHound: at('Quicksilver Hound', 'Campaigns/Iso Play/Session.md'),
 				playerOgre: at('Ogre', 'Campaigns/Iso Play/Session.md'),
-				playerAll: plugin.index.all('Campaigns/Iso Play/Session.md').some(e => e.filePath.startsWith('Campaigns/Iso Run/')),
+				playerAll: plugin.runtime('nimble').index.all('Campaigns/Iso Play/Session.md').some(e => e.filePath.startsWith('Campaigns/Iso Run/')),
 			};
 		});
 		assert.deepEqual(seen, {
@@ -4849,8 +5498,2732 @@ test('pills: every icon and label sits on its pill centre line (within 1px)', as
 		}
 		await o.page.keyboard.press('Escape');
 	});
+	// New character, every step of a level 4 Songweaver (a school, Utility Spells, a subclass, the stat boxes).
+	await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+	const m = o.page.locator('.modal.nimble-newchar-modal');
+	await m.waitFor();
+	await m.locator('input.lu-name-input').fill('Pill Check');
+	await m.locator('select[data-k="class"]').selectOption('Songweaver');
+	await m.locator('select[data-k="background"]').selectOption('Academy Dropout');
+	for (let i = 0; i < 3; i++) await m.locator('[data-k="level-plus"]').click();
+	const steps = await m.locator('.lu-dot').count();
+	for (let k = 0; k < steps; k++) {
+		await m.locator('.lu-dot').nth(k).click();
+		await o.page.waitForTimeout(450);
+		const panel = m.locator('.lu-panel.is-active');
+		if (await panel.locator('.lu-sub-band-choose').count()) await panel.locator('.lu-sub-band-choose').click();
+		if (await panel.locator('.lu-school').count()) await panel.locator('.lu-school').first().click();
+		if (await panel.locator('.lu-place').count()) await panel.locator('.lu-place .ns-stat-box').first().click();
+		await o.page.waitForTimeout(300);
+		bad.push(...(await measure('.modal.nimble-newchar-modal')).map(b => ({ step: k, ...b })));
+	}
+	await o.page.keyboard.press('Escape');
 	assert.deepEqual(bad, [], 'misaligned pills');
 });
+
+/** Measure every pill under `root` and add what's off to `bad`, tagged with where it was. */
+async function measurePills(o, bad, where, root) {
+	for (const b of await o.page.evaluate(pillOffenders, { root, tolerance: 1, selectors: PILL_SELECTORS })) bad.push({ where, ...b });
+	// Which pills were there to measure, so a surface that drew none (a selector gone stale) shows up.
+	const seen = await o.page.evaluate(({ root, selectors }) => {
+		const out = {};
+		for (const scope of document.querySelectorAll(root)) {
+			for (const sel of selectors) {
+				const n = [...scope.querySelectorAll(sel)].filter(e => e.getBoundingClientRect().width).length;
+				if (n) out[sel] = (out[sel] ?? 0) + n;
+			}
+		}
+		return out;
+	}, { root, selectors: PILL_SELECTORS });
+	if (process.env.PILLS_VERBOSE) {
+		// PILLS_VERBOSE=1: what each surface had, and a picture of it in e2e/artifacts/ to look over.
+		console.log(`    ${where}: ${Object.entries(seen).map(([k, v]) => `${k}×${v}`).join(' ')}`);
+		await o.page.locator(root).filter({ visible: true }).first().screenshot({ path: join(ARTIFACTS, `pills-${where.replace(/\W+/g, '-')}.png`) }).catch(() => {});
+	}
+	if (!Object.keys(seen).length) bad.push({ where, el: root, part: 'no pills measured', offset: 0 });
+}
+
+test('pills: Nimble references, stat block buttons, compendium, Omnisearch and the slash menu line up', async (o) => {
+	const bad = [];
+	// The tracker mid-fight: the ticker, the side switch, a hero's card with a timed condition, the turn control;
+	// then the legendary beat, a Bloodied moment, and a hero's keypad with Defend and Interpose.
+	await resetEncounter(o, { party: PARTY });
+	await o.eval((app, plugin) => {
+		const st = plugin.runtime('nimble').encounters;
+		const enc = st.ensureActive();
+		st.addParty(enc.id);
+		st.add(plugin.runtime('nimble').index.get('Krogg, Goblin King').monster, undefined, 1, enc.id);
+		st.start(enc.id);
+		const aria = enc.creatures.find(c => c.label === 'Aria');
+		st.addCondition(enc.id, aria.id, 'Dazed', { rounds: 2 });
+		st.setActing(enc.id, aria.id);
+	});
+	await o.waitFor(async () => (await o.page.locator(`${T} .ev-card .creature-label`).allTextContents()).join() === 'Aria', { what: 'Aria on the card' });
+	await measurePills(o, bad, 'Nimble tracker (a hero acting)', T);
+	await mainButton(o).click();
+	await o.page.locator(`${T} .ev-card.is-beat`).waitFor({ timeout: 2000 });
+	await typeHp(o, 'Krogg, Goblin King', '50');
+	await o.page.locator(`${T} .ev-moment`).first().waitFor({ timeout: 2000 });
+	await measurePills(o, bad, 'Nimble tracker (the legendary beat)', T);
+	await card(o, 'Bram').locator('.hp-display').click();
+	await o.page.keyboard.type('6');
+	await o.page.locator('.nimble-hp-pad .qa-defend').click();
+	await o.page.locator('.nimble-hp-pad .qa-interpose').click();
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble HP keypad', '.nimble-hp-pad');
+	await o.page.keyboard.press('Escape');
+	await resetEncounter(o);
+	// Inline references: monsters [level | name | +], compendium entries [icon | name], unknown names; both views.
+	await o.openFile('Compendium refs.md', 'preview');
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-inline-ref.is-compendium`).count()) >= 8, { what: 'compendium refs' });
+	await o.page.waitForTimeout(200);
+	await o.page.locator(`${R} .nimble-inline-ref.kind-spell`).first().screenshot({ path: join(ARTIFACTS, 'pill-nimble-spell.png') });
+	await measurePills(o, bad, 'Nimble refs (reading)', `${R}`);
+	await o.openFile('Adventure.md', 'preview');
+	await o.waitFor(async () => (await o.page.locator(`${R} .nimble-inline-ref.nimble-inline-found`).count()) >= 2, { what: 'monster refs' });
+	await measurePills(o, bad, 'Nimble monster refs (reading)', `${R}`);
+	// A monster's quick look: its buttons and the stat block's badges.
+	await o.page.locator(`${R} .nimble-inline-ref.nimble-inline-found .nimble-inline-name`).first().click();
+	await o.page.locator('.modal.nimble-record-modal').waitFor({ timeout: 3000 });
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble quick look', '.modal.nimble-record-modal');
+	await o.page.keyboard.press('Escape');
+	// The hover card, with its Add button.
+	await o.page.locator(`${R} .nimble-inline-ref.nimble-inline-found .nimble-inline-name`).first().hover();
+	await o.page.locator('.nimble-hover-preview .nimble-statblock').waitFor({ timeout: 3000 });
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble hover card', '.nimble-hover-preview');
+	await parkMouse(o);
+	await o.openFile('Compendium refs.md', 'source');
+	await o.waitFor(async () => (await o.page.locator(`${S} .nimble-inline-ref.is-compendium`).count()) >= 8, { what: 'Live Preview refs' });
+	await measurePills(o, bad, 'Nimble refs (Live Preview)', `${S}`);
+	// A stat block and its buttons.
+	await o.openFile('Bestiary/Goblin Boss.md', 'preview');
+	await o.page.locator(`${R} .nimble-statblock`).first().waitFor();
+	await measurePills(o, bad, 'Nimble stat block', `${R}`);
+	// The compendium: tabs, rows with their pills and tags, a page with its buttons, a filter chip.
+	await openCompendiumTab(o);
+	await o.page.locator(`${CMP} .nimble-cmpx-input`).pressSequentially('level:1 ', { delay: 20 });
+	await o.waitFor(async () => (await o.page.locator(`${CMP} .nimble-cmpx-chip`).count()) === 1, { what: 'a filter chip' });
+	await o.page.waitForTimeout(300);
+	await measurePills(o, bad, 'Nimble compendium', CMP);
+	// The filter and sort panels, then a spell's card and a class's page (its facts, level boxes, folding rows).
+	await o.page.locator(`${CMP} .nimble-cmpx-filter`).click();
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble compendium (filters)', CMP);
+	await o.page.locator(`${CMP} .nimble-cmpx-sort`).click();
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble compendium (sorting)', CMP);
+	await o.page.locator(`${CMP} .nimble-cmpx-sort`).click();
+	await o.eval((app) => { const leaf = app.workspace.getLeavesOfType('nimble-bestiary')[0]; app.workspace.revealLeaf(leaf); leaf?.view.select('spell:pyroclasm'); });
+	await o.page.locator(`${CMP} .nimble-cmpx-detail .nimble-cmp-card.kind-spell`).waitFor({ timeout: 3000 });
+	await measurePills(o, bad, 'Nimble compendium (a spell)', `${CMP} .nimble-cmpx-detail`);
+	await o.eval((app) => { const leaf = app.workspace.getLeavesOfType('nimble-bestiary')[0]; app.workspace.revealLeaf(leaf); leaf?.view.select('class:oathsworn'); });
+	await o.page.locator(`${CMP} .nimble-cmpx-detail .nimble-cmp-card.kind-class`).waitFor({ timeout: 3000 });
+	await o.page.locator(`${CMP} .nimble-cmpx-detail .nimble-cmp-summary`).first().click();
+	await o.page.waitForTimeout(200);
+	await measurePills(o, bad, 'Nimble compendium (a class)', `${CMP} .nimble-cmpx-detail`);
+	// Omnisearch with a typed filter.
+	await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+	const SP = '.modal-container .prompt.nimble-omnisearch';
+	await o.page.locator(`${SP} .prompt-input`).fill('level:2 gob');
+	await o.waitFor(async () => (await o.page.locator(`${SP} .nimble-cmpx-chip`).count()) >= 1, { what: 'Omnisearch chip' });
+	await o.page.waitForTimeout(300);
+	await measurePills(o, bad, 'Nimble Omnisearch', SP);
+	await o.page.keyboard.press('Escape');
+	// The slash menu, with a difficulty badge.
+	await o.eval(async (app) => {
+		const old = app.vault.getAbstractFileByPath('Pill slash.md');
+		if (old) await app.vault.delete(old);
+		await app.vault.create('Pill slash.md', '# Prep\n\n');
+	});
+	await o.openFile('Pill slash.md', 'source');
+	await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 2, ch: 0 }); ed.focus(); });
+	await o.page.keyboard.type('/', { delay: 15 });
+	await o.waitFor(async () => (await o.page.locator('.suggestion-container .nimble-slash-item').count()) > 10, { what: 'the slash menu' });
+	await o.page.keyboard.type('enc', { delay: 15 });
+	await o.page.waitForTimeout(250);
+	await o.page.keyboard.press('Enter');
+	await o.page.waitForTimeout(250);
+	await o.page.keyboard.type('3 goblin minion, krogg', { delay: 15 });
+	await o.waitFor(async () => (await o.page.locator('.suggestion-container .nimble-slash-badge').count()) >= 1, { what: 'slash menu badge' });
+	await measurePills(o, bad, 'Slash menu (encounter)', '.suggestion-container');
+	await o.page.keyboard.press('Escape');
+	await o.eval(async (app) => { const f = app.vault.getAbstractFileByPath('Pill slash.md'); if (f) await app.vault.delete(f); });
+	assert.deepEqual(bad, [], 'misaligned pills');
+});
+
+test('pills: 5e references, stat block, compendium, tracker and character sheet line up', async (o) => {
+	const C = 'Campaigns/Pill Coast';
+	const note = `${C}/Session.md`;
+	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+	const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	const bad = [];
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Pill Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Session.md`, [
+				'# Session', '',
+				'A `5e:Goblin Warrior` casts `5e:spell:Fireball`, drinks a `5e:item:Potion of Healing`, falls `5e:Prone` and meets a `5e:Nobody Knows`.', '',
+				'```5e', 'name: Ash Wight', 'type: Undead', 'ac: 14 (studded leather)', 'hp: 45 (6d8 + 18)', 'speed: 30 ft.',
+				'str: 15', 'dex: 14', 'con: 16', 'int: 10', 'wis: 13', 'cha: 15', 'cr: 3',
+				'actions:', '- Claw: Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8 + 2) Slashing damage.', '```', '',
+				'```nimble-encounter', 'name: Road ambush', 'monsters:', '- 2 `5e:Goblin Warrior`', '- Ogre', '```', '',
+			].join('\n'));
+			await app.vault.create(`${C}/Ilse.md`, [
+				'---', 'title: Ilse', 'class: Wizard', 'level: 5', 'edition: "2024"', 'str: 8', 'dex: 14', 'con: 13', 'int: 17', 'wis: 12', 'cha: 10',
+				'skills: [Arcana, History]', 'spells: [Fire Bolt, Sacred Flame, Shield, Hellish Rebuke, Fireball, Hold Person]', 'conditions: [Prone]', 'exhaustion: 1', 'inspiration: true', 'inventory:', '  - { name: Dagger, equipped: true }', '  - { name: Potion of Healing, qty: 2 }', 'gold: 12', '---', '', '```5e-sheet', '```', '',
+			].join('\n'));
+			// An NPC on the Priest's stats, with her own AC: the mini sheet under her card.
+			await app.vault.create(`${C}/Odile.md`, ['---', 'nimble: npc', 'role: Keeper of the chapel', 'statblock: Priest', 'ac: 15', 'hp: 30', 'cr: 2', '---', '', '```nimble-npc', 'Wants: The bell raised.', '```', ''].join('\n'));
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+
+		// References in both views, the stat block, the encounter block.
+		await o.openFile(note, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.dnd5e-hit`).count()) >= 3, { what: 'compendium refs' });
+		await o.page.locator(`${R} .dnd5e-encounter`).waitFor();
+		await o.page.waitForTimeout(300);
+		await o.page.locator(`${R} p`, { has: o.page.locator('.dnd5e-ref') }).first().screenshot({ path: join(ARTIFACTS, 'pill-5e-refs.png') });
+		// Every reference sits on the line the same way: a spell's (icon first) as high as a monster's (level first).
+		const tops = await o.page.locator(`${R} p`, { has: o.page.locator('.dnd5e-ref') }).first().evaluate((p) => {
+			const line = (n) => Math.round(n.getBoundingClientRect().top / 4);
+			const refs = [...p.querySelectorAll('.nimble-inline-ref')];
+			const first = refs.filter(r => line(r) === line(refs[0]));
+			return first.map(r => ({ cls: r.className, top: r.getBoundingClientRect().top }));
+		});
+		assert.ok(tops.length >= 2, 'two references on the first line');
+		for (const t of tops) assert.ok(Math.abs(t.top - tops[0].top) < 0.6, `${t.cls} sits ${(t.top - tops[0].top).toFixed(1)}px off the monster reference`);
+		await measurePills(o, bad, '5e note (reading)', `${R}`);
+		await o.openFile(note, 'source');
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-ref.dnd5e-hit`).count()) >= 3, { what: 'Live Preview refs' });
+		await measurePills(o, bad, '5e note (Live Preview)', `${S}`);
+		// A monster's quick look: the stat block with its buttons.
+		await o.openFile(note, 'preview');
+		await o.page.locator(`${R} .dnd5e-ref`).first().locator('.nimble-inline-name').click();
+		await o.page.locator('.modal.dnd5e-quick-look .dnd5e-statblock').waitFor({ timeout: 3000 });
+		await measurePills(o, bad, '5e quick look', '.modal.dnd5e-quick-look');
+		await o.page.keyboard.press('Escape');
+
+		// The compendium: spells with a filter chip and Fireball's page; monsters with their tags.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.page.locator(V).waitFor({ timeout: 5000 });
+		const input = o.page.locator(`${V} .nimble-cmpx-input`);
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Spells' }).click();
+		await input.fill('');
+		await input.pressSequentially('level:3 fireball', { delay: 20 });
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name`).innerText().catch(() => '')) === 'Fireball', { what: 'Fireball selected' });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e compendium (spells)', V);
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Monsters' }).click();
+		await input.fill('goblin');
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-row.is-selected`).count()) === 1, { what: 'a monster selected' });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e compendium (monsters)', V);
+		// By challenge, under their CR headings.
+		await input.fill('');
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-group`).count()) > 0, { what: 'CR headings' });
+		await measurePills(o, bad, '5e compendium (by challenge)', V);
+
+		// The tracker before the fight (Roll all, the boxes), then mid-fight: the Ogre's card with a condition, the queue.
+		await o.openFile(note, 'preview');
+		await o.page.locator(`${R} .dnd5e-encounter button`, { hasText: 'Run' }).click();
+		await o.page.locator(TR).waitFor({ timeout: 5000 });
+		await o.waitFor(async () => (await o.page.locator(`${TR} .dnd5e-combatant`).count()) === 3, { what: 'three combatants' });
+		await measurePills(o, bad, '5e tracker (setting up)', TR);
+		await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.change(f => { for (const c of f.combatants) c.init = c.name === 'Ogre' ? 20 : 10; }));
+		await o.page.locator(`${TR} button`, { hasText: 'Start combat' }).click();
+		const ogre = o.page.locator(`${TR} .dnd5e-combatant.is-turn`);
+		await ogre.waitFor({ timeout: 3000 });
+		await pickCondition5e(o, ogre, 'Prone');
+		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition').count()) === 1, { what: 'Prone chip' });
+		await measurePills(o, bad, '5e tracker', TR);
+
+		// The character sheet, and a rules term's card.
+		await o.openFile(`${C}/Ilse.md`, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e sheet', `${R} .dnd5e-sheet`);
+		for (const t of ['spells', 'features', 'inventory']) {
+			await o.page.locator(`${R} .dnd5e-tab[data-tab="${t}"]`).click();
+			await o.page.locator(`${R} .dnd5e-panel.is-${t}`).waitFor();
+			await measurePills(o, bad, `5e sheet (${t})`, `${R} .dnd5e-sheet`);
+		}
+		// The NPC's mini sheet: its buttons, skills, saves, actions (one opened to its words).
+		await o.openFile(`${C}/Odile.md`, 'preview');
+		await o.page.locator(`${R} .dnd5e-npc-stats .dnd5e-npc-act`).first().waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-npc-act-name`).first().click();
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e NPC stats', `${R} .dnd5e-npc-stats`);
+		await o.openFile(`${C}/Ilse.md`, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="actions"]`).click();
+		const term = o.page.locator(`${R} .dnd5e-sheet .ev-term`).first();
+		if (await term.count()) {
+			await term.click();
+			await o.page.locator('.ev-term-popover').waitFor({ timeout: 3000 });
+			await measurePills(o, bad, 'rules term card', '.ev-term-popover');
+			await o.page.keyboard.press('Escape');
+		}
+
+		// New character: the skill chips (the background's ticked, the class's to pick) and the sheet in brief.
+		const B = '.modal.nimble-entity-builder';
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Class"]`).selectOption('Wizard');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Skills' }).click();
+		await o.page.locator(`${B} .eb-panel.is-active .eb-pick[data-value="Arcana"]`).click();
+		await o.page.waitForTimeout(500);
+		await measurePills(o, bad, '5e New character', B);
+		// Closed as a person would: with choices made, it asks first.
+		await o.page.keyboard.press('Escape');
+		await o.page.locator('.modal-container button.mod-warning', { hasText: 'Discard' }).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+
+		// Omnisearch in a 5e campaign, with a typed filter.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+		const SP = '.modal-container .prompt.nimble-omnisearch';
+		await o.page.locator(`${SP} .prompt-input`).fill('school:evocation fire');
+		await o.waitFor(async () => (await o.page.locator(`${SP} .nimble-cmpx-chip`).count()) >= 1, { what: 'Omnisearch chip' });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e Omnisearch', SP);
+		await o.page.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container, .ev-term-popover').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+	assert.deepEqual(bad, [], 'misaligned pills');
+});
+
+test('game systems: a new campaign can be 5e (2014 rules), and Campaign settings switch it back to Nimble', async (o) => {
+	const home = 'Campaigns/Dragon Coast/Dragon Coast.md';
+	try {
+		await o.eval(async (app) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath('Campaigns/Dragon Coast');
+			if (old) await app.vault.delete(old, true);
+			app.commands.executeCommandById('nimble-gm:new-campaign');
+		});
+		const modal = o.page.locator('.modal.nimble-new-campaign');
+		await modal.waitFor({ timeout: 3000 });
+		const options = await modal.locator('select').first().locator('option').allInnerTexts();
+		assert.deepEqual(options, ['Nimble', '5e, 2024 rules (SRD 5.2)', '5e, 2014 rules (SRD 5.1)']);
+		assert.equal(await modal.locator('select').first().inputValue(), 'nimble');
+		await modal.locator('input[type="text"]').first().fill('Dragon Coast');
+		await modal.locator('select').first().selectOption({ label: '5e, 2014 rules (SRD 5.1)' });
+		await modal.locator('button', { hasText: 'Create campaign' }).click();
+		await o.waitFor(async () => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), home), { what: 'home note' });
+		const text = await read(o, home);
+		assert.match(text, /system: 5e/);
+		assert.match(text, /edition: 2014/);
+		await o.waitFor(async () => (await o.eval((app, plugin, path) => plugin.system(path).id, home)) === 'dnd5e', { what: '5e resolved' });
+		assert.equal(await o.eval((app, plugin, path) => plugin.edition(path), home), '2014');
+		assert.equal(await o.eval((app, plugin, path) => plugin.system(path).conditions(plugin.edition(path)).length, home), 15);
+
+		// Campaign settings show the same picker, set to this campaign's system, and switch it.
+		await o.eval(async (app, plugin) => { await plugin.openCampaignView(); });
+		await o.page.locator(`${CP} .campaign-switch-btn`).first().click();
+		await clickMenu(o, 'Campaign settings…');
+		const settings = o.page.locator('.modal.nimble-campaign-settings');
+		await settings.waitFor({ timeout: 3000 });
+		const select = settings.locator('select').filter({ has: o.page.locator('option', { hasText: '5e, 2014 rules' }) });
+		assert.equal(await select.inputValue(), 'dnd5e:2014');
+		await select.selectOption({ label: 'Nimble' });
+		await settings.locator('button', { hasText: 'Save' }).click();
+		await o.waitFor(async () => /system: Nimble/.test(await read(o, home)), { what: 'system: Nimble written' });
+		assert.doesNotMatch(await read(o, home), /edition:/);
+		await o.waitFor(async () => (await o.eval((app, plugin, path) => plugin.system(path).id, home)) === 'nimble', { what: 'Nimble resolved' });
+		assert.equal(await o.eval((app, plugin, path) => plugin.edition(path), home), undefined);
+	} finally {
+		await o.eval(async (app, plugin) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath('Campaigns/Dragon Coast');
+			if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('pills: builders and dialogs line up (Add several, encounter builder, party, entity builder, roll toast, maps in both games)', async (o) => {
+	const C = 'Campaigns/Tool Coast';
+	const MAP = 'Tool Map.md';
+	const bad = [];
+	await resetEncounter(o);
+	try {
+		await o.eval(async (app, plugin, [C, MAP]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, MAP]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+			const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+			c.getContext('2d').fillRect(0, 0, 400, 300);
+			const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+			if (!app.vault.getAbstractFileByPath('tool-map.png')) await app.vault.createBinary('tool-map.png', await blob.arrayBuffer());
+			await app.vault.create(MAP, '```nimble-map\nimage: [[tool-map.png]]\npins:\n- 30, 30 | Q1. Gate | [[Adventure]] | encounter\n- 60, 60 | Hoard | | treasure\n```\n');
+		}, [C, MAP]);
+
+		// Add several, from a reference's Add menu.
+		await o.openFile('Adventure.md');
+		await parkMouse(o);
+		await o.page.locator(`${R} .nimble-inline-name`, { hasText: /^Goblin$/ }).first().hover();
+		await o.page.waitForSelector(`${PREVIEW} .statblock-action-more`, { timeout: 3000 });
+		await o.page.locator(`${PREVIEW} .statblock-action-more`).click();
+		await clickMenu(o, 'Add several…');
+		await o.page.waitForSelector('.modal.nimble-count-modal');
+		await o.page.locator('.modal.nimble-count-modal .nimble-count-seg', { hasText: 'Tougher' }).click();
+		await o.page.waitForTimeout(350);
+		await measurePills(o, bad, 'Add several', '.modal.nimble-count-modal');
+		await o.page.keyboard.press('Escape');
+
+		// The encounter builder with two monsters in it, and its balance suggestions.
+		const B = '.modal.nimble-builder-modal';
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:build-encounter'));
+		await o.page.waitForSelector(B);
+		await o.page.locator(`${B} .builder-search`).fill('goblin');
+		await o.page.locator(`${B} .builder-result`).first().click();
+		await o.page.locator(`${B} .builder-result`).nth(1).click();
+		await o.page.waitForTimeout(350);
+		await measurePills(o, bad, 'encounter builder', B);
+		await o.page.keyboard.press('Escape');
+		await o.page.waitForSelector(B, { state: 'detached' });
+
+		// The party editor (outside a campaign it's a dialog).
+		const active = await o.eval(async (app, plugin) => {
+			document.querySelectorAll('.modal-container').forEach(n => n.remove());
+			await plugin.campaigns.setActive(null);
+			plugin.settings.party = [{ id: 'p1', name: 'Brakka', className: 'Berserker', level: 3, maxHp: 34, defense: 13, maxWounds: 6 }];
+			plugin.openParty();
+			return plugin.settings.activeCampaign ?? null;
+		});
+		assert.equal(active, null, 'no campaign active, so the party is a dialog');
+		await o.page.waitForSelector('.modal.nimble-party-modal');
+		await measurePills(o, bad, 'party editor', '.modal.nimble-party-modal');
+		await o.page.keyboard.press('Escape');
+
+		// New monster: the builder's step and kind chips, the verdict tag.
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
+		await o.page.waitForSelector('.nimble-entity-builder .eb-panel.is-active');
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, 'Nimble monster builder', '.modal.nimble-entity-builder');
+		await o.page.keyboard.press('Escape');
+		await o.page.waitForSelector('.modal.nimble-entity-builder', { state: 'detached' });
+
+		// A crit's toast: its CRIT tag.
+		await o.eval((app, plugin) => plugin.rollDice('1d6+2', 'Pill test', 'attack', [6, 6, 3]));
+		await o.page.waitForSelector('.notice .ev-roll-toast.is-crit');
+		await measurePills(o, bad, 'roll toast', '.notice .ev-roll-toast');
+
+		// A map with Nimble's encounter as tokens: the toolbar, pin labels, the tray.
+		await o.eval(async (app, plugin) => {
+			const nb = plugin.runtime('nimble');
+			await nb.addToEncounter(nb.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
+		});
+		await o.openFile(MAP, 'preview');
+		await o.page.locator(`${R} .nimble-map-btn[aria-label="Show the current encounter as tokens"]`).click();
+		await o.page.locator(`${R} .nimble-map-token.in-tray`).first().waitFor();
+		await measurePills(o, bad, 'Nimble map', `${R} .nimble-map`);
+
+		// 5e: the builder's edition tag, and a 5e campaign's map.
+		await o.eval(async (app, plugin, C) => {
+			await plugin.campaigns.createCampaign({ name: 'Tool Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Forge.md`, '# Forge\n');
+			await app.vault.create(`${C}/Coast Map.md`, '```nimble-map\nimage: [[tool-map.png]]\npins:\n- 40, 40 | The bridge | | encounter\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Forge.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/Forge.md`, 'preview');
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-monster'));
+		await o.page.waitForSelector('.nimble-entity-builder.ev-sys-dnd5e .eb-panel.is-active');
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, '5e monster builder', '.modal.nimble-entity-builder');
+		// Its saves step: chips with the bonus each would come to.
+		await o.page.locator('.modal.nimble-entity-builder .eb-dot', { hasText: 'Abilities' }).click();
+		await o.page.waitForTimeout(400);
+		await measurePills(o, bad, '5e monster builder: saves', '.modal.nimble-entity-builder');
+		await o.page.keyboard.press('Escape');
+		await o.page.locator('.modal.nimble-entity-builder').waitFor({ state: 'detached' });
+		// 5e's character wizard: the roll, the skill and language chips (given and to pick), the summary's chips with their diamonds.
+		const W = '.modal.nimble-entity-builder';
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		await o.page.waitForSelector(`${W}.ev-sys-dnd5e .eb-panel.is-active`);
+		await o.page.locator(`${W} .eb-dot`, { hasText: 'Abilities' }).click();
+		await o.page.locator(`${W} .eb-panel.is-active [data-key="method"] .eb-seg-btn`, { hasText: 'Roll' }).click();
+		await o.page.locator(`${W} .eb-panel.is-active .dnd5e-roll-btn`).waitFor();
+		await o.page.waitForTimeout(400);
+		await measurePills(o, bad, '5e character wizard: abilities', W);
+		await o.page.locator(`${W} .eb-dot`, { hasText: 'Skills' }).click();
+		await o.page.locator(`${W} .eb-panel.is-active [data-key="skills"] .eb-pick`).first().click();
+		await o.page.waitForTimeout(400);
+		await measurePills(o, bad, '5e character wizard: skills', W);
+		await o.page.locator(`${W} .eb-dot`, { hasText: 'Tools' }).click();
+		await o.page.waitForTimeout(400);
+		await measurePills(o, bad, '5e character wizard: tools and languages', W);
+		await o.page.keyboard.press('Escape');
+		const discard = o.page.locator('.modal-container button.mod-warning', { hasText: 'Discard' });
+		await discard.waitFor();
+		await discard.click();
+		await o.page.locator(W).waitFor({ state: 'detached' });
+		await o.openFile(`${C}/Coast Map.md`, 'preview');
+		await o.page.locator(`${R} .nimble-map.ev-sys-dnd5e .nimble-map-btn`).first().waitFor();
+		await measurePills(o, bad, '5e map', `${R} .nimble-map`);
+	} finally {
+		await o.eval(async (app, plugin, [C, MAP]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, MAP]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+			plugin.settings.party = [];
+		}, [C, MAP]);
+	}
+	assert.deepEqual(bad, [], 'misaligned pills');
+});
+
+test('5e monsters: ```5e blocks in both layouts, 5e: references with CR, hover card, quick look, Copy to vault', async (o) => {
+	const C = 'Campaigns/Sword Coast';
+	const note = `${C}/Session 1.md`;
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, 'Campaigns/Old Rules']) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: true, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Session 1.md`, [
+				'# Session 1', '',
+				'An ambush by `5e:Goblin Warrior`, an old-rules `5e:Goblin`, and a `5e:Nobody Knows`.', '',
+				'```5e', 'name: Ash Wight', 'type: Undead', 'ac: 14 (studded leather)', 'hp: 45 (6d8 + 18)', 'speed: 30 ft.',
+				'str: 15', 'dex: 14', 'con: 16', 'int: 10', 'wis: 13', 'cha: 15', 'saves: Con +5', 'cr: 3',
+				'actions:', '- Claw: Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8 + 2) Slashing damage.', '```', '',
+			].join('\n'));
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(note, 'preview');
+		const block = o.page.locator(`${R} .dnd5e-statblock`);
+		await o.waitFor(async () => (await block.count()) === 1, { what: '5e stat block' });
+		assert.ok(await block.evaluate(el => el.classList.contains('ed-2024')), '2024 layout in a 2024 campaign');
+		assert.match(await block.locator('.dnd5e-name').innerText(), /Ash Wight/i);
+		assert.match(await block.innerText(), /AC\s*14[\s\S]*Initiative\s*\+2 \(12\)[\s\S]*HP\s*45/);
+		assert.match(await block.locator('.ab-con').innerText(), /16\s*\+3\s*\+5/);
+		assert.match(await block.innerText(), /CR\s*3 \(XP 700; PB \+2\)/);
+		// The attack bonus rolls a d20.
+		await block.locator('.dnd5e-feature .dnd5e-roll.is-clickable').first().click();
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.expression)) === '1d20+4', { what: 'attack roll logged' });
+
+		// References: the edition's monster, the other edition's when this one hasn't got it, and an unknown name.
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.nimble-inline-found`).count()) === 2, { what: 'two found refs' });
+		const refs = await o.page.evaluate((R) => [...document.querySelectorAll(`${R} .dnd5e-ref`)].map(r => ({ name: r.dataset.dnd5eRef, cr: r.querySelector('.nimble-inline-level')?.textContent ?? null, found: r.classList.contains('nimble-inline-found') })), R);
+		assert.deepEqual(refs, [{ name: 'Goblin Warrior', cr: '1/4', found: true }, { name: 'Goblin', cr: '1/4', found: true }, { name: 'Nobody Knows', cr: null, found: false }]);
+
+		// Hover: the stat block card. Click: a quick look.
+		const warrior = o.page.locator(`${R} .dnd5e-ref`).first().locator('.nimble-inline-name');
+		await warrior.hover();
+		await o.waitFor(async () => (await o.page.locator('.nimble-hover-preview .dnd5e-statblock').count()) === 1, { what: 'hover card' });
+		assert.match(await o.page.locator('.nimble-hover-preview .dnd5e-name').innerText(), /Goblin Warrior/i);
+		await o.page.keyboard.press('Escape');
+		await warrior.click();
+		const look = o.page.locator('.modal.dnd5e-quick-look');
+		await look.waitFor({ timeout: 3000 });
+		assert.match(await look.locator('.record-sub').innerText(), /CR 1\/4/);
+		assert.ok(await look.locator('.dnd5e-statblock.ed-2024').count() === 1);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-quick-look.png') });
+
+		// Copy to vault: a note in the campaign's Monsters folder, and the reference now opens it.
+		await look.locator('button', { hasText: 'Copy to vault' }).click();
+		const copy = `${C}/Monsters/Goblin Warrior.md`;
+		await o.waitFor(async () => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), copy), { what: 'copied note' });
+		const copied = await read(o, copy);
+		assert.match(copied, /```5e\nname: Goblin Warrior\nedition: 2024\n[\s\S]*cr: 1\/4[\s\S]*```/);
+		await o.page.keyboard.press('Escape');
+		await o.openFile(note, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.nimble-inline-found`).count()) === 2, { what: 'refs again' });
+		await o.page.locator(`${R} .dnd5e-ref`).first().locator('.nimble-inline-name').click();
+		await o.waitFor(async () => (await o.page.locator('.modal.dnd5e-quick-look button', { hasText: 'Open note' }).count()) === 1, { what: 'the copy is the one referenced' });
+		assert.equal(await o.page.locator('.modal.dnd5e-quick-look button', { hasText: 'Copy to vault' }).count(), 0);
+		await o.page.keyboard.press('Escape');
+
+		// Omnisearch in a 5e campaign: 5e monsters with their CR, no Nimble bestiary; Enter is a quick look.
+		await o.eval(async (app, plugin, C) => { await plugin.campaigns.setActive(C); app.commands.executeCommandById('nimble-gm:spotlight'); }, C);
+		const SP = '.modal-container .prompt.nimble-omnisearch';
+		await o.page.locator(`${SP} .prompt-input`).waitFor();
+		await o.page.locator(`${SP} .prompt-input`).fill('goblin');
+		await o.waitFor(async () => (await o.page.locator(`${SP} .suggestion-item .nimble-spot-name`).allInnerTexts()).includes('Goblin Warrior'), { what: '5e goblin in Omnisearch' });
+		const spotNames = await o.page.locator(`${SP} .suggestion-item .nimble-spot-name`).allInnerTexts();
+		assert.ok(!spotNames.includes('Goblin Taskmaster'), 'no Nimble monsters in a 5e campaign');
+		assert.match(await o.page.locator(`${SP} .suggestion-item`, { hasText: 'Goblin Warrior' }).first().innerText(), /1\/4[\s\S]*Goblin Warrior[\s\S]*CR 1\/4/);
+		await o.page.locator(`${SP} .suggestion-item`, { hasText: 'Goblin Warrior' }).first().click();
+		await o.page.locator('.modal.dnd5e-quick-look').waitFor({ timeout: 3000 });
+		// Escape from the quick look goes back to Omnisearch; a second closes it.
+		await o.page.keyboard.press('Escape');
+		await o.page.locator(`${SP} .prompt-input`).waitFor({ timeout: 3000 });
+		await o.page.keyboard.press('Escape');
+		await o.waitFor(async () => (await o.page.locator('.modal-container').count()) === 0, { what: 'Omnisearch closed' });
+
+		// Typing `5e: suggests 5e monsters.
+		await o.eval(async (app, plugin, C) => {
+			const f = await app.vault.create(`${C}/Scratch.md`, 'Meet the \n');
+			await app.workspace.getLeaf(false).openFile(f, { state: { mode: 'source' } });
+			const editor = app.workspace.activeEditor.editor;
+			editor.setCursor({ line: 0, ch: 9 });
+			editor.focus();
+		}, C);
+		await o.page.keyboard.type('`5e:adult red', { delay: 30 });
+		await o.waitFor(() => o.page.evaluate(() => document.querySelector('.suggestion-container .nimble-suggestion-name')?.textContent === 'Adult Red Dragon'), { timeout: 5000, what: 'Adult Red Dragon suggested' });
+		assert.match(await o.page.locator('.suggestion-container .nimble-suggestion-note').first().innerText(), /CR 17/);
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(200);
+		assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), 'Meet the `5e:Adult Red Dragon`');
+
+		// A 2014 campaign lays its monsters out the 2014 way.
+		await o.eval(async (app, plugin) => {
+			await plugin.campaigns.createCampaign({ name: 'Old Rules', level: 1, heroes: 4, starter: false, system: '5e', edition: '2014' });
+			await app.vault.create('Campaigns/Old Rules/Notes.md', 'Watch out for `5e:Goblin`.\n');
+		});
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.edition('Campaigns/Old Rules/Notes.md'))) === '2014', { what: '2014 campaign' });
+		await o.openFile('Campaigns/Old Rules/Notes.md', 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.nimble-inline-found`).count()) === 1, { what: 'goblin ref' });
+		await o.page.locator(`${R} .dnd5e-ref .nimble-inline-name`).click();
+		await o.page.locator('.modal.dnd5e-quick-look .dnd5e-statblock.ed-2014').waitFor({ timeout: 3000 });
+		assert.match(await o.page.locator('.modal.dnd5e-quick-look .dnd5e-statblock').innerText(), /Armor Class\s*15 \(leather armor, shield\)[\s\S]*Challenge\s*1\/4 \(50 XP\)/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-2014.png') });
+		await o.page.keyboard.press('Escape');
+
+		// Live Preview draws them too.
+		await o.openFile('Campaigns/Old Rules/Notes.md', 'source');
+		await o.waitFor(async () => (await o.page.locator('.workspace-leaf.mod-active .markdown-source-view .dnd5e-ref.nimble-inline-found').count()) === 1, { what: 'live preview ref' });
+	} finally {
+		await o.eval(async (app, plugin) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of ['Campaigns/Sword Coast', 'Campaigns/Old Rules']) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		});
+	}
+});
+
+test('5e encounters: a block rated by 2024 XP, Run into the 5e tracker, initiative, turns, HP, conditions, death saves', async (o) => {
+	const C = 'Campaigns/Sword Coast';
+	const note = `${C}/Ambush.md`;
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Ambush.md`, '# Ambush\n\n```nimble-encounter\nname: Road ambush\nparty: true\nmonsters:\n- 4 `5e:Goblin Warrior`\n- Ogre\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(note, 'preview');
+		const block = o.page.locator(`${R} .dnd5e-encounter`);
+		await o.waitFor(async () => (await block.count()) === 1, { what: '5e encounter block' });
+		// Four level-3 heroes: Low 600, Moderate 900, High 1,600. 4 × 50 + 450 = 650 XP.
+		await o.waitFor(async () => /Low · 41%/i.test(await block.locator('.nimble-difficulty').innerText().catch(() => '')), { what: 'Low rating' });
+		assert.match((await block.locator('.nimble-difficulty').getAttribute('title')) ?? (await block.locator('.nimble-difficulty').getAttribute('aria-label')), /650 XP[\s\S]*Low: 600 XP[\s\S]*High: 1,600 XP[\s\S]*2024 rules/);
+		assert.deepEqual(await block.locator('.dnd5e-encounter-xp').allInnerTexts(), ['200 XP', '450 XP']);
+
+		// Run: a fresh fight in the 5e tracker, set up row by row.
+		await block.locator('button', { hasText: 'Run' }).click();
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		const rows = o.page.locator(`${T} .dnd5e-combatant`);
+		await o.waitFor(async () => (await rows.count()) === 5, { what: 'five combatants' });
+		assert.deepEqual((await o.page.locator(`${T} .dnd5e-combatant-name`).allInnerTexts()).sort(), ['Goblin Warrior', 'Goblin Warrior 2', 'Goblin Warrior 3', 'Goblin Warrior 4', 'Ogre']);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-setup.png') });
+
+		// Roll all: identical monsters share one roll, so the four goblins become one row.
+		await o.page.locator(`${T} button[aria-label="Roll initiative"]`).click();
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-init.is-unset`).count()) === 0, { what: 'initiative rolled' });
+		await o.waitFor(async () => (await rows.count()) === 2, { what: 'the goblins on one roll' });
+		assert.deepEqual((await o.page.locator(`${T} .dnd5e-combatant-name`).allInnerTexts()).sort(), ['Goblin Warriors ×4', 'Ogre']);
+		const inits = await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.filter(c => c.name === 'Goblin Warrior').map(c => c.init));
+		assert.equal(new Set(inits).size, 1, `one roll for the group: ${inits}`);
+		// The group's box sets the whole group (12, so the order below doesn't hang on the dice).
+		const goblins = o.page.locator(`${T} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: /^Goblin Warriors ×4$/ }) });
+		await goblins.locator('.dnd5e-init').click();
+		await o.page.locator('.dnd5e-init-pop input').fill('12');
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.filter(c => c.name === 'Goblin Warrior').every(c => c.init === 12))), { what: 'the group set to 12' });
+		// The initiative box takes a typed roll: the Ogre goes first.
+		const ogre = o.page.locator(`${T} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: /^Ogre$/ }) });
+		await ogre.locator('.dnd5e-init').click();
+		await o.page.locator('.dnd5e-init-pop input').fill('30');
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant-name`).first().innerText()) === 'Ogre', { what: 'Ogre first' });
+		assert.equal(await ogre.locator('.dnd5e-init').innerText(), '30');
+		await o.page.locator(`${T} button`, { hasText: 'Start combat' }).click();
+		await o.waitFor(async () => /Round 1/i.test(await o.page.locator(`${T} .dnd5e-tracker-round`).innerText()), { what: 'round 1' });
+		// The card is whoever acts: the Ogre, with its initiative gem, AC shield and HP.
+		assert.equal(await o.page.locator(`${T} .dnd5e-combatant.is-turn`).count(), 1);
+		const first = await o.page.locator(`${T} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).innerText();
+		assert.equal(first, 'Ogre');
+		assert.match(await o.page.locator(`${T} .dnd5e-tracker-status`).innerText(), /Ogre's turn/);
+		assert.equal(await ogre.locator('.dnd5e-gem').innerText(), '30');
+		assert.equal(await ogre.locator('.dnd5e-ac').getAttribute('aria-label'), 'AC 11');
+		const hp = async (label) => (await o.eval((app, plugin, l) => plugin.runtime('dnd5e').fights.fight.combatants.find(c => c.label === l)?.hp, label));
+		assert.equal(await hp('Ogre'), 68);
+
+		// Damage the Ogre on the HP keypad: 68 HP → 58. Then 6 resisted (halved to 3), previewed before it lands.
+		await hpPad5e(o, ogre, '10');
+		await o.waitFor(async () => (await hp('Ogre')) === 58, { what: 'ogre damaged' });
+		await ogre.locator('.dnd5e-focus-hp-btn').click();
+		const pad = o.page.locator('.nimble-hp-pad');
+		await pad.waitFor();
+		await o.page.keyboard.type('6r');
+		assert.match(await pad.locator('.hp-pad-preview').innerText(), /→ 55\/68 · takes 3 \(resisted\)/);
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await hp('Ogre')) === 55, { what: 'ogre resisted 6' });
+		// Knock it Prone, from the card's condition button.
+		await pickCondition5e(o, ogre, 'Prone');
+		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition', { hasText: 'Prone' }).count()) === 1, { what: 'Prone chip' });
+		// Concentrating, from the card's menu: damage calls for the save.
+		await ogre.locator('.dnd5e-combatant-more').click();
+		await clickMenu(o, 'Concentrating');
+		await o.waitFor(async () => (await ogre.locator('.dnd5e-condition.is-concentration').count()) === 1, { what: 'concentrating' });
+		await o.eval(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+		await hpPad5e(o, ogre, '24');
+		await o.waitFor(async () => /Constitution save DC 12/.test((await o.page.locator('.notice').allInnerTexts()).join(' ')), { what: 'concentration save called' });
+
+		// Next: the goblins' turn, one member at a time on the card.
+		const turnName = () => o.page.locator(`${T} .dnd5e-combatant.is-turn .dnd5e-combatant-name`).innerText();
+		const next = o.page.locator(`${T} .dnd5e-next`);
+		assert.equal(await next.innerText(), 'Next: Goblin Warriors');
+		await next.click();
+		await o.waitFor(async () => (await turnName()) === 'Goblin Warrior', { what: 'the goblins up' });
+		assert.equal(await o.page.locator(`${T} .dnd5e-members .dnd5e-member`).count(), 4);
+		assert.equal(await next.innerText(), 'Next: Goblin Warrior 2');
+		await next.click();
+		await o.waitFor(async () => (await turnName()) === 'Goblin Warrior 2', { what: 'the second goblin' });
+		assert.equal(await o.page.locator(`${T} .is-acted-list .dnd5e-combatant-name`).allInnerTexts().then(n => n.join('|')), 'Ogre');
+
+		// The party joins mid-fight; tapping a row out of order makes them act now, and nobody is reshuffled.
+		await o.eval(async (app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
+		await o.page.locator(`${T} button[aria-label="Add the party"]`).click();
+		const ilse = o.page.locator(`${T} .dnd5e-combatant.side-hero`);
+		await o.waitFor(async () => (await ilse.count()) === 1, { what: 'hero added' });
+		assert.equal(await ilse.locator('.dnd5e-ac').getAttribute('aria-label'), 'AC 16');
+		await ilse.locator('.dnd5e-init').click();
+		await o.page.locator('.dnd5e-init-pop input').fill('5');
+		await o.page.keyboard.press('Enter');
+		await ilse.locator('.dnd5e-combatant-name').click();
+		await o.waitFor(async () => (await turnName()) === 'Ilse', { what: 'Ilse acts now' });
+		assert.equal(await next.innerText(), 'Next: Goblin Warrior 2', 'whoever was up stays next');
+		// A hero at 0 HP makes death saves on the card.
+		await hpPad5e(o, ilse, '30');
+		await o.waitFor(async () => (await ilse.locator('.dnd5e-death').count()) === 1, { what: 'death saves' });
+		await ilse.locator('.dnd5e-death-roll').click();
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse: death save', { what: 'death save rolled' });
+		await o.waitFor(async () => {
+			const t = await ilse.innerText();
+			return (await ilse.locator('.ev-pip.is-on').count()) >= 1 || /Stable|Dead/i.test(t) || /\b1\s*\/\s*24\b/.test(t);
+		}, { what: 'death save recorded' });
+		// Back: the goblin is up again, Ilse still to act.
+		await o.page.locator(`${T} button[aria-label="Back a turn"]`).click();
+		await o.waitFor(async () => (await turnName()) === 'Goblin Warrior 2', { what: 'Back undoes the tap' });
+
+		// Round 2: everyone still to act. Drag Ilse to the top: she takes the goblins' initiative and goes before them.
+		await next.click(); await next.click(); await next.click(); await next.click();
+		await o.waitFor(async () => /Round 2/.test(await o.page.locator(`${T} .dnd5e-tracker-round`).innerText()), { what: 'round 2' });
+		await o.waitFor(async () => (await turnName()) === 'Ogre', { what: 'the Ogre first again' });
+		const L = `${T} .dnd5e-tracker-list.is-to-act > .dnd5e-combatant`;
+		const names = () => o.page.locator(`${L} .dnd5e-combatant-name`).allInnerTexts();
+		assert.deepEqual(await names(), ['Goblin Warriors', 'Ilse']);
+		const grab = await o.page.locator(L).last().locator('.dnd5e-combatant-name').boundingBox();
+		const top = await o.page.locator(L).first().boundingBox();
+		await o.page.mouse.move(grab.x + 8, grab.y + grab.height / 2);
+		await o.page.mouse.down();
+		await o.page.mouse.move(grab.x + 10, grab.y - 20, { steps: 4 });
+		await o.waitFor(async () => (await o.page.locator(`${T} .ev-sort-slot`).count()) === 1, { what: 'drop slot while dragging' });
+		await o.page.mouse.move(grab.x + 10, top.y + 2, { steps: 14 });
+		await o.page.waitForTimeout(150);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-drag.png') });
+		await o.page.mouse.up();
+		await o.waitFor(async () => (await names())[0] === 'Ilse', { what: 'dragged to the top' });
+		assert.equal(await turnName(), 'Ogre', 'the turn stayed put');
+		assert.equal(await o.page.locator(`${T} .ev-sort-slot, ${T} .ev-sort-lifted`).count(), 0, 'nothing left lifted');
+		assert.equal(await next.innerText(), 'Next: Ilse');
+		// Move down, from the row menu: back under the goblins.
+		await o.page.locator(L).first().locator('.dnd5e-combatant-name').click({ button: 'right' });
+		await clickMenu(o, 'Move down');
+		await o.waitFor(async () => (await names())[1] === 'Ilse', { what: 'moved down one' });
+
+		// A defeated monster folds away under Defeated, still in the fight: its group's HP asks which one.
+		await o.page.locator(L).first().locator('.dnd5e-hp-text').click();
+		await o.page.locator('.dnd5e-member-pick', { hasText: 'Goblin Warrior 4' }).click();
+		await o.page.locator('.nimble-hp-pad').waitFor();
+		await o.page.keyboard.type('50');
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-tracker-defeated .dnd5e-combatant`).count()) === 1, { what: 'goblin defeated' });
+		assert.match(await o.page.locator(`${T} .dnd5e-tracker-defeated summary`).innerText(), /Defeated\s*1/i);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-tracker-fight.png') });
+
+		// The fight is saved with the plugin's data, and Open encounter tracker shows it in a 5e campaign.
+		assert.equal(await o.eval((app, plugin) => plugin.settings.systemData?.dnd5e?.fight?.combatants?.length), 6);
+		await o.eval(async (app) => { app.workspace.detachLeavesOfType('nimble-dnd5e-tracker'); app.commands.executeCommandById('nimble-gm:open-tracker'); });
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		assert.equal(await o.page.locator(`${T} .dnd5e-combatant.is-turn`).count(), 1);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('5e encounters: timed conditions run out, damage effects prompt at the start of a turn, your own conditions come back', async (o) => {
+	const C = 'Campaigns/Timed Coast';
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	const row = (name) => o.page.locator(`${T} .dnd5e-combatant`, { has: o.page.locator('.dnd5e-combatant-name', { hasText: new RegExp(`^${name}$`) }) });
+	const fight = () => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => ({ label: c.label, hp: c.hp, conditions: c.conditions.map(x => x.name), rounds: Object.fromEntries(c.conditions.map(x => [x.name, x.rounds])) })));
+	const of = async (label) => (await fight()).find(c => c.label === label);
+	const modal = o.page.locator('.modal.ev-effect-prompt');
+	const nextTurn = async () => { await o.page.locator(`${T} .dnd5e-next`).click(); await o.page.waitForTimeout(150); };
+	/** The picker for anyone: the card's button, or a row's menu (right-click, long-press). */
+	const addFor = async (name) => {
+		const r = row(name);
+		const btn = r.locator('.ev-card-condition');
+		if (await btn.count()) await btn.click();
+		else { await r.locator('.dnd5e-combatant-name').click({ button: 'right' }); await o.page.locator('.menu .menu-item', { hasText: exact('Add a condition…') }).click(); }
+	};
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			plugin.settings.customConditions = plugin.settings.customConditions.filter(c => c.name !== 'Seared');
+			await plugin.campaigns.createCampaign({ name: 'Timed Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Fight.md`, '```nimble-encounter\nname: Timed fight\nmonsters:\n- 2 `5e:Goblin Warrior`\n- `5e:Ogre`\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Fight.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/Fight.md`, 'preview');
+		await o.page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-encounter button', { hasText: 'Run' }).first().click();
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant`).count()) === 3, { what: 'three combatants' });
+		await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.change(f => { const inits = { 'Ogre': 20, 'Goblin Warrior': 15, 'Goblin Warrior 2': 10 }; for (const c of f.combatants) c.init = inits[c.label]; }));
+		await o.page.locator(`${T} button`, { hasText: 'Start combat' }).click();
+		await o.waitFor(async () => /Ogre's turn/.test(await o.page.locator(`${T} .dnd5e-tracker-status`).innerText()), { what: "Ogre's turn" });
+
+		// Frightened for 2 rounds, from the picker (a row's menu): two taps and a duration. The row says so.
+		await addFor('Goblin Warrior');
+		await o.page.locator('.condition-picker .nimble-segmented button', { hasText: exact('2') }).click();
+		await o.page.locator('.condition-picker .condition-option[aria-label="Frightened"]').click();
+		await o.waitFor(async () => (await of('Goblin Warrior')).rounds.Frightened === 2, { what: 'Frightened, 2 rounds' });
+		await o.waitFor(async () => /Frightened · 2 rd/.test(await row('Goblin Warrior').locator('.dnd5e-row-sub').innerText().catch(() => '')), { what: 'the row says so' });
+
+		// Burning (SRD 5.2) comes with its effect: 1d4 Fire at the start of each turn. The Ogre is on the card.
+		await addFor('Ogre');
+		await o.page.locator('.condition-picker .condition-search').fill('burn');
+		await o.page.locator('.condition-picker .condition-option[aria-label="Burning"]').click();
+		await o.waitFor(async () => (await row('Ogre').locator('.dnd5e-condition', { hasText: 'Burning' }).locator('.dnd5e-condition-mark.is-damage').count()) === 1, { what: 'Burning chip with its mark' });
+
+		// A condition of your own, made on the spot: 3 Fire damage at the start of its turns, kept for next time.
+		await addFor('Goblin Warrior 2');
+		await o.page.locator('.condition-picker .condition-search').fill('Seared');
+		await o.page.locator('.condition-picker .ev-cond-new').click();
+		const ed = o.page.locator('.nimble-popover.condition-editor');
+		await ed.locator('.ev-cond-add-trigger', { hasText: 'Damage' }).click();
+		await ed.locator('.ev-trigger-dice').fill('3');
+		await ed.locator('.ev-trigger-type').fill('Fire');
+		await ed.locator('.ev-trigger-type').press('Tab');
+		assert.equal(await ed.locator('.ev-cond-keep input').isChecked(), true);
+		await ed.locator('.ev-cond-apply').click();
+		await o.waitFor(async () => (await of('Goblin Warrior 2')).conditions.includes('Seared'), { what: 'Seared applied' });
+		const kept = await o.eval((app, plugin) => plugin.settings.customConditions.find(c => c.name === 'Seared'));
+		assert.deepEqual(kept.timing, { triggers: [{ kind: 'damage', at: 'start', dice: '3', damageType: 'Fire' }] });
+
+		// Ogre → Goblin → Goblin 2: Frightened counts down at the end of the goblin's turn; Seared asks at the start of Goblin 2's.
+		await nextTurn();
+		assert.equal(await modal.count(), 0);
+		await nextTurn();
+		assert.equal((await of('Goblin Warrior')).rounds.Frightened, 1);
+		await modal.waitFor({ timeout: 3000 });
+		assert.match(await modal.locator('.ev-effect').innerText(), /Goblin Warrior 2 is Seared[\s\S]*3 Fire damage/i);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-effect-prompt.png') });
+		await modal.locator('.ev-effect-roll', { hasText: 'Apply 3' }).click();
+		assert.equal((await of('Goblin Warrior 2')).hp, 7);
+		await modal.locator('.ev-effect-done').click();
+		await modal.waitFor({ state: 'detached', timeout: 3000 });
+
+		// Round 2: the Ogre burns at the start of its turn; rolling applies it.
+		await nextTurn();
+		await modal.waitFor({ timeout: 3000 });
+		assert.match(await modal.innerText(), /Ogre is Burning[\s\S]*1d4 Fire damage/i);
+		const before = (await of('Ogre')).hp;
+		await modal.locator('.ev-effect-roll').click();
+		await o.waitFor(async () => /Rolled \d/.test(await modal.locator('.ev-effect-result').innerText().catch(() => '')), { what: 'burn rolled' });
+		const lost = before - (await of('Ogre')).hp;
+		assert.ok(lost >= 1 && lost <= 4, `burned for ${lost}`);
+		assert.equal(await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label), 'Ogre: Burning');
+		await modal.locator('.ev-effect-done').click();
+
+		// Goblin → Goblin 2: Frightened runs out at the end of the goblin's second turn. Skip the sear this time.
+		await nextTurn();
+		await nextTurn();
+		assert.deepEqual((await of('Goblin Warrior')).conditions, []);
+		await modal.waitFor({ timeout: 3000 });
+		await modal.locator('.ev-effect-skip').click();
+		await modal.locator('.ev-effect-done').click();
+		assert.equal((await of('Goblin Warrior 2')).hp, 7);
+
+		// Back puts Frightened back (1 round left); Next again ends it, and doesn't ask about the sear twice.
+		await o.page.locator(`${T} button[aria-label="Back a turn"]`).click();
+		await o.waitFor(async () => (await of('Goblin Warrior')).rounds.Frightened === 1, { what: 'Frightened back after Back' });
+		await nextTurn();
+		assert.deepEqual((await of('Goblin Warrior')).conditions, []);
+		assert.equal(await modal.count(), 0);
+
+		// Your own condition is offered next time, with its effect.
+		await addFor('Ogre');
+		await o.page.locator('.condition-picker .condition-search').fill('sea');
+		const offered = o.page.locator('.condition-picker .condition-option[aria-label="Seared"]');
+		assert.equal(await offered.count(), 1);
+		assert.equal(await offered.locator('.ev-cond-mark').count(), 1);
+		await o.page.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			plugin.settings.customConditions = plugin.settings.customConditions.filter(c => c.name !== 'Seared');
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('encounter settings: the 5e tracker menu opens 5e\'s own settings; heroes left blank for players to fill in', async (o) => {
+	const C = 'Campaigns/Settings Coast';
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Settings Coast', level: 3, heroes: 1, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Fight.md`, '```nimble-encounter\nname: Test fight\nmonsters:\n- `5e:Goblin Warrior`\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Fight.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/Fight.md`, 'preview');
+		// The campaign is active now, so this is its party.
+		await o.eval((app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
+		await o.page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-encounter button', { hasText: 'Run' }).click();
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		await o.page.locator(`${T} button[aria-label="Add the party"]`).click();
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant`).count()) === 2, { what: 'two in the fight' });
+
+		await o.eval(() => document.querySelectorAll('.notice').forEach(n => n.remove())); // a notice from earlier can sit over the menu button
+		await o.page.locator(`${T} .dnd5e-tracker-more`).click();
+		await o.page.locator('.menu-item', { hasText: 'Encounter settings…' }).click();
+		const dlg = o.page.locator('.modal.ev-settings-modal');
+		await dlg.waitFor();
+		assert.match(await dlg.locator('.modal-title').innerText(), /5e encounter settings/);
+		const heroes = dlg.locator('.setting-item', { hasText: 'Roll heroes\' initiative when combat starts' });
+		await heroes.locator('.checkbox-container').click();
+		await o.waitFor(() => o.eval((app, plugin) => plugin.settings.systemData?.dnd5e?.options?.rollHeroes === false), { what: 'setting saved' });
+		await o.page.keyboard.press('Escape');
+
+		await o.page.locator(`${T} button`, { hasText: 'Start combat' }).click();
+		await o.waitFor(() => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.round === 1), { what: 'combat started' });
+		const inits = await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => [c.side, c.init ?? null]));
+		assert.ok(inits.some(([side, init]) => side === 'monster' && init !== null), `monster rolled: ${JSON.stringify(inits)}`);
+		assert.ok(inits.some(([side, init]) => side === 'hero' && init === null), `hero left blank: ${JSON.stringify(inits)}`);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			if (plugin.settings.systemData?.dnd5e?.options) delete plugin.settings.systemData.dnd5e.options;
+			plugin.settings.party = [];
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			if (plugin.settings.activeCampaign) await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('map pins: a click shows the note in a quick look over the map; Cmd/Ctrl-click opens the page', async (o) => {
+	await resetEncounter(o);
+	const M = '.workspace-leaf.mod-active .markdown-reading-view';
+	try {
+		await o.eval(async (app) => {
+			for (const f of ['Pin Map.md', 'Pin NPC.md']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+			const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+			c.getContext('2d').fillRect(0, 0, 400, 300);
+			const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+			if (!app.vault.getAbstractFileByPath('pin-map.png')) await app.vault.createBinary('pin-map.png', await blob.arrayBuffer());
+			await app.vault.create('Pin NPC.md', '---\nnimble: npc\nrole: Ferryman\n---\nHe ferries smugglers.\n');
+			await app.vault.create('Pin Map.md', '```nimble-map\nimage: [[pin-map.png]]\npins:\n- 50, 50 | The ferryman | [[Pin NPC]] | npc\n```\n');
+		});
+		await o.openFile('Pin Map.md', 'preview');
+		// The pin's own box is a point; its badge is what you click.
+		const pin = o.page.locator(`${M} .nimble-map-pin .nimble-map-pin-inner`).first();
+		await o.waitFor(() => o.page.evaluate((M) => { const img = document.querySelector(`${M} .nimble-map img`); return !!img && img.naturalWidth > 0; }, M), { what: 'the map image' });
+		await pin.waitFor({ state: 'visible', timeout: 10000 });
+		// Show pin labels shows them (a small image counts as zoomed out; a label without a key still shows), and hides them.
+		const label = o.page.locator(`${M} .nimble-map-pin .pin-label-full`).first();
+		const toggle = o.page.locator(`${M} .nimble-map-btn[aria-label="Show pin labels"]`);
+		assert.equal(await label.isVisible(), true, 'labels show by default');
+		await toggle.click();
+		await o.waitFor(async () => !(await label.isVisible()), { what: 'labels hidden' });
+		await toggle.click();
+		await o.waitFor(() => label.isVisible(), { what: 'labels back' });
+		await pin.click();
+		await o.waitFor(async () => (await o.page.locator('.modal-container .modal').count()) === 1, { what: 'a quick look' });
+		assert.match(await o.page.locator('.modal-container .modal').innerText(), /Pin NPC|ferries smugglers/);
+		assert.equal(await o.eval((app) => app.workspace.getActiveFile()?.path), 'Pin Map.md', 'still on the map');
+		await o.page.keyboard.press('Escape');
+		await o.waitFor(async () => (await o.page.locator('.modal-container').count()) === 0, { what: 'quick look closed' });
+		await pin.click({ modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'] });
+		await o.waitFor(async () => (await o.eval((app) => app.workspace.getLeavesOfType('markdown').some(l => l.view.file?.path === 'Pin NPC.md'))), { what: 'the page in a new tab' });
+	} finally {
+		await o.eval(async (app) => {
+			app.workspace.getLeavesOfType('markdown').filter(l => l.view.file?.path === 'Pin NPC.md').forEach(l => l.detach());
+			document.querySelectorAll('.modal-container').forEach(n => n.remove());
+			for (const f of ['Pin Map.md', 'Pin NPC.md', 'pin-map.png']) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x); }
+		});
+	}
+});
+
+test('map tokens come from the campaign\'s game: Nimble\'s encounter, then 5e\'s fight', async (o) => {
+	await resetEncounter(o);
+	const C = 'Campaigns/Token Coast';
+	const M = '.workspace-leaf.mod-active .markdown-reading-view';
+	const trayNames = () => o.page.locator(`${M} .nimble-map-token.in-tray .nimble-map-token-name`).allInnerTexts();
+	const openMap = async (path) => {
+		await o.openFile(path, 'preview');
+		const btn = o.page.locator(`${M} .nimble-map-btn[aria-label="Show the current encounter as tokens"]`);
+		await btn.waitFor({ timeout: 5000 });
+		await btn.click();
+	};
+	try {
+		await o.eval(async (app, plugin, C) => {
+			const c = document.createElement('canvas'); c.width = 400; c.height = 300;
+			c.getContext('2d').fillRect(0, 0, 400, 300);
+			const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+			if (!app.vault.getAbstractFileByPath('token-map.png')) await app.vault.createBinary('token-map.png', await blob.arrayBuffer());
+			const md = '```nimble-map\nimage: [[token-map.png]]\n```\n';
+			for (const f of ['Token Map.md', C]) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x, true); }
+			await app.vault.create('Token Map.md', md);
+		}, C);
+
+		// Nimble (a map outside any campaign): the active campaign's Nimble encounter. Each campaign keeps its
+		// own fight, so the goblin goes in once the map is open and whichever campaign is active has settled.
+		await o.openFile('Token Map.md', 'preview');
+		await o.page.waitForTimeout(300);
+		await o.eval(async (app, plugin) => {
+			const nb = plugin.runtime('nimble');
+			await nb.addToEncounter(nb.index.get('Goblin Boss').monster, 'Bestiary/Goblin Boss.md', 1);
+		});
+		await openMap('Token Map.md');
+		await o.waitFor(async () => (await trayNames()).some(n => /^Goblin Boss/.test(n)), { what: 'the Nimble encounter in the tray' });
+
+		// 5e: Run the fight, and the 5e campaign's map shows its fighters, not Nimble's.
+		await o.eval(async (app, plugin, C) => {
+			await plugin.campaigns.createCampaign({ name: 'Token Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Ambush.md`, '```nimble-encounter\nname: Bridge\nmonsters:\n- 2 `5e:Goblin Warrior`\n```\n');
+			await app.vault.create(`${C}/Bridge Map.md`, '```nimble-map\nimage: [[token-map.png]]\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/Ambush.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/Ambush.md`, 'preview');
+		const block = o.page.locator(`${M} .dnd5e-encounter`);
+		await block.locator('button', { hasText: 'Run' }).waitFor();
+		await block.locator('button', { hasText: 'Run' }).click();
+		await o.waitFor(() => o.eval((app, plugin) => { const f = plugin.runtime('dnd5e').fights.fight; return f.name === 'Bridge' && f.combatants.length === 2; }), { what: 'the 5e fight' });
+		await openMap(`${C}/Bridge Map.md`);
+		await o.waitFor(async () => {
+			const n = await trayNames();
+			return n.length === 2 && n.every(x => /^Goblin Warrior/.test(x));
+		}, { what: '5e fighters in the tray' });
+		await o.waitFor(async () => (await o.page.locator(`${M} .nimble-map-tray-title`).innerText().catch(() => '')) === 'Bridge', { what: 'the 5e fight\'s name over the tray' });
+		// A change in the fight redraws the tokens.
+		await o.eval((app, plugin) => { plugin.runtime("dnd5e").fights.change(f => { f.combatants[0].hp = 0; }); });
+		await o.waitFor(async () => (await o.page.locator(`${M} .nimble-map-token.in-tray.is-down`).count()) === 1, { what: 'the downed goblin' });
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			for (const f of ['Token Map.md', C]) { const x = app.vault.getAbstractFileByPath(f); if (x) await app.vault.delete(x, true); }
+			if (plugin.settings.activeCampaign) await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('5e slash commands: /monster, /spell, /encounter rated by 2024 XP, /statblock, /add into the 5e tracker, /roll with advantage, AC in /party-table', async (o) => {
+	const C = 'Campaigns/Slash Coast';
+	const note = `${C}/Prep.md`;
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			await plugin.campaigns.createCampaign({ name: 'Slash Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Prep.md`, '# Prep\n\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(note, 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 2, ch: 0 }); ed.focus(); });
+		const type = async (t) => { await o.page.keyboard.type(t, { delay: 15 }); await o.page.waitForTimeout(250); };
+		const menu = o.page.locator('.suggestion-container .nimble-slash-item');
+		const titles = () => menu.locator('.nimble-slash-title').allInnerTexts();
+
+		// The bare menu offers 5e's commands, not Nimble's builders.
+		await type('/');
+		await o.waitFor(async () => (await menu.count()) > 10, { what: 'the slash menu' });
+		const all = await titles();
+		for (const c of ['/monster', '/spell', '/species', '/encounter', '/condition', '/new-monster', '/new-item']) assert.ok(all.includes(c), `${c} in ${all.join(' ')}`);
+		for (const c of ['/legendary', '/minion', '/companion']) assert.ok(!all.includes(c), `${c} is Nimble's`);
+		await o.page.keyboard.press('Backspace');
+
+		// /encounter: four level-3 heroes, 4 Goblin Warriors + an Ogre = 650 XP, Low.
+		await type('/enc 4 goblin warrior, ogre');
+		await o.waitFor(async () => /Ogre/.test(await menu.first().textContent()), { what: 'encounter suggestion' });
+		assert.match(await menu.first().locator('.nimble-slash-badge').innerText(), /Low 41%/i);
+		assert.match(await menu.first().locator('.nimble-slash-detail').innerText(), /650 XP/);
+		await o.page.keyboard.press('Enter');
+		await type('Boss: /monster ogre');
+		await o.waitFor(async () => (await titles())[0] === 'Ogre', { what: 'Ogre first' });
+		assert.match(await menu.first().locator('.nimble-slash-detail').innerText(), /CR 2/);
+		await o.page.keyboard.press('Enter');
+		await type('/spell school:evocation level:3 class:wiz');
+		await o.waitFor(async () => (await titles()).includes('Fireball'), { what: 'Fireball by its facets' });
+		assert.ok(!(await titles()).includes('Magic Missile'));
+		for (let i = 0; i < 'school:evocation level:3 class:wiz'.length + 7; i++) await o.page.keyboard.press('Backspace');
+		await type('/spell firebal');
+		await o.waitFor(async () => (await titles())[0] === 'Fireball', { what: 'Fireball' });
+		await o.page.keyboard.press('Enter');
+		await o.page.keyboard.press('Enter');
+		await type('/roll +5');
+		await o.waitFor(async () => (await titles()).some(t => /advantage/.test(t)), { what: 'advantage row' });
+		await o.page.keyboard.press('ArrowDown');
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(300);
+		await o.page.keyboard.press('Enter');
+		await type('/statblock goblin war');
+		await o.waitFor(async () => (await titles())[0] === 'Goblin Warrior', { what: 'Goblin Warrior stat block' });
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(300);
+
+		const text = await o.eval((app) => app.workspace.activeEditor.editor.getValue());
+		assert.match(text, /```nimble-encounter\nname: New encounter\nmonsters:\n- 4 Goblin Warrior\n- 1 Ogre\n```\nBoss: `5e:Ogre` `5e:spell:Fireball` /);
+		assert.match(text, /🎲 1d20\+5 \(advantage\) → \*\*\d+\*\*/);
+		assert.match(text, /```5e\nname: Goblin Warrior\n[\s\S]*\n```/);
+		assert.match(await o.eval((app, plugin) => plugin.settings.rollLog[0]?.detail ?? ''), /\[\d+, \d+\]|drop/i);
+
+		// /add: straight into the 5e tracker.
+		await type('/add 2 ogre');
+		await o.waitFor(async () => /Add 2 × Ogre/.test(await menu.first().textContent()), { what: 'add suggestion' });
+		await o.page.keyboard.press('Enter');
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		await o.waitFor(async () => (await o.page.locator(`${T} .dnd5e-combatant`).count()) === 2, { what: 'two ogres' });
+		assert.doesNotMatch(await o.eval((app, plugin, p) => app.vault.cachedRead(app.vault.getAbstractFileByPath(p)), note), /\/add/);
+
+		// /party-table says AC in a 5e campaign.
+		await o.eval(async (app, plugin) => { plugin.settings.party = [{ id: 'h1', name: 'Ilse', level: 3, maxHp: 24, defense: 16 }]; });
+		await o.openFile(note, 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: ed.lineCount() - 1, ch: ed.getLine(ed.lineCount() - 1).length }); ed.focus(); });
+		await o.page.keyboard.press('Enter');
+		await type('/party-table');
+		await o.waitFor(async () => (await titles())[0] === '/party-table', { what: '/party-table' });
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(300);
+		assert.match(await o.eval((app) => app.workspace.activeEditor.editor.getValue()), /\| Hero \| Class \| Level \| HP \| AC \|\n[^\n]*\n\| Ilse \|  \| 3 \| 24 \| 16 \|/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			plugin.settings.party = [];
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('fights follow the campaign: each campaign keeps its own, and the tracker switches to the campaign\'s game', async (o) => {
+	const A = 'Campaigns/Follow Coast', B = 'Campaigns/Follow Vale';
+	const TR5 = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	const TRN = '.workspace-leaf-content[data-type="nimble-encounter-tracker"]';
+	try {
+		await o.eval(async (app, plugin, [A, B]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const c of [A, B]) { const old = app.vault.getAbstractFileByPath(c); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Follow Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await plugin.campaigns.createCampaign({ name: 'Follow Vale', level: 2, heroes: 4, starter: false });
+			await app.vault.create(`${A}/Fight.md`, '```nimble-encounter\nname: Bridge toll\nmonsters:\n- 2 `5e:Goblin Warrior`\n```\n');
+			await app.vault.create(`${B}/Note.md`, 'A Nimble note.\n');
+		}, [A, B]);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${A}/Fight.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${A}/Fight.md`, 'preview');
+		await o.page.locator(`${R} .dnd5e-encounter button`, { hasText: 'Run' }).click();
+		await o.waitFor(async () => (await o.page.locator(`${TR5} .dnd5e-combatant`).count()) === 2, { what: 'two goblins in the 5e tracker' });
+
+		// A Nimble campaign: the same panel becomes Nimble's tracker, with no goblins in it.
+		await o.openFile(`${B}/Note.md`, 'preview');
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.campaigns.active?.folder)) === B, { what: 'Nimble campaign active' });
+		await o.waitFor(async () => (await o.page.locator(TRN).count()) === 1 && (await o.page.locator(TR5).count()) === 0, { what: 'the tracker switched to Nimble\'s' });
+		assert.equal(await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.length), 0, 'the Nimble campaign has no 5e fight');
+
+		// Back to the 5e campaign: its fight comes back.
+		await o.openFile(`${A}/Fight.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${TR5} .dnd5e-combatant`).count()) === 2, { what: 'the goblins came back with their campaign' });
+		assert.equal(await o.page.locator(TRN).count(), 0);
+	} finally {
+		await o.eval(async (app, plugin, [A, B]) => {
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			await plugin.campaigns.setActive(null);
+			for (const c of [A, B]) { const f = app.vault.getAbstractFileByPath(c); if (f) await app.vault.delete(f, true); }
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+		}, [A, B]);
+	}
+});
+
+test('5e: Add to fight from Omnisearch and the quick look; "2 goblin warrior" adds two', async (o) => {
+	const C = 'Campaigns/Add Coast';
+	const SP = '.modal-container .prompt.nimble-omnisearch';
+	const count = () => o.eval((app, plugin) => plugin.runtime('dnd5e').fights.fight.combatants.map(c => c.label));
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Add Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Notes.md`, 'Notes.\n');
+		}, C);
+		await o.openFile(`${C}/Notes.md`, 'preview');
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+		await o.eval((app, plugin) => { plugin.runtime('dnd5e').fights.put(undefined); });
+
+		// Omnisearch → the Wyvern's quick look → Add to fight.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+		await o.page.locator(`${SP} .prompt-input`).fill('wyvern');
+		await o.waitFor(async () => /Wyvern/.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'Wyvern in Omnisearch' });
+		await o.page.keyboard.press('Enter');
+		const add = o.page.locator('.modal.dnd5e-quick-look button', { hasText: 'Add to fight' });
+		await add.waitFor({ timeout: 3000 });
+		await add.click();
+		await o.waitFor(async () => (await count()).join() === 'Wyvern', { what: 'the Wyvern in the fight' });
+		await o.page.keyboard.press('Escape');
+		await o.page.waitForTimeout(200);
+		await o.eval(() => document.querySelectorAll('.modal-container').forEach(n => n.remove()));
+
+		// "2 goblin warrior": Enter adds two.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+		await o.page.locator(`${SP} .prompt-input`).fill('2 goblin warrior');
+		await o.waitFor(async () => /Add 2 × Goblin Warrior/.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'the add row' });
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await count()).length === 3, { what: 'two goblins added' });
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			plugin.runtime('dnd5e').fights.put(undefined);
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('NPC card without the block: a hand-written NPC note still shows its card, portrait slot and game stats; the tags leave them to the card', async (o) => {
+	const C = 'Campaigns/Bare Coast';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Bare Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.createFolder(`${C}/NPCs`).catch(() => {});
+			await app.vault.create(`${C}/NPCs/Sildar.md`, '---\nnimble: npc\nrole: Knight of the Order\nac: 16\nhp: 27\naliases: [Sir Sildar]\n---\nA veteran knight.\n');
+			await app.vault.create(`${C}/NPCs/Has Block.md`, '---\nnimble: npc\nrole: Clerk\n---\n\n```nimble-npc\nlook: Ink on her cuffs.\n```\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, `${C}/NPCs/Sildar.md`)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(`${C}/NPCs/Sildar.md`, 'preview');
+		const card = o.page.locator(`${R} .nimble-npc-card`);
+		await o.waitFor(async () => (await card.count()) === 1, { what: 'one card on a note with no block' });
+		assert.match(await card.locator('.nimble-npc-name').innerText(), /sildar/i);
+		assert.match(await card.locator('.nimble-npc-role').innerText(), /Knight of the Order/i);
+		assert.equal(await card.locator('.nimble-npc-portrait.is-empty').count(), 1, 'the portrait slot offers to add one');
+		// 5e draws its stats as the mini sheet under the card: AC on its shield, HP on the meter.
+		await o.waitFor(async () => (await card.locator('.dnd5e-npc-stats .dnd5e-npc-ac b').innerText().catch(() => '')) === '16', { what: 'AC 16 on the mini sheet' });
+		assert.equal(await card.locator('.dnd5e-npc-stats .dnd5e-npc-hp-bar-max').innerText(), '27');
+		assert.match(await card.locator('.dnd5e-npc-src').innerText(), /Typed in this note/);
+		assert.ok(await card.evaluate(n => !!n.closest('.ev-sys-dnd5e')), 'the card takes 5e\'s look');
+		// The row of tags keeps what the card doesn't show (aliases) and leaves the rest to the card.
+		await o.waitFor(async () => (await o.page.locator(`${R} .metadata-property[data-property-key="role"]`).evaluate(n => getComputedStyle(n).display).catch(() => 'none')) === 'none', { what: 'role left to the card' });
+		assert.notEqual(await o.page.locator(`${R} .metadata-property[data-property-key="aliases"]`).evaluate(n => getComputedStyle(n).display), 'none');
+		// A note with its own block gets just the one card.
+		await o.openFile(`${C}/NPCs/Has Block.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .nimble-npc-card`).count()) >= 1, { what: 'the block card' });
+		await o.page.waitForTimeout(400);
+		assert.equal(await o.page.locator(`${R} .nimble-npc-card`).count(), 1);
+		assert.match(await o.page.locator(`${R} .nimble-npc-card`).innerText(), /Ink on her cuffs/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('note kinds: a 5e NPC gets AC, HP, CR and a stat block, shows them on its card and joins the 5e fight; a system can draw a location card', async (o) => {
+	const C = 'Campaigns/Kinds Coast';
+	const T = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+	try {
+		const npc = await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			await plugin.campaigns.createCampaign({ name: 'Kinds Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			let camp;
+			for (let i = 0; i < 50 && !(camp = plugin.campaigns.campaigns.find(c => c.folder === C && c.system)); i++) await new Promise(r => setTimeout(r, 100));
+			const f = await plugin.campaigns.createInSection(camp, 'npc', 'Marta Hale');
+			return { path: f.path, text: await app.vault.read(f) };
+		}, C);
+		assert.match(npc.text, /attitude: neutral\nac: ""\nhp: ""\ncr: ""\nstatblock: ""\n---/);
+		await o.eval(async (app, plugin, p) => {
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(p), (fm) => { fm.ac = 15; fm.hp = '30 (4d8 + 12)'; fm.statblock = 'Bandit Captain'; });
+		}, npc.path);
+		await o.openFile(npc.path, 'preview');
+		const card = o.page.locator(`${R} .nimble-npc-card`);
+		// A mini character sheet under the card: AC in its shield, HP as the meter, the Bandit Captain's abilities and actions.
+		const stats = card.locator('.dnd5e-npc-stats');
+		await o.waitFor(async () => (await stats.locator('.dnd5e-npc-ac b').innerText().catch(() => '')) === '15', { what: 'AC 15 on the card' });
+		assert.equal(await card.locator('.nimble-note-stat').count(), 0, 'no stat chips beside the mini sheet');
+		assert.match(await stats.locator('.dnd5e-npc-src').innerText(), /From[\s\S]*Bandit Captain[\s\S]*HP is their own/i);
+		assert.equal(await stats.locator('.dnd5e-npc-hp-bar-cur').innerText(), '30');
+		assert.match(await stats.locator('.dnd5e-npc-hpd').innerText(), /4d8 \+ 12/);
+		assert.equal(await stats.locator('.dnd5e-npc-ab').count(), 6);
+		assert.ok(await stats.locator('.dnd5e-npc-act .dnd5e-dmg').count() >= 1, 'actions with damage buttons');
+		await card.screenshot({ path: join(ARTIFACTS, 'note-kinds-5e-npc.png') });
+		// Taking a hit in the note: the meter writes what's left, and the fight starts from it.
+		await stats.locator('.ns-meter-step[aria-label="Take 1 damage"]').click();
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter?.hp_now, npc.path)) === 29, { what: 'hp_now 29' });
+		await o.waitFor(async () => (await card.locator('.dnd5e-npc-hp-bar-cur').innerText().catch(() => '')) === '29', { what: 'the meter redrawn' });
+
+		// Add to fight: the NPC under her own name, AC and HP, with the Bandit Captain's actions.
+		await card.locator('button.dnd5e-npc-fight').click();
+		await o.page.locator(T).waitFor({ timeout: 5000 });
+		const row = o.page.locator(`${T} .dnd5e-combatant`);
+		await o.waitFor(async () => (await row.count()) === 1, { what: 'Marta in the tracker' });
+		assert.match(await row.locator('.dnd5e-combatant-name').innerText(), /^Marta Hale$/);
+		// Before the fight her row is about Initiative; her HP (29, after the hit in her note) and AC are in the fight, and on her card once it starts.
+		const marta = await o.eval((app, plugin) => { const c = plugin.settings.systemData.dnd5e.fight.combatants[0]; return [c.hp, c.maxHp, c.ac]; });
+		assert.deepEqual(marta, [29, 30, 15]);
+		assert.ok((await o.eval((app, plugin) => plugin.settings.systemData.dnd5e.fight.combatants[0].monster.actions.length)) > 0);
+
+		// A story NPC (no stats yet): one quiet line; Type them in writes a starting set into the note.
+		const story = await o.eval(async (app, plugin, C) => {
+			const camp = plugin.campaigns.campaigns.find(c => c.folder === C);
+			return (await plugin.campaigns.createInSection(camp, 'npc', 'Mother Sel')).path;
+		}, C);
+		await o.openFile(story, 'preview');
+		const quiet = o.page.locator(`${R} .nimble-npc-card .dnd5e-npc-stats.is-empty`);
+		await quiet.waitFor({ timeout: 5000 });
+		assert.match(await quiet.innerText(), /A story NPC: no stats[\s\S]*From a stat block[\s\S]*Type them in/);
+		await quiet.locator('button', { hasText: 'Type them in' }).click();
+		await o.waitFor(async () => /Typed in this note/.test(await o.page.locator(`${R} .nimble-npc-card .dnd5e-npc-src`).innerText().catch(() => '')), { what: 'typed-in stats' });
+		assert.deepEqual(await o.eval((app, _p, p) => { const f = app.metadataCache.getCache(p).frontmatter; return [f.ac, f.hp, f.str]; }, story), [10, '4 (1d8)', 10]);
+
+		// A system that draws locations its own way: new locations get a ```nimble-note block for it.
+		const loc = await o.eval(async (app, plugin, C) => {
+			const sys = plugin.systems.resolve('5e');
+			window.__e2eLocation = sys.noteKinds.location; sys.noteKinds.location = { fields: [{ key: 'danger', label: 'Danger' }], card: (el, ctx) => { el.createDiv({ cls: 'e2e-location-card', text: `Spooky ${ctx.fm.title ?? ''}`.trim() }); } };
+			const camp = plugin.campaigns.campaigns.find(c => c.folder === C);
+			const f = await plugin.campaigns.createInSection(camp, 'location', 'Old Mill');
+			await app.fileManager.processFrontMatter(f, (fm) => { fm.danger = 'high'; });
+			return { path: f.path, text: await app.vault.read(f) };
+		}, C);
+		assert.match(loc.text, /danger: /);
+		assert.match(loc.text, /\n---\n\n```nimble-note\n```\n/);
+		await o.openFile(loc.path, 'preview');
+		const lc = o.page.locator(`${R} .nimble-note-card`);
+		await o.waitFor(async () => (await lc.locator('.e2e-location-card').count()) === 1, { what: 'the system\'s location card' });
+		assert.match(await lc.locator('.nimble-note-stat').innerText(), /Danger\s*high/i);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			plugin.systems.resolve('5e').noteKinds.location = window.__e2eLocation;
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-tracker');
+			if (plugin.settings.systemData) delete plugin.settings.systemData.dnd5e;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('NPC card in Nimble: level, the armor letter, HP in a heart, its monster block and Add to fight; players see their notes, never stats or secrets', async (o) => {
+	const C = 'Campaigns/Copper Card';
+	const P = 'Campaigns/Copper Notes';
+	await resetEncounter(o);
+	try {
+		const npc = await o.eval(async (app, plugin, [C, P]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const d of [C, P]) { const old = app.vault.getAbstractFileByPath(d); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Copper Card', level: 3, heroes: 4, starter: false });
+			let camp;
+			for (let i = 0; i < 50 && !(camp = plugin.campaigns.campaigns.find(c => c.folder === C)); i++) await new Promise(r => setTimeout(r, 100));
+			const f = await plugin.campaigns.createInSection(camp, 'npc', 'Ysolde Krenn');
+			const text = await app.vault.read(f);
+			await app.vault.modify(f, text.replace('```nimble-npc\n', '```nimble-npc\ntactics: Holds the door.\n').replace('secret: ', 'secret: She skims the ingots.'));
+			await app.fileManager.processFrontMatter(f, (fm) => { fm.role = 'Captain of the vault guard'; fm.faction = 'The Assayers'; fm.attitude = 'hostile'; fm.level = 3; fm.armor = 'M'; fm.hp = 33; fm.statblock = 'Goblin Boss'; });
+			// A player's own note on her: their notes, and a secret they shouldn't see even if one was pasted in.
+			await plugin.campaigns.createCampaign({ name: 'Copper Notes', level: 3, heroes: 4, starter: false, role: 'player', character: 'Pip' });
+			await app.vault.createFolder(`${P}/NPCs`).catch(() => {});
+			await app.vault.create(`${P}/NPCs/Ysolde.md`, '---\nnimble: npc\nrole: Captain\nlevel: 3\nhp: 33\nstatblock: Goblin Boss\n---\n```nimble-npc\nsaid: Nobody leaves with copper.\nsecret: She skims the ingots.\n```\n');
+			return { path: f.path, text };
+		}, [C, P]);
+		// A new Nimble NPC gets the book's numbers as properties.
+		assert.match(npc.text, /attitude: neutral\nlevel: ""\narmor: ""\nhp: ""\nstatblock: ""\n---/);
+		await o.openFile(npc.path, 'preview');
+		const card = o.page.locator(`${R} .nimble-npc-card`);
+		await o.waitFor(async () => (await card.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 3, { what: 'Nimble stats on the card' });
+		assert.ok(await card.evaluate(n => !!n.closest('.ev-sys-nimble')), 'the card wears Nimble\'s look');
+		assert.deepEqual((await card.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '33']);
+		assert.equal(await card.locator('.nimble-npc-stat.is-armor .nb-armor').getAttribute('aria-label'), 'Medium armor');
+		assert.equal(await card.locator('.nimble-npc-stat.is-hp .nb-heart').count(), 1);
+		assert.equal(await card.locator('.nimble-npc-stats .nimble-inline-ref[data-nimble-ref="Goblin Boss"]').count(), 1, 'a reference to her block');
+		// Each fact keeps its label beside its value.
+		assert.match(await card.locator('.nimble-npc-link').first().innerText(), /Faction\s*The Assayers/);
+		assert.deepEqual(await card.locator('.nimble-npc-pill').allInnerTexts(), ['Alive', 'Hostile']);
+		await card.screenshot({ path: join(ARTIFACTS, 'npc-card-nimble.png') });
+		// Add to fight: under her own name, with her HP and the block's actions.
+		await card.locator('button.nimble-npc-fight').click();
+		await o.waitFor(async () => (await creatures(o)).length === 1, { what: 'Ysolde in the encounter' });
+		const [c] = await creatures(o);
+		assert.match(c.label, /^Ysolde Krenn/);
+		assert.equal(c.max, 33);
+		assert.equal(c.armor, 'medium');
+		// The player's card: their notes under "What we know", no numbers, no secret (not even blurred).
+		await o.openFile(`${P}/NPCs/Ysolde.md`, 'preview');
+		const mine = o.page.locator(`${R} .nimble-npc-card`);
+		await o.waitFor(async () => (await mine.count()) === 1, { what: 'the player\'s card' });
+		assert.ok(await mine.evaluate(n => n.classList.contains('is-player')));
+		assert.match(await mine.locator('.nimble-npc-fields-head').innerText(), /What we know/);
+		assert.equal(await mine.locator('.nimble-npc-stats, .nimble-npc-stat, .nimble-npc-fight').count(), 0);
+		assert.equal(await mine.locator('.nimble-npc-field.is-secret').count(), 0);
+		assert.doesNotMatch(await mine.innerText(), /skims/);
+	} finally {
+		await o.eval(async (app, plugin, dirs) => {
+			for (const d of dirs) { const f = app.vault.getAbstractFileByPath(d); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, [C, P]);
+		await resetEncounter(o);
+	}
+});
+
+test('campaign cards: quests, places and sessions open on a card in the game\'s look; the panel wears it too; nothing shows twice', async (o) => {
+	const C = 'Campaigns/Card Vaults';
+	const F = 'Campaigns/Card Coast';
+	await resetEncounter(o);
+	try {
+		const made = await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const d of [C, F]) { const old = app.vault.getAbstractFileByPath(d); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Card Vaults', level: 3, heroes: 4, starter: false });
+			let camp;
+			for (let i = 0; i < 50 && !(camp = plugin.campaigns.campaigns.find(c => c.folder === C)); i++) await new Promise(r => setTimeout(r, 100));
+			await plugin.campaigns.setActive(C);
+			plugin.settings.party = [{ id: 'a', name: 'Brakka', level: 3, maxHp: 28 }, { id: 'b', name: 'Wren', level: 3, maxHp: 20 }];
+			const quest = await plugin.campaigns.createInSection(camp, 'quest', 'The missing assayer');
+			const place = await plugin.campaigns.createInSection(camp, 'location', 'The Lower Gate');
+			const session = await plugin.campaigns.createInSection(camp, 'session', 'Session 7');
+			const texts = { quest: await app.vault.read(quest), place: await app.vault.read(place), session: await app.vault.read(session) };
+			await app.vault.createFolder(`${C}/NPCs`).catch(() => {});
+			await app.vault.create(`${C}/NPCs/Ollo.md`, '---\nnimble: npc\nrole: Gatekeeper\nlocation: "[[The Lower Gate]]"\n---\n');
+			await app.vault.modify(quest, texts.quest.replace('## Objectives\n- [ ] ', '## Objectives\n- [x] Get past the gate\n- [ ] Find Dunn').replace("*What's really going on, that the heroes don't know yet.*", "*What's really going on, that the heroes don't know yet.*\nDunn is hiding from Krenn."));
+			await app.fileManager.processFrontMatter(quest, (fm) => { fm.status = 'active'; fm.giver = '[[Ollo]]'; fm.location = '[[The Lower Gate]]'; fm.reward = '60 gp'; });
+			await app.fileManager.processFrontMatter(place, (fm) => { fm.region = 'Below the gate'; fm.monsters = ['Goblin Boss']; fm.secret = 'The golem obeys the whistle.'; });
+			const st = await app.vault.read(session);
+			await app.vault.modify(session, st.replace('*What happened, for next time.*', '- Talked Ollo into opening the gate.'));
+			await app.fileManager.processFrontMatter(session, (fm) => { fm.quests = ['[[The missing assayer]] advanced']; fm.loot = ['40 gp']; fm.next = 'Down to the pits.'; });
+			// A 5e place opens on its read-aloud.
+			await plugin.campaigns.createCampaign({ name: 'Card Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			let coast;
+			for (let i = 0; i < 50 && !(coast = plugin.campaigns.campaigns.find(c => c.folder === F && c.system)); i++) await new Promise(r => setTimeout(r, 100));
+			const light = await plugin.campaigns.createInSection(coast, 'location', 'Gullhaven Lighthouse');
+			const lightText = await app.vault.read(light);
+			await app.fileManager.processFrontMatter(light, (fm) => { fm.read_aloud = 'Salt has eaten the door to a lace of rust.'; });
+			return { quest: quest.path, place: place.path, session: session.path, light: light.path, texts, lightText };
+		}, [C, F]);
+		// New quests, places and sessions start with the card's block; a session knows who's at the table.
+		for (const t of [made.texts.quest, made.texts.place, made.texts.session]) assert.match(t, /\n---\n\n```nimble-note\n```\n/);
+		assert.match(made.texts.session, /party: \n {2}- "Brakka"\n {2}- "Wren"\nquests: \[\]\nloot: \[\]\nnext: ""/);
+		assert.match(made.texts.place, /monsters: ""/, 'Nimble places get a list of monsters to use');
+		assert.match(made.lightText, /read_aloud: ""/, '5e places get a read-aloud');
+
+		// The quest: kicker, title, stamp; who, where, reward; objectives to tick; the GM's secret. Its own
+		// Objectives and The truth sections, now on the card, leave the page; so does the inline title.
+		await o.openFile(made.quest, 'preview');
+		const q = o.page.locator(`${R} .ev-cq.kind-quest`);
+		await o.waitFor(async () => (await q.count()) === 1, { what: 'the quest card' });
+		assert.ok(await q.evaluate(n => !!n.closest('.ev-sys-nimble')));
+		assert.equal(await q.locator('.ev-cq-title').innerText(), 'The missing assayer');
+		assert.match(await q.locator('.ev-cq-kicker').innerText(), /side quest/i);
+		assert.match(await q.locator('.ev-cq-stamp.is-active').innerText(), /active/i);
+		assert.match(await q.locator('.ev-cq-facts').innerText(), /Given by[\s\S]*Ollo[\s\S]*Where[\s\S]*The Lower Gate[\s\S]*Reward[\s\S]*60 gp/i);
+		assert.deepEqual(await q.locator('.ev-cq-objs li').allInnerTexts(), ['Get past the gate', 'Find Dunn']);
+		assert.match(await q.locator('.ev-cq-sec').first().innerText(), /1 of 2/);
+		assert.match(await q.locator('.ev-cq-secret').innerText(), /Dunn is hiding from Krenn/);
+		await o.waitFor(async () => (await o.page.locator(`${R} .markdown-preview-sizer > .ev-on-card`).count()) >= 2, { what: 'the sections the card shows to be marked' });
+		const shown = await o.page.evaluate((R) => [...document.querySelectorAll(`.workspace-leaf.mod-active ${R} .markdown-preview-sizer > div`)].filter(d => getComputedStyle(d).display !== 'none' && !d.querySelector('.ev-cq')).map(d => d.innerText).join('\n'), R);
+		assert.doesNotMatch(shown, /Find Dunn|Dunn is hiding/, 'the objectives and the truth show once, on the card');
+		assert.match(shown, /Stakes/, 'the rest of the note is still there');
+		assert.equal(await o.page.locator(`.workspace-leaf.mod-active ${R} .inline-title`).evaluate(n => getComputedStyle(n).display), 'none');
+		await q.screenshot({ path: join(ARTIFACTS, 'campaign-card-quest.png') });
+		// The pills, chips and facts on the cards and in the panel sit on their centre lines.
+		const bad = [];
+		await measurePills(o, bad, 'Quest card', `.workspace-leaf.mod-active ${R} .ev-cq`);
+		// Ticking an objective on the card ticks it in the note.
+		await q.locator('.ev-cq-objs li', { hasText: 'Find Dunn' }).locator('.ev-cq-box').click();
+		await o.waitFor(async () => /- \[x\] Find Dunn/.test(await read(o, made.quest)), { what: 'the objective ticked in the note' });
+
+		// The place: who's here (NPCs whose location is it), the monsters to use, the secret.
+		await o.openFile(made.place, 'preview');
+		const p = o.page.locator(`${R} .ev-cq.kind-location`);
+		await o.waitFor(async () => (await p.locator('.ev-cq-who').count()) === 1, { what: 'who\'s here' });
+		assert.match(await p.locator('.ev-cq-whos').innerText(), /Ollo/);
+		assert.equal(await p.locator('.ev-cq-mons .nimble-inline-ref[data-nimble-ref="Goblin Boss"]').count(), 1);
+		assert.match(await p.locator('.ev-cq-facts').innerText(), /Region\s*Below the gate/i);
+		assert.match(await p.locator('.ev-cq-secret').innerText(), /golem/);
+		await p.screenshot({ path: join(ARTIFACTS, 'campaign-card-location.png') });
+
+		// The session repeats nothing: the date over "Session 7", who was there, what happened (the Recap leaves
+		// the page), the quests it moved, the loot, next time.
+		await o.openFile(made.session, 'preview');
+		const s = o.page.locator(`${R} .ev-cq.kind-session`);
+		await o.waitFor(async () => (await s.count()) === 1, { what: 'the session card' });
+		assert.equal(await s.locator('.ev-cq-title').innerText(), 'Session 7');
+		assert.doesNotMatch(await s.locator('.ev-cq-kicker').innerText(), /session 7/i);
+		assert.deepEqual((await s.locator('.ev-cq-who').allInnerTexts()).map(t => t.replace(/^\S+\s+/, '').trim()), ['Brakka', 'Wren']);
+		assert.match(await s.locator('.ev-cq-recap').innerText(), /Talked Ollo/);
+		assert.match(await s.locator('.ev-cq-thread').innerText(), /The missing assayer\s*Advanced/i);
+		assert.match(await s.locator('.ev-cq-loot').innerText(), /40 gp/);
+		assert.match(await s.locator('.ev-cq-next').innerText(), /Down to the pits/);
+		await s.screenshot({ path: join(ARTIFACTS, 'campaign-card-session.png') });
+		await measurePills(o, bad, 'Session card', `.workspace-leaf.mod-active ${R} .ev-cq`);
+
+		// The Campaign panel wears the campaign's game; open quests sit in their own list with a status dot.
+		await o.eval(async (app, plugin, C) => { await plugin.campaigns.setActive(C); await plugin.openCampaignView(); }, C);
+		const panel = o.page.locator('.nimble-campaign-view');
+		await o.waitFor(async () => (await panel.locator('.campaign-quest').count()) === 1, { what: 'the open quest in the panel' });
+		assert.ok(await panel.evaluate(n => n.classList.contains('ev-sys-nimble')));
+		assert.match(await panel.locator('.campaign-heading-quests').innerText(), /Quests\s*1 open/i);
+		assert.equal(await panel.locator('.campaign-quest .campaign-quest-dot.is-active').count(), 1);
+		await panel.screenshot({ path: join(ARTIFACTS, 'campaign-panel-nimble.png') });
+		await measurePills(o, bad, 'Campaign panel', '.nimble-campaign-view');
+
+		// 5e: the place opens on its read-aloud, and the panel turns 5e's.
+		await o.openFile(made.light, 'preview');
+		const l = o.page.locator(`${R} .ev-cq.kind-location`);
+		await o.waitFor(async () => (await l.locator('.ev-cq-read').count()) === 1, { what: 'the read-aloud' });
+		assert.ok(await l.evaluate(n => !!n.closest('.ev-sys-dnd5e')));
+		assert.match(await l.locator('.ev-cq-read').innerText(), /Read aloud[\s\S]*lace of rust/i);
+		await o.eval(async (app, plugin, F) => { await plugin.campaigns.setActive(F); }, F);
+		await o.waitFor(async () => panel.evaluate(n => n.classList.contains('ev-sys-dnd5e')), { what: 'the panel in 5e\'s look' });
+		await o.page.waitForTimeout(300);
+		await measurePills(o, bad, 'Campaign panel (5e)', '.nimble-campaign-view');
+		assert.deepEqual(bad, [], 'misaligned pills');
+	} finally {
+		await o.eval(async (app, plugin, dirs) => {
+			for (const d of dirs) { const f = app.vault.getAbstractFileByPath(d); if (f) await app.vault.delete(f, true); }
+			plugin.settings.party = [];
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
+		await resetEncounter(o);
+	}
+});
+
+test('5e builders: /new-monster writes a ```5e block with 2024 numbers, Edit reopens it, /new-spell makes a homebrew spell that 5e:spell: and /spell find, New item… is 5e\'s', async (o) => {
+	const C = 'Campaigns/Forge Coast';
+	const note = `${C}/Forge.md`;
+	const B = '.modal.nimble-entity-builder';
+	// Create from any step; on the last one it's the Next button.
+	const create = async () => {
+		const c = o.page.locator(`${B} .eb-create`);
+		if (await c.isVisible()) await c.click(); else await o.page.locator(`${B} .eb-next`).click();
+	};
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Forge Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Forge.md`, '# Forge\n\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin, p) => plugin.system(p).id, note)) === 'dnd5e', { what: '5e campaign' });
+		await o.openFile(note, 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 2, ch: 0 }); ed.focus(); });
+
+		// /new-monster: 5e's builder, with 5e's kinds.
+		await o.page.keyboard.type('/new-monster', { delay: 20 });
+		await o.page.keyboard.press('Enter');
+		await o.page.locator(B).waitFor();
+		assert.deepEqual(await o.page.locator(`${B} .eb-kind`).allInnerTexts(), ['Monster', 'Spell', 'Item']);
+		assert.deepEqual(await o.page.locator(`${B} .eb-dot`).allInnerTexts(), ['Basics', 'Armor', 'Abilities', 'Skills', 'Defenses', 'Actions', 'Spells', 'Reactions', 'Legendary']);
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).fill('Ember Hound');
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Challenge"]`).selectOption('5');
+		assert.match(await o.page.locator(`${B} .eb-panel.is-active [data-key="cr"] .eb-aside`).innerText(), /PB \+3 · 1,800 XP/);
+		// Armor: studded leather and a shield make the AC, and 2024 lists them in its gear.
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Armor"]`).selectOption('Studded Leather Armor');
+		await o.page.locator(`${B} .eb-panel.is-active [data-key="shield"] .eb-seg-btn`, { hasText: 'Yes' }).click();
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Abilities' }).click();
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="CON"]`).fill('16');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="DEX"]`).fill('14');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Armor' }).click();
+		await o.waitFor(async () => /4d8 \+ 12/.test(await o.page.locator(`${B} .eb-panel.is-active [data-key="hp"] .eb-aside`).innerText()), { what: 'HP formula hint' });
+		assert.equal(await o.page.locator(`${B} .eb-panel.is-active input[data-field="AC"]`).getAttribute('placeholder'), '16');
+		// An action that's a saving throw: its DC comes from Con (8 + PB 3 + 3).
+		await o.page.locator(`${B} .eb-dot`, { hasText: /^Actions$/ }).click();
+		await o.page.locator(`${B} .eb-panel.is-active [data-key="actions"] .eb-list-add`).click();
+		const breath = o.page.locator(`${B} .eb-panel.is-active [data-key="actions"] .eb-list-item`).nth(1);
+		await breath.locator('input[data-field="Name"]').fill('Cinder Breath');
+		await breath.locator('[data-key="kind"] .eb-seg-btn', { hasText: 'Save' }).click();
+		await breath.locator('select[data-field="Uses"]').selectOption('Recharge 5–6');
+		await breath.locator('input[data-field="Who and where"]').fill('each creature in a 15-foot Cone');
+		await breath.locator('input[data-field="Dice"]').fill('4');
+		await breath.locator('select[data-field="Die"]').selectOption('6');
+		await breath.locator('select[data-field="Damage"]').selectOption('Fire');
+		await o.waitFor(async () => /Cinder Breath \(Recharge 5–6\)[\s\S]*Dexterity Saving Throw: DC 14, each creature in a 15-foot Cone\. Failure: 14 \(4d6\) Fire damage\. Success: Half damage\./.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the breath in the preview' });
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ember Hound[\s\S]*AC\s*16[\s\S]*30 \(4d8 \+ 12\)/);
+		assert.match(await o.page.locator(`${B} .eb-check .eb-check-head`).innerText(), /CR 5/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-builder-monster.png') });
+		await create();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		const text = await o.eval((app) => app.workspace.activeEditor.editor.getValue());
+		assert.match(text, /```5e\nname: Ember Hound\nedition: 2024\nsize: Medium\ntype: humanoid\n[\s\S]*ac: 16\n[\s\S]*hp: 30 \(4d8 \+ 12\)[\s\S]*gear: Shield, Studded Leather Armor\n[\s\S]*cr: 5\n[\s\S]*- Strike: Melee Attack Roll: \+3, reach 5 ft\. Hit: 3 \(1d6\) Slashing damage\.\n- Cinder Breath \(Recharge 5–6\): Dexterity Saving Throw: DC 14/);
+
+		// Edit on the block: the builder opens on it; Save writes it back.
+		await o.openFile(note, 'preview');
+		const block = o.page.locator(`${R} .block-language-5e`).first();
+		await block.waitFor();
+		await block.hover();
+		await block.locator('.nimble-block-edit').click();
+		await o.page.locator(B).waitFor();
+		assert.equal(await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).inputValue(), 'Ember Hound');
+		// The block opens as fields again: the armor, and the breath as a saving throw.
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Armor' }).click();
+		assert.equal(await o.page.locator(`${B} .eb-panel.is-active select[data-field="Armor"]`).inputValue(), 'Studded Leather Armor');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="AC"]`).fill('15');
+		await create();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /\nac: 15\n/.test(await o.eval((app, _p, p) => app.vault.adapter.read(p), note)), { what: 'AC written back' });
+
+		// /new-spell: a homebrew spell block; references and /spell find it before the SRD.
+		await o.openFile(note, 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; const n = ed.lineCount(); ed.setCursor({ line: n - 1, ch: ed.getLine(n - 1).length }); ed.replaceSelection('\n'); ed.focus(); });
+		await o.page.keyboard.type('/new-spell', { delay: 20 });
+		await o.page.keyboard.press('Enter');
+		await o.page.locator(B).waitFor();
+		assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Spell');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).fill('Ember Lash');
+		await o.page.locator(`${B} .eb-panel.is-active .eb-pick[data-value="Wizard"]`).click();
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Effect' }).click();
+		// A ranged spell attack for 2d6 Fire, a die more per slot level: the SRD's sentences are written for it.
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Attack or save"]`).selectOption('ranged');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Dice"]`).fill('2');
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Die"]`).selectOption('6');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Dice per slot level"]`).fill('1');
+		await o.page.locator(`${B} .eb-panel.is-active textarea[data-field="Text"]`).fill('A whip of fire lashes out.');
+		await o.waitFor(async () => /lashes out\. Make a ranged spell attack against the target\. On a hit, the target takes 2d6 Fire damage\.[\s\S]*The damage increases by 1d6 for each spell slot level above 1\./.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the worded spell' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-builder-spell.png') });
+		await create();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /```5e-spell\nname: Ember Lash\nlevel: 1\nschool: Evocation\n[\s\S]*classes: Wizard\n\nA whip of fire lashes out\. Make a ranged spell attack against the target\. On a hit, the target takes 2d6 Fire damage\.\n\nUsing a Higher-Level Spell Slot: The damage increases by 1d6 for each spell slot level above 1\.\n```/.test(await o.eval((app) => app.workspace.activeEditor.editor.getValue())), { what: 'the spell block' });
+		await o.eval(async (app, _p, C) => { await app.vault.create(`${C}/Lash.md`, 'She casts `5e:spell:Ember Lash`.\n'); }, C);
+		await o.openFile(`${C}/Lash.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.kind-spell`).count()) === 1, { what: 'the homebrew spell reference' });
+		await o.page.locator(`${R} .dnd5e-ref.kind-spell .nimble-inline-name`).hover();
+		await o.waitFor(async () => /A whip of fire/.test(await o.page.locator('.nimble-hover-preview .dnd5e-card').innerText().catch(() => '')), { what: 'homebrew card on hover' });
+		await o.page.keyboard.press('Escape');
+
+		// New item… in a 5e campaign is 5e's item builder: a weapon with its damage, properties and mastery.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-item'); });
+		await o.page.locator(B).waitFor();
+		assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Item');
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Name"]`).fill('Ember Pike');
+		await o.page.locator(`${B} .eb-panel.is-active [data-key="kind"] .eb-seg-btn`, { hasText: 'Weapon' }).click();
+		await o.waitFor(async () => (await o.page.locator(`${B} .eb-dot`).allInnerTexts()).join() === 'Item,Weapon', { what: 'the weapon step' });
+		await o.page.locator(`${B} .eb-panel.is-active input[data-field="Cost"]`).fill('20 gp');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Weapon' }).click();
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Die"]`).selectOption('10');
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Damage"]`).selectOption('Piercing');
+		for (const p of ['Heavy', 'Reach', 'Two-Handed']) await o.page.locator(`${B} .eb-panel.is-active [data-key="properties"] .eb-pick[data-value="${p}"]`).click();
+		await o.page.locator(`${B} .eb-panel.is-active select[data-field="Mastery"]`).selectOption('Cleave');
+		await o.waitFor(async () => /Ember Pike[\s\S]*1d10 piercing[\s\S]*Cleave/i.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the weapon card' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-builder-item.png') });
+		await create();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => !!(await o.eval((app, _p, C) => !!app.vault.getAbstractFileByPath(`${C}/Homebrew/Ember Pike.md`), C)), { what: 'the weapon note' });
+		assert.match(await read(o, `${C}/Homebrew/Ember Pike.md`), /```5e-item\nname: Ember Pike\ncategory: Martial Melee Weapon\ndamage: 1d10 piercing\nproperties: Heavy, Reach, Two-Handed\nmastery: Cleave\ncost: 20 gp\n```/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('content packs: a pack in the content folder adds a 5e spell, subclass and monster; a campaign can turn packs off; Import content reports what it left out', async (o) => {
+	const C = 'Campaigns/Pack Coast';
+	const F = 'Ember Vault/Content';
+	const example = readFileSync(join(ROOT, 'docs/content/examples/5e-hearth-and-cinder.json'), 'utf8');
+	try {
+		await o.eval(async (app, plugin, [C, F, example]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, F]) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Pack Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Refs.md`, 'She casts `5e:spell:Ember Lash`, a `5e:Cinder Hound` growls, and the barbarian walks the `5e:subclass:Path of the Hearthguard`.\n');
+			await app.vault.createFolder(F);
+			await app.vault.create(`${F}/hearth.json`, example);
+		}, [C, F, example]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => `${p.name}:${p.entries.length}`).join())) === 'Hearth and Cinder:5', { what: 'the pack loaded' });
+		await o.openFile(`${C}/Refs.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.dnd5e-hit`).count()) === 2 && (await o.page.locator(`${R} .dnd5e-ref .nimble-inline-unknown`).count()) === 0, { what: 'the pack\'s spell, subclass and monster resolve' });
+		await o.page.locator(`${R} .dnd5e-ref.kind-spell .nimble-inline-name`).hover();
+		await o.waitFor(async () => /whip of fire[\s\S]*Hearth and Cinder/.test(await o.page.locator('.nimble-hover-preview .dnd5e-card').innerText().catch(() => '')), { what: 'the pack spell\'s card, naming its pack' });
+		await o.page.keyboard.press('Escape');
+		// The subclass is the Barbarian's.
+		assert.match(await o.page.locator(`${R} .dnd5e-ref.kind-subclass`).innerText(), /Path of the Hearthguard/);
+
+		// The campaign turns packs off: the references don't find them any more.
+		await o.eval(async (app, plugin, C) => {
+			const home = plugin.campaigns.campaigns.find(c => c.folder === C).home.path;
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(home), (fm) => { fm.packs = 'none'; });
+		}, C);
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref .nimble-inline-unknown`).count()) >= 1 && (await o.page.locator(`${R} .dnd5e-ref.kind-spell`).count()) === 0, { what: 'packs off' });
+		await o.eval(async (app, plugin, C) => {
+			const home = plugin.campaigns.campaigns.find(c => c.folder === C).home.path;
+			await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(home), (fm) => { fm.packs = ['Hearth and Cinder']; });
+		}, C);
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.kind-spell`).count()) === 1, { what: 'the pack back on by name' });
+
+		// Import content: paste a pack with a bad entry; the report says why; Add saves the rest.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		const M = '.modal.nimble-import-content';
+		await o.page.locator(M).waitFor();
+		const pasted = JSON.stringify({ pack: 'Table Rules', system: '5e', entries: [{ kind: 'feat', name: 'Lucky Charm', desc: 'Once a day, reroll a 1.' }, { kind: 'spell', name: 'Half Done', level: 2 }] });
+		await o.page.locator(`${M} textarea`).fill(pasted);
+		await o.waitFor(async () => /1 entry: 1 feat · 1 left out/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the import report' });
+		assert.match(await o.page.locator(`${M} .nimble-pack-notes.is-rejected`).innerText(), /Entry 2 \(Half Done\): "school" is missing; "castingTime" is missing/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-import.png') });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await o.eval((app, _p, F) => app.vault.getAbstractFileByPath(`${F}/Table Rules.json`) !== null, F)), { what: 'the pack saved' });
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => p.name).join())) === 'Hearth and Cinder,Table Rules', { what: 'both packs loaded' });
+	} finally {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, F]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
+	}
+});
+
+test('content packs: Import content takes a Nimble pack and says what it left out; its class is in the compendium, makes a hero who levels into its subclass, and its monster joins a fight', async (o) => {
+	const F = 'Ember Vault/Content';
+	const example = JSON.parse(readFileSync(join(ROOT, 'docs/content/examples/nimble-lantern-road.json'), 'utf8'));
+	let hero = null;
+	await resetEncounter(o);
+	try {
+		await o.eval(async (app, _p, F) => { const old = app.vault.getAbstractFileByPath(F); if (old) await app.vault.delete(old, true); }, F);
+		// Import content: the example pack, with one entry that can't be used.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		const M = '.modal.nimble-import-content';
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(JSON.stringify({ ...example, entries: [...example.entries, { kind: 'spell', name: 'Half Done', school: 'Fire' }] }, null, 2));
+		await o.waitFor(async () => /9 entries: 1 class, 1 subclass, 1 option, 1 ancestry, 1 background, 2 spells, 1 item, 1 monster · 1 left out/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the import report' });
+		assert.match(await o.page.locator(`${M} .nimble-pack-notes.is-rejected`).innerText(), /Entry 10 \(Half Done\): "tier" is missing; "text" is missing/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-import-nimble.png') });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => `${p.name}:${p.system}:${p.entries.length}`).join())) === 'The Lantern Road:nimble:9', { what: 'the pack loaded' });
+
+		// The compendium: the class (tagged with its pack, its Ember Dice and Kindlings on its page), and the option in the Berserker's list.
+		await openCompendiumTab(o);
+		const input = o.page.locator(`${CMP} .nimble-cmpx-input`);
+		const detail = o.page.locator(`${CMP} .nimble-cmpx-detail`);
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="classes"]`).click();
+		await input.fill('lamplighter');
+		await o.waitFor(async () => (await cmpNames(o))[0] === 'Lamplighter', { timeout: 3000, what: 'the pack\'s class' });
+		assert.equal(await cmpRow(o, 'Lamplighter').locator('.bestiary-tag.is-pack').textContent(), 'The Lantern Road');
+		await o.waitFor(async () => (await detail.locator('.nimble-cmp-name').first().textContent().catch(() => '')) === 'Lamplighter', { timeout: 3000, what: 'the class page' });
+		const page = await detail.innerText();
+		for (const part of [/Stoke the Flame/, /Kindlings/, /Ember Dice/, /Keeper of the Night Watch/, /The Lantern Road/]) assert.match(page, part);
+		assert.ok(await cmpRow(o, 'Keeper of the Night Watch').count(), 'the subclass joined its class');
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="features"]`).click();
+		await input.fill('banked fire');
+		await o.waitFor(async () => (await cmpNames(o))[0] === 'Banked Fire', { timeout: 3000, what: 'the Berserker\'s new option' });
+		assert.match(await detail.innerText(), /Savage Arsenal/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-nimble-compendium.png') });
+
+		// Its monster, from the compendium into the fight.
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="adversaries"]`).click();
+		await input.fill('wick wraith');
+		await o.waitFor(async () => (await detail.locator('.monster-name').textContent().catch(() => '')) === 'Wick Wraith', { timeout: 3000, what: 'the pack\'s monster' });
+		assert.equal(await cmpRow(o, 'Wick Wraith').locator('.bestiary-tag.is-pack').textContent(), 'The Lantern Road');
+		await detail.locator('.statblock-action', { hasText: exact('Add') }).click();
+		await o.waitFor(async () => (await creatures(o)).some(c => c.label.startsWith('Wick Wraith') && c.max === 30), { what: 'the Wick Wraith in the fight' });
+		await closeCompendiumTab(o);
+
+		// New character: a Lamplighter, from the pack's class, ancestry and background.
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		const m = o.page.locator('.modal.nimble-newchar-modal');
+		await m.waitFor();
+		await m.locator('input.lu-name-input').fill('Wren Lanternfield');
+		await m.locator('select[data-k="class"]').selectOption('Lamplighter');
+		await m.locator('select[data-k="ancestry"]').selectOption('Emberkin');
+		await m.locator('select[data-k="background"]').selectOption('Night Watch Veteran');
+		await m.locator('.lu-dot', { hasText: 'Review' }).click();
+		await o.page.waitForTimeout(450);
+		await m.locator('.lu-next', { hasText: 'Create' }).click();
+		hero = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Wren Lanternfield')?.path ?? null), { what: 'the new note' });
+		const fmOf = (level) => o.waitFor(() => o.eval((app, _p, [p, level]) => { const f = app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter; return f?.level === level ? f : null; }, [hero, level]), { what: `level ${level}` });
+		const one = await fmOf(1);
+		assert.deepEqual([one.class, one.ancestry, one.background, one.hp_max], ['Lamplighter', 'Emberkin', 'Night Watch Veteran', 13]);
+		await o.openFile(hero, 'preview');
+		const sheet = o.page.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		await o.waitFor(async () => /Ember Dice/.test(await sheet.innerText()), { what: 'the class panel\'s Ember Dice' });
+
+		// Level up twice: a Kindling at 2, the pack's subclass at 3.
+		const levelUp = async (level, choose) => {
+			await camp(o, sheet, 'Level up');
+			const lv = o.page.locator('.modal.nimble-levelup');
+			await lv.waitFor();
+			const steps = (await lv.locator('.lu-dot').allInnerTexts()).map(t => t.trim());
+			const step = async (name) => { await lv.locator('.lu-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return lv.locator('.lu-panel.is-active'); };
+			await (await step('Hit points')).locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
+			await choose(step, steps);
+			if (steps.includes('Skills')) await (await step('Skills')).locator('.lu-skill-row', { hasText: 'Insight' }).locator('.lu-step-btn.is-plus').click();
+			const review = await step('Review');
+			assert.equal(await review.locator('.lu-review-row.is-missing').count(), 0, `every choice made at level ${level}`);
+			await lv.locator('.lu-next').click();
+			const fm = await fmOf(level);
+			await lv.locator('.lu-celebrate button').click();
+			return fm;
+		};
+		const two = await levelUp(2, async (step, steps) => {
+			assert.ok(steps.includes('Kindlings'), `steps: ${steps}`);
+			await (await step('Kindlings')).locator('.lu-option', { hasText: 'Warm Hands' }).click();
+		});
+		assert.deepEqual(two.features, ['Warm Hands']);
+		const three = await levelUp(3, async (step, steps) => {
+			assert.ok(steps.includes('Subclass'), `steps: ${steps}`);
+			await (await step('Subclass')).locator('.lu-sub-band-choose').first().click();
+		});
+		assert.equal(three.subclass, 'Keeper of the Night Watch');
+		assert.equal(three.hp_max, 13 + 4 + 4, 'd8: +4 a level');
+		await o.waitFor(async () => /Ward the Gate/.test(await sheet.innerText()), { what: 'the subclass\'s features on the sheet' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-nimble-sheet.png') });
+	} finally {
+		await o.eval(async (app, plugin, [F, hero]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [F, hero]) { const f = p && app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+		}, [F, hero]);
+		await closeCompendiumTab(o);
+		await resetEncounter(o);
+	}
+});
+
+test('content blocks: a 5e class typed in the content folder is its card, in the compendium as Homebrew, and makes a hero; New on Feats builds a feat', async (o) => {
+	const C = 'Campaigns/Block Coast';
+	const F = 'Ember Vault/Content';
+	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+	const typed = readFileSync(join(ROOT, 'e2e/fixtures/content/5e-hearth-warden.md'), 'utf8');
+	const note = `${C}/Party/Tess Emberly.md`;
+	try {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			for (const p of [C, F]) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Block Coast', level: 1, heroes: 4, starter: false, system: '5e', edition: '2024' });
+		}, [C, F]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		// Typed into a note in the content folder, it's indexed as the Homebrew pack…
+		await o.eval(async (app, _p, [F, typed]) => {
+			await app.vault.createFolder(`${F}/5e/Classes`);
+			await app.vault.create(`${F}/5e/Classes/Hearth Warden.md`, typed);
+		}, [F, typed]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e').map(p => `${p.name}:${p.entries.map(e => e.name)}`).join())) === 'Homebrew:Hearth Warden', { what: 'the typed class indexed' });
+		// …and drawn as its card: the class page, nothing wrong.
+		await o.openFile(`${F}/5e/Classes/Hearth Warden.md`, 'preview');
+		const card = o.page.locator(`${R} .ev-content-block .dnd5e-card`);
+		await card.waitFor({ timeout: 5000 });
+		assert.match(await card.innerText(), /Hearth Warden[\s\S]*Hit Die\s*d10[\s\S]*Hearthfire[\s\S]*Homebrew/i);
+		assert.equal(await o.page.locator(`${R} .ev-content-issues`).count(), 0);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-5e-class.png') });
+
+		// The compendium's Classes tab: tagged Homebrew, with Open note on its page.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.page.locator(V).waitFor({ timeout: 5000 });
+		const input = o.page.locator(`${V} .nimble-cmpx-input`);
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Classes' }).click();
+		assert.equal(await o.page.locator(`${V} .nimble-cmpx-new`).getAttribute('aria-label'), 'New class or subclass');
+		await input.fill('hearth warden');
+		await o.waitFor(async () => (await cmpNames(o, V))[0] === 'Hearth Warden', { timeout: 3000, what: 'the typed class in the Classes tab' });
+		const tag = cmpRow(o, 'Hearth Warden', V).locator('.bestiary-tag.is-homebrew');
+		assert.equal(await tag.textContent(), 'Homebrew');
+		// A dark tag with light text (the game's paper white), 4.5:1 or better.
+		const contrast = await tag.evaluate((el) => {
+			const lum = (c) => { const [r, g, b] = c.match(/\d+/g).slice(0, 3).map(n => { const v = Number(n) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+			const s = getComputedStyle(el);
+			const [bg, fg] = [lum(s.backgroundColor), lum(s.color)];
+			return { ratio: (Math.max(bg, fg) + 0.05) / (Math.min(bg, fg) + 0.05), dark: bg < fg };
+		});
+		assert.ok(contrast.dark && contrast.ratio >= 4.5, `tag contrast ${JSON.stringify(contrast)}`);
+		// Its row's tags and chips centred on their capitals.
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${V} .nimble-cmpx-list`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		assert.ok(await o.page.locator(`${V} .nimble-cmpx-detail .statblock-action`, { hasText: 'Open note' }).count(), 'Open note on its page');
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-compendium-5e.png') });
+
+		// New on the Feats tab opens the feat builder; Create writes the block to the content folder and opens it.
+		await input.fill('');
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Feats' }).click();
+		assert.equal(await o.page.locator(`${V} .nimble-cmpx-new`).getAttribute('aria-label'), 'New feat');
+		await o.page.locator(`${V} .nimble-cmpx-new`).click();
+		const FB = '.modal.nimble-entity-builder';
+		await o.page.locator(FB).waitFor();
+		assert.equal(await o.page.locator(`${FB} .eb-kind.is-active`).innerText(), 'Feat');
+		await o.page.locator(`${FB} .eb-panel.is-active input[data-field="Name"]`).fill('Kindler');
+		await o.page.locator(`${FB} .eb-dot`, { hasText: 'Benefit' }).click();
+		await o.page.locator(`${FB} .eb-panel.is-active textarea[data-field="Text"]`).fill('You light fires with a word.');
+		await o.page.locator(`${FB} .eb-next`).click();
+		await o.page.locator(FB).waitFor({ state: 'detached' });
+		const feat = `${F}/5e/Feats/Kindler.md`;
+		await o.waitFor(async () => /^```5e-feat\nname: Kindler\ntype: general\nprerequisite: Level 4\+\ndesc: You light fires with a word\.\n```/.test(await read(o, feat).catch(() => '')), { what: 'the feat\'s note' });
+		await o.waitFor(async () => (await o.eval((app) => app.workspace.getActiveFile()?.path)) === feat, { what: 'the new note open' });
+		// It joins the compendium.
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e')[0]?.entries.map(e => e.name).join())) === 'Hearth Warden,Kindler', { what: 'the feat indexed' });
+		// Back to the compendium (the note opened in a tab of its own).
+		await o.eval((app) => { const l = app.workspace.getLeavesOfType('nimble-dnd5e-compendium')[0]; if (l) app.workspace.revealLeaf(l); });
+		await input.fill('kindler');
+		await o.waitFor(async () => (await cmpNames(o, V))[0] === 'Kindler', { timeout: 3000, what: 'the new feat in the Feats tab' });
+		await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
+
+		// New character: a Hearth Warden from the typed class, its own equipment.
+		const B = '.modal.nimble-entity-builder';
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		const panel = `${B} .eb-panel.is-active`;
+		await o.page.locator(`${panel} input[data-field="Name"]`).fill('Tess Emberly');
+		await o.page.locator(`${panel} select[data-field="Class"]`).selectOption('Hearth Warden');
+		await o.waitFor(async () => /Hearth Warden/.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the class in the preview' });
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Equipment' }).click();
+		assert.match(await o.page.locator(`${panel}`).innerText(), /Chain Mail/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-5e-new-character.png') });
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter?.class, note)) === 'Hearth Warden', { what: 'the hero\'s note' });
+		const fm = await o.eval((app, _p, p) => app.metadataCache.getCache(p).frontmatter, note);
+		assert.ok(fm.inventory.some(i => (i.name ?? i) === 'Chain Mail'), `inventory: ${JSON.stringify(fm.inventory)}`);
+		await o.openFile(note, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="actions"]`).click();
+		await o.waitFor(async () => /Hearthfire/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'Hearthfire\'s uses on the sheet' });
+	} finally {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			for (const p of [C, F]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
+	}
+});
+
+test('content blocks: a Nimble class typed in the content folder is in the Classes tab as Homebrew and makes a hero; a half-written block lists what\'s wrong; New on Origins writes an ancestry', async (o) => {
+	const F = 'Ember Vault/Content';
+	const typed = readFileSync(join(ROOT, 'e2e/fixtures/content/nimble-cinderwright.md'), 'utf8');
+	let hero = null;
+	try {
+		await o.eval(async (app, plugin, F) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(F); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.setActive(null);
+			await app.vault.createFolder(`${F}/Nimble/Classes`);
+		}, F);
+		await o.eval(async (app, _p, [F, typed]) => { await app.vault.create(`${F}/Nimble/Classes/Cinderwright.md`, typed); }, [F, typed]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').map(p => `${p.name}:${p.entries.map(e => e.name)}`).join())) === 'Homebrew:Cinderwright', { what: 'the typed class indexed' });
+
+		// The compendium's Classes tab: tagged Homebrew; its page is the class's.
+		await openCompendiumTab(o);
+		const input = o.page.locator(`${CMP} .nimble-cmpx-input`);
+		const detail = o.page.locator(`${CMP} .nimble-cmpx-detail`);
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="classes"]`).click();
+		await input.fill('cinderwright');
+		await o.waitFor(async () => (await cmpNames(o))[0] === 'Cinderwright', { timeout: 3000, what: 'the typed class' });
+		assert.equal(await cmpRow(o, 'Cinderwright').locator('.bestiary-tag.is-homebrew').textContent(), 'Homebrew');
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${CMP} .nimble-cmpx-list`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		await o.waitFor(async () => /Strike the Anvil[\s\S]*Anvil Oath/.test(await detail.innerText()), { timeout: 3000, what: 'the class page' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-compendium-nimble.png') });
+
+		// New on Origins: a menu (ancestry or background), then the ancestry's builder; it writes a note in the content folder.
+		await input.fill('');
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="origins"]`).click();
+		assert.equal(await o.page.locator(`${CMP} .nimble-cmpx-new`).getAttribute('aria-label'), 'New ancestry or background');
+		await o.page.locator(`${CMP} .nimble-cmpx-new`).click();
+		await o.page.locator('.menu .menu-item', { hasText: 'New ancestry' }).click();
+		const builder = o.page.locator('.modal.nimble-entity-builder');
+		await builder.waitFor();
+		await builder.locator('.eb-panel.is-active input[data-field="Name"]').fill('Emberkin');
+		await builder.locator('.eb-create').click();
+		const anc = `${F}/Nimble/Ancestries/Emberkin.md`;
+		await o.waitFor(async () => /^```nimble-ancestry\nname: Emberkin\nsize: Medium\nrarity: common\n```/.test(await read(o, anc).catch(() => '')), { what: 'the built note' });
+		// Half written by hand, its card still shows, with what's wrong under it.
+		await o.eval(async (app, _p, anc) => { await app.vault.modify(app.vault.getAbstractFileByPath(anc), '```nimble-ancestry\nname: Emberkin\nsize: Medium\nrarity: common\ntraits:\n  - name: ""\n    text: ""\n```\n'); }, anc);
+		await o.openFile(anc, 'preview');
+		const issues = o.page.locator(`${R} .ev-content-issues.is-error`);
+		await issues.waitFor({ timeout: 5000 });
+		assert.match(await issues.innerText(), /Fix 2 things to add it to the compendium[\s\S]*"traits" item 1: "name" is missing[\s\S]*"traits" item 1: "text" is missing/);
+		assert.match(await o.page.locator(`${R} .ev-content-block .nimble-cmp-card`).innerText(), /Emberkin/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-block-nimble-issues.png') });
+		await closeCompendiumTab(o);
+
+		// New character: a Cinderwright, from the typed class; its class panel from its data.
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		const m = o.page.locator('.modal.nimble-newchar-modal');
+		await m.waitFor();
+		await m.locator('input.lu-name-input').fill('Brann Cinders');
+		await m.locator('select[data-k="class"]').selectOption('Cinderwright');
+		await m.locator('.lu-dot', { hasText: 'Review' }).click();
+		await o.page.waitForTimeout(450);
+		await m.locator('.lu-next', { hasText: 'Create' }).click();
+		hero = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Brann Cinders')?.path ?? null), { what: 'the new note' });
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter?.class, hero)) === 'Cinderwright', { what: 'the hero\'s class' });
+		await o.openFile(hero, 'preview');
+		const sheet = o.page.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		await o.waitFor(async () => /Forge Dice[\s\S]*Ember Mend/.test(await sheet.innerText()), { what: 'the class panel from its data' });
+		assert.ok(await sheet.locator('.ns-state', { hasText: 'Not forgeheated' }).count(), 'its own state');
+	} finally {
+		await o.eval(async (app, plugin, [F, hero]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [F, hero]) { const f = p && app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+		}, [F, hero]);
+		await closeCompendiumTab(o);
+	}
+});
+
+test('content builders: New on the Classes tab builds a Nimble class with its own dice and a subclass; a hero levels through the subclass; Edit reopens the class', async (o) => {
+	const F = 'Ember Vault/Content';
+	const B = '.modal.nimble-entity-builder';
+	const cls = `${F}/Nimble/Classes/Lanternkeeper.md`;
+	const sub = `${F}/Nimble/Subclasses/Hooded Lantern.md`;
+	let hero = null;
+	const b = o.page.locator(B);
+	const panel = () => b.locator('.eb-panel.is-active');
+	const step = async (name) => { await b.locator('.eb-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return panel(); };
+	const bad = [];
+	const measure = async () => bad.push(...await o.page.evaluate(pillOffenders, { root: B, tolerance: 1, selectors: PILL_SELECTORS }));
+	const newFromClasses = async (which) => {
+		await openCompendiumTab(o);
+		await o.page.locator(`${CMP} .nimble-cmpx-seg[data-segment="classes"]`).click();
+		assert.equal(await o.page.locator(`${CMP} .nimble-cmpx-new`).getAttribute('aria-label'), 'New class or subclass');
+		await o.page.locator(`${CMP} .nimble-cmpx-new`).click();
+		await o.page.locator('.menu .menu-item', { hasText: which }).click();
+		await b.waitFor();
+	};
+	try {
+		await o.eval(async (app, plugin, F) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(F); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.setActive(null);
+		}, F);
+
+		// The class: New on the Classes tab opens the class builder, its kinds a hero's content only.
+		await newFromClasses('New class');
+		assert.deepEqual((await b.locator('.eb-kind').allInnerTexts()).map(t => t.trim()), ['Class', 'Subclass', 'Option', 'Ancestry', 'Background', 'Boon']);
+		let p = panel();
+		await p.locator('input[data-field="Name"]').fill('Lanternkeeper');
+		await p.locator('input[data-field="Tagline"]').fill('Carries the light into the dark.');
+		await p.locator('button.ncb-motif[aria-label="Mage\'s motif"]').click();
+		p = await step('Stats');
+		for (const k of ['key-WIL', 'key-DEX', 'adv-WIL', 'dis-STR']) await p.locator(`[data-k="${k}"]`).click();
+		assert.equal(await p.locator('.ncb-stat.is-key').count(), 2);
+		assert.equal(await p.locator('.ns-tri.is-on').count(), 2);
+		await measure();
+		p = await step('Resources');
+		await p.locator('.eb-text-btn', { hasText: 'Add dice' }).click();
+		p = panel();
+		await p.locator('input[data-field="Resource name"]').fill('Wick Dice');
+		await p.locator('input[data-field="Max"]').fill('2');
+		p = await step('Options');
+		await p.locator('.eb-text-btn', { hasText: 'Add a list' }).click();
+		p = panel();
+		await p.locator('input[data-field="List name"]').fill('Wicks');
+		await p.locator('input[data-field="Option name"]').fill('Red Wick');
+		await p.locator('textarea[data-field="Option text"]').fill('Your light burns red.');
+		p = await step('Levels');
+		await p.locator('input[data-field="feature name"]').first().fill('Kindle');
+		await p.locator('textarea[data-field="feature text"]').first().fill('Light your lantern as an action.');
+		await p.locator('.ncb-rung[data-level="2"]').click();
+		p = panel();
+		await p.locator('.eb-text-btn', { hasText: 'Add a feature' }).click();
+		p = panel();
+		await p.locator('input[data-field="feature name"]').fill('Wick Lore');
+		await p.locator('textarea[data-field="feature text"]').fill('You learn the old wick-craft.');
+		await p.locator('.ncb-grant-add').click();
+		await o.page.locator('.menu .menu-item', { hasText: 'A choice from a list' }).click();
+		p = panel();
+		await p.locator('.ncb-grant-edit .eb-pick[data-value="Wicks"]').click();
+		// The check says what each level grants, as Level up will ask it.
+		await o.waitFor(async () => /\n?2\s*Wick Lore\s*Choose 1 · Wicks\s*3\s*Choose a subclass/.test(await b.locator('.eb-check').innerText()), { what: 'the levels in the check' });
+		await measure();
+		await o.page.screenshot({ path: join(ARTIFACTS, 'content-builder-class-levels.png') });
+		await step('Review');
+		assert.equal(await b.locator('.eb-note.tone-warn').count(), 0, 'nothing left to fix');
+		await b.locator('.eb-next').click();
+		await o.waitFor(async () => /^```nimble-class\nname: Lanternkeeper\ntagline: Carries the light into the dark\.\nmotif: Mage\nkeyStats: \[WIL, DEX\]\nhitDie: 8\nstartingHp: 13\nsaves:\n {2}adv: WIL\n {2}dis: STR\n/.test(await read(o, cls).catch(() => '')), { what: 'the class note' });
+		const written = await read(o, cls);
+		assert.match(written, /resources:\n {2}- name: Wick Dice\n {4}max: 2\n {4}reset: Safe Rest\n {4}die: d6\n {4}dice:\n {6}rolled: spent\n {6}addTo: \[attack\]\n/);
+		assert.match(written, /- name: Wick Lore\n {8}text: You learn the old wick-craft\.\n {8}choose:\n {10}from: \[Wicks\]\n {10}count: 1\n/);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').flatMap(x => x.entries.map(e => e.name)).join())).includes('Lanternkeeper'), { what: 'the built class in the compendium' });
+		await b.waitFor({ state: 'detached' });
+
+		// The subclass, for the class just built.
+		await newFromClasses('New subclass');
+		p = panel();
+		await p.locator('input[data-field="Name"]').fill('Hooded Lantern');
+		await p.locator('input[data-field="Class"]').fill('Lanternk');
+		await p.locator('input[data-field="Class"]').press('Enter');
+		assert.equal(await panel().locator('input[data-field="Class"]').inputValue(), 'Lanternkeeper');
+		p = await step('Levels');
+		await p.locator('input[data-field="feature name"]').fill('Shutter');
+		await p.locator('textarea[data-field="feature text"]').fill('You can hide your light as a free action.');
+		await o.waitFor(async () => /In the Lanternkeeper[\s\S]*Levels 3[\s\S]*Shutter/i.test(await b.locator('.eb-check').innerText()), { what: 'the subclass check' });
+		await step('Review');
+		await b.locator('.eb-next').click();
+		await o.waitFor(async () => /^```nimble-subclass\nname: Hooded Lantern\nclass: Lanternkeeper\nlevels:\n {2}- level: 3\n/.test(await read(o, sub).catch(() => '')), { what: 'the subclass note' });
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').flatMap(x => x.entries.map(e => e.name)).join())).includes('Hooded Lantern'), { what: 'the built subclass in the compendium' });
+		await closeCompendiumTab(o);
+
+		// A hero from the built class, levelled 1 → 3 through the Wicks and the subclass.
+		await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+		const m = o.page.locator('.modal.nimble-newchar-modal');
+		await m.waitFor();
+		await m.locator('input.lu-name-input').fill('Ilse Wick');
+		await m.locator('select[data-k="class"]').selectOption('Lanternkeeper');
+		await m.locator('.lu-dot', { hasText: 'Review' }).click();
+		await o.page.waitForTimeout(450);
+		await m.locator('.lu-next', { hasText: 'Create' }).click();
+		hero = await o.waitFor(() => o.eval((app) => app.vault.getMarkdownFiles().find(f => f.basename === 'Ilse Wick')?.path ?? null), { what: 'the new note' });
+		const fmOf = (level) => o.waitFor(() => o.eval((app, _p, [p, level]) => { const f = app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(p))?.frontmatter; return f?.level === level ? f : null; }, [hero, level]), { what: `level ${level}` });
+		assert.deepEqual([(await fmOf(1)).class, (await fmOf(1)).hp_max], ['Lanternkeeper', 13]);
+		await o.openFile(hero, 'preview');
+		const sheet = o.page.locator(`${R} .nimble-sheet`);
+		await sheet.waitFor();
+		await o.waitFor(async () => /Wick Dice/.test(await sheet.innerText()), { what: 'the class panel\'s Wick Dice' });
+		const levelUp = async (level, choose) => {
+			await camp(o, sheet, 'Level up');
+			const lv = o.page.locator('.modal.nimble-levelup');
+			await lv.waitFor();
+			const steps = (await lv.locator('.lu-dot').allInnerTexts()).map(t => t.trim());
+			const lstep = async (name) => { await lv.locator('.lu-dot', { hasText: name }).click(); await o.page.waitForTimeout(450); return lv.locator('.lu-panel.is-active'); };
+			await (await lstep('Hit points')).locator('.lu-hp-option', { hasText: 'Take the flat bonus' }).click();
+			await choose(lstep, steps);
+			if (steps.includes('Skills')) await (await lstep('Skills')).locator('.lu-skill-row', { hasText: 'Insight' }).locator('.lu-step-btn.is-plus').click();
+			const review = await lstep('Review');
+			assert.equal(await review.locator('.lu-review-row.is-missing').count(), 0, `every choice made at level ${level}`);
+			await lv.locator('.lu-next').click();
+			const fm = await fmOf(level);
+			await lv.locator('.lu-celebrate button').click();
+			return fm;
+		};
+		const two = await levelUp(2, async (lstep, steps) => {
+			assert.ok(steps.includes('Wicks'), `steps: ${steps}`);
+			await (await lstep('Wicks')).locator('.lu-option', { hasText: 'Red Wick' }).click();
+		});
+		assert.deepEqual(two.features, ['Red Wick']);
+		const three = await levelUp(3, async (lstep, steps) => {
+			assert.ok(steps.includes('Subclass'), `steps: ${steps}`);
+			await (await lstep('Subclass')).locator('.lu-sub-band-choose').first().click();
+		});
+		assert.equal(three.subclass, 'Hooded Lantern');
+		await sheet.locator('.ns-tab', { hasText: 'Features' }).click();
+		await o.waitFor(async () => /Shutter[\s\S]*Red Wick|Red Wick[\s\S]*Shutter/.test(await sheet.innerText()), { what: 'the subclass\'s feature and the Wick on the sheet' });
+		assert.ok(await sheet.locator('.ns-class .ns-feat', { hasText: 'Wick Dice' }).count(), 'the class\'s own dice on the class panel');
+
+		// Edit on the class's block opens the builder on it; Save writes the block back.
+		await o.openFile(cls, 'preview');
+		const block = o.page.locator(`${R} .ev-content-block`);
+		await block.waitFor();
+		await block.hover();
+		await block.locator('button.nimble-block-edit').click();
+		await b.waitFor();
+		assert.deepEqual((await b.locator('.eb-kind').allInnerTexts()).map(t => t.trim()), ['Class'], 'editing keeps its kind');
+		assert.equal(await panel().locator('input[data-field="Name"]').inputValue(), 'Lanternkeeper');
+		await panel().locator('input[data-field="Tagline"]').fill('Walks ahead with the light.');
+		await step('Review');
+		await b.locator('.eb-next', { hasText: 'Save class' }).click();
+		await o.waitFor(async () => /tagline: Walks ahead with the light\.\n/.test(await read(o, cls)), { what: 'the edit written back' });
+		assert.match(await read(o, cls), /- name: Wick Dice[\s\S]*from: \[Wicks\]/, 'the rest stays');
+		assert.deepEqual(bad, [], 'pills in the builder centred on their capitals');
+	} finally {
+		await o.eval(async (app, plugin, [F, hero]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [F, hero]) { const f = p && app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+		}, [F, hero]);
+		await closeCompendiumTab(o);
+	}
+});
+
+test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its data address); Fantasy Statblocks creatures become ```5e notes', async (o) => {
+	const C = 'Campaigns/Import Coast';
+	const M = '.modal.dnd5e-import';
+	// A made-up character in D&D Beyond's shape (names and numbers only).
+	const stat = (v) => v.map((value, i) => ({ id: i + 1, name: null, value }));
+	const ddb = { success: true, data: {
+		id: 1001, name: 'Pip Underbough',
+		race: { fullName: 'Elf', baseRaceName: 'Elf', isLegacy: false, isSubRace: false, sources: [{ sourceId: 145 }] },
+		background: { hasCustomBackground: false, definition: { name: 'Sage', sources: [{ sourceId: 145 }] } },
+		classes: [{ level: 3, isStartingClass: true, hitDiceUsed: 0, definition: { name: 'Wizard', sources: [{ sourceId: 145 }] }, subclassDefinition: { name: 'Evoker' } }],
+		stats: stat([8, 14, 13, 15, 12, 10]), bonusStats: stat([null, null, null, null, null, null]), overrideStats: stat([null, null, null, null, null, null]),
+		modifiers: { race: [], class: [{ type: 'proficiency', subType: 'arcana' }], background: [{ type: 'bonus', subType: 'intelligence-score', value: 2 }], item: [], feat: [], condition: [] },
+		baseHitPoints: 14, removedHitPoints: 0, temporaryHitPoints: 0,
+		classSpells: [{ spells: [{ definition: { name: 'Fire Bolt' } }, { definition: { name: 'Shield' } }] }],
+		spells: { race: [], class: [], feat: [], item: [] },
+		inventory: [{ quantity: 1, equipped: true, definition: { id: 10, name: 'Quarterstaff' } }],
+		currencies: { cp: 0, sp: 0, ep: 0, gp: 12, pp: 0 }, feats: [{ definition: { name: 'Alert' } }],
+	} };
+	const creatures = '```statblock\nname: Bog Wisp\nsize: Tiny\ntype: undead\nalignment: chaotic evil\nac: 13\nhp: 9\nhit_dice: 2d4 + 4\nspeed: 0 ft., fly 40 ft. (hover)\nstats: [3, 16, 14, 10, 12, 6]\ncr: 1/2\nactions:\n  - name: Chill Touch\n    desc: "Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3) Cold damage."\n```';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Import Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} .dnd5e-import-link`).fill('https://www.dndbeyond.com/characters/123456789/AbCdEf');
+		assert.equal(await o.page.locator(`${M} .dnd5e-import-url a`).getAttribute('href'), 'https://character-service.dndbeyond.com/character/v5/character/123456789');
+		await o.page.locator(`${M} textarea`).fill(JSON.stringify(ddb));
+		await o.waitFor(async () => /Pip Underbough[\s\S]*Level 3 Wizard[\s\S]*2024 rules/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the character found' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb.png') });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		const sheet = `${C}/Party/Pip Underbough.md`;
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter?.class, sheet)) === 'Wizard', { what: 'the imported character note' });
+		const fm = await o.eval((app, _p, p) => app.metadataCache.getCache(p).frontmatter, sheet);
+		assert.deepEqual([fm.level, fm.subclass, fm.int, fm.gold, fm.feats], [3, 'Evoker', 17, 12, ['Alert']]);
+		await o.openFile(sheet, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="features"]`).click();
+		await o.waitFor(async () => /Alert/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'the feat on the sheet' });
+
+		// A private character's page says so plainly.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill('{"success":false,"message":"Unauthorized Access Attempt."}');
+		await o.waitFor(async () => /Public/i.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the private character message' });
+		assert.equal(await o.page.locator(`${M} button.mod-cta`).isDisabled(), true);
+		await o.page.keyboard.press('Escape');
+
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-fantasy-statblocks'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(creatures);
+		await o.waitFor(async () => /Bog Wisp/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the creature found' });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		const wisp = `${C}/Monsters/Bog Wisp.md`;
+		await o.waitFor(async () => o.eval((app, _p, p) => !!app.vault.getAbstractFileByPath(p), wisp), { what: 'the creature note' });
+		assert.match(await read(o, wisp), /```5e\nname: Bog Wisp\n[\s\S]*hp: 9 \(2d4 \+ 4\)[\s\S]*cr: 1\/2[\s\S]*- Chill Touch: Melee Attack Roll: \+5/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('5e imports: a D&D Beyond character brings its class into the compendium as Imported; it makes a hero and levels up; importing again fills in levels', async (o) => {
+	const C = 'Campaigns/Hollow Coast';
+	const F = 'Ember Vault/Content';
+	const M = '.modal.dnd5e-import';
+	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+	const B = '.modal.nimble-entity-builder';
+	const panel = `${B} .eb-panel.is-active`;
+	// Mira Hollowell, a made-up level 7 Hollowblade in D&D Beyond's shape (tests/fixtures; every name and sentence invented).
+	const json = readFileSync(join(ROOT, 'tests/fixtures/ddb-hollowblade.json'), 'utf8');
+	// Two levels on, D&D Beyond gives the class's features up to level 9.
+	const at9 = JSON.parse(json);
+	at9.data.classes[0].level = 9;
+	at9.data.classes[0].definition.classFeatures.push(
+		{ id: 910010, name: 'Ability Score Improvement', description: '<p>You gain the Ability Score Improvement feat or another feat of your choice.</p>', requiredLevel: 8 },
+		{ id: 910011, name: 'Undying Edge', description: '<p>Your weapon attacks score a Critical Hit on a roll of 19 or 20 against undead.</p>', requiredLevel: 9 },
+	);
+	const fm = (p) => o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter ?? null, p);
+	try {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			for (const p of [C, F]) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Hollow Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+		}, [C, F]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		// The import dialog: the character, then what it brings into the compendium, ticked for what's new.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+		await o.page.locator(M).waitFor();
+		assert.ok(await o.page.locator(`${M}.ev-dialog.ev-sys-dnd5e`).count(), 'the dialog wears 5e\'s look');
+		await o.page.locator(`${M} textarea`).fill(json);
+		const report = o.page.locator(`${M} .nimble-import-report`);
+		await o.waitFor(async () => /Mira Hollowell[\s\S]*Level 7 Hollowblade[\s\S]*For your compendium/.test(await report.innerText()), { what: 'the character and its content' });
+		assert.equal(await o.page.locator(`${M} .dnd5e-ddb-summary`).innerText(), 'Hollowblade (class, levels 1–7 seen), Order of the Quiet Lantern (subclass), Elf (species), Grave Tender (background), 2 feats, 2 spells, 3 items: 4 already in the SRD');
+		const rows = await o.page.locator(`${M} .dnd5e-ddb-row input`).evaluateAll(els => els.map(e => `${e.dataset.name}${e.checked ? '' : ' (off)'}`));
+		assert.deepEqual(rows, ['Hollowblade', 'Order of the Quiet Lantern', 'Grave Tender', 'Hollow Focus', 'Lantern Lance', 'Lantern of Last Light', 'Hookblade']);
+		assert.equal(await o.page.locator(`${M} .dnd5e-ddb-skip.is-srd`).innerText(), 'Already in the SRD: Elf, Alert, Light, Longsword');
+		assert.match(await o.page.locator(`${M} .dnd5e-ddb-levels`).innerText(), /only gave Hollowblade's features up to level 7\. Import the character again after they level up/);
+		// New entries need no tag; on a phone, nothing spills sideways.
+		assert.equal(await o.page.locator(`${M} .dnd5e-ddb-tag`).count(), 0);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb-content.png') });
+		const spill = await o.page.evaluate((M) => {
+			const modal = document.querySelector(M);
+			const before = modal.style.width;
+			modal.style.width = '340px';
+			const out = [...modal.querySelectorAll('.dnd5e-ddb-content, .dnd5e-ddb-row, .ev-dialog-foot')].filter(el => el.scrollWidth > el.clientWidth + 1).map(el => el.className);
+			modal.style.width = before;
+			return out;
+		}, M);
+		assert.deepEqual(spill, []);
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+
+		// The character note, and a note for each entry in the content folder, which the compendium reads.
+		const sheet = `${C}/Party/Mira Hollowell.md`;
+		await o.waitFor(async () => (await fm(sheet))?.class === 'Hollowblade', { what: 'the imported character note' });
+		assert.match(await read(o, `${F}/5e/Classes/Hollowblade.md`), /^```5e-class\nname: Hollowblade\nimported: D&D Beyond\nddbId: 900001\nhitDie: 10\n/);
+		assert.match(await read(o, `${F}/5e/Spells/Lantern Lance.md`), /^```5e-spell\nname: Lantern Lance\nimported: D&D Beyond\nddbId: 950001\n/);
+		assert.match(await read(o, `${F}/5e/Magic items/Lantern of Last Light.md`), /^```5e-item\nname: Lantern of Last Light\nimported: D&D Beyond\n/);
+		assert.match(await read(o, `${F}/5e/Equipment/Hookblade.md`), /category: Martial Melee Weapon/);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('dnd5e').flatMap(p => p.entries.map(e => e.name)).sort().join())) === 'Grave Tender,Hollow Focus,Hollowblade,Order of the Quiet Lantern', { what: 'the entries indexed' });
+
+		// The sheet reads the imported class: its features, its subclass's, the feat's text, its limited uses.
+		await o.openFile(sheet, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="features"]`).click();
+		await o.waitFor(async () => /Hollow Strike[\s\S]*Order Feature[\s\S]*Quiet Flame[\s\S]*Steady Light/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'the class\'s and subclass\'s features on the sheet' });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="actions"]`).click();
+		await o.waitFor(async () => /Grave Sense[\s\S]*|Ashen Step/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'the limited uses on the sheet' });
+		const actions = await o.page.locator(`${R} .dnd5e-sheet`).innerText();
+		assert.match(actions, /Grave Sense/);
+		assert.match(actions, /Ashen Step/);
+
+		// The compendium's Classes tab: tagged Imported (a dark tag), its page says where it came from.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.page.locator(V).waitFor({ timeout: 5000 });
+		const input = o.page.locator(`${V} .nimble-cmpx-input`);
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Classes' }).click();
+		await input.fill('hollow');
+		await o.waitFor(async () => (await cmpNames(o, V)).join() === 'Hollowblade,Order of the Quiet Lantern', { timeout: 3000, what: 'the class and subclass in the Classes tab' });
+		const tag = cmpRow(o, 'Hollowblade', V).locator('.bestiary-tag.is-imported');
+		assert.equal(await tag.textContent(), 'Imported');
+		const contrast = await tag.evaluate((el) => {
+			const lum = (c) => { const [r, g, b] = c.match(/\d+/g).slice(0, 3).map(n => { const v = Number(n) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+			const s = getComputedStyle(el);
+			const [bg, fg] = [lum(s.backgroundColor), lum(s.color)];
+			return { ratio: (Math.max(bg, fg) + 0.05) / (Math.min(bg, fg) + 0.05), dark: bg < fg };
+		});
+		assert.ok(contrast.dark && contrast.ratio >= 4.5, `tag contrast ${JSON.stringify(contrast)}`);
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${V} .nimble-cmpx-list`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		await cmpRow(o, 'Hollowblade', V).click();
+		await o.waitFor(async () => /Hollow Strike[\s\S]*Imported from D&D Beyond/.test(await o.page.locator(`${V} .nimble-cmpx-detail`).innerText()), { what: 'the class page' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb-compendium.png') });
+		// Its spell and its magic item too.
+		await o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Spells' }).click();
+		await input.fill('lantern lance');
+		await o.waitFor(async () => (await cmpNames(o, V))[0] === 'Lantern Lance', { timeout: 3000, what: 'the imported spell' });
+		assert.equal(await cmpRow(o, 'Lantern Lance', V).locator('.bestiary-tag.is-imported').textContent(), 'Imported');
+		await o.eval((app) => app.workspace.detachLeavesOfType('nimble-dnd5e-compendium'));
+
+		// New character: a Hollowblade, with the class's own starting equipment.
+		const hero = `${C}/Party/Tamsin Vale.md`;
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		await o.page.locator(`${panel} input[data-field="Name"]`).fill('Tamsin Vale');
+		await o.page.locator(`${panel} select[data-field="Class"]`).selectOption('Hollowblade');
+		await o.waitFor(async () => /Hollowblade/.test(await o.page.locator(`${B} .eb-preview`).innerText()), { what: 'the class in the preview' });
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Equipment' }).click();
+		assert.match(await o.page.locator(panel).innerText(), /Scale Mail/);
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await fm(hero))?.class === 'Hollowblade', { what: 'the hero\'s note' });
+		assert.ok((await fm(hero)).inventory.some(i => (i.name ?? i) === 'Scale Mail'), 'the class\'s starting equipment');
+
+		// Level up: level 2 brings Ashen Step.
+		await o.openFile(hero, 'preview');
+		await o.page.locator(`${R} .dnd5e-sheet`).waitFor({ timeout: 5000 });
+		await o.page.locator(`${R} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Tamsin Vale[\s\S]*level 1 → 2/);
+		await o.page.locator(`${B} .eb-dot`).last().click();
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => (await fm(hero))?.level === 2, { what: 'level 2' });
+		await o.page.locator(`${R} .dnd5e-tab[data-tab="features"]`).click();
+		await o.waitFor(async () => /Ashen Step/.test(await o.page.locator(`${R} .dnd5e-sheet`).innerText()), { what: 'level 2\'s feature' });
+
+		// Import content… takes the character's JSON two levels on: the class fills in levels 8–9, nothing else is written again.
+		const IC = '.modal.nimble-import-content';
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(IC).waitFor();
+		await o.page.locator(`${IC} textarea`).fill(JSON.stringify(at9));
+		await o.waitFor(async () => /Mira Hollowell's content/.test(await o.page.locator(`${IC} .nimble-import-report`).innerText()), { what: 'the character read as content' });
+		const again = await o.page.locator(`${IC} .dnd5e-ddb-row`).evaluateAll(els => els.map(e => `${e.querySelector('input').dataset.name}: ${e.querySelector('.dnd5e-ddb-tag').textContent}`));
+		assert.deepEqual(again, ['Hollowblade: levels 8–9']);
+		// The tag that says what it gains: dark with light text, centred on its capitals.
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${IC} .dnd5e-ddb-list`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		const fill = await o.page.locator(`${IC} .dnd5e-ddb-tag`).evaluate((el) => {
+			const lum = (c) => { const [r, g, b] = c.match(/\d+/g).slice(0, 3).map(n => { const v = Number(n) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+			const s = getComputedStyle(el);
+			const [bg, fg] = [lum(s.backgroundColor), lum(s.color)];
+			return { ratio: (Math.max(bg, fg) + 0.05) / (Math.min(bg, fg) + 0.05), dark: bg < fg };
+		});
+		assert.ok(fill.dark && fill.ratio >= 4.5, `tag contrast ${JSON.stringify(fill)}`);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb-again.png') });
+		assert.match(await o.page.locator(`${IC} .dnd5e-ddb-skip.is-same`).innerText(), /Already imported: Order of the Quiet Lantern, Grave Tender, Hollow Focus, Lantern Lance, Lantern of Last Light, Hookblade/);
+		await o.page.locator(`${IC} button.mod-cta`).click();
+		await o.page.locator(IC).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /- level: 9\n\s+name: Undying Edge/.test(await read(o, `${F}/5e/Classes/Hollowblade.md`)), { what: 'the class filled in' });
+		assert.deepEqual(await o.eval((app, _p, F) => app.vault.getMarkdownFiles().filter(f => f.path.startsWith(`${F}/5e/Classes/`)).map(f => f.basename), F), ['Hollowblade']);
+	} finally {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			for (const p of [C, F]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			plugin.settings.party = [];
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
+	}
+});
+
+test('5e compendium: spells, items and classes for both editions, 5e:spell: references, autocomplete, Omnisearch', async (o) => {
+	const C = 'Campaigns/Sword Coast';
+	const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await app.vault.create(`${C}/Spells.md`, 'She casts `5e:spell:Fireball`, drinks a `5e:item:Potion of Healing` and is `5e:Prone`.\n');
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		// Open compendium in a 5e campaign is the 5e one: the shared browser, with tabs, typed filters and chips.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+		await o.page.locator(V).waitFor({ timeout: 5000 });
+		const input = o.page.locator(`${V} .nimble-cmpx-input`);
+		const selected = () => o.page.locator(`${V} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name`).innerText().catch(() => '');
+		const tab = (name) => o.page.locator(`${V} .nimble-cmpx-seg`, { hasText: name }).click();
+		await tab('Spells');
+		await input.fill('fireball');
+		await o.waitFor(async () => (await selected()) === 'Fireball', { what: 'Fireball selected' });
+		const card = o.page.locator(`${V} .nimble-cmpx-detail .dnd5e-card`);
+		assert.match(await card.innerText(), /Level 3 Evocation[\s\S]*Casting Time\s*Action[\s\S]*Range\s*150 feet/);
+		await card.locator('.nimble-dice.is-clickable').first().click();
+		await o.waitFor(async () => /8d6/.test(await o.eval((app, plugin) => plugin.settings.rollLog[0]?.expression ?? '')), { what: 'fireball damage rolled' });
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-compendium.png') });
+
+		// Typed filters become chips: level 3 evocation wizard spells.
+		await input.fill('');
+		await input.pressSequentially('school:evocation level:3 class:wizard ', { delay: 20 });
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-chip`).count()) === 3, { what: 'three filter chips' });
+		const rows = o.page.locator(`${V} .nimble-cmpx-row.is-card .nimble-cmpx-row-name`);
+		await o.waitFor(async () => (await rows.allInnerTexts()).includes('Fireball'), { what: 'Fireball in the filtered list' });
+		assert.ok(!(await rows.allInnerTexts()).includes('Magic Missile'));
+		// Monsters sort by CR, with headings; a filter suggestion completes as you type.
+		await tab('Monsters');
+		await o.waitFor(async () => /^CR /.test(await o.page.locator(`${V} .nimble-cmpx-group`).first().innerText().catch(() => '')), { what: 'CR headings' });
+		await input.pressSequentially('type:und', { delay: 20 });
+		await o.waitFor(async () => /type:\s*Undead/.test(await o.page.locator(`${V} .nimble-cmpx-row.is-suggestion`).first().innerText().catch(() => '')), { what: 'type:Undead suggested' });
+		await o.page.keyboard.press('Tab');
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-chip`, { hasText: /Undead/ }).count()) === 1, { what: 'Undead chip' });
+		await o.waitFor(async () => (await rows.allInnerTexts()).includes('Zombie'), { what: 'Zombie listed' });
+
+		// The 2014 rules print it the 2014 way.
+		await o.page.locator(`${V} .dnd5e-cmp-editions button`, { hasText: '2014' }).click();
+		await tab('Spells');
+		await o.page.locator(`${V} .nimble-cmpx-input`).fill('fireball');
+		await o.waitFor(async () => /3rd-level evocation/.test(await o.page.locator(`${V} .nimble-cmpx-detail .dnd5e-card-line`).innerText().catch(() => '')), { what: '2014 Fireball' });
+		// A class page: hit die and the level table with spell slots.
+		await tab('Classes');
+		await o.page.locator(`${V} .nimble-cmpx-input`).fill('wizard');
+		await o.waitFor(async () => (await o.page.locator(`${V} .nimble-cmpx-detail .dnd5e-level-table tr`).count()) === 21, { what: 'wizard level table' });
+		assert.match(await o.page.locator(`${V} .nimble-cmpx-detail .dnd5e-card`).innerText(), /Hit Die\s*d6/);
+
+		// References: a spell, an item, and a bare name that's a condition.
+		await o.openFile(`${C}/Spells.md`, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .dnd5e-ref.dnd5e-hit`).count()) === 3, { what: 'three compendium refs' });
+		assert.deepEqual(await o.page.locator(`${R} .dnd5e-ref.dnd5e-hit`).evaluateAll(els => els.map(e => [...e.classList].find(c => c.startsWith('kind-')))), ['kind-spell', 'kind-item', 'kind-condition']);
+		await o.page.locator(`${R} .dnd5e-ref.kind-spell .nimble-inline-name`).hover();
+		await o.waitFor(async () => (await o.page.locator('.nimble-hover-preview .dnd5e-card.kind-spell').count()) === 1, { what: 'spell hover card' });
+		await o.page.keyboard.press('Escape');
+		await o.page.locator(`${R} .dnd5e-ref.kind-item .nimble-inline-name`).click();
+		await o.page.locator('.modal.dnd5e-card-modal .dnd5e-card.kind-item').waitFor({ timeout: 3000 });
+		await o.page.keyboard.press('Escape');
+
+		// Autocomplete: `5e:spell: lists spells and writes the kind.
+		await o.eval(async (app, plugin, C) => {
+			const f = await app.vault.create(`${C}/Scratch.md`, 'Cast \n');
+			await app.workspace.getLeaf(false).openFile(f, { state: { mode: 'source' } });
+			const editor = app.workspace.activeEditor.editor;
+			editor.setCursor({ line: 0, ch: 5 });
+			editor.focus();
+		}, C);
+		await o.page.keyboard.type('`5e:spell:magic miss', { delay: 30 });
+		await o.waitFor(() => o.page.evaluate(() => document.querySelector('.suggestion-container .nimble-suggestion-name')?.textContent === 'Magic Missile'), { timeout: 5000, what: 'Magic Missile suggested' });
+		await o.page.keyboard.press('Enter');
+		await o.page.waitForTimeout(200);
+		assert.equal(await o.eval((app) => app.workspace.activeEditor.editor.getLine(0)), 'Cast `5e:spell:Magic Missile`');
+
+		// Omnisearch finds spells in a 5e campaign.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:spotlight'); });
+		const SP = '.modal-container .prompt.nimble-omnisearch';
+		await o.page.locator(`${SP} .prompt-input`).fill('magic missile');
+		await o.waitFor(async () => /Magic Missile[\s\S]*Spell/i.test(await o.page.locator(`${SP} .suggestion-item`).first().innerText().catch(() => '')), { what: 'spell in Omnisearch' });
+		// Typed filters work in a 5e campaign's Omnisearch too: a chip in 5e's words, 5e entries that match.
+		await o.page.locator(`${SP} .prompt-input`).fill('school:evocation ');
+		await o.waitFor(async () => (await cmpChips(o, SP)).length === 1, { timeout: 3000, what: 'the School chip in 5e Omnisearch' });
+		assert.deepEqual(await cmpChips(o, SP), [['School', 'evocation']]);
+		await o.waitFor(async () => (await o.page.locator(`${SP} .spot-entry .nimble-spot-name`).allInnerTexts()).includes('Fireball'), { timeout: 3000, what: 'Fireball for school:evocation' });
+		const evocation = await o.page.locator(`${SP} .spot-entry .nimble-spot-name`).allInnerTexts();
+		assert.ok(!evocation.includes('Mage Hand'), `only evocation spells: ${evocation.slice(0, 8)}`);
+		assert.equal(await o.page.locator(`${SP} .suggestion-item.spot-lookup`).count(), 1, 'the lookup row');
+		await o.page.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.workspace.detachLeavesOfType('nimble-dnd5e-compendium');
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('5e character sheets: New character makes a 2024 wizard; the sheet rolls, tracks HP, skills, items, spells, slots, rests and levels', async (o) => {
+	const C = 'Campaigns/Sword Coast';
+	const note = `${C}/Party/Ilse Vane.md`;
+	const fm = () => o.eval((app, _p, path) => app.metadataCache.getCache(path)?.frontmatter ?? {}, note);
+	const S = `${R} .dnd5e-sheet`;
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			plugin.settings.party = [];
+			await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: true, system: '5e', edition: '2024' });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+
+		// New character is 5e's wizard in a 5e campaign: who, abilities, skills, subclass and spells.
+		const B = '.modal.nimble-entity-builder';
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:new-character'); });
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		assert.equal(await o.page.locator(`${B} .eb-kind.is-active`).innerText(), 'Character');
+		assert.equal(await o.page.locator(`${B} .eb-kind`).count(), 1);
+		const panel = `${B} .eb-panel.is-active`;
+		await o.page.locator(`${panel} input[data-field="Name"]`).fill('Ilse Vane');
+		await o.page.locator(`${panel} select[data-field="Class"]`).selectOption('Wizard');
+		await o.page.locator(`${panel} input[data-field="Level"]`).fill('3');
+		await o.waitFor(async () => (await o.page.locator(`${B} .eb-dot`).allInnerTexts()).join() === 'Who,Abilities,Skills,Tools,Class,Equipment', { what: 'the wizard\'s steps' });
+		// The standard array set out for a wizard (Int, then Con and Dex); a score's dropdown swaps it with another ability.
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Abilities' }).click();
+		assert.equal(await o.page.locator(`${panel} .dnd5e-ab-card.is-int select`).inputValue(), 'int');
+		assert.equal(await o.page.locator(`${panel} .dnd5e-ab-card.is-int .dnd5e-ab-card-final`).innerText(), '17');
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Skills' }).click();
+		for (const sk of ['Arcana', 'History']) await o.page.locator(`${panel} .eb-pick[data-value="${sk}"]`).click();
+		// Wizards pick two: the rest wait until one is taken off.
+		assert.equal(await o.page.locator(`${panel} .eb-pick.is-active`).count(), 2);
+		assert.equal(await o.page.locator(`${panel} .eb-pick[data-value="Investigation"]`).isDisabled(), true);
+		// Common and two standard languages.
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Tools' }).click();
+		for (const l of ['Elvish', 'Draconic']) await o.page.locator(`${panel} [data-key="languages"] .eb-pick[data-value="${l}"]`).click();
+		assert.equal(await o.page.locator(`${panel} [data-key="languages"] .eb-pick[data-value="Dwarvish"]`).isDisabled(), true);
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Class' }).click();
+		await o.page.locator(`${panel} select[data-field="Subclass"]`).selectOption({ index: 1 });
+		for (const sp of ['Fire Bolt', 'Light']) await o.page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="${sp}"]`).click();
+		await o.page.locator(`${panel} [data-key="spells"] .eb-pick[data-value="Shield"]`).click();
+		// A level 3 wizard's spellbook holds ten.
+		assert.match(await o.page.locator(`${panel} [data-key="spells"] .eb-aside`).innerText(), /1 of 10/);
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane[\s\S]*Level 3[\s\S]*Wizard[\s\S]*HP\s*20/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-new-character.png') });
+		// Equipment: the Wizard's pack (A) or 55 GP (B), and the Acolyte's.
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Equipment' }).click();
+		assert.equal(await o.page.locator(`${panel} .dnd5e-eq-option.is-active`).count(), 2);
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Equipment[\s\S]*Spellbook/);
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-new-character-equipment.png') });
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), note), { what: 'character note' });
+		await o.waitFor(async () => (await fm()).class === 'Wizard', { what: 'frontmatter indexed' });
+		const f0 = await fm();
+		// The standard array set out for a wizard, then the Acolyte's +2 Int and +1 Wis.
+		assert.deepEqual([f0.level, f0.int, f0.wis, f0.con, f0.dex, f0.str, f0.cha, f0.hp_max, f0.edition], [3, 17, 11, 14, 13, 12, 8, 20, '2024']);
+		assert.deepEqual([...f0.skills].sort(), ['Arcana', 'History', 'Insight', 'Religion']);
+		assert.deepEqual(f0.spells, ['Fire Bolt', 'Light', 'Shield']);
+		assert.deepEqual(f0.languages, ['Common', 'Elvish', 'Draconic']);
+		assert.deepEqual(f0.tools, ["Calligrapher's Supplies"]);
+		// The Wizard's option A and the Acolyte's: daggers and the quarterstaff in hand, 5 + 8 GP.
+		assert.deepEqual(f0.inventory.slice(0, 3), [{ name: 'Dagger', qty: 2, equipped: true }, { name: 'Quarterstaff', equipped: true }, { name: 'Robe', qty: 2 }]);
+		assert.equal(f0.gold, 13);
+		assert.ok(f0.subclass);
+		assert.match(await read(o, note), /```5e-sheet\n```/);
+
+		await o.openFile(note, 'preview');
+		await o.page.locator(S).waitFor({ timeout: 5000 });
+		const tab = async (id) => { await o.page.locator(`${S} .dnd5e-tab[data-tab="${id}"]`).click(); await o.page.locator(`${S} .dnd5e-panel.is-${id}`).waitFor(); };
+		// The sheet is the page: no inline title, no Properties box until its button shows them.
+		// The view the sheet is drawn in (other tabs, left open by earlier tests, have reading views too).
+		const pageShows = () => o.page.evaluate((S) => {
+			const view = [...document.querySelectorAll(S)].find(n => n.checkVisibility())?.closest('.markdown-preview-view');
+			return { title: !!view?.querySelector('.inline-title')?.checkVisibility(), props: !!view?.querySelector('.metadata-container')?.checkVisibility() };
+		}, S);
+		assert.deepEqual(await pageShows(), { title: false, props: false });
+		await o.page.locator(`${S} .dnd5e-props-btn`).click();
+		await o.waitFor(async () => (await pageShows()).props, { what: 'properties shown' });
+		await o.page.locator(`${S} .dnd5e-props-btn`).click();
+		await o.waitFor(async () => !(await pageShows()).props, { what: 'properties hidden again' });
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-sub`).innerText(), /Level 3[\s\S]*Wizard/i);
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-box`, { hasText: 'AC' }).innerText(), /11/);
+		await tab('spells');
+		assert.match(await o.page.locator(`${S} .dnd5e-sheet-cast`).innerText(), /Spellcasting\s*Intelligence[\s\S]*Save DC\s*13[\s\S]*Spell attack\s*\+5/i);
+		// The class's scrollwork heads the tabs.
+		assert.equal(await o.page.locator(`${S} .dnd5e-scroll .dnd5e-scroll-title`).innerText(), 'Wizard');
+		assert.deepEqual(await o.page.locator(`${S} .dnd5e-slot-group`).evaluateAll(gs => gs.map(g => g.querySelectorAll('.ev-pip').length)), [4, 2]);
+		await o.page.locator(`${S} .dnd5e-plate.is-init button.dnd5e-plate-n`).click();
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.settings.rollLog[0]?.label)) === 'Ilse Vane: initiative', { what: 'initiative rolled' });
+
+		// Skills: the dot takes Nature from untrained (+3) to proficient (+5).
+		const nature = o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Nature' });
+		assert.match(await nature.locator('.dnd5e-sheet-roll').innerText(), /\+3/);
+		await nature.locator('.dnd5e-skill-dot').click();
+		await o.waitFor(async () => (await fm()).skills?.includes('Nature'), { what: 'Nature proficient' });
+		await o.waitFor(async () => /\+5/.test(await o.page.locator(`${S} .dnd5e-sheet-skill`, { hasText: 'Nature' }).locator('.dnd5e-sheet-roll').innerText()), { what: 'Nature +5' });
+
+		// HP: 5 damage on the keypad, then − twice and + once add up to one change of 1 damage.
+		await o.page.locator(`${S} .ns-meter-calc`).click();
+		await o.page.locator('.nimble-hp-pad').waitFor();
+		await o.page.keyboard.type('5');
+		assert.match(await o.page.locator('.nimble-hp-pad .hp-pad-preview').innerText(), /→ 15\/20/);
+		await o.page.keyboard.press('Enter');
+		await o.waitFor(async () => (await fm()).hp === 15, { what: 'HP 15' });
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-hp-cur`).innerText()) === '15', { what: 'bar shows 15' });
+		for (const step of ['Take 1 damage', 'Take 1 damage', 'Heal 1']) await o.page.locator(`${S} .ns-meter-step[aria-label="${step}"]`).click();
+		await o.waitFor(async () => (await fm()).hp === 14, { what: 'HP 14 from the steps' });
+		// Hit dice: a filled pip spends one.
+		await o.page.locator(`${S} .ev-pips.is-hit-dice .ev-pip.is-on`).first().click();
+		await o.waitFor(async () => (await fm()).hit_dice_used === 1, { what: 'a hit die spent' });
+		// A condition from the rules' list, and off again.
+		await o.page.locator(`${S} .dnd5e-sheet-condition-add`).click();
+		await clickMenu(o, 'Poisoned');
+		await o.waitFor(async () => JSON.stringify((await fm()).conditions) === '["Poisoned"]', { what: 'Poisoned' });
+		await o.page.locator(`${S} .dnd5e-sheet-condition-x[aria-label="End Poisoned"]`).click();
+		await o.waitFor(async () => (await fm()).conditions === undefined, { what: 'Poisoned ends' });
+
+		// A quarterstaff becomes an attack; Magic Missile joins the spells.
+		await tab('inventory');
+		// Add item and Add spell open the compendium, filtered to what they add.
+		const pickIn = async (query, name) => {
+			const M = '.modal.dnd5e-cmpx-modal';
+			await o.page.locator(`${M} .nimble-cmpx-input`).waitFor({ timeout: 3000 });
+			await o.page.locator(`${M} .nimble-cmpx-input`).fill(query);
+			await o.waitFor(async () => (await o.page.locator(`${M} .nimble-cmpx-row.is-selected .nimble-cmpx-row-name > span:first-child`).textContent().catch(() => '')) === name, { what: `${name} selected` });
+			await o.page.keyboard.press('Enter');
+			await o.page.locator(M).waitFor({ state: 'detached' });
+		};
+		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add item' }).click();
+		await pickIn('Quarterstaff', 'Quarterstaff');
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-item`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff carried' });
+		await tab('actions');
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Quarterstaff' }).count()) === 1, { what: 'quarterstaff attack' });
+		const staff = o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Quarterstaff' });
+		assert.match(await staff.innerText(), /Quarterstaff[\s\S]*Versatile[\s\S]*\+3\s*1d6 \+ 1/);
+		// The damage type is the button's icon; its name is in the tooltip.
+		assert.match(await staff.locator('.dnd5e-dmg').getAttribute('aria-label'), /1d6 \+ 1 Bludgeoning damage/);
+		assert.equal(await staff.locator('.dnd5e-dmg .ev-pill-icon svg').count(), 1);
+		// Shield is a reaction: Cast spends a level 1 slot.
+		const shield = o.page.locator(`${S} .dnd5e-sheet-attack`, { hasText: 'Shield' });
+		await shield.locator('.dnd5e-cast-btn').click();
+		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[1]', { what: 'Shield cast' });
+		await tab('spells');
+		await o.page.locator(`${S} .dnd5e-sheet-add`, { hasText: 'Add spell' }).click();
+		await pickIn('Magic Missile', 'Magic Missile');
+		await o.waitFor(async () => (await o.page.locator(`${S} .dnd5e-sheet-spell`, { hasText: 'Magic Missile' }).count()) === 1, { what: 'Magic Missile listed' });
+
+		// Spend a slot, then a long rest brings everything back.
+		await o.page.locator(`${S} .dnd5e-slot-group`).first().locator('.ev-pip.is-on').first().click();
+		await o.waitFor(async () => JSON.stringify((await fm()).slots_used) === '[2]', { what: 'slot spent' });
+		// Arcane Recovery is once per Long Rest: its pip spends it.
+		await tab('features');
+		const recovery = o.page.locator(`${S} .dnd5e-sheet-feature`, { hasText: 'Arcane Recovery' });
+		await recovery.locator('.ev-pip.is-on').click();
+		await o.waitFor(async () => JSON.stringify((await fm()).uses_spent) === '{"Arcane Recovery":1}', { what: 'Arcane Recovery used' });
+		// Its name opens its own words.
+		await recovery.locator('.dnd5e-feature-toggle').click();
+		await o.waitFor(async () => /spell slots/i.test(await o.page.locator(`${S} .dnd5e-sheet-feature`, { hasText: 'Arcane Recovery' }).locator('.dnd5e-sheet-feature-text').innerText().catch(() => '')), { what: 'Arcane Recovery text' });
+		await tab('spells');
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-sheet.png') });
+		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Long rest' }).click();
+		await o.waitFor(async () => { const f = await fm(); return f.hp === 20 && f.slots_used === undefined && f.hit_dice_used === undefined && f.uses_spent === undefined; }, { what: 'long rest' });
+		// The Features tab ends with what the character is trained in.
+		await tab('features');
+		assert.match(await o.page.locator(`${S} .dnd5e-prof-list`).innerText(), /Tools\s*Calligrapher's Supplies[\s\S]*Languages\s*Common, Elvish, Draconic/);
+
+		// Level up in the wizard: d6 average (4) + Con (2), level 4's increase (+2 Int, the best score), a cantrip and two spells.
+		await o.page.locator(`${S} .dnd5e-sheet-actions button`, { hasText: 'Level up' }).click();
+		await o.page.locator(B).waitFor({ timeout: 3000 });
+		assert.deepEqual(await o.page.locator(`${B} .eb-dot`).allInnerTexts(), ['Hit points', 'Increase', 'Spells']);
+		assert.match(await o.page.locator(`${B} .eb-preview`).innerText(), /Ilse Vane[\s\S]*level 3 → 4[\s\S]*HP\s*\+6\s*max 26/);
+		await o.page.locator(`${B} .eb-dot`, { hasText: 'Spells' }).click();
+		assert.match(await o.page.locator(`${panel} [data-key="cantrips"] .eb-aside`).innerText(), /0 of 1/);
+		assert.match(await o.page.locator(`${panel} [data-key="spells"] .eb-aside`).innerText(), /0 of 2/);
+		await o.page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="Mage Hand"]`).click();
+		await o.page.locator(`${panel} .eb-pick[data-value="Misty Step"]`).click();
+		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-level-up.png') });
+		await o.page.locator(`${B} .eb-next`).click();
+		await o.page.locator(B).waitFor({ state: 'detached' });
+		await o.waitFor(async () => { const f = await fm(); return f.level === 4 && f.hp_max === 26 && f.int === 19; }, { what: 'level 4' });
+		assert.ok((await fm()).spells.includes('Misty Step'));
+		assert.ok((await fm()).spells.includes('Mage Hand'));
+
+		// Another note in the same tab has its title and properties back.
+		await o.eval(async (app, _p, C) => { await app.vault.create(`${C}/Plain note.md`, '---\ntags: [x]\n---\nJust a note.\n'); }, C);
+		await o.openFile(`${C}/Plain note.md`, 'preview');
+		const activeShows = () => o.page.evaluate(() => {
+			const view = document.querySelector('.workspace-leaf.mod-active .markdown-preview-view');
+			return { title: !!view?.querySelector('.inline-title')?.checkVisibility(), props: !!view?.querySelector('.metadata-container')?.checkVisibility() };
+		});
+		await o.waitFor(async () => { const v = await activeShows(); return v.title && v.props; }, { what: 'a plain note shows its title and properties' });
+
+		// The encounter party reads the sheet: level and AC.
+		await o.eval((app, plugin) => plugin.syncPartyFromSheets());
+		await o.waitFor(async () => (await o.eval((app, plugin) => JSON.stringify(plugin.settings.party.map(p => [p.name, p.level, p.maxHp, p.defense])))) === JSON.stringify([['Ilse Vane', 4, 26, 11]]), { what: 'party from the sheet' });
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			plugin.settings.party = [];
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+// Suites in their own files (e2e/entities-*.mjs): each exports register(test, helpers) and runs here, in the
+// same Obsidian, before the console check. A missing file is skipped.
+for (const file of ['entities-nimble.mjs', 'entities-5e.mjs']) {
+	let mod;
+	try { mod = await import(`./${file}`); } catch (e) { if (e.code === 'ERR_MODULE_NOT_FOUND') continue; throw e; }
+	mod.register(test, {
+		R, S, T, PREVIEW, PARTY, ARTIFACTS, ROOT, assert, join,
+		resetEncounter, typeHp, creatureMenu, onCard, parkMouse, openCompendiumTab, closeCompendiumTab,
+		freshCampaign, endCampaign, openPicker, createFromPicker, rollThrough, withSheetNote, waitFmAt, waitFm, measurePills,
+		pillOffenders, PILL_SELECTORS,
+		creatures, encounter, card, mainButton, pickOption, exact, notices, camp, CP, cgroup, crow, clickMenu, exists, read, CMP, cmpNames, panelSections, cmpRow, hpPad5e,
+	});
+}
 
 test('no console errors during the run', async (o) => {
 	const errors = o.consoleErrors.filter(e => !/net::ERR_|favicon/.test(e));
@@ -4864,17 +8237,37 @@ const range = process.env.E2E_RANGE?.split('-').map(Number);
 // A file-chooser wait left pending by a test that failed earlier must not take the whole run down with it.
 process.on('unhandledRejection', (e) => console.log(`      (ignored a late rejection: ${String(e?.message ?? e).split('\n')[0]})`));
 const selected = range ? tests.filter((t, i) => (i >= range[0] && i <= range[1]) || (filter && t.name.includes(filter))) : tests.filter(t => !filter || t.name.includes(filter));
+// E2E_SHARD=2/3 runs the second of three slices, for e2e/parallel.mjs. A slice is a contiguous run of tests in the order
+// they're written (so a test that leans on the one before it keeps it), sized by how long each took last time
+// (artifacts/timings.json), and every slice ends with the console check.
+const CONSOLE_CHECK = 'no console errors during the run';
+const TIMINGS = join(ARTIFACTS, 'timings.json');
+const shard = process.env.E2E_SHARD?.match(/^(\d+)\/(\d+)$/)?.slice(1).map(Number);
+let run = selected;
+if (shard) {
+	const [k, n] = shard;
+	let last = {};
+	try { last = JSON.parse(readFileSync(TIMINGS, 'utf8')); } catch { /* first run: equal counts */ }
+	const cost = (t) => last[t.name] ?? 5000;
+	const rest = selected.filter(t => t.name !== CONSOLE_CHECK);
+	const total = rest.reduce((a, t) => a + cost(t), 0) || 1;
+	let at = 0;
+	run = rest.filter((t) => { const mid = at + cost(t) / 2; at += cost(t); return Math.min(n, Math.floor((mid / total) * n) + 1) === k; });
+	run.push(...selected.filter(t => t.name === CONSOLE_CHECK));
+}
 // 3D dice are off for the general run (notices would wait for them to land); one test turns them on.
 // Reading view for campaign pages is off for the general run (tests open campaign notes in Source mode on purpose); one test turns it on.
 const o = await launchObsidian({ settings: { dice3d: false, readingView: false } });
 await o.page.setViewportSize?.({ width: 1400, height: 900 }).catch(() => {});
 let failed = 0;
 const started = Date.now();
-for (const t of selected) {
+const took = {};
+for (const t of run) {
 	const t0 = Date.now();
 	try {
 		await t.fn(o);
-		console.log(`  ✓ ${t.name} (${Date.now() - t0}ms)`);
+		took[t.name] = Date.now() - t0;
+		console.log(`  ✓ ${t.name} (${took[t.name]}ms)`);
 	} catch (e) {
 		failed++;
 		const file = join(ARTIFACTS, `FAIL-${t.name.replace(/[^a-z0-9]+/gi, '-')}.png`);
@@ -4884,5 +8277,11 @@ for (const t of selected) {
 	}
 }
 await o.close();
-console.log(`\n${selected.length - failed}/${selected.length} passed in ${((Date.now() - started) / 1000).toFixed(1)}s`);
+// What each test took, so the next parallel run can split the suite evenly. Shards write their own file; parallel.mjs merges them.
+try {
+	mkdirSync(ARTIFACTS, { recursive: true });
+	if (shard) writeFileSync(join(ARTIFACTS, `timings-${shard[0]}.json`), JSON.stringify(took));
+	else { let all = {}; try { all = JSON.parse(readFileSync(TIMINGS, 'utf8')); } catch { /* none yet */ } writeFileSync(TIMINGS, JSON.stringify({ ...all, ...took })); }
+} catch { /* timings are a nicety */ }
+console.log(`\n${run.length - failed}/${run.length} passed in ${((Date.now() - started) / 1000).toFixed(1)}s`);
 process.exit(failed ? 1 : 0);

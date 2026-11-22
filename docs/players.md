@@ -19,7 +19,7 @@ Every campaign is one or the other. **New campaign** asks first:
 
 For a player campaign you can name your character as you create it. Their [character sheet](character-sheets.md) goes in the Party folder.
 
-**The campaign switcher is the view switcher.** It lists the campaigns you run under **Running** and the ones you play in under **Playing**, with a GM or Player pill on the active one. Opening any note in a campaign makes it active too, so moving from your GM prep to your player notes switches the plugin over by itself.
+**The campaign switcher is the view switcher.** It lists the campaigns you run under **Running** and the ones you play in under **Playing**, with a GM or Player tag on the active one. Opening any note in a campaign makes it active too, so moving from your GM prep to your player notes switches the plugin over by itself.
 
 **Campaigns don't share.** A monster or NPC written in one campaign's notes is only found from that campaign. In a campaign you play in, `nimble:Goblin` or a battle's foes always mean the book's Goblin (as a lore card), never the Goblin you wrote for a game you run, even in the same vault. Monsters and NPCs in notes outside any campaign count as GM material, so player campaigns don't see them either.
 
@@ -31,7 +31,7 @@ In a player campaign the top of the Campaign panel shows your party instead of t
 
 - **+** next to **Party** adds a party member. It's a short character note in the Party folder, so you can keep notes on the rest of the table's heroes too.
 - Click a hero to open their note. Right-click (or long-press) for **This is my character**, which moves the **You** badge.
-- A hero is any note with `nimble: character` in the campaign. `mine: true` marks yours.
+- A hero is any note with `nimble: character` in the campaign. `mine: true` marks yours. **New character** sets it in a campaign you play in until you have a hero, and never in a campaign you run.
 
 ## Battle notes
 
@@ -64,7 +64,7 @@ notes: The shaman fled north.
 - **Names from the bestiary** open a lore card. Names that aren't in it, like "Mystery Hag", are kept as you typed them.
 - **Edit** opens the editor: add foes by name (the bestiary is suggested as you type), change counts, and fill in where, when, loot and notes.
 
-It's the same block the GM uses, so a note you write as a player still makes sense if you later switch that campaign to GM view.
+It's the same block the GM uses, so a note you write as a player still makes sense if you later switch that campaign to GM view. In a [5e campaign](5e.md#encounters) battle notes look like 5e's encounter blocks and do all of the above, with the 5e monsters you can know about as lore cards.
 
 ## Lore cards
 
@@ -74,11 +74,11 @@ As a player, monsters show as lore cards rather than stat blocks: the name, size
 
 The bestiary works the same way. Search covers names, families, habitats and descriptions. Ability text is left out so it can't leak a monster's tricks. The role, armor and level filters are hidden. **Insert reference** (or the @ button on a row) puts `nimble:Name` into the note you were writing.
 
-A creature printed in both Monsters & More and the GM Guide is listed once, with a pill for each book. Its card lists each printing with its page, in the bestiary and everywhere else.
+A creature printed in both Monsters & More and the GM Guide is listed once, with a tag for each book. Its card lists each printing with its page, in the bestiary and everywhere else.
 
 ### Your notes on a creature
 
-**Add notes** on a lore card makes a note for that creature in your campaign's `Bestiary` folder, with headings for what you've seen, strengths and weaknesses, and fights. Whatever you write shows under the book's lore wherever the creature's card appears (the bestiary, hover previews and quick looks), and its bestiary row gets a **Notes** pill. Hover previews and quick looks have **Add notes** / **Open notes** too. **My notes** in the bestiary's filters lists the creatures you've written about. The note is plain markdown, so link sessions and NPCs from it like any other page:
+**Add notes** on a lore card makes a note for that creature in your campaign's `Bestiary` folder, with headings for what you've seen, strengths and weaknesses, and fights. Whatever you write shows under the book's lore wherever the creature's card appears (the bestiary, hover previews and quick looks), and its bestiary row gets a **Notes** tag. Hover previews and quick looks have **Add notes** / **Open notes** too. **My notes** in the bestiary's filters lists the creatures you've written about. The note is plain markdown, so link sessions and NPCs from it like any other page:
 
 ```yaml
 ---

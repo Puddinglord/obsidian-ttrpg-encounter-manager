@@ -28,9 +28,9 @@ Everything is also in the command palette (Cmd/Ctrl+P). Type "Ember Vault" to se
    ![An encounter block rated Easy against a party of four level 2 heroes](images/feature-encounter.png)
 
 3. **Run it.** Select **Run** on the block. The tracker opens with the goblins, the wolves and your heroes.
-4. **Play.** Select **Start combat**. Heroes go first, in any order; tick each one off when they've acted. Then the monsters go. Select **Next round** to start again.
+4. **Play.** Type each hero's Initiative and select **Heroes go first**. Heroes go in any order: tap whoever acts to put them on the card, and select **Done** when they've gone. Then the monsters go, one after another, and the next round starts after the last.
 
-To damage a monster, click its HP: a calculator opens on Damage. Enter `12` and apply it, or toggle **Crit** first. The tracker subtracts armor for you, and with a keyboard you can just type `12!` and press Enter. More on the [tracker page](tracker.md).
+To damage a monster, click its HP: a keypad opens on Damage. Enter `12` and apply it, or toggle **Crit** first. The tracker subtracts armor for you, and with a keyboard you can just type `12!` and press Enter. More on the [tracker page](tracker.md).
 
 ## Your first campaign
 

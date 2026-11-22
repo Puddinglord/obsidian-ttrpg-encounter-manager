@@ -1,0 +1,91 @@
+/* ============================================================================
+   Daggerheart domain cards and the hand (pass 4). Every size comes from one
+   width, --cw: the card is 5 × 7, its type and frame scale with it.
+   No clip-path: the pennant and the type plate are SVG.
+   ========================================================================== */
+.xdc { position: relative; flex: none; width: var(--cw); height: calc(var(--cw) * 1.4); box-sizing: border-box; border-radius: calc(var(--cw) * .055); overflow: hidden; cursor: pointer;
+	background: #FFFDF6; color: #1D1842; text-align: left; -webkit-tap-highlight-color: transparent;
+	box-shadow: 0 0 0 1px rgb(29 24 66 / 0.38), 0 0 0 calc(var(--cw) * .012 + 1px) rgb(242 193 103 / 0.0), 0 10px 18px -10px rgb(0 0 0 / 0.55); }
+.xdc:focus-visible { outline: 2px solid #F2C167; outline-offset: 2px; }
+/* The art: our placeholder. The domain's colour with a soft light, its mark large and faint. The player's own art replaces it. */
+.xdc-art { position: absolute; left: 0; right: 0; top: 0; height: 51%; overflow: hidden;
+	background: radial-gradient(70% 70% at 64% 38%, rgb(255 255 255 / 0.42), transparent 70%), linear-gradient(165deg, var(--dom, #6B3FA0) 10%, #17123A 125%); }
+.xdc-art .mark { position: absolute; left: 34%; top: 14%; width: 52%; height: auto; color: rgb(255 255 255 / 0.5); }
+.xdc-art .mark g { stroke-width: 1.2; }
+.xdc-art .rays { position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgb(255 255 255 / 0.05) 0 2px, transparent 2px 9px); }
+/* The pennant: level on top, the domain's mark under it */
+.xdc-pen { position: absolute; left: 7%; top: 0; z-index: 2; width: 19%; height: 35%; display: grid; justify-items: center; align-content: start; color: #fff; }
+.xdc-pen > svg:first-child { position: absolute; inset: 0; width: 100%; height: 100%; }
+.xdc-pen .pf { fill: var(--dom, #6B3FA0); stroke: #F2C167; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.xdc-pen .pl { fill: none; stroke: rgb(255 255 255 / 0.55); stroke-width: .8; vector-effect: non-scaling-stroke; }
+.xdc-pen b { position: relative; margin-top: calc(var(--cw) * .045); font: 900 calc(var(--cw) * .14)/1 var(--g-font-num); text-shadow: 0 1px 0 rgb(0 0 0 / 0.3); }
+.xdc-pen .xdc-gl { position: relative; width: calc(var(--cw) * .12); height: calc(var(--cw) * .12); margin-top: calc(var(--cw) * .025); color: #fff; }
+/* The recall token: a cream pill, the cost and a bolt */
+.xdc-rc { position: absolute; right: 6%; top: calc(var(--cw) * .05); z-index: 2; display: inline-flex; align-items: center; gap: calc(var(--cw) * .012); height: calc(var(--cw) * .14); min-width: calc(var(--cw) * .14); padding: 0 calc(var(--cw) * .045); box-sizing: border-box; border-radius: 999px; background: #FFFDF6; box-shadow: inset 0 0 0 max(1px, calc(var(--cw) * .012)) #1D1842, 0 1px 3px rgb(0 0 0 / 0.3); color: #1D1842; }
+.xdc-rc b { font: 900 calc(var(--cw) * .09)/1 var(--g-font-num); }
+.xdc-rc .bolt { width: calc(var(--cw) * .065); height: auto; fill: #1D1842; }
+/* The gold band and the type plate */
+.xdc-band { position: absolute; left: 0; right: 0; top: 51%; z-index: 2; height: max(2px, calc(var(--cw) * .03)); transform: translateY(-50%); background: linear-gradient(90deg, #B9781F, #F7D58C 28%, #E9B04F 72%, #B9781F); }
+.xdc-plate { position: absolute; left: 50%; top: 50%; width: 52%; height: calc(var(--cw) * .13); transform: translate(-50%, -50%); display: grid; place-items: center; }
+.xdc-plate > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.xdc-plate .pf { fill: var(--dom, #6B3FA0); stroke: #F2C167; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.xdc-plate .pl { fill: none; stroke: rgb(255 255 255 / 0.45); stroke-width: .8; vector-effect: non-scaling-stroke; }
+.xdc-plate span { position: relative; font: 900 max(7px, calc(var(--cw) * .064))/1 var(--g-font-display); letter-spacing: .12em; text-transform: uppercase; color: #fff; }
+/* Name and feature */
+.xdc-body { position: absolute; left: 0; right: 0; top: 51%; bottom: calc(var(--cw) * .125); padding: calc(var(--cw) * .1) 7% 0; overflow: hidden; }
+.xdc-nm { display: block; text-align: center; font: 900 max(9px, calc(var(--cw) * .088))/1.1 var(--g-font-display); letter-spacing: .02em; text-transform: uppercase; }
+.xdc-body p { margin: calc(var(--cw) * .03) 0 0; font: 500 max(7.5px, calc(var(--cw) * .055))/1.28 var(--g-font-ui); color: #2A2440; }
+.xdc-body p b { font-weight: 800; }
+.xdc-foot { position: absolute; left: 7%; right: 7%; bottom: calc(var(--cw) * .035); display: flex; justify-content: space-between; padding-top: calc(var(--cw) * .02); border-top: 1px solid #E2D6BC; font: italic 600 max(6.5px, calc(var(--cw) * .045))/1 var(--g-font-ui); color: #5D5878; }
+/* A card's domain colours come from .d-<domain> (72-dh-sheets.css). Midnight's art needs a lighter light. */
+.xdc.d-midnight .xdc-art { background: radial-gradient(70% 70% at 64% 38%, rgb(196 184 255 / 0.45), transparent 70%), linear-gradient(165deg, #3A3460 10%, #0D0A1F 125%); }
+
+/* ---------- The hand ---------- */
+.xdh { position: relative; --spread: calc(var(--cw) * .46); }
+.xdh-tip { margin-top: 2px; text-align: center; font: italic 600 12px/16px var(--g-font-ui); color: var(--g-text-2); }
+/* Fan: each card turned around a point under the hand; the middle highest */
+.xdh.is-fan .xdh-row { position: relative; height: calc(var(--cw) * 1.66); }
+.xdh.is-fan .xdc { position: absolute; left: 50%; bottom: calc(var(--cw) * .1); z-index: calc(var(--z, 1) + var(--hz, 0)); transform-origin: 50% 140%;
+	transform: translateX(-50%) translateX(calc(var(--off) * var(--spread) + var(--push) * var(--cw) * .14)) translateY(calc(var(--arc) * var(--cw) * .03)) rotate(calc(var(--off) * 5deg));
+	transition: transform var(--g-dur) var(--g-ease), box-shadow var(--g-dur) var(--g-ease); }
+.xdh.is-fan .xdc.is-lift { transform-origin: 50% 100%; transform: translateX(-50%) translateX(calc(var(--off) * var(--spread))) translateY(calc(var(--cw) * -.07)) rotate(0deg) scale(1.28);
+	box-shadow: 0 0 0 2px #F2C167, 0 22px 36px -14px rgb(0 0 0 / 0.75); }
+@media (hover: hover) {
+	.xdh.is-fan .xdc:hover { --hz: 30; transform-origin: 50% 100%; transform: translateX(-50%) translateX(calc(var(--off) * var(--spread))) translateY(calc(var(--cw) * -.07)) rotate(0deg) scale(1.28); box-shadow: 0 0 0 2px #F2C167, 0 22px 36px -14px rgb(0 0 0 / 0.75); }
+}
+@media (prefers-reduced-motion: reduce) { .xdh.is-fan .xdc { transition: none; } }
+/* Grid: every card readable */
+.xdh.is-grid .xdh-row { display: grid; grid-template-columns: repeat(auto-fill, var(--cw)); justify-content: center; gap: 10px; padding: 2px 0 4px; }
+/* Carousel: one card at a time, the next one peeking */
+.xdh.is-carousel .xdh-row { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px calc(50% - var(--cw) / 2) 12px; margin: 0 -14px; scrollbar-width: none; }
+.xdh.is-carousel .xdc { scroll-snap-align: center; }
+.xdh.is-carousel .xdh-row + .xdh-tip { margin-top: -4px; }
+.xdc-empty { display: grid; place-items: center; width: var(--cw); height: calc(var(--cw) * 1.4); border-radius: 8px; border: 1.5px dashed var(--xd-slot-line); color: var(--g-text-2); }
+/* Opened: the whole card over the hand, with what you can do with it */
+.xdh-open { position: absolute; left: 50%; top: -12px; z-index: 60; transform: translateX(-50%); }
+.xdh-open-in, .xdh-sheet { display: grid; justify-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: #1B1640; box-shadow: 0 0 0 1.5px #F2C167, 0 30px 60px -20px rgb(0 0 0 / 0.7); }
+.xdh-sheet { background: transparent; box-shadow: none; padding: 4px 0 6px; }
+.xdh-open-in .ev-clusters, .xdh-sheet .ev-clusters { width: 100%; }
+.xdh-q-in { display: grid; place-items: center; padding: 4px 0 14px; }
+.g-dh .sh-modal.xdh-q { width: 300px; }
+.g-dh .sh-modal.xdh-q .ev-clusters { margin-top: 0; }
+
+/* The study's stages */
+.xdh-stage { padding: 22px 18px 18px; border-radius: 14px; background: var(--g-bg); }
+.xdh-stage .xd-panel { margin-top: 6px; }
+.xdh-phones { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+.xdh-phones .ev-frame { height: 640px; }
+.xd-panel .xdh { margin-top: 2px; }
+/* Stages never push the page sideways: a narrow window shrinks them. */
+.xdh-stage, .xdk-stage { max-width: 100%; box-sizing: border-box; }
+.xdh-phones > div, .sh-pair > div { min-width: 0; max-width: 100%; }
+/* The player's own art fills the art area; with none, the domain placeholder shows. */
+.xdc-art.has-art { background: #14102B; }
+.xdc-art .xdc-img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.xdc-add { position: absolute; left: 50%; top: 56%; z-index: 3; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 11px; border-radius: 999px; background: rgb(15 12 36 / 0.82); box-shadow: inset 0 0 0 1.5px #F2C167; color: #FBF6EA; font: 900 10.5px/1 var(--g-font-display); letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+.xdc-add svg { color: #F2C167; }
+.xdc-add > span { position: relative; top: .12em; }
+.xdc-drop { position: absolute; inset: 6px; z-index: 3; display: grid; place-content: center; justify-items: center; gap: 4px; border-radius: 6px; border: 2px dashed #F2C167; background: rgb(15 12 36 / 0.7); color: #FBF6EA; font: 900 10.5px/1 var(--g-font-display); letter-spacing: .07em; text-transform: uppercase; }
+.xdc-drop svg { color: #F2C167; }
+@media (hover: hover) { .xdc:not(.has-art-card) .xdc-art:hover .xdc-add { opacity: 1; } }
+.xdh-artrow { display: flex; gap: 16px; align-items: flex-start; }

@@ -1,0 +1,15 @@
+CRITIQUE.push(['Pass 1 · first render of every game (light, 2x frames)', [
+	'5e: the lair row’s "20" sat left of the other initiatives (a flex rule leaked into the number cell). Fixed the selector.',
+	'5e: death-save successes showed in oxblood on a grey box: a page style (.ok) leaked in, and the element builder ignored custom properties. Page classes are now prefixed; the builder sets --vars with setProperty.',
+	'5e: the turn prompt’s third button wrapped; the wide card’s Stat block button spilled out. Prompt actions now start at the card edge; Stat block is an icon button.',
+	'5e: the card spent two lines on legendary actions and resistance. Now one line, which buys the queue a row.',
+	'Nimble: the Done button overflowed the card at 640px (grid tracks without minmax(0, …)). Fixed in every grid.',
+	'Nimble: "Dying" in a row was grey like any other note. Now it reads as danger.',
+	'Nimble: setup rows had empty done-circles that meant nothing before the fight. Replaced with the d20.',
+	'Call of Cthulhu: Big Caslon only has old-style figures, so DEX 110 read as "IIO". Numbers moved to Hoefler Text with lining, tabular figures; Caslon stays on names.',
+	'Daggerheart: the spotlit card was solid gold (the edge’s fill inherited into the card). The inner card now resets its own fill.',
+	'Daggerheart: adversary names truncated ("Bramble b…") behind thresholds and slots. Slots moved to a second line with labels; thresholds became "8 / 15".',
+	'Daggerheart: on the GM’s turn, four party cards in a row overflowed. Two columns.',
+	'PF2e: the reaction mark collided with AC; the current creature’s name truncated. The mark now follows the name; the open row’s name spans the row with "Creature 2" on the right, and AC moved into the stats strip.',
+	'PF2e: tag values were uppercased with the tag ("1D6"). Values keep their case.',
+]]);

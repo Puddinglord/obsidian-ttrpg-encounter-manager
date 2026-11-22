@@ -1,0 +1,45 @@
+/* Call of Cthulhu: the ticker as the hatched band, the card, the queue, the pool slots */
+.g-coc .ev-ticker.xc-tick { margin: 0 var(--g-pad) 10px; min-height: 32px; padding: 4px 12px; border: 1.5px solid var(--g-line-strong); border-radius: 4px; background: var(--coc-band) repeating-linear-gradient(-45deg, transparent 0 3px, var(--coc-hatch) 3px 4px); color: var(--g-text-2); font: italic 400 14px/20px var(--g-font-ui); }
+.g-coc .xc-tick .ev-ticker-round { font: 400 17px/20px var(--g-font-display); font-style: normal; color: var(--g-text); }
+.g-coc .xc-tick .ev-ticker-round b { font-weight: 400; }
+.g-coc .xc-tick .ev-ticker-turn { color: var(--g-text); font-style: normal; }
+
+/* The card: the form's double frame, brass between the rules */
+.xc-card { position: relative; margin: 0 var(--g-pad) 4px; padding: 12px 12px 14px; background: var(--g-now); border: 1.5px solid var(--g-line-strong); border-radius: 4px; box-shadow: inset 0 0 0 3px var(--g-now), inset 0 0 0 4px var(--coc-brass), 0 10px 24px -16px rgb(0 0 0 / 0.45); }
+.xc-card-h { display: grid; grid-template-columns: 50px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding-bottom: 10px; border-bottom: 1px dashed var(--g-line-strong); }
+.xc-card .xc-name { display: grid; gap: 0; padding: 0; }
+.xc-card .xc-name h3 { font: 600 22px/26px var(--g-font-ui); }
+.xc-card .xc-name span { font: italic 400 15px/20px var(--g-font-ui); }
+.xc-card .xc-dex { border-color: var(--g-accent); box-shadow: 0 0 0 1px var(--g-accent); }
+.xc-card .xc-dex > i { background: var(--g-accent); color: var(--g-on-accent); border-color: var(--g-accent); }
+.xc-card .xc-dex.gun > i { background: var(--g-text); color: var(--g-surface); }
+.xc-card .xc-open { margin-top: 10px; padding-top: 0; border-top: 0; gap: 10px; }
+.xc-card .ev-clusters { gap: 6px 8px; }
+.xc-card .ev-btn { height: 36px; padding: 0 10px; }
+.g-coc .ev-btn.xc-lvl { padding: 0 4px; font-size: 14.5px; }
+.xc-card.is-dying { box-shadow: inset 0 0 0 3px var(--g-now), inset 0 0 0 4px var(--g-danger-text), 0 10px 24px -16px rgb(0 0 0 / 0.45); }
+
+/* The queue */
+.g-coc .ev-sec { margin: 14px var(--g-pad) 0; }
+.g-coc .ev-sec-hint { margin: 0 var(--g-pad) 6px; font-style: italic; }
+.xc-form.xc-q { border-top-width: 1.5px; border-radius: 4px; margin-top: 6px; }
+.xc-defeated { display: flex; align-items: center; gap: 6px; margin: 12px var(--g-pad) 0; font: 600 14px/18px var(--g-font-ui); font-variant: small-caps; letter-spacing: .04em; color: var(--g-text-2); }
+.xc-mt-col { padding-top: 12px; }
+
+/* Pool slots: three equal columns on every row, the label a fixed sub-box, the figure centred in the rest */
+.xc-pools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; max-width: 240px; }
+.xc-slot { display: grid; grid-template-columns: 32px minmax(0, 1fr); border: 1px solid var(--g-line-strong); border-radius: 3px; background: var(--g-surface); overflow: hidden; font-variant-numeric: lining-nums tabular-nums; }
+.xc-slot.wide { grid-column: span 2; grid-template-columns: 54px minmax(0, 1fr); }
+.xc-slot > i { background: var(--g-surface-2); border-right: 1px solid var(--g-line-strong); font: 600 12px/1 var(--g-font-ui); font-style: normal; font-variant: small-caps; letter-spacing: .04em; text-transform: lowercase; color: var(--g-text-2); white-space: nowrap; }
+.xc-slot > b { min-width: 0; font: 700 14px/1 var(--g-font-num); color: var(--g-text); }
+.xc-slot > b.hurt > span { color: var(--g-hp); }
+.xc-slot > b.san > span { color: var(--g-san); }
+
+/* Measured with the shared checker: the chevron meets the small caps, the band's title sits on its centre line */
+.xc-defeated > svg { transform: translateY(.14em); }
+.g-coc .xc-tick .ev-ticker-round { position: relative; top: 1px; }
+.g-coc .npc-pill { --g-icon-dy: .15em; }
+.g-coc .npc-row .k { --g-icon-dy: .15em; }
+.g-coc .rib-i .o svg { transform: translateY(-.1em); }
+.g-coc .sh-roll { --g-icon-dy: -.08em; }
+.g-coc .ev-segs { --g-icon-dy: 0em; }

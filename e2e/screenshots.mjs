@@ -7,7 +7,7 @@
 //   node e2e/screenshots.mjs map   only shots whose name contains "map"
 //   THEME=dark node e2e/screenshots.mjs
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launchObsidian } from './harness.mjs';
@@ -30,13 +30,49 @@ const { page } = o;
 await page.setViewportSize({ width: 1200, height: 800 });
 if (process.env.THEME === 'dark') await page.evaluate(() => { document.body.removeClass('theme-light'); document.body.addClass('theme-dark'); });
 
+// The sample's quest, place, session and NPC notes say little in their properties; fill some in (in this run's
+// copy of the vault, never sample-vault/) so their cards have something to show: who gave a quest, who's at a
+// place, who was at the table, an NPC's numbers. A third quest, finished, sits below the open ones.
+await o.eval(async (app) => {
+	const C = 'Campaigns/The Old Quarter';
+	const fm = async (path, fn) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.fileManager.processFrontMatter(f, fn); };
+	const edit = async (path, fn) => { const f = app.vault.getAbstractFileByPath(path); if (f) await app.vault.process(f, fn); };
+	await fm(`${C}/Quests/The Guild's Quiet Job.md`, (m) => { m.status = 'active'; });
+	await edit(`${C}/Quests/Bring Wick Home.md`, t => t.replace('- [ ] Find Wick', '- [x] Find Wick'));
+	await app.vault.create(`${C}/Quests/The Sealed Cellar.md`, [
+		'---', 'nimble: quest', 'status: completed', 'type: side', 'giver: "[[Sister Odile Varr]]"', 'location: "[[The Alchemists\' Guild]]"', 'reward: Odile\'s blessing', '---', '',
+		'## Objectives', '- [x] Find the bricked-up cellar under Lantern Row', '- [x] Tell Odile what\'s behind it', '',
+	].join('\n'));
+	await fm(`${C}/Locations/The Alchemists' Guild.md`, (m) => Object.assign(m, {
+		type: 'guildhall', region: 'The Old Quarter', image: '[[Alchemy bench.png]]', leads: ['[[Q1 Entry Chamber]]'], monsters: ['City Guard'],
+		secret: 'The Guild bricked up the cellar under Lantern Row a year before Vess went quiet.',
+	}));
+	await fm(`${C}/NPCs/Tobren Kask.md`, (m) => Object.assign(m, {
+		ancestry: 'Dwarf', pronouns: 'he/him', age: 61, faction: "[[The Alchemists' Guild]]", location: "[[The Alchemists' Guild]]",
+		status: 'alive', attitude: 'friendly', level: 3, armor: 'M', hp: 40, statblock: 'City Guard',
+	}));
+	await fm(`${C}/NPCs/Sister Odile Varr.md`, (m) => { m.location = "[[The Alchemists' Guild]]"; });
+	const S = `${C}/Sessions/Session 1 - Silver Between the Stones.md`;
+	await fm(S, (m) => Object.assign(m, {
+		party: ['[[Brakka]]', '[[Ilse]]', '[[Tomas]]', '[[Wren]]'],
+		quests: ["[[The Guild's Quiet Job]] new", '[[Bring Wick Home]] new', '[[The Sealed Cellar]] done'],
+		loot: ['30 gp each, up front', "Vess's last letter"], next: 'Down the cellar stair, into Q1.',
+	}));
+	await edit(S, t => t.replace('*What happened, for next time.*', [
+		'- Kask hired the party to find Magistrix Vess and bring back her notes.',
+		'- Sister Odile showed them the bricked-up cellar under Lantern Row.',
+		'- They broke through and found the stair going down.',
+	].join('\n')));
+});
+await page.waitForTimeout(800);
+
 /** Sidebars: 'left' shows the Campaign panel, 'right' the tracker. */
 async function layout({ left = false, right = false } = {}) {
 	await o.eval(async (app, plugin, [left, right]) => {
 		document.querySelectorAll('.menu, .nimble-popover').forEach(n => n.remove());
 		document.querySelectorAll('.modal-container .modal-close-button').forEach(n => n.click());
 		plugin.hover.hide();
-		plugin.spotlight?.close();
+		plugin.omnisearch?.close();
 		document.getElementById('shot-focus')?.remove(); // focusPanel's hidden party cards
 		// One tab only, so stale tabs from earlier shots don't show.
 		const leaves = [];
@@ -45,7 +81,7 @@ async function layout({ left = false, right = false } = {}) {
 		if (left) { app.workspace.leftSplit.expand(); await plugin.openCampaignView(); } else app.workspace.leftSplit.collapse();
 		// The panel starts at the top, whatever an earlier shot scrolled to.
 		app.workspace.leftSplit.containerEl.querySelectorAll('*').forEach(n => { if (n.scrollTop) n.scrollTop = 0; });
-		if (right) { app.workspace.rightSplit.expand(); await plugin.activateEncounterView(false); } else app.workspace.rightSplit.collapse();
+		if (right) { app.workspace.rightSplit.expand(); await plugin.runtime('nimble').activateEncounterView(false); } else app.workspace.rightSplit.collapse();
 	}, [left, right]);
 	// The builder asks before it closes with something typed in (the builder shot).
 	const discard = page.locator('.modal-container button.mod-warning', { hasText: 'Discard' });
@@ -98,12 +134,64 @@ async function typeHp(label, text) {
 	await page.waitForTimeout(250);
 }
 
+/** Tap a row in the tracker's queue, putting that creature on the card. */
+async function onCard(label) {
+	await page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: label }) }).locator('.creature-name-box').first().click();
+	await page.waitForTimeout(400);
+}
+
+/** The footer's main button: Heroes go first, Done, Next… */
+async function mainButton() {
+	await page.locator(`${T} .ev-foot-primary`).click();
+	await page.waitForTimeout(400);
+}
+
+/** Run the encounter block in the open scene, type the heroes' Initiative, and let the heroes go first. */
+async function runFight(init = [14, 9, 18, 21]) {
+	await scrollTo(`${R} .nimble-encounter-block`, 0.2);
+	await page.locator(`${R} .nimble-encounter-block .encounter-block-actions button`, { hasText: 'Run' }).click();
+	await page.waitForTimeout(500);
+	const boxes = page.locator(`${T} .nimble-init-input`);
+	for (const [i, v] of init.entries()) { await boxes.nth(i).fill(String(v)); await boxes.nth(i).press('Tab'); await page.waitForTimeout(100); }
+	await mainButton();
+}
+
+/** The sample's hound fight in round 1: Wren has gone, two hounds are hurt, and Brakka is on the card. */
+async function houndFight(width) {
+	await layout({ right: true });
+	if (width) await o.eval((app, _p, w) => app.workspace.rightSplit.setSize?.(w), width);
+	await open(`${CH}/Q6 Storage Vault.md`);
+	await resetTracker(); // after opening: each campaign keeps its own fight
+	await runFight();
+	await onCard('Wren');
+	await mainButton(); // Done
+	await typeHp('Quicksilver Hound-1', '9');
+	await typeHp('Quicksilver Hound-2', '4');
+	await typeHp('Brakka', '7');
+	await onCard('Brakka');
+	await page.evaluate((T) => {
+		document.querySelectorAll('.notice').forEach(n => n.remove());
+		document.querySelectorAll(`${T}, ${T} *`).forEach(n => { if (n.scrollTop) n.scrollTop = 0; });
+	}, T);
+	await page.waitForTimeout(300);
+}
+
+/** The sample's last fight: the heroes go first, and The Alchemist has taken a beating. */
+async function bossFight() {
+	await layout({ right: true });
+	await open(`${CH}/Q7 Sacred Circle.md`);
+	await resetTracker();
+	await runFight();
+	await typeHp('The Alchemist', '31');
+	await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+}
+
 async function resetTracker() {
 	await o.eval(async (app, plugin) => {
 		plugin.settings.encounters = [];
 		plugin.settings.activeEncounterId = null;
 		plugin.settings.rollLog = [];
-		plugin.encounters.trigger('changed');
+		plugin.runtime('nimble').encounters.trigger('changed');
 		document.querySelectorAll('.notice').forEach(n => n.remove());
 	});
 }
@@ -120,42 +208,48 @@ const shots = {
 		await focusPanel(CHAPTER);
 		await scrollTo(`${R} .nimble-encounter-block`, 0.35);
 	},
+	// The hound fight beside its scene: Brakka on the card, the rest of the heroes and the hounds in the queue.
 	async tracker() {
-		await resetTracker();
-		await layout({ right: true });
-		await open(`${CH}/Q6 Storage Vault.md`);
-		await scrollTo(`${R} .nimble-encounter-block`, 0.2);
-		await page.locator(`${R} .nimble-encounter-block .encounter-block-actions button`, { hasText: 'Run' }).click();
-		await page.waitForTimeout(500);
-		await page.locator(`${T} .round-action`).click();
-		await page.waitForTimeout(200);
-		for (const hero of ['Brakka', 'Wren', 'Ilse', 'Tomas']) {
-			await page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: hero }) }).locator('.turn-toggle').click();
-		}
-		await typeHp('Quicksilver Hound-1', '20');
-		await typeHp('Quicksilver Hound-2', '9');
-		await typeHp('Quicksilver Hound-3', '6!');
-		await typeHp('Brakka', '7');
-		await page.evaluate((T) => {
-			document.querySelectorAll('.notice').forEach(n => n.remove());
-			const head = [...document.querySelectorAll(`${T} .side-header`)].find(h => /Monsters/.test(h.textContent));
-			if (!head) return;
-			let sc = head.parentElement;
-			while (sc && !(sc.scrollHeight > sc.clientHeight + 4 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
-			if (!sc) { head.scrollIntoView({ block: 'start' }); return; }
-			// The Monsters heading just under the sticky round controls, so the downed hound shows too.
-			const controls = sc.querySelector('.tracker-controls');
-			for (let k = 0; k < 3; k++) {
-				const sticky = controls ? controls.getBoundingClientRect().bottom : sc.getBoundingClientRect().top;
-				sc.scrollTop += head.getBoundingClientRect().top - sticky - 6;
-			}
-		}, T);
-		await page.waitForTimeout(300);
+		await houndFight();
 	},
-	// The HP calculator open on a hound, showing its math before you commit.
+	// campaigns.md "Your game's look": the whole app in Nimble's colours and type, the Campaign panel, a scene and the fight.
+	async 'theme-nimble'() {
+		await houndFight();
+		await o.eval(async (app, plugin) => { app.workspace.leftSplit.expand(); await plugin.openCampaignView(); });
+		await focusPanel(CHAPTER);
+		await page.waitForTimeout(500);
+		await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+	},
+	// The same in a 5e campaign: parchment, oxblood small capitals, the 5e tracker.
+	async 'theme-5e'() {
+		await layout({ left: true });
+		await swordCoast();
+		await writeNote('Campaigns/Sword Coast/Waymoot Bridge.md', ['---', 'nimble: location', 'type: bridge', 'region: The Trade Way', 'monsters: [Goblin Warrior, Ogre]', '---', '',
+			'A stone bridge over the river, its toll house shuttered. Goblins hold the far end.', '',
+			'## The toll house', '', 'A narrow stair goes down to a cellar that runs under the river. The ferryman, Old Tam, knows the way.', ''].join('\n'));
+		await writeNote('Campaigns/Sword Coast/Road Ambush.md', ['# Road ambush', '', 'Goblins spring from the ditch while their mage holds back. An ogre lumbers out of the trees on round two.', '',
+			'```nimble-encounter', 'name: Road ambush', 'monsters:', '- 2 `5e:Goblin Warrior`', '- `5e:Ogre`', '- `5e:Mage`', '```', ''].join('\n'));
+		await o.eval(async (app, plugin) => { await plugin.campaigns.setActive('Campaigns/Sword Coast'); await plugin.openCampaignView(); });
+		// The ambush running in the 5e tracker beside the bridge.
+		await open('Campaigns/Sword Coast/Road Ambush.md');
+		const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+		await page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-encounter button', { hasText: 'Run' }).click();
+		await page.locator(TR).waitFor();
+		await page.locator(`${TR} button`, { hasText: /Start combat/ }).first().click();
+		await o.eval((app, plugin) => plugin.runtime('dnd5e').fights.change((f) => {
+			const by = (n) => f.combatants.find(c => c.label === n);
+			const ogre = by('Ogre'); if (ogre) { ogre.hp = 41; ogre.conditions.push({ name: 'Prone' }); }
+			const gob = by('Goblin Warrior'); if (gob) gob.hp = 4;
+		}));
+		await open('Campaigns/Sword Coast/Waymoot Bridge.md');
+		await o.eval((app) => app.workspace.rightSplit.setSize?.(330));
+		await page.waitForTimeout(900);
+		await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+	},
+	// The HP keypad open on a hound, showing its math before you commit.
 	async 'hp-calculator'() {
-		await shots.tracker();
-		const row = page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: 'Quicksilver Hound-4' }) }).first();
+		await houndFight();
+		const row = page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: 'Quicksilver Hound-3' }) }).first();
 		await row.scrollIntoViewIfNeeded();
 		await row.locator('.hp-display').click();
 		await page.waitForTimeout(300);
@@ -163,19 +257,12 @@ const shots = {
 		await page.locator('.nimble-popover button', { hasText: 'Vulnerable' }).first().click();
 		await page.waitForTimeout(400);
 	},
+	// The Alchemist on the card, and her quick look opened from it.
 	async boss() {
-		await resetTracker();
-		await layout({ right: true });
-		await open(`${CH}/Q7 Sacred Circle.md`);
-		await scrollTo(`${R} .nimble-encounter-block`, 0.2);
-		await page.locator(`${R} .nimble-encounter-block .encounter-block-actions button`, { hasText: 'Run' }).click();
-		await page.waitForTimeout(500);
-		await page.locator(`${T} .round-action`).click();
-		await typeHp('The Alchemist', '31');
-		await page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: 'Ilse' }) }).locator('.turn-toggle').click();
-		await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
-		// Her quick look, opened from the tracker.
-		await page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: 'The Alchemist' }) }).locator('.creature-label').click();
+		await bossFight();
+		await onCard('The Alchemist');
+		await page.locator(`${T} .ev-card-sheet`).first().click();
+		await page.waitForSelector('.modal-container .modal');
 		await page.waitForTimeout(700);
 	},
 	async map() {
@@ -187,11 +274,10 @@ const shots = {
 		await layout({ left: true });
 		await open(`${C}/NPCs/Tobren Kask.md`);
 		await focusPanel('NPCs');
-		await scrollTo(`${R} .nimble-npc-card`, 0.06);
 	},
 	async bestiary() {
 		await layout();
-		await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
+		await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
 		await page.waitForSelector('.nimble-compendium .nimble-cmpx-row[data-id]', { timeout: 5000 });
 		await page.locator('.nimble-compendium .nimble-cmpx-input').fill('quicksilver');
 		await page.waitForTimeout(500);
@@ -235,7 +321,7 @@ const shots = {
 	// The compendium's Spells tab, filtered by a typed school chip, with a spell's card beside the list.
 	async compendium() {
 		await layout();
-		await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
+		await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
 		const X = '.nimble-compendium';
 		await page.waitForSelector(`${X} .nimble-cmpx-row[data-id]`, { timeout: 5000 });
 		await page.locator(`${X} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click();
@@ -260,17 +346,17 @@ const shots = {
 		await open(`${C}/Quests/Bring Wick Home.md`);
 		await focusPanel('Quests');
 	},
-	// Spotlight over a scene, searching everything at once.
-	async spotlight() {
+	// Omnisearch over a scene, searching everything at once.
+	async omnisearch() {
 		await layout({ left: true });
 		await open(`${CH}/Q2 Mercury Pool.md`);
 		await focusPanel(CHAPTER);
 		await o.eval((app) => app.commands.executeCommandById('nimble-gm:spotlight'));
-		await page.waitForSelector('.nimble-spotlight .nimble-cmpx-input');
+		await page.waitForSelector('.nimble-omnisearch .nimble-cmpx-input');
 		await page.keyboard.type('alchemist');
 		await page.waitForTimeout(500);
 		// Select the adversary (Obsidian's suggestions select on hover; the mouse leaves before the shot).
-		await page.locator('.nimble-spotlight .nimble-spot-row.spot-monster').first().hover();
+		await page.locator('.nimble-omnisearch .nimble-spot-row.spot-monster').first().hover();
 		await page.waitForTimeout(200);
 	},
 	// Links to campaign notes as pills: locations, scenes, maps and NPCs in a session's prep list.
@@ -278,6 +364,13 @@ const shots = {
 		await layout({ left: true });
 		await open(`${C}/Sessions/Session 1 - Silver Between the Stones.md`);
 		await focusPanel('Sessions');
+		// The session's card comes first; start just under it, at the prep list, where the pills are.
+		await page.evaluate((R) => {
+			const card = [...document.querySelectorAll(`${R} .nimble-note-card`)].find(n => n.getBoundingClientRect().width);
+			const sc = card?.closest('.markdown-preview-view');
+			if (card && sc) sc.scrollTop += card.getBoundingClientRect().bottom - sc.getBoundingClientRect().top + 4;
+		}, R);
+		await page.waitForTimeout(400);
 	},
 	async boxes() {
 		await layout({ left: true });
@@ -324,9 +417,38 @@ const FEATURE_PAD = 28;
 
 /** Brakka's sheet in reading view, 3D dice off so rolls don't throw dice over it. */
 async function brakka() {
+	await hero(`Campaigns/Brakka's Journal/Party/Brakka.md`);
+}
+
+/** A hero's sheet in reading view, 3D dice off. The note's text is kept, so restoreHeroes() can undo what a shot did to it. */
+async function hero(path) {
 	await layout();
-	await o.eval((app, plugin) => { plugin.settings.dice3d = false; });
-	await open(`Campaigns/Brakka's Journal/Party/Brakka.md`);
+	await o.eval(async (app, plugin, path) => {
+		plugin.settings.dice3d = false;
+		window.ftHeroes ??= {};
+		const f = app.vault.getAbstractFileByPath(path);
+		if (f && !(path in window.ftHeroes)) window.ftHeroes[path] = await app.vault.read(f);
+	}, path);
+	await open(path);
+}
+
+/** Put back every hero sheet a shot changed (a Rage, dice, a used reaction), for the shots after it. */
+async function restoreHeroes() {
+	await o.eval(async (app) => {
+		for (const [path, text] of Object.entries(window.ftHeroes ?? {})) {
+			const f = app.vault.getAbstractFileByPath(path);
+			if (f) await app.vault.modify(f, text);
+		}
+		window.ftHeroes = {};
+	});
+	await page.waitForTimeout(400);
+}
+
+/** The visible copy of the active note's Nimble sheet (a note can be drawn twice, once hidden). */
+const SHEET = '.workspace-leaf.mod-active .markdown-reading-view .nimble-sheet';
+async function sheetClick(selector, text) {
+	await page.locator(`${SHEET} ${selector}:visible`, text ? { hasText: text } : {}).first().click();
+	await page.waitForTimeout(500);
 }
 
 /** Switch the active note to Live Preview (the sample vault opens notes in reading view). */
@@ -390,6 +512,14 @@ async function writeNote(path, text) {
 	}, [path, text]);
 	await page.waitForTimeout(300);
 }
+
+/** The 5e campaign the 5e shots use (2024 rules), made on first use, and active. */
+async function swordCoast() {
+	await o.eval(async (app, plugin) => {
+		if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+	});
+	await page.waitForTimeout(300);
+}
 const features = {
 	// The monster builder on its Attacks step, the level check and live stat block beside it.
 	'feature-builder': {
@@ -411,86 +541,103 @@ const features = {
 			return { left: box.left, right: box.right, top, bottom };
 		},
 	},
-	// Title, property pills, the hook and the objectives of a quest note.
+	// A quest note's card: kicker, title and status stamp, who gave it, where, the reward, objectives and the secret.
 	'feature-quest': {
-		lineWidth: 740,
+		lineWidth: 700,
 		setup: async () => { await layout(); await open(`${C}/Quests/Bring Wick Home.md`); },
-		show: () => {
-			const R = '.workspace-leaf.mod-active .markdown-reading-view';
-			const blocks = [...document.querySelectorAll(`${R} .markdown-preview-sizer > div`)];
-			const obj = blocks.findIndex(b => b.querySelector('h2')?.textContent.trim() === 'Objectives');
-			return [`${R} .inline-title`, `${R} .metadata-container`, ...blocks.slice(0, obj + 2).filter(b => !b.querySelector('.inline-title, .metadata-container, .mod-header, .mod-frontmatter') && b.textContent.trim())];
-		},
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .nimble-note-card.kind-quest'],
 	},
-	// The same quest beside the Campaign panel, folded down to its Quests folder with this quest selected.
+	// The same quest's card beside the Campaign panel, folded down to its Quests folder with this quest selected.
 	'feature-quest-panel': {
 		viewport: [1000, 800], lineWidth: 544, extend: true,
-		// The panel as a rounded card only as tall as its contents, and the note's title level with its top.
-		css: `.nimble-campaign-view { background: var(--background-secondary) !important; border-radius: 12px; height: auto !important; flex: none !important; padding-bottom: 4px !important; }
-			.workspace-split.mod-root .workspace-leaf.mod-active .view-content { transform: translateY(-60px); }`,
+		// The panel as a rounded card only as tall as its contents, and the card level with its top.
+		css: `${PANEL_CARD_CSS}
+			.workspace-split.mod-root .workspace-leaf.mod-active .view-content { transform: translateY(-78px); }`,
 		setup: async () => {
 			await layout({ left: true });
 			await open(`${C}/Quests/Bring Wick Home.md`);
 			await focusPanel('Quests');
 		},
-		show: () => {
-			const R = '.workspace-leaf.mod-active .markdown-reading-view';
-			const blocks = [...document.querySelectorAll(`${R} .markdown-preview-sizer > div`)];
-			const obj = blocks.findIndex(b => b.querySelector('h2')?.textContent.trim() === 'Objectives');
-			return ['.workspace-split.mod-left-split .nimble-campaign-view', `${R} .inline-title`, `${R} .metadata-container`, ...blocks.slice(0, obj + 2).filter(b => !b.querySelector('.inline-title, .metadata-container, .mod-header, .mod-frontmatter') && b.textContent.trim())];
-		},
+		show: () => ['.workspace-split.mod-left-split .nimble-campaign-view', '.workspace-leaf.mod-active .markdown-reading-view .nimble-note-card.kind-quest'],
 	},
-	// The top of Brakka's sheet: who he is, his stats, HP, wounds and skills.
+	// campaigns.md "Places": a location's card, its banner, region, the monsters to use there, who's here, where it leads.
+	'guide-place-card': {
+		lineWidth: 600, viewport: [1200, 1200], ratio: 0.5, // the whole card
+		setup: async () => { await layout(); await open(`${C}/Locations/The Alchemists' Guild.md`); },
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .nimble-note-card.kind-location'],
+	},
+	// campaigns.md "Sessions": a session's card, who was at the table, what happened, which quests moved, loot, next time.
+	'guide-session-card': {
+		lineWidth: 600, viewport: [1200, 1200], ratio: 0.5, // the whole card
+		setup: async () => { await layout(); await open(`${C}/Sessions/Session 1 - Silver Between the Stones.md`); },
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .nimble-note-card.kind-session'],
+	},
+	// The top of Brakka's sheet: who he is, the band (stats, Defense, Initiative, Wounds, HP) and the skills.
 	'feature-character-sheet': {
 		lineWidth: 760,
 		setup: async () => { await layout(); await open(`Campaigns/Brakka's Journal/Party/Brakka.md`); },
 		show: () => {
 			const S = [...document.querySelectorAll('.workspace-leaf.mod-active .nimble-sheet')].find(n => n.getBoundingClientRect().width);
-			return [...S.querySelectorAll(':scope > .ns-hero, :scope > .ns-meters, :scope > .ns-abilities')];
+			return [...S.querySelectorAll(':scope > .ns-hero, :scope > .ns-band, :scope > .ns-skills')];
 		},
 	},
-	// The tracker mid-fight: round, whose turn and the monsters' HP. A tall pane, so a portrait shot.
+	// tracker.md "Running a fight": the whole tracker mid-fight, Brakka on the card, the queue under him.
 	'feature-tracker': {
-		viewport: [1200, 900], bg: 'var(--background-secondary)', ratio: 4 / 5,
+		// Just tall enough for the whole fight, so the footer's Done sits under the combat log.
+		viewport: [1200, 940], bg: 'var(--background-secondary)', ratio: 0.3,
+		setup: () => houndFight(400),
+		css: '.workspace-split.mod-right-split { margin-right: 40px !important; }',
+		show: () => ['.nimble-encounter-tracker'],
+		region: () => {
+			const T = document.querySelector('.nimble-encounter-tracker');
+			const rs = [...T.children].map(n => n.getBoundingClientRect()).filter(r => r.width && r.height);
+			return { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom)) };
+		},
+	},
+	// tracker.md "Legendary monsters": Done on Ilse turns the card to The Alchemist's beat, her actions to pick from.
+	'guide-tracker-beat': {
+		viewport: [1200, 1300], bg: 'var(--background-secondary)', ratio: 0.5,
 		setup: async () => {
-			await resetTracker();
-			await layout({ right: true });
-			await o.eval((app) => app.workspace.rightSplit.setSize?.(440));
-			await open(`${CH}/Q6 Storage Vault.md`);
-			await scrollTo(`${R} .nimble-encounter-block`, 0.2);
-			await page.locator(`${R} .nimble-encounter-block .encounter-block-actions button`, { hasText: 'Run' }).click();
-			await page.waitForTimeout(500);
-			await page.locator(`${T} .round-action`).click();
-			await page.waitForTimeout(200);
-			for (const hero of ['Brakka', 'Wren', 'Ilse', 'Tomas']) {
-				await page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: hero }) }).locator('.turn-toggle').click();
-			}
-			await typeHp('Quicksilver Hound-1', '11');
-			await typeHp('Quicksilver Hound-2', '6');
-			await typeHp('Brakka', '7');
-			await page.waitForTimeout(300);
+			await o.eval((app) => app.workspace.rightSplit.setSize?.(400));
+			await bossFight();
+			await onCard('Ilse');
+			await mainButton(); // Done · The Alchemist acts
 			await page.evaluate((T) => document.querySelectorAll(`${T}, ${T} *`).forEach(n => { if (n.scrollTop) n.scrollTop = 0; }), T);
 		},
 		css: '.workspace-split.mod-right-split { margin-right: 40px !important; }',
 		show: () => ['.nimble-encounter-tracker'],
+		// From the encounter's name to the end of the card; the queue under it is hidden.
 		region: () => {
-			const rs = [...document.querySelectorAll('.nimble-encounter-tracker > *')].map(n => n.getBoundingClientRect()).filter(r => r.width && r.height);
-			// Three monsters; the rest would peek in under the bottom padding.
-			const items = [...document.querySelectorAll('.nimble-encounter-tracker .creature-item')];
-			items.slice(3).forEach(n => { n.style.visibility = 'hidden'; });
-			const third = items[2].getBoundingClientRect();
-			return { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: third.bottom };
+			const T = document.querySelector('.nimble-encounter-tracker');
+			const card = [...T.querySelectorAll('.ev-tracker-body > *')].find(n => /After .*'s turn/.test(n.textContent) && n.querySelector('h2'));
+			for (let n = card.nextElementSibling; n; n = n.nextElementSibling) n.style.visibility = 'hidden';
+			T.querySelector('.ev-foot')?.style.setProperty('visibility', 'hidden');
+			const b = T.getBoundingClientRect();
+			return { left: b.left, right: b.right, top: b.top, bottom: card.getBoundingClientRect().bottom };
 		},
+	},
+	// tracker.md "HP": a hero's damage keypad with the players' answers as chips; Defend takes Brakka's Defense off.
+	'guide-tracker-defend': {
+		viewport: [1200, 1000], bg: 'var(--background-secondary)', ratio: 0.5, // the whole keypad
+		setup: async () => {
+			await houndFight(300);
+			await page.locator(`${T} .ev-card-damage`).first().click();
+			await page.waitForTimeout(400);
+			await page.keyboard.type('9');
+			await page.locator('.nimble-popover .qa-defend').first().click();
+			await page.waitForTimeout(400);
+		},
+		show: () => ['.nimble-popover'],
 	},
 	'feature-encounter': {
 		wide: true, lineWidth: 410,
 		setup: () => shots['encounter-block'](),
 		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .nimble-encounter-block'],
 	},
-	'feature-spotlight': {
-		bg: 'var(--background-secondary)',
-		setup: () => shots.spotlight(),
-		show: () => ['.nimble-spotlight'],
+	'feature-omnisearch': {
+		bg: 'var(--background-secondary)', snapText: true,
+		setup: () => shots.omnisearch(),
+		show: () => ['.nimble-omnisearch'],
 	},
 	// Link pills in a session's prep list.
 	'feature-pills': {
@@ -566,7 +713,7 @@ const features = {
 			await shots['hp-calculator']();
 		},
 		show: () => {
-			const row = [...document.querySelectorAll('.nimble-encounter-tracker .creature-item')].find(n => n.querySelector('.creature-label')?.textContent.includes('Hound-4'));
+			const row = [...document.querySelectorAll('.nimble-encounter-tracker .creature-item')].find(n => n.querySelector('.creature-label')?.textContent.includes('Hound-3'));
 			return ['.nimble-popover', row];
 		},
 	},
@@ -676,6 +823,332 @@ const features = {
 		show: () => ['.modal-container .modal'],
 	},
 	// A homebrew spell written as a block, shown as its compendium card.
+	// 5e: New character in a 5e campaign, on its Class step with the sheet in brief beside it.
+	'feature-5e-character': {
+		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+				for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100));
+				app.commands.executeCommandById('nimble-gm:new-character');
+			});
+			const B = '.modal.nimble-entity-builder';
+			const panel = `${B} .eb-panel.is-active`;
+			await page.locator(B).waitFor();
+			await page.locator(`${panel} input[data-field="Name"]`).fill('Ilse Vane');
+			await page.locator(`${panel} select[data-field="Class"]`).selectOption('Wizard');
+			await page.locator(`${panel} input[data-field="Level"]`).fill('3');
+			await page.locator(`${B} .eb-dot`, { hasText: 'Skills' }).click();
+			for (const sk of ['Arcana', 'History']) await page.locator(`${panel} .eb-pick[data-value="${sk}"]`).click();
+			await page.locator(`${B} .eb-dot`, { hasText: 'Class' }).click();
+			await page.locator(`${panel} select[data-field="Subclass"]`).selectOption({ index: 1 });
+			for (const sp of ['Fire Bolt', 'Light', 'Mage Hand']) await page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="${sp}"]`).click();
+			for (const sp of ['Shield', 'Magic Missile', 'Misty Step']) await page.locator(`${panel} [data-key="spells"] .eb-pick[data-value="${sp}"]`).click();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+	},
+	// 5e.md "Make your own": the monster builder on its Actions step, a breath weapon worded with its DC, the check on the banner.
+	'guide-5e-builder': {
+		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+				for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100));
+				app.commands.executeCommandById('nimble-gm:new-monster');
+			});
+			const B = '.modal.nimble-entity-builder';
+			const panel = `${B} .eb-panel.is-active`;
+			await page.locator(B).waitFor();
+			await page.locator(`${panel} input[data-field="Name"]`).fill('Cinder Drake');
+			await page.locator(`${panel} [data-key="size"] .eb-seg-btn`, { hasText: 'Large' }).click();
+			await page.locator(`${panel} select[data-field="Type"]`).selectOption('Dragon');
+			await page.locator(`${panel} select[data-field="Challenge"]`).selectOption('5');
+			await page.locator(`${B} .eb-dot`, { hasText: 'Armor' }).click();
+			await page.locator(`${panel} select[data-field="Armor"]`).selectOption('natural');
+			await page.locator(`${panel} input[data-field="AC"]`).fill('17');
+			await page.locator(`${panel} input[data-field="Hit dice"]`).fill('12');
+			await page.locator(`${panel} input[data-field="Fly"]`).fill('60');
+			await page.locator(`${B} .eb-dot`, { hasText: 'Abilities' }).click();
+			for (const [a, v] of [['STR', '19'], ['DEX', '12'], ['CON', '17'], ['WIS', '13'], ['CHA', '14']]) await page.locator(`${panel} input[data-field="${a}"]`).fill(v);
+			await page.locator(`${B} .eb-dot`, { hasText: /^Actions$/ }).click();
+			const strike = page.locator(`${panel} [data-key="actions"] .eb-list-item`).first();
+			await strike.locator('input[data-field="Name"]').fill('Rend');
+			await strike.locator('select[data-field="Die"]').selectOption('10');
+			await page.locator(`${panel} [data-key="actions"] .eb-list-add`).click();
+			const breath = page.locator(`${panel} [data-key="actions"] .eb-list-item`).nth(1);
+			await breath.locator('input[data-field="Name"]').fill('Cinder Breath');
+			await breath.locator('[data-key="kind"] .eb-seg-btn', { hasText: 'Save' }).click();
+			await breath.locator('select[data-field="Uses"]').selectOption('Recharge 5–6');
+			await breath.locator('input[data-field="Who and where"]').fill('each creature in a 30-foot Cone');
+			await breath.locator('input[data-field="Dice"]').fill('6');
+			await breath.locator('select[data-field="Die"]').selectOption('6');
+			await breath.locator('select[data-field="Damage"]').selectOption('Fire');
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+	},
+	// homebrew.md "5e builders" and 5e.md "Make your own": the class builder on its Features step, a feature with options, what level 3 grants.
+	'guide-5e-class-builder': {
+		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+				for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100));
+				app.commands.executeCommandById('nimble-gm:open-bestiary');
+			});
+			const V = '.workspace-leaf-content[data-type="nimble-dnd5e-compendium"]';
+			await page.locator(V).waitFor();
+			await page.locator(`${V} .nimble-cmpx-seg`, { hasText: 'Classes' }).click();
+			await page.locator(`${V} .nimble-cmpx-new`).click();
+			await page.locator('.menu .menu-item', { hasText: 'New class…' }).click();
+			const B = '.modal.nimble-entity-builder';
+			const panel = `${B} .eb-panel.is-active`;
+			const go = async (step) => { await page.locator(`${B} .eb-dot`, { hasText: step }).click(); await page.waitForTimeout(450); };
+			await page.locator(B).waitFor();
+			await page.locator(`${panel} input[data-field="Name"]`).fill('Hearth Warden');
+			await page.locator(`${panel} [data-key="hitDie"] .eb-seg-btn`, { hasText: 'd10' }).click();
+			for (const a of ['STR', 'WIS']) await page.locator(`${panel} [data-key="primary"] .eb-pick[data-value="${a}"]`).click();
+			for (const a of ['STR', 'WIS']) await page.locator(`${panel} [data-key="saves"] .eb-pick[data-value="${a}"]`).click();
+			await go('Training');
+			for (const a of ['Light Armor', 'Medium Armor', 'Shields']) await page.locator(`${panel} [data-key="armor"] .eb-pick[data-value="${a}"]`).click();
+			await page.locator(`${panel} [data-key="weapons"] .eb-pick[data-value="Martial Weapons"]`).click();
+			for (const s of ['Athletics', 'Insight', 'Medicine', 'Survival']) await page.locator(`${panel} [data-key="skillFrom"] .eb-pick[data-value="${s}"]`).click();
+			await go('Spells');
+			await page.locator(`${panel} [data-key="castAbility"] .eb-seg-btn`, { hasText: 'Wisdom' }).click();
+			await page.waitForTimeout(300);
+			await page.locator(`${B} .eb-panel.is-active [data-key="caster"] .eb-seg-btn`, { hasText: 'Half' }).click();
+			await page.locator(`${B} .eb-panel.is-active select[data-field="Spell list"]`).selectOption('Ranger');
+			await page.locator(`${B} .eb-panel.is-active select[data-field="Cantrips and spells like"]`).selectOption('Ranger');
+			await go('Table');
+			await page.locator(`${panel} input[data-field="Subclass called"]`).fill('Warden Circle');
+			await go('Features');
+			const features = () => page.locator(`${panel} [data-key="features"] > .eb-control > .eb-list > .eb-list-item`);
+			await features().first().locator('input[data-field="Name"]').first().fill('Hearthfire');
+			await features().first().locator('textarea[data-field="Text"]').first().fill('As a Bonus Action, you kindle a warding flame around an ally you can see within 30 feet.');
+			await page.locator(`${panel} [data-key="features"] > .eb-control > .eb-list-add`).click();
+			await features().nth(1).locator('input[data-field="Name"]').first().fill('Warding Style');
+			await features().nth(1).locator('textarea[data-field="Text"]').first().fill('Choose one of the following options.');
+			for (const [name, text] of [['Ember Guard', 'Attacks against the warmed ally have Disadvantage.'], ['Ash Step', 'As a Bonus Action, you teleport to the warmed ally.']]) {
+				await features().nth(1).locator('[data-key="options"] .eb-list-add').click();
+				const opt = features().nth(1).locator('[data-key="options"] .eb-list-item').last();
+				await opt.locator('input[data-field="Name"]').fill(name);
+				await opt.locator('textarea[data-field="Text"]').fill(text);
+			}
+			await features().nth(1).locator('[data-key="more"] .eb-pick[data-value="6"]').click();
+			await page.locator(`${B} .eb-check .dnd5e-cb-level`, { hasText: /^3$/ }).click();
+			// The second feature in view, with its options.
+			await features().nth(1).evaluate(el => el.scrollIntoView({ block: 'start' }));
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+	},
+	// 5e.md "Character sheets": Level up on its Spells step, a cantrip and two spellbook spells picked, what the level brings beside.
+	'guide-5e-level-up': {
+		wide: true, viewport: [1200, 650], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const note = 'Campaigns/Sword Coast/Party/Ilse Vane.md';
+			await o.eval(async (app, plugin, note) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+				for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100));
+				const old = app.vault.getAbstractFileByPath(note); if (old) await app.vault.delete(old);
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast/Party')) await app.vault.createFolder('Campaigns/Sword Coast/Party');
+				await app.vault.create(note, ['---', 'nimble: character', 'system: 5e', 'edition: 2024', 'class: Wizard', 'subclass: Evoker', 'level: 3', 'species: Elf', 'background: Sage',
+					'str: 8', 'dex: 14', 'con: 14', 'int: 17', 'wis: 12', 'cha: 10', 'hp: 20', 'hp_max: 20', 'skills: [Arcana, History, Investigation, Insight]', 'spells: [Fire Bolt, Light, Prestidigitation, Shield, Magic Missile, Detect Magic, Sleep, Misty Step]',
+					'---', '', '```5e-sheet', '```', ''].join('\n'));
+			}, note);
+			await open(note);
+			await page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-sheet-actions button', { hasText: 'Level up' }).click();
+			const B = '.modal.nimble-entity-builder';
+			const panel = `${B} .eb-panel.is-active`;
+			await page.locator(B).waitFor();
+			await page.locator(`${B} .eb-dot`, { hasText: 'Spells' }).click();
+			await page.locator(`${panel} [data-key="cantrips"] .eb-pick[data-value="Mage Hand"]`).click();
+			for (const sp of ['Invisibility', 'Scorching Ray']) await page.locator(`${panel} [data-key="spells"] .eb-pick[data-value="${sp}"]`).click();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+	},
+	// The 5e character sheet: the header, hit points, conditions and the first abilities.
+	'feature-5e-sheet': {
+		lineWidth: 900, viewport: [1200, 900],
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			});
+			await writeNote('Campaigns/Sword Coast/Party/Ilse Vane.md', [
+				'---', 'title: Ilse Vane', 'species: Elf', 'class: Wizard', 'subclass: Evoker', 'background: Sage', 'level: 5', 'edition: "2024"',
+				'str: 8', 'dex: 14', 'con: 13', 'int: 18', 'wis: 12', 'cha: 10', 'hp: 24', 'hp_max: 32', 'temp_hp: 5', 'hit_dice_used: 2', 'inspiration: true',
+				'skills: [Arcana, History, Investigation, Insight]', 'expertise: [Arcana]', 'conditions: [Poisoned]',
+				'spells: [Fire Bolt, Mage Hand, Shield, Magic Missile, Misty Step, Hold Person, Fireball, Counterspell]', 'slots_used: [1, 0, 1]',
+				'inventory:', '  - { name: Dagger, equipped: true }', '  - { name: Quarterstaff, equipped: true }', '  - { name: Potion of Healing, qty: 2 }',
+				'portrait: "[[Campaigns/The Old Quarter/Assets/Art/Tobren Kask.png]]"', 'portrait-position: center 20%', '---', '', '```5e-sheet', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/Party/Ilse Vane.md');
+			await page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-sheet').waitFor();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .dnd5e-sheet'],
+		// From the banner to the first row of ability plaques.
+		region: () => {
+			const sheet = document.querySelector('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-sheet');
+			const b = sheet.getBoundingClientRect();
+			const conds = sheet.querySelector('.dnd5e-conditions-row');
+			const plaques = [...sheet.querySelectorAll('.dnd5e-sheet-ability')].map(n => n.getBoundingClientRect()).filter(r => r.width);
+			const firstRow = plaques.filter(r => Math.abs(r.top - (plaques[0]?.top ?? 0)) < 4);
+			const bottom = firstRow.length ? Math.max(...firstRow.map(r => r.bottom)) : conds ? conds.getBoundingClientRect().bottom : b.top + 600;
+			return { left: b.left, right: b.right, top: b.top, bottom };
+		},
+	},
+	// The 5e tracker mid-fight: initiative rows, the current turn, conditions, concentration and legendary pips.
+	'feature-5e-tracker': {
+		viewport: [1200, 900], ratio: 4 / 5,
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			});
+			await writeNote('Campaigns/Sword Coast/Road Ambush.md', [
+				'# Road ambush', '', 'Goblins spring from the ditch while their mage holds back. An ogre lumbers out of the trees on round two.', '',
+				'```nimble-encounter', 'name: Road ambush', 'monsters:', '- 2 `5e:Goblin Warrior`', '- `5e:Ogre`', '- `5e:Mage`', '- `5e:Young Red Dragon`', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/Road Ambush.md');
+			const R5 = '.workspace-leaf.mod-active .markdown-reading-view';
+			await page.locator(`${R5} .dnd5e-encounter button`, { hasText: 'Run' }).click();
+			const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+			await page.locator(TR).waitFor();
+			await o.eval((app) => app.workspace.rightSplit.setSize?.(480));
+			await page.locator(`${TR} button`, { hasText: /Start combat/ }).first().click();
+			await page.waitForTimeout(400);
+			await o.eval((app, plugin) => {
+				const rt = plugin.runtime('dnd5e');
+				rt.fights.change((f) => {
+					const by = (n) => f.combatants.find(c => c.label === n);
+					const set = (n, hp, conds = []) => { const c = by(n); if (c) { c.hp = hp; c.conditions.push(...conds.map(name => ({ name }))); } };
+					set('Goblin Warrior', 4, ['Frightened']);
+					set('Goblin Warrior 2', 0);
+					set('Ogre', 41, ['Prone']);
+					const mage = by('Mage'); if (mage) { mage.hp = 52; mage.concentrating = true; }
+					const dragon = by('Young Red Dragon'); if (dragon) { dragon.hp = Math.round(dragon.maxHp * 0.62); if (dragon.legendary) dragon.legendary.used = 1; }
+				});
+			});
+			await page.waitForTimeout(700);
+		},
+		show: () => ['.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]'],
+		region: () => {
+			const b = document.querySelector('.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]').getBoundingClientRect();
+			const rows = [...document.querySelectorAll('.workspace-leaf-content[data-type="nimble-dnd5e-tracker"] .dnd5e-combatant')];
+			const last = rows[rows.length - 1];
+			return { left: b.left, right: b.right, top: b.top, bottom: last ? last.getBoundingClientRect().bottom : b.bottom };
+		},
+	},
+	// Timed conditions: at the turn change, the tracker asks for a save and rolls Burning's damage.
+	'feature-conditions': {
+		viewport: [1200, 800], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			});
+			await writeNote('Campaigns/Sword Coast/Road Ambush.md', [
+				'# Road ambush', '', '```nimble-encounter', 'name: Road ambush', 'monsters:', '- `5e:Mage`', '- `5e:Ogre`', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/Road Ambush.md');
+			await page.locator('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-encounter button', { hasText: 'Run' }).click();
+			const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
+			await page.locator(TR).waitFor();
+			await o.eval((app, plugin) => {
+				plugin.runtime('dnd5e').fights.change((f) => {
+					const mage = f.combatants.find(c => c.label === 'Mage'); const ogre = f.combatants.find(c => c.label === 'Ogre');
+					mage.init = 18; ogre.init = 9;
+					mage.conditions.push({ name: 'Hold Person', triggers: [{ kind: 'save', at: 'end', ability: 'Wisdom', dc: 13, endsOnSave: true }] });
+					ogre.conditions.push({ name: 'Burning', triggers: [{ kind: 'damage', at: 'start', dice: '1d4', damageType: 'Fire' }] });
+				});
+			});
+			await page.locator(`${TR} button`, { hasText: /Start combat/ }).first().click();
+			await page.waitForTimeout(300);
+			await page.locator(`${TR} button`, { hasText: /^\s*Next:/ }).first().click();
+			await page.locator('.modal.ev-effect-prompt').waitFor();
+			await page.waitForTimeout(500);
+		},
+		show: () => ['.modal.ev-effect-prompt'],
+	},
+	// A 5e stat block (the example content pack's Cinder Hound) laid out the 2024 way.
+	'feature-5e-statblock': {
+		lineWidth: 520,
+		setup: async () => {
+			await layout();
+			await o.eval(async (app, plugin) => {
+				if (!app.vault.getAbstractFileByPath('Campaigns/Sword Coast')) await plugin.campaigns.createCampaign({ name: 'Sword Coast', level: 3, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			});
+			await writeNote('Campaigns/Sword Coast/Cinder Hound.md', [
+				'```5e', 'name: Cinder Hound', 'size: Medium', 'type: elemental', 'alignment: Neutral', 'ac: 13 (natural armor)', 'hp: 27 (5d8 + 5)', 'speed: 40 ft.',
+				'str: 14', 'dex: 15', 'con: 12', 'int: 4', 'wis: 13', 'cha: 6', 'immunities: Fire', 'senses: Darkvision 60 ft., Passive Perception 13', 'languages: —', 'cr: 1',
+				'traits:', '- Glowing Coat: The hound sheds dim light in a 10-foot radius.',
+				'actions:', '- Bite: Melee Attack Roll: +4, reach 5 ft. Hit: 7 (1d10 + 2) Piercing damage plus 3 (1d6) Fire damage.', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/Cinder Hound.md');
+		},
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .dnd5e-statblock'],
+		// From the name to Languages: the shot ends on a whole line.
+		region: () => {
+			const block = document.querySelector('.workspace-leaf.mod-active .markdown-reading-view .dnd5e-statblock');
+			const b = block.getBoundingClientRect();
+			const lang = [...block.querySelectorAll('*')].find(n => /^Languages/.test(n.textContent?.trim() ?? '') && n.getBoundingClientRect().height < 40);
+			return { left: b.left, right: b.right, top: b.top, bottom: (lang?.getBoundingClientRect().bottom ?? b.bottom) + 2 };
+		},
+	},
+	// 5e.md "NPCs": the GM's mini sheet under a 5e NPC's card, from a linked stat block with her own AC and HP.
+	'guide-5e-npc': {
+		lineWidth: 700, viewport: [1200, 1400], ratio: 0.5,
+		setup: async () => {
+			await layout();
+			await swordCoast();
+			await writeNote('Campaigns/Sword Coast/NPCs/Marta Vey.md', [
+				'---', 'nimble: npc', 'role: Captain of the Waymoot watch', 'ancestry: Human', 'pronouns: she/her', 'age: 44',
+				'status: alive', 'attitude: neutral', 'ac: 16', 'hp: "30 (4d8 + 12)"', 'hp_now: 22', 'cr: "2"', 'statblock: Bandit Captain', '---', '',
+				'```nimble-npc', 'look: Grey braid, a scar through one eyebrow, a watch coat she never buttons.', 'wants: The bridge toll back from the Zhentarim.', 'secret: She takes a cut of the toll herself.', '```', '',
+			].join('\n'));
+			await open('Campaigns/Sword Coast/NPCs/Marta Vey.md');
+			await page.locator(`${R} .dnd5e-npc-stats`).first().waitFor();
+			await scrollTo(`${R} .dnd5e-npc-stats`, 0.05);
+		},
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .dnd5e-npc-stats'],
+	},
+	// Import content with the example pack pasted in: what it adds, before it's saved.
+	'feature-content-packs': {
+		viewport: [1000, 800], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const pack = readFileSync(join(ROOT, 'docs/content/examples/5e-hearth-and-cinder.json'), 'utf8');
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+			await page.locator('.modal.nimble-import-content textarea').fill(pack);
+			await page.locator('.modal.nimble-import-content textarea').evaluate(t => { t.scrollTop = 0; });
+			await page.waitForTimeout(500);
+		},
+		css: '.nimble-import-content textarea.nimble-import-text { height: 6.5em !important; }',
+		show: () => ['.modal.nimble-import-content'],
+	},
+	// Importing a D&D Beyond character: what it brings into the compendium (a made-up class, tests/fixtures).
+	'guide-ddb-import': {
+		viewport: [1000, 1100], ratio: 0.72, snapText: true, bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const json = readFileSync(join(ROOT, 'tests/fixtures/ddb-hollowblade.json'), 'utf8');
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
+			await page.locator('.modal.dnd5e-import textarea').fill(json);
+			await page.locator('.modal.dnd5e-import .dnd5e-ddb-content').waitFor();
+			await page.locator('.modal.dnd5e-import textarea').evaluate(t => { t.scrollTop = 0; });
+			await page.waitForTimeout(500);
+		},
+		css: '.modal.dnd5e-import .dnd5e-ddb-list { max-height: none !important; } .modal.dnd5e-import { max-height: none !important; }',
+		show: () => ['.modal.dnd5e-import'],
+	},
 	'feature-homebrew': {
 		lineWidth: 500,
 		setup: async () => {
@@ -738,28 +1211,13 @@ const features = {
 		},
 		show: () => ['.workspace-split.mod-left-split .nimble-campaign-view'],
 	},
-	// The tracker mid-fight from top to bottom, monsters and heroes, for a tall tile.
+	// The tracker mid-fight from top to bottom, the card and the queue, for a tall tile.
 	'feature-tracker-tall': {
 		viewport: [1100, 2000], bg: 'var(--background-secondary)', ratio: 0.2, // all of it; the tile crops from the bottom
 		css: '.workspace-split.mod-right-split { margin-right: 40px !important; }',
 		setup: async () => {
-			await resetTracker();
-			await layout({ right: true });
-			await o.eval((app) => app.workspace.rightSplit.setSize?.(340));
-			await open(`${CH}/Q6 Storage Vault.md`);
-			await scrollTo(`${R} .nimble-encounter-block`, 0.2);
-			await page.locator(`${R} .nimble-encounter-block .encounter-block-actions button`, { hasText: 'Run' }).click();
-			await page.waitForTimeout(500);
-			await page.locator(`${T} .round-action`).click();
-			await page.waitForTimeout(200);
-			for (const hero of ['Brakka', 'Wren', 'Ilse', 'Tomas']) {
-				await page.locator(`${T} .creature-item`).filter({ has: page.locator('.creature-label', { hasText: hero }) }).locator('.turn-toggle').click();
-			}
-			await typeHp('Quicksilver Hound-1', '11');
-			await typeHp('Quicksilver Hound-2', '6');
-			await typeHp('Brakka', '7');
+			await houndFight(340);
 			await typeHp('Ilse', '4');
-			await page.waitForTimeout(300);
 			await page.evaluate((T) => document.querySelectorAll(`${T}, ${T} *`).forEach(n => { if (n.scrollTop) n.scrollTop = 0; }), T);
 		},
 		show: () => ['.nimble-encounter-tracker'],
@@ -781,33 +1239,128 @@ const features = {
 		setup: async () => { await buildMonster({ hp: 70, step: 1 }); },
 		show: () => ['.modal.nimble-entity-builder'],
 	},
-	// character-sheets.md "Rolling": the roll dialog from Brakka's STR.
+	// homebrew.md "Nimble's builders": a class on its Levels step, a feature choosing from its own list, the check
+	// saying what each level grants, and the class page as it will be.
+	'guide-builder-class': {
+		viewport: [1200, 760], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await o.eval(async (app) => { await app.commands.executeCommandById('nimble-gm:open-bestiary'); });
+			const CMPX = '.nimble-compendium';
+			await page.waitForSelector(`${CMPX} .nimble-cmpx-row[data-id]`, { timeout: 8000 });
+			await page.locator(`${CMPX} .nimble-cmpx-seg[data-segment="classes"]`).click();
+			await page.locator(`${CMPX} .nimble-cmpx-new`).click();
+			await page.locator('.menu .menu-item', { hasText: 'New class' }).first().click();
+			const b = page.locator('.modal.nimble-entity-builder');
+			await b.waitFor();
+			const panel = () => b.locator('.eb-panel.is-active');
+			const step = async (name) => { await b.locator('.eb-dot', { hasText: name }).click(); await page.waitForTimeout(450); return panel(); };
+			let p = panel();
+			await p.locator('input[data-field="Name"]').fill('Lanternkeeper');
+			await p.locator('input[data-field="Tagline"]').fill('Carries the light into the dark.');
+			await p.locator('button.ncb-motif[aria-label="Mage\'s motif"]').click();
+			p = await step('Stats');
+			for (const k of ['key-WIL', 'key-DEX', 'adv-WIL', 'dis-STR']) await p.locator(`[data-k="${k}"]`).click();
+			p = await step('Resources');
+			await p.locator('.eb-text-btn', { hasText: 'Add dice' }).click();
+			await panel().locator('input[data-field="Resource name"]').fill('Wick Dice');
+			await panel().locator('input[data-field="Max"]').fill('2');
+			p = await step('Options');
+			await p.locator('.eb-text-btn', { hasText: 'Add a list' }).click();
+			await panel().locator('input[data-field="List name"]').fill('Wicks');
+			await panel().locator('input[data-field="Option name"]').fill('Red Wick');
+			await panel().locator('textarea[data-field="Option text"]').fill('Your light burns red, and foes in it can\'t hide.');
+			p = await step('Levels');
+			await p.locator('input[data-field="feature name"]').first().fill('Kindle');
+			await p.locator('textarea[data-field="feature text"]').first().fill('As an action, light your lantern until the end of the encounter.');
+			await p.locator('.ncb-rung[data-level="2"]').click();
+			await panel().locator('.eb-text-btn', { hasText: 'Add a feature' }).click();
+			await panel().locator('input[data-field="feature name"]').fill('Wick Lore');
+			await panel().locator('textarea[data-field="feature text"]').fill('You learn the old wick-craft.');
+			await panel().locator('.ncb-grant-add').click();
+			await page.locator('.menu .menu-item', { hasText: 'A choice from a list' }).click();
+			await panel().locator('.ncb-grant-edit .eb-pick[data-value="Wicks"]').click();
+			await page.evaluate(() => activeDocument.activeElement?.blur());
+			await page.waitForTimeout(450);
+		},
+		show: () => ['.modal.nimble-entity-builder'],
+		// Nothing to save from a shot: close without the Discard question.
+		after: async () => { await o.eval((app) => { document.querySelectorAll('.modal-container').forEach(n => n.remove()); app.workspace.getLeavesOfType('nimble-bestiary').forEach(l => l.detach()); }); },
+	},
+	// character-sheets.md "Rolling": the roll dialog for Brakka's Battleaxe while he's Raging, his Fury Die to put in.
 	'guide-roll-dialog': {
-		viewport: [1200, 800], bg: 'var(--background-secondary)',
+		viewport: [1200, 900], bg: 'var(--background-secondary)', ratio: 0.8,
 		setup: async () => {
 			await brakka();
-			await page.locator(`${R} .nimble-sheet [aria-label^="Strength"]`).first().click();
+			await sheetClick('.ns-class .ns-btn', /^\s*Rage\s*$/);
+			await page.waitForTimeout(600);
+			await sheetClick('[aria-label^="Attack with Battleaxe"]');
 			await page.waitForSelector('.nimble-roll-dialog');
 			await page.waitForTimeout(400);
 		},
-		ratio: 0.9,
 		show: () => ['.modal.nimble-roll-dialog'],
+		after: async () => { await page.keyboard.press('Escape'); await restoreHeroes(); },
 	},
-	// character-sheets.md "Class dice": Brakka's Fury Dice on the This turn card, two rolled.
+	// character-sheets.md "The class panel": Tomas's Judgment Dice and Lay on Hands, with Lay on Hands' rules open.
+	'guide-class-panel': {
+		lineWidth: 620,
+		setup: async () => {
+			await hero(`Campaigns/Brakka's Journal/Party/Tomas.md`);
+			await sheetClick('.ns-class .ns-feat-name', 'Lay on Hands');
+			await page.evaluate((S) => document.querySelector(`${S} .ns-class`)?.scrollIntoView({ block: 'center' }), SHEET);
+			await page.waitForTimeout(300);
+		},
+		show: () => [[...document.querySelectorAll('.workspace-leaf.mod-active .markdown-reading-view .nimble-sheet .ns-class')].find(n => n.getBoundingClientRect().width)],
+		after: restoreHeroes,
+	},
+	// character-sheets.md "Class dice": Brakka Raging with a Fury Die, an empty slot tapped for a die rolled at the table.
 	'guide-class-dice': {
-		lineWidth: 500,
+		lineWidth: 620,
 		setup: async () => {
 			await brakka();
-			const plus = page.locator(`${R} .nimble-sheet [aria-label^="Roll 1 more Fury"]`).first();
-			for (let i = 0; i < 2; i++) { await plus.click(); await page.waitForTimeout(700); }
-			await page.waitForTimeout(1500);
-			await scrollTo(`${R} .nimble-sheet .ns-turn`, 0.3);
+			await sheetClick('.ns-class .ns-btn', /^\s*Rage\s*$/);
+			await page.waitForTimeout(600);
+			await sheetClick('.ns-class .ns-held-die.is-empty');
+			await page.evaluate((S) => document.querySelector(`${S} .ns-class`)?.scrollIntoView({ block: 'center' }), SHEET);
 			await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+			await page.waitForTimeout(300);
 		},
-		show: () => {
-			const S = [...document.querySelectorAll('.workspace-leaf.mod-active .nimble-sheet')].find(n => n.getBoundingClientRect().width);
-			return [S.querySelector(':scope > .ns-turn')];
+		show: () => [[...document.querySelectorAll('.workspace-leaf.mod-active .markdown-reading-view .nimble-sheet .ns-class')].find(n => n.getBoundingClientRect().width)],
+		after: restoreHeroes,
+	},
+	// character-sheets.md "Reactions": the four reaction cards on the Actions tab.
+	'guide-reactions': {
+		lineWidth: 760,
+		setup: async () => {
+			await brakka();
+			await page.evaluate((S) => {
+				const sec = [...document.querySelectorAll(`${S} .ns-tabpanel-actions .ns-section`)].find(n => n.getBoundingClientRect().width && /^Reactions/.test(n.textContent.trim()));
+				sec?.scrollIntoView({ block: 'center' });
+			}, SHEET);
+			await page.waitForTimeout(400);
 		},
+		show: () => [[...document.querySelectorAll('.workspace-leaf.mod-active .markdown-reading-view .nimble-sheet .ns-tabpanel-actions .ns-section')].find(n => n.getBoundingClientRect().width && /^Reactions/.test(n.textContent.trim()))],
+	},
+	// character-sheets.md "Making a character": the Stats step, DEX picked to swap with another stat.
+	'guide-new-character': {
+		viewport: [1200, 860], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await brakka();
+			await o.eval((app) => app.commands.executeCommandById('nimble-gm:new-character'));
+			const m = page.locator('.modal.nimble-newchar-modal');
+			await m.waitFor();
+			await m.locator('input.lu-name-input').fill('Lyra Thornwood');
+			await m.locator('select[data-k="ancestry"]').selectOption('Elf');
+			await m.locator('select[data-k="class"]').selectOption('Hunter');
+			await m.locator('select[data-k="background"]').selectOption('Wild One');
+			await m.locator('.lu-next').click();
+			await page.waitForTimeout(500);
+			await m.locator('.lu-panel.is-active .ev-seg button', { hasText: 'Balanced' }).click();
+			await m.locator('.lu-panel.is-active .lu-place', { hasText: 'DEX' }).locator('.ns-stat-box').click();
+			await page.mouse.move(0, 0);
+			await page.waitForTimeout(500);
+		},
+		show: () => ['.modal.nimble-newchar-modal'],
 	},
 	// character-sheets.md "Levelling up": the wizard's first screen.
 	'guide-level-up': {
@@ -878,9 +1431,11 @@ const features = {
 				plugin.rollDice('4d6', 'Treasure', 'effect', [3, 5, 2, 6]);
 			});
 			await page.waitForTimeout(600);
-			await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
+			// The log sits under the tracker's empty state; bring it into view.
+			await page.evaluate(() => { document.querySelectorAll('.notice').forEach(n => n.remove()); document.querySelector('.nimble-encounter-tracker .roll-log')?.scrollIntoView({ block: 'center' }); });
+			await page.waitForTimeout(300);
 		},
-		show: () => ['.roll-log'],
+		show: () => ['.nimble-encounter-tracker .roll-log'],
 	},
 	// dice.md "Rolling into a note": /roll 2d6+3 written into a note.
 	'guide-roll-note': {
@@ -969,23 +1524,31 @@ const features = {
 			await layout();
 		},
 	},
-	// quests.md "Open, finished and failed": the Quests folder with one quest done.
+	// quests.md "Open, finished and failed": the panel's open quests (an active one filled, a waiting one a ring),
+	// and the Quests folder with the finished one ticked below them.
 	'guide-quests-folder': {
-		viewport: [1000, 800], css: PANEL_CARD_CSS,
+		viewport: [1000, 800], css: PANEL_CARD_CSS, ratio: 0.9,
 		setup: async () => {
 			await layout({ left: true });
 			await o.eval((app) => app.workspace.leftSplit.setSize?.(300)); // the default, whatever earlier shots left
-			await o.eval(async (app) => {
-				const f = app.vault.getAbstractFileByPath(`Campaigns/The Old Quarter/Quests/The Guild's Quiet Job.md`);
-				await app.fileManager.processFrontMatter(f, fm => { fm.status = 'completed'; });
-			});
-			await open(`${C}/Quests/Bring Wick Home.md`);
+			await open(`${C}/Sessions/Session 1 - Silver Between the Stones.md`);
 			await focusPanel('Quests');
 			await page.waitForTimeout(500);
 		},
 		bg: 'var(--background-secondary)',
-		// Just the Quests folder.
-		show: () => [[...document.querySelectorAll('.workspace-split.mod-left-split .campaign-group-head')].find(h => /Quests/.test(h.textContent)).parentElement],
+		show: () => ['.workspace-split.mod-left-split .nimble-campaign-view'],
+		// From the open quests down to the end of the Quests folder.
+		region: () => {
+			const P = document.querySelector('.workspace-split.mod-left-split .nimble-campaign-view');
+			const box = P.getBoundingClientRect();
+			const head = P.querySelector('.campaign-heading-quests');
+			const folder = [...P.querySelectorAll('.campaign-group-head')].find(h => /Quests/.test(h.textContent)).parentElement;
+			// What sits above the open quests and below the folder would peek into the padding: hide it.
+			const hideAround = (el, dir) => { for (let n = el; n && n !== P; n = n.parentElement) for (let s = n[dir]; s; s = s[dir]) s.style.visibility = 'hidden'; };
+			hideAround(head, 'previousElementSibling');
+			hideAround(folder, 'nextElementSibling');
+			return { left: box.left + 8, right: box.right - 8, top: head.getBoundingClientRect().top, bottom: folder.getBoundingClientRect().bottom };
+		},
 	},
 	// getting-started.md "Install": the ribbon's Campaign, tracker and compendium icons.
 	'guide-ribbon': {
@@ -1001,7 +1564,7 @@ const features = {
 		show: () => ['.workspace-ribbon.mod-left', '.workspace-split.mod-left-split .nimble-campaign-view'],
 		region: () => {
 			const rib = document.querySelector('.workspace-ribbon.mod-left').getBoundingClientRect();
-			const icons = [...document.querySelectorAll('.workspace-ribbon.mod-left .side-dock-ribbon-action')].filter(n => /Nimble/.test(n.getAttribute('aria-label') || ''));
+			const icons = [...document.querySelectorAll('.workspace-ribbon.mod-left .side-dock-ribbon-action')].filter(n => /^(Campaign|Encounter tracker|Compendium|My character)$/.test(n.getAttribute('aria-label') || ''));
 			const bottom = Math.max(...icons.map(n => n.getBoundingClientRect().bottom)) + 8;
 			const panel = document.querySelector('.workspace-split.mod-left-split .nimble-campaign-view').getBoundingClientRect();
 			return { left: rib.left, top: rib.top, right: panel.right, bottom };
@@ -1030,7 +1593,7 @@ const features = {
 		viewport: [1000, 800], css: '.workspace-split.mod-root { margin-right: 24px !important; }', snapText: true, ratio: 1,
 		setup: async () => {
 			await layout();
-			await o.eval(async (app, plugin) => { await plugin.openBestiary(); });
+			await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
 			const X = '.workspace-leaf.mod-active .nimble-compendium';
 			await page.waitForSelector(`${X} .nimble-cmpx-row[data-id]`, { timeout: 5000 });
 			await page.locator(`${X} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click();
@@ -1070,6 +1633,139 @@ const features = {
 		},
 		show: () => ['.modal-container .modal'],
 	},
+	// dice.md "The roll's result": three rolls from Brakka's sheet as they land: a save, a crit and a miss.
+	'guide-roll-toast': {
+		viewport: [1200, 800], bg: 'var(--background-secondary)', ratio: 1.2, keepNotices: true,
+		setup: async () => {
+			await brakka();
+			await o.eval((app, plugin) => {
+				document.querySelectorAll('.notice').forEach(n => n.remove());
+				plugin.rollDice('1d20+3', 'Brakka · STR save', 'check', [14]);
+				plugin.rollDice('1d8+3', 'Brakka · Battleaxe', 'attack', [8, 5]);
+				plugin.rollDice('1d8+3', 'Brakka · Battleaxe', 'attack', [1]);
+			});
+			await page.waitForTimeout(700);
+		},
+		show: () => ['.notice-container'],
+	},
+	// encounters.md "Several at once": Add several on a Quicksilver Hound, three of them one level tougher.
+	'guide-add-several': {
+		viewport: [1200, 800], bg: 'var(--background-secondary)', ratio: 1,
+		setup: async () => {
+			await layout();
+			await open(`${CH}/Q6 Storage Vault.md`);
+			await resetTracker();
+			await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
+			const X = '.workspace-leaf.mod-active .nimble-compendium';
+			await page.waitForSelector(`${X} .nimble-cmpx-row[data-id]`, { timeout: 5000 });
+			await page.locator(`${X} .nimble-cmpx-input`).fill('quicksilver hound');
+			await page.waitForTimeout(500);
+			await page.locator(`${X} .nimble-cmpx-row[data-id]`).first().click();
+			await page.waitForTimeout(400);
+			await page.locator(`${X} .statblock-action-more:visible`).first().click();
+			await page.locator('.menu .menu-item', { hasText: 'Add several' }).first().click();
+			await page.waitForSelector('.modal-container .modal');
+			await page.keyboard.press('Backspace');
+			await page.keyboard.type('3');
+			await page.locator('.modal-container .modal button', { hasText: /^\s*Tougher\s*$/ }).first().click();
+			await page.waitForTimeout(400);
+		},
+		show: () => ['.modal-container .modal'],
+	},
+	// settings.md "Party": the party editor, opened outside any campaign.
+	'guide-party-editor': {
+		viewport: [1200, 800], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			await open('Start Here.md');
+			await o.eval(async (app, plugin) => {
+				await plugin.campaigns.setActive(null);
+				plugin.settings.party = [
+					{ id: 'ft-1', name: 'Kaelen', className: 'Oathsworn', level: 3, maxHp: 34, defense: 6, maxWounds: 6 },
+					{ id: 'ft-2', name: 'Mira', className: 'Mage', level: 3, maxHp: 21, defense: 2, maxWounds: 6 },
+					{ id: 'ft-3', name: 'Roan', className: 'Hunter', level: 3, maxHp: 27, defense: 4, maxWounds: 6 },
+				];
+				app.commands.executeCommandById('nimble-gm:edit-party');
+			});
+			await page.waitForSelector('.modal-container .modal');
+			await page.waitForTimeout(500);
+		},
+		show: () => ['.modal-container .modal'],
+		after: async () => {
+			await page.keyboard.press('Escape');
+			await o.eval(async (app, plugin) => { plugin.settings.party = []; await plugin.campaigns.setActive('Campaigns/The Old Quarter'); });
+			await layout();
+		},
+	},
+	// compendium.md "Classes": a class page under its scrollwork, Nimble's levels under khaki ribbons.
+	'guide-compendium-class': {
+		viewport: [1200, 900], css: '.workspace-split.mod-root { margin-right: 24px !important; }', ratio: 1.2, snapText: true,
+		setup: async () => {
+			await layout();
+			await open(`${CH}/Q1 Entry Chamber.md`);
+			await o.eval(async (app, plugin) => { await plugin.runtime('nimble').openBestiary(); });
+			const X = '.workspace-leaf.mod-active .nimble-compendium';
+			await page.waitForSelector(`${X} .nimble-cmpx-row[data-id]`, { timeout: 5000 });
+			await page.locator(`${X} .nimble-cmpx-seg`, { hasText: 'Classes' }).first().click();
+			await page.waitForTimeout(400);
+			await page.locator(`${X} .nimble-cmpx-row[data-id]`, { hasText: 'Berserker' }).first().click();
+			await page.waitForTimeout(600);
+		},
+		// The page beside the list, from its top.
+		show: () => {
+			const X = '.workspace-leaf.mod-active .nimble-compendium';
+			const card = [...document.querySelectorAll(`${X} .nimble-cmpx-detail .nimble-cmp-card`)].find(n => n.getBoundingClientRect().width > 200);
+			return [card];
+		},
+	},
+	// 5e.md "The 5e compendium": Fireball's card in the 2024 dress, beside the Spells list.
+	'guide-5e-compendium': {
+		viewport: [1200, 800], css: '.workspace-split.mod-root { margin-right: 24px !important; }',
+		setup: async () => {
+			await layout();
+			await swordCoast();
+			await writeNote('Campaigns/Sword Coast/Road Ambush.md', '# Road ambush\n');
+			await open('Campaigns/Sword Coast/Road Ambush.md');
+			await o.eval(async (app, plugin) => { for (let i = 0; i < 50 && plugin.system().id !== 'dnd5e'; i++) await new Promise(r => setTimeout(r, 100)); await plugin.openSystemCompendium(); });
+			const X = '.workspace-leaf.mod-active .nimble-compendium';
+			await page.waitForSelector(`${X} .nimble-cmpx-row[data-id]`, { timeout: 8000 });
+			await page.locator(`${X} .nimble-cmpx-seg`, { hasText: 'Spells' }).first().click();
+			await page.waitForTimeout(400);
+			await page.locator(`${X} .nimble-cmpx-input`).fill('fire');
+			await page.waitForTimeout(500);
+			await page.locator(`${X} .nimble-cmpx-row[data-id]`, { hasText: 'Fireball' }).first().click();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.workspace-leaf.mod-active .nimble-compendium'],
+		region: () => {
+			const X = document.querySelector('.workspace-leaf.mod-active .nimble-compendium');
+			const b = X.getBoundingClientRect();
+			const tabs = X.querySelector('.nimble-cmpx-seg').parentElement.getBoundingClientRect();
+			// Down to the bottom of what the page shows (its card and buttons).
+			const shown = [...X.querySelectorAll('.nimble-cmpx-detail button, .nimble-cmpx-detail p, .nimble-cmpx-detail div')].map(n => n.getBoundingClientRect()).filter(r => r.width && r.height && r.top > b.top + 100 && r.bottom < b.bottom - 4);
+			const bottom = shown.length ? Math.max(...shown.map(r => r.bottom)) : b.bottom;
+			return { left: b.left, right: Math.min(b.right, tabs.right), top: b.top, bottom };
+		},
+	},
+	// bestiary.md "Writing a stat block": Krogg from the field reference, drawn as the GM's Guide draws a legendary.
+	'guide-statblock': {
+		lineWidth: 640, viewport: [1200, 1100], ratio: 0.5,
+		setup: async () => {
+			await layout();
+			await writeNote('Feature Shots/Krogg.md', [
+				'```nimble', 'name: Krogg, Goblin King', 'level: 2', 'role: solo', 'size: Medium', 'type: Angry Bugbear', 'hp: 28/hero', 'armor: none', 'movement: 6', 'saves: STR+ DEX+',
+				"actionText: After each hero's turn, choose one:", 'attacks:',
+				'- **Manglemaul.** Move 6. 2d6+2 damage, Grappled (escape DC 10).',
+				'- **Crack Skulls.** Move 6. Swing a Grappled creature at another creature. Both take 2d6+2.',
+				"bloodied: At 45 HP, Krogg's damage increases to 2d8+2.",
+				'lastStand: At 0 HP Krogg is dying! If he takes 20 more damage he dies. Until then, he has Medium Armor.',
+				'easier: Have the Manglemaul jam after using Crack Skulls.', 'harder: Move often; end turns out of melee reach.',
+				'```', '',
+			].join('\n'));
+			await open('Feature Shots/Krogg.md');
+		},
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .nimble-statblock'],
+	},
 };
 
 const FEATURE_CSS = `
@@ -1093,7 +1789,7 @@ async function featureShot(name, f) {
 	await page.waitForTimeout(600);
 	await f.setup();
 	if (!f.keepHover) await page.mouse.move(w - 1, h - 1);
-	await page.evaluate((keep) => { if (!keep) activeDocument.activeElement?.blur?.(); document.querySelectorAll('.notice').forEach(n => n.remove()); }, !!f.keepFocus);
+	await page.evaluate(([keep, notices]) => { if (!keep) activeDocument.activeElement?.blur?.(); if (!notices) document.querySelectorAll('.notice').forEach(n => n.remove()); }, [!!f.keepFocus, !!f.keepNotices]);
 	await page.waitForTimeout(400);
 	let box = await page.evaluate(([bg, showSrc, regionSrc]) => {
 		// The first visible match of each selector (a note can be rendered twice, once hidden).

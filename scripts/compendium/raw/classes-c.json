@@ -44,7 +44,7 @@
           "Lightning",
           "Wind"
         ],
-        "notes": "You know the Lightning & Wind schools, and can cast those cantrips. Mana recharges on a Safe Rest. Stormcaller: Learn a Utility Spell from each spell school you know."
+        "notes": "You know the Lightning & Wind schools, and can cast those cantrips (level 1). Mana recharges on a Safe Rest. Learn a Utility Spell from each spell school you know (level 4, Stormcaller; a 2nd at level 7)."
       },
       "resources": [
         {
@@ -771,7 +771,7 @@
           "actions": "1 Action",
           "range": "Range 12",
           "damage": "2d4",
-          "text": "Range: 12. Range: 12. Damage: 2d4 slashing, with advantage OR include a 2nd creature adjacent to your target.",
+          "text": "Range: 12. Damage: 2d4 slashing, with advantage OR include a 2nd creature adjacent to your target.",
           "cantripScaling": "+3 damage every 5 Levels.",
           "source": "Stormshifter 3.1",
           "page": 15,
@@ -2185,7 +2185,6 @@
   "notes": [
     "classes-c: extra keys beyond the brief schema: class `highlights` (the three icon blurbs under the intro), subclass `page`, and subclass `sidebars` (boxed callouts printed on a subclass page). Drop them if unwanted.",
     "Stormshifter: the 'Be Wild' callout is printed twice (pp. 4 and 7); recorded once in sidebars.",
-    "Stormshifter: Razor Wind prints 'Range: 12. Range: 12.' (duplicated in the book); kept as printed.",
     "Stormshifter: Seething Storm has no 'Upcast:' label; its last sentence '+2 Reach and +2 lightning bolts each round.' is kept in text rather than higherLevels.",
     "Stormshifter: Arc Lightning header tag '1+ Target' stored in the spell's aoe field. Spell header tag 'AoE' with no separate shape is stored as aoe 'AoE'.",
     "Stormshifter: italic spell footnotes (Charged, Next Closest Creature, D44 with advantage) are appended to the relevant spell text and also listed in class sidebars.",

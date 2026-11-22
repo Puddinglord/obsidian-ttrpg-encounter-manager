@@ -1,0 +1,247 @@
+/* ============================================================================
+   PF2e character sheet: parchment in an ornamental frame, a crimson heraldic
+   banner with gold edges, the big AC shield, T E M L rank boxes, plates with
+   crimson caps, maroon attribute plaques, ribbons with notched ends.
+   ========================================================================== */
+.g-pf {
+	--pfs-page: #FCF7EB; --pfs-page-edge: #EFE0C0; --pfs-ink: #6E2A1E; --pfs-fold: #4A0E09;
+	--pfs-t: #1F2A5C; --pfs-e: #4A1F78; --pfs-m: #7A5410; --pfs-l: #8A1C14;
+	--pfs-plaque: #5E120D; --pfs-plaque-hi: #7A1B13;
+}
+html[data-theme="dark"] .g-pf {
+	--pfs-page: #221A14; --pfs-page-edge: #150F0B; --pfs-ink: #A0705A; --pfs-fold: #2A0805;
+	--pfs-t: #4A5BA8; --pfs-e: #7A4CB0; --pfs-m: #A27A2E; --pfs-l: #C23A2B;
+	--pfs-plaque: #6E1A13; --pfs-plaque-hi: #8A2418;
+}
+
+.pfs { position: relative; padding: 26px 28px 30px; color: var(--g-text); font-family: var(--g-font-ui); --glyph-cut: var(--pfs-page);
+	background: radial-gradient(120% 90% at 50% 35%, var(--pfs-page) 55%, var(--pfs-page-edge) 100%);
+	border: 2px solid var(--pfs-ink); border-radius: 3px; box-shadow: 0 10px 30px -18px rgb(40 10 0 / 0.5); }
+.pfs::before { content: ""; position: absolute; inset: 5px; border: 1px solid var(--pf-gold); border-radius: 1px; pointer-events: none; }
+.pfs-corner { position: absolute; width: 30px; height: 30px; pointer-events: none; z-index: 1; }
+.pfs-corner svg { display: block; width: 30px; height: 30px; }
+.pfs-corner .s { fill: none; stroke: var(--pf-gold); stroke-width: 1.5; stroke-linecap: round; }
+.pfs-corner .d { fill: var(--g-accent); stroke: var(--pf-gold); stroke-width: 1; }
+.pfs-corner.tl { left: 2px; top: 2px; }
+.pfs-corner.tr { right: 2px; top: 2px; transform: scaleX(-1); }
+.pfs-corner.bl { left: 2px; bottom: 2px; transform: scaleY(-1); }
+.pfs-corner.br { right: 2px; bottom: 2px; transform: scale(-1, -1); }
+
+.pfs-cap { font: 700 12px/14px var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; color: var(--g-text); }
+.pfs .ev-num { font-variant-numeric: lining-nums tabular-nums; }
+
+/* Ribbon ends: drawn, a swallowtail with the gold edge running into the notch and a fold under it */
+.pfs-end { position: relative; flex: none; display: block; height: 30px; }
+.pfs-end svg { position: absolute; left: 0; top: calc(var(--t) * -1px); display: block; overflow: visible; }
+.pfs-end.l svg { transform: scaleX(-1); }
+.pfs-end .b { fill: var(--pf-rib); }
+.pfs-end .e, .pfs-end .te { fill: none; stroke: var(--pf-gold); stroke-width: 1; }
+.pfs-end .t { stroke: var(--pf-gold); stroke-width: .8; stroke-opacity: .55; }
+.pfs-end .te { stroke-opacity: .8; }
+.pfs-end .roll { stroke: var(--pf-gold); stroke-width: 1.2; }
+.pfs-end .hl { fill: none; stroke: #FFE3B8; stroke-opacity: .35; stroke-width: 1.4; stroke-linecap: round; }
+.pfs-end .c { fill: none; stroke: var(--pf-gold); stroke-width: 1.1; stroke-linecap: round; }
+.pfs-end .fl { fill: none; stroke: var(--pf-gold); stroke-width: 1.3; stroke-linecap: round; }
+.pfs-end .d { fill: var(--pf-gold); }
+
+/* The banner */
+.pfs-ban { position: relative; display: flex; align-items: center; height: 60px; margin: 14px -6px 0 0; }
+.pfs-ban > .pfs-end { height: 60px; }
+.pfs.is-phone .pfs-ban, .pfs.is-phone .pfs-ban > .pfs-end { height: 52px; }
+.pfs-medal { position: relative; z-index: 2; flex: none; margin: -14px -34px -14px -6px; padding: 4px; border-radius: 50%; background: linear-gradient(160deg, #E9CF8A, var(--pf-gold) 45%, #8E6A24); box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.55); }
+.pfs-medal .sh-portrait { box-shadow: inset 0 0 0 2px var(--pf-rib), 0 0 0 1px #5E4210; background: radial-gradient(120% 120% at 30% 20%, #FBF3E2 0%, #E6D3AE 75%); color: var(--pf-rib); font-family: var(--g-font-display); }
+.pfs-ban-m { position: relative; flex: 1; min-width: 0; align-self: stretch; display: flex; align-items: center; gap: 14px; padding: 0 12px 0 48px; background: var(--pf-rib); color: var(--pf-rib-text); box-shadow: inset 0 8px 14px -10px rgb(255 220 170 / 0.35), inset 0 -10px 14px -10px rgb(0 0 0 / 0.35); }
+.pfs-ban-m::before, .pfs-ban-m::after { content: ""; position: absolute; left: 0; right: 0; height: 1px; background: var(--pf-gold); }
+.pfs-ban-m::before { top: 3px; } .pfs-ban-m::after { bottom: 3px; }
+.pfs-ban h1 { flex: 1; min-width: 0; margin: 0; font: 400 32px/38px var(--g-font-display); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 1px rgb(0 0 0 / 0.4); }
+.pfs-cls { flex: none; display: flex; align-items: center; gap: 10px; font: 700 17px/20px var(--g-font-cap); letter-spacing: .14em; text-transform: uppercase; }
+.pfs-lv { width: 50px; height: 50px; display: grid; place-items: center; align-content: center; gap: 1px; border-radius: 50%; background: #FBF3E2; color: var(--pf-rib); box-shadow: inset 0 0 0 2px var(--pf-rib), inset 0 0 0 3.5px #FBF3E2, inset 0 0 0 4.5px var(--pf-gold), 0 0 0 2px var(--pf-gold), 0 3px 8px -2px rgb(0 0 0 / 0.5); }
+.pfs-lv small { font: 700 8.5px/9px var(--g-font-cap); letter-spacing: .12em; }
+.pfs-lv b { font: 700 24px/22px var(--g-font-cap); letter-spacing: 0; }
+
+.pfs-under { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin: 12px 0 0 74px; }
+.pfs-hero { display: inline-flex; align-items: center; gap: 8px; }
+.pfs-under-acts { margin-left: auto; display: inline-flex; gap: 6px; }
+
+/* Diamonds for hero points and slots: the game's own mark */
+.pfs-pips { gap: 5px; }
+.pfs-pips > i { --g-pip: 11px; border-radius: 1px; transform: rotate(45deg); box-shadow: inset 0 0 0 1.5px var(--pfs-ink); }
+.pfs-pips > i.on { background: var(--g-accent); box-shadow: inset 0 0 0 1.5px var(--g-accent), 0 0 0 1px var(--pf-gold); }
+
+/* Ruled identity rows, as the pregens print them */
+.pfs-id { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 20px; margin-top: 10px; }
+.pfs-id > div { display: flex; align-items: baseline; gap: 8px; min-width: 0; min-height: 30px; padding: 7px 0 3px; border-bottom: 1px solid var(--g-text); font: 500 15px/20px var(--g-font-ui); }
+.pfs-id > div > .pfs-cap { flex: none; }
+.pfs-id .v { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pfs-iv { display: inline-flex; align-items: center; gap: 6px; vertical-align: -2px; }
+.pfs-iv b { font: 700 16px/1 var(--g-font-num); }
+
+/* T E M L */
+.pfs-teml { display: inline-flex; gap: 2px; flex: none; vertical-align: middle; }
+.pfs-teml i { width: 16px; height: 16px; display: grid; place-items: center; border-radius: 2px; font: 700 10.5px/1 var(--g-font-cap); font-style: normal; color: var(--g-text-2); box-shadow: inset 0 0 0 1px var(--g-line-strong); background: var(--pf-box); }
+.pfs-teml.sm i { width: 13px; height: 13px; font-size: 9px; }
+.pfs-teml i.on { color: #fff; box-shadow: none; }
+.pfs-teml.r-T i.on { background: var(--pfs-t); } .pfs-teml.r-E i.on { background: var(--pfs-e); } .pfs-teml.r-M i.on { background: var(--pfs-m); } .pfs-teml.r-L i.on { background: var(--pfs-l); }
+.pfs-teml-key { display: inline-flex; gap: 2px; }
+.pfs-teml-key i { width: 14px; height: 14px; display: grid; place-items: center; border-radius: 2px; font: 700 9.5px/1 var(--g-font-cap); font-style: normal; color: #fff; box-shadow: 0 0 0 1px rgb(255 240 210 / 0.5); }
+.pfs-teml-key i.r-T { background: var(--pfs-t); } .pfs-teml-key i.r-E { background: var(--pfs-e); } .pfs-teml-key i.r-M { background: var(--pfs-m); } .pfs-teml-key i.r-L { background: #B0281C; }
+
+/* Defence: the big shield, then the HP plate */
+.pfs-def { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 14px; margin-top: 18px; align-items: stretch; }
+.pfs-ac { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.pfs-shield { position: relative; flex: none; display: grid; place-items: center; }
+.pfs-shield svg { position: absolute; inset: 0; filter: drop-shadow(0 4px 6px rgb(60 10 0 / 0.3)); }
+.pfs-shield .o { fill: var(--pf-rib); stroke: var(--pf-gold); stroke-width: 3; }
+.pfs-shield.is-small .o { stroke-width: 2; }
+.pfs-shield.is-small .pfs-shield-in { margin-top: calc(var(--s) * -0.08px); gap: 1px; }
+.pfs-shield .i { fill: none; stroke: var(--pf-gold); stroke-width: 1; opacity: .85; }
+.pfs-shield-in { position: relative; display: grid; justify-items: center; margin-top: -6px; color: var(--pf-rib-text); }
+.pfs-shield-in small { font: 700 12px/12px var(--g-font-cap); letter-spacing: .16em; padding-left: .16em; color: #F0D79C; }
+.pfs-shield-in b { font: 700 calc(var(--s) * 0.42px)/1 var(--g-font-cap); letter-spacing: -.01em; text-shadow: 0 1px 1px rgb(0 0 0 / 0.4); }
+.pfs-ac-x { display: grid; gap: 4px; justify-items: start; min-width: 0; }
+.pfs-ac-raise { font: 500 14px/18px var(--g-font-ui); color: var(--g-text-2); }
+.pfs-ac-raise b { font: 700 18px/18px var(--g-font-num); color: var(--g-text); }
+.pfs-ac-sh { display: inline-flex; align-items: center; gap: 6px; font: 500 13px/17px var(--g-font-ui); color: var(--g-text-2); }
+
+.pfs-hp, .pfs-plate { border: 1.5px solid var(--pfs-ink); border-radius: 4px; background: var(--pf-box); overflow: hidden; }
+.pfs-hp { display: grid; align-content: start; gap: 10px; padding-bottom: 10px; }
+.pfs-hp-h, .pfs-plate-cap { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 24px; padding: 3px 10px; background: var(--pf-rib); color: var(--pf-rib-text); box-shadow: inset 0 -1px 0 var(--pf-gold); }
+.pfs-hp-h .pfs-cap, .pfs-plate-cap { color: var(--pf-rib-text); font: 700 12.5px/16px var(--g-font-cap); letter-spacing: .1em; text-transform: uppercase; }
+.pfs-res { font: 500 13px/16px var(--g-font-ui); color: var(--pf-rib-text); opacity: .9; }
+.pfs-res .pfs-cap { font-size: 11px; margin-right: 4px; }
+.pfs-hp .sh-meter { padding: 0 10px; }
+.pfs-hp .sh-meter-h { display: none; }
+.pfs-hp.is-zero .sh-meter-bar b { color: var(--g-danger-text); text-shadow: none; }
+.pfs-dw { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; padding: 0 10px; }
+.pfs-track { display: inline-flex; align-items: center; gap: 7px; color: var(--g-text-2); }
+.pfs-track svg { display: block; }
+.pfs-track .pfs-cap { color: var(--g-text-2); font-size: 11.5px; }
+.pfs-track.on, .pfs-track.on .pfs-cap { color: var(--g-danger-text); }
+.pfs-dying { display: flex; gap: 10px; align-items: center; margin-top: 12px; padding: 9px 12px; background: var(--g-danger-bg); border: 1.5px solid var(--g-danger-text); border-radius: 4px; font: 500 14px/19px var(--g-font-ui); color: var(--g-danger-text); }
+.pfs-dying > span:nth-child(2) { color: var(--g-text); flex: 1; }
+.pfs-dying b { color: var(--g-danger-text); font: 700 14px/1 var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; }
+
+/* Saves and Perception: plates with crimson caps; each one rolls */
+.pfs-plates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.pfs-plate { appearance: none; display: grid; justify-items: center; align-content: start; gap: 5px; padding: 0 0 8px; color: var(--g-text); cursor: pointer; font: inherit; }
+.pfs-plate-cap { justify-content: center; align-self: stretch; justify-self: stretch; }
+.pfs-plate > b { font: 700 28px/30px var(--g-font-cap); margin-top: 2px; }
+.pfs-plate > small { font: 500 12px/14px var(--g-font-ui); color: var(--g-text-2); margin-top: -1px; }
+.pfs-plate:hover { background: var(--g-now); }
+
+/* Attributes: maroon plaques with the modifier in a white box */
+.pfs-abil { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
+.pfs-ab { appearance: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: 52px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: inherit; }
+.pfs-ab-k { display: grid; place-items: center; align-content: center; gap: 2px; border-radius: 7px 0 0 7px; background: linear-gradient(var(--pfs-plaque-hi), var(--pfs-plaque)); color: var(--g-on-trait); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25); }
+.pfs-ab-k b { font: 700 21px/20px var(--g-font-cap); text-transform: uppercase; letter-spacing: .03em; }
+.pfs-ab-k small { font: 600 8.5px/9px var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; opacity: .85; max-width: 100%; overflow: hidden; }
+.pfs-ab-v { display: grid; place-items: center; border: 1.5px solid var(--pfs-plaque); border-left: 0; border-radius: 0 7px 7px 0; background: var(--pf-box); font: 700 22px/1 var(--g-font-cap); color: var(--g-text); }
+.pfs-ab:hover .pfs-ab-v { background: var(--g-now); }
+
+/* Ribbons over sections */
+.pfs-rib { display: flex; align-items: stretch; height: 30px; margin: 22px 0 8px; }
+.pfs-rib-m { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 2px; background: var(--pf-rib); color: var(--pf-rib-text); box-shadow: inset 0 6px 10px -8px rgb(255 220 170 / 0.35), inset 0 -8px 10px -8px rgb(0 0 0 / 0.35); }
+.pfs-rib-m::before, .pfs-rib-m::after { content: ""; position: absolute; left: 0; right: 0; height: 1px; background: var(--pf-gold); }
+.pfs-rib-m::before { top: 3px; } .pfs-rib-m::after { bottom: 3px; }
+.pfs-rib .t { font: 400 17px/20px var(--g-font-display); letter-spacing: .1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pfs-rib .r { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/14px var(--g-font-cap); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+
+/* Strikes: the three attacks are one cluster, damage beside it */
+.pfs-strike { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; grid-template-areas: "g n map dmg" ". t map dmg"; gap: 4px 10px; align-items: center; padding: 8px 0 9px; border-bottom: 1px solid var(--g-line-strong); }
+.pfs-strike > .pfs-glyph { grid-area: g; }
+.pfs-strike-n { grid-area: n; display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.pfs-strike-n b { font: 700 19px/22px var(--g-font-cap); text-transform: uppercase; letter-spacing: .03em; }
+.pfs-strike-n small { font: 600 12px/14px var(--g-font-cap); text-transform: uppercase; letter-spacing: .08em; color: var(--g-text-2); }
+.pfs-strike > .xp-tags { grid-area: t; }
+.pfs-map { grid-area: map; display: inline-flex; border: 1.5px solid var(--pfs-ink); border-radius: 4px; overflow: hidden; background: var(--pf-box); }
+.pfs-map-b, .pfs-dmg { appearance: none; border: 0; background: none; color: var(--g-text); cursor: pointer; font: inherit; }
+.pfs-map-b { width: 52px; height: 44px; display: grid; place-items: center; align-content: center; gap: 2px; }
+.pfs-map-b + .pfs-map-b { box-shadow: inset 1px 0 0 var(--g-line-strong); }
+.pfs-map-b small { font: 700 10px/10px var(--g-font-cap); text-transform: uppercase; letter-spacing: .1em; color: var(--g-text-2); }
+.pfs-map-b b { font: 700 18px/18px var(--g-font-cap); }
+.pfs-map-b.first b { color: var(--g-accent-text); }
+.pfs-map-b:hover, .pfs-dmg:hover { background: var(--g-now); }
+.pfs-map-b.is-on { background: var(--pf-rib); }
+.pfs-map-b.is-on b, .pfs-map-b.is-on small { color: var(--pf-rib-text); }
+.pfs-dmg { grid-area: dmg; height: 47px; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; border: 1.5px solid var(--pfs-ink); border-radius: 4px; background: var(--pf-box); }
+.pfs-dmg svg { display: block; color: var(--g-text-2); }
+.pfs-dmg b { font: 700 17px/18px var(--g-font-cap); white-space: nowrap; }
+.pfs-glyph { display: inline-flex; align-items: center; gap: 4px; color: var(--g-text); flex: none; }
+.pfs-glyph svg { display: block; }
+.pfs-glyph.range i { font: 600 11px/1 var(--g-font-cap); font-style: normal; text-transform: uppercase; letter-spacing: .06em; color: var(--g-text-2); }
+
+/* Skills | Spells, feats */
+.pfs-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 26px; }
+.pfs-col > .pfs-rib:first-child { margin-top: 22px; }
+.pfs-skills { display: grid; }
+.pfs-sk { appearance: none; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 36px; padding: 0 2px; border: 0; border-bottom: 1px solid var(--g-line-strong); background: none; color: var(--g-text); cursor: pointer; text-align: left; font: inherit; }
+.pfs-sk-n { display: flex; align-items: baseline; gap: 6px; min-width: 0; font: 700 15px/18px var(--g-font-cap); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; overflow: hidden; }
+.pfs-sk-n small { font: 600 11px/14px var(--g-font-cap); color: var(--g-text-2); letter-spacing: .08em; }
+.pfs-sk-v { min-width: 40px; height: 26px; display: grid; place-items: center; border-radius: 3px; background: var(--pf-box); box-shadow: inset 0 0 0 1px var(--g-line-strong); font: 700 16px/1 var(--g-font-cap); }
+.pfs-sk.u .pfs-sk-n, .pfs-sk.u .pfs-sk-v { color: var(--g-text-2); }
+.pfs-sk:hover { background: var(--g-now); }
+.pfs-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 4px; }
+.pfs-slots > div { display: grid; justify-items: center; align-content: center; gap: 5px; height: 48px; border: 1.5px solid var(--pfs-ink); border-radius: 4px; background: var(--pf-box); }
+.pfs-slots small { font: 500 12px/14px var(--g-font-ui); color: var(--g-text-2); }
+.pfs-acts { display: grid; }
+.pfs-act { appearance: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 36px; padding: 0 2px; border: 0; border-bottom: 1px solid var(--g-line-strong); background: none; color: var(--g-text); cursor: pointer; text-align: left; font: inherit; }
+.pfs-act-n { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.pfs-act-n b { font: 700 15px/18px var(--g-font-cap); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pfs-act > small { font: italic 500 13px/16px var(--g-font-ui); color: var(--g-text-2); white-space: nowrap; }
+.pfs-act:hover { background: var(--g-now); }
+
+/* The shared parts on the sheet */
+.g-pf .sh-roll { border-radius: var(--g-r-md); border-color: var(--pf-box-line); background: var(--pf-box); font-family: var(--g-font-num); }
+.g-pf .sh-roll b { font-weight: 700; }
+.g-pf .sh-meter-bar { border-radius: 3px; height: 32px; box-shadow: inset 0 0 0 1px var(--g-line-strong); }
+.g-pf .sh-meter-bar b { font-family: var(--g-font-cap); font-size: 19px; }
+.pfs .ev-btn.is-sm { font-family: var(--g-font-cap); text-transform: uppercase; letter-spacing: .06em; }
+
+/* iPad portrait and narrower */
+@container (max-width: 760px) {
+	.pfs-id { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.pfs-def { grid-template-columns: 1fr; }
+	.pfs-abil { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container (max-width: 640px) {
+	.pfs-cols { grid-template-columns: 1fr; }
+	.pfs-col + .pfs-col > .pfs-rib:first-child { margin-top: 22px; }
+}
+/* Phone */
+@container (max-width: 480px) {
+	.pfs { padding: 18px 14px 22px; }
+	.pfs-medal { margin: -10px -30px -10px -4px; padding: 3px; }
+	.pfs-ban-m { padding-left: 40px; gap: 8px; }
+	.pfs-ban h1 { font-size: 20px; line-height: 24px; letter-spacing: .02em; }
+	.pfs-ban-m { padding-right: 8px; }
+	.pfs-ban { margin-top: 18px; margin-right: -4px; }
+	.pfs-cls > span:first-child { display: none; }
+	.pfs-lv { width: 38px; height: 38px; }
+	.pfs-lv small { font-size: 7px; line-height: 7px; }
+	.pfs-lv b { font-size: 20px; line-height: 18px; }
+	.pfs-under { margin-left: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+	.pfs-under > .xp-tags { grid-column: 1 / -1; }
+	.pfs-id { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+	.pfs-id > div { display: grid; gap: 1px; align-content: end; padding-top: 6px; }
+	.pfs-id > div:nth-child(6) { grid-column: 1 / -1; }
+	.pfs-plates { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.pfs-abil { gap: 6px; }
+	.pfs-ab { height: 48px; }
+	.pfs-ab-k b { font-size: 18px; }
+	.pfs-ab-k small { display: none; }
+	.pfs-ab-v { font-size: 20px; }
+	.pfs-strike { grid-template-columns: 22px minmax(0, 1fr) auto; grid-template-areas: "g n n" ". t t" ". map dmg"; }
+	.pfs-map { justify-self: start; }
+	.pfs-rib .r { font-size: 11px; letter-spacing: .05em; }
+}
+/* Measured with the shared checker */
+.pfs-dmg > svg { transform: translateY(.065em); }
+.pfs-glyph.range i { transform: translateY(-.15em); }
+/* The NPC card and the stat block take the sheet's shield and plates */
+.xpn-row .pfs-shield-in small { font-size: 8.5px; line-height: 9px; }
+.xpn-c { align-items: center; border: 1.5px solid var(--pfs-ink); box-shadow: none; }
+
+/* Damage: one width for every Strike, the dice left and the damage type's icon right. */
+.pfs-dmg { width: 104px; justify-content: space-between; }
+.pfs-dmg .sh-dmg-t { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; }
+.pfs-dmg .sh-dmg-t svg { width: 15px; height: 15px; color: var(--g-text-2); }

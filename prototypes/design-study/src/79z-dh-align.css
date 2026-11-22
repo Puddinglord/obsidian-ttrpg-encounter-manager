@@ -1,0 +1,22 @@
+/* ============================================================================
+   Daggerheart: optical centring (pass 4, measured in headless Chrome).
+   Overpass has a deep descent (0.40em) and a short ascent over its capitals, so
+   capitals and digits sit up to 0.2em above the middle of a box they're centred in.
+   Chromium 124 has no text-box-trim, so each box nudges its text down by what was
+   measured: padding-top where the box centres its content in a fixed height, or
+   top on a label beside an icon (the icon stays put).
+   /tmp/ev-dh-tools/align.mjs measures every one, both themes: all within 1px.
+   ========================================================================== */
+.xd-thresh b, .xdk-th b, .xd-adv .th b, .xdk-ft, .xd-evb { padding-top: .24em; box-sizing: border-box; }
+.xd-count .boxes span { padding-top: .36em; box-sizing: border-box; }
+.g-dh b.tag { padding-top: .34em; box-sizing: border-box; }
+.xd-tabs span { padding-top: .32em; box-sizing: border-box; }
+.g-dh b.dice { padding-top: .1em; box-sizing: border-box; }
+.xdk-tile .bp { padding: 3.7px 6px .3px; }
+.xd-fear .n { padding-top: .24em; }
+.xdc-rc b, .g-dh .ev-btn > span, .xdk-tag > span, .xd-act em, .xd-react-h em { position: relative; top: .12em; }
+.xdk-ref > span { position: relative; top: .13em; }
+.xdk-cd > span { position: relative; top: .1em; }
+.xdk .cost { padding-top: .2em; box-sizing: border-box; }
+.g-dh .ev-btn > svg { position: relative; top: 1px; }
+.g-dh .sh-toast > svg { top: calc(9.5px - 0.35em); }

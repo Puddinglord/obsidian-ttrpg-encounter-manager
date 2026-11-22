@@ -1,0 +1,75 @@
+/* ============================================================================
+   Daggerheart class scrollwork (pass 6). Gold is currentColor; the medallion
+   rings take the domain accent (lifted on indigo, deepened on parchment).
+   Each side is 140 × 36 units with the title's centre line at 18, so the two
+   sides and the name share one centre line.
+   ========================================================================== */
+.xsc { --xsc-gold: #A87420; --xsc-ink: #1C1745; --xsc-h: 30px; display: inline-flex; align-items: center; gap: calc(var(--xsc-h) * .34); max-width: 100%; min-width: 0; color: var(--xsc-gold); vertical-align: middle; }
+html[data-theme="dark"] .g-dh .xsc, .xsc.on-band, .on-band .xsc, .xds-band .xsc { --xsc-gold: #F2C167; --xsc-ink: #0F0C24; }
+.xsc-s { flex: 0 1 auto; height: var(--xsc-h); width: calc(var(--xsc-h) * 180 / 36); min-width: 0; overflow: hidden; position: relative; top: var(--xsc-dy, 0px); }
+.xsc-right { transform: scaleX(-1); }
+.xsc.is-mid .xsc-s { width: calc(var(--xsc-h) * 95 / 36); flex: none; }
+.xsc.is-compact { gap: calc(var(--xsc-h) * .26); }
+.xsc.is-compact .xsc-s { width: calc(var(--xsc-h) * 43 / 36); flex: none; }
+.xsc-s .stem { fill: currentColor; }
+.xsc-s .ln { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; }
+.xsc-s .ln.th { stroke-width: 1.4; }
+.xsc-s .leaf { fill: currentColor; opacity: .85; }
+.xsc-s .bead { fill: currentColor; }
+.xsc-s .acc { fill: var(--acc-l); }
+.xsc-s .med { fill: var(--xsc-ink); stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
+.xsc-s .med-r { fill: none; stroke: var(--acc-l); stroke-width: 1.5; stroke-linejoin: round; }
+.xsc-s .mk { fill: none; stroke: #FBF6EA; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.xsc-s .tm { fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+html[data-theme="dark"] .g-dh .xsc-s .acc, .on-band .xsc-s .acc, .xsc.on-band .xsc-s .acc, .xds-band .xsc-s .acc { fill: var(--acc-d); }
+html[data-theme="dark"] .g-dh .xsc-s .med-r, .on-band .xsc-s .med-r, .xsc.on-band .xsc-s .med-r, .xds-band .xsc-s .med-r { stroke: var(--acc-d); }
+.xsc-t { flex: none; white-space: nowrap; }
+/* Sizes: the flourish is a little taller than the capitals it flanks */
+.xsc.is-lg { --xsc-h: 40px; }
+.xsc.is-lg .xsc-t { font: 900 28px/32px var(--g-font-display); letter-spacing: .03em; text-transform: uppercase; color: var(--g-text); }
+.xsc.is-md { --xsc-h: 30px; }
+.xsc.is-md .xsc-t { font: 900 19px/24px var(--g-font-display); letter-spacing: .04em; text-transform: uppercase; color: var(--g-text); }
+.xsc.is-sm { --xsc-h: 22px; gap: 6px; }
+.xsc.on-band .xsc-t, .on-band .xsc .xsc-t { color: #FBF6EA; }
+/* The hero band's class line keeps its own type (italic gold caps); the scrollwork sits either side. */
+.xds-id .l .xsc.is-sm .xsc-t { font: inherit; letter-spacing: inherit; color: inherit; }
+.xds-id .l .xsc.is-sm { margin-left: -4px; }
+/* A class page's heading */
+.xsc-head { display: grid; justify-items: center; gap: 10px; text-align: center; }
+.xsc-doms { display: flex; gap: 6px; justify-content: center; }
+.xsc-dom { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 999px; background: var(--dom); color: #fff; font: 900 10.5px/1 var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; }
+.xsc-dom > span { position: relative; top: .12em; }
+/* Gallery */
+.xsc-gal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(580px, 1fr)); gap: 18px; }
+.xsc-cell { display: grid; justify-items: center; padding: 20px 10px 18px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--g-line); }
+.xsc-gal.on-band .xsc-cell { box-shadow: inset 0 0 0 1px rgb(242 193 103 / 0.25); }
+.xsc-gal.on-band { --g-text: #FBF6EA; --g-line: rgb(242 193 103 / 0.25); color: #FBF6EA; }
+.xdh-stage .xsc-gal.on-band, .xsc-gal.on-band { background: linear-gradient(105deg, #2F2667, #1B1640 70%); padding: 16px; border-radius: 12px; }
+.xsc-gal-h { margin: 18px 0 8px; font: italic 600 12.5px/16px var(--g-font-ui); color: var(--g-text-2); }
+.xsc-gal.on-band .xsc-gal-h { color: #E3C690; }
+.xsc-gal-compact { display: flex; flex-wrap: wrap; gap: 14px 30px; }
+.state-stage .xsc-gal-grid { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+/* Level up */
+.g-dh .sh-modal.xsc-lvl { width: 680px; padding: 0; overflow: hidden; }
+.xsc-lvl-band { position: relative; display: grid; justify-items: center; gap: 4px; padding: 20px 16px 14px; background: linear-gradient(105deg, #2F2667, #1B1640 70%); border-bottom: 2px solid #F2C167; }
+.xsc-lvl-band > .ev-btn { position: absolute; right: 8px; top: 8px; color: #FBF6EA; }
+.xsc-lvl-sub { font: italic 600 12.5px/17px var(--g-font-ui); color: #E3C690; text-align: center; }
+.xsc-lvl-body { padding: 14px 16px 16px; }
+.xsc-opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; }
+.xsc-opt { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 1px 8px; align-items: center; align-content: center; padding: 8px 10px; border-radius: 8px; background: #FFFDF6; box-shadow: inset 0 0 0 1px #E2D6BC; }
+.xsc-opt .ev-mark { grid-row: span 2; width: 16px; height: 16px; }
+.xsc-opt b { font: 800 13px/17px var(--g-font-ui); color: #1D1842; }
+.xsc-opt small { font: 500 12px/16px var(--g-font-ui); color: #4F4A68; }
+.xsc-opt.on { box-shadow: inset 0 0 0 1.5px #C8922E; background: #FFF8E6; }
+.xsc-lvl.is-phone { width: auto; }
+.xsc-lvl.is-phone .xsc-opts { grid-template-columns: minmax(0, 1fr); }
+.ev-sheet .xsc-lvl, .ev-frame .xsc-lvl.is-phone { box-shadow: none; }
+/* Centre line: Overpass capitals sit about 0.1em above their line box's middle, so each side
+   rises by what was measured (/tmp/ev-dh-tools/scrollalign.mjs): within 1px of the capitals' centre. */
+.xsc.is-lg { --xsc-dy: -2.8px; }
+.xsc.is-md { --xsc-dy: -1.65px; }
+.xsc.is-sm { --xsc-dy: -1.45px; }
+.xsc-lvl.is-phone { margin: 0 -2px; border: 0; border-radius: 10px; overflow: hidden; }
+.xsc-lvl.is-phone .xsc-lvl-band { padding: 14px 10px 10px; }
+.xsc-lvl.is-phone .xsc-lvl-body { padding: 10px 2px 4px; }
+.xsc-lvl.is-phone .xsc-opts { grid-template-columns: repeat(2, minmax(0, 1fr)); }

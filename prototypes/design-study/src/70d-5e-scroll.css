@@ -1,0 +1,70 @@
+/* ============================================================================
+   5e: class scrollwork (70d-5e-scroll.js).
+   ========================================================================== */
+.x5sc-h { container: x5sc / inline-size; display: flex; align-items: center; justify-content: center; gap: 14px; color: var(--x5-gold); }
+.x5sc-t { flex: none; white-space: nowrap; position: relative; top: var(--x5sc-dy, 0px); font: var(--g-display-weight, 600) 18px/24px var(--g-font-display); font-variant: small-caps; letter-spacing: .05em; color: var(--x5-label); }
+/* Each side takes half the spare width; the taper grows outward, the ornament stays by the title. */
+.x5sc-side { flex: 1 1 0; min-width: 0; display: flex; justify-content: flex-end; align-items: center; }
+.x5sc-side.is-r { transform: scaleX(-1); }
+.x5sc-full { display: flex; align-items: center; flex: 0 1 262px; min-width: 0; }
+.x5sc-side svg { display: block; overflow: visible; flex: none; }
+.x5sc-full .x5sc-reach { flex: 1 1 auto; min-width: 12px; width: 150px; height: 28px; }
+.x5sc-side .ox { fill: var(--g-rule); }
+.x5sc-side .gd { fill: var(--x5-gold); }
+.x5sc-side .fil { fill: none; stroke: var(--x5-gold); stroke-width: 1.1; stroke-linecap: round; }
+.x5sc-side .m, .x5sc-motifs .m { fill: var(--x5-gold); color: var(--x5-gold); }
+/* A shape that stands clear of what's behind it (the Paladin's sword): a hairline of the paper it sits on. */
+.x5sc-side .m .halo, .x5sc-motifs .m .halo { stroke: var(--x5sc-paper, var(--g-bg)); stroke-width: 1.5; stroke-linejoin: round; paint-order: stroke; }
+.x5sc-stage, .x5sc-motifs, .x5sc-dlg, .x5sc-comp { --x5sc-paper: var(--g-surface); }
+.x5sc-side .x5sc-compact { display: none; }
+@container x5sc (max-width: 440px) {
+	.x5sc-full { display: none; }
+	.x5sc-side .x5sc-compact { display: block; }
+	.x5sc-h { gap: 10px; }
+}
+/* In the sheet: between the abilities and the tabs. */
+.x5sc-h.in-sheet { margin: 18px 0 2px; }
+/* Bigger, for a page title (compendium, level up): the same drawing at 1.3×. */
+.x5sc-h.is-big { gap: 18px; }
+.x5sc-h.is-big .x5sc-cap { width: 13px; height: 36px; }
+.x5sc-h.is-big .x5sc-reach { height: 36px; }
+.x5sc-h.is-big .x5sc-orn { width: 132.6px; height: 36px; }
+.x5sc-h.is-big .x5sc-full { flex-basis: 340px; }
+.x5sc-h.is-big .x5sc-side .x5sc-compact { width: 75.4px; height: 36px; }
+.x5sc-h.is-big .x5sc-t { font-size: 25px; line-height: 32px; top: var(--x5sc-dy-big, -1px); }
+@container x5sc (max-width: 540px) {
+	.x5sc-h.is-big .x5sc-full { display: none; }
+	.x5sc-h.is-big .x5sc-side .x5sc-compact { display: block; }
+	.x5sc-h.is-big { gap: 12px; }
+}
+
+/* ---------- Design system gallery ---------- */
+html .g-5e.x5sc-light { --g-bg: #F2EBDD; --g-surface: #FCF8EF; --g-line: #E3D6BF; --g-text: #24190F; --g-text-2: #67543F; --g-rule: #9A2716; --x5-gold: #A88435; --x5-label: #6B1F12; }
+html .g-5e.x5sc-dark { --g-bg: #17120E; --g-surface: #221A14; --g-line: #3A2E23; --g-text: #F1E6D3; --g-text-2: #B7A48B; --g-rule: #C4503D; --x5-gold: #C3A05A; --x5-label: #E9A58D; }
+.x5sc-pair { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.x5sc-stage { background: var(--g-surface); color: var(--g-text); border-radius: 10px; box-shadow: inset 0 0 0 1px var(--g-line); padding: 10px 16px 14px; font-family: var(--g-font-ui); }
+.x5sc-stage .x5sc-h { padding: 8px 0; }
+.x5sc-stage .x5sc-h + .x5sc-h { border-top: 1px solid var(--g-line); }
+.x5sc-stage-k { font: 600 11px/16px var(--p-ui, sans-serif); letter-spacing: .06em; text-transform: uppercase; color: var(--g-text-2); padding-bottom: 4px; }
+.x5sc-h5 { margin: 28px 0 10px; font: 600 14px/20px var(--p-ui, sans-serif); }
+.x5sc-motifs { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; background: var(--g-surface); border-radius: 10px; box-shadow: inset 0 0 0 1px var(--g-line); padding: 14px; color: var(--g-text); }
+.x5sc-mt { display: flex; align-items: center; gap: 10px; }
+.x5sc-mt .x5sc-m2 { width: 48px; height: 48px; flex: none; }
+.x5sc-mt .x5sc-m1 { width: 22px; height: 22px; flex: none; }
+.x5sc-mt b { display: block; font: 600 13px/18px var(--g-font-ui); }
+.x5sc-mt small { display: block; font: 12px/16px var(--g-font-ui); color: var(--g-text-2); }
+.x5sc-places { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.x5sc-places figure { margin: 0; }
+.x5sc-places figcaption { margin-top: 8px; font-size: 12.5px; color: var(--p-text-2, inherit); max-width: 460px; }
+.x5sc-dlg, .x5sc-comp { width: 600px; background-color: var(--g-surface); color: var(--g-text); border-radius: 10px; box-shadow: inset 0 0 0 1px var(--x5-gold-soft), 0 12px 30px -16px rgb(0 0 0 / 0.35); padding: 14px 18px 18px; font-family: var(--x5-font-book); }
+.x5sc-dlg .x5sc-h, .x5sc-comp .x5sc-h { padding: 6px 0 2px; }
+.x5sc-dlg-k { font: 600 12px/16px var(--g-font-display); font-variant: small-caps; letter-spacing: .08em; color: var(--g-text-2); text-align: center; }
+.x5sc-dlg-sub { text-align: center; font: 600 15px/20px var(--g-font-display); color: var(--g-text-2); }
+.x5sc-dlg-l { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.x5sc-dlg-l li { display: flex; align-items: baseline; gap: 10px; padding: 8px 12px; border-radius: 6px; background: var(--g-surface-2); }
+.x5sc-dlg-l small, .x5sc-facts small { font: 600 13px/18px var(--g-font-display); font-variant: small-caps; letter-spacing: .05em; color: var(--x5-label); }
+.x5sc-dlg-l b, .x5sc-facts b { font: 600 15px/20px var(--x5-font-book); }
+.x5sc-facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; margin-top: 10px; }
+.x5sc-facts span { display: inline-flex; align-items: baseline; gap: 6px; }
+.x5sc-sheetbox { width: 720px; padding: 4px 18px 10px; border-radius: 10px; background-color: var(--g-bg); }
+.x5sc-log { max-width: 900px; }

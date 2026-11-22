@@ -19,9 +19,21 @@ Turn the bundled bestiary off in settings if you only want your own monsters.
 
 ![A monster reference's hover preview: the full stat block over the note, with Add and Open note](images/hover.png)
 
-Write `` `nimble:Goblin` `` (inline code) anywhere in a note. It shows as a reference chip. Hover it for the stat block, or click it for a quick look: the full stat block in a window over your note, with **Add to fight** and **Open page**. Cmd/Ctrl-click goes straight to the page. The chip's **+** button puts the monster in the tracker. `/monster` opens the compendium and inserts one for you; `/monster goblin` picks from the menu.
+Write `` `nimble:Goblin` `` (inline code) anywhere in a note. It shows as a reference chip. Hover it for the stat block, or click it for a quick look: the full stat block in a window over your note, with **Add to fight** and **Open page** (**Open in compendium** for a book monster). Cmd/Ctrl-click goes straight to the page. The chip's **+** button puts the monster in the tracker. `/monster` opens the compendium and inserts one for you; `/monster goblin` picks from the menu.
 
-- **Hover previews** stay open while you move into them. Click inside to pin one; drag its top bar to move it. Its **Add** button has a menu with Add 2, Add tougher (+1 level) and Add weaker (−1 level). Easier/Harder notes appear in full stat blocks and the bestiary, not the hover card. Escape closes the preview.
+- **Hover previews** stay open while you move into them. Click inside to pin one; drag its top bar to move it. Its **Add** button adds one (Shift-click for two), and the arrow beside it has **Add several…**, **Add tougher (+1 level)** and **Add weaker (−1 level)**. Easier/Harder notes appear in full stat blocks and the bestiary, not the hover card. Escape closes the preview.
+
+## How a stat block looks
+
+Stat blocks are drawn the way the GM's Guide draws them, in notes, the compendium, hover cards and the tracker's quick look:
+
+- the name in heavy italic small caps, with the level, size and type beside it (above it for a solo or legendary monster)
+- HP in a red heart, the armor shield with its letter (M or H; no armor shows nothing), speed when it isn't 6, and saves as their stat with ▲ or ▼
+- passives on a khaki ribbon, and "Choose 1" with an "or" between choices
+- a solo's actions beside **Bloodied** and **Last Stand**, with the HP they happen at in red
+- an icon for each damage type in resistances and vulnerabilities
+
+Dice roll when you click them, and conditions and rules words open their rule.
 
 ## Writing a stat block
 
@@ -49,6 +61,8 @@ harder: Move often; end turns out of melee reach.
 ```
 ````
 
+![Krogg's block in a note: Level 2 Solo above his name, 28 HP per hero in a heart, STR and DEX saves, his two attacks beside Bloodied and Last Stand, the Easier and Harder tactics, and Add to encounter](images/guide-statblock.png)
+
 Each line is a field, a colon, then its value. Lists (attacks, abilities) are a heading on its own line with one item per line under it, each starting with a dash.
 
 | Field | What goes in it | Example |
@@ -56,7 +70,7 @@ Each line is a field, a colon, then its value. Lists (attacks, abilities) are a 
 | `name:` | The only field you need. | `name: Cave Bear` |
 | `level:` | A number, or a fraction for weaklings. | `level: 1/2` |
 | `role:` | `regular` (the default), `minion`, `solo` or `legendary`. | `role: solo` |
-| `size:`, `type:` | Shown above the name. | `size: Large` |
+| `size:`, `type:` | Shown beside the name (above it for a solo). | `size: Large` |
 | `hp:` | A number, or HP per hero for a solo. | `hp: 28/hero` |
 | `armor:` | `none`, `medium` (M) or `heavy` (H). | `armor: M` |
 | `movement:` | Speed 6 is the default and isn't shown. | `movement: 8, climb 6` |

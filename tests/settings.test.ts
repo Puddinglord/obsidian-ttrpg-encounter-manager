@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, migrateSettings, NimbleStatblocksSettings } from '../src/types';
+import { DEFAULT_SETTINGS, migrateSettings, NimbleStatblocksSettings } from '../src/systems/nimble/types';
 
 describe('reading saved settings', () => {
 	it('nothing saved yet gives the defaults, without sharing their lists', () => {

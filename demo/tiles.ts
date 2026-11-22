@@ -3,8 +3,8 @@
 
 import './obsidian-shim';
 import { setIcon } from 'obsidian';
-import { dice3dSupported, looks3d, preview3d, DICE3D_MATERIALS } from '../src/dice3d';
-import type { DiceMaterial, PreviewHandle } from '../src/dice3d';
+import { dice3dSupported, looks3d, preview3d, DICE3D_MATERIALS } from '../src/core/dice3d';
+import type { DiceMaterial, PreviewHandle } from '../src/core/dice3d';
 import { reducedMotion, renderBox, roll, rollNotice } from './slash-demo';
 
 // ---------------------------------------------------------------------------

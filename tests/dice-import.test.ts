@@ -9,8 +9,8 @@ vi.mock('obsidian', () => ({
 	Notice: class { constructor(text: string) { notices.push(text); } },
 }));
 
-import { importFile, importZip } from '../src/dice3d/importer';
-import { migrateDice } from '../src/dice3d/styles';
+import { importFile, importZip } from '../src/core/dice3d/importer';
+import { migrateDice } from '../src/core/dice3d/styles';
 
 /** A plugin with an in-memory plugin folder. */
 function fakePlugin() {

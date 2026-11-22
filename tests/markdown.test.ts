@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appendRichText, blockPrefix, DICE_RE, execWithLead, insideCodeFence, keywordPattern, placeBlock, slashQuery } from '../src/markdown';
+import { appendRichText, blockPrefix, DICE_RE, execWithLead, insideCodeFence, keywordPattern, placeBlock, slashQuery } from '../src/core/markdown';
 
 function html(text: string, dice = false): string {
 	const el = document.createElement('div');

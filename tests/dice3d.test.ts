@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Quaternion, Vector3 } from 'three';
-import { defaultLabels, DIE_SIDES, dieShape, exactShape, relabel, restingRotation, shapeFor, topIndex, valueOnTop } from '../src/dice3d/geometry';
-import { canRoll3d, dice3dBlockedText, diceForRoll, landedWithin, MAX_DICE_3D } from '../src/dice3d';
+import { defaultLabels, DIE_SIDES, dieShape, exactShape, relabel, restingRotation, shapeFor, topIndex, valueOnTop } from '../src/core/dice3d/geometry';
+import { canRoll3d, dice3dBlockedText, diceForRoll, landedWithin, MAX_DICE_3D } from '../src/core/dice3d';
 
 describe('3D dice geometry', () => {
 	it.each(DIE_SIDES)('d%i has the right faces and values', (sides) => {
@@ -96,8 +96,8 @@ describe('simulate-then-relabel', () => {
 
 describe('dice looks', () => {
 	it('every listed material is a known look, and the shader hooks exist in three', async () => {
-		const { DICE3D_MATERIALS } = await import('../src/dice3d/materials');
-		const { lookProps } = await import('../src/dice3d/shaders');
+		const { DICE3D_MATERIALS } = await import('../src/core/dice3d/materials');
+		const { lookProps } = await import('../src/core/dice3d/shaders');
 		const { ShaderLib } = await import('three');
 		const ids = DICE3D_MATERIALS.map(m => m.id);
 		expect(ids).toEqual(['classic', 'gem', 'metal', 'glitter', 'lava', 'frost', 'nebula', 'opal', 'marble']);

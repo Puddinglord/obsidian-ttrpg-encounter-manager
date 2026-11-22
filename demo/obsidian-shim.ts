@@ -365,3 +365,5 @@ export class Menu {
 		window.setTimeout(() => activeDocument.addEventListener('pointerdown', (e) => { if (!el.contains(e.target as Node)) this.hide(); }, { once: true, capture: true }), 0);
 	}
 }
+/** A note's tags from its metadata cache entry (the demo has no vault, so this only reads what it's given). */
+export function getAllTags(cache: { tags?: { tag: string }[] } | null | undefined): string[] | null { return cache?.tags?.map(t => t.tag) ?? []; }

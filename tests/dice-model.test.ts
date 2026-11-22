@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Quaternion, Vector3 } from 'three';
-import { defaultLabels, modelCorrection, modelShape, symmetryRotation, topIndex, valueOnTop } from '../src/dice3d/geometry';
+import { defaultLabels, modelCorrection, modelShape, symmetryRotation, topIndex, valueOnTop } from '../src/core/dice3d/geometry';
 
 const SIDES = [4, 6, 8, 10, 12, 20];
 

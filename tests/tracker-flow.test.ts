@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { EncounterStore, fightInProgress, isDown, monsterHit, sameFight } from '../src/encounters';
-import { parseHpCommand } from '../src/rules';
-import { DEFAULT_SETTINGS, NimbleMonster, NimbleStatblocksSettings } from '../src/types';
+import { EncounterStore, fightInProgress, isDown, monsterHit, sameFight } from '../src/systems/nimble/encounters';
+import { parseHpCommand } from '../src/systems/nimble/rules';
+import { DEFAULT_SETTINGS, NimbleMonster, NimbleStatblocksSettings } from '../src/systems/nimble/types';
 
 const goblin: NimbleMonster = { name: 'Goblin', hp: 15, armor: 'none', movement: '6', level: '1/2' };
 const knight: NimbleMonster = { name: 'Knight', hp: 40, armor: 'medium', movement: '6', level: 4 };
@@ -261,5 +261,225 @@ describe('review fixes', () => {
 		expect(store.creature(enc, k.id)).toMatchObject({ currentHp: hit.hp, tempHp: 0 });
 		// No temp HP left: nothing absorbed.
 		expect(monsterHit(store.creature(enc, k.id)!, 20, false, { autoArmor: true })).toMatchObject({ absorbed: 0, taken: 10, hp: 25 });
+	});
+});
+
+describe('timed conditions on Nimble’s sides (core/tracker/effects.ts)', () => {
+	const burn = { kind: 'damage' as const, at: 'start' as const, dice: '1d4', damageType: 'Fire' };
+	const save = { kind: 'save' as const, at: 'end' as const, ability: 'STR', dc: 12, endsOnSave: true };
+	const party = (settings: NimbleStatblocksSettings) => { settings.party = [{ id: 'a', name: 'A', level: 1, maxHp: 10 }]; };
+	const listen = (store: EncounterStore) => {
+		const got: string[] = [];
+		store.on('effects', (...args: unknown[]) => { for (const p of args[1] as { condition: string; trigger: { at: string } }[]) got.push(`${p.condition}@${p.trigger.at}`); });
+		return got;
+	};
+
+	it('start effects fire when the creature’s side begins its turn, once a round', () => {
+		const { store, settings } = setup();
+		party(settings);
+		store.addParty();
+		const [g] = store.add(goblin);
+		const enc = store.active!;
+		const got = listen(store);
+		store.addCondition(enc.id, g.id, 'Burning', { timing: { triggers: [burn] } });
+		store.start(enc.id);
+		expect(got).toEqual([]); // heroes go first
+		store.setDone(enc.id, enc.creatures[0].id, true); // the last hero is done: the monsters' turn starts
+		expect(enc.phase).toBe('monsters');
+		expect(got).toEqual(['Burning@start']);
+		store.setPhase(enc.id, 'heroes');
+		store.setPhase(enc.id, 'monsters'); // toggled back: not asked twice in a round
+		expect(got).toEqual(['Burning@start']);
+		store.nextRound(enc.id);
+		store.setPhase(enc.id, 'monsters');
+		expect(got).toEqual(['Burning@start', 'Burning@start']);
+	});
+
+	it('end effects fire when the turn is marked done, or when the round ends without it', () => {
+		const { store } = setup();
+		const [g, g2] = store.add(goblin, undefined, 2);
+		const enc = store.active!;
+		const got = listen(store);
+		store.addCondition(enc.id, g.id, 'Held', { timing: { triggers: [save] } });
+		store.addCondition(enc.id, g2.id, 'Held', { timing: { triggers: [save] } });
+		store.start(enc.id);
+		store.setDone(enc.id, g.id, true);
+		expect(got).toEqual(['Held@end']);
+		store.setDone(enc.id, g.id, false);
+		store.setDone(enc.id, g.id, true); // undone and done again: asked once
+		expect(got).toEqual(['Held@end']);
+		store.nextRound(enc.id); // g2 never marked its turn
+		expect(got).toEqual(['Held@end', 'Held@end']);
+	});
+
+	it('a condition can count down on the turn of the creature that caused it', () => {
+		const { store, settings } = setup();
+		party(settings);
+		store.addParty();
+		const [g] = store.add(goblin);
+		const enc = store.active!;
+		const hero = enc.creatures[0];
+		store.addCondition(enc.id, g.id, 'Frightened', { timing: { rounds: 1, whose: 'source' }, sourceId: hero.id });
+		expect(store.creature(enc.id, g.id)!.conditions[0]).toMatchObject({ rounds: 1, whose: 'source', sourceId: hero.id, sourceLabel: hero.label });
+		store.start(enc.id);
+		store.setDone(enc.id, hero.id, true);
+		expect(store.creature(enc.id, g.id)!.conditions).toEqual([]);
+		expect(enc.log?.some(l => /Goblin.*: Frightened wore off/.test(l.text))).toBe(true);
+	});
+
+	it('changes a condition’s timing from its chip', () => {
+		const { store } = setup();
+		const [g] = store.add(goblin);
+		const enc = store.active!;
+		store.addCondition(enc.id, g.id, 'Dazed', { rounds: 2 });
+		store.retimeCondition(enc.id, g.id, 'Dazed', { triggers: [burn] });
+		expect(store.creature(enc.id, g.id)!.conditions).toEqual([{ name: 'Dazed', triggers: [burn] }]);
+	});
+});
+
+describe('the card and the queue (Nimble)', () => {
+	const heroes = (settings: NimbleStatblocksSettings) => {
+		settings.party = [
+			{ id: 'a', name: 'Aria', level: 2, maxHp: 10, defense: 3 },
+			{ id: 'b', name: 'Bram', level: 2, maxHp: 20, defense: 5 },
+		];
+	};
+	const fight = (over: Partial<NimbleStatblocksSettings> = {}, boss = false) => {
+		const { store, settings } = setup(over);
+		heroes(settings);
+		store.addParty();
+		const [g1] = store.add(goblin);
+		const [g2] = store.add(knight);
+		const k = boss ? store.add(krogg)[0] : undefined;
+		const enc = store.active!;
+		const [aria, bram] = enc.creatures;
+		store.start(enc.id);
+		return { store, settings, enc, aria, bram, g1, g2, k };
+	};
+
+	it('assumes no order among heroes: nobody is on the card until someone is tapped', () => {
+		const { store, enc, aria, bram } = fight();
+		expect(enc.acting).toBeUndefined();
+		store.setActing(enc.id, bram.id);
+		expect(enc.acting).toBe(bram.id);
+		store.next(enc.id); // Done
+		expect(store.creature(enc.id, bram.id)!.done).toBe(true);
+		expect(enc.acting).toBeUndefined();
+		expect(enc.phase).toBe('heroes');
+		store.setActing(enc.id, aria.id);
+		store.next(enc.id);
+		expect(enc.phase).toBe('monsters');
+	});
+
+	it('the monsters’ side: the first monster is up, Next goes down the list, the last one starts the next round', () => {
+		const { store, enc, aria, bram, g1, g2 } = fight();
+		store.setDone(enc.id, aria.id, true);
+		store.setDone(enc.id, bram.id, true);
+		expect(enc.phase).toBe('monsters');
+		expect(enc.acting).toBe(g1.id);
+		store.next(enc.id);
+		expect(store.creature(enc.id, g1.id)!.done).toBe(true);
+		expect(enc.acting).toBe(g2.id);
+		store.next(enc.id);
+		expect(enc.round).toBe(2);
+		expect(enc.phase).toBe('heroes');
+		expect(enc.acting).toBeUndefined();
+		expect(enc.creatures.every(c => !c.done)).toBe(true);
+	});
+
+	it('Next says what wore off: on the creature whose turn ended, and at the round\'s end', () => {
+		const { store, enc, aria, bram, g1, g2 } = fight();
+		store.addCondition(enc.id, g1.id, 'Dazed', { rounds: 1 });
+		store.addCondition(enc.id, g2.id, 'Prone', { rounds: 1 });
+		store.setDone(enc.id, aria.id, true);
+		store.setDone(enc.id, bram.id, true);
+		expect(enc.acting).toBe(g1.id);
+		expect(store.next(enc.id)).toEqual(['Goblin: Dazed wore off']); // a lone goblin is shown without its number
+		expect(store.creature(enc.id, g1.id)!.conditions).toEqual([]);
+		// The last monster's Next ends its turn too, then starts the round.
+		expect(store.next(enc.id)).toEqual([expect.stringMatching(/^\S.*: Prone wore off$/)]);
+		expect(enc.round).toBe(2);
+		expect(store.next(enc.id)).toEqual([]);
+	});
+
+	it('any monster can be tapped, on either side; nothing is enforced', () => {
+		const { store, enc, g2 } = fight();
+		store.setActing(enc.id, g2.id);
+		expect(enc.acting).toBe(g2.id);
+		expect(enc.phase).toBe('heroes');
+		store.next(enc.id);
+		expect(store.creature(enc.id, g2.id)!.done).toBe(true);
+		expect(enc.acting).toBeUndefined();
+	});
+
+	it('the legendary beat: Done on a hero turns the card to the boss; Next goes back to the heroes', () => {
+		const { store, enc, aria, bram, k } = fight({}, true);
+		store.setActing(enc.id, aria.id);
+		store.next(enc.id);
+		expect(enc.acting).toBe(k!.id);
+		expect(enc.beat).toEqual({ after: aria.id });
+		store.useBeatAction(enc.id, k!.id, 'Crack Skulls');
+		expect(store.creature(enc.id, k!.id)!.lastAction).toBe('Crack Skulls');
+		store.next(enc.id);
+		expect(enc.beat).toBeUndefined();
+		expect(enc.acting).toBeUndefined();
+		expect(enc.phase).toBe('heroes');
+		// After the last hero, the beat, then the monsters' side (the boss has no turn of its own there).
+		store.setActing(enc.id, bram.id);
+		store.next(enc.id);
+		expect(enc.acting).toBe(k!.id);
+		store.next(enc.id);
+		expect(enc.phase).toBe('monsters');
+		expect(enc.acting).not.toBe(k!.id);
+	});
+
+	it('the beat can be turned off', () => {
+		const { store, enc, aria, k } = fight({ legendaryBeat: false }, true);
+		store.setActing(enc.id, aria.id);
+		store.next(enc.id);
+		expect(enc.acting).toBeUndefined();
+		expect(k).toBeDefined();
+	});
+
+	it('Back undoes a step: who was on the card, who had gone, and a hero’s actions', () => {
+		const { store, enc, aria } = fight();
+		store.setActing(enc.id, aria.id);
+		store.setActions(enc.id, aria.id, 1);
+		store.addCondition(enc.id, aria.id, 'Dazed', { rounds: 1 });
+		store.next(enc.id);
+		expect(store.creature(enc.id, aria.id)!.conditions).toEqual([]);
+		expect(store.canGoBack(enc.id)).toBe(true);
+		expect(store.back(enc.id)).toBe(true);
+		const a = store.creature(enc.id, aria.id)!;
+		expect(a.done).toBe(false);
+		expect(a.actions).toBe(1);
+		expect(a.conditions.map(c => [c.name, c.rounds])).toEqual([['Dazed', 1]]);
+		expect(enc.acting).toBe(aria.id);
+		expect(store.canGoBack(enc.id)).toBe(false);
+	});
+
+	it('Initiative before the fight sets a hero’s first-turn actions', () => {
+		const { store, settings } = setup();
+		heroes(settings);
+		store.addParty();
+		const enc = store.active!;
+		const a = enc.creatures[0];
+		store.setInitiative(enc.id, a.id, 7);
+		expect(store.creature(enc.id, a.id)).toMatchObject({ init: 7, actions: 1 });
+		store.setInitiative(enc.id, a.id, 14);
+		expect(store.creature(enc.id, a.id)!.actions).toBe(2);
+		store.setInitiative(enc.id, a.id, 22);
+		expect(store.creature(enc.id, a.id)!.actions).toBe(3);
+	});
+
+	it('Defend takes the hero’s Armor off and costs an action; Interpose sends the hit to a friend', () => {
+		const { store, enc, aria, bram } = fight();
+		store.heroHit(enc.id, aria.id, dmg('5'), { defend: true });
+		expect(store.creature(enc.id, aria.id)).toMatchObject({ currentHp: 8, actions: 2 });
+		store.heroHit(enc.id, aria.id, dmg('5!'), { defend: true });
+		expect(store.creature(enc.id, aria.id)!.currentHp).toBe(3); // a crit: Armor doesn't help
+		store.heroHit(enc.id, aria.id, dmg('9'), { interpose: bram.id, defend: true });
+		expect(store.creature(enc.id, aria.id)!.currentHp).toBe(3);
+		expect(store.creature(enc.id, bram.id)).toMatchObject({ currentHp: 16, actions: 1 });
 	});
 });

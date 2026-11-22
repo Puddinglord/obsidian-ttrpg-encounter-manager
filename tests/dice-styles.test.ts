@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanStyle, DEFAULT_DICE, migrateDice, PRESETS, rollEvent, styleFor, useForAllDice } from '../src/dice3d/styles';
+import { cleanStyle, DEFAULT_DICE, migrateDice, PRESETS, rollEvent, styleFor, useForAllDice } from '../src/core/dice3d/styles';
 
 describe('dice settings carry over from 1.0.3', () => {
 	it('untouched defaults map to the matching presets, nothing extra created', () => {

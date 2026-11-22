@@ -1,6 +1,6 @@
 # Ember Vault user guide
 
-Ember Vault turns an Obsidian vault into a GM screen for the [Nimble TTRPG](https://nimbleRPG.com). Your adventure stays in ordinary Markdown notes, and the plugin adds the tools you need at the table on top of them.
+Ember Vault turns an Obsidian vault into a GM screen for the [Nimble TTRPG](https://nimbleRPG.com) and for [5e](5e.md) (the 2024 and 2014 rules, from the SRD). Your adventure stays in ordinary Markdown notes, and the plugin adds the tools you need at the table on top of them.
 
 New here? Start with **[Getting started](getting-started.md)**, or download the **[sample adventure](sample-adventure.md)** and open it as a vault. It's a short dungeon with every feature already set up.
 
@@ -21,21 +21,25 @@ What changed lately is in the **[changelog](../CHANGELOG.md)**.
 | [The builder](builder.md) | Make monsters, spells and items on the books' numbers: quick or full, level first or stats first, from a template |
 | [Encounters](encounters.md) | Encounter blocks, difficulty, scaling monsters, the builder |
 | [GM maps](maps.md) | Maps with pins linked to your notes, tokens |
+| [Your own content](homebrew.md) | Make a class, subclass, feat, species, ancestry, background, boon or rule: New on a compendium tab, a few lines in a note, in the compendium as Homebrew |
+| [Content packs](content-packs.md) | Add homebrew and what the plugin can't ship (a class, a book's subclasses, a bestiary) as JSON files in your vault, for Nimble and 5e |
+| [Importing](import.md) | Bring in a D&D Beyond character or a Fantasy Statblocks creature |
+| [Playing 5e](5e.md) | 5e campaigns: SRD monsters and ```5e stat blocks, XP-rated encounters, the initiative tracker, the compendium, character sheets |
 
 ## Playing
 
 | Page | What it covers |
 |---|---|
 | [Playing in a campaign](players.md) | Player campaigns, your party, battle notes, lore cards, switching between GM and player |
-| [Character sheets](character-sheets.md) | Your Nimble character as a note: the interactive sheet, rolling, resting, levelling up, adding gear and spells |
+| [Character sheets](character-sheets.md) | Your Nimble character as a note: the sheet, your class panel, rolling, dice from the table, resting, levelling up, adding gear and spells |
 
 ## At the table
 
 | Page | What it covers |
 |---|---|
-| [Combat tracker](tracker.md) | Running a fight, the HP calculator, armor, minions, legendary monsters, conditions |
+| [Combat tracker](tracker.md) | Running a fight from the card and queue, the HP keypad, armor, minions, legendary monsters, conditions |
 | [Dice](dice.md) | Clickable dice, Nimble attack rolls, 3D dice |
-| [Spotlight](spotlight.md) | Cmd/Ctrl+K: search adversaries, NPCs and notes, roll dice, run commands |
+| [Omnisearch](omnisearch.md) | Cmd/Ctrl+K: search adversaries, NPCs and notes, roll dice, run commands |
 | [Slash commands](slash-commands.md) | Every `/` command in one table |
 | [Phone and iPad](mobile.md) | Running the game from a touch screen, and syncing |
 

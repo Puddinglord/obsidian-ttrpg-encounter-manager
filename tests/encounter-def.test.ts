@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { encounterBlockSource, findEncounterFence, parseEncounterBlock, replaceEncounterBlock } from '../src/encounter-def';
+import { encounterBlockSource, findEncounterFence, parseEncounterBlock, parseMonsterLine, replaceEncounterBlock } from '../src/core/encounter-def';
 
 /** What a stepper click does: parse, change one count, write. */
 function bump(src: string): string {
@@ -111,7 +111,7 @@ describe('finding a block in its note', () => {
 
 describe('battle notes fields', () => {
 	it('reads outcome, where, loot from the extra lines and keeps them on rewrite', async () => {
-		const { battleField, outcomeOf, withBattleField } = await import('../src/encounter-def');
+		const { battleField, outcomeOf, withBattleField } = await import('../src/core/encounter-def');
 		const def = parseEncounterBlock('name: Ford ambush\noutcome: Victory!\nloot: 40 gp\nmonsters:\n- 4 Goblin\n- Goblin Shaman\nnotes: The shaman fled.');
 		expect(battleField(def, 'outcome')).toBe('Victory!');
 		expect(outcomeOf(battleField(def, 'outcome'))).toBe('won');
@@ -129,11 +129,17 @@ describe('battle notes fields', () => {
 	});
 
 	it('knows outcomes by their usual words', async () => {
-		const { outcomeOf } = await import('../src/encounter-def');
+		const { outcomeOf } = await import('../src/core/encounter-def');
 		expect(outcomeOf('we won')).toBe('won');
 		expect(outcomeOf('retreated')).toBe('fled');
 		expect(outcomeOf('TPK')).toBe('lost');
 		expect(outcomeOf('talked them down')).toBe('parley');
 		expect(outcomeOf('something odd')).toBeUndefined();
+	});
+});
+
+describe('5e references in an encounter list', () => {
+	it('reads `5e:Name` like `nimble:Name`, keeping what was written', () => {
+		expect(parseMonsterLine('- 3 `5e:Goblin Warrior`')).toEqual({ name: 'Goblin Warrior', count: 3, written: '`5e:Goblin Warrior`' });
 	});
 });

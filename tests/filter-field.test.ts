@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('obsidian', () => ({ setIcon: (el: HTMLElement, icon: string) => { el.dataset.icon = icon; } }));
 
-import { FilterField } from '../src/filter-field';
+import { FilterField } from '../src/systems/nimble/filter-field';
 
 function field() {
 	const chipsEl = document.body.createDiv();

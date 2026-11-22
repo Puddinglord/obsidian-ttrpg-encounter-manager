@@ -1,0 +1,2524 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Ember Vault content pack (Nimble)",
+	"description": "An Ember Vault content pack for Nimble. Put the file in your content folder (Ember Vault/Content by default), or use Import content.",
+	"type": "object",
+	"required": [
+		"pack",
+		"system",
+		"entries"
+	],
+	"properties": {
+		"pack": {
+			"type": "string",
+			"description": "The pack's name, as campaigns turn it on or off."
+		},
+		"system": {
+			"const": "nimble"
+		},
+		"version": {
+			"type": "number"
+		},
+		"description": {
+			"type": "string"
+		},
+		"entries": {
+			"type": "array",
+			"items": {
+				"oneOf": [
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "monster"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"statblock": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The whole stat block in the ```nimble block format, instead of the fields below."
+							},
+							"level": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"3\", \"1/2\". Minions can leave it out."
+							},
+							"role": {
+								"type": [
+									"string",
+									"number"
+								],
+								"enum": [
+									"regular",
+									"minion",
+									"legendary",
+									"solo"
+								],
+								"description": "Regular if left out. Solo is the Monsters & More word for legendary."
+							},
+							"size": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Tiny, Small, Medium, Large, Huge or Gargantuan."
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Undead\", \"Goblin\"."
+							},
+							"group": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The family heading in a bestiary: \"Goblins\"."
+							},
+							"habitat": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"armor": {
+								"type": [
+									"string",
+									"number"
+								],
+								"enum": [
+									"none",
+									"medium",
+									"heavy"
+								],
+								"description": "None if left out."
+							},
+							"hp": {
+								"type": "integer",
+								"minimum": 1
+							},
+							"hpPerHero": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "Legendary monsters: HP for each hero."
+							},
+							"speed": {
+								"type": "integer",
+								"minimum": 0,
+								"description": "Spaces; 6 if left out."
+							},
+							"fly": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"swim": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"climb": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"burrow": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"movement": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Movement as written, instead of the numbers: \"6, fly 8 (hover)\"."
+							},
+							"saves": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"STR+ DEX-\", \"ALL++\"."
+							},
+							"minionDie": {
+								"type": "integer",
+								"minimum": 2,
+								"description": "A minion's die: 8 for d8."
+							},
+							"resist": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"vuln": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"immune": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"senses": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"languages": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"traits": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"text": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The rules text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"text"
+									]
+								}
+							},
+							"actionsIntro": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The line over the actions: \"Choose 1:\"."
+							},
+							"actions": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"text": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The rules text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"text"
+									]
+								}
+							},
+							"bloodied": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "What happens when it's Bloodied."
+							},
+							"lastStand": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Legendary: its Last Stand."
+							},
+							"flavor": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Lore."
+							},
+							"tactics": {
+								"type": "object",
+								"properties": {
+									"easier": {
+										"type": [
+											"string",
+											"number"
+										]
+									},
+									"harder": {
+										"type": [
+											"string",
+											"number"
+										]
+									}
+								}
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name"
+						],
+						"title": "Monster",
+						"description": "A stat block. Give the fields, or \"statblock\" with the text of a ```nimble block."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "spell"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"school": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Fire\", \"Radiant\", or a class's own school."
+							},
+							"tier": {
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 9,
+								"description": "0 for a cantrip."
+							},
+							"utility": {
+								"type": "boolean",
+								"description": "A Utility Spell."
+							},
+							"actions": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"1 Action\", \"2 Actions\", \"Reaction\"."
+							},
+							"range": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Range 8\", \"Reach 1\", \"Self\"."
+							},
+							"aoe": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Cone 3\"."
+							},
+							"concentration": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Up to 1 minute\"."
+							},
+							"damage": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"2d8\"."
+							},
+							"text": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"higherLevels": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "What casting it at a higher tier adds."
+							},
+							"cantripScaling": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "How a cantrip grows with level."
+							},
+							"class": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The class it belongs to, for a class's own spells."
+							},
+							"secret": {
+								"type": "boolean",
+								"description": "A GM's secret spell (a reward)."
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"school",
+							"tier",
+							"text"
+						],
+						"title": "Spell",
+						"description": "A spell, as the compendium shows it. A spell with \"class\" is that class's own."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "item"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"category": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "weapon, armor, shield, gear, magic, wand, scroll, consumable…"
+							},
+							"subcategory": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"melee\", \"ranged\", \"cloth\", \"weapon\"…"
+							},
+							"cost": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"12 gp\"."
+							},
+							"damage": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Weapons: \"1d8\"."
+							},
+							"stat": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Weapons: STR or DEX."
+							},
+							"damageType": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"slashing\"."
+							},
+							"properties": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "\"2-handed\", \"Thrown 4\", \"Light\"."
+							},
+							"range": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"armor": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Defense: \"2+DEX\", \"6\"."
+							},
+							"strength": {
+								"type": "integer",
+								"minimum": 0,
+								"description": "STR needed."
+							},
+							"slots": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"rarity": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "common, uncommon, rare, very rare, legendary."
+							},
+							"rarityText": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Rarity varies\"."
+							},
+							"tier": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"charges": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"flavor": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"text": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"category"
+						],
+						"title": "Item",
+						"description": "Gear, a weapon, armor, a shield or a magic item."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "class"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"tagline": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "One line: \"High-damage, melee-focused class.\""
+							},
+							"motif": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The motif in its scrollwork: a book class's (\"Berserker\", \"Mage\"). A plain one if left out."
+							},
+							"flavor": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"highlights": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"complexity": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 4
+							},
+							"keyStats": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "One or two of STR, DEX, INT, WIL."
+							},
+							"hitDie": {
+								"type": "integer",
+								"minimum": 4,
+								"maximum": 20,
+								"description": "8 for d8."
+							},
+							"startingHp": {
+								"type": "integer",
+								"minimum": 1
+							},
+							"saves": {
+								"type": "object",
+								"properties": {
+									"adv": {
+										"type": [
+											"string",
+											"number"
+										],
+										"enum": [
+											"STR",
+											"DEX",
+											"INT",
+											"WIL"
+										]
+									},
+									"dis": {
+										"type": [
+											"string",
+											"number"
+										],
+										"enum": [
+											"STR",
+											"DEX",
+											"INT",
+											"WIL"
+										]
+									}
+								},
+								"required": [
+									"adv",
+									"dis"
+								],
+								"description": "The save with advantage, and the one with disadvantage."
+							},
+							"skillMods": {
+								"type": "object",
+								"additionalProperties": {
+									"type": "number"
+								},
+								"description": "Skilled Hero adjustments: { \"Might\": 2, \"Finesse\": -2 }."
+							},
+							"armor": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Leather, Shields\"."
+							},
+							"weapons": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"DEX weapons\"."
+							},
+							"startingGear": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Items by name (the books' or a pack's)."
+							},
+							"casting": {
+								"type": "object",
+								"properties": {
+									"mana": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "How the book writes the pool: \"(INT×3)+LVL\"."
+									},
+									"manaFormula": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "The pool as a formula of STR, DEX, INT, WIL, KEY and LVL: \"INT*3+LVL\"."
+									},
+									"manaFromLevel": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 20,
+										"description": "The level the pool starts at."
+									},
+									"schools": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										},
+										"description": "Spell schools known from level 1."
+									},
+									"notes": {
+										"type": [
+											"string",
+											"number"
+										]
+									}
+								},
+								"description": "Spellcasting: the mana pool and the schools the class knows."
+							},
+							"resources": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"max": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "A number, or a formula of STR, DEX, INT, WIL, KEY and LVL: \"WIL\", \"5×LVL\"."
+										},
+										"reset": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "\"Safe Rest\", \"encounter\", \"Rage ends\"."
+										},
+										"die": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "\"d6\", for dice."
+										},
+										"dice": {
+											"type": "object",
+											"properties": {
+												"rolled": {
+													"type": [
+														"string",
+														"number"
+													],
+													"enum": [
+														"spent",
+														"gained"
+													],
+													"description": "\"spent\": rolled with the roll they go into (Judgment Dice); \"gained\": rolled as you gain them and set aside (Fury Dice)."
+												},
+												"addTo": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													},
+													"description": "Rolls they can go into: attack, spell, save, check."
+												},
+												"use": {
+													"type": [
+														"string",
+														"number"
+													],
+													"enum": [
+														"one",
+														"any",
+														"all"
+													],
+													"description": "How many go into one roll: one, any number, or every die held."
+												},
+												"keep": {
+													"type": "boolean",
+													"description": "They stay after the roll (Fury Dice add to every attack while Raging)."
+												},
+												"on": {
+													"type": "boolean",
+													"description": "Switched on in the roll dialog from the start."
+												},
+												"onWhile": {
+													"type": [
+														"string",
+														"number"
+													],
+													"description": "Switched on while the hero has this condition: \"Raging\"."
+												},
+												"damageType": {
+													"type": [
+														"string",
+														"number"
+													],
+													"description": "\"fire\": shown with the dice."
+												},
+												"gain": {
+													"type": "integer",
+													"minimum": 1,
+													"description": "Dice gained at once with the sheet's button."
+												},
+												"gainLabel": {
+													"type": [
+														"string",
+														"number"
+													],
+													"description": "The button's word: \"Rage\"."
+												},
+												"reachOnly": {
+													"type": "boolean",
+													"description": "Only melee and Reach attacks, not ranged ones."
+												},
+												"clearsOnRest": {
+													"type": "boolean",
+													"description": "Gone after a fight, so empty after a Safe Rest."
+												},
+												"byLevel": {
+													"type": "array",
+													"items": {
+														"type": "object",
+														"properties": {
+															"level": {
+																"type": "integer",
+																"minimum": 1,
+																"maximum": 20
+															},
+															"die": {
+																"type": [
+																	"string",
+																	"number"
+																],
+																"description": "\"d8\""
+															}
+														},
+														"required": [
+															"level",
+															"die"
+														]
+													},
+													"description": "The die from each level on."
+												},
+												"rules": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													},
+													"description": "The class features whose words explain these dice."
+												},
+												"maxSteps": {
+													"type": "array",
+													"items": {
+														"type": "object",
+														"properties": {
+															"level": {
+																"type": "integer",
+																"minimum": 1,
+																"maximum": 20
+															},
+															"add": {
+																"type": "integer"
+															},
+															"subclass": {
+																"type": [
+																	"string",
+																	"number"
+																]
+															}
+														},
+														"required": [
+															"level",
+															"add"
+														]
+													},
+													"description": "The most held grows: \"add\" more from a level, for one subclass only when it names one."
+												}
+											},
+											"required": [
+												"rolled"
+											],
+											"description": "For dice: how they're rolled and what they go into. Without it they're a plain count."
+										},
+										"spend": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The word on a number's button: \"Heal\" (Lay on Hands). \"Spend\" if left out."
+										}
+									},
+									"required": [
+										"name"
+									]
+								},
+								"description": "What the class panel on the sheet counts: dice, uses, points."
+							},
+							"states": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The row's name: \"Rage\"."
+										},
+										"condition": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The condition it puts on the hero: \"Raging\"."
+										},
+										"feature": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The feature whose words explain it."
+										},
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20,
+											"description": "From this level (1 if left out)."
+										}
+									},
+									"required": [
+										"name",
+										"condition"
+									]
+								},
+								"description": "States the class panel switches on and off: Rage puts Raging on the hero."
+							},
+							"target": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "The row's name: \"Hunter's Mark\"."
+									},
+									"feature": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "The feature whose words explain it."
+									},
+									"level": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 20
+									},
+									"tip": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "\"one Quarry at a time, for a day\"."
+									}
+								},
+								"required": [
+									"name"
+								],
+								"description": "A target the class panel keeps, one at a time: Hunter's Mark's Quarry."
+							},
+							"levels": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"features": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"text": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The rules text. Markdown is fine."
+													},
+													"choose": {
+														"type": "object",
+														"properties": {
+															"from": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Option lists (the class's \"optionGroups\" by name)."
+															},
+															"count": {
+																"type": "integer",
+																"minimum": 1,
+																"description": "How many to choose (1 if left out)."
+															},
+															"name": {
+																"type": [
+																	"string",
+																	"number"
+																],
+																"description": "A name for the lists together: \"Combat Abilities\"."
+															},
+															"or": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Choices offered instead, that can be taken more than once: \"+1 max Combat Dice\"."
+															}
+														},
+														"required": [
+															"from"
+														],
+														"description": "What the feature has you choose, when its words don't say: the option lists to pick from, how many, and choices that can be taken more than once instead."
+													},
+													"increase": {
+														"type": "object",
+														"properties": {
+															"stats": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																}
+															},
+															"count": {
+																"type": "integer",
+																"minimum": 1,
+																"maximum": 4,
+																"description": "How many different stats get +1 (1 if left out)."
+															}
+														},
+														"required": [
+															"stats"
+														],
+														"description": "A stat increase, when the words don't say \"+1 STR or DEX\": the stats it can go to (STR, DEX, INT, WIL), and how many different ones get +1."
+													},
+													"learn": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"kind": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"enum": [
+																		"school",
+																		"utilities",
+																		"utility"
+																	]
+																},
+																"from": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	},
+																	"description": "Schools by name, or one of \"known\", \"new\" (a school not known yet) or \"any\". Any school if left out."
+																},
+																"count": {
+																	"type": "integer",
+																	"minimum": 1,
+																	"description": "How many (1 if left out)."
+																},
+																"each": {
+																	"type": "boolean",
+																	"description": "One for each school the hero knows."
+																}
+															},
+															"required": [
+																"kind"
+															]
+														},
+														"description": "Spell schools or Utility Spells it has you learn, when the words don't say: \"school\" learns a school, \"utilities\" every Utility Spell of one school, \"utility\" Utility Spells one by one."
+													},
+													"uses": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
+													},
+													"spellTier": {
+														"type": "integer",
+														"minimum": 0,
+														"maximum": 9,
+														"description": "The highest spell tier the hero casts from this level, when the feature isn't called \"Tier 2 Spells\"."
+													},
+													"unlock": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"description": "Option lists it opens, when the words don't say \"Unlock Greater Psionic Abilities\": picks from a list then offer every tier of it open so far."
+													},
+													"knows": {
+														"type": "object",
+														"properties": {
+															"lists": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Option lists it gives every option of (\"Chimeric Boons\")."
+															},
+															"options": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Options it gives, by name."
+															},
+															"utility": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Schools whose Utility Spells it gives, or \"known\" for every school the hero knows."
+															}
+														},
+														"description": "What the feature gives outright, when the words don't say \"You know all …\": every option of some lists, options by name, and every Utility Spell of some schools."
+													},
+													"boon": {
+														"type": [
+															"string",
+															"number"
+														],
+														"enum": [
+															"epic",
+															"lodging",
+															"other"
+														],
+														"description": "It has you choose a boon of this type, when the words don't say \"Choose an Epic Boon\"."
+													}
+												},
+												"required": [
+													"name",
+													"text"
+												]
+											}
+										}
+									},
+									"required": [
+										"level",
+										"features"
+									]
+								},
+								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`, `spellTier`, `unlock`, `knows`, `boon`."
+							},
+							"optionGroups": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"intro": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"options": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"text": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"cost": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "\"Passive\", \"1 Action\", \"Reaction\"."
+													},
+													"requirement": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "\"Req. level 5\"."
+													}
+												},
+												"required": [
+													"name",
+													"text"
+												]
+											}
+										}
+									},
+									"required": [
+										"name",
+										"options"
+									]
+								},
+								"description": "Lists the class chooses from as it levels (\"Savage Arsenal\"): a feature saying \"Choose 1 …\" with the list's name picks from it."
+							},
+							"sidebars": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"title": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"text": {
+											"type": [
+												"string",
+												"number"
+											]
+										}
+									},
+									"required": [
+										"title",
+										"text"
+									]
+								}
+							},
+							"subclasses": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The name, as references use it."
+										},
+										"flavor": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"complexity": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 4
+										},
+										"story": {
+											"type": "boolean",
+											"description": "A story subclass."
+										},
+										"intro": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"levels": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"level": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 20
+													},
+													"features": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"name": {
+																	"type": [
+																		"string",
+																		"number"
+																	]
+																},
+																"text": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "The rules text. Markdown is fine."
+																},
+																"choose": {
+																	"type": "object",
+																	"properties": {
+																		"from": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			},
+																			"description": "Option lists (the class's \"optionGroups\" by name)."
+																		},
+																		"count": {
+																			"type": "integer",
+																			"minimum": 1,
+																			"description": "How many to choose (1 if left out)."
+																		},
+																		"name": {
+																			"type": [
+																				"string",
+																				"number"
+																			],
+																			"description": "A name for the lists together: \"Combat Abilities\"."
+																		},
+																		"or": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			},
+																			"description": "Choices offered instead, that can be taken more than once: \"+1 max Combat Dice\"."
+																		}
+																	},
+																	"required": [
+																		"from"
+																	],
+																	"description": "What the feature has you choose, when its words don't say: the option lists to pick from, how many, and choices that can be taken more than once instead."
+																},
+																"increase": {
+																	"type": "object",
+																	"properties": {
+																		"stats": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			}
+																		},
+																		"count": {
+																			"type": "integer",
+																			"minimum": 1,
+																			"maximum": 4,
+																			"description": "How many different stats get +1 (1 if left out)."
+																		}
+																	},
+																	"required": [
+																		"stats"
+																	],
+																	"description": "A stat increase, when the words don't say \"+1 STR or DEX\": the stats it can go to (STR, DEX, INT, WIL), and how many different ones get +1."
+																},
+																"learn": {
+																	"type": "array",
+																	"items": {
+																		"type": "object",
+																		"properties": {
+																			"kind": {
+																				"type": [
+																					"string",
+																					"number"
+																				],
+																				"enum": [
+																					"school",
+																					"utilities",
+																					"utility"
+																				]
+																			},
+																			"from": {
+																				"type": "array",
+																				"items": {
+																					"type": "string"
+																				},
+																				"description": "Schools by name, or one of \"known\", \"new\" (a school not known yet) or \"any\". Any school if left out."
+																			},
+																			"count": {
+																				"type": "integer",
+																				"minimum": 1,
+																				"description": "How many (1 if left out)."
+																			},
+																			"each": {
+																				"type": "boolean",
+																				"description": "One for each school the hero knows."
+																			}
+																		},
+																		"required": [
+																			"kind"
+																		]
+																	},
+																	"description": "Spell schools or Utility Spells it has you learn, when the words don't say: \"school\" learns a school, \"utilities\" every Utility Spell of one school, \"utility\" Utility Spells one by one."
+																},
+																"uses": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
+																},
+																"spellTier": {
+																	"type": "integer",
+																	"minimum": 0,
+																	"maximum": 9,
+																	"description": "The highest spell tier the hero casts from this level, when the feature isn't called \"Tier 2 Spells\"."
+																},
+																"unlock": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	},
+																	"description": "Option lists it opens, when the words don't say \"Unlock Greater Psionic Abilities\": picks from a list then offer every tier of it open so far."
+																},
+																"knows": {
+																	"type": "object",
+																	"properties": {
+																		"lists": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			},
+																			"description": "Option lists it gives every option of (\"Chimeric Boons\")."
+																		},
+																		"options": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			},
+																			"description": "Options it gives, by name."
+																		},
+																		"utility": {
+																			"type": "array",
+																			"items": {
+																				"type": "string"
+																			},
+																			"description": "Schools whose Utility Spells it gives, or \"known\" for every school the hero knows."
+																		}
+																	},
+																	"description": "What the feature gives outright, when the words don't say \"You know all …\": every option of some lists, options by name, and every Utility Spell of some schools."
+																},
+																"boon": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"enum": [
+																		"epic",
+																		"lodging",
+																		"other"
+																	],
+																	"description": "It has you choose a boon of this type, when the words don't say \"Choose an Epic Boon\"."
+																}
+															},
+															"required": [
+																"name",
+																"text"
+															]
+														}
+													}
+												},
+												"required": [
+													"level",
+													"features"
+												]
+											},
+											"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`, `spellTier`, `unlock`, `knows`, `boon`."
+										},
+										"optionGroups": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"intro": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"options": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"name": {
+																	"type": [
+																		"string",
+																		"number"
+																	]
+																},
+																"text": {
+																	"type": [
+																		"string",
+																		"number"
+																	]
+																},
+																"cost": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "\"Passive\", \"1 Action\", \"Reaction\"."
+																},
+																"requirement": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"description": "\"Req. level 5\"."
+																}
+															},
+															"required": [
+																"name",
+																"text"
+															]
+														}
+													}
+												},
+												"required": [
+													"name",
+													"options"
+												]
+											},
+											"description": "Lists the class chooses from as it levels (\"Savage Arsenal\"): a feature saying \"Choose 1 …\" with the list's name picks from it."
+										},
+										"sidebars": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"title": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"text": {
+														"type": [
+															"string",
+															"number"
+														]
+													}
+												},
+												"required": [
+													"title",
+													"text"
+												]
+											}
+										},
+										"casting": {
+											"type": "object",
+											"properties": {
+												"mana": {
+													"type": [
+														"string",
+														"number"
+													],
+													"description": "How the book writes the pool: \"(INT×3)+LVL\"."
+												},
+												"manaFormula": {
+													"type": [
+														"string",
+														"number"
+													],
+													"description": "The pool as a formula of STR, DEX, INT, WIL, KEY and LVL: \"INT*3+LVL\"."
+												},
+												"manaFromLevel": {
+													"type": "integer",
+													"minimum": 1,
+													"maximum": 20,
+													"description": "The level the pool starts at."
+												},
+												"schools": {
+													"type": "array",
+													"items": {
+														"type": "string"
+													},
+													"description": "Spell schools known from level 1."
+												},
+												"notes": {
+													"type": [
+														"string",
+														"number"
+													]
+												}
+											},
+											"description": "Spellcasting: the mana pool and the schools the class knows."
+										},
+										"lose": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"description": "Its class's option lists it gives up, when the words don't say \"You lose access to …\"."
+										},
+										"instead": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"from": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The class's list: \"Combat Tactics\"."
+													},
+													"to": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The list chosen instead."
+													}
+												},
+												"required": [
+													"from",
+													"to"
+												]
+											},
+											"description": "A list chosen in another's place, when the words don't say \"Whenever you could choose a Combat Tactic, instead choose …\"."
+										},
+										"companions": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"description": "Its own option lists that are companions (a Beastmaster's): one is chosen with the subclass."
+										},
+										"page": {
+											"type": "integer",
+											"minimum": 1,
+											"description": "The page in the book it comes from, if any."
+										}
+									},
+									"required": [
+										"name"
+									]
+								}
+							},
+							"spellList": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Spells the class can cast besides its schools', by name."
+							},
+							"faq": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"q": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"a": {
+											"type": [
+												"string",
+												"number"
+											]
+										}
+									},
+									"required": [
+										"q",
+										"a"
+									]
+								}
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"keyStats",
+							"hitDie",
+							"startingHp",
+							"saves",
+							"levels"
+						],
+						"title": "Class",
+						"description": "A whole class, as the class books write one: key stats, saves, Hit Die, gear, levels, option lists, resources and subclasses."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "subclass"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"class": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The class it belongs to: \"Berserker\"."
+							},
+							"flavor": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"complexity": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 4
+							},
+							"story": {
+								"type": "boolean",
+								"description": "A story subclass."
+							},
+							"intro": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"levels": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"level": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 20
+										},
+										"features": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"text": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "The rules text. Markdown is fine."
+													},
+													"choose": {
+														"type": "object",
+														"properties": {
+															"from": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Option lists (the class's \"optionGroups\" by name)."
+															},
+															"count": {
+																"type": "integer",
+																"minimum": 1,
+																"description": "How many to choose (1 if left out)."
+															},
+															"name": {
+																"type": [
+																	"string",
+																	"number"
+																],
+																"description": "A name for the lists together: \"Combat Abilities\"."
+															},
+															"or": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Choices offered instead, that can be taken more than once: \"+1 max Combat Dice\"."
+															}
+														},
+														"required": [
+															"from"
+														],
+														"description": "What the feature has you choose, when its words don't say: the option lists to pick from, how many, and choices that can be taken more than once instead."
+													},
+													"increase": {
+														"type": "object",
+														"properties": {
+															"stats": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																}
+															},
+															"count": {
+																"type": "integer",
+																"minimum": 1,
+																"maximum": 4,
+																"description": "How many different stats get +1 (1 if left out)."
+															}
+														},
+														"required": [
+															"stats"
+														],
+														"description": "A stat increase, when the words don't say \"+1 STR or DEX\": the stats it can go to (STR, DEX, INT, WIL), and how many different ones get +1."
+													},
+													"learn": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"kind": {
+																	"type": [
+																		"string",
+																		"number"
+																	],
+																	"enum": [
+																		"school",
+																		"utilities",
+																		"utility"
+																	]
+																},
+																"from": {
+																	"type": "array",
+																	"items": {
+																		"type": "string"
+																	},
+																	"description": "Schools by name, or one of \"known\", \"new\" (a school not known yet) or \"any\". Any school if left out."
+																},
+																"count": {
+																	"type": "integer",
+																	"minimum": 1,
+																	"description": "How many (1 if left out)."
+																},
+																"each": {
+																	"type": "boolean",
+																	"description": "One for each school the hero knows."
+																}
+															},
+															"required": [
+																"kind"
+															]
+														},
+														"description": "Spell schools or Utility Spells it has you learn, when the words don't say: \"school\" learns a school, \"utilities\" every Utility Spell of one school, \"utility\" Utility Spells one by one."
+													},
+													"uses": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "Uses between Safe Rests, when the words don't say \"(1/Safe Rest)\": a number or a formula, \"WIL\", \"2×WIL\"."
+													},
+													"spellTier": {
+														"type": "integer",
+														"minimum": 0,
+														"maximum": 9,
+														"description": "The highest spell tier the hero casts from this level, when the feature isn't called \"Tier 2 Spells\"."
+													},
+													"unlock": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														},
+														"description": "Option lists it opens, when the words don't say \"Unlock Greater Psionic Abilities\": picks from a list then offer every tier of it open so far."
+													},
+													"knows": {
+														"type": "object",
+														"properties": {
+															"lists": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Option lists it gives every option of (\"Chimeric Boons\")."
+															},
+															"options": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Options it gives, by name."
+															},
+															"utility": {
+																"type": "array",
+																"items": {
+																	"type": "string"
+																},
+																"description": "Schools whose Utility Spells it gives, or \"known\" for every school the hero knows."
+															}
+														},
+														"description": "What the feature gives outright, when the words don't say \"You know all …\": every option of some lists, options by name, and every Utility Spell of some schools."
+													},
+													"boon": {
+														"type": [
+															"string",
+															"number"
+														],
+														"enum": [
+															"epic",
+															"lodging",
+															"other"
+														],
+														"description": "It has you choose a boon of this type, when the words don't say \"Choose an Epic Boon\"."
+													}
+												},
+												"required": [
+													"name",
+													"text"
+												]
+											}
+										}
+									},
+									"required": [
+										"level",
+										"features"
+									]
+								},
+								"description": "What each level brings. A feature called \"Subclass\" offers the subclass; \"Key Stat Increase\" with \"+1 STR or DEX.\" raises a stat; \"Choose 1 Kindling\" picks from the option list of that name. When the words don't say, a feature can: `choose`, `increase`, `learn`, `uses`, `spellTier`, `unlock`, `knows`, `boon`."
+							},
+							"optionGroups": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"intro": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"options": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"text": {
+														"type": [
+															"string",
+															"number"
+														]
+													},
+													"cost": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "\"Passive\", \"1 Action\", \"Reaction\"."
+													},
+													"requirement": {
+														"type": [
+															"string",
+															"number"
+														],
+														"description": "\"Req. level 5\"."
+													}
+												},
+												"required": [
+													"name",
+													"text"
+												]
+											}
+										}
+									},
+									"required": [
+										"name",
+										"options"
+									]
+								},
+								"description": "Lists the class chooses from as it levels (\"Savage Arsenal\"): a feature saying \"Choose 1 …\" with the list's name picks from it."
+							},
+							"sidebars": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"title": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"text": {
+											"type": [
+												"string",
+												"number"
+											]
+										}
+									},
+									"required": [
+										"title",
+										"text"
+									]
+								}
+							},
+							"casting": {
+								"type": "object",
+								"properties": {
+									"mana": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "How the book writes the pool: \"(INT×3)+LVL\"."
+									},
+									"manaFormula": {
+										"type": [
+											"string",
+											"number"
+										],
+										"description": "The pool as a formula of STR, DEX, INT, WIL, KEY and LVL: \"INT*3+LVL\"."
+									},
+									"manaFromLevel": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 20,
+										"description": "The level the pool starts at."
+									},
+									"schools": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										},
+										"description": "Spell schools known from level 1."
+									},
+									"notes": {
+										"type": [
+											"string",
+											"number"
+										]
+									}
+								},
+								"description": "Spellcasting: the mana pool and the schools the class knows."
+							},
+							"lose": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Its class's option lists it gives up, when the words don't say \"You lose access to …\"."
+							},
+							"instead": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"from": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The class's list: \"Combat Tactics\"."
+										},
+										"to": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The list chosen instead."
+										}
+									},
+									"required": [
+										"from",
+										"to"
+									]
+								},
+								"description": "A list chosen in another's place, when the words don't say \"Whenever you could choose a Combat Tactic, instead choose …\"."
+							},
+							"companions": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Its own option lists that are companions (a Beastmaster's): one is chosen with the subclass."
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"class",
+							"levels"
+						],
+						"title": "Subclass",
+						"description": "A subclass for a class (the books' or a pack's), by the class's name."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "option"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"class": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The class: \"Berserker\"."
+							},
+							"group": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The list: \"Savage Arsenal\". A new name makes a new list."
+							},
+							"subclass": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "When the list is a subclass's."
+							},
+							"groupIntro": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The list's opening words, for a new list."
+							},
+							"text": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"cost": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Passive\", \"1 Action\", \"Reaction\"."
+							},
+							"requirement": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Req. level 5\"."
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"class",
+							"group",
+							"text"
+						],
+						"title": "Class option",
+						"description": "One more choice in a class's list (a Savage Arsenal ability, a Combat Tactic), by the class's and the list's names."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "ancestry"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"size": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Medium\", \"Small or Medium\"."
+							},
+							"rarity": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "common, uncommon, rare."
+							},
+							"flavor": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"traits": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"name": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"text": {
+											"type": [
+												"string",
+												"number"
+											],
+											"description": "The rules text. Markdown is fine."
+										}
+									},
+									"required": [
+										"name",
+										"text"
+									]
+								}
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name"
+						],
+						"title": "Ancestry",
+						"description": "An ancestry, with its traits."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "background"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"text": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"requirement": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Req. 0 or negative INT at character creation.\""
+							},
+							"category": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"text"
+						],
+						"title": "Background",
+						"description": "A background."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "boon"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"type": {
+								"type": [
+									"string",
+									"number"
+								],
+								"enum": [
+									"epic",
+									"lodging",
+									"other"
+								],
+								"description": "Epic Boons are offered when a class grants one."
+							},
+							"text": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"requirement": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"category": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Major Boons\"."
+							},
+							"roll": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"text"
+						],
+						"title": "Boon",
+						"description": "A boon: an Epic Boon heroes choose at high level, a lodging boon, or another reward."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "property"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"text": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"text"
+						],
+						"title": "Weapon property",
+						"description": "A weapon property items can name (\"Thrown 4\" finds \"Thrown\")."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "language"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"speakers": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "Who speaks it."
+							}
+						},
+						"required": [
+							"kind",
+							"name"
+						],
+						"title": "Language",
+						"description": "A language heroes can speak."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "rule"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"text": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"topic": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "\"Magic\", \"Equipment\", \"Travel\". \"Rules\" if left out."
+							},
+							"page": {
+								"type": "integer",
+								"minimum": 1,
+								"description": "The page in the book it comes from, if any."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"text"
+						],
+						"title": "Rule",
+						"description": "A rule: shown in the compendium's Rules tab, and its name is underlined in rules text."
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"const": "condition"
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
+							},
+							"text": {
+								"type": [
+									"string",
+									"number"
+								]
+							},
+							"minor": {
+								"type": "boolean",
+								"description": "A minor status that does nothing on its own."
+							},
+							"value": {
+								"type": "boolean",
+								"description": "Takes a number: \"Empowered 2\"."
+							}
+						},
+						"required": [
+							"kind",
+							"name",
+							"text"
+						],
+						"title": "Condition",
+						"description": "A condition the tracker offers, beside the book's."
+					}
+				]
+			}
+		}
+	}
+}

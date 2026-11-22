@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import BESTIARY from '../src/data/bestiary.json';
-import { BestiaryEntry, fromBestiary } from '../src/bestiary';
-import { encounterBlockSource, parseEncounterBlock, parseMonsterLine } from '../src/encounter-def';
-import { parseStatblock, toStatblockSource } from '../src/parser';
-import { monsterRole } from '../src/rules';
+import BESTIARY from '../src/systems/nimble/data/bestiary.json';
+import { BestiaryEntry, fromBestiary } from '../src/systems/nimble/bestiary';
+import { encounterBlockSource, parseEncounterBlock, parseMonsterLine } from '../src/core/encounter-def';
+import { parseStatblock, toStatblockSource } from '../src/systems/nimble/parser';
+import { monsterRole } from '../src/systems/nimble/rules';
 
 const raw = BESTIARY as unknown as BestiaryEntry[];
 

@@ -54,6 +54,8 @@ Every entry has `source` (book tag above), `page` (printed page number from the 
   ],
   "levels": [                                                           // every level 1-20 in the progression, in order
     { "level": 1, "features": [ { "name": "Rage", "text": "(1/turn) Action: Roll a Fury Die (1d4) …" } ] }
+    // A feature whose words don't name the lists it picks from can say so (not book text; the level-up wizard reads it):
+    // "choose": { "name": "Combat Abilities", "from": ["Commander’s Orders", "Combat Tactics"], "count": 1, "or": ["+1 max Combat Dice"] }
   ],
   "sidebars": [ { "title": "Your Rage Ends...", "text": "If you leave combat, …" } ],   // boxed notes / callouts tied to the class
   "optionGroups": [                                                     // pick-lists like Savage Arsenal, Spellshaper, Combat Tactics, Lyrical Weaponry…

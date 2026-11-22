@@ -1,0 +1,152 @@
+/* ============================================================================
+   The GM screen: one anatomy for every game, its look from the game's tokens
+   (--g-*, the design study's). A screen is tabs of columns; a column is a
+   stack of cards; a card is a pinned note, rule, table, monster, or a widget.
+   ========================================================================== */
+
+.gm { display: flex; flex-direction: column; min-height: 100%; background: var(--g-bg); color: var(--g-text); font-family: var(--g-font-ui); font-size: 13.5px; line-height: 19px; }
+.gm * { box-sizing: border-box; }
+
+/* Top: the screen's name, its screens as tabs, and the few actions that belong to the whole screen. */
+.gm-top { display: flex; align-items: flex-end; gap: 14px; padding: 12px 16px 0; border-bottom: 1px solid var(--g-line); }
+.gm-name { margin: 0 0 9px; font: var(--g-display-weight, 700) 19px/24px var(--g-font-name, var(--g-font-display)); font-variant: var(--g-display-variant, normal); color: var(--g-text); white-space: nowrap; }
+.g-nimble .gm-name { font: italic 900 19px/24px var(--g-font-name); }
+.gm-tabs { display: flex; gap: 2px; flex: 1; min-width: 0; overflow: hidden; }
+.gm-tab { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 11px; border-bottom: 2px solid transparent; color: var(--g-text-2); font: 600 13px/normal var(--g-font-ui); white-space: nowrap; }
+.gm-tab.on { color: var(--g-text); border-bottom-color: var(--g-accent); }
+.gm-tab.add { color: var(--g-text-2); padding: 0 8px; }
+.gm-tab small { font-weight: 600; color: var(--g-text-2); font-size: 11.5px; }
+.gm-acts { display: flex; gap: 6px; margin-bottom: 7px; }
+.gm-ib { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; min-width: 28px; padding: 0 8px; border-radius: var(--g-r-md, 6px); color: var(--g-text-2); font: 600 12.5px/normal var(--g-font-ui); }
+.gm-ib.on { background: color-mix(in srgb, var(--g-text) 8%, transparent); color: var(--g-text); }
+
+/* Columns: as many as fit (each at least 260px), cards stacked; a wide card spans two. */
+.gm-cols { display: grid; grid-template-columns: repeat(var(--gm-cols, 3), minmax(0, 1fr)); gap: 12px; padding: 12px 16px 18px; align-items: start; }
+.gm-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.gm-board { display: grid; grid-template-columns: repeat(var(--gm-cols, 4), minmax(0, 1fr)); grid-auto-rows: 118px; grid-auto-flow: dense; gap: 12px; padding: 12px 16px 18px; }
+.gm-board > .gm-card { overflow: hidden; }
+.gm-board > .s-2x1 { grid-column: span 2; } .gm-board > .s-1x2 { grid-row: span 2; } .gm-board > .s-2x2 { grid-column: span 2; grid-row: span 2; }
+
+/* The card: a header that says what it is and what it's from, then its body. */
+.gm-card { background: var(--g-surface); border: 1px solid var(--g-line); border-radius: var(--g-r-lg, 8px); min-width: 0; }
+.g-5e .gm-card { box-shadow: 0 1px 2px rgb(70 40 10 / 0.08); }
+.gm-card-h { display: flex; align-items: center; gap: 7px; min-height: 34px; padding: 6px 8px 6px 11px; border-bottom: 1px solid var(--g-line); }
+.gm-card-h > .ev-i, .gm-card-h > svg { flex: none; color: var(--g-text-2); }
+.gm-card-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--g-display-weight, 700) 13.5px/18px var(--g-font-display); font-variant: var(--g-display-variant, normal); letter-spacing: 0.01em; color: var(--g-text); }
+.g-nimble .gm-card-t { text-transform: uppercase; letter-spacing: 0.04em; font-size: 13px; }
+.g-5e .gm-card-t { color: var(--g-accent-text, var(--g-accent)); font-size: 15px; }
+.gm-card-from { flex: none; color: var(--g-text-2); font: 500 11.5px/normal var(--g-font-ui); white-space: nowrap; }
+.gm-card-b { padding: 9px 11px 11px; }
+.gm-card-b > p { margin: 0 0 6px; } .gm-card-b > p:last-child { margin-bottom: 0; }
+.gm-card-b b { font-weight: 700; }
+.gm-card.is-wide { grid-column: span 2; }
+.gm-x { flex: none; display: inline-flex; color: var(--g-text-2); padding: 3px; border-radius: 4px; }
+
+/* Edit mode: the cards become movable, removable, resizable; each column ends in a place to pin. */
+.gm.is-edit .gm-card { outline: 1.5px dashed color-mix(in srgb, var(--g-accent) 55%, transparent); outline-offset: 2px; }
+.gm.is-edit .gm-card-h { cursor: grab; }
+.gm-grip { flex: none; display: none; color: var(--g-text-2); }
+.gm.is-edit .gm-grip { display: inline-flex; }
+.gm-size { display: none; gap: 2px; }
+.gm.is-edit .gm-size { display: inline-flex; }
+.gm-size span { padding: 1px 5px; border-radius: 4px; font: 600 11px/16px var(--g-font-ui); color: var(--g-text-2); }
+.gm-size span.on { background: color-mix(in srgb, var(--g-text) 9%, transparent); color: var(--g-text); }
+.gm-slot { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 52px; border: 1.5px dashed var(--g-line-strong); border-radius: var(--g-r-lg, 8px); color: var(--g-text-2); font: 600 12.5px/normal var(--g-font-ui); }
+
+/* Text: a rule in the book's words, lead words bold. */
+.gm-rule p { margin: 0 0 5px; } .gm-rule p:last-child { margin: 0; }
+.gm-rule .lead { font-weight: 700; color: var(--g-text); }
+.gm-meta { color: var(--g-text-2); font-size: 12.5px; }
+
+/* A table: hairlines, numbers right and tabular. */
+.gm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.gm-table th { text-align: left; font: 600 11px/16px var(--g-font-ui); text-transform: uppercase; letter-spacing: 0.06em; color: var(--g-text-2); padding: 0 6px 4px 0; }
+.gm-table td { padding: 5px 6px 5px 0; border-top: 1px solid var(--g-line); vertical-align: top; }
+.gm-table td.n { text-align: right; font-variant-numeric: tabular-nums lining-nums; font-weight: 700; white-space: nowrap; padding-right: 0; }
+.gm-table tr.hit td { background: color-mix(in srgb, var(--g-accent) 9%, transparent); }
+
+/* Rows of people: the party, a fight. */
+.gm-rows { display: flex; flex-direction: column; }
+.gm-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--g-line); }
+.gm-row:first-child { border-top: 0; padding-top: 0; }
+.gm-who b { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm-who small { display: block; color: var(--g-text-2); font-size: 12px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm-hp { display: grid; gap: 3px; width: 92px; justify-items: end; font-variant-numeric: tabular-nums lining-nums; }
+.gm-hp b { font-weight: 800; } .gm-hp small { color: var(--g-text-2); }
+.gm-hp .ev-bar { width: 100%; }
+.gm-stat { display: grid; justify-items: center; min-width: 30px; font-variant-numeric: tabular-nums lining-nums; }
+.gm-stat b { font-weight: 800; font-size: 14px; line-height: 18px; } .gm-stat small { font: 600 9.5px/12px var(--g-font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--g-text-2); }
+.gm-cond { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+
+/* Dice: a tray of faces, then what was rolled. */
+.gm-dice { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.gm-die { display: flex; align-items: center; justify-content: center; height: 34px; border: 1px solid var(--g-line-strong); border-radius: var(--g-r-md, 6px); font: 700 13px/normal var(--g-font-num, var(--g-font-ui)); color: var(--g-text); background: var(--g-surface); }
+.gm-rolls { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+.gm-roll { display: flex; justify-content: space-between; gap: 8px; color: var(--g-text-2); font-size: 12.5px; }
+.gm-roll b { color: var(--g-text); font-variant-numeric: tabular-nums lining-nums; }
+.gm-roll:first-child b { font-size: 15px; }
+
+/* A clock: segments filled one tap at a time (the pip spec), its name beside it. */
+.gm-clocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+.gm-clock { display: flex; align-items: center; gap: 9px; }
+.gm-clock svg { flex: none; }
+.gm-clock b { display: block; font-weight: 700; line-height: 17px; } .gm-clock small { color: var(--g-text-2); font-size: 12px; }
+
+/* A random table: Roll, and the row it landed on. */
+.gm-rand-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+
+/* Notes and quests. */
+.gm-check { display: flex; gap: 8px; align-items: flex-start; padding: 2px 0; }
+.gm-check i { flex: none; width: 14px; height: 14px; margin-top: 3px; border: 1.5px solid var(--g-line-strong); border-radius: 3px; }
+.gm-check.done { color: var(--g-text-2); text-decoration: line-through; }
+.gm-check.done i { background: var(--g-accent); border-color: var(--g-accent); }
+.gm-quest + .gm-quest { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--g-line); }
+.gm-quest > b { display: block; margin-bottom: 3px; }
+.gm-scratch { min-height: 96px; padding: 2px 0; color: var(--g-text); background: repeating-linear-gradient(to bottom, transparent 0 18px, var(--g-line) 18px 19px); line-height: 19px; }
+.gm-scratch .cur { display: inline-block; width: 1.5px; height: 15px; background: var(--g-text); vertical-align: -2px; }
+
+/* A monster's quick reference: what you need at the table, the whole block one tap away. */
+.gm-mon-top { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.gm-mon-top .gm-hp { width: auto; flex: 1; justify-items: stretch; }
+.gm-mon-act { padding: 4px 0; border-top: 1px solid var(--g-line); }
+.gm-mon-act b { font-style: italic; }
+.g-5e .gm-mon-act b { color: var(--g-accent-text, var(--g-text)); }
+
+/* The campaign panel's top, before and after. */
+.gm-panel { width: 300px; padding: 10px; background: var(--g-bg); border: 1px solid var(--g-line); border-radius: 10px; display: flex; flex-direction: column; gap: 8px; font-family: var(--g-font-ui); }
+.gm-switch { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 10px; border: 1px solid var(--g-line); border-radius: var(--g-r-md, 6px); background: var(--g-surface); }
+.gm-switch b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--g-display-weight, 700) 15px/20px var(--g-font-name, var(--g-font-display)); font-variant: var(--g-display-variant, normal); }
+.g-nimble .gm-switch b { font: italic 900 15px/20px var(--g-font-name); }
+.g-5e .gm-switch b { color: var(--g-accent-text, var(--g-accent)); }
+.gm-tagdark { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 3px; background: var(--g-accent); color: var(--g-on-accent, #fff); font: 700 10.5px/normal var(--g-font-ui); letter-spacing: 0.06em; }
+.gm-home { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--g-line); border-radius: var(--g-r-md, 6px); color: var(--g-text-2); }
+.gm-searchbar { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border: 1px solid var(--g-line); border-radius: var(--g-r-md, 6px); background: var(--g-surface); color: var(--g-text-2); }
+.gm-searchbar kbd { margin-left: auto; font: 600 11px/normal var(--g-font-ui); color: var(--g-text-2); }
+.gm-open { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: var(--g-r-md, 6px); background: var(--g-accent); color: var(--g-on-accent, #fff); font: 650 13.5px/normal var(--g-font-ui); }
+.gm-open kbd { margin-left: auto; font: 600 11px/normal var(--g-font-ui); opacity: 0.8; }
+.gm-open.is-quiet { background: var(--g-surface); color: var(--g-text); border: 1px solid var(--g-line); }
+.gm-panel-sec { margin-top: 4px; font: 700 11px/14px var(--g-font-ui); letter-spacing: 0.07em; text-transform: uppercase; color: var(--g-text-2); }
+
+/* Menus and dialogs drawn for the pinning flows (Obsidian's own chrome, in the game's colours). */
+.gm-menu { width: 230px; padding: 5px; border: 1px solid var(--g-line); border-radius: 8px; background: var(--g-surface); box-shadow: 0 8px 24px rgb(0 0 0 / 0.14); font: 13px/18px var(--g-font-ui); color: var(--g-text); }
+.gm-menu div { display: flex; align-items: center; gap: 9px; height: 28px; padding: 0 8px; border-radius: 5px; color: var(--g-text); }
+.gm-menu div.on { background: color-mix(in srgb, var(--g-accent) 12%, transparent); }
+.gm-menu hr { border: 0; border-top: 1px solid var(--g-line); margin: 4px 2px; }
+.gm-kinds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.gm-kind { display: flex; flex-direction: column; gap: 3px; padding: 10px; border: 1px solid var(--g-line); border-radius: var(--g-r-md, 6px); background: var(--g-surface); }
+.gm-kind b { display: flex; align-items: center; gap: 7px; font-weight: 700; }
+.gm-kind small { color: var(--g-text-2); font-size: 12px; line-height: 16px; }
+.gm-kind.from-game { border-style: dashed; }
+
+/* The drawer: the screen over whatever note you're in, from the right. */
+.gm-drawer-wrap { position: relative; height: 100%; }
+.gm-drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 56%; box-shadow: -14px 0 30px rgb(0 0 0 / 0.18); border-left: 1px solid var(--g-line); overflow: hidden; }
+
+/* Study page bits. */
+.gm-pagegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; align-items: start; }
+.gm-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.gm-cap { margin: 8px 0 0; font-size: 13px; color: var(--muted, #6b6b6b); }
+.gm-cap b { color: var(--ink, inherit); }
+.gm-stage { padding: 16px; border-radius: 12px; }
+.gm-code { font: 12.5px/18px ui-monospace, SFMono-Regular, Menlo, monospace; background: #f4f1ea; border: 1px solid #e2ddd2; border-radius: 8px; padding: 12px 14px; white-space: pre; overflow: auto; }
+html[data-theme="dark"] .gm-code { background: #211f1b; border-color: #3a362f; color: #ece6da; }

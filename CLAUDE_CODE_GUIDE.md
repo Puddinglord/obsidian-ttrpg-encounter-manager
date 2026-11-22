@@ -1,91 +1,111 @@
 # Ember Vault - Development Guide
 
+Start with [AGENTS.md](AGENTS.md) (the overview, and which guide to read for each part). This page is the detailed map.
+
 An Obsidian plugin (TypeScript, bundled with esbuild) that renders Nimble TTRPG monster stat blocks, `nimble:` inline references, and an encounter tracker.
 
 ## Project structure
 
+Three layers, enforced by `npm run lint` (eslint `no-restricted-imports`, see eslint.config.mjs):
+
+- **`src/core/`** is shared by every game system. It never imports a system or the app layer. When it needs something system-specific it asks the plugin: `plugin.system(path)` returns the note's campaign's `GameSystem` (src/systems/contract.ts).
+- **`src/systems/<id>/`** is one game system (today only `nimble`). It may import core and the contract, never another system or the app layer. A change inside one system can only break another through core or the contract.
+- **`src/app/`** and `main.ts` wire it together (settings page, Omnisearch, maps with encounter tokens, the list of shipped systems). They may import anything.
+
+Core modules take the plugin type with `import type EmberVaultPlugin from '../../main'` (type only). New system-specific behaviour that core needs becomes a member of `GameSystem`, written from the real call site.
+
 ```
-main.ts                 Plugin entry: wiring, commands, dice rolls, settings load/migration, bestiary, copy-to-vault
-src/
-  types.ts              Data types, default settings, Nimble 3.3 conditions, uid()
-  rules.ts              Nimble 3.3 / GMG 3.0 rules: armor, hero Wounds, minions, Last Stand, conditions, difficulty budget
-  parser.ts             Stat block parsing (+ legacy fields), toStatblockSource(), finding ```nimble blocks
-  bestiary.ts           Bundled bestiary conversion, attribution text
-  data/bestiary.json    525 Nimble monsters (built by scripts/bestiary/merge.py)
+main.ts                 The plugin (EmberVaultPlugin): what every game shares, then each system's register(); dice rolls, settings load/migration, system(path), runtime(id), events. Imports no game system
+src/systems/
+  contract.ts           GameSystem: what core may ask a system for (attribution, conditions, characters, quick look…)
+  registry.ts           SystemRegistry: register, resolve a campaign's `system:` (case-insensitive), fall back to the default (pure, tested)
+src/app/
+  omnisearch.ts          Cmd/Ctrl+K box: search NPCs/notes/conditions, roll dice, run commands; the campaign's system adds its monsters, compendium and typed filters through `omnisearch` (core/omnisearch-source.ts); omnisearch-def.ts is the pure query parser and ranking
+  settings-tab.ts       The settings page: shared rows (core/settings-ui.ts), then each system's settingsSections
+  systems.ts            SHIPPED_SYSTEMS and createSystems(): every system the plugin ships, the first is the default
+src/core/
+  content/              Content packs: spec.ts (fields → checks and JSON Schema), packs.ts (read a pack, packs: per campaign), store.ts (plugin.content), import-modal.ts
+  builder/              The builder for every system: frame.ts (the dialog, its fields, kinds registered per system), schema.ts (builders from a schema of fields and formulas), commands.ts (New monster/spell/item…, the Edit pencil, rewriteBlock)
+  compendium/           The compendium engine: query.ts (search language: typed filters, fuzzy names, sorts, suggestions; pure, tested), filter-field.ts (filters as chips), browser.ts (tabs, list, page, keys), refs.ts
+  slash.ts              "/" menu engine and the commands every game shares (boxes, NPCs, quests, maps, party, roll, conditions); systems add theirs through `slashCommands`
   markdown.ts           Safe inline markdown (bold/italic/wikilinks/dice/keywords) built as DOM nodes
-  render.ts             The one stat block renderer (notes, bestiary, tracker, hover previews)
-  icons.ts              Badge SVGs
-  monster-index.ts      Vault monsters + bundled bestiary, by name
-  encounters.ts         Encounter state + every mutation (EncounterStore)
-  tracker-view.ts       The encounter tracker sidebar
-  compendium-entries.ts Every searchable thing (monsters, NPCs, companions, compendium hits, conditions, rules) as one Entry list with facets (pure, tested)
-  compendium-query.ts   The search language: typed filters, fuzzy names, sorts, autocomplete suggestions (pure, tested)
-  filter-field.ts       The search field shared by the compendium and Spotlight: filters as chips, a chip waiting for its value, Backspace/Escape (tested)
-  compendium-browser.ts The one compendium UI (tabs, chip search bar, suggestions, list, sort/filter, entry page, keys); entry cache
-  compendium-view.ts    The Compendium tab (view type is still `nimble-bestiary`)
-  compendium-modal.ts   The compendium as a pre-filtered dialog; openEntry() quick looks
-  compendium-pickers.ts Add monster, the sheet's Add item/spell/feature, and slash-command inserts, all through the dialog
-  compendium-art.ts     Your art for compendium entries: the portrait slot, list icons, upload/pick, rename tracking (settings.compendiumArt)
-  count-modal.ts        "Add several…": how many of a monster (and tougher/weaker) to add
-  compendium-ref.ts     `nimble:spell:Name` / `nimble:feature:Name@Class` references (pure, tested)
-  encounter-def.ts      ```nimble-encounter format (pure)   encounter-block.ts  its renderer
-  builder-modal.ts      Encounter builder
-  map-def.ts            ```nimble-map format (pure)         map-block.ts        its renderer (pins, tokens)
-  slash.ts              "/" commands
-  spotlight.ts          Cmd/Ctrl+K box: search adversaries/NPCs/notes, roll dice, run commands (spotlight-def.ts is the pure query parser)
-  inline-ref.ts         `nimble:Name` references and the interactive hover preview
-  live-preview.ts       CodeMirror extension that renders references in Live Preview
+  encounter-def.ts      ```nimble-encounter format (pure); Nimble's encounter-block.ts renders it
+  map-def.ts            ```nimble-map format (pure); app/map-block.ts renders it (pins, and the campaign's game's fight as tokens through combatTokens)
   campaign-model.ts     Campaign structure from folders + frontmatter (pure, tested)
   campaigns.ts          CampaignStore: live index, active campaign, per-campaign party swap, note creation
   campaign-ui.ts        The outline (party line, Continue, chapters, sections) shared by panel and block
   campaign-view.ts      Campaign panel (left sidebar) and the ```nimble-campaign dashboard block
   campaign-modals.ts    New campaign, name prompt, campaign/chapter pickers
-  campaign-templates.ts Starter notes (campaign home, chapter, scene, NPC, location, quest, session)
   box-def.ts            ```box fence format: presets, colours, styles, icon library (pure, tested)
   box-block.ts          Box renderer and the icon/colour/style editor (writes the fence line back)
   npc-links.ts          Reading view: NPC link chips and auto-linked mentions
+  note-kinds.ts         The shared note kinds and what a system adds to them (fields, card) (pure, tested)
+  note-card.ts          Draws a system's stats and card in the NPC card, and the ```nimble-note block for other kinds
   npc-live-preview.ts   The same for Live Preview (CodeMirror decorations)
   tables.ts             DC columns as pills; the "Styled tables" body class
   dice3d/               3D dice: index.ts (tiny entry), renderer.ts (three.js), geometry.ts (shapes, face-up math, tested)
+  pill.ts               pill(): the one markup for pills, chips and compact icon+label buttons (see "Pills and compact buttons")
   popover.ts            Shared floating popover (condition info, pickers); a bottom sheet on phones
   touch.ts              isTouch/isPhone, onLongPress (right-click on touch), confirmAction (no window.confirm on mobile)
-  hp-pad.ts             Touch HP keypad used by the tracker instead of the text box
+  hold-redraws.ts       holdRedraws(): a view that redraws when its data changes waits while a finger is down in it, so a tap isn't lost
   party.ts              Party editor (settings tab and the /party modal); cards on narrow screens
-  suggest.ts            `nimble:` autocomplete and the "Add monster…" picker
-  settings-tab.ts       Settings UI (party, bestiary, rules, custom conditions)
   dice.ts               Dice expression parsing and rolling
-  compendium.ts         Player compendium types, lookups, featuresFor, search (pure, tested); data/compendium.json, compendium-data.ts loads it
+  types.ts              Shared types: conditions (AppliedCondition, ConditionDef), the party, the roll log, uid()
+  settings.ts           EmberVaultSettings (what every game shares), CORE_DEFAULTS, migrateSettings(saved, parts); systems augment the interface
+  settings-ui.ts        Settings rows and sections, for app/settings-tab.ts and each system's settingsSections
+  dice-edge.ts          Rolls with stacked advantage/disadvantage, modifiers and extra dice (pure, tested)
+  rule-terms.ts         A game's rules words (abilities, senses, conditions…) as lookups and patterns (pure, tested); rule-term-ui.ts underlines them and shows a term's card
+  dice-attack.ts        Exploding attack rolls, for a game whose attackRolls says 'exploding' (pure, tested)
+  wiki-links.ts         [[Wiki links]] inside rendered text: resolve, open, hover preview
+src/systems/nimble/
+  types.ts              Nimble monster and encounter types, Nimble 3.3 conditions
+  settings.ts           Nimble's settings fields (augmenting EmberVaultSettings), NIMBLE_DEFAULTS, its migration; settings-ui.ts its settings sections
+  runtime.ts            nimble(): Nimble's live state (monster index, encounter store) and helpers; register.ts wires it in at load
+  map-tokens.ts         The active encounter as map tokens (combatTokens)
+  rule-terms.ts         Nimble's rules words (conditions, stats, skills, languages, magic rules) for ruleTerms, each id its compendium entry's (pure, tested)
+  rules.ts              Nimble 3.3 / GMG 3.0 rules: armor, hero Wounds, minions, Last Stand, conditions, difficulty budget
+  parser.ts             Stat block parsing (+ legacy fields), toStatblockSource(), finding ```nimble blocks
+  bestiary.ts           Bundled bestiary conversion, attribution text
+  data/bestiary.json    525 Nimble monsters (built by scripts/bestiary/merge.py)
+  render.ts             The one stat block renderer (notes, bestiary, tracker, hover previews)
+  icons.ts              Badge SVGs
+  monster-index.ts      Vault monsters + bundled bestiary, by name
+  encounters.ts         Encounter state + every mutation (EncounterStore)
+  tracker-view.ts       The encounter tracker sidebar
+  compendium-query.ts   Nimble's words (facets, sorts, tabs) for core's search language (core/compendium/query.ts) (pure, tested)
+  filter-field.ts       Core's filter field with Nimble's words, for the compendium and Omnisearch
+  compendium-view.ts    The Compendium tab (view type is still `nimble-bestiary`)
+  compendium-modal.ts   The compendium as a pre-filtered dialog; openEntry() quick looks
+  compendium-art.ts     Your art for compendium entries: the portrait slot, list icons, upload/pick, rename tracking (settings.compendiumArt)
+  count-modal.ts        "Add several…": how many of a monster (and tougher/weaker) to add
+  compendium-ref.ts     `nimble:spell:Name` / `nimble:feature:Name@Class` references (pure, tested)
+  builder-modal.ts      Encounter builder
+  inline-ref.ts         `nimble:Name` references and the interactive hover preview
+  live-preview.ts       CodeMirror extension that renders references in Live Preview
+  hp-pad.ts             Touch HP keypad used by the tracker instead of the text box
+  suggest.ts            `nimble:` autocomplete and the "Add monster…" picker
+  compendium.ts         Player compendium types, lookups, featuresFor, search (pure, tested); data/compendium.json, compendium-data.ts loads it with the campaign's content packs and the vault's homebrew on top
+  content.ts            What Nimble takes in content packs (every kind it ships, with the bundled data's fields), pack entries as content, and that content merged onto the books (pure, tested)
   compendium-card.ts    How a compendium entry looks: cards, full class pages, condition cards, the card modal
   character-def.ts      Character note frontmatter → sheet values, and every sheet change as a frontmatter edit (pure, tested)
-  character-sheet.ts    The ```nimble-sheet renderer (writes through processFrontMatter, rolls through plugin.rollDice)
+  character-sheet.ts    The ```nimble-sheet renderer (writes through processFrontMatter, rolls through plugin.rollDice), as the design study draws it
+  class-panel.ts        The sheet's class panel (class-panel-def.ts says what it holds, pure, tested); class-scroll.ts the class's scrollwork heading
   character-view.ts     Character side panel; character-modals.ts: new character, level up, custom ability
-  character-register.ts registerCharacterFeatures(): block, panel, commands, ribbon
   roll-def.ts           Rolls with stacked advantage/disadvantage, modifiers and extra dice (pure, tested); roll-dialog.ts is the dialog
   resource-def.ts       How class dice behave (rolled when gained or spent, all/any/one per roll, kept or spent), from scripts/compendium/raw/resources.json (pure, tested)
   creature-notes.ts     A player's `nimble: creature` notes, as the bestiary shows them (pure, tested)
   statblock-issues.ts   The quiet "N lines here aren't shown as written" hints under hand-written stat blocks (parser.ts readStatblock finds them), Fix buttons, rewriteBlock()
   builder-math.ts       The GM Guide's monster and legendary tables, spell damage by tier, item prices: expected stats, level/tier guesses, re-levelling, dice suggestions (pure, tested)
-  entity-builder.ts     The builder's frame (one fixed-size dialog for monsters, spells, items; steps, live preview, phone sheet) and its shared fields
+  entity-builder.ts     Nimble's kinds for core's builder (core/builder/frame.ts)
   entity-monster.ts     The monster draft: typed values kept, the rest from the level; quick build, solo, minion, from a template (pure, tested); entity-monster-ui.ts its steps
   entity-homebrew.ts    Spell and item drafts (pure, tested); entity-homebrew-ui.ts their steps
+  entity-content.ts     A hero's content as builder drafts: class, subclass, option, ancestry, background, boon; the block they write, what's missing, what each level grants (pure, tested); entity-content-ui.ts the small kinds and shared editors, entity-class-ui.ts the class and subclass
   homebrew-def.ts       ```nimble-spell / ```nimble-item blocks (pure, tested); homebrew-block.ts renders them; the monster index collects them into the compendium
-  builder-register.ts   Builder commands and the Edit pencil on blocks in notes
+  builder-register.ts   Registers Nimble's builder kinds; the Edit pencil on Nimble's blocks
+  system.ts             Nimble as a GameSystem: the contract's members, each a thin call into the modules below
+  attack-roll.ts        Nimble attack rolls: miss on a 1, explode on max (pure, tested)
 scripts/bestiary/       Raw per-page extractions from the Nimble PDFs, the brief, and merge.py
-tests/                  Unit tests (vitest + happy-dom); obsidian-stub.ts stands in for the API
-e2e/                    End-to-end tests that drive a real Obsidian
-```nimble blocks in a note
-  markdown.ts           Safe inline markdown (bold/italic/wikilinks/dice) built as DOM nodes
-  render.ts             The one stat block renderer (note blocks, tracker viewer, hover preview)
-  icons.ts              Badge SVGs
-  monster-index.ts      Vault-wide index of monsters by name
-  encounters.ts         Encounter state + every mutation (EncounterStore), HP/label helpers
-  tracker-view.ts       The encounter tracker sidebar
-  inline-ref.ts         `nimble:Name` references and the hover preview
-  live-preview.ts       CodeMirror extension that renders references in Live Preview
-  suggest.ts            `nimble:` autocomplete and the "Add monster…" picker
-  settings-tab.ts       Settings UI and the custom condition editor
-  dice.ts               Dice expression parsing and rolling
-tests/                  Unit tests (vitest + happy-dom); obsidian-stub.ts stands in for the API
+tests/                  Unit tests (vitest + happy-dom); obsidian-stub.ts stands in for the API; systems.test.ts is the conformance suite every shipped system passes
 e2e/                    End-to-end tests that drive a real Obsidian
   harness.mjs           Launches an isolated Obsidian with a temp vault and connects over CDP
   run.mjs               The test suite
@@ -95,10 +115,10 @@ e2e/                    End-to-end tests that drive a real Obsidian
 
 Rules that keep this healthy:
 
-- `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `roll-def.ts`, `resource-def.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
+- Core's `types.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, the registry, and Nimble's `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `attack-roll.ts`, `roll-def.ts`, `resource-def.ts`, `content.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `entity-content.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
-- Views don't mutate encounter data directly. Call `plugin.encounters.*`; it saves and fires `changed`, and every open tracker re-renders.
+- Views don't mutate encounter data directly. Call `nimble().encounters.*` (or 5e's `dnd5e().fights.change`); it saves and fires `changed`, and every open tracker re-renders.
 
 ## Commands
 
@@ -108,10 +128,13 @@ npm run dev          # watch build (main.js with inline sourcemap)
 npm run build        # type-check + production build
 npm test             # unit tests (fast, no Obsidian needed)
 npm run lint         # Obsidian's review checks: ESLint (TS) + stylelint (styles.css); fails on any warning
-npm run test:e2e     # build, then drive a real Obsidian through the e2e suite
+npm run test:e2e     # build, then the e2e suite in 3 hidden Obsidians side by side (e2e/parallel.mjs; --shards=N for more)
+npm run test:e2e:serial         # the same in one Obsidian, in order
 node e2e/run.mjs dice           # only e2e tests whose name contains "dice"
+node e2e/upgrade.mjs            # a vault used with the latest release, opened by this build: nothing lost, nothing rewritten
 node e2e/explore.mjs /tmp/shots # screenshots of every fixture note and the tracker
 node e2e/layout-sweep.mjs       # every sample-vault note in the hover preview and at phone width; fails on crushed or spilling elements
+npm run test:visual             # every surface of both games, light and dark, Nimble and 5e side by side: screenshots and visual checks; --full for every width (node e2e/visual.mjs nimble sheet for a subset)
 ```
 
 ## End-to-end tests
@@ -126,15 +149,21 @@ node e2e/layout-sweep.mjs       # every sample-vault note in the hover preview a
 
 To cover a new scenario, add notes to `e2e/fixtures/vault/` and a `test('...', async (o) => { ... })` block in `e2e/run.mjs`.
 
+**Parallel runs.** `npm run test:e2e` (`e2e/parallel.mjs`) runs `run.mjs` in 3 Obsidians with `E2E_SHARD=k/3`: each takes a contiguous run of tests in the order they're written, sized by what each took last time (`e2e/artifacts/timings.json`, updated by every run), and ends with the console check. It prints each slice's tally and every failure; a slice's full log is `e2e/artifacts/shard-k.log`. A test may rely on the one before it, never on anything earlier: a slice can start anywhere. `E2E_RANGE=10-20` runs tests by position, for finding which earlier test upsets a later one.
+
+**Visual check.** `npm run test:visual` (`e2e/visual.mjs`) opens the sample vault plus the 5e campaigns and notes it writes, drives every surface in both games (sheets and their tabs, trackers mid-fight, encounter blocks, stat blocks, cards, the Campaign and Character panels, the compendiums, Omnisearch, the slash menu, references and hover cards, every builder and wizard step, the dialogs, maps, homebrew), and shoots each at content widths 320 and 700, at 390 in the phone layout, and its sidebars at 260 and 420 (with `--full`, 540, 900 and the 340 sidebar too), light and dark, into `e2e/artifacts/visual/<game>/<surface>/`. In the page it checks each shot: pills off their capitals' centre line (`pillOffenders`, over `PILL_SELECTORS` and anything pill-like it finds, listing those so they can be added, or named in `NOT_PILLS` when they aren't pills), text cut off, labels, names and numbers that wrap, spilling or sideways scroll, overlapping siblings, crushed text, and tag labels under 4.5:1 on a dark fill. It writes `report.md` (worst first), `report.json` and `index.html` (a gallery with each problem outlined), and exits 1 if anything is left. Surfaces live in `e2e/visual-surfaces.mjs`; a genuine false positive goes in `IGNORE` in `e2e/visual.mjs` with why. With no game or surface named it runs Nimble in one hidden Obsidian and 5e with the shared surfaces in another (each a `--part`, logged to `part-<name>.log`), prints only problems and the summary, and merges both into one report; `--serial` runs everything in one. `node e2e/visual.mjs 5e tracker --themes=light --no-phone` runs a slice and updates just those surfaces in the report. Running `node e2e/run.mjs` leaves `e2e/artifacts/visual` alone.
+
 ## Installing in a vault by hand
 
 Copy `main.js`, `manifest.json` and `styles.css` to `<vault>/.obsidian/plugins/nimble-gm/`, then reload Obsidian or toggle the plugin. `./deploy.sh` does this for `~/Documents/DevVault`.
 
 ## Common tasks
 
-- **New stat block field:** add it to `NimbleMonster` (types.ts), parse it in `processKeyValue` (parser.ts), render it in `render.ts`, add a parser test.
-- **New built-in condition:** add to `NIMBLE_CONDITIONS` in types.ts.
-- **New setting:** add to `NimbleStatblocksSettings` + `DEFAULT_SETTINGS`, then a control in `settings-tab.ts`.
+- **New stat block field:** add it to `NimbleMonster` (systems/nimble/types.ts), parse it in `processKeyValue` (parser.ts), render it in `render.ts`, add a parser test.
+- **New built-in condition:** add to `NIMBLE_CONDITIONS` in systems/nimble/types.ts.
+- **New game system:** a folder `src/systems/<id>/` with a `system.ts` that implements `GameSystem`, added to `SHIPPED_SYSTEMS` (src/app/systems.ts). The lint rules pick the folder up on their own, and the conformance suite in tests/systems.test.ts runs against it.
+- **Core needs something system-specific:** add a member to `GameSystem` (contract.ts), implement it in every system, and call it through `plugin.system(path)`. Never import a system from core.
+- **New setting:** one every game shares goes in `EmberVaultSettings` + `CORE_DEFAULTS` (core/settings.ts) and a row in `app/settings-tab.ts`. A game's own: augment `EmberVaultSettings` in its `settings.ts` (as nimble/settings.ts does), give it a default in its `SettingsPart`, and a row in its `settingsSections`.
 - **New tracker action:** add a method to `EncounterStore`, a unit test in `tests/encounters.test.ts`, and the button in `tracker-view.ts`.
 
 ## Obsidian review checks
@@ -149,7 +178,7 @@ The community directory's review bot flags things the `eslint-plugin-obsidianmd`
 
 ## The compendium is the picker
 
-Anything that asks the user to pick a monster, spell, item, feature or class opens the compendium dialog (`openCompendiumModal`, or the helpers in compendium-pickers.ts) with `segment` / `only` set, rather than a new SuggestModal. New searchable data goes in `buildEntries` (compendium-entries.ts) with its facets, and a new filter key in `FACETS` (compendium-query.ts), so the tab, every dialog, the slash commands, `nimble:` autocomplete and Spotlight all get it.
+Anything that asks the user to pick a monster, spell, item, feature or class opens the compendium dialog (Nimble: `openCompendiumModal`, or the helpers in compendium-pickers.ts; 5e: `openCompendium5eModal` and `pickMonster5e` in dnd5e/compendium-modal.ts) with `segment` / `only` set, rather than a new SuggestModal. New searchable data goes in `buildEntries` (compendium-entries.ts) with its facets, and a new filter key in `FACETS` (compendium-query.ts), so the tab, every dialog, the slash commands, `nimble:` autocomplete and Omnisearch all get it.
 
 ## Shared components, GM and player alike
 
@@ -157,13 +186,20 @@ Running a campaign and playing in one show the same things; build each once and 
 
 - Party: `renderRoster` and `heroCard` (campaign-ui.ts) for both roles; the GM side also feeds the encounter party from the same sheets (`syncPartyFromSheets` in main.ts).
 - Monsters: `renderStatblock` and `renderLoreCard` (render.ts) share `renderActionBar`; `plugin.renderStatblock` adds the player's creature notes and every printing to any lore card.
-- Vitals: `renderMeter`, `renderActionDots` and `renderWoundPips` (vitals-ui.ts) draw the HP and mana bars (with their damage and heal animations and batched − / + taps), action dots and Wound pips, for the character sheet (writing to the note) and the tracker's quick look (writing to the fight). Wrap them in `.nimble-sheet` (the quick look uses `.nimble-sheet.ns-embed`) for their styles.
+- Vitals: `renderMeter` (core/vitals/meter.ts, every game) draws an HP or mana bar with its damage and heal animations and batched − / + taps; wrap it in `.nimble-sheet` or `.ev-vitals` for its styles. 5e's sheet uses it. Nimble's `renderActionDots` and `renderWoundPips` (vitals-ui.ts) draw action dots and Wound pips, for the character sheet (writing to the note) and the tracker's quick look (writing to the fight; `.nimble-sheet.ns-embed`).
+- Redraws on changed data: a view that redraws when its note or fight changes passes that redraw through `holdRedraws` (core/hold-redraws.ts), so a redraw never replaces the button under a finger that's down. Both sheets, both trackers and Nimble's quick look do.
+- A game's sheet takes the page: `markSheetPage` (core/sheet-page.ts) hides the note's inline title and Properties box around any sheet, for notes with or without `cssclasses`; the sheet's own button shows the properties again.
 - Dice and marks: `dieShape` and `triangleMark` (die-shape.ts), styled globally (`.ns-die`, `.ns-tri-mark`), used by the sheet and the Camp dialog.
-- Rolls: `rollWith` and `RollDialog` for every sheet roll; `pipStep` (rules.ts) for every row of pips, on the sheet and in the tracker.
+- Dice rolled at the table: any die a hero holds can be typed in. Tap it to change it, tap an empty slot to add one; `renderFacePicker` (core/face-picker.ts) opens the strip of faces under the row. Nimble's class panel uses it for Fury and Judgment Dice.
+- Rolls: `rollWith` and `RollDialog` for every sheet roll; the result lands in core's toast (`rollToast`, core/roll-toast.ts).
+- Dialogs: `gameDialog`, `dialogLabel` and `dialogFoot` (core/dialog.ts) for any modal drawn for a game: its paper, its title type, labels beside their values, the HP keypad's footer. Builders and dialogs are archived in the design study's "Builders & dialogs" tab (`prototypes/design-study/src/78-tools.js`, shots by `node e2e/tools-shots.mjs`).
+- Pips, in every game: `renderPipRow` (core/pip-row.ts), the one pip spec. A filled pip takes one away and an empty one adds one, one step at a time, never jumping to the pip tapped (`pipStep`, core/pips.ts). The pip that just changed animates: its fill grows in with a bounce or shrinks out (pass a stable `key` so the row remembers its last count; reduced motion turns it off). No right-click-to-undo, no tap-to-spend-anywhere. Nimble's sheet and tracker pips predate it and follow the same spec (vitals-ui.ts, tracker-view.ts).
 
 ## Pills and compact buttons
 
-Every pill, chip and small icon+label button is centred by one shared rule at the end of the character sheet section of `styles.css` (flex row, icons as blocks, labels at `line-height: normal`). Don't use `line-height: 1` on labels: at small sizes Chromium rounds the font's ascent and descent and the label lands ~1px high. A new pill class goes in that rule's list **and** in `PILL_SELECTORS` in `e2e/align.mjs`; the `pills:` e2e test measures the real glyphs (capital height, real baseline) and fails if an icon or label drifts more than 1px.
+Build new pills with core's `pill()` (core/pill.ts); don't hand-roll icon+label markup. `pill(parent, { icon, text, tag: 'span' | 'button' | 'a', cls, title, attr })` writes `.ev-pill` > `.ev-pill-icon` (the svg) + `.ev-pill-text`, and its CSS (next to the shared rule) puts both on one centre line with one gap and the icon at the text's size. Your class gives the look (colours, border, padding, font size); set `--ev-pill-icon` or `--ev-pill-gap` if a pill really needs another size. `setPill(el, { icon, text })` redraws one. Inline references (`nimble:…`, `5e:…`) are split pills: build them with `refPill()` (core/inline-refs.ts) so references look the same in every game.
+
+Every pill, chip and small icon+label button is centred by one shared rule at the end of the character sheet section of `styles.css` (flex row, icons as blocks, labels at `line-height: normal`). Don't use `line-height: 1` on labels: at small sizes Chromium rounds the font's ascent and descent and the label lands ~1px high. A new pill class goes in that rule's list **and** in `PILL_SELECTORS` in `e2e/align.mjs`. The rule outranks every component rule (`:not(#nimble-pill)`), so a pill's hidden state needs `:not(#nimble-pill)` too (as the builder's `.is-hidden` has). Something that looks like a pill to the visual check but isn't one (a rules word, a box of pills, a row, a checkbox) goes in `NOT_PILLS` next to it, with why. The `pills:` e2e tests measure the real glyphs (capital height, real baseline) in both games (Nimble's sheet, level up, references, quick look, hover card, compendium, Omnisearch, slash menu; 5e's references, quick look, encounter block, compendium, tracker, sheet, rules card) and fail if an icon or label drifts more than 1px or an icon sits closer than 3px to its label. `PILLS_VERBOSE=1 node e2e/run.mjs pills` lists what each surface measured and saves a picture of each in `e2e/artifacts/`.
 
 ## Releasing
 
@@ -171,6 +207,7 @@ Every PR merged into `main` is released by `.github/workflows/auto-release.yml` 
 
 - Default is a patch release. When the user says a change is a minor or major release, add the `release: minor` or `release: major` label to the PR (`gh pr edit <n> --add-label "release: minor"`). For `release: skip`, only when they say not to release.
 - Run `npm test && npm run test:e2e` before merging; `release.yml` lints, tests, builds and attaches `main.js`, `manifest.json`, `styles.css`.
+- Before merging anything that touches what's saved (settings, a fence, a note property, a fight), run `node e2e/upgrade.mjs`: it uses the latest release on its own sample vault (a party, a fight in progress, rolls, a setting, a hero's HP), opens that vault with this build, and fails if a saved setting changed, the fight didn't come back, a note draws a new error, or opening the vault rewrote a note. `node e2e/upgrade.mjs 1.6.1` picks the release. `launchObsidian({ pluginFrom })` is how it installs the release.
 - Every PR adds its changes to `CHANGELOG.md` under `## [Unreleased]` (Added / Changed / Fixed), written plainly in the user's voice; the release workflow turns that section into the tag message and the release notes (`scripts/changelog.mjs`).
 
 ## Shipping a feature

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { literalCalls, modulePath, parseDiceModule, parseDsnExport } from '../src/dice3d/dsn-parse';
+import { literalCalls, modulePath, parseDiceModule, parseDsnExport } from '../src/core/dice3d/dsn-parse';
 
 // The shape of a model dice set's script (written for this test).
 const SCRIPT = `

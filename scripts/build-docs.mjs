@@ -16,6 +16,8 @@ const REPO = 'https://github.com/Puddinglord/obsidian-ttrpg-encounter-manager';
 
 const pageName = (file) => (file === 'README.md' ? 'index' : file.replace(/\.md$/, ''));
 const pageUrl = (file) => (file === 'README.md' ? 'index.html' : `${pageName(file)}.html`);
+/** Guide pages that were renamed: old address → new. */
+const MOVED = { 'spotlight.html': 'omnisearch.html' };
 
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
 const decode = (s) => s.replace(/&(#x?[0-9a-f]+|\w+);/gi, (m, e) => {
@@ -319,6 +321,10 @@ export function buildDocs({ root, out }) {
 	writeFileSync(join(outDir, 'search-index.json'), json);
 	v.index = createHash('sha1').update(json).digest('hex').slice(0, 8);
 	for (const p of pages) writeFileSync(join(outDir, p.url), layout(p, { nav, pages, v }));
+	// Pages that moved: the old address sends you on, so links people saved keep working.
+	for (const [from, to] of Object.entries(MOVED)) {
+		writeFileSync(join(outDir, from), `<!doctype html><meta charset="utf-8"><title>Moved</title><link rel="canonical" href="${to}"><meta http-equiv="refresh" content="0; url=${to}"><a href="${to}">This page moved.</a>\n`);
+	}
 
 	// Always start from site/sitemap.xml, so running this twice doesn't list the pages twice.
 	const sitemapSrc = join(root, 'site/sitemap.xml');

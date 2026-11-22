@@ -1,0 +1,139 @@
+/* ============================================================================
+   Shared components. Every game draws these; they read only --g-* tokens.
+   Buildable as-is in the plugin: no clip-path, display: contents, column-gap,
+   :has() or !important anywhere below this line.
+   ========================================================================== */
+
+/* --- Frames: an Obsidian right sidebar, a wide pane, a phone --- */
+.ev-frame { position: relative; width: 360px; height: 720px; border-radius: 12px; overflow: hidden; background: var(--ob-bg-2); box-shadow: 0 0 0 1px var(--ob-line), 0 12px 32px -12px rgb(0 0 0 / 0.18); display: flex; flex-direction: column; }
+.ev-frame.is-wide { width: 640px; height: 640px; }
+.ev-frame.is-short { height: 600px; }
+.ev-frame.is-phone { width: 390px; height: 800px; border-radius: 44px; box-shadow: 0 0 0 10px #0d0d0d, 0 0 0 11px #2a2a2a, 0 24px 48px -16px rgb(0 0 0 / 0.4); }
+.ev-ob { flex: none; height: 38px; display: flex; align-items: center; gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--ob-line); background: var(--ob-bg-2); }
+.ev-ob span { width: 28px; height: 26px; border-radius: 5px; display: grid; place-items: center; color: var(--ob-icon); }
+.ev-ob span.on { background: var(--ob-active); color: var(--p-text); }
+.ev-ob span:last-child { margin-left: auto; }
+.ev-phone-bar { flex: none; height: 50px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 30px 6px; font: 600 15px/1 var(--p-ui); color: var(--g-text, var(--p-text)); background: var(--g-bg); }
+.ev-phone-nav { flex: none; height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: var(--g-bg); color: var(--g-text-2); border-bottom: 1px solid var(--g-line); font: 600 15px/1 var(--p-ui); }
+.ev-phone-nav b { color: var(--g-text); font-weight: 600; }
+.ev-home { position: absolute; bottom: 8px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--g-text); opacity: .85; z-index: 9; }
+
+.ev-view { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--g-bg); color: var(--g-text); font-family: var(--g-font-ui); font-size: 14px; line-height: 20px; }
+.ev-scroll { flex: 1; min-height: 0; overflow: auto; scrollbar-width: none; }
+.ev-scroll::-webkit-scrollbar { display: none; }
+.ev-num { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1, "lnum" 1; }
+
+/* --- Buttons --- */
+.ev-btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: var(--g-r-md); border: 1px solid var(--g-line-strong); background: var(--g-surface); color: var(--g-text); font: 500 14px/1 var(--g-font-ui); white-space: nowrap; cursor: pointer; transition: background var(--g-dur) var(--g-ease), border-color var(--g-dur) var(--g-ease); }
+.ev-btn:hover { background: var(--g-surface-2); }
+.ev-btn svg { flex: none; }
+.ev-btn.is-primary { background: var(--g-accent); border-color: var(--g-accent); color: var(--g-on-accent); font-weight: 600; }
+.ev-btn.is-primary:hover { background: var(--g-accent-hover); border-color: var(--g-accent-hover); }
+.ev-btn.is-quiet { background: transparent; border-color: transparent; color: var(--g-text-2); }
+.ev-btn.is-quiet:hover { background: var(--g-surface-2); color: var(--g-text); }
+.ev-btn.is-icon { width: 36px; padding: 0; }
+.ev-btn.is-sm { height: 30px; padding: 0 10px; font-size: 13px; }
+.ev-btn.is-sm.is-icon { width: 30px; padding: 0; }
+.ev-btn.is-lg { height: 44px; font-size: 15px; }
+.ev-btn.is-danger { color: var(--g-danger-text); }
+.ev-btn .ev-btn-sub { font-weight: 400; opacity: .8; margin-left: -2px; }
+
+/* --- Footer: the turn control, same place in every game --- */
+.ev-foot { flex: none; display: flex; gap: 8px; padding: 10px var(--g-pad) 12px; border-top: 1px solid var(--g-line); background: var(--g-bg); }
+.ev-foot .ev-btn.is-primary { flex: 1; }
+.is-phone .ev-foot { padding-bottom: 30px; }
+
+/* --- Tracks: a bar --- */
+.ev-bar { position: relative; height: var(--g-bar-h, 6px); border-radius: var(--g-bar-r, 99px); background: var(--g-track-empty); overflow: hidden; display: flex; }
+.ev-bar > i { display: block; height: 100%; background: var(--g-track); transition: width var(--g-dur) var(--g-ease); }
+.ev-bar.is-low > i:first-child { background: var(--g-track-low); }
+.ev-bar.is-zero > i:first-child { background: transparent; }
+.ev-bar > i.temp { background: var(--g-temp); }
+
+/* --- Tracks: marked slots (Daggerheart HP and Stress, Nimble Wounds, CoC boxes) --- */
+.ev-slots { display: inline-flex; gap: var(--g-slot-gap, 3px); align-items: center; }
+.ev-slots > i { display: block; width: var(--g-slot, 12px); height: var(--g-slot, 12px); border-radius: var(--g-slot-r, 2px); box-shadow: inset 0 0 0 1.5px var(--slot-line, var(--g-line-strong)); }
+.ev-slots > i.on { background: var(--slot-on, var(--g-text)); box-shadow: inset 0 0 0 1.5px var(--slot-on, var(--g-text)); }
+
+/* --- Resources: pips --- */
+.ev-pips { display: inline-flex; gap: 4px; align-items: center; }
+.ev-pips > i { display: block; width: var(--g-pip, 10px); height: var(--g-pip, 10px); border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--pip-line, var(--g-line-strong)); }
+.ev-pips > i.on { background: var(--pip-on, var(--g-accent)); box-shadow: inset 0 0 0 1.5px var(--pip-on, var(--g-accent)); }
+
+/* --- Conditions --- */
+.ev-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.ev-chip { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 8px; border-radius: var(--g-r-chip); background: var(--g-chip-bg); color: var(--g-chip-text); font: 500 12.5px/1 var(--g-font-ui); white-space: nowrap; }
+.ev-chip .v { font-weight: 650; font-variant-numeric: tabular-nums; }
+.ev-chip .t { display: inline-flex; align-items: center; gap: 2px; color: var(--g-text-2); font-weight: 500; font-variant-numeric: tabular-nums; padding-left: 5px; margin-left: 1px; border-left: 1px solid var(--g-line-strong); height: 12px; }
+.ev-chip svg { flex: none; }
+.ev-chip.is-acts { background: var(--g-chip-acts-bg); color: var(--g-chip-acts-text); }
+.ev-chip.is-add { background: transparent; color: var(--g-text-2); box-shadow: inset 0 0 0 1px var(--g-line-strong); padding: 0 6px; }
+.ev-chip.is-bad { background: var(--g-danger-bg); color: var(--g-danger-text); }
+
+/* --- Overlays inside the panel: prompts, the keypad, the picker --- */
+.ev-scrim { position: absolute; inset: 0; background: rgb(0 0 0 / 0.28); z-index: 5; }
+.ev-sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--g-surface); border-top-left-radius: var(--g-r-lg); border-top-right-radius: var(--g-r-lg); box-shadow: 0 -10px 30px -10px rgb(0 0 0 / 0.3); padding: 8px var(--g-pad) 14px; max-height: 88%; overflow: auto; }
+.is-phone .ev-sheet { padding-bottom: 34px; }
+.ev-sheet-grip { width: 36px; height: 4px; border-radius: 2px; background: var(--g-line-strong); margin: 0 auto 10px; }
+.ev-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.ev-sheet-head h3 { margin: 0; font: var(--g-display-weight) 18px/24px var(--g-font-display); font-variant: var(--g-display-variant); color: var(--g-text); }
+.ev-sheet-head .ev-btn { margin-right: -8px; }
+
+/* Keypad */
+.ev-pad-read { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 4px 2px 12px; border-bottom: 1px solid var(--g-line); margin-bottom: 12px; }
+.ev-pad-read .who { font-size: 13px; color: var(--g-text-2); }
+.ev-pad-read .who b { color: var(--g-text); font-weight: 600; }
+.ev-pad-read .amt { font: 600 34px/1 var(--g-font-num); color: var(--g-text); }
+.ev-pad-read .amt.is-dmg { color: var(--g-danger-text); }
+.ev-pad-mode { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; background: var(--g-surface-2); border-radius: var(--g-r-md); padding: 3px; margin-bottom: 10px; }
+.ev-pad-mode span { display: grid; place-items: center; height: 30px; border-radius: calc(var(--g-r-md) - 2px); font: 500 13px/1 var(--g-font-ui); color: var(--g-text-2); }
+.ev-pad-mode span.on { background: var(--g-surface); color: var(--g-text); box-shadow: 0 1px 2px rgb(0 0 0 / 0.14); font-weight: 600; }
+.ev-pad-keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.ev-pad-keys span { display: grid; place-items: center; height: 46px; border-radius: var(--g-r-md); background: var(--g-surface-2); font: 500 20px/1 var(--g-font-num); color: var(--g-text); font-variant-numeric: tabular-nums; }
+.ev-pad-keys span.fn { font: 500 14px/1 var(--g-font-ui); color: var(--g-text-2); }
+.ev-pad-go { margin-top: 10px; display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+.ev-pad-go .ev-btn { height: 44px; }
+.ev-pad-hint { font-size: 12.5px; color: var(--g-text-2); margin: 10px 2px 0; }
+
+/* Prompt cards */
+.ev-prompt { border: 1px solid var(--g-line); border-radius: var(--g-r-md); padding: 12px 14px; background: var(--g-bg); }
+.ev-prompt + .ev-prompt { margin-top: 8px; }
+.ev-prompt-head { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14.5px; }
+.ev-prompt-head svg { color: var(--g-accent-text); }
+.ev-prompt-head em { font-style: normal; color: var(--g-accent-text); }
+.ev-prompt p { margin: 4px 0 10px; color: var(--g-text-2); font-size: 13.5px; }
+.ev-prompt-acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.ev-prompt-acts .ev-btn.is-sm { padding: 0 9px; }
+
+/* Condition picker */
+.ev-search { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: var(--g-r-md); background: var(--g-surface-2); color: var(--g-text-2); font-size: 14px; margin-bottom: 10px; }
+.ev-search b { color: var(--g-text); font-weight: 400; }
+.ev-search .caret { width: 1.5px; height: 18px; background: var(--g-accent); margin-left: -6px; }
+.ev-pick-list { display: flex; flex-direction: column; }
+.ev-pick { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--g-line); }
+.ev-pick:last-child { border-bottom: 0; }
+.ev-pick b { font-weight: 600; font-size: 14px; display: block; }
+.ev-pick small { display: block; color: var(--g-text-2); font-size: 12.5px; line-height: 17px; }
+.ev-pick .ic { color: var(--g-text-2); }
+.ev-pick.is-on { background: var(--g-now); border-radius: var(--g-r-sm); border-bottom-color: transparent; padding-left: 8px; padding-right: 8px; margin: 0 -4px; }
+.ev-pick.is-on .ic { color: var(--g-accent-text); }
+.ev-timing { margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--g-line); display: grid; gap: 8px; }
+.ev-timing-row { display: flex; align-items: center; justify-content: space-between; font-size: 13.5px; color: var(--g-text-2); }
+.ev-timing-row b { color: var(--g-text); font-weight: 500; }
+.ev-stepper { display: inline-flex; align-items: center; border: 1px solid var(--g-line-strong); border-radius: var(--g-r-md); height: 30px; }
+.ev-stepper span { width: 30px; display: grid; place-items: center; color: var(--g-text-2); }
+.ev-stepper b { min-width: 28px; text-align: center; font-variant-numeric: tabular-nums; color: var(--g-text); font-weight: 600; }
+.ev-segs { display: inline-flex; background: var(--g-surface-2); border-radius: var(--g-r-md); padding: 2px; }
+.ev-segs span { padding: 5px 9px; border-radius: calc(var(--g-r-md) - 2px); font-size: 12.5px; color: var(--g-text-2); }
+.ev-segs span.on { background: var(--g-surface); color: var(--g-text); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+
+/* Hover-only controls get a touch path: always shown on coarse pointers. */
+.ev-hover-only { opacity: 0; transition: opacity var(--g-dur) var(--g-ease); }
+.is-hovered .ev-hover-only, *:hover > .ev-hover-only { opacity: 1; }
+@media (pointer: coarse) { .ev-hover-only { opacity: 1; } .ev-btn { min-height: 44px; } }
+.is-phone .ev-hover-only { opacity: 1; }
+
+/* States shared by every layout: dragging lifts, defeated recedes */
+.is-dragging { box-shadow: 0 14px 28px -10px rgb(0 0 0 / 0.35), 0 0 0 1px var(--g-line-strong); transform: rotate(-1deg) scale(1.01); background: var(--g-surface); z-index: 2; position: relative; }
+.ev-drop-line { height: 2px; border-radius: 1px; background: var(--g-accent); margin: -1px 0; position: relative; }
+.ev-drop-line::before { content: ""; position: absolute; left: -3px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--g-accent); }

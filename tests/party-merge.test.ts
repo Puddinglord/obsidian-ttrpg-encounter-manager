@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { handEnteredLeft, isSheetMember, mergeParty, PartyMember } from '../src/types';
+import { handEnteredLeft, isSheetMember, mergeParty, PartyMember } from '../src/systems/nimble/types';
 
 const hand = (name: string, id = name.toLowerCase()): PartyMember => ({ id, name, level: 2, maxHp: 20 });
 const sheet = (name: string): PartyMember => ({ id: `sheet:Campaigns/X/Party/${name}.md`, name, level: 3, maxHp: 30 });

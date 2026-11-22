@@ -1,0 +1,113 @@
+/* ============================================================================
+   Call of Cthulhu: the design system and the visual brief. "The investigator's form."
+   ========================================================================== */
+const COC_BRIEF = {
+	cards: [
+		{ t: 'What makes it look like itself', li: [
+			['<b>The investigator sheet is a form.</b> Every characteristic and skill is a bordered box: the Regular value large, then a split cell with Half over Fifth. Nothing floats; every number has a box and every box has a rule.', S('Starter Set pregens (the user’s PDF), p.19', '#')],
+			['<b>Skills are a ruled checklist:</b> a tick box, the name with its base % in brackets, the split box; four columns with alternate rows shaded grey.', S('Starter Set pregens; Keeper Rulebook p.430', '#')],
+			['<b>Section bands:</b> grey hatched bars with Art Nouveau display caps (CHARACTERISTICS, INVESTIGATOR SKILLS, WEAPONS, COMBAT), an ornate frame around the page, a black “1920s ERA INVESTIGATOR” tab over typed-in fields.', S('Starter Set pregens', '#')],
+			['<b>The Keeper Rulebook:</b> foxed paper darkening at the edges, olive brush-rule ornaments and spaced-cap running heads, Minion Pro body, bold caps entry heads (GHOULS, Mocking charnel feeders), a char. / averages / rolls table, and aged parchment sidebars with a brown rule.', S('Keeper Rulebook pp.16, 295 (the user’s PDF)', '#')],
+			['<b>Sepia photographs</b> and typed documents carry the period: the handouts are typewritten, the pregens have photo-like portraits.', S('Starter Set handouts', '#')],
+		] },
+		{ t: 'What the best tools do', li: [
+			['<b>Foundry CoC7</b>: parchment pages, coloured ribbons for pools, a moss line ornament under headings; a drawn-gun toggle per combatant that re-sorts DEX + 50; HP #922D2E, Sanity #2E4B1F, Luck #79501C.', S('CoC7-FoundryVTT assets and styles', 'https://github.com/Miskatonic-Investigative-Society/CoC7-FoundryVTT')],
+			['<b>Dhole’s House</b> (Chaosium’s own builder) keeps the sheet’s boxes, digitally; it blocks automated visits, so it’s described from memory, not shot.', S('dholeshouse.org', 'https://www.dholeshouse.org/')],
+			['<b>Chaosium’s site</b> is a plain storefront (crimson bar, covers); the identity lives in the books and sheets, not the web. Demiplane doesn’t host CoC; Alchemy has no public CoC page; Roll20’s sheet page didn’t render headless.', S('chaosium.com', 'https://www.chaosium.com/call-of-cthulhu-rpg/')],
+		] },
+		{ t: 'Why it read as floating words', li: [
+			['Entries sat on the page with only a hairline under them: DEX, HP, SAN and LUCK were words and numbers side by side, with no box to hold them.', S('Pass 0 screenshots', '#')],
+			['The Regular | Hard | Extreme pill was a capsule; the sheet’s box is a rectangle with Half stacked over Fifth.', S('Pass 0', '#')],
+			['No section bands, no frame, no alternate shading: the form’s structure was gone, and the air that was meant to feel heavy felt empty.', S('Pass 0', '#')],
+		] },
+		{ t: 'Palette: sea ink and brass, not olive', sw: [['#ECE5D4', 'foxed paper'], ['#FBF8F0', 'form'], ['#E5DCC8', 'row shade'], ['#DCD2BC', 'band'], ['#463D33', 'box ink'], ['#1E1A15', 'ink'], ['#1F4757', 'sea ink'], ['#A8853A', 'brass'], ['#8A2A22', 'wounds'], ['#563A7A', 'Sanity'], ['#7A5512', 'Luck'], ['#EEDFB8', 'Keeper’s slip']],
+			li: [['<b>Sea ink</b> (#1F4757) is the one structural colour: the turn, the primary button, the acting DEX box. It is the deep-sea blue of the 7th edition Keeper Rulebook’s cover, and the blue-black of a 1920s fountain pen on a case file. <b>Brass</b> (#A8853A) is the cover’s gold wordmark, used only as a hairline inside the acting card’s frame.', S('Keeper Rulebook covers', '#')],
+				['Paper moved from grey-green to warm foxed ivory, and every olive is gone: wounds stay oxblood, <b>Sanity is violet</b> (the mind, not the sea, so it can’t be confused with the turn), Luck is ochre.', S('Pass 4', '#')],
+				['Dark is the deep at night, not a lamplit archive: #111518 ground, #1B1E20 form, box ink #A39A86, sea ink lifts to #93C4D2, wounds #E8897D, Sanity #BDA6E6, Luck #D9B06C. Every pair is measured on the design-system tab.', S('Measured in this study', '#')]] },
+		{ t: 'How CoC differs from Delta Green and RuneQuest', li: [
+			['<b>Delta Green</b> (Arc Dream) owns olive and army green: the green triangle, the stencilled logo on torn paper, a black ground, EYES ONLY and red stamps, government memo pages. Its fiction is a modern conspiracy, so its design is a classified file. Our old moss accent on grey-green paper, with typewriter figures, sat squarely in that look.', S('Arc Dream’s shop', 'https://shop.arcdream.com/collections/delta-green')],
+			['<b>RuneQuest</b> (Chaosium) is Bronze Age myth: gold wordmarks over a rune line, vermilion runes, terracotta and bronze, painted heroic covers. Warm metals and red are its voice; it never uses typed figures or form boxes.', S('Chaosium’s RuneQuest range', 'https://www.chaosium.com/runequest/')],
+			['<b>Pulp Cthulhu</b> shouts in sunset orange and yellow pulp-magazine lettering; the Starter Set goes oxblood and gold. Both are louder cousins of the core line.', S('Pulp Cthulhu; Starter Set Book 1', 'https://www.chaosium.com/pulp-cthulhu-hardcover/')],
+			['<b>Call of Cthulhu 7e itself:</b> covers in deep-sea teal and night blue with a gold wordmark; interiors on aged paper with brown and olive brush rules; sheets in black ink with Art Nouveau heads. So: the 1920s form in black ink, sea-blue ink for what is happening now, brass for ornament, and colour only for harm. Olive is left to Delta Green, metals and vermilion to RuneQuest, orange to Pulp.', S('Keeper Rulebook; Investigator Handbook', '#')],
+		] },
+		{ t: 'Type', li: [
+			['Books: Minion Pro body and bold caps heads; Aquifer and Portmanteau on the sheets (Art Nouveau display, condensed labels).', S('pdffonts on the Keeper Rulebook', '#')],
+			['Ours, all OFL: <b>Crimson Pro</b> for everything printed (Minion’s cousin); <b>Federant</b> for the sheet’s Art Nouveau section bands; <b>Courier Prime</b> for every number, as if typed onto the form; <b>Special Elite</b> for typed names and the Keeper’s index cards.', S('Google Fonts, bundled as subsets', 'https://fonts.google.com/specimen/Federant')],
+		] },
+		{ t: 'Shapes, panels, icons, density', li: [
+			['The split box (1.5px ink, 6px radius); pool boxes with a grey label strip over typed values; tick boxes ticked with a typed X; round boxes for Move, Damage Bonus and Build.', S('Our build', '#')],
+			['Panels: one ink frame per form with alternate rows shaded; a double frame around the sheet’s top; the Keeper’s parchment slip for rules said in the moment; the index card (red head rule, blue lines) for NPCs; sepia photos with paper corners.', S('Our build', '#')],
+			['Icons: fine line (1.5px), used sparingly: a drawn gun for readied firearms, an hourglass for the end of the round. No Elder Sign, no tentacles.', S('Our build', '#')],
+			['Density: middling. Entries about 58px, padding 14; a fight is rare and heavy, but every number is boxed.', S('Our build', '#')],
+		] },
+		{ t: 'Critique passes', li: [
+			['<b>Pass 1 (light, sidebar 360px):</b> HP, SAN and Luck cells wrapped to two lines, tightened; the open entry repeated HP, now the pools line hides while the boxes show; the action row overflowed, now a grid; the Federant title wrapped into a quirky two-liner, the title moved to Crimson Pro and Federant kept for bands.', S('Screens in /tmp/ev-refs/coc/s1', '#')],
+			['<b>Pass 2 (sheet, block, index card):</b> the typed rows floated across the card’s rules, now set on a 26px grid; the dying state lost its ticks (old markup), fixed; the 1920s tab and photo corners kept.', S('Screens in /tmp/ev-refs/coc/s2', '#')],
+			['<b>Pass 3 (dark, and the worst widths):</b> box ink lifts to #A39A84 so every frame still reads at 6:1; the photograph’s white paper glared on the dark archive, now a dimmed card; the hatched bands keep their texture at 6% ink; at 596px the form stays one column with the defender’s slip below.', S('Screens in /tmp/ev-refs/coc/final', '#')],
+			['<b>Side by side with the sheet:</b> the split boxes, the bands, the ticks and the black era tab are the pregen’s; nothing on the panel is a bare number any more. What remains ours: sea ink for the turn, the Keeper’s slip, the index card.', S('Compared with /tmp/ev-refs/coc', '#')],
+			['<b>Pass 4 (palette and alignment):</b> the moss accent and grey-green paper read as Delta Green, so the palette moved to sea ink and brass on foxed paper. Every box was rebuilt the same way (fixed height, centred, one nudge per face) and measured in headless Chrome: STR to HP in the NPC block are one strict ten-column grid; characteristics sit in three equal columns with every label on the box’s centre line (Idea and Know beside the label, not under it); pool slots in the tracker are three fixed columns; figures and labels are within 1px of their box’s centre.', S('Screens in /tmp/ev-refs/coc/pass4b', '#')],
+		] },
+	],
+	borrow: ['The split characteristic box, everywhere a roll is asked', 'Hatched section bands with Art Nouveau titles', 'Tick boxes for statuses and skill improvements', 'Alternate-row shading inside one ink frame', 'Typed figures and names; the Keeper’s parchment slip; sepia photos', 'Sea ink for structure, brass for ornament; colour only for wounds, Sanity and Luck'],
+	avoid: ['Olive and army green, stamps and redactions: that is Delta Green', 'The Elder Sign, the wordmark, tentacles, the Art Nouveau page frame', 'Number tracks: the sheet’s boxes say the same thing in less room', 'Blood, stamps, coffee rings', 'Text without a box around it'],
+	direction: ['<b>The investigator’s form.</b> A fight is a form being filled in by lamplight: every combatant is a ruled row in one ink frame, DEX in its own box, HP, Sanity and Luck in labelled cells, statuses ticked, rolls in the sheet’s split box, the rules the Keeper needs on a parchment slip.', 'Still quiet and heavy: generous rows, few colours, nothing that bounces.'],
+};
+DEFS.coc = {
+	id: 'coc', name: 'Call of Cthulhu', long: 'Call of Cthulhu · 7th edition', title: 'The investigator’s form',
+	lede: 'The 1920s sheet made live. Foxed paper, sea-blue ink for whoever is acting, brass hairlines, one ink frame per form, the sheet’s split box for every roll (Regular, then Half over Fifth), hatched section bands with Art Nouveau titles, tick boxes for statuses, typed figures. Nothing floats: every number has a box. A fight in this game is rare, short and deadly; the form should feel heavy, never routine.',
+	research: COC_BRIEF,
+	rules: [
+		'DEX order, highest first. A gun already drawn fires at DEX + 50, so a readied investigator can act before a faster cultist.',
+		'Melee targets respond (Dodge or Fight Back) instead of taking turns of their own for it; firearms can only be dived from.',
+		'Major wound: one blow of half max HP or more. Prone, and a CON roll or unconscious. At 0 HP with a major wound: dying, a CON roll at the end of every round.',
+		'Sanity loss is x/y (0/1D6 for a ghoul). Five or more at once: an INT roll; passing means temporary insanity and a bout of madness.',
+		'Every roll is percentile with Regular, Hard and Extreme thresholds: the sheet’s split box.',
+	],
+	viewsIntro: 'One direction for Call of Cthulhu: the form. The acting combatant’s card sits on top with the sheet’s boxes and the roll that matters; the rest of the form waits below in DEX order.',
+	views: [
+		{ cap: 'Setup: DEX and drawn guns', sub: 'One toggle per combatant, as in the Foundry system. A drawn gun turns its DEX box black and adds 50; the order re-sorts.', render: () => GC.page(FIGHT_COC, 'setup') },
+		{ cap: 'Round 2: the ghoul’s turn', sub: 'The entry opens: HP as the sheet’s Max | Current box, Sanity loss beside it, Fighting in the split box. The end of the round is a slip ruled into the form.', render: () => GC.page(FIGHT_COC, 'mid'), rec: true },
+		{ cap: 'Dying', sub: 'Amos’s turn at 0 HP with a major wound: the Keeper’s slip, his CON in the split box, First Aid.', render: () => GC.page(FIGHT_COC, 'dying') },
+		{ cap: 'Turn prompt: a Sanity roll', sub: 'The ghoul is seen. Each investigator’s roll on a ruled form; five lost at once asks for the INT roll.', render: () => GC.page(FIGHT_COC, 'prompt') },
+		{ cap: 'Damage keypad', sub: 'Round keys like a typewriter’s; the keypad knows the major wound threshold and says what it means.', render: () => GC.page(FIGHT_COC, 'keypad') },
+		{ cap: 'Adding a status', sub: 'A bout of madness: rolled 1D10 rounds, counted at the end of each round.', render: () => GC.page(FIGHT_COC, 'picker') },
+	],
+	extra: [{ cap: 'Phone', sub: 'The form scrolls; the Next button stays under the thumb.', kind: 'phone', title: 'Ashcombe farmhouse', render: () => GC.page(FIGHT_COC, 'mid') }],
+	voice: 'Quiet and exact, a little formal. "Unconscious, out of the fight." Never jokey, never gory.',
+	principles: [
+		['Every number in a box', 'DEX, HP, Sanity, Luck and every roll sit in the sheet’s boxes. No figure floats on the page.'],
+		['The sheet’s grammar', 'Split boxes (Regular, Half over Fifth), Max | Current boxes, tick boxes in the sheet’s order, hatched bands.'],
+		['One frame per form', 'A fight, a sheet, a monster: each is one ink frame with ruled rows and alternate shading.'],
+		['Colour means trouble', 'Black ink and sea ink by default; oxblood for wounds, violet for Sanity, ochre for Luck.'],
+		['Say the rule on a slip', 'At the moment it applies, in a sentence on the Keeper’s parchment slip, so nobody reaches for the book.'],
+	],
+	typeNote: 'Crimson Pro for everything printed (the books’ Minion), Federant for the sheet’s Art Nouveau bands, Courier Prime for figures typed onto the form, Special Elite for typed names on index cards. All OFL, bundled as latin subsets.',
+	type: [
+		['Band', 'Investigator Skills', { font: '400 20px/24px var(--g-font-display)' }, 'Federant · 20/24'],
+		['Acting entry', 'Ghoul', { font: '600 22px/26px var(--g-font-ui)' }, 'Crimson Pro 600 · 22/26'],
+		['Entry name', 'Harriet Cole', { font: '600 18px/22px var(--g-font-ui)' }, 'Crimson Pro 600 · 18/22'],
+		['Figures', '110   45 22 9   0/1D6', { font: '700 20px/24px var(--g-font-num)' }, 'Courier Prime 700 · 20/24'],
+		['Typed name', 'Mabel Ostrander', { font: '400 20px/24px var(--g-font-type)' }, 'Special Elite · 20/24'],
+		['Body', 'Dying: a CON roll at the end of every round', { font: '400 15px/20px var(--g-font-ui)' }, 'Crimson Pro · 15/20'],
+		['Label', 'hp max  current  san', { font: '600 12.5px/16px var(--g-font-ui)', fontVariant: 'small-caps', letterSpacing: '.05em', color: 'var(--g-text-2)' }, 'Crimson Pro 600 small caps · 12.5/16'],
+	],
+	colors: [
+		['--g-bg', 'Keeper paper'], ['--g-surface', 'The form'],
+		['--g-text', 'Ink', '--g-surface'], ['--g-text-2', 'Secondary', '--g-surface'],
+		['--g-line-strong', 'Box ink', '--g-surface', 'ui'],
+		['--g-accent-text', 'Sea ink: the turn', '--g-now'], ['--g-accent', 'Primary button', '--g-bg', 'ui'], ['--g-on-accent', 'Text on it', '--g-accent'],
+		['--g-hp', 'Wounds', '--g-surface'], ['--g-san', 'Sanity', '--g-surface'], ['--g-luck', 'Luck', '--g-surface'],
+		['--coc-parch-ink', 'The Keeper’s slip', '--coc-parch'], ['--g-danger-text', 'Dying, on its tint', '--g-danger-bg'],
+	],
+	radii: [[2, 'buttons, ticks'], [4, 'frames, cells'], [6, 'split boxes'], [99, 'Move, Build, DB']],
+	density: 'Middling: entries about 58px, padding 14, and every figure in a box. Alternate rows shade like the sheet’s skill grid.',
+	icons: { text: 'The shared bold icons, used sparingly: a blood drop for Damage, a first-aid cross for Heal, the bold book for the entry, a drawn gun for readied firearms, an hourglass for the end of the round. Tick boxes are ticked with a typed X. No occult glyphs.', list: ['damage', 'heal', 'statblock', 'gun', 'hourglass', 'heart-crack', 'moon', 'dice',
+		{ title: 'Split box', el: () => GC.cbox(55) }, { title: 'Large split box', el: () => GC.cbox(70, { cls: 'lg' }) }, { title: 'Cell', el: () => GC.cell('HP', 9, { of: '/11', tone: 'hurt' }) }, { title: 'Status', el: () => GC.check('Major wound') }, { title: 'Band', el: () => h('div', { style: { width: '200px' } }, GC.band('Combat')) }] },
+	motion: [
+		'Slow and even (260ms, no overshoot). Nothing bounces in this game.',
+		'Next: the open entry closes as the next one opens, like turning attention, not a page.',
+		'A tick is typed: the X appears at once, with a single faint key-strike. Sanity loss counts down one figure at a time. Reduced motion: it changes at once.',
+	],
+	statesNote: 'An entry in the form.',
+	states: GC.states,
+};

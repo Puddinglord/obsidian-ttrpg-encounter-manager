@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { dieAt, heldFaces, resourceRule, spendsOn, startsOn } from '../src/resource-def';
-import { rollEdge } from '../src/roll-def';
-import { safeRest, setResource, setRolled, readCharacter, Frontmatter } from '../src/character-def';
-import { Compendium } from '../src/compendium';
-import { poolText, spendCount } from '../src/roll-def';
+import { dieAt, heldFaces, resourceRule, ruleFromData, ruleOf, spendsOn, startsOn } from '../src/systems/nimble/resource-def';
+import { rollEdge } from '../src/systems/nimble/roll-def';
+import { safeRest, setResource, setRolled, readCharacter, Frontmatter } from '../src/systems/nimble/character-def';
+import { Compendium } from '../src/systems/nimble/compendium';
+import { poolText, spendCount } from '../src/systems/nimble/roll-def';
 
 const comp = new Compendium({ classes: [], ancestries: [], backgrounds: [], spells: [], items: [], boons: [] } as never);
 
@@ -100,5 +100,25 @@ describe('a miss', () => {
 		] }, () => 0);
 		expect(r.outcome).toBe('miss');
 		expect(r.detail).toBe('[1] miss on a 1 · Judgment Dice lost');
+	});
+});
+
+describe('dice a class describes itself (homebrew, content packs)', () => {
+	it('become a rule like the books\' own: when rolled, what they go into, how many, kept, switched on, the die by level', () => {
+		const r = ruleFromData({ name: 'Ember Dice', dice: { rolled: 'gained', addTo: ['attack', 'Spell', 'nonsense'], use: 'all', keep: true, onWhile: 'Blazing', damageType: 'fire', gain: 2, gainLabel: 'Stoke', clearsOnRest: true, byLevel: [{ level: 1, die: 'd4' }, { level: 5, die: 'D8' }], rules: ['Stoke the Flame'] } })!;
+		expect(r).toMatchObject({ rolledWhen: 'gained', on: ['attack', 'spell'], amount: 'all', keep: true, damageType: 'fire', gain: { count: 2, label: 'Stoke' }, clearsOnRest: true, dieByLevel: { 1: 'd4', 5: 'd8' }, rules: ['Stoke the Flame'] });
+		expect(r.match.test('ember dice')).toBe(true);
+		expect(startsOn(r, ['Blazing'])).toBe(true);
+		expect(startsOn(r, ['Dazed'])).toBe(false);
+		expect([1, 4, 5, 9].map(l => dieAt(r, l))).toEqual(['d4', 'd4', 'd8', 'd8']);
+		// The plainest: spent one at a time on attacks, off until switched on.
+		expect(ruleFromData({ name: 'Sparks', dice: { rolled: 'spent' } })).toMatchObject({ rolledWhen: 'spent', on: ['attack'], amount: 'one', autoOn: false });
+		expect(ruleFromData({ name: 'Sparks' })).toBeUndefined();
+	});
+	it('a resource\'s own rule comes first; otherwise the books\' by name', () => {
+		const own = ruleFromData({ name: 'Fury Dice', dice: { rolled: 'spent' } })!;
+		expect(ruleOf({ name: 'Fury Dice', rule: own })).toBe(own);
+		expect(ruleOf({ name: 'Fury Dice' })?.rolledWhen).toBe('gained');
+		expect(ruleOf({ name: 'Sparks' })).toBeUndefined();
 	});
 });

@@ -818,7 +818,17 @@
           "features": [
             {
               "name": "Fit for Any Battlefield (2)",
-              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice.",
+              "choose": {
+                "name": "Combat Abilities",
+                "from": [
+                  "Commander’s Orders",
+                  "Combat Tactics"
+                ],
+                "or": [
+                  "+1 max Combat Dice"
+                ]
+              }
             },
             {
               "name": "Weapon Mastery",
@@ -840,7 +850,17 @@
           "features": [
             {
               "name": "Fit for Any Battlefield (3)",
-              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice.",
+              "choose": {
+                "name": "Combat Abilities",
+                "from": [
+                  "Commander’s Orders",
+                  "Combat Tactics"
+                ],
+                "or": [
+                  "+1 max Combat Dice"
+                ]
+              }
             },
             {
               "name": "Key Stat Increase",
@@ -866,7 +886,17 @@
           "features": [
             {
               "name": "Fit for Any Battlefield (4)",
-              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice.",
+              "choose": {
+                "name": "Combat Abilities",
+                "from": [
+                  "Commander’s Orders",
+                  "Combat Tactics"
+                ],
+                "or": [
+                  "+1 max Combat Dice"
+                ]
+              }
             },
             {
               "name": "Weapon Mastery (2)",
@@ -888,7 +918,17 @@
           "features": [
             {
               "name": "Fit for Any Battlefield (5)",
-              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice.",
+              "choose": {
+                "name": "Combat Abilities",
+                "from": [
+                  "Commander’s Orders",
+                  "Combat Tactics"
+                ],
+                "or": [
+                  "+1 max Combat Dice"
+                ]
+              }
             },
             {
               "name": "Key Stat Increase",
@@ -932,7 +972,17 @@
           "features": [
             {
               "name": "Fit for Any Battlefield (6)",
-              "text": "Choose another Combat Ability or gain +1 max Combat Dice."
+              "text": "Choose another Combat Ability or gain +1 max Combat Dice.",
+              "choose": {
+                "name": "Combat Abilities",
+                "from": [
+                  "Commander’s Orders",
+                  "Combat Tactics"
+                ],
+                "or": [
+                  "+1 max Combat Dice"
+                ]
+              }
             },
             {
               "name": "Key Stat Increase",
@@ -2121,7 +2171,7 @@
           "Ice",
           "Lightning"
         ],
-        "notes": "You know the Fire, Ice, and Lightning spell schools and can cast cantrips from them. Learn the Utility Spells from 1 spell school you know."
+        "notes": "You know the Fire, Ice, and Lightning spell schools and can cast cantrips from them (level 1). Learn the Utility Spells from 1 spell school you know (level 3; a 2nd at level 6 and a 3rd at level 14)."
       },
       "levels": [
         {
@@ -3321,6 +3371,7 @@
     "Mage spells: `range` holds a printed 'Range: N' or 'Reach: N' value; `aoe` holds the printed shape when there is one ('Cone 4', 'Line 12', '3×3') and otherwise just 'AoE' when the spell is tagged AoE. The full printed body, including the 'Range:/Damage:' labels and any boxed condition/rules note attached to the spell (Smoldering, Hampered, Charged, D66, D88, Next Closest Creature, Replacing a die, Note.), is kept in `text`.",
     "Mage: Arc Lightning's tag reads 'TIER 1, 1+ TARGET'; the '1+ Target' tag has no schema field and is not recorded elsewhere.",
     "Mage: Seething Storm has the line 'Costs 3 actions each round to maintain. +2 Reach and +2 lightning bolts each round.' printed where other spells have their Upcast line, but without an 'Upcast:' label. It is kept in `text` and `higherLevels` is not set.",
-    "Mage: the 'Where’s the Chaos Table?' box (Invoker of Chaos page) and the Utility Spells intro line are stored as class sidebars."
+    "Mage: the 'Where’s the Chaos Table?' box (Invoker of Chaos page) and the Utility Spells intro line are stored as class sidebars.",
+    "Commander: Fit for Any Battlefield (2)–(6) say \"Choose another Combat Ability or gain +1 max Combat Dice\" but the book never defines a Combat Ability; the COMBAT ABILITIES heading sits over Commander's Orders, with Combat Tactics on the next page. Each carries a `choose` hint (Commander's Orders or Combat Tactics, or +1 max Combat Dice) so the level-up wizard can offer it; it isn't book text."
   ]
 }

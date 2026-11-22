@@ -12,7 +12,7 @@ import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE_VAULT = join(ROOT, 'e2e', 'fixtures', 'vault');
 const PLUGIN_ID = 'nimble-gm';
 
@@ -84,10 +84,11 @@ async function sendToBackground(page, previous) {
 	}
 }
 
-export async function launchObsidian({ settings, vaultDir } = {}) {
+export async function launchObsidian({ settings, vaultDir, pluginFrom = ROOT } = {}) {
 	if (!existsSync(OBSIDIAN_BIN)) throw new Error(`Obsidian not found at ${OBSIDIAN_BIN}. Set OBSIDIAN_BIN.`);
+	// pluginFrom: a folder with another build's main.js, manifest.json and styles.css (a release, for e2e/upgrade.mjs).
 	for (const f of ['main.js', 'manifest.json', 'styles.css']) {
-		if (!existsSync(join(ROOT, f))) throw new Error(`${f} missing, run npm run build first`);
+		if (!existsSync(join(pluginFrom, f))) throw new Error(`${f} missing${pluginFrom === ROOT ? ', run npm run build first' : ` in ${pluginFrom}`}`);
 	}
 
 	const work = mkdtempSync(join(tmpdir(), 'nimble-e2e-'));
@@ -96,8 +97,8 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 	cpSync(vaultDir || FIXTURE_VAULT, vault, { recursive: true });
 	const pluginDir = join(vault, '.obsidian', 'plugins', PLUGIN_ID);
 	mkdirSync(pluginDir, { recursive: true });
-	for (const f of ['main.js', 'manifest.json', 'styles.css']) cpSync(join(ROOT, f), join(pluginDir, f));
-	// Tests start past the one-time "Use Cmd+K for Spotlight?" offer, unless one asks for it (spotlightOffered: false).
+	for (const f of ['main.js', 'manifest.json', 'styles.css']) cpSync(join(pluginFrom, f), join(pluginDir, f));
+	// Tests start past the one-time "Use Cmd+K for Omnisearch?" offer, unless one asks for it (spotlightOffered: false).
 	const dataFile = join(pluginDir, 'data.json');
 	const shipped = !settings && existsSync(dataFile) ? JSON.parse(readFileSync(dataFile, 'utf8')) : {};
 	writeFileSync(dataFile, JSON.stringify({ spotlightOffered: true, ...shipped, ...(settings || {}) }));
@@ -197,7 +198,8 @@ export async function launchObsidian({ settings, vaultDir } = {}) {
 			// Disconnecting from a CDP-attached browser can hang; never wait long.
 			await Promise.race([browser.close().catch(() => {}), new Promise(r => setTimeout(r, 2000))]);
 			await killProc();
-			if (!process.env.KEEP_E2E) rmSync(work, { recursive: true, force: true });
+			// Obsidian may still be writing as it quits: retry, and never fail a passing run over a temp folder.
+			if (!process.env.KEEP_E2E) { try { rmSync(work, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch (e) { console.warn(`Could not remove ${work}: ${e.message}`); } }
 		},
 	};
 	return obsidian;
