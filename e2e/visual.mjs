@@ -68,6 +68,8 @@ const IGNORE = [
 	{ surface: /^shared\/settings$/, width: 320, why: "Obsidian's settings window has no room for its content at 320px" },
 	// At 540px its tab is about 210px: Obsidian's own setting rows wrap a name beside its toggle, ours as any plugin's.
 	{ surface: /^shared\/settings$/, width: 540, kind: /wrap/, sel: /^div\.setting-item-name$/, why: "Obsidian's setting rows in a 210px tab (its layout, not ours)" },
+	// At 700px a setting with a long description still gets about 245px for its name beside the toggle.
+	{ surface: /^shared\/settings$/, width: 700, kind: /wrap/, sel: /^div\.setting-item-name$/, why: "Obsidian's setting rows beside a long description (its layout, not ours)" },
 	// A map pin's number is a hair wider than its round badge and is centred over it (as in layout-sweep).
 	{ sel: /nimble-map-pin-inner/, kind: /spill|clipped/, why: 'centred over the badge on purpose' },
 	// Four reaction cards across a narrow sheet: a two-word name ("Opportunity Attack") takes two lines, balanced and centred.
