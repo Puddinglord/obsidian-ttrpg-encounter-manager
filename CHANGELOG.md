@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-22
+
 ### Fixed
 
 - The plugin passes Obsidian's plugin review again: stat blocks and drag-to-reorder in the tracker build their elements with Obsidian's own helpers. Nothing looks or works differently.
