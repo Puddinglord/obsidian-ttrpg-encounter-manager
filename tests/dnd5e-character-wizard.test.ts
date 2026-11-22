@@ -361,7 +361,7 @@ describe('levelling up', () => {
 				applyLevelUp5e(capped, newLevelUp5e(capped, ed, 'Climber'));
 				expect(capped.level).toBe(20);
 			});
-		});
+		}, 60000); // every class, three ways, twenty levels: a few seconds here, longer on a CI runner
 	}
 	it('2014 Wizard: its tradition at 2, 2nd-level spells at 3, an increase at 4, 3rd-level spells at 5', () => {
 		const fm = characterFm(filled('2014', 'Wizard'));
