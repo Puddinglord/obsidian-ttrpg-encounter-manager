@@ -6,6 +6,10 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Fixed
+
+- On a narrow phone, the 5e character sheet shows every skill's name in full. "Animal Handling" was cut short. See the [5e guide](docs/5e.md#character-sheets).
+
 ## [2.1.0] - 2026-11-22
 
 ### Changed
