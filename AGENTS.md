@@ -11,6 +11,7 @@ An Obsidian plugin (TypeScript, esbuild) for running and playing tabletop RPG ca
 | File-by-file map, test harness, Obsidian review rules | [CLAUDE_CODE_GUIDE.md](CLAUDE_CODE_GUIDE.md) |
 | How anything the user sees should look (every game, every surface) | [prototypes/design-study/README.md](prototypes/design-study/README.md): the design study, our living design archive, and its rules |
 | Where the architecture is going | [prototypes/SYSTEMLESS.md](prototypes/SYSTEMLESS.md), then [prototypes/MULTI-SYSTEM.md](prototypes/MULTI-SYSTEM.md) for how we got here |
+| Ideas explored, not built yet | [prototypes/gm-screen-study/README.md](prototypes/gm-screen-study/README.md): the GM screen (parked, with its open questions) |
 
 ## The shape of the code
 
