@@ -7445,13 +7445,14 @@ button.dnd5e-pm:not(.is-prof, .is-expert):hover::before { box-shadow: inset 0 0 
 }
 @container dnd5e-sheet (max-width: 380px) {
 	.dnd5e-sheet .dnd5e-sheet-page { padding: 10px 4px 24px; }
-	/* Two plaques a row with every skill's name whole: a little less air inside them. */
+	/* Two plaques a row with every skill's name whole: a little less air inside them. "Animal Handling" needs 98px;
+	   at a 360px phone these leave its name 100px. */
 	.dnd5e-sheet .dnd5e-abilities { gap: 6px; }
-	.dnd5e-sheet :is(.dnd5e-sheet-save, .dnd5e-sheet-skill) { gap: 4px; }
-	.dnd5e-sheet button.dnd5e-sheet-roll.is-bonus { padding: 1px 2px; }
+	.dnd5e-sheet :is(.dnd5e-sheet-save, .dnd5e-sheet-skill) { gap: 3px; }
+	.dnd5e-sheet button.dnd5e-sheet-roll.is-bonus { padding: 1px 1px; }
 	.dnd5e-sheet .dnd5e-banner { padding: 12px 12px 24px; }
 	.dnd5e-sheet .dnd5e-crest { gap: 6px; }
-	.dnd5e-sheet .dnd5e-ability-rows { padding: 2px 5px 8px; }
+	.dnd5e-sheet .dnd5e-ability-rows { padding: 2px 3px 8px; }
 	.dnd5e-sheet .ns-meter-row { gap: 6px; }
 }
 /* Touch: no hover, so what hover shows is always there; bigger marks. */
