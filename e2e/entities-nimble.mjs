@@ -815,7 +815,8 @@ export function register(test, h) {
 				await mainButton(o).click();
 				await beat.waitFor({ timeout: 3000 });
 				assert.match(await beat.locator('.ev-card-kicker').textContent(), new RegExp(`After ${hero}'s turn`));
-				await beat.locator('.nimble-card-act').first().click();
+				// Its name: the middle of the row can be a rules word (Grappled), which opens its card instead.
+				await beat.locator('.nimble-card-act strong').first().click();
 				await o.waitFor(async () => (await beat.locator('.nimble-card-act.is-used').count()) === 1, { what: 'Krogg\'s action marked' });
 				await mainButton(o).click();
 			}
