@@ -361,24 +361,18 @@ export function markDamageTypes(el: HTMLElement): void {
 		if (afterDice) hits.push({ at: afterDice[1].length, word: afterDice[2] });
 		for (const m of text.matchAll(DAMAGE_AFTER_DICE)) hits.push({ at: (m.index ?? 0) + m[1].length, word: m[2] });
 		if (!hits.length) continue;
-		const frag = doc.createDocumentFragment();
+		const frag = createFragment();
 		let pos = 0;
 		for (const h of hits.sort((a, b) => a.at - b.at)) {
 			const dmg = damageIcon(h.word);
 			if (!dmg || h.at < pos) continue;
-			frag.appendChild(doc.createTextNode(text.slice(pos, h.at)));
-			const wrap = doc.createElement('span');
-			wrap.className = 'monster-damage-type';
-			wrap.setAttribute('aria-label', dmg.label);
-			const icon = doc.createElement('span');
-			icon.className = 'monster-damage-icon';
-			setIcon(icon, dmg.icon);
-			wrap.appendChild(icon);
-			wrap.appendChild(doc.createTextNode(text.slice(h.at, h.at + h.word.length)));
-			frag.appendChild(wrap);
+			frag.appendText(text.slice(pos, h.at));
+			const wrap = frag.createSpan({ cls: 'monster-damage-type', attr: { 'aria-label': dmg.label } });
+			setIcon(wrap.createSpan({ cls: 'monster-damage-icon' }), dmg.icon);
+			wrap.appendText(text.slice(h.at, h.at + h.word.length));
 			pos = h.at + h.word.length;
 		}
-		frag.appendChild(doc.createTextNode(text.slice(pos)));
+		frag.appendText(text.slice(pos));
 		n.replaceWith(frag);
 	}
 }
@@ -395,18 +389,15 @@ function markHp(el: HTMLElement): void {
 		const text = n.textContent ?? '';
 		const hits = [...text.matchAll(PHASE_HP)];
 		if (!hits.length) continue;
-		const frag = doc.createDocumentFragment();
+		const frag = createFragment();
 		let at = 0;
 		for (const hit of hits) {
 			const i = hit.index ?? 0;
-			if (i > at) frag.appendChild(doc.createTextNode(text.slice(at, i)));
-			const em = doc.createElement('em');
-			em.className = 'phase-hp';
-			em.textContent = hit[0];
-			frag.appendChild(em);
+			if (i > at) frag.appendText(text.slice(at, i));
+			frag.createEl('em', { cls: 'phase-hp', text: hit[0] });
 			at = i + hit[0].length;
 		}
-		if (at < text.length) frag.appendChild(doc.createTextNode(text.slice(at)));
+		if (at < text.length) frag.appendText(text.slice(at));
 		n.replaceWith(frag);
 	}
 }

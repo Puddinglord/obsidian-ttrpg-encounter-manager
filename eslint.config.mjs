@@ -56,6 +56,11 @@ export default defineConfig([
 			"no-restricted-syntax": ["error", {
 				selector: "CallExpression[callee.property.name='addCommand'] Property[key.name='name'] Literal[value=/command/i]",
 				message: "Adding `command` to the command name is not necessary (Obsidian review). Avoid \"command\"/\"commands\" anywhere in the name.",
+			}, {
+				// The bot's obsidianmd/prefer-create-el reports these calls; run locally, it skips any whose helper it can't
+				// resolve through Obsidian's types. createElement(tag, options) is left alone, as the rule leaves it.
+				selector: "CallExpression[callee.property.name='createElement'][arguments.length=1], CallExpression[callee.property.name='createDocumentFragment'][arguments.length=0]",
+				message: "Use Obsidian's DOM helpers (Obsidian review): parent.createEl/createDiv/createSpan, createFragment() and appendText().",
 			}],
 		},
 	},

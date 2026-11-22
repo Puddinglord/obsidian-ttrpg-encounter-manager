@@ -145,12 +145,9 @@ export function makeSortable(list: HTMLElement, opts: SortableOptions): () => vo
 			margins.push(parseFloat(win.getComputedStyle(el).marginTop) || 0);
 		}
 		const gap = parseFloat(win.getComputedStyle(list).rowGap) || 0;
-		const slot = doc.createElement('div');
-		slot.className = 'ev-sort-slot';
-		slot.setAttribute('aria-hidden', 'true');
+		const slot = list.createDiv({ cls: 'ev-sort-slot', attr: { 'aria-hidden': 'true' } });
 		slot.style.top = `${tops[from]}px`;
 		slot.style.height = `${heights[from]}px`;
-		list.appendChild(slot);
 		list.classList.add('is-sorting');
 		doc.body.classList.add('ev-is-sorting');
 		for (const el of all) el.classList.add(el === press.item ? 'ev-sort-lifted' : 'ev-sort-shifting');
