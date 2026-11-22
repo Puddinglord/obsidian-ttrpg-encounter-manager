@@ -1,6 +1,6 @@
 {
 	"name": "nimble-gm",
-	"version": "1.6.0",
+	"version": "1.6.1",
 	"description": "Run Nimble and 5e games from your notes: campaigns, bundled bestiaries, encounter blocks rated for your party, combat trackers, GM maps and 3D dice.",
 	"main": "main.js",
 	"scripts": {
@@ -12,7 +12,7 @@
 		"test:e2e": "npm run build && node e2e/parallel.mjs",
 		"test:e2e:serial": "npm run build && node e2e/run.mjs",
 		"test:visual": "npm run build && node e2e/visual.mjs",
-		"lint": "eslint . --max-warnings 0 && stylelint styles.css",
+		"lint": "eslint . --max-warnings 0 && stylelint styles.css \"site/**/*.css\"",
 		"screenshots": "npm run build && node e2e/screenshots.mjs",
 		"site": "node scripts/build-site.mjs",
 		"site:serve": "node scripts/build-site.mjs --serve"

@@ -161,6 +161,12 @@ Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like
 - A tap on a character sheet, the tracker or the quick look no longer gets lost when the note or the fight changes at that moment (tapping HP again right after a hit): the redraw waits until you let go. See the [character sheets guide](docs/character-sheets.md).
 - Pressing Enter in a sheet's small boxes (Hunter's Mark, a number, coins, a language, a condition) or a map pin's label no longer opens the box again behind you. See the [character sheets guide](docs/character-sheets.md).
 
+## [1.6.1] - 2026-11-17
+
+### Fixed
+
+- The user guide's style sheet no longer uses `:has()`, which Obsidian's plugin review flags. Phone screenshots in the guide still get their narrower frame.
+
 ## [1.6.0] - 2026-11-17
 
 A user guide that shows what it describes, and a changelog on the website.
