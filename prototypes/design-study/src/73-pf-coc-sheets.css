@@ -5,9 +5,10 @@
 .xpb { color: var(--g-text); font: 400 15px/21px var(--g-font-ui); --glyph-cut: var(--g-bg); }
 .xpb .xp-tline { font-size: 22px; line-height: 26px; }
 .xpb > .xp-tags { margin: 5px 0 4px; }
-.xpb p { margin: 0; padding-left: 14px; text-indent: -14px; }
+.xpb p { margin: 0; padding-left: 14px; }
+.xpb p::before { content: ''; margin-left: -14px; } /* a hanging indent, without text-indent */
 .xpb p b { font-weight: 700; }
-.xpb-r { font-weight: 600; color: var(--g-accent-text); text-decoration: underline dotted; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
+.xpb-r { font-weight: 600; color: var(--g-accent-text); border-bottom: 1px dotted; cursor: pointer; }
 .xpb-rule { height: 1px; background: var(--g-text); margin: 5px 0; }
 .xpb-tr { color: var(--g-text); }
 .xpb .xp-glyph { color: var(--g-text); }

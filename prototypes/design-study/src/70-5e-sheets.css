@@ -110,7 +110,7 @@
 .g-5e .sh-roll svg { color: var(--x5-gold); }
 .g-5e .sh-roll b { font: 600 16px/1 var(--g-font-display); font-variant-numeric: lining-nums; }
 .g-5e .sh-roll:hover { border-color: var(--x5-gold); }
-.g-5e .sh-term { text-decoration-color: color-mix(in srgb, var(--x5-gold) 80%, var(--g-text-2)); }
+.g-5e .sh-term { border-bottom-color: color-mix(in srgb, var(--x5-gold) 80%, var(--g-text-2)); }
 .g-5e .sh-toast { background: var(--x5-banner-b); color: var(--x5-on-banner); box-shadow: inset 0 0 0 1px var(--x5-gold), inset 0 0 0 3px var(--x5-banner-b), inset 0 0 0 4px color-mix(in srgb, var(--x5-gold) 45%, transparent), 0 14px 30px -10px rgb(0 0 0 / 0.55); border-radius: var(--g-r-lg); padding: 12px 18px; }
 .g-5e .sh-toast svg { color: var(--x5-on-banner-2); }
 .g-5e .sh-toast .big { font: 600 28px/1 var(--g-font-display); font-variant-numeric: lining-nums; color: #FFE7B0; }
@@ -197,7 +197,7 @@
 /* ---------- Stat blocks ---------- */
 .x5b { position: relative; color: var(--g-text); font: 400 15.5px/21px var(--x5-font-book); }
 .x5b p { margin: 7px 0; }
-.x5b .sh-term { text-decoration-color: color-mix(in srgb, var(--x5-gold) 80%, var(--g-text-2)); }
+.x5b .sh-term { border-bottom-color: color-mix(in srgb, var(--x5-gold) 80%, var(--g-text-2)); }
 .g-5e .x5b .x5b-r { padding: 0 2px; border-radius: 2px; box-shadow: none; background: color-mix(in srgb, var(--x5-gold) 13%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--x5-gold) 70%, transparent); font-weight: 700; }
 .g-5e .x5b .x5b-r:hover { background: color-mix(in srgb, var(--x5-gold) 26%, transparent); }
 .x5b-l { padding: 1px 0; }
@@ -220,7 +220,9 @@
 .g-5e .x5b-ab24 .x5b-r:hover { border-bottom-color: var(--x5-gold); }
 .x5b.ed2024 h3 { margin: 14px 0 4px; padding-bottom: 2px; border-bottom: 1px solid var(--g-rule); font: 600 21px/24px var(--g-font-display); font-variant: small-caps; letter-spacing: .02em; color: var(--g-accent-text); }
 .x5b p > b:first-child { font-style: italic; font-weight: 700; }
-.x5b-spl { padding-left: 14px; text-indent: -14px; }
+/* Hanging indent without text-indent (the review bot flags it): the first line starts 14px left. */
+.x5b-spl { padding-left: 14px; }
+.x5b-spl::before { content: ''; margin-left: -14px; }
 .x5b p.x5b-spl > b.k { font-style: normal; font-weight: 700; }
 
 /* 2014: the amber page, the ochre bars, the red taper */

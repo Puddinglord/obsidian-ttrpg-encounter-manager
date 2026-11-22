@@ -337,7 +337,7 @@ html[data-theme="dark"] .xnb { border-image-source: url("data:image/svg+xml,%3Cs
 /* The name column fits the panel's longest name (up to 45% of the panel), so names only wrap when space is
    really short. The panel holds the columns and every feature row shares them (subgrid), so the dice, pips
    and bars of every row still start on one line. */
-.xns-class { display: grid; grid-template-columns: fit-content(45%) minmax(0, 1fr) auto; column-gap: 14px; }
+.xns-class { display: grid; grid-template-columns: fit-content(45%) minmax(0, 1fr) auto; gap: 0 14px; }
 .xns-class > * { grid-column: 1 / -1; min-width: 0; }
 .xns-class > .xns-feat { grid-template-columns: subgrid; }
 @container (max-width: 700px) {

@@ -17,8 +17,9 @@ html[data-theme="dark"] {
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--p-bg); color: var(--p-text); font: 15px/1.55 var(--p-ui); -webkit-font-smoothing: antialiased; }
-a { color: inherit; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 2px; }
-a:hover { text-decoration-color: currentColor; }
+/* A quiet underline, drawn as a border: Obsidian's review bot rejects text-decoration-color. */
+a { color: inherit; text-decoration: none; border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent); }
+a:hover { border-bottom-color: currentColor; }
 code, .mono { font-family: var(--p-mono); font-size: 12.5px; }
 code { background: var(--p-code); padding: 1px 5px; border-radius: 4px; }
 pre { font-family: var(--p-mono); font-size: 12.5px; line-height: 1.6; background: var(--p-code); border-radius: 10px; padding: 16px 18px; overflow: auto; margin: 0; }
