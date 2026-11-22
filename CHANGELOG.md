@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-22
+
 ### Changed
 
 - A location card without a picture has a faint hex map with a compass rose across its banner, in your game's colours, instead of wavy lines. See the [campaigns guide](docs/campaigns.md#places).
