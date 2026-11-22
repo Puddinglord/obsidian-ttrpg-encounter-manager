@@ -6,6 +6,12 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Fixed
+
+- On a screen that isn't high-resolution, a Nimble sheet's class feature names (Fury Dice, Rage…) sat a pixel high and its weapon damage numbers a pixel low in their buttons. Both now sit centred on any screen, as do the section headings on a compendium class page.
+- A Nimble NPC's "First met" link sat a pixel high beside its label.
+- In New character, a one-word spell name like "Firebrand" ran under its tags in a narrow window. It now keeps its room and the tags stack beside it.
+
 ## [2.0.2] - 2026-11-22
 
 ### Fixed

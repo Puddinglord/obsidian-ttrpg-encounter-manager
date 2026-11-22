@@ -3290,6 +3290,9 @@ body.is-tablet button.nimble-npc-pill { padding: 6px 10px; }
 :is(.nimble-npc-stats, .ev-cq-mons) > .nimble-inline-ref { top: 0; } /* in a row of chips, centred like them (not lifted to a sentence) */
 /* A note link in a labelled row (an NPC's "First met", a battle's place): centred on the row, not lifted to a sentence (it sat 1–1.5px high). */
 :is(span.nimble-npc-link, .battle-fact) a.internal-link:is(.nimble-note-link, .nimble-npc-link) { top: 0; }
+/* Nimble's at its label's size: at 0.95em (12.35px) Avenir Next's ascent rounds down and its descent up, and the words
+   sat 1.4px high. 5e's type centres at 0.95em and goes 1px off at 12.5px, so this is Nimble's alone. */
+.ev-sys-nimble span.nimble-npc-link a.internal-link:is(.nimble-note-link, .nimble-npc-link) { font-size: 12.5px; }
 /* And on one line: the link shrinks to the room left beside its label and its words end in … (oneLineLinks, wiki-links.ts). */
 :is(span.nimble-npc-link, .battle-fact) :is(.nimble-npc-link-value, .battle-fact-text) { min-width: 0; max-width: 100%; }
 :is(span.nimble-npc-link, .battle-fact) a.internal-link { display: inline-flex; max-width: 100%; min-width: 0; white-space: nowrap; }
@@ -3932,9 +3935,10 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet.ns-sheet .ns-class-head + .ns-feat { border-top: 0; }
 .nimble-sheet.ns-sheet .ns-feat-name { justify-content: flex-start; justify-self: start; min-width: 0; min-height: 22px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
 .nimble-sheet.ns-sheet button.ns-feat-name { cursor: pointer; }
-/* The name's capitals sit on the row's centre line as they are (the bundled Vollkorn needs no nudge; measured). */
-.nimble-sheet.ns-sheet .ns-feat-name b { display: inline; font: italic 900 15px/20px var(--ev-font-name); color: var(--ev-text); }
-.nimble-sheet.ns-sheet .ns-feat-name b { position: relative; top: 1px; } /* Vollkorn's capitals sit 1.1px high in a centred box (measured) */
+/* The name's capitals sit on the row's centre line: its box is trimmed to them, so the row centres the letters,
+   not Vollkorn's ascent and descent (a pixel nudge landed 1px off on a 1x screen and centred on a 2x one). */
+.nimble-sheet.ns-sheet .ns-feat-name b { display: block; font: italic 900 15px/20px var(--ev-font-name); color: var(--ev-text); text-box: trim-both cap alphabetic; }
+@supports not (text-box: trim-both cap alphabetic) { .nimble-sheet.ns-sheet .ns-feat-name b { position: relative; top: 1px; } }
 .nimble-sheet.ns-sheet .ns-feat.is-mana .ns-feat-name b { color: var(--ev-mana); }
 .nimble-sheet.ns-sheet .ns-feat-nw { white-space: nowrap; }
 .nimble-sheet.ns-sheet .ns-feat-chev { display: inline-flex; vertical-align: middle; margin: -2px 0 0 6px; color: var(--ev-text-2); transition: transform 0.15s ease; }
@@ -4058,7 +4062,7 @@ body.is-phone .nimble-record-modal .record-actions .record-btn { flex: 1; justif
 .nimble-sheet.ns-sheet button.ns-roll.is-cast { color: var(--ev-mana); background: var(--ev-surface); border-color: color-mix(in srgb, var(--ev-mana) 40%, var(--ev-line-strong)); }
 .nimble-sheet.ns-sheet button.ns-roll.is-cast:hover { background: var(--ev-mana-soft); color: var(--ev-mana); }
 .nimble-sheet.ns-sheet .ns-roll .ev-pill-icon svg { color: var(--ev-text-2); }
-.nimble-sheet.ns-sheet .ns-roll > :is(.ev-pill-text, .ns-dmg-n) { position: relative; top: var(--ns-btn-dy, 1.5px); }
+.nimble-sheet.ns-sheet .ns-roll > .ev-pill-text { position: relative; top: var(--ns-btn-dy, 1.5px); }
 .nimble-sheet.ns-sheet button.ns-dmg { justify-content: space-between; gap: 8px; min-width: 96px; }
 .nimble-sheet.ns-sheet .ns-dmg-n { font: 700 15px/normal var(--ev-font-num); font-variant-numeric: lining-nums tabular-nums; }
 .nimble-sheet.ns-sheet .ns-dmg-t { width: 15px; height: 15px; justify-content: center; color: var(--ev-text-2); }
@@ -4663,7 +4667,9 @@ button.nimble-cmp-back:hover { background: var(--background-modifier-active-hove
 .nimble-cmp-card .nimble-cmp-details[open] > .nimble-cmp-summary { border-bottom: 1px solid var(--ev-line); }
 .nimble-cmp-card .nimble-cmp-summary-chev { color: var(--ev-text-2); }
 .nimble-cmp-card .nimble-cmp-summary-chev svg { width: 14px; height: 14px; }
-.nimble-cmp-card .nimble-cmp-summary-title { position: relative; top: 1px; font: italic 900 15px/20px var(--ev-font-name); } /* Vollkorn's capitals sit 1.1px high in a centred box (measured) */
+/* Trimmed to its capitals so the row centres the letters, not Vollkorn's ascent and descent (as the sheet's feature names). */
+.nimble-cmp-card .nimble-cmp-summary-title { font: italic 900 15px/20px var(--ev-font-name); text-box: trim-both cap alphabetic; }
+@supports not (text-box: trim-both cap alphabetic) { .nimble-cmp-card .nimble-cmp-summary-title { position: relative; top: 1px; } }
 .nimble-cmp-card .nimble-cmp-count { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 12px/normal var(--ev-font-ui); }
 .nimble-cmp-card .nimble-cmp-details-body { gap: 10px; padding: 12px 14px 14px; }
 .nimble-cmp-card .nimble-cmp-group .nimble-cmp-feature { padding-top: 10px; border-top: 1px solid var(--ev-line); }
@@ -4905,7 +4911,8 @@ body.is-phone .nimble-wizard .lu-sub { justify-content: center; }
 .nimble-wizard .lu-option.is-dim { opacity: 0.72; }
 .nimble-wizard .lu-option.is-taken { opacity: 0.55; cursor: default; }
 .nimble-wizard .lu-option-top { display: flex; align-items: center; gap: 6px; }
-.nimble-wizard .lu-option-name { flex: 1 1 auto; min-width: 0; font: italic 800 15.5px/1.25 var(--ev-font-name); }
+/* It wraps between words but never narrower than its longest word (a one-word name ran under its tags). */
+.nimble-wizard .lu-option-name { flex: 1 1 auto; min-width: min-content; font: italic 800 15.5px/1.25 var(--ev-font-name); }
 .nimble-wizard .lu-option-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
 .nimble-wizard .lu-option-check { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; background: var(--ev-accent); color: var(--ev-on-accent); }
 .nimble-wizard .lu-option-check svg { display: block; width: 12px; height: 12px; }
