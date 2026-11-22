@@ -62,6 +62,7 @@ g.activeWindow ??= window;
 g.createEl ??= <K extends keyof HTMLElementTagNameMap>(tag: K, o?: ElInfo | string) => build(document, tag, o);
 g.createDiv ??= (o?: ElInfo | string) => build(document, 'div', o);
 g.createSpan ??= (o?: ElInfo | string) => build(document, 'span', o);
+g.createFragment ??= () => document.createDocumentFragment();
 
 const el = HTMLElement.prototype as unknown as Record<string, unknown>;
 proto.appendText ??= function (this: Node, t: string) { this.appendChild(ownerDoc(this).createTextNode(t)); };

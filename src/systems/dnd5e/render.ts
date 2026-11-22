@@ -60,18 +60,15 @@ export function italicizeBookWords(el: HTMLElement): void {
 		const text = n.textContent ?? '';
 		const hits = [...text.matchAll(BOOK_ITALICS)];
 		if (!hits.length) continue;
-		const frag = doc.createDocumentFragment();
+		const frag = createFragment();
 		let at = 0;
 		for (const h of hits) {
 			const i = h.index ?? 0;
-			if (i > at) frag.appendChild(doc.createTextNode(text.slice(at, i)));
-			const em = doc.createElement('em');
-			em.className = 'dnd5e-book-italic';
-			em.textContent = h[0];
-			frag.appendChild(em);
+			if (i > at) frag.appendText(text.slice(at, i));
+			frag.createEl('em', { cls: 'dnd5e-book-italic', text: h[0] });
 			at = i + h[0].length;
 		}
-		if (at < text.length) frag.appendChild(doc.createTextNode(text.slice(at)));
+		if (at < text.length) frag.appendText(text.slice(at));
 		n.replaceWith(frag);
 	}
 }
