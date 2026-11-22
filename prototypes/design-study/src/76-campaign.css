@@ -51,8 +51,17 @@
 .cq-secret .k { display: inline-flex; align-items: center; gap: 5px; font: 700 11.5px/20px var(--g-font-ui); text-transform: uppercase; letter-spacing: .06em; color: var(--g-text-2); }
 .cq-whos { display: flex; flex-wrap: wrap; gap: 8px 16px; }
 .cq-leads { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14.5px; }
-.cq-banner { position: relative; height: 92px; margin: -18px -20px 4px; border-radius: var(--g-r-lg, 12px) var(--g-r-lg, 12px) 0 0; background: color-mix(in srgb, var(--g-accent) 9%, var(--g-surface-2)); color: color-mix(in srgb, var(--g-accent) 34%, transparent); overflow: hidden; }
-.cq-contours { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* The banner's hex map and compass rose (CQ.map), in the game's ink: --cq-grid and --cq-rose say how faint each
+   part is, and the rose's paper-coloured halves are --cq-ground, the banner's own background. */
+.cq-banner { --cq-ground: color-mix(in srgb, var(--g-accent) 9%, var(--g-surface-2)); --cq-grid: 0.16; --cq-rose: 0.32; position: relative; height: 92px; margin: -18px -20px 4px; border-radius: var(--g-r-lg, 12px) var(--g-r-lg, 12px) 0 0; background: var(--cq-ground); color: var(--g-accent); overflow: hidden; }
+html[data-theme="dark"] :where(.cq-banner) { --cq-grid: 0.12; --cq-rose: 0.24; }
+.cq-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cq-map svg { overflow: visible; }
+.cq-grid { opacity: var(--cq-grid); }
+.cq-rose { opacity: var(--cq-rose); }
+.cq-paper { fill: var(--cq-ground); }
+.cq-shade { fill-opacity: 0.4; }
+.cq-rose-n { font: 600 9.5px/1 var(--g-font-display); }
 .cq-emb { position: absolute; left: 20px; bottom: 12px; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--g-surface); color: var(--g-accent-text); box-shadow: inset 0 0 0 1.5px var(--g-line-strong), 0 2px 6px rgb(0 0 0 / 0.08); }
 .cq-at { display: grid; gap: 6px; }
 .cq-at > small { font: 700 11px/14px var(--g-font-ui); text-transform: uppercase; letter-spacing: .06em; color: var(--g-text-2); }
@@ -137,6 +146,7 @@
 	.cq-xp { grid-template-columns: auto minmax(0, 1fr); }
 	.cq-xp > small { grid-column: 1 / -1; }
 	.cq-banner { height: 78px; }
+	.cq-rose, .cq-halo { scale: 0.84; }
 }
 
 /* ---- 5e: the book's red and gold, Garamond small caps, a tapered red rule, a boxed read-aloud ---- */
@@ -147,7 +157,8 @@
 .g-5e .cq-read { background: #F1E6CF; box-shadow: inset 0 0 0 1px #D5BE95, 0 1px 2px rgb(88 24 13 / 0.08); }
 .g-5e .cq-prose h2 { font-variant: small-caps; color: var(--x5-sb14-name); }
 .g-5e .cq-camp b { font: 700 17px/20px var(--g-font-display); font-variant: small-caps; color: var(--x5-sb14-name); }
-.g-5e .cq-banner { background: #EFE0C2; color: rgb(146 38 16 / 0.28); }
+.g-5e .cq-banner { --cq-ground: #EFE0C2; --cq-grid: 0.17; --cq-rose: 0.34; background-image: var(--x5-paper); color: #922610; }
+html[data-theme="dark"] .g-5e .cq-banner { --cq-ground: #2C2218; --cq-grid: 0.16; --cq-rose: 0.3; color: #E07A5E; }
 
 /* ---- Nimble: the sheet's charcoal frame and dark foot, Vollkorn, khaki ribbons ---- */
 .g-nimble .cq-card { border-radius: 4px; box-shadow: inset 0 0 0 2px var(--g-bar); }
@@ -156,7 +167,8 @@
 .g-nimble .cq-sec small { font: 600 12.5px/19px var(--g-font-ui); font-style: normal; }
 .g-nimble .cq-stamp { border-radius: 2px; background: var(--g-bar); color: var(--g-on-bar); box-shadow: none; }
 .g-nimble .cq-stamp.is-failed { background: var(--g-danger-text); color: #fff; }
-.g-nimble .cq-banner { border-radius: 4px 4px 0 0; background: var(--g-band); color: rgb(75 71 67 / 0.3); box-shadow: inset 0 0 0 2px var(--g-bar); }
+.g-nimble .cq-banner { --cq-ground: var(--g-band); border-radius: 4px 4px 0 0; box-shadow: inset 0 0 0 2px var(--g-bar); }
+.g-nimble .cq-rose-n { font: italic 800 10px/1 var(--g-font-name); }
 .g-nimble .cq-emb { box-shadow: inset 0 0 0 2px var(--g-bar); color: var(--g-text); }
 .g-nimble .cq-mon { background: var(--g-bar); color: var(--g-on-bar); }
 .g-nimble .cq-mon svg { color: var(--g-on-bar); opacity: .8; }
@@ -180,7 +192,8 @@
 .g-coc .cq-objs li { font-size: 16.5px; }
 .g-coc .cq-secret { background: #E1D3AE; box-shadow: inset 0 0 0 1px #C7B68C; border-radius: 2px; }
 .g-coc .cq-san { background: #F3E6D9; color: #8A2A22; box-shadow: inset 0 0 0 1px rgb(138 42 34 / 0.35); }
-.g-coc .cq-banner { margin: -18px -20px 4px; border-radius: 2px 6px 0 0; background: #CDBB8E; color: rgb(30 26 21 / 0.3); }
+.g-coc .cq-banner { --cq-ground: #CDBB8E; --cq-grid: 0.2; --cq-rose: 0.36; margin: -18px -20px 4px; border-radius: 2px 6px 0 0; color: #1E1A15; }
+.g-coc .cq-rose-n { font-family: "Big Caslon", "Hoefler Text", Georgia, serif; }
 .g-coc .cq-emb { border-radius: 2px; background: #F4ECD6; box-shadow: inset 0 0 0 1px #8F7F57; color: var(--g-text); transform: rotate(-3deg); }
 .g-coc .cq-change, .g-coc .cq-loot span { border-radius: 2px; font-family: var(--g-font-type); font-weight: 400; }
 .g-coc .cq-prose h2 { font: 400 22px/1.25 var(--g-font-display); }
@@ -194,7 +207,8 @@
 .g-dh .cq-kick { color: var(--g-accent-text); }
 .g-dh .cq-sec { border-bottom: 1px solid var(--g-line-strong); color: var(--g-accent-text); letter-spacing: .12em; }
 .g-dh .cq-stamp { background: var(--g-text); color: #F2D48A; box-shadow: none; }
-.g-dh .cq-banner { margin: -22px -24px 4px; border-radius: 14px 14px 0 0; background: linear-gradient(160deg, #2B2466, #1D1842); color: rgb(242 212 138 / 0.45); }
+.g-dh .cq-banner { --cq-ground: #241E54; --cq-grid: 0.2; --cq-rose: 0.4; margin: -22px -24px 4px; border-radius: 14px 14px 0 0; background: linear-gradient(160deg, #2B2466, #1D1842); color: #F2D48A; }
+.g-dh .cq-rose-n { font-family: var(--g-font-ui); }
 .g-dh .cq-emb { background: #1D1842; color: #F2D48A; box-shadow: inset 0 0 0 1.5px #C8922E, 0 2px 8px rgb(29 24 66 / 0.3); }
 .g-dh .cq-count { background: #F4EFE2; box-shadow: inset 0 0 0 1px var(--g-line-strong); color: var(--g-text); }
 .g-dh .cq-count svg { color: var(--g-accent-text); }
@@ -229,7 +243,7 @@
 .g-pf .cq-settle-h { border-bottom: 2px solid var(--g-accent); }
 .g-pf .cq-settle-h > span { color: var(--g-accent-text); }
 .g-pf .cq-xp { background: var(--g-surface-2); box-shadow: inset 0 0 0 1px var(--g-line); }
-.g-pf .cq-banner { border-radius: 4px 4px 0 0; background: #EBD9C2; color: rgb(138 28 20 / 0.3); }
+.g-pf .cq-banner { --cq-ground: #EBD9C2; --cq-grid: 0.17; --cq-rose: 0.34; border-radius: 4px 4px 0 0; color: #8A1C14; }
 .g-pf .cq-change, .g-pf .cq-loot span { border-radius: 2px; font-family: var(--g-font-cap); }
 .g-pf .cq-prose h2 { font: 400 23px/1.2 var(--g-font-display); }
 .g-pf .cq-camp b { font: 400 16px/20px var(--g-font-display); }

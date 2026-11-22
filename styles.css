@@ -2462,11 +2462,20 @@ body.is-tablet button.ev-cq-box { padding: 0; }
 .ev-cq-secret-icon { display: inline-flex; }
 .ev-cq-secret-icon svg { width: 13px; height: 13px; }
 .ev-cq-secret-text { display: grid; gap: 6px; }
-/* A place: its banner (its image, or contour lines in the game's tint) and emblem; who's here; where it leads. */
-.ev-cq-banner { position: relative; height: 92px; margin: -18px -20px 4px; overflow: hidden; border-radius: var(--ev-r-lg, 12px) var(--ev-r-lg, 12px) 0 0; background: color-mix(in srgb, var(--ev-accent) 9%, var(--ev-surface-2)); color: color-mix(in srgb, var(--ev-accent) 34%, transparent); }
+/* A place: its banner (its image, or a hex map and compass rose in the game's ink) and emblem; who's here; where it leads.
+   The map's ink is the banner's colour; --ev-cq-grid and --ev-cq-rose say how faint each part is, and the rose's
+   paper-coloured halves are --ev-cq-ground, the banner's own background. */
+.ev-cq-banner { --ev-cq-ground: color-mix(in srgb, var(--ev-accent) 9%, var(--ev-surface-2)); --ev-cq-grid: 0.16; --ev-cq-rose: 0.32; position: relative; height: 92px; margin: -18px -20px 4px; overflow: hidden; border-radius: var(--ev-r-lg, 12px) var(--ev-r-lg, 12px) 0 0; background: var(--ev-cq-ground); color: var(--ev-accent); }
+.theme-dark .ev-cq-banner { --ev-cq-grid: 0.12; --ev-cq-rose: 0.24; }
 .ev-cq-banner.has-image { height: 140px; }
 .ev-cq-banner-img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.ev-cq-contours { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ev-cq-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ev-cq-map svg { overflow: visible; }
+.ev-cq-grid { opacity: var(--ev-cq-grid); }
+.ev-cq-rose { opacity: var(--ev-cq-rose); }
+.ev-cq-paper { fill: var(--ev-cq-ground); }
+.ev-cq-shade { fill-opacity: 0.4; }
+.ev-cq-rose-n { font: 600 9.5px/1 var(--ev-font-display); }
 .ev-cq-emblem { position: absolute; left: 20px; bottom: 12px; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--ev-surface); color: var(--ev-accent-text); box-shadow: inset 0 0 0 1.5px var(--ev-line-strong), 0 2px 6px rgb(0 0 0 / 0.08); }
 .ev-cq-emblem svg { width: 22px; height: 22px; }
 .ev-cq-leads { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 600 14.5px/20px var(--ev-font-ui); }
@@ -2500,6 +2509,7 @@ body.is-tablet button.ev-cq-box { padding: 0; }
 	.ev-cq-head { grid-template-columns: minmax(0, 1fr); }
 	.ev-cq-stamp { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 6px; }
 	.ev-cq-banner { height: 78px; }
+	.ev-cq-rose, .ev-cq-halo { scale: 0.84; }
 	.ev-cq-thread { flex-wrap: wrap; }
 }
 @container (max-width: 360px) {
@@ -2515,14 +2525,14 @@ body.is-tablet button.ev-cq-box { padding: 0; }
 .ev-sys-nimble .ev-cq-stamp.is-open { background: var(--ev-surface); color: var(--ev-text); box-shadow: inset 0 0 0 2px var(--ev-bar); }
 .ev-sys-nimble .ev-cq-stamp.is-done { background: var(--ev-text-2); color: #FFFFFF; }
 .ev-sys-nimble .ev-cq-stamp.is-failed { background: var(--ev-danger-text); color: #FFFFFF; }
-.ev-sys-nimble .ev-cq-banner { border-radius: 4px 4px 0 0; background: var(--ev-band); color: rgb(75 71 67 / 0.3); box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.ev-sys-nimble .ev-cq-banner { --ev-cq-ground: var(--ev-band); border-radius: 4px 4px 0 0; box-shadow: inset 0 0 0 2px var(--ev-bar); }
+.ev-sys-nimble .ev-cq-rose-n { font: italic 800 10px/1 var(--ev-font-name); }
 .ev-sys-nimble .ev-cq-emblem { box-shadow: inset 0 0 0 2px var(--ev-bar); color: var(--ev-text); }
 .ev-sys-nimble button.ev-cq-box { border-radius: 2px; box-shadow: inset 0 0 0 2px var(--ev-bar); }
 .ev-sys-nimble .ev-cq ul.ev-cq-objs > li.is-done button.ev-cq-box { background: var(--ev-bar); color: var(--ev-on-bar); }
 .ev-sys-nimble .ev-cq-change { border-radius: 2px; background: var(--ev-bar); color: var(--ev-on-bar); }
 .ev-sys-nimble .ev-cq-change.is-done { background: var(--ev-text-2); color: #FFFFFF; }
 .ev-sys-nimble .ev-cq-change.is-failed { background: var(--ev-danger-text); color: #FFFFFF; }
-.theme-dark .ev-sys-nimble .ev-cq-banner { color: rgb(233 227 215 / 0.25); }
 
 /* 5e: the book's red and gold, Garamond small caps, a tapered red rule under the title, a boxed read-aloud. */
 .ev-sys-dnd5e .ev-cq-title { font: 700 32px/1.1 var(--ev-font-display); font-variant: small-caps; letter-spacing: 0.01em; color: var(--x5-sb14-name); }
@@ -2532,8 +2542,8 @@ body.is-tablet button.ev-cq-box { padding: 0; }
 .ev-sys-dnd5e .ev-cq-stamp.is-done { color: var(--ev-text-2); box-shadow: inset 0 0 0 1.5px var(--ev-line-strong); }
 .ev-sys-dnd5e .ev-cq-read { background: #F1E6CF; box-shadow: inset 0 0 0 1px #D5BE95, 0 1px 2px rgb(88 24 13 / 0.08); }
 .theme-dark .ev-sys-dnd5e .ev-cq-read { background: #2C2218; box-shadow: inset 0 0 0 1px #5E4A2E; }
-.ev-sys-dnd5e .ev-cq-banner { background: #EFE0C2; color: rgb(146 38 16 / 0.28); }
-.theme-dark .ev-sys-dnd5e .ev-cq-banner { background: #2C2218; color: rgb(224 122 94 / 0.3); }
+.ev-sys-dnd5e .ev-cq-banner { --ev-cq-ground: #EFE0C2; --ev-cq-grid: 0.17; --ev-cq-rose: 0.34; background-image: var(--x5-paper); color: #922610; }
+.theme-dark .ev-sys-dnd5e .ev-cq-banner { --ev-cq-ground: #2C2218; --ev-cq-grid: 0.16; --ev-cq-rose: 0.3; color: #E07A5E; }
 .ev-sys-dnd5e .ev-cq-emblem { box-shadow: inset 0 0 0 1.5px var(--x5-gold-soft), 0 2px 6px rgb(0 0 0 / 0.08); }
 @container (max-width: 460px) {
 	.ev-sys-nimble .ev-cq-title { font-size: 25px; }
@@ -6692,7 +6702,8 @@ body.is-mobile .nimble-entity-builder button.ncb-motif, body.is-tablet .nimble-e
 .dnd5e-tracker .dnd5e-row.is-down { opacity: 0.8; }
 .dnd5e-tracker .dnd5e-row.is-defeated { min-height: 36px; opacity: 0.55; grid-template-columns: 20px 26px minmax(0, 1fr) 0 60px; }
 .dnd5e-tracker .dnd5e-row.is-defeated .dnd5e-combatant-name { text-decoration: line-through; }
-.dnd5e-tracker button.dnd5e-init { width: 26px; height: 26px; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; font: 600 16px/1 var(--ev-font-display); color: var(--ev-text-2); text-align: right; justify-content: flex-end; font-variant-numeric: lining-nums tabular-nums; }
+/* Not the turn card's gem, which is a .dnd5e-init button too and keeps its own size. */
+.dnd5e-tracker button.dnd5e-init:where(:not(.dnd5e-gem)) { width: 26px; height: 26px; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; font: 600 16px/1 var(--ev-font-display); color: var(--ev-text-2); text-align: right; justify-content: flex-end; font-variant-numeric: lining-nums tabular-nums; }
 .dnd5e-tracker button.dnd5e-init:hover { color: var(--ev-accent-text); }
 .dnd5e-tracker button.dnd5e-init.is-unset { color: color-mix(in srgb, var(--ev-text-2) 70%, transparent); }
 .dnd5e-tracker .dnd5e-row-name { min-width: 0; }
@@ -6786,7 +6797,7 @@ body.ev-is-sorting .dnd5e-tracker .dnd5e-row:hover { background: transparent; bo
 	.dnd5e-tracker .dnd5e-grip { opacity: 0.55; }
 	.dnd5e-tracker .dnd5e-condition { height: 30px; }
 	.dnd5e-tracker .dnd5e-condition-x { width: 26px; height: 26px; }
-	.dnd5e-tracker button.dnd5e-init { height: 34px; }
+	.dnd5e-tracker button.dnd5e-init:where(:not(.dnd5e-gem)) { height: 34px; }
 }
 body.is-tablet .dnd5e-tracker :is(button.dnd5e-init, button.dnd5e-gem, button.dnd5e-hp-text, button.dnd5e-member, button.dnd5e-combatant-more) { padding: 0; }
 @media (prefers-reduced-motion: reduce) { .dnd5e-tracker .ev-bar > i { transition: none; } }

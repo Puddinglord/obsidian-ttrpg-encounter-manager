@@ -240,9 +240,12 @@ const shots = {
 			const by = (n) => f.combatants.find(c => c.label === n);
 			const ogre = by('Ogre'); if (ogre) { ogre.hp = 41; ogre.conditions.push({ name: 'Prone' }); }
 			const gob = by('Goblin Warrior'); if (gob) gob.hp = 4;
+			// Fixed initiative, so the bloodied goblin is the one on the card whatever the dice say.
+			for (const c of f.combatants) c.init = { 'Goblin Warrior': 16, Mage: 12, Ogre: 6 }[c.name] ?? c.init;
+			if (gob) { f.turnId = gob.id; f.acted = []; }
 		}));
 		await open('Campaigns/Sword Coast/Waymoot Bridge.md');
-		await o.eval((app) => app.workspace.rightSplit.setSize?.(330));
+		await o.eval((app) => app.workspace.rightSplit.setSize?.(365)); // wide enough for the card's type line beside its initiative gem
 		await page.waitForTimeout(900);
 		await page.evaluate(() => document.querySelectorAll('.notice').forEach(n => n.remove()));
 	},

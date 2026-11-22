@@ -6,6 +6,14 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Changed
+
+- A location card without a picture has a faint hex map with a compass rose across its banner, in your game's colours, instead of wavy lines. See the [campaigns guide](docs/campaigns.md#places).
+
+### Fixed
+
+- The initiative gem on the 5e tracker's turn card keeps its full shape, with the number in the middle. It was squeezed to half its width, with the number pushed against its edge. See the [5e guide](docs/5e.md#encounters).
+
 ## [2.0.3] - 2026-11-22
 
 ### Fixed

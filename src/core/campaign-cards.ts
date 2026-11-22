@@ -206,7 +206,10 @@ function npcsAt(plugin: EmberVaultPlugin, place: TFile): string[] {
 	return out.sort((a, b) => a.localeCompare(b));
 }
 
-/** The place's banner: its image when it has one, else contour lines in the game's tint, and its emblem. */
+/**
+ * The place's banner: its image when it has one, else an explorer's hex map with a faint compass rose,
+ * drawn in the game's tint (`currentColor`, opacities from the CSS); and its emblem.
+ */
 function banner(card: HTMLElement, plugin: EmberVaultPlugin, fm: Record<string, unknown>, path: string): void {
 	const b = card.createDiv({ cls: 'ev-cq-banner' });
 	const link = portraitLink(fm.image ?? fm.banner);
@@ -219,22 +222,105 @@ function banner(card: HTMLElement, plugin: EmberVaultPlugin, fm: Record<string, 
 	if (src) {
 		b.addClass('has-image');
 		b.createEl('img', { cls: 'ev-cq-banner-img', attr: { src, alt: '', draggable: 'false' } });
-	} else {
-		const svg = b.createSvg('svg', { cls: 'ev-cq-contours', attr: { viewBox: '0 0 700 90', preserveAspectRatio: 'xMidYMid slice', 'aria-hidden': 'true' } });
-		const g = svg.createSvg('g', { attr: { fill: 'none', stroke: 'currentColor', 'stroke-width': '1.2' } });
-		for (const [d, op] of CONTOURS) g.createSvg('path', { attr: { d, opacity: op } });
-		g.createSvg('ellipse', { attr: { cx: '420', cy: '40', rx: '38', ry: '16', opacity: '.6' } });
-		g.createSvg('ellipse', { attr: { cx: '420', cy: '40', rx: '20', ry: '8', opacity: '.6' } });
-	}
+	} else hexMap(b);
 	setIcon(b.createSpan({ cls: 'ev-cq-emblem' }), evIcon('castle'));
 }
 
-const CONTOURS: [string, string][] = [
-	['M-10 60c60-30 110 20 170-6s100-34 160-10 120 28 180 4 110-20 160 2', '1'],
-	['M-10 44c60-28 110 18 170-8s100-30 160-8 120 24 180 2 110-18 160 4', '.7'],
-	['M-10 28c60-26 110 16 170-10s100-26 160-6 120 20 180 0 110-16 160 6', '.5'],
-	['M-10 76c60-30 110 22 170-4s100-36 160-12 120 30 180 6 110-22 160 0', '.7'],
-];
+// The banner's map is drawn in CSS pixels (no viewBox), so the hexes and hairlines are one size at every
+// card width. Everything hangs off the rose, which sits a fixed distance in from the right edge.
+const HEX_R = 13; // a flat-topped hex, centre to corner
+const HEX_ROW = 22.5; // flat side to flat side: √3·13 is 22.52, so two rows tile in whole pixels
+const ROSE_X = -62; // the rose's centre, from the right edge
+const ROSE_Y = 5; // below the middle, which leaves room for its N
+const ROSE = { ring: 21.5, band: 19, outer: 23.5, cardinal: 31, cardinalW: 3.5, ordinal: 19, ordinalW: 2.6, hub: 1.5, halo: 2 };
+/** Each map's ids get a number, so two cards on one page (a note and its hover preview) keep their own masks. */
+let mapSeq = 0;
+
+const num = (n: number): string => String(Math.round(n * 100) / 100);
+/** (x, y) turned by `a` radians about the rose's centre. */
+const turn = (x: number, y: number, a: number): string => `${num(x * Math.cos(a) - y * Math.sin(a))} ${num(x * Math.sin(a) + y * Math.cos(a))}`;
+
+/** The hex map: a grid fading in past the emblem and out at the edges, and a ghosted compass rose. */
+function hexMap(b: HTMLElement): void {
+	const n = ++mapSeq;
+	const ref = (k: string): string => `ev-cq-${k}-${n}`;
+	const url = (k: string): string => `url(#${ref(k)})`;
+	const svg = b.createSvg('svg', { cls: 'ev-cq-map', attr: { 'aria-hidden': 'true' } });
+	const defs = svg.createSvg('defs');
+	// A group whose origin is the rose's centre, wherever the right edge is.
+	const atRose = (parent: SVGElement): SVGGElement =>
+		parent.createSvg('svg', { attr: { x: '100%', y: '50%', overflow: 'visible' } }).createSvg('g', { attr: { transform: `translate(${ROSE_X} ${ROSE_Y})` } });
+
+	// The tile: two columns by two rows of hexes, each drawing its top and its two right-hand edges, so every
+	// edge is drawn once. Neighbours spill in so lines crossing the tile's edges join up. A hex is centred on the rose.
+	const tileW = 3 * HEX_R, tileH = 2 * HEX_ROW;
+	let d = '';
+	for (let i = -1; i <= 1; i++) {
+		for (let j = -1; j <= 2; j++) {
+			for (const [cx, cy] of [[tileW * i, HEX_ROW * (j + 0.25)], [tileW * i + 1.5 * HEX_R, HEX_ROW * (j + 0.75)]]) {
+				d += `M${num(cx - HEX_R / 2)} ${num(cy - HEX_ROW / 2)}H${num(cx + HEX_R / 2)}L${num(cx + HEX_R)} ${num(cy)}L${num(cx + HEX_R / 2)} ${num(cy + HEX_ROW / 2)}`;
+			}
+		}
+	}
+	defs.createSvg('pattern', { attr: { id: ref('hex'), width: tileW, height: tileH, y: num(-HEX_ROW / 4), patternUnits: 'userSpaceOnUse' } })
+		.createSvg('path', { attr: { d, fill: 'none', stroke: 'currentColor', 'stroke-width': '0.6' } });
+
+	// Where the grid shows: not under the emblem, less at the top and bottom, softly less round the rose, and
+	// never touching it (a knockout halo, as printed maps keep lines off their symbols).
+	const gradient = (tag: 'linearGradient' | 'radialGradient', k: string, stops: [number, number][], attr: Record<string, string> = {}): void => {
+		const g = defs.createSvg(tag, { attr: { id: ref(k), ...attr } });
+		for (const [offset, a] of stops) g.createSvg('stop', { attr: { offset, 'stop-color': '#000', 'stop-opacity': a } });
+	};
+	gradient('linearGradient', 'left', [[0, 1], [0.3, 0.92], [0.65, 0.35], [1, 0]]);
+	gradient('linearGradient', 'edges', [[0, 0.3], [0.22, 0], [0.78, 0], [1, 0.3]], { x2: '0', y2: '1' });
+	gradient('radialGradient', 'clear', [[0, 0.45], [0.5, 0.3], [1, 0]]);
+	const mask = defs.createSvg('mask', { attr: { id: ref('fade'), maskUnits: 'userSpaceOnUse', x: '0', y: '0', width: '100%', height: '100%' } });
+	mask.createSvg('rect', { attr: { width: '100%', height: '100%', fill: '#fff' } });
+	mask.createSvg('rect', { attr: { width: '100%', height: '100%', fill: url('edges') } });
+	mask.createSvg('rect', { attr: { width: '260', height: '100%', fill: url('left') } });
+	const clear = atRose(mask);
+	clear.createSvg('circle', { attr: { r: '70', fill: url('clear') } });
+	const halo = clear.createSvg('g', { cls: 'ev-cq-halo', attr: { fill: '#000', stroke: '#000', 'stroke-width': ROSE.halo * 2, 'stroke-linejoin': 'round' } });
+	halo.createSvg('circle', { attr: { r: ROSE.outer } });
+	halo.createSvg('path', { attr: { d: star(ROSE.cardinal, ROSE.cardinalW, 0) } });
+	halo.createSvg('rect', { attr: { x: '-3.5', y: num(-ROSE.cardinal - 9.6), width: '7', height: '7' } });
+
+	atRose(svg.createSvg('g', { cls: 'ev-cq-grid', attr: { mask: url('fade') } }))
+		.createSvg('rect', { attr: { x: '-3000', y: '-150', width: '3200', height: '300', fill: url('hex') } });
+	rose(atRose(svg));
+}
+
+/** A four-pointed star's outline: tips at `t`, shoulders `w` out on the diagonals, turned by `a`. */
+function star(t: number, w: number, a: number): string {
+	let s = '';
+	for (let k = 0; k < 4; k++) s += `${k ? 'L' : 'M'}${turn(-w, -w, a + k * Math.PI / 2)}L${turn(0, -t, a + k * Math.PI / 2)}`;
+	return s + 'Z';
+}
+
+/**
+ * An engraved compass rose: a ticked ring inside a hairline one, the four cardinal and four intercardinal
+ * points each split down its length (one half shaded, one the paper's colour, which hides the ring behind it), and N.
+ */
+function rose(at: SVGGElement): void {
+	const g = at.createSvg('g', { cls: 'ev-cq-rose', attr: { fill: 'none', stroke: 'currentColor', 'stroke-width': '0.55', 'stroke-linejoin': 'round' } });
+	g.createSvg('circle', { attr: { r: ROSE.outer, 'stroke-width': '0.4' } });
+	g.createSvg('circle', { attr: { r: ROSE.ring } });
+	g.createSvg('circle', { attr: { r: ROSE.band } });
+	let ticks = '';
+	for (let k = 0; k < 32; k++) {
+		if (k % 8) ticks += `M${turn(0, -ROSE.band, k * Math.PI / 16)}L${turn(0, -ROSE.ring, k * Math.PI / 16)}`;
+	}
+	g.createSvg('path', { attr: { d: ticks, 'stroke-width': '0.45' } });
+	for (const [t, w, off] of [[ROSE.ordinal, ROSE.ordinalW, Math.PI / 4], [ROSE.cardinal, ROSE.cardinalW, 0]]) {
+		for (let k = 0; k < 4; k++) {
+			const a = off + k * Math.PI / 2;
+			g.createSvg('path', { cls: 'ev-cq-paper', attr: { d: `M0 0L${turn(-w, -w, a)}L${turn(0, -t, a)}Z` } });
+			g.createSvg('path', { cls: 'ev-cq-shade', attr: { d: `M0 0L${turn(0, -t, a)}L${turn(w, -w, a)}Z`, fill: 'currentColor' } });
+		}
+	}
+	g.createSvg('circle', { cls: 'ev-cq-paper', attr: { r: ROSE.hub } });
+	g.createSvg('text', { cls: 'ev-cq-rose-n', attr: { y: num(-ROSE.cardinal - 2.6), 'text-anchor': 'middle', fill: 'currentColor', stroke: 'none' } }).setText('N');
+}
 
 // ---------------------------------------------------------------------------
 // Session
