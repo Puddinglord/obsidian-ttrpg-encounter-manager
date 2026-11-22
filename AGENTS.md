@@ -46,7 +46,7 @@ npm run test:visual    # build, then every surface of both games, screenshotted 
 Test in tiers, so a check costs what the change is worth:
 
 - **While you work:** `npm test`, `npm run lint`, `npm run build`, the e2e tests for what you touched (`node e2e/run.mjs "<name>"`) and the visual check for the surfaces you touched (`node e2e/visual.mjs nimble sheet --themes=light`). After a fix, rerun only what failed.
-- **Once, at the end of a batch of work and before a PR:** the full suites, `npm run test:e2e` and `npm run test:visual`, in the background. Read the summary and the failures, not the whole log.
+- **Once, at the end of a batch of work and before a PR:** the full suites, `npm run test:e2e` and `npm run test:visual`, in the background. Read the summary and the failures, not the whole log. If the work touches anything saved (settings, fences, note properties, fights), also `node e2e/upgrade.mjs`: a vault used with the last release, opened by this build.
 - **Before a release:** `node e2e/visual.mjs --full` adds the widths in between.
 
 The e2e Obsidians run hidden; don't run them in the foreground (the maintainer works while they run).

@@ -131,6 +131,7 @@ npm run lint         # Obsidian's review checks: ESLint (TS) + stylelint (styles
 npm run test:e2e     # build, then the e2e suite in 3 hidden Obsidians side by side (e2e/parallel.mjs; --shards=N for more)
 npm run test:e2e:serial         # the same in one Obsidian, in order
 node e2e/run.mjs dice           # only e2e tests whose name contains "dice"
+node e2e/upgrade.mjs            # a vault used with the latest release, opened by this build: nothing lost, nothing rewritten
 node e2e/explore.mjs /tmp/shots # screenshots of every fixture note and the tracker
 node e2e/layout-sweep.mjs       # every sample-vault note in the hover preview and at phone width; fails on crushed or spilling elements
 npm run test:visual             # every surface of both games, light and dark, Nimble and 5e side by side: screenshots and visual checks; --full for every width (node e2e/visual.mjs nimble sheet for a subset)
@@ -206,6 +207,7 @@ Every PR merged into `main` is released by `.github/workflows/auto-release.yml` 
 
 - Default is a patch release. When the user says a change is a minor or major release, add the `release: minor` or `release: major` label to the PR (`gh pr edit <n> --add-label "release: minor"`). For `release: skip`, only when they say not to release.
 - Run `npm test && npm run test:e2e` before merging; `release.yml` lints, tests, builds and attaches `main.js`, `manifest.json`, `styles.css`.
+- Before merging anything that touches what's saved (settings, a fence, a note property, a fight), run `node e2e/upgrade.mjs`: it uses the latest release on its own sample vault (a party, a fight in progress, rolls, a setting, a hero's HP), opens that vault with this build, and fails if a saved setting changed, the fight didn't come back, a note draws a new error, or opening the vault rewrote a note. `node e2e/upgrade.mjs 1.6.1` picks the release. `launchObsidian({ pluginFrom })` is how it installs the release.
 - Every PR adds its changes to `CHANGELOG.md` under `## [Unreleased]` (Added / Changed / Fixed), written plainly in the user's voice; the release workflow turns that section into the tag message and the release notes (`scripts/changelog.mjs`).
 
 ## Shipping a feature
