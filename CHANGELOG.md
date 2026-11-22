@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-22
+
 Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like its game's own book.
 
 ### Added
