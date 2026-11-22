@@ -6692,7 +6692,8 @@ body.is-mobile .nimble-entity-builder button.ncb-motif, body.is-tablet .nimble-e
 .dnd5e-tracker .dnd5e-row.is-down { opacity: 0.8; }
 .dnd5e-tracker .dnd5e-row.is-defeated { min-height: 36px; opacity: 0.55; grid-template-columns: 20px 26px minmax(0, 1fr) 0 60px; }
 .dnd5e-tracker .dnd5e-row.is-defeated .dnd5e-combatant-name { text-decoration: line-through; }
-.dnd5e-tracker button.dnd5e-init { width: 26px; height: 26px; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; font: 600 16px/1 var(--ev-font-display); color: var(--ev-text-2); text-align: right; justify-content: flex-end; font-variant-numeric: lining-nums tabular-nums; }
+/* Not the turn card's gem, which is a .dnd5e-init button too and keeps its own size. */
+.dnd5e-tracker button.dnd5e-init:where(:not(.dnd5e-gem)) { width: 26px; height: 26px; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; font: 600 16px/1 var(--ev-font-display); color: var(--ev-text-2); text-align: right; justify-content: flex-end; font-variant-numeric: lining-nums tabular-nums; }
 .dnd5e-tracker button.dnd5e-init:hover { color: var(--ev-accent-text); }
 .dnd5e-tracker button.dnd5e-init.is-unset { color: color-mix(in srgb, var(--ev-text-2) 70%, transparent); }
 .dnd5e-tracker .dnd5e-row-name { min-width: 0; }
@@ -6786,7 +6787,7 @@ body.ev-is-sorting .dnd5e-tracker .dnd5e-row:hover { background: transparent; bo
 	.dnd5e-tracker .dnd5e-grip { opacity: 0.55; }
 	.dnd5e-tracker .dnd5e-condition { height: 30px; }
 	.dnd5e-tracker .dnd5e-condition-x { width: 26px; height: 26px; }
-	.dnd5e-tracker button.dnd5e-init { height: 34px; }
+	.dnd5e-tracker button.dnd5e-init:where(:not(.dnd5e-gem)) { height: 34px; }
 }
 body.is-tablet .dnd5e-tracker :is(button.dnd5e-init, button.dnd5e-gem, button.dnd5e-hp-text, button.dnd5e-member, button.dnd5e-combatant-more) { padding: 0; }
 @media (prefers-reduced-motion: reduce) { .dnd5e-tracker .ev-bar > i { transition: none; } }
