@@ -168,10 +168,11 @@ Copy `main.js`, `manifest.json` and `styles.css` to `<vault>/.obsidian/plugins/n
 
 ## Obsidian review checks
 
-The community directory's review bot flags things the `eslint-plugin-obsidianmd` recommended config misses, so `eslint.config.mjs` and `stylelint.config.mjs` add them and `npm run lint` fails on warnings. The bot reads every CSS file in the repo, so stylelint checks the site's CSS (`site/**/*.css`) as well as `styles.css`. `.github/workflows/check.yml` runs it on every PR and push to main.
+The community directory's review bot flags things the `eslint-plugin-obsidianmd` recommended config misses, so `eslint.config.mjs` and `stylelint.config.mjs` add them and `npm run lint` fails on warnings. The bot reads every CSS file in the repo (the site's and the design study's too), so stylelint checks every tracked `.css` file, not only `styles.css`. `.github/workflows/check.yml` runs it on every PR and push to main.
 
 - No "command"/"commands" anywhere in a command name; no type assertions that don't change the type.
-- CSS must be fully supported by Chromium 124 (Obsidian 1.6.5): no `display: contents`, no `clip-path` (draw shapes with SVG), no `column-gap` (use `gap`). Stylelint names the feature.
+- CSS must be fully supported by Chromium 124 (Obsidian 1.6.5): no `display: contents`, no `clip-path` (draw shapes with SVG), no `column-gap` (use `gap`), no `text-decoration-color`, `-thickness` or `underline dotted` (draw a coloured or dotted underline with `border-bottom`, as `.ev-term` does), no `text-indent` (a hanging indent is `padding-left` plus a `::before` with `content: ''` and the negative margin). Stylelint names the feature.
+- No remote URLs in CSS, only `data:`. A page that needs web fonts loads them from its HTML (the design study's `00-head.html`).
 - No `!important`; raise specificity instead (see the print rules in styles.css).
 - No `:has()`; put a class on the parent where the markup is generated instead.
 - When the bot flags something new, add a rule for it here rather than only fixing the line.

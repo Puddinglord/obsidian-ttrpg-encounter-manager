@@ -46,7 +46,8 @@
 .xdk-exp { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 8px; padding-top: 7px; border-top: 1.5px dotted #C8B48A; font: 600 13.5px/18px var(--g-font-ui); }
 .xdk-exp b { font-weight: 900; }
 .xdk-pot { display: flex; flex-wrap: wrap; gap: 4px 6px; }
-.xdk-ref { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border-radius: 999px; background: #F6F1E5; box-shadow: inset 0 0 0 1.25px #C8922E; color: #1D1842; font: 700 12.5px/1 var(--g-font-ui); text-decoration: underline; text-decoration-color: #C8B48A; text-underline-offset: 2px; }
+.xdk-ref { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border-radius: 999px; background: #F6F1E5; box-shadow: inset 0 0 0 1.25px #C8922E; color: #1D1842; font: 700 12.5px/1 var(--g-font-ui); }
+.xdk-ref > span { box-shadow: inset 0 -1px #C8B48A; }
 .xdk-ref svg { color: #A8262A; }
 /* FEATURES: the book's heading (left, caps), a gold rule, and the key */
 .xdk-fh { display: flex; align-items: center; gap: 10px; margin: 12px 0 6px; font: 900 13px/16px var(--g-font-display); letter-spacing: .08em; text-transform: uppercase; color: #1D1842; }

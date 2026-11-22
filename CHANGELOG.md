@@ -6,6 +6,10 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Fixed
+
+- The repository passes Obsidian's plugin review again. The design study kept in the repo loaded fonts from the web in its CSS and used CSS that Obsidian 1.6.5 only partly supports. The plugin itself doesn't change.
+
 ## [2.0.0] - 2026-11-22
 
 Ember Vault runs 5e campaigns as well as Nimble, and every screen now looks like its game's own book.

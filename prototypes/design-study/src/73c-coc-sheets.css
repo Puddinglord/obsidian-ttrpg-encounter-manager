@@ -99,7 +99,8 @@
 .xcb h2 { margin: 0; font: 700 21px/26px var(--g-font-ui); text-transform: uppercase; letter-spacing: .02em; }
 .xcb h2 span { text-transform: none; letter-spacing: 0; font-weight: 600; }
 .xcb .ep { font-style: italic; color: var(--g-text-2); margin-top: 2px; }
-.xcb p { margin: 6px 0; padding-left: 16px; text-indent: -16px; }
+.xcb p { margin: 6px 0; padding-left: 16px; }
+.xcb p::before { content: ''; margin-left: -16px; } /* a hanging indent, without text-indent */
 .xcb-tbl { display: grid; margin-top: 10px; border: 1.5px solid var(--g-line-strong); border-radius: 4px; background: var(--g-surface); overflow: hidden; }
 .xcb-tbl > div { display: grid; grid-template-columns: 70px 90px minmax(0, 1fr); grid-auto-rows: 26px; align-items: stretch; padding: 0 10px; border-top: 1px solid var(--g-line); }
 .xcb-tbl > div > * { display: grid; align-items: center; line-height: 1; }
