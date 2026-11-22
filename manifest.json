@@ -1,7 +1,7 @@
 {
 	"id": "nimble-gm",
 	"name": "Ember Vault",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"minAppVersion": "1.7.2",
 	"description": "Run and play Nimble and 5e campaigns from your notes: bundled bestiaries, encounter blocks rated for your party, combat trackers, GM maps, 3D dice, and interactive character sheets for players.",
 	"author": "Dakotah",

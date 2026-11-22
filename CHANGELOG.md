@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-22
+
 ### Fixed
 
 - The repository passes Obsidian's plugin review again. The design study kept in the repo loaded fonts from the web in its CSS and used CSS that Obsidian 1.6.5 only partly supports. The plugin itself doesn't change.
