@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+## [2.0.3] - 2026-11-22
+
 ### Fixed
 
 - On a screen that isn't high-resolution, a Nimble sheet's class feature names (Fury Dice, Rage…) sat a pixel high and its weapon damage numbers a pixel low in their buttons. Both now sit centred on any screen, as do the section headings on a compendium class page.
