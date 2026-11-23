@@ -13,7 +13,7 @@ import type EmberVaultPlugin from '../../main';
 import { Campaign, Chapter, defaultKindFor, FileRef, homeFolderFor, isFileFolder, KIND_ICON, NoteRef, questOrder, questsIn, questState, Section } from './campaign-model';
 import { evIcon } from './icons';
 import { CharacterInfo, SECTION_FOR } from './campaigns';
-import { CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles, ROLE_INFO } from './campaign-modals';
+import { CampaignPicker, CampaignSettingsModal, ChapterPicker, MovePicker, MoveTarget, NamePrompt, NewNoteModal, pickFiles, ROLE_INFO } from './campaign-modals';
 import { STARTERS, StarterKind } from './campaign-templates';
 import { draggedPaths, startFileDrag } from './internals';
 import { handEnteredLeft, PartyMember } from './types';
@@ -190,6 +190,9 @@ export function renderRoster(el: HTMLElement, plugin: EmberVaultPlugin, c: Campa
 	// sheets, with a button to make sheets for them. They count in encounters meanwhile (mergeParty).
 	const stored = gm ? (plugin.settings.activeCampaign === c.folder ? plugin.settings.party : (plugin.settings.campaigns?.[c.folder]?.party ?? [])) : [];
 	const left = handEnteredLeft(stored, heroes.map(h => h.name));
+	if ((heroes.length || left.length) && plugin.campaigns.sameGame(c).length) {
+		iconBtn(head, 'copy', 'Copy the party to another campaign', () => sendHeroes(plugin, c, heroes.map(h => h.path), left, false));
+	}
 	if (!heroes.length && !left.length) {
 		const add = roster.createEl('button', { cls: 'campaign-party campaign-roster-empty' });
 		setIcon(add.createSpan({ cls: 'campaign-party-icon' }), gm ? 'user-plus' : 'shield');
@@ -204,6 +207,10 @@ export function renderRoster(el: HTMLElement, plugin: EmberVaultPlugin, c: Campa
 			const m = new Menu();
 			m.addItem(i => i.setTitle('Open in new tab').setIcon('file-plus').onClick(() => void plugin.campaigns.open(h.path, true)));
 			if (!h.mine && !gm) m.addItem(i => i.setTitle('This is my character').setIcon('shield').onClick(() => void plugin.campaigns.setMine(c, h.path)));
+			if (plugin.campaigns.sameGame(c).length) {
+				m.addItem(i => i.setTitle('Copy to campaign…').setIcon('copy').onClick(() => sendHeroes(plugin, c, [h.path], [], false)));
+				m.addItem(i => i.setTitle('Move to campaign…').setIcon('folder-input').onClick(() => sendHeroes(plugin, c, [h.path], [], true)));
+			}
 			m.showAtMouseEvent(e);
 		});
 	}
@@ -249,10 +256,8 @@ function heroCard(list: HTMLElement, plugin: EmberVaultPlugin, h: Partial<Charac
 	}
 	if (path) {
 		card.addEventListener('click', (e) => { e.preventDefault(); void plugin.campaigns.open(path, e.metaKey || e.ctrlKey); });
-		if (menu) {
-			card.addEventListener('contextmenu', (e) => { e.preventDefault(); menu(e); });
-			onLongPress(card, menu);
-		}
+		// Right-click and long-press both (onLongPress handles the mouse's contextmenu too: one menu, not two).
+		if (menu) onLongPress(card, menu);
 		draggable(card, plugin, path);
 	}
 	return card;
@@ -275,6 +280,18 @@ export function promptCharacter(plugin: EmberVaultPlugin, c: Campaign, mine: boo
 /** The party, as character sheets: the same section for campaigns you run and ones you play in. */
 export function renderPartyLine(el: HTMLElement, plugin: EmberVaultPlugin, c: Campaign): void {
 	renderRoster(el, plugin, c);
+}
+
+/** Pick another campaign of the same game, then copy or move heroes (sheets and heroes entered by hand) into it. */
+function sendHeroes(plugin: EmberVaultPlugin, c: Campaign, sheets: string[], typed: PartyMember[], move: boolean): void {
+	const n = sheets.length + typed.length;
+	const what = n === 1 ? (sheets[0] ? baseName(sheets[0]) : typed[0].name) : `${n} heroes`;
+	new CampaignPicker(plugin.app, plugin.campaigns.sameGame(c), (to) => void (async () => {
+		const { sent, skipped } = await plugin.campaigns.sendHeroes(c, to, sheets, typed, move);
+		const done = sent.length ? `${move ? 'Moved' : 'Copied'} ${sent.join(', ')} to ${to.name}.` : '';
+		const left = skipped.length ? ` ${to.name} already has ${skipped.join(', ')}.` : '';
+		new Notice((done + left).trim());
+	})(), `${move ? 'Move' : 'Copy'} ${what} to which campaign?`).open();
 }
 
 /** A party entered by hand (name, class, level, HP): a character note for each, keeping their HP, Defense and Wounds. */

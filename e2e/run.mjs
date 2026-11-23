@@ -5484,6 +5484,71 @@ test('GM party: character sheets in a Party section, and the encounter party rea
 	}
 });
 
+test('GM party: copy and move heroes to another campaign of the same game', async (o) => {
+	const p = o.page;
+	const V = '.nimble-campaign-view';
+	const NAMES = ['Copy To', 'Copy Other', 'Copy From'];
+	const clean = () => o.eval(async (app, plugin, names) => {
+		for (const n of names) { const f = app.vault.getAbstractFileByPath(`Campaigns/${n}`); if (f) await app.vault.delete(f, true); }
+		for (const n of names) delete plugin.settings.campaigns[`Campaigns/${n}`];
+		await plugin.campaigns.setActive(null);
+		plugin.settings.party = [];
+	}, NAMES);
+	try {
+		await clean();
+		// A player campaign and a 5e one beside the campaign the heroes come from, which is made last, so it's active.
+		await o.eval(async (app, plugin) => {
+			await plugin.campaigns.createCampaign({ name: 'Copy To', level: 2, heroes: 4, starter: false, role: 'player' });
+			await plugin.campaigns.createCampaign({ name: 'Copy Other', level: 2, heroes: 4, starter: false, system: '5e', edition: '2024' });
+			await plugin.campaigns.createCampaign({ name: 'Copy From', level: 2, heroes: 4, starter: false });
+			await app.vault.createFolder('Campaigns/Copy From/Party').catch(() => undefined);
+			await app.vault.create('Campaigns/Copy From/Party/Wren.md', '---\nnimble: character\nmine: true\nclass: Hunter\nlevel: 2\nhp_max: 19\n---\n\n```nimble-sheet\n```\n');
+			await app.vault.create('Campaigns/Copy From/Party/Ash.md', '---\nnimble: character\nmine: true\nclass: Mage\nlevel: 2\nhp_max: 14\n---\n\n```nimble-sheet\n```\n');
+			plugin.settings.party = [{ id: 'k1', name: 'Kestrel', level: 2, maxHp: 21, className: 'Hunter' }];
+			await plugin.saveSettings();
+			await plugin.openCampaignView();
+			plugin.campaigns.trigger('changed');
+		});
+		await p.waitForSelector(`${V} a.campaign-hero[data-path="Campaigns/Copy From/Party/Wren.md"]`, { timeout: 5000 });
+		// Copy the party: only the other Nimble campaign is offered, not the 5e one.
+		await p.locator(`${V} .campaign-roster-head [aria-label="Copy the party to another campaign"]`).click();
+		await p.locator('.prompt .suggestion-item').first().waitFor({ timeout: 3000 });
+		assert.deepEqual(await p.locator('.prompt .suggestion-item').allTextContents(), ['Copy To (Player)']);
+		await p.locator('.prompt .suggestion-item').first().click();
+		// Both sheets are copied into its Party folder, and Kestrel (typed in by hand) joins its party.
+		await o.waitFor(() => o.eval((app) => ['Wren', 'Ash'].every(n => app.vault.getAbstractFileByPath(`Campaigns/Copy To/Party/${n}.md`))), { what: 'sheets copied' });
+		assert.ok(await o.eval((app) => !!app.vault.getAbstractFileByPath('Campaigns/Copy From/Party/Wren.md')), 'a copy leaves the hero where it was');
+		assert.deepEqual(await o.eval((app, plugin) => plugin.settings.campaigns['Campaigns/Copy To'].party.map(h => h.name)), ['Kestrel']);
+		// One of them stays yours in the player campaign; the other doesn't, since a player has one hero.
+		const mineIn = (paths) => o.eval((app, _p, paths) => paths.map(path => app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter?.mine === true), paths);
+		const copied = ['Ash', 'Wren'].map(n => `Campaigns/Copy To/Party/${n}.md`);
+		await o.waitFor(async () => (await mineIn(copied)).filter(Boolean).length === 1, { what: 'exactly one copied hero marked yours' });
+		// Copying again leaves out the heroes already there.
+		const again = await o.eval(async (app, plugin) => {
+			const from = plugin.campaigns.campaigns.find(c => c.name === 'Copy From');
+			const to = plugin.campaigns.campaigns.find(c => c.name === 'Copy To');
+			return plugin.campaigns.sendHeroes(from, to, ['Campaigns/Copy From/Party/Wren.md'], [], false);
+		});
+		assert.deepEqual(again, { sent: [], skipped: ['Wren'] });
+		// The hero card's menu moves one hero: the note goes, and it loses `mine` in a campaign you run.
+		await o.eval(async (app, plugin) => {
+			await app.vault.create('Campaigns/Copy From/Party/Vell.md', '---\nnimble: character\nclass: Cheat\nlevel: 2\nhp_max: 15\n---\n\n```nimble-sheet\n```\n');
+			const from = plugin.campaigns.campaigns.find(c => c.name === 'Copy From');
+			await plugin.campaigns.setMine(from, 'Campaigns/Copy From/Party/Vell.md');
+		});
+		const vell = `${V} a.campaign-hero[data-path="Campaigns/Copy From/Party/Vell.md"]`;
+		await p.waitForSelector(vell, { timeout: 5000 });
+		await p.locator(vell).click({ button: 'right' });
+		assert.equal(await p.locator('.menu').count(), 1, 'one menu, not two');
+		await clickMenu(o, 'Move to campaign…');
+		await p.locator('.prompt .suggestion-item').first().click();
+		await o.waitFor(() => o.eval((app) => !app.vault.getAbstractFileByPath('Campaigns/Copy From/Party/Vell.md') && !!app.vault.getAbstractFileByPath('Campaigns/Copy To/Party/Vell.md')), { what: 'Vell moved' });
+		await waitFmAt(o, 'Campaigns/Copy To/Party/Vell.md', fm => fm.class && fm.mine === undefined, 'Vell not marked yours: the player campaign already has your hero');
+	} finally {
+		await clean();
+	}
+});
+
 test('pills: every icon and label sits on its pill centre line (within 1px)', async (o) => {
 	await resetEncounter(o);
 	const measure = async (root) => o.page.evaluate(pillOffenders, { root, tolerance: 1, selectors: PILL_SELECTORS });

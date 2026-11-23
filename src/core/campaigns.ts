@@ -11,6 +11,7 @@ import {
 	blankNote, campaignHome, chapterHome, characterNote, handoutNote, locationNote, mapNote, monsterNote, npcNote, playerCampaignHome, questNote, sceneNote, sessionNote, StarterKind,
 } from './campaign-templates';
 import { findNpc } from './npc-lookup';
+import { PartyMember, uid } from './types';
 
 export type NewNoteKind = 'scene' | 'npc' | 'location' | 'quest' | 'session';
 
@@ -233,6 +234,73 @@ export class CampaignStore extends Events {
 		await write(path, true);
 		for (const h of this.characters(c)) if (h.mine && h.path !== path) await write(h.path, false);
 		this.rebuildSoon();
+	}
+
+	/** Other campaigns of the same game as `c`: where its heroes can go. */
+	sameGame(c: Campaign): Campaign[] {
+		const id = this.plugin.systems.resolve(c.system).id;
+		return this.campaigns.filter(t => t !== c && this.plugin.systems.resolve(t.system).id === id);
+	}
+
+	/** A campaign's party as entered by hand (the active campaign's is `settings.party`). */
+	private typedParty(c: Campaign): PartyMember[] {
+		if (this.s.activeCampaign === c.folder) return this.s.party;
+		return this.s.campaigns?.[c.folder]?.party ?? [];
+	}
+
+	private setTypedParty(c: Campaign, party: PartyMember[]): void {
+		if (this.s.activeCampaign === c.folder) { this.s.party = party; return; }
+		const store = (this.s.campaigns ??= {});
+		store[c.folder] = { ...(store[c.folder] ?? {}), party };
+	}
+
+	/**
+	 * Copy heroes into another campaign of the same game, or move them there. A sheet goes into the
+	 * campaign's Party folder (a move keeps links to it); a hero entered by hand joins its party.
+	 * A hero the campaign already has (same name) is left out. A copy keeps `mine` only where it's
+	 * right: not in a campaign you run, and not if the campaign already has your hero.
+	 * Returns the names sent and the names left out.
+	 */
+	async sendHeroes(from: Campaign, to: Campaign, sheets: string[], typed: PartyMember[], move: boolean): Promise<{ sent: string[]; skipped: string[] }> {
+		// The index may have been rebuilt since the picker opened: use today's campaigns, by folder.
+		from = this.campaigns.find(x => x.folder === from.folder) ?? from;
+		to = this.campaigns.find(x => x.folder === to.folder) ?? to;
+		const key = (n: string) => n.trim().toLowerCase();
+		const there = new Set([...this.characters(to).map(h => key(h.name)), ...this.typedParty(to).map(m => key(m.name))]);
+		const sent: string[] = [];
+		const skipped: string[] = [];
+		let mineTaken = to.role !== 'player' || !!this.myCharacter(to);
+		const folder = homeFolderFor(to, 'character', to.folder);
+		for (const path of sheets) {
+			const f = this.app.vault.getFileByPath(path);
+			if (!f) continue;
+			const fm = this.app.metadataCache.getFileCache(f)?.frontmatter ?? {};
+			const name = textOf(fm.title) ?? f.basename;
+			const mine = fmTrue(fm.mine);
+			if (there.has(key(name))) { skipped.push(name); continue; }
+			const dest = this.available(`${folder}/${f.name}`);
+			await this.ensureFolder(folder);
+			const out = move ? f : await this.app.vault.create(dest, await this.app.vault.read(f));
+			if (move) await this.app.fileManager.renameFile(f, dest);
+			if (mine && mineTaken) await this.app.fileManager.processFrontMatter(out, (fm: Record<string, unknown>) => { delete fm.mine; });
+			else if (mine) mineTaken = true;
+			there.add(key(name));
+			sent.push(name);
+		}
+		const keep = typed.filter(m => !there.has(key(m.name)));
+		skipped.push(...typed.filter(m => there.has(key(m.name))).map(m => m.name));
+		if (keep.length) {
+			this.setTypedParty(to, [...this.typedParty(to), ...keep.map(m => ({ ...m, id: uid() }))]);
+			if (move) {
+				const gone = new Set(keep.map(m => m.id));
+				this.setTypedParty(from, this.typedParty(from).filter(m => !gone.has(m.id)));
+			}
+			sent.push(...keep.map(m => m.name));
+			await this.plugin.saveSettings();
+			this.plugin.events.trigger('party-changed');
+		}
+		this.rebuildSoon();
+		return { sent, skipped };
 	}
 
 	/** Hero level and count to assume when the party hasn't been entered yet. */
