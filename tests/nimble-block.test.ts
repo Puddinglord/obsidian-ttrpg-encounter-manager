@@ -33,9 +33,12 @@ describe('the book block', () => {
 		expect(b.classList.contains('ev-sys-nimble')).toBe(true);
 		expect(b.querySelector('.monster-kicker')?.textContent).toBe('Level 3 Legendary · Large · Swamp Matron');
 		expect(b.querySelector('h2.monster-name')?.textContent).toBe('Old Mother Grell');
-		// HP in the heart, the armor letter; speed 6 is the default and is left off.
-		expect([...b.querySelectorAll('.monster-badges .badge-value')].map(x => x.textContent)).toEqual(['100', 'M']);
-		expect(b.querySelector('.move-badge')).toBeNull();
+		// HP in the heart, the armor letter, and speed 6 shown even though it's the default.
+		expect([...b.querySelectorAll('.monster-badges .badge-value')].map(x => x.textContent)).toEqual(['100', 'M', '6']);
+		expect(b.querySelector('.move-badge')?.getAttribute('aria-label')).toBe('Speed 6');
+		// With the setting off, speed 6 is left out; medium armor still shows.
+		const bare = renderStatblock(document.createElement('div'), grell, { ...opts, hideDefaults: true });
+		expect([...bare.querySelectorAll('.monster-badges .badge-value')].map(x => x.textContent)).toEqual(['100', 'M']);
 		expect(b.querySelectorAll('.saves-badge .nb-tri.is-up').length).toBe(1);
 		expect(b.querySelectorAll('.saves-badge .nb-tri.is-down').length).toBe(1);
 		expect(b.querySelector('.ability-item')?.textContent).toBe('Slick Hide. Grapples against her are made with disadvantage.');
@@ -54,7 +57,14 @@ describe('the book block', () => {
 		} as unknown as NimbleMonster;
 		const b = renderStatblock(document.createElement('div'), hound, opts);
 		expect(b.querySelector('.monster-title')?.textContent).toBe('BramblehoundLvl 3, Beast');
-		expect(b.querySelector('.armor-badge')).toBeNull();
+		// No armor still shows: an outline shield with a dash.
+		expect(b.querySelector('.armor-badge')?.classList.contains('is-none')).toBe(true);
+		expect(b.querySelector('.armor-badge')?.getAttribute('aria-label')).toBe('No armor');
+		expect(b.querySelector('.armor-badge .badge-value')?.textContent).toBe('–');
+		// With the setting off, no armor is left out, as the books do; a speed that isn't 6 still shows.
+		const bare = renderStatblock(document.createElement('div'), hound, { ...opts, hideDefaults: true });
+		expect(bare.querySelector('.armor-badge')).toBeNull();
+		expect(bare.querySelector('.move-badge .badge-value')?.textContent).toBe('8');
 		expect(b.querySelector('.move-badge .badge-value')?.textContent).toBe('8');
 		expect(b.querySelector('.actions-intro')?.textContent).toBe('Choose 1');
 		expect(b.querySelector('.actions-list')?.classList.contains('is-choice')).toBe(true);

@@ -47,6 +47,8 @@ export interface RenderOptions {
 	fieldKeywords?: RegExp;
 	/** Party size for per-hero HP. */
 	partySize?: number;
+	/** Leave out no armor and speed 6, as the books do (the "Always show armor and speed" setting, off). */
+	hideDefaults?: boolean;
 	/** Hide flavour text and tactics (tight spaces). */
 	brief?: boolean;
 	/**
@@ -202,7 +204,8 @@ function header(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void
 	}
 
 	// Icons on the right, as the book sets them: HP in a red heart, the armor shield with its letter,
-	// speed, saves as triangles. Defaults (no armor, speed 6) are left off.
+	// speed, saves as triangles. No armor (a dash on an outline shield) and speed 6 show too, so the GM
+	// never has to remember the defaults, unless the setting leaves them out (hideDefaults).
 	const badges = top.createDiv({ cls: 'monster-badges' });
 	if (role !== 'minion') {
 		const hp = badges.createSpan({ cls: 'stat-badge hp-badge' });
@@ -216,12 +219,12 @@ function header(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void
 			hp.createSpan({ cls: 'badge-value', text: String(m.hp) });
 		}
 	}
-	if (m.armor !== 'none') armorGlyph(badges, m.armor, 'armor-badge');
-	const movement = parseMovement(m.movement);
-	if (movement.display) {
-		const sp = badges.createSpan({ cls: 'stat-badge move-badge', attr: { 'aria-label': `Speed ${m.movement}` } });
+	if (m.armor !== 'none' || !opts.hideDefaults) armorGlyph(badges, m.armor, 'armor-badge');
+	const speed = parseMovement(m.movement).display;
+	if (speed || !opts.hideDefaults) {
+		const sp = badges.createSpan({ cls: 'stat-badge move-badge', attr: { 'aria-label': `Speed ${m.movement?.trim() || '6'}` } });
 		setIcon(sp.createSpan({ cls: 'badge-icon' }), evIcon('footprints'));
-		sp.createSpan({ cls: 'badge-value', text: movement.display });
+		sp.createSpan({ cls: 'badge-value', text: speed ?? '6' });
 	}
 	const saves = monsterSaves(m);
 	if (saves) {
@@ -277,6 +280,26 @@ function abilities(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): v
 		}
 		appendRichText(item, ab.description, textOpts(opts, m.name, ab.name));
 	}
+	followRibbonHeights(box);
+}
+
+/**
+ * A ribbon's points keep the book's angle at any height: each ribbon's height goes in `--nb-ribbon-h`, and the
+ * CSS makes its pointed ends that much wider (see "Passives" in styles.css). Written a frame later, so a ribbon
+ * that rewraps doesn't loop the observer.
+ */
+function followRibbonHeights(box: HTMLElement): void {
+	if (typeof ResizeObserver === 'undefined') return;
+	const ro = new ResizeObserver((entries) => {
+		box.win.requestAnimationFrame(() => {
+			for (const e of entries) {
+				const el = e.target as HTMLElement;
+				const h = `${Math.round(el.offsetHeight)}px`;
+				if (el.style.getPropertyValue('--nb-ribbon-h') !== h) el.setCssProps({ '--nb-ribbon-h': h });
+			}
+		});
+	});
+	for (const item of Array.from(box.children)) ro.observe(item);
 }
 
 function attackLabel(raw: string): string {

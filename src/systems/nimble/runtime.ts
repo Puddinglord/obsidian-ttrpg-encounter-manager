@@ -117,6 +117,7 @@ export class NimbleRuntime {
 			onKeyword: (el, word) => this.markWord(el, word, sourcePath),
 			fieldKeywords: this.terms().pattern(false),
 			partySize: this.encounters.partySize(this.encounters.active),
+			hideDefaults: !this.settings.statblockDefaults,
 			// Lore cards list every book the creature is in, wherever they show.
 			sources: lore ? extra.sources ?? this.printingsOf(monster) : undefined,
 			...extra,

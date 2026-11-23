@@ -167,8 +167,15 @@ test('regular stat block renders kicker, badges, abilities and attacks', async (
 	assert.equal(info.name, 'Goblin Boss');
 	// Name and level inline, as the book prints a regular monster ("Lvl 2, small humanoid" in small caps).
 	assert.equal(info.kicker, 'Lvl 2, Small Humanoid');
-	// HP in the heart, the armor letter on its shield; speed 6 is the default, so it's left off.
-	assert.deepEqual(info.badges, ['36', 'M']);
+	// HP in the heart, the armor letter on its shield, and speed 6 (shown, though it's the default).
+	assert.deepEqual(info.badges, ['36', 'M', '6']);
+	// "Always show armor and speed" off: speed 6 is left out, as the books do.
+	await o.eval(async (app, plugin) => { plugin.settings.statblockDefaults = false; await plugin.saveSettings(); plugin.rerenderNotes(); });
+	try {
+		await o.waitFor(async () => (await o.page.locator(`${R} .nimble-statblock .monster-badges .badge-value`).allInnerTexts()).join() === '36,M', { what: 'speed 6 left off the block' });
+	} finally {
+		await o.eval(async (app, plugin) => { plugin.settings.statblockDefaults = true; await plugin.saveSettings(); plugin.rerenderNotes(); });
+	}
 	assert.equal(info.saves, 'Saves: STR+ DEX++ WIL−');
 	assert.deepEqual(info.triangles, ['STR▲', 'DEX▲▲', 'WIL▼']);
 	assert.deepEqual(info.damage, ['Slashing damage', 'Piercing damage']);
@@ -6875,12 +6882,21 @@ test('NPC card in Nimble: level, the armor letter, HP in a heart, its monster bl
 		assert.match(npc.text, /attitude: neutral\nlevel: ""\narmor: ""\nhp: ""\nstatblock: ""\n---/);
 		await o.openFile(npc.path, 'preview');
 		const card = o.page.locator(`${R} .nimble-npc-card`);
-		await o.waitFor(async () => (await card.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 3, { what: 'Nimble stats on the card' });
+		await o.waitFor(async () => (await card.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 4, { what: 'Nimble stats on the card' });
 		assert.ok(await card.evaluate(n => !!n.closest('.ev-sys-nimble')), 'the card wears Nimble\'s look');
-		assert.deepEqual((await card.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '33']);
+		assert.deepEqual((await card.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '33', 'Speed 6']);
 		assert.equal(await card.locator('.nimble-npc-stat.is-armor .nb-armor').getAttribute('aria-label'), 'Medium armor');
 		assert.equal(await card.locator('.nimble-npc-stat.is-hp .nb-heart').count(), 1);
 		assert.equal(await card.locator('.nimble-npc-stats .nimble-inline-ref[data-nimble-ref="Goblin Boss"]').count(), 1, 'a reference to her block');
+		// "Always show armor and speed" off: speed 6 is left out, as the books do (her medium armor stays).
+		await o.eval(async (app, plugin) => { plugin.settings.statblockDefaults = false; await plugin.saveSettings(); plugin.rerenderNotes(); });
+		try {
+			await o.waitFor(async () => (await card.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 3, { what: 'speed 6 left off the card' });
+			assert.deepEqual((await card.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '33']);
+		} finally {
+			await o.eval(async (app, plugin) => { plugin.settings.statblockDefaults = true; await plugin.saveSettings(); plugin.rerenderNotes(); });
+		}
+		await o.waitFor(async () => (await card.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 4, { what: 'speed back on the card' });
 		// Each fact keeps its label beside its value.
 		assert.match(await card.locator('.nimble-npc-link').first().innerText(), /Faction\s*The Assayers/);
 		assert.deepEqual(await card.locator('.nimble-npc-pill').allInnerTexts(), ['Alive', 'Hostile']);

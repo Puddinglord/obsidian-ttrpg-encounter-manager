@@ -48,6 +48,7 @@ These only change Nimble campaigns. **Nimble encounters** is also in the tracker
   - **Help with stat blocks you write:** a quiet line under a stat block when part of it couldn't be shown as written.
 - **Nimble stat blocks**
   - **Stat block style:** Book or Compact.
+  - **Always show armor and speed:** on by default. Off leaves out no armor and speed 6 on stat blocks and NPC cards, as the books do.
   - **Nimble attack rolls:** attack dice miss on a 1 and explode on their max.
 - **Nimble encounters**
   - **Multiple encounters:** keep several fights in the tracker and switch between them.

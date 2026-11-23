@@ -308,10 +308,10 @@ export function register(test, h) {
 			await setFm(o, N, { role: 'Master assayer', ancestry: 'Dwarf', faction: 'The Guild', level: 3, armor: 'M', hp: 30, statblock: 'Goblin Boss' });
 			await o.openFile(N, 'preview');
 			const npc = o.page.locator(`${R} .nimble-npc-card`);
-			await o.waitFor(async () => (await npc.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 3, { what: 'the Nimble numbers on the card' });
+			await o.waitFor(async () => (await npc.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 4, { what: 'the Nimble numbers on the card' });
 			assert.equal(await npc.count(), 1, 'one card');
 			assert.match(await npc.locator('.nimble-npc-role').innerText(), /Master assayer/i);
-			assert.deepEqual((await npc.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '30']);
+			assert.deepEqual((await npc.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '30', 'Speed 6']);
 			assert.match(await npc.innerText(), /jeweller's loupe/);
 			assert.equal(await npc.locator('.nimble-npc-field.is-secret').count(), 1, 'the secret row is there, blurred');
 			assert.deepEqual(await npc.locator('.nimble-npc-pill').allInnerTexts(), ['Alive', 'Neutral']);
@@ -410,7 +410,7 @@ export function register(test, h) {
 			await o.openFile(M, 'preview');
 			const block = o.page.locator(`${R} .nimble-statblock`);
 			await block.waitFor();
-			assert.deepEqual(await block.locator('.monster-badges .badge-value').allInnerTexts(), ['40', 'M']);
+			assert.deepEqual(await block.locator('.monster-badges .badge-value').allInnerTexts(), ['40', 'M', '6']);
 			assert.equal(await o.page.locator(`${R} .nimble-issues`).count(), 0, 'no hints under a clean block');
 			// Edit with the builder's pencil: HP written back into the block.
 			await o.page.locator(`${R} .block-language-nimble`).first().hover();
