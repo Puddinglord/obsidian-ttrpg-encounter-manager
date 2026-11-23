@@ -15,6 +15,8 @@ declare module '../../core/settings' {
 		multipleEncounters: boolean;
 		/** Under a stat block you wrote, a quiet note about lines it couldn't use (with fixes). */
 		statblockHints: boolean;
+		/** Stat blocks and NPC cards show no armor (a dashed shield) and speed 6; off leaves them out, as the books do. */
+		statblockDefaults: boolean;
 		/** Nimble attack rules for dice in attack lines: 1 on the primary die misses, max explodes. */
 		nimbleAttackRolls: boolean;
 		/** Include the Nimble bestiary that ships with the plugin. */
@@ -42,6 +44,7 @@ export const NIMBLE_DEFAULTS = {
 	activeEncounterId: null as string | null,
 	multipleEncounters: false,
 	statblockHints: true,
+	statblockDefaults: true,
 	nimbleAttackRolls: true,
 	bundledBestiary: true,
 	autoArmor: true,

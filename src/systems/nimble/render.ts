@@ -47,6 +47,8 @@ export interface RenderOptions {
 	fieldKeywords?: RegExp;
 	/** Party size for per-hero HP. */
 	partySize?: number;
+	/** Leave out no armor and speed 6, as the books do (the "Always show armor and speed" setting, off). */
+	hideDefaults?: boolean;
 	/** Hide flavour text and tactics (tight spaces). */
 	brief?: boolean;
 	/**
@@ -203,7 +205,7 @@ function header(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void
 
 	// Icons on the right, as the book sets them: HP in a red heart, the armor shield with its letter,
 	// speed, saves as triangles. No armor (a dash on an outline shield) and speed 6 show too, so the GM
-	// never has to remember the defaults.
+	// never has to remember the defaults, unless the setting leaves them out (hideDefaults).
 	const badges = top.createDiv({ cls: 'monster-badges' });
 	if (role !== 'minion') {
 		const hp = badges.createSpan({ cls: 'stat-badge hp-badge' });
@@ -217,11 +219,13 @@ function header(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void
 			hp.createSpan({ cls: 'badge-value', text: String(m.hp) });
 		}
 	}
-	armorGlyph(badges, m.armor, 'armor-badge');
-	const speed = parseMovement(m.movement).display ?? '6';
-	const sp = badges.createSpan({ cls: 'stat-badge move-badge', attr: { 'aria-label': `Speed ${m.movement?.trim() || '6'}` } });
-	setIcon(sp.createSpan({ cls: 'badge-icon' }), evIcon('footprints'));
-	sp.createSpan({ cls: 'badge-value', text: speed });
+	if (m.armor !== 'none' || !opts.hideDefaults) armorGlyph(badges, m.armor, 'armor-badge');
+	const speed = parseMovement(m.movement).display;
+	if (speed || !opts.hideDefaults) {
+		const sp = badges.createSpan({ cls: 'stat-badge move-badge', attr: { 'aria-label': `Speed ${m.movement?.trim() || '6'}` } });
+		setIcon(sp.createSpan({ cls: 'badge-icon' }), evIcon('footprints'));
+		sp.createSpan({ cls: 'badge-value', text: speed ?? '6' });
+	}
 	const saves = monsterSaves(m);
 	if (saves) {
 		const sv = badges.createSpan({ cls: 'saves-badge', attr: { 'aria-label': `Saves: ${saves.replace(/-/g, '−')}` } });

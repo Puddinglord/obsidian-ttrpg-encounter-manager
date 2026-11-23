@@ -28,7 +28,7 @@ Write `` `nimble:Goblin` `` (inline code) anywhere in a note. It shows as a refe
 Stat blocks are drawn the way the GM's Guide draws them, in notes, the compendium, hover cards and the tracker's quick look:
 
 - the name in heavy italic small caps, with the level, size and type beside it (above it for a solo or legendary monster)
-- HP in a red heart, the armor shield with its letter (M or H, a dash for no armor), speed, and saves as their stat with ▲ or ▼
+- HP in a red heart, the armor shield with its letter (M or H, a dash for no armor), speed (to leave out no armor and speed 6, as the books do, turn off **Always show armor and speed** in [settings](settings.md#nimble)), and saves as their stat with ▲ or ▼
 - passives on a khaki ribbon, and "Choose 1" with an "or" between choices
 - a solo's actions beside **Bloodied** and **Last Stand**, with the HP they happen at in red
 - an icon for each damage type in resistances and vulnerabilities

@@ -37,6 +37,11 @@ export function nimbleSettingsSections(plugin: EmberVaultPlugin): SettingsSectio
 				},
 			},
 			{
+				name: 'Always show armor and speed',
+				desc: 'Off leaves out no armor and speed 6, as the books do.',
+				render: toggle(() => s.statblockDefaults, v => { s.statblockDefaults = v; }, () => plugin.rerenderNotes()),
+			},
+			{
 				name: 'Nimble attack rolls',
 				desc: 'Attack dice miss on 1 and explode on max.',
 				render: toggle(() => s.nimbleAttackRolls, v => { s.nimbleAttackRolls = v; }, () => plugin.rerenderNotes()),

@@ -59,7 +59,7 @@ In a Nimble campaign, an NPC can carry the book's numbers, for when the party en
 | `hp:` | `hp: 40` | HP in a heart |
 | `statblock:` | `statblock: City Guard` (or `[[City Guard]]`) | The monster block they fight with, as a reference: hover it for the block, click it for a quick look |
 
-The card also shows their speed: their stat block's, or 6 without one.
+The card also shows their speed: their stat block's, or 6 without one. **Always show armor and speed** in [settings](settings.md#nimble) can leave out no armor and speed 6.
 
 **Add to fight** puts the NPC in the tracker under their own name, with the stat block's attacks and the NPC's own level, armor and HP on top. With no stat block, HP is enough. The GM sees all of this; players never do. In a 5e campaign, NPCs get a small character sheet instead: see [Playing 5e](5e.md#npcs).
 
