@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-11-23
+
 ### Changed
 
 - Nimble stat blocks always show armor and speed. No armor is an outline shield with a dash, and a monster with no speed written shows 6, so you don't have to remember the defaults. To leave them out, as the books do, turn off **Always show armor and speed** in Settings → Nimble stat blocks. See the [bestiary guide](docs/bestiary.md#how-a-stat-block-looks).
