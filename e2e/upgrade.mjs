@@ -3,7 +3,7 @@
 // everything still drawing without an error.
 //
 //   node e2e/upgrade.mjs           the latest release on GitHub
-//   node e2e/upgrade.mjs 1.6.1     a given release
+//   node e2e/upgrade.mjs 1.6.1     a given release (1.x or 2.x: phase 1 finds the release's own APIs)
 //
 // The vault is that release's own sample vault plus its e2e fixtures (both from its git tag). Phase 1 installs the
 // release's main.js, manifest.json and styles.css (gh release download) and uses it the way a table would: a party
@@ -68,10 +68,13 @@ let before;
 			await plugin.campaigns.setActive("Campaigns/Brakka's Journal");
 			await plugin.campaigns.setActive('Campaigns/The Old Quarter');
 			plugin.syncPartyFromSheets();
-			const st = plugin.encounters;
+			// 2.x keeps Nimble's fights and monsters on its runtime; 1.x had them on the plugin.
+			const nimble = plugin.runtime?.('nimble');
+			const st = nimble?.encounters ?? plugin.encounters;
+			const index = nimble?.index ?? plugin.index;
 			const enc = st.ensureActive();
 			st.addParty(enc.id);
-			st.add(plugin.index.get('Quicksilver Hound').monster, undefined, 3, enc.id);
+			st.add(index.get('Quicksilver Hound').monster, undefined, 3, enc.id);
 			st.start(enc.id);
 			const by = (label) => enc.creatures.find(c => c.label === label);
 			st.setHp(enc.id, by('Quicksilver Hound-1').id, 9);
