@@ -6,6 +6,10 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Fixed
+
+- A Nimble stat block you write points out attacks written under `abilities:`, like `- Mace 1d6+1`. They showed as abilities named after the whole line, with no hint why. A button adds `attacks:` above them. See the [bestiary guide](docs/bestiary.md#when-a-line-isnt-shown).
+
 ## [2.1.2] - 2026-11-23
 
 ### Changed

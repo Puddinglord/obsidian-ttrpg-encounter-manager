@@ -56,6 +56,8 @@ const FIELD_NAMES = ['name', 'level', 'role', 'size', 'type', 'hp', 'armor', 'mo
 	'resistances', 'immunities', 'vulnerabilities'];
 
 const isBullet = (t: string) => t.startsWith('-') || /^[*+]\s/.test(t);
+/** An ability line with dice and nothing split off as its text ("Mace 1d6+1"): an attack in the wrong list. */
+const looksLikeAttack = (item: { text: string }) => /\b\d*d\d+\b/i.test(item.text) && !parseAbility(item.text).description;
 /** A wrapped sentence's next line: starts lower case, with a digit, or a bracket. */
 const continues = (t: string) => /^[a-z0-9([,;]/.test(t);
 
@@ -85,6 +87,7 @@ export function readStatblock(content: string): StatblockReading {
 			if (!s) return;
 			if (s.kind === 'list') {
 				if (s.items.length) processSection(monster, LISTS[s.key], s.items.map(i => i.text));
+				if (LISTS[s.key] === 'abilities') checkAttacksInAbilities(s.items);
 			} else if (s.kind === 'text') {
 				if (!s.items.length) return;
 				// "actionText:" over a list: the list is the attacks it introduces.
@@ -99,6 +102,29 @@ export function readStatblock(content: string): StatblockReading {
 					fix: near ? { label: `Change to ${near}:`, start: s.line, end: s.line, lines: [`${near}:`] } : undefined,
 				});
 			}
+		};
+		/**
+		 * "- Mace 1d6+1" under abilities: has no name to split off, so the whole line
+		 * becomes an ability's name. With dice in it, it's an attack in the wrong list.
+		 */
+		const checkAttacksInAbilities = (items: { text: string; line: number }[]) => {
+			const at = items.findIndex(looksLikeAttack);
+			if (at < 0) return;
+			const wrong = items.slice(at).filter(looksLikeAttack);
+			const first = items[at];
+			const n = wrong.length;
+			// Only when they're the last items in the list does a heading above the first one move them all.
+			const last = wrong.length === items.length - at;
+			issues.push({
+				line: first.line, text: lines[first.line].trim(), mark: first.text,
+				message: n === 1
+					? 'This looks like an attack, but it\'s under abilities:, so it shows as an ability.'
+					: `These ${n} lines look like attacks, but they're under abilities:, so they show as abilities.`,
+				hint: last
+					? `Put attacks: on its own line above ${n === 1 ? 'it' : 'them'}.`
+					: `Move ${n === 1 ? 'it' : 'them'} under attacks:.`,
+				fix: last ? { label: 'Add attacks: above', start: first.line, end: first.line, lines: ['attacks:', lines[first.line]] } : undefined,
+			});
 		};
 		const stray = (i: number, t: string) => {
 			// "Join" only to the line right above: joining past another line that isn't shown would delete it.

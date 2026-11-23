@@ -96,4 +96,4 @@ Each line is a field, a colon, then its value. Lists (attacks, abilities) are a 
 
 ![The helper opened under a hand-written stat block: each line it couldn't read, what's wrong in plain words, and a Fix button](images/feature-statblock-help.png)
 
-If something in a stat block you wrote can't be shown as written, a quiet line appears under it: **2 lines here aren't shown as written**. Click it to see which lines, what's wrong in plain words, and what to change. When the fix is obvious, such as a misspelled field name or a missing colon, a button makes the change for you. Turn this off in **Settings → Bestiary → Help with stat blocks you write**.
+If something in a stat block you wrote can't be shown as written, a quiet line appears under it: **2 lines here aren't shown as written**. Click it to see which lines, what's wrong in plain words, and what to change. When the fix is obvious, such as a misspelled field name, a missing colon or attacks written under `abilities:`, a button makes the change for you. Turn this off in **Settings → Bestiary → Help with stat blocks you write**.

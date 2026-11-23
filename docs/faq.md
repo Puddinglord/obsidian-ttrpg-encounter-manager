@@ -19,7 +19,7 @@ Yes. Press **+** on the compendium's Classes or Origins tab and fill in the bloc
 Yes, if you own it on D&D Beyond. [Import the character](import.md#what-it-brings-into-your-compendium) and its class, subclass, feats, spells and items join your compendium, tagged Imported, and work in New character and Level up. D&D Beyond only includes features up to the character's level; import again after they level up to fill in the rest.
 
 **A stat block says some lines "aren't shown as written".**
-A line in a ```` ```nimble ```` block you wrote couldn't be read: a misspelled field, a missing colon, list items with no heading. Click the line under the stat block to see which ones and why, and use **Fix** where it's offered. See [When a line isn't shown](bestiary.md#when-a-line-isnt-shown).
+A line in a ```` ```nimble ```` block you wrote couldn't be read: a misspelled field, a missing colon, list items with no heading, attacks under `abilities:`. Click the line under the stat block to see which ones and why, and use **Fix** where it's offered. See [When a line isn't shown](bestiary.md#when-a-line-isnt-shown).
 
 **A monster reference shows as unknown.**
 The name has to match a bundled monster or a note in your vault that has a `nimble` stat block. Check the spelling in the compendium, or use `/monster` to insert it with autocomplete.
