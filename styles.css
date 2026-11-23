@@ -511,13 +511,17 @@ body.ev-theme-dnd5e {
 .nimble-statblock .monster-damage-icon svg { width: 14px; height: 14px; }
 
 /* Passives: the khaki ribbon, pointed at both ends and poking out past the box. The ribbon is a border image
-   whose ends (14px each, stretched to the ribbon's height) sit outside its box (border-image-outset), so the points
-   follow one line or three, and poke out without making anything scroll. */
+   whose pointed ends sit 14px outside its box (border-image-outset), so they poke out without making anything
+   scroll. The points keep a one-line ribbon's angle at any height: render.ts puts each ribbon's height in
+   --nb-ribbon-h, and a taller ribbon's points get wider (14px per 33px of height), so every ribbon comes to a
+   true point; on a taller one the slope starts further in. The text padding clears the slope at the first line,
+   where it reaches furthest in. */
 .nimble-statblock .monster-abilities { display: grid; gap: 6px; margin: 8px -6px; }
 .nimble-statblock .ability-item {
-	position: relative; z-index: 1; padding: 6px 12px; color: var(--ev-band-text); font-style: italic;
+	--nb-point: max(14px, calc(var(--nb-ribbon-h, 0px) * 14 / 33));
+	position: relative; z-index: 1; padding: 6px max(12px, calc(var(--nb-point) - 15px)); color: var(--ev-band-text); font-style: italic;
 	border: 0 solid transparent;
-	border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='100' viewBox='0 0 128 100' preserveAspectRatio='none'%3E%3Cpath d='M14 0H114L128 50 114 100H14L0 50Z' fill='%23DDD6C4'/%3E%3C/svg%3E") 0 14 fill / 0 14px / 0 14px stretch;
+	border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='100' viewBox='0 0 128 100' preserveAspectRatio='none'%3E%3Cpath d='M14 0H114L128 50 114 100H14L0 50Z' fill='%23DDD6C4'/%3E%3C/svg%3E") 0 14 fill / 0 var(--nb-point) / 0 14px stretch;
 }
 .theme-dark .nimble-statblock .ability-item {
 	border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='100' viewBox='0 0 128 100' preserveAspectRatio='none'%3E%3Cpath d='M14 0H114L128 50 114 100H14L0 50Z' fill='%233A352D'/%3E%3C/svg%3E");

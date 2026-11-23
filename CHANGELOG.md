@@ -13,6 +13,7 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ### Fixed
 
+- A passive that wraps onto two or more lines keeps the pointed ends of a one-line passive. Its points were flattened into shallow wedges. See the [bestiary guide](docs/bestiary.md#how-a-stat-block-looks).
 - The armor letter on a Nimble NPC's card sits in the middle of its shield. It was pushed against the shield's left edge.
 
 ## [2.1.1] - 2026-11-22
