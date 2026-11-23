@@ -202,7 +202,8 @@ function header(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void
 	}
 
 	// Icons on the right, as the book sets them: HP in a red heart, the armor shield with its letter,
-	// speed, saves as triangles. Defaults (no armor, speed 6) are left off.
+	// speed, saves as triangles. No armor (a dash on an outline shield) and speed 6 show too, so the GM
+	// never has to remember the defaults.
 	const badges = top.createDiv({ cls: 'monster-badges' });
 	if (role !== 'minion') {
 		const hp = badges.createSpan({ cls: 'stat-badge hp-badge' });
@@ -216,13 +217,11 @@ function header(block: HTMLElement, m: NimbleMonster, opts: RenderOptions): void
 			hp.createSpan({ cls: 'badge-value', text: String(m.hp) });
 		}
 	}
-	if (m.armor !== 'none') armorGlyph(badges, m.armor, 'armor-badge');
-	const movement = parseMovement(m.movement);
-	if (movement.display) {
-		const sp = badges.createSpan({ cls: 'stat-badge move-badge', attr: { 'aria-label': `Speed ${m.movement}` } });
-		setIcon(sp.createSpan({ cls: 'badge-icon' }), evIcon('footprints'));
-		sp.createSpan({ cls: 'badge-value', text: movement.display });
-	}
+	armorGlyph(badges, m.armor, 'armor-badge');
+	const speed = parseMovement(m.movement).display ?? '6';
+	const sp = badges.createSpan({ cls: 'stat-badge move-badge', attr: { 'aria-label': `Speed ${m.movement?.trim() || '6'}` } });
+	setIcon(sp.createSpan({ cls: 'badge-icon' }), evIcon('footprints'));
+	sp.createSpan({ cls: 'badge-value', text: speed });
 	const saves = monsterSaves(m);
 	if (saves) {
 		const sv = badges.createSpan({ cls: 'saves-badge', attr: { 'aria-label': `Saves: ${saves.replace(/-/g, '−')}` } });

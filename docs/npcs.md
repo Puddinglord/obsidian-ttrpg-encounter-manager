@@ -28,7 +28,7 @@ An NPC whose `location:` is a place shows on that place's card, under **Who's he
 
 ## Character cards
 
-![Tobren Kask's card: his portrait, role, ancestry and age, faction and where he's found, Alive and Friendly, his level, armor, HP and stat block with Add to fight, then his rows](images/npc-card.png)
+![Tobren Kask's card: his portrait, role, ancestry and age, faction and where he's found, Alive and Friendly, his level, armor, HP, speed and stat block with Add to fight, then his rows](images/npc-card.png)
 
 A `nimble-npc` block shows the NPC as a card in your campaign's look: the portrait, the name, the role, the quick facts and pills, the game's numbers, then rows of your own.
 
@@ -55,9 +55,11 @@ In a Nimble campaign, an NPC can carry the book's numbers, for when the party en
 | Property | Example | On the card |
 |---|---|---|
 | `level:` | `level: 3` | Level 3 |
-| `armor:` | `armor: M` (or `medium`, `H`, `heavy`, `none`) | The armor letter on its shield |
+| `armor:` | `armor: M` (or `medium`, `H`, `heavy`, `none`) | The armor letter on its shield, a dash for none |
 | `hp:` | `hp: 40` | HP in a heart |
 | `statblock:` | `statblock: City Guard` (or `[[City Guard]]`) | The monster block they fight with, as a reference: hover it for the block, click it for a quick look |
+
+The card also shows their speed: their stat block's, or 6 without one.
 
 **Add to fight** puts the NPC in the tracker under their own name, with the stat block's attacks and the NPC's own level, armor and HP on top. With no stat block, HP is enough. The GM sees all of this; players never do. In a 5e campaign, NPCs get a small character sheet instead: see [Playing 5e](5e.md#npcs).
 

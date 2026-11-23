@@ -6,6 +6,15 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Changed
+
+- Nimble stat blocks always show armor and speed. No armor is an outline shield with a dash, and a monster with no speed written shows 6, so you don't have to remember the defaults. See the [bestiary guide](docs/bestiary.md#how-a-stat-block-looks).
+- A Nimble NPC's card shows their speed next to their level, armor and HP, and shows the dashed shield when they have no armor. See the [NPC guide](docs/npcs.md#an-npcs-numbers).
+
+### Fixed
+
+- The armor letter on a Nimble NPC's card sits in the middle of its shield. It was pushed against the shield's left edge.
+
 ## [2.1.1] - 2026-11-22
 
 ### Fixed

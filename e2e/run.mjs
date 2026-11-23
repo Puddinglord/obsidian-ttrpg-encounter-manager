@@ -167,8 +167,8 @@ test('regular stat block renders kicker, badges, abilities and attacks', async (
 	assert.equal(info.name, 'Goblin Boss');
 	// Name and level inline, as the book prints a regular monster ("Lvl 2, small humanoid" in small caps).
 	assert.equal(info.kicker, 'Lvl 2, Small Humanoid');
-	// HP in the heart, the armor letter on its shield; speed 6 is the default, so it's left off.
-	assert.deepEqual(info.badges, ['36', 'M']);
+	// HP in the heart, the armor letter on its shield, and speed 6 (shown, though it's the default).
+	assert.deepEqual(info.badges, ['36', 'M', '6']);
 	assert.equal(info.saves, 'Saves: STR+ DEX++ WIL−');
 	assert.deepEqual(info.triangles, ['STR▲', 'DEX▲▲', 'WIL▼']);
 	assert.deepEqual(info.damage, ['Slashing damage', 'Piercing damage']);
@@ -6875,9 +6875,9 @@ test('NPC card in Nimble: level, the armor letter, HP in a heart, its monster bl
 		assert.match(npc.text, /attitude: neutral\nlevel: ""\narmor: ""\nhp: ""\nstatblock: ""\n---/);
 		await o.openFile(npc.path, 'preview');
 		const card = o.page.locator(`${R} .nimble-npc-card`);
-		await o.waitFor(async () => (await card.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 3, { what: 'Nimble stats on the card' });
+		await o.waitFor(async () => (await card.locator('.nimble-npc-stats .nimble-npc-stat').count()) === 4, { what: 'Nimble stats on the card' });
 		assert.ok(await card.evaluate(n => !!n.closest('.ev-sys-nimble')), 'the card wears Nimble\'s look');
-		assert.deepEqual((await card.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '33']);
+		assert.deepEqual((await card.locator('.nimble-npc-stat').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), ['Level 3', 'M Armor', '33', 'Speed 6']);
 		assert.equal(await card.locator('.nimble-npc-stat.is-armor .nb-armor').getAttribute('aria-label'), 'Medium armor');
 		assert.equal(await card.locator('.nimble-npc-stat.is-hp .nb-heart').count(), 1);
 		assert.equal(await card.locator('.nimble-npc-stats .nimble-inline-ref[data-nimble-ref="Goblin Boss"]').count(), 1, 'a reference to her block');
