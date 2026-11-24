@@ -9,6 +9,7 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 ### Added
 
 - **Import…** brings in content, NPCs, places and maps from other tools in one window. Choose files, paste text or paste a link, and it works out what the file is. Before anything is written, it shows what's new, what updates something you imported before, and what's already yours. Everything it writes remembers where it came from, so importing the same file again updates it instead of making copies. `/import` opens it from any note. See the [import guide](docs/import.md).
+- Monsters and items from **Nimble Nexus**: paste a monster's, item's or collection's link into Import… and choose **Fetch from nimble.nexus**, or import a file exported from Nexus or Slate (their Nexus and Nimbrew formats). Movement, saves, Solo monsters, minions and each action's reach and range come across, and every entry links back to its page. See the [import guide](docs/import.md).
 - **Mapping files** teach Import… another tool's format without waiting for an update: a JSON file in your content folder's Importers folder that says which of the tool's fields go where. See the [mapping files guide](docs/mapping-files.md).
 
 ### Changed

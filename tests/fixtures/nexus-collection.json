@@ -1,0 +1,48 @@
+{
+	"data": {
+		"type": "collections", "id": "7q1demo0collection00000000",
+		"attributes": { "name": "Marsh Folk", "description": "", "monsterCount": 3, "itemCount": 1 },
+		"relationships": {
+			"monsters": { "data": [{ "type": "monsters", "id": "7q1demo0mirehag000000000000" }, { "type": "monsters", "id": "7q1demo0bogwisp000000000000" }, { "type": "monsters", "id": "7q1demo0drownedking00000000" }] },
+			"items": { "data": [{ "type": "items", "id": "7q1demo0lantern00000000000" }] }
+		}
+	},
+	"included": [
+		{
+			"type": "monsters", "id": "7q1demo0mirehag000000000000",
+			"attributes": {
+				"name": " Mire Hag ", "hazard": false, "hp": 30, "level": 3, "size": "medium", "armor": "medium", "kind": "Fey",
+				"movement": [{ "speed": 6 }, { "mode": "swim", "speed": 8 }],
+				"abilities": [{ "name": "Bog-born", "description": "Ignores difficult terrain in water." }],
+				"actions": [
+					{ "name": "Claw", "description": "1d8+2 slashing.", "damage": { "roll": "1d8+2" }, "target": { "reach": 2 } },
+					{ "name": "Hex.", "description": "The target is Dazed until the hag's next turn.", "target": { "range": 8 } }
+				],
+				"actionsInstructions": "Choose one.", "effects": [], "description": "She keeps a @monster:7q1demo0bogwisp000000000000 as a lamp.",
+				"subtype": "standard", "legendary": false, "bloodied": { "description": "" }, "lastStand": { "description": "" }, "saves": { "wil": 1, "str": -1 }
+			}
+		},
+		{
+			"type": "monsters", "id": "7q1demo0bogwisp000000000000",
+			"attributes": {
+				"name": "Bog Wisp", "hp": 0, "size": "tiny", "armor": "none", "movement": [{ "mode": "fly", "speed": 8 }],
+				"abilities": [], "actions": [{ "name": "", "description": "1d4", "damage": { "roll": "1d4" } }],
+				"actionsInstructions": "Chill", "subtype": "minion", "legendary": false, "minion": true
+			}
+		},
+		{
+			"type": "monsters", "id": "7q1demo0drownedking00000000",
+			"attributes": {
+				"name": "The Drowned King", "hp": 0, "hpPerHero": 40, "level": 6, "size": "large", "armor": "heavy", "kind": "Undead",
+				"movement": [{ "speed": 6 }], "abilities": [], "actions": [{ "name": "Tide", "description": "2d10 to everything within Reach 3." }],
+				"actionsInstructions": "", "subtype": "legendary", "legendary": true,
+				"bloodied": { "description": "The water rises: difficult terrain everywhere." }, "lastStand": { "description": "He has 20 HP per hero and acts twice." },
+				"saves": { "all": 2 }
+			}
+		},
+		{
+			"type": "items", "id": "7q1demo0lantern00000000000",
+			"attributes": { "name": "Lantern of the Drowned", "kind": "Wondrous Lantern", "rarity": "very_rare", "description": "Its light shows the dead as they were.", "moreInfo": "The King wants it back." }
+		}
+	]
+}

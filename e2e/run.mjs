@@ -7931,6 +7931,50 @@ test('import: a bundle brings a monster, an NPC with its card, a place and a map
 	}
 });
 
+test('import: a Nimble Nexus link is fetched only on a click, and its monster lands in the campaign', async (o) => {
+	const C = 'Campaigns/Nexus Vale';
+	const M = '.modal.ev-import';
+	const col = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/nexus-collection.json'), 'utf8'));
+	const one = { data: col.included[0] };
+	try {
+		await o.eval(async (app, plugin, [C, one]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Nexus Vale', level: 3, heroes: 4, starter: false });
+			// The network, stood in for: what was asked for, and Nexus's answer.
+			window.__fetched = [];
+			window.__realFetch = plugin.importFetch;
+			plugin.importFetch = async (url) => { window.__fetched.push(url); return { ok: true, text: JSON.stringify(one) }; };
+		}, [C, one]);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.campaigns.active?.folder)) === C, { what: 'the campaign active' });
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill('https://nimble.nexus/monsters/mire-hag-7q1demo0mirehag000000000000');
+		const fetchBtn = o.page.locator(`${M} .ev-import-fetch`);
+		await fetchBtn.waitFor();
+		assert.match(await fetchBtn.innerText(), /Fetch from nimble\.nexus/);
+		assert.deepEqual(await o.eval(() => window.__fetched), [], 'nothing fetched before the click');
+		await fetchBtn.click();
+		await o.waitFor(async () => /Nimble Nexus[\s\S]*A monster/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the monster read' });
+		assert.deepEqual(await o.eval(() => window.__fetched), ['https://nimble.nexus/api/monsters/7q1demo0mirehag000000000000']);
+		assert.match(await o.page.locator(`${M} .nimble-import-report`).innerText(), /3rd Party Creator License/);
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		const hag = `${C}/Monsters/Mire Hag.md`;
+		await o.waitFor(() => exists(o, hag), { what: 'the monster note' });
+		assert.match(await read(o, hag), /imported: Nimble Nexus\nimportId: "nexus:monster:7q1demo0mirehag000000000000"[\s\S]*```nimble\nname: Mire Hag\n/);
+		await o.openFile(hag, 'preview');
+		await o.waitFor(async () => /Mire Hag[\s\S]*Claw/.test(await o.page.locator(`${R} .nimble-statblock`).innerText().catch(() => '')), { what: 'the stat block drawn' });
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			if (window.__realFetch) plugin.importFetch = window.__realFetch;
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('import: a mapping file in the content folder teaches Import… a new format; a broken one says why in settings', async (o) => {
 	const write = (o, path, text) => o.eval(async (app, _p, [path, text]) => {
 		const dir = path.slice(0, path.lastIndexOf('/'));

@@ -43,6 +43,7 @@ import { ContentStore } from './src/core/content/store';
 import { coreImporters } from './src/core/import/core-importers';
 import { MappingStore } from './src/core/import/mapping-store';
 import { openImport } from './src/core/import/dialog';
+import { fetchImport } from './src/core/import/fetch';
 import type { Importer } from './src/core/import/importer';
 import { registerContentBlocks } from './src/core/content/blocks-ui';
 import type { GameSystem } from './src/systems/contract';
@@ -75,6 +76,8 @@ export default class EmberVaultPlugin extends Plugin {
 	readonly importers: Importer[] = coreImporters();
 	/** Mapping files: other tools' formats as data, shipped and in the content folder's Importers folder. */
 	readonly mappings = new MappingStore(this);
+	/** The one request an import makes (a pasted link, on a click). A field so the e2e tests can stand in for the network. */
+	importFetch = fetchImport;
 	/** Bumped when the NPC list changes; Live Preview decorations watch it. */
 	npcVersion = 0;
 	/** The fences of our blocks (```nimble-map, ```box…), lowercase: links inside them follow renames (core/link-follow.ts). */

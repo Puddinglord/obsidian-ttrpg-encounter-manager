@@ -13,7 +13,6 @@ import { dialogFoot, gameDialog } from '../dialog';
 import { evIcon, EvIconName } from '../icons';
 import { pill } from '../pill';
 import { bundleSummary, CheckedBundle, checkBundle, CheckedRecord } from './bundle';
-import { fetchImport } from './fetch';
 import { detectImporters, Importer, ImportFile, ImportInput, ImportRead, linkImporter } from './importer';
 import { planRecords, PlanItem, planResultText } from './plan';
 import { vaultHave, writePlan } from './write';
@@ -136,7 +135,7 @@ export class ImportDialog extends Modal {
 		const go = pill(row, { tag: 'button', cls: 'ev-import-fetch', icon: evIcon('link'), text: `Fetch from ${host}` }) as HTMLButtonElement;
 		go.addEventListener('click', () => {
 			go.disabled = true;
-			void fetchImport(hit.dataUrl).then(res => {
+			void this.plugin.importFetch(hit.dataUrl).then(res => {
 				if (!res.ok) { this.linkEl.empty(); this.linkEl.createDiv({ cls: 'ev-import-link-none', text: res.error }); return; }
 				this.input = { files: [], text: res.text, url };
 				const found = detectImporters(this.input, importers).map(d => d.importer);
