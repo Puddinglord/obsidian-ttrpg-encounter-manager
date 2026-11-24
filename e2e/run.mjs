@@ -8099,6 +8099,34 @@ test('import: a 5e goblin pasted into a Nimble campaign is converted on the GM G
 	}
 });
 
+test('import: Import… opens from the compendium\'s ⋯ menu and from /import', async (o) => {
+	const M = '.modal.ev-import';
+	try {
+		await openCompendiumTab(o);
+		await o.page.locator(`${CMP} .nimble-cmpx-more`).click();
+		await o.page.locator('.menu .menu-item', { hasText: 'Import…' }).click();
+		await o.page.locator(`${M} .ev-import-drop`).waitFor();
+		await o.page.keyboard.press('Escape');
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		await o.eval(async (app) => { const f = app.vault.getAbstractFileByPath('Import Slash.md'); if (f) await app.vault.delete(f); await app.vault.create('Import Slash.md', '\n'); });
+		await o.openFile('Import Slash.md', 'source');
+		await o.eval((app) => { const ed = app.workspace.activeEditor.editor; ed.setCursor({ line: 0, ch: 0 }); ed.focus(); });
+		await o.page.keyboard.type('/import', { delay: 20 });
+		await o.page.locator('.suggestion-container .nimble-slash-item', { hasText: '/import' }).first().waitFor();
+		await o.page.keyboard.press('Enter');
+		await o.page.locator(`${M} .ev-import-drop`).waitFor();
+		await o.page.keyboard.press('Escape');
+		// The slash text is gone from the note.
+		assert.equal((await read(o, 'Import Slash.md')).trim(), '');
+	} finally {
+		await o.eval(async (app) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath('Import Slash.md'); if (f) await app.vault.delete(f);
+		});
+		await closeCompendiumTab(o).catch(() => {});
+	}
+});
+
 test('import: a mapping file in the content folder teaches Import… a new format; a broken one says why in settings', async (o) => {
 	const write = (o, path, text) => o.eval(async (app, _p, [path, text]) => {
 		const dir = path.slice(0, path.lastIndexOf('/'));
