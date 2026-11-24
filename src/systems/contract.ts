@@ -17,6 +17,7 @@ import type { NoteKindExtensions } from '../core/note-kinds';
 import type { KindSpec } from '../core/content/spec';
 import type { BlockSpec } from '../core/content/blocks';
 import type { Importer } from '../core/import/importer';
+import type { NeutralCreature } from '../core/import/creature';
 import type { SettingsPart } from '../core/settings';
 import type { SettingsSection } from '../core/settings-ui';
 import type { CombatTokens } from '../core/tracker/tokens';
@@ -180,6 +181,15 @@ export interface GameContent {
 	 * `blocks` are written as their ```<prefix>-<kind> YAML block, and other kinds can't be imported as notes.
 	 */
 	writeEntry?(kind: string, value: Record<string, unknown>, edition?: string): { lang: string; body: string; props?: Record<string, unknown> } | null;
+	/**
+	 * Monsters to and from a creature in no game's terms (core/import/creature.ts), so Import… can convert one game's
+	 * monsters to another's without a converter for each pair: `out` reads one of this game's monster entries, `in`
+	 * builds one, with notes for the GM on what changed.
+	 */
+	creatures?: {
+		out?: (value: Record<string, unknown>) => NeutralCreature | null;
+		in?: (c: NeutralCreature) => { value: Record<string, unknown>; notes: string[] };
+	};
 	/**
 	 * The seed the game's builder opens on to edit a block (`value`: the fields that checked out). A kind with a guided
 	 * builder (core/builder, registered under the kind's id) and a seed gets the Edit pencil on its block, and Save

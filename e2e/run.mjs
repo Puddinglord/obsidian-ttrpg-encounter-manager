@@ -8044,6 +8044,43 @@ test('import: a Nimble stat block pasted as text, as the book prints it, becomes
 	}
 });
 
+test('import: a 5e goblin pasted into a Nimble campaign is converted on the GM Guide\'s numbers, with its original a tab away', async (o) => {
+	const C = 'Campaigns/Convert Vale';
+	const M = '.modal.ev-import';
+	const goblin = 'Goblin Warrior\nSmall Fey (Goblinoid), Chaotic Neutral\nAC 15 Initiative +2 (12)\nHP 10 (3d6)\nSpeed 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 8 −1 −1 Dex 15 +2 +2 Con 10 +0 +0\nInt 10 +0 +0 Wis 8 −1 −1 Cha 8 −1 −1\nSkills Stealth +6\nSenses Darkvision 60 ft.; Passive Perception 9\nLanguages Common, Goblin\nCR 1/4 (XP 50; PB +2)\nActions\nScimitar. Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6 + 2) Slashing damage.\nShortbow. Ranged Attack Roll: +4, range 80/320 ft. Hit: 5 (1d6 + 2) Piercing damage.';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Convert Vale', level: 1, heroes: 4, starter: false });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.campaigns.active?.folder)) === C, { what: 'the campaign active' });
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(goblin);
+		await o.page.locator(`${M} .ev-import-convert input`).waitFor();
+		assert.equal(await o.page.locator(`${M} .ev-import-convert input`).isChecked(), true, 'converting by default in a Nimble campaign');
+		await o.waitFor(async () => /Converted/.test(await o.page.locator(`${M} .ev-import-row`).first().innerText().catch(() => '')), { what: 'the row tagged Converted' });
+		assert.match(await o.page.locator(`${M} .ev-import-pane`).innerText(), /Level 1\/4, from CR 1\/4/);
+		await o.page.locator(`${M} .ev-import-seg button`, { hasText: 'Original' }).click();
+		await o.waitFor(async () => /Goblin Warrior[\s\S]*Scimitar/.test(await o.page.locator(`${M} .ev-import-paper`).innerText().catch(() => '')), { what: 'the 5e original drawn' });
+		await importAndClose(o, M);
+		const note = `${C}/Monsters/Goblin Warrior.md`;
+		await o.waitFor(() => exists(o, note), { what: 'the monster note' });
+		const text = await read(o, note);
+		assert.match(text, /converted: dnd5e/);
+		assert.match(text, /```nimble\nname: Goblin Warrior\nlevel: 1\/4\n/);
+		assert.match(text, /Reach 1\./);
+		assert.match(text, /Range 16\./);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('import: a mapping file in the content folder teaches Import… a new format; a broken one says why in settings', async (o) => {
 	const write = (o, path, text) => o.eval(async (app, _p, [path, text]) => {
 		const dir = path.slice(0, path.lastIndexOf('/'));

@@ -13,7 +13,8 @@ import type EmberVaultPlugin from '../../../main';
 import { dialogFoot, gameDialog } from '../dialog';
 import { evIcon, EvIconName } from '../icons';
 import { pill } from '../pill';
-import { bundleSummary, CheckedBundle, checkBundle } from './bundle';
+import { bundleSummary, CheckedBundle, checkBundle, CheckedRecord } from './bundle';
+import { convertBundle, Converted } from './convert';
 import { changedFields, recordFact } from './facts';
 import { detectImporters, extOf, Importer, ImportRead, linkImporter } from './importer';
 import { planRecords, PlanItem, PlanStatus } from './plan';
@@ -50,6 +51,11 @@ interface Read {
 	read: ImportRead | null;
 	bundle?: CheckedBundle;
 	plan: PlanItem[];
+	/** It's another game's content that the campaign's game can convert: the two games' names. */
+	canConvert?: { from: string; to: string; fromName: string; toName: string };
+	/** Convert it (on unless switched off). */
+	convert?: boolean;
+	converted?: Converted;
 }
 
 /** A row of the list: a plan item and the read it came from. */
@@ -57,7 +63,7 @@ interface Row { item: PlanItem; read: Read }
 
 interface PendingLink { url: string; host: string; importer?: Importer; dataUrl?: string; state: 'ready' | 'fetching' | 'failed'; error?: string }
 
-type Tab = 'preview' | 'changes' | 'source';
+type Tab = 'preview' | 'changes' | 'original' | 'source';
 
 const ticked = (it: PlanItem, picked: ReadonlySet<PlanItem>) => picked.has(it) && (it.status !== 'yours' || !!it.copy);
 const offerable = (it: PlanItem) => it.status === 'new' || it.status === 'update' || it.status === 'yours';
@@ -291,14 +297,34 @@ export class ImportDialog extends Modal {
 			r.read = await r.importer.read(r.group.input, { plugin: this.plugin, sourcePath: this.sourcePath });
 			r.bundle = undefined;
 			r.plan = [];
+			r.canConvert = undefined;
+			r.converted = undefined;
 			if ('bundle' in r.read) {
 				const plugin = this.plugin;
-				r.bundle = checkBundle(r.read.bundle, {
+				// Another game's monsters, in a campaign of a game that can build them: converted unless switched off.
+				const src = r.read.bundle.system ? plugin.systems.get(r.read.bundle.system) : undefined;
+				const dst = plugin.system(this.sourcePath);
+				const out = src?.content?.creatures?.out;
+				const into = dst.content?.creatures?.in;
+				let raw = r.read.bundle;
+				if (src && src.id !== dst.id && out && into && (raw.content ?? []).some(e => e.kind === 'monster')) {
+					r.canConvert = { from: src.id, to: dst.id, fromName: src.name, toName: dst.name };
+					if (r.convert !== false) {
+						r.converted = convertBundle(raw, { from: src.id, to: dst.id, out, in: into });
+						raw = r.converted.bundle;
+					}
+				}
+				r.bundle = checkBundle(raw, {
 					resolve: (id) => {
 						const g = plugin.systems.get(id);
 						return g ? { id: g.id, kinds: g.content?.kinds ?? [], editions: g.editions?.map(e => e.id) } : undefined;
 					},
 				});
+				if (r.converted) {
+					// What the conversion changed, first among what's worth a look.
+					for (const rec of r.bundle.records) rec.warnings = [...(r.converted.notes.get(rec.name) ?? []), ...rec.warnings];
+					r.bundle.warnings.push(...r.converted.said);
+				}
 				r.plan = r.bundle.error ? [] : planRecords(r.bundle.records, vaultHave(plugin, r.bundle.system));
 			}
 		} catch (e) {
@@ -306,6 +332,15 @@ export class ImportDialog extends Modal {
 			r.read = { error: e instanceof Error ? e.message : 'Couldn\'t read that.' };
 		}
 		return r;
+	}
+
+	/** After a group is read again: its new records ticked as they start, the selection on its first. */
+	private refreshPicks(read: Read): void {
+		this.picked = new Set([...this.picked].filter(p => this.reads.some(r => r.plan.includes(p))));
+		for (const p of read.plan) if (p.on) this.picked.add(p);
+		this.selected = this.rows()[0] ?? null;
+		this.tab = this.defaultTab();
+		this.render();
 	}
 
 	private async readAs(read: Read, id: string, list: Importer[] = read.candidates): Promise<void> {
@@ -436,6 +471,13 @@ export class ImportDialog extends Modal {
 		}
 		const tools = el.createDiv({ cls: 'ev-import-read-tools' });
 		if (one && one.candidates.length > 1) this.readAsChoice(tools, one);
+		for (const r of reads.filter(x => x.canConvert)) {
+			const sw = tools.createEl('label', { cls: 'ev-import-switch ev-import-convert' });
+			const box = sw.createEl('input', { type: 'checkbox' });
+			box.checked = r.convert !== false;
+			sw.createSpan({ text: `Convert to ${r.canConvert!.toName}` });
+			box.addEventListener('change', () => { r.convert = box.checked; void this.readGroup(r).then(() => { this.refreshPicks(r); }); });
+		}
 		const looks = reads.flatMap(r => [...(r.bundle?.warnings ?? []), ...(r.read && 'notes' in r.read ? r.read.notes ?? [] : [])]);
 		if (looks.length) {
 			const t = pill(tools, { tag: 'button', cls: 'ev-import-look-toggle', icon: evIcon('warning'), text: `${looks.length} to look at` });
@@ -716,6 +758,7 @@ export class ImportDialog extends Modal {
 		const avail: { id: Tab; label: string; icon: EvIconName }[] = [
 			...(it.status === 'update' && it.before ? [{ id: 'changes' as const, label: 'Changes', icon: 'swap' as const }] : []),
 			...(r.value ? [{ id: 'preview' as const, label: 'Preview', icon: 'eye' as const }] : []),
+			...(r.converted && row.read.converted?.originals.has(r.name) ? [{ id: 'original' as const, label: 'Original', icon: 'swap' as const }] : []),
 			{ id: 'source', label: 'Source', icon: 'code' },
 		];
 		if (!avail.some(a => a.id === this.tab)) this.tab = avail[0].id;
@@ -734,6 +777,7 @@ export class ImportDialog extends Modal {
 		if (r.value && r.warnings.length) this.note(pane, 'warning', 'Worth a look', r.warnings.join(' '), 'is-look');
 		if (this.tab === 'changes' && it.before && r.value) drawChanges(pane, it.before, r.value);
 		else if (this.tab === 'preview') drawPreview(pane, r, this.previewContext(row));
+		else if (this.tab === 'original') this.drawOriginal(pane, row);
 		else this.drawSource(pane, row);
 		const pins = r.type === 'map' && r.value && Array.isArray(r.value.pins) ? r.value.pins as { text?: string }[] : [];
 		if (this.tab === 'preview' && offerable(it) && pins.some(p => p.text)) {
@@ -743,6 +787,15 @@ export class ImportDialog extends Modal {
 			box.addEventListener('change', () => { it.roomNotes = box.checked; });
 			sw.createSpan({ text: 'A location note for each room, linked from its pin' });
 		}
+	}
+
+	/** A converted record as its own game drew it. */
+	private drawOriginal(el: HTMLElement, row: Row): void {
+		const orig = row.read.converted?.originals.get(row.item.record.name);
+		if (!orig || !row.read.canConvert) return;
+		const { kind, from: _f, converted: _c, ...value } = orig;
+		const rec: CheckedRecord = { type: 'content', kind, name: orig.name, at: '', value: value, errors: [], warnings: [] };
+		drawPreview(el, rec, { ...this.previewContext(row), system: row.read.canConvert.from, edition: undefined });
 	}
 
 	private note(el: HTMLElement, icon: EvIconName, title: string, text: string, cls = '', file?: string): void {
