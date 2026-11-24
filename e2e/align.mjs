@@ -47,6 +47,8 @@ export const PILL_SELECTORS = [
 	'.nimble-art-level', '.nimble-cmpx-group', '.bestiary-back',
 	// Importing a D&D Beyond character: the checklist's New and "levels 8–9" tags.
 	'.dnd5e-ddb-tag',
+	'.ev-import-tag',
+	'.ev-import-fetch',
 	// Nimble's builders for a hero's content: what a level grants in the check, a feature's grants, the stats said, the level ladder.
 	'.ncb-grant', '.ncb-grant-label', '.ncb-grant-add', '.ncb-said', '.ncb-rung',
 	// The builders (core/builder/frame.ts): step dots, kinds, segments, the footer's buttons and the phone sheet's, steppers,

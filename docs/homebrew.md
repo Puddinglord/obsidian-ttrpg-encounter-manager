@@ -7,7 +7,7 @@ Your content lives in the [compendium](compendium.md), not beside your campaign 
 ## Ways in
 
 - **Make it here:** press **+** in the compendium (below). Most kinds open a builder ([Nimble's](#nimbles-builders), [5e's](#5e-builders)); monsters, spells and items open the [builder](builder.md).
-- **A content pack:** a JSON file of entries, added with **Import content…**. See [Content packs](content-packs.md).
+- **A content pack:** a JSON file of entries, added with **Import…**. See [Content packs](content-packs.md).
 - **A D&D Beyond character (5e):** importing one brings its class, subclass, species, background, feats, spells and items into the compendium, tagged **Imported**. See [Importing](import.md#what-it-brings-into-your-compendium).
 
 ## Make something

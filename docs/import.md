@@ -73,11 +73,11 @@ desc: |-
 
 D&D Beyond only includes a class's features up to the levels in the character's data. When levels are missing, the import window says so: "D&D Beyond only gave Hollowblade's features up to level 7."
 
-After the character levels up, import them again (or run **Import content…** with their data). The class shows as ticked, tagged with what it gains ("levels 8–9"), and Import adds those levels to the note you already have. Anything you changed in it stays.
+After the character levels up, import them again. The class shows as ticked, tagged with what it gains ("levels 8–9"), and Import adds those levels to the note you already have. Anything you changed in it stays.
 
 ### Only the content
 
-**Import content…** takes a character's data too. It adds the character's content to your compendium without making a character note.
+Untick **Make a character note in the party** to add only the character's content to your compendium. When the character is already in the party, it starts unticked, so importing them again only brings in what's new.
 
 A few things to check after importing:
 

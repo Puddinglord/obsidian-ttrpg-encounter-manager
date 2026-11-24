@@ -1,22 +1,18 @@
 // What a D&D Beyond character brings into the compendium, as a checklist: the
 // new entries (ticked), earlier imports that gain levels (ticked), and one line
-// each for what the SRD, an earlier import or your own notes already have. The
-// import dialog shows it under the character; Import content… shows it alone
-// (`importDdbContent`, the contract's `importFrom`). Ticked entries are written
-// as blocks in the content folder, one note each, tagged Imported.
+// each for what the SRD, an earlier import or your own notes already have.
+// Import… shows it under the character (importers.ts). Ticked entries are
+// written as blocks in the content folder, one note each, tagged Imported.
 
 import { normalizePath, setIcon, TFile } from 'obsidian';
-import type EmberVaultPlugin from '../../../main';
 import { fence } from '../../core/builder/frame';
 import { safeFileName } from '../../core/content/blocks';
-import type { ContentImport } from '../../core/content/import-modal';
 import { contentFolderFor } from '../../core/content/new-entry';
 import { evIcon } from '../../core/icons';
 import { applyLook } from '../../core/look';
 import { pill } from '../../core/pill';
 import { compendium5e, KIND5E } from './compendium';
 import type { Dnd5eEdition } from './editions';
-import { ddbCharacterOf, importDdbCharacter } from './import-ddb';
 import { ddbBlock, ddbContent, DdbContentKind, DdbHave, DdbPlanItem, maxLevel, planDdbContent, replaceBlock } from './import-ddb-content';
 import type { Dnd5eRuntime } from './runtime';
 
@@ -179,40 +175,4 @@ export class DdbContentChoice {
 export function wroteText(r: { added: number; updated: number }): string {
 	const parts = [r.added ? `added ${r.added} ${r.added === 1 ? 'entry' : 'entries'} to your compendium` : '', r.updated ? `brought ${r.updated} up to date` : ''].filter(Boolean);
 	return parts.join('; ');
-}
-
-/** Import content…'s reading of a D&D Beyond character's JSON: its content alone, no character note. */
-export function importDdbContent(plugin: EmberVaultPlugin, text: string): ContentImport | null {
-	let character: Record<string, unknown>;
-	let edition: Dnd5eEdition;
-	try {
-		character = ddbCharacterOf(text);
-		edition = importDdbCharacter(character).edition;
-	} catch (e) {
-		// Not a character at all: Import content reads it as a pack. A character D&D Beyond wouldn't share: say so.
-		const said = e instanceof Error ? e.message : '';
-		if (!/D&D Beyond didn’t share/.test(said)) return null;
-		return { render: (el) => { el.createDiv({ cls: 'nimble-pack-head is-error' }).createDiv({ cls: 'nimble-pack-summary', text: said }); }, chosen: () => 0, add: () => Promise.resolve('') };
-	}
-	const rt = plugin.runtime<Dnd5eRuntime>('dnd5e');
-	if (!rt) return null;
-	const choice = new DdbContentChoice(rt, character, edition);
-	const name = typeof character.name === 'string' && character.name.trim() ? character.name.trim() : 'This character';
-	return {
-		render(el, changed) {
-			const head = el.createDiv({ cls: 'nimble-pack-head' });
-			setIcon(head.createSpan({ cls: 'nimble-pack-icon' }), 'user-round');
-			const t = head.createDiv();
-			t.createDiv({ cls: 'nimble-pack-name', text: `${name}'s content` });
-			t.createDiv({ cls: 'nimble-pack-summary', text: `A D&D Beyond character, ${edition} rules. Only its content is added here.` });
-			if (!choice.plan.length) el.createDiv({ cls: 'dnd5e-ddb-none', text: 'Nothing to add: D&D Beyond gave only names for this character.' });
-			choice.render(el, changed);
-		},
-		chosen: () => choice.chosen().length,
-		async add() {
-			const r = await choice.write();
-			const said = wroteText(r);
-			return said ? `${said.charAt(0).toUpperCase()}${said.slice(1)}.` : 'Nothing to add.';
-		},
-	};
 }

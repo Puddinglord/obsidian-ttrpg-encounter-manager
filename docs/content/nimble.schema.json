@@ -32,6 +32,14 @@
 							"kind": {
 								"const": "monster"
 							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
 							"name": {
 								"type": [
 									"string",
@@ -298,6 +306,14 @@
 							"kind": {
 								"const": "spell"
 							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
 							"name": {
 								"type": [
 									"string",
@@ -409,6 +425,14 @@
 						"properties": {
 							"kind": {
 								"const": "item"
+							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
 							},
 							"name": {
 								"type": [
@@ -543,6 +567,14 @@
 						"properties": {
 							"kind": {
 								"const": "class"
+							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
 							},
 							"name": {
 								"type": [
@@ -1708,6 +1740,14 @@
 							"kind": {
 								"const": "subclass"
 							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
 							"name": {
 								"type": [
 									"string",
@@ -2128,6 +2168,14 @@
 							"kind": {
 								"const": "option"
 							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
 							"name": {
 								"type": [
 									"string",
@@ -2205,6 +2253,14 @@
 							"kind": {
 								"const": "ancestry"
 							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
 							"name": {
 								"type": [
 									"string",
@@ -2276,6 +2332,14 @@
 							"kind": {
 								"const": "background"
 							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
 							"name": {
 								"type": [
 									"string",
@@ -2321,6 +2385,14 @@
 						"properties": {
 							"kind": {
 								"const": "boon"
+							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
 							},
 							"name": {
 								"type": [
@@ -2386,6 +2458,14 @@
 							"kind": {
 								"const": "property"
 							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
 							"name": {
 								"type": [
 									"string",
@@ -2419,6 +2499,14 @@
 							"kind": {
 								"const": "language"
 							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
 							"name": {
 								"type": [
 									"string",
@@ -2446,6 +2534,14 @@
 						"properties": {
 							"kind": {
 								"const": "rule"
+							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
 							},
 							"name": {
 								"type": [
@@ -2486,6 +2582,14 @@
 						"properties": {
 							"kind": {
 								"const": "condition"
+							},
+							"imported": {
+								"type": "string",
+								"description": "Where it was imported from (\"Nimble Nexus\"): the compendium tags it Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
 							},
 							"name": {
 								"type": [

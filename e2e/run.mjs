@@ -7847,6 +7847,90 @@ test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its
 	}
 });
 
+test('import: a bundle brings a monster, an NPC with its card, a place and a map with its picture and pins; importing it again changes nothing', async (o) => {
+	const C = 'Campaigns/Import Vale';
+	const M = '.modal.ev-import';
+	const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+	const bundle = {
+		format: 'ember-vault-bundle', version: 1, system: 'nimble', source: { name: 'Test Tool', license: 'Made up for the tests' },
+		content: [{ kind: 'monster', name: 'Mire Hag', level: 3, hp: 30, armor: 'medium', actions: [{ name: 'Claw', text: '1d8+2 slashing.' }], source: { id: 'test:mire-hag' } }],
+		notes: [
+			{ kind: 'npc', name: 'Irinia', fields: { role: 'Cleric', faction: 'The Gate' }, card: { wants: 'To hold the gate', voice: 'Low and even' }, source: { id: 'test:irinia' } },
+			{ kind: 'location', name: 'The East Gate', body: 'Oak doors, banded in iron.' },
+		],
+		maps: [{ name: 'Sunken Crypt', image: { file: 'iv-crypt.png' }, grid: '10x8', body: 'A crypt under the marsh.', pins: [
+			{ x: 41.5, y: 22, label: '1. Altar', text: 'A cracked altar, still warm.' },
+			{ x: 70, y: 60, label: 'Irinia', note: 'Irinia', kind: 'npc' },
+		] }],
+		files: [{ name: 'iv-crypt.png', data: PNG }],
+	};
+	const text = JSON.stringify(bundle);
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, 'iv-crypt.png']) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Import Vale', level: 3, heroes: 4, starter: false });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.campaigns.active?.folder)) === C, { what: 'the campaign active' });
+
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(text);
+		let said = '';
+		await o.waitFor(async () => /Test Tool[\s\S]*a monster, an NPC, a location and a map/.test(said = await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the bundle read' })
+			.catch((e) => { throw new Error(`${e.message}; the report said: ${said}`); });
+		const rows = await o.page.locator(`${M} .ev-import-row input`).evaluateAll(els => els.map(e => `${e.dataset.kind}:${e.dataset.name}${e.checked ? '' : ' (off)'}`));
+		assert.deepEqual(rows, ['monster:Mire Hag', 'npc:Irinia', 'location:The East Gate', 'map:Sunken Crypt']);
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${M} .nimble-import-report`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+
+		const hag = `${C}/Monsters/Mire Hag.md`;
+		await o.waitFor(() => exists(o, hag), { what: 'the monster note' });
+		assert.match(await read(o, hag), /^---\nnimble: monster\nlevel: "3"\nimported: Test Tool\nimportId: "test:mire-hag"\n---\n\n```nimble\nname: Mire Hag\n[\s\S]*Claw/);
+		const npc = `${C}/NPCs/Irinia.md`;
+		await o.waitFor(() => exists(o, npc), { what: 'the NPC note' });
+		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter?.importId, npc)) === 'test:irinia', { what: 'the NPC\'s properties' });
+		const nfm = await o.eval((app, _p, p) => app.metadataCache.getCache(p).frontmatter, npc);
+		assert.deepEqual([nfm.nimble, nfm.role, nfm.faction, nfm.imported], ['npc', 'Cleric', 'The Gate', 'Test Tool']);
+		assert.match(await read(o, npc), /```nimble-npc\nlook: \nwants: To hold the gate\nvoice: Low and even\nsecret: \n```/);
+		assert.match(await read(o, `${C}/Locations/The East Gate.md`), /Oak doors, banded in iron\./);
+		const map = `${C}/Maps/Sunken Crypt.md`;
+		await o.waitFor(() => exists(o, map), { what: 'the map note' });
+		const mapText = await read(o, map);
+		assert.match(mapText, /A crypt under the marsh\./);
+		assert.match(mapText, /```nimble-map\nimage: \[\[iv-crypt\.png\]\]\ngrid: 10x8\npins:\n- 41\.5, 22 \| 1\. Altar \| \[\[Sunken Crypt#1\. Altar\]\]\n- 70, 60 \| Irinia \| \[\[Irinia\]\] \| npc\n```/);
+		assert.match(mapText, /## Key\n\n### 1\. Altar\n\nA cracked altar, still warm\./);
+		assert.ok(await exists(o, 'iv-crypt.png'), 'the picture in the vault');
+		// The map draws, with both pins.
+		await o.openFile(map, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map-pin`).count()) === 2, { what: 'both pins on the map' });
+
+		// Again: everything is already imported; nothing to tick.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(text);
+		await o.waitFor(async () => /Already imported: Mire Hag, Irinia, The East Gate, Sunken Crypt/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'all of it already imported' });
+		assert.equal(await o.page.locator(`${M} .ev-import-row`).count(), 0);
+		assert.equal(await o.page.locator(`${M} button.mod-cta`).isDisabled(), true);
+		await o.page.keyboard.press('Escape');
+
+		// Something it can't read says so, and Import stays off.
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill('{"hello": "world"}');
+		await o.waitFor(async () => /doesn't recognise this/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'not recognised' });
+		assert.equal(await o.page.locator(`${M} button.mod-cta`).isDisabled(), true);
+		await o.page.keyboard.press('Escape');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, 'iv-crypt.png']) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('5e imports: a D&D Beyond character brings its class into the compendium as Imported; it makes a hero and levels up; importing again fills in levels', async (o) => {
 	const C = 'Campaigns/Hollow Coast';
 	const F = 'Ember Vault/Content';
@@ -7980,7 +8064,9 @@ test('5e imports: a D&D Beyond character brings its class into the compendium as
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
 		await o.page.locator(IC).waitFor();
 		await o.page.locator(`${IC} textarea`).fill(JSON.stringify(at9));
-		await o.waitFor(async () => /Mira Hollowell's content/.test(await o.page.locator(`${IC} .nimble-import-report`).innerText()), { what: 'the character read as content' });
+		await o.waitFor(async () => /Mira Hollowell[\s\S]*already in the party/.test(await o.page.locator(`${IC} .nimble-import-report`).innerText()), { what: 'the character read, already in the party' });
+		// She's in the party already: only her content comes in, unless asked.
+		assert.equal(await o.page.locator(`${IC} input[data-k="character-note"]`).isChecked(), false);
 		const again = await o.page.locator(`${IC} .dnd5e-ddb-row`).evaluateAll(els => els.map(e => `${e.querySelector('input').dataset.name}: ${e.querySelector('.dnd5e-ddb-tag').textContent}`));
 		assert.deepEqual(again, ['Hollowblade: levels 8–9']);
 		// The tag that says what it gains: dark with light text, centred on its capitals.

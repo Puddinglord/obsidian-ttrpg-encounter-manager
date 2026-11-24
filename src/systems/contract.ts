@@ -16,7 +16,7 @@ import type { SlashCommand } from '../core/slash';
 import type { NoteKindExtensions } from '../core/note-kinds';
 import type { KindSpec } from '../core/content/spec';
 import type { BlockSpec } from '../core/content/blocks';
-import type { ContentImport } from '../core/content/import-modal';
+import type { Importer } from '../core/import/importer';
 import type { SettingsPart } from '../core/settings';
 import type { SettingsSection } from '../core/settings-ui';
 import type { CombatTokens } from '../core/tracker/tokens';
@@ -152,6 +152,12 @@ export interface GameSystem {
 	 * campaign uses from `plugin.content.enabled(id, path)`.
 	 */
 	readonly content?: GameContent;
+	/**
+	 * Other apps' files this game reads, for Import… (core/import/dialog.ts): each turns its format into an import
+	 * bundle of this game's content (a Fantasy Statblocks creature), or draws a review of its own (a D&D Beyond
+	 * character). Core adds the ones every game shares (bundles, content packs, maps).
+	 */
+	readonly importers?: readonly Importer[];
 }
 
 /** A game's content: the kinds packs and blocks hold, how it writes them as blocks, and how a block's entry looks. */
@@ -169,11 +175,11 @@ export interface GameContent {
 	 */
 	card?(el: HTMLElement, entry: { kind: string; value: Record<string, unknown> }, ctx: { plugin: EmberVaultPlugin; sourcePath: string }): void;
 	/**
-	 * Content in another app's file that this game reads (5e: a D&D Beyond character's JSON, whose class, subclass,
-	 * species, background, feats, spells and items join the compendium), for Import content…: null when the text
-	 * isn't one. It draws what the file brings, with a choice of what to add, and adds it as content blocks.
+	 * How an entry of one of its kinds is written into a note, for imports (core/import/write.ts): the fenced block,
+	 * and for a monster the note's properties beside `nimble: monster` (5e: cr). Null, or no member: kinds in
+	 * `blocks` are written as their ```<prefix>-<kind> YAML block, and other kinds can't be imported as notes.
 	 */
-	importFrom?(plugin: EmberVaultPlugin, text: string): ContentImport | null;
+	writeEntry?(kind: string, value: Record<string, unknown>, edition?: string): { lang: string; body: string; props?: Record<string, unknown> } | null;
 	/**
 	 * The seed the game's builder opens on to edit a block (`value`: the fields that checked out). A kind with a guided
 	 * builder (core/builder, registered under the kind's id) and a seed gets the Edit pencil on its block, and Save

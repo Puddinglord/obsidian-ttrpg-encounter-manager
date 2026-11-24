@@ -1428,7 +1428,7 @@ export function register(test, h) {
 			await o.page.locator(M).waitFor({ state: 'detached' });
 			const wisp = `${C}/Monsters/Bog Wisp.md`;
 			await o.waitFor(() => exists(o, wisp), { what: 'the creature note' });
-			assert.match(await read(o, wisp), /^---\nnimble: monster\ncr: "1\/2"\n---\n\n```5e\nname: Bog Wisp\n/);
+			assert.match(await read(o, wisp), /^---\nnimble: monster\ncr: "1\/2"\nimported: Fantasy Statblocks\n---\n\n```5e\nname: Bog Wisp\n/);
 			await o.waitFor(async () => crow(o, wisp).evaluate(el => el.classList.contains('kind-monster')).catch(() => false), { what: 'listed as a monster in the panel' });
 			await write(o, `${C}/Chapter 1/Bog.md`, '```nimble-encounter\nname: The bog\nmonsters:\n- 3 [[Bog Wisp]]\n```\n');
 			await o.openFile(`${C}/Chapter 1/Bog.md`, 'preview');

@@ -39,19 +39,23 @@
 							"kind": {
 								"const": "monster"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",
@@ -353,19 +357,23 @@
 							"kind": {
 								"const": "spell"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",
@@ -467,19 +475,23 @@
 							"kind": {
 								"const": "item"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",
@@ -532,19 +544,23 @@
 							"kind": {
 								"const": "equipment"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",
@@ -665,19 +681,23 @@
 							"kind": {
 								"const": "feat"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",
@@ -728,19 +748,23 @@
 							"kind": {
 								"const": "background"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",
@@ -936,19 +960,23 @@
 							"kind": {
 								"const": "species"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",
@@ -1292,19 +1320,23 @@
 							"kind": {
 								"const": "class"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",
@@ -1819,19 +1851,23 @@
 							"kind": {
 								"const": "subclass"
 							},
-							"name": {
-								"type": [
-									"string",
-									"number"
-								],
-								"description": "The name, as references use it."
-							},
 							"imported": {
 								"type": [
 									"string",
 									"number"
 								],
 								"description": "Where it was imported from: \"D&D Beyond\". Your note of it is tagged Imported."
+							},
+							"importId": {
+								"type": "string",
+								"description": "The source's id for it: a later import of the same thing updates this one."
+							},
+							"name": {
+								"type": [
+									"string",
+									"number"
+								],
+								"description": "The name, as references use it."
 							},
 							"ddbId": {
 								"type": "integer",

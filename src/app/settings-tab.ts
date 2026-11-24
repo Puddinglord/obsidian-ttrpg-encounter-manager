@@ -9,7 +9,8 @@ import { diceAssignmentRows, diceMotionRows, renderDiceStudio } from '../core/di
 import { confirmAction } from '../core/touch';
 import { FINISHES } from '../core/dice3d/styles';
 import { DEFAULT_CONTENT_FOLDER } from '../core/content/store';
-import { ImportContentModal, PackReportModal } from '../core/content/import-modal';
+import { PackReportModal } from '../core/content/import-modal';
+import { openImport } from '../core/import/dialog';
 import { packSummary } from '../core/content/packs';
 
 /**
@@ -144,7 +145,7 @@ export class EmberVaultSettingsTab extends PluginSettingTab {
 							await save();
 							void this.plugin.content.load();
 						}));
-						setting.addButton(b => b.setButtonText('Import content…').onClick(() => new ImportContentModal(this.plugin).open()));
+						setting.addButton(b => b.setButtonText('Import…').onClick(() => openImport(this.plugin)));
 					},
 				},
 				{
