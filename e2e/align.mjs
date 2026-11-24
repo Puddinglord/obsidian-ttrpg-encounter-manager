@@ -49,6 +49,12 @@ export const PILL_SELECTORS = [
 	'.dnd5e-ddb-tag',
 	'.ev-import-tag',
 	'.ev-import-fetch',
+	'.ev-import-add',
+	'.ev-import-choose',
+	'.ev-import-btn',
+	'.ev-import-open',
+	'.ev-import-look-toggle',
+	'.ev-import-seg > button',
 	// Nimble's builders for a hero's content: what a level grants in the check, a feature's grants, the stats said, the level ladder.
 	'.ncb-grant', '.ncb-grant-label', '.ncb-grant-add', '.ncb-said', '.ncb-rung',
 	// The builders (core/builder/frame.ts): step dots, kinds, segments, the footer's buttons and the phone sheet's, steppers,

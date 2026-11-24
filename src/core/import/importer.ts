@@ -7,6 +7,7 @@
 // Pure: no Obsidian imports.
 
 import type { ImportBundle } from './bundle';
+import type { EvIconName } from '../icons';
 
 /** What the user gave: files (chosen or dropped together), pasted text, and the link it was fetched from. */
 export interface ImportInput {
@@ -34,6 +35,8 @@ export interface CustomReview {
 	add(): Promise<string>;
 	/** The Add button's label ("Import", "Add to vault"). */
 	action?: string;
+	/** What Import… says it read, over the review: an icon, a name, a line. */
+	head?: { icon: EvIconName; title: string; summary?: string };
 }
 
 /** What an importer read: a bundle (with anything worth a look), or its own review, or why it couldn't. */

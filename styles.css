@@ -5174,13 +5174,13 @@ body.is-tablet .ev-dialog button.ev-dialog-btn { padding-left: 14px; padding-rig
    and to PILL_SELECTORS there. (:not(#nimble-pill) only lifts these above the per-component rules, so a pill's
    hidden state needs it too, like the builder's .is-hidden. A label already trimmed to its capitals, the builder's
    .eb-t, keeps its own box: as a flex box its text-box trim would stop working.) */
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-omnisearch-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-omnisearch-die, .dnd5e-ddb-tag, .ev-import-tag, .ev-import-fetch, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar, .ev-seg:where(:not(.lu-seg)) > button):not(#nimble-pill) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-omnisearch-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-omnisearch-die, .dnd5e-ddb-tag, .ev-import-tag, .ev-import-fetch, .ev-import-add, .ev-import-choose, .ev-import-btn, .ev-import-open, .ev-import-look-toggle, .ev-import-seg > button, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar, .ev-seg:where(:not(.lu-seg)) > button):not(#nimble-pill) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-omnisearch-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-omnisearch-die, .dnd5e-ddb-tag, .ev-import-tag, .ev-import-fetch, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar, .ev-seg:where(:not(.lu-seg)) > button):not(#nimble-pill) > :is(span, div):where(:not(.eb-t)) {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-omnisearch-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-omnisearch-die, .dnd5e-ddb-tag, .ev-import-tag, .ev-import-fetch, .ev-import-add, .ev-import-choose, .ev-import-btn, .ev-import-open, .ev-import-look-toggle, .ev-import-seg > button, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar, .ev-seg:where(:not(.lu-seg)) > button):not(#nimble-pill) > :is(span, div):where(:not(.eb-t)) {
 	display: inline-flex; align-items: center; line-height: normal;
 }
-:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-omnisearch-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-omnisearch-die, .dnd5e-ddb-tag, .ev-import-tag, .ev-import-fetch, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar, .ev-seg:where(:not(.lu-seg)) > button):not(#nimble-pill) svg {
+:is(.ns-add, .ns-roll, .ns-cond, .ns-cond-add, .ns-lang, .ns-coin, .ns-rest-btn, .ns-tab, .ns-equip, .ns-remove, .ns-actions-end, .ns-rc-cost, .ev-face-remove, .ns-reaction-used, .rd-cost, .rd-roll, .nimble-npc-pill, .campaign-role-pill, .campaign-hero-you, .lore-tag, .battle-outcome, .battle-fact, .lu-tag, .lu-gain, .lu-count, .lu-dot, .lu-back, .lu-next, .lu-sub-tab, .lu-sub-band-choose, .lu-skill-budget, .lu-skill-move, .lu-skill-reset, .lu-celebrate-chip, .lu-view-toggle button, .lu-chip, .lu-key-tag, .lu-level-tag, .lu-reset, .lu-view-btn, .lu-compare-choose, .lu-option-less, .lu-badge, .nimble-omnisearch-chip, .nimble-difficulty, .bestiary-tag, .rd-seg-btn, .nimble-cmpx-chip, .nimble-cmpx-pill, .nimble-cmpx-tag, .nimble-cmpx-pill-tag, .nimble-cmp-back, .nimble-count-seg, .ev-term-tag, .statblock-action, .record-btn, .dnd5e-condition, .dnd5e-condition-add, .dnd5e-hp-text, .dnd5e-death-stable, .dnd5e-death-dead, .dnd5e-sheet-condition, .dnd5e-turn-action, .dnd5e-sheet-gold, .dnd5e-qty, .ev-pill, .condition-tag, .hp-pad-qa, .hp-pad-choice, .phase-pill, .nimble-phase-chip, .dnd5e-ribbon, .ev-moment-btn, .rd-mode-btn, .builder-level, .ev-roll-tag, .balance-targets > button, .builder-pick-meta, .nimble-cmp-kind, .nimble-cmp-fact, .nimble-cmp-tag, .nimble-cmp-draft, .nimble-cmp-count, .nimble-cmp-level-badge, .nimble-spot-icon, .nimble-slash-icon, .nimble-cmpx-kbd, .nimble-cmpx-sort-dir, .nimble-cmpx-sort-add, .nimble-cmpx-sort-reset, .nimble-art-level, .nimble-omnisearch-die, .dnd5e-ddb-tag, .ev-import-tag, .ev-import-fetch, .ev-import-add, .ev-import-choose, .ev-import-btn, .ev-import-open, .ev-import-look-toggle, .ev-import-seg > button, .eb-dot, .eb-kind, .eb-seg-btn, .eb-back, .eb-next, .eb-create, .eb-preview-btn, .eb-sheet-close, .eb-num-btn, .eb-icon-btn, .eb-text-btn, .eb-chip, .eb-review-edit, .eb-note-fix, .eb-df-step, button.eb-df-seg, .eb-mode-toggle, .eb-pill, .eb-auto, .ncb-motif, .ns-feat-name, .ns-rc-foot, .ns-icon-btn, .dnd5e-roll, .dnd5e-init:where(:not(.dnd5e-gem)), .dnd5e-sheet-x, .dnd5e-equip, .dnd5e-item-more, .dnd5e-npc-ab-s, .ns-meter-extra, .nimble-dice, .nimble-dc, .nimble-segmented > button, .hp-pad-keys > button, .hp-pad-mode, .hp-pad-toggles > button, .hp-pad-close, .hp-pad-cancel, .hp-pad-apply, .ev-card-icon, .ev-foot-back, .ev-keys > button, .rd-step-btn, .nimble-issue-fix, .nimble-block-edit, .nimble-box-icon, .nimble-npc-portrait-edit, .ev-term-open, .nimble-map-token-text, .campaign-hero-avatar, .ev-seg:where(:not(.lu-seg)) > button):not(#nimble-pill) svg {
 	display: block; flex: 0 0 auto;
 }
 /* The standard pill, core/pill.ts: [icon] [text] on one centre line, one gap, the icon at the text's size.
@@ -7774,7 +7774,6 @@ body .workspace-leaf-content .ev-sheet-page:not(.nimble-show-props) .metadata-co
 
 /* Import… (core/import/dialog.ts), on the campaign's game's paper (the game dialog frame): what it read as a checklist.
    A D&D Beyond character shows what it brings into the compendium the same way (dnd5e/import-content-ui.ts). */
-.modal.ev-dialog:is(.ev-import, .dnd5e-import) { width: min(620px, 96vw); }
 .ev-dialog:is(.ev-import, .dnd5e-import) .nimble-import-lead { margin: 0; color: var(--ev-text-2); font-size: 14px; line-height: 1.45; }
 .ev-dialog:is(.ev-import, .dnd5e-import) input.dnd5e-import-link, .ev-dialog:is(.ev-import, .dnd5e-import) textarea.nimble-import-text { border-radius: var(--ev-r-md); border: 1px solid var(--ev-line-strong); background: var(--ev-surface); color: var(--ev-text); }
 .ev-dialog:is(.ev-import, .dnd5e-import) .dnd5e-import-link { height: 36px; margin-bottom: 0; }
@@ -7812,17 +7811,251 @@ body .workspace-leaf-content .ev-sheet-page:not(.nimble-show-props) .metadata-co
 .dnd5e-ddb-levels { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: var(--ev-r-md, 6px); background: color-mix(in srgb, var(--ev-accent, var(--interactive-accent)) 9%, var(--ev-surface, var(--background-primary))); font-size: 13px; line-height: 1.45; color: var(--ev-text, var(--text-normal)); }
 .dnd5e-ddb-levels-icon { display: inline-flex; flex: 0 0 auto; padding-top: 1px; color: var(--ev-accent-text, var(--text-accent)); }
 .dnd5e-ddb-levels-icon svg { width: 16px; height: 16px; }
-/* Import… (core/import/dialog.ts): what it read, a switch when more than one format fits, a pasted link to fetch. */
-.ev-dialog.ev-import .ev-import-hint:empty, .ev-dialog.ev-import .ev-import-link:empty { display: none; }
-.ev-dialog.ev-import .ev-import-hint { display: flex; flex-direction: column; gap: 10px; }
-.ev-import-as { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ev-text-2, var(--text-muted)); }
-.ev-import-as select { min-width: 0; max-width: 100%; }
-.ev-import-link { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--ev-text-2, var(--text-muted)); }
-.ev-import-link-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.ev-import-fetch { height: 28px; padding: 0 10px; border-radius: var(--ev-r-md, 6px); border: 1px solid var(--ev-line-strong, var(--background-modifier-border)); background: var(--ev-surface, var(--background-primary)); color: var(--ev-text, var(--text-normal)); font-size: 13px; cursor: pointer; --ev-pill-icon: 14px; --ev-pill-gap: 6px; }
-.ev-import-license { font-size: 12.5px; color: var(--ev-text-2, var(--text-muted)); }
-.ev-import-toggle { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ev-text, var(--text-normal)); cursor: pointer; }
+/* Import… (core/import/dialog.ts), as the import study draws it (prototypes/import-study): one fixed frame for every
+   step. What was given as chips, what it was read as, then the body (start, a status card, the review: the list
+   beside a preview of the selected record, or what was written), then the footer. Narrow (under 720px, by the
+   dialog's own width, `.is-narrow`): one column, the preview pushed over the list. */
+.modal.ev-dialog.ev-import { width: min(1080px, 96vw); height: min(780px, 92vh); max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+body.is-phone .modal.ev-dialog.ev-import { width: 100%; height: 100%; max-height: none; }
+.modal.ev-dialog.ev-import .modal-header, .modal.ev-dialog.ev-import > .modal-title { padding: 18px 22px 10px; margin: 0; }
+.modal.ev-dialog.ev-import .modal-content.ev-import-frame { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 0; overflow: hidden; padding: 0; }
+.ev-import .ev-import-file { display: none; }
+.ev-import :is(.ev-import-sources, .ev-import-read).is-hidden { display: none; }
+.ev-import :focus-visible { outline: 2px solid var(--ev-accent); outline-offset: 2px; }
+
+/* What was given: a chip each; a data file and its picture share one box. */
+.ev-import-sources { flex: 0 0 auto; display: flex; gap: 8px; align-items: stretch; padding: 0 22px 12px; overflow-x: auto; scrollbar-width: thin; }
+.ev-import-source { position: relative; flex: 0 0 auto; display: grid; grid-template-columns: auto minmax(0, auto) auto; align-items: center; gap: 8px; height: 44px; max-width: 280px; padding: 0 4px 0 6px; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); }
+.ev-import-source-thumb { width: 32px; height: 32px; border-radius: 4px; display: grid; place-items: center; background: var(--ev-surface-2); color: var(--ev-text-2); overflow: hidden; }
+.ev-import-source-thumb svg { width: 18px; height: 18px; }
+.ev-import-source-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ev-import-source-text { min-width: 0; display: flex; flex-direction: column; }
+.ev-import-source-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
+.ev-import-source-meta { max-width: 220px; font-size: 11.5px; color: var(--ev-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
+.ev-import-source-meta.is-bad { color: var(--ev-danger-text, var(--text-error)); }
+.ev-import button.ev-import-source-remove { width: 26px; height: 26px; padding: 0; display: grid; place-items: center; border: 0; background: transparent; color: var(--ev-text-2); }
+.ev-import button.ev-import-source-remove svg { width: 13px; height: 13px; }
+.ev-import-pair { flex: 0 0 auto; display: flex; align-items: center; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); }
+.ev-import-pair > .ev-import-source { border: 0; }
+.ev-import-pair-link { display: grid; place-items: center; width: 18px; color: var(--ev-text-2); }
+.ev-import-pair-link svg { width: 14px; height: 14px; }
+.ev-import button.ev-import-add { flex: 0 0 auto; height: 44px; padding: 0 12px; border: 1px dashed var(--ev-line-strong); border-radius: var(--ev-r-md); background: transparent; color: var(--ev-text-2); font: 600 13px/normal var(--ev-font-ui); --ev-pill-icon: 15px; }
+.ev-import button.ev-import-add:hover { color: var(--ev-text); border-color: var(--ev-text-2); }
+
+/* What it was read as. */
+.ev-import-read { flex: 0 0 auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; margin: 0 22px; padding: 12px 0; border-top: 1px solid var(--ev-line); border-bottom: 1px solid var(--ev-line); }
+.ev-sys-dnd5e .ev-import-read { border-top-color: var(--ev-rule, var(--ev-line)); }
+.ev-import-read-icon { grid-row: span 2; align-self: start; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; background: var(--ev-surface-2); color: var(--ev-text); }
+.ev-import-read-icon svg { width: 20px; height: 20px; }
+.ev-import-read-name { font: var(--ev-display-weight, 700) 19px/1.2 var(--ev-font-display); font-variant: var(--ev-display-variant, normal); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-import-read-sub { grid-column: 2; display: flex; flex-wrap: wrap; gap: 2px 0; align-items: center; font-size: 13px; color: var(--ev-text-2); }
+.ev-import-read-bit { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; max-width: 100%; }
+.ev-import-read-bit:not(:last-child)::after { content: '·'; padding: 0 8px; }
+.ev-import-read-bit > span:not(.ev-import-read-bit-icon) { overflow: hidden; text-overflow: ellipsis; }
+.ev-import-read-bit-icon { display: inline-flex; }
+.ev-import-read-bit-icon svg { width: 13px; height: 13px; }
+.ev-import-read-bit a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--ev-line-strong); }
+.ev-import-read-tools { grid-column: 3; grid-row: 1 / span 2; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 14px; align-items: center; }
+.ev-import-as { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ev-text-2); }
+.ev-import-as select { min-width: 0; max-width: 260px; }
+.ev-import button.ev-import-look-toggle { height: 28px; padding: 0 9px; border: 0; border-radius: var(--ev-r-sm); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 12.5px/normal var(--ev-font-ui); --ev-pill-icon: 14px; --ev-pill-gap: 6px; }
+.ev-import-look { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; margin-top: 6px; padding: 10px 12px; border-radius: var(--ev-r-md); background: var(--ev-chip-bg); color: var(--ev-chip-text); font-size: 13px; }
+.ev-import-switch { display: inline-flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.ev-import-switch input { margin: 0; }
+
+/* The body. */
+.ev-import-body { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+
+/* Start: a drop zone that is also the file chooser, the paste box beside it. */
+.ev-import-start { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 14px 16px; padding: 4px 22px 16px; }
+.ev-import-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 240px; padding: 24px; border: 2px dashed var(--ev-line-strong); border-radius: var(--ev-r-lg); background: var(--ev-surface-2); color: var(--ev-text); text-align: center; cursor: pointer; }
+.ev-import-drop:hover { border-color: var(--ev-text-2); }
+.ev-import-drop-icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--ev-surface); border: 1px solid var(--ev-line); color: var(--ev-text); }
+.ev-import-drop-icon svg { width: 30px; height: 30px; }
+.ev-import-drop-title { font: var(--ev-display-weight, 700) 24px/1.15 var(--ev-font-display); font-variant: var(--ev-display-variant, normal); letter-spacing: 0.02em; }
+.ev-import-drop-sub { font-size: 13px; color: var(--ev-text-2); }
+.ev-import button.ev-import-choose { height: 36px; padding: 0 16px; border: 0; border-radius: var(--ev-r-md); background: var(--ev-accent); color: var(--ev-on-accent); font: 700 14px/normal var(--ev-font-ui); --ev-pill-icon: 16px; }
+.ev-import button.ev-import-choose:hover { background: var(--ev-accent-hover); }
+.ev-import-pastebox { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.ev-import-hint { display: flex; flex-direction: column; gap: 8px; }
+.ev-import-label { display: flex; align-items: center; gap: 6px; font: var(--ev-display-weight, 700) 13px/normal var(--ev-font-display); font-variant: var(--ev-display-variant, normal); letter-spacing: 0.06em; color: var(--ev-text-2); }
+.ev-import-label-icon { display: inline-flex; }
+.ev-import-label-icon svg { width: 14px; height: 14px; }
+.ev-import textarea.ev-import-paste { flex: 1 1 auto; min-height: 160px; width: 100%; resize: none; padding: 12px 14px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-lg); background: var(--ev-surface); color: var(--ev-text); font: 12.5px/1.55 var(--font-monospace); }
+.ev-import textarea.ev-import-paste::placeholder { color: var(--ev-text-2); font-family: var(--ev-font-ui); font-size: 14px; }
+.ev-import-formats { grid-column: 1 / -1; font-size: 12.5px; line-height: 1.6; color: var(--ev-text-2); }
+.ev-import-formats-label { font-weight: 600; color: var(--ev-text); }
+.ev-import-formats a, .ev-import-card-actions a { color: var(--ev-text); text-decoration: none; border-bottom: 1px solid var(--ev-line-strong); white-space: nowrap; }
+
+/* Dragging files over: the whole dialog is the target. */
+.ev-import-drag { display: none; }
+.ev-import.is-dragging .ev-import-drag { position: absolute; inset: 64px 12px 12px; z-index: 20; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--ev-accent); border-radius: var(--ev-r-lg); background: color-mix(in srgb, var(--ev-surface) 92%, transparent); color: var(--ev-text); font: var(--ev-display-weight, 700) 26px/1.15 var(--ev-font-display); font-variant: var(--ev-display-variant, normal); pointer-events: none; }
+
+/* A status card: a link to fetch, fetching, an error with its evidence. */
+.ev-import-status { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px 22px; }
+.ev-import-card { width: min(100%, 560px); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.ev-import-card-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--ev-surface-2); border: 1px solid var(--ev-line); color: var(--ev-text); }
+.ev-import-card-icon svg { width: 26px; height: 26px; }
+.ev-import-card-icon.is-bad { background: var(--ev-danger-bg, var(--background-modifier-error)); color: var(--ev-danger-text, var(--text-error)); border-color: transparent; }
+.ev-import-status.is-fetching .ev-import-card-icon svg { animation: ev-import-spin 0.9s linear infinite; }
+@keyframes ev-import-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ev-import-status.is-fetching .ev-import-card-icon svg { animation-duration: 3s; } }
+.ev-import-card-title { font: 700 19px/1.3 var(--ev-font-ui); overflow-wrap: anywhere; }
+.ev-import-card-text { max-width: 46ch; font-size: 14px; color: var(--ev-text-2); }
+.ev-import-card-url { max-width: 100%; padding: 6px 10px; border-radius: var(--ev-r-sm); background: var(--ev-surface-2); color: var(--ev-text); font: 12.5px/1.4 var(--font-monospace); overflow-wrap: anywhere; }
+.ev-import-card-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 12px; margin-top: 4px; }
+.ev-import-card-actions .dnd5e-import-link { width: min(100%, 420px); }
+.ev-import button:is(.ev-import-btn, .ev-import-fetch) { height: 36px; padding: 0 14px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); font: 600 14px/normal var(--ev-font-ui); --ev-pill-icon: 16px; }
+.ev-import button.ev-import-fetch { background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); }
+.ev-import button.ev-import-fetch:hover { background: var(--ev-accent-hover); }
+.ev-import-status .ev-import-code { width: min(100%, 760px); max-height: 300px; }
+
+/* The review: the list beside the preview. */
+.ev-import-review { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(280px, 34%) minmax(0, 1fr); }
+.ev-import-rail { min-height: 0; display: flex; flex-direction: column; border-right: 1px solid var(--ev-line); }
+.ev-import-tools { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 10px 14px 10px 22px; border-bottom: 1px solid var(--ev-line); }
+.ev-import-all { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.ev-import input.ev-import-filter { flex: 1 1 auto; min-width: 0; height: 30px; font-size: 13px; }
+.ev-import-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 0 12px; }
+.ev-import button.ev-import-group-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 14px 0 22px; border: 0; border-radius: 0; background: var(--ev-surface); color: var(--ev-text-2); }
+.ev-import-group-title { font: var(--ev-display-weight, 700) 13px/normal var(--ev-font-display); font-variant: var(--ev-display-variant, normal); letter-spacing: 0.06em; color: var(--ev-text); }
+.ev-import-group-count { font: 600 12px/normal var(--ev-font-num, var(--ev-font-ui)); color: var(--ev-text-2); }
+.ev-import-group-caret { margin-left: auto; display: inline-flex; }
+.ev-import-group-caret svg { width: 14px; height: 14px; }
+.ev-import-row { display: grid; grid-template-columns: 20px 20px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 48px; padding: 5px 14px 5px 22px; cursor: pointer; }
+.ev-import-row:hover { background: var(--ev-surface-2); }
+.ev-import-row.is-selected { background: var(--ev-now, var(--ev-surface-2)); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+.ev-import-row input[type="checkbox"], .ev-import-all input, .ev-import-detail-tick input { margin: 0; --checkbox-color: var(--ev-accent); --checkbox-color-hover: var(--ev-accent-hover); --checkbox-border-color: var(--ev-line-strong); --checkbox-marker-color: var(--ev-on-accent); }
+.ev-import-row-state, .ev-import-row-icon { display: grid; place-items: center; color: var(--ev-text-2); }
+.ev-import-row-state svg { width: 17px; height: 17px; }
+.ev-import-row-icon svg { width: 18px; height: 18px; }
+.ev-import-row-text { min-width: 0; display: flex; flex-direction: column; }
+.ev-import-row-name { font-size: 14px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-import-row-meta { font-size: 12.5px; line-height: 1.3; color: var(--ev-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-import-row.is-off .ev-import-row-name { color: var(--ev-text-2); }
+.ev-import-row-end { display: flex; align-items: center; gap: 6px; color: var(--ev-text-2); }
+.ev-import-row-warn { display: inline-flex; color: var(--ev-text); }
+.ev-import-row-warn svg, .ev-import-row-go svg { width: 15px; height: 15px; }
+.ev-import-row-go { display: none; }
+
+/* The preview: the record's head, its tabs, then what it is. */
+.ev-import-detail { min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--ev-bg); }
+.ev-import-detail-head { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 12px 22px 10px; background: var(--ev-surface); border-bottom: 1px solid var(--ev-line); }
+.ev-import button.ev-import-back { width: 34px; height: 34px; padding: 0; display: none; place-items: center; border: 0; border-radius: 999px; background: var(--ev-surface-2); color: var(--ev-text); }
+.ev-import-detail-title { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; }
+.ev-import-detail-name { font: var(--ev-name-style, normal) var(--ev-name-weight, 700) 20px/1.25 var(--ev-font-name, var(--ev-font-display)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-import-detail-meta { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 12.5px; color: var(--ev-text-2); }
+.ev-import-detail-fact { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-import-detail-tick { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.ev-import-tag { height: 20px; padding: 0 7px; border-radius: var(--ev-r-chip); background: var(--ev-accent); color: var(--ev-on-accent); font: 600 11.5px/normal var(--ev-font-ui); white-space: nowrap; --ev-pill-icon: 11px; --ev-pill-gap: 4px; }
+.ev-import-tabs { flex: 0 0 auto; display: flex; justify-content: center; padding: 10px 16px 0; }
+.ev-import-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 8px; background: var(--ev-chip-bg); }
+.ev-import .ev-import-seg > button { height: 28px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: var(--ev-text-2); font: 600 13px/normal var(--ev-font-ui); --ev-pill-icon: 14px; }
+.ev-import .ev-import-seg > button.is-active { background: var(--ev-surface); color: var(--ev-text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.ev-import .ev-import-seg.is-small > button { height: 24px; padding: 0 10px; font-size: 12px; }
+.ev-import-pane { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 22px 22px; }
+.ev-import-pane > * { max-width: 680px; margin-left: auto; margin-right: auto; }
+.ev-import-pane > * + * { margin-top: 12px; }
+.ev-import-note { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 4px 10px; padding: 10px 12px; border-radius: var(--ev-r-md); background: var(--ev-surface-2); font-size: 13px; }
+.ev-import-note-icon { display: inline-flex; margin-top: 1px; }
+.ev-import-note-icon svg { width: 17px; height: 17px; }
+.ev-import-note.is-look { background: var(--ev-chip-bg); color: var(--ev-chip-text); }
+.ev-import-note.is-bad { background: var(--ev-danger-bg, var(--background-modifier-error)); }
+.ev-import-note.is-bad .ev-import-note-icon { color: var(--ev-danger-text, var(--text-error)); }
+.ev-import-note-title { font-weight: 700; }
+.ev-import button.ev-import-open { height: 28px; padding: 0 10px; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); font: 600 12.5px/normal var(--ev-font-ui); --ev-pill-icon: 13px; }
+.ev-import-paper { display: flex; flex-direction: column; gap: 12px; }
+.ev-import-paper .ev-import-block > *:first-child { margin-top: 0; }
+.ev-import-empty { padding: 24px; text-align: center; color: var(--ev-text-2); font-size: 13.5px; }
+.ev-import-facts { font-size: 13px; color: var(--ev-text-2); }
+.ev-import-body-text { font-size: 14px; }
+
+/* A map: its picture with every pin, then the key. */
+.ev-import-map { position: relative; align-self: center; width: fit-content; max-width: 100%; overflow: hidden; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: #1d1b18; }
+.ev-import-map.is-missing { width: auto; }
+.ev-import-map img { display: block; max-width: 100%; max-height: 480px; width: auto; height: auto; }
+.ev-import-pin { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%); }
+.ev-import-pin-label { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; border: 2px solid #fff; background: #c8321e; color: #fff; font: 700 11px/normal var(--ev-font-ui); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); }
+.ev-import-map-missing { aspect-ratio: 3 / 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; border: 2px dashed var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface-2); color: var(--ev-text); text-align: center; font-size: 13.5px; }
+.ev-import-map-missing-icon svg { width: 28px; height: 28px; }
+.ev-import-key { border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.ev-import-key-row { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; align-items: start; padding: 8px 12px; font-size: 13.5px; }
+.ev-import-key-row + .ev-import-key-row { border-top: 1px solid var(--ev-line); }
+.ev-import-key-label { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--ev-accent); color: var(--ev-on-accent); font: 700 11px/normal var(--ev-font-ui); }
+.ev-import-key-text p { margin: 0; }
+.ev-import-key-note { color: var(--ev-text-2); }
+
+/* Changes: an update, field by field. */
+.ev-import-diff { overflow: hidden; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.ev-import-diff-row { display: grid; grid-template-columns: minmax(90px, 0.6fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 9px 12px; font-size: 13.5px; }
+.ev-import-diff-row + .ev-import-diff-row { border-top: 1px solid var(--ev-line); }
+.ev-import-diff-key { font-weight: 600; overflow-wrap: anywhere; }
+.ev-import-diff-was, .ev-import-diff-will { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.ev-import-diff-was { color: var(--ev-text-2); }
+.ev-import-diff-word { font: 700 11px/normal var(--ev-font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ev-text-2); }
+
+/* Source: the text, as code. */
+.ev-import-code-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.ev-import-code { max-height: 520px; overflow: auto; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-code-bg, var(--ev-surface)); font: 12.5px/1.6 var(--font-monospace); text-align: left; }
+.ev-import-code-line { display: grid; grid-template-columns: 48px minmax(0, 1fr); white-space: pre; }
+.ev-import-code-n { padding-right: 10px; margin-right: 10px; border-right: 1px solid var(--ev-line); text-align: right; color: var(--ev-text-2); opacity: 0.6; user-select: none; }
+.ev-import-code-line.is-marked { background: var(--ev-danger-bg, var(--background-modifier-error)); }
+.ev-import-code-line.is-marked .ev-import-code-n { color: var(--ev-danger-text, var(--text-error)); opacity: 1; font-weight: 700; }
+.ev-import-code .is-key { color: var(--ev-text); font-weight: 600; }
+.ev-import-code .is-str { color: var(--ev-text-2); }
+.ev-import-code-more { padding: 6px 12px; color: var(--ev-text-2); }
+
+/* A review an importer draws itself (D&D Beyond, a content pack), in a readable column. */
+.ev-import-custom { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px 22px 18px; }
+.ev-import .ev-import-custom-col { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.ev-import-toggle { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); font-size: 14px; font-weight: 600; cursor: pointer; }
 .ev-import-toggle input[type="checkbox"] { margin: 0; }
+
+/* Done. */
+.ev-import-done { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 22px; }
+.ev-import-done .ev-import-card-icon:not(.is-bad) { background: var(--ev-accent); color: var(--ev-on-accent); border: 0; }
+.ev-import-written { width: min(100%, 620px); border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.ev-import-written:empty { display: none; }
+.ev-import-written-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; }
+.ev-import-written-row + .ev-import-written-row { border-top: 1px solid var(--ev-line); }
+.ev-import-written-row.is-bad { color: var(--ev-danger-text, var(--text-error)); }
+.ev-import-written-icon { display: inline-flex; color: var(--ev-text-2); }
+.ev-import-written-icon svg { width: 18px; height: 18px; }
+.ev-import-written-name { font-size: 14px; font-weight: 600; }
+.ev-import-written-path { font-size: 12px; color: var(--ev-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Footer: Cancel left, Import N right. */
+.ev-import-foot-wrap { flex: 0 0 auto; border-top: 1px solid var(--ev-line); background: var(--ev-surface); padding: 12px 22px; }
+.ev-import-foot-wrap .ev-dialog-foot { margin: 0; }
+.ev-import-kbd { font-size: 12.5px; color: var(--ev-text-2); white-space: nowrap; }
+.ev-import button.ev-import-main { min-width: 140px; }
+
+/* Narrow: one column; the preview pushed over the list, with a way back. */
+.ev-import.is-narrow :is(.ev-import-sources, .ev-import-tools, .ev-import-custom, .ev-import-done, .ev-import-status, .ev-import-foot-wrap) { padding-left: 16px; padding-right: 16px; }
+.ev-import.is-narrow .ev-import-start { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; align-content: start; padding: 4px 16px 14px; }
+.ev-import.is-narrow .ev-import-drop { min-height: 0; padding: 20px 16px; }
+.ev-import.is-narrow textarea.ev-import-paste { min-height: 130px; }
+.ev-import.is-narrow .ev-import-read { grid-template-columns: minmax(0, 1fr); margin: 0 16px; }
+.ev-import.is-narrow .ev-import-read-icon { display: none; }
+.ev-import.is-narrow :is(.ev-import-read-sub, .ev-import-read-tools) { grid-column: 1; grid-row: auto; justify-content: flex-start; }
+.ev-import.is-narrow .ev-import-review { grid-template-columns: minmax(0, 1fr); position: relative; overflow: hidden; }
+.ev-import.is-narrow .ev-import-rail { border-right: 0; }
+.ev-import.is-narrow .ev-import-row { min-height: 56px; padding: 6px 16px; }
+.ev-import.is-narrow button.ev-import-group-head { padding: 0 16px; }
+.ev-import.is-narrow .ev-import-row-go { display: inline-flex; }
+.ev-import.is-narrow button.ev-import-back { display: grid; }
+.ev-import.is-narrow .ev-import-detail-head { flex-wrap: wrap; padding: 10px 12px; }
+.ev-import.is-narrow .ev-import-pane { padding: 12px; }
+.ev-import.is-narrow .ev-import-detail { position: absolute; inset: 0; z-index: 6; transform: translateX(100%); visibility: hidden; transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.24s; box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12); }
+.ev-import.is-narrow.is-detail-open .ev-import-detail { transform: none; visibility: visible; transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.ev-import.is-narrow .ev-import-diff-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.ev-import.is-narrow .ev-import-kbd { display: none; }
+@media (prefers-reduced-motion: reduce) { .ev-import.is-narrow .ev-import-detail { transition: none; } }
+/* Phones: no drag and drop; the drop zone is a big Choose files button. */
+body.is-phone .ev-import .ev-import-drop { flex-direction: row; justify-content: flex-start; gap: 14px; padding: 16px; border-style: solid; border-width: 1px; text-align: left; }
+body.is-phone .ev-import .ev-import-drop-sub, body.is-phone .ev-import button.ev-import-choose { display: none; }
+body.is-phone .ev-import .ev-import-drop-icon { width: 48px; height: 48px; }
+body.is-phone .ev-import .ev-import-drop-title { font-size: 20px; }
 @media (max-width: 480px) {
 	/* The kind under the name, and a long name ("Order of the Quiet Lantern") on two lines rather than off the edge. */
 	:is(.dnd5e-ddb-name, .ev-import-name) { flex-direction: column; align-items: stretch; gap: 0; }

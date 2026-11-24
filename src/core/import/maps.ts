@@ -33,7 +33,6 @@ export function pictureFor(input: ImportInput, jsonName?: string): ImportFile | 
 }
 
 const enc = new TextEncoder();
-const xml = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
 
 /** A plain map as SVG: open cells (or rooms) drawn on a grid, in ink on paper. */
 function svgMap(w: number, h: number, cells: { x: number; y: number; w: number; h: number }[], extra = ''): Uint8Array {

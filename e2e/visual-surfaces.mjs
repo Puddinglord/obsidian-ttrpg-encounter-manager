@@ -553,8 +553,37 @@ const nimble = [
 			await c.open(`${CH}/Q1 Entry Chamber.md`);
 			await c.cmd('import-content');
 			await c.page.locator('.modal.nimble-import-content textarea').fill(c.pack('nimble-lantern-road.json'));
-			await c.wait(600);
-			await c.page.locator('.modal.nimble-import-content textarea').evaluate(t => { t.scrollTop = 0; });
+			await c.page.locator('.modal.nimble-import-content .nimble-pack-head').waitFor({ timeout: 5000 });
+			await c.wait(400);
+		},
+	},
+	{
+		// Import…'s start: the drop zone and the paste box.
+		name: 'import-start', mode: 'window', root: '.modal.ev-import',
+		setup: async (c) => {
+			await c.campaign(NQ);
+			await c.open(`${CH}/Q1 Entry Chamber.md`);
+			await c.cmd('import-content');
+			await c.page.locator('.modal.ev-import .ev-import-drop').waitFor({ timeout: 5000 });
+			await c.wait(300);
+		},
+	},
+	{
+		// Import… with a map selected: its drawn picture with the pins, the key, the room-notes switch.
+		name: 'import-map', mode: 'window', root: '.modal.ev-import',
+		setup: async (c) => {
+			await c.campaign(NQ);
+			await c.open(`${CH}/Q1 Entry Chamber.md`);
+			await c.cmd('import-content');
+			await c.page.locator('.modal.ev-import input.ev-import-file').setInputFiles({ name: 'crypt.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({
+				title: 'The Sunken Crypt', story: 'Under the marsh, a crypt fills with water every spring.',
+				rects: [{ x: -2, y: 0, w: 4, h: 4 }, { x: 0, y: 4, w: 1, h: 4 }, { x: -3, y: 8, w: 6, h: 6 }], doors: [],
+				notes: [{ text: 'A cracked altar, still warm.', ref: '1', pos: { x: 0, y: 2 } }, { text: 'Water to the knees.', ref: '2', pos: { x: 0, y: 11 } }],
+			})) });
+			// Narrow (a phone, a small window): the preview opens over the list from its row.
+			await c.page.locator('.modal.ev-import .ev-import-row').first().click();
+			await c.page.locator('.modal.ev-import .ev-import-map img').waitFor({ timeout: 5000 });
+			await c.wait(400);
 		},
 	},
 	{
@@ -574,7 +603,6 @@ const nimble = [
 				maps: [{ name: 'Sunken Crypt', pins: [{ x: 40, y: 20, label: '1' }] }],
 			}));
 			await c.page.locator('.modal.ev-import .ev-import-list').waitFor({ timeout: 5000 });
-			await c.page.locator('.modal.ev-import textarea').evaluate(t => { t.scrollTop = 0; });
 			await c.wait(400);
 		},
 	},
@@ -795,7 +823,6 @@ const dnd5e = [
 			await c.cmd('import-ddb-character');
 			await c.page.locator('.modal.dnd5e-import textarea').fill(c.fixture('tests/fixtures/ddb-hollowblade.json'));
 			await c.page.locator('.modal.dnd5e-import .dnd5e-ddb-content').waitFor({ timeout: 5000 });
-			await c.page.locator('.modal.dnd5e-import textarea').evaluate(t => { t.scrollTop = 0; });
 			await c.wait(400);
 		},
 	},

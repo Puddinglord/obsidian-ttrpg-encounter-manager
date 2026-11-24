@@ -2848,6 +2848,13 @@ const hpPad5e = async (o, row, keys) => {
 	await o.page.keyboard.press('Enter');
 	await o.page.locator('.nimble-hp-pad').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {});
 };
+/** Import…'s main button, then Done when it shows what it wrote; until the dialog has closed. */
+const importAndClose = async (o, M) => {
+	await o.page.locator(`${M} button.ev-import-main`).click();
+	await o.waitFor(async () => (await o.page.locator(M).count()) === 0 || (await o.page.locator(`${M} .ev-import-done`).count()) > 0, { what: 'the import written' });
+	if (await o.page.locator(`${M} .ev-import-done`).count()) await o.page.locator(`${M} button.ev-import-main`).click();
+	await o.page.locator(M).waitFor({ state: 'detached' });
+};
 const exists = (o, path) => o.eval((app, _p, path) => !!app.vault.getAbstractFileByPath(path), path);
 const read = (o, path) => o.eval((app, _p, path) => app.vault.adapter.read(path), path);
 const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -7314,8 +7321,7 @@ test('content packs: a pack in the content folder adds a 5e spell, subclass and 
 		await o.waitFor(async () => /1 entry: 1 feat · 1 left out/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the import report' });
 		assert.match(await o.page.locator(`${M} .nimble-pack-notes.is-rejected`).innerText(), /Entry 2 \(Half Done\): "school" is missing; "castingTime" is missing/);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'content-import.png') });
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		await importAndClose(o, M);
 		await o.waitFor(async () => (await o.eval((app, _p, F) => app.vault.getAbstractFileByPath(`${F}/Table Rules.json`) !== null, F)), { what: 'the pack saved' });
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => p.name).join())) === 'Hearth and Cinder,Table Rules', { what: 'both packs loaded' });
 	} finally {
@@ -7342,8 +7348,7 @@ test('content packs: Import content takes a Nimble pack and says what it left ou
 		await o.waitFor(async () => /9 entries: 1 class, 1 subclass, 1 option, 1 ancestry, 1 background, 2 spells, 1 item, 1 monster · 1 left out/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the import report' });
 		assert.match(await o.page.locator(`${M} .nimble-pack-notes.is-rejected`).innerText(), /Entry 10 \(Half Done\): "tier" is missing; "text" is missing/);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'content-import-nimble.png') });
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		await importAndClose(o, M);
 		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => `${p.name}:${p.system}:${p.entries.length}`).join())) === 'The Lantern Road:nimble:9', { what: 'the pack loaded' });
 
 		// The compendium: the class (tagged with its pack, its Ember Dice and Kindlings on its page), and the option in the Berserker's list.
@@ -7810,8 +7815,7 @@ test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its
 		await o.page.locator(`${M} textarea`).fill(JSON.stringify(ddb));
 		await o.waitFor(async () => /Pip Underbough[\s\S]*Level 3 Wizard[\s\S]*2024 rules/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the character found' });
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb.png') });
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		await importAndClose(o, M);
 		const sheet = `${C}/Party/Pip Underbough.md`;
 		await o.waitFor(async () => (await o.eval((app, _p, p) => app.metadataCache.getCache(p)?.frontmatter?.class, sheet)) === 'Wizard', { what: 'the imported character note' });
 		const fm = await o.eval((app, _p, p) => app.metadataCache.getCache(p).frontmatter, sheet);
@@ -7825,16 +7829,15 @@ test('5e imports: a D&D Beyond character becomes a sheet (the link box shows its
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
 		await o.page.locator(M).waitFor();
 		await o.page.locator(`${M} textarea`).fill('{"success":false,"message":"Unauthorized Access Attempt."}');
-		await o.waitFor(async () => /Public/i.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the private character message' });
+		await o.waitFor(async () => /Public/i.test(await o.page.locator(`${M} .ev-import-frame`).innerText()), { what: 'the private character message' });
 		assert.equal(await o.page.locator(`${M} button.mod-cta`).isDisabled(), true);
 		await o.page.keyboard.press('Escape');
 
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-fantasy-statblocks'); });
 		await o.page.locator(M).waitFor();
 		await o.page.locator(`${M} textarea`).fill(creatures);
-		await o.waitFor(async () => /Bog Wisp/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the creature found' });
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /Bog Wisp/.test(await o.page.locator(`${M} .ev-import-frame`).innerText()), { what: 'the creature found' });
+		await importAndClose(o, M);
 		const wisp = `${C}/Monsters/Bog Wisp.md`;
 		await o.waitFor(async () => o.eval((app, _p, p) => !!app.vault.getAbstractFileByPath(p), wisp), { what: 'the creature note' });
 		assert.match(await read(o, wisp), /```5e\nname: Bog Wisp\n[\s\S]*hp: 9 \(2d4 \+ 4\)[\s\S]*cr: 1\/2[\s\S]*- Chill Touch: Melee Attack Roll: \+5/);
@@ -7877,13 +7880,12 @@ test('import: a bundle brings a monster, an NPC with its card, a place and a map
 		await o.page.locator(M).waitFor();
 		await o.page.locator(`${M} textarea`).fill(text);
 		let said = '';
-		await o.waitFor(async () => /Test Tool[\s\S]*A monster, an NPC, a location and a map/.test(said = await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the bundle read' })
+		await o.waitFor(async () => /Test Tool[\s\S]*A monster, an NPC, a location and a map/.test(said = await o.page.locator(`${M} .ev-import-frame`).innerText().catch(() => '')), { what: 'the bundle read' })
 			.catch((e) => { throw new Error(`${e.message}; the report said: ${said}`); });
 		const rows = await o.page.locator(`${M} .ev-import-row input`).evaluateAll(els => els.map(e => `${e.dataset.kind}:${e.dataset.name}${e.checked ? '' : ' (off)'}`));
 		assert.deepEqual(rows, ['monster:Mire Hag', 'npc:Irinia', 'location:The East Gate', 'map:Sunken Crypt']);
-		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${M} .nimble-import-report`, tolerance: 1, selectors: PILL_SELECTORS }), []);
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		assert.deepEqual(await o.page.evaluate(pillOffenders, { root: `${M} .ev-import-frame`, tolerance: 1, selectors: PILL_SELECTORS }), []);
+		await importAndClose(o, M);
 
 		const hag = `${C}/Monsters/Mire Hag.md`;
 		await o.waitFor(() => exists(o, hag), { what: 'the monster note' });
@@ -7910,8 +7912,8 @@ test('import: a bundle brings a monster, an NPC with its card, a place and a map
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
 		await o.page.locator(M).waitFor();
 		await o.page.locator(`${M} textarea`).fill(text);
-		await o.waitFor(async () => /Already imported: Mire Hag, Irinia, The East Gate, Sunken Crypt/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'all of it already imported' });
-		assert.equal(await o.page.locator(`${M} .ev-import-row`).count(), 0);
+		await o.waitFor(async () => (await o.page.locator(`${M} .ev-import-group[data-status="same"] .ev-import-group-count`).innerText().catch(() => '')) === '4', { what: 'all of it already imported' });
+		assert.equal(await o.page.locator(`${M} .ev-import-group[data-status="new"]`).count(), 0);
 		assert.equal(await o.page.locator(`${M} button.mod-cta`).isDisabled(), true);
 		await o.page.keyboard.press('Escape');
 
@@ -7919,7 +7921,7 @@ test('import: a bundle brings a monster, an NPC with its card, a place and a map
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
 		await o.page.locator(M).waitFor();
 		await o.page.locator(`${M} textarea`).fill('{"hello": "world"}');
-		await o.waitFor(async () => /doesn't recognise this/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'not recognised' });
+		await o.waitFor(async () => /doesn't recognise this/.test(await o.page.locator(`${M} .ev-import-frame`).innerText().catch(() => '')), { what: 'not recognised' });
 		assert.equal(await o.page.locator(`${M} button.mod-cta`).isDisabled(), true);
 		await o.page.keyboard.press('Escape');
 	} finally {
@@ -7955,11 +7957,10 @@ test('import: a Nimble Nexus link is fetched only on a click, and its monster la
 		assert.match(await fetchBtn.innerText(), /Fetch from nimble\.nexus/);
 		assert.deepEqual(await o.eval(() => window.__fetched), [], 'nothing fetched before the click');
 		await fetchBtn.click();
-		await o.waitFor(async () => /Nimble Nexus[\s\S]*A monster/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the monster read' });
+		await o.waitFor(async () => /Nimble Nexus[\s\S]*A monster/.test(await o.page.locator(`${M} .ev-import-frame`).innerText().catch(() => '')), { what: 'the monster read' });
 		assert.deepEqual(await o.eval(() => window.__fetched), ['https://nimble.nexus/api/monsters/7q1demo0mirehag000000000000']);
-		assert.match(await o.page.locator(`${M} .nimble-import-report`).innerText(), /3rd Party Creator License/);
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		assert.match(await o.page.locator(`${M} .ev-import-frame`).innerText(), /3rd Party Creator License/);
+		await importAndClose(o, M);
 		const hag = `${C}/Monsters/Mire Hag.md`;
 		await o.waitFor(() => exists(o, hag), { what: 'the monster note' });
 		assert.match(await read(o, hag), /imported: Nimble Nexus\nimportId: "nexus:monster:7q1demo0mirehag000000000000"[\s\S]*```nimble\nname: Mire Hag\n/);
@@ -7993,9 +7994,8 @@ test('import: a Watabou dungeon chosen as a file becomes a map with a pin on eac
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
 		await o.page.locator(M).waitFor();
 		await o.page.locator(`${M} input[type="file"]`).setInputFiles({ name: 'crypt.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(dungeon)) });
-		await o.waitFor(async () => /Watabou[\s\S]*A map/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the dungeon read' });
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /Watabou[\s\S]*A map/.test(await o.page.locator(`${M} .ev-import-frame`).innerText().catch(() => '')), { what: 'the dungeon read' });
+		await importAndClose(o, M);
 		const map = `${C}/Maps/The Sunken Crypt.md`;
 		await o.waitFor(() => exists(o, map), { what: 'the map note' });
 		const text = await read(o, map);
@@ -8040,10 +8040,10 @@ test('import: a mapping file in the content folder teaches Import… a new forma
 		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
 		await o.page.locator(M).waitFor();
 		await o.page.locator(`${M} textarea`).fill(exported);
-		await o.waitFor(async () => /Lantern Forge[\s\S]*A monster and an NPC/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the export read by the mapping' });
-		assert.match(await o.page.locator(`${M} .nimble-import-report`).innerText(), /A record with no name was left out/);
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		await o.waitFor(async () => /Lantern Forge[\s\S]*A monster and an NPC/.test(await o.page.locator(`${M} .ev-import-frame`).innerText().catch(() => '')), { what: 'the export read by the mapping' });
+		await o.page.locator(`${M} .ev-import-look-toggle`).click();
+		assert.match(await o.page.locator(`${M} .ev-import-look`).innerText(), /A record with no name was left out/);
+		await importAndClose(o, M);
 		const hag = `${C}/Monsters/Mire Hag.md`;
 		await o.waitFor(() => exists(o, hag), { what: 'the monster note' });
 		assert.match(await read(o, hag), /imported: Lantern Forge\nimportId: "lantern-forge:41"[\s\S]*```nimble\nname: Mire Hag\n[\s\S]*\*\*Claw\.\*\* \*\*1d8\+2\*\* slashing\./);
@@ -8117,8 +8117,7 @@ test('5e imports: a D&D Beyond character brings its class into the compendium as
 			return out;
 		}, M);
 		assert.deepEqual(spill, []);
-		await o.page.locator(`${M} button.mod-cta`).click();
-		await o.page.locator(M).waitFor({ state: 'detached' });
+		await importAndClose(o, M);
 
 		// The character note, and a note for each entry in the content folder, which the compendium reads.
 		const sheet = `${C}/Party/Mira Hollowell.md`;
@@ -8215,8 +8214,7 @@ test('5e imports: a D&D Beyond character brings its class into the compendium as
 		assert.ok(fill.dark && fill.ratio >= 4.5, `tag contrast ${JSON.stringify(fill)}`);
 		await o.page.screenshot({ path: join(ARTIFACTS, 'dnd5e-import-ddb-again.png') });
 		assert.match(await o.page.locator(`${IC} .dnd5e-ddb-skip.is-same`).innerText(), /Already imported: Order of the Quiet Lantern, Grave Tender, Hollow Focus, Lantern Lance, Lantern of Last Light, Hookblade/);
-		await o.page.locator(`${IC} button.mod-cta`).click();
-		await o.page.locator(IC).waitFor({ state: 'detached' });
+		await importAndClose(o, IC);
 		await o.waitFor(async () => /- level: 9\n\s+name: Undying Edge/.test(await read(o, `${F}/5e/Classes/Hollowblade.md`)), { what: 'the class filled in' });
 		assert.deepEqual(await o.eval((app, _p, F) => app.vault.getMarkdownFiles().filter(f => f.path.startsWith(`${F}/5e/Classes/`)).map(f => f.basename), F), ['Hollowblade']);
 	} finally {
@@ -8546,6 +8544,7 @@ for (const file of ['entities-nimble.mjs', 'entities-5e.mjs']) {
 	let mod;
 	try { mod = await import(`./${file}`); } catch (e) { if (e.code === 'ERR_MODULE_NOT_FOUND') continue; throw e; }
 	mod.register(test, {
+		importAndClose,
 		R, S, T, PREVIEW, PARTY, ARTIFACTS, ROOT, assert, join,
 		resetEncounter, typeHp, creatureMenu, onCard, parkMouse, openCompendiumTab, closeCompendiumTab,
 		freshCampaign, endCampaign, openPicker, createFromPicker, rollThrough, withSheetNote, waitFmAt, waitFm, measurePills,

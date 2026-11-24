@@ -102,13 +102,15 @@ export async function writePlan(plugin: EmberVaultPlugin, bundle: CheckedBundle,
 	const files = new Map<string, BundleFile | Uint8Array>();
 	for (const f of bundle.files) files.set(f.name.toLowerCase(), f);
 	for (const [k, v] of o.files ?? []) if (!files.has(k)) files.set(k, v);
-	for (const item of items) {
-		const r = item.record;
+	for (let item of items) {
+		// Yours, as a copy: the same record under a name that says where it's from.
+		const r = item.status === 'yours' && item.copy ? copyOf(item.record, bundle) : item.record;
+		item = r === item.record ? item : { ...item, record: r, status: 'new' };
 		try {
 			let file: TFile | null = null;
 			if (r.type === 'content') file = await writeContent(plugin, bundle, item);
 			else if (r.type === 'note') file = await writeNote(plugin, bundle, r);
-			else file = await writeMap(plugin, bundle, r, files);
+			else file = await writeMap(plugin, bundle, r, files, !!item.roomNotes);
 			if (!file) { out.failed.push(`${r.name}: this game can't write a ${r.kind} as a note`); continue; }
 			out.files.push(file);
 			if (item.status === 'update') out.updated++; else out.added++;
@@ -118,6 +120,13 @@ export async function writePlan(plugin: EmberVaultPlugin, bundle: CheckedBundle,
 		}
 	}
 	return out;
+}
+
+/** A record renamed for a copy beside your own: "Mire Hag (Nimble Nexus)". */
+export function copyOf(r: CheckedRecord, bundle: CheckedBundle): CheckedRecord {
+	const from = str(r.source?.name) ?? str(bundle.source?.name) ?? 'Imported';
+	const name = `${r.name} (${from})`;
+	return { ...r, name, value: r.value ? { ...r.value, name } : r.value, source: r.source?.id ? { ...r.source, id: `${r.source.id}#copy` } : r.source };
 }
 
 async function writeContent(plugin: EmberVaultPlugin, bundle: CheckedBundle, item: PlanItem): Promise<TFile | null> {
@@ -200,7 +209,7 @@ async function writeNote(plugin: EmberVaultPlugin, bundle: CheckedBundle, r: Che
 /** A heading's text a link can point at: no characters a link or heading would read as syntax. */
 const headingText = (s: string) => s.replace(/[#|[\]^\\]/g, '').replace(/\s+/g, ' ').trim();
 
-async function writeMap(plugin: EmberVaultPlugin, bundle: CheckedBundle, r: CheckedRecord, files: ReadonlyMap<string, BundleFile | Uint8Array>): Promise<TFile> {
+async function writeMap(plugin: EmberVaultPlugin, bundle: CheckedBundle, r: CheckedRecord, files: ReadonlyMap<string, BundleFile | Uint8Array>, roomNotes = false): Promise<TFile> {
 	const v = r.value!;
 	const app = plugin.app;
 	const folder = normalizePath(homeFolder(plugin, 'Maps', 'Maps'));
@@ -222,19 +231,28 @@ async function writeMap(plugin: EmberVaultPlugin, bundle: CheckedBundle, r: Chec
 	const pins = Array.isArray(v.pins) ? v.pins as BundlePin[] : [];
 	const key: string[] = [];
 	const used = new Set<string>();
-	const mapPins: MapPin[] = pins.map(p => {
+	const mapPins: MapPin[] = [];
+	for (const p of pins) {
 		const kind: PinKind = (PIN_KINDS as readonly string[]).includes(String(p.kind)) ? p.kind as PinKind : 'place';
 		let link: string | undefined;
 		if (p.note) link = p.note;
-		else if (p.text) {
+		else if (p.text && roomNotes) {
+			// A location note for the room, its text in the note, the pin linking to it.
+			const lfolder = normalizePath(homeFolder(plugin, 'Locations', 'Locations'));
+			await ensureFolder(plugin, lfolder);
+			const room = await plugin.campaigns.createStarter(lfolder, 'location', `${r.name} ${headingText(p.label) || 'room'}`);
+			await app.vault.process(room, text => `${text.replace(/\s*$/, '')}\n\n${p.text!.trim()}\n`);
+			await app.fileManager.processFrontMatter(room, (fm: Record<string, unknown>) => { Object.assign(fm, importFields(r, bundle)); });
+			link = room.basename;
+		} else if (p.text) {
 			let h = headingText(p.label) || 'Pin';
 			for (let n = 2; used.has(h.toLowerCase()); n++) h = `${headingText(p.label)} (${n})`;
 			used.add(h.toLowerCase());
 			key.push(`### ${h}\n\n${p.text.trim()}`);
 			link = `${file.basename}#${h}`;
 		}
-		return { x: p.x, y: p.y, label: p.label, kind, ...(link ? { link } : {}) };
-	});
+		mapPins.push({ x: p.x, y: p.y, label: p.label, kind, ...(link ? { link } : {}) });
+	}
 	const g = /^(\d+)x(\d+)$/.exec(str(v.grid) ?? '');
 	const source = mapBlockSource({ image: imageLink, ...(g ? { grid: { cols: Number(g[1]), rows: Number(g[2]) } } : {}), pins: mapPins });
 	const body = str(v.body);

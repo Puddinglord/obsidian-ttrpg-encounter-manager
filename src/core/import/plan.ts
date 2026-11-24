@@ -31,6 +31,12 @@ export interface PlanItem {
 	file?: string;
 	/** Ticked to start with: new things and updates. */
 	on: boolean;
+	/** For an update: the vault's copy, for what changed. */
+	before?: Record<string, unknown>;
+	/** Yours: written as a copy under another name ("Mire Hag (Nimble Nexus)"), when ticked. */
+	copy?: boolean;
+	/** A map: a location note for each pin with text, the pin linking to it (instead of the map's key). */
+	roomNotes?: boolean;
 }
 
 const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -70,7 +76,7 @@ export function planRecords(records: readonly CheckedRecord[], have: readonly Ha
 			if (record.type !== 'content' || !earlier.value || stableText(earlier.value) === stableText(record.value)) {
 				return { record, status: 'same', file: earlier.file, on: false };
 			}
-			return { record, status: 'update', file: earlier.file, on: true };
+			return { record, status: 'update', file: earlier.file, on: true, before: earlier.value };
 		}
 		const yours = group.find(h => key(h.name) === key(record.name));
 		if (yours) return { record, status: 'yours', file: yours.file, on: false };

@@ -13,6 +13,7 @@
 import { readFileSync } from 'node:fs';
 
 export function register(test, h) {
+	const { importAndClose } = h;
 	const {
 		R, S, T, PREVIEW, ARTIFACTS, ROOT, assert, join,
 		resetEncounter, typeHp, onCard, parkMouse, openCompendiumTab, closeCompendiumTab,
@@ -1296,8 +1297,7 @@ export function register(test, h) {
 			await o.page.locator(M).waitFor();
 			await o.page.locator(`${M} textarea`).fill(JSON.stringify(example, null, 2));
 			await o.waitFor(async () => /9 entries/.test(await o.page.locator(`${M} .nimble-import-report`).innerText()), { what: 'the import report' });
-			await o.page.locator(`${M} button.mod-cta`).click();
-			await o.page.locator(M).waitFor({ state: 'detached' });
+			await importAndClose(o, M);
 			await write(o, `${CF}/Nimble/Classes/Cinderwright.md`, typed);
 			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.enabled('nimble').map(p => p.name).sort().join())) === 'Homebrew,The Lantern Road', { what: 'the pack and the typed class' });
 
