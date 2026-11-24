@@ -24,6 +24,7 @@ What changed lately is in the **[changelog](../CHANGELOG.md)**.
 | [Your own content](homebrew.md) | Make a class, subclass, feat, species, ancestry, background, boon or rule: New on a compendium tab, a few lines in a note, in the compendium as Homebrew |
 | [Content packs](content-packs.md) | Add homebrew and what the plugin can't ship (a class, a book's subclasses, a bestiary) as JSON files in your vault, for Nimble and 5e |
 | [Importing](import.md) | Bring in a D&D Beyond character or a Fantasy Statblocks creature |
+| [Mapping files](mapping-files.md) | Teach Import… another tool's format with a JSON file, no code |
 | [Playing 5e](5e.md) | 5e campaigns: SRD monsters and ```5e stat blocks, XP-rated encounters, the initiative tracker, the compendium, character sheets |
 
 ## Playing

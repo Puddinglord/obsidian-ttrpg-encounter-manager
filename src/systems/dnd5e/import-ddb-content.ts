@@ -27,7 +27,7 @@
 //   inventory[].definition: { id, name, magic, rarity, filterType, type, canAttune, attunementDescription, description,
 //     categoryId, attackType, damage, damageType, properties[], range, longRange, armorTypeId, armorClass, cost, weight }
 
-import { htmlToText, labelledValues } from './ddb-html';
+import { htmlToText, labelledValues } from '../../core/html-text';
 import type { Dnd5eEdition } from './editions';
 import { equipmentSource5e, itemSource5e, ITEM_LANG, SPELL_LANG, spellSource5e } from './homebrew';
 import { toYaml } from '../../core/yaml-lite';

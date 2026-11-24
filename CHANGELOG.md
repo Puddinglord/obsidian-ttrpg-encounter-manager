@@ -6,6 +6,15 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Added
+
+- **Import…** brings in content, NPCs, places and maps from other tools in one window. Choose files, paste text or paste a link, and it works out what the file is. Before anything is written, it shows what's new, what updates something you imported before, and what's already yours. Everything it writes remembers where it came from, so importing the same file again updates it instead of making copies. `/import` opens it from any note. See the [import guide](docs/import.md).
+- **Mapping files** teach Import… another tool's format without waiting for an update: a JSON file in your content folder's Importers folder that says which of the tool's fields go where. See the [mapping files guide](docs/mapping-files.md).
+
+### Changed
+
+- **Import content…** is now **Import…**, and the D&D Beyond and Fantasy Statblocks imports open in it. Their commands and hotkeys still work. When you import a D&D Beyond character who's already in the party, only what's new comes in, unless you tick **Make another character note**. See the [import guide](docs/import.md).
+
 ## [2.1.3] - 2026-11-24
 
 ### Added

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { decodeEntities, htmlToText, labelledValues } from '../src/systems/dnd5e/ddb-html';
+import { decodeEntities, htmlToText, labelledValues } from '../src/core/html-text';
 import { ddbCharacterOf, importDdbCharacter } from '../src/systems/dnd5e/import-ddb';
 import {
 	ddbBlock, ddbContent, DdbContentEntry, DdbContentKind, DdbHave, fillIn, levelsMissing, maxLevel, planDdbContent, renameInFrontmatter, replaceBlock, startingEquipmentOf,

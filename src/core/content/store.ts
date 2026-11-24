@@ -17,6 +17,9 @@ export const DEFAULT_CONTENT_FOLDER = 'Ember Vault/Content';
 /** What one note in the content folder adds, by game. */
 interface NoteContent { system: string; entries: PackEntry[]; rejected: PackNote[]; warnings: PackNote[] }
 
+/** The content folder's folder of mapping files (core/import/mapping.ts): how to read other tools' files. */
+export const IMPORTERS_FOLDER = 'Importers';
+
 export class ContentStore extends Events {
 	private packs = new Map<string, LoadedPack>();
 	/** Note path → what its blocks add, per game. */
@@ -107,9 +110,9 @@ export class ContentStore extends Events {
 		return [...this.notes.values()].flat().filter(n => n.system === system).flatMap(n => n.entries);
 	}
 
-	/** Is this a file the store reads: a pack or a note in the content folder? */
+	/** Is this a file the store reads: a pack or a note in the content folder? (Its Importers folder holds mapping files, not content.) */
 	private inFolder(f: TAbstractFile): f is TFile {
-		return f instanceof TFile && f.path.startsWith(`${this.folder()}/`) && /^(json|md)$/i.test(f.extension);
+		return f instanceof TFile && f.path.startsWith(`${this.folder()}/`) && !f.path.startsWith(`${this.folder()}/${IMPORTERS_FOLDER}/`) && /^(json|md)$/i.test(f.extension);
 	}
 
 	async load(): Promise<void> {

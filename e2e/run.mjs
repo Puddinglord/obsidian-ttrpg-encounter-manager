@@ -7931,6 +7931,58 @@ test('import: a bundle brings a monster, an NPC with its card, a place and a map
 	}
 });
 
+test('import: a mapping file in the content folder teaches Import… a new format; a broken one says why in settings', async (o) => {
+	const write = (o, path, text) => o.eval(async (app, _p, [path, text]) => {
+		const dir = path.slice(0, path.lastIndexOf('/'));
+		if (dir && !app.vault.getAbstractFileByPath(dir)) await app.vault.createFolder(dir);
+		await app.vault.create(path, text);
+	}, [path, text]);
+	const C = 'Campaigns/Mapping Vale';
+	const F = 'Ember Vault/Content/Importers';
+	const M = '.modal.ev-import';
+	const mapping = readFileSync(join(ROOT, 'docs/import/examples/lantern-forge-mapping.json'), 'utf8');
+	const exported = readFileSync(join(ROOT, 'tests/fixtures/lantern-forge-export.json'), 'utf8');
+	try {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, F]) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Mapping Vale', level: 3, heroes: 4, starter: false });
+		}, [C, F]);
+		await write(o, `${F}/lantern-forge.json`, mapping);
+		await write(o, `${F}/broken.json`, '{ "format": "ember-vault-mapping", "version": 1, "id": "broken", "label": "Broken", "detect": {} ');
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.mappings.reports().length)) === 2, { what: 'both mapping files read' });
+		// Not a content pack: the content store leaves the Importers folder alone.
+		assert.deepEqual(await o.eval((app, plugin) => plugin.content.all().map(p => p.name)), []);
+
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(exported);
+		await o.waitFor(async () => /Lantern Forge[\s\S]*A monster and an NPC/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the export read by the mapping' });
+		assert.match(await o.page.locator(`${M} .nimble-import-report`).innerText(), /A record with no name was left out/);
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		const hag = `${C}/Monsters/Mire Hag.md`;
+		await o.waitFor(() => exists(o, hag), { what: 'the monster note' });
+		assert.match(await read(o, hag), /imported: Lantern Forge\nimportId: "lantern-forge:41"[\s\S]*```nimble\nname: Mire Hag\n[\s\S]*\*\*Claw\.\*\* \*\*1d8\+2\*\* slashing\./);
+		await o.waitFor(() => exists(o, `${C}/NPCs/Irinia.md`), { what: 'the NPC note' });
+		assert.match(await read(o, `${C}/NPCs/Irinia.md`), /wants: Hold the gate[\s\S]*Clever, wise and discerning\./);
+
+		// The broken one is listed in settings with what's wrong.
+		await o.eval((app) => { app.setting.open(); app.setting.openTabById('nimble-gm'); });
+		await o.waitFor(async () => /Broken|broken\.json/.test(await o.page.locator('.vertical-tab-content').innerText().catch(() => '')), { what: 'the mapping list in settings' });
+		assert.match(await o.page.locator('.vertical-tab-content .nimble-pack-row.is-error').innerText(), /isn't JSON Ember Vault can read/);
+		assert.match(await o.page.locator('.vertical-tab-content').innerText(), /Lantern Forge[\s\S]*Reads Lantern Forge in Import/);
+		await o.eval((app) => app.setting.close());
+	} finally {
+		await o.eval(async (app, plugin, [C, F]) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			app.setting?.close?.();
+			for (const p of [C, F]) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, [C, F]);
+	}
+});
+
 test('5e imports: a D&D Beyond character brings its class into the compendium as Imported; it makes a hero and levels up; importing again fills in levels', async (o) => {
 	const C = 'Campaigns/Hollow Coast';
 	const F = 'Ember Vault/Content';

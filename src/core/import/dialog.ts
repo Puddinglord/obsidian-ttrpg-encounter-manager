@@ -23,9 +23,9 @@ export interface ImportDialogOptions {
 	prefer?: string;
 }
 
-/** Every importer: the games' own, then core's (bundles, packs, maps), in that order so a game's wins a tie. */
+/** Every importer: the games' own, then mapping files, then core's (bundles, packs, maps), in that order so a game's wins a tie. */
 export function allImporters(plugin: EmberVaultPlugin): Importer[] {
-	return [...plugin.systems.all().flatMap(s => s.importers ?? []), ...plugin.importers];
+	return [...plugin.systems.all().flatMap(s => s.importers ?? []), ...plugin.mappings.importers(), ...plugin.importers];
 }
 
 /** What a bundle's records' kinds are called: "Monster", "NPC", "Map". */

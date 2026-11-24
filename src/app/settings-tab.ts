@@ -152,6 +152,11 @@ export class EmberVaultSettingsTab extends PluginSettingTab {
 					name: 'Packs',
 					block: (el) => renderPackList(el, this.plugin),
 				},
+				{
+					name: 'Mapping files',
+					desc: `Teach Import… another tool's format. Put them in ${this.plugin.mappings.folder()}.`,
+					block: (el) => renderMappingList(el, this.plugin),
+				},
 			] },
 			{ heading: 'Dice', rows: [
 				{
@@ -346,12 +351,29 @@ class EditConditionModal extends Modal {
 }
 
 /** The packs in the content folder: each one's game and what it adds, and a click for what was left out. */
+function renderMappingList(el: HTMLElement, plugin: EmberVaultPlugin): void {
+	const list = el.createDiv({ cls: 'nimble-pack-list' });
+	const draw = () => {
+		list.empty();
+		const files = plugin.mappings.reports();
+		if (!files.length) { list.createDiv({ cls: 'nimble-pack-empty', text: 'None yet.' }); return; }
+		for (const m of files) {
+			const row = list.createDiv({ cls: `nimble-pack-row${m.errors.length ? ' is-error' : ''}` });
+			const text = row.createDiv({ cls: 'nimble-pack-text' });
+			text.createDiv({ cls: 'nimble-pack-name', text: m.label ?? m.file?.replace(/^.*\//, '') ?? '' });
+			text.createDiv({ cls: 'nimble-pack-summary', text: m.errors.length ? m.errors.join(' ') : `Reads ${m.label ?? 'its format'} in Import…` });
+		}
+	};
+	draw();
+	const ref = plugin.mappings.on('changed', () => { if (!list.isConnected) plugin.mappings.offref(ref); else draw(); });
+}
+
 function renderPackList(el: HTMLElement, plugin: EmberVaultPlugin): void {
 	const list = el.createDiv({ cls: 'nimble-pack-list' });
 	const draw = () => {
 		list.empty();
 		const packs = plugin.content.all();
-		if (!packs.length) { list.createDiv({ cls: 'nimble-pack-empty', text: `No packs yet. Put a pack's .json file in ${plugin.content.folder()}, or use Import content.` }); return; }
+		if (!packs.length) { list.createDiv({ cls: 'nimble-pack-empty', text: `No packs yet. Put a pack's .json file in ${plugin.content.folder()}, or use Import….` }); return; }
 		for (const p of packs) {
 			const row = list.createDiv({ cls: `nimble-pack-row${p.error ? ' is-error' : p.rejected.length ? ' is-partial' : ''}` });
 			const text = row.createDiv({ cls: 'nimble-pack-text' });

@@ -41,6 +41,7 @@ import { noteKind } from './src/core/campaign-model';
 import { registerBuilderCommands } from './src/core/builder/commands';
 import { ContentStore } from './src/core/content/store';
 import { coreImporters } from './src/core/import/core-importers';
+import { MappingStore } from './src/core/import/mapping-store';
 import { openImport } from './src/core/import/dialog';
 import type { Importer } from './src/core/import/importer';
 import { registerContentBlocks } from './src/core/content/blocks-ui';
@@ -72,6 +73,8 @@ export default class EmberVaultPlugin extends Plugin {
 	readonly content = new ContentStore(this);
 	/** The importers every game shares (bundles, content packs, maps); each game adds its own (`GameSystem.importers`). */
 	readonly importers: Importer[] = coreImporters();
+	/** Mapping files: other tools' formats as data, shipped and in the content folder's Importers folder. */
+	readonly mappings = new MappingStore(this);
 	/** Bumped when the NPC list changes; Live Preview decorations watch it. */
 	npcVersion = 0;
 	/** The fences of our blocks (```nimble-map, ```box…), lowercase: links inside them follow renames (core/link-follow.ts). */
@@ -199,6 +202,7 @@ export default class EmberVaultPlugin extends Plugin {
 		// The other game systems wire in their own blocks, references and indexes.
 		for (const system of this.systems.all()) system.register?.(this);
 		this.content.register();
+		this.mappings.register();
 		registerContentBlocks(this);
 		// Import…: everything from elsewhere. The id is still Import content…'s, so its hotkeys keep working.
 		this.addCommand({ id: 'import-content', name: 'Import…', icon: 'package-plus', callback: () => openImport(this) });

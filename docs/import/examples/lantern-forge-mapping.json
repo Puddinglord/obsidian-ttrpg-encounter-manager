@@ -1,0 +1,47 @@
+{
+	"$schema": "../mapping.schema.json",
+	"format": "ember-vault-mapping",
+	"version": 1,
+	"id": "lantern-forge",
+	"label": "Lantern Forge",
+	"system": "nimble",
+	"license": "Made up for this example",
+	"detect": { "all": ["creature.title", "creature.lvl"], "files": [".json"] },
+	"links": [{ "match": "^https://lanternforge\\.example/creatures/[\\w-]+$", "data": "{url}.json" }],
+	"records": [
+		{
+			"each": "items[*]",
+			"when": { "path": "type", "equals": "creature" },
+			"kind": "monster",
+			"source": { "id": { "template": "lantern-forge:{id}" }, "url": { "template": "https://lanternforge.example/creatures/{slug}" } },
+			"fields": {
+				"name": "creature.title",
+				"level": { "path": "creature.lvl", "as": "string" },
+				"hp": { "path": "creature.health", "as": "integer" },
+				"armor": { "path": "creature.armour", "map": { "none": "none", "light": "none", "medium": "medium", "heavy": "heavy", "*": "none" } },
+				"size": { "path": "creature.size", "as": "lower" },
+				"type": "creature.family",
+				"speed": { "path": "creature.speed", "as": "integer" },
+				"fly": { "path": "creature.fly", "as": "integer" },
+				"actions": { "path": "creature.moves", "each": { "name": "label", "text": { "path": "detail", "as": "html" } } },
+				"traits": { "path": "creature.passives", "each": { "name": "label", "text": "detail" } },
+				"flavor": { "path": "creature.blurb", "as": "html" }
+			}
+		},
+		{
+			"each": "items[*]",
+			"when": { "path": "type", "equals": "person" },
+			"into": "note",
+			"kind": "npc",
+			"source": { "id": { "template": "lantern-forge:{id}" } },
+			"fields": {
+				"name": "person.name",
+				"role": "person.job",
+				"faction": "person.allegiance",
+				"level": { "path": "person.lvl", "as": "integer" }
+			},
+			"card": { "look": "person.looks", "wants": "person.goal", "voice": "person.speech" },
+			"body": { "path": "person.notes", "as": "html" }
+		}
+	]
+}
