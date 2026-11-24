@@ -135,7 +135,7 @@
 						},
 						"description": "Our fields (the game's content-pack fields, or a note's properties), each from the file."
 					},
-					"from": {
+					"importedFrom": {
 						"type": "object",
 						"properties": {
 							"name": {
@@ -206,7 +206,7 @@
 			},
 			"description": "Our fields (the game's content-pack fields, or a note's properties), each from the file."
 		},
-		"from": {
+		"importedFrom": {
 			"type": "object",
 			"properties": {
 				"name": {

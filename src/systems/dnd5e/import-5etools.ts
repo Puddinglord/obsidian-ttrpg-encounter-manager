@@ -177,7 +177,7 @@ export function toolsMonster(m: Obj, sourceName: string): BundleEntry | null {
 	}
 	if (Array.isArray(m.legendaryHeader)) out.legendaryIntro = entriesText(m.legendaryHeader);
 	const book = str(m.source);
-	out.from = { name: sourceName, id: `5etools:monster:${(book ?? '').toLowerCase()}:${name.toLowerCase()}` };
+	out.importedFrom = { name: sourceName, id: `5etools:monster:${(book ?? '').toLowerCase()}:${name.toLowerCase()}` };
 	return out;
 }
 
@@ -233,7 +233,7 @@ export function toolsSpell(s: Obj, sourceName: string): BundleEntry | null {
 		...(Array.isArray(s.entriesHigherLevel) ? { higherLevel: entriesText(objs(s.entriesHigherLevel).map(x => x.entries)) } : {}),
 		...(dur.concentration ? { concentration: true } : {}),
 		...(isObj(s.meta) && s.meta.ritual ? { ritual: true } : {}),
-		from: { name: sourceName, id: `5etools:spell:${(str(s.source) ?? '').toLowerCase()}:${name.toLowerCase()}` },
+		importedFrom: { name: sourceName, id: `5etools:spell:${(str(s.source) ?? '').toLowerCase()}:${name.toLowerCase()}` },
 	};
 }
 
@@ -248,7 +248,7 @@ export function toolsItem(i: Obj, sourceName: string): BundleEntry | null {
 		type: i.wondrous === true ? 'Wondrous item' : ITEM_TYPE[(str(i.type) ?? '').split('|')[0]] ?? 'Wondrous item',
 		desc: entriesText(i.entries) || '—',
 		...(i.reqAttune ? { attunement: true } : {}),
-		from: { name: sourceName, id: `5etools:item:${(str(i.source) ?? '').toLowerCase()}:${name.toLowerCase()}` },
+		importedFrom: { name: sourceName, id: `5etools:item:${(str(i.source) ?? '').toLowerCase()}:${name.toLowerCase()}` },
 	};
 }
 
@@ -360,9 +360,9 @@ export function open5eBundle(j: unknown): { bundle: ImportBundle; notes: string[
 		const doc = isObj(c.document) ? c.document : {};
 		const pub = isObj(doc.publisher) ? str(doc.publisher.name) : undefined;
 		if (str(doc.name)) books.add(`${str(doc.name)}${pub ? ` (${pub})` : ''}`);
-		// The book is the monster's own "source"; where it came from is "from".
+		// The book is the monster's own "source"; where it was imported from is "importedFrom".
 		const key = str(c.key)!;
-		content.push({ ...e, from: { name: 'Open5e', id: `open5e:${key}`, url: `https://open5e.com/monsters/${key}` } });
+		content.push({ ...e, importedFrom: { name: 'Open5e', id: `open5e:${key}`, url: `https://open5e.com/monsters/${key}` } });
 	}
 	const notes: string[] = [];
 	if (isObj(j) && typeof j.next === 'string' && j.next) notes.push('This is one page of results. Open5e has more after it.');

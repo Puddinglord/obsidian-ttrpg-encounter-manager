@@ -59,7 +59,7 @@ export interface RecordMap {
 	kind: FieldMap;
 	fields: Record<string, FieldMap>;
 	/** Where each record came from: name, url, license, id, as rules (often templates: "nexus:monster:{id}"). */
-	from?: Partial<Record<keyof BundleSource, FieldMap>>;
+	importedFrom?: Partial<Record<keyof BundleSource, FieldMap>>;
 	/** Notes only: the NPC card (look, wants, voice, secret) and the note's text. */
 	card?: Record<string, FieldMap>;
 	body?: FieldMap;
@@ -224,7 +224,7 @@ function checkRecordMap(r: unknown, at: string, errors: string[]): void {
 	if (r.into === 'note' && typeof r.kind === 'string' && !(NOTE_KINDS as readonly string[]).includes(r.kind)) errors.push(`${at}: a note's "kind" should be one of ${NOTE_KINDS.join(', ')}`);
 	if (!isObj(r.fields)) errors.push(`${at} needs "fields": ours, each from a path in the file`);
 	else for (const [k, rule] of Object.entries(r.fields)) checkRule(rule, `${at}.fields.${k}`, errors);
-	for (const part of ['from', 'card'] as const) {
+	for (const part of ['importedFrom', 'card'] as const) {
 		if (r[part] === undefined) continue;
 		if (!isObj(r[part])) { errors.push(`${at}: "${part}" should be an object`); continue; }
 		for (const [k, rule] of Object.entries(r[part])) checkRule(rule, `${at}.${part}.${k}`, errors);
@@ -268,7 +268,7 @@ export function readMapping(raw: unknown): { mapping?: Mapping; errors: string[]
 // ----------------------------------------------------------------------------
 // Running a mapping
 
-const setsOf = (m: Mapping): RecordMap[] => m.records ?? [{ each: m.each, when: m.when, into: m.into, kind: m.kind!, fields: m.fields!, from: m.from, card: m.card, body: m.body }];
+const setsOf = (m: Mapping): RecordMap[] => m.records ?? [{ each: m.each, when: m.when, into: m.into, kind: m.kind!, fields: m.fields!, importedFrom: m.importedFrom, card: m.card, body: m.body }];
 
 /** The records a set covers in the file. */
 function recordsOf(data: Json, set: RecordMap): Json[] {
@@ -282,7 +282,7 @@ function recordsOf(data: Json, set: RecordMap): Json[] {
 	});
 }
 
-function sourceOf(rules: RecordMap['from'], record: Json): BundleSource | undefined {
+function sourceOf(rules: RecordMap['importedFrom'], record: Json): BundleSource | undefined {
 	if (!rules) return undefined;
 	const out: BundleSource = {};
 	for (const [k, r] of Object.entries(rules)) { const v = applyField(r, record); if (present(v)) out[k as keyof BundleSource] = textOf(v); }
@@ -329,15 +329,15 @@ export function runMapping(m: Mapping, data: Json, ctx: { url?: string } = {}): 
 			for (const [k, r] of Object.entries(set.fields)) { const v = applyField(r, record); if (present(v)) fields[k] = v; }
 			const name = textOf(fields.name).trim();
 			if (!kind || !name) { said.push(`A record with no ${!name ? 'name' : 'kind'} was left out.`); continue; }
-			const from = sourceOf(set.from, record);
+			const from = sourceOf(set.importedFrom, record);
 			if (set.into === 'note') {
 				const card: Record<string, string> = {};
 				for (const [k, r] of Object.entries(set.card ?? {})) { const v = textOf(applyField(r, record)); if (v) card[k] = v; }
 				const body = set.body ? textOf(applyField(set.body, record)) : '';
 				const { name: _n, ...rest } = fields;
-				notes.push({ kind: kind as BundleNote['kind'], name, ...(Object.keys(rest).length ? { fields: rest } : {}), ...(Object.keys(card).length ? { card } : {}), ...(body ? { body } : {}), ...(from ? { from } : {}) });
+				notes.push({ kind: kind as BundleNote['kind'], name, ...(Object.keys(rest).length ? { fields: rest } : {}), ...(Object.keys(card).length ? { card } : {}), ...(body ? { body } : {}), ...(from ? { importedFrom: from } : {}) });
 			} else {
-				content.push({ kind, ...fields, name, ...(from ? { from } : {}) });
+				content.push({ kind, ...fields, name, ...(from ? { importedFrom: from } : {}) });
 			}
 		}
 	}
@@ -375,7 +375,7 @@ export function mappingSchema(): Record<string, unknown> {
 		into: { enum: ['content', 'note'], description: 'content (a monster, spell…; the default) or note (an NPC, a place…).' },
 		kind: { ...rule, description: 'What each record becomes, as text: "monster", "spell", "npc"… Or { "path": … } to read it from the record.' },
 		fields: { ...fields, description: 'Our fields (the game\'s content-pack fields, or a note\'s properties), each from the file.' },
-		from: { type: 'object', properties: { name: rule, url: rule, license: rule, id: rule, retrieved: rule }, description: 'Where each record came from. "id" lets a later import update it.' },
+		importedFrom: { type: 'object', properties: { name: rule, url: rule, license: rule, id: rule, retrieved: rule }, description: 'Where each record came from. "id" lets a later import update it.' },
 		card: { ...fields, description: 'Notes: the NPC card (look, wants, voice, secret).' },
 		body: { ...rule, description: 'Notes: the note\'s text.' },
 	};

@@ -30,7 +30,7 @@ describe('Nimble Nexus', () => {
 			actions: [{ name: 'Claw', text: '(Reach 2) 1d8+2 slashing.' }, { name: 'Hex', text: '(Range 8) The target is Dazed until the hag\'s next turn.' }],
 			actionsIntro: 'Choose one.',
 			flavor: 'She keeps a Bog Wisp as a lamp.',
-			from: { name: 'Nimble Nexus', id: 'nexus:monster:7q1demo0mirehag000000000000', url: 'https://nimble.nexus/monsters/7q1demo0mirehag000000000000' },
+			importedFrom: { name: 'Nimble Nexus', id: 'nexus:monster:7q1demo0mirehag000000000000', url: 'https://nimble.nexus/monsters/7q1demo0mirehag000000000000' },
 		});
 		// A minion with one unnamed attack takes its name from the line over it.
 		expect(wisp).toMatchObject({ role: 'minion', fly: 8, actions: [{ name: 'Chill', text: '1d4' }] });

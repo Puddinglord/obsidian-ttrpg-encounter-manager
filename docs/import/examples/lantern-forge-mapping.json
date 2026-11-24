@@ -13,7 +13,7 @@
 			"each": "items[*]",
 			"when": { "path": "type", "equals": "creature" },
 			"kind": "monster",
-			"from": { "id": { "template": "lantern-forge:{id}" }, "url": { "template": "https://lanternforge.example/creatures/{slug}" } },
+			"importedFrom": { "id": { "template": "lantern-forge:{id}" }, "url": { "template": "https://lanternforge.example/creatures/{slug}" } },
 			"fields": {
 				"name": "creature.title",
 				"level": { "path": "creature.lvl", "as": "string" },
@@ -33,7 +33,7 @@
 			"when": { "path": "type", "equals": "person" },
 			"into": "note",
 			"kind": "npc",
-			"from": { "id": { "template": "lantern-forge:{id}" } },
+			"importedFrom": { "id": { "template": "lantern-forge:{id}" } },
 			"fields": {
 				"name": "person.name",
 				"role": "person.job",

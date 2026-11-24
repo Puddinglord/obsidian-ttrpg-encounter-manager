@@ -13,6 +13,7 @@ import { contentFolderFor } from '../content/new-entry';
 import { mapBlockSource, MapPin, PIN_KINDS, PinKind } from '../map-def';
 import { NPC_CARD_BLOCK } from '../npc-card-def';
 import { toYaml } from '../yaml-lite';
+import { ORIGINAL_LANG, originalBody } from './original';
 import type { BundleFile, BundlePin, CheckedBundle, CheckedRecord } from './bundle';
 import type { Have, PlanItem } from './plan';
 
@@ -122,6 +123,15 @@ export async function writePlan(plugin: EmberVaultPlugin, bundle: CheckedBundle,
 	return out;
 }
 
+/** A converted record's original, as an ```ev-original block under it (original.ts); '' when it wasn't converted. */
+function originalOf(plugin: EmberVaultPlugin, r: CheckedRecord): string {
+	if (!r.convertedFrom || !r.original) return '';
+	const { kind, ...value } = r.original;
+	const w = plugin.systems.get(r.convertedFrom)?.content?.writeEntry?.(typeof kind === 'string' ? kind : r.kind, value);
+	if (!w) return '';
+	return `\n${fence(ORIGINAL_LANG, originalBody({ game: r.convertedFrom, lang: w.lang, converted: new Date().toISOString().slice(0, 10), body: w.body }))}\n`;
+}
+
 /** A record renamed for a copy beside your own: "Mire Hag (Nimble Nexus)". */
 export function copyOf(r: CheckedRecord, bundle: CheckedBundle): CheckedRecord {
 	const from = str(r.source?.name) ?? str(bundle.source?.name) ?? 'Imported';
@@ -135,7 +145,7 @@ async function writeContent(plugin: EmberVaultPlugin, bundle: CheckedBundle, ite
 	const game = system ? plugin.systems.get(system) : undefined;
 	if (!game || !r.value) return null;
 	const meta = importFields(r, bundle);
-	const value = { ...r.value, ...meta, ...(r.converted ? { converted: r.converted } : {}) };
+	const value = { ...r.value, ...meta };
 	const written = game.content?.writeEntry?.(r.kind, value, bundle.edition)
 		?? (game.content?.blocks?.kinds.includes(r.kind) ? { lang: blockLang(game.content.blocks.prefix, r.kind), body: toBlockYaml(value) } : null);
 	if (!written) return null;
@@ -159,9 +169,11 @@ async function writeContent(plugin: EmberVaultPlugin, bundle: CheckedBundle, ite
 		const folder = normalizePath(homeFolder(plugin, 'Monsters', 'Bestiary'));
 		await ensureFolder(plugin, folder);
 		const path = plugin.campaigns.available(normalizePath(`${folder}/${safeFileName(r.name)}.md`));
-		const props: Record<string, unknown> = { nimble: 'monster', ...(written.props ?? {}), ...meta, ...(r.converted ? { converted: r.converted } : {}) };
+		// Converted: from which game, to which, and the original as its own game writes it.
+		const conv = r.convertedFrom ? { convertedFrom: r.convertedFrom, convertedTo: system } : {};
+		const props: Record<string, unknown> = { nimble: 'monster', ...(written.props ?? {}), ...meta, ...conv };
 		const front = Object.entries(props).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => `${k}: ${typeof v === 'string' ? yamlValue(v) : JSON.stringify(v)}`).join('\n');
-		return app.vault.create(path, `---\n${front}\n---\n\n${fenced}\n`);
+		return app.vault.create(path, `---\n${front}\n---\n\n${fenced}\n${originalOf(plugin, r)}`);
 	}
 	const folder = contentFolderFor(plugin, system!, r.kind);
 	await ensureFolder(plugin, folder);

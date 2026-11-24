@@ -45,7 +45,8 @@ describe('5e monsters, converted to Nimble on the GM Guide\'s numbers', () => {
 				n++;
 				if (r.errors.length) { off.push(`${r.name}: ${r.errors.join('; ')}`); continue; }
 				const v = r.value!;
-				expect(r.converted).toBe('dnd5e');
+				expect(r.convertedFrom).toBe('dnd5e');
+				expect(r.original?.kind).toBe('monster');
 				const block = writeEntryNimble('monster', v)!.body;
 				expect(parseStatblock(block)?.name).toBe(r.name);
 				const [a, b] = String(v.level).split('/').map(Number); const level = b ? a / b : a;
@@ -59,11 +60,12 @@ describe('5e monsters, converted to Nimble on the GM Guide\'s numbers', () => {
 		expect(off).toEqual([]);
 	});
 
-	it('what isn\'t a monster is left out, and said', () => {
+	it('what isn\'t a monster waits (coming soon); a converted one keeps its original', () => {
 		const conv = convertBundle(emptyBundle({ system: 'dnd5e', content: [{ kind: 'spell', name: 'Fireball' }, { kind: 'monster', ...srd('Goblin', '2014'), name: 'Goblin' }] }), toNimble);
 		expect(conv.bundle.content!.map(e => e.name)).toEqual(['Goblin']);
-		expect(conv.said[0]).toMatch(/1 entry isn't a monster/);
-		expect(conv.originals.get('Goblin')?.kind).toBe('monster');
+		// Not dropped: waiting, for the dialog to show as coming soon.
+		expect(conv.waiting.map(e => e.name)).toEqual(['Fireball']);
+		expect(conv.bundle.content![0]).toMatchObject({ convertedFrom: 'dnd5e', original: { kind: 'monster', name: 'Goblin', cr: '1/4' } });
 	});
 
 	it('feet become spaces; AC becomes armor, early armor stepped down', () => {

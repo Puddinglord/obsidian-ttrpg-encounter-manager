@@ -88,7 +88,7 @@
 						"type": "string",
 						"description": "Markdown for the note."
 					},
-					"from": {
+					"importedFrom": {
 						"$ref": "#/$defs/source"
 					}
 				},
@@ -167,7 +167,7 @@
 						"type": "string",
 						"description": "Markdown at the top of the map's note."
 					},
-					"from": {
+					"importedFrom": {
 						"$ref": "#/$defs/source"
 					}
 				}
@@ -482,12 +482,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -606,12 +610,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -757,12 +765,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -1932,12 +1944,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2370,12 +2386,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2461,12 +2481,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2550,12 +2574,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2610,12 +2638,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2689,12 +2721,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2737,12 +2773,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2781,12 +2821,16 @@
 											],
 											"description": "Who speaks it."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2835,12 +2879,16 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -2886,12 +2934,16 @@
 											"type": "boolean",
 											"description": "Takes a number: \"Empowered 2\"."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -3244,12 +3296,16 @@
 												"number"
 											]
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -3362,12 +3418,16 @@
 										"ritual": {
 											"type": "boolean"
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -3442,12 +3502,16 @@
 											],
 											"description": "The line under the name, if not the usual \"Weapon (Longsword), rare\"."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -3588,12 +3652,16 @@
 												"number"
 											]
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -3662,12 +3730,16 @@
 											},
 											"description": "Its Ability Score Increase: +1 to one of these, to a maximum of 20 (30 for an Epic Boon): [STR, DEX]."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -3882,12 +3954,16 @@
 											],
 											"description": "Languages to choose: how many, and from which (any if left out)."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -4247,12 +4323,16 @@
 											},
 											"description": "2014: subraces; 2024: lineages and other choices of the species (\"Elven Lineage: Drow\")."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -4784,12 +4864,16 @@
 												]
 											}
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [
@@ -5006,12 +5090,16 @@
 											},
 											"description": "Spells it always has prepared, from a class level (domain or oath spells)."
 										},
-										"from": {
+										"importedFrom": {
 											"$ref": "#/$defs/source"
 										},
-										"converted": {
+										"convertedFrom": {
 											"type": "string",
 											"description": "The game it was written for, when it was converted to this one."
+										},
+										"original": {
+											"type": "object",
+											"description": "Converted: the entry as its own game had it."
 										}
 									},
 									"required": [

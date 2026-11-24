@@ -42,6 +42,7 @@ import { registerBuilderCommands } from './src/core/builder/commands';
 import { ContentStore } from './src/core/content/store';
 import { coreImporters } from './src/core/import/core-importers';
 import { MappingStore } from './src/core/import/mapping-store';
+import { registerOriginalBlocks } from './src/core/import/original-block';
 import { openImport } from './src/core/import/dialog';
 import { fetchImport } from './src/core/import/fetch';
 import type { Importer } from './src/core/import/importer';
@@ -206,6 +207,7 @@ export default class EmberVaultPlugin extends Plugin {
 		for (const system of this.systems.all()) system.register?.(this);
 		this.content.register();
 		this.mappings.register();
+		registerOriginalBlocks(this);
 		registerContentBlocks(this);
 		// Import…: everything from elsewhere. The id is still Import content…'s, so its hotkeys keep working.
 		this.addCommand({ id: 'import-content', name: 'Import…', icon: 'package-plus', callback: () => openImport(this) });

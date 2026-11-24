@@ -17,30 +17,25 @@ export interface Converter {
 
 export interface Converted {
 	bundle: ImportBundle;
-	/** Per converted record (by name): what the GM should check, and the record as it was. */
+	/** Per converted record (by name): what the GM should check. */
 	notes: Map<string, string[]>;
-	originals: Map<string, BundleEntry>;
-	/** Things about the whole conversion. */
-	said: string[];
+	/** Entries the target game can't build yet (a 5e spell, for Nimble): shown as coming soon, never written. */
+	waiting: BundleEntry[];
 }
 
 export function convertBundle(b: ImportBundle, c: Converter): Converted {
 	const notes = new Map<string, string[]>();
-	const originals = new Map<string, BundleEntry>();
-	const said: string[] = [];
+	const waiting: BundleEntry[] = [];
 	const content: BundleEntry[] = [];
-	let skipped = 0;
 	for (const e of b.content ?? []) {
-		if (e.kind !== 'monster') { skipped++; continue; }
-		const { kind: _k, from, converted: _c, ...value } = e;
-		const n = c.out(value);
-		if (!n) { skipped++; continue; }
+		const { kind, importedFrom, convertedFrom: _c, original: _o, ...value } = e;
+		const n = kind === 'monster' ? c.out(value) : null;
+		if (!n) { waiting.push(e); continue; }
 		const built = c.in(n);
 		const name = typeof built.value.name === 'string' ? built.value.name : e.name;
-		content.push({ ...built.value, kind: 'monster', name, converted: c.from, ...(from ? { from } : {}) });
+		// The original stays with it, as its own game had it, so the note can show it and convert it again.
+		content.push({ ...built.value, kind: 'monster', name, convertedFrom: c.from, original: { kind, ...value }, ...(importedFrom ? { importedFrom } : {}) });
 		notes.set(name, built.notes);
-		originals.set(name, e);
 	}
-	if (skipped) said.push(`${skipped} ${skipped === 1 ? 'entry isn\'t a monster' : 'entries aren\'t monsters'}, and only monsters convert yet, so ${skipped === 1 ? 'it was' : 'they were'} left out. Import without converting to keep ${skipped === 1 ? 'it' : 'them'} as they are.`);
-	return { bundle: { ...b, system: c.to, edition: undefined, content }, notes, originals, said };
+	return { bundle: { ...b, system: c.to, edition: undefined, content }, notes, waiting };
 }

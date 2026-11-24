@@ -52,7 +52,7 @@ describe('5etools homebrew', () => {
 			traits: [{ name: 'Flicker', desc: 'It can\'t be seen in bright light.' }],
 			actions: [{ name: 'Chill Touch', desc: 'Melee Spell Attack: +5 to hit, reach 5 ft. Hit: 6 (1d6 + 3) cold damage. (Recharge 5–6)' }],
 			legendaryActions: [{ name: 'Fade', desc: 'The wisp turns invisible.' }],
-			from: { name: 'The Mire Book', id: '5etools:monster:mirebook:bog wisp' },
+			importedFrom: { name: 'The Mire Book', id: '5etools:monster:mirebook:bog wisp' },
 		});
 		expect(spell).toMatchObject({ kind: 'spell', level: 1, school: 'Evocation', castingTime: 'Action', range: '60 feet', components: 'V, M (a firefly)', duration: 'Concentration, up to 1 minute', concentration: true, desc: 'A light bobs in the air.\n\n- It sheds **dim** light.\n- It can move 30 feet.', higherLevel: 'One more light per slot level above 1.' });
 		expect(lantern).toMatchObject({ kind: 'item', rarity: 'Very Rare', type: 'Wondrous item', attunement: true });
@@ -98,7 +98,7 @@ describe('Open5e', () => {
 			bonusActions: [{ name: 'Glow (3/Day)', desc: 'Bright light in 10 feet.' }],
 			legendaryActions: [{ name: 'Fade', desc: 'The wisp turns invisible.' }],
 			source: 'The Mire Book',
-			from: { name: 'Open5e', id: 'open5e:mirebook_bog-wisp', url: 'https://open5e.com/monsters/mirebook_bog-wisp' },
+			importedFrom: { name: 'Open5e', id: 'open5e:mirebook_bog-wisp', url: 'https://open5e.com/monsters/mirebook_bog-wisp' },
 		});
 		expect(clean(bundle)).toEqual([['Bog Wisp', []]]);
 	});

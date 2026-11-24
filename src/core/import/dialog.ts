@@ -323,7 +323,11 @@ export class ImportDialog extends Modal {
 				if (r.converted) {
 					// What the conversion changed, first among what's worth a look.
 					for (const rec of r.bundle.records) rec.warnings = [...(r.converted.notes.get(rec.name) ?? []), ...rec.warnings];
-					r.bundle.warnings.push(...r.converted.said);
+					// What can't be converted yet is listed as coming soon, never dropped without a word.
+					const label = (k: string) => (src?.content?.kinds.find(x => x.kind === k)?.label ?? k).toLowerCase();
+					for (const e of r.converted.waiting) {
+						r.bundle.records.push({ type: 'content', kind: e.kind, name: e.name, at: e.name, soon: true, errors: [`Converting a ${label(e.kind)} to ${dst.name} is coming soon. Switch off Convert to ${dst.name} to import it as it is.`], warnings: [] });
+					}
 				}
 				r.plan = r.bundle.error ? [] : planRecords(r.bundle.records, vaultHave(plugin, r.bundle.system));
 			}
@@ -701,7 +705,8 @@ export class ImportDialog extends Modal {
 				: recordFact(r, this.label(row));
 		text.createDiv({ cls: 'ev-import-row-meta', text: fact });
 		const end = el.createDiv({ cls: 'ev-import-row-end' });
-		if (r.converted) pill(end, { tag: 'span', cls: 'ev-import-tag', icon: evIcon('sparkle'), text: 'Converted' });
+		if (r.convertedFrom) pill(end, { tag: 'span', cls: 'ev-import-tag', icon: evIcon('sparkle'), text: 'Converted' });
+		if (r.soon) pill(end, { tag: 'span', cls: 'ev-import-tag is-soon', icon: evIcon('hourglass'), text: 'Coming soon' });
 		if (r.value && r.warnings.length) setIcon(end.createSpan({ cls: 'ev-import-row-warn', attr: { 'aria-label': 'Worth a look', title: r.warnings[0] } }), evIcon('warning'));
 		setIcon(end.createSpan({ cls: 'ev-import-row-go' }), evIcon('caret-right'));
 		el.addEventListener('click', () => this.select(row, true));
@@ -758,7 +763,7 @@ export class ImportDialog extends Modal {
 		const avail: { id: Tab; label: string; icon: EvIconName }[] = [
 			...(it.status === 'update' && it.before ? [{ id: 'changes' as const, label: 'Changes', icon: 'swap' as const }] : []),
 			...(r.value ? [{ id: 'preview' as const, label: 'Preview', icon: 'eye' as const }] : []),
-			...(r.converted && row.read.converted?.originals.has(r.name) ? [{ id: 'original' as const, label: 'Original', icon: 'swap' as const }] : []),
+			...(r.convertedFrom && r.original ? [{ id: 'original' as const, label: 'Original', icon: 'swap' as const }] : []),
 			{ id: 'source', label: 'Source', icon: 'code' },
 		];
 		if (!avail.some(a => a.id === this.tab)) this.tab = avail[0].id;
@@ -791,10 +796,11 @@ export class ImportDialog extends Modal {
 
 	/** A converted record as its own game drew it. */
 	private drawOriginal(el: HTMLElement, row: Row): void {
-		const orig = row.read.converted?.originals.get(row.item.record.name);
+		const orig = row.item.record.original;
 		if (!orig || !row.read.canConvert) return;
-		const { kind, from: _f, converted: _c, ...value } = orig;
-		const rec: CheckedRecord = { type: 'content', kind, name: orig.name, at: '', value: value, errors: [], warnings: [] };
+		const { kind: k, ...value } = orig;
+		const kind = typeof k === 'string' ? k : row.item.record.kind;
+		const rec: CheckedRecord = { type: 'content', kind, name: row.item.record.name, at: '', value, errors: [], warnings: [] };
 		drawPreview(el, rec, { ...this.previewContext(row), system: row.read.canConvert.from, edition: undefined });
 	}
 

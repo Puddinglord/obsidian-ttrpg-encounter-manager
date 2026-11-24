@@ -7856,9 +7856,9 @@ test('import: a bundle brings a monster, an NPC with its card, a place and a map
 	const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 	const bundle = {
 		format: 'ember-vault-bundle', version: 1, system: 'nimble', source: { name: 'Test Tool', license: 'Made up for the tests' },
-		content: [{ kind: 'monster', name: 'Mire Hag', level: 3, hp: 30, armor: 'medium', actions: [{ name: 'Claw', text: '1d8+2 slashing.' }], from: { id: 'test:mire-hag' } }],
+		content: [{ kind: 'monster', name: 'Mire Hag', level: 3, hp: 30, armor: 'medium', actions: [{ name: 'Claw', text: '1d8+2 slashing.' }], importedFrom: { id: 'test:mire-hag' } }],
 		notes: [
-			{ kind: 'npc', name: 'Irinia', fields: { role: 'Cleric', faction: 'The Gate' }, card: { wants: 'To hold the gate', voice: 'Low and even' }, from: { id: 'test:irinia' } },
+			{ kind: 'npc', name: 'Irinia', fields: { role: 'Cleric', faction: 'The Gate' }, card: { wants: 'To hold the gate', voice: 'Low and even' }, importedFrom: { id: 'test:irinia' } },
 			{ kind: 'location', name: 'The East Gate', body: 'Oak doors, banded in iron.' },
 		],
 		maps: [{ name: 'Sunken Crypt', image: { file: 'iv-crypt.png' }, grid: '10x8', body: 'A crypt under the marsh.', pins: [
@@ -8068,10 +8068,28 @@ test('import: a 5e goblin pasted into a Nimble campaign is converted on the GM G
 		const note = `${C}/Monsters/Goblin Warrior.md`;
 		await o.waitFor(() => exists(o, note), { what: 'the monster note' });
 		const text = await read(o, note);
-		assert.match(text, /converted: dnd5e/);
+		// Where it was converted from and to, and the original kept as text under it.
+		assert.match(text, /convertedFrom: dnd5e\nconvertedTo: nimble\n/);
 		assert.match(text, /```nimble\nname: Goblin Warrior\nlevel: 1\/4\n/);
 		assert.match(text, /Reach 1\./);
 		assert.match(text, /Range 16\./);
+		assert.match(text, /```ev-original\ngame: dnd5e\nlang: 5e\nconverted: \d{4}-\d\d-\d\d\n---\nname: Goblin Warrior\n[\s\S]*ac: 15/);
+		// In the note: one folded line; opened, the 5e stat block.
+		await o.openFile(note, 'preview');
+		const og = o.page.locator(`${R} .ev-original`);
+		await og.waitFor();
+		assert.match(await og.innerText(), /Converted from .*5e/);
+		assert.equal(await og.locator('.ev-original-body').isVisible(), false, 'folded');
+		await og.locator('.ev-original-toggle').click();
+		await o.waitFor(async () => /Goblin Warrior[\s\S]*Scimitar/.test(await og.locator('.ev-original-body').innerText().catch(() => '')), { what: 'the original drawn' });
+		// Convert again, from the ⋯ menu: an edit to the converted block is replaced, the original kept.
+		await o.eval(async (app, _p, p) => { const f = app.vault.getAbstractFileByPath(p); await app.vault.process(f, t => t.replace(/^hp: 10$/m, 'hp: 99')); }, note);
+		await o.waitFor(async () => /hp: 99/.test(await read(o, note)), { what: 'the edit' });
+		await o.page.locator(`${R} .ev-original-more`).click();
+		await o.page.locator('.menu .menu-item', { hasText: 'Convert again' }).click();
+		await o.page.locator('.modal-container .modal button.mod-warning, .modal-container .modal button.mod-cta').last().click();
+		await o.waitFor(async () => /hp: 10\n/.test(await read(o, note)), { what: 'converted again' });
+		assert.match(await read(o, note), /```ev-original\ngame: dnd5e/);
 	} finally {
 		await o.eval(async (app, plugin, C) => {
 			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());

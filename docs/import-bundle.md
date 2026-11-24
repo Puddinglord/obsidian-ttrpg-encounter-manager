@@ -20,7 +20,7 @@ The schema is [bundle.schema.json](import/bundle.schema.json). Point your editor
     {
       "kind": "monster", "name": "Mire Hag", "level": "3", "hp": 30, "armor": "medium",
       "actions": [{ "name": "Claw", "text": "Reach 1. 1d8+2 slashing." }],
-      "from": { "id": "mire-book:mire-hag" }
+      "importedFrom": { "id": "mire-book:mire-hag" }
     }
   ],
   "notes": [
@@ -45,7 +45,7 @@ The schema is [bundle.schema.json](import/bundle.schema.json). Point your editor
 | `system` | The game the content is for: `"nimble"` or `"5e"`. Only needed when there's content. |
 | `edition` | 5e only: `"2024"` or `"2014"`. |
 | `source` | Where the bundle came from: `name`, `url`, `license`. Import… shows them before anything is written, and each note it writes says `imported: <name>`. |
-| `content` | The game's monsters, spells, items, classes and the rest: the same entries a [content pack](content-packs.md) holds, plus `from`. Monsters become monster notes in the campaign; the rest become notes in the content folder. |
+| `content` | The game's monsters, spells, items, classes and the rest: the same entries a [content pack](content-packs.md) holds, plus `importedFrom`. Monsters become monster notes in the campaign; the rest become notes in the content folder. |
 | `notes` | NPCs, locations, quests and plain notes: `kind`, `name`, `fields` (the note's properties: `role`, `faction`, and the game's own, like Nimble's `level`, `armor`, `hp`), `card` (an NPC's `look`, `wants`, `voice`, `secret`) and `body` (Markdown). |
 | `maps` | A map note each: `image` (a file in `files`, or one chosen with the bundle), `grid` (`"30x20"`), `pins` and `body`. |
 | `files` | Pictures, as base64 in `data`. |
@@ -55,7 +55,7 @@ A pin's `x` and `y` are percent of the picture's width and height, from the top 
 
 ## Updating instead of copying
 
-Give each record a `from` with an `id` that stays the same each time your tool exports it (`"mire-book:mire-hag"`). Import the bundle again and Import… offers what changed as an update to the note it wrote before, instead of a second copy. Without an id, it matches imported notes by name.
+Give each record an `importedFrom` with an `id` that stays the same each time your tool exports it (`"mire-book:mire-hag"`). Import the bundle again and Import… offers what changed as an update to the note it wrote before, instead of a second copy. Without an id, it matches imported notes by name.
 
 ## What Import… says about it
 
