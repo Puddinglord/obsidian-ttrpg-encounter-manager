@@ -557,6 +557,27 @@ const nimble = [
 			await c.page.locator('.modal.nimble-import-content textarea').evaluate(t => { t.scrollTop = 0; });
 		},
 	},
+	{
+		// Import… with a bundle: what it brings as a checklist, a long name, an update, and what was left out.
+		name: 'import-bundle', mode: 'window', root: '.modal.ev-import',
+		setup: async (c) => {
+			await c.campaign(NQ);
+			await c.open(`${CH}/Q1 Entry Chamber.md`);
+			await c.cmd('import-content');
+			await c.page.locator('.modal.ev-import textarea').fill(JSON.stringify({
+				format: 'ember-vault-bundle', version: 1, system: 'nimble', source: { name: 'Visual Tool', license: 'Made up for the visual check' },
+				content: [
+					{ kind: 'monster', name: 'Mire Hag of the Long Drowned Causeway', level: 3, hp: 30, armor: 'medium', actions: [{ name: 'Claw', text: '1d8+2.' }] },
+					{ kind: 'monster', name: 'Bog Wisp' },
+				],
+				notes: [{ kind: 'npc', name: 'Irinia' }, { kind: 'location', name: 'The East Gate' }],
+				maps: [{ name: 'Sunken Crypt', pins: [{ x: 40, y: 20, label: '1' }] }],
+			}));
+			await c.page.locator('.modal.ev-import .ev-import-list').waitFor({ timeout: 5000 });
+			await c.page.locator('.modal.ev-import textarea').evaluate(t => { t.scrollTop = 0; });
+			await c.wait(400);
+		},
+	},
 ];
 
 const dnd5e = [

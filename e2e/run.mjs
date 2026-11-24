@@ -7877,7 +7877,7 @@ test('import: a bundle brings a monster, an NPC with its card, a place and a map
 		await o.page.locator(M).waitFor();
 		await o.page.locator(`${M} textarea`).fill(text);
 		let said = '';
-		await o.waitFor(async () => /Test Tool[\s\S]*a monster, an NPC, a location and a map/.test(said = await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the bundle read' })
+		await o.waitFor(async () => /Test Tool[\s\S]*A monster, an NPC, a location and a map/.test(said = await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the bundle read' })
 			.catch((e) => { throw new Error(`${e.message}; the report said: ${said}`); });
 		const rows = await o.page.locator(`${M} .ev-import-row input`).evaluateAll(els => els.map(e => `${e.dataset.kind}:${e.dataset.name}${e.checked ? '' : ' (off)'}`));
 		assert.deepEqual(rows, ['monster:Mire Hag', 'npc:Irinia', 'location:The East Gate', 'map:Sunken Crypt']);

@@ -227,7 +227,8 @@ export class ImportDialog extends Modal {
 		if (b.error) { this.head(el, 'warning', b.error, true); return; }
 		const from = b.source?.name ?? this.importer?.label ?? 'Import';
 		const game = b.system ? this.plugin.systems.get(b.system)?.name : undefined;
-		this.head(el, 'books', from, false, [bundleSummary(b.records), game, b.edition ? `${b.edition} rules` : undefined].filter(Boolean).join(' · '));
+		const summary = bundleSummary(b.records);
+		this.head(el, 'books', from, false, [summary.charAt(0).toUpperCase() + summary.slice(1), game, b.edition ? `${b.edition} rules` : undefined].filter(Boolean).join(' · '));
 		if (b.source?.license) el.createDiv({ cls: 'ev-import-license', text: b.source.license });
 		const offered = this.plan.filter(p => p.status === 'new' || p.status === 'update');
 		const box = el.createDiv({ cls: 'ev-import-content' });
