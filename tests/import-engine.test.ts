@@ -34,7 +34,7 @@ describe('checking a bundle', () => {
 		const b = checkBundle(emptyBundle({
 			system: '5e', edition: '2014', source: { name: 'My Tool', license: 'CC-BY-4.0' },
 			content: [
-				{ kind: 'monster', name: 'Bog Wisp', statblock: WISP, source: { id: 'tool:wisp', url: 'https://example.com/wisp' } },
+				{ kind: 'monster', name: 'Bog Wisp', statblock: WISP, from: { id: 'tool:wisp', url: 'https://example.com/wisp' } },
 				{ kind: 'Monster', name: 'Stone Toad', ac: 14, hp: 22, abilities: [14, 8, 16, 2, 10, 4], cr: '1', source: 'Swamp Book' },
 				{ kind: 'starship', name: 'Nostromo' },
 				{ kind: 'spell', name: 'Half a Spell' },
@@ -123,7 +123,7 @@ describe('planning an import', () => {
 	const records = checkBundle(emptyBundle({
 		system: '5e',
 		content: [
-			{ kind: 'monster', name: 'Bog Wisp', statblock: WISP, source: { id: 'tool:wisp' } },
+			{ kind: 'monster', name: 'Bog Wisp', statblock: WISP, from: { id: 'tool:wisp' } },
 			{ kind: 'monster', name: 'Stone Toad', statblock: WISP.replace('Bog Wisp', 'Stone Toad') },
 			{ kind: 'monster', name: 'Goblin Boss', statblock: WISP.replace('Bog Wisp', 'Goblin Boss') },
 			{ kind: 'monster', name: 'Marsh Hag', statblock: WISP.replace('Bog Wisp', 'Marsh Hag') },

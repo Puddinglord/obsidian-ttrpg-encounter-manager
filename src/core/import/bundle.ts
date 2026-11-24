@@ -24,8 +24,8 @@ export interface BundleSource {
 export interface BundleEntry {
 	kind: string;
 	name: string;
-	/** Where it came from; as text, the kind's own "source" field (a 5e monster's book). */
-	source?: BundleSource | string;
+	/** Where it came from. (A kind's own "source" field, a 5e monster's book, is just a field.) */
+	from?: BundleSource;
 	/** The game it was written for, when it was converted to this one ("5e"). */
 	converted?: string;
 	[field: string]: unknown;
@@ -43,7 +43,7 @@ export interface BundleNote {
 	card?: Record<string, string>;
 	/** Markdown under the note's own sections. */
 	body?: string;
-	source?: BundleSource;
+	from?: BundleSource;
 }
 
 export interface BundlePin {
@@ -67,7 +67,7 @@ export interface BundleMap {
 	pins?: BundlePin[];
 	/** Markdown at the top of the map's note (a dungeon's story). */
 	body?: string;
-	source?: BundleSource;
+	from?: BundleSource;
 }
 
 /** A file the bundle carries: base64 in JSON; `bytes` only in memory (an adapter's decoded image). */
@@ -160,13 +160,11 @@ function checkContent(raw: unknown, i: number, kinds: ReadonlyMap<string, KindSp
 	if (!isObj(raw)) return { type: 'content', kind: '', name: '', at: at(''), errors: ['should be an object with "kind" and "name"'], warnings: [] };
 	const name = nameOf(raw);
 	const kindName = str(raw.kind)?.toLowerCase() ?? '';
-	// "source" as an object is where the entry came from; as text it's the entry's own field (a 5e monster's book).
-	const base = { type: 'content' as const, kind: kindName, name, at: at(name), source: isObj(raw.source) ? readSource(raw.source) : undefined, converted: str(raw.converted) };
+	const base = { type: 'content' as const, kind: kindName, name, at: at(name), source: readSource(raw.from), converted: str(raw.converted) };
 	if (!kinds) return { ...base, errors: ['the bundle says no "system", so content can\'t be read'], warnings: [] };
 	const kind = kinds.get(kindName);
 	if (!kind) return { ...base, errors: [kindName ? `${gameName ?? 'This game'} has no "${kindName}" kind (it has ${[...kinds.keys()].join(', ')})` : '"kind" is missing'], warnings: [] };
-	const { kind: _k, converted: _c, ...fields } = raw;
-	if (isObj(fields.source) || !kind.fields.source) delete fields.source;
+	const { kind: _k, converted: _c, from: _f, ...fields } = raw;
 	const checked = checkEntry(kind, fields);
 	const errors = [...checked.errors];
 	if (!name) errors.unshift('"name" is missing');
@@ -178,7 +176,7 @@ function checkNote(raw: unknown, i: number): CheckedRecord {
 	if (!isObj(raw)) return { type: 'note', kind: '', name: '', at: at(''), errors: ['should be an object with "kind" and "name"'], warnings: [] };
 	const name = nameOf(raw);
 	const kind = str(raw.kind)?.toLowerCase() ?? '';
-	const base = { type: 'note' as const, kind, name, at: at(name), source: readSource(raw.source) };
+	const base = { type: 'note' as const, kind, name, at: at(name), source: readSource(raw.from) };
 	const errors: string[] = [];
 	const warnings: string[] = [];
 	if (!name) errors.push('"name" is missing');
@@ -189,7 +187,7 @@ function checkNote(raw: unknown, i: number): CheckedRecord {
 	const card: Record<string, string> | undefined = isObj(raw.card)
 		? Object.fromEntries(Object.entries(raw.card).map(([k, v]): [string, string] => [k, str(v) ?? '']).filter(([, v]) => v))
 		: undefined;
-	for (const k of Object.keys(raw)) if (!['kind', 'name', 'fields', 'card', 'body', 'source'].includes(k)) warnings.push(`"${k}" isn't a field here, so it was left out`);
+	for (const k of Object.keys(raw)) if (!['kind', 'name', 'fields', 'card', 'body', 'from'].includes(k)) warnings.push(`"${k}" isn't a field here, so it was left out`);
 	const value: Record<string, unknown> = { kind, name, ...(isObj(raw.fields) ? { fields: raw.fields } : {}), ...(card && Object.keys(card).length ? { card } : {}), ...(typeof raw.body === 'string' ? { body: raw.body } : {}) };
 	return { ...base, value: errors.length ? undefined : value, errors, warnings };
 }
@@ -200,7 +198,7 @@ function checkMap(raw: unknown, i: number, files: ReadonlySet<string>): CheckedR
 	const at = (name: string) => `map ${i + 1}${name ? ` (${name})` : ''}`;
 	if (!isObj(raw)) return { type: 'map', kind: 'map', name: '', at: at(''), errors: ['should be an object with "name"'], warnings: [] };
 	const name = nameOf(raw);
-	const base = { type: 'map' as const, kind: 'map', name, at: at(name), source: readSource(raw.source) };
+	const base = { type: 'map' as const, kind: 'map', name, at: at(name), source: readSource(raw.from) };
 	const errors: string[] = [];
 	const warnings: string[] = [];
 	if (!name) errors.push('"name" is missing');
@@ -312,7 +310,7 @@ const sourceSchema: Json = {
 export function bundleSchema(games: { id: string; /** Other names a bundle may use for it. */ aliases?: readonly string[]; kinds: readonly KindSpec[]; packSchema: Json; editions?: readonly string[] }[]): Json {
 	const entriesOf = (pack: Json) => ((pack.properties as Json).entries as Json).items as Json;
 	const withMeta = (items: Json): Json => ({
-		oneOf: (items.oneOf as Json[]).map(k => ({ ...k, properties: { ...(k.properties as Json), source: { $ref: '#/$defs/source' }, converted: { type: 'string', description: 'The game it was written for, when it was converted to this one.' } } })),
+		oneOf: (items.oneOf as Json[]).map(k => ({ ...k, properties: { ...(k.properties as Json), from: { $ref: '#/$defs/source' }, converted: { type: 'string', description: 'The game it was written for, when it was converted to this one.' } } })),
 	});
 	return {
 		$schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -339,7 +337,7 @@ export function bundleSchema(games: { id: string; /** Other names a bundle may u
 						fields: { type: 'object', description: 'The note\'s properties: role, faction, location… and the game\'s own (Nimble: level, armor, hp, statblock).' },
 						card: { type: 'object', description: 'An NPC\'s card.', properties: { look: { type: 'string' }, wants: { type: 'string' }, voice: { type: 'string' }, secret: { type: 'string' } }, additionalProperties: { type: 'string' } },
 						body: { type: 'string', description: 'Markdown for the note.' },
-						source: { $ref: '#/$defs/source' },
+						from: { $ref: '#/$defs/source' },
 					},
 					additionalProperties: false,
 				},
@@ -369,7 +367,7 @@ export function bundleSchema(games: { id: string; /** Other names a bundle may u
 							},
 						},
 						body: { type: 'string', description: 'Markdown at the top of the map\'s note.' },
-						source: { $ref: '#/$defs/source' },
+						from: { $ref: '#/$defs/source' },
 					},
 				},
 			},

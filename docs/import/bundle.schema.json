@@ -88,7 +88,7 @@
 						"type": "string",
 						"description": "Markdown for the note."
 					},
-					"source": {
+					"from": {
 						"$ref": "#/$defs/source"
 					}
 				},
@@ -167,7 +167,7 @@
 						"type": "string",
 						"description": "Markdown at the top of the map's note."
 					},
-					"source": {
+					"from": {
 						"$ref": "#/$defs/source"
 					}
 				}
@@ -482,7 +482,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -606,7 +606,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -757,7 +757,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -1932,7 +1932,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2370,7 +2370,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2461,7 +2461,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2550,7 +2550,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2610,7 +2610,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2689,7 +2689,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2737,7 +2737,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2781,7 +2781,7 @@
 											],
 											"description": "Who speaks it."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2835,7 +2835,7 @@
 											"minimum": 1,
 											"description": "The page in the book it comes from, if any."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -2886,7 +2886,7 @@
 											"type": "boolean",
 											"description": "Takes a number: \"Empowered 2\"."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -3239,6 +3239,12 @@
 											]
 										},
 										"source": {
+											"type": [
+												"string",
+												"number"
+											]
+										},
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -3356,7 +3362,7 @@
 										"ritual": {
 											"type": "boolean"
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -3436,7 +3442,7 @@
 											],
 											"description": "The line under the name, if not the usual \"Weapon (Longsword), rare\"."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -3582,7 +3588,7 @@
 												"number"
 											]
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -3656,7 +3662,7 @@
 											},
 											"description": "Its Ability Score Increase: +1 to one of these, to a maximum of 20 (30 for an Epic Boon): [STR, DEX]."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -3876,7 +3882,7 @@
 											],
 											"description": "Languages to choose: how many, and from which (any if left out)."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -4241,7 +4247,7 @@
 											},
 											"description": "2014: subraces; 2024: lineages and other choices of the species (\"Elven Lineage: Drow\")."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -4778,7 +4784,7 @@
 												]
 											}
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {
@@ -5000,7 +5006,7 @@
 											},
 											"description": "Spells it always has prepared, from a class level (domain or oath spells)."
 										},
-										"source": {
+										"from": {
 											"$ref": "#/$defs/source"
 										},
 										"converted": {

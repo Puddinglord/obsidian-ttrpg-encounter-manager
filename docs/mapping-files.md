@@ -36,7 +36,7 @@ This mapping turns its creatures into Nimble monsters and its people into NPC no
       "each": "items[*]",
       "when": { "path": "type", "equals": "creature" },
       "kind": "monster",
-      "source": { "id": { "template": "lantern-forge:{id}" } },
+      "from": { "id": { "template": "lantern-forge:{id}" } },
       "fields": {
         "name": "creature.title",
         "level": { "path": "creature.lvl", "as": "string" },
@@ -50,7 +50,7 @@ This mapping turns its creatures into Nimble monsters and its people into NPC no
       "when": { "path": "type", "equals": "person" },
       "into": "note",
       "kind": "npc",
-      "source": { "id": { "template": "lantern-forge:{id}" } },
+      "from": { "id": { "template": "lantern-forge:{id}" } },
       "fields": { "name": "person.name", "role": "person.job" },
       "card": { "wants": "person.goal" }
     }
@@ -82,7 +82,7 @@ Each entry in `records` has:
 | `into` | `"content"` (the default) for a game's monsters, spells and items, or `"note"` for NPCs, locations, quests and plain notes. |
 | `kind` | What each record becomes: a content kind (`monster`, `spell`, `item`…, the same kinds as [content packs](content-packs.md)) or a note kind (`npc`, `location`, `quest`, `note`). |
 | `fields` | Our fields, each filled from the file. For content they're the game's content-pack fields. For notes they're the note's properties. |
-| `source` | Where each record came from. Give it an `id` (usually a template like `"lantern-forge:{id}"`) so that importing the same file again updates what it made instead of adding copies. |
+| `from` | Where each record came from. Give it an `id` (usually a template like `"lantern-forge:{id}"`) so that importing the same file again updates what it made instead of adding copies. |
 | `card`, `body` | Notes only: the NPC card (`look`, `wants`, `voice`, `secret`) and the note's text. |
 
 ## Filling a field

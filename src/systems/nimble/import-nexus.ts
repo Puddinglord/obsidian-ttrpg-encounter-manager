@@ -107,7 +107,7 @@ export function nexusMonster(id: string, a: Obj, names: ReadonlyMap<string, stri
 	if (last) out.lastStand = nexusRefs(last, names);
 	const flavor = str(a.description);
 	if (flavor) out.flavor = nexusRefs(flavor, names);
-	out.source = { name: NEXUS, id: `nexus:monster:${id}`, url: `${NEXUS_SITE}/monsters/${id}` };
+	out.from = { name: NEXUS, id: `nexus:monster:${id}`, url: `${NEXUS_SITE}/monsters/${id}` };
 	return out;
 }
 
@@ -132,7 +132,7 @@ export function nexusItem(id: string, a: Obj, names: ReadonlyMap<string, string>
 		...(kind ? { subcategory: kind } : {}),
 		...(rarity ? { rarity } : {}),
 		text: nexusRefs(text, names) || '—',
-		source: { name: NEXUS, id: `nexus:item:${id}`, url: `${NEXUS_SITE}/items/${id}` },
+		from: { name: NEXUS, id: `nexus:item:${id}`, url: `${NEXUS_SITE}/items/${id}` },
 	};
 }
 

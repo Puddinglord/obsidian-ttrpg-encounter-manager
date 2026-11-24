@@ -7853,9 +7853,9 @@ test('import: a bundle brings a monster, an NPC with its card, a place and a map
 	const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 	const bundle = {
 		format: 'ember-vault-bundle', version: 1, system: 'nimble', source: { name: 'Test Tool', license: 'Made up for the tests' },
-		content: [{ kind: 'monster', name: 'Mire Hag', level: 3, hp: 30, armor: 'medium', actions: [{ name: 'Claw', text: '1d8+2 slashing.' }], source: { id: 'test:mire-hag' } }],
+		content: [{ kind: 'monster', name: 'Mire Hag', level: 3, hp: 30, armor: 'medium', actions: [{ name: 'Claw', text: '1d8+2 slashing.' }], from: { id: 'test:mire-hag' } }],
 		notes: [
-			{ kind: 'npc', name: 'Irinia', fields: { role: 'Cleric', faction: 'The Gate' }, card: { wants: 'To hold the gate', voice: 'Low and even' }, source: { id: 'test:irinia' } },
+			{ kind: 'npc', name: 'Irinia', fields: { role: 'Cleric', faction: 'The Gate' }, card: { wants: 'To hold the gate', voice: 'Low and even' }, from: { id: 'test:irinia' } },
 			{ kind: 'location', name: 'The East Gate', body: 'Oak doors, banded in iron.' },
 		],
 		maps: [{ name: 'Sunken Crypt', image: { file: 'iv-crypt.png' }, grid: '10x8', body: 'A crypt under the marsh.', pins: [

@@ -105,12 +105,12 @@ describe('running a mapping', () => {
 			actions: [{ name: 'Claw', text: '**1d8+2** slashing.' }, { name: 'Hex', text: 'Range 8. The target is *Dazed*.' }],
 			traits: [{ name: 'Bog-born', text: 'Ignores difficult terrain in water.' }],
 			flavor: 'She trades in names & teeth.',
-			source: { id: 'lantern-forge:41', url: 'https://lanternforge.example/creatures/mire-hag' },
+			from: { id: 'lantern-forge:41', url: 'https://lanternforge.example/creatures/mire-hag' },
 		}]);
 		expect(bundle.notes).toEqual([{
 			kind: 'npc', name: 'Irinia', fields: { role: 'Cleric', faction: 'The Gate', level: 1 },
 			card: { look: 'Grey robes, a mace', wants: 'Hold the gate', voice: 'Low and even' }, body: 'Clever, wise and discerning.',
-			source: { id: 'lantern-forge:52' },
+			from: { id: 'lantern-forge:52' },
 		}]);
 		expect(notes).toEqual(['A record with no name was left out.']);
 		const checked = checkBundle(bundle, games);
