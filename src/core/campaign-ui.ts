@@ -18,6 +18,7 @@ import { STARTERS, StarterKind } from './campaign-templates';
 import { draggedPaths, startFileDrag } from './internals';
 import { handEnteredLeft, PartyMember } from './types';
 import { confirmAction, onLongPress } from './touch';
+import { openAsMarkdown } from './reading-mode';
 
 export { KIND_ICON };
 const SECTION_ICON: Record<string, string> = { Party: 'shield', NPCs: 'users-round', Locations: 'map-pin', Quests: 'flag', Sessions: 'calendar-days', Monsters: 'skull', Handouts: 'scroll-text', Assets: 'image', Maps: 'map' };
@@ -203,16 +204,10 @@ export function renderRoster(el: HTMLElement, plugin: EmberVaultPlugin, c: Campa
 	}
 	const list = roster.createDiv({ cls: 'campaign-roster-list' });
 	for (const h of heroes) {
-		heroCard(list, plugin, { ...h, showHp: h.mine || gm }, (e) => {
-			const m = new Menu();
-			m.addItem(i => i.setTitle('Open in new tab').setIcon('file-plus').onClick(() => void plugin.campaigns.open(h.path, true)));
-			if (!h.mine && !gm) m.addItem(i => i.setTitle('This is my character').setIcon('shield').onClick(() => void plugin.campaigns.setMine(c, h.path)));
-			if (plugin.campaigns.sameGame(c).length) {
-				m.addItem(i => i.setTitle('Copy to campaign…').setIcon('copy').onClick(() => sendHeroes(plugin, c, [h.path], [], false)));
-				m.addItem(i => i.setTitle('Move to campaign…').setIcon('folder-input').onClick(() => sendHeroes(plugin, c, [h.path], [], true)));
-			}
-			m.showAtMouseEvent(e);
-		});
+		// The same menu as the hero's row in the outline, plus what only a hero has.
+		heroCard(list, plugin, { ...h, showHp: h.mine || gm }, (e) => itemMenu(plugin, c, h.path, e, (m) => {
+			if (!h.mine && !gm) m.addItem(i => i.setTitle('This is my character').setIcon('shield').setSection('action').onClick(() => void plugin.campaigns.setMine(c, h.path)));
+		}));
 	}
 	for (const h of left) heroCard(list, plugin, { name: h.name, className: h.className, level: h.level, hpMax: h.maxHp });
 	if (left.length) {
@@ -476,12 +471,20 @@ function newMenu(plugin: EmberVaultPlugin, c: Campaign, e: MouseEvent | PointerE
 	m.showAtMouseEvent(e);
 }
 
-/** Right-click or long-press on a note or file row. */
-function itemMenu(plugin: EmberVaultPlugin, c: Campaign, path: string, e: MouseEvent | PointerEvent): void {
+/** Right-click or long-press on a note or file row (and a hero's card, which adds its own items with `extra`). */
+function itemMenu(plugin: EmberVaultPlugin, c: Campaign, path: string, e: MouseEvent | PointerEvent, extra?: (m: Menu) => void): void {
 	const f = plugin.app.vault.getAbstractFileByPath(path);
 	if (!f) return;
 	const m = new Menu();
 	m.addItem(i => i.setTitle('Open in new tab').setIcon('file-plus').setSection('open').onClick(() => void plugin.campaigns.open(path, true)));
+	// A sheet or card stands in for its note when it opens; this shows the note itself.
+	if (f instanceof TFile && f.extension === 'md') m.addItem(i => i.setTitle('Open as Markdown').setIcon('file-code').setSection('open').onClick(() => void openAsMarkdown(plugin.app, path)));
+	extra?.(m);
+	// A hero (from the card or the Party folder) can join another campaign of the same game.
+	if (plugin.campaigns.sameGame(c).length && plugin.campaigns.characters(c).some(h => h.path === path)) {
+		m.addItem(i => i.setTitle('Copy to campaign…').setIcon('copy').setSection('action').onClick(() => sendHeroes(plugin, c, [path], [], false)));
+		m.addItem(i => i.setTitle('Move to campaign…').setIcon('folder-input').setSection('action').onClick(() => sendHeroes(plugin, c, [path], [], true)));
+	}
 	m.addItem(i => i.setTitle('Move to chapter or folder…').setIcon('folder-input').setSection('action').onClick(() => promptMove(plugin, c, path)));
 	m.addItem(i => i.setTitle('Rename…').setIcon('pencil').setSection('action').onClick(() => promptRename(plugin, path)));
 	m.addItem(i => i.setTitle('Delete').setIcon('trash-2').setSection('danger').setWarning(true).onClick(() => void (async () => {

@@ -9,6 +9,7 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 ### Added
 
 - Copy or move heroes to another campaign of the same game. Right-click a hero's card under Party and choose **Copy to campaign…** or **Move to campaign…**, or copy the whole party with the button next to Party's **+**. See the [campaigns guide](docs/campaigns.md#moving-things-around).
+- **Open as Markdown** in the Campaign panel's right-click menu shows a note as text, properties and all. A hero's sheet, like an NPC's card, stands in for its note, so this is how to see what's behind it. A hero's card under Party now has the same menu as the notes in the outline: rename, move, delete and Obsidian's own items. See the [campaigns guide](docs/campaigns.md#moving-things-around).
 
 ### Fixed
 

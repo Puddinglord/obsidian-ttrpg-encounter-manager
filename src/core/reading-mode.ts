@@ -4,7 +4,7 @@
 // Obsidian's own edit toggle. Session logs are written at the table, so they
 // open however Obsidian would open them, and so does a note you just made.
 
-import { getAllTags, MarkdownView, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, getAllTags, MarkdownView, TFile, WorkspaceLeaf } from 'obsidian';
 import type EmberVaultPlugin from '../../main';
 import { noteKind, opensInReading } from './campaign-model';
 import type { SharedNoteKind } from './note-kinds';
@@ -92,6 +92,24 @@ function watchEmptyProperties(view: MarkdownView, on: boolean, onCard: () => Set
 	mark();
 }
 
+/** Notes being opened as Markdown on purpose: reading view leaves them be. */
+const asMarkdown = new Set<string>();
+
+/**
+ * Open a note as its Markdown: editing, in source mode, so its properties and
+ * blocks show as text. For pages whose sheet or card stands in for the note.
+ */
+export async function openAsMarkdown(app: App, path: string, newLeaf = false): Promise<void> {
+	const f = app.vault.getFileByPath(path);
+	if (!f) return;
+	asMarkdown.add(path);
+	try {
+		await app.workspace.getLeaf(newLeaf).openFile(f, { active: true, state: { mode: 'source', source: true } });
+	} finally {
+		window.setTimeout(() => asMarkdown.delete(path), 500);
+	}
+}
+
 export function registerReadingMode(plugin: EmberVaultPlugin): void {
 	const app = plugin.app;
 	const tag = () => tagProperties(plugin);
@@ -117,6 +135,7 @@ export function registerReadingMode(plugin: EmberVaultPlugin): void {
 			if (!(view instanceof MarkdownView) || view.file?.path !== file.path) continue;
 			if (shown.get(leaf) === file.path) continue;
 			shown.set(leaf, file.path);
+			if (asMarkdown.has(file.path)) continue;
 			if (!plugin.settings.readingView || view.getMode() === 'preview') continue;
 			const born = created.get(file.path);
 			if (born !== undefined && Date.now() - born < FRESH_MS) continue;

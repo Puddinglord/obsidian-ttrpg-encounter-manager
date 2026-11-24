@@ -5510,6 +5510,29 @@ test('GM party: copy and move heroes to another campaign of the same game', asyn
 			plugin.campaigns.trigger('changed');
 		});
 		await p.waitForSelector(`${V} a.campaign-hero[data-path="Campaigns/Copy From/Party/Wren.md"]`, { timeout: 5000 });
+		// A hero's card has the outline's note menu, and Open as Markdown shows the note behind the sheet.
+		await p.locator(`${V} a.campaign-hero[data-path="Campaigns/Copy From/Party/Wren.md"]`).click({ button: 'right' });
+		const titles = await menuTitles(o);
+		for (const t of ['Open in new tab', 'Open as Markdown', 'Move to chapter or folder…', 'Rename…', 'Delete', 'Copy to campaign…', 'Move to campaign…']) assert.ok(titles.includes(t), `hero menu has ${t}: ${titles}`);
+		await clickMenu(o, 'Open as Markdown');
+		const mode = () => o.eval((app) => {
+			const v = app.workspace.getLeavesOfType('markdown').map(l => l.view).find(v => v.file?.path === 'Campaigns/Copy From/Party/Wren.md');
+			return v ? `${v.getMode()}:${v.getState().source}` : null;
+		});
+		await o.waitFor(async () => (await mode()) === 'source:true', { what: 'Wren open in source mode' });
+		await p.waitForTimeout(400);
+		assert.equal(await mode(), 'source:true', 'reading view leaves it in source mode');
+		// The hero's row in the Party folder has Copy and Move too; another note's row doesn't.
+		await o.eval(async (app) => { await app.vault.create('Campaigns/Copy From/Lore.md', '# Lore\n'); });
+		await p.locator(`${V} .campaign-note[data-path="Campaigns/Copy From/Party/Wren.md"]`).click({ button: 'right' });
+		assert.ok((await menuTitles(o)).includes('Copy to campaign…'), 'the Party folder row offers Copy to campaign…');
+		await p.keyboard.press('Escape');
+		await p.locator(`${V} .campaign-note[data-path="Campaigns/Copy From/Lore.md"]`).waitFor({ timeout: 5000 });
+		await p.locator(`${V} .campaign-note[data-path="Campaigns/Copy From/Lore.md"]`).click({ button: 'right' });
+		const lore = await menuTitles(o);
+		assert.ok(lore.includes('Open as Markdown') && !lore.includes('Copy to campaign…'), `a plain note: ${lore}`);
+		await p.keyboard.press('Escape');
+		await p.screenshot({ path: join(ARTIFACTS, 'hero-as-markdown.png') });
 		// Copy the party: only the other Nimble campaign is offered, not the 5e one.
 		await p.locator(`${V} .campaign-roster-head [aria-label="Copy the party to another campaign"]`).click();
 		await p.locator('.prompt .suggestion-item').first().waitFor({ timeout: 3000 });

@@ -84,7 +84,8 @@ A link in a card, a box or on a map that goes to a note that doesn't exist says 
 
 **Right-click** a note, file, folder or chapter (or **long-press** it on a phone or tablet) for:
 
-- notes and files: **Open in new tab**, **Move to chapter or folder…**, **Rename…**, **Delete**
+- notes and files: **Open in new tab**, **Open as Markdown** (the note itself, as text, with its properties: for a hero, an NPC or anything else whose sheet or card stands in for it), **Move to chapter or folder…**, **Rename…**, **Delete**
+- heroes, on their card under Party or in the Party folder: the same, plus **Copy to campaign…** and **Move to campaign…**
 - folders: **New note…**, **Add files…**, **Rename folder…**, **Delete folder**
 - chapters: **New scene or note…**, **Open chapter note**, **Add files…**, **Rename chapter…** (renames its folder and chapter note together), **Delete chapter**
 
@@ -92,7 +93,7 @@ Obsidian's own items (Bookmark, Reveal in navigation, and items from other plugi
 
 **Each campaign has its own party.** In a campaign you run, the party is the [character sheets](character-sheets.md) in its Party folder: **+** next to Party makes a new one, and each card opens the hero's sheet. Encounter blocks and the tracker read the party from those sheets (name, level, max HP, Defense and max Wounds), so levelling a hero up changes the encounter maths too. Opening a note inside a campaign makes that campaign active, so encounter blocks in it are rated against that table's heroes. Until you add heroes, the campaign's `level:` and `heroes:` properties are used.
 
-**Heroes can join another campaign.** To bring a player's hero into another campaign of the same game, right-click (or long-press) their card under Party and choose **Copy to campaign…** or **Move to campaign…**, then pick the campaign. A copy leaves the hero where they were; a move takes their note across, and links to it keep working. The copy button next to Party's **+** copies the whole party at once. A hero the other campaign already has (same name) is left out, and only one hero can be **You** in a campaign you play in.
+**Heroes can join another campaign.** To bring a player's hero into another campaign of the same game, right-click (or long-press) their card under Party, or their note in the Party folder below, and choose **Copy to campaign…** or **Move to campaign…**, then pick the campaign. A copy leaves the hero where they were; a move takes their note across, and links to it keep working. The copy button next to Party's **+** copies the whole party at once. A hero the other campaign already has (same name) is left out, and only one hero can be **You** in a campaign you play in.
 
 **Each campaign has its own fight.** The tracker shows the active campaign's encounter: open a note in another campaign and the tracker switches to that campaign's fight (and to its game's tracker, for a 5e campaign beside a Nimble one). Go back and the first fight is where you left it. A party you entered by hand before keeps counting: those heroes show in the Party section after the sheets, with a button to make character sheets for them, until a sheet with the same name replaces each one.
 
