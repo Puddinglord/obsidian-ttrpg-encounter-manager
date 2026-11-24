@@ -7975,6 +7975,45 @@ test('import: a Nimble Nexus link is fetched only on a click, and its monster la
 	}
 });
 
+test('import: a Watabou dungeon chosen as a file becomes a map with a pin on each note, drawn from its rooms', async (o) => {
+	const C = 'Campaigns/Map Vale';
+	const M = '.modal.ev-import';
+	const dungeon = {
+		title: 'The Sunken Crypt', story: 'Under the marsh, a crypt fills with water every spring.',
+		rects: [{ x: -2, y: 0, w: 4, h: 4 }, { x: 0, y: 4, w: 1, h: 4 }, { x: -3, y: 8, w: 6, h: 6 }],
+		doors: [], notes: [{ text: 'A cracked altar, still warm.', ref: '1', pos: { x: 0, y: 2 } }, { text: 'Water to the knees.', ref: '2', pos: { x: 0, y: 11 } }],
+	};
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, 'The Sunken Crypt.svg']) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Map Vale', level: 3, heroes: 4, starter: false });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.campaigns.active?.folder)) === C, { what: 'the campaign active' });
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} input[type="file"]`).setInputFiles({ name: 'crypt.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(dungeon)) });
+		await o.waitFor(async () => /Watabou[\s\S]*A map/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the dungeon read' });
+		await o.page.locator(`${M} button.mod-cta`).click();
+		await o.page.locator(M).waitFor({ state: 'detached' });
+		const map = `${C}/Maps/The Sunken Crypt.md`;
+		await o.waitFor(() => exists(o, map), { what: 'the map note' });
+		const text = await read(o, map);
+		assert.match(text, /Under the marsh, a crypt fills with water every spring\./);
+		assert.match(text, /image: \[\[The Sunken Crypt\.svg\]\]\ngrid: 8x16\npins:\n- 50, 18\.8 \| 1 \| \[\[The Sunken Crypt#1\]\] \| area\n- 50, 75 \| 2 \| \[\[The Sunken Crypt#2\]\] \| area/);
+		assert.match(text, /### 1\n\nA cracked altar, still warm\./);
+		await o.openFile(map, 'preview');
+		await o.waitFor(async () => (await o.page.locator(`${R} .nimble-map-pin`).count()) === 2, { what: 'both pins on the drawn map' });
+		assert.ok(await o.page.locator(`${R} .nimble-map img`).evaluate(img => img.complete && img.naturalWidth > 0), 'the drawn map loads');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, 'The Sunken Crypt.svg']) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('import: a mapping file in the content folder teaches Import… a new format; a broken one says why in settings', async (o) => {
 	const write = (o, path, text) => o.eval(async (app, _p, [path, text]) => {
 		const dir = path.slice(0, path.lastIndexOf('/'));

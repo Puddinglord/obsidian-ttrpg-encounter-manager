@@ -1,12 +1,13 @@
-// The importers every game shares: an Ember Vault bundle as it is, and a
-// content pack (saved as a pack file in the content folder, as Import content…
-// always did). Format importers for maps and the like join this list.
+// The importers every game shares: an Ember Vault bundle as it is, a content
+// pack (saved as a pack file in the content folder, as Import content… always
+// did), and maps from other tools (maps.ts).
 
 import type EmberVaultPlugin from '../../../main';
 import { packSummary } from '../content/packs';
 import { renderPackReport } from '../content/import-modal';
 import { BUNDLE_FORMAT, ImportBundle } from './bundle';
 import { Importer, inputJson, inputText } from './importer';
+import { mapImporters } from './maps';
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
@@ -47,4 +48,4 @@ export const packImporter: Importer = {
 	},
 };
 
-export const coreImporters = (): Importer[] => [bundleImporter, packImporter];
+export const coreImporters = (): Importer[] => [bundleImporter, packImporter, ...mapImporters()];
