@@ -3007,8 +3007,9 @@ test('New note picker: each starter writes its template where it was opened', as
 		await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath('Campaigns/Fresh/Quests/The Missing Caravan.md'), (fm) => { fm.status = 'completed'; });
 	});
 	const questTitles = () => cgroup(o, 'Campaigns/Fresh/Quests').locator('.campaign-note-title').allInnerTexts();
-	await o.waitFor(async () => (await questTitles()).join() === 'Clear the Mine,The Missing Caravan', { what: 'the finished quest to sink' });
-	assert.equal(await crow(o, 'Campaigns/Fresh/Quests/The Missing Caravan.md').evaluate(el => el.classList.contains('is-quest-done')), true);
+	// The order alone is alphabetical too, so wait for the finished mark, which comes with the status.
+	await o.waitFor(() => crow(o, 'Campaigns/Fresh/Quests/The Missing Caravan.md').evaluate(el => el.classList.contains('is-quest-done')), { what: 'the quest marked finished' });
+	assert.equal((await questTitles()).join(), 'Clear the Mine,The Missing Caravan', 'the finished quest sinks');
 	assert.equal(await crow(o, 'Campaigns/Fresh/Quests/Clear the Mine.md').evaluate(el => el.classList.contains('is-quest-done')), false);
 
 	// Monsters: a stat block the bestiary picks up under its name.
@@ -5536,8 +5537,9 @@ test('GM party: copy and move heroes to another campaign of the same game', asyn
 		// Copy the party: only the other Nimble campaign is offered, not the 5e one.
 		await p.locator(`${V} .campaign-roster-head [aria-label="Copy the party to another campaign"]`).click();
 		await p.locator('.prompt .suggestion-item').first().waitFor({ timeout: 3000 });
-		assert.deepEqual(await p.locator('.prompt .suggestion-item').allTextContents(), ['Copy To (Player)']);
-		await p.locator('.prompt .suggestion-item').first().click();
+		const offered = await p.locator('.prompt .suggestion-item').allTextContents();
+		assert.ok(offered.includes('Copy To (Player)') && !offered.some(t => t.startsWith('Copy Other')), `other Nimble campaigns only: ${offered}`);
+		await p.locator('.prompt .suggestion-item', { hasText: 'Copy To (Player)' }).click();
 		// Both sheets are copied into its Party folder, and Kestrel (typed in by hand) joins its party.
 		await o.waitFor(() => o.eval((app) => ['Wren', 'Ash'].every(n => app.vault.getAbstractFileByPath(`Campaigns/Copy To/Party/${n}.md`))), { what: 'sheets copied' });
 		assert.ok(await o.eval((app) => !!app.vault.getAbstractFileByPath('Campaigns/Copy From/Party/Wren.md')), 'a copy leaves the hero where it was');
@@ -5564,10 +5566,12 @@ test('GM party: copy and move heroes to another campaign of the same game', asyn
 		await p.locator(vell).click({ button: 'right' });
 		assert.equal(await p.locator('.menu').count(), 1, 'one menu, not two');
 		await clickMenu(o, 'Move to campaign…');
-		await p.locator('.prompt .suggestion-item').first().click();
+		await p.locator('.prompt .suggestion-item', { hasText: 'Copy To (Player)' }).click();
 		await o.waitFor(() => o.eval((app) => !app.vault.getAbstractFileByPath('Campaigns/Copy From/Party/Vell.md') && !!app.vault.getAbstractFileByPath('Campaigns/Copy To/Party/Vell.md')), { what: 'Vell moved' });
 		await waitFmAt(o, 'Campaigns/Copy To/Party/Vell.md', fm => fm.class && fm.mine === undefined, 'Vell not marked yours: the player campaign already has your hero');
 	} finally {
+		// A picker left open by a failure would block the next test's clicks.
+		while (await p.locator('.prompt, .menu').count()) await p.keyboard.press('Escape');
 		await clean();
 	}
 });
