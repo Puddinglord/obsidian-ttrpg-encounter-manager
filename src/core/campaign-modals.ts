@@ -243,9 +243,9 @@ export class CampaignSettingsModal extends Modal {
 }
 
 export class CampaignPicker extends FuzzySuggestModal<Campaign> {
-	constructor(app: App, private items: Campaign[], private onPick: (c: Campaign) => void) {
+	constructor(app: App, private items: Campaign[], private onPick: (c: Campaign) => void, placeholder = 'Switch campaign…') {
 		super(app);
-		this.setPlaceholder('Switch campaign…');
+		this.setPlaceholder(placeholder);
 	}
 	getItems(): Campaign[] { return this.items; }
 	getItemText(c: Campaign): string { return `${c.name} (${ROLE_INFO[c.role].short})`; }

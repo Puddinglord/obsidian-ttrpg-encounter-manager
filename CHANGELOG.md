@@ -6,6 +6,16 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+### Added
+
+- Copy or move heroes to another campaign of the same game. Right-click a hero's card under Party and choose **Copy to campaign…** or **Move to campaign…**, or copy the whole party with the button next to Party's **+**. See the [campaigns guide](docs/campaigns.md#moving-things-around).
+- **Open as Markdown** in the Campaign panel's right-click menu shows a note as text, properties and all. A hero's sheet, like an NPC's card, stands in for its note, so this is how to see what's behind it. A hero's card under Party now has the same menu as the notes in the outline: rename, move, delete and Obsidian's own items. See the [campaigns guide](docs/campaigns.md#moving-things-around).
+
+### Fixed
+
+- A Nimble stat block you write points out attacks written under `abilities:`, like `- Mace 1d6+1`. They showed as abilities named after the whole line, with no hint why. A button adds `attacks:` above them. See the [bestiary guide](docs/bestiary.md#when-a-line-isnt-shown).
+- Right-clicking a hero's card under Party opens one menu. It opened two, one on top of the other.
+
 ## [2.1.2] - 2026-11-23
 
 ### Changed

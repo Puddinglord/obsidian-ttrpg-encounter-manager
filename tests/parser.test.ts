@@ -293,6 +293,29 @@ harder: Move often; end turns out of melee reach.`;
 		expect(issues[0].fix?.lines).toEqual(['attacks:', '- Bite 1d6']);
 	});
 
+	it('says when attacks are written under abilities:, and offers attacks: above them', () => {
+		const src = 'name: Irinia\nabilities:\n- Good with healing; can aid healing +2 to Hit Dice spent.\n- Mace 1d6+1.\n- Dagger. 1d4\ndescription: Clever';
+		const { monster: m, issues } = readStatblock(src);
+		expect(issues).toHaveLength(1);
+		expect(issues[0]).toMatchObject({ line: 3, message: 'These 2 lines look like attacks, but they\'re under abilities:, so they show as abilities.' });
+		expect(issues[0].fix).toEqual({ label: 'Add attacks: above', start: 3, end: 3, lines: ['attacks:', '- Mace 1d6+1.'] });
+		expect(m!.abilities).toHaveLength(3);
+
+		const fixed = src.split('\n');
+		fixed.splice(3, 1, ...issues[0].fix!.lines);
+		const after = readStatblock(fixed.join('\n'));
+		expect(after.issues).toEqual([]);
+		expect(after.monster!.attacks?.map(a => a.raw)).toEqual(['Mace 1d6+1.', 'Dagger. 1d4']);
+		expect(after.monster!.abilities?.map(a => a.name)).toEqual(['Good with healing; can aid healing +2 to Hit Dice spent.']);
+	});
+
+	it('leaves abilities with a name and dice alone, and only hints when an attack sits between abilities', () => {
+		expect(readStatblock('name: A\nabilities:\n- Regrow: heals 1d6 a round.\n- **Spines.** 1d4 to a grappler.').issues).toEqual([]);
+		const { issues } = readStatblock('name: A\nabilities:\n- Bite 1d6\n- Keen: Smells.');
+		expect(issues[0]).toMatchObject({ line: 2, hint: 'Move it under attacks:.' });
+		expect(issues[0].fix).toBeUndefined();
+	});
+
 	it('says when a list is under a heading stat blocks do not show', () => {
 		const { issues } = readStatblock('name: A\nabilitys:\n- Keen: Smells.');
 		expect(issues[0]).toMatchObject({ line: 1, hint: 'Did you mean abilities:?' });

@@ -193,7 +193,7 @@ cssclasses: [nimble-sheet-note]
 
 Because they're properties, Obsidian's Bases and Dataview can query them: a table of the party's HP, say.
 
-`cssclasses: [nimble-sheet-note]` hides the note's Properties box and inline title, so the sheet is the page; the list button at the top of the sheet shows the properties again. New characters get it. Without it, the note shows its title and properties above the sheet.
+`cssclasses: [nimble-sheet-note]` hides the note's Properties box and inline title, so the sheet is the page; the list button at the top of the sheet shows the properties again. To see the note itself, as text, right-click the hero in the Campaign panel and choose **Open as Markdown**. New characters get it. Without it, the note shows its title and properties above the sheet.
 
 ## What's in the compendium
 
