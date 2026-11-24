@@ -8014,6 +8014,36 @@ test('import: a Watabou dungeon chosen as a file becomes a map with a pin on eac
 	}
 });
 
+test('import: a Nimble stat block pasted as text, as the book prints it, becomes a monster note', async (o) => {
+	const C = 'Campaigns/Paste Vale';
+	const M = '.modal.ev-import';
+	const text = 'Mire Hag\nlvl 3, Medium Fey\n[hp]30 [ar]M [mv]6 [sv]WIL+\nBog-born. Ignores difficult terrain in water.\nActions: Choose one.\n• Claw. Reach 1. 1d8+2.\n• Hex. Range 8. The target is Dazed.';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Paste Vale', level: 3, heroes: 4, starter: false });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.campaigns.active?.folder)) === C, { what: 'the campaign active' });
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(text);
+		await o.waitFor(async () => /Nimble stat block \(text\)[\s\S]*A monster/.test(await o.page.locator(`${M} .ev-import-frame`).innerText().catch(() => '')), { what: 'the text read' });
+		// The preview is the stat block itself, drawn by the bestiary's renderer.
+		await o.waitFor(async () => /Mire Hag[\s\S]*Claw/.test(await o.page.locator(`${M} .ev-import-paper .nimble-statblock`).innerText().catch(() => '')), { what: 'the stat block previewed' });
+		await importAndClose(o, M);
+		const note = `${C}/Monsters/Mire Hag.md`;
+		await o.waitFor(() => exists(o, note), { what: 'the monster note' });
+		assert.match(await read(o, note), /imported: Pasted text[\s\S]*```nimble\nname: Mire Hag\nlevel: 3\n[\s\S]*armor: medium\nhp: 30/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('import: a mapping file in the content folder teaches Import… a new format; a broken one says why in settings', async (o) => {
 	const write = (o, path, text) => o.eval(async (app, _p, [path, text]) => {
 		const dir = path.slice(0, path.lastIndexOf('/'));

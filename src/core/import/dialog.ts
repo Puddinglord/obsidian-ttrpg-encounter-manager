@@ -264,7 +264,9 @@ export class ImportDialog extends Modal {
 		const groups = groupSources(this.sources, takesPicture);
 		const reads: Read[] = [];
 		for (const group of groups) {
-			const found = detectImporters(group.input, importers).map(d => d.importer);
+			// Equally sure: the campaign's own game first.
+			const game = this.plugin.system(this.sourcePath).id;
+			const found = detectImporters(group.input, importers).sort((a, b) => b.score - a.score || Number(b.importer.system === game) - Number(a.importer.system === game)).map(d => d.importer);
 			const want = prefer ?? this.preferred;
 			const candidates = want && found.includes(want) ? [want, ...found.filter(i => i !== want)] : found;
 			// Opened for one format and nothing fits: that format says what's wrong with it.

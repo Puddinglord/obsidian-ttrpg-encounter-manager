@@ -17,6 +17,7 @@ import { packContent, sheetCompendium } from './compendium-data';
 import { KINDS_NIMBLE, NIMBLE_BLOCKS } from './content';
 import { writeEntryNimble } from './import-write';
 import { nexusImporter, nimbrewImporter } from './import-nexus';
+import { textNimbleImporter } from './import-text';
 import { drawNimbleContent } from './content-blocks';
 import { CONTENT_KINDS } from './entity-content';
 import { registerNimble } from './register';
@@ -110,5 +111,5 @@ export const nimbleSystem: GameSystem = {
 		location: { fields: LOCATION_FIELDS_NIMBLE, card: drawLocationNimble },
 	},
 	monsterStarter: (name) => starterStatblock(name),
-	importers: [nexusImporter, nimbrewImporter],
+	importers: [nexusImporter, nimbrewImporter, textNimbleImporter],
 };
