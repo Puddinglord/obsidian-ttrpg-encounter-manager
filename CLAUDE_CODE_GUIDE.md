@@ -24,7 +24,7 @@ src/app/
   settings-tab.ts       The settings page: shared rows (core/settings-ui.ts), then each system's settingsSections
   systems.ts            SHIPPED_SYSTEMS and createSystems(): every system the plugin ships, the first is the default
 src/core/
-  import/               Import…: one engine for every outside format: bundle.ts (the import bundle and its checks, pure), importer.ts (the Importer contract, pure), plan.ts (new/update/same/yours, pure), write.ts, dialog.ts, fetch.ts (a pasted link, on a click)
+  import/               Import…: one engine for every outside format (see src/core/AGENTS.md): the bundle, importers, plans, mapping files, maps, conversion; the dialog as prototypes/import-study draws it
   content/              Content packs: spec.ts (fields → checks and JSON Schema), packs.ts (read a pack, packs: per campaign), store.ts (plugin.content), import-modal.ts
   builder/              The builder for every system: frame.ts (the dialog, its fields, kinds registered per system), schema.ts (builders from a schema of fields and formulas), commands.ts (New monster/spell/item…, the Edit pencil, rewriteBlock)
   compendium/           The compendium engine: query.ts (search language: typed filters, fuzzy names, sorts, suggestions; pure, tested), filter-field.ts (filters as chips), browser.ts (tabs, list, page, keys), refs.ts
@@ -116,7 +116,7 @@ e2e/                    End-to-end tests that drive a real Obsidian
 
 Rules that keep this healthy:
 
-- Core's `types.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `import/bundle.ts`, `import/importer.ts`, `import/plan.ts`, the registry, and Nimble's `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `attack-roll.ts`, `roll-def.ts`, `resource-def.ts`, `content.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `entity-content.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
+- Core's `types.ts`, `encounter-def.ts`, `map-def.ts`, `markdown.ts`, `dice.ts`, `html-text.ts`, `import/bundle.ts`, `import/importer.ts`, `import/plan.ts`, `import/sources.ts`, `import/facts.ts`, `import/mapping.ts`, `import/maps.ts`, `import/creature.ts`, `import/convert.ts`, the registry, and Nimble's `types.ts`, `rules.ts`, `parser.ts`, `bestiary.ts`, `attack-roll.ts`, `roll-def.ts`, `resource-def.ts`, `content.ts`, `creature-notes.ts`, `builder-math.ts`, `entity-monster.ts`, `entity-homebrew.ts`, `entity-content.ts`, `homebrew-def.ts` must not import `obsidian`, so unit tests run in plain Node.
 - Rules live in `rules.ts` and are unit-tested; views never re-implement them.
 - Never put note text into `innerHTML`. Use `appendRichText()` or `createEl({ text })`. A stat block pasted from somewhere else must not be able to run script.
 - Views don't mutate encounter data directly. Call `nimble().encounters.*` (or 5e's `dnd5e().fights.change`); it saves and fires `changed`, and every open tracker re-renders.
