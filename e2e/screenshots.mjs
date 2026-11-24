@@ -1194,6 +1194,26 @@ const features = {
 		css: '.modal.dnd5e-import .dnd5e-ddb-list { max-height: none !important; } .modal.dnd5e-import { max-height: none !important; height: auto !important; } .modal.dnd5e-import .ev-import-custom { overflow: visible !important; }',
 		show: () => ['.modal.dnd5e-import'],
 	},
+	// A converted goblin's note: its Nimble stat block, and the original under it, opened.
+	'guide-import-original': {
+		lineWidth: 640,
+		setup: async () => {
+			await layout();
+			await writeNote('Feature Shots/Goblin Warrior.md', [
+				'---', 'nimble: monster', 'level: 1/4', 'imported: Pasted text', 'convertedFrom: dnd5e', 'convertedTo: nimble', '---', '',
+				'```nimble', 'name: Goblin Warrior', 'level: 1/4', 'size: Small', 'type: Fey (Goblinoid)', 'armor: none', 'hp: 10', 'movement: 6',
+				'senses: Darkvision 12 spaces; Passive Perception 9', 'languages: Common, Goblin', 'attacks:', '- **Scimitar.** Reach 1. 1d4 slashing.', '- **Shortbow.** Range 16. 1d4 piercing.', '```', '',
+				'```ev-original', 'game: dnd5e', 'lang: 5e', 'converted: 2026-11-24', '---', 'name: Goblin Warrior', 'size: Small', 'type: Fey (Goblinoid)', 'alignment: Chaotic Neutral',
+				'ac: 15', 'hp: 10 (3d6)', 'speed: 30 ft.', 'abilities: 8, 15, 10, 10, 8, 8', 'skills: Stealth +6', 'senses: Darkvision 60 ft.; Passive Perception 9', 'languages: Common, Goblin', 'cr: 1/4',
+				'actions:', '- Scimitar: Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6 + 2) Slashing damage.', '- Shortbow: Ranged Attack Roll: +4, range 80/320 ft. Hit: 5 (1d6 + 2) Piercing damage.', '```', '',
+			].join('\n'));
+			await open('Feature Shots/Goblin Warrior.md');
+			await page.locator('.workspace-leaf.mod-active .markdown-reading-view .ev-original-toggle').click();
+			await page.locator('.workspace-leaf.mod-active .markdown-reading-view .ev-original-body .dnd5e-statblock').waitFor();
+			await page.waitForTimeout(400);
+		},
+		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .nimble-statblock', '.workspace-leaf.mod-active .markdown-reading-view .ev-original'],
+	},
 	'feature-homebrew': {
 		lineWidth: 500,
 		setup: async () => {

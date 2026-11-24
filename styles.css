@@ -5787,13 +5787,13 @@ body.is-tablet .modal.nimble-entity-builder:not(.is-phone-layout) { height: min(
 .nimble-entity-builder:not(.is-phone-layout) .eb-chip:not(#nimble-pill), .nimble-entity-builder .eb-chip.is-hidden:not(#nimble-pill) { display: none; } /* :not(#nimble-pill) outranks the shared pill rule */
 
 /* Step chips */
-.nimble-entity-builder .eb-dots { display: flex; gap: 0.35rem; padding: 0.15rem 1.25rem 0.7rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--ev-paper-edge); flex: 0 0 auto; }
-.nimble-entity-builder .eb-dots::-webkit-scrollbar { display: none; }
-.nimble-entity-builder button.eb-dot { display: inline-flex; align-items: center; gap: 0.35rem; flex: 0 0 auto; height: 1.9rem; padding: 0 0.75rem; border-radius: 999px; border: 1px solid var(--ev-paper-edge); background: var(--background-primary); color: var(--text-muted); font-size: 0.78rem; font-weight: 700; line-height: 1; white-space: nowrap; }
-.nimble-entity-builder .eb-dot-icon { display: inline-flex; }
-.nimble-entity-builder .eb-dot-icon svg { width: 13px; height: 13px; }
-.nimble-entity-builder button.eb-dot.is-done { color: var(--text-normal); }
-.nimble-entity-builder button.eb-dot.is-active { background: var(--eb-accent); border-color: var(--eb-accent); color: var(--eb-on-accent); }
+:is(.nimble-entity-builder, .ev-import) .eb-dots { display: flex; gap: 0.35rem; padding: 0.15rem 1.25rem 0.7rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--ev-paper-edge); flex: 0 0 auto; }
+:is(.nimble-entity-builder, .ev-import) .eb-dots::-webkit-scrollbar { display: none; }
+:is(.nimble-entity-builder, .ev-import) button.eb-dot { display: inline-flex; align-items: center; gap: 0.35rem; flex: 0 0 auto; height: 1.9rem; padding: 0 0.75rem; border-radius: 999px; border: 1px solid var(--ev-paper-edge); background: var(--background-primary); color: var(--text-muted); font-size: 0.78rem; font-weight: 700; line-height: 1; white-space: nowrap; }
+:is(.nimble-entity-builder, .ev-import) .eb-dot-icon { display: inline-flex; }
+:is(.nimble-entity-builder, .ev-import) .eb-dot-icon svg { width: 13px; height: 13px; }
+:is(.nimble-entity-builder, .ev-import) button.eb-dot.is-done { color: var(--text-normal); }
+:is(.nimble-entity-builder, .ev-import) button.eb-dot.is-active { background: var(--eb-accent); border-color: var(--eb-accent); color: var(--eb-on-accent); }
 
 /* Body: the steps and the side panel */
 .nimble-entity-builder .eb-body { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr); flex: 1 1 auto; min-height: 0; }
@@ -7815,13 +7815,18 @@ body .workspace-leaf-content .ev-sheet-page:not(.nimble-show-props) .metadata-co
    step. What was given as chips, what it was read as, then the body (start, a status card, the review: the list
    beside a preview of the selected record, or what was written), then the footer. Narrow (under 720px, by the
    dialog's own width, `.is-narrow`): one column, the preview pushed over the list. */
-.modal.ev-dialog.ev-import { width: min(1080px, 96vw); height: min(780px, 92vh); max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+.modal.ev-dialog.ev-import { --eb-accent: var(--ev-accent); --eb-on-accent: var(--ev-on-accent); width: min(1080px, 96vw); height: min(780px, 92vh); max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; padding: 0; }
 body.is-phone .modal.ev-dialog.ev-import { width: 100%; height: 100%; max-height: none; }
 .modal.ev-dialog.ev-import .modal-header, .modal.ev-dialog.ev-import > .modal-title { padding: 18px 22px 10px; margin: 0; }
 .modal.ev-dialog.ev-import .modal-content.ev-import-frame { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 0; overflow: hidden; padding: 0; }
 .ev-import .ev-import-file { display: none; }
 .ev-import :is(.ev-import-sources, .ev-import-read).is-hidden { display: none; }
 .ev-import :focus-visible { outline: 2px solid var(--ev-accent); outline-offset: 2px; }
+
+/* The steps (the builders' chips): Choose, Review, Done. */
+.ev-import .eb-dots.ev-import-steps { padding: 0 22px 12px; margin-bottom: 12px; }
+.ev-import.is-narrow .eb-dots.ev-import-steps { padding-left: 16px; padding-right: 16px; }
+.ev-import button.eb-dot:disabled { opacity: 1; cursor: default; }
 
 /* What was given: a chip each; a data file and its picture share one box. */
 .ev-import-sources { flex: 0 0 auto; display: flex; gap: 8px; align-items: stretch; padding: 0 22px 12px; overflow-x: auto; scrollbar-width: thin; }
@@ -8068,7 +8073,7 @@ button.ev-original-more { margin-left: auto; color: var(--text-faint); }
 @media (prefers-reduced-motion: reduce) { .ev-import.is-narrow .ev-import-detail { transition: none; } }
 /* Phones: no drag and drop; the drop zone is a big Choose files button. */
 body.is-phone .ev-import .ev-import-drop { flex-direction: row; justify-content: flex-start; gap: 14px; padding: 16px; border-style: solid; border-width: 1px; text-align: left; }
-body.is-phone .ev-import .ev-import-drop-sub, body.is-phone .ev-import button.ev-import-choose { display: none; }
+body.is-phone .ev-import .ev-import-drop-sub, body.is-phone .ev-import button.ev-import-choose:not(#nimble-pill) { display: none; } /* :not(#nimble-pill) outranks the shared pill rule */
 body.is-phone .ev-import .ev-import-drop-icon { width: 48px; height: 48px; }
 body.is-phone .ev-import .ev-import-drop-title { font-size: 20px; }
 @media (max-width: 480px) {

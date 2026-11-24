@@ -2,7 +2,9 @@
 
 **Import…** brings content, NPCs, places and maps into your vault from other tools: a Nimble Nexus monster, a 5etools homebrew file, a Watabou dungeon, a stat block copied out of a PDF. You don't need to say what it is: Import… works it out, shows you everything before it's written, and remembers where each thing came from.
 
-Open it with **Import…** in the command palette (**Ctrl+P**, or **Cmd+P** on a Mac), with `/import` in any note, or with **Import…** in **Settings → Ember Vault → Content packs**.
+Open it from the compendium's **⋯** menu (next to **New**), with `/import` in any note, with **Import…** in the command palette (**Ctrl+P**, or **Cmd+P** on a Mac), or from **Settings → Ember Vault → Content packs**.
+
+It's a wizard in three steps: **Choose** what to import, **Review** what it brings, and **Done**, which lists what it wrote. **Back** returns to Choose to add or remove something.
 
 ![Import… reviewing a Nimble Nexus collection: three monsters and an item, all ticked, and the Mire Hag's stat block drawn on the right as the vault will show it](images/feature-import.png)
 
@@ -49,7 +51,7 @@ Select any row to see it the way the vault will show it: a monster's stat block,
 
 Choose **Import 7** (the count is what's ticked). The window then lists every note it wrote, with **Open**. Monsters go in the campaign's **Monsters** folder, NPCs in **NPCs**, places in **Locations**, maps in **Maps**, and spells, items and classes in your content folder, where the compendium finds them.
 
-Each one says where it came from (`imported: Nimble Nexus`, and the source's `importId`). Import the same file again and what changed is offered as an update instead of a second copy, so keep those two properties if you edit the note.
+Each one says where it was imported from (`imported: Nimble Nexus`, and the source's `importId`). Import the same file again and what changed is offered as an update instead of a second copy, so keep those two properties if you edit the note.
 
 ## Maps
 
@@ -82,7 +84,33 @@ Import 5e monsters into a Nimble campaign and **Convert to Nimble** is on. Each 
 
 ![A 5e goblin pasted into a Nimble campaign: tagged Converted, what changed listed under Worth a look, and its Nimble stat block](images/guide-import-convert.png)
 
-**Worth a look** lists every change, and **Original** shows the 5e block. The note says `converted: dnd5e`, so you can find converted monsters later. Only monsters convert so far; turn **Convert to Nimble** off to import spells, items and monsters as 5e.
+**Worth a look** lists every change, and **Original** shows the 5e block. Monsters always convert to your campaign's game. Only monsters convert so far: spells and items show as **Coming soon**, and switching **Convert to Nimble** off imports everything as 5e.
+
+### What a converted note keeps
+
+A converted monster's note says where it came from in its properties:
+
+```yaml
+convertedFrom: dnd5e
+convertedTo: nimble
+```
+
+Under its stat block it keeps the original, as plain text in the note:
+
+````markdown
+```ev-original
+game: dnd5e
+lang: 5e
+converted: 2026-11-24
+---
+name: Goblin Warrior
+…
+```
+````
+
+In reading view that's one folded line, **Converted from 5e**. Select it to see the original stat block. Its **⋯** menu has **Convert again**, which builds the Nimble stat block again from the original with the converter as it is now. As the converter gets better, Convert again picks up its fixes without importing the monster again. It asks first, because changes you made to the Nimble stat block are replaced.
+
+![A converted goblin's note: its Nimble stat block, and under it the folded "Converted from 5e" line opened to show the original 5e stat block](images/guide-import-original.png)
 
 ## What goes online
 

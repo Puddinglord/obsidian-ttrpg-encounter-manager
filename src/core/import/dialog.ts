@@ -84,6 +84,9 @@ export class ImportDialog extends Modal {
 	private urls = new Map<string, string>();
 	private preview = new Component();
 	private pasteText = '';
+	/** The wizard's step: what to import, then what it brings (the third, Done, is `done`). */
+	private step: 'choose' | 'review' = 'choose';
+	private stepsEl!: HTMLElement;
 	private sourcesEl!: HTMLElement;
 	private readEl!: HTMLElement;
 	private bodyEl!: HTMLElement;
@@ -108,6 +111,8 @@ export class ImportDialog extends Modal {
 		this.titleEl.setText(pref ? `Import ${/^(a|an|the) /i.test(pref.label) ? pref.label : `from ${pref.label}`}` : 'Import');
 		const el = this.contentEl;
 		el.addClass('ev-import-frame');
+		// The wizard's steps, as the builders draw theirs.
+		this.stepsEl = el.createDiv({ cls: 'eb-dots ev-import-steps', attr: { role: 'tablist' } });
 		this.sourcesEl = el.createDiv({ cls: 'ev-import-sources', attr: { role: 'list', 'aria-label': 'What you gave' } });
 		this.readEl = el.createDiv({ cls: 'ev-import-read' });
 		this.bodyEl = el.createDiv({ cls: 'ev-import-body' });
@@ -201,6 +206,7 @@ export class ImportDialog extends Modal {
 			}
 		}
 		this.done = null;
+		this.step = 'review';
 		void this.readAll();
 	}
 
@@ -217,6 +223,7 @@ export class ImportDialog extends Modal {
 		} else if (t) {
 			const lines = text.split('\n').length;
 			this.sources.push({ id: sourceId(), kind: 'text', name: `Pasted text · ${lines} line${lines === 1 ? '' : 's'}`, text, size: text.length });
+			this.step = 'review';
 		}
 		this.done = null;
 		void this.readAll();
@@ -234,6 +241,7 @@ export class ImportDialog extends Modal {
 			this.link = null;
 			this.pasteText = '';
 			this.sources.push({ id: sourceId(), kind: 'link', name: l.host, text: res.text, url: l.url, size: res.text.length });
+			this.step = 'review';
 			void this.readAll(l.importer);
 		});
 	}
@@ -382,10 +390,30 @@ export class ImportDialog extends Modal {
 	// Drawing
 
 	private render(): void {
+		this.drawSteps();
 		this.drawSources();
 		this.drawRead();
 		this.drawBody();
 		this.drawFoot();
+	}
+
+	/** Choose, Review, Done: where you are, done ones ticked; a step behind you takes you back. */
+	private drawSteps(): void {
+		const el = this.stepsEl;
+		el.empty();
+		const at = this.done ? 2 : this.step === 'review' && this.sources.length ? 1 : 0;
+		const steps: { label: string; icon: EvIconName; go?: () => void }[] = [
+			{ label: 'Choose', icon: 'tray-arrow-down', go: () => { this.step = 'choose'; this.render(); } },
+			{ label: 'Review', icon: 'eye', go: this.sources.length ? () => { this.step = 'review'; this.render(); } : undefined },
+			{ label: 'Done', icon: 'flag' },
+		];
+		steps.forEach((st, i) => {
+			const d = el.createEl('button', { cls: `eb-dot${i === at ? ' is-active' : ''}${i < at ? ' is-done' : ''}`, attr: { role: 'tab', 'aria-selected': String(i === at) } });
+			setIcon(d.createSpan({ cls: 'eb-dot-icon' }), evIcon(i < at ? 'check' : st.icon));
+			d.createSpan({ cls: 'eb-dot-label eb-t', text: st.label });
+			d.disabled = !!this.done || i === at || !st.go;
+			if (st.go && !this.done) d.addEventListener('click', st.go);
+		});
 	}
 
 	private drawSources(): void {
@@ -503,7 +531,7 @@ export class ImportDialog extends Modal {
 		this.modalEl.removeClass('is-start', 'is-review', 'is-status', 'is-done', 'is-custom');
 		if (this.done) { this.modalEl.addClass('is-done'); this.drawDone(el); return; }
 		if (this.link) { this.modalEl.addClass('is-status'); this.drawLink(el); return; }
-		if (!this.sources.length) { this.modalEl.addClass('is-start'); this.drawStart(el); return; }
+		if (!this.sources.length || this.step === 'choose') { this.modalEl.addClass('is-start'); this.drawStart(el); return; }
 		const custom = this.custom();
 		if (custom) {
 			this.modalEl.addClass('is-custom');
@@ -879,10 +907,18 @@ export class ImportDialog extends Modal {
 			main.addClass('ev-import-main');
 			return;
 		}
+		// Choose: Cancel | Next (once something is given). Review: Back | Import N.
+		if (this.step === 'choose' || !this.sources.length) {
+			const { main } = dialogFoot(el, { cancel: () => this.close(), main: { text: 'Next', icon: evIcon('caret-right'), onClick: () => { this.step = 'review'; this.render(); } } });
+			main.addClass('ev-import-next');
+			main.disabled = !this.sources.length || !!this.link;
+			return;
+		}
 		const custom = this.custom();
 		const n = custom ? custom.chosen() : this.chosen().length;
 		const label = custom ? custom.action ?? 'Import' : n ? `Import ${n}` : 'Import';
-		const { main, foot } = dialogFoot(el, { cancel: () => this.close(), main: { text: label, icon: evIcon('check'), onClick: () => void this.importChosen() } });
+		const { main, foot } = dialogFoot(el, { cancel: () => { this.step = 'choose'; this.modalEl.removeClass('is-detail-open'); this.render(); }, cancelText: 'Back', main: { text: label, icon: evIcon('check'), onClick: () => void this.importChosen() } });
+		foot.querySelector('.is-cancel')?.addClass('ev-import-back-btn');
 		main.addClass('ev-import-main');
 		main.disabled = !n;
 		if (!Platform.isMobile) foot.insertBefore(createSpan({ cls: 'ev-import-kbd', text: Platform.isMacOS ? '⌘↵' : 'Ctrl+↵' }), main);
@@ -898,6 +934,7 @@ export class ImportDialog extends Modal {
 		this.picked.clear();
 		this.selected = null;
 		this.done = null;
+		this.step = 'choose';
 		this.modalEl.removeClass('is-detail-open');
 		this.render();
 	}

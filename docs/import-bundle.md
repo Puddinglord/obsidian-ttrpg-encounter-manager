@@ -45,7 +45,7 @@ The schema is [bundle.schema.json](import/bundle.schema.json). Point your editor
 | `system` | The game the content is for: `"nimble"` or `"5e"`. Only needed when there's content. |
 | `edition` | 5e only: `"2024"` or `"2014"`. |
 | `source` | Where the bundle came from: `name`, `url`, `license`. Import… shows them before anything is written, and each note it writes says `imported: <name>`. |
-| `content` | The game's monsters, spells, items, classes and the rest: the same entries a [content pack](content-packs.md) holds, plus `importedFrom`. Monsters become monster notes in the campaign; the rest become notes in the content folder. |
+| `content` | The game's monsters, spells, items, classes and the rest: the same entries a [content pack](content-packs.md) holds, plus `importedFrom` (where it came from). An entry converted from another game says `convertedFrom` and carries its `original`. Monsters become monster notes in the campaign; the rest become notes in the content folder. |
 | `notes` | NPCs, locations, quests and plain notes: `kind`, `name`, `fields` (the note's properties: `role`, `faction`, and the game's own, like Nimble's `level`, `armor`, `hp`), `card` (an NPC's `look`, `wants`, `voice`, `secret`) and `body` (Markdown). |
 | `maps` | A map note each: `image` (a file in `files`, or one chosen with the bundle), `grid` (`"30x20"`), `pins` and `body`. |
 | `files` | Pictures, as base64 in `data`. |
