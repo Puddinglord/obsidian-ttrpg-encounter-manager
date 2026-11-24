@@ -1,6 +1,6 @@
 {
 	"name": "nimble-gm",
-	"version": "2.1.2",
+	"version": "2.1.3",
 	"description": "Run Nimble and 5e games from your notes: campaigns, bundled bestiaries, encounter blocks rated for your party, combat trackers, GM maps and 3D dice.",
 	"main": "main.js",
 	"scripts": {

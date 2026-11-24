@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+## [2.1.3] - 2026-11-24
+
 ### Added
 
 - Copy or move heroes to another campaign of the same game. Right-click a hero's card under Party and choose **Copy to campaign…** or **Move to campaign…**, or copy the whole party with the button next to Party's **+**. See the [campaigns guide](docs/campaigns.md#moving-things-around).
