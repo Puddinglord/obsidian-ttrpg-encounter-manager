@@ -33,11 +33,17 @@ A note with the same name as a bundled monster replaces it. Use **Copy to vault*
 **The 3D dice don't appear.**
 They switch off by themselves without WebGL, or when your system asks for reduced motion. On phones they're off unless you turn on **3D dice on phones** in settings. A d100 or other odd-sized die, or more than 12 dice at once, shows just the result.
 
+**Can I import monsters from another site or tool?**
+Yes, from many: Nimble Nexus, 5etools, Open5e, Watabou, donjon, D&D Beyond, Fantasy Statblocks, or a stat block copied out of a PDF. See [Importing](import.md). For a tool it doesn't know, write a [mapping file](mapping-files.md).
+
+**Can I use 5e monsters in my Nimble game?**
+Yes. Import them into a Nimble campaign and they're converted on the GM Guide's numbers. See [Convert 5e monsters to Nimble](import.md#convert-5e-monsters-to-nimble).
+
 **Does it work on mobile?**
 Yes. See [Phone and iPad](mobile.md).
 
 **Does the plugin use the internet?**
-Only when you ask it to. Importing a dice set by link downloads it from the address you give (a module.json you import, as a link or a file, points at the set's download, and that is fetched too). An NPC portrait you set to an `https://` image URL is loaded from that address. Nothing else goes online, and no data about you or your vault is sent anywhere. It writes to the clipboard only when you select a **Copy** button.
+Only when you ask it to. Importing a dice set by link downloads it from the address you give (a module.json you import, as a link or a file, points at the set's download, and that is fetched too). An NPC portrait you set to an `https://` image URL is loaded from that address. In Import…, a link you paste is fetched only when you choose **Fetch from…**, and only that page's data. Nothing else goes online, and no data about you or your vault is sent anywhere. It writes to the clipboard only when you select a **Copy** button.
 
 **Where's my data?**
 Encounters, stat blocks, maps and NPC cards are text in your notes. The party, the tracker's current fight and map token positions are in the plugin's `data.json` inside your vault's `.obsidian` folder.

@@ -94,7 +94,7 @@ What changed in each release: [CHANGELOG.md](CHANGELOG.md), or the [changelog on
 
 ## Privacy
 
-- **No network use.** The plugin makes no network requests and sends no data anywhere. There are two exceptions, both things you ask for: an NPC portrait you set to an `https://` image URL loads from that address, and **Import link** in the 3D dice settings downloads the dice set at the link you paste.
+- **No network use.** The plugin makes no network requests and sends no data anywhere. There are three exceptions, all things you ask for: an NPC portrait you set to an `https://` image URL loads from that address, **Import link** in the 3D dice settings downloads the dice set at the link you paste, and **Fetch from…** in Import… asks the site of a link you paste (Nimble Nexus, Open5e) for that page's data.
 - **Clipboard.** It writes to the clipboard only when you click a **Copy** button (encounter summaries, roll results, encounter blocks).
 - **Your files.** Everything it writes is plain Markdown in your vault, plus its own settings file.
 

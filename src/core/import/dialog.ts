@@ -774,7 +774,7 @@ export class ImportDialog extends Modal {
 		if (it.status === 'unusable') this.note(pane, 'prohibit', 'Left out', r.errors.join('; ') || 'It\'s in this import twice; the first one counts.', 'is-bad');
 		if (it.status === 'same') this.note(pane, 'check-circle', 'Imported before', 'Unchanged, so it\'s left as it is.', '', it.file);
 		if (it.status === 'yours') this.note(pane, 'lock-simple', 'The vault has its own', `Yours is never changed. Tick Import as a copy to add this one beside it, as "${r.name} (${from})".`, '', it.file);
-		if (r.value && r.warnings.length) this.note(pane, 'warning', 'Worth a look', r.warnings.join(' '), 'is-look');
+		if (r.value && r.warnings.length) this.note(pane, 'warning', 'Worth a look', r.warnings, 'is-look');
 		if (this.tab === 'changes' && it.before && r.value) drawChanges(pane, it.before, r.value);
 		else if (this.tab === 'preview') drawPreview(pane, r, this.previewContext(row));
 		else if (this.tab === 'original') this.drawOriginal(pane, row);
@@ -798,12 +798,14 @@ export class ImportDialog extends Modal {
 		drawPreview(el, rec, { ...this.previewContext(row), system: row.read.canConvert.from, edition: undefined });
 	}
 
-	private note(el: HTMLElement, icon: EvIconName, title: string, text: string, cls = '', file?: string): void {
+	private note(el: HTMLElement, icon: EvIconName, title: string, text: string | string[], cls = '', file?: string): void {
 		const n = el.createDiv({ cls: `ev-import-note ${cls}`.trim() });
 		setIcon(n.createSpan({ cls: 'ev-import-note-icon' }), evIcon(icon));
 		const t = n.createDiv({ cls: 'ev-import-note-text' });
 		t.createDiv({ cls: 'ev-import-note-title', text: title });
-		t.createDiv({ text });
+		// Several things to check: one a line.
+		if (Array.isArray(text) && text.length > 1) { const ul = t.createEl('ul'); for (const x of text) ul.createEl('li', { text: x }); }
+		else t.createDiv({ text: Array.isArray(text) ? text[0] ?? '' : text });
 		if (file) {
 			const open = pill(n, { tag: 'button', cls: 'ev-import-open', icon: evIcon('arrow-square-out'), text: 'Open' });
 			open.addEventListener('click', () => { const f = this.app.vault.getFileByPath(file); if (f) void this.app.workspace.getLeaf('tab').openFile(f); });

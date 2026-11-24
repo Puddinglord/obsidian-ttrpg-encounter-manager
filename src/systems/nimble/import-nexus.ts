@@ -44,12 +44,9 @@ export function savesText(v: unknown): string | undefined {
 	return parts.length ? parts.join(' ') : undefined;
 }
 
-/** Nexus's own links in text ("@monster:<id>") as links to the page, by name when the import has it. */
+/** Nexus's own links in text ("@monster:<id>") as the name, when the import has it (a stat block's text shows no links). */
 export function nexusRefs(text: string, names: ReadonlyMap<string, string>): string {
-	return text.replace(/@(monster|item)s?:([a-z0-9]{10,})/gi, (_m, kind: string, id: string) => {
-		const k = kind.toLowerCase();
-		return `[${names.get(id) ?? (k === 'item' ? 'an item' : 'a monster')}](${NEXUS_SITE}/${k}s/${id})`;
-	});
+	return text.replace(/@(monster|item)s?:([a-z0-9]{10,})/gi, (_m, kind: string, id: string) => names.get(id) ?? (kind.toLowerCase() === 'item' ? 'an item' : 'a monster'));
 }
 
 /** An action's text with its reach or range in front, when the text doesn't already say it. */

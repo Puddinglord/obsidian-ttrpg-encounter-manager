@@ -1123,33 +1123,75 @@ const features = {
 		},
 		show: () => ['.workspace-leaf.mod-active .markdown-reading-view .dnd5e-npc-stats'],
 	},
-	// Import content with the example pack pasted in: what it adds, before it's saved.
+	// Import… with the example pack pasted in: what it adds, before it's saved.
 	'feature-content-packs': {
-		viewport: [1000, 800], bg: 'var(--background-secondary)',
+		viewport: [1300, 900], bg: 'var(--background-secondary)',
 		setup: async () => {
 			await layout();
 			const pack = readFileSync(join(ROOT, 'docs/content/examples/5e-hearth-and-cinder.json'), 'utf8');
 			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
-			await page.locator('.modal.nimble-import-content textarea').fill(pack);
-			await page.locator('.modal.nimble-import-content textarea').evaluate(t => { t.scrollTop = 0; });
+			await page.locator('.modal.ev-import textarea').fill(pack);
+			await page.locator('.modal.ev-import .nimble-pack-head').waitFor();
 			await page.waitForTimeout(500);
 		},
-		css: '.nimble-import-content textarea.nimble-import-text { height: 6.5em !important; }',
-		show: () => ['.modal.nimble-import-content'],
+		show: () => ['.modal.ev-import'],
+	},
+	// Import… reviewing a Nimble Nexus collection (made up, in Nexus's shape): the list, and the selected monster's stat block.
+	'feature-import': {
+		viewport: [1300, 900], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const json = readFileSync(join(ROOT, 'tests/fixtures/nexus-collection.json'), 'utf8');
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+			await page.locator('.modal.ev-import input.ev-import-file').setInputFiles({ name: 'marsh-folk.json', mimeType: 'application/json', buffer: Buffer.from(json) });
+			await page.locator('.modal.ev-import .ev-import-paper .nimble-statblock').waitFor();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.ev-import'],
+	},
+	// Import…'s map preview: a Watabou dungeon drawn from its rooms, a pin on each note.
+	'guide-import-map': {
+		viewport: [1300, 900], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const dungeon = {
+				title: 'The Sunken Crypt', story: 'Under the marsh, a crypt fills with water every spring.',
+				rects: [{ x: -4, y: 0, w: 5, h: 4 }, { x: 1, y: 1, w: 3, h: 1 }, { x: 4, y: -1, w: 5, h: 5 }, { x: 6, y: 4, w: 1, h: 3 }, { x: 3, y: 7, w: 7, h: 5 }],
+				doors: [],
+				notes: [{ text: 'A cracked altar, still warm.', ref: '1', pos: { x: -1.5, y: 2 } }, { text: 'Water to the knees.', ref: '2', pos: { x: 6.5, y: 1.5 } }, { text: 'The drowned king\'s throne.', ref: '3', pos: { x: 6.5, y: 9.5 } }],
+			};
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+			await page.locator('.modal.ev-import input.ev-import-file').setInputFiles({ name: 'crypt.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(dungeon)) });
+			await page.locator('.modal.ev-import .ev-import-map img').waitFor();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.ev-import'],
+	},
+	// Import… converting a pasted 5e goblin (SRD 5.2) to Nimble: what changed, under Worth a look.
+	'guide-import-convert': {
+		viewport: [1300, 900], bg: 'var(--background-secondary)',
+		setup: async () => {
+			await layout();
+			const goblin = 'Goblin Warrior\nSmall Fey (Goblinoid), Chaotic Neutral\nAC 15 Initiative +2 (12)\nHP 10 (3d6)\nSpeed 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 8 −1 −1 Dex 15 +2 +2 Con 10 +0 +0\nInt 10 +0 +0 Wis 8 −1 −1 Cha 8 −1 −1\nSkills Stealth +6\nSenses Darkvision 60 ft.; Passive Perception 9\nLanguages Common, Goblin\nCR 1/4 (XP 50; PB +2)\nActions\nScimitar. Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6 + 2) Slashing damage.\nShortbow. Ranged Attack Roll: +4, range 80/320 ft. Hit: 5 (1d6 + 2) Piercing damage.';
+			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+			await page.locator('.modal.ev-import textarea').fill(goblin);
+			await page.locator('.modal.ev-import .ev-import-paper .nimble-statblock').waitFor();
+			await page.waitForTimeout(600);
+		},
+		show: () => ['.modal.ev-import'],
 	},
 	// Importing a D&D Beyond character: what it brings into the compendium (a made-up class, tests/fixtures).
 	'guide-ddb-import': {
-		viewport: [1000, 1100], ratio: 0.72, snapText: true, bg: 'var(--background-secondary)',
+		viewport: [1300, 1300], ratio: 0.72, snapText: true, bg: 'var(--background-secondary)',
 		setup: async () => {
 			await layout();
 			const json = readFileSync(join(ROOT, 'tests/fixtures/ddb-hollowblade.json'), 'utf8');
 			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-ddb-character'); });
 			await page.locator('.modal.dnd5e-import textarea').fill(json);
 			await page.locator('.modal.dnd5e-import .dnd5e-ddb-content').waitFor();
-			await page.locator('.modal.dnd5e-import textarea').evaluate(t => { t.scrollTop = 0; });
 			await page.waitForTimeout(500);
 		},
-		css: '.modal.dnd5e-import .dnd5e-ddb-list { max-height: none !important; } .modal.dnd5e-import { max-height: none !important; }',
+		css: '.modal.dnd5e-import .dnd5e-ddb-list { max-height: none !important; } .modal.dnd5e-import { max-height: none !important; height: auto !important; } .modal.dnd5e-import .ev-import-custom { overflow: visible !important; }',
 		show: () => ['.modal.dnd5e-import'],
 	},
 	'feature-homebrew': {

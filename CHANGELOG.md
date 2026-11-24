@@ -6,6 +6,8 @@ New work goes under `## [Unreleased]`, sorted into Added, Changed and Fixed. A l
 
 ## [Unreleased]
 
+Import from anywhere: Nimble Nexus, 5etools, Open5e, dungeon generators and pasted stat blocks, with 5e monsters converted to Nimble
+
 ### Added
 
 - **Import…** brings in content, NPCs, places and maps from other tools in one window. Choose files, paste text or paste a link, and it works out what the file is. Before anything is written, it shows what's new, what updates something you imported before, and what's already yours. Everything it writes remembers where it came from, so importing the same file again updates it instead of making copies. `/import` opens it from any note. See the [import guide](docs/import.md).

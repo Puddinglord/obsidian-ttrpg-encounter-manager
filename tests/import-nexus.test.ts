@@ -29,7 +29,7 @@ describe('Nimble Nexus', () => {
 			traits: [{ name: 'Bog-born', text: 'Ignores difficult terrain in water.' }],
 			actions: [{ name: 'Claw', text: '(Reach 2) 1d8+2 slashing.' }, { name: 'Hex', text: '(Range 8) The target is Dazed until the hag\'s next turn.' }],
 			actionsIntro: 'Choose one.',
-			flavor: 'She keeps a [Bog Wisp](https://nimble.nexus/monsters/7q1demo0bogwisp000000000000) as a lamp.',
+			flavor: 'She keeps a Bog Wisp as a lamp.',
 			from: { name: 'Nimble Nexus', id: 'nexus:monster:7q1demo0mirehag000000000000', url: 'https://nimble.nexus/monsters/7q1demo0mirehag000000000000' },
 		});
 		// A minion with one unnamed attack takes its name from the line over it.
