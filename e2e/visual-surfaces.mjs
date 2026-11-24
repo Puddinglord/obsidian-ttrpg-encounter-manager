@@ -833,8 +833,8 @@ const dnd5e = [
 			await c.open(`${X5}/Chapter 1/Road Ambush.md`);
 			await c.cmd('import-content');
 			await c.page.locator('.modal.nimble-import-content textarea').fill(c.pack('5e-hearth-and-cinder.json'));
-			await c.wait(600);
-			await c.page.locator('.modal.nimble-import-content textarea').evaluate(t => { t.scrollTop = 0; });
+			await c.page.locator('.modal.nimble-import-content .nimble-pack-head').waitFor({ timeout: 5000 });
+			await c.wait(400);
 		},
 	},
 	{

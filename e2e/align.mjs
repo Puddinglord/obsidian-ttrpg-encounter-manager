@@ -55,6 +55,8 @@ export const PILL_SELECTORS = [
 	'.ev-import-open',
 	'.ev-import-look-toggle',
 	'.ev-import-seg > button',
+	'.ev-import-pin-label',
+	'.ev-import-key-label',
 	// Nimble's builders for a hero's content: what a level grants in the check, a feature's grants, the stats said, the level ladder.
 	'.ncb-grant', '.ncb-grant-label', '.ncb-grant-add', '.ncb-said', '.ncb-rung',
 	// The builders (core/builder/frame.ts): step dots, kinds, segments, the footer's buttons and the phone sheet's, steppers,
@@ -87,6 +89,8 @@ export const PILL_SELECTORS = [
  * as one nor listed as missing from PILL_SELECTORS. Each with why.
  */
 export const NOT_PILLS = [
+	// Import…'s group headers: a row that folds its group, not a pill.
+	'.ev-import-group-head',
 	// A rules word you can tap (core/rule-term-ui.ts): a word in its sentence, or a label, underlined. Text, not a pill.
 	'.ev-term',
 	// Boxes that hold pills, each measured on its own: segmented controls, the builder's speed modes, the compendium's search field.
