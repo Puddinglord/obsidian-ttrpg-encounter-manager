@@ -5,6 +5,7 @@
 // the list (or instead of it, in a narrow pane). It replaces the bestiary and
 // keeps its view id, so tabs people already had open come back as this.
 
+import { openImport } from '../../core/import/dialog';
 import { debounce, ItemView, ViewStateResult, WorkspaceLeaf } from 'obsidian';
 import type EmberVaultPlugin from '../../../main';
 import { openBuilder } from './entity-builder';
@@ -157,6 +158,8 @@ export class CompendiumView extends ItemView {
 				return undefined;
 			},
 			onNew: (seg, ev) => newContent(plugin, 'nimble', newKindsNimble(seg, lore), ev),
+			// Import… where people look for more content: the compendium.
+			more: (m) => m.addItem(i => i.setTitle('Import…').setIcon(evIcon('tray-arrow-down')).onClick(() => openImport(plugin))),
 			newLabel: (seg) => newButtonLabel(plugin, 'nimble', newKindsNimble(seg, lore)),
 			detail: {
 				monsterActions: (e) => [

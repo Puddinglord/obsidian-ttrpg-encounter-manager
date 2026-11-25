@@ -15,6 +15,10 @@ import { NIMBLE_CONDITIONS } from './types';
 import { readCharacter } from './character-def';
 import { packContent, sheetCompendium } from './compendium-data';
 import { KINDS_NIMBLE, NIMBLE_BLOCKS } from './content';
+import { writeEntryNimble } from './import-write';
+import { creatureInNimble } from './creature';
+import { nexusImporter, nimbrewImporter } from './import-nexus';
+import { textNimbleImporter } from './import-text';
 import { drawNimbleContent } from './content-blocks';
 import { CONTENT_KINDS } from './entity-content';
 import { registerNimble } from './register';
@@ -97,7 +101,7 @@ export const nimbleSystem: GameSystem = {
 	omnisearch: nimbleOmnisearch,
 	vocabulary: { defense: 'DEF' },
 	content: {
-		kinds: KINDS_NIMBLE, blocks: NIMBLE_BLOCKS, card: drawNimbleContent,
+		kinds: KINDS_NIMBLE, blocks: NIMBLE_BLOCKS, card: drawNimbleContent, writeEntry: writeEntryNimble, creatures: { in: creatureInNimble },
 		// A class, subclass, option, ancestry, background or boon block opens in its guided builder (entity-content-ui.ts).
 		editSeed: (e) => ((CONTENT_KINDS as readonly string[]).includes(e.kind) ? { entry: e.value, editing: true } : undefined),
 	},
@@ -108,4 +112,5 @@ export const nimbleSystem: GameSystem = {
 		location: { fields: LOCATION_FIELDS_NIMBLE, card: drawLocationNimble },
 	},
 	monsterStarter: (name) => starterStatblock(name),
+	importers: [nexusImporter, nimbrewImporter, textNimbleImporter],
 };

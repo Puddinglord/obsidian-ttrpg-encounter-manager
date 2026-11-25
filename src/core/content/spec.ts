@@ -31,6 +31,12 @@ export interface KindSpec {
 	starter?: Record<string, unknown>;
 }
 
+/**
+ * Fields every entry may carry, whatever its kind: where an import brought it from (`imported: Nimble Nexus`, its
+ * tag in the compendium) and that source's id for it (`importId`), which a later import of the same thing matches.
+ */
+export const IMPORT_FIELDS = ['imported', 'importId'] as const;
+
 /** `value` when the entry can be used; `partial` always: every field that checked out (a card can show those while the rest is fixed). */
 export interface Checked { value?: Record<string, unknown>; partial: Record<string, unknown>; errors: string[]; warnings: string[] }
 
@@ -105,7 +111,16 @@ function checkFields(fields: Record<string, FieldSpec>, raw: Record<string, unkn
 export function checkEntry(kind: KindSpec, raw: Record<string, unknown>): Checked {
 	const errors: string[] = [];
 	const warnings: string[] = [];
-	const value = checkFields(kind.fields, raw, '', errors, warnings);
+	// Where an imported entry came from, on every kind (a kind may also declare them itself, as 5e's do).
+	const meta: Record<string, unknown> = {};
+	const rest = { ...raw };
+	for (const k of IMPORT_FIELDS) {
+		if (k in kind.fields || rest[k] === undefined) continue;
+		const v = typeof rest[k] === 'number' ? String(rest[k]) : rest[k];
+		if (typeof v === 'string' && v.trim()) meta[k] = v.trim(); else warnings.push(`${quote(k)} should be text, so it was left out`);
+		delete rest[k];
+	}
+	const value = { ...checkFields(kind.fields, rest, '', errors, warnings), ...meta };
 	if (!errors.length && kind.check) errors.push(...kind.check(value));
 	return errors.length ? { partial: value, errors, warnings } : { value, partial: value, errors, warnings };
 }
@@ -160,6 +175,11 @@ function objectSchema(fields: Record<string, FieldSpec>, extra: Json = {}): Json
 	return { type: 'object', properties, ...(required.length ? { required } : {}) };
 }
 
+const IMPORT_SCHEMA: Json = {
+	imported: { type: 'string', description: 'Where it was imported from ("Nimble Nexus"): the compendium tags it Imported.' },
+	importId: { type: 'string', description: 'The source\'s id for it: a later import of the same thing updates this one.' },
+};
+
 /** The JSON Schema for a system's packs. */
 export function packSchema(o: { system: string; /** The game as people write it ("Nimble"), when its id isn't. */ name?: string; title: string; editions?: readonly string[]; kinds: readonly KindSpec[] }): Json {
 	return {
@@ -176,7 +196,7 @@ export function packSchema(o: { system: string; /** The game as people write it 
 			description: { type: 'string' },
 			entries: {
 				type: 'array',
-				items: { oneOf: o.kinds.map(k => ({ ...objectSchema(k.fields, { kind: { const: k.kind } }), required: ['kind', ...((objectSchema(k.fields).required as string[] | undefined) ?? [])], title: k.label, description: k.description })) },
+				items: { oneOf: o.kinds.map(k => ({ ...objectSchema(k.fields, { kind: { const: k.kind }, ...IMPORT_SCHEMA }), required: ['kind', ...((objectSchema(k.fields).required as string[] | undefined) ?? [])], title: k.label, description: k.description })) },
 			},
 		},
 	};

@@ -35,3 +35,7 @@ New character, Level up and the sheet read classes, subclasses, ancestries, back
 - **Nimble's settings fields sit at the top level of `data.json`** (they were there first), declared by augmenting `EmberVaultSettings` in `settings.ts`. `NimbleStatblocksSettings` and `DEFAULT_SETTINGS` in `types.ts` are old names kept for Nimble's own code. Other systems keep their state under `settings.systemData.<id>`.
 - **`nimble()` is Nimble's alone.** Core and `src/app` never call it; they ask through the contract. Tests and e2e reach it as `plugin.runtime('nimble')`.
 - **The player view** (`role: player`) shows lore cards instead of stat blocks (`plugin.hideStats`). Any new monster UI must respect it.
+
+## Importing
+
+Nimble's `importers` (core/import/importer.ts): `import-nexus.ts` (pure: Nimble Nexus's JSON:API, by link or file, and Nimbrew; movement modes, numeric saves, Solo, minions), `import-text.ts` (pure: a stat block pasted as the books print it, and our own ```nimble text). `import-write.ts` (pure) is `writeEntry`; `creature.ts` (pure) is `creatures.in`: another game's monster built on the GM Guide's numbers (level from CR, HP and damage from the Monster Builder table, armor from AC stepped down where it's early), with a note for each change.

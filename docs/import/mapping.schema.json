@@ -1,0 +1,306 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Ember Vault mapping",
+	"description": "How Ember Vault reads another tool's JSON or YAML. Put it in your content folder's Importers folder.",
+	"type": "object",
+	"required": [
+		"format",
+		"version",
+		"id",
+		"label",
+		"detect"
+	],
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"format": {
+			"const": "ember-vault-mapping"
+		},
+		"version": {
+			"const": 1
+		},
+		"id": {
+			"type": "string",
+			"pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"
+		},
+		"label": {
+			"type": "string",
+			"description": "What people call the format: \"Open5e\"."
+		},
+		"system": {
+			"type": "string",
+			"description": "The game its content is for: \"nimble\", \"5e\"."
+		},
+		"edition": {
+			"type": "string"
+		},
+		"detect": {
+			"type": "object",
+			"properties": {
+				"all": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"description": "Paths every record has."
+				},
+				"any": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"description": "Paths a record has at least one of."
+				},
+				"files": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"description": "File extensions: \".json\"."
+				},
+				"score": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"maximum": 1,
+					"description": "How sure a match is (0.7 by default). Higher wins when two importers fit."
+				}
+			}
+		},
+		"links": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": [
+					"match",
+					"data"
+				],
+				"properties": {
+					"match": {
+						"type": "string",
+						"description": "A pattern for the links it reads."
+					},
+					"data": {
+						"type": "string",
+						"description": "The https address of the data. \"{url}\" is the link."
+					}
+				}
+			}
+		},
+		"license": {
+			"type": "string",
+			"description": "The licence its content comes under, shown before it's imported."
+		},
+		"records": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": [
+					"kind",
+					"fields"
+				],
+				"properties": {
+					"each": {
+						"type": "string",
+						"description": "Where the records are, from the top of the file: \"results[*]\". Leave it out when the file is one record, or a list of them."
+					},
+					"when": {
+						"type": "object",
+						"required": [
+							"path"
+						],
+						"properties": {
+							"path": {
+								"type": "string"
+							},
+							"equals": {}
+						},
+						"description": "Only records where this path has a value (or equals this)."
+					},
+					"into": {
+						"enum": [
+							"content",
+							"note"
+						],
+						"description": "content (a monster, spell…; the default) or note (an NPC, a place…)."
+					},
+					"kind": {
+						"$ref": "#/$defs/field",
+						"description": "What each record becomes, as text: \"monster\", \"spell\", \"npc\"… Or { \"path\": … } to read it from the record."
+					},
+					"fields": {
+						"type": "object",
+						"additionalProperties": {
+							"$ref": "#/$defs/field"
+						},
+						"description": "Our fields (the game's content-pack fields, or a note's properties), each from the file."
+					},
+					"importedFrom": {
+						"type": "object",
+						"properties": {
+							"name": {
+								"$ref": "#/$defs/field"
+							},
+							"url": {
+								"$ref": "#/$defs/field"
+							},
+							"license": {
+								"$ref": "#/$defs/field"
+							},
+							"id": {
+								"$ref": "#/$defs/field"
+							},
+							"retrieved": {
+								"$ref": "#/$defs/field"
+							}
+						},
+						"description": "Where each record came from. \"id\" lets a later import update it."
+					},
+					"card": {
+						"type": "object",
+						"additionalProperties": {
+							"$ref": "#/$defs/field"
+						},
+						"description": "Notes: the NPC card (look, wants, voice, secret)."
+					},
+					"body": {
+						"$ref": "#/$defs/field",
+						"description": "Notes: the note's text."
+					}
+				}
+			},
+			"description": "Several sets of records; else this mapping's own each, kind and fields."
+		},
+		"each": {
+			"type": "string",
+			"description": "Where the records are, from the top of the file: \"results[*]\". Leave it out when the file is one record, or a list of them."
+		},
+		"when": {
+			"type": "object",
+			"required": [
+				"path"
+			],
+			"properties": {
+				"path": {
+					"type": "string"
+				},
+				"equals": {}
+			},
+			"description": "Only records where this path has a value (or equals this)."
+		},
+		"into": {
+			"enum": [
+				"content",
+				"note"
+			],
+			"description": "content (a monster, spell…; the default) or note (an NPC, a place…)."
+		},
+		"kind": {
+			"$ref": "#/$defs/field",
+			"description": "What each record becomes, as text: \"monster\", \"spell\", \"npc\"… Or { \"path\": … } to read it from the record."
+		},
+		"fields": {
+			"type": "object",
+			"additionalProperties": {
+				"$ref": "#/$defs/field"
+			},
+			"description": "Our fields (the game's content-pack fields, or a note's properties), each from the file."
+		},
+		"importedFrom": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"$ref": "#/$defs/field"
+				},
+				"url": {
+					"$ref": "#/$defs/field"
+				},
+				"license": {
+					"$ref": "#/$defs/field"
+				},
+				"id": {
+					"$ref": "#/$defs/field"
+				},
+				"retrieved": {
+					"$ref": "#/$defs/field"
+				}
+			},
+			"description": "Where each record came from. \"id\" lets a later import update it."
+		},
+		"card": {
+			"type": "object",
+			"additionalProperties": {
+				"$ref": "#/$defs/field"
+			},
+			"description": "Notes: the NPC card (look, wants, voice, secret)."
+		},
+		"body": {
+			"$ref": "#/$defs/field",
+			"description": "Notes: the note's text."
+		}
+	},
+	"$defs": {
+		"field": {
+			"description": "A path (\"hit_points\", \"a.b[0]\", \"a[*]\", \"a | b\"), or a rule.",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"path": {
+							"type": "string"
+						},
+						"value": {},
+						"template": {
+							"type": "string",
+							"description": "Text with {path} slots; {$} is the value at \"path\"."
+						},
+						"as": {
+							"enum": [
+								"text",
+								"html",
+								"string",
+								"number",
+								"integer",
+								"boolean",
+								"lower",
+								"upper",
+								"dice",
+								"list"
+							]
+						},
+						"map": {
+							"type": "object",
+							"description": "The value (any case) to ours; \"*\" for the rest."
+						},
+						"join": {
+							"type": "string"
+						},
+						"split": {
+							"type": "string"
+						},
+						"first": {
+							"type": "boolean"
+						},
+						"each": {
+							"type": "object",
+							"additionalProperties": {
+								"$ref": "#/$defs/field"
+							}
+						},
+						"fields": {
+							"type": "object",
+							"additionalProperties": {
+								"$ref": "#/$defs/field"
+							}
+						},
+						"default": {}
+					},
+					"additionalProperties": false
+				}
+			]
+		}
+	}
+}

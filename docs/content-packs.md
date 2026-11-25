@@ -8,7 +8,7 @@ To make one class or feat yourself, you don't need a pack: press **+** on its co
 
 ## Add a pack
 
-1. Run **Import content…** (command palette, or **Settings → Ember Vault → Content packs**).
+1. Run **Import…** (command palette, or **Settings → Ember Vault → Content packs**).
 2. Choose the pack's `.json` file, or paste its text.
 3. Read the report: what the pack adds, and anything it left out with the reason.
 4. Choose **Add to vault**.
@@ -125,7 +125,7 @@ Point your editor at the game's schema and it suggests fields and flags mistakes
 
 For 5e, end it with `5e.schema.json` instead.
 
-Import content checks it too, and says exactly what's wrong: `Entry 2 (Half Done): "tier" is missing`.
+Import… checks it too, and says exactly what's wrong: `Entry 2 (Half Done): "tier" is missing`.
 
 ## Sharing
 

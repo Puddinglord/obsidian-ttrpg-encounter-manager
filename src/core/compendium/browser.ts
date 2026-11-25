@@ -16,7 +16,7 @@
 //   ⌫ (empty)      edit the last filter chip
 //   ⌥ ← → / ⌥ 1-0  switch tabs
 
-import { Component, Platform, setIcon } from 'obsidian';
+import { Component, Menu, Platform, setIcon } from 'obsidian';
 import { evIcon } from '../icons';
 import { applyLook } from '../look';
 import { pill } from '../pill';
@@ -110,6 +110,8 @@ export interface BrowserOptions<E extends CompendiumEntry, S extends string = st
 	isTaken?: (e: E) => boolean;
 	/** A New button in the search bar: make something for the tab you're on (`ev`: the click, for a menu of kinds). */
 	onNew?: (segment: S, ev: MouseEvent) => void;
+	/** A ⋯ button after New: what its menu holds (Import…). */
+	more?: (menu: Menu) => void;
 	/** The New button's label: one for every tab, or each tab's ("New class"); undefined hides the button on that tab. */
 	newLabel?: string | ((segment: S) => string | undefined);
 	/** Offer "Add “what you typed”" when nothing matches exactly. */
@@ -335,6 +337,11 @@ export class CompendiumBrowser<E extends CompendiumEntry, S extends string = str
 			setIcon(nb, evIcon('plus'));
 			nb.addEventListener('click', (ev) => this.o.onNew!(this.segment, ev));
 			this.drawNew();
+		}
+		if (this.o.more) {
+			const mb = bar.createEl('button', { cls: 'clickable-icon nimble-cmpx-more', attr: { 'aria-label': 'More' } });
+			setIcon(mb, evIcon('more'));
+			mb.addEventListener('click', (ev) => { const m = new Menu(); this.o.more!(m); m.showAtMouseEvent(ev); });
 		}
 
 		this.sortEl = side.createDiv({ cls: 'nimble-cmpx-sortpanel' });

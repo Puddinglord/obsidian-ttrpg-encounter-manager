@@ -23,7 +23,9 @@ What changed lately is in the **[changelog](../CHANGELOG.md)**.
 | [GM maps](maps.md) | Maps with pins linked to your notes, tokens |
 | [Your own content](homebrew.md) | Make a class, subclass, feat, species, ancestry, background, boon or rule: New on a compendium tab, a few lines in a note, in the compendium as Homebrew |
 | [Content packs](content-packs.md) | Add homebrew and what the plugin can't ship (a class, a book's subclasses, a bestiary) as JSON files in your vault, for Nimble and 5e |
-| [Importing](import.md) | Bring in a D&D Beyond character or a Fantasy Statblocks creature |
+| [Importing](import.md) | Import…: monsters, spells, items, NPCs and maps from Nimble Nexus, 5etools, Open5e, Watabou, donjon, D&D Beyond and more; stat blocks pasted from a PDF; 5e monsters converted to Nimble |
+| [Mapping files](mapping-files.md) | Teach Import… another tool's format with a JSON file, no code |
+| [The import bundle](import-bundle.md) | The one-file format other tools and AIs can write for Import… |
 | [Playing 5e](5e.md) | 5e campaigns: SRD monsters and ```5e stat blocks, XP-rated encounters, the initiative tracker, the compendium, character sheets |
 
 ## Playing

@@ -1,4 +1,4 @@
-// D&D Beyond's descriptions are HTML. These turn it into the text our cards
+// HTML from other apps (D&D Beyond's descriptions, Nexus and Open5e text) as the text our cards
 // draw: one paragraph a line, **bold** and *italic*, "- " lists and
 // "| a | b |" tables, entities decoded. It never builds DOM from the HTML (no
 // innerHTML, no DOMParser): it reads the tags as text and keeps only words.

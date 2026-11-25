@@ -18,7 +18,11 @@ import { dnd5eSlashCommands } from './slash';
 import { dnd5eOmnisearch } from './omnisearch';
 import { BLOCKS_5E, KINDS_5E } from './content';
 import { draw5eContent } from './content-blocks';
-import { importDdbContent } from './import-content-ui';
+import { ddbImporter, fantasyStatblocksImporter } from './importers';
+import { open5eImporter, toolsImporter } from './import-5etools';
+import { text5eImporter } from './import-text';
+import { writeEntry5e } from './import-write';
+import { creatureOut5e } from './creature';
 import { NPC_FIELDS_5E } from './npc';
 import { drawNpc5e } from './npc-card';
 import { ruleTerms5e, termPage5e } from './rule-terms';
@@ -36,7 +40,8 @@ export const dnd5eSystem: GameSystem = {
 	attribution: DND5E_ATTRIBUTION,
 	vocabulary: { defense: 'AC' },
 	// A block's pencil opens 5e's builder on the fields that checked out (content-builders.ts keeps the rest as written).
-	content: { kinds: KINDS_5E, blocks: BLOCKS_5E, card: draw5eContent, importFrom: importDdbContent, editSeed: (e) => ({ entry: e.value }) },
+	content: { kinds: KINDS_5E, blocks: BLOCKS_5E, card: draw5eContent, writeEntry: writeEntry5e, creatures: { out: creatureOut5e }, editSeed: (e) => ({ entry: e.value }) },
+	importers: [ddbImporter, fantasyStatblocksImporter, toolsImporter, open5eImporter, text5eImporter],
 	slashCommands: dnd5eSlashCommands,
 	omnisearch: dnd5eOmnisearch,
 	settingsSections: settingsSections5e,

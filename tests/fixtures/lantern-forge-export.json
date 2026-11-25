@@ -1,0 +1,21 @@
+{
+	"tool": "Lantern Forge",
+	"items": [
+		{
+			"id": 41, "slug": "mire-hag", "type": "creature",
+			"creature": {
+				"title": "Mire Hag", "lvl": 3, "health": "30 hp", "armour": "Medium", "size": "Medium", "family": "Fey",
+				"speed": 6, "fly": null,
+				"moves": [{ "label": "Claw", "detail": "<p><strong>1d8+2</strong> slashing.</p>" }, { "label": "Hex", "detail": "Range 8. The target is <em>Dazed</em>." }],
+				"passives": [{ "label": "Bog-born", "detail": "Ignores difficult terrain in water." }],
+				"blurb": "<p>She trades in names &amp; teeth.</p>"
+			}
+		},
+		{
+			"id": 52, "type": "person",
+			"person": { "name": "Irinia", "job": "Cleric", "allegiance": "The Gate", "lvl": 1, "looks": "Grey robes, a mace", "goal": "Hold the gate", "speech": "Low and even", "notes": "<p>Clever, wise and discerning.</p>" }
+		},
+		{ "id": 53, "type": "creature", "creature": { "lvl": 1 } },
+		{ "id": 60, "type": "treasure", "treasure": { "name": "Lantern" } }
+	]
+}

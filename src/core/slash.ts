@@ -19,6 +19,7 @@ import { insideCodeFence, placeBlock, slashQuery } from './markdown';
 import { NPC_CARD_BLOCK } from './npc-card-def';
 import { kindsOf, openBuilder } from './builder/frame';
 import { applyLook } from './look';
+import { openImport } from './import/dialog';
 
 /** One row in the menu. */
 export interface SlashItem {
@@ -91,7 +92,7 @@ export function commandMatches(c: SlashCommand, q: string): number {
  * every system's /monster or /spell lands in the same place. Unlisted commands
  * follow, in the order they're defined (the system's, then core's).
  */
-export const SLASH_ORDER = ['monster', 'spell', 'item', 'feature', 'class', 'compendium', 'fought', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'quest', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings'];
+export const SLASH_ORDER = ['monster', 'spell', 'item', 'feature', 'class', 'compendium', 'fought', 'add', 'encounter', 'read-aloud', 'look', 'treasure', 'npc', 'quest', 'npc-card', 'statblock', 'builder', 'party', 'tracker', 'bestiary', 'condition', 'roll', 'trap', 'secret', 'clue', 'checks', 'exits', 'box', 'map', 'legendary', 'minion', 'new-monster', 'summary', 'party-table', 'settings', 'import'];
 const rank = (c: SlashCommand) => { const i = SLASH_ORDER.indexOf(c.name); return i !== -1 ? i : c.order ?? SLASH_ORDER.length; };
 
 /** Rows for a query: the matching commands, or (after a space) the command's own rows. */
@@ -245,6 +246,7 @@ function baseCommands(plugin: EmberVaultPlugin, path?: string): SlashCommand[] {
 		{ name: 'tracker', side: 'gm', aliases: ['combat', 'initiative'], icon: 'swords', desc: 'Open the encounter tracker', run: (w) => { w.clear(); void p.openTracker(); } },
 		{ name: 'bestiary', aliases: ['monsters', 'b', 'open-compendium'], icon: 'book-open', desc: 'Open the compendium tab', run: (w) => { w.clear(); void p.openSystemCompendium(); } },
 		{ name: 'settings', aliases: ['options'], icon: 'settings', desc: 'Ember Vault settings', run: (w) => { w.clear(); p.openSettings(); } },
+		{ name: 'import', icon: 'package-plus', desc: 'Import from a file, text or a link', run: (w) => { w.clear(); openImport(p); } },
 		{
 			name: 'party-table', side: 'gm', icon: 'users-round', desc: 'Table of your heroes',
 			run: insert((pl) => {

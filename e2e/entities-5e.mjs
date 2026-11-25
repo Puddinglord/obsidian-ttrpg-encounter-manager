@@ -16,6 +16,7 @@
 import { readFileSync } from 'node:fs';
 
 export function register(test, h) {
+	const { importAndClose } = h;
 	const { R, S, ARTIFACTS, ROOT, assert, join, exact, read, exists, clickMenu, CP, cgroup, crow, panelSections, cmpNames, cmpRow, hpPad5e, measurePills, pillOffenders, PILL_SELECTORS } = h;
 
 	const TR = '.workspace-leaf-content[data-type="nimble-dnd5e-tracker"]';
@@ -1375,8 +1376,7 @@ export function register(test, h) {
 			await o.page.locator(`${IC} textarea`).fill(pack);
 			await o.waitFor(async () => /Hearth and Cinder[\s\S]*5 entries/.test(await o.page.locator(`${IC} .nimble-import-report`).innerText().catch(() => '')), { what: 'the pack read' });
 			assert.equal(await o.page.locator(`${IC} .nimble-pack-notes.is-rejected`).count(), 0, 'nothing left out');
-			await o.page.locator(`${IC} button.mod-cta`).click();
-			await o.page.locator(IC).waitFor({ state: 'detached' });
+			await importAndClose(o, IC);
 			await o.waitFor(async () => (await o.eval((app, plugin) => plugin.content.all().map(p => p.name).join())) === 'Hearth and Cinder', { what: 'the pack loaded' });
 
 			// Find: each kind on its tab, tagged with the pack's name, in the 2014 compendium.
@@ -1409,8 +1409,7 @@ export function register(test, h) {
 			await o.page.locator(M).waitFor();
 			await o.page.locator(`${M} textarea`).fill(ddb);
 			await o.waitFor(async () => /Mira Hollowell[\s\S]*Level 7 Hollowblade/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the character read' });
-			await o.page.locator(`${M} button.mod-cta`).click();
-			await o.page.locator(M).waitFor({ state: 'detached' });
+			await importAndClose(o, M);
 			const mira = `${C}/Party/Mira Hollowell.md`;
 			await waitFm(o, mira, f => f.class === 'Hollowblade', 'the imported character');
 			await o.openFile(mira, 'preview');
@@ -1423,12 +1422,11 @@ export function register(test, h) {
 			await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-fantasy-statblocks'); });
 			await o.page.locator(M).waitFor();
 			await o.page.locator(`${M} textarea`).fill('```statblock\nname: Bog Wisp\nsize: Tiny\ntype: undead\nalignment: chaotic evil\nac: 13\nhp: 9\nhit_dice: 2d4 + 4\nspeed: 0 ft., fly 40 ft. (hover)\nstats: [3, 16, 14, 10, 12, 6]\ncr: 1/2\nactions:\n  - name: Chill Touch\n    desc: "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) cold damage."\n```');
-			await o.waitFor(async () => /Bog Wisp/.test(await o.page.locator(`${M} .nimble-import-report`).innerText().catch(() => '')), { what: 'the creature read' });
-			await o.page.locator(`${M} button.mod-cta`).click();
-			await o.page.locator(M).waitFor({ state: 'detached' });
+			await o.waitFor(async () => /Bog Wisp/.test(await o.page.locator(`${M} .ev-import-frame`).innerText().catch(() => '')), { what: 'the creature read' });
+			await importAndClose(o, M);
 			const wisp = `${C}/Monsters/Bog Wisp.md`;
 			await o.waitFor(() => exists(o, wisp), { what: 'the creature note' });
-			assert.match(await read(o, wisp), /^---\nnimble: monster\ncr: "1\/2"\n---\n\n```5e\nname: Bog Wisp\n/);
+			assert.match(await read(o, wisp), /^---\nnimble: monster\ncr: "1\/2"\nimported: Fantasy Statblocks\n---\n\n```5e\nname: Bog Wisp\n/);
 			await o.waitFor(async () => crow(o, wisp).evaluate(el => el.classList.contains('kind-monster')).catch(() => false), { what: 'listed as a monster in the panel' });
 			await write(o, `${C}/Chapter 1/Bog.md`, '```nimble-encounter\nname: The bog\nmonsters:\n- 3 [[Bog Wisp]]\n```\n');
 			await o.openFile(`${C}/Chapter 1/Bog.md`, 'preview');

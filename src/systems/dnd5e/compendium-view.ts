@@ -2,6 +2,7 @@
 // sorts, keyboard) over the 5e entries (compendium-entries.ts) for one
 // edition, chosen at the top. Monsters are the SRD's plus your ```5e blocks.
 
+import { openImport } from '../../core/import/dialog';
 import { debounce, ItemView, setIcon, WorkspaceLeaf } from 'obsidian';
 import { COMPENDIUM_SPLIT_MIN, CompendiumBrowser, CompendiumSource } from '../../core/compendium/browser';
 import { copyReference, insertReference } from '../../core/compendium/refs';
@@ -213,6 +214,8 @@ export class Dnd5eCompendiumView extends ItemView {
 			detail: {},
 			// A builder opens on the edition the compendium shows.
 			onNew: (seg, ev) => newContent(rt.plugin, 'dnd5e', newKinds(seg), ev, { seed: { edition: this.edition } }),
+			// Import… where people look for more content: the compendium.
+			more: (m) => m.addItem(i => i.setTitle('Import…').setIcon(evIcon('tray-arrow-down')).onClick(() => openImport(rt.plugin))),
 			// Equipment is made in the item builder; its button says what it makes there.
 			newLabel: (seg) => (seg === 'equipment' && newKinds(seg).length ? 'New equipment' : newButtonLabel(rt.plugin, 'dnd5e', newKinds(seg))),
 			onNarrowShow: (d) => {

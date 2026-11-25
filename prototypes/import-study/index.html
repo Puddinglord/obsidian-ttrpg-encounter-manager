@@ -1,0 +1,1059 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Import…: a design study</title>
+<!-- Vollkorn is Nimble's name face, EB Garamond 5e's display face; the rest are system fonts with fallbacks. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,600;0,700;1,700;1,900&family=EB+Garamond:wght@500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Page (the study's own chrome, not the dialog) ===== */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Inter", sans-serif; background: #d9d6d0; color: #24211d; }
+.study-bar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 10px 18px; background: #24211d; color: #f2eee7; }
+.study-bar h1 { margin: 0; font: 700 15px/1 -apple-system, sans-serif; letter-spacing: .02em; }
+.study-group { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.study-group > span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; opacity: .6; margin-right: 4px; }
+.study-group button { font: 600 12px/1 -apple-system, sans-serif; padding: 6px 9px; border-radius: 4px; border: 1px solid #4d4840; background: transparent; color: #f2eee7; cursor: pointer; }
+.study-group button.on { background: #f2eee7; color: #24211d; border-color: #f2eee7; }
+.study-states { padding: 8px 18px; background: #2f2c28; display: flex; flex-wrap: wrap; gap: 4px; position: sticky; top: 48px; z-index: 49; }
+.study-states button { font: 500 12px/1 -apple-system, sans-serif; padding: 6px 8px; border-radius: 4px; border: 1px solid #4d4840; background: transparent; color: #e9e3d7; cursor: pointer; }
+.study-states button.on { background: #e9e3d7; color: #24211d; }
+.study-note { max-width: 1280px; margin: 14px auto 0; padding: 0 18px; font-size: 13px; color: #3a352e; }
+.study-note b { font-weight: 700; }
+.stage { display: flex; justify-content: center; padding: 18px; }
+
+/* A frame stands in for Obsidian's window: a workspace behind a modal backdrop. */
+.frame { position: relative; overflow: hidden; border-radius: 10px; box-shadow: 0 20px 50px -20px rgba(0,0,0,.45); background: #f4f1ea; }
+.frame.desktop { width: 1280px; height: 860px; }
+.frame.window { width: 700px; height: 820px; }
+.frame.phone { width: 390px; height: 844px; border-radius: 44px; border: 10px solid #1b1916; }
+.frame .ws { position: absolute; inset: 0; padding: 40px 60px; color: #8f8981; font: 15px/1.8 Georgia, serif; }
+.frame .ws i { display: block; height: 12px; margin: 14px 0; background: #e2ddd2; border-radius: 3px; }
+.frame .backdrop { position: absolute; inset: 0; background: rgba(20, 18, 15, .38); }
+
+/* ===== Game tokens (from styles.css .ev-sys-nimble / .ev-sys-dnd5e) ===== */
+.ev-sys-nimble {
+	--ev-bg: #EEEBE4; --ev-surface: #FFFEFB; --ev-surface-2: #F6F3EC; --ev-line: #E2DDD2; --ev-line-strong: #C9C2B4;
+	--ev-text: #24211D; --ev-text-2: #625C53; --ev-accent: #46423D; --ev-accent-hover: #2F2C28; --ev-on-accent: #FFFFFF;
+	--ev-accent-text: #24211D; --ev-now: #F1ECE1; --ev-now-line: #46423D; --ev-danger-text: #B0281B; --ev-danger-bg: #F8E7E2;
+	--ev-red: #C8321E; --ev-ok: #3D7A3A; --ev-chip-bg: #E8E3D7; --ev-chip-text: #2B2823; --ev-band: #DDD6C4; --ev-band-text: #3A352E;
+	--ev-hp: #C8321E; --ev-ochre: #9A6A1E; --ev-ochre-soft: #F3E8D2;
+	--ev-font-display: "Avenir Next Condensed", "Barlow Condensed", "Roboto Condensed", sans-serif; --ev-display-weight: 700; --ev-display-variant: small-caps;
+	--ev-font-name: "Vollkorn", "Avenir Next Condensed", Georgia, serif;
+	--ev-font-ui: "Avenir Next", "Nunito Sans", -apple-system, sans-serif;
+	--ev-font-num: "Avenir Next Condensed", "Barlow Condensed", sans-serif;
+	--ev-r-sm: 3px; --ev-r-md: 6px; --ev-r-lg: 10px; --ev-r-chip: 3px; --ev-pad: 12px;
+	--ev-rule: transparent; --ev-name-style: italic; --ev-name-weight: 900;
+	--ev-code-bg: #FBF9F4;
+}
+.theme-dark .ev-sys-nimble {
+	--ev-bg: #171512; --ev-surface: #211F1B; --ev-surface-2: #2A2723; --ev-line: #35312B; --ev-line-strong: #4D4840;
+	--ev-text: #F2EEE7; --ev-text-2: #B5AEA3; --ev-accent: #E9E3D7; --ev-accent-hover: #FFFFFF; --ev-on-accent: #1B1916;
+	--ev-accent-text: #F2EEE7; --ev-now: #2E2B26; --ev-chip-bg: #34302A; --ev-chip-text: #F2EEE7; --ev-band: #3A362F; --ev-band-text: #F2EEE7;
+	--ev-danger-bg: #3A211A; --ev-danger-text: #F2917C; --ev-code-bg: #1C1A17; --ev-ochre-soft: #3A3020;
+}
+.ev-sys-dnd5e {
+	--ev-bg: #F2EBDD; --ev-surface: #FCF8EF; --ev-surface-2: #EFE6D5; --ev-line: #E3D6BF; --ev-line-strong: #C9B797;
+	--ev-text: #24190F; --ev-text-2: #67543F; --ev-accent: #7B1E12; --ev-accent-hover: #63170D; --ev-on-accent: #FFF6EA;
+	--ev-accent-text: #6E1A0E; --ev-now: #F7E9DB; --ev-now-line: #D8B49B; --ev-danger-text: #A3241A; --ev-danger-bg: #F5DFD6;
+	--ev-red: #A3241A; --ev-ok: #3D6B35; --ev-chip-bg: #EEE3D0; --ev-chip-text: #3A2C1E; --ev-band: #EADFCF; --ev-band-text: #3A2C1E;
+	--ev-hp: #A3241A; --ev-ochre: #9C7A2E; --ev-ochre-soft: #F1E6CC; --ev-gold: #9C7A2E;
+	--ev-font-display: "EB Garamond", "Iowan Old Style", Garamond, Georgia, serif; --ev-display-weight: 600; --ev-display-variant: small-caps;
+	--ev-font-name: "EB Garamond", Georgia, serif; --ev-name-style: normal; --ev-name-weight: 600;
+	--ev-font-ui: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+	--ev-font-num: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+	--ev-r-sm: 3px; --ev-r-md: 6px; --ev-r-lg: 8px; --ev-r-chip: 3px; --ev-pad: 14px; --ev-rule: #9C7A2E;
+	--ev-code-bg: #FBF6EA;
+}
+.theme-dark .ev-sys-dnd5e {
+	--ev-bg: #17120E; --ev-surface: #221A14; --ev-surface-2: #2C221A; --ev-line: #3A2E23; --ev-line-strong: #5A4733;
+	--ev-text: #F1E6D3; --ev-text-2: #B7A48B; --ev-accent: #B4402F; --ev-accent-hover: #C44C3A; --ev-on-accent: #FFF6EA;
+	--ev-accent-text: #EBA68E; --ev-now: #2F1E16; --ev-chip-bg: #3A2C20; --ev-chip-text: #F1E6D3; --ev-band: #3A2C20; --ev-band-text: #F1E6D3;
+	--ev-danger-bg: #3A211A; --ev-danger-text: #F2917C; --ev-code-bg: #1D1611; --ev-ochre-soft: #3A2E1A;
+}
+.theme-dark .frame { background: #1e1e1e; }
+.theme-dark .frame .ws { color: #5a5650; }
+.theme-dark .frame .ws i { background: #2a2a2a; }
+.theme-dark .frame .backdrop { background: rgba(0,0,0,.55); }
+
+.ev-import { --evi-check: var(--evi-check-l); --evi-minus: var(--evi-minus-l); }
+.theme-dark .ev-sys-nimble.ev-import { --evi-check: var(--evi-check-d); --evi-minus: var(--evi-minus-d); }
+/* ===== Icons and the shared pill (core/pill.ts): icon and label on one centre line ===== */
+.ic { display: block; width: 1em; height: 1em; fill: currentColor; flex: 0 0 auto; }
+.ev-pill { display: inline-flex; align-items: center; justify-content: center; gap: var(--ev-pill-gap, 6px); white-space: nowrap; }
+.ev-pill > .ev-pill-icon { display: block; width: var(--ev-pill-icon, 1.1em); height: var(--ev-pill-icon, 1.1em); }
+.ev-pill > .ev-pill-icon svg { display: block; width: 100%; height: 100%; }
+.ev-pill > .ev-pill-text { line-height: normal; }
+
+/* ===== The dialog (.modal.ev-dialog.ev-import) ===== */
+.ev-import {
+	position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+	width: min(1080px, 96%); height: min(780px, 92%);
+	display: flex; flex-direction: column; overflow: hidden;
+	background: var(--ev-surface); color: var(--ev-text); font-family: var(--ev-font-ui);
+	border: 1px solid var(--ev-line); border-radius: 12px; box-shadow: 0 24px 60px -18px rgba(0,0,0,.45);
+	container: evi / inline-size;
+}
+.frame.phone .ev-import { left: 0; top: 0; transform: none; width: 100%; height: 100%; border-radius: 34px; border: 0; }
+.ev-import button { font-family: inherit; cursor: pointer; }
+.ev-import :focus-visible { outline: 2px solid var(--ev-accent); outline-offset: 2px; }
+
+/* Title row: Obsidian's .modal-title and close button, the game's type. */
+.ev-import-titlebar { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 18px 22px 12px; }
+.frame.phone .ev-import-titlebar { padding: 22px 18px 10px; justify-content: center; position: relative; }
+.ev-import-title { margin: 0; font: var(--ev-name-style) var(--ev-name-weight) 24px/1.1 var(--ev-font-name); }
+.ev-sys-dnd5e .ev-import-title { font: 600 26px/1.1 var(--ev-font-display); font-variant: small-caps; color: var(--ev-accent-text); }
+.ev-import-close { margin-left: auto; width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 6px; background: transparent; color: var(--ev-text-2); font-size: 20px; }
+.frame.phone .ev-import-close { position: absolute; right: 16px; top: 16px; width: 40px; height: 40px; border-radius: 999px; background: var(--ev-surface-2); }
+.ev-import-close:hover { background: var(--ev-surface-2); color: var(--ev-text); }
+
+/* ----- Sources: what was given, one chip each (files, pasted text, a link) ----- */
+.ev-import-sources { flex: 0 0 auto; display: flex; gap: 8px; align-items: stretch; padding: 0 22px 12px; overflow-x: auto; scrollbar-width: thin; }
+.frame.phone .ev-import-sources { padding: 0 16px 10px; }
+.ev-import-source { position: relative; flex: 0 0 auto; display: grid; grid-template-columns: auto minmax(0, auto) auto; align-items: center; gap: 8px; height: 44px; max-width: 260px; padding: 0 6px 0 6px; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); text-align: left; }
+.ev-import-source:hover { border-color: var(--ev-line-strong); }
+.ev-import-source.is-on { background: var(--ev-now); border-color: var(--ev-accent); }
+.ev-import-source-thumb { width: 32px; height: 32px; border-radius: 4px; display: grid; place-items: center; background: var(--ev-surface-2); color: var(--ev-text-2); font-size: 18px; overflow: hidden; }
+.ev-import-source-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ev-import-source-text { min-width: 0; display: flex; flex-direction: column; }
+.ev-import-source-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
+.ev-import-source-meta { font-size: 11.5px; color: var(--ev-text-2); white-space: nowrap; line-height: 1.25; }
+.ev-import-source-meta.is-bad { color: var(--ev-danger-text); }
+.ev-import-source-remove { width: 24px; height: 24px; display: grid; place-items: center; border: 0; border-radius: 4px; background: transparent; color: var(--ev-text-2); font-size: 13px; }
+.ev-import-source-remove:hover { background: var(--ev-surface-2); color: var(--ev-text); }
+/* A picture that goes with a data file (crypt.json + crypt.png): one box, the link between them. */
+.ev-import-pair { flex: 0 0 auto; display: flex; align-items: center; gap: 0; padding: 0; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); }
+.ev-import-pair > .ev-import-source { border: 0; border-radius: var(--ev-r-md); }
+.ev-import-pair-link { display: grid; place-items: center; width: 18px; color: var(--ev-text-2); font-size: 14px; }
+.ev-import-add { flex: 0 0 auto; height: 44px; padding: 0 12px; border: 1px dashed var(--ev-line-strong); border-radius: var(--ev-r-md); background: transparent; color: var(--ev-text-2); font-size: 13px; font-weight: 600; --ev-pill-icon: 15px; }
+.ev-import-add:hover { color: var(--ev-text); border-color: var(--ev-text-2); }
+
+/* ----- What it was read as ----- */
+.ev-import-read { flex: 0 0 auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; margin: 0 22px; padding: 12px 0; border-top: 1px solid var(--ev-line); border-bottom: 1px solid var(--ev-line); }
+.ev-sys-dnd5e .ev-import-read { border-top-color: var(--ev-gold); }
+.frame.phone .ev-import-read { margin: 0 16px; grid-template-columns: auto minmax(0, 1fr); }
+.ev-import-read-icon { grid-row: span 2; align-self: start; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; background: var(--ev-surface-2); color: var(--ev-text); font-size: 20px; }
+.ev-import-read-name { font: var(--ev-display-weight) 19px/1.15 var(--ev-font-display); font-variant: var(--ev-display-variant); letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-import-read-sub { grid-column: 2; font-size: 13px; color: var(--ev-text-2); display: flex; flex-wrap: wrap; gap: 2px 0; align-items: center; }
+.ev-import-read-sub > span:not(:last-child)::after { content: '·'; padding: 0 8px; }
+.ev-import-read-sub > span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.ev-import-read-sub .ic { font-size: 13px; }
+.ev-import-read-sub a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--ev-line-strong); }
+.ev-import-read-tools { grid-column: 3; grid-row: 1 / span 2; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 14px; align-items: center; }
+.frame.phone .ev-import-read-tools, .ev-import.is-narrow .ev-import-read-tools { grid-column: 1 / -1; grid-row: auto; justify-content: flex-start; padding-top: 6px; }
+.ev-import-as { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ev-text-2); }
+.ev-import-select { appearance: none; height: 30px; padding: 0 28px 0 10px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface) no-repeat right 8px center / 12px; color: var(--ev-text); font: 600 13px/1 var(--ev-font-ui); }
+.ev-import-switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.ev-import-switch input { appearance: none; width: 34px; height: 20px; border-radius: 999px; background: var(--ev-line-strong); position: relative; margin: 0; cursor: pointer; transition: background .15s; }
+.ev-import-switch input::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.ev-import-switch input:checked { background: var(--ev-accent); }
+.ev-import-switch input:checked::after { transform: translateX(14px); background: var(--ev-on-accent); }
+.ev-import-look { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; margin-top: 6px; padding: 10px 12px; border-radius: var(--ev-r-md); background: var(--ev-chip-bg); font-size: 13px; }
+.ev-import-look-title { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.ev-import-look ul { margin: 0; padding-left: 20px; }
+button.ev-import-look-toggle { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px; border: 0; border-radius: var(--ev-r-sm); background: var(--ev-chip-bg); color: var(--ev-chip-text); font-size: 12.5px; font-weight: 600; --ev-pill-icon: 14px; }
+
+/* ----- The body: start, a status card, the review, a custom review, done ----- */
+.ev-import-body { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+
+/* Start: drop zone and paste box side by side; stacked when narrow. */
+.ev-import-start { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 14px 16px; padding: 4px 22px 16px; }
+.ev-import-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 240px; padding: 24px; border: 2px dashed var(--ev-line-strong); border-radius: var(--ev-r-lg); background: var(--ev-surface-2); color: var(--ev-text); text-align: center; cursor: pointer; transition: border-color .12s, background .12s; }
+.ev-import-drop:hover { border-color: var(--ev-text-2); }
+.ev-import-drop-icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--ev-surface); border: 1px solid var(--ev-line); font-size: 30px; color: var(--ev-text); }
+.ev-import-drop-title { font: var(--ev-display-weight) 24px/1.1 var(--ev-font-display); font-variant: var(--ev-display-variant); letter-spacing: .02em; }
+.ev-import-drop-sub { font-size: 13px; color: var(--ev-text-2); }
+.ev-import-choose { height: 36px; padding: 0 16px; border: 0; border-radius: var(--ev-r-md); background: var(--ev-accent); color: var(--ev-on-accent); font-size: 14px; font-weight: 700; --ev-pill-icon: 16px; }
+.ev-import-choose:hover { background: var(--ev-accent-hover); }
+.ev-import-pastebox { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.ev-import-label { font: var(--ev-display-weight) 13px/1 var(--ev-font-display); font-variant: var(--ev-display-variant); letter-spacing: .06em; text-transform: lowercase; color: var(--ev-text-2); display: flex; align-items: center; gap: 6px; }
+.ev-import-label .ic { font-size: 14px; }
+textarea.ev-import-paste { flex: 1 1 auto; min-height: 160px; width: 100%; resize: none; padding: 12px 14px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-lg); background: var(--ev-surface); color: var(--ev-text); font: 12.5px/1.55 ui-monospace, "SF Mono", Menlo, monospace; }
+textarea.ev-import-paste::placeholder { color: var(--ev-text-2); font-family: var(--ev-font-ui); font-size: 14px; }
+.ev-import-formats { grid-column: 1 / -1; font-size: 12.5px; color: var(--ev-text-2); line-height: 1.6; }
+.ev-import-format { white-space: nowrap; }
+.ev-import-formats b { font-weight: 600; color: var(--ev-text); }
+.ev-import-formats a { color: var(--ev-text); text-decoration: none; border-bottom: 1px solid var(--ev-line-strong); white-space: nowrap; }
+@container evi (max-width: 719px) {
+	.ev-import-start { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; align-content: start; padding: 4px 16px 14px; }
+	.ev-import-drop { min-height: 0; padding: 20px 16px; }
+	textarea.ev-import-paste { min-height: 130px; }
+}
+/* No drag and drop on phones: the drop zone is a big Choose files button. */
+.frame.phone .ev-import-drop { flex-direction: row; justify-content: flex-start; gap: 14px; padding: 16px; border-style: solid; border-width: 1px; text-align: left; }
+.frame.phone .ev-import-drop-icon { width: 48px; height: 48px; font-size: 24px; }
+.frame.phone .ev-import-drop-title { font-size: 20px; }
+
+/* Dragging files over: the whole dialog is the target. */
+.ev-import-drag { position: absolute; inset: 64px 12px 12px; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border: 2px dashed var(--ev-accent); border-radius: var(--ev-r-lg); background: color-mix(in srgb, var(--ev-surface) 92%, transparent); pointer-events: none; }
+.ev-import-drag .ev-import-drop-icon { width: 76px; height: 76px; font-size: 36px; background: var(--ev-accent); color: var(--ev-on-accent); border: 0; }
+.ev-import-drag-title { font: var(--ev-display-weight) 26px/1.1 var(--ev-font-display); font-variant: var(--ev-display-variant); }
+.ev-import-drag-sub { font-size: 13px; color: var(--ev-text-2); }
+
+/* Status card: a link waiting, fetching, reading, an error. */
+.ev-import-status { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px 22px; }
+.ev-import-card { width: min(100%, 560px); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.ev-import-card-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--ev-surface-2); border: 1px solid var(--ev-line); font-size: 26px; }
+.ev-import-card-icon.is-bad { background: var(--ev-danger-bg); color: var(--ev-danger-text); border-color: transparent; }
+.ev-import-card-title { font: 700 19px/1.3 var(--ev-font-ui); overflow-wrap: anywhere; }
+.ev-import-card-text { font-size: 14px; color: var(--ev-text-2); max-width: 46ch; }
+.ev-import-card-url { max-width: 100%; padding: 6px 10px; border-radius: var(--ev-r-sm); background: var(--ev-surface-2); font: 12.5px/1.4 ui-monospace, Menlo, monospace; color: var(--ev-text); overflow-wrap: anywhere; }
+.ev-import-card-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; }
+.ev-import-btn { height: 36px; padding: 0 14px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); font-size: 14px; font-weight: 600; --ev-pill-icon: 16px; }
+.ev-import-btn:hover { background: var(--ev-surface-2); }
+.ev-import-btn.is-main { background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); }
+.ev-import-btn.is-main:hover { background: var(--ev-accent-hover); }
+.ev-import-btn[disabled] { opacity: .65; cursor: default; }
+.ev-import-spin { animation: evi-spin 0.9s linear infinite; }
+@keyframes evi-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ev-import-spin { animation-duration: 3s; } }
+.ev-import-status .ev-import-code { width: min(100%, 760px); max-height: 300px; }
+
+/* ----- Review: the checklist (rail) beside the preview (detail) ----- */
+.ev-import-review { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(280px, 34%) minmax(0, 1fr); }
+.ev-import-rail { min-height: 0; display: flex; flex-direction: column; border-right: 1px solid var(--ev-line); }
+.ev-import-tools { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 10px 14px 10px 22px; border-bottom: 1px solid var(--ev-line); }
+.frame.phone .ev-import-tools, .ev-import.is-narrow .ev-import-tools { padding: 10px 16px; }
+.ev-import-all { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.ev-import-filter { flex: 1 1 auto; min-width: 0; height: 30px; padding: 0 8px 0 28px; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface) no-repeat 8px center / 14px; color: var(--ev-text); font: 13px var(--ev-font-ui); }
+.ev-import-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 0 12px; }
+.ev-import-group-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 14px 0 22px; border: 0; background: var(--ev-surface); color: var(--ev-text-2); text-align: left; }
+.frame.phone .ev-import-group-head, .ev-import.is-narrow .ev-import-group-head { padding: 0 16px; }
+.ev-import-group-title { font: var(--ev-display-weight) 13px/1 var(--ev-font-display); font-variant: var(--ev-display-variant); letter-spacing: .06em; text-transform: lowercase; color: var(--ev-text); }
+.ev-import-group-count { font: 600 12px/1 var(--ev-font-num); color: var(--ev-text-2); }
+.ev-import-group-caret { margin-left: auto; font-size: 14px; color: var(--ev-text-2); transition: transform .12s; }
+.ev-import-group.is-closed .ev-import-group-caret { transform: rotate(-90deg); }
+.ev-import-group.is-closed .ev-import-row { display: none; }
+.ev-import-row { position: relative; display: grid; grid-template-columns: 20px 20px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 48px; padding: 5px 14px 5px 22px; cursor: pointer; }
+.frame.phone .ev-import-row, .ev-import.is-narrow .ev-import-row { padding: 6px 16px; min-height: 56px; grid-template-columns: 22px 20px minmax(0, 1fr) auto; }
+.ev-import-row:hover { background: var(--ev-surface-2); }
+.ev-import-row.is-selected { background: var(--ev-now); box-shadow: inset 0 0 0 1px var(--ev-line-strong); }
+.ev-import-row input[type="checkbox"], .ev-import-all input, .ev-import-detail-tick input, .ev-import-toggle-row input { appearance: none; width: 18px; height: 18px; margin: 0; border: 1.5px solid var(--ev-line-strong); border-radius: 4px; background: var(--ev-surface) no-repeat center / 12px; cursor: pointer; display: block; }
+:is(.ev-import-row, .ev-import-all, .ev-import-detail-tick, .ev-import-toggle-row) input:checked { background-color: var(--ev-accent); border-color: var(--ev-accent); background-image: var(--evi-check); }
+:is(.ev-import-row, .ev-import-all, .ev-import-detail-tick, .ev-import-toggle-row) input:indeterminate { background-color: var(--ev-accent); border-color: var(--ev-accent); background-image: var(--evi-minus); }
+.ev-import-row-state { display: grid; place-items: center; width: 20px; height: 20px; font-size: 17px; color: var(--ev-text-2); }
+.ev-import-row-icon { display: grid; place-items: center; font-size: 18px; color: var(--ev-text-2); }
+.ev-import-row-text { min-width: 0; display: flex; flex-direction: column; }
+.ev-import-row-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.ev-import-row-meta { font-size: 12.5px; color: var(--ev-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.ev-import-row.is-off .ev-import-row-name { color: var(--ev-text-2); }
+.ev-import-row-end { display: flex; align-items: center; gap: 6px; color: var(--ev-text-2); }
+.ev-import-row-end .is-look { color: var(--ev-text); font-size: 16px; }
+.ev-import-row-go { display: none; font-size: 14px; }
+.frame.phone .ev-import-row-go, .ev-import.is-narrow .ev-import-row-go { display: block; }
+
+/* Tags: dark, white text (design study rule 14). */
+.ev-import-tag { height: 20px; padding: 0 7px; border-radius: var(--ev-r-chip); background: var(--ev-accent); color: var(--ev-on-accent); font: 600 11.5px/normal var(--ev-font-ui); --ev-pill-icon: 11px; --ev-pill-gap: 4px; }
+
+/* Detail: the record's head, tabs, then its preview, changes or source. */
+.ev-import-detail { min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--ev-bg); }
+.ev-import-detail-head { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 12px 22px 10px; background: var(--ev-surface); border-bottom: 1px solid var(--ev-line); }
+.frame.phone .ev-import-detail-head, .ev-import.is-narrow .ev-import-detail-head { padding: 10px 12px; flex-wrap: wrap; }
+.ev-import-back { width: 34px; height: 34px; display: none; place-items: center; border: 0; border-radius: 999px; background: var(--ev-surface-2); color: var(--ev-text); font-size: 17px; }
+.frame.phone .ev-import-back, .ev-import.is-narrow .ev-import-back { display: grid; }
+.ev-import-detail-title { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; }
+.ev-import-detail-name { font: var(--ev-name-style) var(--ev-name-weight) 20px/1.2 var(--ev-font-name); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-import-detail-meta { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ev-text-2); }
+.ev-import-detail-tick { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.ev-import-step { display: flex; gap: 4px; }
+.ev-import-step button { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); font-size: 14px; }
+.ev-import-step button[disabled] { opacity: .4; cursor: default; }
+.ev-import-tabs { flex: 0 0 auto; display: flex; justify-content: center; padding: 10px 16px 0; }
+.ev-import-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 8px; background: var(--ev-chip-bg); }
+.ev-import-seg button { height: 28px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: var(--ev-text-2); font-size: 13px; font-weight: 600; --ev-pill-icon: 14px; }
+.ev-import-seg button.is-on { background: var(--ev-surface); color: var(--ev-text); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.ev-import-pane { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 22px 22px; container-type: inline-size; }
+.frame.phone .ev-import-pane, .ev-import.is-narrow .ev-import-pane { padding: 12px; }
+.ev-import-pane > * { max-width: 680px; margin-left: auto; margin-right: auto; }
+.ev-import-pane > * + * { margin-top: 12px; }
+.ev-import-pane > .ev-import-paper > * + * { margin-top: 12px; }
+
+/* Notes on a record: what's wrong, what to check, where it is. Full tint, no edge stripe. */
+.ev-import-note { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; padding: 10px 12px; border-radius: var(--ev-r-md); background: var(--ev-surface-2); font-size: 13px; }
+.ev-import-note > .ic { font-size: 17px; margin-top: 1px; }
+.ev-import-note.is-look { background: var(--ev-chip-bg); }
+.ev-import-note.is-bad { background: var(--ev-danger-bg); }
+.ev-import-note.is-bad > .ic { color: var(--ev-danger-text); }
+.ev-import-note-title { font-weight: 700; }
+.ev-import-note ul { margin: 2px 0 0; padding-left: 18px; }
+.ev-import-note-actions { grid-column: 2; display: flex; gap: 8px; margin-top: 4px; }
+.ev-import-note .ev-import-btn { height: 30px; font-size: 13px; padding: 0 10px; }
+
+/* The preview stand-ins: the plugin draws the real ones (see README). */
+.ev-import-paper { max-width: 680px; }
+.sb { border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); padding: 14px 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.sb-name { font: var(--ev-name-style) var(--ev-name-weight) 22px/1.15 var(--ev-font-name); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.ev-sys-nimble .sb-name { font-variant: small-caps; }
+.sb-sub { font: 700 12px/1 var(--ev-font-display); font-variant: small-caps; letter-spacing: .04em; color: var(--ev-text-2); font-style: normal; }
+.sb-stats { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 6px; font: 700 15px/1 var(--ev-font-num); }
+.sb-stat { display: inline-flex; align-items: center; gap: 5px; }
+.sb-stat .ic { font-size: 15px; }
+.sb-stat.hp .ic { color: var(--ev-hp); }
+.sb-band { margin: 8px -16px; padding: 8px 22px 8px 16px; background: var(--ev-band); color: var(--ev-band-text); font-size: 13.5px; }
+.sb-band b { font-style: italic; }
+.sb-band.is-blood { background: var(--ev-danger-bg); }
+.sb ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; }
+.sb li + li { margin-top: 4px; }
+.dice { display: inline-block; padding: 0 4px; border: 1px solid var(--ev-line-strong); border-radius: 3px; font: 600 13px/1.35 var(--ev-font-num); background: var(--ev-surface); }
+.term { border-bottom: 1px dotted var(--ev-text-2); }
+.npc { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); padding: 14px; }
+@container (max-width: 420px) { .npc { grid-template-columns: 64px minmax(0, 1fr); } }
+.npc-portrait { aspect-ratio: 1; border-radius: var(--ev-r-md); background: var(--ev-band); display: grid; place-items: center; font: var(--ev-name-style) var(--ev-name-weight) 30px/1 var(--ev-font-name); color: var(--ev-band-text); }
+.npc-name { font: var(--ev-name-style) var(--ev-name-weight) 24px/1.1 var(--ev-font-name); }
+.npc-role { font-size: 13px; color: var(--ev-text-2); margin: 2px 0 8px; }
+.npc-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.npc-fact { height: 22px; padding: 0 8px; border-radius: var(--ev-r-chip); background: var(--ev-chip-bg); color: var(--ev-chip-text); font: 600 12px/normal var(--ev-font-ui); --ev-pill-icon: 12px; --ev-pill-gap: 5px; }
+.npc dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: 13.5px; }
+.npc dt { font: 700 12px/1.6 var(--ev-font-display); font-variant: small-caps; letter-spacing: .05em; color: var(--ev-text-2); }
+.npc dd { margin: 0; }
+.npc-body { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid var(--ev-line); font-size: 14px; }
+.loc { border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); overflow: hidden; }
+.loc-banner { height: 92px; background: linear-gradient(160deg, #6f6a60, #3b3832); position: relative; }
+.loc-head { padding: 12px 14px 0; }
+.loc-kicker { display: flex; align-items: center; gap: 6px; font: 700 12px/1 var(--ev-font-display); font-variant: small-caps; letter-spacing: .06em; color: var(--ev-text-2); }
+.loc-name { font: var(--ev-name-style) var(--ev-name-weight) 24px/1.15 var(--ev-font-name); margin-top: 4px; }
+.loc-body { padding: 8px 14px 14px; font-size: 14px; }
+.card-item { border: 1px solid var(--ev-line-strong); border-radius: var(--ev-r-md); background: var(--ev-surface); padding: 14px 16px; }
+.card-item-kicker { font: 700 12px/1 var(--ev-font-display); font-variant: small-caps; letter-spacing: .06em; color: var(--ev-text-2); }
+.card-item-name { font: var(--ev-name-style) var(--ev-name-weight) 22px/1.15 var(--ev-font-name); margin: 4px 0 8px; }
+.card-item p { margin: 6px 0 0; font-size: 14px; }
+
+/* Map: the picture with its pins, as the map block draws them; the key under it. */
+.ev-import-map { position: relative; border-radius: var(--ev-r-md); overflow: hidden; border: 1px solid var(--ev-line-strong); background: #1d1b18; }
+.ev-import-map img { display: block; width: 100%; height: auto; }
+.ev-import-pin { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; border: 0; padding: 0; background: transparent; }
+.ev-import-pin-label { height: 18px; min-width: 18px; padding: 0 5px; border-radius: 3px; background: #24211d; color: #fff; font: 700 11px/normal var(--ev-font-ui); display: inline-flex; align-items: center; justify-content: center; }
+.ev-import-pin-dot { width: 22px; height: 22px; margin-top: 2px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #C8321E; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.ev-import-pin.is-on .ev-import-pin-label { background: #fff; color: #24211d; box-shadow: 0 0 0 2px #24211d; }
+.ev-import-map-missing { aspect-ratio: 3 / 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; background: var(--ev-surface-2); color: var(--ev-text); text-align: center; border: 2px dashed var(--ev-line-strong); border-radius: var(--ev-r-md); }
+.ev-import-map-missing .ev-import-card-icon { background: var(--ev-surface); }
+.ev-import-key { display: grid; grid-template-columns: minmax(0, 1fr); border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.ev-import-key-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; padding: 8px 12px; font-size: 13.5px; border: 0; background: transparent; color: inherit; text-align: left; }
+.ev-import-key-row + .ev-import-key-row { border-top: 1px solid var(--ev-line); }
+.ev-import-key-row.is-on { background: var(--ev-now); }
+.ev-import-key-row .ev-import-pin-label { margin-top: 1px; }
+.ev-import-key-row b { display: block; }
+.ev-import-key-row > div > span { color: var(--ev-text-2); }
+.ev-import-map-opts { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: 13px; color: var(--ev-text-2); }
+
+/* Changes: an update, field by field. */
+.ev-import-diff { border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); overflow: hidden; }
+.ev-import-diff-row { display: grid; grid-template-columns: minmax(90px, 0.6fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 9px 12px; font-size: 13.5px; }
+.ev-import-diff-row + .ev-import-diff-row { border-top: 1px solid var(--ev-line); }
+.ev-import-diff-row.is-head { font: 700 12px/1.3 var(--ev-font-display); font-variant: small-caps; letter-spacing: .05em; color: var(--ev-text-2); background: var(--ev-surface-2); }
+.ev-import-diff-field { font-weight: 600; }
+.ev-import-diff-old { color: var(--ev-text-2); text-decoration: line-through; }
+@container (max-width: 460px) {
+	.ev-import-diff-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+	.ev-import-diff-row.is-head { display: none; }
+}
+
+/* Source: the file's text, as code, with line numbers. Read-only; pasted text can be edited. */
+.ev-import-code-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.ev-import-code-file { display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--ev-font-ui); min-width: 0; }
+.ev-import-code-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-import-code-bar .ev-import-seg { margin-left: auto; }
+.ev-import-code { overflow: auto; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-code-bg); font: 12.5px/1.6 ui-monospace, "SF Mono", Menlo, monospace; counter-reset: ln; text-align: left; }
+.ev-import-code-line { display: grid; grid-template-columns: 44px minmax(0, 1fr); white-space: pre; }
+.ev-import-code-line::before { counter-increment: ln; content: counter(ln); padding-right: 10px; text-align: right; color: var(--ev-text-2); opacity: .6; user-select: none; border-right: 1px solid var(--ev-line); margin-right: 10px; }
+.ev-import-code-line.is-err { background: var(--ev-danger-bg); }
+.ev-import-code-line.is-err::before { color: var(--ev-danger-text); opacity: 1; font-weight: 700; }
+.ev-import-code-line.is-rec { background: var(--ev-now); }
+.ev-import-code .k { color: var(--ev-text); font-weight: 600; }
+.ev-import-code .s { color: var(--ev-text-2); }
+.ev-import-code .n { color: var(--ev-text); }
+.ev-import-code .p { color: var(--ev-text-2); opacity: .7; }
+
+/* Custom reviews (D&D Beyond, a content pack): the importer's own body, in a readable column. */
+.ev-import-custom { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px 22px 18px; }
+.frame.phone .ev-import-custom { padding: 12px 16px; }
+.ev-import-custom-col { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.ev-import-checklist { display: flex; flex-direction: column; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.ev-import-checklist .ev-import-row { padding: 6px 12px; }
+.ev-import-checklist .ev-import-row + .ev-import-row { border-top: 1px solid var(--ev-line); }
+.ev-import-section-title { font: var(--ev-display-weight) 16px/1.2 var(--ev-font-display); font-variant: var(--ev-display-variant); letter-spacing: .04em; color: var(--ev-accent-text); }
+.ev-import-muted { font-size: 13px; color: var(--ev-text-2); }
+.ev-import-toggle-row { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); font-size: 14px; font-weight: 600; }
+.ev-import-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.ev-import-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.ev-import-tile b { font: 700 22px/1 var(--ev-font-num); }
+.ev-import-tile span { font-size: 12.5px; color: var(--ev-text-2); }
+
+/* Done. */
+.ev-import-done { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 22px; }
+.ev-import-done .ev-import-card-icon { background: var(--ev-accent); color: var(--ev-on-accent); border: 0; }
+.ev-import-written { width: min(100%, 620px); border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); }
+.ev-import-written-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; }
+.ev-import-written-row + .ev-import-written-row { border-top: 1px solid var(--ev-line); }
+.ev-import-written-row .ic { font-size: 18px; color: var(--ev-text-2); }
+.ev-import-written-name { font-weight: 600; font-size: 14px; }
+.ev-import-written-path { font-size: 12px; color: var(--ev-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-import-open { height: 28px; padding: 0 10px; border: 1px solid var(--ev-line); border-radius: var(--ev-r-md); background: var(--ev-surface); color: var(--ev-text); font-size: 12.5px; font-weight: 600; --ev-pill-icon: 13px; }
+
+/* Footer: Cancel left, the main action right (core/dialog.ts dialogFoot). */
+.ev-dialog-foot { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 12px 22px; border-top: 1px solid var(--ev-line); background: var(--ev-surface); }
+.frame.phone .ev-dialog-foot { padding: 10px 16px 26px; }
+.ev-dialog-btn { height: 40px; padding: 0 18px; border-radius: var(--ev-r-md); border: 1px solid var(--ev-line-strong); background: var(--ev-surface); color: var(--ev-text); font-size: 15px; font-weight: 700; --ev-pill-icon: 17px; }
+.ev-dialog-btn.is-cancel { margin-right: auto; }
+.ev-dialog-btn.is-main { background: var(--ev-accent); border-color: var(--ev-accent); color: var(--ev-on-accent); min-width: 140px; }
+.ev-dialog-btn.is-main[disabled] { opacity: .45; cursor: default; }
+.ev-dialog-foot-hint { font-size: 12.5px; color: var(--ev-text-2); white-space: nowrap; }
+.frame.phone .ev-dialog-foot .ev-dialog-btn { flex: 1 1 0; }
+.frame.phone .ev-dialog-foot .ev-dialog-btn.is-main { flex-grow: 2; }
+.frame.phone .ev-dialog-foot-hint { display: none; }
+
+/* Narrow (the dialog under 720px wide, and phones): one column, the preview pushed over the list. */
+.ev-import.is-narrow .ev-import-review { grid-template-columns: minmax(0, 1fr); position: relative; overflow: hidden; }
+.ev-import.is-narrow .ev-import-rail { border-right: 0; }
+.ev-import.is-narrow .ev-import-step { display: none; }
+.ev-import.is-narrow .ev-import-read { grid-template-columns: minmax(0, 1fr); margin: 0; padding: 12px 16px; border-top: 0; }
+.ev-import.is-narrow .ev-import-read-icon { display: none; }
+.ev-import.is-narrow .ev-import-read-sub, .ev-import.is-narrow .ev-import-read-tools { grid-column: 1; }
+.ev-import.is-narrow .ev-import-list > .ev-import-sources { padding: 2px 16px 0; }
+.ev-import.is-narrow .ev-import-detail { z-index: 6; position: absolute; inset: 0; transform: translateX(100%); visibility: hidden; transition: transform .24s cubic-bezier(.2,.8,.2,1), visibility 0s linear .24s; box-shadow: -8px 0 24px rgba(0,0,0,.12); }
+.ev-import.is-narrow.is-detail-open .ev-import-detail { transform: none; visibility: visible; transition: transform .24s cubic-bezier(.2,.8,.2,1); }
+@media (prefers-reduced-motion: reduce) { .ev-import.is-narrow .ev-import-detail { transition: none; } }
+.ev-import.is-narrow .ev-import-titlebar { padding-left: 16px; padding-right: 16px; }
+.ev-import.is-narrow .ev-import-sources { padding-left: 16px; padding-right: 16px; }
+.ev-import.is-narrow .ev-import-read { margin-left: 16px; margin-right: 16px; }
+.ev-import.is-narrow .ev-dialog-foot { padding-left: 16px; padding-right: 16px; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="study-bar">
+	<h1>Import… study</h1>
+	<div class="study-group" id="views"><span>Frame</span></div>
+	<div class="study-group" id="games"><span>Game</span></div>
+	<div class="study-group" id="themes"><span>Theme</span></div>
+</div>
+<div class="study-states" id="states"></div>
+<p class="study-note" id="note"></p>
+<div class="stage"><div class="frame desktop" id="frame"><div class="ws"><i style="width:40%"></i><i></i><i style="width:80%"></i><i style="width:90%"></i><i></i><i style="width:60%"></i></div><div class="backdrop"></div></div></div>
+
+<script>
+const ICONS = {"arrow-left":"<path d=\"M228,128a12,12,0,0,1-12,12H69l51.52,51.51a12,12,0,0,1-17,17l-72-72a12,12,0,0,1,0-17l72-72a12,12,0,0,1,17,17L69,116H216A12,12,0,0,1,228,128Z\"/>","arrow-square-out":"<path d=\"M228,104a12,12,0,0,1-24,0V69l-59.51,59.51a12,12,0,0,1-17-17L187,52H152a12,12,0,0,1,0-24h64a12,12,0,0,1,12,12Zm-44,24a12,12,0,0,0-12,12v64H52V84h64a12,12,0,0,0,0-24H48A20,20,0,0,0,28,80V208a20,20,0,0,0,20,20H176a20,20,0,0,0,20-20V140A12,12,0,0,0,184,128Z\"/>","arrow-up":"<path d=\"M208.49,120.49a12,12,0,0,1-17,0L140,69V216a12,12,0,0,1-24,0V69L64.49,120.49a12,12,0,0,1-17-17l72-72a12,12,0,0,1,17,0l72,72A12,12,0,0,1,208.49,120.49Z\"/>","arrows-clockwise":"<path d=\"M228,48V96a12,12,0,0,1-12,12H168a12,12,0,0,1,0-24h19l-7.8-7.8a75.55,75.55,0,0,0-53.32-22.26h-.43A75.49,75.49,0,0,0,72.39,75.57,12,12,0,1,1,55.61,58.41a99.38,99.38,0,0,1,69.87-28.47H126A99.42,99.42,0,0,1,196.2,59.23L204,67V48a12,12,0,0,1,24,0ZM183.61,180.43a75.49,75.49,0,0,1-53.09,21.63h-.43A75.55,75.55,0,0,1,76.77,179.8L69,172H88a12,12,0,0,0,0-24H40a12,12,0,0,0-12,12v48a12,12,0,0,0,24,0V189l7.8,7.8A99.42,99.42,0,0,0,130,226.06h.56a99.38,99.38,0,0,0,69.87-28.47,12,12,0,0,0-16.78-17.16Z\"/>","book-open":"<path d=\"M232,44H160a43.86,43.86,0,0,0-32,13.85A43.86,43.86,0,0,0,96,44H24A12,12,0,0,0,12,56V200a12,12,0,0,0,12,12H96a20,20,0,0,1,20,20,12,12,0,0,0,24,0,20,20,0,0,1,20-20h72a12,12,0,0,0,12-12V56A12,12,0,0,0,232,44ZM96,188H36V68H96a20,20,0,0,1,20,20V192.81A43.79,43.79,0,0,0,96,188Zm124,0H160a43.71,43.71,0,0,0-20,4.83V88a20,20,0,0,1,20-20h60Z\"/>","books":"<path d=\"M235.57,193.73,202.38,35.93a20,20,0,0,0-23.76-15.48L131.81,30.51a19.82,19.82,0,0,0-11,6.65A20,20,0,0,0,104,28H56A20,20,0,0,0,36,48V208a20,20,0,0,0,20,20h48a20,20,0,0,0,20-20V90.25l25.62,121.82A20,20,0,0,0,169.15,228a20.27,20.27,0,0,0,4.23-.45l46.81-10.06A20.1,20.1,0,0,0,235.57,193.73ZM148.19,88.65l39-8.38,2.53,12-39,8.38Zm7.46,35.5,39-8.38,9.16,43.58-39,8.38Zm24.06-79.39,2.53,12-39,8.38-2.53-12ZM60,88h40v80H60Zm40-36V64H60V52ZM60,204V192h40v12Zm112.29-.76-2.53-12,39-8.38,2.53,12Z\"/>","caret-down":"<path d=\"M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z\"/>","caret-right":"<path d=\"M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z\"/>","caret-up":"<path d=\"M216.49,168.49a12,12,0,0,1-17,0L128,97,56.49,168.49a12,12,0,0,1-17-17l80-80a12,12,0,0,1,17,0l80,80A12,12,0,0,1,216.49,168.49Z\"/>","check":"<path d=\"M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z\"/>","check-circle":"<path d=\"M176.49,95.51a12,12,0,0,1,0,17l-56,56a12,12,0,0,1-17,0l-24-24a12,12,0,1,1,17-17L112,143l47.51-47.52A12,12,0,0,1,176.49,95.51ZM236,128A108,108,0,1,1,128,20,108.12,108.12,0,0,1,236,128Zm-24,0a84,84,0,1,0-84,84A84.09,84.09,0,0,0,212,128Z\"/>","circle-notch":"<path d=\"M236,128a108,108,0,0,1-216,0c0-42.52,24.73-81.34,63-98.9A12,12,0,1,1,93,50.91C63.24,64.57,44,94.83,44,128a84,84,0,0,0,168,0c0-33.17-19.24-63.43-49-77.09A12,12,0,1,1,173,29.1C211.27,46.66,236,85.48,236,128Z\"/>","clipboard-text":"<path d=\"M172,164a12,12,0,0,1-12,12H96a12,12,0,0,1,0-24h64A12,12,0,0,1,172,164Zm-12-52H96a12,12,0,0,0,0,24h64a12,12,0,0,0,0-24Zm60-64V216a20,20,0,0,1-20,20H56a20,20,0,0,1-20-20V48A20,20,0,0,1,56,28H90.53a51.88,51.88,0,0,1,74.94,0H200A20,20,0,0,1,220,48ZM100.29,60h55.42a28,28,0,0,0-55.42,0ZM196,52H178.59A52.13,52.13,0,0,1,180,64v8a12,12,0,0,1-12,12H88A12,12,0,0,1,76,72V64a52.13,52.13,0,0,1,1.41-12H60V212H196Z\"/>","code":"<path d=\"M71.68,97.22,34.74,128l36.94,30.78a12,12,0,1,1-15.36,18.44l-48-40a12,12,0,0,1,0-18.44l48-40A12,12,0,0,1,71.68,97.22Zm176,21.56-48-40a12,12,0,1,0-15.36,18.44L221.26,128l-36.94,30.78a12,12,0,1,0,15.36,18.44l48-40a12,12,0,0,0,0-18.44ZM164.1,28.72a12,12,0,0,0-15.38,7.18l-64,176a12,12,0,0,0,7.18,15.37A11.79,11.79,0,0,0,96,228a12,12,0,0,0,11.28-7.9l64-176A12,12,0,0,0,164.1,28.72Z\"/>","copy":"<path d=\"M216,28H88A12,12,0,0,0,76,40V76H40A12,12,0,0,0,28,88V216a12,12,0,0,0,12,12H168a12,12,0,0,0,12-12V180h36a12,12,0,0,0,12-12V40A12,12,0,0,0,216,28ZM156,204H52V100H156Zm48-48H180V88a12,12,0,0,0-12-12H100V52H204Z\"/>","eye":"<path d=\"M251,123.13c-.37-.81-9.13-20.26-28.48-39.61C196.63,57.67,164,44,128,44S59.37,57.67,33.51,83.52C14.16,102.87,5.4,122.32,5,123.13a12.08,12.08,0,0,0,0,9.75c.37.82,9.13,20.26,28.49,39.61C59.37,198.34,92,212,128,212s68.63-13.66,94.48-39.51c19.36-19.35,28.12-38.79,28.49-39.61A12.08,12.08,0,0,0,251,123.13Zm-46.06,33C183.47,177.27,157.59,188,128,188s-55.47-10.73-76.91-31.88A130.36,130.36,0,0,1,29.52,128,130.45,130.45,0,0,1,51.09,99.89C72.54,78.73,98.41,68,128,68s55.46,10.73,76.91,31.89A130.36,130.36,0,0,1,226.48,128,130.45,130.45,0,0,1,204.91,156.12ZM128,84a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,84Zm0,64a20,20,0,1,1,20-20A20,20,0,0,1,128,148Z\"/>","file":"<path d=\"M216.49,79.52l-56-56A12,12,0,0,0,152,20H56A20,20,0,0,0,36,40V216a20,20,0,0,0,20,20H200a20,20,0,0,0,20-20V88A12,12,0,0,0,216.49,79.52ZM160,57l23,23H160ZM60,212V44h76V92a12,12,0,0,0,12,12h48V212Z\"/>","file-code":"<path d=\"M180.49,143.51a12,12,0,0,1,0,17l-24,24a12,12,0,0,1-17-17L155,152l-15.52-15.51a12,12,0,1,1,17-17Zm-64-24a12,12,0,0,0-17,0l-24,24a12,12,0,0,0,0,17l24,24a12,12,0,0,0,17-17L101,152l15.52-15.51A12,12,0,0,0,116.49,119.51ZM220,88V216a20,20,0,0,1-20,20H56a20,20,0,0,1-20-20V40A20,20,0,0,1,56,20h96a12,12,0,0,1,8.49,3.52l56,56A12,12,0,0,1,220,88ZM160,57V80h23Zm36,155V104H148a12,12,0,0,1-12-12V44H60V212Z\"/>","file-text":"<path d=\"M216.49,79.52l-56-56A12,12,0,0,0,152,20H56A20,20,0,0,0,36,40V216a20,20,0,0,0,20,20H200a20,20,0,0,0,20-20V88A12,12,0,0,0,216.49,79.52ZM160,57l23,23H160ZM60,212V44h76V92a12,12,0,0,0,12,12h48V212Zm112-80a12,12,0,0,1-12,12H96a12,12,0,0,1,0-24h64A12,12,0,0,1,172,132Zm0,40a12,12,0,0,1-12,12H96a12,12,0,0,1,0-24h64A12,12,0,0,1,172,172Z\"/>","folder-simple":"<path d=\"M216,68H132L105.33,48a20.12,20.12,0,0,0-12-4H40A20,20,0,0,0,20,64V200a20,20,0,0,0,20,20H216.89A19.13,19.13,0,0,0,236,200.89V88A20,20,0,0,0,216,68Zm-4,128H44V68H92l28.8,21.6A12,12,0,0,0,128,92h84Z\"/>","footprints":"<path d=\"M212,180H156a12,12,0,0,0-12,12v12a40,40,0,0,0,80,0V192A12,12,0,0,0,212,180Zm-28,40a16,16,0,0,1-16-16h32A16,16,0,0,1,184,220Zm-84-64H44a12,12,0,0,0-12,12v12a40,40,0,0,0,80,0V168A12,12,0,0,0,100,156ZM72,196a16,16,0,0,1-16-16H88A16,16,0,0,1,72,196ZM72,12c-14.06,0-27.7,12.33-37.41,33.83-12.45,27.57-16.78,67.52,3.14,90.11a12,12,0,0,0,9,4.06H97.25a12,12,0,0,0,9-4.06c19.92-22.59,15.59-62.54,3.14-90.11C99.68,24.33,86,12,72,12ZM91.07,116H52.9c-6.71-12.13-7.67-35.45,3.56-60.3C63.16,40.85,70.28,36,72,36s8.82,4.85,15.53,19.7C98.73,80.55,97.77,103.87,91.07,116Zm67.68,48h50.54a12,12,0,0,0,9-4.06c19.92-22.59,15.59-62.54,3.14-90.11C211.72,48.33,198.08,36,184,36s-27.7,12.33-37.41,33.83c-12.45,27.57-16.78,67.52,3.14,90.11A12,12,0,0,0,158.75,164Zm9.74-84.3C175.2,64.85,182.32,60,184,60s8.82,4.85,15.52,19.7c11.23,24.85,10.27,48.17,3.56,60.3H164.93C158.23,127.87,157.27,104.55,168.49,79.7Z\"/>","gem":"<path d=\"M238.16,113.89,142.1,17.83a20,20,0,0,0-28.21,0l-96,96.06a20,20,0,0,0,0,28.22l96.05,96.06h0a20,20,0,0,0,28.21,0l96-96.06a20,20,0,0,0,0-28.22ZM128,218.33,37.68,128,128,37.67,218.32,128Z\"/>","globe-simple":"<path d=\"M128,20A108,108,0,1,0,236,128,108.12,108.12,0,0,0,128,20Zm83.13,96H179.56a144.3,144.3,0,0,0-21.35-66.36A84.22,84.22,0,0,1,211.13,116ZM128,207c-9.36-10.81-24.46-33.13-27.45-67h54.94a119.74,119.74,0,0,1-17.11,52.77A108.61,108.61,0,0,1,128,207Zm-27.45-91a119.74,119.74,0,0,1,17.11-52.77A108.61,108.61,0,0,1,128,49c9.36,10.81,24.46,33.13,27.45,67ZM97.79,49.64A144.3,144.3,0,0,0,76.44,116H44.87A84.22,84.22,0,0,1,97.79,49.64ZM44.87,140H76.44a144.3,144.3,0,0,0,21.35,66.36A84.22,84.22,0,0,1,44.87,140Zm113.34,66.36A144.3,144.3,0,0,0,179.56,140h31.57A84.22,84.22,0,0,1,158.21,206.36Z\"/>","image":"<path d=\"M144,96a16,16,0,1,1,16,16A16,16,0,0,1,144,96Zm92-40V200a20,20,0,0,1-20,20H40a20,20,0,0,1-20-20V56A20,20,0,0,1,40,36H216A20,20,0,0,1,236,56ZM44,60v79.72l33.86-33.86a20,20,0,0,1,28.28,0L147.31,147l17.18-17.17a20,20,0,0,1,28.28,0L212,149.09V60Zm0,136H162.34L92,125.66l-48,48Zm168,0V183l-33.37-33.37L164.28,164l32,32Z\"/>","link":"<path d=\"M117.18,188.74a12,12,0,0,1,0,17l-5.12,5.12A58.26,58.26,0,0,1,70.6,228h0A58.62,58.62,0,0,1,29.14,127.92L63.89,93.17a58.64,58.64,0,0,1,98.56,28.11,12,12,0,1,1-23.37,5.44,34.65,34.65,0,0,0-58.22-16.58L46.11,144.89A34.62,34.62,0,0,0,70.57,204h0a34.41,34.41,0,0,0,24.49-10.14l5.11-5.12A12,12,0,0,1,117.18,188.74ZM226.83,45.17a58.65,58.65,0,0,0-82.93,0l-5.11,5.11a12,12,0,0,0,17,17l5.12-5.12a34.63,34.63,0,1,1,49,49L175.1,145.86A34.39,34.39,0,0,1,150.61,156h0a34.63,34.63,0,0,1-33.69-26.72,12,12,0,0,0-23.38,5.44A58.64,58.64,0,0,0,150.56,180h.05a58.28,58.28,0,0,0,41.47-17.17l34.75-34.75a58.62,58.62,0,0,0,0-82.91Z\"/>","lock-simple":"<path d=\"M208,76H180V56A52,52,0,0,0,76,56V76H48A20,20,0,0,0,28,96V208a20,20,0,0,0,20,20H208a20,20,0,0,0,20-20V96A20,20,0,0,0,208,76ZM100,56a28,28,0,0,1,56,0V76H100ZM204,204H52V100H204Z\"/>","magnifying-glass":"<path d=\"M232.49,215.51,185,168a92.12,92.12,0,1,0-17,17l47.53,47.54a12,12,0,0,0,17-17ZM44,112a68,68,0,1,1,68,68A68.07,68.07,0,0,1,44,112Z\"/>","map-pin":"<path d=\"M128,60a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,60Zm0,64a20,20,0,1,1,20-20A20,20,0,0,1,128,124Zm0-112a92.1,92.1,0,0,0-92,92c0,77.36,81.64,135.4,85.12,137.83a12,12,0,0,0,13.76,0,259,259,0,0,0,42.18-39C205.15,170.57,220,136.37,220,104A92.1,92.1,0,0,0,128,12Zm31.3,174.71A249.35,249.35,0,0,1,128,216.89a249.35,249.35,0,0,1-31.3-30.18C80,167.37,60,137.31,60,104a68,68,0,0,1,136,0C196,137.31,176,167.37,159.3,186.71Z\"/>","minus":"<path d=\"M228,128a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,128Z\"/>","package":"<path d=\"M225.6,62.64l-88-48.17a19.91,19.91,0,0,0-19.2,0l-88,48.17A20,20,0,0,0,20,80.19v95.62a20,20,0,0,0,10.4,17.55l88,48.17a19.89,19.89,0,0,0,19.2,0l88-48.17A20,20,0,0,0,236,175.81V80.19A20,20,0,0,0,225.6,62.64ZM128,36.57,200,76,178.57,87.73l-72-39.42Zm0,78.83L56,76,81.56,62l72,39.41ZM44,96.79l72,39.4v76.67L44,173.44Zm96,116.07V136.19l24-13.13V152a12,12,0,0,0,24,0V109.92l24-13.13v76.65Z\"/>","plus":"<path d=\"M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z\"/>","prohibit":"<path d=\"M128,20A108,108,0,1,0,236,128,108.12,108.12,0,0,0,128,20Zm84,108a83.6,83.6,0,0,1-16.75,50.28L77.72,60.75A84,84,0,0,1,212,128ZM44,128A83.6,83.6,0,0,1,60.75,77.72L178.28,195.25A84,84,0,0,1,44,128Z\"/>","question":"<path d=\"M144,180a16,16,0,1,1-16-16A16,16,0,0,1,144,180Zm92-52A108,108,0,1,1,128,20,108.12,108.12,0,0,1,236,128Zm-24,0a84,84,0,1,0-84,84A84.09,84.09,0,0,0,212,128ZM128,64c-24.26,0-44,17.94-44,40v4a12,12,0,0,0,24,0v-4c0-8.82,9-16,20-16s20,7.18,20,16-9,16-20,16a12,12,0,0,0-12,12v8a12,12,0,0,0,23.73,2.56C158.31,137.88,172,122.37,172,104,172,81.94,152.26,64,128,64Z\"/>","scales":"<path d=\"M243.14,131.54l-32-80h0a12,12,0,0,0-13.73-7.25L140,57V40a12,12,0,0,0-24,0V62.37L53.4,76.29a12,12,0,0,0-8.54,7.25h0l0,0v0l-32,79.92A12,12,0,0,0,12,168c0,12.13,6.2,22.43,17.45,29A55,55,0,0,0,56,204a55,55,0,0,0,26.55-7C93.8,190.43,100,180.13,100,168a12,12,0,0,0-.86-4.46L72.38,96.65,116,87V204H104a12,12,0,0,0,0,24h48a12,12,0,0,0,0-24H140V81.63l40.42-9-23.56,58.9A12,12,0,0,0,156,136c0,12.13,6.2,22.43,17.45,29a53.78,53.78,0,0,0,53.1,0C237.8,158.43,244,148.13,244,136A12,12,0,0,0,243.14,131.54ZM56,180c-3.71,0-18-1.87-19.81-10.18L56,120.31l19.81,49.51C74,178.13,59.71,180,56,180Zm144-32c-3.71,0-18-1.87-19.81-10.18L200,88.31l19.81,49.51C218,146.13,203.71,148,200,148Z\"/>","scroll":"<path d=\"M92,92a12,12,0,0,1,12-12h60a12,12,0,0,1,0,24H104A12,12,0,0,1,92,92Zm12,52h60a12,12,0,0,0,0-24H104a12,12,0,0,0,0,24Zm132,48a36,36,0,0,1-36,36H88a36,36,0,0,1-36-36V64a12,12,0,0,0-24,0c0,3.73,3.35,6.51,3.38,6.54l-.18-.14h0A12,12,0,1,1,16.81,89.59h0C15.49,88.62,4,79.55,4,64A36,36,0,0,1,40,28H176a36,36,0,0,1,36,36V164h4a12,12,0,0,1,7.2,2.4C224.51,167.38,236,176.45,236,192ZM92.62,172.2A12,12,0,0,1,104,164h84V64a12,12,0,0,0-12-12H73.94A35.88,35.88,0,0,1,76,64V192a12,12,0,0,0,24,0c0-3.58-3.17-6.38-3.2-6.4A12,12,0,0,1,92.62,172.2ZM212,192a7.69,7.69,0,0,0-1.24-4h-87a30.32,30.32,0,0,1,.26,4,35.84,35.84,0,0,1-2.06,12H200A12,12,0,0,0,212,192Z\"/>","shield":"<path d=\"M208,36H48A20,20,0,0,0,28,56v56c0,54.29,26.32,87.22,48.4,105.29,23.71,19.39,47.44,26,48.44,26.29a12.1,12.1,0,0,0,6.32,0c1-.28,24.73-6.9,48.44-26.29,22.08-18.07,48.4-51,48.4-105.29V56A20,20,0,0,0,208,36Zm-4,76c0,35.71-13.09,64.69-38.91,86.15A126.28,126.28,0,0,1,128,219.38a126.14,126.14,0,0,1-37.09-21.23C65.09,176.69,52,147.71,52,112V60H204Z\"/>","skull":"<path d=\"M116,132a24,24,0,1,1-24-24A24,24,0,0,1,116,132Zm48-24a24,24,0,1,0,24,24A24,24,0,0,0,164,108Zm72,8c0,29.85-13.05,57.78-36,77.52V216a20,20,0,0,1-20,20H76a20,20,0,0,1-20-20V193.52c-23-19.74-36-47.67-36-77.52C20,58.65,68.45,12,128,12S236,58.65,236,116Zm-24,0c0-44.11-37.68-80-84-80S44,71.89,44,116c0,24.31,11.41,47,31.31,62.3A12,12,0,0,1,80,187.82V212H96V192a12,12,0,0,1,24,0v20h16V192a12,12,0,0,1,24,0v20h16V187.82a12,12,0,0,1,4.69-9.51C200.59,163,212,140.31,212,116Z\"/>","sparkle":"<path d=\"M199,125.31l-49.88-18.39L130.69,57a19.92,19.92,0,0,0-37.38,0L74.92,106.92,25,125.31a19.92,19.92,0,0,0,0,37.38l49.88,18.39L93.31,231a19.92,19.92,0,0,0,37.38,0l18.39-49.88L199,162.69a19.92,19.92,0,0,0,0-37.38Zm-63.38,35.16a12,12,0,0,0-7.11,7.11L112,212.28l-16.47-44.7a12,12,0,0,0-7.11-7.11L43.72,144l44.7-16.47a12,12,0,0,0,7.11-7.11L112,75.72l16.47,44.7a12,12,0,0,0,7.11,7.11L180.28,144ZM140,40a12,12,0,0,1,12-12h12V16a12,12,0,0,1,24,0V28h12a12,12,0,0,1,0,24H188V64a12,12,0,0,1-24,0V52H152A12,12,0,0,1,140,40ZM252,88a12,12,0,0,1-12,12h-4v4a12,12,0,0,1-24,0v-4h-4a12,12,0,0,1,0-24h4V72a12,12,0,0,1,24,0v4h4A12,12,0,0,1,252,88Z\"/>","spell":"<path d=\"M252,152a12,12,0,0,1-12,12H228v12a12,12,0,0,1-24,0V164H192a12,12,0,0,1,0-24h12V128a12,12,0,0,1,24,0v12h12A12,12,0,0,1,252,152ZM56,76H68V88a12,12,0,0,0,24,0V76h12a12,12,0,1,0,0-24H92V40a12,12,0,0,0-24,0V52H56a12,12,0,0,0,0,24ZM184,188h-4v-4a12,12,0,0,0-24,0v4h-4a12,12,0,0,0,0,24h4v4a12,12,0,0,0,24,0v-4h4a12,12,0,0,0,0-24ZM222.14,82.83,82.82,222.14a20,20,0,0,1-28.28,0L33.85,201.46a20,20,0,0,1,0-28.29L173.17,33.86a20,20,0,0,1,28.28,0l20.69,20.68A20,20,0,0,1,222.14,82.83ZM159,112,144,97,53.65,187.31l15,15Zm43.31-43.31-15-15L161,80l15,15Z\"/>","swap":"<path d=\"M228,48V152a20,20,0,0,1-20,20H112.92a12,12,0,0,1-17.41,16.49l-20-20a12,12,0,0,1,0-17l20-20A12,12,0,0,1,112.92,148H204V52H100a12,12,0,0,1-24,0V48A20,20,0,0,1,96,28H208A20,20,0,0,1,228,48ZM168,192a12,12,0,0,0-12,12H52V108h91.08a12,12,0,0,0,17.41,16.49l20-20a12,12,0,0,0,0-17l-20-20A12,12,0,0,0,143.08,84H48a20,20,0,0,0-20,20V208a20,20,0,0,0,20,20H160a20,20,0,0,0,20-20v-4A12,12,0,0,0,168,192Z\"/>","sword":"<path d=\"M216,28H152a12,12,0,0,0-9.33,4.45L79.5,110.51l-4.66-4.65a20,20,0,0,0-28.29,0L29.86,122.55a20,20,0,0,0,0,28.29h0L45,166,23.86,187.17a20,20,0,0,0,0,28.28l16.69,16.69a20,20,0,0,0,28.28,0L90,211l15.17,15.16a20,20,0,0,0,28.29,0l16.69-16.69a20,20,0,0,0,0-28.3l-4.65-4.65,78.06-63.17A12,12,0,0,0,228,104V40A12,12,0,0,0,216,28ZM54.69,212.34l-11-11L62,183l11,11Zm64.61-6L49.65,136.7l11.05-11,69.65,69.65ZM204,98.27l-75.58,61.17L121,152l47.51-47.5a12,12,0,0,0-17-17L104,135l-7.45-7.44L157.73,52H204Z\"/>","tray-arrow-down":"<path d=\"M208,28H48A20,20,0,0,0,28,48V208a20,20,0,0,0,20,20H208a20,20,0,0,0,20-20V48A20,20,0,0,0,208,28Zm-4,24v92H179.31a19.86,19.86,0,0,0-14.14,5.86L147,168H109L90.83,149.86A19.86,19.86,0,0,0,76.69,144H52V52ZM52,204V168H75l18.14,18.14A19.86,19.86,0,0,0,107.31,192h41.38a19.86,19.86,0,0,0,14.14-5.86L181,168h23v36Zm35.51-87.51a12,12,0,0,1,17-17L116,111V76a12,12,0,0,1,24,0v35l11.51-11.52a12,12,0,0,1,17,17l-32,32a12,12,0,0,1-17,0Z\"/>","user":"<path d=\"M234.38,210a123.36,123.36,0,0,0-60.78-53.23,76,76,0,1,0-91.2,0A123.36,123.36,0,0,0,21.62,210a12,12,0,1,0,20.77,12c18.12-31.32,50.12-50,85.61-50s67.49,18.69,85.61,50a12,12,0,0,0,20.77-12ZM76,96a52,52,0,1,1,52,52A52.06,52.06,0,0,1,76,96Z\"/>","warning":"<path d=\"M240.26,186.1,152.81,34.23h0a28.74,28.74,0,0,0-49.62,0L15.74,186.1a27.45,27.45,0,0,0,0,27.71A28.31,28.31,0,0,0,40.55,228h174.9a28.31,28.31,0,0,0,24.79-14.19A27.45,27.45,0,0,0,240.26,186.1Zm-20.8,15.7a4.46,4.46,0,0,1-4,2.2H40.55a4.46,4.46,0,0,1-4-2.2,3.56,3.56,0,0,1,0-3.73L124,46.2a4.77,4.77,0,0,1,8,0l87.44,151.87A3.56,3.56,0,0,1,219.46,201.8ZM116,136V104a12,12,0,0,1,24,0v32a12,12,0,0,1-24,0Zm28,40a16,16,0,1,1-16-16A16,16,0,0,1,144,176Z\"/>","x":"<path d=\"M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z\"/>","heart-fill":"<path d=\"M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0C119.79,228.66,16,172,16,102A62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z\"/>"};
+
+/* ---------- tiny DOM helpers (text only through textContent, as the plugin must) ---------- */
+function h(tag, attrs, ...kids) {
+	const el = document.createElement(tag);
+	for (const [k, v] of Object.entries(attrs || {})) {
+		if (v === undefined || v === null || v === false) continue;
+		if (k === 'cls') el.className = v;
+		else if (k === 'text') el.textContent = v;
+		else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+		else if (k === 'style') el.setAttribute('style', v);
+		else if (k in el && typeof v !== 'string') el[k] = v;
+		else el.setAttribute(k, v === true ? '' : v);
+	}
+	for (const kid of kids.flat()) if (kid !== null && kid !== undefined && kid !== false) el.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+	return el;
+}
+function icon(name, cls = '') {
+	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+	svg.setAttribute('viewBox', '0 0 256 256'); svg.setAttribute('class', `ic ${cls}`); svg.setAttribute('aria-hidden', 'true');
+	svg.innerHTML = ICONS[name] || ''; // static icon paths from the Phosphor package, never data
+	return svg;
+}
+function pill(tag, o) {
+	const el = h(tag, { cls: `ev-pill ${o.cls || ''}`, title: o.title, type: tag === 'button' ? 'button' : undefined, onclick: o.onclick, disabled: o.disabled, 'aria-label': o.aria });
+	if (o.icon) el.append(h('span', { cls: 'ev-pill-icon' }, icon(o.icon, o.spin ? 'ev-import-spin' : '')));
+	if (o.text) el.append(h('span', { cls: 'ev-pill-text', text: o.text }));
+	return el;
+}
+const svgUrl = (name, color) => `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='${color}'>${ICONS[name]}</svg>`)}")`;
+
+/* ---------- the invented content ---------- */
+// A dungeon picture, drawn here so the study needs no files.
+const CRYPT = (() => {
+	const rooms = [[60,40,110,80],[210,40,160,100],[410,40,140,90],[220,190,120,120],[50,180,120,150],[400,170,150,110],[400,305,150,65]];
+	const cor = [[170,70,40,20],[370,80,40,20],[280,140,20,50],[170,240,50,20],[340,230,60,20],[465,280,20,25],[100,120,20,60]];
+	const grid = (x,y,w,ht) => { let s=''; for (let i=x+10;i<x+w;i+=10) s+=`<line x1='${i}' y1='${y}' x2='${i}' y2='${y+ht}'/>`; for (let j=y+10;j<y+ht;j+=10) s+=`<line x1='${x}' y1='${j}' x2='${x+w}' y2='${j}'/>`; return s; };
+	let body = '';
+	for (const [x,y,w,ht] of [...rooms, ...cor]) body += `<rect x='${x}' y='${y}' width='${w}' height='${ht}' fill='#efe9dc'/>`;
+	body += `<g stroke='#cfc6b4' stroke-width='0.6'>${[...rooms, ...cor].map(r => grid(...r)).join('')}</g>`;
+	for (const [x,y,w,ht] of rooms) body += `<rect x='${x}' y='${y}' width='${w}' height='${ht}' fill='none' stroke='#2a2723' stroke-width='3'/>`;
+	body += `<circle cx='280' cy='250' r='22' fill='#9fb4c2' stroke='#2a2723' stroke-width='3'/>`;
+	body += `<rect x='445' y='205' width='60' height='30' fill='#d8cfbd' stroke='#2a2723' stroke-width='2'/>`;
+	body += `<g fill='#9fb4c2' opacity='.7'><rect x='62' y='42' width='106' height='38'/><rect x='402' y='307' width='146' height='61'/></g>`;
+	const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'><rect width='600' height='400' fill='#1d1b18'/>${body}</svg>`;
+	return 'data:image/svg+xml,' + encodeURIComponent(svg);
+})();
+const PINS = [
+	{ x: 19, y: 20, label: '1', name: 'Flooded stair', text: 'Black water to the knee. The steps under it are slick with weed.' },
+	{ x: 48, y: 22, label: '2', name: 'Hall of urns', text: 'Forty clay urns, sealed with wax. Six are cracked and empty.' },
+	{ x: 80, y: 21, label: '3', name: 'Ossuary', text: 'Bones stacked by size. Something has been sorting them again.' },
+	{ x: 47, y: 56, label: '4', name: 'The well', text: 'The tide rises here first. A rope ladder hangs into the dark.' },
+	{ x: 18, y: 59, label: '5', name: 'Collapsed chapel', text: 'Half the roof is in the nave. Irinia keeps a lamp lit by the door.' },
+	{ x: 79, y: 51, label: '6', name: 'Altar of the drowned', text: 'A cracked altar. The Mire Hag sleeps beneath it at low tide.' },
+	{ x: 79, y: 82, label: '7', name: 'Tide gate', text: 'A rusted gate to the sea caves. It opens at the spring tide.' },
+];
+const BUNDLE_SRC = `{
+  "format": "ember-vault-bundle",
+  "version": 1,
+  "system": "nimble",
+  "source": { "name": "The Sunken Crypt", "url": "https://mossbank.example/crypt", "license": "CC BY 4.0" },
+  "content": [
+    {
+      "kind": "monster",
+      "name": "Mire Hag",
+      "source": { "id": "mossbank:mire-hag" },
+      "level": 4,
+      "size": "medium",
+      "type": "Fey (Hag)",
+      "hp": 52,
+      "armor": "medium",
+      "speed": 6,
+      "abilities": [{ "name": "Bog-Born", "text": "Moves through mud and shallow water as if it were open ground." }],
+      "attacks": [
+        { "name": "Rake", "damage": "2d6+4" },
+        { "name": "Drowning Grasp", "damage": "1d8+4", "rider": "STR save DC 13 or Submerged for 1 round" }
+      ],
+      "bloodied": "Its skin sloughs into black water: +2 armor until the end of its next turn."
+    },
+    { "kind": "monster", "name": "Drowned Acolyte", "level": 1, "minion": true, "attacks": [{ "name": "Hook", "damage": "1d6" }] },
+    { "kind": "monster", "name": "Bog Wisp", "source": { "id": "mossbank:bog-wisp" }, "level": 2, "hp": 22 },
+    { "kind": "monster", "name": "Crypt Rat", "source": { "id": "mossbank:crypt-rat" }, "level": 0, "hp": 6 },
+    { "kind": "monster", "name": "Lantern Eel", "level": 3, "armor": "none" },
+    { "kind": "item", "name": "Tidecaller's Hook", "rarity": "uncommon", "text": "While you hold it, you can breathe under water for 1 minute, once per day." }
+  ],
+  "notes": [
+    { "kind": "npc", "name": "Irinia", "fields": { "role": "Cleric of the Tide", "level": 3, "hp": 28 },
+      "card": { "look": "Salt-white hair, barnacle earrings", "wants": "To seal the crypt before the spring tide", "voice": "Slow, as if counting waves", "secret": "She opened the crypt." } },
+    { "kind": "npc", "name": "Old Pell", "fields": { "role": "Ferryman" } },
+    { "kind": "location", "name": "The East Gate", "fields": { "region": "Mossbank" }, "body": "A rusted portcullis, half raised. Gulls nest in the gatehouse." }
+  ],
+  "maps": [
+    { "name": "Sunken Crypt", "image": { "file": "crypt.png" }, "grid": "30x20", "pins": [ … 7 pins … ] }
+  ]
+}`;
+const recordLines = { 'mire-hag': [6, 25], 'drowned-acolyte': [26, 26], 'bog-wisp': [27, 27], 'crypt-rat': [28, 28], 'lantern-eel': [29, 29], 'hook': [30, 30], 'irinia': [33, 34], 'old-pell': [35, 35], 'east-gate': [36, 36], 'crypt': [39, 39] };
+
+const RECORDS = [
+	{ id: 'mire-hag', status: 'new', kind: 'Monster', icon: 'skull', name: 'Mire Hag', meta: 'Level 4 · Fey', look: ['"Submerged" isn\'t a Nimble condition. Kept as text in Drowning Grasp.'], preview: 'monster' },
+	{ id: 'drowned-acolyte', status: 'new', kind: 'Monster', icon: 'skull', name: 'Drowned Acolyte', meta: 'Level 1 · Minion', preview: 'minion' },
+	{ id: 'irinia', status: 'new', kind: 'NPC', icon: 'user', name: 'Irinia', meta: 'Cleric of the Tide', preview: 'npc' },
+	{ id: 'east-gate', status: 'new', kind: 'Location', icon: 'map-pin', name: 'The East Gate', meta: 'Mossbank', preview: 'location' },
+	{ id: 'crypt', status: 'new', kind: 'Map', icon: 'image', name: 'Sunken Crypt', meta: '7 pins · 30 × 20', preview: 'map' },
+	{ id: 'hook', status: 'new', kind: 'Item', icon: 'gem', name: "Tidecaller's Hook", meta: 'Uncommon', preview: 'item' },
+	{ id: 'bog-wisp', status: 'update', kind: 'Monster', icon: 'skull', name: 'Bog Wisp', meta: '2 changes', preview: 'wisp', file: 'Compendium/Monsters/Bog Wisp.md' },
+	{ id: 'crypt-rat', status: 'same', kind: 'Monster', icon: 'skull', name: 'Crypt Rat', meta: 'Compendium/Monsters', preview: 'rat', file: 'Compendium/Monsters/Crypt Rat.md' },
+	{ id: 'old-pell', status: 'yours', kind: 'NPC', icon: 'user', name: 'Old Pell', meta: 'Your note', preview: 'pell', file: 'Mossbank/NPCs/Old Pell.md' },
+	{ id: 'lantern-eel', status: 'out', kind: 'Monster', icon: 'skull', name: 'Lantern Eel', meta: 'No HP and no stat block', preview: 'eel', reasons: ['It has no HP and no stat block.'] },
+];
+const GROUPS = [
+	{ status: 'new', title: 'New', icon: 'plus' },
+	{ status: 'update', title: 'Updates', icon: 'arrow-up' },
+	{ status: 'same', title: 'Already imported', icon: 'check-circle' },
+	{ status: 'yours', title: 'Already yours', icon: 'lock-simple' },
+	{ status: 'out', title: 'Left out', icon: 'prohibit' },
+];
+const STATUS_TAG = { new: ['plus', 'New'], update: ['arrow-up', 'Update'], same: ['check', 'Imported'], yours: ['lock-simple', 'Yours'], out: ['prohibit', 'Left out'] };
+const STATE_GLYPH = { same: 'check-circle', yours: 'lock-simple', out: 'prohibit' };
+
+const FILES = {
+	bundle: { name: 'sunken-crypt.json', icon: 'file-code', meta: '14 KB · bundle' },
+	png: { name: 'crypt.png', thumb: CRYPT, meta: '1.2 MB · 1500 × 1000' },
+	pasted: { name: 'Pasted text', icon: 'clipboard-text', meta: '31 lines' },
+	link: { name: 'nimble.nexus', icon: 'globe-simple', meta: 'Link' },
+	linkDone: { name: 'nimble.nexus', icon: 'globe-simple', meta: 'Fetched' },
+	broken: { name: 'crypt.json', icon: 'file-code', meta: "Isn't valid JSON", bad: true },
+	mystery: { name: 'notes.txt', icon: 'file-text', meta: '3 KB' },
+	ddb: { name: 'Pasted text', icon: 'clipboard-text', meta: '48 KB' },
+	pack: { name: 'hollow-lands.json', icon: 'package', meta: '86 KB' },
+	cryptOnly: { name: 'crypt.json', icon: 'file-code', meta: '9 KB · Watabou' },
+};
+
+/* ---------- study state ---------- */
+const STATES = [
+	['empty', 'Start'], ['dragging', 'Dragging over'], ['dragging-more', 'Dragging (more)'],
+	['review', 'Review: monster'], ['review-npc', 'NPC'], ['review-location', 'Location'], ['review-map', 'Map + pins'], ['review-item', 'Item'],
+	['review-update', 'Update: changes'], ['review-same', 'Already imported'], ['review-yours', 'Yours'], ['review-out', 'Left out'], ['review-source', 'Source'],
+	['missing-picture', 'JSON without its picture'], ['pasted', 'Pasted 5e → Nimble'],
+	['link', 'Link pasted'], ['fetching', 'Fetching'], ['fetch-failed', 'Fetch failed'], ['link-unknown', 'Unknown link'], ['link-ddb', 'D&D Beyond link'],
+	['reading', 'Reading'], ['unrecognised', 'Not recognised'], ['invalid', 'Unreadable file'], ['nothing-new', 'Nothing new'],
+	['ddb', 'D&D Beyond character'], ['pack', 'Content pack'], ['done', 'Done'],
+];
+const NOTES = {
+	empty: 'The whole body is the drop zone and file chooser (click, Enter or Space opens the picker). Paste sits beside it: text or a link, detected as you paste. ⌘V anywhere in the dialog pastes there, and a copied picture comes in as a file. The formats line lists the importers that are registered.',
+	dragging: 'Files dragged over any part of the dialog: the whole dialog is the target. The count comes from dataTransfer.items during dragover.',
+	'dragging-more': 'Dropping on a dialog that already has files adds to them; it never replaces them.',
+	review: 'Files given: one chip each. A picture whose name matches a data file sits with it in one box. Below that, what it was read as, from where, and its licence. Then the checklist, grouped by what will happen, beside a real preview of the selected record.',
+	'review-npc': 'An NPC previews as its NPC card (core npc-card, with the game\'s fields), with the note\'s body under it.',
+	'review-location': 'Locations, quests and sessions preview as core\'s campaign card (drawCampaignCard), which already takes properties and text.',
+	'review-map': 'A map previews with its picture and every pin where it will sit; the key lists each pin\'s text. Clicking a pin or a key row shows which is which. The room-notes choice belongs to the map, so it sits here.',
+	'review-item': 'Content kinds (spells, items, classes…) preview as the game\'s own card: GameContent.card, the same one a ```nimble-item block draws.',
+	'review-update': 'An update opens on Changes: field by field, what the vault has and what the import brings.',
+	'review-same': 'Already imported and unchanged: no tick. The preview says where it is and opens it.',
+	'review-yours': 'Your own note by the same name: left alone, never touched.',
+	'review-out': 'Left out: the reasons first, in plain words, then its source opened at the record.',
+	'review-source': 'Source: the record as read, or the whole file, as code with line numbers. Not a textarea.',
+	'missing-picture': 'A dungeon\'s JSON without its PNG: the map record says what\'s missing and takes the picture right there.',
+	pasted: 'Pasted text that more than one importer reads: the switch. A 5e monster in a Nimble campaign: Convert to Nimble, with the conversion notes on the record and its original one tab away.',
+	link: 'A pasted link is never fetched on its own: the button names the site.',
+	fetching: 'Fetching: the button says so; Cancel still works.',
+	'fetch-failed': 'The site\'s answer, in plain words, and Try again.',
+	'link-unknown': 'A link no importer declares: say so and point at the file.',
+	'link-ddb': 'D&D Beyond is never fetched. The link gives the address of its data to open in the browser; the user pastes what it shows.',
+	reading: 'Reading: only shown when it takes long enough to notice.',
+	unrecognised: 'No importer recognises it: say so, let them pick one by hand (its own error is clearer), and show the text.',
+	invalid: 'A file that can\'t be read: which file, where, and the line in the source.',
+	'nothing-new': 'Everything is already in the vault: the list still shows it (and previews it); Import is off.',
+	ddb: 'Custom reviews (CustomReview.render) keep the frame: sources, the read band, the footer. Their body sits in a readable column.',
+	pack: 'A content pack: what it adds by kind, where it\'s saved, what\'s left out.',
+	done: 'After Import: what was written, each one a link, and anything that failed with why. One note written: the main button opens it.',
+};
+const S = { state: 'review', view: 'desktop', game: 'nimble', theme: 'light', sel: 'mire-hag', tab: 'preview', srcScope: 'record', ticked: new Set(['mire-hag', 'drowned-acolyte', 'irinia', 'east-gate', 'crypt', 'hook', 'bog-wisp', 'lurker']), closed: new Set(['same', 'yours']), detailOpen: false, pin: '6', filter: '', convert: true, roomNotes: false, ddbNote: true };
+
+function setState(id) {
+	S.state = id; S.detailOpen = false; S.srcScope = 'record';
+	const pick = { review: 'mire-hag', 'review-npc': 'irinia', 'review-location': 'east-gate', 'review-map': 'crypt', 'review-item': 'hook', 'review-update': 'bog-wisp', 'review-same': 'crypt-rat', 'review-yours': 'old-pell', 'review-out': 'lantern-eel', 'review-source': 'mire-hag', 'missing-picture': 'crypt', 'nothing-new': 'crypt-rat' }[id];
+	if (pick) S.sel = pick;
+	S.tab = id === 'review-update' ? 'changes' : id === 'review-source' || id === 'review-out' ? 'source' : 'preview';
+	if (id === 'review-same' || id === 'review-yours') S.closed.delete(id === 'review-same' ? 'same' : 'yours');
+	if (id === 'review-same' || id === 'review-yours' || id === 'review-out' || id === 'review-update') S.detailOpen = true;
+	if (/^review-(npc|location|map|item)$/.test(id)) S.detailOpen = true;
+	if (id === 'pasted') S.sel = 'lurker';
+	render();
+}
+
+/* ---------- the dialog ---------- */
+function render() {
+	document.body.className = `theme-${S.theme}`;
+	const frame = document.getElementById('frame');
+	frame.className = `frame ${S.view}`;
+	frame.querySelector('.ev-import')?.remove();
+	const game = S.state === 'ddb' ? 'dnd5e' : S.game;
+	const narrow = S.view !== 'desktop';
+	const m = h('div', { cls: `ev-import ev-dialog ev-sys-${game}${narrow ? ' is-narrow' : ''}${S.detailOpen ? ' is-detail-open' : ''}`, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'evi-title' });
+	frame.append(m);
+	const st = S.state;
+	const title = st === 'ddb' ? 'Import a D&D Beyond character' : 'Import';
+	m.append(h('div', { cls: 'ev-import-titlebar' }, h('h2', { cls: 'ev-import-title', id: 'evi-title', text: title }), h('button', { cls: 'ev-import-close', 'aria-label': 'Close', type: 'button' }, icon('x'))));
+	const body = h('div', { cls: 'ev-import-body' });
+
+	const sources = sourcesFor(st);
+	if (sources) m.append(sources);
+	const band = readBand(st);
+	if (band) m.append(band);
+	m.append(body);
+
+	let main = { text: 'Import', icon: 'check', disabled: true };
+	if (st === 'empty' || st === 'dragging') body.append(start());
+	if (st === 'dragging' || st === 'dragging-more') m.append(dragOverlay(st === 'dragging' ? 'Drop to add 2 files' : 'Drop to add 1 more file'));
+	if (st.startsWith('review') || st === 'dragging-more' || st === 'missing-picture' || st === 'nothing-new') {
+		body.append(review(st));
+		const n = st === 'nothing-new' ? 0 : [...S.ticked].filter(id => recordsFor(st).some(r => r.id === id)).length + (st === 'missing-picture' ? 0 : 0);
+		main = { text: n ? `Import ${n}` : 'Import', icon: 'check', disabled: !n };
+	}
+	if (st === 'pasted') { body.append(review(st)); main = { text: S.ticked.has('lurker') ? 'Import 1' : 'Import', icon: 'check', disabled: !S.ticked.has('lurker') }; }
+	if (['link', 'fetching', 'fetch-failed', 'link-unknown', 'link-ddb', 'reading', 'unrecognised', 'invalid'].includes(st)) body.append(status(st));
+	if (st === 'ddb') { body.append(ddb()); main = { text: 'Import', icon: 'user', disabled: false }; }
+	if (st === 'pack') { body.append(pack()); main = { text: 'Add pack', icon: 'package', disabled: false }; }
+	if (st === 'done') body.append(done());
+
+	const foot = h('div', { cls: 'ev-dialog-foot' });
+	if (st === 'done') {
+		foot.append(pill('button', { cls: 'ev-dialog-btn is-cancel', text: 'Import more', icon: 'plus' }));
+		foot.append(pill('button', { cls: 'ev-dialog-btn is-main', text: 'Done', icon: 'check' }));
+	} else {
+		foot.append(pill('button', { cls: 'ev-dialog-btn is-cancel', text: st === 'fetching' ? 'Cancel' : 'Cancel' }));
+		if (!narrow && (st.startsWith('review') || st === 'pasted') && st !== 'nothing-new') foot.append(h('span', { cls: 'ev-dialog-foot-hint', text: '⌘↵' }));
+		foot.append(pill('button', { cls: 'ev-dialog-btn is-main', text: main.text, icon: main.icon, disabled: main.disabled }));
+	}
+	m.append(foot);
+	document.getElementById('note').textContent = NOTES[st] || '';
+	for (const b of document.querySelectorAll('#states button')) b.classList.toggle('on', b.dataset.id === st);
+	for (const b of document.querySelectorAll('.study-group button')) b.classList.toggle('on', S[b.dataset.k] === b.dataset.v);
+}
+
+function sourceChip(f, o = {}) {
+	const thumb = h('span', { cls: 'ev-import-source-thumb' }, f.thumb ? h('img', { src: f.thumb, alt: '' }) : icon(f.icon));
+	return h('div', { cls: `ev-import-source${o.on ? ' is-on' : ''}`, role: 'group', 'aria-label': f.name },
+		thumb,
+		h('span', { cls: 'ev-import-source-text' }, h('span', { cls: 'ev-import-source-name', text: f.name }), h('span', { cls: `ev-import-source-meta${f.bad ? ' is-bad' : ''}`, text: f.meta })),
+		h('button', { cls: 'ev-import-source-remove', type: 'button', 'aria-label': `Remove ${f.name}`, title: 'Remove' }, icon('x')));
+}
+function sourcesFor(st) {
+	const row = h('div', { cls: 'ev-import-sources', role: 'list', 'aria-label': 'What you gave' });
+	const add = () => pill('button', { cls: 'ev-import-add', icon: 'plus', text: 'Add', title: 'Add files' });
+	const pair = () => h('div', { cls: 'ev-import-pair', role: 'listitem' }, sourceChip(FILES.bundle), h('span', { cls: 'ev-import-pair-link', title: 'crypt.png goes with this file' }, icon('link')), sourceChip(FILES.png));
+	if (st === 'empty' || st === 'dragging') return null;
+	if (st.startsWith('review') || st === 'dragging-more' || st === 'nothing-new') { row.append(pair(), add()); return row; }
+	if (st === 'missing-picture') { row.append(sourceChip(FILES.cryptOnly), add()); return row; }
+	if (st === 'pasted') { row.append(sourceChip(FILES.pasted, { on: S.tab === 'source' }), add()); return row; }
+	if (['link', 'fetching', 'fetch-failed', 'link-unknown', 'link-ddb'].includes(st)) { row.append(sourceChip({ ...FILES.link, name: st === 'link-unknown' ? 'example.com' : st === 'link-ddb' ? 'dndbeyond.com' : 'nimble.nexus' })); return row; }
+	if (st === 'reading') { row.append(pair()); return row; }
+	if (st === 'unrecognised') { row.append(sourceChip(FILES.mystery), add()); return row; }
+	if (st === 'invalid') { row.append(sourceChip(FILES.broken), sourceChip(FILES.png), add()); return row; }
+	if (st === 'ddb') { row.append(sourceChip(FILES.ddb)); return row; }
+	if (st === 'pack') { row.append(sourceChip(FILES.pack)); return row; }
+	return null;
+}
+
+function readBand(st) {
+	const mk = (ic, name, subs, tools, extra) => {
+		const b = h('div', { cls: 'ev-import-read' });
+		b.append(h('span', { cls: 'ev-import-read-icon' }, icon(ic)), h('div', { cls: 'ev-import-read-name', text: name }));
+		b.append(h('div', { cls: 'ev-import-read-sub' }, subs.map(s => h('span', {}, s.icon ? icon(s.icon) : null, s.href ? h('a', { href: '#', text: s.text }) : s.text))));
+		if (tools && tools.length) b.append(h('div', { cls: 'ev-import-read-tools' }, tools));
+		if (extra) b.append(extra);
+		return b;
+	};
+	if (st.startsWith('review') || st === 'dragging-more' || st === 'missing-picture' || st === 'nothing-new') {
+		if (st === 'missing-picture') return mk('image', 'Sunken Crypt', [{ text: 'Watabou dungeon' }, { text: 'a map' }], []);
+		const look = h('button', { cls: 'ev-pill ev-import-look-toggle', type: 'button', 'aria-expanded': String(!!S.lookOpen), onclick: () => { S.lookOpen = !S.lookOpen; render(); } }, h('span', { cls: 'ev-pill-icon' }, icon('warning')), h('span', { cls: 'ev-pill-text', text: '1 to look at' }));
+		const extra = S.lookOpen ? h('div', { cls: 'ev-import-look' }, h('ul', {}, h('li', { text: 'The bundle has a "campaign" section. It isn\'t read yet, so chapters and scenes are left out.' }))) : null;
+		return mk('books', 'The Sunken Crypt', [{ text: 'Ember Vault bundle' }, { text: '6 monsters, an item, 3 notes, a map' }, { icon: 'scales', text: 'CC BY 4.0' }, { icon: 'link', text: 'mossbank.example', href: true }], [look], extra);
+	}
+	if (st === 'pasted') {
+		const sel = h('label', { cls: 'ev-import-as' }, 'Read as', h('select', { cls: 'ev-import-select', style: `background-image:${svgUrl('caret-down', '%23625C53')}` }, h('option', { text: 'Fantasy Statblocks' }), h('option', { text: 'Pasted stat block' })));
+		const sw = h('label', { cls: 'ev-import-switch' }, h('input', { type: 'checkbox', checked: S.convert, role: 'switch', onchange: e => { S.convert = e.target.checked; render(); } }), 'Convert to Nimble');
+		return mk('clipboard-text', 'Marsh Lurker', [{ text: 'a 5e monster' }, { text: 'this campaign plays Nimble' }], [sel, sw]);
+	}
+	if (st === 'ddb') return mk('user', 'Mira Hollowell', [{ text: 'Level 7 Hollowblade' }, { text: 'Elf' }, { text: '2024 rules' }], []);
+	if (st === 'pack') return mk('package', 'Hollow Lands', [{ text: 'Content pack' }, { text: 'Nimble' }, { icon: 'scales', text: 'CC BY 4.0' }], []);
+	if (st === 'invalid' || st === 'unrecognised') return null;
+	return null;
+}
+
+/* Start */
+// Each registered importer's label, from allImporters(): the line follows what's installed.
+const FORMATS = ['Ember Vault bundles', 'content packs', 'Nimble Nexus', 'Nimbrew', 'Fantasy Statblocks', 'D&D Beyond characters', '5etools', 'Open5e', 'Watabou', 'donjon', 'Universal VTT', 'pictures'];
+function start() {
+	const phone = S.view === 'phone';
+	const s = h('div', { cls: 'ev-import-start' });
+	const drop = h('div', { cls: 'ev-import-drop', role: 'button', tabindex: '0', 'aria-label': phone ? 'Choose files' : 'Choose files, or drop them here' },
+		h('span', { cls: 'ev-import-drop-icon' }, icon(phone ? 'folder-simple' : 'tray-arrow-down')),
+		phone ? h('div', {}, h('div', { cls: 'ev-import-drop-title', text: 'Choose files' }), h('div', { cls: 'ev-import-drop-sub', text: 'JSON, YAML, ZIP, pictures' }))
+			: [h('div', { cls: 'ev-import-drop-title', text: 'Drop files here' }), h('div', { cls: 'ev-import-drop-sub', text: 'Several at once: a dungeon and its picture' }), pill('button', { cls: 'ev-import-choose', icon: 'folder-simple', text: 'Choose files' })]);
+	const paste = h('div', { cls: 'ev-import-pastebox' },
+		h('label', { cls: 'ev-import-label', for: 'evi-paste' }, icon('clipboard-text'), 'Or paste'),
+		h('textarea', { cls: 'ev-import-paste', id: 'evi-paste', spellcheck: 'false', placeholder: 'A stat block, JSON, or a link' }));
+	const formats = h('div', { cls: 'ev-import-formats' }, h('b', { text: 'Reads ' }), FORMATS.map((f, i) => [h('span', { cls: 'ev-import-format', text: f + (i < FORMATS.length - 1 ? ' · ' : '. ') }), ' ']), h('a', { href: '#', text: 'Import guide' }));
+	s.append(drop, paste, formats);
+	return s;
+}
+function dragOverlay(text) {
+	return h('div', { cls: 'ev-import-drag', 'aria-hidden': 'true' }, h('span', { cls: 'ev-import-drop-icon' }, icon('tray-arrow-down')), h('div', { cls: 'ev-import-drag-title', text }), h('div', { cls: 'ev-import-drag-sub', text: 'A picture with the same name as a data file goes with it' }));
+}
+
+/* Status cards */
+function status(st) {
+	const s = h('div', { cls: 'ev-import-status' });
+	const card = (ic, title, text, actions, o = {}) => h('div', { cls: 'ev-import-card', role: o.alert ? 'alert' : 'status' },
+		h('span', { cls: `ev-import-card-icon${o.bad ? ' is-bad' : ''}` }, icon(ic, o.spin ? 'ev-import-spin' : '')),
+		h('div', { cls: 'ev-import-card-title', text: title }),
+		o.url ? h('div', { cls: 'ev-import-card-url', text: o.url }) : null,
+		text ? h('div', { cls: 'ev-import-card-text', text }) : null,
+		actions && actions.length ? h('div', { cls: 'ev-import-card-actions' }, actions) : null);
+	const url = 'https://nimble.nexus/monsters/mire-hag';
+	if (st === 'link') s.append(card('globe-simple', 'A Nimble Nexus monster', null, [pill('button', { cls: 'ev-import-btn is-main', icon: 'arrow-square-out', text: 'Fetch from nimble.nexus' })], { url }));
+	if (st === 'fetching') s.append(card('circle-notch', 'Fetching from nimble.nexus', null, [pill('button', { cls: 'ev-import-btn', text: 'Stop' })], { url, spin: true }));
+	if (st === 'fetch-failed') s.append(card('warning', "Couldn't fetch from nimble.nexus", 'The site answered 404: no monster at that address.', [pill('button', { cls: 'ev-import-btn', icon: 'arrows-clockwise', text: 'Try again' })], { url, bad: true, alert: true }));
+	if (st === 'link-unknown') s.append(card('globe-simple', "Ember Vault can't read links from example.com", 'Download the export there, then choose the file.', [pill('button', { cls: 'ev-import-btn is-main', icon: 'folder-simple', text: 'Choose files' })], { url: 'https://example.com/dungeons/1234' }));
+	if (st === 'link-ddb') s.append(card('user', 'A D&D Beyond character', 'Open its data in your browser, copy everything it shows, and paste it here. The character has to be public.', [pill('button', { cls: 'ev-import-btn is-main', icon: 'arrow-square-out', text: 'Open the data' })], { url: 'https://www.dndbeyond.com/characters/123456789' }));
+	if (st === 'reading') s.append(card('circle-notch', 'Reading sunken-crypt.json', null, [], { spin: true }));
+	if (st === 'unrecognised') {
+		s.append(card('question', "Ember Vault doesn't recognise notes.txt", null, [
+			h('label', { cls: 'ev-import-as' }, 'Read as', h('select', { cls: 'ev-import-select', style: `background-image:${svgUrl('caret-down', '%23625C53')}` }, h('option', { text: 'Choose a format…' }), h('option', { text: 'Pasted stat block' }), h('option', { text: 'Fantasy Statblocks' }), h('option', { text: 'Nimble Nexus' }))),
+			pill('button', { cls: 'ev-import-btn', icon: 'book-open', text: 'Import guide' }),
+		]));
+		s.append(code('The Mire Hag lives under the altar.\nShe has 52 HP, medium armor and speed 6.\nRake 2d6+4, Drowning Grasp 1d8+4.\n\nIrinia keeps the lamp in the chapel.'.split('\n')));
+	}
+	if (st === 'invalid') {
+		s.append(card('warning', "crypt.json isn't valid JSON", 'Line 14: a comma is missing after the closing brace.', [pill('button', { cls: 'ev-import-btn', icon: 'x', text: 'Remove crypt.json' })], { bad: true, alert: true }));
+		s.append(code(['{', '  "title": "Sunken Crypt",', '  "story": "The tide took the chapel a hundred years ago.",', '  "rects": [', '    { "x": 0, "y": 0, "w": 11, "h": 8 },', '    { "x": 14, "y": 0, "w": 16, "h": 10 }', '  ],', '  "notes": [', '    {', '      "text": "Black water to the knee.",', '      "ref": "1",', '      "pos": { "x": 5.5, "y": 4 }', '    }', '    {', '      "text": "Forty clay urns, sealed with wax.",', '      "ref": "2",'], { err: 14 }));
+	}
+	return s;
+}
+
+/* Code view: JSON lightly tinted (keys, strings, numbers), with line numbers. */
+function code(lines, o = {}) {
+	const box = h('div', { cls: 'ev-import-code', role: 'region', 'aria-label': 'Source', tabindex: '0' });
+	lines.forEach((ln, i) => {
+		const row = h('div', { cls: `ev-import-code-line${o.err === i + 1 ? ' is-err' : ''}${o.rec && i + 1 >= o.rec[0] && i + 1 <= o.rec[1] ? ' is-rec' : ''}` });
+		const span = h('span');
+		const re = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?)|([{}[\],])/g;
+		let last = 0, m;
+		while ((m = re.exec(ln))) {
+			if (m.index > last) span.append(ln.slice(last, m.index));
+			if (m[1]) { span.append(h('span', { cls: m[2] ? 'k' : 's', text: m[1] })); if (m[2]) span.append(m[2]); }
+			else if (m[3]) span.append(h('span', { cls: 'n', text: m[3] }));
+			else span.append(h('span', { cls: 'p', text: m[4] }));
+			last = re.lastIndex;
+		}
+		span.append(ln.slice(last));
+		row.append(span);
+		box.append(row);
+	});
+	return box;
+}
+
+/* Review: checklist + detail */
+function recordsFor(st) {
+	if (st === 'pasted') return [{ id: 'lurker', status: 'new', kind: 'Monster', icon: 'skull', name: 'Marsh Lurker', meta: S.convert ? 'Level 3 · converted from 5e' : 'CR 3 · 5e', preview: 'lurker', converted: S.convert, look: S.convert ? ['AC 15 → medium armor', 'CR 3 → level 3 (its HP and damage fit level 3)', 'Bite and Claw are one attack per round: Bite 2d8+3'] : null }];
+	if (st === 'missing-picture') return [{ id: 'crypt', status: 'new', kind: 'Map', icon: 'image', name: 'Sunken Crypt', meta: 'Needs crypt.png', preview: 'map-missing' }];
+	if (st === 'nothing-new') return RECORDS.filter(r => r.status === 'same').concat([{ ...RECORDS[0], status: 'same', meta: 'Compendium/Monsters', id: 'mh2' }]);
+	return RECORDS;
+}
+function review(st) {
+	const recs = recordsFor(st);
+	const wrap = h('div', { cls: 'ev-import-review' });
+	const rail = h('div', { cls: 'ev-import-rail' });
+	const tickable = recs.filter(r => r.status === 'new' || r.status === 'update');
+	const n = tickable.filter(r => S.ticked.has(r.id)).length;
+	const all = h('input', { type: 'checkbox', checked: n === tickable.length && n > 0, disabled: !tickable.length, onchange: e => { for (const r of tickable) e.target.checked ? S.ticked.add(r.id) : S.ticked.delete(r.id); render(); } });
+	queueMicrotask(() => { all.indeterminate = n > 0 && n < tickable.length; });
+	const tools = h('div', { cls: 'ev-import-tools' }, h('label', { cls: 'ev-import-all' }, all, tickable.length ? `All ${tickable.length}` : 'All'));
+	if (recs.length > 6) tools.append(h('input', { cls: 'ev-import-filter', type: 'search', placeholder: 'Filter', 'aria-label': 'Filter', style: `background-image:${svgUrl('magnifying-glass', '%23625C53')}` }));
+	rail.append(tools);
+	const list = h('div', { cls: 'ev-import-list', role: 'list' });
+	for (const g of GROUPS) {
+		const rows = recs.filter(r => r.status === g.status);
+		if (!rows.length) continue;
+		const closed = S.closed.has(g.status);
+		const grp = h('div', { cls: `ev-import-group${closed ? ' is-closed' : ''}`, role: 'group', 'aria-label': g.title });
+		grp.append(h('button', { cls: 'ev-import-group-head', type: 'button', 'aria-expanded': String(!closed), onclick: () => { closed ? S.closed.delete(g.status) : S.closed.add(g.status); render(); } },
+			h('span', { cls: 'ev-import-group-title', text: g.title }), h('span', { cls: 'ev-import-group-count', text: String(rows.length) }), icon('caret-down', 'ev-import-group-caret')));
+		for (const r of rows) grp.append(row(r));
+		list.append(grp);
+	}
+	rail.append(list);
+	wrap.append(rail, detail(recs.find(r => r.id === S.sel) || recs[0], recs));
+	// Narrow: what was given and what it was read as scroll away with the list, so the list gets the height.
+	if (S.view !== 'desktop') queueMicrotask(() => {
+		const m = wrap.closest('.ev-import');
+		const top = [m.querySelector(':scope > .ev-import-sources'), m.querySelector(':scope > .ev-import-read')].filter(Boolean);
+		list.prepend(...top, tools);
+	});
+	return wrap;
+}
+function row(r) {
+	const tick = r.status === 'new' || r.status === 'update';
+	const sel = S.sel === r.id;
+	const el = h('div', { cls: `ev-import-row${sel ? ' is-selected' : ''}${tick && !S.ticked.has(r.id) ? ' is-off' : ''}${!tick ? ' is-off' : ''}`, role: 'listitem', 'aria-current': sel ? 'true' : undefined,
+		onclick: e => { if (e.target.tagName === 'INPUT') return; S.sel = r.id; S.tab = r.status === 'update' ? 'changes' : r.status === 'out' ? 'source' : 'preview'; S.detailOpen = true; render(); } });
+	if (tick) {
+		const cb = h('input', { type: 'checkbox', checked: S.ticked.has(r.id), 'aria-label': `Import ${r.name}`, onchange: e => { e.target.checked ? S.ticked.add(r.id) : S.ticked.delete(r.id); render(); } });
+		el.append(cb);
+	} else el.append(h('span', { cls: 'ev-import-row-state', title: STATUS_TAG[r.status][1] }, icon(STATE_GLYPH[r.status])));
+	el.append(h('span', { cls: 'ev-import-row-icon' }, icon(r.icon)));
+	el.append(h('span', { cls: 'ev-import-row-text' }, h('button', { cls: 'sr-only', type: 'button', text: `Preview ${r.name}` }), h('span', { cls: 'ev-import-row-name', text: r.name }), h('span', { cls: 'ev-import-row-meta', text: `${r.kind} · ${r.meta}` })));
+	const end = h('span', { cls: 'ev-import-row-end' });
+	if (r.converted) end.append(pill('span', { cls: 'ev-import-tag', icon: 'sparkle', text: 'Converted' }));
+	if (r.look && !r.converted) end.append(h('span', { cls: 'is-look', title: 'Worth a look', 'aria-label': 'Worth a look' }, icon('warning')));
+	end.append(icon('caret-right', 'ev-import-row-go'));
+	el.append(end);
+	return el;
+}
+function detail(r, recs) {
+	const d = h('div', { cls: 'ev-import-detail', 'aria-label': `${r.name}` });
+	const idx = recs.indexOf(r);
+	const tick = r.status === 'new' || r.status === 'update';
+	const head = h('div', { cls: 'ev-import-detail-head' },
+		h('button', { cls: 'ev-import-back', type: 'button', 'aria-label': 'Back to the list', onclick: () => { S.detailOpen = false; render(); } }, icon('arrow-left')),
+		h('div', { cls: 'ev-import-detail-title' }, h('div', { cls: 'ev-import-detail-name', text: r.name }), h('div', { cls: 'ev-import-detail-meta' }, pill('span', { cls: 'ev-import-tag', icon: STATUS_TAG[r.status][0], text: STATUS_TAG[r.status][1] }), `${r.kind} · ${r.meta}`)));
+	if (tick) {
+		const cb = h('input', { type: 'checkbox', checked: S.ticked.has(r.id), onchange: e => { e.target.checked ? S.ticked.add(r.id) : S.ticked.delete(r.id); render(); } });
+		head.append(h('label', { cls: 'ev-import-detail-tick' }, cb, 'Import'));
+	}
+	head.append(h('div', { cls: 'ev-import-step' },
+		h('button', { type: 'button', 'aria-label': 'Previous', disabled: idx <= 0, onclick: () => { S.sel = recs[idx - 1].id; render(); } }, icon('caret-up')),
+		h('button', { type: 'button', 'aria-label': 'Next', disabled: idx >= recs.length - 1, onclick: () => { S.sel = recs[idx + 1].id; render(); } }, icon('caret-down'))));
+	d.append(head);
+	const tabs = [['preview', 'eye', 'Preview']];
+	if (r.status === 'update') tabs.unshift(['changes', 'swap', 'Changes']);
+	if (r.converted) tabs.push(['original', 'book-open', 'Original']);
+	tabs.push(['source', 'code', 'Source']);
+	if (!tabs.some(t => t[0] === S.tab)) S.tab = tabs[0][0];
+	d.append(h('div', { cls: 'ev-import-tabs' }, h('div', { cls: 'ev-import-seg', role: 'tablist' }, tabs.map(([id, ic, t]) => pill('button', { cls: S.tab === id ? 'is-on' : '', icon: ic, text: t, onclick: () => { S.tab = id; render(); } })))));
+	const pane = h('div', { cls: 'ev-import-pane', role: 'tabpanel' });
+	if (S.tab === 'source') pane.append(...sourcePane(r));
+	else if (S.tab === 'changes') pane.append(...changes(r));
+	else if (S.tab === 'original') pane.append(statblock5e());
+	else pane.append(...preview(r));
+	d.append(pane);
+	return d;
+}
+
+function noteBox(kind, ic, title, items, actions) {
+	return h('div', { cls: `ev-import-note${kind ? ` is-${kind}` : ''}`, role: kind === 'bad' ? 'alert' : undefined }, icon(ic),
+		h('div', {}, title ? h('div', { cls: 'ev-import-note-title', text: title }) : null, items && items.length > 1 ? h('ul', {}, items.map(t => h('li', { text: t }))) : items ? h('div', { text: items[0] }) : null),
+		actions ? h('div', { cls: 'ev-import-note-actions' }, actions) : null);
+}
+function preview(r) {
+	const out = [];
+	if (r.look && r.status !== 'out') out.push(noteBox('look', 'warning', r.converted ? 'Converted from 5e' : 'Worth a look', r.look));
+	if (r.status === 'same') out.push(noteBox('', 'check-circle', 'Imported before, and unchanged', [r.file], [pill('button', { cls: 'ev-import-btn', icon: 'arrow-square-out', text: 'Open' })]));
+	if (r.status === 'yours') out.push(noteBox('', 'lock-simple', 'The vault has its own Old Pell, so this one is left alone', [r.file], [pill('button', { cls: 'ev-import-btn', icon: 'arrow-square-out', text: 'Open yours' })]));
+	if (r.status === 'out') out.push(noteBox('bad', 'prohibit', 'Left out', r.reasons));
+	const paper = h('div', { cls: 'ev-import-paper' });
+	out.push(paper);
+	const p = r.preview;
+	if (p === 'monster' || p === 'lurker') paper.append(statblock(p === 'lurker' ? LURKER : HAG));
+	if (p === 'minion') paper.append(statblock(ACOLYTE));
+	if (p === 'wisp') paper.append(statblock(WISP));
+	if (p === 'rat') paper.append(statblock(RAT));
+	if (p === 'eel') paper.append(statblock(EEL));
+	if (p === 'npc' || p === 'pell') paper.append(npc(p === 'pell'));
+	if (p === 'location') paper.append(locationCard());
+	if (p === 'item') paper.append(item());
+	if (p === 'map') paper.append(...map());
+	if (p === 'map-missing') paper.append(mapMissing());
+	return out;
+}
+const HAG = { name: 'Mire Hag', sub: 'Lvl 4, Fey (Hag)', hp: 52, armor: 'M', speed: 6, abilities: [['Bog-Born.', 'Moves through mud and shallow water as if it were open ground.']], attacks: [['Rake.', '2d6+4', ''], ['Drowning Grasp.', '1d8+4', ' On a hit: STR save DC 13 or Submerged for 1 round.']], bloodied: 'Its skin sloughs into black water: +2 armor until the end of its next turn.' };
+const ACOLYTE = { name: 'Drowned Acolyte', sub: 'Lvl 1, Minion', hp: null, armor: null, speed: 6, abilities: [], attacks: [['Hook.', '1d6', '']] };
+const WISP = { name: 'Bog Wisp', sub: 'Lvl 2, Fey', hp: 22, armor: null, speed: 8, abilities: [['Flicker.', 'When it\'s hit, it can move 2 spaces (once per round).']], attacks: [['Cold Light.', '1d8+2', ' Range 6.']] };
+const RAT = { name: 'Crypt Rat', sub: 'Lvl 0, Beast', hp: 6, armor: null, speed: 8, abilities: [], attacks: [['Bite.', '1d4+1', '']] };
+const EEL = { name: 'Lantern Eel', sub: 'Lvl 3, Beast', hp: '—', armor: null, speed: 8, abilities: [['Lure.', 'Its light draws the eye.']], attacks: [] };
+const LURKER = { name: 'Marsh Lurker', sub: 'Lvl 3, Beast', hp: 45, armor: 'M', speed: 6, abilities: [['Hold Breath.', 'Can stay under water for an hour.']], attacks: [['Bite.', '2d8+3', ' On a hit: Grappled.']] };
+function statblock(m) {
+	const sb = h('div', { cls: 'sb' });
+	sb.append(h('div', { cls: 'sb-name' }, m.name, h('span', { cls: 'sb-sub', text: m.sub })));
+	const stats = h('div', { cls: 'sb-stats' });
+	if (m.hp !== null) stats.append(h('span', { cls: 'sb-stat hp' }, icon('heart-fill'), String(m.hp)));
+	if (m.armor) stats.append(h('span', { cls: 'sb-stat' }, icon('shield'), m.armor));
+	stats.append(h('span', { cls: 'sb-stat' }, icon('footprints'), String(m.speed)));
+	sb.append(stats);
+	for (const [n, t] of m.abilities) sb.append(h('div', { cls: 'sb-band' }, h('b', { text: n }), ' ', t));
+	if (m.attacks.length) sb.append(h('ul', {}, m.attacks.map(([n, d, t]) => h('li', {}, h('b', { text: n }), ' ', h('span', { cls: 'dice', text: d }), '.', t.includes('Submerged') ? [' On a hit: ', h('span', { cls: 'term', text: 'STR' }), ' save DC 13 or Submerged for 1 round.'] : t))));
+	if (m.bloodied) sb.append(h('div', { cls: 'sb-band is-blood' }, h('b', { text: 'Bloodied.' }), ' ', m.bloodied));
+	return sb;
+}
+function statblock5e() {
+	const sb = h('div', { cls: 'sb', style: 'font-family: Georgia, serif' });
+	sb.append(h('div', { cls: 'sb-name', style: 'font-style:normal;font-variant:small-caps;color:#7B1E12' }, 'Marsh Lurker'), h('div', { cls: 'ev-import-muted', style: 'font-style:italic', text: 'Large Beast, Unaligned' }));
+	sb.append(h('div', { style: 'margin-top:8px;font-size:14px' }, h('div', {}, h('b', { text: 'AC ' }), '15 (natural armor)'), h('div', {}, h('b', { text: 'HP ' }), '45 (6d10 + 12)'), h('div', {}, h('b', { text: 'Speed ' }), '30 ft., swim 40 ft.'), h('div', {}, h('b', { text: 'CR ' }), '3')));
+	sb.append(h('div', { style: 'margin-top:8px;font-size:14px' }, h('b', { text: 'Multiattack. ' }), 'The lurker makes one Bite and one Claw attack.'));
+	sb.append(h('div', { style: 'margin-top:4px;font-size:14px' }, h('b', { text: 'Bite. ' }), '+5 to hit, reach 5 ft. 12 (2d8 + 3) piercing damage.'));
+	sb.append(h('div', { style: 'margin-top:4px;font-size:14px' }, h('b', { text: 'Claw. ' }), '+5 to hit, reach 5 ft. 8 (2d4 + 3) slashing damage.'));
+	return sb;
+}
+function npc(pell) {
+	const c = h('div', { cls: 'npc' });
+	c.append(h('div', { cls: 'npc-portrait', text: pell ? 'OP' : 'Ir' }));
+	const t = h('div');
+	t.append(h('div', { cls: 'npc-name', text: pell ? 'Old Pell' : 'Irinia' }), h('div', { cls: 'npc-role', text: pell ? 'Ferryman' : 'Cleric of the Tide' }));
+	if (!pell) {
+		t.append(h('div', { cls: 'npc-facts' }, pill('span', { cls: 'npc-fact', text: 'Lvl 3' }), pill('span', { cls: 'npc-fact', icon: 'heart-fill', text: '28' }), pill('span', { cls: 'npc-fact', icon: 'shield', text: 'M' })));
+		t.append(h('dl', {}, [['Look', 'Salt-white hair, barnacle earrings'], ['Wants', 'To seal the crypt before the spring tide'], ['Voice', 'Slow, as if counting waves'], ['Secret', 'She opened the crypt.']].map(([k, v]) => [h('dt', { text: k }), h('dd', { text: v })])));
+	}
+	c.append(t);
+	if (!pell) c.append(h('div', { cls: 'npc-body', text: 'She keeps a lamp lit by the chapel door, and asks every visitor whether the tide is rising.' }));
+	return c;
+}
+function locationCard() {
+	return h('div', { cls: 'loc' }, h('div', { cls: 'loc-banner' }), h('div', { cls: 'loc-head' }, h('div', { cls: 'loc-kicker' }, icon('map-pin'), 'Location · Mossbank'), h('div', { cls: 'loc-name', text: 'The East Gate' })),
+		h('div', { cls: 'loc-body', text: 'A rusted portcullis, half raised. Gulls nest in the gatehouse.' }));
+}
+function item() {
+	return h('div', { cls: 'card-item' }, h('div', { cls: 'card-item-kicker', text: 'Uncommon item' }), h('div', { cls: 'card-item-name', text: "Tidecaller's Hook" }), h('p', { text: 'While you hold it, you can breathe under water for 1 minute, once per day.' }));
+}
+function map() {
+	const m = h('div', { cls: 'ev-import-map' }, h('img', { src: CRYPT, alt: 'Sunken Crypt' }));
+	for (const p of PINS) m.append(h('button', { cls: `ev-import-pin${S.pin === p.label ? ' is-on' : ''}`, type: 'button', style: `left:${p.x}%;top:${p.y}%`, 'aria-label': `${p.label}. ${p.name}`, onclick: () => { S.pin = p.label; render(); } }, h('span', { cls: 'ev-import-pin-label', text: p.label }), h('span', { cls: 'ev-import-pin-dot' })));
+	const opts = h('div', { cls: 'ev-import-map-opts' },
+		h('label', { cls: 'ev-import-switch' }, h('input', { type: 'checkbox', role: 'switch', checked: S.roomNotes, onchange: e => { S.roomNotes = e.target.checked; render(); } }), 'A location note for each room'),
+		h('span', { text: 'crypt.png · 30 × 20 grid' }));
+	const key = h('div', { cls: 'ev-import-key' }, PINS.map(p => h('button', { cls: `ev-import-key-row${S.pin === p.label ? ' is-on' : ''}`, type: 'button', onclick: () => { S.pin = p.label; render(); } }, h('span', { cls: 'ev-import-pin-label', text: p.label }), h('div', {}, h('b', { text: p.name }), h('span', { text: p.text })))));
+	return [m, opts, key];
+}
+function mapMissing() {
+	return h('div', { cls: 'ev-import-map-missing' }, h('span', { cls: 'ev-import-card-icon' }, icon('image')), h('div', { cls: 'ev-import-card-title', text: 'crypt.png is missing' }),
+		h('div', { cls: 'ev-import-card-text', text: 'Watabou saves the picture separately. Add it too, and its 7 rooms become pins on it.' }),
+		pill('button', { cls: 'ev-import-btn is-main', icon: 'folder-simple', text: 'Add crypt.png' }));
+}
+function changes(r) {
+	const tbl = h('div', { cls: 'ev-import-diff' });
+	tbl.append(h('div', { cls: 'ev-import-diff-row is-head' }, h('span', { text: 'Field' }), h('span', { text: 'In the vault' }), h('span', { text: 'From the import' })));
+	tbl.append(h('div', { cls: 'ev-import-diff-row' }, h('span', { cls: 'ev-import-diff-field', text: 'HP' }), h('span', { cls: 'ev-import-diff-old', text: '18' }), h('span', { text: '22' })));
+	tbl.append(h('div', { cls: 'ev-import-diff-row' }, h('span', { cls: 'ev-import-diff-field', text: 'Flicker' }), h('span', { cls: 'ev-import-diff-old', text: 'When it\'s hit, it can move 1 space.' }), h('span', { text: 'When it\'s hit, it can move 2 spaces (once per round).' })));
+	return [noteBox('', 'arrow-up', 'Updates Compendium/Monsters/Bog Wisp.md', ['The rest of the note stays as it is.']), tbl];
+}
+function sourcePane(r) {
+	const isPasted = r.id === 'lurker';
+	const lines = isPasted ? 'creature: Marsh Lurker\nsize: Large\ntype: beast\nac: 15\nac_class: natural armor\nhp: 45\nhit_dice: 6d10 + 12\nspeed: 30 ft., swim 40 ft.\ncr: 3\ntraits:\n  - name: Hold Breath\n    desc: The lurker can hold its breath for 1 hour.\nactions:\n  - name: Multiattack\n    desc: The lurker makes one Bite and one Claw attack.\n  - name: Bite\n    desc: "Melee Weapon Attack: +5 to hit, reach 5 ft. 12 (2d8 + 3) piercing damage."'.split('\n') : BUNDLE_SRC.split('\n');
+	const rec = recordLines[r.id];
+	const bar = h('div', { cls: 'ev-import-code-bar' },
+		h('span', { cls: 'ev-import-code-file' }, icon(isPasted ? 'clipboard-text' : 'file-code'), h('span', { text: isPasted ? 'Pasted text' : 'sunken-crypt.json' })),
+		isPasted ? null : h('div', { cls: 'ev-import-seg' }, [['record', 'This record'], ['file', 'Whole file']].map(([id, t]) => pill('button', { cls: S.srcScope === id ? 'is-on' : '', text: t, onclick: () => { S.srcScope = id; render(); } }))),
+		pill('button', { cls: 'ev-import-open', icon: 'copy', text: 'Copy' }));
+	const shown = !isPasted && S.srcScope === 'record' && rec ? lines.slice(rec[0] - 1, rec[1]) : lines;
+	const out = [];
+	if (r.status === 'out') out.push(noteBox('bad', 'prohibit', 'Left out', r.reasons));
+	out.push(bar, code(shown, { rec: S.srcScope === 'file' ? rec : null }));
+	return out;
+}
+
+/* Custom reviews */
+function ddb() {
+	const c = h('div', { cls: 'ev-import-custom' });
+	const col = h('div', { cls: 'ev-import-custom-col' });
+	const tog = h('input', { type: 'checkbox', checked: S.ddbNote, onchange: e => { S.ddbNote = e.target.checked; render(); } });
+	col.append(h('label', { cls: 'ev-import-toggle-row' }, tog, 'Make a character note in the party'));
+	col.append(h('div', {}, h('div', { cls: 'ev-import-section-title', text: 'For your compendium' }), h('div', { cls: 'ev-import-muted', text: 'Hollowblade (class, levels 1–7 seen), Order of the Quiet Lantern (subclass), Grave Tender (background), a feat, a spell, 2 items' })));
+	const list = h('div', { cls: 'ev-import-checklist' });
+	for (const [ic, n, k] of [['shield', 'Hollowblade', 'Class'], ['scroll', 'Order of the Quiet Lantern', 'Subclass'], ['scroll', 'Grave Tender', 'Background'], ['sparkle', 'Hollow Focus', 'Feat'], ['spell', 'Lantern Lance', 'Spell'], ['gem', 'Lantern of Last Light', 'Magic item'], ['sword', 'Hookblade', 'Equipment']]) {
+		const cb = h('input', { type: 'checkbox', checked: true });
+		list.append(h('label', { cls: 'ev-import-row' }, cb, h('span', { cls: 'ev-import-row-icon' }, icon(ic)), h('span', { cls: 'ev-import-row-text' }, h('span', { cls: 'ev-import-row-name', text: n }), h('span', { cls: 'ev-import-row-meta', text: k })), h('span')));
+	}
+	col.append(list, h('div', { cls: 'ev-import-muted' }, h('b', { text: 'Already in the SRD: ' }), 'Elf, Alert, Light, Longsword'));
+	col.append(noteBox('look', 'warning', null, ["D&D Beyond only gave Hollowblade's features up to level 7. Import the character again after they level up to add the rest."]));
+	c.append(col);
+	return c;
+}
+function pack() {
+	const c = h('div', { cls: 'ev-import-custom' });
+	const col = h('div', { cls: 'ev-import-custom-col' });
+	col.append(h('div', { cls: 'ev-import-tiles' }, [['24', 'monsters'], ['12', 'spells'], ['6', 'items'], ['2', 'ancestries']].map(([n, t]) => h('div', { cls: 'ev-import-tile' }, h('b', { text: n }), h('span', { text: t })))));
+	col.append(noteBox('', 'folder-simple', 'Saved as Ember Vault/Packs/hollow-lands.json', ['Turn it on per campaign in the campaign\'s packs.']));
+	col.append(noteBox('bad', 'prohibit', 'Left out (2)', ['monster 7 (Ash Wight): no HP and no stat block', 'spell 3 (Cinder Veil): "tier" must be 0 to 9']));
+	col.append(noteBox('look', 'warning', 'Added, with something ignored (1)', ['item 2 (Ember Lamp): "weight" isn\'t a Nimble item field']));
+	c.append(col);
+	return c;
+}
+function done() {
+	const d = h('div', { cls: 'ev-import-done', role: 'status' });
+	d.append(h('span', { cls: 'ev-import-card-icon' }, icon('check')), h('div', { cls: 'ev-import-card-title', text: 'Added 6, updated 1' }));
+	const list = h('div', { cls: 'ev-import-written' });
+	for (const [ic, n, p] of [['skull', 'Mire Hag', 'Compendium/Monsters/Mire Hag.md'], ['skull', 'Drowned Acolyte', 'Compendium/Monsters/Drowned Acolyte.md'], ['user', 'Irinia', 'Mossbank/NPCs/Irinia.md'], ['map-pin', 'The East Gate', 'Mossbank/Locations/The East Gate.md'], ['image', 'Sunken Crypt', 'Mossbank/Maps/Sunken Crypt.md'], ['gem', "Tidecaller's Hook", "Compendium/Items/Tidecaller's Hook.md"], ['arrow-up', 'Bog Wisp', 'Compendium/Monsters/Bog Wisp.md · updated']]) {
+		list.append(h('div', { cls: 'ev-import-written-row' }, icon(ic), h('div', { style: 'min-width:0' }, h('div', { cls: 'ev-import-written-name', text: n }), h('div', { cls: 'ev-import-written-path', text: p })), pill('button', { cls: 'ev-import-open', icon: 'arrow-square-out', text: 'Open' })));
+	}
+	d.append(list);
+	return d;
+}
+
+/* ---------- study controls ---------- */
+const statesEl = document.getElementById('states');
+for (const [id, t] of STATES) statesEl.append(h('button', { 'data-id': id, text: t, onclick: () => { setState(id); location.hash = `${id}/${S.view}`; } }));
+const groupBtns = (elId, k, opts) => { const g = document.getElementById(elId); for (const [v, t] of opts) g.append(h('button', { 'data-k': k, 'data-v': v, text: t, onclick: () => { S[k] = v; if (k === 'view') S.detailOpen = S.detailOpen; render(); location.hash = `${S.state}/${S.view}`; } })); };
+groupBtns('views', 'view', [['desktop', 'Desktop 1280'], ['window', 'Window 700'], ['phone', 'Phone 390']]);
+groupBtns('games', 'game', [['nimble', 'Nimble'], ['dnd5e', '5e']]);
+groupBtns('themes', 'theme', [['light', 'Light'], ['dark', 'Dark']]);
+// #state/view[/detail][/dark][/5e] — the screenshot script drives the study through the hash.
+function fromHash() {
+	const [st, view, ...flags] = location.hash.slice(1).split('/');
+	if (view) S.view = view;
+	S.theme = flags.includes('dark') ? 'dark' : 'light';
+	S.game = flags.includes('5e') ? 'dnd5e' : 'nimble';
+	setState(STATES.some(s => s[0] === st) ? st : 'review');
+	if (flags.includes('list')) { S.detailOpen = false; render(); }
+	if (flags.includes('detail')) { S.detailOpen = true; render(); }
+}
+// Checkbox marks in the accent's opposite colour, light and dark.
+for (const [k, ic] of [['check', 'check'], ['minus', 'minus']]) {
+	document.body.parentElement.style.setProperty(`--evi-${k}-l`, svgUrl(ic, 'white'));
+	document.body.parentElement.style.setProperty(`--evi-${k}-d`, svgUrl(ic, '%231B1916'));
+}
+window.addEventListener('hashchange', fromHash);
+fromHash();
+</script>
+</body>
+</html>
