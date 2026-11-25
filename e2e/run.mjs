@@ -8127,6 +8127,140 @@ test('import: Import… opens from the compendium\'s ⋯ menu and from /import',
 	}
 });
 
+test('import: a dungeon\'s JSON chosen with its picture reads as one, and the map uses the picture', async (o) => {
+	const C = 'Campaigns/Pair Vale';
+	const M = '.modal.ev-import';
+	const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+	const dungeon = { title: 'The Paired Crypt', story: 'Two rooms.', rects: [{ x: 0, y: 0, w: 4, h: 4 }, { x: 5, y: 0, w: 4, h: 4 }], doors: [], notes: [{ text: 'An altar.', ref: '1', pos: { x: 2, y: 2 } }] };
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, 'paired-crypt.png']) { const old = app.vault.getAbstractFileByPath(p); if (old) await app.vault.delete(old, true); }
+			await plugin.campaigns.createCampaign({ name: 'Pair Vale', level: 3, heroes: 4, starter: false });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.campaigns.active?.folder)) === C, { what: 'the campaign active' });
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} input.ev-import-file`).setInputFiles([
+			{ name: 'paired-crypt.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(dungeon)) },
+			{ name: 'paired-crypt.png', mimeType: 'image/png', buffer: PNG },
+		]);
+		// One box for the pair, its link between them; the picture said to be the dungeon's.
+		await o.page.locator(`${M} .ev-import-pair .ev-import-pair-link`).waitFor();
+		assert.equal(await o.page.locator(`${M} .ev-import-pair .ev-import-source`).count(), 2);
+		assert.match(await o.page.locator(`${M} .ev-import-pair`).innerText(), /its picture/);
+		await o.page.locator(`${M} .ev-import-look-toggle`).click();
+		assert.match(await o.page.locator(`${M} .ev-import-look`).innerText(), /Move pins/);
+		await importAndClose(o, M);
+		const map = `${C}/Maps/The Paired Crypt.md`;
+		await o.waitFor(() => exists(o, map), { what: 'the map note' });
+		assert.match(await read(o, map), /image: \[\[paired-crypt\.png\]\]\npins:\n- /);
+		assert.ok(await exists(o, 'paired-crypt.png'), 'the picture in the vault');
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			for (const p of [C, 'paired-crypt.png']) { const f = app.vault.getAbstractFileByPath(p); if (f) await app.vault.delete(f, true); }
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('import: a 5e stat block pasted into a 5e campaign comes in as 5e, with no conversion offered', async (o) => {
+	const C = 'Campaigns/Paste Coast';
+	const M = '.modal.ev-import';
+	const goblin = 'Goblin\nSmall humanoid (goblinoid), neutral evil\nArmor Class 15 (leather armor, shield)\nHit Points 7 (2d6)\nSpeed 30 ft.\nSTR DEX CON INT WIS CHA\n8 (−1) 14 (+2) 10 (+0) 10 (+0) 8 (−1) 8 (−1)\nSkills Stealth +6\nSenses darkvision 60 ft., passive Perception 9\nLanguages Common, Goblin\nChallenge 1/4 (50 XP)\nActions\nScimitar. Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) slashing damage.';
+	try {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+			await plugin.campaigns.createCampaign({ name: 'Paste Coast', level: 1, heroes: 4, starter: false, system: '5e', edition: '2014' });
+		}, C);
+		await o.waitFor(async () => (await o.eval((app, plugin) => plugin.system().id)) === 'dnd5e', { what: '5e campaign active' });
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await o.page.locator(M).waitFor();
+		await o.page.locator(`${M} textarea`).fill(goblin);
+		await o.waitFor(async () => /5e stat block \(text\)[\s\S]*A monster/.test(await o.page.locator(`${M} .ev-import-frame`).innerText().catch(() => '')), { what: 'the text read' });
+		assert.equal(await o.page.locator(`${M} .ev-import-convert`).count(), 0, 'nothing to convert in its own game');
+		await o.waitFor(async () => /Goblin[\s\S]*Scimitar/.test(await o.page.locator(`${M} .ev-import-paper .dnd5e-statblock`).innerText().catch(() => '')), { what: 'the 5e stat block previewed' });
+		await importAndClose(o, M);
+		const note = `${C}/Monsters/Goblin.md`;
+		await o.waitFor(() => exists(o, note), { what: 'the monster note' });
+		const text = await read(o, note);
+		assert.match(text, /```5e\nname: Goblin\n[\s\S]*ac: 15/);
+		assert.doesNotMatch(text, /convertedFrom|ev-original/);
+	} finally {
+		await o.eval(async (app, plugin, C) => {
+			document.querySelectorAll('.menu, .modal-container').forEach(n => n.remove());
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
+test('import: on a phone, one column: tap a record for its preview, back to the list, import', async (o) => {
+	const p = o.page;
+	const C = 'Campaigns/Phone Vale';
+	const M = '.modal.ev-import';
+	const cdp = await p.context().newCDPSession(p);
+	const tap = async (loc) => {
+		await loc.scrollIntoViewIfNeeded().catch(() => {});
+		const b = await loc.boundingBox();
+		assert.ok(b, 'tap target is visible');
+		const x = b.x + b.width / 2, y = b.y + b.height / 2;
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+		await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await p.waitForTimeout(300);
+	};
+	const bundle = { format: 'ember-vault-bundle', version: 1, system: 'nimble', source: { name: 'Phone Tool' },
+		content: [{ kind: 'monster', name: 'Mire Hag', level: 3, hp: 30, armor: 'medium', actions: [{ name: 'Claw', text: '1d8+2.' }] }],
+		notes: [{ kind: 'npc', name: 'Irinia', fields: { role: 'Cleric' } }] };
+	await o.eval(async (app, plugin, C) => {
+		const old = app.vault.getAbstractFileByPath(C); if (old) await app.vault.delete(old, true);
+		await plugin.campaigns.createCampaign({ name: 'Phone Vale', level: 3, heroes: 4, starter: false });
+	}, C);
+	await p.setViewportSize({ width: 390, height: 844 });
+	await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+	await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400);
+	await o.eval((app) => app.emulateMobile(true));
+	await p.waitForTimeout(1200);
+	try {
+		await o.eval((app) => { app.commands.executeCommandById('nimble-gm:import-content'); });
+		await p.locator(M).waitFor();
+		// No drag and drop on a phone: the drop zone is one big Choose files.
+		assert.equal(await p.locator(`${M} button.ev-import-choose`).isVisible(), false);
+		assert.match(await p.locator(`${M} .ev-import-drop-title`).innerText(), /Choose files/);
+		await p.locator(`${M} textarea`).fill(JSON.stringify(bundle));
+		await p.locator(`${M} .ev-import-row`).first().waitFor();
+		assert.ok(await o.eval(() => document.querySelector('.modal.ev-import').classList.contains('is-narrow')), 'one column');
+		// Tap a row: its preview comes over the list; back returns to the list.
+		await tap(p.locator(`${M} .ev-import-row`, { hasText: 'Mire Hag' }));
+		await o.waitFor(async () => (await p.locator(`${M} .ev-import-detail`).evaluate(el => getComputedStyle(el).visibility)) === 'visible', { what: 'the preview pushed over the list' });
+		await o.waitFor(async () => /Mire Hag[\s\S]*Claw/.test(await p.locator(`${M} .ev-import-paper`).innerText().catch(() => '')), { what: 'the stat block previewed' });
+		const spill = await p.evaluate(() => { const m = document.querySelector('.modal.ev-import'); return m.scrollWidth > m.clientWidth + 1; });
+		assert.equal(spill, false, 'nothing spills sideways');
+		await tap(p.locator(`${M} button.ev-import-back`));
+		await o.waitFor(async () => (await p.locator(`${M} .ev-import-detail`).evaluate(el => getComputedStyle(el).visibility)) === 'hidden', { what: 'back to the list' });
+		await tap(p.locator(`${M} button.ev-import-main`));
+		await p.locator(`${M} .ev-import-done`).waitFor();
+		assert.match(await p.locator(`${M} .ev-import-done`).innerText(), /Added 2/);
+		await tap(p.locator(`${M} button.ev-import-main`));
+		await p.locator(M).waitFor({ state: 'detached' });
+		await o.waitFor(() => exists(o, `${C}/Monsters/Mire Hag.md`), { what: 'the monster note' });
+		assert.ok(await exists(o, `${C}/NPCs/Irinia.md`), 'the NPC note');
+	} finally {
+		await p.evaluate(() => document.querySelectorAll('.nimble-popover, .modal-container, .menu').forEach(n => n.remove()));
+		await o.eval(async (app, plugin) => { await plugin.saveSettings(); }); await p.waitForTimeout(400);
+		await o.eval((app) => app.emulateMobile(false));
+		await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+		await p.setViewportSize({ width: 1400, height: 900 });
+		await p.waitForTimeout(800);
+		await o.eval(async (app, plugin, C) => {
+			const f = app.vault.getAbstractFileByPath(C); if (f) await app.vault.delete(f, true);
+			await plugin.campaigns.setActive(null);
+		}, C);
+	}
+});
+
 test('import: a mapping file in the content folder teaches Import… a new format; a broken one says why in settings', async (o) => {
 	const write = (o, path, text) => o.eval(async (app, _p, [path, text]) => {
 		const dir = path.slice(0, path.lastIndexOf('/'));
